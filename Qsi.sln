@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qsi", "Qsi\Qsi.csproj", "{82482593-EE23-40C7-BC0E-8C343D70D434}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qsi.MySql", "Qsi.MySql\Qsi.MySql.csproj", "{514AE9A8-6162-4ABE-AB66-8FF81DB8DFD0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qsi.PostgreSql", "Qsi.PostgreSql\Qsi.PostgreSql.csproj", "{2AA051E7-77E4-4F7E-AD54-2CC04BC7DD78}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{82482593-EE23-40C7-BC0E-8C343D70D434}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82482593-EE23-40C7-BC0E-8C343D70D434}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82482593-EE23-40C7-BC0E-8C343D70D434}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82482593-EE23-40C7-BC0E-8C343D70D434}.Release|Any CPU.Build.0 = Release|Any CPU
+		{514AE9A8-6162-4ABE-AB66-8FF81DB8DFD0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{514AE9A8-6162-4ABE-AB66-8FF81DB8DFD0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{514AE9A8-6162-4ABE-AB66-8FF81DB8DFD0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{514AE9A8-6162-4ABE-AB66-8FF81DB8DFD0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2AA051E7-77E4-4F7E-AD54-2CC04BC7DD78}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2AA051E7-77E4-4F7E-AD54-2CC04BC7DD78}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2AA051E7-77E4-4F7E-AD54-2CC04BC7DD78}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2AA051E7-77E4-4F7E-AD54-2CC04BC7DD78}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
