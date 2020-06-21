@@ -1,5 +1,5 @@
 ## QSI
-The PSI is the Query Structure Interface.
+The QSI is the Query Structure Interface.
 
 It builds on the ANTLR to create a semantic query tree.
 
