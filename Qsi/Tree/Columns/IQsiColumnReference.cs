@@ -8,7 +8,7 @@ namespace Qsi.Tree
     public interface IQsiColumnReference : IQsiColumn
     {
         /// <summary>
-        /// Get the column name.
+        /// Get the declared column name.
         /// </summary>
         QsiIdentifier Name { get; }
     }

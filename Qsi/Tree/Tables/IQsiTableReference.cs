@@ -1,10 +1,15 @@
-﻿namespace Qsi.Tree
+﻿using Qsi.Data;
+
+namespace Qsi.Tree
 {
     /// <summary>
     /// Specifies the declared table.
     /// </summary>
-    public interface IQsiTableReference : IQsiTable, IQsiNamedNdoe
+    public interface IQsiTableReference : IQsiTable
     {
-        // TODO: impl
+        /// <summary>
+        /// Get declared table name.
+        /// </summary>
+        QsiQualifiedIdentifier Name { get; }
     }
 }
