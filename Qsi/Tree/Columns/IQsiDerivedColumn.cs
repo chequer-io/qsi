@@ -1,6 +1,4 @@
-﻿using Qsi.Tree.Expressions;
-
-namespace Qsi.Tree.Columns
+﻿namespace Qsi.Tree
 {
     /// <summary>
     /// Specifies an expression or aliased column.

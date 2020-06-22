@@ -1,4 +1,4 @@
-﻿namespace Qsi.Tree.Columns
+﻿namespace Qsi.Tree
 {
     /// <summary>
     /// Specifies an aliased column.

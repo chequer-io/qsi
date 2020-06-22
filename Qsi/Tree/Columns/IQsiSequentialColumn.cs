@@ -1,4 +1,4 @@
-﻿﻿namespace Qsi.Tree.Columns
+﻿﻿namespace Qsi.Tree
 {
     /// <summary>
     /// Specifies the column defined in IQsiDerivedTable using the ordinal.

@@ -1,6 +1,6 @@
 ﻿using Qsi.Data;
 
-namespace Qsi.Tree.Columns
+namespace Qsi.Tree
 {
     /// <summary>
     /// Specifies all columns.
