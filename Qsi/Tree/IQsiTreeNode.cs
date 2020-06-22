@@ -2,5 +2,6 @@
 {
     public interface IQsiTreeNode
     {
+        IQsiTreeNode Parent { get; }
     }
 }

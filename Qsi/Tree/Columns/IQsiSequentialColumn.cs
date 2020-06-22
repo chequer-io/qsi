@@ -1,7 +1,10 @@
 ﻿﻿namespace Qsi.Tree.Columns
 {
-    public interface IQsiSequentialColumn : IQsiColumn
+    /// <summary>
+    /// Specifies the column defined in IQsiDerivedTable using the ordinal.
+    /// </summary>
+    public interface IQsiSequentialColumn : IQsiAliasedColumn
     {
-        
+        int Ordinal { get; }
     }
 }

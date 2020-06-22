@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace Qsi.Data
 {
-    public readonly struct QsiQualifiedIdentifier
+    public sealed class QsiQualifiedIdentifier
     {
         public QsiIdentifier[] Identifiers { get; }
 

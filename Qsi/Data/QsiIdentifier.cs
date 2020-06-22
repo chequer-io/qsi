@@ -1,6 +1,6 @@
 ﻿namespace Qsi.Data
 {
-    public readonly struct QsiIdentifier
+    public sealed class QsiIdentifier
     {
         public string Value { get; }
 
