@@ -3,9 +3,9 @@
 namespace Qsi.Tree
 {
     /// <summary>
-    /// Specifies the column defined in IQsiTableReference.
+    /// Specifies the column declared in IQsiTable.
     /// </summary>
-    public interface IQsiColumnReference : IQsiColumn
+    public interface IQsiDeclaredColumn : IQsiColumn
     {
         /// <summary>
         /// Get the declared column name.

@@ -8,9 +8,9 @@ namespace Qsi.Tree
     public interface IQsiJoinedTable : IQsiTable
     {
         /// <summary>
-        /// Get the left source.
+        /// Get the left table.
         /// </summary>
-        IQsiTable LeftSource { get; }
+        IQsiTable Left { get; }
 
         /// <summary>
         /// Get the join type.
@@ -18,9 +18,9 @@ namespace Qsi.Tree
         QsiJoinType JoinType { get; }
 
         /// <summary>
-        /// Get the right source.
+        /// Get the right table.
         /// </summary>
-        IQsiTable RightSource { get; }
+        IQsiTable Right { get; }
 
         /// <summary>
         /// Get the pivot columns declaration.
