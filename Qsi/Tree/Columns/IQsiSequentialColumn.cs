@@ -3,7 +3,7 @@
     /// <summary>
     /// Specifies the column defined in IQsiDerivedTable using the ordinal.
     /// </summary>
-    public interface IQsiSequentialColumn : IQsiAliasedColumn
+    public interface IQsiSequentialColumn : IQsiColumn, IQsiAliased
     {
         int Ordinal { get; }
     }

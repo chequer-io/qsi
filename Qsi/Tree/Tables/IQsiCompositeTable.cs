@@ -8,6 +8,6 @@
         /// <summary>
         /// Get all tables.
         /// </summary>
-        IQsiTable[] Tables { get; }
+        IQsiTable[] Sources { get; }
     }
 }

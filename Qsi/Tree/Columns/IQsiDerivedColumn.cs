@@ -3,7 +3,7 @@
     /// <summary>
     /// Specifies an expression or aliased column.
     /// </summary>
-    public interface IQsiDerivedColumn : IQsiAliasedColumn
+    public interface IQsiDerivedColumn : IQsiColumn, IQsiAliased
     {
         /// <summary>
         /// Get the target column.

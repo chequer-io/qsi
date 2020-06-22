@@ -1,6 +1,10 @@
 ﻿namespace Qsi.Tree
 {
-    public interface IQsiTableReference : IQsiTable
+    /// <summary>
+    /// Specifies the declared table.
+    /// </summary>
+    public interface IQsiTableReference : IQsiTable, IQsiNamedNdoe
     {
+        // TODO: impl
     }
 }
