@@ -28,4 +28,14 @@ Get-ChildItem -Path "Qsi.*" -Directory | ForEach-Object {
         -o "$OutputDirectory" `
         -visitor `
         "$GrammarDirectory\*.g4"
+
+    # Fetch access modifier
+    Get-ChildItem -Path $OutputDirectory\* -Include *.cs | ForEach-Object {
+        Write-Host "[Fetch] $($PSItem.Name)" -ForegroundColor Yellow
+
+        $Content = Get-Content -Path $PSItem -Raw
+        $Content = $Content -replace 'public(?= +(?:interface|(?:partial +)?class) +[\w<>]+)', 'internal'
+
+        Set-Content -Path $PSItem -Value $Content
+    }
 }
