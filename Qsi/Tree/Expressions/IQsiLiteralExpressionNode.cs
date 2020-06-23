@@ -1,7 +1,11 @@
+using Qsi.Data;
+
 namespace Qsi.Tree
 {
     public interface IQsiLiteralExpressionNode : IQsiExpressionNode
     {
-        string Value { get; }
+        object Value { get; }
+
+        QsiLiteralType Type { get; }
     }
 }
