@@ -10,6 +10,6 @@ namespace Qsi.Tree
         /// <summary>
         /// Get declared table name.
         /// </summary>
-        QsiQualifiedIdentifier Name { get; }
+        QsiQualifiedIdentifier Identifier { get; }
     }
 }

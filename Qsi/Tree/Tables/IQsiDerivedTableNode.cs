@@ -3,7 +3,7 @@
     /// <summary>
     /// Specifies a derived table.
     /// </summary>
-    public interface IQsiDerivedTableNode : IQsiTableNode, IQsiAliasedNode
+    public interface IQsiDerivedTableNode : IQsiTableNode
     {
         /// <summary>
         /// Get the table directives.
@@ -19,5 +19,10 @@
         /// Get the table source.
         /// </summary>
         IQsiTableNode Source { get; }
+
+        /// <summary>
+        /// Get the delcared alias.
+        /// </summary>
+        IQsiAliasNode Alias { get; }
     }
 }
