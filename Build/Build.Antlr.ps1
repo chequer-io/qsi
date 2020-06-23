@@ -4,7 +4,7 @@ Set-Location $(Get-Item "$PSScriptRoot").Parent.FullName
 $AntlrJar = Resolve-Path ".\Build\antlr-4.8-complete.jar"
 
 Get-ChildItem -Path "Qsi.*" -Directory | ForEach-Object {
-    $Namespace = $PSItem.Name
+    $Namespace = "$($PSItem.Name).Internal"
     $GrammarDirectory = [System.IO.Path]::Combine($PSItem.FullName, "Antlr")
     $OutputDirectory = [System.IO.Path]::Combine($GrammarDirectory, "generated")
 
