@@ -3,11 +3,11 @@
     /// <summary>
     /// Specifies table directives.
     /// </summary>
-    public interface IQsiTableDirectives : IQsiTreeNode
+    public interface IQsiTableDirectivesNode : IQsiTreeNode
     {
         /// <summary>
         /// Get delcared tables.
         /// </summary>
-        IQsiTable[] Tables { get; }
+        IQsiTableNode[] Tables { get; }
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Qsi.Tree
 {
-    public interface IQsiMemberAccessExpression : IQsiExpression
+    public interface IQsiMemberAccessExpressionNode : IQsiExpressionNode
     {
         QsiQualifiedIdentifier Identifier { get; }
     }

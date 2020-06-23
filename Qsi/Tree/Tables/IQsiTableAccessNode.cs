@@ -5,7 +5,7 @@ namespace Qsi.Tree
     /// <summary>
     /// Specifies the declared table.
     /// </summary>
-    public interface IQsiTableAccess : IQsiTable
+    public interface IQsiTableAccessNode : IQsiTableNode
     {
         /// <summary>
         /// Get declared table name.

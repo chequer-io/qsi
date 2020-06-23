@@ -5,12 +5,12 @@ namespace Qsi.Tree
     /// <summary>
     /// Specifies a joined table.
     /// </summary>
-    public interface IQsiJoinedTable : IQsiTable
+    public interface IQsiJoinedTableNode : IQsiTableNode
     {
         /// <summary>
         /// Get the left table.
         /// </summary>
-        IQsiTable Left { get; }
+        IQsiTableNode Left { get; }
 
         /// <summary>
         /// Get the join type.
@@ -20,11 +20,11 @@ namespace Qsi.Tree
         /// <summary>
         /// Get the right table.
         /// </summary>
-        IQsiTable Right { get; }
+        IQsiTableNode Right { get; }
 
         /// <summary>
         /// Get the pivot columns declaration.
         /// </summary>
-        IQsiColumnsDeclaration PivotColumns { get; }
+        IQsiColumnsDeclarationNode PivotColumns { get; }
     }
 }

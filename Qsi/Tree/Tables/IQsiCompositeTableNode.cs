@@ -3,11 +3,11 @@
     /// <summary>
     /// Specifies a virtual table in which two or more tables are combined.
     /// </summary>
-    public interface IQsiCompositeTable : IQsiTable
+    public interface IQsiCompositeTableNode : IQsiTableNode
     {
         /// <summary>
         /// Get all tables.
         /// </summary>
-        IQsiTable[] Sources { get; }
+        IQsiTableNode[] Sources { get; }
     }
 }

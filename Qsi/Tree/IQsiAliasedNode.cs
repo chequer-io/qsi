@@ -2,7 +2,7 @@
 
 namespace Qsi.Tree
 {
-    public interface IQsiAliased : IQsiTreeNode
+    public interface IQsiAliasedNode : IQsiTreeNode
     {
         QsiQualifiedIdentifier Alias { get; }
     }

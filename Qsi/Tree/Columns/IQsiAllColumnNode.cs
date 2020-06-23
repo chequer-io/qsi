@@ -5,7 +5,7 @@ namespace Qsi.Tree
     /// <summary>
     /// Specifies all columns.
     /// </summary>
-    public interface IQsiColumnAll : IQsiColumn
+    public interface IQsiAllColumnNode : IQsiColumnNode
     {
         /// <summary>
         /// Get the path of the target table to search the entire columns.

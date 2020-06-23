@@ -3,17 +3,17 @@
     /// <summary>
     /// Specifies an expression or aliased column.
     /// </summary>
-    public interface IQsiDerivedColumn : IQsiColumn, IQsiAliased
+    public interface IQsiDerivedColumnNode : IQsiColumnNode, IQsiAliasedNode
     {
         /// <summary>
         /// Get the target column.
         /// </summary>
-        IQsiColumn Column { get; }
+        IQsiColumnNode Column { get; }
 
         /// <summary>
         /// Get the expression in column.
         /// </summary>
-        IQsiExpression Expression { get; }
+        IQsiExpressionNode Expression { get; }
 
         bool IsColumn => Column != null;
 
