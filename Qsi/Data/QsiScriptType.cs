@@ -24,7 +24,7 @@
         DropTable,
         DropView,
         DropFunction,
-        DropProcedure,
+        DropProcedure
 
         // ** TCL **
         // TODO: Transaction Control Language
