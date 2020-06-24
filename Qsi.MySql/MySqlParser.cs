@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using Antlr4.Runtime;
 using Qsi.Data;
 using Qsi.MySql.Internal;
@@ -20,11 +18,6 @@ namespace Qsi.MySql
         }
 
         protected override IQsiTreeNode ParseTree(QsiScript script, Parser parser)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override IEnumerable<QsiScript> ParseScripts(string script)
         {
             throw new NotImplementedException();
         }

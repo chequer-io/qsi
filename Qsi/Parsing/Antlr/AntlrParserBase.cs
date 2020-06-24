@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Antlr4.Runtime;
 using Qsi.Data;
 using Qsi.Tree;
@@ -21,8 +20,6 @@ namespace Qsi.Parsing.Antlr
         protected abstract Parser CreateParser(QsiScript script);
 
         protected abstract IQsiTreeNode ParseTree(QsiScript script, Parser parser);
-
-        protected abstract IEnumerable<QsiScript> ParseScripts(string script);
 
         protected virtual void OnSyntaxError(QsiSyntaxErrorException e)
         {
