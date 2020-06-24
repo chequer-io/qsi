@@ -1,13 +1,15 @@
-﻿using System.Collections.Generic;
-using Antlr4.Runtime;
-using Antlr4.Runtime.Tree;
+﻿using System;
+using System.Collections.Generic;
 using Qsi.Data;
+using Qsi.Tree;
 
 namespace Qsi.Parsing
 {
     public interface IQsiParser
     {
-        IParseTree ParseTree(ICharStream stream);
+        event EventHandler<QsiSyntaxErrorException> SyntaxError;
+
+        IQsiTreeNode ParseTree(QsiScript script);
 
         IEnumerable<QsiScript> ParseScripts(string script);
     }
