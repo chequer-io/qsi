@@ -6,6 +6,8 @@ namespace Qsi.Services
     {
         IQsiParser CreateParser();
 
+        IQsiScriptParser CreateScriptParser();
+
         IQsiReferenceResolver CreateResolver();
     }
 }

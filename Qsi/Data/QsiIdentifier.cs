@@ -1,4 +1,6 @@
-﻿namespace Qsi.Data
+﻿using System;
+
+namespace Qsi.Data
 {
     public sealed class QsiIdentifier
     {
@@ -10,6 +12,11 @@
         {
             Value = value;
             IsEscaped = escaped;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(IsEscaped, Value);
         }
     }
 }

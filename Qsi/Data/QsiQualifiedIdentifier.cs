@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Qsi.Utilities;
 
 namespace Qsi.Data
 {
@@ -14,6 +15,11 @@ namespace Qsi.Data
         public QsiQualifiedIdentifier(params QsiIdentifier[] identifiers)
         {
             Identifiers = identifiers;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCodeUtility.Combine(Identifiers.Select(i => i.GetHashCode()));
         }
     }
 }

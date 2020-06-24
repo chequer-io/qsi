@@ -30,16 +30,11 @@ namespace Qsi.Parsing.Antlr
         }
 
         #region IQsiParser
-        IQsiTreeNode IQsiParser.ParseTree(QsiScript script)
+        IQsiTreeNode IQsiParser.Parse(QsiScript script)
         {
             var parser = CreateParser(script);
             parser.AddErrorListener(_errorHandler);
             return ParseTree(script, parser);
-        }
-
-        IEnumerable<QsiScript> IQsiParser.ParseScripts(string script)
-        {
-            return ParseScripts(script);
         }
         #endregion
     }

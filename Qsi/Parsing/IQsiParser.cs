@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Qsi.Data;
 using Qsi.Tree;
 
@@ -9,8 +8,6 @@ namespace Qsi.Parsing
     {
         event EventHandler<QsiSyntaxErrorException> SyntaxError;
 
-        IQsiTreeNode ParseTree(QsiScript script);
-
-        IEnumerable<QsiScript> ParseScripts(string script);
+        IQsiTreeNode Parse(QsiScript script);
     }
 }
