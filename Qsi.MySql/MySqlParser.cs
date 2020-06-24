@@ -17,7 +17,7 @@ namespace Qsi.MySql
             return new Internal.MySqlParser(tokens);
         }
 
-        protected override IQsiTreeNode ParseTree(QsiScript script, Parser parser)
+        protected override IQsiTreeNode Parse(QsiScript script, Parser parser)
         {
             throw new NotImplementedException();
         }

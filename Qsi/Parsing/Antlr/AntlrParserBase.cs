@@ -19,7 +19,7 @@ namespace Qsi.Parsing.Antlr
 
         protected abstract Parser CreateParser(QsiScript script);
 
-        protected abstract IQsiTreeNode ParseTree(QsiScript script, Parser parser);
+        protected abstract IQsiTreeNode Parse(QsiScript script, Parser parser);
 
         protected virtual void OnSyntaxError(QsiSyntaxErrorException e)
         {
@@ -31,7 +31,7 @@ namespace Qsi.Parsing.Antlr
         {
             var parser = CreateParser(script);
             parser.AddErrorListener(_errorHandler);
-            return ParseTree(script, parser);
+            return Parse(script, parser);
         }
         #endregion
     }

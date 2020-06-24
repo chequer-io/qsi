@@ -4,10 +4,10 @@ namespace Qsi.Services
 {
     public interface IQsiReferenceResolver
     {
-        QsiQualifiedIdentifier ResolveQualifiedIdentifier(in QsiQualifiedIdentifier identifier);
+        QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier);
 
-        QsiDataTable LookupTable(in QsiQualifiedIdentifier identifier);
+        QsiDataTable LookupTable(QsiQualifiedIdentifier identifier);
 
-        QsiScript LookupDefinition(in QsiQualifiedIdentifier identifier, QsiDataTableType type);
+        QsiScript LookupDefinition(QsiQualifiedIdentifier identifier, QsiDataTableType type);
     }
 }

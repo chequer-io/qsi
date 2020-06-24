@@ -16,22 +16,22 @@ namespace Qsi.Services
             _lookupDefinitionCache = new ConcurrentDictionary<QsiQualifiedIdentifier, QsiScript>(comparer);
         }
 
-        public bool TryGetTable(in QsiQualifiedIdentifier identifier, out QsiDataTable dataTable)
+        public bool TryGetTable(QsiQualifiedIdentifier identifier, out QsiDataTable dataTable)
         {
             return _lookupCache.TryGetValue(identifier, out dataTable);
         }
 
-        public void SetTable(in QsiQualifiedIdentifier identifier, QsiDataTable dataTable)
+        public void SetTable(QsiQualifiedIdentifier identifier, QsiDataTable dataTable)
         {
             _lookupCache[identifier] = dataTable;
         }
 
-        public bool TryGetDefinition(in QsiQualifiedIdentifier identifier, out QsiScript script)
+        public bool TryGetDefinition(QsiQualifiedIdentifier identifier, out QsiScript script)
         {
             return _lookupDefinitionCache.TryGetValue(identifier, out script);
         }
 
-        public void SetDefinition(in QsiQualifiedIdentifier identifier, in QsiScript script)
+        public void SetDefinition(QsiQualifiedIdentifier identifier, QsiScript script)
         {
             _lookupDefinitionCache[identifier] = script;
         }
