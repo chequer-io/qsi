@@ -4,10 +4,15 @@
     {
         public string Operator { get; set; }
 
-        public QsiExpressionNode Expression { get; set; }
+        public QsiTreeNodeProperty<QsiExpressionNode> Expression { get; }
 
         #region Explicit
-        IQsiExpressionNode IQsiUnaryExpressionNode.Expression => Expression;
+        IQsiExpressionNode IQsiUnaryExpressionNode.Expression => Expression.GetValue();
         #endregion
+
+        public QsiUnaryExpressionNode()
+        {
+            Expression = new QsiTreeNodeProperty<QsiExpressionNode>(this);
+        }
     }
 }

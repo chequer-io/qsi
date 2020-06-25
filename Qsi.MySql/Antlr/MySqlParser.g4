@@ -1893,7 +1893,7 @@ describeObjectClause
 //    DB Objects
 
 fullId
-    : uid (DOT_ID | '.' uid)?
+    : uid dottedId?
     ;
 
 tableName
@@ -2009,8 +2009,11 @@ booleanLiteral
 hexadecimalLiteral
     : STRING_CHARSET_NAME? HEXADECIMAL_LITERAL;
 
+nullLiteral
+    : NULL_LITERAL | NULL_SPEC_LITERAL;
+
 nullNotnull
-    : NOT? (NULL_LITERAL | NULL_SPEC_LITERAL)
+    : NOT? nullLiteral
     ;
 
 constant
@@ -2021,7 +2024,7 @@ constant
     | booleanLiteral                                                #booleanLiteralConstant
     | REAL_LITERAL                                                  #realLiteralConstant
     | BIT_STRING                                                    #bitStringConstant
-    | NOT? nullLiteral=(NULL_LITERAL | NULL_SPEC_LITERAL)           #nullLiteralConstant
+    | nullNotnull                                                   #nullLiteralConstant
     ;
 
 

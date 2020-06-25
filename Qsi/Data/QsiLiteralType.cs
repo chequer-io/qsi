@@ -3,9 +3,11 @@
     public enum QsiLiteralType
     {
         Unknown,
+        Null,
         String,
         Numeric,
         Decimal,
+        Hexadecimal,
         Boolean,
         Date,
         Time,

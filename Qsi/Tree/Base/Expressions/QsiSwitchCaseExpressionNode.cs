@@ -2,14 +2,20 @@
 {
     public sealed class QsiSwitchCaseExpressionNode : QsiExpressionNode, IQsiSwitchCaseExpressionNode
     {
-        public QsiExpressionNode Condition { get; set; }
+        public QsiTreeNodeProperty<QsiExpressionNode> Condition { get; }
 
-        public QsiExpressionNode Return { get; set; }
+        public QsiTreeNodeProperty<QsiExpressionNode> Consequent { get; }
 
         #region Explicit
-        IQsiExpressionNode IQsiSwitchCaseExpressionNode.Condition => Condition;
+        IQsiExpressionNode IQsiSwitchCaseExpressionNode.Condition => Condition.GetValue();
 
-        IQsiExpressionNode IQsiSwitchCaseExpressionNode.Return => Return;
+        IQsiExpressionNode IQsiSwitchCaseExpressionNode.Consequent => Consequent.GetValue();
         #endregion
+
+        public QsiSwitchCaseExpressionNode()
+        {
+            Condition = new QsiTreeNodeProperty<QsiExpressionNode>(this);
+            Consequent = new QsiTreeNodeProperty<QsiExpressionNode>(this);
+        }
     }
 }

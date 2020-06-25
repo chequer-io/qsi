@@ -4,6 +4,6 @@ namespace Qsi.Tree
     {
         IQsiExpressionNode Condition { get; }
 
-        IQsiExpressionNode Return { get; }
+        IQsiExpressionNode Consequent { get; }
     }
 }

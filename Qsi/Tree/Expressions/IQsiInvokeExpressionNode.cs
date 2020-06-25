@@ -4,6 +4,6 @@ namespace Qsi.Tree
     {
         IQsiFunctionAccessExpressionNode Member { get; }
 
-        IQsiExpressionNode[] Parameters { get; }
+        IQsiParametersExpressionNode Parameters { get; }
     }
 }

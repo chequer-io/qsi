@@ -2,10 +2,15 @@
 {
     public sealed class QsiTableExpressionNode : QsiExpressionNode, IQsiTableExpressionNode
     {
-        public QsiTableNode Table { get; set; }
+        public QsiTreeNodeProperty<QsiTableNode> Table { get; }
 
         #region Explicit
-        IQsiTableNode IQsiTableExpressionNode.Table => Table;
+        IQsiTableNode IQsiTableExpressionNode.Table => Table.GetValue();
         #endregion
+
+        public QsiTableExpressionNode()
+        {
+            Table = new QsiTreeNodeProperty<QsiTableNode>(this);
+        }
     }
 }

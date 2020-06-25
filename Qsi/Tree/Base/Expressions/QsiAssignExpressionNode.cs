@@ -2,16 +2,22 @@
 {
     public sealed class QsiAssignExpressionNode : QsiExpressionNode, IQsiAssignExpressionNode
     {
-        public QsiVariableAccessExpressionNode Variable { get; set; }
+        public QsiTreeNodeProperty<QsiVariableAccessExpressionNode> Variable { get; }
 
         public string Operator { get; set; }
 
-        public QsiExpressionNode Value { get; set; }
+        public QsiTreeNodeProperty<QsiExpressionNode> Value { get; }
 
         #region Explicit
-        IQsiVariableAccessExpressionNode IQsiAssignExpressionNode.Variable => Variable;
+        IQsiVariableAccessExpressionNode IQsiAssignExpressionNode.Variable => Variable.GetValue();
 
-        IQsiExpressionNode IQsiAssignExpressionNode.Value => Value;
+        IQsiExpressionNode IQsiAssignExpressionNode.Value => Value.GetValue();
         #endregion
+
+        public QsiAssignExpressionNode()
+        {
+            Variable = new QsiTreeNodeProperty<QsiVariableAccessExpressionNode>(this);
+            Value = new QsiTreeNodeProperty<QsiExpressionNode>(this);
+        }
     }
 }

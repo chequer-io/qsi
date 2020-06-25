@@ -1,18 +1,24 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-
-namespace Qsi.Tree.Base
+﻿namespace Qsi.Tree.Base
 {
     public sealed class QsiInvokeExpressionNode : QsiExpressionNode, IQsiInvokeExpressionNode
     {
-        public QsiFunctionAccessExpressionNode Member { get; set; }
+        public QsiTreeNodeProperty<QsiFunctionAccessExpressionNode> Member { get; }
 
-        public List<QsiExpressionNode> Parameters { get; } = new List<QsiExpressionNode>();
+        public QsiTreeNodeList<QsiExpressionNode> Parameters { get; }
 
         #region Explicit
-        IQsiFunctionAccessExpressionNode IQsiInvokeExpressionNode.Member => Member;
+        IQsiFunctionAccessExpressionNode IQsiInvokeExpressionNode.Member => Member.GetValue();
 
-        IQsiExpressionNode[] IQsiInvokeExpressionNode.Parameters => Parameters.Cast<IQsiExpressionNode>().ToArray();
+        IQsiParametersExpressionNode IQsiInvokeExpressionNode.Parameters => _parameters;
         #endregion
+
+        private readonly QsiParametersExpressionNode _parameters;
+
+        public QsiInvokeExpressionNode()
+        {
+            Member = new QsiTreeNodeProperty<QsiFunctionAccessExpressionNode>(this);
+            _parameters = new QsiParametersExpressionNode();
+            Parameters = _parameters.Expressions;
+        }
     }
 }

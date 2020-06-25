@@ -2,7 +2,7 @@
 
 namespace Qsi.Tree.Base
 {
-    public sealed class QsiFunctionAccessExpressionNode : QsiTreeNode, IQsiFunctionAccessExpressionNode
+    public sealed class QsiFunctionAccessExpressionNode : QsiExpressionNode, IQsiFunctionAccessExpressionNode
     {
         public QsiQualifiedIdentifier Identifier { get; set; }
     }

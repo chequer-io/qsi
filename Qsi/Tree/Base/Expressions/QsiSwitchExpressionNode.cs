@@ -5,14 +5,20 @@ namespace Qsi.Tree.Base
 {
     public sealed class QsiSwitchExpressionNode : QsiExpressionNode, IQsiSwitchExpressionNode
     {
-        public QsiExpressionNode Value { get; set; }
+        public QsiTreeNodeProperty<QsiExpressionNode> Value { get; }
 
-        public List<QsiSwitchCaseExpressionNode> Cases { get; } = new List<QsiSwitchCaseExpressionNode>();
+        public QsiTreeNodeList<QsiSwitchCaseExpressionNode> Cases { get; }
 
         #region Explicit
-        IQsiExpressionNode IQsiSwitchExpressionNode.Value => Value;
+        IQsiExpressionNode IQsiSwitchExpressionNode.Value => Value.GetValue();
 
         IQsiSwitchCaseExpressionNode[] IQsiSwitchExpressionNode.Cases => Cases.Cast<IQsiSwitchCaseExpressionNode>().ToArray();
         #endregion
+
+        public QsiSwitchExpressionNode()
+        {
+            Value = new QsiTreeNodeProperty<QsiExpressionNode>(this);
+            Cases = new QsiTreeNodeList<QsiSwitchCaseExpressionNode>(this);
+        }
     }
 }
