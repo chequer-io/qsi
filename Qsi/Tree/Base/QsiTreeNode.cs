@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Qsi.Tree.Base
+﻿namespace Qsi.Tree.Base
 {
     public abstract class QsiTreeNode : IQsiTreeNode
     {

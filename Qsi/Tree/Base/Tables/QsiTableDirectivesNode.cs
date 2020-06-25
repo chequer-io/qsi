@@ -1,14 +1,18 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 
 namespace Qsi.Tree.Base
 {
     public sealed class QsiTableDirectivesNode : QsiTableNode, IQsiTableDirectivesNode
     {
-        public List<QsiTableNode> Tables { get; } = new List<QsiTableNode>();
+        public QsiTreeNodeList<QsiTableNode> Tables { get; }
 
         #region Explicit
         IQsiTableNode[] IQsiTableDirectivesNode.Tables => Tables.Cast<IQsiTableNode>().ToArray();
         #endregion
+
+        public QsiTableDirectivesNode()
+        {
+            Tables = new QsiTreeNodeList<QsiTableNode>(this);
+        }
     }
 }
