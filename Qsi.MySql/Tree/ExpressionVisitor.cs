@@ -846,7 +846,7 @@ namespace Qsi.MySql.Tree
         #region Variable
         private static QsiVariableAccessExpressionNode VisitVariable(MysqlVariableContext context)
         {
-            if (context.children[0] is ITerminalNode terminalNode == false)
+            if (!(context.children[0] is ITerminalNode terminalNode))
             {
                 throw TreeHelper.NotSupportedTree(context);
             }
