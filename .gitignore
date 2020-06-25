@@ -342,3 +342,5 @@ healthchecksdb
 # Antlr
 [gG]en/
 Qsi.*/Antlr/generated/
+*.interp
+*.tokens

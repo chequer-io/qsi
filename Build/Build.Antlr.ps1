@@ -20,6 +20,10 @@ Get-ChildItem -Path "Qsi.*" -Directory | ForEach-Object {
         Remove-Item -Path $OutputDirectory -Recurse -Force -Confirm:$false -ErrorAction Ignore
     }
 
+    # Clean grammar cache
+    Remove-Item -Path "$GrammarDirectory\*" -Include *.interp, *.tokens
+
+    # Generate
     java `
         -jar "$AntlrJar" `
         -Dlanguage=CSharp `
@@ -28,6 +32,11 @@ Get-ChildItem -Path "Qsi.*" -Directory | ForEach-Object {
         -o "$OutputDirectory" `
         -visitor `
         "$GrammarDirectory\*.g4"
+
+    # Move grammar cache (interp, tokens)
+    Get-ChildItem -Path $OutputDirectory\* -Include *.interp, *.tokens | ForEach-Object {
+        Move-Item $PSItem $GrammarDirectory
+    }
 
     # Fetch access modifier
     Get-ChildItem -Path $OutputDirectory\* -Include *.cs | ForEach-Object {
