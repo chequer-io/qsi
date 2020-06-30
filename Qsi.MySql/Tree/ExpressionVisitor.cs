@@ -833,17 +833,9 @@ namespace Qsi.MySql.Tree
         #region ColumnExpression
         private static QsiColumnAccessExpressionNode VisitFullColumnName(FullColumnNameContext context)
         {
-            DottedIdContext[] dottedIds = context.dottedId();
-            var identifiers = new QsiIdentifier[dottedIds.Length + 1];
-
-            identifiers[0] = IdentifierVisitor.Visit(context.uid());
-
-            for (int i = 0; i < dottedIds.Length; i++)
-                identifiers[i + 1] = IdentifierVisitor.Visit(dottedIds[i]);
-
             return new QsiColumnAccessExpressionNode
             {
-                Identifier = new QsiQualifiedIdentifier(identifiers)
+                Identifier = IdentifierVisitor.Visit(context)
             };
         }
         #endregion
@@ -925,7 +917,7 @@ namespace Qsi.MySql.Tree
         {
             return new QsiUnknownMemberAcessExpressionNode
             {
-                Identifier = new QsiQualifiedIdentifier(IdentifierVisitor.Visit(context))
+                Identifier = new QsiQualifiedIdentifier(IdentifierVisitor.VisitUid(context))
             };
         }
         #endregion

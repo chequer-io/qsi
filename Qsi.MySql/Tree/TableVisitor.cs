@@ -100,7 +100,7 @@ namespace Qsi.MySql.Tree
         {
             return new QsiAliasNode
             {
-                Name = IdentifierVisitor.Visit(context)
+                Name = IdentifierVisitor.VisitUid(context)
             };
         }
         #endregion
@@ -349,7 +349,7 @@ namespace Qsi.MySql.Tree
                 {
                     return new QsiAllColumnNode
                     {
-                        Path = IdentifierVisitor.Visit(starElementContext.fullId())
+                        Path = IdentifierVisitor.VisitFullId(starElementContext.fullId())
                     };
                 }
 
@@ -546,7 +546,7 @@ namespace Qsi.MySql.Tree
                         IEnumerable<QsiDeclaredColumnNode> columns = uidListContext.uid()
                             .Select(uid => new QsiDeclaredColumnNode
                             {
-                                Name = new QsiQualifiedIdentifier(IdentifierVisitor.Visit(uid))
+                                Name = new QsiQualifiedIdentifier(IdentifierVisitor.VisitUid(uid))
                             });
 
                         var columnsDeclaration = TreeHelper.Create<QsiColumnsDeclarationNode>(dn =>
@@ -569,7 +569,7 @@ namespace Qsi.MySql.Tree
         {
             var tableNode = new QsiTableAccessNode
             {
-                Identifier = IdentifierVisitor.Visit(context.tableName().fullId())
+                Identifier = IdentifierVisitor.VisitFullId(context.tableName().fullId())
             };
 
             if (context.alias == null)
@@ -586,7 +586,7 @@ namespace Qsi.MySql.Tree
         {
             return new QsiTableAccessNode
             {
-                Identifier = IdentifierVisitor.Visit(context)
+                Identifier = IdentifierVisitor.VisitFullId(context)
             };
         }
 

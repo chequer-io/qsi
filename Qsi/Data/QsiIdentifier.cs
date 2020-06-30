@@ -18,5 +18,10 @@ namespace Qsi.Data
         {
             return HashCode.Combine(IsEscaped, Value);
         }
+
+        public override string ToString()
+        {
+            return Value;
+        }
     }
 }

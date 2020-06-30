@@ -12,22 +12,25 @@ namespace Qsi.MySql.Tree
             switch (tree)
             {
                 case FullIdContext fullIdContext:
-                    return Visit(fullIdContext);
+                    return VisitFullId(fullIdContext);
+
+                case FullColumnNameContext fullColumnNameContext:
+                    return VisitFullColumnName(fullColumnNameContext);
 
                 case UidContext uidContext:
-                    return new QsiQualifiedIdentifier(Visit(uidContext));
+                    return new QsiQualifiedIdentifier(VisitUid(uidContext));
 
                 case DottedIdContext dottedIdContext:
-                    return new QsiQualifiedIdentifier(Visit(dottedIdContext));
+                    return new QsiQualifiedIdentifier(VisitDottedId(dottedIdContext));
 
                 case ITerminalNode terminalNode:
-                    return new QsiQualifiedIdentifier(Visit(terminalNode));
+                    return new QsiQualifiedIdentifier(VisitTerminalNode(terminalNode));
             }
 
             throw TreeHelper.NotSupportedTree(tree);
         }
 
-        public static QsiQualifiedIdentifier Visit(FullIdContext context)
+        public static QsiQualifiedIdentifier VisitFullId(FullIdContext context)
         {
             var identifiers = new QsiIdentifier[context.ChildCount];
 
@@ -37,13 +40,13 @@ namespace Qsi.MySql.Tree
                 {
                     case UidContext uidContext:
                     {
-                        identifiers[i] = Visit(uidContext);
+                        identifiers[i] = VisitUid(uidContext);
                         break;
                     }
 
                     case DottedIdContext dottedIdContext:
                     {
-                        identifiers[i] = Visit(dottedIdContext);
+                        identifiers[i] = VisitDottedId(dottedIdContext);
                         break;
                     }
 
@@ -57,28 +60,41 @@ namespace Qsi.MySql.Tree
             return new QsiQualifiedIdentifier(identifiers);
         }
 
-        public static QsiIdentifier Visit(UidContext context)
+        public static QsiQualifiedIdentifier VisitFullColumnName(FullColumnNameContext context)
+        {
+            DottedIdContext[] dottedIds = context.dottedId();
+            var identifiers = new QsiIdentifier[dottedIds.Length + 1];
+
+            identifiers[0] = VisitUid(context.uid());
+
+            for (int i = 0; i < dottedIds.Length; i++)
+                identifiers[i + 1] = VisitDottedId(dottedIds[i]);
+
+            return new QsiQualifiedIdentifier(identifiers);
+        }
+
+        public static QsiIdentifier VisitUid(UidContext context)
         {
             if (context.children[0] is ITerminalNode terminalNode)
-                return Visit(terminalNode);
+                return VisitTerminalNode(terminalNode);
 
             return new QsiIdentifier(context.GetText(), false);
         }
 
-        public static QsiIdentifier Visit(DottedIdContext context)
+        public static QsiIdentifier VisitDottedId(DottedIdContext context)
         {
             var uid = context.uid();
 
             if (uid != null)
-                return Visit(uid);
+                return VisitUid(uid);
 
             if (context.children[0] is ITerminalNode terminalNode)
-                return Visit(terminalNode);
+                return VisitTerminalNode(terminalNode);
 
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiIdentifier Visit(ITerminalNode terminalNode)
+        public static QsiIdentifier VisitTerminalNode(ITerminalNode terminalNode)
         {
             switch (terminalNode.Symbol.Type)
             {

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
@@ -21,8 +22,8 @@ namespace Qsi.Playground
         private readonly TextBlock _tbError;
         private readonly TreeView _tvQsi;
 
-        private readonly IBrush _terminalBrush = Brush.Parse("#F2AAAA");
-        private readonly IBrush _elementBrush = Brush.Parse("#DDF3F5");
+        private readonly IBrush _terminalBrush = Brush.Parse("#c70039");
+        private readonly IBrush _propertyBrush = Brush.Parse("#cf7500");
 
         private readonly Dictionary<string, Lazy<IQsiParser>> _parsers;
 
@@ -46,7 +47,7 @@ namespace Qsi.Playground
             _cbLanguages.Items = _parsers.Keys;
             _cbLanguages.SelectedIndex = 0;
 
-            _tbInput.KeyDown += TbInputOnKeyDown;
+            _tbInput.GetObservable(TextBox.TextProperty).Subscribe(_ => OnInputChanged());
         }
 
         private void InitializeComponent()
@@ -67,9 +68,9 @@ namespace Qsi.Playground
             }
         }
 
-        private void TbInputOnKeyDown(object sender, KeyEventArgs e)
+        private void OnInputChanged()
         {
-            Flow.Debounce(sender, Update, 500);
+            Flow.Debounce(_tbInput, Update, 500);
         }
 
         private void Update()
@@ -88,12 +89,20 @@ namespace Qsi.Playground
                 var sentence = input.Split(';', 2)[0].Trim();
                 var script = new QsiScript(sentence, QsiScriptType.Select);
 
+                _qsiParser.SyntaxError += ErrorHandler;
                 var tree = _qsiParser.Parse(script);
-               BuildVisualTree(tree);
+                _qsiParser.SyntaxError -= ErrorHandler;
+
+                BuildVisualTree(tree);
             }
             catch (Exception e)
             {
-                _tbError.Text = e.ToString();
+                _tbError.Text = e.Message;
+            }
+
+            static void ErrorHandler(object sender, QsiSyntaxErrorException e)
+            {
+                throw e;
             }
         }
 
@@ -118,21 +127,31 @@ namespace Qsi.Playground
             var nodeItem = new TreeViewItem
             {
                 Header = $"{node.GetType().Name}",
-                Background = _elementBrush
+                Foreground = Brushes.Black,
+                IsExpanded = true
             };
 
             var nodeItemChild = new List<TreeViewItem>();
 
-            foreach (var property in node.GetType().GetTypeInfo().DeclaredProperties)
+            IEnumerable<PropertyInfo> properties = node.GetType().GetInterfaces()
+                .Where(t => t != typeof(IQsiTreeNode))
+                .SelectMany(t => t.GetProperties());
+
+            foreach (var property in properties)
             {
+                var value = property.GetValue(node);
+
+                if (value == null || value is bool || value is int)
+                    continue;
+
                 var item = new TreeViewItem
                 {
-                    Header = property.Name
+                    Header = property.Name,
+                    Foreground = _propertyBrush,
+                    IsExpanded = true
                 };
 
                 nodeItemChild.Add(item);
-
-                var value = property.GetValue(node);
 
                 switch (value)
                 {
@@ -145,8 +164,8 @@ namespace Qsi.Playground
                         break;
 
                     default:
-                        item.Header = $"{property.Name}: {value} (terminal node)";
-                        item.Background = _terminalBrush;
+                        item.Header = $"{property.Name}: {value}";
+                        item.Foreground = _terminalBrush;
                         break;
                 }
             }
