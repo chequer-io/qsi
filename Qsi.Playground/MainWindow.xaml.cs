@@ -21,6 +21,9 @@ namespace Qsi.Playground
         private readonly TextBlock _tbError;
         private readonly TreeView _tvQsi;
 
+        private readonly IBrush _terminalBrush = Brush.Parse("#F2AAAA");
+        private readonly IBrush _elementBrush = Brush.Parse("#DDF3F5");
+
         private readonly Dictionary<string, Lazy<IQsiParser>> _parsers;
 
         private IQsiParser _qsiParser;
@@ -86,7 +89,7 @@ namespace Qsi.Playground
                 var script = new QsiScript(sentence, QsiScriptType.Select);
 
                 var tree = _qsiParser.Parse(script);
-                BuildVisualTree(tree);
+               BuildVisualTree(tree);
             }
             catch (Exception e)
             {
@@ -115,11 +118,10 @@ namespace Qsi.Playground
             var nodeItem = new TreeViewItem
             {
                 Header = $"{node.GetType().Name}",
-                Background = Brushes.Aquamarine
+                Background = _elementBrush
             };
 
             var nodeItemChild = new List<TreeViewItem>();
-            nodeItem.Items = nodeItemChild;
 
             foreach (var property in node.GetType().GetTypeInfo().DeclaredProperties)
             {
@@ -144,10 +146,12 @@ namespace Qsi.Playground
 
                     default:
                         item.Header = $"{property.Name}: {value} (terminal node)";
-                        item.Background = Brushes.IndianRed;
+                        item.Background = _terminalBrush;
                         break;
                 }
             }
+
+            nodeItem.Items = nodeItemChild.ToArray();
 
             return nodeItem;
         }

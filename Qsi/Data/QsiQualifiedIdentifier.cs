@@ -21,5 +21,10 @@ namespace Qsi.Data
         {
             return HashCodeUtility.Combine(Identifiers.Select(i => i.GetHashCode()));
         }
+
+        public override string ToString()
+        {
+            return string.Join(".", Identifiers.Select(x => x.Value));
+        }
     }
 }

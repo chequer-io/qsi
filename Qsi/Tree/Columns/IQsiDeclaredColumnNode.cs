@@ -10,6 +10,6 @@ namespace Qsi.Tree
         /// <summary>
         /// Get the declared column name.
         /// </summary>
-        QsiIdentifier Name { get; }
+        QsiQualifiedIdentifier Name { get; }
     }
 }

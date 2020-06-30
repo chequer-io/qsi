@@ -4,10 +4,15 @@
     {
         public int Ordinal { get; set; } = -1;
 
-        public QsiAliasNode Alias { get; set; }
+        public QsiTreeNodeProperty<QsiAliasNode> Alias { get; }
 
         #region Explicit
-        IQsiAliasNode IQsiSequentialColumnNode.Alias => Alias;
+        IQsiAliasNode IQsiSequentialColumnNode.Alias => Alias.GetValue();
         #endregion
+
+        public QsiSequentialColumnNode()
+        {
+            Alias = new QsiTreeNodeProperty<QsiAliasNode>(this);
+        }
     }
 }

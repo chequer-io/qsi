@@ -682,12 +682,7 @@ namespace Qsi.MySql.Tree
 
             if (localIdAssign != null)
             {
-                return TreeHelper.Create<QsiAssignExpressionNode>(n =>
-                {
-                    n.Operator = localIdAssign.VAR_ASSIGN().GetText();
-                    n.Variable.SetValue(VisitLocalId(localIdAssign.LOCAL_ID()));
-                    n.Value.SetValue(expression);
-                });
+                return VisitLocalIdAssign(context.localIdAssign(), expression);
             }
 
             return expression;
@@ -807,6 +802,16 @@ namespace Qsi.MySql.Tree
                 default:
                     throw TreeHelper.NotSupportedTree(context);
             }
+        }
+
+        internal static QsiExpressionNode VisitLocalIdAssign(LocalIdAssignContext context, QsiExpressionNode expression)
+        {
+            return TreeHelper.Create<QsiAssignExpressionNode>(n =>
+            {
+                n.Operator = context.VAR_ASSIGN().GetText();
+                n.Variable.SetValue(VisitLocalId(context.LOCAL_ID()));
+                n.Value.SetValue(expression);
+            });
         }
 
         private static QsiExpressionNode VisitOrderByExpression(OrderByExpressionContext context)

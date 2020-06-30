@@ -4,6 +4,6 @@ namespace Qsi.Tree.Base
 {
     public sealed class QsiDeclaredColumnNode : QsiColumnNode, IQsiDeclaredColumnNode
     {
-        public QsiIdentifier Name { get; set; }
+        public QsiQualifiedIdentifier Name { get; set; }
     }
 }
