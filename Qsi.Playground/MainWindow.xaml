@@ -1,0 +1,45 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        x:Class="Qsi.Playground.MainWindow"
+        d:DesignWidth="900"
+        d:DesignHeight="600"
+        MinWidth="400"
+        MinHeight="600"
+        Width="900"
+        Height="600"
+        WindowStartupLocation="CenterScreen"
+        Title="Qsi Playground">
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+
+        <ComboBox x:Name="cbLanguages" HorizontalAlignment="Left" Padding="8,6" Margin="0,0,0,8" />
+
+        <StackPanel Orientation="Vertical" Grid.Row="1">
+            <TextBox
+                x:Name="tbInput"
+                Height="200"
+                AcceptsReturn="True"
+                AcceptsTab="True"
+                TextWrapping="Wrap"
+                FontSize="14" />
+
+            <TextBlock
+                x:Name="tbError"
+                Foreground="#E36387"
+                Margin="8"
+                FontSize="12"
+                TextAlignment="Left"
+                TextWrapping="Wrap" />
+        </StackPanel>
+
+        <TreeView x:Name="tvQsi" Grid.Row="2" />
+    </Grid>
+</Window>

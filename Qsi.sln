@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qsi.PostgreSql", "Qsi.Postg
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Languages", "Languages", "{97493A14-DF8A-4A8A-A521-5900DFAC1CDA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qsi.Playground", "Qsi.Playground\Qsi.Playground.csproj", "{DA61E58C-53AA-4D1E-ADD0-0BA63F7B2DC3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -26,6 +28,10 @@ Global
 		{2AA051E7-77E4-4F7E-AD54-2CC04BC7DD78}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2AA051E7-77E4-4F7E-AD54-2CC04BC7DD78}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2AA051E7-77E4-4F7E-AD54-2CC04BC7DD78}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA61E58C-53AA-4D1E-ADD0-0BA63F7B2DC3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA61E58C-53AA-4D1E-ADD0-0BA63F7B2DC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA61E58C-53AA-4D1E-ADD0-0BA63F7B2DC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA61E58C-53AA-4D1E-ADD0-0BA63F7B2DC3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{514AE9A8-6162-4ABE-AB66-8FF81DB8DFD0} = {97493A14-DF8A-4A8A-A521-5900DFAC1CDA}
