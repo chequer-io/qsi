@@ -17,6 +17,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition />
         </Grid.RowDefinitions>
 
@@ -40,6 +41,8 @@
                 TextWrapping="Wrap" />
         </StackPanel>
 
-        <TreeView x:Name="tvQsi" Grid.Row="2" />
+        <CheckBox x:Name="chkQsiProperty" Content="Hide Property" Grid.Row="2" VerticalAlignment="Center" />
+        <TextBlock x:Name="tbQsiStatus" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Right" />
+        <TreeView x:Name="tvQsi" Margin="0,4,0,0" Grid.Row="3" />
     </Grid>
 </Window>

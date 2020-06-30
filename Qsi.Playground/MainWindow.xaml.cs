@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
@@ -20,6 +22,8 @@ namespace Qsi.Playground
         private readonly ComboBox _cbLanguages;
         private readonly TextBox _tbInput;
         private readonly TextBlock _tbError;
+        private readonly CheckBox _chkQsiProperty;
+        private readonly TextBlock _tbQsiStatus;
         private readonly TreeView _tvQsi;
 
         private readonly IBrush _terminalBrush = Brush.Parse("#c70039");
@@ -41,6 +45,8 @@ namespace Qsi.Playground
             _cbLanguages = this.Find<ComboBox>("cbLanguages");
             _tbInput = this.Find<TextBox>("tbInput");
             _tbError = this.Find<TextBlock>("tbError");
+            _chkQsiProperty = this.Find<CheckBox>("chkQsiProperty");
+            _tbQsiStatus = this.Find<TextBlock>("tbQsiStatus");
             _tvQsi = this.Find<TreeView>("tvQsi");
 
             _cbLanguages.SelectionChanged += CbLanguagesOnSelectionChanged;
@@ -48,6 +54,7 @@ namespace Qsi.Playground
             _cbLanguages.SelectedIndex = 0;
 
             _tbInput.GetObservable(TextBox.TextProperty).Subscribe(_ => OnInputChanged());
+            _chkQsiProperty.GetObservable(ToggleButton.IsCheckedProperty).Subscribe(_ => Update());
         }
 
         private void InitializeComponent()
@@ -90,8 +97,14 @@ namespace Qsi.Playground
                 var script = new QsiScript(sentence, QsiScriptType.Select);
 
                 _qsiParser.SyntaxError += ErrorHandler;
+
+                var sw = Stopwatch.StartNew();
                 var tree = _qsiParser.Parse(script);
+                sw.Stop();
+
                 _qsiParser.SyntaxError -= ErrorHandler;
+
+                _tbQsiStatus.Text = $"parsed in {sw.Elapsed.TotalMilliseconds:0.0000} ms";
 
                 BuildVisualTree(tree);
             }
@@ -124,6 +137,8 @@ namespace Qsi.Playground
 
         private TreeViewItem BuildVisualTreeImpl(IQsiTreeNode node)
         {
+            bool hideProperty = _chkQsiProperty.IsChecked ?? false;
+
             var nodeItem = new TreeViewItem
             {
                 Header = $"{node.GetType().Name}",
@@ -151,16 +166,31 @@ namespace Qsi.Playground
                     IsExpanded = true
                 };
 
-                nodeItemChild.Add(item);
-
                 switch (value)
                 {
                     case IQsiTreeNode childNode:
-                        item.Items = new[] { BuildVisualTreeImpl(childNode) };
+                        var childItem = BuildVisualTreeImpl(childNode);
+
+                        if (hideProperty)
+                        {
+                            nodeItemChild.Add(childItem);
+                            continue;
+                        }
+
+                        item.Items = new[] { childItem };
+
                         break;
 
                     case IEnumerable<IQsiTreeNode> childNodes:
-                        item.Items = childNodes.Select(BuildVisualTreeImpl).ToArray();
+                        TreeViewItem[] childItems = childNodes.Select(BuildVisualTreeImpl).ToArray();
+
+                        if (hideProperty)
+                        {
+                            nodeItemChild.AddRange(childItems);
+                            continue;
+                        }
+
+                        item.Items = childItems;
                         break;
 
                     default:
@@ -168,6 +198,8 @@ namespace Qsi.Playground
                         item.Foreground = _terminalBrush;
                         break;
                 }
+
+                nodeItemChild.Add(item);
             }
 
             nodeItem.Items = nodeItemChild.ToArray();
