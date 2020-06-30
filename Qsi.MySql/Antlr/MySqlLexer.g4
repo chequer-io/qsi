@@ -1158,7 +1158,7 @@ DOT_ID:                              '.' ID_LITERAL;
 // Identifiers
 
 ID:                                  ID_LITERAL;
-// DOUBLE_QUOTE_ID:                  '"' ~'"'+ '"';
+DOUBLE_QUOTE_ID:                     '"' ~'"'+ '"';
 REVERSE_QUOTE_ID:                    '`' ~'`'+ '`';
 STRING_USER_NAME:                    (
                                        SQUOTA_STRING | DQUOTA_STRING 
