@@ -1,4 +1,4 @@
-﻿namespace Qsi.Playground.Models
+﻿namespace Qsi.Debugger.Models
 {
     public abstract class QsiTreeItem
     {

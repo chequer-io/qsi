@@ -2,9 +2,9 @@
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
-using Qsi.Playground.Collections;
+using Qsi.Debugger.Collections;
 
-namespace Qsi.Playground.Utilities
+namespace Qsi.Debugger.Utilities
 {
     public static class Flow
     {

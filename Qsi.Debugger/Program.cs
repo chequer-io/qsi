@@ -1,7 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.Logging.Serilog;
 
-namespace Qsi.Playground
+namespace Qsi.Debugger
 {
     class Program
     {

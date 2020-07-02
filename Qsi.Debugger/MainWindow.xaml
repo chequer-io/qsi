@@ -3,9 +3,9 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ae="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
-        xmlns:md="clr-namespace:Qsi.Playground.Models"
+        xmlns:md="clr-namespace:Qsi.Debugger.Models"
         mc:Ignorable="d"
-        x:Class="Qsi.Playground.MainWindow"
+        x:Class="Qsi.Debugger.MainWindow"
         d:DesignWidth="900"
         d:DesignHeight="600"
         MinWidth="400"
@@ -13,7 +13,7 @@
         Width="900"
         Height="600"
         WindowStartupLocation="CenterScreen"
-        Title="Qsi Playground">
+        Title="Qsi Debugger">
 
     <Grid Margin="16">
         <Grid.ColumnDefinitions>

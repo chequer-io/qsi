@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 
-namespace Qsi.Playground.Collections
+namespace Qsi.Debugger.Collections
 {
     public class ConcurrentHashSet<T> : IDisposable
     {

@@ -14,13 +14,13 @@ using AvaloniaEdit;
 using AvaloniaEdit.Highlighting;
 using AvaloniaEdit.Highlighting.Xshd;
 using Qsi.Data;
+using Qsi.Debugger.Models;
+using Qsi.Debugger.Utilities;
 using Qsi.MySql;
 using Qsi.Parsing;
-using Qsi.Playground.Models;
-using Qsi.Playground.Utilities;
 using Qsi.Tree;
 
-namespace Qsi.Playground
+namespace Qsi.Debugger
 {
     public class MainWindow : Window
     {
@@ -42,7 +42,6 @@ namespace Qsi.Playground
         {
             InitializeComponent();
 
-            this.OpenDevTools();
             _parsers = new Dictionary<string, Lazy<IQsiParser>>
             {
                 ["MySQL"] = new Lazy<IQsiParser>(() => new MySqlParser())

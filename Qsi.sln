@@ -8,7 +8,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qsi.PostgreSql", "Qsi.Postg
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Languages", "Languages", "{97493A14-DF8A-4A8A-A521-5900DFAC1CDA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qsi.Playground", "Qsi.Playground\Qsi.Playground.csproj", "{DA61E58C-53AA-4D1E-ADD0-0BA63F7B2DC3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qsi.Debugger", "Qsi.Debugger\Qsi.Debugger.csproj", "{DA61E58C-53AA-4D1E-ADD0-0BA63F7B2DC3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AvaloniaEdit", "Libraries\AvaloniaEdit\AvaloniaEdit.csproj", "{CFE5B121-8ABF-4646-97FD-AC5794A36C53}"
 EndProject
