@@ -1,27 +1,25 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
-  </PropertyGroup>
-  <ItemGroup>
-    <Compile Update="**\*.xaml.cs">
-      <DependentUpon>%(Filename)</DependentUpon>
-    </Compile>
-    <AvaloniaResource Include="**\*.xaml">
-      <SubType>Designer</SubType>
-    </AvaloniaResource>
-    <AvaloniaResource Include="Assets\**" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.9.9" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.9.9" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Assets" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Qsi.MySql\Qsi.MySql.csproj" />
-    <ProjectReference Include="..\Qsi.PostgreSql\Qsi.PostgreSql.csproj" />
-    <ProjectReference Include="..\Qsi\Qsi.csproj" />
-  </ItemGroup>
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>netcoreapp3.0</TargetFramework>
+    </PropertyGroup>
+    <ItemGroup>
+        <Compile Update="**\*.xaml.cs">
+            <DependentUpon>%(Filename)</DependentUpon>
+        </Compile>
+        <AvaloniaResource Include="**\*.xaml">
+            <SubType>Designer</SubType>
+        </AvaloniaResource>
+        <AvaloniaResource Include="Assets\**" />
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
+        <PackageReference Include="Avalonia.Desktop" Version="$(AvaloniaVersion)" />
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Libraries\AvaloniaEdit\AvaloniaEdit.csproj" />
+        <ProjectReference Include="..\Qsi.MySql\Qsi.MySql.csproj" />
+        <ProjectReference Include="..\Qsi.PostgreSql\Qsi.PostgreSql.csproj" />
+        <ProjectReference Include="..\Qsi\Qsi.csproj" />
+    </ItemGroup>
 </Project>

@@ -3,15 +3,20 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Xml;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using AvaloniaEdit;
+using AvaloniaEdit.Highlighting;
+using AvaloniaEdit.Highlighting.Xshd;
 using Qsi.Data;
 using Qsi.MySql;
 using Qsi.Parsing;
+using Qsi.Playground.Models;
 using Qsi.Playground.Utilities;
 using Qsi.Tree;
 
@@ -20,14 +25,14 @@ namespace Qsi.Playground
     public class MainWindow : Window
     {
         private readonly ComboBox _cbLanguages;
-        private readonly TextBox _tbInput;
+        private readonly TextEditor _codeEditor;
         private readonly TextBlock _tbError;
         private readonly CheckBox _chkQsiProperty;
         private readonly TextBlock _tbQsiStatus;
         private readonly TreeView _tvQsi;
 
-        private readonly IBrush _terminalBrush = Brush.Parse("#c70039");
-        private readonly IBrush _propertyBrush = Brush.Parse("#cf7500");
+        private readonly IBrush _terminalBrush = Brush.Parse("#FA8072");
+        private readonly IBrush _propertyBrush = Brush.Parse("#B0B0B0");
 
         private readonly Dictionary<string, Lazy<IQsiParser>> _parsers;
 
@@ -37,29 +42,49 @@ namespace Qsi.Playground
         {
             InitializeComponent();
 
+            this.OpenDevTools();
             _parsers = new Dictionary<string, Lazy<IQsiParser>>
             {
                 ["MySQL"] = new Lazy<IQsiParser>(() => new MySqlParser())
             };
 
             _cbLanguages = this.Find<ComboBox>("cbLanguages");
-            _tbInput = this.Find<TextBox>("tbInput");
+            _codeEditor = this.Find<TextEditor>("codeEditor");
             _tbError = this.Find<TextBlock>("tbError");
             _chkQsiProperty = this.Find<CheckBox>("chkQsiProperty");
             _tbQsiStatus = this.Find<TextBlock>("tbQsiStatus");
             _tvQsi = this.Find<TreeView>("tvQsi");
 
+            InitializeEditor();
+
             _cbLanguages.SelectionChanged += CbLanguagesOnSelectionChanged;
             _cbLanguages.Items = _parsers.Keys;
             _cbLanguages.SelectedIndex = 0;
 
-            _tbInput.GetObservable(TextBox.TextProperty).Subscribe(_ => OnInputChanged());
             _chkQsiProperty.GetObservable(ToggleButton.IsCheckedProperty).Subscribe(_ => Update());
         }
 
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
+        }
+
+        private void InitializeEditor()
+        {
+            using var reader = XmlReader.Create(AssetManager.FindResource("Sql.xshd"));
+            var xshd = HighlightingLoader.LoadXshd(reader);
+            var highlighting = HighlightingLoader.Load(xshd, new HighlightingManager());
+
+            _codeEditor.ShowLineNumbers = true;
+            _codeEditor.SyntaxHighlighting = highlighting;
+            _codeEditor.TextArea.SelectionBrush = Brush.Parse("#6623577B");
+            _codeEditor.TextArea.Options.ShowColumnRuler = true;
+            _codeEditor.TextArea.Options.ColumnRulerPosition = 100;
+            _codeEditor.TextArea.TextView.CurrentLineBackground = Brushes.Transparent;
+            _codeEditor.TextArea.TextView.CurrentLineBorder = new Pen(Brush.Parse("#1BFFFFFF"));
+            _codeEditor.TextArea.Options.HighlightCurrentLine = true;
+
+            _codeEditor.TextChanged += CodeEditorOnTextInput;
         }
 
         private void CbLanguagesOnSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -75,9 +100,9 @@ namespace Qsi.Playground
             }
         }
 
-        private void OnInputChanged()
+        private void CodeEditorOnTextInput(object sender, EventArgs e)
         {
-            Flow.Debounce(_tbInput, Update, 500);
+            Flow.Debounce(_codeEditor, Update, 500);
         }
 
         private void Update()
@@ -87,10 +112,10 @@ namespace Qsi.Playground
 
             try
             {
-                if (_qsiParser == null || string.IsNullOrWhiteSpace(_tbInput.Text))
+                if (_qsiParser == null || string.IsNullOrWhiteSpace(_codeEditor.Text))
                     return;
 
-                var input = _tbInput.Text;
+                var input = _codeEditor.Text;
 
                 // TODO: change to IQsiScriptParser
                 var sentence = input.Split(';', 2)[0].Trim();
@@ -135,18 +160,16 @@ namespace Qsi.Playground
             _tvQsi.Items = new[] { BuildVisualTreeImpl(node) };
         }
 
-        private TreeViewItem BuildVisualTreeImpl(IQsiTreeNode node)
+        private QsiTreeItem BuildVisualTreeImpl(IQsiTreeNode node)
         {
             bool hideProperty = _chkQsiProperty.IsChecked ?? false;
 
-            var nodeItem = new TreeViewItem
+            var nodeItem = new QsiElementItem
             {
-                Header = $"{node.GetType().Name}",
-                Foreground = Brushes.Black,
-                IsExpanded = true
+                Header = NormalizeElementName(node.GetType().Name)
             };
 
-            var nodeItemChild = new List<TreeViewItem>();
+            var nodeItemChild = new List<QsiTreeItem>();
 
             IEnumerable<PropertyInfo> properties = node.GetType().GetInterfaces()
                 .Where(t => t != typeof(IQsiTreeNode))
@@ -159,12 +182,7 @@ namespace Qsi.Playground
                 if (value == null || value is bool || value is int)
                     continue;
 
-                var item = new TreeViewItem
-                {
-                    Header = property.Name,
-                    Foreground = _propertyBrush,
-                    IsExpanded = true
-                };
+                QsiTreeItem item;
 
                 switch (value)
                 {
@@ -177,12 +195,16 @@ namespace Qsi.Playground
                             continue;
                         }
 
-                        item.Items = new[] { childItem };
+                        item = new QsiChildElementItem
+                        {
+                            Header = property.Name,
+                            Items = new[] { childItem }
+                        };
 
                         break;
 
                     case IEnumerable<IQsiTreeNode> childNodes:
-                        TreeViewItem[] childItems = childNodes.Select(BuildVisualTreeImpl).ToArray();
+                        QsiTreeItem[] childItems = childNodes.Select(BuildVisualTreeImpl).ToArray();
 
                         if (hideProperty)
                         {
@@ -190,12 +212,21 @@ namespace Qsi.Playground
                             continue;
                         }
 
-                        item.Items = childItems;
+                        item = new QsiChildElementItem
+                        {
+                            Header = property.Name,
+                            Items = childItems
+                        };
+
                         break;
 
                     default:
-                        item.Header = $"{property.Name}: {value}";
-                        item.Foreground = _terminalBrush;
+                        item = new QsiPropertyItem
+                        {
+                            Header = property.Name,
+                            Value = value
+                        };
+
                         break;
                 }
 
@@ -205,6 +236,17 @@ namespace Qsi.Playground
             nodeItem.Items = nodeItemChild.ToArray();
 
             return nodeItem;
+        }
+
+        private string NormalizeElementName(string name)
+        {
+            if (name.StartsWith("Qsi"))
+                name = name[3..];
+
+            if (name.EndsWith("Node"))
+                name = name[..^4];
+
+            return name;
         }
         #endregion
     }

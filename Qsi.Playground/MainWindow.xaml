@@ -2,6 +2,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ae="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
+        xmlns:md="clr-namespace:Qsi.Playground.Models"
         mc:Ignorable="d"
         x:Class="Qsi.Playground.MainWindow"
         d:DesignWidth="900"
@@ -14,35 +16,91 @@
         Title="Qsi Playground">
 
     <Grid Margin="16">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition />
-        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition Width="6" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
 
-        <ComboBox x:Name="cbLanguages" HorizontalAlignment="Left" Padding="8,6" Margin="0,0,0,8" />
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
 
-        <StackPanel Orientation="Vertical" Grid.Row="1">
-            <TextBox
-                x:Name="tbInput"
-                Height="200"
-                AcceptsReturn="True"
-                AcceptsTab="True"
-                TextWrapping="Wrap"
+            <ComboBox
+                x:Name="cbLanguages"
+                HorizontalAlignment="Left"
+                Padding="8,6" />
+
+            <ae:TextEditor
+                x:Name="codeEditor"
+                Grid.Row="1"
+                FontWeight="Medium"
+                Background="#16191F"
+                LineNumbersForeground="#7E7E7E"
+                Margin="0,8"
                 FontSize="14" />
 
             <TextBlock
                 x:Name="tbError"
+                Grid.Row="2"
                 Foreground="#E36387"
                 Margin="8"
                 FontSize="12"
                 TextAlignment="Left"
                 TextWrapping="Wrap" />
-        </StackPanel>
+        </Grid>
 
-        <CheckBox x:Name="chkQsiProperty" Content="Hide Property" Grid.Row="2" VerticalAlignment="Center" />
-        <TextBlock x:Name="tbQsiStatus" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Right" />
-        <TreeView x:Name="tvQsi" Margin="0,4,0,0" Grid.Row="3" />
+        <GridSplitter Grid.Column="1" Opacity="0" />
+
+        <DockPanel Grid.Column="2">
+            <Grid DockPanel.Dock="Top" Margin="0,0,0,8">
+                <CheckBox x:Name="chkQsiProperty" Content="Hide Property" VerticalAlignment="Center" />
+                <TextBlock x:Name="tbQsiStatus" VerticalAlignment="Center" HorizontalAlignment="Right" />
+            </Grid>
+
+            <TreeView x:Name="tvQsi">
+                <TreeView.Styles>
+                    <Style Selector="TreeViewItem">
+                        <Setter Property="IsExpanded" Value="true" />
+                    </Style>
+                    <Style Selector="TreeViewItem/template/ToggleButton#expander">
+                        <Setter Property="Template">
+                            <ControlTemplate>
+                                <Border
+                                    Background="Transparent"
+                                    Width="14"
+                                    Height="12"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center">
+
+                                    <Path Fill="White"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          Data="M 0 2 L 4 6 L 0 10 Z" />
+                                </Border>
+                            </ControlTemplate>
+                        </Setter>
+                    </Style>
+                </TreeView.Styles>
+                <TreeView.DataTemplates>
+                    <TreeDataTemplate DataType="md:QsiElementItem" ItemsSource="{Binding Items}">
+                        <TextBlock Text="{Binding Header}" Foreground="#87CEEB" />
+                    </TreeDataTemplate>
+                    <TreeDataTemplate DataType="md:QsiChildElementItem" ItemsSource="{Binding Items}">
+                        <TextBlock Text="{Binding Header}" Foreground="#B0B0B0" />
+                    </TreeDataTemplate>
+                    <DataTemplate DataType="md:QsiPropertyItem">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding Header}" Foreground="#B0B0B0" />
+                            <TextBlock Text=": " />
+                            <TextBlock Text="{Binding Value}" Foreground="#FA8072" />
+                        </StackPanel>
+                    </DataTemplate>
+                </TreeView.DataTemplates>
+            </TreeView>
+        </DockPanel>
     </Grid>
 </Window>

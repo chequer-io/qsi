@@ -4,9 +4,18 @@
     <Application.Styles>
         <StyleInclude Source="avares://Avalonia.Themes.Default/DefaultTheme.xaml" />
         <StyleInclude Source="avares://Avalonia.Themes.Default/Accents/BaseLight.xaml" />
+        <StyleInclude Source="resm:AvaloniaEdit.AvaloniaEdit.xaml?assembly=AvaloniaEdit" />
 
+        <Style Selector=":is(Window)">
+            <Setter Property="Background" Value="#262930" />
+        </Style>
+        
         <Style Selector=":is(TemplatedControl)">
-            <Setter Property="FontFamily" Value="/Assets/Fonts/NanumBarunGothic.ttf#NanumBarunGothic" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+
+        <Style Selector=":is(TreeViewItem)">
+            <Setter Property="Foreground" Value="White" />
         </Style>
     </Application.Styles>
 </Application>
