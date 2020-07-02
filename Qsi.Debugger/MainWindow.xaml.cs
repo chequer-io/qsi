@@ -7,7 +7,6 @@ using System.Xml;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
-using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using AvaloniaEdit;
@@ -31,9 +30,6 @@ namespace Qsi.Debugger
         private readonly TextBlock _tbQsiStatus;
         private readonly TreeView _tvQsi;
 
-        private readonly IBrush _terminalBrush = Brush.Parse("#FA8072");
-        private readonly IBrush _propertyBrush = Brush.Parse("#B0B0B0");
-
         private readonly Dictionary<string, Lazy<IQsiParser>> _parsers;
 
         private IQsiParser _qsiParser;
@@ -44,7 +40,10 @@ namespace Qsi.Debugger
 
             _parsers = new Dictionary<string, Lazy<IQsiParser>>
             {
-                ["MySQL"] = new Lazy<IQsiParser>(() => new MySqlParser())
+                ["MySQL_1"] = new Lazy<IQsiParser>(() => new MySqlParser()),
+                ["MySQL_2"] = new Lazy<IQsiParser>(() => new MySqlParser()),
+                ["MySQL_3"] = new Lazy<IQsiParser>(() => new MySqlParser()),
+                ["MySQL_4"] = new Lazy<IQsiParser>(() => new MySqlParser())
             };
 
             _cbLanguages = this.Find<ComboBox>("cbLanguages");

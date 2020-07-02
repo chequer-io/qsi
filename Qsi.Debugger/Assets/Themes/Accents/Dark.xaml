@@ -1,0 +1,115 @@
+﻿<Style xmlns="https://github.com/avaloniaui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Style.Resources>
+        <!-- Primary Colors -->
+
+        <!-- > Blue -->
+        <Color x:Key="Blue.5.Color">#F0F6FA</Color>
+        <Color x:Key="Blue.7.Color">#DBEAF5</Color>
+        <Color x:Key="Blue.10.Color">#C8DEED</Color>
+        <Color x:Key="Blue.20.Color">#A4C8E2</Color>
+        <Color x:Key="Blue.30.Color">#7DB2D5</Color>
+        <Color x:Key="Blue.40.Color">#5B9DCB</Color>
+        <Color x:Key="Blue.50.Color">#4691C7</Color>
+        <Color x:Key="Blue.60.Color">#3582B8</Color>
+        <Color x:Key="Blue.70.Color">#2E73A3</Color>
+        <Color x:Key="Blue.80.Color">#23577B</Color>
+        <Color x:Key="Blue.90.Color">#193E58</Color>
+        <Color x:Key="Blue.100.Color">#0F2635</Color>
+        <Color x:Key="Blue.A10.Color">#B4E1FA</Color>
+
+        <!-- Base Colors -->
+
+        <!-- > Ink -->
+        <Color x:Key="Ink.1.Color">#FFFFFF</Color>
+        <Color x:Key="Ink.5.Color">#C0C0C6</Color>
+        <Color x:Key="Ink.7.Color">#6B7079</Color>
+        <Color x:Key="Ink.10.Color">#5B606A</Color>
+        <Color x:Key="Ink.20.Color">#474B53</Color>
+        <Color x:Key="Ink.30.Color">#383B42</Color>
+        <Color x:Key="Ink.40.Color">#30333A</Color>
+        <Color x:Key="Ink.50.Color">#2B2E35</Color>
+        <Color x:Key="Ink.60.Color">#262930</Color>
+        <Color x:Key="Ink.70.Color">#21242A</Color>
+        <Color x:Key="Ink.80.Color">#1C1E23</Color>
+        <Color x:Key="Ink.90.Color">#16191F</Color>
+        <Color x:Key="Ink.100.Color">#121212</Color>
+        <Color x:Key="Ink.A10.Color">#3A4151</Color>
+
+        <!-- Semantic Colors -->
+
+        <!-- > Green -->
+        <Color x:Key="Green.50.Color">#3DD154</Color>
+
+        <!-- > Skyblue -->
+        <Color x:Key="Skyblue.50.Color">#009BFF</Color>
+
+        <!-- > Red -->
+        <Color x:Key="Red.10.Color">#FF4973</Color>
+        <Color x:Key="Red.50.Color">#FF2F5F</Color>
+        <Color x:Key="Red.90.Color">#FB003A</Color>
+
+        <!-- > Orange -->
+        <Color x:Key="Orange.10.Color">#FF7E5D</Color>
+        <Color x:Key="Orange.50.Color">#FF552A</Color>
+        <Color x:Key="Orange.90.Color">#F63200</Color>
+
+        <!-- Primary Brushes -->
+
+        <!-- > Blue -->
+        <SolidColorBrush x:Key="Blue.5.Brush" Color="{DynamicResource Blue.5.Color}" />
+        <SolidColorBrush x:Key="Blue.7.Brush" Color="{DynamicResource Blue.7.Color}" />
+        <SolidColorBrush x:Key="Blue.10.Brush" Color="{DynamicResource Blue.10.Color}" />
+        <SolidColorBrush x:Key="Blue.20.Brush" Color="{DynamicResource Blue.20.Color}" />
+        <SolidColorBrush x:Key="Blue.30.Brush" Color="{DynamicResource Blue.30.Color}" />
+        <SolidColorBrush x:Key="Blue.40.Brush" Color="{DynamicResource Blue.40.Color}" />
+        <SolidColorBrush x:Key="Blue.50.Brush" Color="{DynamicResource Blue.50.Color}" />
+        <SolidColorBrush x:Key="Blue.60.Brush" Color="{DynamicResource Blue.60.Color}" />
+        <SolidColorBrush x:Key="Blue.70.Brush" Color="{DynamicResource Blue.70.Color}" />
+        <SolidColorBrush x:Key="Blue.80.Brush" Color="{DynamicResource Blue.80.Color}" />
+        <SolidColorBrush x:Key="Blue.80.Brush.40" Color="{DynamicResource Blue.80.Color}" Opacity="0.4" />
+        <SolidColorBrush x:Key="Blue.90.Brush" Color="{DynamicResource Blue.90.Color}" />
+        <SolidColorBrush x:Key="Blue.100.Brush" Color="{DynamicResource Blue.100.Color}" />
+        <SolidColorBrush x:Key="Blue.A10.Brush" Color="{DynamicResource Blue.A10.Color}" />
+
+        <!-- Base Brushes -->
+
+        <!-- > Ink -->
+        <SolidColorBrush x:Key="Ink.1.Brush" Color="{DynamicResource Ink.1.Color}" />
+        <SolidColorBrush x:Key="Ink.5.Brush" Color="{DynamicResource Ink.5.Color}" />
+        <SolidColorBrush x:Key="Ink.7.Brush" Color="{DynamicResource Ink.7.Color}" />
+        <SolidColorBrush x:Key="Ink.10.Brush" Color="{DynamicResource Ink.10.Color}" />
+        <SolidColorBrush x:Key="Ink.20.Brush" Color="{DynamicResource Ink.20.Color}" />
+        <SolidColorBrush x:Key="Ink.30.Brush" Color="{DynamicResource Ink.30.Color}" />
+        <SolidColorBrush x:Key="Ink.40.Brush" Color="{DynamicResource Ink.40.Color}" />
+        <SolidColorBrush x:Key="Ink.50.Brush" Color="{DynamicResource Ink.50.Color}" />
+        <SolidColorBrush x:Key="Ink.60.Brush" Color="{DynamicResource Ink.60.Color}" />
+        <SolidColorBrush x:Key="Ink.70.Brush" Color="{DynamicResource Ink.70.Color}" />
+        <SolidColorBrush x:Key="Ink.80.Brush" Color="{DynamicResource Ink.80.Color}" />
+        <SolidColorBrush x:Key="Ink.90.Brush" Color="{DynamicResource Ink.90.Color}" />
+        <SolidColorBrush x:Key="Ink.100.Brush" Color="{DynamicResource Ink.100.Color}" />
+        <SolidColorBrush x:Key="Ink.A10.Brush" Color="{DynamicResource Ink.A10.Color}" />
+
+        <!-- Semantic Brushes -->
+
+        <!-- > Green -->
+        <SolidColorBrush x:Key="Green.50.Brush" Color="{DynamicResource Green.50.Color}" />
+
+        <!-- > Skyblue -->
+        <SolidColorBrush x:Key="Skyblue.50.Brush" Color="{DynamicResource Skyblue.50.Color}" />
+
+        <!-- > Red -->
+        <SolidColorBrush x:Key="Red.10.Brush" Color="{DynamicResource Red.10.Color}" />
+        <SolidColorBrush x:Key="Red.50.Brush" Color="{DynamicResource Red.50.Color}" />
+        <SolidColorBrush x:Key="Red.90.Brush" Color="{DynamicResource Red.90.Color}" />
+
+        <!-- > Orange -->
+        <SolidColorBrush x:Key="Orange.10.Brush" Color="{DynamicResource Orange.10.Color}" />
+        <SolidColorBrush x:Key="Orange.50.Brush" Color="{DynamicResource Orange.50.Color}" />
+        <SolidColorBrush x:Key="Orange.90.Brush" Color="{DynamicResource Orange.90.Color}" />
+
+        <!-- Override -->
+        <SolidColorBrush x:Key="ThemeBackgroundBrush" Color="{DynamicResource Ink.50.Color}"/>
+        <SolidColorBrush x:Key="ThemeForegroundBrush" Color="{DynamicResource Ink.1.Color}"/>
+    </Style.Resources>
+</Style>

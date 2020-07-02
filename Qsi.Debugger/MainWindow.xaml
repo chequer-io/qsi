@@ -1,19 +1,20 @@
-<Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:ae="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
-        xmlns:md="clr-namespace:Qsi.Debugger.Models"
-        mc:Ignorable="d"
-        x:Class="Qsi.Debugger.MainWindow"
-        d:DesignWidth="900"
-        d:DesignHeight="600"
-        MinWidth="400"
-        MinHeight="600"
-        Width="900"
-        Height="600"
-        WindowStartupLocation="CenterScreen"
-        Title="Qsi Debugger">
+<Window
+    x:Class="Qsi.Debugger.MainWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ae="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:md="clr-namespace:Qsi.Debugger.Models"
+    Title="Qsi Debugger"
+    Width="900"
+    Height="600"
+    MinWidth="400"
+    MinHeight="600"
+    d:DesignHeight="600"
+    d:DesignWidth="900"
+    WindowStartupLocation="CenterScreen"
+    mc:Ignorable="d">
 
     <Grid Margin="16">
         <Grid.ColumnDefinitions>
@@ -31,24 +32,24 @@
 
             <ComboBox
                 x:Name="cbLanguages"
-                HorizontalAlignment="Left"
-                Padding="8,6" />
+                Padding="8,6"
+                HorizontalAlignment="Left" />
 
             <ae:TextEditor
                 x:Name="codeEditor"
                 Grid.Row="1"
-                FontWeight="Medium"
-                Background="#16191F"
-                LineNumbersForeground="#7E7E7E"
                 Margin="0,8"
-                FontSize="14" />
+                Background="#16191F"
+                FontSize="14"
+                FontWeight="Medium"
+                LineNumbersForeground="#7E7E7E" />
 
             <TextBlock
                 x:Name="tbError"
                 Grid.Row="2"
-                Foreground="#E36387"
                 Margin="8"
                 FontSize="12"
+                Foreground="#E36387"
                 TextAlignment="Left"
                 TextWrapping="Wrap" />
         </Grid>
@@ -56,9 +57,15 @@
         <GridSplitter Grid.Column="1" Opacity="0" />
 
         <DockPanel Grid.Column="2">
-            <Grid DockPanel.Dock="Top" Margin="0,0,0,8">
-                <CheckBox x:Name="chkQsiProperty" Content="Hide Property" VerticalAlignment="Center" />
-                <TextBlock x:Name="tbQsiStatus" VerticalAlignment="Center" HorizontalAlignment="Right" />
+            <Grid Margin="0,0,0,8" DockPanel.Dock="Top">
+                <CheckBox
+                    x:Name="chkQsiProperty"
+                    VerticalAlignment="Center"
+                    Content="Hide Property" />
+                <TextBlock
+                    x:Name="tbQsiStatus"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center" />
             </Grid>
 
             <TreeView x:Name="tvQsi">
@@ -66,37 +73,31 @@
                     <Style Selector="TreeViewItem">
                         <Setter Property="IsExpanded" Value="true" />
                     </Style>
-                    <Style Selector="TreeViewItem/template/ToggleButton#expander">
-                        <Setter Property="Template">
-                            <ControlTemplate>
-                                <Border
-                                    Background="Transparent"
-                                    Width="14"
-                                    Height="12"
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Center">
 
-                                    <Path Fill="White"
-                                          HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"
-                                          Data="M 0 2 L 4 6 L 0 10 Z" />
-                                </Border>
-                            </ControlTemplate>
-                        </Setter>
+                    <Style Selector="TreeViewItem/template/Border#SelectionBorder:pointerover">
+                        <Setter Property="Background" Value="#6623577B" />
+                        <Setter Property="CornerRadius" Value="2" />
+                    </Style>
+
+                    <Style Selector="TreeViewItem:selected/template/Border#SelectionBorder">
+                        <Setter Property="Background" Value="#23577B" />
                     </Style>
                 </TreeView.Styles>
+
                 <TreeView.DataTemplates>
                     <TreeDataTemplate DataType="md:QsiElementItem" ItemsSource="{Binding Items}">
-                        <TextBlock Text="{Binding Header}" Foreground="#87CEEB" />
+                        <TextBlock Foreground="#87CEEB" Text="{Binding Header}" />
                     </TreeDataTemplate>
+
                     <TreeDataTemplate DataType="md:QsiChildElementItem" ItemsSource="{Binding Items}">
-                        <TextBlock Text="{Binding Header}" Foreground="#B0B0B0" />
+                        <TextBlock Foreground="#B0B0B0" Text="{Binding Header}" />
                     </TreeDataTemplate>
+
                     <DataTemplate DataType="md:QsiPropertyItem">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="{Binding Header}" Foreground="#B0B0B0" />
+                            <TextBlock Foreground="#B0B0B0" Text="{Binding Header}" />
                             <TextBlock Text=": " />
-                            <TextBlock Text="{Binding Value}" Foreground="#FA8072" />
+                            <TextBlock Foreground="#FA8072" Text="{Binding Value}" />
                         </StackPanel>
                     </DataTemplate>
                 </TreeView.DataTemplates>

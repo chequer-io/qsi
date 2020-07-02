@@ -30,4 +30,11 @@
         <ProjectReference Include="..\Qsi\Qsi.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <UpToDateCheckInput Remove="Assets\Themes\CheckBox.xaml" />
+      <UpToDateCheckInput Remove="Assets\Themes\ColorScheme.xaml" />
+      <UpToDateCheckInput Remove="Assets\Themes\Dark\ColorScheme.xaml" />
+      <UpToDateCheckInput Remove="Assets\Themes\Dark\Theme.xaml" />
+    </ItemGroup>
+
 </Project>

@@ -1,21 +1,11 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="Qsi.Debugger.App">
+
     <Application.Styles>
         <StyleInclude Source="avares://Avalonia.Themes.Default/DefaultTheme.xaml" />
         <StyleInclude Source="avares://Avalonia.Themes.Default/Accents/BaseLight.xaml" />
+        <StyleInclude Source="avares://Qsi.Debugger/Assets/Themes/Theme.Dark.xaml" />
         <StyleInclude Source="resm:AvaloniaEdit.AvaloniaEdit.xaml?assembly=AvaloniaEdit" />
-
-        <Style Selector=":is(Window)">
-            <Setter Property="Background" Value="#262930" />
-        </Style>
-        
-        <Style Selector=":is(TemplatedControl)">
-            <Setter Property="Foreground" Value="White" />
-        </Style>
-
-        <Style Selector=":is(TreeViewItem)">
-            <Setter Property="Foreground" Value="White" />
-        </Style>
     </Application.Styles>
 </Application>

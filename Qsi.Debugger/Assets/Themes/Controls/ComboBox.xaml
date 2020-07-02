@@ -1,0 +1,106 @@
+﻿<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Style Selector="ComboBox">
+        <Setter Property="Background" Value="{DynamicResource Ink.80.Brush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Ink.A10.Brush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="9,8" />
+        <Setter Property="MinHeight" Value="20" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border
+                    x:Name="border"
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="2">
+
+                    <Grid ColumnDefinitions="*,Auto">
+                        <ContentControl
+                            Padding="{TemplateBinding Padding}"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            Content="{TemplateBinding SelectionBoxItem}"
+                            ContentTemplate="{TemplateBinding ItemTemplate}" />
+
+                        <ToggleButton
+                            x:Name="toggle"
+                            Grid.Column="1"
+                            Margin="9,0,0,0"
+                            Padding="0,0,9,0"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            ClickMode="Release"
+                            Focusable="False"
+                            IsChecked="{TemplateBinding IsDropDownOpen,
+                                                        Mode=TwoWay}">
+                            <ToggleButton.Styles>
+                                <Style Selector="ToggleButton:checked /template/ ContentPresenter">
+                                    <Setter Property="Background" Value="Transparent" />
+                                    <Setter Property="BorderBrush" Value="Transparent" />
+                                </Style>
+
+                                <Style Selector="ToggleButton:pressed  /template/ ContentPresenter">
+                                    <Setter Property="Background" Value="Transparent" />
+                                </Style>
+                            </ToggleButton.Styles>
+
+                            <Path
+                                Width="12"
+                                Height="12"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Data="F1 M320,320z M0,0z M160,241.2C156.3,241.2,152.7,239.7,150.1,237.1L15.8,102.7C10.3,97.2 10.3,88.4 15.8,82.9 21.3,77.4 30.1,77.4 35.6,82.9L160,207.4 284.5,82.9C290,77.4 298.8,77.4 304.3,82.9 309.8,88.4 309.8,97.2 304.3,102.7L169.9,237.1C167.3,239.7,163.7,241.2,160,241.2z"
+                                Fill="{DynamicResource Ink.1.Brush}"
+                                Stretch="Uniform" />
+                        </ToggleButton>
+
+                        <Popup
+                            x:Name="PART_Popup"
+                            MinWidth="{Binding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}"
+                            MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                            IsOpen="{TemplateBinding IsDropDownOpen,
+                                                     Mode=TwoWay}"
+                            PlacementTarget="{TemplateBinding}"
+                            StaysOpen="False"
+                            VerticalOffset="3">
+
+                            <Border
+                                Background="{DynamicResource Ink.40.Brush}"
+                                BorderBrush="{DynamicResource Ink.A10.Brush}"
+                                BorderThickness="1"
+                                CornerRadius="2">
+
+                                <ScrollViewer>
+                                    <ItemsPresenter
+                                        x:Name="PART_ItemsPresenter"
+                                        ItemTemplate="{TemplateBinding ItemTemplate}"
+                                        Items="{TemplateBinding Items}"
+                                        ItemsPanel="{TemplateBinding ItemsPanel}"
+                                        VirtualizationMode="{TemplateBinding VirtualizationMode}" />
+                                </ScrollViewer>
+                            </Border>
+                        </Popup>
+                    </Grid>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+
+    <Style Selector="ComboBox:pointerover /template/ Border#border">
+        <Setter Property="BorderBrush" Value="{DynamicResource Blue.60.Brush}" />
+    </Style>
+
+    <Style Selector="ComboBox[IsDropDownOpen=true] /template/ Border#border">
+        <Setter Property="BorderBrush" Value="{DynamicResource Blue.60.Brush}" />
+    </Style>
+
+    <Style Selector="ComboBox:disabled /template/ Border#border">
+        <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />
+    </Style>
+
+    <!-- <Style Selector="ComboBox /template/ ToggleButton#toggle:checked">
+        <Setter Property="RenderTransform">
+            <RotateTransform Angle="180" />
+        </Setter>
+    </Style>-->
+</Styles>
