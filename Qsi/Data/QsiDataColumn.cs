@@ -5,11 +5,13 @@ namespace Qsi.Data
 {
     public sealed class QsiDataColumn
     {
+        public QsiDataTable Parent { get; }
+
         public QsiIdentifier Name { get; set;}
 
         public List<QsiDataColumn> References { get; } = new List<QsiDataColumn>();
 
-        public bool IsAnonymous { get; set; }
+        public bool IsAnonymous => Name == null;
 
         public bool IsExpression
         {
@@ -17,6 +19,11 @@ namespace Qsi.Data
             set => _isExpression = value;
         }
 
-        private bool _isExpression;
+        internal bool _isExpression;
+
+        internal QsiDataColumn(QsiDataTable parent)
+        {
+            Parent = parent;
+        }
     }
 }

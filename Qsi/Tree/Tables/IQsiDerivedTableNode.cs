@@ -23,6 +23,11 @@
         /// <summary>
         /// Get the delcared alias.
         /// </summary>
+        IQsiAliasNode SourceAlias { get; }
+
+        /// <summary>
+        /// Get the delcared alias.
+        /// </summary>
         IQsiAliasNode Alias { get; }
     }
 }

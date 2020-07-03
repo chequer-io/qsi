@@ -5,7 +5,7 @@ namespace Qsi.MySql
 {
     public abstract class MySqlLanguageServiceBase : QsiLanguageServiceBase
     {
-        public override IQsiParser CreateParser()
+        public override IQsiTreeParser CreateTreeParser()
         {
             return new MySqlParser();
         }

@@ -8,6 +8,8 @@ namespace Qsi.Data
     {
         public QsiIdentifier[] Identifiers { get; }
 
+        public int Level => Identifiers?.Length ?? 0;
+
         public QsiQualifiedIdentifier(IEnumerable<QsiIdentifier> identifiers) : this(identifiers.ToArray())
         {
         }

@@ -8,6 +8,22 @@ namespace Qsi.Data
 
         public QsiQualifiedIdentifier Identifier { get; set; }
 
-        public List<QsiDataColumn> Columns { get; } = new List<QsiDataColumn>();
+        public IReadOnlyList<QsiDataColumn> Columns => _columns;
+
+        public bool HasIdentifier => Identifier != null;
+
+        private readonly List<QsiDataColumn> _columns;
+
+        public QsiDataTable()
+        {
+            _columns = new List<QsiDataColumn>();
+        }
+
+        public QsiDataColumn NewColumn()
+        {
+            var column = new QsiDataColumn(this);
+            _columns.Add(column);
+            return column;
+        }
     }
 }

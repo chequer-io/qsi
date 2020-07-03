@@ -4,7 +4,7 @@ using Qsi.Tree;
 
 namespace Qsi.Parsing
 {
-    public interface IQsiParser
+    public interface IQsiTreeParser
     {
         event EventHandler<QsiSyntaxErrorException> SyntaxError;
 

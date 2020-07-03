@@ -5,9 +5,9 @@ using Qsi.Data;
 
 namespace Qsi.Runtime.Internal
 {
-    internal sealed class CompileScope : IDisposable
+    internal sealed class CompileContext : IDisposable
     {
-        public CompileScope Parent { get; }
+        public CompileContext Parent { get; }
 
         public int Depth { get; }
 
@@ -18,13 +18,13 @@ namespace Qsi.Runtime.Internal
         private readonly List<QsiDataTable> _directives;
         private readonly List<QsiDataTable> _tables;
 
-        public CompileScope() : this(null)
+        public CompileContext() : this(null)
         {
         }
 
-        public CompileScope(CompileScope scope)
+        public CompileContext(CompileContext context)
         {
-            Parent = scope;
+            Parent = context;
 
             _directives = new List<QsiDataTable>();
             _tables = new List<QsiDataTable>();
@@ -34,19 +34,24 @@ namespace Qsi.Runtime.Internal
             // Stack
             Tables = _tables.AsEnumerable().Reverse();
 
-            if (scope != null)
+            if (context != null)
             {
-                Depth = scope.Depth + 1;
+                Depth = context.Depth + 1;
 
                 // Priority: this > parent
-                Directives = Directives.Concat(scope.Directives);
-                Tables = Tables.Concat(scope.Tables);
+                Directives = Directives.Concat(context.Directives);
+                Tables = Tables.Concat(context.Tables);
             }
         }
 
         public void PushTable(QsiDataTable table)
         {
             _tables.Add(table);
+        }
+
+        public QsiDataTable PeekTable()
+        {
+            return _tables.FirstOrDefault();
         }
 
         public void AddDirective(QsiDataTable directiveTable)

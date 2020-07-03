@@ -578,7 +578,7 @@ namespace Qsi.MySql.Tree
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
                 n.Source.SetValue(tableNode);
-                n.Alias.SetValue(CreateAliasNode(context.alias));
+                n.SourceAlias.SetValue(CreateAliasNode(context.alias));
             });
         }
 
@@ -603,7 +603,7 @@ namespace Qsi.MySql.Tree
 
                 n.Columns.SetValue(allDeclaration);
                 n.Source.SetValue(VisitSelectStatement(context.selectStatement()));
-                n.Alias.SetValue(CreateAliasNode(context.alias));
+                n.SourceAlias.SetValue(CreateAliasNode(context.alias));
             });
         }
 

@@ -29,7 +29,7 @@ namespace Qsi.Utilities
 
         public static Exception NotSupportedTree(IParseTree tree)
         {
-            return new NotSupportedException($"Not supported tree type: {tree.GetType().FullName}");
+            return new QsiException($"Not supported tree type: {tree.GetType().FullName}");
         }
     }
 }

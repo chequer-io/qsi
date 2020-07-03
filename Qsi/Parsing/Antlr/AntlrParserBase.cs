@@ -5,7 +5,7 @@ using Qsi.Tree;
 
 namespace Qsi.Parsing.Antlr
 {
-    public abstract class AntlrParserBase : IQsiParser
+    public abstract class AntlrParserBase : IQsiTreeParser
     {
         public event EventHandler<QsiSyntaxErrorException> SyntaxError;
 
@@ -27,7 +27,7 @@ namespace Qsi.Parsing.Antlr
         }
 
         #region IQsiParser
-        IQsiTreeNode IQsiParser.Parse(QsiScript script)
+        IQsiTreeNode IQsiTreeParser.Parse(QsiScript script)
         {
             var parser = CreateParser(script);
             parser.AddErrorListener(_errorHandler);

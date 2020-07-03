@@ -30,20 +30,20 @@ namespace Qsi.Debugger
         private readonly TextBlock _tbQsiStatus;
         private readonly TreeView _tvQsi;
 
-        private readonly Dictionary<string, Lazy<IQsiParser>> _parsers;
+        private readonly Dictionary<string, Lazy<IQsiTreeParser>> _parsers;
 
-        private IQsiParser _qsiParser;
+        private IQsiTreeParser _qsiParser;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            _parsers = new Dictionary<string, Lazy<IQsiParser>>
+            _parsers = new Dictionary<string, Lazy<IQsiTreeParser>>
             {
-                ["MySQL_1"] = new Lazy<IQsiParser>(() => new MySqlParser()),
-                ["MySQL_2"] = new Lazy<IQsiParser>(() => new MySqlParser()),
-                ["MySQL_3"] = new Lazy<IQsiParser>(() => new MySqlParser()),
-                ["MySQL_4"] = new Lazy<IQsiParser>(() => new MySqlParser())
+                ["MySQL_1"] = new Lazy<IQsiTreeParser>(() => new MySqlParser()),
+                ["MySQL_2"] = new Lazy<IQsiTreeParser>(() => new MySqlParser()),
+                ["MySQL_3"] = new Lazy<IQsiTreeParser>(() => new MySqlParser()),
+                ["MySQL_4"] = new Lazy<IQsiTreeParser>(() => new MySqlParser())
             };
 
             _cbLanguages = this.Find<ComboBox>("cbLanguages");
@@ -87,7 +87,7 @@ namespace Qsi.Debugger
 
         private void CbLanguagesOnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (_parsers.TryGetValue((string)_cbLanguages.SelectedItem, out Lazy<IQsiParser> parser))
+            if (_parsers.TryGetValue((string)_cbLanguages.SelectedItem, out Lazy<IQsiTreeParser> parser))
             {
                 _qsiParser = parser.Value;
                 Update();

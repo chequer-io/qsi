@@ -1,13 +1,16 @@
-﻿using Qsi.Parsing;
+﻿using Qsi.Data;
+using Qsi.Parsing;
 
 namespace Qsi.Services
 {
     public interface IQsiLanguageService
     {
-        IQsiParser CreateParser();
+        IQsiTreeParser CreateTreeParser();
 
         IQsiScriptParser CreateScriptParser();
 
         IQsiReferenceResolver CreateResolver();
+
+        bool MatchIdentifier(QsiQualifiedIdentifier x, QsiQualifiedIdentifier y);
     }
 }
