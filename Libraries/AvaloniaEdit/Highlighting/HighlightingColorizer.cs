@@ -26,17 +26,23 @@ using AvaloniaEdit.Utils;
 namespace AvaloniaEdit.Highlighting
 {
     /// <summary>
-    /// A colorizes that interprets a highlighting rule set and colors the document accordingly.
+    ///     A colorizes that interprets a highlighting rule set and colors the document accordingly.
     /// </summary>
     public class HighlightingColorizer : DocumentColorizingTransformer
     {
         private readonly IHighlightingDefinition _definition;
-        private TextView _textView;
-        private IHighlighter _highlighter;
         private readonly bool _isFixedHighlighter;
+        private IHighlighter _highlighter;
+
+        private bool _isInHighlightingGroup;
+
+        private DocumentLine _lastColorizedLine;
+
+        private int _lineNumberBeingColorized;
+        private TextView _textView;
 
         /// <summary>
-        /// Creates a new HighlightingColorizer instance.
+        ///     Creates a new HighlightingColorizer instance.
         /// </summary>
         /// <param name="definition">The highlighting definition.</param>
         public HighlightingColorizer(IHighlightingDefinition definition)
@@ -45,9 +51,9 @@ namespace AvaloniaEdit.Highlighting
         }
 
         /// <summary>
-        /// Creates a new HighlightingColorizer instance that uses a fixed highlighter instance.
-        /// The colorizer can only be used with text views that show the document for which
-        /// the highlighter was created.
+        ///     Creates a new HighlightingColorizer instance that uses a fixed highlighter instance.
+        ///     The colorizer can only be used with text views that show the document for which
+        ///     the highlighter was created.
         /// </summary>
         /// <param name="highlighter">The highlighter to be used.</param>
         public HighlightingColorizer(IHighlighter highlighter)
@@ -57,8 +63,8 @@ namespace AvaloniaEdit.Highlighting
         }
 
         /// <summary>
-        /// Creates a new HighlightingColorizer instance.
-        /// Derived classes using this constructor must override the <see cref="CreateHighlighter"/> method.
+        ///     Creates a new HighlightingColorizer instance.
+        ///     Derived classes using this constructor must override the <see cref="CreateHighlighter" /> method.
         /// </summary>
         protected HighlightingColorizer()
         {
@@ -66,14 +72,14 @@ namespace AvaloniaEdit.Highlighting
 
         private void TextView_DocumentChanged(object sender, EventArgs e)
         {
-            var textView = (TextView) sender;
+            var textView = (TextView)sender;
             DeregisterServices(textView);
             RegisterServices(textView);
         }
 
         /// <summary>
-        /// This method is called when a text view is removed from this HighlightingColorizer,
-        /// and also when the TextDocument on any associated text view changes.
+        ///     This method is called when a text view is removed from this HighlightingColorizer,
+        ///     and also when the TextDocument on any associated text view changes.
         /// </summary>
         protected virtual void DeregisterServices(TextView textView)
         {
@@ -86,11 +92,10 @@ namespace AvaloniaEdit.Highlighting
                 }
 
                 _highlighter.HighlightingStateChanged -= OnHighlightStateChanged;
+
                 // remove highlighter if it is registered
                 if (textView.Services.GetService(typeof(IHighlighter)) == _highlighter)
-                {
                     textView.Services.RemoveService<IHighlighter>();
-                }
 
                 if (!_isFixedHighlighter)
                 {
@@ -101,8 +106,8 @@ namespace AvaloniaEdit.Highlighting
         }
 
         /// <summary>
-        /// This method is called when a new text view is added to this HighlightingColorizer,
-        /// and also when the TextDocument on any associated text view changes.
+        ///     This method is called when a new text view is added to this HighlightingColorizer,
+        ///     and also when the TextDocument on any associated text view changes.
         /// </summary>
         protected virtual void RegisterServices(TextView textView)
         {
@@ -110,13 +115,12 @@ namespace AvaloniaEdit.Highlighting
             {
                 if (!_isFixedHighlighter)
                     _highlighter = textView.Document != null ? CreateHighlighter(textView, textView.Document) : null;
+
                 if (_highlighter != null && _highlighter.Document == textView.Document)
                 {
                     //add service only if it doesn't already exist
                     if (textView.Services.GetService<IHighlighter>() == null)
-                    {
                         textView.Services.AddService(typeof(IHighlighter), _highlighter);
-                    }
 
                     _highlighter.HighlightingStateChanged += OnHighlightStateChanged;
                 }
@@ -124,24 +128,23 @@ namespace AvaloniaEdit.Highlighting
         }
 
         /// <summary>
-        /// Creates the IHighlighter instance for the specified text document.
+        ///     Creates the IHighlighter instance for the specified text document.
         /// </summary>
         protected virtual IHighlighter CreateHighlighter(TextView textView, TextDocument document)
         {
             if (_definition != null)
                 return new DocumentHighlighter(document, _definition);
+
             throw new NotSupportedException(
                 "Cannot create a highlighter because no IHighlightingDefinition was specified, and the CreateHighlighter() method was not overridden.");
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void OnAddToTextView(TextView textView)
         {
             if (_textView != null)
-            {
                 throw new InvalidOperationException(
                     "Cannot use a HighlightingColorizer instance in multiple text views. Please create a separate instance for each text view.");
-            }
 
             base.OnAddToTextView(textView);
             _textView = textView;
@@ -151,7 +154,7 @@ namespace AvaloniaEdit.Highlighting
             RegisterServices(textView);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void OnRemoveFromTextView(TextView textView)
         {
             DeregisterServices(textView);
@@ -162,8 +165,6 @@ namespace AvaloniaEdit.Highlighting
             _textView = null;
         }
 
-        private bool _isInHighlightingGroup;
-
         private void TextView_VisualLineConstructionStarting(object sender, VisualLineConstructionStartEventArgs e)
         {
             if (_highlighter != null)
@@ -173,6 +174,7 @@ namespace AvaloniaEdit.Highlighting
                 // We need to detect this case and issue a redraw (through OnHighlightStateChanged)
                 // before the visual line construction reuses existing lines that were built using the invalid highlighting state.
                 _lineNumberBeingColorized = e.FirstLineInView.LineNumber - 1;
+
                 if (!_isInHighlightingGroup)
                 {
                     // avoid opening group twice if there was an exception during the previous visual line construction
@@ -196,15 +198,13 @@ namespace AvaloniaEdit.Highlighting
             }
         }
 
-        private DocumentLine _lastColorizedLine;
-
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void Colorize(ITextRunConstructionContext context)
         {
             _lastColorizedLine = null;
             base.Colorize(context);
+
             if (_lastColorizedLine != context.VisualLine.LastDocumentLine)
-            {
                 if (_highlighter != null)
                 {
                     // In some cases, it is possible that we didn't highlight the last document line within the visual line
@@ -215,14 +215,11 @@ namespace AvaloniaEdit.Highlighting
                     _highlighter.UpdateHighlightingState(_lineNumberBeingColorized);
                     _lineNumberBeingColorized = 0;
                 }
-            }
 
             _lastColorizedLine = null;
         }
 
-        private int _lineNumberBeingColorized;
-
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void ColorizeLine(DocumentLine line)
         {
             if (_highlighter != null)
@@ -230,10 +227,12 @@ namespace AvaloniaEdit.Highlighting
                 _lineNumberBeingColorized = line.LineNumber;
                 var hl = _highlighter.HighlightLine(_lineNumberBeingColorized);
                 _lineNumberBeingColorized = 0;
+
                 foreach (var section in hl.Sections)
                 {
                     if (IsEmptyColor(section.Color))
                         continue;
+
                     ChangeLinePart(section.Offset, section.Offset + section.Length,
                         visualLineElement => ApplyColorToElement(visualLineElement, section.Color));
                 }
@@ -243,20 +242,21 @@ namespace AvaloniaEdit.Highlighting
         }
 
         /// <summary>
-        /// Gets whether the color is empty (has no effect on a VisualLineTextElement).
-        /// For example, the C# "Punctuation" is an empty color.
+        ///     Gets whether the color is empty (has no effect on a VisualLineTextElement).
+        ///     For example, the C# "Punctuation" is an empty color.
         /// </summary>
         internal static bool IsEmptyColor(HighlightingColor color)
         {
             if (color == null)
                 return true;
+
             return color.Background == null && color.Foreground == null
                                             && color.FontStyle == null && color.FontWeight == null
                                             && color.Underline == null;
         }
 
         /// <summary>
-        /// Applies a highlighting color to a visual line element.
+        ///     Applies a highlighting color to a visual line element.
         /// </summary>
         protected virtual void ApplyColorToElement(VisualLineElement element, HighlightingColor color)
         {
@@ -264,11 +264,12 @@ namespace AvaloniaEdit.Highlighting
         }
 
         internal static void ApplyColorToElement(VisualLineElement element, HighlightingColor color,
-            ITextRunConstructionContext context)
+                                                 ITextRunConstructionContext context)
         {
             if (color.Foreground != null)
             {
                 var b = color.Foreground.GetBrush(context);
+
                 if (b != null)
                     element.TextRunProperties.ForegroundBrush = b;
             }
@@ -276,11 +277,12 @@ namespace AvaloniaEdit.Highlighting
             if (color.Background != null)
             {
                 var b = color.Background.GetBrush(context);
+
                 if (b != null)
                     element.BackgroundBrush = b;
             }
 
-            if (color.FontStyle == null && color.FontWeight == null) 
+            if (color.FontStyle == null && color.FontWeight == null)
                 return;
 
             var tf = element.TextRunProperties.Typeface;
@@ -297,25 +299,21 @@ namespace AvaloniaEdit.Highlighting
         }
 
         /// <summary>
-        /// This method is responsible for telling the TextView to redraw lines when the highlighting state has changed.
+        ///     This method is responsible for telling the TextView to redraw lines when the highlighting state has changed.
         /// </summary>
         /// <remarks>
-        /// Creation of a VisualLine triggers the syntax highlighter (which works on-demand), so it says:
-        /// Hey, the user typed "/*". Don't just recreate that line, but also the next one
-        /// because my highlighting state (at end of line) changed!
+        ///     Creation of a VisualLine triggers the syntax highlighter (which works on-demand), so it says:
+        ///     Hey, the user typed "/*". Don't just recreate that line, but also the next one
+        ///     because my highlighting state (at end of line) changed!
         /// </remarks>
         private void OnHighlightStateChanged(int fromLineNumber, int toLineNumber)
         {
             if (_lineNumberBeingColorized != 0)
-            {
                 // Ignore notifications for any line except the one we're interested in.
                 // This improves the performance as Redraw() can take quite some time when called repeatedly
                 // while scanning the document (above the visible area) for highlighting changes.
                 if (toLineNumber <= _lineNumberBeingColorized)
-                {
                     return;
-                }
-            }
 
             // The user may have inserted "/*" into the current line, and so far only that line got redrawn.
             // So when the highlighting state is changed, we issue a redraw for the line immediately below.

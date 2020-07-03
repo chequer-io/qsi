@@ -21,21 +21,22 @@ using AvaloniaEdit.Text;
 namespace AvaloniaEdit.Rendering
 {
     internal sealed class SimpleTextSource : TextSource
-	{
-	    private readonly string _text;
-	    private readonly TextRunProperties _properties;
-		
-		public SimpleTextSource(string text, TextRunProperties properties)
-		{
-			_text = text;
-			_properties = properties;
-		}
-		
-		public override TextRun GetTextRun(int characterIndex)
-		{
-		    if (characterIndex < _text.Length)
-				return new TextCharacters(_text, characterIndex, _text.Length - characterIndex, _properties);
-		    return new TextEndOfParagraph(1);
-		}
-	}
+    {
+        private readonly TextRunProperties _properties;
+        private readonly string _text;
+
+        public SimpleTextSource(string text, TextRunProperties properties)
+        {
+            _text = text;
+            _properties = properties;
+        }
+
+        public override TextRun GetTextRun(int characterIndex)
+        {
+            if (characterIndex < _text.Length)
+                return new TextCharacters(_text, characterIndex, _text.Length - characterIndex, _properties);
+
+            return new TextEndOfParagraph(1);
+        }
+    }
 }

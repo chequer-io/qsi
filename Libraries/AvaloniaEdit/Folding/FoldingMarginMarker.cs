@@ -17,21 +17,21 @@
 // DEALINGS IN THE SOFTWARE.
 
 using Avalonia;
-using AvaloniaEdit.Rendering;
-using AvaloniaEdit.Utils;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
-using Avalonia.Data;
+using AvaloniaEdit.Rendering;
+using AvaloniaEdit.Utils;
 
 namespace AvaloniaEdit.Folding
 {
     internal sealed class FoldingMarginMarker : Control
     {
-        internal VisualLine VisualLine;
-        internal FoldingSection FoldingSection;
+        private const double MarginSizeFactor = 0.7;
 
         private bool _isExpanded;
+        internal FoldingSection FoldingSection;
+        internal VisualLine VisualLine;
 
         public bool IsExpanded
         {
@@ -52,6 +52,7 @@ namespace AvaloniaEdit.Folding
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             base.OnPointerPressed(e);
+
             if (!e.Handled)
             {
                 IsExpanded = !IsExpanded;
@@ -65,8 +66,6 @@ namespace AvaloniaEdit.Folding
             Cursor = Cursor.Default;
         }
 
-        private const double MarginSizeFactor = 0.7;
-
         protected override Size MeasureCore(Size availableSize)
         {
             var size = MarginSizeFactor * FoldingMargin.SizeFactor * GetValue(TextBlock.FontSizeProperty);
@@ -76,12 +75,16 @@ namespace AvaloniaEdit.Folding
 
         public override void Render(DrawingContext drawingContext)
         {
-            var margin = (FoldingMargin) Parent;
+            var margin = (FoldingMargin)Parent;
+
             var activePen = new Pen(margin.SelectedFoldingMarkerBrush,
                 lineCap: PenLineCap.Square);
+
             var inactivePen = new Pen(margin.FoldingMarkerBrush,
                 lineCap: PenLineCap.Square);
+
             var pixelSize = PixelSnapHelpers.GetPixelSize(this);
+
             var rect = new Rect(pixelSize.Width / 2,
                 pixelSize.Height / 2,
                 Bounds.Width - pixelSize.Width,
@@ -104,11 +107,9 @@ namespace AvaloniaEdit.Folding
                 new Point(rect.Right - space, middleY));
 
             if (!_isExpanded)
-            {
                 drawingContext.DrawLine(activePen,
                     new Point(middleX, rect.Y + space),
                     new Point(middleX, rect.Bottom - space));
-            }
         }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
@@ -116,9 +117,7 @@ namespace AvaloniaEdit.Folding
             base.OnPropertyChanged(e);
 
             if (e.Property == IsPointerOverProperty)
-            {
                 InvalidateVisual();
-            }
         }
     }
 }

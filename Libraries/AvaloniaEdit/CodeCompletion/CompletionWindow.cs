@@ -18,17 +18,17 @@
 
 using System;
 using Avalonia;
-using AvaloniaEdit.Document;
-using AvaloniaEdit.Editing;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Media;
+using AvaloniaEdit.Document;
+using AvaloniaEdit.Editing;
 
 namespace AvaloniaEdit.CodeCompletion
 {
     /// <summary>
-    /// The code completion window.
+    ///     The code completion window.
     /// </summary>
     public class CompletionWindow : CompletionWindowBase
     {
@@ -36,12 +36,7 @@ namespace AvaloniaEdit.CodeCompletion
         private ContentControl _toolTipContent;
 
         /// <summary>
-        /// Gets the completion list used in this completion window.
-        /// </summary>
-        public CompletionList CompletionList { get; }
-
-        /// <summary>
-        /// Creates a new code completion window.
+        ///     Creates a new code completion window.
         /// </summary>
         public CompletionWindow(TextArea textArea) : base(textArea)
         {
@@ -53,7 +48,7 @@ namespace AvaloniaEdit.CodeCompletion
             Child = CompletionList;
             // prevent user from resizing window to 0x0
             MinHeight = 15;
-            MinWidth = 30;          
+            MinWidth = 30;
 
             _toolTipContent = new ContentControl();
             _toolTipContent.Classes.Add("ToolTip");
@@ -63,7 +58,7 @@ namespace AvaloniaEdit.CodeCompletion
                 StaysOpen = false,
                 PlacementTarget = this,
                 PlacementMode = PlacementMode.Right,
-                Child = _toolTipContent,
+                Child = _toolTipContent
             };
 
             LogicalChildren.Add(_toolTip);
@@ -72,6 +67,28 @@ namespace AvaloniaEdit.CodeCompletion
 
             AttachEvents();
         }
+
+        /// <summary>
+        ///     Gets the completion list used in this completion window.
+        /// </summary>
+        public CompletionList CompletionList { get; }
+
+        /// <summary>
+        ///     Gets/Sets whether the completion window should close automatically.
+        ///     The default value is true.
+        /// </summary>
+        public bool CloseAutomatically { get; set; }
+
+        /// <inheritdoc />
+        protected override bool CloseOnFocusLost => CloseAutomatically;
+
+        /// <summary>
+        ///     When this flag is set, code completion closes if the caret moves to the
+        ///     beginning of the allowed range. This is useful in Ctrl+Space and "complete when typing",
+        ///     but not in dot-completion.
+        ///     Has no effect if CloseAutomatically is false.
+        /// </summary>
+        public bool CloseWhenCaretAtBeginning { get; set; }
 
         protected override void OnClosed()
         {
@@ -86,50 +103,45 @@ namespace AvaloniaEdit.CodeCompletion
         }
 
         #region ToolTip handling
-
         private void CompletionList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (_toolTipContent == null) return;
 
             var item = CompletionList.SelectedItem;
             var description = item?.Description;
+
             if (description != null)
             {
                 if (description is string descriptionText)
-                {
                     _toolTipContent.Content = new TextBlock
                     {
                         Text = descriptionText,
                         TextWrapping = TextWrapping.Wrap
                     };
-                }
                 else
-                {                   
                     _toolTipContent.Content = description;
-                }
 
                 _toolTip.IsOpen = false; //Popup needs to be closed to change position
 
                 //Calculate offset for tooltip
                 if (CompletionList.CurrentList != null)
                 {
-                    int index = CompletionList.CurrentList.IndexOf(item);
-                    int scrollIndex = (int)CompletionList.ListBox.Scroll.Offset.Y;
-                    int yoffset = index - scrollIndex;
+                    var index = CompletionList.CurrentList.IndexOf(item);
+                    var scrollIndex = (int)CompletionList.ListBox.Scroll.Offset.Y;
+                    var yoffset = index - scrollIndex;
                     if (yoffset < 0) yoffset = 0;
-                    if ((yoffset+1) * 20 > MaxHeight) yoffset--;
+                    if ((yoffset + 1) * 20 > MaxHeight) yoffset--;
                     _toolTip.Offset = new PixelPoint(2, yoffset * 20); //Todo find way to measure item height
                 }
 
-                _toolTip.PlacementTarget = this.Host as PopupRoot;
-                _toolTip.IsOpen = true;                    
+                _toolTip.PlacementTarget = Host as PopupRoot;
+                _toolTip.IsOpen = true;
             }
             else
             {
                 _toolTip.IsOpen = false;
             }
         }
-
         #endregion
 
         private void CompletionList_InsertionRequested(object sender, EventArgs e)
@@ -150,7 +162,7 @@ namespace AvaloniaEdit.CodeCompletion
             TextArea.TextInput += TextArea_PreviewTextInput;
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void DetachEvents()
         {
             CompletionList.InsertionRequested -= CompletionList_InsertionRequested;
@@ -161,55 +173,39 @@ namespace AvaloniaEdit.CodeCompletion
             base.DetachEvents();
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void OnKeyDown(KeyEventArgs e)
         {
             base.OnKeyDown(e);
+
             if (!e.Handled)
-            {
                 CompletionList.HandleKey(e);
-            }
         }
 
         private void TextArea_PreviewTextInput(object sender, TextInputEventArgs e)
         {
             e.Handled = RaiseEventPair(this, null, TextInputEvent,
-                                       new TextInputEventArgs { Device = e.Device, Text = e.Text });
+                new TextInputEventArgs { Device = e.Device, Text = e.Text });
         }
 
         private void TextArea_MouseWheel(object sender, PointerWheelEventArgs e)
         {
             e.Handled = RaiseEventPair(GetScrollEventTarget(),
-                                       null, PointerWheelChangedEvent, e);
+                null, PointerWheelChangedEvent, e);
         }
 
         private Control GetScrollEventTarget()
         {
             if (CompletionList == null)
                 return this;
+
             return CompletionList.ScrollViewer ?? CompletionList.ListBox ?? (Control)CompletionList;
         }
-
-        /// <summary>
-        /// Gets/Sets whether the completion window should close automatically.
-        /// The default value is true.
-        /// </summary>
-        public bool CloseAutomatically { get; set; }
-
-        /// <inheritdoc/>
-        protected override bool CloseOnFocusLost => CloseAutomatically;
-
-        /// <summary>
-        /// When this flag is set, code completion closes if the caret moves to the
-        /// beginning of the allowed range. This is useful in Ctrl+Space and "complete when typing",
-        /// but not in dot-completion.
-        /// Has no effect if CloseAutomatically is false.
-        /// </summary>
-        public bool CloseWhenCaretAtBeginning { get; set; }
 
         private void CaretPositionChanged(object sender, EventArgs e)
         {
             var offset = TextArea.Caret.Offset;
+
             if (offset == StartOffset)
             {
                 if (CloseAutomatically && CloseWhenCaretAtBeginning)
@@ -223,18 +219,19 @@ namespace AvaloniaEdit.CodeCompletion
                     if (CompletionList.ListBox.ItemCount == 0) IsVisible = false;
                     else IsVisible = true;
                 }
+
                 return;
             }
+
             if (offset < StartOffset || offset > EndOffset)
             {
                 if (CloseAutomatically)
-                {
                     Hide();
-                }
             }
             else
             {
                 var document = TextArea.Document;
+
                 if (document != null)
                 {
                     CompletionList.SelectItem(document.GetText(StartOffset, offset - StartOffset));

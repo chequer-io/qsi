@@ -18,33 +18,18 @@
 
 using System;
 using System.Windows.Input;
-using AvaloniaEdit.Document;
 using Avalonia.Input;
+using AvaloniaEdit.Document;
 
 namespace AvaloniaEdit.Editing
 {
     /// <summary>
-    /// Contains the predefined input handlers.
+    ///     Contains the predefined input handlers.
     /// </summary>
     public class TextAreaDefaultInputHandler : TextAreaInputHandler
     {
         /// <summary>
-        /// Gets the caret navigation input handler.
-        /// </summary>
-        public TextAreaInputHandler CaretNavigation { get; }
-
-        /// <summary>
-        /// Gets the editing input handler.
-        /// </summary>
-        public TextAreaInputHandler Editing { get; }
-
-        /// <summary>
-        /// Gets the mouse selection input handler.
-        /// </summary>
-        public ITextAreaInputHandler MouseSelection { get; }
-
-        /// <summary>
-        /// Creates a new TextAreaDefaultInputHandler instance.
+        ///     Creates a new TextAreaDefaultInputHandler instance.
         /// </summary>
         public TextAreaDefaultInputHandler(TextArea textArea) : base(textArea)
         {
@@ -55,6 +40,21 @@ namespace AvaloniaEdit.Editing
             AddBinding(ApplicationCommands.Undo, ExecuteUndo, CanExecuteUndo);
             AddBinding(ApplicationCommands.Redo, ExecuteRedo, CanExecuteRedo);
         }
+
+        /// <summary>
+        ///     Gets the caret navigation input handler.
+        /// </summary>
+        public TextAreaInputHandler CaretNavigation { get; }
+
+        /// <summary>
+        ///     Gets the editing input handler.
+        /// </summary>
+        public TextAreaInputHandler Editing { get; }
+
+        /// <summary>
+        ///     Gets the mouse selection input handler.
+        /// </summary>
+        public ITextAreaInputHandler MouseSelection { get; }
 
         private void AddBinding(RoutedCommand command, EventHandler<ExecutedRoutedEventArgs> handler, EventHandler<CanExecuteRoutedEventArgs> canExecuteHandler = null)
         {
@@ -67,7 +67,6 @@ namespace AvaloniaEdit.Editing
         }
 
         #region Undo / Redo
-
         private UndoStack GetUndoStack()
         {
             var document = TextArea.Document;
@@ -77,6 +76,7 @@ namespace AvaloniaEdit.Editing
         private void ExecuteUndo(object sender, ExecutedRoutedEventArgs e)
         {
             var undoStack = GetUndoStack();
+
             if (undoStack != null)
             {
                 if (undoStack.CanUndo)
@@ -84,6 +84,7 @@ namespace AvaloniaEdit.Editing
                     undoStack.Undo();
                     TextArea.Caret.BringCaretToView();
                 }
+
                 e.Handled = true;
             }
         }
@@ -91,6 +92,7 @@ namespace AvaloniaEdit.Editing
         private void CanExecuteUndo(object sender, CanExecuteRoutedEventArgs e)
         {
             var undoStack = GetUndoStack();
+
             if (undoStack != null)
             {
                 e.Handled = true;
@@ -101,6 +103,7 @@ namespace AvaloniaEdit.Editing
         private void ExecuteRedo(object sender, ExecutedRoutedEventArgs e)
         {
             var undoStack = GetUndoStack();
+
             if (undoStack != null)
             {
                 if (undoStack.CanRedo)
@@ -108,6 +111,7 @@ namespace AvaloniaEdit.Editing
                     undoStack.Redo();
                     TextArea.Caret.BringCaretToView();
                 }
+
                 e.Handled = true;
             }
         }
@@ -115,6 +119,7 @@ namespace AvaloniaEdit.Editing
         private void CanExecuteRedo(object sender, CanExecuteRoutedEventArgs e)
         {
             var undoStack = GetUndoStack();
+
             if (undoStack != null)
             {
                 e.Handled = true;

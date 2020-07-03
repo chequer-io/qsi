@@ -25,35 +25,6 @@ namespace AvaloniaEdit.Rendering
 {
     internal sealed class CurrentLineHighlightRenderer : IBackgroundRenderer
     {
-        #region Fields
-        private int _line;
-        private readonly TextView _textView;
-
-        public static readonly Color DefaultBackground = Color.FromArgb(22, 20, 220, 224);
-        public static readonly Color DefaultBorder = Color.FromArgb(52, 0, 255, 110);
-        #endregion
-
-        #region Properties
-        public int Line
-        {
-            get { return _line; }
-            set
-            {
-                if (_line != value)
-                {
-                    _line = value;
-                    _textView.InvalidateLayer(Layer);
-                }
-            }
-        }
-
-        public KnownLayer Layer => KnownLayer.Selection;
-
-        public IBrush BackgroundBrush { get; set; }
-
-        public Pen BorderPen { get; set; }
-        #endregion
-
         public CurrentLineHighlightRenderer(TextView textView)
         {
             BorderPen = new Pen(new ImmutableSolidColorBrush(DefaultBorder));
@@ -83,9 +54,36 @@ namespace AvaloniaEdit.Rendering
             var geometry = builder.CreateGeometry();
 
             if (geometry != null)
-            {
                 drawingContext.DrawGeometry(BackgroundBrush, BorderPen, geometry);
+        }
+
+        #region Fields
+        private int _line;
+        private readonly TextView _textView;
+
+        public static readonly Color DefaultBackground = Color.FromArgb(22, 20, 220, 224);
+        public static readonly Color DefaultBorder = Color.FromArgb(52, 0, 255, 110);
+        #endregion
+
+        #region Properties
+        public int Line
+        {
+            get => _line;
+            set
+            {
+                if (_line != value)
+                {
+                    _line = value;
+                    _textView.InvalidateLayer(Layer);
+                }
             }
         }
+
+        public KnownLayer Layer => KnownLayer.Selection;
+
+        public IBrush BackgroundBrush { get; set; }
+
+        public Pen BorderPen { get; set; }
+        #endregion
     }
 }

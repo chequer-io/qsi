@@ -21,31 +21,31 @@ using AvaloniaEdit.Document;
 namespace AvaloniaEdit.Highlighting
 {
 	/// <summary>
-	/// A text section with syntax highlighting information.
+	///     A text section with syntax highlighting information.
 	/// </summary>
 	public class HighlightedSection : ISegment
-	{
-		/// <summary>
-		/// Gets/sets the document offset of the section.
-		/// </summary>
-		public int Offset { get; set; }
-		
-		/// <summary>
-		/// Gets/sets the length of the section.
-		/// </summary>
-		public int Length { get; set; }
-		
-		int ISegment.EndOffset => Offset + Length;
+    {
+	    /// <summary>
+	    ///     Gets the highlighting color associated with the highlighted section.
+	    /// </summary>
+	    public HighlightingColor Color { get; set; }
 
 	    /// <summary>
-		/// Gets the highlighting color associated with the highlighted section.
-		/// </summary>
-		public HighlightingColor Color { get; set; }
-		
-		/// <inheritdoc/>
-		public override string ToString()
-		{
-			return $"[HighlightedSection ({Offset}-{Offset + Length})={Color}]";
-		}
-	}
+	    ///     Gets/sets the document offset of the section.
+	    /// </summary>
+	    public int Offset { get; set; }
+
+	    /// <summary>
+	    ///     Gets/sets the length of the section.
+	    /// </summary>
+	    public int Length { get; set; }
+
+        int ISegment.EndOffset => Offset + Length;
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return $"[HighlightedSection ({Offset}-{Offset + Length})={Color}]";
+        }
+    }
 }

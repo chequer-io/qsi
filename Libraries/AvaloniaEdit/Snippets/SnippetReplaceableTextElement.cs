@@ -26,12 +26,12 @@ using AvaloniaEdit.Rendering;
 namespace AvaloniaEdit.Snippets
 {
     /// <summary>
-    /// Text element that is supposed to be replaced by the user.
-    /// Will register an <see cref="IReplaceableActiveElement"/>.
+    ///     Text element that is supposed to be replaced by the user.
+    ///     Will register an <see cref="IReplaceableActiveElement" />.
     /// </summary>
     public class SnippetReplaceableTextElement : SnippetTextElement
     {
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override void Insert(InsertionContext context)
         {
             var start = context.InsertionPosition;
@@ -48,17 +48,17 @@ namespace AvaloniaEdit.Snippets
     }
 
     /// <summary>
-    /// Interface for active element registered by <see cref="SnippetReplaceableTextElement"/>.
+    ///     Interface for active element registered by <see cref="SnippetReplaceableTextElement" />.
     /// </summary>
     public interface IReplaceableActiveElement : IActiveElement
     {
         /// <summary>
-        /// Gets the current text inside the element.
+        ///     Gets the current text inside the element.
         /// </summary>
         string Text { get; }
 
         /// <summary>
-        /// Occurs when the text inside the element changes.
+        ///     Occurs when the text inside the element changes.
         /// </summary>
         event EventHandler TextChanged;
     }
@@ -66,21 +66,20 @@ namespace AvaloniaEdit.Snippets
     internal sealed class ReplaceableActiveElement : IReplaceableActiveElement
     {
         private readonly InsertionContext _context;
-        private readonly int _startOffset;
         private readonly int _endOffset;
-        private TextAnchor _start;
+        private readonly int _startOffset;
+
+        private Renderer _background, _foreground;
         private TextAnchor _end;
+
+        private bool _isCaretInside;
+        private TextAnchor _start;
 
         public ReplaceableActiveElement(InsertionContext context, int startOffset, int endOffset)
         {
             _context = context;
             _startOffset = startOffset;
             _endOffset = endOffset;
-        }
-
-        private void AnchorDeleted(object sender, EventArgs e)
-        {
-            _context.Deactivate(new SnippetEventArgs(DeactivateReason.Deleted));
         }
 
         public void OnInsertionCompleted()
@@ -117,44 +116,9 @@ namespace AvaloniaEdit.Snippets
             _context.TextArea.Caret.PositionChanged -= Caret_PositionChanged;
         }
 
-        private bool _isCaretInside;
-
-        private void Caret_PositionChanged(object sender, EventArgs e)
-        {
-            var s = Segment;
-            if (s != null)
-            {
-                var newIsCaretInside = s.Contains(_context.TextArea.Caret.Offset, 0);
-                if (newIsCaretInside != _isCaretInside)
-                {
-                    _isCaretInside = newIsCaretInside;
-                    _context.TextArea.TextView.InvalidateLayer(_foreground.Layer);
-                }
-            }
-        }
-
-        private Renderer _background, _foreground;
-
         public string Text { get; private set; }
 
-        private string GetText()
-        {
-            if (_start.IsDeleted || _end.IsDeleted)
-                return string.Empty;
-            return _context.Document.GetText(_start.Offset, Math.Max(0, _end.Offset - _start.Offset));
-        }
-
         public event EventHandler TextChanged;
-
-        void OnDocumentTextChanged(object sender, EventArgs e)
-        {
-            var newText = GetText();
-            if (Text != newText)
-            {
-                Text = newText;
-                TextChanged?.Invoke(this, e);
-            }
-        }
 
         public bool IsEditable => true;
 
@@ -164,7 +128,48 @@ namespace AvaloniaEdit.Snippets
             {
                 if (_start.IsDeleted || _end.IsDeleted)
                     return null;
+
                 return new SimpleSegment(_start.Offset, Math.Max(0, _end.Offset - _start.Offset));
+            }
+        }
+
+        private void AnchorDeleted(object sender, EventArgs e)
+        {
+            _context.Deactivate(new SnippetEventArgs(DeactivateReason.Deleted));
+        }
+
+        private void Caret_PositionChanged(object sender, EventArgs e)
+        {
+            var s = Segment;
+
+            if (s != null)
+            {
+                var newIsCaretInside = s.Contains(_context.TextArea.Caret.Offset, 0);
+
+                if (newIsCaretInside != _isCaretInside)
+                {
+                    _isCaretInside = newIsCaretInside;
+                    _context.TextArea.TextView.InvalidateLayer(_foreground.Layer);
+                }
+            }
+        }
+
+        private string GetText()
+        {
+            if (_start.IsDeleted || _end.IsDeleted)
+                return string.Empty;
+
+            return _context.Document.GetText(_start.Offset, Math.Max(0, _end.Offset - _start.Offset));
+        }
+
+        private void OnDocumentTextChanged(object sender, EventArgs e)
+        {
+            var newText = GetText();
+
+            if (Text != newText)
+            {
+                Text = newText;
+                TextChanged?.Invoke(this, e);
             }
         }
 
@@ -173,18 +178,6 @@ namespace AvaloniaEdit.Snippets
             private static readonly IBrush BackgroundBrush = CreateBackgroundBrush();
             private static readonly Pen ActiveBorderPen = CreateBorderPen();
 
-            private static IBrush CreateBackgroundBrush()
-            {
-				var b = new ImmutableSolidColorBrush(Colors.LimeGreen, 0.4);
-                return b;
-            }
-
-            private static Pen CreateBorderPen()
-            {
-                var p = new Pen(Brushes.Black, dashStyle: DashStyle.Dot);
-                return p;
-            }
-
             internal ReplaceableActiveElement Element;
 
             public KnownLayer Layer { get; set; }
@@ -192,6 +185,7 @@ namespace AvaloniaEdit.Snippets
             public void Draw(TextView textView, DrawingContext drawingContext)
             {
                 var s = Element.Segment;
+
                 if (s != null)
                 {
                     var geoBuilder = new BackgroundGeometryBuilder
@@ -199,6 +193,7 @@ namespace AvaloniaEdit.Snippets
                         AlignToWholePixels = true,
                         BorderThickness = ActiveBorderPen?.Thickness ?? 0
                     };
+
                     if (Layer == KnownLayer.Background)
                     {
                         geoBuilder.AddSegment(textView, s);
@@ -210,18 +205,30 @@ namespace AvaloniaEdit.Snippets
                         if (Element._isCaretInside)
                         {
                             geoBuilder.AddSegment(textView, s);
+
                             foreach (var boundElement in Element._context.ActiveElements.OfType<BoundActiveElement>())
-                            {
                                 if (boundElement.TargetElement == Element)
                                 {
                                     geoBuilder.AddSegment(textView, boundElement.Segment);
                                     geoBuilder.CloseFigure();
                                 }
-                            }
+
                             drawingContext.DrawGeometry(null, ActiveBorderPen, geoBuilder.CreateGeometry());
                         }
                     }
                 }
+            }
+
+            private static IBrush CreateBackgroundBrush()
+            {
+                var b = new ImmutableSolidColorBrush(Colors.LimeGreen, 0.4);
+                return b;
+            }
+
+            private static Pen CreateBorderPen()
+            {
+                var p = new Pen(Brushes.Black, dashStyle: DashStyle.Dot);
+                return p;
             }
         }
     }

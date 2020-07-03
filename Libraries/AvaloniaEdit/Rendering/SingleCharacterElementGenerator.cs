@@ -30,32 +30,17 @@ namespace AvaloniaEdit.Rendering
     // This class is internal because it does not need to be accessed by the user - it can be configured using TextEditorOptions.
 
     /// <summary>
-    /// Element generator that displays · for spaces and » for tabs and a box for control characters.
+    ///     Element generator that displays · for spaces and » for tabs and a box for control characters.
     /// </summary>
     /// <remarks>
-    /// This element generator is present in every TextView by default; the enabled features can be configured using the
-    /// <see cref="TextEditorOptions"/>.
+    ///     This element generator is present in every TextView by default; the enabled features can be configured using the
+    ///     <see cref="TextEditorOptions" />.
     /// </remarks>
     [SuppressMessage("Microsoft.Naming", "CA1702:CompoundWordsShouldBeCasedCorrectly", MessageId = "Whitespace")]
     internal sealed class SingleCharacterElementGenerator : VisualLineElementGenerator, IBuiltinElementGenerator
     {
         /// <summary>
-        /// Gets/Sets whether to show · for spaces.
-        /// </summary>
-        public bool ShowSpaces { get; set; }
-
-        /// <summary>
-        /// Gets/Sets whether to show » for tabs.
-        /// </summary>
-        public bool ShowTabs { get; set; }
-
-        /// <summary>
-        /// Gets/Sets whether to show a box with the hex code for control characters.
-        /// </summary>
-        public bool ShowBoxForControlCharacters { get; set; }
-
-        /// <summary>
-        /// Creates a new SingleCharacterElementGenerator instance.
+        ///     Creates a new SingleCharacterElementGenerator instance.
         /// </summary>
         public SingleCharacterElementGenerator()
         {
@@ -63,6 +48,21 @@ namespace AvaloniaEdit.Rendering
             ShowTabs = true;
             ShowBoxForControlCharacters = true;
         }
+
+        /// <summary>
+        ///     Gets/Sets whether to show · for spaces.
+        /// </summary>
+        public bool ShowSpaces { get; set; }
+
+        /// <summary>
+        ///     Gets/Sets whether to show » for tabs.
+        /// </summary>
+        public bool ShowTabs { get; set; }
+
+        /// <summary>
+        ///     Gets/Sets whether to show a box with the hex code for control characters.
+        /// </summary>
+        public bool ShowBoxForControlCharacters { get; set; }
 
         void IBuiltinElementGenerator.FetchOptions(TextEditorOptions options)
         {
@@ -79,47 +79,54 @@ namespace AvaloniaEdit.Rendering
             for (var i = 0; i < relevantText.Count; i++)
             {
                 var c = relevantText.Text[relevantText.Offset + i];
+
                 switch (c)
                 {
                     case ' ':
                         if (ShowSpaces)
                             return startOffset + i;
+
                         break;
+
                     case '\t':
                         if (ShowTabs)
                             return startOffset + i;
+
                         break;
+
                     default:
                         if (ShowBoxForControlCharacters && char.IsControl(c))
-                        {
                             return startOffset + i;
-                        }
+
                         break;
                 }
             }
+
             return -1;
         }
 
         public override VisualLineElement ConstructElement(int offset)
         {
             var c = CurrentContext.Document.GetCharAt(offset);
+
             if (ShowSpaces && c == ' ')
-            {
                 return new SpaceTextElement(CurrentContext.TextView.CachedElements.GetTextForNonPrintableCharacter("\u00B7", CurrentContext));
-            }
+
             if (ShowTabs && c == '\t')
-            {
                 return new TabTextElement(CurrentContext.TextView.CachedElements.GetTextForNonPrintableCharacter("\u00BB", CurrentContext));
-            }
+
             if (ShowBoxForControlCharacters && char.IsControl(c))
             {
                 var p = CurrentContext.GlobalTextRunProperties.Clone();
                 p.ForegroundBrush = Brushes.White;
                 var textFormatter = TextFormatterFactory.Create();
+
                 var text = FormattedTextElement.PrepareText(textFormatter,
                     TextUtilities.GetControlCharacterName(c), p);
+
                 return new SpecialCharacterBoxElement(text);
             }
+
             return null;
         }
 
@@ -133,6 +140,7 @@ namespace AvaloniaEdit.Rendering
             {
                 if (mode == CaretPositioningMode.Normal || mode == CaretPositioningMode.EveryCodepoint)
                     return base.GetNextCaretPosition(visualColumn, direction, mode);
+
                 return -1;
             }
 
@@ -157,8 +165,10 @@ namespace AvaloniaEdit.Rendering
                 // first a TabGlyphRun, then TextCharacters '\t' to let the fx handle the tab indentation
                 if (startVisualColumn == VisualColumn)
                     return new TabGlyphRun(this, TextRunProperties);
+
                 if (startVisualColumn == VisualColumn + 1)
                     return new TextCharacters("\t", TextRunProperties);
+
                 throw new ArgumentOutOfRangeException(nameof(startVisualColumn));
             }
 
@@ -166,6 +176,7 @@ namespace AvaloniaEdit.Rendering
             {
                 if (mode == CaretPositioningMode.Normal || mode == CaretPositioningMode.EveryCodepoint)
                     return base.GetNextCaretPosition(visualColumn, direction, mode);
+
                 return -1;
             }
 
@@ -187,7 +198,7 @@ namespace AvaloniaEdit.Rendering
 
             public override bool HasFixedSize => true;
 
-            public override StringRange StringRange => default(StringRange);
+            public override StringRange StringRange => default;
 
             public override int Length => 1;
 
@@ -229,7 +240,7 @@ namespace AvaloniaEdit.Rendering
 
             static SpecialCharacterTextRun()
             {
-				DarkGrayBrush = new ImmutableSolidColorBrush(Color.FromArgb(200, 128, 128, 128));
+                DarkGrayBrush = new ImmutableSolidColorBrush(Color.FromArgb(200, 128, 128, 128));
             }
 
             public SpecialCharacterTextRun(FormattedTextElement element, TextRunProperties properties)

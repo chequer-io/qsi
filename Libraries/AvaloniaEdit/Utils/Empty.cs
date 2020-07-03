@@ -19,7 +19,7 @@
 namespace AvaloniaEdit.Utils
 {
     /// <summary>
-    /// Provides immutable empty list instances.
+    ///     Provides immutable empty list instances.
     /// </summary>
     internal static class Empty<T>
     {

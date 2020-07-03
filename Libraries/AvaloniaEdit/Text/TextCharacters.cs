@@ -2,12 +2,6 @@ namespace AvaloniaEdit.Text
 {
     public class TextCharacters : TextRun
     {
-        public sealed override StringRange StringRange { get; }
-
-        public sealed override int Length { get; }
-
-        public sealed override TextRunProperties Properties { get; }
-
         public TextCharacters(string characterString, TextRunProperties textRunProperties)
             : this(characterString, 0, characterString?.Length ?? 0, textRunProperties)
         {
@@ -24,5 +18,11 @@ namespace AvaloniaEdit.Text
             Length = length;
             Properties = textRunProperties;
         }
+
+        public sealed override StringRange StringRange { get; }
+
+        public sealed override int Length { get; }
+
+        public sealed override TextRunProperties Properties { get; }
     }
 }

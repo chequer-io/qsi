@@ -21,45 +21,17 @@ using System;
 namespace AvaloniaEdit.Document
 {
     /// <summary>
-    /// Allows registering a line tracker on a TextDocument using a weak reference from the document to the line tracker.
+    ///     Allows registering a line tracker on a TextDocument using a weak reference from the document to the line tracker.
     /// </summary>
     public sealed class WeakLineTracker : ILineTracker
     {
-        private TextDocument _textDocument;
         private readonly WeakReference _targetObject;
+        private TextDocument _textDocument;
 
         private WeakLineTracker(TextDocument textDocument, ILineTracker targetTracker)
         {
             _textDocument = textDocument;
             _targetObject = new WeakReference(targetTracker);
-        }
-
-        /// <summary>
-        /// Registers the <paramref name="targetTracker"/> as line tracker for the <paramref name="textDocument"/>.
-        /// A weak reference to the target tracker will be used, and the WeakLineTracker will deregister itself
-        /// when the target tracker is garbage collected.
-        /// </summary>
-        public static WeakLineTracker Register(TextDocument textDocument, ILineTracker targetTracker)
-        {
-            if (textDocument == null)
-                throw new ArgumentNullException(nameof(textDocument));
-            if (targetTracker == null)
-                throw new ArgumentNullException(nameof(targetTracker));
-            var wlt = new WeakLineTracker(textDocument, targetTracker);
-            textDocument.LineTrackers.Add(wlt);
-            return wlt;
-        }
-
-        /// <summary>
-        /// Deregisters the weak line tracker.
-        /// </summary>
-        public void Deregister()
-        {
-            if (_textDocument != null)
-            {
-                _textDocument.LineTrackers.Remove(this);
-                _textDocument = null;
-            }
         }
 
         void ILineTracker.BeforeRemoveLine(DocumentLine line)
@@ -100,6 +72,36 @@ namespace AvaloniaEdit.Document
                 targetTracker.ChangeComplete(e);
             else
                 Deregister();
+        }
+
+        /// <summary>
+        ///     Registers the <paramref name="targetTracker" /> as line tracker for the <paramref name="textDocument" />.
+        ///     A weak reference to the target tracker will be used, and the WeakLineTracker will deregister itself
+        ///     when the target tracker is garbage collected.
+        /// </summary>
+        public static WeakLineTracker Register(TextDocument textDocument, ILineTracker targetTracker)
+        {
+            if (textDocument == null)
+                throw new ArgumentNullException(nameof(textDocument));
+
+            if (targetTracker == null)
+                throw new ArgumentNullException(nameof(targetTracker));
+
+            var wlt = new WeakLineTracker(textDocument, targetTracker);
+            textDocument.LineTrackers.Add(wlt);
+            return wlt;
+        }
+
+        /// <summary>
+        ///     Deregisters the weak line tracker.
+        /// </summary>
+        public void Deregister()
+        {
+            if (_textDocument != null)
+            {
+                _textDocument.LineTrackers.Remove(this);
+                _textDocument = null;
+            }
         }
     }
 }

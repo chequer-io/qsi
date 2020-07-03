@@ -22,36 +22,38 @@ using System.Globalization;
 
 namespace AvaloniaEdit.Highlighting
 {
-	/// <summary>
-	/// Converts between strings and <see cref="IHighlightingDefinition"/> by treating the string as the definition name
-	/// and calling <c>HighlightingManager.Instance.<see cref="HighlightingManager.GetDefinition">GetDefinition</see>(name)</c>.
-	/// </summary>
-	public sealed class HighlightingDefinitionTypeConverter : TypeConverter
-	{
-        /// <inheritdoc/>
+    /// <summary>
+    ///     Converts between strings and <see cref="IHighlightingDefinition" /> by treating the string as the definition name
+    ///     and calling
+    ///     <c>HighlightingManager.Instance.<see cref="HighlightingManager.GetDefinition">GetDefinition</see>(name)</c>.
+    /// </summary>
+    public sealed class HighlightingDefinitionTypeConverter : TypeConverter
+    {
+        /// <inheritdoc />
         public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
         {
             return sourceType == typeof(string);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
         {
             return value is string definitionName ? HighlightingManager.Instance.GetDefinition(definitionName) : null;
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
         {
             return destinationType == typeof(string);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
         {
             if (value is IHighlightingDefinition definition && destinationType == typeof(string))
                 return definition.Name;
+
             return null;
         }
-	}
+    }
 }

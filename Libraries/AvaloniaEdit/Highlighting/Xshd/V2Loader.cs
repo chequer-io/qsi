@@ -20,15 +20,14 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Xml;
-using Avalonia.Markup.Xaml.Converters;
 using Avalonia.Media;
 using AvaloniaEdit.Utils;
 
 namespace AvaloniaEdit.Highlighting.Xshd
 {
     /// <summary>
-    /// Loads .xshd files, version 2.0.
-    /// Version 2.0 files are recognized by the namespace.
+    ///     Loads .xshd files, version 2.0.
+    ///     Version 2.0 files are recognized by the namespace.
     /// </summary>
     internal static class V2Loader
     {
@@ -59,10 +58,12 @@ namespace AvaloniaEdit.Highlighting.Xshd
         private static XshdSyntaxDefinition ParseDefinition(XmlReader reader)
         {
             Debug.Assert(reader.LocalName == "SyntaxDefinition");
-            var def = new XshdSyntaxDefinition {Name = reader.GetAttribute("name")};
+            var def = new XshdSyntaxDefinition { Name = reader.GetAttribute("name") };
             var extensions = reader.GetAttribute("extensions");
+
             if (extensions != null)
                 def.Extensions.AddRange(extensions.Split(';'));
+
             ParseElements(def.Elements, reader);
             Debug.Assert(reader.NodeType == XmlNodeType.EndElement);
             Debug.Assert(reader.LocalName == "SyntaxDefinition");
@@ -73,38 +74,49 @@ namespace AvaloniaEdit.Highlighting.Xshd
         {
             if (reader.IsEmptyElement)
                 return;
+
             while (reader.Read() && reader.NodeType != XmlNodeType.EndElement)
             {
                 Debug.Assert(reader.NodeType == XmlNodeType.Element);
+
                 if (reader.NamespaceURI != Namespace)
                 {
                     if (!reader.IsEmptyElement)
                         reader.Skip();
+
                     continue;
                 }
+
                 switch (reader.Name)
                 {
                     case "RuleSet":
                         c.Add(ParseRuleSet(reader));
                         break;
+
                     case "Property":
                         c.Add(ParseProperty(reader));
                         break;
+
                     case "Color":
                         c.Add(ParseNamedColor(reader));
                         break;
+
                     case "Keywords":
                         c.Add(ParseKeywords(reader));
                         break;
+
                     case "Span":
                         c.Add(ParseSpan(reader));
                         break;
+
                     case "Import":
                         c.Add(ParseImport(reader));
                         break;
+
                     case "Rule":
                         c.Add(ParseRule(reader));
                         break;
+
                     default:
                         throw new NotSupportedException("Unknown element " + reader.Name);
                 }
@@ -137,15 +149,18 @@ namespace AvaloniaEdit.Highlighting.Xshd
             var rule = new XshdRule();
             SetPosition(rule, reader);
             rule.ColorReference = ParseColorReference(reader);
+
             if (!reader.IsEmptyElement)
             {
                 reader.Read();
+
                 if (reader.NodeType == XmlNodeType.Text)
                 {
                     rule.Regex = reader.ReadContentAsString();
                     rule.RegexType = XshdRegexType.IgnorePatternWhitespace;
                 }
             }
+
             return rule;
         }
 
@@ -155,11 +170,13 @@ namespace AvaloniaEdit.Highlighting.Xshd
             SetPosition(keywords, reader);
             keywords.ColorReference = ParseColorReference(reader);
             reader.Read();
+
             while (reader.NodeType != XmlNodeType.EndElement)
             {
                 Debug.Assert(reader.NodeType == XmlNodeType.Element);
                 keywords.Words.Add(reader.ReadElementContentAsString());
             }
+
             return keywords;
         }
 
@@ -168,8 +185,10 @@ namespace AvaloniaEdit.Highlighting.Xshd
             var import = new XshdImport();
             SetPosition(import, reader);
             import.RuleSetReference = ParseRuleSetReference(reader);
+
             if (!reader.IsEmptyElement)
                 reader.Skip();
+
             return import;
         }
 
@@ -182,39 +201,49 @@ namespace AvaloniaEdit.Highlighting.Xshd
             span.Multiline = reader.GetBoolAttribute("multiline") ?? false;
             span.SpanColorReference = ParseColorReference(reader);
             span.RuleSetReference = ParseRuleSetReference(reader);
+
             if (!reader.IsEmptyElement)
             {
                 reader.Read();
+
                 while (reader.NodeType != XmlNodeType.EndElement)
                 {
                     Debug.Assert(reader.NodeType == XmlNodeType.Element);
+
                     switch (reader.Name)
                     {
                         case "Begin":
                             if (span.BeginRegex != null)
                                 throw Error(reader, "Duplicate Begin regex");
+
                             span.BeginColorReference = ParseColorReference(reader);
                             span.BeginRegex = reader.ReadElementContentAsString();
                             span.BeginRegexType = XshdRegexType.IgnorePatternWhitespace;
                             break;
+
                         case "End":
                             if (span.EndRegex != null)
                                 throw Error(reader, "Duplicate End regex");
+
                             span.EndColorReference = ParseColorReference(reader);
                             span.EndRegex = reader.ReadElementContentAsString();
                             span.EndRegexType = XshdRegexType.IgnorePatternWhitespace;
                             break;
+
                         case "RuleSet":
                             if (span.RuleSetReference.ReferencedElement != null)
                                 throw Error(reader, "Cannot specify both inline RuleSet and RuleSet reference");
+
                             span.RuleSetReference = new XshdReference<XshdRuleSet>(ParseRuleSet(reader));
                             reader.Read();
                             break;
+
                         default:
                             throw new NotSupportedException("Unknown element " + reader.Name);
                     }
                 }
             }
+
             return span;
         }
 
@@ -227,12 +256,12 @@ namespace AvaloniaEdit.Highlighting.Xshd
         {
             if (lineInfo != null)
                 return new HighlightingDefinitionInvalidException(HighlightingLoader.FormatExceptionMessage(message, lineInfo.LineNumber, lineInfo.LinePosition));
-            else
-                return new HighlightingDefinitionInvalidException(message);
+
+            return new HighlightingDefinitionInvalidException(message);
         }
 
         /// <summary>
-        /// Sets the element's position to the XmlReader's position.
+        ///     Sets the element's position to the XmlReader's position.
         /// </summary>
         private static void SetPosition(XshdElement element, XmlReader reader)
         {
@@ -246,23 +275,19 @@ namespace AvaloniaEdit.Highlighting.Xshd
         private static XshdReference<XshdRuleSet> ParseRuleSetReference(XmlReader reader)
         {
             var ruleSet = reader.GetAttribute("ruleSet");
+
             if (ruleSet != null)
             {
                 // '/' is valid in highlighting definition names, so we need the last occurence
                 var pos = ruleSet.LastIndexOf('/');
+
                 if (pos >= 0)
-                {
                     return new XshdReference<XshdRuleSet>(ruleSet.Substring(0, pos), ruleSet.Substring(pos + 1));
-                }
-                else
-                {
-                    return new XshdReference<XshdRuleSet>(null, ruleSet);
-                }
+
+                return new XshdReference<XshdRuleSet>(null, ruleSet);
             }
-            else
-            {
-                return new XshdReference<XshdRuleSet>();
-            }
+
+            return new XshdReference<XshdRuleSet>();
         }
 
         private static void CheckElementName(XmlReader reader, string name)
@@ -271,13 +296,13 @@ namespace AvaloniaEdit.Highlighting.Xshd
             {
                 if (name.Length == 0)
                     throw Error(reader, "The empty string is not a valid name.");
+
                 if (name.IndexOf('/') >= 0)
                     throw Error(reader, "Element names must not contain a slash.");
             }
         }
 
         #region ParseColor
-
         private static XshdColor ParseNamedColor(XmlReader reader)
         {
             var color = ParseColorAttributes(reader);
@@ -293,22 +318,18 @@ namespace AvaloniaEdit.Highlighting.Xshd
         private static XshdReference<XshdColor> ParseColorReference(XmlReader reader)
         {
             var color = reader.GetAttribute("color");
+
             if (color != null)
             {
                 var pos = color.LastIndexOf('/');
+
                 if (pos >= 0)
-                {
                     return new XshdReference<XshdColor>(color.Substring(0, pos), color.Substring(pos + 1));
-                }
-                else
-                {
-                    return new XshdReference<XshdColor>(null, color);
-                }
+
+                return new XshdReference<XshdColor>(null, color);
             }
-            else
-            {
-                return new XshdReference<XshdColor>(ParseColorAttributes(reader));
-            }
+
+            return new XshdReference<XshdColor>(ParseColorAttributes(reader));
         }
 
         private static XshdColor ParseColorAttributes(XmlReader reader)
@@ -321,12 +342,13 @@ namespace AvaloniaEdit.Highlighting.Xshd
             color.FontStyle = ParseFontStyle(reader.GetAttribute("fontStyle"));
             color.Underline = reader.GetBoolAttribute("underline");
             return color;
-        }        
+        }
 
         private static HighlightingBrush ParseColor(string color)
         {
             if (string.IsNullOrEmpty(color))
                 return null;
+
             return FixedColorHighlightingBrush(Color.Parse(color));
         }
 
@@ -334,6 +356,7 @@ namespace AvaloniaEdit.Highlighting.Xshd
         {
             if (color == null)
                 return null;
+
             return new SimpleHighlightingBrush(color.Value);
         }
 
@@ -341,14 +364,16 @@ namespace AvaloniaEdit.Highlighting.Xshd
         {
             if (string.IsNullOrEmpty(fontWeight))
                 return null;
-            return (FontWeight)Enum.Parse(typeof(FontWeight), fontWeight, ignoreCase: true);
+
+            return (FontWeight)Enum.Parse(typeof(FontWeight), fontWeight, true);
         }
 
         private static FontStyle? ParseFontStyle(string fontStyle)
         {
             if (string.IsNullOrEmpty(fontStyle))
                 return null;
-            return (FontStyle)Enum.Parse(typeof(FontStyle), fontStyle, ignoreCase: true);
+
+            return (FontStyle)Enum.Parse(typeof(FontStyle), fontStyle, true);
         }
         #endregion
     }

@@ -20,21 +20,21 @@ using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
-using Avalonia.Media;
 using Avalonia.Data;
+using Avalonia.Media;
 
 namespace AvaloniaEdit.Editing
 {
     /// <summary>
-    /// Margin for use with the text area.
-    /// A vertical dotted line to separate the line numbers from the text view.
+    ///     Margin for use with the text area.
+    ///     A vertical dotted line to separate the line numbers from the text view.
     /// </summary>
     public static class DottedLineMargin
     {
         private static readonly object Tag = new object();
 
         /// <summary>
-        /// Creates a vertical dotted line to separate the line numbers from the text view.
+        ///     Creates a vertical dotted line to separate the line numbers from the text view.
         /// </summary>
         public static IControl Create()
         {
@@ -54,7 +54,7 @@ namespace AvaloniaEdit.Editing
         }
 
         /// <summary>
-        /// Creates a vertical dotted line to separate the line numbers from the text view.
+        ///     Creates a vertical dotted line to separate the line numbers from the text view.
         /// </summary>
         internal static IControl Create(IControl editor)
         {
@@ -64,7 +64,7 @@ namespace AvaloniaEdit.Editing
         }
 
         /// <summary>
-        /// Gets whether the specified UIElement is the result of a DottedLineMargin.Create call.
+        ///     Gets whether the specified UIElement is the result of a DottedLineMargin.Create call.
         /// </summary>
         public static bool IsDottedLineMargin(IControl element)
         {

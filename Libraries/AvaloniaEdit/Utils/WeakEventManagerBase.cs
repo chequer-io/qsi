@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reflection;
@@ -10,8 +9,8 @@ using System.Threading;
 namespace AvaloniaEdit.Utils
 {
     /// <summary>
-    /// WeakEventManager base class. Inspired by the WPF WeakEventManager class and the code in 
-    /// http://social.msdn.microsoft.com/Forums/silverlight/en-US/34d85c3f-52ea-4adc-bb32-8297f5549042/command-binding-memory-leak?forum=silverlightbugs
+    ///     WeakEventManager base class. Inspired by the WPF WeakEventManager class and the code in
+    ///     http://social.msdn.microsoft.com/Forums/silverlight/en-US/34d85c3f-52ea-4adc-bb32-8297f5549042/command-binding-memory-leak?forum=silverlightbugs
     /// </summary>
     /// <remarks>Copied here from ReactiveUI due to bugs in its design (singleton instance for multiple events).</remarks>
     /// <typeparam name="TEventManager"></typeparam>
@@ -24,23 +23,24 @@ namespace AvaloniaEdit.Utils
         // ReSharper disable once StaticMemberInGenericType
         private static readonly object StaticSource = new object();
 
-        /// <summary>
-        /// Mapping between the target of the delegate (for example a Button) and the handler (EventHandler).
-        /// Windows Phone needs this, otherwise the event handler gets garbage collected.
-        /// </summary>
-        private readonly ConditionalWeakTable<object, List<Delegate>> _targetToEventHandler = new ConditionalWeakTable<object, List<Delegate>>();
+        private static readonly Lazy<TEventManager> CurrentLazy = new Lazy<TEventManager>(() => new TEventManager());
 
         /// <summary>
-        /// Mapping from the source of the event to the list of handlers. This is a CWT to ensure it does not leak the source of the event.
+        ///     Mapping from the source of the event to the list of handlers. This is a CWT to ensure it does not leak the source
+        ///     of the event.
         /// </summary>
         private readonly ConditionalWeakTable<object, WeakHandlerList> _sourceToWeakHandlers = new ConditionalWeakTable<object, WeakHandlerList>();
 
-        private static readonly Lazy<TEventManager> CurrentLazy = new Lazy<TEventManager>(() => new TEventManager());
+        /// <summary>
+        ///     Mapping between the target of the delegate (for example a Button) and the handler (EventHandler).
+        ///     Windows Phone needs this, otherwise the event handler gets garbage collected.
+        /// </summary>
+        private readonly ConditionalWeakTable<object, List<Delegate>> _targetToEventHandler = new ConditionalWeakTable<object, List<Delegate>>();
 
         private static TEventManager Current => CurrentLazy.Value;
 
         /// <summary>
-        /// Adds a weak reference to the handler and associates it with the source.
+        ///     Adds a weak reference to the handler and associates it with the source.
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="handler">The handler.</param>
@@ -50,7 +50,7 @@ namespace AvaloniaEdit.Utils
         }
 
         /// <summary>
-        /// Removes the association between the source and the handler.
+        ///     Removes the association between the source and the handler.
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="handler">The handler.</param>
@@ -60,23 +60,23 @@ namespace AvaloniaEdit.Utils
         }
 
         /// <summary>
-        /// Delivers the event to the handlers registered for the source. 
+        ///     Delivers the event to the handlers registered for the source.
         /// </summary>
         /// <param name="sender">The sender.</param>
-        /// <param name="args">The <see cref="TEventArgs"/> instance containing the event data.</param>
+        /// <param name="args">The <see cref="TEventArgs" /> instance containing the event data.</param>
         protected static void DeliverEvent(object sender, TEventArgs args)
         {
             Current.PrivateDeliverEvent(sender, args);
         }
 
         /// <summary>
-        /// Override this method to attach to an event.
+        ///     Override this method to attach to an event.
         /// </summary>
         /// <param name="source">The source.</param>
         protected abstract void StartListening(TEventSource source);
 
         /// <summary>
-        /// Override this method to detach from an event.
+        ///     Override this method to detach from an event.
         /// </summary>
         /// <param name="source">The source.</param>
         protected abstract void StopListening(TEventSource source);
@@ -87,9 +87,7 @@ namespace AvaloniaEdit.Utils
             if (handler == null) throw new ArgumentNullException(nameof(handler));
 
             if (!typeof(TEventHandler).GetTypeInfo().IsSubclassOf(typeof(Delegate)))
-            {
                 throw new ArgumentException("Handler must be Delegate type");
-            }
 
             AddWeakHandler(source, handler);
             AddTargetHandler(handler);
@@ -106,6 +104,7 @@ namespace AvaloniaEdit.Utils
                     _sourceToWeakHandlers.Remove(source);
                     _sourceToWeakHandlers.Add(source, weakHandlers);
                 }
+
                 weakHandlers.AddWeakHandler(source, handler);
             }
             else
@@ -143,9 +142,7 @@ namespace AvaloniaEdit.Utils
             if (handler == null) throw new ArgumentNullException(nameof(handler));
 
             if (!typeof(TEventHandler).GetTypeInfo().IsSubclassOf(typeof(Delegate)))
-            {
                 throw new ArgumentException("handler must be Delegate type");
-            }
 
             RemoveWeakHandler(source, handler);
             RemoveTargetHandler(handler);
@@ -181,9 +178,7 @@ namespace AvaloniaEdit.Utils
                 delegates.Remove(@delegate);
 
                 if (delegates.Count == 0)
-                {
                     _targetToEventHandler.Remove(key);
-                }
             }
         }
 
@@ -194,17 +189,13 @@ namespace AvaloniaEdit.Utils
             var hasStaleEntries = false;
 
             if (_sourceToWeakHandlers.TryGetValue(source, out var weakHandlers))
-            {
                 using (weakHandlers.DeliverActive())
                 {
                     hasStaleEntries = weakHandlers.DeliverEvent(source, args);
                 }
-            }
 
             if (hasStaleEntries)
-            {
                 Purge(source);
-            }
         }
 
         private void Purge(object source)
@@ -226,8 +217,14 @@ namespace AvaloniaEdit.Utils
 
         internal class WeakHandler
         {
-            private readonly WeakReference _source;
             private readonly WeakReference _originalHandler;
+            private readonly WeakReference _source;
+
+            public WeakHandler(object source, TEventHandler originalHandler)
+            {
+                _source = new WeakReference(source);
+                _originalHandler = new WeakReference(originalHandler);
+            }
 
             public bool IsActive => _source != null && _source.IsAlive && _originalHandler != null && _originalHandler.IsAlive;
 
@@ -236,17 +233,10 @@ namespace AvaloniaEdit.Utils
                 get
                 {
                     if (_originalHandler == null)
-                    {
-                        return default(TEventHandler);
-                    }
+                        return default;
+
                     return (TEventHandler)_originalHandler.Target;
                 }
-            }
-
-            public WeakHandler(object source, TEventHandler originalHandler)
-            {
-                _source = new WeakReference(source);
-                _originalHandler = new WeakReference(originalHandler);
             }
 
             public bool Matches(object o, TEventHandler handler)
@@ -263,13 +253,17 @@ namespace AvaloniaEdit.Utils
 
         internal class WeakHandlerList
         {
-            private int _deliveries;
             private readonly List<WeakHandler> _handlers;
+            private int _deliveries;
 
             public WeakHandlerList()
             {
                 _handlers = new List<WeakHandler>();
             }
+
+            public int Count => _handlers.Count;
+
+            public bool IsDeliverActive => _deliveries > 0;
 
             public void AddWeakHandler(TEventSource source, TEventHandler handler)
             {
@@ -280,12 +274,8 @@ namespace AvaloniaEdit.Utils
             public bool RemoveWeakHandler(TEventSource source, TEventHandler handler)
             {
                 foreach (var weakHandler in _handlers)
-                {
                     if (weakHandler.Matches(source, handler))
-                    {
                         return _handlers.Remove(weakHandler);
-                    }
-                }
 
                 return false;
             }
@@ -297,10 +287,6 @@ namespace AvaloniaEdit.Utils
 
                 return newList;
             }
-
-            public int Count => _handlers.Count;
-
-            public bool IsDeliverActive => _deliveries > 0;
 
             public IDisposable DeliverActive()
             {
@@ -315,7 +301,6 @@ namespace AvaloniaEdit.Utils
                 var hasStaleEntries = false;
 
                 foreach (var handler in _handlers)
-                {
                     if (handler.IsActive)
                     {
                         var @delegate = handler.Handler as Delegate;
@@ -325,7 +310,6 @@ namespace AvaloniaEdit.Utils
                     {
                         hasStaleEntries = true;
                     }
-                }
 
                 return hasStaleEntries;
             }
@@ -333,12 +317,8 @@ namespace AvaloniaEdit.Utils
             public void Purge()
             {
                 for (var i = _handlers.Count - 1; i >= 0; i--)
-                {
                     if (!_handlers[i].IsActive)
-                    {
                         _handlers.RemoveAt(i);
-                    }
-                }
             }
         }
     }

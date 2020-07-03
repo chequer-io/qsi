@@ -43,17 +43,22 @@ namespace AvaloniaEdit.Editing
             {
                 var segmentStart = segment.StartOffset;
                 var segmentEnd = segment.EndOffset;
+
                 if (segmentEnd <= lineStartOffset)
                     continue;
+
                 if (segmentStart >= lineEndOffset)
                     continue;
+
                 int startColumn;
+
                 startColumn = segmentStart < lineStartOffset
                     ? 0
                     : context.VisualLine.ValidateVisualColumn(segment.StartOffset, segment.StartVisualColumn,
                         _textArea.Selection.EnableVirtualSpace);
 
                 int endColumn;
+
                 if (segmentEnd > lineEndOffset)
                     endColumn = _textArea.Selection.EnableVirtualSpace ? int.MaxValue : context.VisualLine.VisualLengthWithEndOfLineMarker;
                 else

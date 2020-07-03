@@ -22,24 +22,24 @@ using AvaloniaEdit.Document;
 namespace AvaloniaEdit.Snippets
 {
     /// <summary>
-    /// An element that binds to a <see cref="SnippetReplaceableTextElement"/> and displays the same text.
+    ///     An element that binds to a <see cref="SnippetReplaceableTextElement" /> and displays the same text.
     /// </summary>
     public class SnippetBoundElement : SnippetElement
     {
         /// <summary>
-        /// Gets/Sets the target element.
+        ///     Gets/Sets the target element.
         /// </summary>
         public SnippetReplaceableTextElement TargetElement { get; set; }
 
         /// <summary>
-        /// Converts the text before copying it.
+        ///     Converts the text before copying it.
         /// </summary>
         public virtual string ConvertText(string input)
         {
             return input;
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override void Insert(InsertionContext context)
         {
             if (TargetElement != null)
@@ -48,10 +48,10 @@ namespace AvaloniaEdit.Snippets
                 start.MovementType = AnchorMovementType.BeforeInsertion;
                 start.SurviveDeletion = true;
                 var inputText = TargetElement.Text;
+
                 if (inputText != null)
-                {
                     context.InsertText(ConvertText(inputText));
-                }
+
                 var end = context.Document.CreateAnchor(context.InsertionPosition);
                 end.MovementType = AnchorMovementType.BeforeInsertion;
                 end.SurviveDeletion = true;
@@ -75,11 +75,11 @@ namespace AvaloniaEdit.Snippets
 
     internal sealed class BoundActiveElement : IActiveElement
     {
+        private readonly SnippetBoundElement _boundElement;
         private readonly InsertionContext _context;
         private readonly SnippetReplaceableTextElement _targetSnippetElement;
-        private readonly SnippetBoundElement _boundElement;
-        internal IReplaceableActiveElement TargetElement;
         private AnchorSegment _segment;
+        internal IReplaceableActiveElement TargetElement;
 
         public BoundActiveElement(InsertionContext context, SnippetReplaceableTextElement targetSnippetElement, SnippetBoundElement boundElement, AnchorSegment segment)
         {
@@ -92,33 +92,9 @@ namespace AvaloniaEdit.Snippets
         public void OnInsertionCompleted()
         {
             TargetElement = _context.GetActiveElement(_targetSnippetElement) as IReplaceableActiveElement;
-            if (TargetElement != null)
-            {
-                TargetElement.TextChanged += targetElement_TextChanged;
-            }
-        }
 
-        private void targetElement_TextChanged(object sender, EventArgs e)
-        {
-            // Don't copy text if the segments overlap (we would get an endless loop).
-            // This can happen if the user deletes the text between the replaceable element and the bound element.
-            if (SimpleSegment.GetOverlap(_segment, TargetElement.Segment) == SimpleSegment.Invalid)
-            {
-                var offset = _segment.Offset;
-                var length = _segment.Length;
-                var text = _boundElement.ConvertText(TargetElement.Text);
-                if (length != text.Length || text != _context.Document.GetText(offset, length))
-                {
-                    // Call replace only if we're actually changing something.
-                    // Without this check, we would generate an empty undo group when the user pressed undo.
-                    _context.Document.Replace(offset, length, text);
-                    if (length == 0)
-                    {
-                        // replacing an empty anchor segment with text won't enlarge it, so we have to recreate it
-                        _segment = new AnchorSegment(_context.Document, offset, text.Length);
-                    }
-                }
-            }
+            if (TargetElement != null)
+                TargetElement.TextChanged += targetElement_TextChanged;
         }
 
         public void Deactivate(SnippetEventArgs e)
@@ -129,5 +105,28 @@ namespace AvaloniaEdit.Snippets
         public bool IsEditable => false;
 
         public ISegment Segment => _segment;
+
+        private void targetElement_TextChanged(object sender, EventArgs e)
+        {
+            // Don't copy text if the segments overlap (we would get an endless loop).
+            // This can happen if the user deletes the text between the replaceable element and the bound element.
+            if (SimpleSegment.GetOverlap(_segment, TargetElement.Segment) == SimpleSegment.Invalid)
+            {
+                var offset = _segment.Offset;
+                var length = _segment.Length;
+                var text = _boundElement.ConvertText(TargetElement.Text);
+
+                if (length != text.Length || text != _context.Document.GetText(offset, length))
+                {
+                    // Call replace only if we're actually changing something.
+                    // Without this check, we would generate an empty undo group when the user pressed undo.
+                    _context.Document.Replace(offset, length, text);
+
+                    if (length == 0)
+                        // replacing an empty anchor segment with text won't enlarge it, so we have to recreate it
+                        _segment = new AnchorSegment(_context.Document, offset, text.Length);
+                }
+            }
+        }
     }
 }

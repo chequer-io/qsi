@@ -17,18 +17,17 @@
 // DEALINGS IN THE SOFTWARE.
 
 using System;
-using Avalonia.Controls.Platform;
 using AvaloniaEdit.Editing;
 
 namespace AvaloniaEdit.CodeCompletion
 {
     /// <summary>
-    /// A popup-like window that is attached to a text segment.
+    ///     A popup-like window that is attached to a text segment.
     /// </summary>
     public class InsightWindow : CompletionWindowBase
     {
         /// <summary>
-        /// Creates a new InsightWindow.
+        ///     Creates a new InsightWindow.
         /// </summary>
         public InsightWindow(TextArea textArea) : base(textArea)
         {
@@ -36,6 +35,15 @@ namespace AvaloniaEdit.CodeCompletion
             AttachEvents();
             Initialize();
         }
+
+        /// <summary>
+        ///     Gets/Sets whether the insight window should close automatically.
+        ///     The default value is true.
+        /// </summary>
+        public bool CloseAutomatically { get; set; }
+
+        /// <inheritdoc />
+        protected override bool CloseOnFocusLost => CloseAutomatically;
 
         private void Initialize()
         {
@@ -47,21 +55,12 @@ namespace AvaloniaEdit.CodeCompletion
             //MaxWidth = Math.Min(workingArea.Width, Math.Max(1000, workingArea.Width * 0.6));
         }
 
-        /// <summary>
-        /// Gets/Sets whether the insight window should close automatically.
-        /// The default value is true.
-        /// </summary>
-        public bool CloseAutomatically { get; set; }
-
-        /// <inheritdoc/>
-        protected override bool CloseOnFocusLost => CloseAutomatically;
-
         private void AttachEvents()
         {
             TextArea.Caret.PositionChanged += CaretPositionChanged;
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void DetachEvents()
         {
             TextArea.Caret.PositionChanged -= CaretPositionChanged;
@@ -73,10 +72,9 @@ namespace AvaloniaEdit.CodeCompletion
             if (CloseAutomatically)
             {
                 var offset = TextArea.Caret.Offset;
+
                 if (offset < StartOffset || offset > EndOffset)
-                {
                     Hide();
-                }
             }
         }
     }

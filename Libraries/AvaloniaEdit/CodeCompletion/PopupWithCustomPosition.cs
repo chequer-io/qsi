@@ -10,10 +10,7 @@ namespace AvaloniaEdit.CodeCompletion
 
         public PixelPoint Offset
         {
-            get
-            {
-                return new PixelPoint((int)HorizontalOffset, (int)VerticalOffset);
-            }
+            get => new PixelPoint((int)HorizontalOffset, (int)VerticalOffset);
             set
             {
                 HorizontalOffset = value.X;
@@ -21,6 +18,6 @@ namespace AvaloniaEdit.CodeCompletion
 
                 //this.Revalidate(VerticalOffsetProperty);
             }
-        }            
+        }
     }
 }

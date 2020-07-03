@@ -25,41 +25,43 @@ using AvaloniaEdit.Editing;
 namespace AvaloniaEdit.Search
 {
     /// <summary>
-    /// Search commands for AvalonEdit.
+    ///     Search commands for AvalonEdit.
     /// </summary>
     public static class SearchCommands
     {
         /// <summary>
-        /// Finds the next occurrence in the file.
+        ///     Finds the next occurrence in the file.
         /// </summary>
         public static readonly RoutedCommand FindNext = new RoutedCommand(nameof(FindNext), new KeyGesture(Key.F3));
 
         /// <summary>
-        /// Finds the previous occurrence in the file.
+        ///     Finds the previous occurrence in the file.
         /// </summary>
         public static readonly RoutedCommand FindPrevious = new RoutedCommand(nameof(FindPrevious), new KeyGesture(Key.F3, KeyModifiers.Shift));
 
         /// <summary>
-        /// Closes the SearchPanel.
+        ///     Closes the SearchPanel.
         /// </summary>
         public static readonly RoutedCommand CloseSearchPanel = new RoutedCommand(nameof(CloseSearchPanel), new KeyGesture(Key.Escape));
 
         /// <summary>
-        /// Replaces the next occurrence in the document.
+        ///     Replaces the next occurrence in the document.
         /// </summary>
         public static readonly RoutedCommand ReplaceNext = new RoutedCommand(nameof(ReplaceNext), new KeyGesture(Key.R, KeyModifiers.Alt));
 
         /// <summary>
-        /// Replaces all the occurrences in the document.
+        ///     Replaces all the occurrences in the document.
         /// </summary>
         public static readonly RoutedCommand ReplaceAll = new RoutedCommand(nameof(ReplaceAll), new KeyGesture(Key.A, KeyModifiers.Alt));
     }
 
     /// <summary>
-    /// TextAreaInputHandler that registers all search-related commands.
+    ///     TextAreaInputHandler that registers all search-related commands.
     /// </summary>
     internal class SearchInputHandler : TextAreaInputHandler
     {
+        private readonly SearchPanel _panel;
+
         public SearchInputHandler(TextArea textArea, SearchPanel panel)
             : base(textArea)
         {
@@ -86,24 +88,24 @@ namespace AvaloniaEdit.Search
             commandBindings.Add(new RoutedCommandBinding(SearchCommands.CloseSearchPanel, ExecuteCloseSearchPanel, CanExecuteWithOpenSearchPanel));
         }
 
-        private readonly SearchPanel _panel;
-
         private void ExecuteFind(object sender, ExecutedRoutedEventArgs e)
         {
-            FindOrReplace(isReplaceMode: false);
+            FindOrReplace(false);
         }
 
         private void ExecuteReplace(object sender, ExecutedRoutedEventArgs e)
         {
-            FindOrReplace(isReplaceMode: true);
+            FindOrReplace(true);
         }
 
         private void FindOrReplace(bool isReplaceMode)
         {
             _panel.IsReplaceMode = isReplaceMode;
             _panel.Open();
+
             if (!(TextArea.Selection.IsEmpty || TextArea.Selection.IsMultiline))
                 _panel.SearchPattern = TextArea.Selection.GetText();
+
             Dispatcher.UIThread.Post(_panel.Reactivate, DispatcherPriority.Input);
         }
 
@@ -168,7 +170,7 @@ namespace AvaloniaEdit.Search
         }
 
         /// <summary>
-        /// Fired when SearchOptions are modified inside the SearchPanel.
+        ///     Fired when SearchOptions are modified inside the SearchPanel.
         /// </summary>
         public event EventHandler<SearchOptionsChangedEventArgs> SearchOptionsChanged
         {

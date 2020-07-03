@@ -17,8 +17,8 @@
 // DEALINGS IN THE SOFTWARE.
 
 using System;
-using AvaloniaEdit.Rendering;
 using Avalonia.Media;
+using AvaloniaEdit.Rendering;
 
 namespace AvaloniaEdit.Editing
 {
@@ -56,15 +56,12 @@ namespace AvaloniaEdit.Editing
             };
 
             foreach (var segment in _textArea.Selection.Segments)
-            {
                 geoBuilder.AddSegment(TextView, segment);
-            }
 
             var geometry = geoBuilder.CreateGeometry();
+
             if (geometry != null)
-            {
                 drawingContext.DrawGeometry(_textArea.SelectionBrush, selectionBorder, geometry);
-            }
         }
     }
 }

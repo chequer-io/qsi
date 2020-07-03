@@ -27,9 +27,8 @@ namespace AvaloniaEdit.Search
 {
     internal class SearchResultBackgroundRenderer : IBackgroundRenderer
     {
-        public TextSegmentCollection<SearchResult> CurrentResults { get; } = new TextSegmentCollection<SearchResult>();
-
-        public KnownLayer Layer => KnownLayer.Background;
+        private IBrush _markerBrush;
+        private Pen _markerPen;
 
         public SearchResultBackgroundRenderer()
         {
@@ -37,8 +36,7 @@ namespace AvaloniaEdit.Search
             _markerPen = new Pen(_markerBrush);
         }
 
-        private IBrush _markerBrush;
-        private Pen _markerPen;
+        public TextSegmentCollection<SearchResult> CurrentResults { get; } = new TextSegmentCollection<SearchResult>();
 
         public IBrush MarkerBrush
         {
@@ -50,10 +48,13 @@ namespace AvaloniaEdit.Search
             }
         }
 
+        public KnownLayer Layer => KnownLayer.Background;
+
         public void Draw(TextView textView, DrawingContext drawingContext)
         {
             if (textView == null)
                 throw new ArgumentNullException(nameof(textView));
+
             if (drawingContext == null)
                 throw new ArgumentNullException(nameof(drawingContext));
 
@@ -61,6 +62,7 @@ namespace AvaloniaEdit.Search
                 return;
 
             ReadOnlyCollection<VisualLine> visualLines = textView.VisualLines;
+
             if (visualLines.Count == 0)
                 return;
 
@@ -75,12 +77,12 @@ namespace AvaloniaEdit.Search
                     BorderThickness = _markerPen?.Thickness ?? 0,
                     CornerRadius = 3
                 };
+
                 geoBuilder.AddSegment(textView, result);
                 var geometry = geoBuilder.CreateGeometry();
+
                 if (geometry != null)
-                {
                     drawingContext.DrawGeometry(_markerBrush, _markerPen, geometry);
-                }
             }
         }
     }

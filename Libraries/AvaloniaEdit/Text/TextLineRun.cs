@@ -14,6 +14,16 @@ namespace AvaloniaEdit.Text
         private Size _formattedTextSize;
         private double[] _glyphWidths;
 
+        private TextLineRun()
+        {
+        }
+
+        private TextLineRun(int length, TextRun textRun)
+        {
+            Length = length;
+            TextRun = textRun;
+        }
+
         public StringRange StringRange { get; private set; }
 
         public int Length { get; set; }
@@ -33,9 +43,7 @@ namespace AvaloniaEdit.Text
             get
             {
                 if (IsEnd)
-                {
                     return 0.0;
-                }
 
                 if (IsEmbedded && TextRun is TextEmbeddedObject embeddedObject)
                 {
@@ -52,9 +60,7 @@ namespace AvaloniaEdit.Text
             get
             {
                 if (IsEnd)
-                {
                     return 0.0;
-                }
 
                 if (IsEmbedded && TextRun is TextEmbeddedObject embeddedObject)
                 {
@@ -70,10 +76,6 @@ namespace AvaloniaEdit.Text
 
         public double FontSize => TextRun.Properties.FontSize;
 
-        private TextLineRun()
-        {
-        }
-
         public static TextLineRun Create(TextSource textSource, int index, int firstIndex, double lengthLeft)
         {
             var textRun = textSource.GetTextRun(index);
@@ -84,24 +86,20 @@ namespace AvaloniaEdit.Text
         private static TextLineRun Create(TextSource textSource, StringRange stringRange, TextRun textRun, int index, double widthLeft)
         {
             if (textRun is TextCharacters)
-            {
                 return CreateRunForEol(textSource, stringRange, textRun, index) ??
                        CreateRunForText(stringRange, textRun, widthLeft, false, true);
-            }
 
             if (textRun is TextEndOfLine)
-            {
                 return new TextLineRun(textRun.Length, textRun) { IsEnd = true };
-            }
 
             if (textRun is TextEmbeddedObject embeddedObject)
             {
-                double width = embeddedObject.GetSize(double.PositiveInfinity).Width;
+                var width = embeddedObject.GetSize(double.PositiveInfinity).Width;
 
                 return new TextLineRun(textRun.Length, textRun)
                 {
                     IsEmbedded = true,
-                    _glyphWidths = new double[] { width },
+                    _glyphWidths = new[] { width },
                     // Embedded objects must propagate their width to the container.
                     // Otherwise text runs after the embedded object are drawn at the same x position.
                     Width = width
@@ -198,12 +196,6 @@ namespace AvaloniaEdit.Text
             return run;
         }
 
-        private TextLineRun(int length, TextRun textRun)
-        {
-            Length = length;
-            TextRun = textRun;
-        }
-
         private void SetGlyphWidths()
         {
             var result = new double[StringRange.Length];
@@ -235,9 +227,7 @@ namespace AvaloniaEdit.Text
             }
 
             if (Length <= 0 || IsEnd)
-            {
                 return;
-            }
 
             if (_formattedText != null && drawingContext != null)
             {
@@ -280,16 +270,12 @@ namespace AvaloniaEdit.Text
             if (!IsEnd && !IsTab)
             {
                 if (index > Length)
-                {
                     index = Length;
-                }
 
                 double distance = 0;
 
                 for (var i = 0; i < index; i++)
-                {
                     distance += _glyphWidths[i];
-                }
 
                 return distance;
             }
@@ -311,9 +297,7 @@ namespace AvaloniaEdit.Text
                 width = IsTab ? Width / Length : _glyphWidths[index];
 
                 if (distance < width)
-                {
                     break;
-                }
 
                 distance -= width;
             }

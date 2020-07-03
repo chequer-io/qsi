@@ -31,31 +31,39 @@ using AvaloniaEdit.Utils;
 namespace AvaloniaEdit.CodeCompletion
 {
     /// <summary>
-    /// The listbox used inside the CompletionWindow, contains CompletionListBox.
+    ///     The listbox used inside the CompletionWindow, contains CompletionListBox.
     /// </summary>
     public class CompletionList : TemplatedControl
     {
+        /// <summary>
+        ///     Dependency property for <see cref="EmptyTemplate" />.
+        /// </summary>
+        public static readonly StyledProperty<ControlTemplate> EmptyTemplateProperty =
+            AvaloniaProperty.Register<CompletionList, ControlTemplate>(nameof(EmptyTemplate));
+
+        private readonly ObservableCollection<ICompletionData> _completionData = new ObservableCollection<ICompletionData>();
+
+        private ObservableCollection<ICompletionData> _currentList;
+
+        // SelectItem gets called twice for every typed character (once from FormatLine), this helps execute SelectItem only once
+        private string _currentText;
+
+        private CompletionListBox _listBox;
+
         public CompletionList()
         {
             DoubleTapped += OnDoubleTapped;
         }
 
-
         /// <summary>
-        /// If true, the CompletionList is filtered to show only matching items. Also enables search by substring.
-        /// If false, enables the old behavior: no filtering, search by string.StartsWith.
+        ///     If true, the CompletionList is filtered to show only matching items. Also enables search by substring.
+        ///     If false, enables the old behavior: no filtering, search by string.StartsWith.
         /// </summary>
         public bool IsFiltering { get; set; } = true;
 
         /// <summary>
-        /// Dependency property for <see cref="EmptyTemplate" />.
-        /// </summary>
-        public static readonly StyledProperty<ControlTemplate> EmptyTemplateProperty =
-            AvaloniaProperty.Register<CompletionList, ControlTemplate>(nameof(EmptyTemplate));
-
-        /// <summary>
-        /// Content of EmptyTemplate will be shown when CompletionList contains no items.
-        /// If EmptyTemplate is null, nothing will be shown.
+        ///     Content of EmptyTemplate will be shown when CompletionList contains no items.
+        ///     If EmptyTemplate is null, nothing will be shown.
         /// </summary>
         public ControlTemplate EmptyTemplate
         {
@@ -64,34 +72,7 @@ namespace AvaloniaEdit.CodeCompletion
         }
 
         /// <summary>
-        /// Is raised when the completion list indicates that the user has chosen
-        /// an entry to be completed.
-        /// </summary>
-        public event EventHandler InsertionRequested;
-
-        /// <summary>
-        /// Raises the InsertionRequested event.
-        /// </summary>
-        public void RequestInsertion(EventArgs e)
-        {
-            InsertionRequested?.Invoke(this, e);
-        }
-
-        private CompletionListBox _listBox;
-
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
-        {
-            base.OnTemplateApplied(e);
-
-            _listBox = e.NameScope.Find("PART_ListBox") as CompletionListBox;
-            if (_listBox != null)
-            {
-                _listBox.Items = _completionData;
-            }
-        }
-
-        /// <summary>
-        /// Gets the list box.
+        ///     Gets the list box.
         /// </summary>
         public CompletionListBox ListBox
         {
@@ -99,35 +80,79 @@ namespace AvaloniaEdit.CodeCompletion
             {
                 if (_listBox == null)
                     ApplyTemplate();
+
                 return _listBox;
             }
         }
 
         /// <summary>
-        /// Gets the scroll viewer used in this list box.
+        ///     Gets the scroll viewer used in this list box.
         /// </summary>
         public ScrollViewer ScrollViewer => _listBox?.ScrollViewer;
 
-        private readonly ObservableCollection<ICompletionData> _completionData = new ObservableCollection<ICompletionData>();
-
         /// <summary>
-        /// Gets the list to which completion data can be added.
+        ///     Gets the list to which completion data can be added.
         /// </summary>
         public IList<ICompletionData> CompletionData => _completionData;
 
-        /// <inheritdoc/>
-        protected override void OnKeyDown(KeyEventArgs e)
+        /// <summary>
+        ///     Gets/Sets the selected item.
+        /// </summary>
+        /// <remarks>
+        ///     The setter of this property does not scroll to the selected item.
+        ///     You might want to also call <see cref="ScrollIntoView" />.
+        /// </remarks>
+        public ICompletionData SelectedItem
         {
-            base.OnKeyDown(e);
-            if (!e.Handled)
+            get => _listBox?.SelectedItem as ICompletionData;
+            set
             {
-                HandleKey(e);
+                if (_listBox == null && value != null)
+                    ApplyTemplate();
+
+                if (_listBox != null) // may still be null if ApplyTemplate fails, or if listBox and value both are null
+                    _listBox.SelectedItem = value;
             }
         }
 
+        public List<ICompletionData> CurrentList => ListBox.Items.Cast<ICompletionData>().ToList();
+
         /// <summary>
-        /// Handles a key press. Used to let the completion list handle key presses while the
-        /// focus is still on the text editor.
+        ///     Is raised when the completion list indicates that the user has chosen
+        ///     an entry to be completed.
+        /// </summary>
+        public event EventHandler InsertionRequested;
+
+        /// <summary>
+        ///     Raises the InsertionRequested event.
+        /// </summary>
+        public void RequestInsertion(EventArgs e)
+        {
+            InsertionRequested?.Invoke(this, e);
+        }
+
+        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        {
+            base.OnTemplateApplied(e);
+
+            _listBox = e.NameScope.Find("PART_ListBox") as CompletionListBox;
+
+            if (_listBox != null)
+                _listBox.Items = _completionData;
+        }
+
+        /// <inheritdoc />
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+
+            if (!e.Handled)
+                HandleKey(e);
+        }
+
+        /// <summary>
+        ///     Handles a key press. Used to let the completion list handle key presses while the
+        ///     focus is still on the text editor.
         /// </summary>
         public void HandleKey(KeyEventArgs e)
         {
@@ -143,33 +168,40 @@ namespace AvaloniaEdit.CodeCompletion
                     e.Handled = true;
                     _listBox.SelectIndex(_listBox.SelectedIndex + 1);
                     break;
+
                 case Key.Up:
                     e.Handled = true;
                     _listBox.SelectIndex(_listBox.SelectedIndex - 1);
                     break;
+
                 case Key.PageDown:
                     e.Handled = true;
                     _listBox.SelectIndex(_listBox.SelectedIndex + _listBox.VisibleItemCount);
                     break;
+
                 case Key.PageUp:
                     e.Handled = true;
                     _listBox.SelectIndex(_listBox.SelectedIndex - _listBox.VisibleItemCount);
                     break;
+
                 case Key.Home:
                     e.Handled = true;
                     _listBox.SelectIndex(0);
                     break;
+
                 case Key.End:
                     e.Handled = true;
                     _listBox.SelectIndex(_listBox.ItemCount - 1);
                     break;
+
                 case Key.Tab:
                 case Key.Enter:
-                    if(CurrentList.Count > 0)
+                    if (CurrentList.Count > 0)
                     {
                         e.Handled = true;
                         RequestInsertion(e);
-                    }                    
+                    }
+
                     break;
             }
         }
@@ -178,7 +210,7 @@ namespace AvaloniaEdit.CodeCompletion
         {
             //TODO TEST
             if (((AvaloniaObject)e.Source).VisualAncestorsAndSelf()
-                    .TakeWhile(obj => obj != this).Any(obj => obj is ListBoxItem))
+                .TakeWhile(obj => obj != this).Any(obj => obj is ListBoxItem))
             {
                 e.Handled = true;
                 RequestInsertion(e);
@@ -186,36 +218,18 @@ namespace AvaloniaEdit.CodeCompletion
         }
 
         /// <summary>
-        /// Gets/Sets the selected item.
-        /// </summary>
-        /// <remarks>
-        /// The setter of this property does not scroll to the selected item.
-        /// You might want to also call <see cref="ScrollIntoView"/>.
-        /// </remarks>
-        public ICompletionData SelectedItem
-        {
-            get => _listBox?.SelectedItem as ICompletionData;
-            set
-            {
-                if (_listBox == null && value != null)
-                    ApplyTemplate();
-                if (_listBox != null) // may still be null if ApplyTemplate fails, or if listBox and value both are null
-                    _listBox.SelectedItem = value;
-            }
-        }
-
-        /// <summary>
-        /// Scrolls the specified item into view.
+        ///     Scrolls the specified item into view.
         /// </summary>
         public void ScrollIntoView(ICompletionData item)
         {
             if (_listBox == null)
                 ApplyTemplate();
+
             _listBox?.ScrollIntoView(item);
         }
 
         /// <summary>
-        /// Occurs when the SelectedItem property changes.
+        ///     Occurs when the SelectedItem property changes.
         /// </summary>
         public event EventHandler<SelectionChangedEventArgs> SelectionChanged
         {
@@ -223,39 +237,27 @@ namespace AvaloniaEdit.CodeCompletion
             remove => RemoveHandler(SelectingItemsControl.SelectionChangedEvent, value);
         }
 
-        // SelectItem gets called twice for every typed character (once from FormatLine), this helps execute SelectItem only once
-        private string _currentText;
-
-        private ObservableCollection<ICompletionData> _currentList;
-
-        public List<ICompletionData> CurrentList
-        {
-            get => ListBox.Items.Cast<ICompletionData>().ToList();
-        }
-
         /// <summary>
-        /// Selects the best match, and filter the items if turned on using <see cref="IsFiltering" />.
+        ///     Selects the best match, and filter the items if turned on using <see cref="IsFiltering" />.
         /// </summary>
         public void SelectItem(string text)
         {
             if (text == _currentText)
                 return;
+
             if (_listBox == null)
                 ApplyTemplate();
 
             if (IsFiltering)
-            {
                 SelectItemFiltering(text);
-            }
             else
-            {
                 SelectItemWithStart(text);
-            }
+
             _currentText = text;
         }
 
         /// <summary>
-        /// Filters CompletionList items to show only those matching given query, and selects the best match.
+        ///     Filters CompletionList items to show only those matching given query, and selects the best match.
         /// </summary>
         private void SelectItemFiltering(string query)
         {
@@ -278,16 +280,19 @@ namespace AvaloniaEdit.CodeCompletion
             var bestQuality = -1;
             double bestPriority = 0;
             var i = 0;
+
             foreach (var matchingItem in matchingItems)
             {
                 var priority = matchingItem.Item == suggestedItem ? double.PositiveInfinity : matchingItem.Item.Priority;
                 var quality = matchingItem.Quality;
+
                 if (quality > bestQuality || quality == bestQuality && priority > bestPriority)
                 {
                     bestIndex = i;
                     bestPriority = priority;
                     bestQuality = quality;
                 }
+
                 listBoxItems.Add(matchingItem.Item);
                 i++;
             }
@@ -299,7 +304,7 @@ namespace AvaloniaEdit.CodeCompletion
         }
 
         /// <summary>
-        /// Selects the item that starts with the specified query.
+        ///     Selects the item that starts with the specified query.
         /// </summary>
         private void SelectItemWithStart(string query)
         {
@@ -311,14 +316,17 @@ namespace AvaloniaEdit.CodeCompletion
             var bestIndex = -1;
             var bestQuality = -1;
             double bestPriority = 0;
+
             for (var i = 0; i < _completionData.Count; ++i)
             {
                 var quality = GetMatchQuality(_completionData[i].Text, query);
+
                 if (quality < 0)
                     continue;
 
                 var priority = _completionData[i].Priority;
                 bool useThisItem;
+
                 if (bestQuality < quality)
                 {
                     useThisItem = true;
@@ -326,19 +334,14 @@ namespace AvaloniaEdit.CodeCompletion
                 else
                 {
                     if (bestIndex == suggestedIndex)
-                    {
                         useThisItem = false;
-                    }
                     else if (i == suggestedIndex)
-                    {
                         // prefer recommendedItem, regardless of its priority
                         useThisItem = bestQuality == quality;
-                    }
                     else
-                    {
                         useThisItem = bestQuality == quality && bestPriority < priority;
-                    }
                 }
+
                 if (useThisItem)
                 {
                     bestIndex = i;
@@ -346,6 +349,7 @@ namespace AvaloniaEdit.CodeCompletion
                     bestQuality = quality;
                 }
             }
+
             SelectIndexCentered(bestIndex);
         }
 
@@ -358,6 +362,7 @@ namespace AvaloniaEdit.CodeCompletion
             else
             {
                 var firstItem = _listBox.FirstVisibleItem;
+
                 if (bestIndex < firstItem || firstItem + _listBox.VisibleItemCount <= bestIndex)
                 {
                     // CenterViewOn does nothing as CompletionListBox.ScrollViewer is null
@@ -388,15 +393,18 @@ namespace AvaloniaEdit.CodeCompletion
             //		-1 = no match
             if (query == itemText)
                 return 8;
+
             if (string.Equals(itemText, query, StringComparison.CurrentCultureIgnoreCase))
                 return 7;
 
             if (itemText.StartsWith(query, StringComparison.CurrentCulture))
                 return 6;
+
             if (itemText.StartsWith(query, StringComparison.CurrentCultureIgnoreCase))
                 return 5;
 
             bool? camelCaseMatch = null;
+
             if (query.Length <= 2)
             {
                 camelCaseMatch = CamelCaseMatch(itemText, query);
@@ -408,12 +416,14 @@ namespace AvaloniaEdit.CodeCompletion
             {
                 if (itemText.IndexOf(query, StringComparison.CurrentCulture) >= 0)
                     return 3;
+
                 if (itemText.IndexOf(query, StringComparison.CurrentCultureIgnoreCase) >= 0)
                     return 2;
             }
 
             if (!camelCaseMatch.HasValue)
                 camelCaseMatch = CamelCaseMatch(itemText, query);
+
             if (camelCaseMatch == true)
                 return 1;
 
@@ -429,16 +439,21 @@ namespace AvaloniaEdit.CodeCompletion
                 .Concat(text.AsEnumerable().Skip(1).Where(char.IsUpper));
 
             var i = 0;
+
             foreach (var letter in theFirstLetterOfEachWord)
             {
                 if (i > query.Length - 1)
-                    return true;    // return true here for CamelCase partial match ("CQ" matches "CodeQualityAnalysis")
+                    return true; // return true here for CamelCase partial match ("CQ" matches "CodeQualityAnalysis")
+
                 if (char.ToUpperInvariant(query[i]) != char.ToUpperInvariant(letter))
                     return false;
+
                 i++;
             }
+
             if (i >= query.Length)
                 return true;
+
             return false;
         }
     }

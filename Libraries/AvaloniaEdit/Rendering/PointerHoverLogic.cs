@@ -25,7 +25,7 @@ using Avalonia.Threading;
 namespace AvaloniaEdit.Rendering
 {
     /// <summary>
-    /// Encapsulates and adds pointer hover support to controls.
+    ///     Encapsulates and adds pointer hover support to controls.
     /// </summary>
     public class PointerHoverLogic : IDisposable
     {
@@ -35,13 +35,15 @@ namespace AvaloniaEdit.Rendering
 
         private readonly IControl _target;
 
-        private DispatcherTimer _timer;
-        private Point _hoverStartPoint;
-        private PointerEventArgs _hoverLastEventArgs;
+        private bool _disposed;
         private bool _hovering;
+        private PointerEventArgs _hoverLastEventArgs;
+        private Point _hoverStartPoint;
+
+        private DispatcherTimer _timer;
 
         /// <summary>
-        /// Creates a new instance and attaches itself to the <paramref name="target" /> UIElement.
+        ///     Creates a new instance and attaches itself to the <paramref name="target" /> UIElement.
         /// </summary>
         public PointerHoverLogic(IControl target)
         {
@@ -51,14 +53,29 @@ namespace AvaloniaEdit.Rendering
             _target.PointerEnter += OnPointerEnter;
         }
 
+        /// <summary>
+        ///     Removes the hover support from the target control.
+        /// </summary>
+        public void Dispose()
+        {
+            if (!_disposed)
+            {
+                _target.PointerLeave -= OnPointerLeave;
+                _target.PointerMoved -= OnPointerMoved;
+                _target.PointerEnter -= OnPointerEnter;
+            }
+
+            _disposed = true;
+        }
+
         private void OnPointerMoved(object sender, PointerEventArgs e)
         {
             var movement = _hoverStartPoint - e.GetPosition(_target);
+
             if (Math.Abs(movement.X) > PointerHoverWidth ||
                 Math.Abs(movement.Y) > PointerHoverHeight)
-            {
                 StartHovering(e);
-            }
+
             // do not set e.Handled - allow others to also handle the event
         }
 
@@ -90,6 +107,7 @@ namespace AvaloniaEdit.Rendering
                 _timer.Stop();
                 _timer = null;
             }
+
             if (_hovering)
             {
                 _hovering = false;
@@ -107,12 +125,12 @@ namespace AvaloniaEdit.Rendering
         }
 
         /// <summary>
-        /// Occurs when the pointer starts hovering over a certain location.
+        ///     Occurs when the pointer starts hovering over a certain location.
         /// </summary>
         public event EventHandler<PointerEventArgs> PointerHover;
 
         /// <summary>
-        /// Raises the <see cref="PointerHover"/> event.
+        ///     Raises the <see cref="PointerHover" /> event.
         /// </summary>
         protected virtual void OnPointerHover(PointerEventArgs e)
         {
@@ -120,32 +138,16 @@ namespace AvaloniaEdit.Rendering
         }
 
         /// <summary>
-        /// Occurs when the pointer stops hovering over a certain location.
+        ///     Occurs when the pointer stops hovering over a certain location.
         /// </summary>
         public event EventHandler<PointerEventArgs> PointerHoverStopped;
 
         /// <summary>
-        /// Raises the <see cref="PointerHoverStopped"/> event.
+        ///     Raises the <see cref="PointerHoverStopped" /> event.
         /// </summary>
         protected virtual void OnPointerHoverStopped(PointerEventArgs e)
         {
             PointerHoverStopped?.Invoke(this, e);
-        }
-
-        private bool _disposed;
-
-        /// <summary>
-        /// Removes the hover support from the target control.
-        /// </summary>
-        public void Dispose()
-        {
-            if (!_disposed)
-            {
-                _target.PointerLeave -= OnPointerLeave;
-                _target.PointerMoved -= OnPointerMoved;
-                _target.PointerEnter -= OnPointerEnter;
-            }
-            _disposed = true;
         }
     }
 }

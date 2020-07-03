@@ -26,21 +26,21 @@ using AvaloniaEdit.Utils;
 namespace AvaloniaEdit.Highlighting
 {
     /// <summary>
-    /// A highlighting color is a set of font properties and foreground and background color.
+    ///     A highlighting color is a set of font properties and foreground and background color.
     /// </summary>
     public class HighlightingColor : IFreezable, ICloneable, IEquatable<HighlightingColor>
     {
         internal static readonly HighlightingColor Empty = FreezableHelper.FreezeAndReturn(new HighlightingColor());
+        private HighlightingBrush _background;
+        private FontStyle? _fontStyle;
+        private FontWeight? _fontWeight;
+        private HighlightingBrush _foreground;
 
         private string _name;
-        private FontWeight? _fontWeight;
-        private FontStyle? _fontStyle;
         private bool? _underline;
-        private HighlightingBrush _foreground;
-        private HighlightingBrush _background;
 
         /// <summary>
-        /// Gets/Sets the name of the color.
+        ///     Gets/Sets the name of the color.
         /// </summary>
         public string Name
         {
@@ -49,12 +49,13 @@ namespace AvaloniaEdit.Highlighting
             {
                 if (IsFrozen)
                     throw new InvalidOperationException();
+
                 _name = value;
             }
         }
 
         /// <summary>
-        /// Gets/sets the font weight. Null if the highlighting color does not change the font weight.
+        ///     Gets/sets the font weight. Null if the highlighting color does not change the font weight.
         /// </summary>
         public FontWeight? FontWeight
         {
@@ -63,12 +64,13 @@ namespace AvaloniaEdit.Highlighting
             {
                 if (IsFrozen)
                     throw new InvalidOperationException();
+
                 _fontWeight = value;
             }
         }
 
         /// <summary>
-        /// Gets/sets the font style. Null if the highlighting color does not change the font style.
+        ///     Gets/sets the font style. Null if the highlighting color does not change the font style.
         /// </summary>
         public FontStyle? FontStyle
         {
@@ -77,12 +79,13 @@ namespace AvaloniaEdit.Highlighting
             {
                 if (IsFrozen)
                     throw new InvalidOperationException();
+
                 _fontStyle = value;
             }
         }
 
         /// <summary>
-        ///  Gets/sets the underline flag. Null if the underline status does not change the font style.
+        ///     Gets/sets the underline flag. Null if the underline status does not change the font style.
         /// </summary>
         public bool? Underline
         {
@@ -91,12 +94,13 @@ namespace AvaloniaEdit.Highlighting
             {
                 if (IsFrozen)
                     throw new InvalidOperationException();
+
                 _underline = value;
             }
         }
 
         /// <summary>
-        /// Gets/sets the foreground color applied by the highlighting.
+        ///     Gets/sets the foreground color applied by the highlighting.
         /// </summary>
         public HighlightingBrush Foreground
         {
@@ -105,12 +109,13 @@ namespace AvaloniaEdit.Highlighting
             {
                 if (IsFrozen)
                     throw new InvalidOperationException();
+
                 _foreground = value;
             }
         }
 
         /// <summary>
-        /// Gets/sets the background color applied by the highlighting.
+        ///     Gets/sets the background color applied by the highlighting.
         /// </summary>
         public HighlightingBrush Background
         {
@@ -119,9 +124,42 @@ namespace AvaloniaEdit.Highlighting
             {
                 if (IsFrozen)
                     throw new InvalidOperationException();
+
                 _background = value;
             }
         }
+
+        internal bool IsEmptyForMerge => _fontWeight == null && _fontStyle == null && _underline == null
+                                         && _foreground == null && _background == null;
+
+        object ICloneable.Clone()
+        {
+            return Clone();
+        }
+
+        /// <inheritdoc />
+        public virtual bool Equals(HighlightingColor other)
+        {
+            if (other == null)
+                return false;
+
+            return _name == other._name && _fontWeight == other._fontWeight
+                                        && _fontStyle == other._fontStyle && _underline == other._underline
+                                        && Equals(_foreground, other._foreground) && Equals(_background, other._background);
+        }
+
+        /// <summary>
+        ///     Prevent further changes to this highlighting color.
+        /// </summary>
+        public virtual void Freeze()
+        {
+            IsFrozen = true;
+        }
+
+        /// <summary>
+        ///     Gets whether this HighlightingColor instance is frozen.
+        /// </summary>
+        public bool IsFrozen { get; private set; }
 
         ///// <summary>
         ///// Serializes this HighlightingColor instance.
@@ -145,60 +183,50 @@ namespace AvaloniaEdit.Highlighting
         //}
 
         /// <summary>
-        /// Gets CSS code for the color.
+        ///     Gets CSS code for the color.
         /// </summary>
         [SuppressMessage("Microsoft.Globalization", "CA1308:NormalizeStringsToUppercase", Justification = "CSS usually uses lowercase, and all possible values are English-only")]
         public virtual string ToCss()
         {
             var b = new StringBuilder();
             Color? c = Foreground?.GetColor(null);
+
             if (c != null)
-            {
                 b.AppendFormat(CultureInfo.InvariantCulture, "color: #{0:x2}{1:x2}{2:x2}; ", c.Value.R, c.Value.G, c.Value.B);
-            }
+
             if (FontWeight != null)
             {
                 b.Append("font-weight: ");
                 b.Append(FontWeight.Value.ToString().ToLowerInvariant());
                 b.Append("; ");
             }
+
             if (FontStyle != null)
             {
                 b.Append("font-style: ");
                 b.Append(FontStyle.Value.ToString().ToLowerInvariant());
                 b.Append("; ");
             }
+
             if (Underline != null)
             {
                 b.Append("text-decoration: ");
                 b.Append(Underline.Value ? "underline" : "none");
                 b.Append("; ");
             }
+
             return b.ToString();
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override string ToString()
         {
             return "[" + GetType().Name + " " + (string.IsNullOrEmpty(Name) ? ToCss() : Name) + "]";
         }
 
         /// <summary>
-        /// Prevent further changes to this highlighting color.
-        /// </summary>
-        public virtual void Freeze()
-        {
-            IsFrozen = true;
-        }
-
-        /// <summary>
-        /// Gets whether this HighlightingColor instance is frozen.
-        /// </summary>
-        public bool IsFrozen { get; private set; }
-
-        /// <summary>
-        /// Clones this highlighting color.
-        /// If this color is frozen, the clone will be unfrozen.
+        ///     Clones this highlighting color.
+        ///     If this color is frozen, the clone will be unfrozen.
         /// </summary>
         public virtual HighlightingColor Clone()
         {
@@ -207,66 +235,58 @@ namespace AvaloniaEdit.Highlighting
             return c;
         }
 
-        object ICloneable.Clone()
-        {
-            return Clone();
-        }
-
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public sealed override bool Equals(object obj)
         {
             return Equals(obj as HighlightingColor);
         }
 
-        /// <inheritdoc/>
-        public virtual bool Equals(HighlightingColor other)
-        {
-            if (other == null)
-                return false;
-            return _name == other._name && _fontWeight == other._fontWeight
-                && _fontStyle == other._fontStyle && _underline == other._underline
-                && Equals(_foreground, other._foreground) && Equals(_background, other._background);
-        }
-
-        /// <inheritdoc/>
+        /// <inheritdoc />
         [SuppressMessage("ReSharper", "NonReadonlyMemberInGetHashCode")]
         public override int GetHashCode()
         {
             var hashCode = 0;
+
             unchecked
             {
                 if (_name != null)
                     hashCode += 1000000007 * _name.GetHashCode();
+
                 hashCode += 1000000009 * _fontWeight.GetHashCode();
                 hashCode += 1000000021 * _fontStyle.GetHashCode();
+
                 if (_foreground != null)
                     hashCode += 1000000033 * _foreground.GetHashCode();
+
                 if (_background != null)
                     hashCode += 1000000087 * _background.GetHashCode();
             }
+
             return hashCode;
         }
 
         /// <summary>
-        /// Overwrites the properties in this HighlightingColor with those from the given color;
-        /// but maintains the current values where the properties of the given color return <c>null</c>.
+        ///     Overwrites the properties in this HighlightingColor with those from the given color;
+        ///     but maintains the current values where the properties of the given color return <c>null</c>.
         /// </summary>
         public void MergeWith(HighlightingColor color)
         {
             FreezableHelper.ThrowIfFrozen(this);
+
             if (color._fontWeight != null)
                 _fontWeight = color._fontWeight;
+
             if (color._fontStyle != null)
                 _fontStyle = color._fontStyle;
+
             if (color._foreground != null)
                 _foreground = color._foreground;
+
             if (color._background != null)
                 _background = color._background;
+
             if (color._underline != null)
                 _underline = color._underline;
         }
-
-        internal bool IsEmptyForMerge => _fontWeight == null && _fontStyle == null && _underline == null
-                                         && _foreground == null && _background == null;
     }
 }

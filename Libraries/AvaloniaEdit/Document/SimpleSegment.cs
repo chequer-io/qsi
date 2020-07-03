@@ -24,16 +24,16 @@ using AvaloniaEdit.Utils;
 namespace AvaloniaEdit.Document
 {
     /// <summary>
-    /// Represents a simple segment (Offset,Length pair) that is not automatically updated
-    /// on document changes.
+    ///     Represents a simple segment (Offset,Length pair) that is not automatically updated
+    ///     on document changes.
     /// </summary>
     public struct SimpleSegment : IEquatable<SimpleSegment>, ISegment
     {
         public static readonly SimpleSegment Invalid = new SimpleSegment(-1, -1);
 
         /// <summary>
-        /// Gets the overlapping portion of the segments.
-        /// Returns SimpleSegment.Invalid if the segments don't overlap.
+        ///     Gets the overlapping portion of the segments.
+        ///     Returns SimpleSegment.Invalid if the segments don't overlap.
         /// </summary>
         public static SimpleSegment GetOverlap(ISegment segment1, ISegment segment2)
         {
@@ -73,7 +73,7 @@ namespace AvaloniaEdit.Document
 
         public override bool Equals(object obj)
         {
-            return (obj is SimpleSegment) && Equals((SimpleSegment)obj);
+            return obj is SimpleSegment && Equals((SimpleSegment)obj);
         }
 
         public bool Equals(SimpleSegment other)
@@ -91,7 +91,7 @@ namespace AvaloniaEdit.Document
             return !left.Equals(right);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override string ToString()
         {
             return $"[Offset={Offset}, Length={Length}]";
@@ -99,50 +99,46 @@ namespace AvaloniaEdit.Document
     }
 
     /// <summary>
-    /// A segment using <see cref="TextAnchor"/>s as start and end positions.
+    ///     A segment using <see cref="TextAnchor" />s as start and end positions.
     /// </summary>
     /// <remarks>
-    /// <para>
-    /// For the constructors creating new anchors, the start position will be AfterInsertion and the end position will be BeforeInsertion.
-    /// Should the end position move before the start position, the segment will have length 0.
-    /// </para>
+    ///     <para>
+    ///         For the constructors creating new anchors, the start position will be AfterInsertion and the end position will
+    ///         be BeforeInsertion.
+    ///         Should the end position move before the start position, the segment will have length 0.
+    ///     </para>
     /// </remarks>
-    /// <seealso cref="ISegment"/>
-    /// <seealso cref="TextSegment"/>
+    /// <seealso cref="ISegment" />
+    /// <seealso cref="TextSegment" />
     public sealed class AnchorSegment : ISegment
     {
-        private readonly TextAnchor _start;
         private readonly TextAnchor _end;
-
-        /// <inheritdoc/>
-        public int Offset => _start.Offset;
-
-        /// <inheritdoc/>
-        public int Length => Math.Max(0, _end.Offset - _start.Offset);
-
-        /// <inheritdoc/>
-        public int EndOffset => Math.Max(_start.Offset, _end.Offset);
+        private readonly TextAnchor _start;
 
         /// <summary>
-        /// Creates a new AnchorSegment using the specified anchors.
-        /// The anchors must have <see cref="TextAnchor.SurviveDeletion"/> set to true.
+        ///     Creates a new AnchorSegment using the specified anchors.
+        ///     The anchors must have <see cref="TextAnchor.SurviveDeletion" /> set to true.
         /// </summary>
         public AnchorSegment(TextAnchor start, TextAnchor end)
         {
             if (start == null)
                 throw new ArgumentNullException(nameof(start));
+
             if (end == null)
                 throw new ArgumentNullException(nameof(end));
+
             if (!start.SurviveDeletion)
                 throw new ArgumentException("Anchors for AnchorSegment must use SurviveDeletion", nameof(start));
+
             if (!end.SurviveDeletion)
                 throw new ArgumentException("Anchors for AnchorSegment must use SurviveDeletion", nameof(end));
+
             _start = start;
             _end = end;
         }
 
         /// <summary>
-        /// Creates a new AnchorSegment that creates new anchors.
+        ///     Creates a new AnchorSegment that creates new anchors.
         /// </summary>
         public AnchorSegment(TextDocument document, ISegment segment)
             : this(document, ThrowUtil.CheckNotNull(segment, "segment").Offset, segment.Length)
@@ -150,7 +146,7 @@ namespace AvaloniaEdit.Document
         }
 
         /// <summary>
-        /// Creates a new AnchorSegment that creates new anchors.
+        ///     Creates a new AnchorSegment that creates new anchors.
         /// </summary>
         public AnchorSegment(TextDocument document, int offset, int length)
         {
@@ -162,7 +158,16 @@ namespace AvaloniaEdit.Document
             _end.MovementType = AnchorMovementType.BeforeInsertion;
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
+        public int Offset => _start.Offset;
+
+        /// <inheritdoc />
+        public int Length => Math.Max(0, _end.Offset - _start.Offset);
+
+        /// <inheritdoc />
+        public int EndOffset => Math.Max(_start.Offset, _end.Offset);
+
+        /// <inheritdoc />
         public override string ToString()
         {
             return "[Offset=" + Offset.ToString(CultureInfo.InvariantCulture) + ", EndOffset=" + EndOffset.ToString(CultureInfo.InvariantCulture) + "]";

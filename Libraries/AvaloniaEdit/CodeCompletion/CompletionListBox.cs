@@ -17,7 +17,6 @@
 // DEALINGS IN THE SOFTWARE.
 
 using System;
-using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Styling;
@@ -26,11 +25,49 @@ using AvaloniaEdit.Utils;
 namespace AvaloniaEdit.CodeCompletion
 {
     /// <summary>
-    /// The list box used inside the CompletionList.
+    ///     The list box used inside the CompletionList.
     /// </summary>
     public class CompletionListBox : ListBox, IStyleable
     {
         internal ScrollViewer ScrollViewer;
+
+        /// <summary>
+        ///     Gets the number of the first visible item.
+        /// </summary>
+        public int FirstVisibleItem
+        {
+            get
+            {
+                if (ScrollViewer == null || ScrollViewer.Extent.Height == 0)
+                    return 0;
+
+                return (int)(ItemCount * ScrollViewer.Offset.Y / ScrollViewer.Extent.Height);
+            }
+            set
+            {
+                value = value.CoerceValue(0, ItemCount - VisibleItemCount);
+
+                if (ScrollViewer != null)
+                    ScrollViewer.Offset = ScrollViewer.Offset.WithY((double)value / ItemCount * ScrollViewer.Extent.Height);
+            }
+        }
+
+        /// <summary>
+        ///     Gets the number of visible items.
+        /// </summary>
+        public int VisibleItemCount
+        {
+            get
+            {
+                if (ScrollViewer == null || ScrollViewer.Extent.Height == 0)
+                    return 10;
+
+                return Math.Max(
+                    3,
+                    (int)Math.Ceiling(ItemCount * ScrollViewer.Viewport.Height
+                                      / ScrollViewer.Extent.Height));
+            }
+        }
 
         Type IStyleable.StyleKey => typeof(ListBox);
 
@@ -41,49 +78,7 @@ namespace AvaloniaEdit.CodeCompletion
         }
 
         /// <summary>
-        /// Gets the number of the first visible item.
-        /// </summary>
-        public int FirstVisibleItem
-        {
-            get
-            {
-                if (ScrollViewer == null || ScrollViewer.Extent.Height == 0)
-                {
-                    return 0;
-                }
-
-                return (int)(ItemCount * ScrollViewer.Offset.Y / ScrollViewer.Extent.Height);
-            }
-            set
-            {
-                value = value.CoerceValue(0, ItemCount - VisibleItemCount);
-                if (ScrollViewer != null)
-                {
-                    ScrollViewer.Offset = ScrollViewer.Offset.WithY((double)value / ItemCount * ScrollViewer.Extent.Height);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets the number of visible items.
-        /// </summary>
-        public int VisibleItemCount
-        {
-            get
-            {
-                if (ScrollViewer == null || ScrollViewer.Extent.Height == 0)
-                {
-                    return 10;
-                }
-                return Math.Max(
-                    3,
-                    (int)Math.Ceiling(ItemCount * ScrollViewer.Viewport.Height
-                                      / ScrollViewer.Extent.Height));
-            }
-        }
-
-        /// <summary>
-        /// Removes the selection.
+        ///     Removes the selection.
         /// </summary>
         public void ClearSelection()
         {
@@ -91,20 +86,22 @@ namespace AvaloniaEdit.CodeCompletion
         }
 
         /// <summary>
-        /// Selects the item with the specified index and scrolls it into view.
+        ///     Selects the item with the specified index and scrolls it into view.
         /// </summary>
         public void SelectIndex(int index)
         {
             if (index >= ItemCount)
                 index = ItemCount - 1;
+
             if (index < 0)
                 index = 0;
+
             SelectedIndex = index;
             ScrollIntoView(SelectedItem);
         }
 
         /// <summary>
-        /// Centers the view on the item with the specified index.
+        ///     Centers the view on the item with the specified index.
         /// </summary>
         public void CenterViewOn(int index)
         {

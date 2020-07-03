@@ -20,56 +20,230 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using Avalonia;
+using Avalonia.Input;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.Utils;
-using Avalonia.Input;
 
+#pragma warning disable 618
 namespace AvaloniaEdit.Editing
 {
     /// <summary>
-    /// Handles selection of text using the mouse.
+    ///     Handles selection of text using the mouse.
     /// </summary>
     internal sealed class SelectionMouseHandler : ITextAreaInputHandler
     {
-        #region enum SelectionMode
+        private const int MinimumHorizontalDragDistance = 2;
+        private const int MinimumVerticalDragDistance = 2;
 
+        private SelectionMode _mode;
+        private Point _possibleDragStartMousePos;
+        private AnchorSegment _startWord;
+
+        #region LeftButtonDown
+        private void TextArea_MouseLeftButtonDown(object sender, PointerPressedEventArgs e)
+        {
+            TextArea.Cursor = Cursor.Parse("IBeam");
+
+            var pointer = e.GetCurrentPoint(TextArea);
+
+            _mode = SelectionMode.None;
+
+            if (!e.Handled)
+            {
+                var modifiers = e.KeyModifiers;
+                var shift = modifiers.HasFlag(KeyModifiers.Shift);
+
+                if (_enableTextDragDrop && !shift)
+                {
+                    var offset = GetOffsetFromMousePosition(e, out _, out _);
+
+                    if (TextArea.Selection.Contains(offset))
+                    {
+                        if (TextArea.CapturePointer(e.Pointer))
+                        {
+                            _mode = SelectionMode.PossibleDragStart;
+                            _possibleDragStartMousePos = e.GetPosition(TextArea);
+                        }
+
+                        e.Handled = true;
+                        return;
+                    }
+                }
+
+                var oldPosition = TextArea.Caret.Position;
+                SetCaretOffsetToMousePosition(e);
+
+                if (!shift)
+                    TextArea.ClearSelection();
+
+                if (TextArea.CapturePointer(e.Pointer))
+                {
+                    if (modifiers.HasFlag(KeyModifiers.Alt) && TextArea.Options.EnableRectangularSelection)
+                    {
+                        _mode = SelectionMode.Rectangular;
+
+                        if (shift && TextArea.Selection is RectangleSelection)
+                            TextArea.Selection = TextArea.Selection.StartSelectionOrSetEndpoint(oldPosition, TextArea.Caret.Position);
+                    }
+                    else if (modifiers.HasFlag(KeyModifiers.Control) && e.ClickCount == 1) // e.ClickCount == 1
+                    {
+                        _mode = SelectionMode.WholeWord;
+
+                        if (shift && !(TextArea.Selection is RectangleSelection))
+                            TextArea.Selection = TextArea.Selection.StartSelectionOrSetEndpoint(oldPosition, TextArea.Caret.Position);
+                    }
+                    else if (pointer.Properties.IsLeftButtonPressed && e.ClickCount == 1) // e.ClickCount == 1
+                    {
+                        _mode = SelectionMode.Normal;
+
+                        if (shift && !(TextArea.Selection is RectangleSelection))
+                            TextArea.Selection = TextArea.Selection.StartSelectionOrSetEndpoint(oldPosition, TextArea.Caret.Position);
+                    }
+                    else
+                    {
+                        _mode = SelectionMode.WholeWord;
+                        SimpleSegment startWord;
+
+                        if (e.ClickCount == 3)
+                        {
+                            _mode = SelectionMode.WholeLine;
+                            startWord = GetLineAtMousePosition(e);
+                        }
+                        else
+                        {
+                            _mode = SelectionMode.WholeWord;
+                            startWord = GetWordAtMousePosition(e);
+                        }
+
+                        if (startWord == SimpleSegment.Invalid)
+                        {
+                            _mode = SelectionMode.None;
+                            TextArea.ReleasePointerCapture(e.Pointer);
+                            return;
+                        }
+
+                        if (shift && !TextArea.Selection.IsEmpty)
+                        {
+                            if (startWord.Offset < TextArea.Selection.SurroundingSegment.Offset)
+                                TextArea.Selection = TextArea.Selection.SetEndpoint(new TextViewPosition(TextArea.Document.GetLocation(startWord.Offset)));
+                            else if (startWord.EndOffset > TextArea.Selection.SurroundingSegment.EndOffset)
+                                TextArea.Selection = TextArea.Selection.SetEndpoint(new TextViewPosition(TextArea.Document.GetLocation(startWord.EndOffset)));
+
+                            _startWord = new AnchorSegment(TextArea.Document, TextArea.Selection.SurroundingSegment);
+                        }
+                        else
+                        {
+                            TextArea.Selection = Selection.Create(TextArea, startWord.Offset, startWord.EndOffset);
+                            _startWord = new AnchorSegment(TextArea.Document, startWord.Offset, startWord.Length);
+                        }
+                    }
+                }
+
+                e.Handled = true;
+            }
+        }
+        #endregion
+
+        #region MouseMove
+        private void TextArea_MouseMove(object sender, PointerEventArgs e)
+        {
+            if (e.Handled)
+                return;
+
+            if (_mode == SelectionMode.Normal || _mode == SelectionMode.WholeWord || _mode == SelectionMode.WholeLine || _mode == SelectionMode.Rectangular)
+            {
+                e.Handled = true;
+
+                if (TextArea.TextView.VisualLinesValid)
+                    // If the visual lines are not valid, don't extend the selection.
+                    // Extending the selection forces a VisualLine refresh, and it is sufficient
+                    // to do that on MouseUp, we don't have to do it every MouseMove.
+                    ExtendSelectionToMouse(e);
+            }
+            else if (_mode == SelectionMode.PossibleDragStart)
+            {
+                e.Handled = true;
+                Vector mouseMovement = e.GetPosition(TextArea) - _possibleDragStartMousePos;
+
+                if (Math.Abs(mouseMovement.X) > MinimumHorizontalDragDistance
+                    || Math.Abs(mouseMovement.Y) > MinimumVerticalDragDistance)
+                {
+                    // TODO: drag
+                    //StartDrag();
+                }
+            }
+        }
+        #endregion
+
+        #region MouseLeftButtonUp
+        private void TextArea_MouseLeftButtonUp(object sender, PointerEventArgs e)
+        {
+            if (_mode == SelectionMode.None || e.Handled)
+                return;
+
+            e.Handled = true;
+
+            switch (_mode)
+            {
+                case SelectionMode.PossibleDragStart:
+                    // this was not a drag start (mouse didn't move after mousedown)
+                    SetCaretOffsetToMousePosition(e);
+                    TextArea.ClearSelection();
+                    break;
+
+                case SelectionMode.Normal:
+                case SelectionMode.WholeWord:
+                case SelectionMode.WholeLine:
+                case SelectionMode.Rectangular:
+                    ExtendSelectionToMouse(e);
+                    break;
+            }
+
+            _mode = SelectionMode.None;
+            TextArea.ReleasePointerCapture(e.Pointer);
+        }
+        #endregion
+
+        #region enum SelectionMode
         private enum SelectionMode
         {
             /// <summary>
-            /// no selection (no mouse button down)
+            ///     no selection (no mouse button down)
             /// </summary>
             None,
+
             /// <summary>
-            /// left mouse button down on selection, might be normal click
-            /// or might be drag'n'drop
+            ///     left mouse button down on selection, might be normal click
+            ///     or might be drag'n'drop
             /// </summary>
             PossibleDragStart,
+
             /// <summary>
-            /// dragging text
+            ///     dragging text
             /// </summary>
             Drag,
+
             /// <summary>
-            /// normal selection (click+drag)
+            ///     normal selection (click+drag)
             /// </summary>
             Normal,
+
             /// <summary>
-            /// whole-word selection (double click+drag or ctrl+click+drag)
+            ///     whole-word selection (double click+drag or ctrl+click+drag)
             /// </summary>
             WholeWord,
+
             /// <summary>
-            /// whole-line selection (triple click+drag)
+            ///     whole-line selection (triple click+drag)
             /// </summary>
             WholeLine,
+
             /// <summary>
-            /// rectangular selection (alt+click+drag)
+            ///     rectangular selection (alt+click+drag)
             /// </summary>
             Rectangular
         }
         #endregion
-
-        private SelectionMode _mode;
-        private AnchorSegment _startWord;
-        private Point _possibleDragStartMousePos;
 
         #region Constructor + Attach + Detach
         public SelectionMouseHandler(TextArea textArea)
@@ -88,10 +262,9 @@ namespace AvaloniaEdit.Editing
             TextArea.OptionChanged += TextArea_OptionChanged;
 
             _enableTextDragDrop = TextArea.Options.EnableTextDragDrop;
+
             if (_enableTextDragDrop)
-            {
                 AttachDragDrop();
-            }
         }
 
         public void Detach()
@@ -102,10 +275,9 @@ namespace AvaloniaEdit.Editing
             TextArea.PointerReleased -= TextArea_MouseLeftButtonUp;
             //textArea.QueryCursor -= textArea_QueryCursor;
             TextArea.OptionChanged -= TextArea_OptionChanged;
+
             if (_enableTextDragDrop)
-            {
                 DetachDragDrop();
-            }
         }
 
         private void AttachDragDrop()
@@ -135,9 +307,11 @@ namespace AvaloniaEdit.Editing
         private void TextArea_OptionChanged(object sender, PropertyChangedEventArgs e)
         {
             var newEnableTextDragDrop = TextArea.Options.EnableTextDragDrop;
+
             if (newEnableTextDragDrop != _enableTextDragDrop)
             {
                 _enableTextDragDrop = newEnableTextDragDrop;
+
                 if (newEnableTextDragDrop)
                     AttachDragDrop();
                 else
@@ -388,169 +562,67 @@ namespace AvaloniaEdit.Editing
         //}
         #endregion
 
-        #region LeftButtonDown
-
-        private void TextArea_MouseLeftButtonDown(object sender, PointerPressedEventArgs e)
-        {
-            TextArea.Cursor = Cursor.Parse("IBeam");           
-
-            var pointer = e.GetPointerPoint(TextArea);
-
-            _mode = SelectionMode.None;
-            if (!e.Handled)
-            {
-                var modifiers = e.KeyModifiers;
-                var shift = modifiers.HasFlag(KeyModifiers.Shift);
-                if (_enableTextDragDrop && !shift)
-                {
-                    var offset = GetOffsetFromMousePosition(e, out _, out _);
-                    if (TextArea.Selection.Contains(offset))
-                    {
-                        if (TextArea.CapturePointer(e.Pointer))
-                        {
-                            _mode = SelectionMode.PossibleDragStart;
-                            _possibleDragStartMousePos = e.GetPosition(TextArea);
-                        }
-                        e.Handled = true;
-                        return;
-                    }
-                }
-
-                var oldPosition = TextArea.Caret.Position;
-                SetCaretOffsetToMousePosition(e);
-
-
-                if (!shift)
-                {
-                    TextArea.ClearSelection();
-                }
-
-                if (TextArea.CapturePointer(e.Pointer))
-                {
-                    if (modifiers.HasFlag(KeyModifiers.Alt) && TextArea.Options.EnableRectangularSelection)
-                    {
-                        _mode = SelectionMode.Rectangular;
-                        if (shift && TextArea.Selection is RectangleSelection)
-                        {
-                            TextArea.Selection = TextArea.Selection.StartSelectionOrSetEndpoint(oldPosition, TextArea.Caret.Position);
-                        }
-                    }
-                    else if (modifiers.HasFlag(KeyModifiers.Control) && e.ClickCount == 1) // e.ClickCount == 1
-                    {
-                        _mode = SelectionMode.WholeWord;
-                        if (shift && !(TextArea.Selection is RectangleSelection))
-                        {
-                            TextArea.Selection = TextArea.Selection.StartSelectionOrSetEndpoint(oldPosition, TextArea.Caret.Position);
-                        }
-                    }
-                    else if(pointer.Properties.IsLeftButtonPressed && e.ClickCount == 1) // e.ClickCount == 1
-                    {
-                        _mode = SelectionMode.Normal;
-                        if (shift && !(TextArea.Selection is RectangleSelection))
-                        {
-                            TextArea.Selection = TextArea.Selection.StartSelectionOrSetEndpoint(oldPosition, TextArea.Caret.Position);
-                        }
-                    }
-                    else
-                    {
-                        SimpleSegment startWord;
-
-                        _mode = SelectionMode.WholeWord;
-                        startWord = GetWordAtMousePosition(e);
-                         
-                        if (e.ClickCount == 3)
-                        {
-                            _mode = SelectionMode.WholeLine;
-                            startWord = GetLineAtMousePosition(e);
-                        }
-                        else
-                        {
-                           _mode = SelectionMode.WholeWord;
-                            startWord = GetWordAtMousePosition(e);                           
-                        }
-                        
-                        if (startWord == SimpleSegment.Invalid)
-                        {
-                            _mode = SelectionMode.None;
-                            TextArea.ReleasePointerCapture(e.Pointer);
-                            return;
-                        }
-                        if (shift && !TextArea.Selection.IsEmpty)
-                        {
-                            if (startWord.Offset < TextArea.Selection.SurroundingSegment.Offset)
-                            {
-                                TextArea.Selection = TextArea.Selection.SetEndpoint(new TextViewPosition(TextArea.Document.GetLocation(startWord.Offset)));
-                            }
-                            else if (startWord.EndOffset > TextArea.Selection.SurroundingSegment.EndOffset)
-                            {
-                                TextArea.Selection = TextArea.Selection.SetEndpoint(new TextViewPosition(TextArea.Document.GetLocation(startWord.EndOffset)));
-                            }
-                            _startWord = new AnchorSegment(TextArea.Document, TextArea.Selection.SurroundingSegment);
-                        }
-                        else
-                        {
-                            TextArea.Selection = Selection.Create(TextArea, startWord.Offset, startWord.EndOffset);
-                            _startWord = new AnchorSegment(TextArea.Document, startWord.Offset, startWord.Length);
-                        }
-                    }
-                }
-				e.Handled = true;
-			}
-		}
-        #endregion
-
         #region LeftButtonClick
-
         #endregion
 
         #region LeftButtonDoubleTap
-
         #endregion
 
         #region Mouse Position <-> Text coordinates
-
         private SimpleSegment GetWordAtMousePosition(PointerEventArgs e)
         {
             var textView = TextArea.TextView;
             if (textView == null) return SimpleSegment.Invalid;
+
             var pos = e.GetPosition(textView);
+
             if (pos.Y < 0)
                 pos = pos.WithY(0);
+
             if (pos.Y > textView.Bounds.Height)
                 pos = pos.WithY(textView.Bounds.Height);
+
             pos += textView.ScrollOffset;
             var line = textView.GetVisualLineFromVisualTop(pos.Y);
+
             if (line != null)
             {
                 var visualColumn = line.GetVisualColumn(pos, TextArea.Selection.EnableVirtualSpace);
                 var wordStartVc = line.GetNextCaretPosition(visualColumn + 1, LogicalDirection.Backward, CaretPositioningMode.WordStartOrSymbol, TextArea.Selection.EnableVirtualSpace);
+
                 if (wordStartVc == -1)
                     wordStartVc = 0;
+
                 var wordEndVc = line.GetNextCaretPosition(wordStartVc, LogicalDirection.Forward, CaretPositioningMode.WordBorderOrSymbol, TextArea.Selection.EnableVirtualSpace);
+
                 if (wordEndVc == -1)
                     wordEndVc = line.VisualLength;
+
                 var relOffset = line.FirstDocumentLine.Offset;
                 var wordStartOffset = line.GetRelativeOffset(wordStartVc) + relOffset;
                 var wordEndOffset = line.GetRelativeOffset(wordEndVc) + relOffset;
                 return new SimpleSegment(wordStartOffset, wordEndOffset - wordStartOffset);
             }
-            else
-            {
-                return SimpleSegment.Invalid;
-            }
+
+            return SimpleSegment.Invalid;
         }
 
         private SimpleSegment GetLineAtMousePosition(PointerEventArgs e)
         {
             var textView = TextArea.TextView;
             if (textView == null) return SimpleSegment.Invalid;
+
             var pos = e.GetPosition(textView);
+
             if (pos.Y < 0)
                 pos = pos.WithY(0);
+
             if (pos.Y > textView.Bounds.Height)
                 pos = pos.WithY(textView.Bounds.Height);
+
             pos += textView.ScrollOffset;
             var line = textView.GetVisualLineFromVisualTop(pos.Y);
+
             return line != null
                 ? new SimpleSegment(line.StartOffset, line.LastDocumentLine.EndOffset - line.StartOffset)
                 : SimpleSegment.Invalid;
@@ -566,19 +638,26 @@ namespace AvaloniaEdit.Editing
             visualColumn = 0;
             var textView = TextArea.TextView;
             var pos = positionRelativeToTextView;
+
             if (pos.Y < 0)
                 pos = pos.WithY(0);
+
             if (pos.Y > textView.Bounds.Height)
                 pos = pos.WithY(textView.Bounds.Height);
+
             pos += textView.ScrollOffset;
+
             if (pos.Y >= textView.DocumentHeight)
                 pos = pos.WithY(textView.DocumentHeight - ExtensionMethods.Epsilon);
+
             var line = textView.GetVisualLineFromVisualTop(pos.Y);
+
             if (line != null)
             {
                 visualColumn = line.GetVisualColumn(pos, TextArea.Selection.EnableVirtualSpace, out isAtEndOfLine);
                 return line.GetRelativeOffset(visualColumn) + line.FirstDocumentLine.Offset;
             }
+
             isAtEndOfLine = false;
             return -1;
         }
@@ -588,64 +667,37 @@ namespace AvaloniaEdit.Editing
             visualColumn = 0;
             var textView = TextArea.TextView;
             var pos = positionRelativeToTextView;
+
             if (pos.Y < 0)
                 pos = pos.WithY(0);
+
             if (pos.Y > textView.Bounds.Height)
                 pos = pos.WithY(textView.Bounds.Height);
+
             pos += textView.ScrollOffset;
+
             if (pos.Y >= textView.DocumentHeight)
                 pos = pos.WithY(textView.DocumentHeight - ExtensionMethods.Epsilon);
+
             var line = textView.GetVisualLineFromVisualTop(pos.Y);
+
             if (line != null)
             {
                 visualColumn = line.GetVisualColumn(line.TextLines.First(), pos.X, TextArea.Selection.EnableVirtualSpace);
                 return line.GetRelativeOffset(visualColumn) + line.FirstDocumentLine.Offset;
             }
+
             return -1;
         }
         #endregion
 
-        private const int MinimumHorizontalDragDistance = 2;
-        private const int MinimumVerticalDragDistance = 2;
-
-        #region MouseMove
-
-        private void TextArea_MouseMove(object sender, PointerEventArgs e)
-        {
-            if (e.Handled)
-                return;
-            if (_mode == SelectionMode.Normal || _mode == SelectionMode.WholeWord || _mode == SelectionMode.WholeLine || _mode == SelectionMode.Rectangular)
-            {
-                e.Handled = true;
-                if (TextArea.TextView.VisualLinesValid)
-                {
-                    // If the visual lines are not valid, don't extend the selection.
-                    // Extending the selection forces a VisualLine refresh, and it is sufficient
-                    // to do that on MouseUp, we don't have to do it every MouseMove.
-                    ExtendSelectionToMouse(e);
-                }
-            }
-            else if (_mode == SelectionMode.PossibleDragStart)
-            {
-                e.Handled = true;
-                Vector mouseMovement = e.GetPosition(TextArea) - _possibleDragStartMousePos;
-                if (Math.Abs(mouseMovement.X) > MinimumHorizontalDragDistance
-                    || Math.Abs(mouseMovement.Y) > MinimumVerticalDragDistance)
-                {
-                    // TODO: drag
-                    //StartDrag();
-                }
-            }
-        }
-        #endregion
-
         #region ExtendSelection
-
         private void SetCaretOffsetToMousePosition(PointerEventArgs e, ISegment allowedSegment = null)
         {
             int visualColumn;
             bool isAtEndOfLine;
             int offset;
+
             if (_mode == SelectionMode.Rectangular)
             {
                 offset = GetOffsetFromMousePositionFirstTextLineOnly(e.GetPosition(TextArea.TextView), out visualColumn);
@@ -657,9 +709,7 @@ namespace AvaloniaEdit.Editing
             }
 
             if (allowedSegment != null)
-            {
                 offset = offset.CoerceValue(allowedSegment.Offset, allowedSegment.EndOffset);
-            }
 
             if (offset >= 0)
             {
@@ -671,9 +721,11 @@ namespace AvaloniaEdit.Editing
         private void ExtendSelectionToMouse(PointerEventArgs e)
         {
             var oldPosition = TextArea.Caret.Position;
+
             if (_mode == SelectionMode.Normal || _mode == SelectionMode.Rectangular)
             {
                 SetCaretOffsetToMousePosition(e);
+
                 if (_mode == SelectionMode.Normal && TextArea.Selection is RectangleSelection)
                     TextArea.Selection = new SimpleSelection(TextArea, oldPosition, TextArea.Caret.Position);
                 else if (_mode == SelectionMode.Rectangular && !(TextArea.Selection is RectangleSelection))
@@ -683,44 +735,22 @@ namespace AvaloniaEdit.Editing
             }
             else if (_mode == SelectionMode.WholeWord || _mode == SelectionMode.WholeLine)
             {
-                var newWord = (_mode == SelectionMode.WholeLine) ? GetLineAtMousePosition(e) : GetWordAtMousePosition(e);
-                if (newWord != SimpleSegment.Invalid &&_startWord != null)
+                var newWord = _mode == SelectionMode.WholeLine ? GetLineAtMousePosition(e) : GetWordAtMousePosition(e);
+
+                if (newWord != SimpleSegment.Invalid && _startWord != null)
                 {
                     TextArea.Selection = Selection.Create(TextArea,
-                                                          Math.Min(newWord.Offset, _startWord.Offset),
-                                                          Math.Max(newWord.EndOffset, _startWord.EndOffset));
+                        Math.Min(newWord.Offset, _startWord.Offset),
+                        Math.Max(newWord.EndOffset, _startWord.EndOffset));
+
                     // moves caret to start or end of selection
                     TextArea.Caret.Offset = newWord.Offset < _startWord.Offset ? newWord.Offset : Math.Max(newWord.EndOffset, _startWord.EndOffset);
                 }
             }
+
             TextArea.Caret.BringCaretToView(5.0);
-        }
-        #endregion
-
-        #region MouseLeftButtonUp
-
-        private void TextArea_MouseLeftButtonUp(object sender, PointerEventArgs e)
-        {
-            if (_mode == SelectionMode.None || e.Handled)
-                return;
-            e.Handled = true;
-            switch (_mode)
-            {
-                case SelectionMode.PossibleDragStart:
-                    // this was not a drag start (mouse didn't move after mousedown)
-                    SetCaretOffsetToMousePosition(e);
-                    TextArea.ClearSelection();
-                    break;
-                case SelectionMode.Normal:
-                case SelectionMode.WholeWord:
-                case SelectionMode.WholeLine:
-                case SelectionMode.Rectangular:
-                    ExtendSelectionToMouse(e);
-                    break;
-            }
-            _mode = SelectionMode.None;
-            TextArea.ReleasePointerCapture(e.Pointer);
         }
         #endregion
     }
 }
+#pragma warning restore 618

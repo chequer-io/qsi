@@ -25,50 +25,69 @@ using AvaloniaEdit.Utils;
 namespace AvaloniaEdit.Rendering
 {
     /// <summary>
-    /// TextSource implementation that creates TextRuns for a VisualLine.
+    ///     TextSource implementation that creates TextRuns for a VisualLine.
     /// </summary>
     internal sealed class VisualLineTextSource : TextSource, ITextRunConstructionContext
     {
+        private string _cachedString;
+        private int _cachedStringOffset;
+
         public VisualLineTextSource(VisualLine visualLine)
         {
             VisualLine = visualLine;
         }
 
         public VisualLine VisualLine { get; }
+
         public TextView TextView { get; set; }
+
         public TextDocument Document { get; set; }
+
         public TextRunProperties GlobalTextRunProperties { get; set; }
+
+        public StringSegment GetText(int offset, int length)
+        {
+            if (_cachedString != null)
+                if (offset >= _cachedStringOffset && offset + length <= _cachedStringOffset + _cachedString.Length)
+                    return new StringSegment(_cachedString, offset - _cachedStringOffset, length);
+
+            _cachedStringOffset = offset;
+            return new StringSegment(_cachedString = Document.GetText(offset, length));
+        }
 
         public override TextRun GetTextRun(int characterIndex)
         {
             try
             {
                 foreach (var element in VisualLine.Elements)
-                {
                     if (characterIndex >= element.VisualColumn
                         && characterIndex < element.VisualColumn + element.VisualLength)
                     {
                         var relativeOffset = characterIndex - element.VisualColumn;
                         var run = element.CreateTextRun(characterIndex, this);
+
                         if (run == null)
                             throw new ArgumentNullException(element.GetType().Name + ".CreateTextRun");
+
                         if (run.Length == 0)
                             throw new ArgumentException("The returned TextRun must not have length 0.", element.GetType().Name + ".Length");
+
                         if (relativeOffset + run.Length > element.VisualLength)
                             throw new ArgumentException("The returned TextRun is too long.", element.GetType().Name + ".CreateTextRun");
+
                         if (run is InlineObjectRun inlineRun)
                         {
                             inlineRun.VisualLine = VisualLine;
                             VisualLine.HasInlineObjects = true;
                             TextView.AddInlineObject(inlineRun);
                         }
+
                         return run;
                     }
-                }
+
                 if (TextView.Options.ShowEndOfLine && characterIndex == VisualLine.VisualLength)
-                {
                     return CreateTextRunForNewLine();
-                }
+
                 return new TextEndOfParagraph(1);
             }
             catch (Exception ex)
@@ -82,6 +101,7 @@ namespace AvaloniaEdit.Rendering
         {
             var newlineText = "";
             var lastDocumentLine = VisualLine.LastDocumentLine;
+
             if (lastDocumentLine.DelimiterLength == 2)
             {
                 newlineText = "¶";
@@ -89,36 +109,24 @@ namespace AvaloniaEdit.Rendering
             else if (lastDocumentLine.DelimiterLength == 1)
             {
                 var newlineChar = Document.GetCharAt(lastDocumentLine.Offset + lastDocumentLine.Length);
+
                 switch (newlineChar)
                 {
                     case '\r':
                         newlineText = "\\r";
                         break;
+
                     case '\n':
                         newlineText = "\\n";
                         break;
+
                     default:
                         newlineText = "?";
                         break;
                 }
             }
+
             return new FormattedTextRun(new FormattedTextElement(TextView.CachedElements.GetTextForNonPrintableCharacter(newlineText, this), 0), GlobalTextRunProperties);
-        }
-
-        private string _cachedString;
-        private int _cachedStringOffset;
-
-        public StringSegment GetText(int offset, int length)
-        {
-            if (_cachedString != null)
-            {
-                if (offset >= _cachedStringOffset && offset + length <= _cachedStringOffset + _cachedString.Length)
-                {
-                    return new StringSegment(_cachedString, offset - _cachedStringOffset, length);
-                }
-            }
-            _cachedStringOffset = offset;
-            return new StringSegment(_cachedString = Document.GetText(offset, length));
         }
     }
 }

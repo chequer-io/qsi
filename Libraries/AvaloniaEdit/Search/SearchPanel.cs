@@ -24,9 +24,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.Media;
-using Avalonia.VisualTree;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.Editing;
 using AvaloniaEdit.Rendering;
@@ -34,134 +32,53 @@ using AvaloniaEdit.Rendering;
 namespace AvaloniaEdit.Search
 {
     /// <summary>
-    /// Provides search functionality for AvalonEdit. It is displayed in the top-right corner of the TextArea.
+    ///     Provides search functionality for AvalonEdit. It is displayed in the top-right corner of the TextArea.
     /// </summary>
     public class SearchPanel : TemplatedControl, IRoutedCommandBindable
     {
-        private TextArea _textArea;
-        private SearchInputHandler _handler;
         private TextDocument _currentDocument;
+        private SearchInputHandler _handler;
+
+        private Popup _messageView;
+        private ContentPresenter _messageViewContent;
         private SearchResultBackgroundRenderer _renderer;
         private TextBox _searchTextBox;
+
+        private ISearchStrategy _strategy;
+        private TextArea _textArea;
+        private string _validationError;
+
+        static SearchPanel()
+        {
+            UseRegexProperty.Changed.Subscribe(SearchPatternChangedCallback);
+            MatchCaseProperty.Changed.Subscribe(SearchPatternChangedCallback);
+            WholeWordsProperty.Changed.Subscribe(SearchPatternChangedCallback);
+            SearchPatternProperty.Changed.Subscribe(SearchPatternChangedCallback);
+
+            MarkerBrushProperty.Changed.Subscribe(MarkerBrushChangedCallback);
+        }
+
+        /// <summary>
+        ///     Creates a new SearchPanel.
+        /// </summary>
+        private SearchPanel()
+        {
+        }
+
         private TextEditor _textEditor { get; set; }
 
-        #region DependencyProperties
-
         /// <summary>
-        /// Dependency property for <see cref="UseRegex"/>.
+        ///     Gets whether the Panel is already closed.
         /// </summary>
-        public static readonly StyledProperty<bool> UseRegexProperty =
-            AvaloniaProperty.Register<SearchPanel, bool>(nameof(UseRegex));
+        public bool IsClosed { get; private set; }
 
-        /// <summary>
-        /// Gets/sets whether the search pattern should be interpreted as regular expression.
-        /// </summary>
-        public bool UseRegex
-        {
-            get => GetValue(UseRegexProperty);
-            set => SetValue(UseRegexProperty, value);
-        }
-
-        /// <summary>
-        /// Dependency property for <see cref="MatchCase"/>.
-        /// </summary>
-        public static readonly StyledProperty<bool> MatchCaseProperty =
-            AvaloniaProperty.Register<SearchPanel, bool>(nameof(MatchCase));
-
-        /// <summary>
-        /// Gets/sets whether the search pattern should be interpreted case-sensitive.
-        /// </summary>
-        public bool MatchCase
-        {
-            get => GetValue(MatchCaseProperty);
-            set => SetValue(MatchCaseProperty, value);
-        }
-
-        /// <summary>
-        /// Dependency property for <see cref="WholeWords"/>.
-        /// </summary>
-        public static readonly StyledProperty<bool> WholeWordsProperty =
-            AvaloniaProperty.Register<SearchPanel, bool>(nameof(WholeWords));
-
-        /// <summary>
-        /// Gets/sets whether the search pattern should only match whole words.
-        /// </summary>
-        public bool WholeWords
-        {
-            get => GetValue(WholeWordsProperty);
-            set => SetValue(WholeWordsProperty, value);
-        }
-
-        /// <summary>
-        /// Dependency property for <see cref="SearchPattern"/>.
-        /// </summary>
-        public static readonly StyledProperty<string> SearchPatternProperty =
-            AvaloniaProperty.Register<SearchPanel, string>(nameof(SearchPattern), "");
-
-        /// <summary>
-        /// Gets/sets the search pattern.
-        /// </summary>
-        public string SearchPattern
-        {
-            get => GetValue(SearchPatternProperty);
-            set => SetValue(SearchPatternProperty, value);
-        }
-
-        public static readonly StyledProperty<bool> IsReplaceModeProperty =
-            AvaloniaProperty.Register<SearchPanel, bool>(nameof(IsReplaceMode));
-
-        /// <summary>
-        /// Checks if replacemode is allowed
-        /// </summary>
-        /// <returns>False if editor is not null and readonly</returns>
-        private static bool ValidateReplaceMode(SearchPanel panel, bool v1)
-        {
-            if (panel._textEditor == null || !v1) return v1;
-            return !panel._textEditor.IsReadOnly;
-        }
-
-        public bool IsReplaceMode
-        {
-            get => GetValue(IsReplaceModeProperty);
-            set => SetValue(IsReplaceModeProperty, _textEditor?.IsReadOnly ?? false ? false : value);
-        }
-
-        public static readonly StyledProperty<string> ReplacePatternProperty =
-            AvaloniaProperty.Register<SearchPanel, string>(nameof(ReplacePattern));
-
-        public string ReplacePattern
-        {
-            get => GetValue(ReplacePatternProperty);
-            set => SetValue(ReplacePatternProperty, value);
-        }
-
-
-        /// <summary>
-        /// Dependency property for <see cref="MarkerBrush"/>.
-        /// </summary>
-        public static readonly StyledProperty<IBrush> MarkerBrushProperty =
-            AvaloniaProperty.Register<SearchPanel, IBrush>(nameof(MarkerBrush), Brushes.LightGreen);
-
-        /// <summary>
-        /// Gets/sets the Brush used for marking search results in the TextView.
-        /// </summary>
-        public IBrush MarkerBrush
-        {
-            get => GetValue(MarkerBrushProperty);
-            set => SetValue(MarkerBrushProperty, value);
-        }
-
-        #endregion
+        public IList<RoutedCommandBinding> CommandBindings { get; } = new List<RoutedCommandBinding>();
 
         private static void MarkerBrushChangedCallback(AvaloniaPropertyChangedEventArgs e)
         {
             if (e.Sender is SearchPanel panel)
-            {
-                panel._renderer.MarkerBrush = (IBrush) e.NewValue;
-            }
+                panel._renderer.MarkerBrush = (IBrush)e.NewValue;
         }
-
-        private ISearchStrategy _strategy;
 
         private static void SearchPatternChangedCallback(AvaloniaPropertyChangedEventArgs e)
         {
@@ -179,58 +96,45 @@ namespace AvaloniaEdit.Search
             // if results are found by the next run, the message will be hidden inside DoSearch ...
             if (_renderer.CurrentResults.Any())
                 _messageView.IsOpen = false;
+
             _strategy = SearchStrategyFactory.Create(SearchPattern ?? "", !MatchCase, WholeWords,
                 UseRegex ? SearchMode.RegEx : SearchMode.Normal);
+
             OnSearchOptionsChanged(new SearchOptionsChangedEventArgs(SearchPattern, MatchCase, UseRegex, WholeWords));
             DoSearch(true);
         }
 
-        static SearchPanel()
-        {
-            UseRegexProperty.Changed.Subscribe(SearchPatternChangedCallback);
-            MatchCaseProperty.Changed.Subscribe(SearchPatternChangedCallback);
-            WholeWordsProperty.Changed.Subscribe(SearchPatternChangedCallback);
-            SearchPatternProperty.Changed.Subscribe(SearchPatternChangedCallback);
-
-            MarkerBrushProperty.Changed.Subscribe(MarkerBrushChangedCallback);
-        }
-
         /// <summary>
-        /// Creates a new SearchPanel.
-        /// </summary>
-        private SearchPanel()
-        {
-        }
-
-        /// <summary>
-        /// Creates a SearchPanel and installs it to the TextEditor's TextArea.
+        ///     Creates a SearchPanel and installs it to the TextEditor's TextArea.
         /// </summary>
         /// <remarks>This is a convenience wrapper.</remarks>
         public static SearchPanel Install(TextEditor editor)
         {
             if (editor == null) throw new ArgumentNullException(nameof(editor));
+
             var searchPanel = Install(editor.TextArea);
             searchPanel._textEditor = editor;
             return searchPanel;
         }
 
         /// <summary>
-        /// Creates a SearchPanel and installs it to the TextArea.
+        ///     Creates a SearchPanel and installs it to the TextArea.
         /// </summary>
         public static SearchPanel Install(TextArea textArea)
         {
             if (textArea == null) throw new ArgumentNullException(nameof(textArea));
+
             var panel = new SearchPanel();
             panel.AttachInternal(textArea);
             panel._handler = new SearchInputHandler(textArea, panel);
             textArea.DefaultInputHandler.NestedInputHandlers.Add(panel._handler);
-            ((ISetLogicalParent) panel).SetParent(textArea);
+            ((ISetLogicalParent)panel).SetParent(textArea);
 
             return panel;
         }
 
         /// <summary>
-        /// Adds the commands used by SearchPanel to the given CommandBindingCollection.
+        ///     Adds the commands used by SearchPanel to the given CommandBindingCollection.
         /// </summary>
         public void RegisterCommands(ICollection<RoutedCommandBinding> commandBindings)
         {
@@ -238,7 +142,7 @@ namespace AvaloniaEdit.Search
         }
 
         /// <summary>
-        /// Removes the SearchPanel from the TextArea.
+        ///     Removes the SearchPanel from the TextArea.
         /// </summary>
         public void Uninstall()
         {
@@ -252,8 +156,10 @@ namespace AvaloniaEdit.Search
 
             _renderer = new SearchResultBackgroundRenderer();
             _currentDocument = textArea.Document;
+
             if (_currentDocument != null)
                 _currentDocument.TextChanged += TextArea_Document_TextChanged;
+
             textArea.DocumentChanged += TextArea_DocumentChanged;
             KeyDown += SearchLayerKeyDown;
 
@@ -266,10 +172,13 @@ namespace AvaloniaEdit.Search
                 IsReplaceMode = false;
                 Reactivate();
             }));
+
             CommandBindings.Add(new RoutedCommandBinding(ApplicationCommands.Replace,
                 (sender, e) => IsReplaceMode = true));
+
             CommandBindings.Add(new RoutedCommandBinding(SearchCommands.ReplaceNext, (sender, e) => ReplaceNext(),
                 (sender, e) => e.CanExecute = IsReplaceMode));
+
             CommandBindings.Add(new RoutedCommandBinding(SearchCommands.ReplaceAll, (sender, e) => ReplaceAll(),
                 (sender, e) => e.CanExecute = IsReplaceMode));
 
@@ -280,7 +189,9 @@ namespace AvaloniaEdit.Search
         {
             if (_currentDocument != null)
                 _currentDocument.TextChanged -= TextArea_Document_TextChanged;
+
             _currentDocument = _textArea.Document;
+
             if (_currentDocument != null)
             {
                 _currentDocument.TextChanged += TextArea_Document_TextChanged;
@@ -318,44 +229,45 @@ namespace AvaloniaEdit.Search
         }
 
         /// <summary>
-        /// Reactivates the SearchPanel by setting the focus on the search box and selecting all text.
+        ///     Reactivates the SearchPanel by setting the focus on the search box and selecting all text.
         /// </summary>
         public void Reactivate()
         {
             if (_searchTextBox == null)
                 return;
+
             _searchTextBox.Focus();
             _searchTextBox.SelectionStart = 0;
             _searchTextBox.SelectionEnd = _searchTextBox.Text?.Length ?? 0;
         }
 
         /// <summary>
-        /// Moves to the next occurrence in the file.
+        ///     Moves to the next occurrence in the file.
         /// </summary>
         public void FindNext()
         {
             var result = _renderer.CurrentResults.FindFirstSegmentWithStartAfter(_textArea.Caret.Offset + 1) ??
                          _renderer.CurrentResults.FirstSegment;
+
             if (result != null)
-            {
                 SelectResult(result);
-            }
         }
 
         /// <summary>
-        /// Moves to the previous occurrence in the file.
+        ///     Moves to the previous occurrence in the file.
         /// </summary>
         public void FindPrevious()
         {
             var result = _renderer.CurrentResults.FindFirstSegmentWithStartAfter(_textArea.Caret.Offset);
+
             if (result != null)
                 result = _renderer.CurrentResults.GetPreviousSegment(result);
+
             if (result == null)
                 result = _renderer.CurrentResults.LastSegment;
+
             if (result != null)
-            {
                 SelectResult(result);
-            }
         }
 
         public void ReplaceNext()
@@ -363,10 +275,9 @@ namespace AvaloniaEdit.Search
             if (!IsReplaceMode) return;
 
             FindNext();
+
             if (!_textArea.Selection.IsEmpty)
-            {
                 _textArea.Selection.ReplaceSelectionWithText(ReplacePattern ?? string.Empty);
-            }
 
             UpdateSearch();
         }
@@ -377,34 +288,30 @@ namespace AvaloniaEdit.Search
 
             var replacement = ReplacePattern ?? string.Empty;
             var document = _textArea.Document;
+
             using (document.RunUpdate())
             {
                 SearchResult[] segments = _renderer.CurrentResults.OrderByDescending(x => x.EndOffset).ToArray();
+
                 foreach (var textSegment in segments)
-                {
                     document.Replace(textSegment.StartOffset, textSegment.Length,
                         new StringTextSource(replacement));
-                }
             }
         }
-
-        private Popup _messageView;
-        private ContentPresenter _messageViewContent;
-        private string _validationError;
 
         private void DoSearch(bool changeSelection)
         {
             if (IsClosed)
                 return;
+
             _renderer.CurrentResults.Clear();
 
             if (!string.IsNullOrEmpty(SearchPattern))
             {
                 var offset = _textArea.Caret.Offset;
+
                 if (changeSelection)
-                {
                     _textArea.ClearSelection();
-                }
 
                 // We cast from ISearchResult to SearchResult; this is safe because we always use the built-in strategy
                 foreach (var result in _strategy.FindAll(_textArea.Document, 0, _textArea.Document.TextLength)
@@ -429,7 +336,9 @@ namespace AvaloniaEdit.Search
                     _messageView.IsOpen = true;
                 }
                 else
+                {
                     _messageView.IsOpen = false;
+                }
             }
 
             _textArea.TextView.InvalidateLayer(KnownLayer.Selection);
@@ -450,26 +359,22 @@ namespace AvaloniaEdit.Search
             {
                 case Key.Enter:
                     e.Handled = true;
+
                     if (e.KeyModifiers.HasFlag(KeyModifiers.Shift))
-                    {
                         FindPrevious();
-                    }
                     else
-                    {
                         FindNext();
-                    }
 
                     if (_searchTextBox != null)
-                    {
                         if (_validationError != null)
                         {
                             _messageViewContent.Content = SR.SearchErrorText + " " + _validationError;
                             _messageView.PlacementTarget = _searchTextBox;
                             _messageView.IsOpen = true;
                         }
-                    }
 
                     break;
+
                 case Key.Escape:
                     e.Handled = true;
                     Close();
@@ -478,12 +383,7 @@ namespace AvaloniaEdit.Search
         }
 
         /// <summary>
-        /// Gets whether the Panel is already closed.
-        /// </summary>
-        public bool IsClosed { get; private set; }
-
-        /// <summary>
-        /// Closes the SearchPanel.
+        ///     Closes the SearchPanel.
         /// </summary>
         public void Close()
         {
@@ -500,18 +400,19 @@ namespace AvaloniaEdit.Search
         }
 
         /// <summary>
-        /// Closes the SearchPanel and removes it.
+        ///     Closes the SearchPanel and removes it.
         /// </summary>
         private void CloseAndRemove()
         {
             Close();
             _textArea.DocumentChanged -= TextArea_DocumentChanged;
+
             if (_currentDocument != null)
                 _currentDocument.TextChanged -= TextArea_Document_TextChanged;
         }
 
         /// <summary>
-        /// Opens the an existing search panel.
+        ///     Opens the an existing search panel.
         /// </summary>
         public void Open()
         {
@@ -545,48 +446,132 @@ namespace AvaloniaEdit.Search
         }
 
         /// <summary>
-        /// Fired when SearchOptions are changed inside the SearchPanel.
+        ///     Fired when SearchOptions are changed inside the SearchPanel.
         /// </summary>
         public event EventHandler<SearchOptionsChangedEventArgs> SearchOptionsChanged;
 
         /// <summary>
-        /// Raises the <see cref="SearchOptionsChanged" /> event.
+        ///     Raises the <see cref="SearchOptionsChanged" /> event.
         /// </summary>
         protected virtual void OnSearchOptionsChanged(SearchOptionsChangedEventArgs e)
         {
             SearchOptionsChanged?.Invoke(this, e);
         }
 
-        public IList<RoutedCommandBinding> CommandBindings { get; } = new List<RoutedCommandBinding>();
+        #region DependencyProperties
+        /// <summary>
+        ///     Dependency property for <see cref="UseRegex" />.
+        /// </summary>
+        public static readonly StyledProperty<bool> UseRegexProperty =
+            AvaloniaProperty.Register<SearchPanel, bool>(nameof(UseRegex));
+
+        /// <summary>
+        ///     Gets/sets whether the search pattern should be interpreted as regular expression.
+        /// </summary>
+        public bool UseRegex
+        {
+            get => GetValue(UseRegexProperty);
+            set => SetValue(UseRegexProperty, value);
+        }
+
+        /// <summary>
+        ///     Dependency property for <see cref="MatchCase" />.
+        /// </summary>
+        public static readonly StyledProperty<bool> MatchCaseProperty =
+            AvaloniaProperty.Register<SearchPanel, bool>(nameof(MatchCase));
+
+        /// <summary>
+        ///     Gets/sets whether the search pattern should be interpreted case-sensitive.
+        /// </summary>
+        public bool MatchCase
+        {
+            get => GetValue(MatchCaseProperty);
+            set => SetValue(MatchCaseProperty, value);
+        }
+
+        /// <summary>
+        ///     Dependency property for <see cref="WholeWords" />.
+        /// </summary>
+        public static readonly StyledProperty<bool> WholeWordsProperty =
+            AvaloniaProperty.Register<SearchPanel, bool>(nameof(WholeWords));
+
+        /// <summary>
+        ///     Gets/sets whether the search pattern should only match whole words.
+        /// </summary>
+        public bool WholeWords
+        {
+            get => GetValue(WholeWordsProperty);
+            set => SetValue(WholeWordsProperty, value);
+        }
+
+        /// <summary>
+        ///     Dependency property for <see cref="SearchPattern" />.
+        /// </summary>
+        public static readonly StyledProperty<string> SearchPatternProperty =
+            AvaloniaProperty.Register<SearchPanel, string>(nameof(SearchPattern), "");
+
+        /// <summary>
+        ///     Gets/sets the search pattern.
+        /// </summary>
+        public string SearchPattern
+        {
+            get => GetValue(SearchPatternProperty);
+            set => SetValue(SearchPatternProperty, value);
+        }
+
+        public static readonly StyledProperty<bool> IsReplaceModeProperty =
+            AvaloniaProperty.Register<SearchPanel, bool>(nameof(IsReplaceMode));
+
+        /// <summary>
+        ///     Checks if replacemode is allowed
+        /// </summary>
+        /// <returns>False if editor is not null and readonly</returns>
+        private static bool ValidateReplaceMode(SearchPanel panel, bool v1)
+        {
+            if (panel._textEditor == null || !v1) return v1;
+
+            return !panel._textEditor.IsReadOnly;
+        }
+
+        public bool IsReplaceMode
+        {
+            get => GetValue(IsReplaceModeProperty);
+            set => SetValue(IsReplaceModeProperty, _textEditor?.IsReadOnly ?? false ? false : value);
+        }
+
+        public static readonly StyledProperty<string> ReplacePatternProperty =
+            AvaloniaProperty.Register<SearchPanel, string>(nameof(ReplacePattern));
+
+        public string ReplacePattern
+        {
+            get => GetValue(ReplacePatternProperty);
+            set => SetValue(ReplacePatternProperty, value);
+        }
+
+        /// <summary>
+        ///     Dependency property for <see cref="MarkerBrush" />.
+        /// </summary>
+        public static readonly StyledProperty<IBrush> MarkerBrushProperty =
+            AvaloniaProperty.Register<SearchPanel, IBrush>(nameof(MarkerBrush), Brushes.LightGreen);
+
+        /// <summary>
+        ///     Gets/sets the Brush used for marking search results in the TextView.
+        /// </summary>
+        public IBrush MarkerBrush
+        {
+            get => GetValue(MarkerBrushProperty);
+            set => SetValue(MarkerBrushProperty, value);
+        }
+        #endregion
     }
 
     /// <summary>
-    /// EventArgs for <see cref="SearchPanel.SearchOptionsChanged"/> event.
+    ///     EventArgs for <see cref="SearchPanel.SearchOptionsChanged" /> event.
     /// </summary>
     public class SearchOptionsChangedEventArgs : EventArgs
     {
         /// <summary>
-        /// Gets the search pattern.
-        /// </summary>
-        public string SearchPattern { get; }
-
-        /// <summary>
-        /// Gets whether the search pattern should be interpreted case-sensitive.
-        /// </summary>
-        public bool MatchCase { get; }
-
-        /// <summary>
-        /// Gets whether the search pattern should be interpreted as regular expression.
-        /// </summary>
-        public bool UseRegex { get; }
-
-        /// <summary>
-        /// Gets whether the search pattern should only match whole words.
-        /// </summary>
-        public bool WholeWords { get; }
-
-        /// <summary>
-        /// Creates a new SearchOptionsChangedEventArgs instance.
+        ///     Creates a new SearchOptionsChangedEventArgs instance.
         /// </summary>
         public SearchOptionsChangedEventArgs(string searchPattern, bool matchCase, bool useRegex, bool wholeWords)
         {
@@ -595,5 +580,25 @@ namespace AvaloniaEdit.Search
             UseRegex = useRegex;
             WholeWords = wholeWords;
         }
+
+        /// <summary>
+        ///     Gets the search pattern.
+        /// </summary>
+        public string SearchPattern { get; }
+
+        /// <summary>
+        ///     Gets whether the search pattern should be interpreted case-sensitive.
+        /// </summary>
+        public bool MatchCase { get; }
+
+        /// <summary>
+        ///     Gets whether the search pattern should be interpreted as regular expression.
+        /// </summary>
+        public bool UseRegex { get; }
+
+        /// <summary>
+        ///     Gets whether the search pattern should only match whole words.
+        /// </summary>
+        public bool WholeWords { get; }
     }
 }

@@ -22,23 +22,25 @@ using System.Collections.ObjectModel;
 namespace AvaloniaEdit.Utils
 {
     /// <summary>
-    /// A collection that cannot contain null values.
+    ///     A collection that cannot contain null values.
     /// </summary>
     internal class NullSafeCollection<T> : Collection<T> where T : class
     {
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void InsertItem(int index, T item)
         {
             if (item == null)
                 throw new ArgumentNullException(nameof(item));
+
             base.InsertItem(index, item);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void SetItem(int index, T item)
         {
             if (item == null)
                 throw new ArgumentNullException(nameof(item));
+
             base.SetItem(index, item);
         }
     }

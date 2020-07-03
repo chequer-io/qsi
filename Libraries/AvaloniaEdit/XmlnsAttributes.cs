@@ -8,4 +8,3 @@ using Avalonia.Metadata;
 [assembly: XmlnsDefinition("https://github.com/avaloniaui/avaloniaedit", "AvaloniaEdit.Search")]
 
 [assembly: InternalsVisibleTo("AvaloniaEdit.Tests")]
-

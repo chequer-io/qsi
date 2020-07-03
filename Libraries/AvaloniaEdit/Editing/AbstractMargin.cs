@@ -19,21 +19,30 @@
 using System;
 using System.Diagnostics;
 using Avalonia;
+using Avalonia.Controls;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.Rendering;
-using Avalonia.Controls;
 
 namespace AvaloniaEdit.Editing
 {
     /// <summary>
-    /// Base class for margins.
-    /// Margins don't have to derive from this class, it just helps maintaining a reference to the TextView
-    /// and the TextDocument.
-    /// AbstractMargin derives from FrameworkElement, so if you don't want to handle visual children and rendering
-    /// on your own, choose another base class for your margin!
+    ///     Base class for margins.
+    ///     Margins don't have to derive from this class, it just helps maintaining a reference to the TextView
+    ///     and the TextDocument.
+    ///     AbstractMargin derives from FrameworkElement, so if you don't want to handle visual children and rendering
+    ///     on your own, choose another base class for your margin!
     /// </summary>
     public abstract class AbstractMargin : Control, ITextViewConnect
     {
+        /// <summary>
+        ///     TextView property.
+        /// </summary>
+        public static readonly StyledProperty<TextView> TextViewProperty =
+            AvaloniaProperty.Register<AbstractMargin, TextView>(nameof(TextView));
+
+        // automatically set/unset TextView property using ITextViewConnect
+        private bool _wasAutoAddedToTextView;
+
         public AbstractMargin()
         {
             this.GetPropertyChangedObservable(TextViewProperty).Subscribe(o =>
@@ -44,23 +53,24 @@ namespace AvaloniaEdit.Editing
         }
 
         /// <summary>
-        /// TextView property.
+        ///     Gets/sets the text view for which line numbers are displayed.
         /// </summary>
-        public static readonly StyledProperty<TextView> TextViewProperty =
-            AvaloniaProperty.Register<AbstractMargin, TextView>(nameof(TextView));
-
-        /// <summary>
-        /// Gets/sets the text view for which line numbers are displayed.
-        /// </summary>
-        /// <remarks>Adding a margin to <see cref="TextArea.LeftMargins"/> will automatically set this property to the text area's TextView.</remarks>
+        /// <remarks>
+        ///     Adding a margin to <see cref="TextArea.LeftMargins" /> will automatically set this property to the text area's
+        ///     TextView.
+        /// </remarks>
         public TextView TextView
         {
             get => GetValue(TextViewProperty);
             set => SetValue(TextViewProperty, value);
         }
 
-        // automatically set/unset TextView property using ITextViewConnect
-        private bool _wasAutoAddedToTextView;
+        /// <summary>
+        ///     Gets the document associated with the margin.
+        /// </summary>
+        public TextDocument Document { get; private set; }
+
+        protected TextArea TextArea { get; set; }
 
         void ITextViewConnect.AddToTextView(TextView textView)
         {
@@ -85,33 +95,20 @@ namespace AvaloniaEdit.Editing
         }
 
         /// <summary>
-        /// Gets the document associated with the margin.
-        /// </summary>
-        public TextDocument Document { get; private set; }
-
-        protected TextArea TextArea { get; set; }
-
-        /// <summary>
-        /// Called when the <see cref="TextView"/> is changing.
+        ///     Called when the <see cref="TextView" /> is changing.
         /// </summary>
         protected virtual void OnTextViewChanged(TextView oldTextView, TextView newTextView)
         {
             if (oldTextView != null)
-            {
                 oldTextView.DocumentChanged -= TextViewDocumentChanged;
-            }
 
             if (newTextView != null)
-            {
                 newTextView.DocumentChanged += TextViewDocumentChanged;
-            }
 
             TextViewDocumentChanged(null, null);
 
             if (oldTextView != null)
-            {
                 oldTextView.VisualLinesChanged -= TextViewVisualLinesChanged;
-            }
 
             if (newTextView != null)
             {
@@ -127,8 +124,8 @@ namespace AvaloniaEdit.Editing
         }
 
         /// <summary>
-        /// Called when the attached textviews visual lines change.
-        /// Default behavior is to Invalidate Margins Visual.
+        ///     Called when the attached textviews visual lines change.
+        ///     Default behavior is to Invalidate Margins Visual.
         /// </summary>
         protected virtual void OnTextViewVisualLinesChanged()
         {
@@ -146,7 +143,7 @@ namespace AvaloniaEdit.Editing
         }
 
         /// <summary>
-        /// Called when the <see cref="Document"/> is changing.
+        ///     Called when the <see cref="Document" /> is changing.
         /// </summary>
         protected virtual void OnDocumentChanged(TextDocument oldDocument, TextDocument newDocument)
         {

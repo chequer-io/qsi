@@ -21,24 +21,29 @@ using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
-using Avalonia.Markup;
 using Avalonia.Data.Converters;
 
 namespace AvaloniaEdit.CodeCompletion
 {
     /// <summary>
-    /// Represents a text between "Up" and "Down" buttons.
+    ///     Represents a text between "Up" and "Down" buttons.
     /// </summary>
     public class OverloadViewer : TemplatedControl
     {
         /// <summary>
-        /// The text property.
+        ///     The text property.
         /// </summary>
         public static readonly StyledProperty<string> TextProperty =
             AvaloniaProperty.Register<OverloadViewer, string>("Text");
 
         /// <summary>
-        /// Gets/Sets the text between the Up and Down buttons.
+        ///     The ItemProvider property.
+        /// </summary>
+        public static readonly StyledProperty<IOverloadProvider> ProviderProperty =
+            AvaloniaProperty.Register<OverloadViewer, IOverloadProvider>("Provider");
+
+        /// <summary>
+        ///     Gets/Sets the text between the Up and Down buttons.
         /// </summary>
         public string Text
         {
@@ -46,39 +51,8 @@ namespace AvaloniaEdit.CodeCompletion
             set => SetValue(TextProperty, value);
         }
 
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs args)
-        {
-            base.OnTemplateApplied(args);
-
-            var upButton = args.NameScope.Find<Button>("PART_UP");
-            if (upButton != null)
-            {
-                upButton.Click += (sender, e) =>
-                  {
-                      e.Handled = true;
-                      ChangeIndex(-1);
-                  };
-            }
-
-            var downButton = args.NameScope.Find<Button>("PART_DOWN");
-            if (downButton != null)
-            {
-                downButton.Click += (sender, e) =>
-                  {
-                      e.Handled = true;
-                      ChangeIndex(+1);
-                  };
-            }
-        }
-
         /// <summary>
-        /// The ItemProvider property.
-        /// </summary>
-        public static readonly StyledProperty<IOverloadProvider> ProviderProperty =
-            AvaloniaProperty.Register<OverloadViewer, IOverloadProvider>("Provider");
-
-        /// <summary>
-        /// Gets/Sets the item provider.
+        ///     Gets/Sets the item provider.
         /// </summary>
         public IOverloadProvider Provider
         {
@@ -86,20 +60,47 @@ namespace AvaloniaEdit.CodeCompletion
             set => SetValue(ProviderProperty, value);
         }
 
+        protected override void OnTemplateApplied(TemplateAppliedEventArgs args)
+        {
+            base.OnTemplateApplied(args);
+
+            var upButton = args.NameScope.Find<Button>("PART_UP");
+
+            if (upButton != null)
+                upButton.Click += (sender, e) =>
+                {
+                    e.Handled = true;
+                    ChangeIndex(-1);
+                };
+
+            var downButton = args.NameScope.Find<Button>("PART_DOWN");
+
+            if (downButton != null)
+                downButton.Click += (sender, e) =>
+                {
+                    e.Handled = true;
+                    ChangeIndex(+1);
+                };
+        }
+
         /// <summary>
-        /// Changes the selected index.
+        ///     Changes the selected index.
         /// </summary>
         /// <param name="relativeIndexChange">The relative index change - usual values are +1 or -1.</param>
         public void ChangeIndex(int relativeIndexChange)
         {
             var p = Provider;
+
             if (p != null)
             {
                 var newIndex = p.SelectedIndex + relativeIndexChange;
+
                 if (newIndex < 0)
                     newIndex = p.Count - 1;
+
                 if (newIndex >= p.Count)
                     newIndex = 0;
+
                 p.SelectedIndex = newIndex;
             }
         }

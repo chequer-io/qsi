@@ -19,25 +19,44 @@
 using System;
 using System.Diagnostics;
 using Avalonia;
+using Avalonia.Media;
+using Avalonia.Threading;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.Rendering;
 using AvaloniaEdit.Utils;
-using Avalonia.Media;
-using Avalonia.Threading;
 
 namespace AvaloniaEdit.Editing
 {
     /// <summary>
-    /// Helper class with caret-related methods.
+    ///     Helper class with caret-related methods.
     /// </summary>
     public sealed class Caret
     {
         private const double CaretWidth = 0.5;
 
+        /// <summary>
+        ///     Minimum distance of the caret to the view border.
+        /// </summary>
+        internal const double MinimumDistanceToViewBorder = 30;
+
+        private readonly CaretLayer _caretAdorner;
+
         private readonly TextArea _textArea;
         private readonly TextView _textView;
-        private readonly CaretLayer _caretAdorner;
+        private bool _hasWin32Caret;
+
+        private bool _isInVirtualSpace;
+
+        private TextViewPosition _position;
+
+        private bool _raisePositionChangedOnUpdateFinished;
+
+        private bool _showScheduled;
+
+        private int _storedCaretOffset;
         private bool _visible;
+
+        private bool _visualColumnValid;
 
         internal Caret(TextArea textArea)
         {
@@ -51,37 +70,10 @@ namespace AvaloniaEdit.Editing
             _textView.ScrollOffsetChanged += TextView_ScrollOffsetChanged;
         }
 
-        internal void UpdateIfVisible()
-        {
-            if (_visible)
-            {
-                Show();
-            }
-        }
-
-        private void TextView_VisualLinesChanged(object sender, EventArgs e)
-        {
-            if (_visible)
-            {
-                Show();
-            }
-            // required because the visual columns might have changed if the
-            // element generators did something differently than on the last run
-            // (e.g. a FoldingSection was collapsed)
-            InvalidateVisualColumn();
-        }
-
-        private void TextView_ScrollOffsetChanged(object sender, EventArgs e)
-        {
-            _caretAdorner?.InvalidateVisual();
-        }
-
-        private TextViewPosition _position;
-
         /// <summary>
-        /// Gets/Sets the position of the caret.
-        /// Retrieving this property will validate the visual column (which can be expensive).
-        /// Use the <see cref="Location"/> property instead if you don't need the visual column.
+        ///     Gets/Sets the position of the caret.
+        ///     Retrieving this property will validate the visual column (which can be expensive).
+        ///     Use the <see cref="Location" /> property instead if you don't need the visual column.
         /// </summary>
         public TextViewPosition Position
         {
@@ -102,6 +94,7 @@ namespace AvaloniaEdit.Editing
                     InvalidateVisualColumn();
                     RaisePositionChanged();
                     Log("Caret position changed to " + value);
+
                     if (_visible)
                         Show();
                 }
@@ -109,14 +102,14 @@ namespace AvaloniaEdit.Editing
         }
 
         /// <summary>
-        /// Gets the caret position without validating it.
+        ///     Gets the caret position without validating it.
         /// </summary>
         internal TextViewPosition NonValidatedPosition => _position;
 
         /// <summary>
-        /// Gets/Sets the location of the caret.
-        /// The getter of this property is faster than <see cref="Position"/> because it doesn't have
-        /// to validate the visual column.
+        ///     Gets/Sets the location of the caret.
+        ///     The getter of this property is faster than <see cref="Position" /> because it doesn't have
+        ///     to validate the visual column.
         /// </summary>
         public TextLocation Location
         {
@@ -125,7 +118,7 @@ namespace AvaloniaEdit.Editing
         }
 
         /// <summary>
-        /// Gets/Sets the caret line.
+        ///     Gets/Sets the caret line.
         /// </summary>
         public int Line
         {
@@ -134,7 +127,7 @@ namespace AvaloniaEdit.Editing
         }
 
         /// <summary>
-        /// Gets/Sets the caret column.
+        ///     Gets/Sets the caret column.
         /// </summary>
         public int Column
         {
@@ -143,7 +136,7 @@ namespace AvaloniaEdit.Editing
         }
 
         /// <summary>
-        /// Gets/Sets the caret visual column.
+        ///     Gets/Sets the caret visual column.
         /// </summary>
         public int VisualColumn
         {
@@ -155,10 +148,8 @@ namespace AvaloniaEdit.Editing
             set => Position = new TextViewPosition(_position.Line, _position.Column, value);
         }
 
-        private bool _isInVirtualSpace;
-
         /// <summary>
-        /// Gets whether the caret is in virtual space.
+        ///     Gets whether the caret is in virtual space.
         /// </summary>
         public bool IsInVirtualSpace
         {
@@ -169,7 +160,69 @@ namespace AvaloniaEdit.Editing
             }
         }
 
-        private int _storedCaretOffset;
+        /// <summary>
+        ///     Gets/Sets the caret offset.
+        ///     Setting the caret offset has the side effect of setting the <see cref="DesiredXPos" /> to NaN.
+        /// </summary>
+        public int Offset
+        {
+            get
+            {
+                var document = _textArea.Document;
+
+                if (document == null)
+                    return 0;
+
+                return document.GetOffset(_position.Location);
+            }
+            set
+            {
+                var document = _textArea.Document;
+
+                if (document != null)
+                {
+                    Position = new TextViewPosition(document.GetLocation(value));
+                    DesiredXPos = double.NaN;
+                }
+            }
+        }
+
+        /// <summary>
+        ///     Gets/Sets the desired x-position of the caret, in device-independent pixels.
+        ///     This property is NaN if the caret has no desired position.
+        /// </summary>
+        public double DesiredXPos { get; set; } = double.NaN;
+
+        /// <summary>
+        ///     Gets/Sets the color of the caret.
+        /// </summary>
+        public IBrush CaretBrush
+        {
+            get => _caretAdorner.CaretBrush;
+            set => _caretAdorner.CaretBrush = value;
+        }
+
+        internal void UpdateIfVisible()
+        {
+            if (_visible)
+                Show();
+        }
+
+        private void TextView_VisualLinesChanged(object sender, EventArgs e)
+        {
+            if (_visible)
+                Show();
+
+            // required because the visual columns might have changed if the
+            // element generators did something differently than on the last run
+            // (e.g. a FoldingSection was collapsed)
+            InvalidateVisualColumn();
+        }
+
+        private void TextView_ScrollOffsetChanged(object sender, EventArgs e)
+        {
+            _caretAdorner?.InvalidateVisual();
+        }
 
         internal void OnDocumentChanging()
         {
@@ -180,67 +233,42 @@ namespace AvaloniaEdit.Editing
         internal void OnDocumentChanged(DocumentChangeEventArgs e)
         {
             InvalidateVisualColumn();
+
             if (_storedCaretOffset >= 0)
             {
                 // If the caret is at the end of a selection, we don't expand the selection if something
                 // is inserted at the end. Thus we also need to keep the caret in front of the insertion.
                 AnchorMovementType caretMovementType;
+
                 if (!_textArea.Selection.IsEmpty && _storedCaretOffset == _textArea.Selection.SurroundingSegment.EndOffset)
                     caretMovementType = AnchorMovementType.BeforeInsertion;
                 else
                     caretMovementType = AnchorMovementType.Default;
+
                 var newCaretOffset = e.GetNewOffset(_storedCaretOffset, caretMovementType);
                 var document = _textArea.Document;
+
                 if (document != null)
-                {
                     // keep visual column
                     Position = new TextViewPosition(document.GetLocation(newCaretOffset), _position.VisualColumn);
-                }
             }
+
             _storedCaretOffset = -1;
         }
-
-        /// <summary>
-        /// Gets/Sets the caret offset.
-        /// Setting the caret offset has the side effect of setting the <see cref="DesiredXPos"/> to NaN.
-        /// </summary>
-        public int Offset
-        {
-            get
-            {
-                var document = _textArea.Document;
-                if (document == null)
-                {
-                    return 0;
-                }
-                return document.GetOffset(_position.Location);
-            }
-            set
-            {
-                var document = _textArea.Document;
-                if (document != null)
-                {
-                    Position = new TextViewPosition(document.GetLocation(value));
-                    DesiredXPos = double.NaN;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets/Sets the desired x-position of the caret, in device-independent pixels.
-        /// This property is NaN if the caret has no desired position.
-        /// </summary>
-        public double DesiredXPos { get; set; } = double.NaN;
 
         private void ValidatePosition()
         {
             if (_position.Line < 1)
                 _position.Line = 1;
+
             if (_position.Column < 1)
                 _position.Column = 1;
+
             if (_position.VisualColumn < -1)
                 _position.VisualColumn = -1;
+
             var document = _textArea.Document;
+
             if (document != null)
             {
                 if (_position.Line > document.LineCount)
@@ -252,6 +280,7 @@ namespace AvaloniaEdit.Editing
                 else
                 {
                     var line = document.GetLineByNumber(_position.Line);
+
                     if (_position.Column > line.Length + 1)
                     {
                         _position.Column = line.Length + 1;
@@ -262,24 +291,18 @@ namespace AvaloniaEdit.Editing
         }
 
         /// <summary>
-        /// Event raised when the caret position has changed.
-        /// If the caret position is changed inside a document update (between BeginUpdate/EndUpdate calls),
-        /// the PositionChanged event is raised only once at the end of the document update.
+        ///     Event raised when the caret position has changed.
+        ///     If the caret position is changed inside a document update (between BeginUpdate/EndUpdate calls),
+        ///     the PositionChanged event is raised only once at the end of the document update.
         /// </summary>
         public event EventHandler PositionChanged;
-
-        private bool _raisePositionChangedOnUpdateFinished;
 
         private void RaisePositionChanged()
         {
             if (_textArea.Document != null && _textArea.Document.IsInUpdate)
-            {
                 _raisePositionChangedOnUpdateFinished = true;
-            }
             else
-            {
                 PositionChanged?.Invoke(this, EventArgs.Empty);
-            }
         }
 
         internal void OnDocumentUpdateFinished()
@@ -291,16 +314,15 @@ namespace AvaloniaEdit.Editing
             }
         }
 
-        private bool _visualColumnValid;
-
         private void ValidateVisualColumn()
         {
             if (!_visualColumnValid)
             {
                 var document = _textArea.Document;
+
                 if (document != null)
                 {
-                   // Debug.WriteLine("Explicit validation of caret column");
+                    // Debug.WriteLine("Explicit validation of caret column");
                     var documentLine = document.GetLineByNumber(_position.Line);
                     RevalidateVisualColumn(_textView.GetOrConstructVisualLine(documentLine));
                 }
@@ -313,8 +335,8 @@ namespace AvaloniaEdit.Editing
         }
 
         /// <summary>
-        /// Validates the visual column of the caret using the specified visual line.
-        /// The visual line must contain the caret offset.
+        ///     Validates the visual column of the caret using the specified visual line.
+        ///     The visual line must contain the caret offset.
         /// </summary>
         private void RevalidateVisualColumn(VisualLine visualLine)
         {
@@ -330,6 +352,7 @@ namespace AvaloniaEdit.Editing
 
             // search possible caret positions
             var newVisualColumnForwards = visualLine.GetNextCaretPosition(_position.VisualColumn - 1, LogicalDirection.Forward, CaretPositioningMode.Normal, _textArea.Selection.EnableVirtualSpace);
+
             // If position.VisualColumn was valid, we're done with validation.
             if (newVisualColumnForwards != _position.VisualColumn)
             {
@@ -341,17 +364,21 @@ namespace AvaloniaEdit.Editing
 
                 // determine offsets for new visual column positions
                 int newOffsetForwards;
+
                 if (newVisualColumnForwards >= 0)
                     newOffsetForwards = visualLine.GetRelativeOffset(newVisualColumnForwards) + firstDocumentLineOffset;
                 else
                     newOffsetForwards = -1;
+
                 int newOffsetBackwards;
+
                 if (newVisualColumnBackwards >= 0)
                     newOffsetBackwards = visualLine.GetRelativeOffset(newVisualColumnBackwards) + firstDocumentLineOffset;
                 else
                     newOffsetBackwards = -1;
 
                 int newVisualColumn, newOffset;
+
                 // if there's only one valid position, use it
                 if (newVisualColumnForwards < 0)
                 {
@@ -379,17 +406,17 @@ namespace AvaloniaEdit.Editing
                         newOffset = newOffsetForwards;
                     }
                 }
+
                 Position = new TextViewPosition(_textView.Document.GetLocation(newOffset), newVisualColumn);
             }
-            _isInVirtualSpace = (_position.VisualColumn > visualLine.VisualLength);
+
+            _isInVirtualSpace = _position.VisualColumn > visualLine.VisualLength;
         }
 
         private Rect CalcCaretRectangle(VisualLine visualLine)
         {
             if (!_visualColumnValid)
-            {
                 RevalidateVisualColumn(visualLine);
-            }
 
             var textLine = visualLine.GetTextLine(_position.VisualColumn, _position.IsAtEndOfLine);
             var xPos = visualLine.GetTextLineVisualXPosition(textLine, _position.VisualColumn);
@@ -397,17 +424,15 @@ namespace AvaloniaEdit.Editing
             var lineBottom = visualLine.GetTextLineVisualYPosition(textLine, VisualYPosition.TextBottom);
 
             return new Rect(xPos,
-                            lineTop,
-                            CaretWidth,
-                            lineBottom - lineTop);
+                lineTop,
+                CaretWidth,
+                lineBottom - lineTop);
         }
 
         private Rect CalcCaretOverstrikeRectangle(VisualLine visualLine)
         {
             if (!_visualColumnValid)
-            {
                 RevalidateVisualColumn(visualLine);
-            }
 
             var currentPos = _position.VisualColumn;
             // The text being overwritten in overstrike mode is everything up to the next normal caret stop
@@ -415,6 +440,7 @@ namespace AvaloniaEdit.Editing
             var textLine = visualLine.GetTextLine(currentPos);
 
             Rect r;
+
             if (currentPos < visualLine.VisualLength)
             {
                 // If the caret is within the text, use GetTextBounds() for the text being overwritten.
@@ -432,14 +458,16 @@ namespace AvaloniaEdit.Editing
                 var lineBottom = visualLine.GetTextLineVisualYPosition(textLine, VisualYPosition.TextBottom);
                 r = new Rect(xPos, lineTop, xPos2 - xPos, lineBottom - lineTop);
             }
+
             // If the caret is too small (e.g. in front of zero-width character), ensure it's still visible
             if (r.Width < CaretWidth)
                 r = r.WithWidth(CaretWidth);
+
             return r;
         }
 
         /// <summary>
-        /// Returns the caret rectangle. The coordinate system is in device-independent pixels from the top of the document.
+        ///     Returns the caret rectangle. The coordinate system is in device-independent pixels from the top of the document.
         /// </summary>
         public Rect CalculateCaretRectangle()
         {
@@ -448,16 +476,12 @@ namespace AvaloniaEdit.Editing
                 var visualLine = _textView.GetOrConstructVisualLine(_textView.Document.GetLineByNumber(_position.Line));
                 return _textArea.OverstrikeMode ? CalcCaretOverstrikeRectangle(visualLine) : CalcCaretRectangle(visualLine);
             }
+
             return Rect.Empty;
         }
 
         /// <summary>
-        /// Minimum distance of the caret to the view border.
-        /// </summary>
-        internal const double MinimumDistanceToViewBorder = 30;
-
-        /// <summary>
-        /// Scrolls the text view so that the caret is visible.
+        ///     Scrolls the text view so that the caret is visible.
         /// </summary>
         public void BringCaretToView()
         {
@@ -467,6 +491,7 @@ namespace AvaloniaEdit.Editing
         public void BringCaretToView(double border)
         {
             var caretRectangle = CalculateCaretRectangle();
+
             if (!caretRectangle.IsEmpty)
             {
                 caretRectangle = caretRectangle.Inflate(border);
@@ -475,21 +500,19 @@ namespace AvaloniaEdit.Editing
         }
 
         /// <summary>
-        /// Makes the caret visible and updates its on-screen position.
+        ///     Makes the caret visible and updates its on-screen position.
         /// </summary>
         public void Show()
         {
             Log("Caret.Show()");
             _visible = true;
+
             if (!_showScheduled)
             {
                 _showScheduled = true;
                 Dispatcher.UIThread.Post(ShowInternal);
             }
         }
-
-        private bool _showScheduled;
-        private bool _hasWin32Caret;
 
         private void ShowInternal()
         {
@@ -502,6 +525,7 @@ namespace AvaloniaEdit.Editing
             if (_caretAdorner != null && _textView != null)
             {
                 var visualLine = _textView.GetVisualLine(_position.Line);
+
                 if (visualLine != null)
                 {
                     var caretRect = _textArea.OverstrikeMode ? CalcCaretOverstrikeRectangle(visualLine) : CalcCaretRectangle(visualLine);
@@ -525,18 +549,18 @@ namespace AvaloniaEdit.Editing
         }
 
         /// <summary>
-        /// Makes the caret invisible.
+        ///     Makes the caret invisible.
         /// </summary>
         public void Hide()
         {
             Log("Caret.Hide()");
             _visible = false;
+
             if (_hasWin32Caret)
-            {
                 // TODO: win32 caret
                 //Win32.DestroyCaret();
                 _hasWin32Caret = false;
-            }
+
             _caretAdorner?.Hide();
         }
 
@@ -545,15 +569,6 @@ namespace AvaloniaEdit.Editing
         {
             // commented out to make debug output less noisy - add back if there are any problems with the caret
             //Debug.WriteLine(text);
-        }
-
-        /// <summary>
-        /// Gets/Sets the color of the caret.
-        /// </summary>
-        public IBrush CaretBrush
-        {
-            get => _caretAdorner.CaretBrush;
-            set => _caretAdorner.CaretBrush = value;
         }
     }
 }

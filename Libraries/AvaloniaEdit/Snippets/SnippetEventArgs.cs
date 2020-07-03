@@ -21,52 +21,57 @@ using System;
 namespace AvaloniaEdit.Snippets
 {
 	/// <summary>
-	/// Provides information about the event that occured during use of snippets.
+	///     Provides information about the event that occured during use of snippets.
 	/// </summary>
 	public class SnippetEventArgs : EventArgs
-	{
-		/// <summary>
-		/// Gets the reason for deactivation.
-		/// </summary>
-		public DeactivateReason Reason { get; }
-		
-		/// <summary>
-		/// Creates a new SnippetEventArgs object, with a DeactivateReason.
-		/// </summary>
-		public SnippetEventArgs(DeactivateReason reason)
-		{
-			Reason = reason;
-		}
-	}
-	
+    {
+	    /// <summary>
+	    ///     Creates a new SnippetEventArgs object, with a DeactivateReason.
+	    /// </summary>
+	    public SnippetEventArgs(DeactivateReason reason)
+        {
+            Reason = reason;
+        }
+
+	    /// <summary>
+	    ///     Gets the reason for deactivation.
+	    /// </summary>
+	    public DeactivateReason Reason { get; }
+    }
+
 	/// <summary>
-	/// Describes the reason for deactivation of a <see cref="SnippetElement" />.
+	///     Describes the reason for deactivation of a <see cref="SnippetElement" />.
 	/// </summary>
 	public enum DeactivateReason
-	{
-		/// <summary>
-		/// Unknown reason.
-		/// </summary>
-		Unknown,
-		/// <summary>
-		/// Snippet was deleted.
-		/// </summary>
-		Deleted,
-		/// <summary>
-		/// There are no active elements in the snippet.
-		/// </summary>
-		NoActiveElements,
-		/// <summary>
-		/// The SnippetInputHandler was detached.
-		/// </summary>
-		InputHandlerDetached,
-		/// <summary>
-		/// Return was pressed by the user.
-		/// </summary>
-		ReturnPressed,
-		/// <summary>
-		/// Escape was pressed by the user.
-		/// </summary>
-		EscapePressed
-	}
+    {
+	    /// <summary>
+	    ///     Unknown reason.
+	    /// </summary>
+	    Unknown,
+
+	    /// <summary>
+	    ///     Snippet was deleted.
+	    /// </summary>
+	    Deleted,
+
+	    /// <summary>
+	    ///     There are no active elements in the snippet.
+	    /// </summary>
+	    NoActiveElements,
+
+	    /// <summary>
+	    ///     The SnippetInputHandler was detached.
+	    /// </summary>
+	    InputHandlerDetached,
+
+	    /// <summary>
+	    ///     Return was pressed by the user.
+	    /// </summary>
+	    ReturnPressed,
+
+	    /// <summary>
+	    ///     Escape was pressed by the user.
+	    /// </summary>
+	    EscapePressed
+    }
 }

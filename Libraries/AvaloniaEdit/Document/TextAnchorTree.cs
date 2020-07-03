@@ -25,7 +25,7 @@ using AvaloniaEdit.Utils;
 namespace AvaloniaEdit.Document
 {
     /// <summary>
-    /// A tree of TextAnchorNodes.
+    ///     A tree of TextAnchorNodes.
     /// </summary>
     internal sealed class TextAnchorTree
     {
@@ -74,138 +74,6 @@ namespace AvaloniaEdit.Document
             Debug.WriteLine("TextAnchorTree: " + text);
         }
 
-        #region Insert Text
-
-        private void InsertText(int offset, int length, bool defaultAnchorMovementIsBeforeInsertion)
-        {
-            if (length == 0 || _root == null || offset > _root.TotalLength)
-                return;
-
-            // find the range of nodes that are placed exactly at offset
-            // beginNode is inclusive, endNode is exclusive
-            if (offset == _root.TotalLength)
-            {
-                PerformInsertText(FindActualBeginNode(_root.RightMost), null, length, defaultAnchorMovementIsBeforeInsertion);
-            }
-            else
-            {
-                var endNode = FindNode(ref offset);
-                Debug.Assert(endNode.Length > 0);
-
-                if (offset > 0)
-                {
-                    // there are no nodes exactly at offset
-                    endNode.Length += length;
-                    UpdateAugmentedData(endNode);
-                }
-                else
-                {
-                    PerformInsertText(FindActualBeginNode(endNode.Predecessor), endNode, length, defaultAnchorMovementIsBeforeInsertion);
-                }
-            }
-            DeleteMarkedNodes();
-        }
-
-        private TextAnchorNode FindActualBeginNode(TextAnchorNode node)
-        {
-            // now find the actual beginNode
-            while (node != null && node.Length == 0)
-                node = node.Predecessor;
-            // no predecessor = beginNode is first node in tree
-            return node ?? _root.LeftMost;
-        }
-
-        // Sorts the nodes in the range [beginNode, endNode) by MovementType
-        // and inserts the length between the BeforeInsertion and the AfterInsertion nodes.
-        private void PerformInsertText(TextAnchorNode beginNode, TextAnchorNode endNode, int length, bool defaultAnchorMovementIsBeforeInsertion)
-        {
-            Debug.Assert(beginNode != null);
-            // endNode may be null at the end of the anchor tree
-
-            // now we need to sort the nodes in the range [beginNode, endNode); putting those with
-            // MovementType.BeforeInsertion in front of those with MovementType.AfterInsertion
-            var beforeInsert = new List<TextAnchorNode>();
-            //List<TextAnchorNode> afterInsert = new List<TextAnchorNode>();
-            var temp = beginNode;
-            while (temp != endNode)
-            {
-                var anchor = (TextAnchor)temp.Target;
-                if (anchor == null)
-                {
-                    // afterInsert.Add(temp);
-                    MarkNodeForDelete(temp);
-                }
-                else if (defaultAnchorMovementIsBeforeInsertion
-                         ? anchor.MovementType != AnchorMovementType.AfterInsertion
-                         : anchor.MovementType == AnchorMovementType.BeforeInsertion)
-                {
-                    beforeInsert.Add(temp);
-                    //				} else {
-                    //					afterInsert.Add(temp);
-                }
-                temp = temp.Successor;
-            }
-            // now again go through the range and swap the nodes with those in the beforeInsert list
-            temp = beginNode;
-            foreach (var node in beforeInsert)
-            {
-                SwapAnchors(node, temp);
-                temp = temp.Successor;
-            }
-            // now temp is pointing to the first node that is afterInsert,
-            // or to endNode, if there is no afterInsert node at the offset
-            // So add the length to temp
-            if (temp == null)
-            {
-                // temp might be null if endNode==null and no afterInserts
-                Debug.Assert(endNode == null);
-            }
-            else
-            {
-                temp.Length += length;
-                UpdateAugmentedData(temp);
-            }
-        }
-
-        /// <summary>
-        /// Swaps the anchors stored in the two nodes.
-        /// </summary>
-        private void SwapAnchors(TextAnchorNode n1, TextAnchorNode n2)
-        {
-            if (n1 != n2)
-            {
-                var anchor1 = (TextAnchor)n1.Target;
-                var anchor2 = (TextAnchor)n2.Target;
-                if (anchor1 == null && anchor2 == null)
-                {
-                    // -> no swap required
-                    return;
-                }
-                n1.Target = anchor2;
-                n2.Target = anchor1;
-                if (anchor1 == null)
-                {
-                    // unmark n1 from deletion, mark n2 for deletion
-                    _nodesToDelete.Remove(n1);
-                    MarkNodeForDelete(n2);
-                    anchor2.Node = n1;
-                }
-                else if (anchor2 == null)
-                {
-                    // unmark n2 from deletion, mark n1 for deletion
-                    _nodesToDelete.Remove(n2);
-                    MarkNodeForDelete(n1);
-                    anchor1.Node = n2;
-                }
-                else
-                {
-                    anchor1.Node = n2;
-                    anchor2.Node = n1;
-                }
-            }
-        }
-        #endregion
-
         #region Remove or Replace text
         public void HandleTextChange(OffsetChangeMapEntry entry, DelayedEvents delayedEvents)
         {
@@ -226,21 +94,26 @@ namespace AvaloniaEdit.Document
             //   surviving side.
             // - adjust the segment size between the left and right side
 
-            int offset = entry.Offset;
-            int remainingRemovalLength = entry.RemovalLength;
+            var offset = entry.Offset;
+            var remainingRemovalLength = entry.RemovalLength;
+
             // if the text change is happening after the last anchor, we don't have to do anything
             if (_root == null || offset >= _root.TotalLength)
                 return;
+
             var node = FindNode(ref offset);
             TextAnchorNode firstDeletionSurvivor = null;
+
             // go forward through the tree and delete all nodes in the removal segment
             while (node != null && offset + remainingRemovalLength > node.Length)
             {
                 var anchor = (TextAnchor)node.Target;
+
                 if (anchor != null && (anchor.SurviveDeletion || entry.RemovalNeverCausesAnchorDeletion))
                 {
                     if (firstDeletionSurvivor == null)
                         firstDeletionSurvivor = node;
+
                     // This node should be deleted, but it wants to survive.
                     // We'll just remove the deleted length segment, so the node will be positioned
                     // in front of the removed segment.
@@ -275,11 +148,11 @@ namespace AvaloniaEdit.Document
                 node.Length -= remainingRemovalLength;
                 Debug.Assert(node.Length >= 0);
             }
+
             if (entry.InsertionLength > 0)
             {
                 // we are performing a replacement
                 if (firstDeletionSurvivor != null)
-                {
                     // We got deletion survivors which need to be split into BeforeInsertion
                     // and AfterInsertion groups.
                     // Take care that we don't regroup everything at offset, but only the deletion
@@ -287,63 +160,28 @@ namespace AvaloniaEdit.Document
                     // This ensures that nodes immediately before or after the replaced segment
                     // stay where they are (independent from their MovementType)
                     PerformInsertText(firstDeletionSurvivor, node, entry.InsertionLength, entry.DefaultAnchorMovementIsBeforeInsertion);
-                }
                 else if (node != null)
-                {
                     // No deletion survivors:
                     // just perform the insertion
                     node.Length += entry.InsertionLength;
-                }
             }
+
             if (node != null)
-            {
                 UpdateAugmentedData(node);
-            }
+
             DeleteMarkedNodes();
-        }
-        #endregion
-
-        #region Node removal when TextAnchor was GC'ed
-
-        private void MarkNodeForDelete(TextAnchorNode node)
-        {
-            if (!_nodesToDelete.Contains(node))
-                _nodesToDelete.Add(node);
-        }
-
-        private void DeleteMarkedNodes()
-        {
-            CheckProperties();
-            while (_nodesToDelete.Count > 0)
-            {
-                int pos = _nodesToDelete.Count - 1;
-                var n = _nodesToDelete[pos];
-                // combine section of n with the following section
-                var s = n.Successor;
-                if (s != null)
-                {
-                    s.Length += n.Length;
-                }
-                RemoveNode(n);
-                if (s != null)
-                {
-                    UpdateAugmentedData(s);
-                }
-                _nodesToDelete.RemoveAt(pos);
-                CheckProperties();
-            }
-            CheckProperties();
         }
         #endregion
 
         #region FindNode
         /// <summary>
-        /// Finds the node at the specified offset.
-        /// After the method has run, offset is relative to the beginning of the returned node.
+        ///     Finds the node at the specified offset.
+        ///     After the method has run, offset is relative to the beginning of the returned node.
         /// </summary>
         private TextAnchorNode FindNode(ref int offset)
         {
             var n = _root;
+
             while (true)
             {
                 if (n.Left != null)
@@ -353,46 +191,218 @@ namespace AvaloniaEdit.Document
                         n = n.Left; // descend into left subtree
                         continue;
                     }
+
                     offset -= n.Left.TotalLength; // skip left subtree
                 }
+
                 if (!n.IsAlive)
                     MarkNodeForDelete(n);
+
                 if (offset < n.Length)
-                {
                     return n; // found correct node
-                }
+
                 offset -= n.Length; // skip this node
+
                 if (n.Right != null)
-                {
                     n = n.Right; // descend into right subtree
-                }
                 else
-                {
                     // didn't find any node containing the offset
                     return null;
-                }
             }
         }
         #endregion
 
         #region UpdateAugmentedData
-
         private void UpdateAugmentedData(TextAnchorNode n)
         {
             if (!n.IsAlive)
                 MarkNodeForDelete(n);
 
-            int totalLength = n.Length;
+            var totalLength = n.Length;
+
             if (n.Left != null)
                 totalLength += n.Left.TotalLength;
+
             if (n.Right != null)
                 totalLength += n.Right.TotalLength;
+
             if (n.TotalLength != totalLength)
             {
                 n.TotalLength = totalLength;
+
                 if (n.Parent != null)
                     UpdateAugmentedData(n.Parent);
             }
+        }
+        #endregion
+
+        #region Insert Text
+        private void InsertText(int offset, int length, bool defaultAnchorMovementIsBeforeInsertion)
+        {
+            if (length == 0 || _root == null || offset > _root.TotalLength)
+                return;
+
+            // find the range of nodes that are placed exactly at offset
+            // beginNode is inclusive, endNode is exclusive
+            if (offset == _root.TotalLength)
+            {
+                PerformInsertText(FindActualBeginNode(_root.RightMost), null, length, defaultAnchorMovementIsBeforeInsertion);
+            }
+            else
+            {
+                var endNode = FindNode(ref offset);
+                Debug.Assert(endNode.Length > 0);
+
+                if (offset > 0)
+                {
+                    // there are no nodes exactly at offset
+                    endNode.Length += length;
+                    UpdateAugmentedData(endNode);
+                }
+                else
+                {
+                    PerformInsertText(FindActualBeginNode(endNode.Predecessor), endNode, length, defaultAnchorMovementIsBeforeInsertion);
+                }
+            }
+
+            DeleteMarkedNodes();
+        }
+
+        private TextAnchorNode FindActualBeginNode(TextAnchorNode node)
+        {
+            // now find the actual beginNode
+            while (node != null && node.Length == 0)
+                node = node.Predecessor;
+
+            // no predecessor = beginNode is first node in tree
+            return node ?? _root.LeftMost;
+        }
+
+        // Sorts the nodes in the range [beginNode, endNode) by MovementType
+        // and inserts the length between the BeforeInsertion and the AfterInsertion nodes.
+        private void PerformInsertText(TextAnchorNode beginNode, TextAnchorNode endNode, int length, bool defaultAnchorMovementIsBeforeInsertion)
+        {
+            Debug.Assert(beginNode != null);
+            // endNode may be null at the end of the anchor tree
+
+            // now we need to sort the nodes in the range [beginNode, endNode); putting those with
+            // MovementType.BeforeInsertion in front of those with MovementType.AfterInsertion
+            var beforeInsert = new List<TextAnchorNode>();
+            //List<TextAnchorNode> afterInsert = new List<TextAnchorNode>();
+            var temp = beginNode;
+
+            while (temp != endNode)
+            {
+                var anchor = (TextAnchor)temp.Target;
+
+                if (anchor == null)
+                    // afterInsert.Add(temp);
+                    MarkNodeForDelete(temp);
+                else if (defaultAnchorMovementIsBeforeInsertion
+                    ? anchor.MovementType != AnchorMovementType.AfterInsertion
+                    : anchor.MovementType == AnchorMovementType.BeforeInsertion)
+                    beforeInsert.Add(temp);
+                //				} else {
+                //					afterInsert.Add(temp);
+
+                temp = temp.Successor;
+            }
+
+            // now again go through the range and swap the nodes with those in the beforeInsert list
+            temp = beginNode;
+
+            foreach (var node in beforeInsert)
+            {
+                SwapAnchors(node, temp);
+                temp = temp.Successor;
+            }
+
+            // now temp is pointing to the first node that is afterInsert,
+            // or to endNode, if there is no afterInsert node at the offset
+            // So add the length to temp
+            if (temp == null)
+            {
+                // temp might be null if endNode==null and no afterInserts
+                Debug.Assert(endNode == null);
+            }
+            else
+            {
+                temp.Length += length;
+                UpdateAugmentedData(temp);
+            }
+        }
+
+        /// <summary>
+        ///     Swaps the anchors stored in the two nodes.
+        /// </summary>
+        private void SwapAnchors(TextAnchorNode n1, TextAnchorNode n2)
+        {
+            if (n1 != n2)
+            {
+                var anchor1 = (TextAnchor)n1.Target;
+                var anchor2 = (TextAnchor)n2.Target;
+
+                if (anchor1 == null && anchor2 == null)
+                    // -> no swap required
+                    return;
+
+                n1.Target = anchor2;
+                n2.Target = anchor1;
+
+                if (anchor1 == null)
+                {
+                    // unmark n1 from deletion, mark n2 for deletion
+                    _nodesToDelete.Remove(n1);
+                    MarkNodeForDelete(n2);
+                    anchor2.Node = n1;
+                }
+                else if (anchor2 == null)
+                {
+                    // unmark n2 from deletion, mark n1 for deletion
+                    _nodesToDelete.Remove(n2);
+                    MarkNodeForDelete(n1);
+                    anchor1.Node = n2;
+                }
+                else
+                {
+                    anchor1.Node = n2;
+                    anchor2.Node = n1;
+                }
+            }
+        }
+        #endregion
+
+        #region Node removal when TextAnchor was GC'ed
+        private void MarkNodeForDelete(TextAnchorNode node)
+        {
+            if (!_nodesToDelete.Contains(node))
+                _nodesToDelete.Add(node);
+        }
+
+        private void DeleteMarkedNodes()
+        {
+            CheckProperties();
+
+            while (_nodesToDelete.Count > 0)
+            {
+                var pos = _nodesToDelete.Count - 1;
+                var n = _nodesToDelete[pos];
+                // combine section of n with the following section
+                var s = n.Successor;
+
+                if (s != null)
+                    s.Length += n.Length;
+
+                RemoveNode(n);
+
+                if (s != null)
+                    UpdateAugmentedData(s);
+
+                _nodesToDelete.RemoveAt(pos);
+                CheckProperties();
+            }
+
+            CheckProperties();
         }
         #endregion
 
@@ -402,6 +412,7 @@ namespace AvaloniaEdit.Document
             Log("CreateAnchor(" + offset + ")");
             var anchor = new TextAnchor(_document);
             anchor.Node = new TextAnchorNode(anchor);
+
             if (_root == null)
             {
                 // creating the first text anchor
@@ -424,6 +435,7 @@ namespace AvaloniaEdit.Document
                 n.Length -= offset;
                 InsertBefore(n, anchor.Node);
             }
+
             DeleteMarkedNodes();
             return anchor;
         }
@@ -431,13 +443,9 @@ namespace AvaloniaEdit.Document
         private void InsertBefore(TextAnchorNode node, TextAnchorNode newNode)
         {
             if (node.Left == null)
-            {
                 InsertAsLeft(node, newNode);
-            }
             else
-            {
                 InsertAsRight(node.Left.RightMost, newNode);
-            }
         }
         #endregion
 
@@ -473,6 +481,7 @@ namespace AvaloniaEdit.Document
             Debug.Assert(node.Right == null || node.Right.Color == Black);
 
             var parentNode = node.Parent;
+
             if (parentNode == null)
             {
                 // we inserted in the root -> the node must be black
@@ -481,18 +490,18 @@ namespace AvaloniaEdit.Document
                 node.Color = Black;
                 return;
             }
+
             if (parentNode.Color == Black)
-            {
                 // if the parent node where we inserted was black, our red node is placed correctly.
                 // since we inserted a red node, the number of black nodes on each path is unchanged
                 // -> the tree is still balanced
                 return;
-            }
             // parentNode is red, so there is a conflict here!
 
             // because the root is black, parentNode is not the root -> there is a grandparent node
             var grandparentNode = parentNode.Parent;
             var uncleNode = Sibling(parentNode);
+
             if (uncleNode != null && uncleNode.Color == Red)
             {
                 parentNode.Color = Black;
@@ -501,6 +510,7 @@ namespace AvaloniaEdit.Document
                 FixTreeOnInsert(grandparentNode);
                 return;
             }
+
             // now we know: parent is red but uncle is black
             // First rotation:
             if (node == parentNode.Right && parentNode == grandparentNode.Left)
@@ -513,6 +523,7 @@ namespace AvaloniaEdit.Document
                 RotateRight(parentNode);
                 node = node.Right;
             }
+
             // because node might have changed, reassign variables:
             // ReSharper disable once PossibleNullReferenceException
             parentNode = node.Parent;
@@ -521,6 +532,7 @@ namespace AvaloniaEdit.Document
             // Now recolor a bit:
             parentNode.Color = Black;
             grandparentNode.Color = Red;
+
             // Second rotation:
             if (node == parentNode.Left && parentNode == grandparentNode.Left)
             {
@@ -562,39 +574,35 @@ namespace AvaloniaEdit.Document
             var childNode = removedNode.Left ?? removedNode.Right;
             ReplaceNode(removedNode, childNode);
             if (parentNode != null) UpdateAugmentedData(parentNode);
+
             if (removedNode.Color == Black)
             {
                 if (childNode != null && childNode.Color == Red)
-                {
                     childNode.Color = Black;
-                }
                 else
-                {
                     FixTreeOnDelete(childNode, parentNode);
-                }
             }
         }
 
         private void FixTreeOnDelete(TextAnchorNode node, TextAnchorNode parentNode)
         {
             Debug.Assert(node == null || node.Parent == parentNode);
+
             if (parentNode == null)
                 return;
 
             // warning: node may be null
             var sibling = Sibling(node, parentNode);
+
             if (sibling.Color == Red)
             {
                 parentNode.Color = Red;
                 sibling.Color = Black;
+
                 if (node == parentNode.Left)
-                {
                     RotateLeft(parentNode);
-                }
                 else
-                {
                     RotateRight(parentNode);
-                }
 
                 sibling = Sibling(node, parentNode); // update value of sibling after rotation
             }
@@ -637,10 +645,12 @@ namespace AvaloniaEdit.Document
                 sibling.Right.Color = Black;
                 RotateLeft(sibling);
             }
+
             sibling = Sibling(node, parentNode); // update value of sibling after rotation
 
             sibling.Color = parentNode.Color;
             parentNode.Color = Black;
+
             if (node == parentNode.Left)
             {
                 if (sibling.Right != null)
@@ -648,6 +658,7 @@ namespace AvaloniaEdit.Document
                     Debug.Assert(sibling.Right.Color == Red);
                     sibling.Right.Color = Black;
                 }
+
                 RotateLeft(parentNode);
             }
             else
@@ -657,6 +668,7 @@ namespace AvaloniaEdit.Document
                     Debug.Assert(sibling.Left.Color == Red);
                     sibling.Left.Color = Black;
                 }
+
                 RotateRight(parentNode);
             }
         }
@@ -675,10 +687,10 @@ namespace AvaloniaEdit.Document
                 else
                     replacedNode.Parent.Right = newNode;
             }
+
             if (newNode != null)
-            {
                 newNode.Parent = replacedNode.Parent;
-            }
+
             replacedNode.Parent = null;
         }
 
@@ -724,14 +736,17 @@ namespace AvaloniaEdit.Document
         {
             if (node == node.Parent.Left)
                 return node.Parent.Right;
+
             return node.Parent.Left;
         }
 
         private static TextAnchorNode Sibling(TextAnchorNode node, TextAnchorNode parentNode)
         {
             Debug.Assert(node == null || node.Parent == parentNode);
+
             if (node == parentNode.Left)
                 return parentNode.Right;
+
             return parentNode.Left;
         }
 
@@ -751,7 +766,7 @@ namespace AvaloniaEdit.Document
                 CheckProperties(_root);
 
                 // check red-black property:
-                int blackCount = -1;
+                var blackCount = -1;
                 CheckNodeProperties(_root, null, Red, 0, ref blackCount);
             }
 #endif
@@ -761,17 +776,20 @@ namespace AvaloniaEdit.Document
 
         private void CheckProperties(TextAnchorNode node)
         {
-            int totalLength = node.Length;
+            var totalLength = node.Length;
+
             if (node.Left != null)
             {
                 CheckProperties(node.Left);
                 totalLength += node.Left.TotalLength;
             }
+
             if (node.Right != null)
             {
                 CheckProperties(node.Right);
                 totalLength += node.Right.TotalLength;
             }
+
             Debug.Assert(node.TotalLength == totalLength);
         }
 
@@ -790,13 +808,11 @@ namespace AvaloniaEdit.Document
             Debug.Assert(node.Parent == parentNode);
 
             if (parentColor == Red)
-            {
                 Debug.Assert(node.Color == Black);
-            }
+
             if (node.Color == Black)
-            {
                 blackCount++;
-            }
+
             if (node.Left == null && node.Right == null)
             {
                 // node is a leaf node:
@@ -805,6 +821,7 @@ namespace AvaloniaEdit.Document
                 else
                     Debug.Assert(expectedBlackCount == blackCount);
             }
+
             CheckNodeProperties(node.Left, node, node.Color, blackCount, ref expectedBlackCount);
             CheckNodeProperties(node.Right, node, node.Color, blackCount, ref expectedBlackCount);
         }
@@ -818,6 +835,7 @@ namespace AvaloniaEdit.Document
         {
             if (_root == null)
                 return "<empty tree>";
+
             var b = new StringBuilder();
             AppendTreeToString(_root, b, 0);
             return b.ToString();
@@ -828,12 +846,14 @@ namespace AvaloniaEdit.Document
             b.Append(node.Color == Red ? "RED   " : "BLACK ");
             b.AppendLine(node.ToString());
             indent += 2;
+
             if (node.Left != null)
             {
                 b.Append(' ', indent);
                 b.Append("L: ");
                 AppendTreeToString(node.Left, b, indent);
             }
+
             if (node.Right != null)
             {
                 b.Append(' ', indent);

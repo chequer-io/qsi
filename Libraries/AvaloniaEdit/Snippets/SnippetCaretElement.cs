@@ -21,32 +21,32 @@ using AvaloniaEdit.Document;
 namespace AvaloniaEdit.Snippets
 {
     /// <summary>
-    /// Sets the caret position after interactive mode has finished.
+    ///     Sets the caret position after interactive mode has finished.
     /// </summary>
     public class SnippetCaretElement : SnippetElement
     {
         private readonly bool _setCaretOnlyIfTextIsSelected;
 
         /// <summary>
-        /// Creates a new SnippetCaretElement.
+        ///     Creates a new SnippetCaretElement.
         /// </summary>
         public SnippetCaretElement()
         {
         }
 
         /// <summary>
-        /// Creates a new SnippetCaretElement.
+        ///     Creates a new SnippetCaretElement.
         /// </summary>
         /// <param name="setCaretOnlyIfTextIsSelected">
-        /// If set to true, the caret is set only when some text was selected.
-        /// This is useful when both SnippetCaretElement and SnippetSelectionElement are used in the same snippet.
+        ///     If set to true, the caret is set only when some text was selected.
+        ///     This is useful when both SnippetCaretElement and SnippetSelectionElement are used in the same snippet.
         /// </param>
         public SnippetCaretElement(bool setCaretOnlyIfTextIsSelected)
         {
             _setCaretOnlyIfTextIsSelected = setCaretOnlyIfTextIsSelected;
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override void Insert(InsertionContext context)
         {
             if (!_setCaretOnlyIfTextIsSelected || !string.IsNullOrEmpty(context.SelectedText))
@@ -58,12 +58,11 @@ namespace AvaloniaEdit.Snippets
             var pos = context.Document.CreateAnchor(context.InsertionPosition);
             pos.MovementType = AnchorMovementType.BeforeInsertion;
             pos.SurviveDeletion = true;
+
             context.Deactivated += (sender, e) =>
             {
                 if (e.Reason == DeactivateReason.ReturnPressed || e.Reason == DeactivateReason.NoActiveElements)
-                {
                     context.TextArea.Caret.Offset = pos.Offset;
-                }
             };
         }
     }

@@ -27,19 +27,107 @@ using AvaloniaEdit.Utils;
 namespace AvaloniaEdit.Highlighting
 {
     /// <summary>
-    /// Manages a list of syntax highlighting definitions.
+    ///     Manages a list of syntax highlighting definitions.
     /// </summary>
     /// <remarks>
-    /// All memers on this class (including instance members) are thread-safe.
+    ///     All memers on this class (including instance members) are thread-safe.
     /// </remarks>
     public class HighlightingManager : IHighlightingDefinitionReferenceResolver
     {
+        private readonly List<IHighlightingDefinition> _allHighlightings = new List<IHighlightingDefinition>();
+        private readonly Dictionary<string, IHighlightingDefinition> _highlightingsByExtension = new Dictionary<string, IHighlightingDefinition>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, IHighlightingDefinition> _highlightingsByName = new Dictionary<string, IHighlightingDefinition>();
+
+        private readonly object _lockObj = new object();
+
+        /// <summary>
+        ///     Gets a copy of all highlightings.
+        /// </summary>
+        public ReadOnlyCollection<IHighlightingDefinition> HighlightingDefinitions
+        {
+            get
+            {
+                lock (_lockObj)
+                {
+                    return new ReadOnlyCollection<IHighlightingDefinition>(_allHighlightings);
+                }
+            }
+        }
+
+        /// <summary>
+        ///     Gets the default HighlightingManager instance.
+        ///     The default HighlightingManager comes with built-in highlightings.
+        /// </summary>
+        public static HighlightingManager Instance => DefaultHighlightingManager.Instance;
+
+        /// <summary>
+        ///     Gets a highlighting definition by name.
+        ///     Returns null if the definition is not found.
+        /// </summary>
+        public IHighlightingDefinition GetDefinition(string name)
+        {
+            lock (_lockObj)
+            {
+                return _highlightingsByName.TryGetValue(name, out var rh) ? rh : null;
+            }
+        }
+
+        /// <summary>
+        ///     Gets a highlighting definition by extension.
+        ///     Returns null if the definition is not found.
+        /// </summary>
+        public IHighlightingDefinition GetDefinitionByExtension(string extension)
+        {
+            lock (_lockObj)
+            {
+                return _highlightingsByExtension.TryGetValue(extension, out var rh) ? rh : null;
+            }
+        }
+
+        /// <summary>
+        ///     Registers a highlighting definition.
+        /// </summary>
+        /// <param name="name">The name to register the definition with.</param>
+        /// <param name="extensions">The file extensions to register the definition for.</param>
+        /// <param name="highlighting">The highlighting definition.</param>
+        public void RegisterHighlighting(string name, string[] extensions, IHighlightingDefinition highlighting)
+        {
+            if (highlighting == null)
+                throw new ArgumentNullException(nameof(highlighting));
+
+            lock (_lockObj)
+            {
+                _allHighlightings.Add(highlighting);
+
+                if (name != null)
+                    _highlightingsByName[name] = highlighting;
+
+                if (extensions != null)
+                    foreach (var ext in extensions)
+                        _highlightingsByExtension[ext] = highlighting;
+            }
+        }
+
+        /// <summary>
+        ///     Registers a highlighting definition.
+        /// </summary>
+        /// <param name="name">The name to register the definition with.</param>
+        /// <param name="extensions">The file extensions to register the definition for.</param>
+        /// <param name="lazyLoadedHighlighting">A function that loads the highlighting definition.</param>
+        public void RegisterHighlighting(string name, string[] extensions, Func<IHighlightingDefinition> lazyLoadedHighlighting)
+        {
+            if (lazyLoadedHighlighting == null)
+                throw new ArgumentNullException(nameof(lazyLoadedHighlighting));
+
+            RegisterHighlighting(name, extensions, new DelayLoadedHighlightingDefinition(name, lazyLoadedHighlighting));
+        }
+
         private sealed class DelayLoadedHighlightingDefinition : IHighlightingDefinition
         {
             private readonly object _lockObj = new object();
             private readonly string _name;
-            private Func<IHighlightingDefinition> _lazyLoadingFunction;
             private IHighlightingDefinition _definition;
+            private Func<IHighlightingDefinition> _lazyLoadingFunction;
             private Exception _storedException;
 
             public DelayLoadedHighlightingDefinition(string name, Func<IHighlightingDefinition> lazyLoadingFunction)
@@ -49,48 +137,6 @@ namespace AvaloniaEdit.Highlighting
             }
 
             public string Name => _name ?? GetDefinition().Name;
-
-            [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes",
-                                                             Justification = "The exception will be rethrown")]
-            private IHighlightingDefinition GetDefinition()
-            {
-                Func<IHighlightingDefinition> func;
-                lock (_lockObj)
-                {
-                    if (_definition != null)
-                        return _definition;
-                    func = _lazyLoadingFunction;
-                }
-                Exception exception = null;
-                IHighlightingDefinition def = null;
-                try
-                {
-                    using (var busyLock = BusyManager.Enter(this))
-                    {
-                        if (!busyLock.Success)
-                            throw new InvalidOperationException("Tried to create delay-loaded highlighting definition recursively. Make sure the are no cyclic references between the highlighting definitions.");
-                        def = func();
-                    }
-                    if (def == null)
-                        throw new InvalidOperationException("Function for delay-loading highlighting definition returned null");
-                }
-                catch (Exception ex)
-                {
-                    exception = ex;
-                }
-                lock (_lockObj)
-                {
-                    _lazyLoadingFunction = null;
-                    if (_definition == null && _storedException == null)
-                    {
-                        _definition = def;
-                        _storedException = exception;
-                    }
-                    if (_storedException != null)
-                        throw new HighlightingDefinitionInvalidException("Error delay-loading highlighting definition", _storedException);
-                    return _definition;
-                }
-            }
 
             public HighlightingRuleSet MainRuleSet => GetDefinition().MainRuleSet;
 
@@ -106,120 +152,81 @@ namespace AvaloniaEdit.Highlighting
 
             public IEnumerable<HighlightingColor> NamedHighlightingColors => GetDefinition().NamedHighlightingColors;
 
+            public IDictionary<string, string> Properties => GetDefinition().Properties;
+
+            [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes",
+                Justification = "The exception will be rethrown")]
+            private IHighlightingDefinition GetDefinition()
+            {
+                Func<IHighlightingDefinition> func;
+
+                lock (_lockObj)
+                {
+                    if (_definition != null)
+                        return _definition;
+
+                    func = _lazyLoadingFunction;
+                }
+
+                Exception exception = null;
+                IHighlightingDefinition def = null;
+
+                try
+                {
+                    using (var busyLock = BusyManager.Enter(this))
+                    {
+                        if (!busyLock.Success)
+                            throw new InvalidOperationException("Tried to create delay-loaded highlighting definition recursively. Make sure the are no cyclic references between the highlighting definitions.");
+
+                        def = func();
+                    }
+
+                    if (def == null)
+                        throw new InvalidOperationException("Function for delay-loading highlighting definition returned null");
+                }
+                catch (Exception ex)
+                {
+                    exception = ex;
+                }
+
+                lock (_lockObj)
+                {
+                    _lazyLoadingFunction = null;
+
+                    if (_definition == null && _storedException == null)
+                    {
+                        _definition = def;
+                        _storedException = exception;
+                    }
+
+                    if (_storedException != null)
+                        throw new HighlightingDefinitionInvalidException("Error delay-loading highlighting definition", _storedException);
+
+                    return _definition;
+                }
+            }
+
             public override string ToString()
             {
                 return Name;
             }
-
-            public IDictionary<string, string> Properties => GetDefinition().Properties;
         }
-
-        private readonly object _lockObj = new object();
-        private readonly Dictionary<string, IHighlightingDefinition> _highlightingsByName = new Dictionary<string, IHighlightingDefinition>();
-        private readonly Dictionary<string, IHighlightingDefinition> _highlightingsByExtension = new Dictionary<string, IHighlightingDefinition>(StringComparer.OrdinalIgnoreCase);
-        private readonly List<IHighlightingDefinition> _allHighlightings = new List<IHighlightingDefinition>();
-
-        /// <summary>
-        /// Gets a highlighting definition by name.
-        /// Returns null if the definition is not found.
-        /// </summary>
-        public IHighlightingDefinition GetDefinition(string name)
-        {
-            lock (_lockObj)
-            {
-                return _highlightingsByName.TryGetValue(name, out var rh) ? rh : null;
-            }
-        }
-
-        /// <summary>
-        /// Gets a copy of all highlightings.
-        /// </summary>
-        public ReadOnlyCollection<IHighlightingDefinition> HighlightingDefinitions
-        {
-            get
-            {
-                lock (_lockObj)
-                {
-                    return new ReadOnlyCollection<IHighlightingDefinition>(_allHighlightings);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets a highlighting definition by extension.
-        /// Returns null if the definition is not found.
-        /// </summary>
-        public IHighlightingDefinition GetDefinitionByExtension(string extension)
-        {
-            lock (_lockObj)
-            {
-                return _highlightingsByExtension.TryGetValue(extension, out var rh) ? rh : null;
-            }
-        }
-
-        /// <summary>
-        /// Registers a highlighting definition.
-        /// </summary>
-        /// <param name="name">The name to register the definition with.</param>
-        /// <param name="extensions">The file extensions to register the definition for.</param>
-        /// <param name="highlighting">The highlighting definition.</param>
-        public void RegisterHighlighting(string name, string[] extensions, IHighlightingDefinition highlighting)
-        {
-            if (highlighting == null)
-                throw new ArgumentNullException(nameof(highlighting));
-
-            lock (_lockObj)
-            {
-                _allHighlightings.Add(highlighting);
-                if (name != null)
-                {
-                    _highlightingsByName[name] = highlighting;
-                }
-                if (extensions != null)
-                {
-                    foreach (var ext in extensions)
-                    {
-                        _highlightingsByExtension[ext] = highlighting;
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Registers a highlighting definition.
-        /// </summary>
-        /// <param name="name">The name to register the definition with.</param>
-        /// <param name="extensions">The file extensions to register the definition for.</param>
-        /// <param name="lazyLoadedHighlighting">A function that loads the highlighting definition.</param>
-        public void RegisterHighlighting(string name, string[] extensions, Func<IHighlightingDefinition> lazyLoadedHighlighting)
-        {
-            if (lazyLoadedHighlighting == null)
-                throw new ArgumentNullException(nameof(lazyLoadedHighlighting));
-            RegisterHighlighting(name, extensions, new DelayLoadedHighlightingDefinition(name, lazyLoadedHighlighting));
-        }
-
-        /// <summary>
-        /// Gets the default HighlightingManager instance.
-        /// The default HighlightingManager comes with built-in highlightings.
-        /// </summary>
-        public static HighlightingManager Instance => DefaultHighlightingManager.Instance;
 
         internal sealed class DefaultHighlightingManager : HighlightingManager
         {
-            // ReSharper disable once MemberHidesStaticFromOuterClass
-            public new static DefaultHighlightingManager Instance { get; } = new DefaultHighlightingManager();
-
             public DefaultHighlightingManager()
             {
                 Resources.RegisterBuiltInHighlightings(this);
             }
+
+            // ReSharper disable once MemberHidesStaticFromOuterClass
+            public new static DefaultHighlightingManager Instance { get; } = new DefaultHighlightingManager();
 
             // Registering a built-in highlighting
             internal void RegisterHighlighting(string name, string[] extensions, string resourceName)
             {
                 try
                 {
-
                     RegisterHighlighting(name, extensions, LoadHighlighting(resourceName));
                 }
                 catch (HighlightingDefinitionInvalidException ex)
@@ -229,18 +236,20 @@ namespace AvaloniaEdit.Highlighting
             }
 
             [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode",
-                                                             Justification = "LoadHighlighting is used only in release builds")]
+                Justification = "LoadHighlighting is used only in release builds")]
             private Func<IHighlightingDefinition> LoadHighlighting(string resourceName)
             {
                 IHighlightingDefinition Func()
                 {
                     XshdSyntaxDefinition xshd;
+
                     using (var s = Resources.OpenStream(resourceName))
                     using (var reader = XmlReader.Create(s))
                     {
                         // in release builds, skip validating the built-in highlightings
                         xshd = HighlightingLoader.LoadXshd(reader, true);
                     }
+
                     return HighlightingLoader.Load(xshd, this);
                 }
 

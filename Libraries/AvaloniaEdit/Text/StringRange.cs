@@ -8,7 +8,7 @@ namespace AvaloniaEdit.Text
 
         public int Length { get; }
 
-        public static StringRange Empty => default(StringRange);
+        public static StringRange Empty => default;
 
         internal int OffsetToFirstChar { get; }
 
@@ -40,6 +40,7 @@ namespace AvaloniaEdit.Text
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
+
             return obj is StringRange && Equals((StringRange)obj);
         }
 
@@ -47,7 +48,7 @@ namespace AvaloniaEdit.Text
         {
             unchecked
             {
-                var hashCode = (String != null ? String.GetHashCode() : 0);
+                var hashCode = String != null ? String.GetHashCode() : 0;
                 hashCode = (hashCode * 397) ^ Length;
                 hashCode = (hashCode * 397) ^ OffsetToFirstChar;
                 return hashCode;

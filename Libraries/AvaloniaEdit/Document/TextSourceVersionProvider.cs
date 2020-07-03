@@ -25,14 +25,14 @@ using AvaloniaEdit.Utils;
 namespace AvaloniaEdit.Document
 {
     /// <summary>
-    /// Provides ITextSourceVersion instances.
+    ///     Provides ITextSourceVersion instances.
     /// </summary>
     public class TextSourceVersionProvider
     {
         private Version _currentVersion;
 
         /// <summary>
-        /// Creates a new TextSourceVersionProvider instance.
+        ///     Creates a new TextSourceVersionProvider instance.
         /// </summary>
         public TextSourceVersionProvider()
         {
@@ -40,12 +40,12 @@ namespace AvaloniaEdit.Document
         }
 
         /// <summary>
-        /// Gets the current version.
+        ///     Gets the current version.
         /// </summary>
         public ITextSourceVersion CurrentVersion => _currentVersion;
 
         /// <summary>
-        /// Replaces the current version with a new version.
+        ///     Replaces the current version with a new version.
         /// </summary>
         /// <param name="change">Change from current version to new version</param>
         public void AppendChange(TextChangeEventArgs change)
@@ -58,11 +58,12 @@ namespace AvaloniaEdit.Document
         [DebuggerDisplay("Version #{" + nameof(_id) + "}")]
         private sealed class Version : ITextSourceVersion
         {
+            // ID used for CompareAge()
+            private readonly int _id;
+
             // Reference back to the provider.
             // Used to determine if two checkpoints belong to the same document.
             private readonly TextSourceVersionProvider _provider;
-            // ID used for CompareAge()
-            private readonly int _id;
 
             // the change from this version to the next version
             internal TextChangeEventArgs Change;
@@ -91,6 +92,7 @@ namespace AvaloniaEdit.Document
 
                 if (!(other is Version o) || _provider != o._provider)
                     throw new ArgumentException("Versions do not belong to the same document.");
+
                 // We will allow overflows, but assume that the maximum distance between checkpoints is 2^31-1.
                 // This is guaranteed on x86 because so many checkpoints don't fit into memory.
                 return Math.Sign(unchecked(_id - o._id));
@@ -100,26 +102,27 @@ namespace AvaloniaEdit.Document
             {
                 var result = CompareAge(other);
                 var o = (Version)other;
+
                 if (result < 0)
                     return GetForwardChanges(o);
+
                 if (result > 0)
                     return o.GetForwardChanges(this).Reverse().Select(c => c.Invert());
-                return Empty<TextChangeEventArgs>.Array;
-            }
 
-            private IEnumerable<TextChangeEventArgs> GetForwardChanges(Version other)
-            {
-                // Return changes from this(inclusive) to other(exclusive).
-                for (var node = this; node != other; node = node.Next)
-                {
-                    yield return node.Change;
-                }
+                return Empty<TextChangeEventArgs>.Array;
             }
 
             public int MoveOffsetTo(ITextSourceVersion other, int oldOffset, AnchorMovementType movement)
             {
                 return GetChangesTo(other)
                     .Aggregate(oldOffset, (current, e) => e.GetNewOffset(current, movement));
+            }
+
+            private IEnumerable<TextChangeEventArgs> GetForwardChanges(Version other)
+            {
+                // Return changes from this(inclusive) to other(exclusive).
+                for (var node = this; node != other; node = node.Next)
+                    yield return node.Change;
             }
         }
     }

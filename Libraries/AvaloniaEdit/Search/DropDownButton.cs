@@ -20,24 +20,28 @@ using System;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
-using Avalonia.Interactivity;
-using Avalonia.Styling;
 
 namespace AvaloniaEdit.Search
 {
     /// <summary>
-    /// A button that opens a drop-down menu when clicked.
+    ///     A button that opens a drop-down menu when clicked.
     /// </summary>
     public class DropDownButton : Button
     {
         /// <summary>
-        /// Identifies the <see cref="DropDownContentProperty" /> dependency property.
+        ///     Identifies the <see cref="DropDownContentProperty" /> dependency property.
         /// </summary>
         public static readonly StyledProperty<Popup> DropDownContentProperty
             = AvaloniaProperty.Register<DropDownButton, Popup>(nameof(DropDownContent));
 
         /// <summary>
-        /// Gets/Sets the popup that is used as drop-down content.
+        ///     Identifies the <see cref="IsDropDownContentOpenProperty" /> dependency property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsDropDownContentOpenProperty
+            = AvaloniaProperty.Register<DropDownButton, bool>(nameof(IsDropDownContentOpen));
+
+        /// <summary>
+        ///     Gets/Sets the popup that is used as drop-down content.
         /// </summary>
         public Popup DropDownContent
         {
@@ -46,13 +50,7 @@ namespace AvaloniaEdit.Search
         }
 
         /// <summary>
-        /// Identifies the <see cref="IsDropDownContentOpenProperty" /> dependency property.
-        /// </summary>
-        public static readonly StyledProperty<bool> IsDropDownContentOpenProperty
-            = AvaloniaProperty.Register<DropDownButton, bool>(nameof(IsDropDownContentOpen));
-        
-        /// <summary>
-        /// Gets whether the drop-down is opened.
+        ///     Gets whether the drop-down is opened.
         /// </summary>
         public bool IsDropDownContentOpen
         {
@@ -60,19 +58,19 @@ namespace AvaloniaEdit.Search
             protected set => SetValue(IsDropDownContentOpenProperty, value);
         }
 
-       /* protected override void OnClick(RoutedEventArgs e)
-        {
-            base.OnClick(e);
-
-            if (DropDownContent != null && !IsDropDownContentOpen)
-            {
-                DropDownContent.PlacementMode = PlacementMode.Bottom;
-                DropDownContent.PlacementTarget = this;
-                DropDownContent.IsOpen = true;
-                DropDownContent.Closed += DropDownContent_Closed;
-                IsDropDownContentOpen = true;
-            }
-        }*/
+        /* protected override void OnClick(RoutedEventArgs e)
+         {
+             base.OnClick(e);
+ 
+             if (DropDownContent != null && !IsDropDownContentOpen)
+             {
+                 DropDownContent.PlacementMode = PlacementMode.Bottom;
+                 DropDownContent.PlacementTarget = this;
+                 DropDownContent.IsOpen = true;
+                 DropDownContent.Closed += DropDownContent_Closed;
+                 IsDropDownContentOpen = true;
+             }
+         }*/
 
         private void DropDownContent_Closed(object sender, EventArgs e)
         {

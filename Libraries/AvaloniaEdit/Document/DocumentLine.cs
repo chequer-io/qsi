@@ -23,22 +23,39 @@ using System.Globalization;
 namespace AvaloniaEdit.Document
 {
     /// <summary>
-    /// Represents a line inside a <see cref="TextDocument"/>.
+    ///     Represents a line inside a <see cref="TextDocument" />.
     /// </summary>
     /// <remarks>
-    /// <para>
-    /// The <see cref="TextDocument.Lines"/> collection contains one DocumentLine instance
-    /// for every line in the document. This collection is read-only to user code and is automatically
-    /// updated to reflect the current document content.
-    /// </para>
-    /// <para>
-    /// Internally, the DocumentLine instances are arranged in a binary tree that allows for both efficient updates and lookup.
-    /// Converting between offset and line number is possible in O(lg N) time,
-    /// and the data structure also updates all offsets in O(lg N) whenever a line is inserted or removed.
-    /// </para>
+    ///     <para>
+    ///         The <see cref="TextDocument.Lines" /> collection contains one DocumentLine instance
+    ///         for every line in the document. This collection is read-only to user code and is automatically
+    ///         updated to reflect the current document content.
+    ///     </para>
+    ///     <para>
+    ///         Internally, the DocumentLine instances are arranged in a binary tree that allows for both efficient updates and
+    ///         lookup.
+    ///         Converting between offset and line number is possible in O(lg N) time,
+    ///         and the data structure also updates all offsets in O(lg N) whenever a line is inserted or removed.
+    ///     </para>
     /// </remarks>
     public sealed partial class DocumentLine : IDocumentLine
     {
+        #region ToString
+        /// <summary>
+        ///     Gets a string with debug output showing the line number and offset.
+        ///     Does not include the line's text.
+        /// </summary>
+        public override string ToString()
+        {
+            if (IsDeleted)
+                return "[DocumentLine deleted]";
+
+            return string.Format(
+                CultureInfo.InvariantCulture,
+                "[DocumentLine Number={0} Offset={1} Length={2}]", LineNumber, Offset, Length);
+        }
+        #endregion
+
         #region Constructor
 #if DEBUG
         // Required for thread safety check which is done only in debug builds.
@@ -93,7 +110,7 @@ namespace AvaloniaEdit.Document
 
         #region Properties stored in tree
         /// <summary>
-        /// Gets if this line was deleted from the document.
+        ///     Gets if this line was deleted from the document.
         /// </summary>
         public bool IsDeleted
         {
@@ -106,8 +123,8 @@ namespace AvaloniaEdit.Document
         }
 
         /// <summary>
-        /// Gets the number of this line.
-        /// Runtime: O(log n)
+        ///     Gets the number of this line.
+        ///     Runtime: O(log n)
         /// </summary>
         /// <exception cref="InvalidOperationException">The line was deleted.</exception>
         public int LineNumber
@@ -116,13 +133,14 @@ namespace AvaloniaEdit.Document
             {
                 if (IsDeleted)
                     throw new InvalidOperationException();
+
                 return DocumentLineTree.GetIndexFromNode(this) + 1;
             }
         }
 
         /// <summary>
-        /// Gets the starting offset of the line in the document's text.
-        /// Runtime: O(log n)
+        ///     Gets the starting offset of the line in the document's text.
+        ///     Runtime: O(log n)
         /// </summary>
         /// <exception cref="InvalidOperationException">The line was deleted.</exception>
         public int Offset
@@ -131,30 +149,31 @@ namespace AvaloniaEdit.Document
             {
                 if (IsDeleted)
                     throw new InvalidOperationException();
+
                 return DocumentLineTree.GetOffsetFromNode(this);
             }
         }
 
         /// <summary>
-        /// Gets the end offset of the line in the document's text (the offset before the line delimiter).
-        /// Runtime: O(log n)
+        ///     Gets the end offset of the line in the document's text (the offset before the line delimiter).
+        ///     Runtime: O(log n)
         /// </summary>
         /// <exception cref="InvalidOperationException">The line was deleted.</exception>
-        /// <remarks>EndOffset = <see cref="Offset"/> + <see cref="Length"/>.</remarks>
+        /// <remarks>EndOffset = <see cref="Offset" /> + <see cref="Length" />.</remarks>
         public int EndOffset => Offset + Length;
-
         #endregion
 
         #region Length
-
         private int _totalLength;
         private byte _delimiterLength;
 
         /// <summary>
-        /// Gets the length of this line. The length does not include the line delimiter. O(1)
+        ///     Gets the length of this line. The length does not include the line delimiter. O(1)
         /// </summary>
-        /// <remarks>This property is still available even if the line was deleted;
-        /// in that case, it contains the line's length before the deletion.</remarks>
+        /// <remarks>
+        ///     This property is still available even if the line was deleted;
+        ///     in that case, it contains the line's length before the deletion.
+        /// </remarks>
         public int Length
         {
             get
@@ -165,10 +184,12 @@ namespace AvaloniaEdit.Document
         }
 
         /// <summary>
-        /// Gets the length of this line, including the line delimiter. O(1)
+        ///     Gets the length of this line, including the line delimiter. O(1)
         /// </summary>
-        /// <remarks>This property is still available even if the line was deleted;
-        /// in that case, it contains the line's length before the deletion.</remarks>
+        /// <remarks>
+        ///     This property is still available even if the line was deleted;
+        ///     in that case, it contains the line's length before the deletion.
+        /// </remarks>
         public int TotalLength
         {
             get
@@ -181,12 +202,16 @@ namespace AvaloniaEdit.Document
         }
 
         /// <summary>
-        /// <para>Gets the length of the line delimiter.</para>
-        /// <para>The value is 1 for single <c>"\r"</c> or <c>"\n"</c>, 2 for the <c>"\r\n"</c> sequence;
-        /// and 0 for the last line in the document.</para>
+        ///     <para>Gets the length of the line delimiter.</para>
+        ///     <para>
+        ///         The value is 1 for single <c>"\r"</c> or <c>"\n"</c>, 2 for the <c>"\r\n"</c> sequence;
+        ///         and 0 for the last line in the document.
+        ///     </para>
         /// </summary>
-        /// <remarks>This property is still available even if the line was deleted;
-        /// in that case, it contains the line delimiter's length before the deletion.</remarks>
+        /// <remarks>
+        ///     This property is still available even if the line was deleted;
+        ///     in that case, it contains the line delimiter's length before the deletion.
+        /// </remarks>
         public int DelimiterLength
         {
             get
@@ -204,7 +229,7 @@ namespace AvaloniaEdit.Document
 
         #region Previous / Next Line
         /// <summary>
-        /// Gets the next line in the document.
+        ///     Gets the next line in the document.
         /// </summary>
         /// <returns>The line following this line, or null if this is the last line.</returns>
         public DocumentLine NextLine
@@ -214,23 +239,24 @@ namespace AvaloniaEdit.Document
                 DebugVerifyAccess();
 
                 if (Right != null)
-                {
                     return Right.LeftMost;
-                }
+
                 var node = this;
                 DocumentLine oldNode;
+
                 do
                 {
                     oldNode = node;
                     node = node.Parent;
                     // we are on the way up from the right part, don't output node again
                 } while (node != null && node.Right == oldNode);
+
                 return node;
             }
         }
 
         /// <summary>
-        /// Gets the previous line in the document.
+        ///     Gets the previous line in the document.
         /// </summary>
         /// <returns>The line before this line, or null if this is the first line.</returns>
         public DocumentLine PreviousLine
@@ -240,17 +266,18 @@ namespace AvaloniaEdit.Document
                 DebugVerifyAccess();
 
                 if (Left != null)
-                {
                     return Left.RightMost;
-                }
+
                 var node = this;
                 DocumentLine oldNode;
+
                 do
                 {
                     oldNode = node;
                     node = node.Parent;
                     // we are on the way up from the left part, don't output node again
                 } while (node != null && node.Left == oldNode);
+
                 return node;
             }
         }
@@ -258,22 +285,6 @@ namespace AvaloniaEdit.Document
         IDocumentLine IDocumentLine.NextLine => NextLine;
 
         IDocumentLine IDocumentLine.PreviousLine => PreviousLine;
-
-        #endregion
-
-        #region ToString
-        /// <summary>
-        /// Gets a string with debug output showing the line number and offset.
-        /// Does not include the line's text.
-        /// </summary>
-        public override string ToString()
-        {
-            if (IsDeleted)
-                return "[DocumentLine deleted]";
-            return string.Format(
-                CultureInfo.InvariantCulture,
-                "[DocumentLine Number={0} Offset={1} Length={2}]", LineNumber, Offset, Length);
-        }
         #endregion
     }
 }

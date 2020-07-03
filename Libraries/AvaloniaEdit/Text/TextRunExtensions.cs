@@ -8,6 +8,7 @@ namespace AvaloniaEdit.Text
             {
                 case TextCharacters _:
                     return textRun.StringRange;
+
                 default:
                     return StringRange.Empty;
             }

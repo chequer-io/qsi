@@ -19,8 +19,8 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using AvaloniaEdit.Editing;
 using Avalonia.Input;
+using AvaloniaEdit.Editing;
 
 namespace AvaloniaEdit.Snippets
 {
@@ -50,6 +50,7 @@ namespace AvaloniaEdit.Snippets
         public override void OnPreviewKeyDown(KeyEventArgs e)
         {
             base.OnPreviewKeyDown(e);
+
             if (e.Key == Key.Escape)
             {
                 _context.Deactivate(new SnippetEventArgs(DeactivateReason.EscapePressed));
@@ -81,23 +82,22 @@ namespace AvaloniaEdit.Snippets
         private IActiveElement FindNextEditableElement(int offset, bool backwards)
         {
             IEnumerable<IActiveElement> elements = _context.ActiveElements.Where(e => e.IsEditable && e.Segment != null);
+
             if (backwards)
             {
                 elements = elements.Reverse();
+
                 foreach (var element in elements)
-                {
                     if (offset > element.Segment.EndOffset)
                         return element;
-                }
             }
             else
             {
                 foreach (var element in elements)
-                {
                     if (offset < element.Segment.Offset)
                         return element;
-                }
             }
+
             return elements.FirstOrDefault();
         }
     }

@@ -10,8 +10,11 @@ namespace AvaloniaEdit
 {
     public class RoutedCommand : ICommand
     {
-        public string Name { get; }
-        public KeyGesture Gesture { get; }
+        static RoutedCommand()
+        {
+            CanExecuteEvent.AddClassHandler<IRoutedCommandBindable>(CanExecuteEventHandler);
+            ExecutedEvent.AddClassHandler<IRoutedCommandBindable>(ExecutedEventHandler);
+        }
 
         public RoutedCommand(string name, KeyGesture keyGesture = null)
         {
@@ -19,57 +22,17 @@ namespace AvaloniaEdit
             Gesture = keyGesture;
         }
 
-        static RoutedCommand()
-        {
-            CanExecuteEvent.AddClassHandler<IRoutedCommandBindable>(CanExecuteEventHandler);
-            ExecutedEvent.AddClassHandler<IRoutedCommandBindable>(ExecutedEventHandler);
-        }
+        public string Name { get; }
 
-        private static Action<CanExecuteRoutedEventArgs> CanExecuteEventHandler(IRoutedCommandBindable control)
-        {
-            return args =>
-            {
-                var binding = control.CommandBindings.Where(c => c != null)
-                    .FirstOrDefault(c => c.Command == args.Command && c.DoCanExecute(control, args));
-                args.CanExecute = binding != null;
-            };
-        }
-
-        private static Action<ExecutedRoutedEventArgs> ExecutedEventHandler(IRoutedCommandBindable control)
-        {
-            return args =>
-            {
-                // ReSharper disable once UnusedVariable
-                var binding = control.CommandBindings.Where(c => c != null)
-                    .FirstOrDefault(c => c.Command == args.Command && c.DoExecuted(control, args));
-            };
-        }
+        public KeyGesture Gesture { get; }
 
         public static RoutedEvent<CanExecuteRoutedEventArgs> CanExecuteEvent { get; } = RoutedEvent.Register<CanExecuteRoutedEventArgs>(nameof(CanExecuteEvent), RoutingStrategies.Bubble, typeof(RoutedCommand));
 
-        public bool CanExecute(object parameter, IInputElement target)
-        {
-            if (target == null) return false;
-
-            var args = new CanExecuteRoutedEventArgs(this, parameter);
-            target.RaiseEvent(args);
-
-            return args.CanExecute;
-        }
+        public static RoutedEvent<ExecutedRoutedEventArgs> ExecutedEvent { get; } = RoutedEvent.Register<ExecutedRoutedEventArgs>(nameof(ExecutedEvent), RoutingStrategies.Bubble, typeof(RoutedCommand));
 
         bool ICommand.CanExecute(object parameter)
         {
             return CanExecute(parameter, Application.Current.FocusManager.Current);
-        }
-
-        public static RoutedEvent<ExecutedRoutedEventArgs> ExecutedEvent { get; } = RoutedEvent.Register<ExecutedRoutedEventArgs>(nameof(ExecutedEvent), RoutingStrategies.Bubble, typeof(RoutedCommand));
-
-        public void Execute(object parameter, IInputElement target)
-        {
-            if (target == null) return;
-
-            var args = new ExecutedRoutedEventArgs(this, parameter);
-            target.RaiseEvent(args);
         }
 
         void ICommand.Execute(object parameter)
@@ -83,6 +46,39 @@ namespace AvaloniaEdit
             add { }
             remove { }
         }
+
+        private static void CanExecuteEventHandler(IRoutedCommandBindable control, CanExecuteRoutedEventArgs e)
+        {
+            var binding = control.CommandBindings.Where(c => c != null)
+                .FirstOrDefault(c => c.Command == e.Command && c.DoCanExecute(control, e));
+
+            e.CanExecute = binding != null;
+        }
+
+        private static void ExecutedEventHandler(IRoutedCommandBindable control, ExecutedRoutedEventArgs e)
+        {
+            // ReSharper disable once UnusedVariable
+            var binding = control.CommandBindings.Where(c => c != null)
+                .FirstOrDefault(c => c.Command == e.Command && c.DoExecuted(control, e));
+        }
+
+        public bool CanExecute(object parameter, IInputElement target)
+        {
+            if (target == null) return false;
+
+            var args = new CanExecuteRoutedEventArgs(this, parameter);
+            target.RaiseEvent(args);
+
+            return args.CanExecute;
+        }
+
+        public void Execute(object parameter, IInputElement target)
+        {
+            if (target == null) return;
+
+            var args = new ExecutedRoutedEventArgs(this, parameter);
+            target.RaiseEvent(args);
+        }
     }
 
     public interface IRoutedCommandBindable : IInteractive
@@ -93,8 +89,8 @@ namespace AvaloniaEdit
     public class RoutedCommandBinding
     {
         public RoutedCommandBinding(RoutedCommand command,
-            EventHandler<ExecutedRoutedEventArgs> executed = null,
-            EventHandler<CanExecuteRoutedEventArgs> canExecute = null)
+                                    EventHandler<ExecutedRoutedEventArgs> executed = null,
+                                    EventHandler<CanExecuteRoutedEventArgs> canExecute = null)
         {
             Command = command;
             if (executed != null) Executed += executed;
@@ -112,6 +108,7 @@ namespace AvaloniaEdit
             if (e.Handled) return true;
 
             EventHandler<CanExecuteRoutedEventArgs> canExecute = CanExecute;
+
             if (canExecute == null)
             {
                 if (Executed != null)
@@ -125,9 +122,7 @@ namespace AvaloniaEdit
                 canExecute(sender, e);
 
                 if (e.CanExecute)
-                {
                     e.Handled = true;
-                }
             }
 
             return e.CanExecute;
@@ -140,14 +135,12 @@ namespace AvaloniaEdit
                 EventHandler<ExecutedRoutedEventArgs> executed = Executed;
 
                 if (executed != null)
-                {
                     if (DoCanExecute(sender, new CanExecuteRoutedEventArgs(e.Command, e.Parameter)))
                     {
                         executed(sender, e);
                         e.Handled = true;
                         return true;
                     }
-                }
             }
 
             return false;
@@ -156,31 +149,31 @@ namespace AvaloniaEdit
 
     public sealed class CanExecuteRoutedEventArgs : RoutedEventArgs
     {
-        public ICommand Command { get; }
-
-        public object Parameter { get; }
-
-        public bool CanExecute { get; set; }
-
         internal CanExecuteRoutedEventArgs(ICommand command, object parameter)
         {
             Command = command ?? throw new ArgumentNullException(nameof(command));
             Parameter = parameter;
             RoutedEvent = RoutedCommand.CanExecuteEvent;
         }
-    }
 
-    public sealed class ExecutedRoutedEventArgs : RoutedEventArgs
-    {
         public ICommand Command { get; }
 
         public object Parameter { get; }
 
+        public bool CanExecute { get; set; }
+    }
+
+    public sealed class ExecutedRoutedEventArgs : RoutedEventArgs
+    {
         internal ExecutedRoutedEventArgs(ICommand command, object parameter)
         {
             Command = command ?? throw new ArgumentNullException(nameof(command));
             Parameter = parameter;
             RoutedEvent = RoutedCommand.ExecutedEvent;
         }
+
+        public ICommand Command { get; }
+
+        public object Parameter { get; }
     }
 }

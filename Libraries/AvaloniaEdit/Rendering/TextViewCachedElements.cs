@@ -24,27 +24,22 @@ namespace AvaloniaEdit.Rendering
 {
     internal sealed class TextViewCachedElements
     {
-        private Dictionary<string, TextLine> _nonPrintableCharacterTexts;
         private TextFormatter _formatter;
+        private Dictionary<string, TextLine> _nonPrintableCharacterTexts;
 
         public TextLine GetTextForNonPrintableCharacter(string text, ITextRunConstructionContext context)
         {
             if (_nonPrintableCharacterTexts == null)
-            {
                 _nonPrintableCharacterTexts = new Dictionary<string, TextLine>();
-            }
 
             if (_nonPrintableCharacterTexts.TryGetValue(text, out var textLine))
-            {
                 return textLine;
-            }
 
             var properties = context.GlobalTextRunProperties.Clone();
             properties.ForegroundBrush = context.TextView.NonPrintableCharacterBrush;
+
             if (_formatter == null)
-            {
                 _formatter = TextFormatterFactory.Create();
-            }
 
             textLine = FormattedTextElement.PrepareText(_formatter, text, properties);
             _nonPrintableCharacterTexts[text] = textLine;

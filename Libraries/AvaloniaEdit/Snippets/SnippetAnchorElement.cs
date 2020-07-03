@@ -21,22 +21,22 @@ using AvaloniaEdit.Document;
 namespace AvaloniaEdit.Snippets
 {
     /// <summary>
-    /// Creates a named anchor that can be accessed by other SnippetElements.
+    ///     Creates a named anchor that can be accessed by other SnippetElements.
     /// </summary>
     public sealed class SnippetAnchorElement : SnippetElement
     {
         /// <summary>
-        /// Gets or sets the name of the anchor.
-        /// </summary>
-        public string Name { get; }
-
-        /// <summary>
-        /// Creates a SnippetAnchorElement with the supplied name.
+        ///     Creates a SnippetAnchorElement with the supplied name.
         /// </summary>
         public SnippetAnchorElement(string name)
         {
             Name = name;
         }
+
+        /// <summary>
+        ///     Gets or sets the name of the anchor.
+        /// </summary>
+        public string Name { get; }
 
         /// <inheritdoc />
         public override void Insert(InsertionContext context)
@@ -50,21 +50,16 @@ namespace AvaloniaEdit.Snippets
     }
 
     /// <summary>
-    /// AnchorElement created by SnippetAnchorElement.
+    ///     AnchorElement created by SnippetAnchorElement.
     /// </summary>
     public sealed class AnchorElement : IActiveElement
     {
-        /// <inheritdoc />
-        public bool IsEditable => false;
-
-        private AnchorSegment _segment;
         private readonly InsertionContext _context;
 
-        /// <inheritdoc />
-        public ISegment Segment => _segment;
+        private AnchorSegment _segment;
 
         /// <summary>
-        /// Creates a new AnchorElement.
+        ///     Creates a new AnchorElement.
         /// </summary>
         public AnchorElement(AnchorSegment segment, string name, InsertionContext context)
         {
@@ -74,7 +69,7 @@ namespace AvaloniaEdit.Snippets
         }
 
         /// <summary>
-        /// Gets or sets the text at the anchor.
+        ///     Gets or sets the text at the anchor.
         /// </summary>
         public string Text
         {
@@ -84,18 +79,23 @@ namespace AvaloniaEdit.Snippets
                 var offset = _segment.Offset;
                 var length = _segment.Length;
                 _context.Document.Replace(offset, length, value);
+
                 if (length == 0)
-                {
                     // replacing an empty anchor segment with text won't enlarge it, so we have to recreate it
                     _segment = new AnchorSegment(_context.Document, offset, value.Length);
-                }
             }
         }
 
         /// <summary>
-        /// Gets or sets the name of the anchor.
+        ///     Gets or sets the name of the anchor.
         /// </summary>
         public string Name { get; }
+
+        /// <inheritdoc />
+        public bool IsEditable => false;
+
+        /// <inheritdoc />
+        public ISegment Segment => _segment;
 
         /// <inheritdoc />
         public void OnInsertionCompleted()

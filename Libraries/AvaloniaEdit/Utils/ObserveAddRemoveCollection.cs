@@ -22,9 +22,9 @@ using System.Collections.ObjectModel;
 namespace AvaloniaEdit.Utils
 {
     /// <summary>
-    /// A collection where adding and removing items causes a callback.
-    /// It is valid for the onAdd callback to throw an exception - this will prevent the new item from
-    /// being added to the collection.
+    ///     A collection where adding and removing items causes a callback.
+    ///     It is valid for the onAdd callback to throw an exception - this will prevent the new item from
+    ///     being added to the collection.
     /// </summary>
     internal sealed class ObserveAddRemoveCollection<T> : Collection<T>
     {
@@ -32,7 +32,7 @@ namespace AvaloniaEdit.Utils
         private readonly Action<T> _onRemove;
 
         /// <summary>
-        /// Creates a new ObserveAddRemoveCollection using the specified callbacks.
+        ///     Creates a new ObserveAddRemoveCollection using the specified callbacks.
         /// </summary>
         public ObserveAddRemoveCollection(Action<T> onAdd, Action<T> onRemove)
         {
@@ -40,35 +40,35 @@ namespace AvaloniaEdit.Utils
             _onRemove = onRemove ?? throw new ArgumentNullException(nameof(onRemove));
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void ClearItems()
         {
             if (_onRemove != null)
-            {
                 foreach (var val in this)
                     _onRemove(val);
-            }
+
             base.ClearItems();
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void InsertItem(int index, T item)
         {
             _onAdd?.Invoke(item);
             base.InsertItem(index, item);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void RemoveItem(int index)
         {
             _onRemove?.Invoke(this[index]);
             base.RemoveItem(index);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void SetItem(int index, T item)
         {
             _onRemove?.Invoke(this[index]);
+
             try
             {
                 _onAdd?.Invoke(item);
@@ -80,6 +80,7 @@ namespace AvaloniaEdit.Utils
                 RemoveAt(index);
                 throw;
             }
+
             base.SetItem(index, item);
         }
     }

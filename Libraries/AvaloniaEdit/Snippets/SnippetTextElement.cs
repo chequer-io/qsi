@@ -19,28 +19,26 @@
 namespace AvaloniaEdit.Snippets
 {
 	/// <summary>
-	/// Represents a text element in a snippet.
+	///     Represents a text element in a snippet.
 	/// </summary>
 	public class SnippetTextElement : SnippetElement
-	{
+    {
 	    /// <summary>
-		/// The text to be inserted.
-		/// </summary>
-		public string Text { get; set; }
+	    ///     The text to be inserted.
+	    /// </summary>
+	    public string Text { get; set; }
 
-	    /// <inheritdoc/>
-		public override void Insert(InsertionContext context)
-		{
-		    if (Text != null)
-		    {
-		        context.InsertText(Text);
-		    }
-		}
-		
-		///// <inheritdoc/>
-		//public override Inline ToTextRun()
-		//{
-		//	return new Run(Text ?? string.Empty);
-		//}
-	}
+	    /// <inheritdoc />
+	    public override void Insert(InsertionContext context)
+        {
+            if (Text != null)
+                context.InsertText(Text);
+        }
+
+        ///// <inheritdoc/>
+        //public override Inline ToTextRun()
+        //{
+        //	return new Run(Text ?? string.Empty);
+        //}
+    }
 }

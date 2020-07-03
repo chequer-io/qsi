@@ -22,87 +22,80 @@ using AvaloniaEdit.Document;
 namespace AvaloniaEdit.Rendering
 {
 	/// <summary>
-	/// Represents a collapsed line section.
-	/// Use the Uncollapse() method to uncollapse the section.
+	///     Represents a collapsed line section.
+	///     Use the Uncollapse() method to uncollapse the section.
 	/// </summary>
 	public sealed class CollapsedLineSection
-	{
-	    private DocumentLine _start;
-	    private DocumentLine _end;
-	    private readonly HeightTree _heightTree;
-		
-		#if DEBUG
-		internal string Id;
-	    private static int _nextId;
-		#else
-		internal const string Id = "";
-		#endif
-		
-		internal CollapsedLineSection(HeightTree heightTree, DocumentLine start, DocumentLine end)
-		{
-			_heightTree = heightTree;
-			_start = start;
-			_end = end;
-			#if DEBUG
-			unchecked {
-				Id = " #" + (_nextId++);
-			}
-			#endif
-		}
-		
-		/// <summary>
-		/// Gets if the document line is collapsed.
-		/// This property initially is true and turns to false when uncollapsing the section.
-		/// </summary>
-		public bool IsCollapsed => _start != null;
+    {
+        private readonly HeightTree _heightTree;
 
-	    /// <summary>
-		/// Gets the start line of the section.
-		/// When the section is uncollapsed or the text containing it is deleted,
-		/// this property returns null.
-		/// </summary>
-		public DocumentLine Start {
-			get => _start;
-	        internal set => _start = value;
-	    }
-		
-		/// <summary>
-		/// Gets the end line of the section.
-		/// When the section is uncollapsed or the text containing it is deleted,
-		/// this property returns null.
-		/// </summary>
-		public DocumentLine End {
-			get => _end;
-		    internal set => _end = value;
-		}
-		
-		/// <summary>
-		/// Uncollapses the section.
-		/// This causes the Start and End properties to be set to null!
-		/// Does nothing if the section is already uncollapsed.
-		/// </summary>
-		public void Uncollapse()
-		{
-			if (_start == null)
-				return;
-			
-			_heightTree.Uncollapse(this);
-			#if DEBUG
-			//heightTree.CheckProperties();
-			#endif
-			
-			_start = null;
-			_end = null;
-		}
-		
-		/// <summary>
-		/// Gets a string representation of the collapsed section.
-		/// </summary>
-		[SuppressMessage("Microsoft.Globalization", "CA1305:SpecifyIFormatProvider", MessageId = "System.Int32.ToString")]
-		public override string ToString()
-		{
-			return "[CollapsedSection" + Id + " Start=" + (_start != null ? _start.LineNumber.ToString() : "null")
-				+ " End=" + (_end != null ? _end.LineNumber.ToString() : "null") + "]";
-		}
-	}
+#if DEBUG
+        internal string Id;
+        private static int _nextId;
+#else
+		internal const string Id = "";
+#endif
+
+        internal CollapsedLineSection(HeightTree heightTree, DocumentLine start, DocumentLine end)
+        {
+            _heightTree = heightTree;
+            Start = start;
+            End = end;
+#if DEBUG
+            unchecked
+            {
+                Id = " #" + _nextId++;
+            }
+#endif
+        }
+
+        /// <summary>
+        ///     Gets if the document line is collapsed.
+        ///     This property initially is true and turns to false when uncollapsing the section.
+        /// </summary>
+        public bool IsCollapsed => Start != null;
+
+        /// <summary>
+        ///     Gets the start line of the section.
+        ///     When the section is uncollapsed or the text containing it is deleted,
+        ///     this property returns null.
+        /// </summary>
+        public DocumentLine Start { get; internal set; }
+
+        /// <summary>
+        ///     Gets the end line of the section.
+        ///     When the section is uncollapsed or the text containing it is deleted,
+        ///     this property returns null.
+        /// </summary>
+        public DocumentLine End { get; internal set; }
+
+        /// <summary>
+        ///     Uncollapses the section.
+        ///     This causes the Start and End properties to be set to null!
+        ///     Does nothing if the section is already uncollapsed.
+        /// </summary>
+        public void Uncollapse()
+        {
+            if (Start == null)
+                return;
+
+            _heightTree.Uncollapse(this);
+#if DEBUG
+            //heightTree.CheckProperties();
+#endif
+
+            Start = null;
+            End = null;
+        }
+
+        /// <summary>
+        ///     Gets a string representation of the collapsed section.
+        /// </summary>
+        [SuppressMessage("Microsoft.Globalization", "CA1305:SpecifyIFormatProvider", MessageId = "System.Int32.ToString")]
+        public override string ToString()
+        {
+            return "[CollapsedSection" + Id + " Start=" + (Start != null ? Start.LineNumber.ToString() : "null")
+                   + " End=" + (End != null ? End.LineNumber.ToString() : "null") + "]";
+        }
+    }
 }

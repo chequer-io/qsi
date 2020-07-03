@@ -32,7 +32,7 @@
 //	sealed class V1Loader
 //	{
 //		//static XmlSchemaSet schemaSet;
-		
+
 //		//static XmlSchemaSet SchemaSet {
 //		//	get {
 //		//		if (schemaSet == null) {
@@ -42,7 +42,7 @@
 //		//		return schemaSet;
 //		//	}
 //		//}
-		
+
 //		public static XshdSyntaxDefinition LoadDefinition(XmlReader reader, bool skipValidation)
 //		{
 //			reader = HighlightingLoader.GetValidatingReader(reader, false);
@@ -51,7 +51,7 @@
 //			V1Loader loader = new V1Loader();
 //			return loader.ParseDefinition(document.DocumentElement);
 //		}
-		
+
 //		XshdSyntaxDefinition ParseDefinition(XmlElement syntaxDefinition)
 //		{
 //			XshdSyntaxDefinition def = new XshdSyntaxDefinition();
@@ -59,17 +59,17 @@
 //			if (syntaxDefinition.HasAttribute("extensions")) {
 //				def.Extensions.AddRange(syntaxDefinition.GetAttribute("extensions").Split(';', '|'));
 //			}
-			
+
 //			XshdRuleSet mainRuleSetElement = null;
 //			foreach (XmlElement element in syntaxDefinition.GetElementsByTagName("RuleSet")) {
 //				XshdRuleSet ruleSet = ImportRuleSet(element);
 //				def.Elements.Add(ruleSet);
 //				if (ruleSet.Name == null)
 //					mainRuleSetElement = ruleSet;
-				
+
 //				if (syntaxDefinition["Digits"] != null) {
 //					// create digit highlighting rule
-					
+
 //					const string optionalExponent = @"([eE][+-]?[0-9]+)?";
 //					const string floatingPoint = @"\.[0-9]+";
 //					ruleSet.Elements.Add(
@@ -84,7 +84,7 @@
 //						});
 //				}
 //			}
-			
+
 //			if (syntaxDefinition.HasAttribute("extends") && mainRuleSetElement != null) {
 //				// convert 'extends="HTML"' to '<Import ruleSet="HTML/" />' in main rule set.
 //				mainRuleSetElement.Elements.Add(
@@ -94,7 +94,7 @@
 //			}
 //			return def;
 //		}
-		
+
 //		static XshdColor GetColorFromElement(XmlElement element)
 //		{
 //			if (!element.HasAttribute("bold") && !element.HasAttribute("italic") && !element.HasAttribute("color") && !element.HasAttribute("bgcolor"))
@@ -110,7 +110,7 @@
 //				color.Background = ParseColor(element.GetAttribute("bgcolor"));
 //			return color;
 //		}
-		
+
 //		static XshdReference<XshdColor> GetColorReference(XmlElement element)
 //		{
 //			XshdColor color = GetColorFromElement(element);
@@ -119,7 +119,7 @@
 //			else
 //				return new XshdReference<XshdColor>();
 //		}
-		
+
 //		static HighlightingBrush ParseColor(string c)
 //		{
 //			if (c.StartsWith("#", StringComparison.Ordinal)) {
@@ -129,7 +129,7 @@
 //					offset = 2;
 //					a = Int32.Parse(c.Substring(1,2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
 //				}
-				
+
 //				int r = Int32.Parse(c.Substring(1 + offset,2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
 //				int g = Int32.Parse(c.Substring(3 + offset,2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
 //				int b = Int32.Parse(c.Substring(5 + offset,2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
@@ -138,20 +138,20 @@
 //				return new SimpleHighlightingBrush((Color)V2Loader.ColorConverter.ConvertFrom(null, null, c));
 //			}
 //		}
-		
+
 //		char ruleSetEscapeCharacter;
-		
+
 //		XshdRuleSet ImportRuleSet(XmlElement element)
 //		{
 //			XshdRuleSet ruleSet = new XshdRuleSet();
 //			ruleSet.Name = element.GetAttributeOrNull("name");
-			
+
 //			if (element.HasAttribute("escapecharacter")) {
 //				ruleSetEscapeCharacter = element.GetAttribute("escapecharacter")[0];
 //			} else {
 //				ruleSetEscapeCharacter = '\0';
 //			}
-			
+
 //			if (element.HasAttribute("reference")) {
 //				ruleSet.Elements.Add(
 //					new XshdImport { RuleSetReference = new XshdReference<XshdRuleSet>(
@@ -159,7 +159,7 @@
 //					) });
 //			}
 //			ruleSet.IgnoreCase = element.GetBoolAttribute("ignorecase");
-			
+
 //			foreach (XmlElement el in element.GetElementsByTagName("KeyWords")) {
 //				XshdKeywords keywords = new XshdKeywords();
 //				keywords.ColorReference = GetColorReference(el);
@@ -174,28 +174,28 @@
 //					ruleSet.Elements.Add(keywords);
 //				}
 //			}
-			
+
 //			foreach (XmlElement el in element.GetElementsByTagName("Span")) {
 //				ruleSet.Elements.Add(ImportSpan(el));
 //			}
-			
+
 //			foreach (XmlElement el in element.GetElementsByTagName("MarkPrevious")) {
 //				ruleSet.Elements.Add(ImportMarkPrevNext(el, false));
 //			}
 //			foreach (XmlElement el in element.GetElementsByTagName("MarkFollowing")) {
 //				ruleSet.Elements.Add(ImportMarkPrevNext(el, true));
 //			}
-			
+
 //			return ruleSet;
 //		}
-		
+
 //		static XshdRule ImportMarkPrevNext(XmlElement el, bool markFollowing)
 //		{
 //			bool markMarker = el.GetBoolAttribute("markmarker") ?? false;
 //			string what = Regex.Escape(el.InnerText);
 //			const string identifier = @"[\d\w_]+";
 //			const string whitespace = @"\s*";
-			
+
 //			string regex;
 //			if (markFollowing) {
 //				if (markMarker) {
@@ -216,7 +216,7 @@
 //				RegexType = XshdRegexType.IgnorePatternWhitespace
 //			};
 //		}
-		
+
 //		XshdSpan ImportSpan(XmlElement element)
 //		{
 //			XshdSpan span = new XshdSpan();
@@ -228,15 +228,15 @@
 //				escapeCharacter = element.GetAttribute("escapecharacter")[0];
 //			}
 //			span.Multiline = !(element.GetBoolAttribute("stopateol") ?? false);
-			
+
 //			span.SpanColorReference = GetColorReference(element);
-			
+
 //			span.BeginRegexType = XshdRegexType.IgnorePatternWhitespace;
 //			span.BeginRegex = ImportRegex(element["Begin"].InnerText,
 //			                              element["Begin"].GetBoolAttribute("singleword") ?? false,
 //			                              element["Begin"].GetBoolAttribute("startofline"));
 //			span.BeginColorReference = GetColorReference(element["Begin"]);
-			
+
 //			string endElementText = string.Empty;
 //			if (element["End"] != null) {
 //				span.EndRegexType = XshdRegexType.IgnorePatternWhitespace;
@@ -246,7 +246,7 @@
 //				                            null);
 //				span.EndColorReference = GetColorReference(element["End"]);
 //			}
-			
+
 //			if (escapeCharacter != '\0') {
 //				XshdRuleSet ruleSet = new XshdRuleSet();
 //				if (endElementText.Length == 1 && endElementText[0] == escapeCharacter) {
@@ -269,7 +269,7 @@
 //			}
 //			return span;
 //		}
-		
+
 //		static string ImportRegex(string expr, bool singleWord, bool? startOfLine)
 //		{
 //			StringBuilder b = new StringBuilder();
@@ -333,3 +333,5 @@
 //		}
 //	}
 //}
+
+

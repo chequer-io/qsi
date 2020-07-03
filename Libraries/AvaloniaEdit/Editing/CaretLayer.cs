@@ -28,13 +28,14 @@ namespace AvaloniaEdit.Editing
 {
     internal sealed class CaretLayer : Layer
     {
+        private readonly DispatcherTimer _caretBlinkTimer = new DispatcherTimer();
         private readonly TextArea _textArea;
-
-        private bool _isVisible;
+        private bool _blink;
         private Rect _caretRectangle;
 
-        private readonly DispatcherTimer _caretBlinkTimer = new DispatcherTimer();
-        private bool _blink;
+        private bool _isVisible;
+
+        internal IBrush CaretBrush;
 
         public CaretLayer(TextArea textArea) : base(textArea.TextView, KnownLayer.Caret)
         {
@@ -72,7 +73,8 @@ namespace AvaloniaEdit.Editing
             // TODO
             var blinkTime = TimeSpan.FromMilliseconds(500); //Win32.CaretBlinkTime;
             _blink = true; // the caret should visible initially
-                          // This is important if blinking is disabled (system reports a negative blinkTime)
+
+            // This is important if blinking is disabled (system reports a negative blinkTime)
             if (blinkTime.TotalMilliseconds > 0)
             {
                 _caretBlinkTimer.Interval = blinkTime;
@@ -85,8 +87,6 @@ namespace AvaloniaEdit.Editing
             _caretBlinkTimer.Stop();
         }
 
-        internal IBrush CaretBrush;
-
         public override void Render(DrawingContext drawingContext)
         {
             base.Render(drawingContext);
@@ -96,19 +96,17 @@ namespace AvaloniaEdit.Editing
                 var caretBrush = CaretBrush ?? TextView.GetValue(TextBlock.ForegroundProperty);
 
                 if (_textArea.OverstrikeMode)
-                {
                     if (caretBrush is SolidColorBrush scBrush)
                     {
                         var brushColor = scBrush.Color;
                         var newColor = Color.FromArgb(100, brushColor.R, brushColor.G, brushColor.B);
                         caretBrush = new SolidColorBrush(newColor);
                     }
-                }
 
                 var r = new Rect(_caretRectangle.X - TextView.HorizontalOffset,
-                                  _caretRectangle.Y - TextView.VerticalOffset,
-                                  _caretRectangle.Width,
-                                  _caretRectangle.Height);
+                    _caretRectangle.Y - TextView.VerticalOffset,
+                    _caretRectangle.Width,
+                    _caretRectangle.Height);
 
                 drawingContext.FillRectangle(caretBrush, PixelSnapHelpers.Round(r, PixelSnapHelpers.GetPixelSize(this)));
             }

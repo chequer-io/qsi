@@ -23,18 +23,20 @@ using System.Text.RegularExpressions;
 namespace AvaloniaEdit.Search
 {
     /// <summary>
-    /// Provides factory methods for ISearchStrategies.
+    ///     Provides factory methods for ISearchStrategies.
     /// </summary>
     public static class SearchStrategyFactory
     {
         /// <summary>
-        /// Creates a default ISearchStrategy with the given parameters.
+        ///     Creates a default ISearchStrategy with the given parameters.
         /// </summary>
         public static ISearchStrategy Create(string searchPattern, bool ignoreCase, bool matchWholeWords, SearchMode mode)
         {
             if (searchPattern == null)
                 throw new ArgumentNullException(nameof(searchPattern));
+
             var options = RegexOptions.Multiline;
+
             if (ignoreCase)
                 options |= RegexOptions.IgnoreCase;
 
@@ -43,6 +45,7 @@ namespace AvaloniaEdit.Search
                 case SearchMode.Normal:
                     searchPattern = Regex.Escape(searchPattern);
                     break;
+
                 case SearchMode.Wildcard:
                     searchPattern = ConvertWildcardsToRegex(searchPattern);
                     break;
@@ -67,20 +70,20 @@ namespace AvaloniaEdit.Search
             var builder = new StringBuilder();
 
             foreach (var ch in searchPattern)
-            {
                 switch (ch)
                 {
                     case '?':
                         builder.Append(".");
                         break;
+
                     case '*':
                         builder.Append(".*");
                         break;
+
                     default:
                         builder.Append(Regex.Escape(ch.ToString()));
                         break;
                 }
-            }
 
             return builder.ToString();
         }

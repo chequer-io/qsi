@@ -26,12 +26,12 @@ using AvaloniaEdit.Utils;
 namespace AvaloniaEdit.Highlighting
 {
     /// <summary>
-    /// Represents a highlighted document line.
+    ///     Represents a highlighted document line.
     /// </summary>
     public class HighlightedLine
     {
         /// <summary>
-        /// Creates a new HighlightedLine instance.
+        ///     Creates a new HighlightedLine instance.
         /// </summary>
         public HighlightedLine(IDocument document, IDocumentLine documentLine)
         {
@@ -43,40 +43,44 @@ namespace AvaloniaEdit.Highlighting
         }
 
         /// <summary>
-        /// Gets the document associated with this HighlightedLine.
+        ///     Gets the document associated with this HighlightedLine.
         /// </summary>
         public IDocument Document { get; }
 
         /// <summary>
-        /// Gets the document line associated with this HighlightedLine.
+        ///     Gets the document line associated with this HighlightedLine.
         /// </summary>
         public IDocumentLine DocumentLine { get; }
 
         /// <summary>
-        /// Gets the highlighted sections.
-        /// The sections are not overlapping, but they may be nested.
-        /// In that case, outer sections come in the list before inner sections.
-        /// The sections are sorted by start offset.
+        ///     Gets the highlighted sections.
+        ///     The sections are not overlapping, but they may be nested.
+        ///     In that case, outer sections come in the list before inner sections.
+        ///     The sections are sorted by start offset.
         /// </summary>
         public IList<HighlightedSection> Sections { get; }
 
         /// <summary>
-        /// Validates that the sections are sorted correctly, and that they are not overlapping.
+        ///     Validates that the sections are sorted correctly, and that they are not overlapping.
         /// </summary>
-        /// <seealso cref="Sections"/>
+        /// <seealso cref="Sections" />
         public void ValidateInvariants()
         {
             var line = this;
             var lineStartOffset = line.DocumentLine.Offset;
             var lineEndOffset = line.DocumentLine.EndOffset;
+
             for (var i = 0; i < line.Sections.Count; i++)
             {
                 var s1 = line.Sections[i];
+
                 if (s1.Offset < lineStartOffset || s1.Length < 0 || s1.Offset + s1.Length > lineEndOffset)
                     throw new InvalidOperationException("Section is outside line bounds");
+
                 for (var j = i + 1; j < line.Sections.Count; j++)
                 {
                     var s2 = line.Sections[j];
+
                     if (s2.Offset >= s1.Offset + s1.Length)
                     {
                         // s2 is after s1
@@ -93,117 +97,35 @@ namespace AvaloniaEdit.Highlighting
             }
         }
 
-        #region Merge
         /// <summary>
-        /// Merges the additional line into this line.
+        ///     Creates a <see cref="RichTextModel" /> that stores the highlighting of this line.
         /// </summary>
-        public void MergeWith(HighlightedLine additionalLine)
+        public RichTextModel ToRichTextModel()
         {
-            if (additionalLine == null)
-                return;
-#if DEBUG
-            ValidateInvariants();
-            additionalLine.ValidateInvariants();
-#endif
+            var builder = new RichTextModel();
+            var startOffset = DocumentLine.Offset;
 
-            var pos = 0;
-            var activeSectionEndOffsets = new Stack<int>();
-            var lineEndOffset = DocumentLine.EndOffset;
-            activeSectionEndOffsets.Push(lineEndOffset);
-            foreach (var newSection in additionalLine.Sections)
-            {
-                var newSectionStart = newSection.Offset;
-                // Track the existing sections using the stack, up to the point where
-                // we need to insert the first part of the newSection
-                while (pos < Sections.Count)
-                {
-                    var s = Sections[pos];
-                    if (newSection.Offset < s.Offset)
-                        break;
-                    while (s.Offset > activeSectionEndOffsets.Peek())
-                    {
-                        activeSectionEndOffsets.Pop();
-                    }
-                    activeSectionEndOffsets.Push(s.Offset + s.Length);
-                    pos++;
-                }
-                // Now insert the new section
-                // Create a copy of the stack so that we can track the sections we traverse
-                // during the insertion process:
-                var insertionStack = new Stack<int>(activeSectionEndOffsets.Reverse());
-                // The stack enumerator reverses the order of the elements, so we call Reverse() to restore
-                // the original order.
-                int i;
-                for (i = pos; i < Sections.Count; i++)
-                {
-                    var s = Sections[i];
-                    if (newSection.Offset + newSection.Length <= s.Offset)
-                        break;
-                    // Insert a segment in front of s:
-                    Insert(ref i, ref newSectionStart, s.Offset, newSection.Color, insertionStack);
+            foreach (var section in Sections)
+                builder.ApplyHighlighting(section.Offset - startOffset, section.Length, section.Color);
 
-                    while (s.Offset > insertionStack.Peek())
-                    {
-                        insertionStack.Pop();
-                    }
-                    insertionStack.Push(s.Offset + s.Length);
-                }
-                Insert(ref i, ref newSectionStart, newSection.Offset + newSection.Length, newSection.Color, insertionStack);
-            }
-
-#if DEBUG
-            ValidateInvariants();
-#endif
+            return builder;
         }
 
-        private void Insert(ref int pos, ref int newSectionStart, int insertionEndPos, HighlightingColor color, Stack<int> insertionStack)
+        /// <summary>
+        ///     Creates a <see cref="RichText" /> that stores the text and highlighting of this line.
+        /// </summary>
+        public RichText ToRichText()
         {
-            if (newSectionStart >= insertionEndPos)
-            {
-                // nothing to insert here
-                return;
-            }
-
-            while (insertionStack.Peek() <= newSectionStart)
-            {
-                insertionStack.Pop();
-            }
-            while (insertionStack.Peek() < insertionEndPos)
-            {
-                var end = insertionStack.Pop();
-                // insert the portion from newSectionStart to end
-                if (end > newSectionStart)
-                {
-                    Sections.Insert(pos++, new HighlightedSection
-                    {
-                        Offset = newSectionStart,
-                        Length = end - newSectionStart,
-                        Color = color
-                    });
-                    newSectionStart = end;
-                }
-            }
-            if (insertionEndPos > newSectionStart)
-            {
-                Sections.Insert(pos++, new HighlightedSection
-                {
-                    Offset = newSectionStart,
-                    Length = insertionEndPos - newSectionStart,
-                    Color = color
-                });
-                newSectionStart = insertionEndPos;
-            }
+            return new RichText(Document.GetText(DocumentLine), ToRichTextModel());
         }
-        #endregion
 
         #region WriteTo / ToHtml
-
         private sealed class HtmlElement : IComparable<HtmlElement>
         {
-            internal readonly int Offset;
-            internal readonly int Nesting;
-            internal readonly bool IsEnd;
             internal readonly HighlightingColor Color;
+            internal readonly bool IsEnd;
+            internal readonly int Nesting;
+            internal readonly int Offset;
 
             public HtmlElement(int offset, int nesting, bool isEnd, HighlightingColor color)
             {
@@ -217,14 +139,18 @@ namespace AvaloniaEdit.Highlighting
             public int CompareTo(HtmlElement other)
             {
                 var r = Offset.CompareTo(other.Offset);
+
                 if (r != 0)
                     return r;
+
                 if (IsEnd != other.IsEnd)
                 {
                     if (IsEnd)
                         return -1;
+
                     return 1;
                 }
+
                 return IsEnd ? other.Nesting.CompareTo(Nesting) : Nesting.CompareTo(other.Nesting);
             }
         }
@@ -310,26 +236,115 @@ namespace AvaloniaEdit.Highlighting
         //}
         #endregion
 
+        #region Merge
         /// <summary>
-        /// Creates a <see cref="RichTextModel"/> that stores the highlighting of this line.
+        ///     Merges the additional line into this line.
         /// </summary>
-        public RichTextModel ToRichTextModel()
+        public void MergeWith(HighlightedLine additionalLine)
         {
-            var builder = new RichTextModel();
-            var startOffset = DocumentLine.Offset;
-            foreach (var section in Sections)
+            if (additionalLine == null)
+                return;
+#if DEBUG
+            ValidateInvariants();
+            additionalLine.ValidateInvariants();
+#endif
+
+            var pos = 0;
+            var activeSectionEndOffsets = new Stack<int>();
+            var lineEndOffset = DocumentLine.EndOffset;
+            activeSectionEndOffsets.Push(lineEndOffset);
+
+            foreach (var newSection in additionalLine.Sections)
             {
-                builder.ApplyHighlighting(section.Offset - startOffset, section.Length, section.Color);
+                var newSectionStart = newSection.Offset;
+
+                // Track the existing sections using the stack, up to the point where
+                // we need to insert the first part of the newSection
+                while (pos < Sections.Count)
+                {
+                    var s = Sections[pos];
+
+                    if (newSection.Offset < s.Offset)
+                        break;
+
+                    while (s.Offset > activeSectionEndOffsets.Peek())
+                        activeSectionEndOffsets.Pop();
+
+                    activeSectionEndOffsets.Push(s.Offset + s.Length);
+                    pos++;
+                }
+
+                // Now insert the new section
+                // Create a copy of the stack so that we can track the sections we traverse
+                // during the insertion process:
+                var insertionStack = new Stack<int>(activeSectionEndOffsets.Reverse());
+                // The stack enumerator reverses the order of the elements, so we call Reverse() to restore
+                // the original order.
+                int i;
+
+                for (i = pos; i < Sections.Count; i++)
+                {
+                    var s = Sections[i];
+
+                    if (newSection.Offset + newSection.Length <= s.Offset)
+                        break;
+
+                    // Insert a segment in front of s:
+                    Insert(ref i, ref newSectionStart, s.Offset, newSection.Color, insertionStack);
+
+                    while (s.Offset > insertionStack.Peek())
+                        insertionStack.Pop();
+
+                    insertionStack.Push(s.Offset + s.Length);
+                }
+
+                Insert(ref i, ref newSectionStart, newSection.Offset + newSection.Length, newSection.Color, insertionStack);
             }
-            return builder;
+
+#if DEBUG
+            ValidateInvariants();
+#endif
         }
 
-        /// <summary>
-        /// Creates a <see cref="RichText"/> that stores the text and highlighting of this line.
-        /// </summary>
-        public RichText ToRichText()
+        private void Insert(ref int pos, ref int newSectionStart, int insertionEndPos, HighlightingColor color, Stack<int> insertionStack)
         {
-            return new RichText(Document.GetText(DocumentLine), ToRichTextModel());
+            if (newSectionStart >= insertionEndPos)
+                // nothing to insert here
+                return;
+
+            while (insertionStack.Peek() <= newSectionStart)
+                insertionStack.Pop();
+
+            while (insertionStack.Peek() < insertionEndPos)
+            {
+                var end = insertionStack.Pop();
+
+                // insert the portion from newSectionStart to end
+                if (end > newSectionStart)
+                {
+                    Sections.Insert(pos++, new HighlightedSection
+                    {
+                        Offset = newSectionStart,
+                        Length = end - newSectionStart,
+                        Color = color
+                    });
+
+                    newSectionStart = end;
+                }
+            }
+
+            if (insertionEndPos > newSectionStart)
+            {
+                Sections.Insert(pos++, new HighlightedSection
+                {
+                    Offset = newSectionStart,
+                    Length = insertionEndPos - newSectionStart,
+                    Color = color
+                });
+
+                newSectionStart = insertionEndPos;
+            }
         }
+        #endregion
     }
 }

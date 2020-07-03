@@ -17,29 +17,29 @@
 // DEALINGS IN THE SOFTWARE.
 
 using System;
-using System.Globalization;
 using System.ComponentModel;
+using System.Globalization;
 
 namespace AvaloniaEdit.Document
 {
     /// <summary>
-    /// A line/column position.
-    /// Text editor lines/columns are counted started from one.
+    ///     A line/column position.
+    ///     Text editor lines/columns are counted started from one.
     /// </summary>
     /// <remarks>
-    /// The document provides the methods <see cref="IDocument.GetLocation"/> and
-    /// <see cref="IDocument.GetOffset(TextLocation)"/> to convert between offsets and TextLocations.
+    ///     The document provides the methods <see cref="IDocument.GetLocation" /> and
+    ///     <see cref="IDocument.GetOffset(TextLocation)" /> to convert between offsets and TextLocations.
     /// </remarks>
     [TypeConverter(typeof(TextLocationConverter))]
     public struct TextLocation : IComparable<TextLocation>, IEquatable<TextLocation>
     {
         /// <summary>
-        /// Represents no text location (0, 0).
+        ///     Represents no text location (0, 0).
         /// </summary>
         public static readonly TextLocation Empty = new TextLocation(0, 0);
 
         /// <summary>
-        /// Creates a TextLocation instance.
+        ///     Creates a TextLocation instance.
         /// </summary>
         public TextLocation(int line, int column)
         {
@@ -48,22 +48,22 @@ namespace AvaloniaEdit.Document
         }
 
         /// <summary>
-        /// Gets the line number.
+        ///     Gets the line number.
         /// </summary>
         public int Line { get; }
 
         /// <summary>
-        /// Gets the column number.
+        ///     Gets the column number.
         /// </summary>
         public int Column { get; }
 
         /// <summary>
-        /// Gets whether the TextLocation instance is empty.
+        ///     Gets whether the TextLocation instance is empty.
         /// </summary>
         public bool IsEmpty => Column <= 0 && Line <= 0;
 
         /// <summary>
-        /// Gets a string representation for debugging purposes.
+        ///     Gets a string representation for debugging purposes.
         /// </summary>
         public override string ToString()
         {
@@ -71,24 +71,25 @@ namespace AvaloniaEdit.Document
         }
 
         /// <summary>
-        /// Gets a hash code.
+        ///     Gets a hash code.
         /// </summary>
         public override int GetHashCode()
         {
-            return unchecked(191 * Column.GetHashCode() ^ Line.GetHashCode());
+            return unchecked((191 * Column.GetHashCode()) ^ Line.GetHashCode());
         }
 
         /// <summary>
-        /// Equality test.
+        ///     Equality test.
         /// </summary>
         public override bool Equals(object obj)
         {
             if (!(obj is TextLocation)) return false;
+
             return (TextLocation)obj == this;
         }
 
         /// <summary>
-        /// Equality test.
+        ///     Equality test.
         /// </summary>
         public bool Equals(TextLocation other)
         {
@@ -96,7 +97,7 @@ namespace AvaloniaEdit.Document
         }
 
         /// <summary>
-        /// Equality test.
+        ///     Equality test.
         /// </summary>
         public static bool operator ==(TextLocation left, TextLocation right)
         {
@@ -104,7 +105,7 @@ namespace AvaloniaEdit.Document
         }
 
         /// <summary>
-        /// Inequality test.
+        ///     Inequality test.
         /// </summary>
         public static bool operator !=(TextLocation left, TextLocation right)
         {
@@ -112,31 +113,35 @@ namespace AvaloniaEdit.Document
         }
 
         /// <summary>
-        /// Compares two text locations.
+        ///     Compares two text locations.
         /// </summary>
         public static bool operator <(TextLocation left, TextLocation right)
         {
             if (left.Line < right.Line)
                 return true;
+
             if (left.Line == right.Line)
                 return left.Column < right.Column;
+
             return false;
         }
 
         /// <summary>
-        /// Compares two text locations.
+        ///     Compares two text locations.
         /// </summary>
         public static bool operator >(TextLocation left, TextLocation right)
         {
             if (left.Line > right.Line)
                 return true;
+
             if (left.Line == right.Line)
                 return left.Column > right.Column;
+
             return false;
         }
 
         /// <summary>
-        /// Compares two text locations.
+        ///     Compares two text locations.
         /// </summary>
         public static bool operator <=(TextLocation left, TextLocation right)
         {
@@ -144,7 +149,7 @@ namespace AvaloniaEdit.Document
         }
 
         /// <summary>
-        /// Compares two text locations.
+        ///     Compares two text locations.
         /// </summary>
         public static bool operator >=(TextLocation left, TextLocation right)
         {
@@ -152,92 +157,93 @@ namespace AvaloniaEdit.Document
         }
 
         /// <summary>
-        /// Compares two text locations.
+        ///     Compares two text locations.
         /// </summary>
         public int CompareTo(TextLocation other)
         {
             if (this == other)
                 return 0;
+
             if (this < other)
                 return -1;
+
             return 1;
         }
     }
 
     /// <summary>
-    /// Converts strings of the form '0+[;,]0+' to a <see cref="TextLocation"/>.
+    ///     Converts strings of the form '0+[;,]0+' to a <see cref="TextLocation" />.
     /// </summary>
     public class TextLocationConverter : TypeConverter
     {
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
         {
             return sourceType == typeof(string);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
         {
             return destinationType == typeof(TextLocation);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
         {
             var s = value as string;
             string[] parts = s?.Split(';', ',');
+
             if (parts?.Length == 2)
-            {
                 return new TextLocation(int.Parse(parts[0], culture), int.Parse(parts[1], culture));
-            }
+
             throw new InvalidOperationException();
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
         {
             if (value is TextLocation loc && destinationType == typeof(string))
-            {
                 return loc.Line.ToString(culture) + ";" + loc.Column.ToString(culture);
-            }
+
             throw new InvalidOperationException();
         }
     }
 
     /// <summary>
-    /// An (Offset,Length)-pair.
+    ///     An (Offset,Length)-pair.
     /// </summary>
     public interface ISegment
     {
         /// <summary>
-        /// Gets the start offset of the segment.
+        ///     Gets the start offset of the segment.
         /// </summary>
         int Offset { get; }
 
         /// <summary>
-        /// Gets the length of the segment.
+        ///     Gets the length of the segment.
         /// </summary>
         /// <remarks>For line segments (IDocumentLine), the length does not include the line delimeter.</remarks>
         int Length { get; }
 
         /// <summary>
-        /// Gets the end offset of the segment.
+        ///     Gets the end offset of the segment.
         /// </summary>
         /// <remarks>EndOffset = Offset + Length;</remarks>
         int EndOffset { get; }
     }
 
     /// <summary>
-    /// Extension methods for <see cref="ISegment"/>.
+    ///     Extension methods for <see cref="ISegment" />.
     /// </summary>
     public static class SegmentExtensions
     {
         /// <summary>
-        /// Gets whether <paramref name="segment"/> fully contains the specified segment.
+        ///     Gets whether <paramref name="segment" /> fully contains the specified segment.
         /// </summary>
         /// <remarks>
-        /// Use <c>segment.Contains(offset, 0)</c> to detect whether a segment (end inclusive) contains offset;
-        /// use <c>segment.Contains(offset, 1)</c> to detect whether a segment (end exclusive) contains offset.
+        ///     Use <c>segment.Contains(offset, 0)</c> to detect whether a segment (end inclusive) contains offset;
+        ///     use <c>segment.Contains(offset, 1)</c> to detect whether a segment (end exclusive) contains offset.
         /// </remarks>
         public static bool Contains(this ISegment segment, int offset, int length)
         {
@@ -245,7 +251,7 @@ namespace AvaloniaEdit.Document
         }
 
         /// <summary>
-        /// Gets whether <paramref name="thisSegment"/> fully contains the specified segment.
+        ///     Gets whether <paramref name="thisSegment" /> fully contains the specified segment.
         /// </summary>
         public static bool Contains(this ISegment thisSegment, ISegment segment)
         {

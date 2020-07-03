@@ -38,6 +38,7 @@ namespace AvaloniaEdit.Rendering
         {
             if (CollapsedSections == null)
                 CollapsedSections = new List<CollapsedLineSection>();
+
             CollapsedSections.Add(section);
         }
 
@@ -45,12 +46,13 @@ namespace AvaloniaEdit.Rendering
         {
             Debug.Assert(CollapsedSections.Contains(section));
             CollapsedSections.Remove(section);
+
             if (CollapsedSections.Count == 0)
                 CollapsedSections = null;
         }
 
         /// <summary>
-        /// Returns 0 if the line is directly collapsed, otherwise, returns <see cref="Height"/>.
+        ///     Returns 0 if the line is directly collapsed, otherwise, returns <see cref="Height" />.
         /// </summary>
         internal double TotalHeight => IsDirectlyCollapsed ? 0 : Height;
     }

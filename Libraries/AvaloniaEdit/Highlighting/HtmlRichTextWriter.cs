@@ -38,7 +38,7 @@
 //		bool hasSpace;
 //		bool needIndentation = true;
 //		int indentationLevel;
-		
+
 //		/// <summary>
 //		/// Creates a new HtmlRichTextWriter instance.
 //		/// </summary>
@@ -55,19 +55,19 @@
 //			this.htmlWriter = htmlWriter;
 //			this.options = options ?? new HtmlOptions();
 //		}
-		
+
 //		/// <inheritdoc/>
 //		public override Encoding Encoding {
 //			get { return htmlWriter.Encoding; }
 //		}
-		
+
 //		/// <inheritdoc/>
 //		public override void Flush()
 //		{
 //			FlushSpace(true); // next char potentially might be whitespace
 //			htmlWriter.Flush();
 //		}
-		
+
 //		/// <inheritdoc/>
 //		protected override void Dispose(bool disposing)
 //		{
@@ -76,7 +76,7 @@
 //			}
 //			base.Dispose(disposing);
 //		}
-		
+
 //		void FlushSpace(bool nextIsWhitespace)
 //		{
 //			if (hasSpace) {
@@ -88,7 +88,7 @@
 //				spaceNeedsEscaping = true;
 //			}
 //		}
-		
+
 //		void WriteIndentation()
 //		{
 //			if (needIndentation) {
@@ -98,16 +98,16 @@
 //				needIndentation = false;
 //			}
 //		}
-		
+
 //		/// <inheritdoc/>
 //		public override void Write(char value)
 //		{
 //			WriteIndentation();
 //			WriteChar(value);
 //		}
-		
+
 //		static readonly char[] specialChars = { ' ', '\t', '\r', '\n' };
-		
+
 //		void WriteChar(char c)
 //		{
 //			bool isWhitespace = char.IsWhiteSpace(c);
@@ -147,7 +147,7 @@
 //				spaceNeedsEscaping = isWhitespace;
 //			}
 //		}
-		
+
 //		/// <inheritdoc/>
 //		public override void Write(string value)
 //		{
@@ -164,13 +164,13 @@
 //				pos = endPos + 1;
 //			} while (pos < value.Length);
 //		}
-		
+
 //		void WriteIndentationAndSpace()
 //		{
 //			WriteIndentation();
 //			FlushSpace(false);
 //		}
-		
+
 //		void WriteSimpleString(string value)
 //		{
 //			if (value.Length == 0)
@@ -182,13 +182,13 @@
 //			HttpUtility.HtmlEncode(value, htmlWriter);
 //			#endif
 //		}
-		
+
 //		/// <inheritdoc/>
 //		public override void Indent()
 //		{
 //			indentationLevel++;
 //		}
-		
+
 //		/// <inheritdoc/>
 //		public override void Unindent()
 //		{
@@ -196,43 +196,43 @@
 //				throw new NotSupportedException();
 //			indentationLevel--;
 //		}
-		
+
 //		/// <inheritdoc/>
 //		protected override void BeginUnhandledSpan()
 //		{
 //			endTagStack.Push(null);
 //		}
-		
+
 //		/// <inheritdoc/>
 //		public override void EndSpan()
 //		{
 //			htmlWriter.Write(endTagStack.Pop());
 //		}
-		
+
 //		/// <inheritdoc/>
 //		public override void BeginSpan(Color foregroundColor)
 //		{
 //			BeginSpan(new HighlightingColor { Foreground = new SimpleHighlightingBrush(foregroundColor) });
 //		}
-		
+
 //		/// <inheritdoc/>
 //		public override void BeginSpan(FontFamily fontFamily)
 //		{
 //			BeginUnhandledSpan(); // TODO
 //		}
-		
+
 //		/// <inheritdoc/>
 //		public override void BeginSpan(FontStyle fontStyle)
 //		{
 //			BeginSpan(new HighlightingColor { FontStyle = fontStyle });
 //		}
-		
+
 //		/// <inheritdoc/>
 //		public override void BeginSpan(FontWeight fontWeight)
 //		{
 //			BeginSpan(new HighlightingColor { FontWeight = fontWeight });
 //		}
-		
+
 //		/// <inheritdoc/>
 //		public override void BeginSpan(HighlightingColor highlightingColor)
 //		{
@@ -246,7 +246,7 @@
 //				endTagStack.Push(null);
 //			}
 //		}
-		
+
 //		/// <inheritdoc/>
 //		public override void BeginHyperlinkSpan(Uri uri)
 //		{
@@ -261,3 +261,5 @@
 //		}
 //	}
 //}
+
+

@@ -21,46 +21,46 @@ using System.Diagnostics;
 namespace AvaloniaEdit.Document
 {
 	/// <summary>
-	/// Describes a change to a TextDocument.
+	///     Describes a change to a TextDocument.
 	/// </summary>
 	internal sealed class DocumentChangeOperation : IUndoableOperationWithContext
-	{
-	    private readonly TextDocument _document;
-	    private readonly DocumentChangeEventArgs _change;
-		
-		public DocumentChangeOperation(TextDocument document, DocumentChangeEventArgs change)
-		{
-			_document = document;
-			_change = change;
-		}
-		
-		public void Undo(UndoStack stack)
-		{
-			Debug.Assert(stack.State == UndoStack.StatePlayback);
-			stack.RegisterAffectedDocument(_document);
-			stack.State = UndoStack.StatePlaybackModifyDocument;
-			Undo();
-			stack.State = UndoStack.StatePlayback;
-		}
-		
-		public void Redo(UndoStack stack)
-		{
-			Debug.Assert(stack.State == UndoStack.StatePlayback);
-			stack.RegisterAffectedDocument(_document);
-			stack.State = UndoStack.StatePlaybackModifyDocument;
-			Redo();
-			stack.State = UndoStack.StatePlayback;
-		}
-		
-		public void Undo()
-		{
-			var map = _change.OffsetChangeMapOrNull;
-			_document.Replace(_change.Offset, _change.InsertionLength, _change.RemovedText, map?.Invert());
-		}
-		
-		public void Redo()
-		{
-			_document.Replace(_change.Offset, _change.RemovalLength, _change.InsertedText, _change.OffsetChangeMapOrNull);
-		}
-	}
+    {
+        private readonly DocumentChangeEventArgs _change;
+        private readonly TextDocument _document;
+
+        public DocumentChangeOperation(TextDocument document, DocumentChangeEventArgs change)
+        {
+            _document = document;
+            _change = change;
+        }
+
+        public void Undo(UndoStack stack)
+        {
+            Debug.Assert(stack.State == UndoStack.StatePlayback);
+            stack.RegisterAffectedDocument(_document);
+            stack.State = UndoStack.StatePlaybackModifyDocument;
+            Undo();
+            stack.State = UndoStack.StatePlayback;
+        }
+
+        public void Redo(UndoStack stack)
+        {
+            Debug.Assert(stack.State == UndoStack.StatePlayback);
+            stack.RegisterAffectedDocument(_document);
+            stack.State = UndoStack.StatePlaybackModifyDocument;
+            Redo();
+            stack.State = UndoStack.StatePlayback;
+        }
+
+        public void Undo()
+        {
+            var map = _change.OffsetChangeMapOrNull;
+            _document.Replace(_change.Offset, _change.InsertionLength, _change.RemovedText, map?.Invert());
+        }
+
+        public void Redo()
+        {
+            _document.Replace(_change.Offset, _change.RemovalLength, _change.InsertedText, _change.OffsetChangeMapOrNull);
+        }
+    }
 }

@@ -17,54 +17,67 @@
 // DEALINGS IN THE SOFTWARE.
 
 using System;
-using AvaloniaEdit.Text;
 using Avalonia.Controls;
 using Avalonia.Media;
 using AvaloniaEdit.Rendering;
+using AvaloniaEdit.Text;
 
 namespace AvaloniaEdit.Utils
 {
-    /// <summary>
-    /// Creates TextFormatter instances that with the correct TextFormattingMode, if running on .NET 4.0.
-    /// </summary>
-    public static class TextFormatterFactory
-	{
-	    public static TextFormatter Create()
-	    {
-	        return new TextFormatter();
-	    }
+	/// <summary>
+	///     Creates TextFormatter instances that with the correct TextFormattingMode, if running on .NET 4.0.
+	/// </summary>
+	public static class TextFormatterFactory
+    {
+        public static TextFormatter Create()
+        {
+            return new TextFormatter();
+        }
 
-		/// <summary>
-		/// Creates formatted text.
-		/// </summary>
-		/// <param name="element">The owner element. The text formatter setting are read from this element.</param>
-		/// <param name="text">The text.</param>
-		/// <param name="typeface">The typeface to use. If this parameter is null, the typeface of the <paramref name="element"/> will be used.</param>
-		/// <param name="emSize">The font size. If this parameter is null, the font size of the <paramref name="element"/> will be used.</param>
-		/// <param name="foreground">The foreground color. If this parameter is null, the foreground of the <paramref name="element"/> will be used.</param>
-		/// <returns>A FormattedText object using the specified settings.</returns>
-		public static FormattedText CreateFormattedText(Control element, string text, Avalonia.Media.FontFamily typeface, double? emSize, IBrush foreground)
-	    {
-	        if (element == null)
-	            throw new ArgumentNullException(nameof(element));
-	        if (text == null)
-	            throw new ArgumentNullException(nameof(text));
-	        if (typeface == null)
-	            typeface = TextBlock.GetFontFamily(element);
-	        if (emSize == null)
-	            emSize = TextBlock.GetFontSize(element);
-	        if (foreground == null)
-	            foreground = TextBlock.GetForeground(element);
+        /// <summary>
+        ///     Creates formatted text.
+        /// </summary>
+        /// <param name="element">The owner element. The text formatter setting are read from this element.</param>
+        /// <param name="text">The text.</param>
+        /// <param name="typeface">
+        ///     The typeface to use. If this parameter is null, the typeface of the <paramref name="element" />
+        ///     will be used.
+        /// </param>
+        /// <param name="emSize">
+        ///     The font size. If this parameter is null, the font size of the <paramref name="element" /> will be
+        ///     used.
+        /// </param>
+        /// <param name="foreground">
+        ///     The foreground color. If this parameter is null, the foreground of the
+        ///     <paramref name="element" /> will be used.
+        /// </param>
+        /// <returns>A FormattedText object using the specified settings.</returns>
+        public static FormattedText CreateFormattedText(Control element, string text, FontFamily typeface, double? emSize, IBrush foreground)
+        {
+            if (element == null)
+                throw new ArgumentNullException(nameof(element));
+
+            if (text == null)
+                throw new ArgumentNullException(nameof(text));
+
+            if (typeface == null)
+                typeface = TextBlock.GetFontFamily(element);
+
+            if (emSize == null)
+                emSize = TextBlock.GetFontSize(element);
+
+            if (foreground == null)
+                foreground = TextBlock.GetForeground(element);
 
             var formattedText = new FormattedText
             {
                 Text = text,
                 Typeface = new Typeface(typeface, emSize.Value)
             };
-	        
-	        formattedText.SetTextStyle(0, text.Length, foreground);
 
-	        return formattedText;
-	    }
-	}
+            formattedText.SetTextStyle(0, text.Length, foreground);
+
+            return formattedText;
+        }
+    }
 }

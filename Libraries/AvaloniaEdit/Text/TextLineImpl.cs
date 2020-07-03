@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia;
-using AvaloniaEdit.Utils;
 using Avalonia.Media;
 
 namespace AvaloniaEdit.Text
@@ -12,63 +11,6 @@ namespace AvaloniaEdit.Text
         private const int MaxCharactersPerLine = 10000;
 
         private readonly TextLineRun[] _runs;
-
-        public override int FirstIndex { get; }
-
-        public override int Length { get; }
-
-        public override int TrailingWhitespaceLength { get; }
-
-        public override double Width { get; }
-
-        public override double WidthIncludingTrailingWhitespace { get; }
-
-        public override double Height { get; }
-
-        public override double Baseline { get; }
-
-        internal static TextLineImpl Create(TextParagraphProperties paragraphProperties, int firstIndex, int paragraphLength, TextSource textSource)
-        {
-            var index = firstIndex;
-            var visibleLength = 0;
-            var widthLeft = paragraphProperties.TextWrapping == TextWrapping.Wrap && paragraphLength > 0 ? paragraphLength : double.MaxValue;
-            TextLineRun prevRun = null;
-            var run = TextLineRun.Create(textSource, index, firstIndex, widthLeft);
-            if (!run.IsEnd && run.Width <= widthLeft)
-            {
-                index += run.Length;
-                widthLeft -= run.Width;
-                prevRun = run;
-                run = TextLineRun.Create(textSource, index, firstIndex, widthLeft);
-            }
-
-            var trailing = new TrailingInfo();
-            var runs = new List<TextLineRun>(2);
-            if (prevRun != null)
-            {
-                visibleLength += AddRunReturnVisibleLength(runs, prevRun);
-            }
-
-            if (visibleLength >= MaxCharactersPerLine)
-            {
-                throw new NotSupportedException("Too many characters per line");
-            }
-
-            while (true)
-            {
-                visibleLength += AddRunReturnVisibleLength(runs, run);
-                index += run.Length;
-                widthLeft -= run.Width;
-                if (run.IsEnd || widthLeft <= 0)
-                {
-                    trailing.SpaceWidth = 0;
-                    UpdateTrailingInfo(runs, trailing);
-                    return new TextLineImpl(paragraphProperties, firstIndex, runs, trailing);
-                }
-
-                run = TextLineRun.Create(textSource, index, firstIndex, widthLeft);
-            }
-        }
 
         private TextLineImpl(TextParagraphProperties paragraphProperties, int firstIndex, List<TextLineRun> runs, TrailingInfo trailing)
         {
@@ -114,16 +56,68 @@ namespace AvaloniaEdit.Text
             Width = WidthIncludingTrailingWhitespace - trailing.SpaceWidth;
         }
 
+        public override int FirstIndex { get; }
+
+        public override int Length { get; }
+
+        public override int TrailingWhitespaceLength { get; }
+
+        public override double Width { get; }
+
+        public override double WidthIncludingTrailingWhitespace { get; }
+
+        public override double Height { get; }
+
+        public override double Baseline { get; }
+
+        internal static TextLineImpl Create(TextParagraphProperties paragraphProperties, int firstIndex, int paragraphLength, TextSource textSource)
+        {
+            var index = firstIndex;
+            var visibleLength = 0;
+            var widthLeft = paragraphProperties.TextWrapping == TextWrapping.Wrap && paragraphLength > 0 ? paragraphLength : double.MaxValue;
+            TextLineRun prevRun = null;
+            var run = TextLineRun.Create(textSource, index, firstIndex, widthLeft);
+
+            if (!run.IsEnd && run.Width <= widthLeft)
+            {
+                index += run.Length;
+                widthLeft -= run.Width;
+                prevRun = run;
+                run = TextLineRun.Create(textSource, index, firstIndex, widthLeft);
+            }
+
+            var trailing = new TrailingInfo();
+            var runs = new List<TextLineRun>(2);
+
+            if (prevRun != null)
+                visibleLength += AddRunReturnVisibleLength(runs, prevRun);
+
+            if (visibleLength >= MaxCharactersPerLine)
+                throw new NotSupportedException("Too many characters per line");
+
+            while (true)
+            {
+                visibleLength += AddRunReturnVisibleLength(runs, run);
+                index += run.Length;
+                widthLeft -= run.Width;
+
+                if (run.IsEnd || widthLeft <= 0)
+                {
+                    trailing.SpaceWidth = 0;
+                    UpdateTrailingInfo(runs, trailing);
+                    return new TextLineImpl(paragraphProperties, firstIndex, runs, trailing);
+                }
+
+                run = TextLineRun.Create(textSource, index, firstIndex, widthLeft);
+            }
+        }
+
         private static void UpdateTrailingInfo(List<TextLineRun> runs, TrailingInfo trailing)
         {
             for (var index = (runs?.Count ?? 0) - 1; index >= 0; index--)
-            {
                 // ReSharper disable once PossibleNullReferenceException
                 if (!runs[index].UpdateTrailingInfo(trailing))
-                {
                     return;
-                }
-            }
         }
 
         private static int AddRunReturnVisibleLength(List<TextLineRun> runs, TextLineRun run)
@@ -131,10 +125,9 @@ namespace AvaloniaEdit.Text
             if (run.Length > 0)
             {
                 runs.Add(run);
+
                 if (!run.IsEnd)
-                {
                     return run.Length;
-                }
             }
 
             return 0;
@@ -145,9 +138,7 @@ namespace AvaloniaEdit.Text
             if (drawingContext == null) throw new ArgumentNullException(nameof(drawingContext));
 
             if (_runs.Length == 0)
-            {
                 return;
-            }
 
             double width = 0;
             var y = origin.Y;
@@ -164,13 +155,13 @@ namespace AvaloniaEdit.Text
             double distance = 0;
             var index = firstIndex + (trailingLength != 0 ? 1 : 0) - FirstIndex;
             TextLineRun[] runs = _runs;
+
             foreach (var run in runs)
             {
                 distance += run.GetDistanceFromCharacter(index);
+
                 if (index <= run.Length)
-                {
                     break;
-                }
 
                 index -= run.Length;
             }
@@ -181,10 +172,9 @@ namespace AvaloniaEdit.Text
         public override (int firstIndex, int trailingLength) GetCharacterFromDistance(double distance)
         {
             var firstIndex = FirstIndex;
+
             if (distance < 0)
-            {
                 return (FirstIndex, 0);
-            }
 
             (int firstIndex, int trailingLength) result = (FirstIndex, 0);
 
@@ -198,9 +188,7 @@ namespace AvaloniaEdit.Text
                 }
 
                 if (distance <= run.Width)
-                {
                     break;
-                }
 
                 distance -= run.Width;
             }
@@ -225,9 +213,7 @@ namespace AvaloniaEdit.Text
             }
 
             if (firstIndex + textLength > FirstIndex + Length)
-            {
                 textLength = FirstIndex + Length - firstIndex;
-            }
 
             var distance = GetDistanceFromCharacter(firstIndex, 0);
             var distanceToLast = GetDistanceFromCharacter(firstIndex + textLength, 0);

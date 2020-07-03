@@ -5,15 +5,6 @@ namespace AvaloniaEdit.Text
 {
     public class TextRunProperties
     {
-        public TextRunProperties Clone() => new TextRunProperties
-        {
-            BackgroundBrush = BackgroundBrush,
-            CultureInfo = CultureInfo,
-            ForegroundBrush = ForegroundBrush,
-            Typeface = Typeface,
-            FontSize = FontSize
-        };
-
         public IBrush BackgroundBrush { get; set; }
 
         public CultureInfo CultureInfo { get; set; }
@@ -23,5 +14,17 @@ namespace AvaloniaEdit.Text
         public Typeface Typeface { get; set; }
 
         public double FontSize { get; set; }
+
+        public TextRunProperties Clone()
+        {
+            return new TextRunProperties
+            {
+                BackgroundBrush = BackgroundBrush,
+                CultureInfo = CultureInfo,
+                ForegroundBrush = ForegroundBrush,
+                Typeface = Typeface,
+                FontSize = FontSize
+            };
+        }
     }
 }

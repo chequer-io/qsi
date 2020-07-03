@@ -24,18 +24,13 @@ using AvaloniaEdit.Document;
 namespace AvaloniaEdit.Editing
 {
     /// <summary>
-    /// Implementation for <see cref="IReadOnlySectionProvider"/> that stores the segments
-    /// in a <see cref="TextSegmentCollection{T}"/>.
+    ///     Implementation for <see cref="IReadOnlySectionProvider" /> that stores the segments
+    ///     in a <see cref="TextSegmentCollection{T}" />.
     /// </summary>
     public class TextSegmentReadOnlySectionProvider<T> : IReadOnlySectionProvider where T : TextSegment
     {
         /// <summary>
-        /// Gets the collection storing the read-only segments.
-        /// </summary>
-        public TextSegmentCollection<T> Segments { get; }
-
-        /// <summary>
-        /// Creates a new TextSegmentReadOnlySectionProvider instance for the specified document.
+        ///     Creates a new TextSegmentReadOnlySectionProvider instance for the specified document.
         /// </summary>
         public TextSegmentReadOnlySectionProvider(TextDocument textDocument)
         {
@@ -43,7 +38,7 @@ namespace AvaloniaEdit.Editing
         }
 
         /// <summary>
-        /// Creates a new TextSegmentReadOnlySectionProvider instance using the specified TextSegmentCollection.
+        ///     Creates a new TextSegmentReadOnlySectionProvider instance using the specified TextSegmentCollection.
         /// </summary>
         public TextSegmentReadOnlySectionProvider(TextSegmentCollection<T> segments)
         {
@@ -51,7 +46,12 @@ namespace AvaloniaEdit.Editing
         }
 
         /// <summary>
-        /// Gets whether insertion is possible at the specified offset.
+        ///     Gets the collection storing the read-only segments.
+        /// </summary>
+        public TextSegmentCollection<T> Segments { get; }
+
+        /// <summary>
+        ///     Gets whether insertion is possible at the specified offset.
         /// </summary>
         public virtual bool CanInsert(int offset)
         {
@@ -60,7 +60,7 @@ namespace AvaloniaEdit.Editing
         }
 
         /// <summary>
-        /// Gets the deletable segments inside the given segment.
+        ///     Gets the deletable segments inside the given segment.
         /// </summary>
         public virtual IEnumerable<ISegment> GetDeletableSegments(ISegment segment)
         {
@@ -70,28 +70,28 @@ namespace AvaloniaEdit.Editing
             if (segment.Length == 0 && CanInsert(segment.Offset))
             {
                 yield return segment;
+
                 yield break;
             }
 
             var readonlyUntil = segment.Offset;
+
             foreach (var ts in Segments.FindOverlappingSegments(segment))
             {
                 var start = ts.StartOffset;
                 var end = start + ts.Length;
+
                 if (start > readonlyUntil)
-                {
                     yield return new SimpleSegment(readonlyUntil, start - readonlyUntil);
-                }
+
                 if (end > readonlyUntil)
-                {
                     readonlyUntil = end;
-                }
             }
+
             var endOffset = segment.EndOffset;
+
             if (readonlyUntil < endOffset)
-            {
                 yield return new SimpleSegment(readonlyUntil, endOffset - readonlyUntil);
-            }
         }
     }
 }

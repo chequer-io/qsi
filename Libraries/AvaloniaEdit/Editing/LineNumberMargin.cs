@@ -19,37 +19,42 @@
 using System;
 using System.Globalization;
 using Avalonia;
-using AvaloniaEdit.Document;
-using AvaloniaEdit.Rendering;
-using AvaloniaEdit.Utils;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Media;
+using AvaloniaEdit.Document;
+using AvaloniaEdit.Rendering;
+using AvaloniaEdit.Utils;
 
 namespace AvaloniaEdit.Editing
 {
     /// <summary>
-    /// Margin showing line numbers.
+    ///     Margin showing line numbers.
     /// </summary>
     public class LineNumberMargin : AbstractMargin
     {
-        private AnchorSegment _selectionStart;
         private bool _selecting;
+        private AnchorSegment _selectionStart;
 
         /// <summary>
-        /// The typeface used for rendering the line number margin.
-        /// This field is calculated in MeasureOverride() based on the FontFamily etc. properties.
+        ///     Maximum length of a line number, in characters
+        /// </summary>
+        protected int MaxLineNumberLength = 1;
+
+        /// <summary>
+        ///     The typeface used for rendering the line number margin.
+        ///     This field is calculated in MeasureOverride() based on the FontFamily etc. properties.
         /// </summary>
         protected FontFamily Typeface { get; set; }
 
         /// <summary>
-        /// The font size used for rendering the line number margin.
-        /// This field is calculated in MeasureOverride() based on the FontFamily etc. properties.
+        ///     The font size used for rendering the line number margin.
+        ///     This field is calculated in MeasureOverride() based on the FontFamily etc. properties.
         /// </summary>
         protected double EmSize { get; set; }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override Size MeasureOverride(Size availableSize)
         {
             Typeface = GetValue(TextBlock.FontFamilyProperty);
@@ -66,7 +71,7 @@ namespace AvaloniaEdit.Editing
             return new Size(text.Bounds.Width, 0);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override void Render(DrawingContext drawingContext)
         {
             var textView = TextView;
@@ -89,45 +94,37 @@ namespace AvaloniaEdit.Editing
                     var y = line.GetTextLineVisualYPosition(line.TextLines[0], VisualYPosition.TextTop);
 
                     drawingContext.DrawText(
-                        foreground, 
-                        new Point((renderSize.Width - text.Bounds.Width) / 2, y - textView.VerticalOffset), 
+                        foreground,
+                        new Point((renderSize.Width - text.Bounds.Width) / 2, y - textView.VerticalOffset),
                         text);
                 }
             }
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void OnTextViewChanged(TextView oldTextView, TextView newTextView)
         {
             if (oldTextView != null)
-            {
                 oldTextView.VisualLinesChanged -= TextViewVisualLinesChanged;
-            }
 
             base.OnTextViewChanged(oldTextView, newTextView);
 
             if (newTextView != null)
-            {
                 newTextView.VisualLinesChanged += TextViewVisualLinesChanged;
-            }
 
             InvalidateVisual();
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void OnDocumentChanged(TextDocument oldDocument, TextDocument newDocument)
         {
             if (oldDocument != null)
-            {
                 TextDocumentWeakEventManager.LineCountChanged.RemoveHandler(oldDocument, OnDocumentLineCountChanged);
-            }
 
             base.OnDocumentChanged(oldDocument, newDocument);
 
             if (newDocument != null)
-            {
                 TextDocumentWeakEventManager.LineCountChanged.AddHandler(newDocument, OnDocumentLineCountChanged);
-            }
 
             OnDocumentLineCountChanged();
         }
@@ -137,15 +134,10 @@ namespace AvaloniaEdit.Editing
             OnDocumentLineCountChanged();
         }
 
-        void TextViewVisualLinesChanged(object sender, EventArgs e)
+        private void TextViewVisualLinesChanged(object sender, EventArgs e)
         {
             InvalidateMeasure();
         }
-
-        /// <summary>
-        /// Maximum length of a line number, in characters
-        /// </summary>
-        protected int MaxLineNumberLength = 1;
 
         private void OnDocumentLineCountChanged()
         {
@@ -187,17 +179,13 @@ namespace AvaloniaEdit.Editing
                     _selectionStart = new AnchorSegment(Document, currentSeg.Offset, currentSeg.Length);
 
                     if (e.KeyModifiers.HasFlag(KeyModifiers.Shift))
-                    {
                         if (TextArea.Selection is SimpleSelection simpleSelection)
                             _selectionStart = new AnchorSegment(Document, simpleSelection.SurroundingSegment);
-                    }
 
                     TextArea.Selection = Selection.Create(TextArea, _selectionStart);
 
                     if (e.KeyModifiers.HasFlag(KeyModifiers.Shift))
-                    {
                         ExtendSelection(currentSeg);
-                    }
 
                     TextArea.Caret.BringCaretToView(5.0);
                 }

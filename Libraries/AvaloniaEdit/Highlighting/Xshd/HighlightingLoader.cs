@@ -22,13 +22,13 @@ using System.Xml;
 namespace AvaloniaEdit.Highlighting.Xshd
 {
     /// <summary>
-    /// Static class with helper methods to load XSHD highlighting files.
+    ///     Static class with helper methods to load XSHD highlighting files.
     /// </summary>
     public static class HighlightingLoader
     {
         #region XSHD loading
         /// <summary>
-        /// Lodas a syntax definition from the xml reader.
+        ///     Lodas a syntax definition from the xml reader.
         /// </summary>
         public static XshdSyntaxDefinition LoadXshd(XmlReader reader)
         {
@@ -39,12 +39,14 @@ namespace AvaloniaEdit.Highlighting.Xshd
         {
             if (reader == null)
                 throw new ArgumentNullException(nameof(reader));
+
             try
             {
                 reader.MoveToContent();
                 //if (reader.NamespaceURI == V2Loader.Namespace)
                 //{
-                    return V2Loader.LoadDefinition(reader, skipValidation);
+                return V2Loader.LoadDefinition(reader, skipValidation);
+
                 //}
                 //else
                 //{
@@ -57,7 +59,7 @@ namespace AvaloniaEdit.Highlighting.Xshd
             }
         }
 
-        static Exception WrapException(Exception ex, int lineNumber, int linePosition)
+        private static Exception WrapException(Exception ex, int lineNumber, int linePosition)
         {
             return new HighlightingDefinitionInvalidException(FormatExceptionMessage(ex.Message, lineNumber, linePosition), ex);
         }
@@ -66,8 +68,8 @@ namespace AvaloniaEdit.Highlighting.Xshd
         {
             if (lineNumber <= 0)
                 return message;
-            else
-                return "Error at position (line " + lineNumber + ", column " + linePosition + "):\n" + message;
+
+            return "Error at position (line " + lineNumber + ", column " + linePosition + "):\n" + message;
         }
 
         internal static XmlReader GetValidatingReader(XmlReader input, bool ignoreWhitespace)
@@ -78,6 +80,7 @@ namespace AvaloniaEdit.Highlighting.Xshd
                 IgnoreComments = true,
                 IgnoreWhitespace = ignoreWhitespace
             };
+
             //if (schemaSet != null)
             //{
             //    settings.Schemas = schemaSet;
@@ -100,17 +103,18 @@ namespace AvaloniaEdit.Highlighting.Xshd
 
         #region Load Highlighting from XSHD
         /// <summary>
-        /// Creates a highlighting definition from the XSHD file.
+        ///     Creates a highlighting definition from the XSHD file.
         /// </summary>
         public static IHighlightingDefinition Load(XshdSyntaxDefinition syntaxDefinition, IHighlightingDefinitionReferenceResolver resolver)
         {
             if (syntaxDefinition == null)
                 throw new ArgumentNullException(nameof(syntaxDefinition));
+
             return new XmlHighlightingDefinition(syntaxDefinition, resolver);
         }
 
         /// <summary>
-        /// Creates a highlighting definition from the XSHD file.
+        ///     Creates a highlighting definition from the XSHD file.
         /// </summary>
         public static IHighlightingDefinition Load(XmlReader reader, IHighlightingDefinitionReferenceResolver resolver)
         {

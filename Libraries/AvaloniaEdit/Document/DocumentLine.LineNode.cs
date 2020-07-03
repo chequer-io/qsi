@@ -24,10 +24,52 @@ namespace AvaloniaEdit.Document
     partial class DocumentLine
     {
         internal DocumentLine Left { get; set; }
+
         internal DocumentLine Right { get; set; }
+
         internal DocumentLine Parent { get; set; }
 
         internal bool Color { get; set; }
+
+        internal DocumentLine LeftMost
+        {
+            get
+            {
+                var node = this;
+
+                while (node.Left != null)
+                    node = node.Left;
+
+                return node;
+            }
+        }
+
+        internal DocumentLine RightMost
+        {
+            get
+            {
+                var node = this;
+
+                while (node.Right != null)
+                    node = node.Right;
+
+                return node;
+            }
+        }
+
+        /// <summary>
+        ///     The number of lines in this node and its child nodes.
+        ///     Invariant:
+        ///     nodeTotalCount = 1 + left.nodeTotalCount + right.nodeTotalCount
+        /// </summary>
+        internal int NodeTotalCount { get; set; }
+
+        /// <summary>
+        ///     The total text length of this node and its child nodes.
+        ///     Invariant:
+        ///     nodeTotalLength = left.nodeTotalLength + documentLine.TotalLength + right.nodeTotalLength
+        /// </summary>
+        internal int NodeTotalLength { get; set; }
 
         // optimization note: I tried packing color and isDeleted into a single byte field, but that
         // actually increased the memory requirements. The JIT packs two bools and a byte (delimiterSize)
@@ -40,7 +82,7 @@ namespace AvaloniaEdit.Document
         // 28 bits left for totalLength. 268435455 characters per line should be enough for everyone :)
 
         /// <summary>
-        /// Resets the line to enable its reuse after a document rebuild.
+        ///     Resets the line to enable its reuse after a document rebuild.
         /// </summary>
         internal void ResetLine()
         {
@@ -55,41 +97,5 @@ namespace AvaloniaEdit.Document
             NodeTotalLength = TotalLength;
             return this;
         }
-
-        internal DocumentLine LeftMost
-        {
-            get
-            {
-                var node = this;
-                while (node.Left != null)
-                    node = node.Left;
-                return node;
-            }
-        }
-
-        internal DocumentLine RightMost
-        {
-            get
-            {
-                var node = this;
-                while (node.Right != null)
-                    node = node.Right;
-                return node;
-            }
-        }
-
-        /// <summary>
-        /// The number of lines in this node and its child nodes.
-        /// Invariant:
-        ///   nodeTotalCount = 1 + left.nodeTotalCount + right.nodeTotalCount
-        /// </summary>
-        internal int NodeTotalCount { get; set; }
-
-        /// <summary>
-        /// The total text length of this node and its child nodes.
-        /// Invariant:
-        ///   nodeTotalLength = left.nodeTotalLength + documentLine.TotalLength + right.nodeTotalLength
-        /// </summary>
-        internal int NodeTotalLength { get; set; }
     }
 }

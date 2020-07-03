@@ -17,20 +17,20 @@
 // DEALINGS IN THE SOFTWARE.
 
 using Avalonia;
-using AvaloniaEdit.Editing;
 using Avalonia.Input;
+using AvaloniaEdit.Editing;
 
 namespace AvaloniaEdit.CodeCompletion
 {
     /// <summary>
-    /// Insight window that shows an OverloadViewer.
+    ///     Insight window that shows an OverloadViewer.
     /// </summary>
     public class OverloadInsightWindow : InsightWindow
     {
         private readonly OverloadViewer _overloadViewer = new OverloadViewer();
 
         /// <summary>
-        /// Creates a new OverloadInsightWindow.
+        ///     Creates a new OverloadInsightWindow.
         /// </summary>
         public OverloadInsightWindow(TextArea textArea) : base(textArea)
         {
@@ -39,7 +39,7 @@ namespace AvaloniaEdit.CodeCompletion
         }
 
         /// <summary>
-        /// Gets/Sets the item provider.
+        ///     Gets/Sets the item provider.
         /// </summary>
         public IOverloadProvider Provider
         {
@@ -47,10 +47,11 @@ namespace AvaloniaEdit.CodeCompletion
             set => _overloadViewer.Provider = value;
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void OnKeyDown(KeyEventArgs e)
         {
             base.OnKeyDown(e);
+
             if (!e.Handled && Provider != null && Provider.Count > 1)
             {
                 switch (e.Key)
@@ -59,16 +60,16 @@ namespace AvaloniaEdit.CodeCompletion
                         e.Handled = true;
                         _overloadViewer.ChangeIndex(-1);
                         break;
+
                     case Key.Down:
                         e.Handled = true;
                         _overloadViewer.ChangeIndex(+1);
                         break;
                 }
+
                 if (e.Handled)
-                {
                     // TODO: UpdateLayout();
                     UpdatePosition();
-                }
             }
         }
     }

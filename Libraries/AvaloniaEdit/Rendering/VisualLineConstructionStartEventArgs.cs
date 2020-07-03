@@ -22,21 +22,21 @@ using AvaloniaEdit.Document;
 namespace AvaloniaEdit.Rendering
 {
 	/// <summary>
-	/// EventArgs for the <see cref="TextView.VisualLineConstructionStarting"/> event.
+	///     EventArgs for the <see cref="TextView.VisualLineConstructionStarting" /> event.
 	/// </summary>
 	public class VisualLineConstructionStartEventArgs : EventArgs
-	{
-		/// <summary>
-		/// Gets/Sets the first line that is visible in the TextView.
-		/// </summary>
-		public DocumentLine FirstLineInView { get; }
-		
-		/// <summary>
-		/// Creates a new VisualLineConstructionStartEventArgs instance.
-		/// </summary>
-		public VisualLineConstructionStartEventArgs(DocumentLine firstLineInView)
-		{
+    {
+	    /// <summary>
+	    ///     Creates a new VisualLineConstructionStartEventArgs instance.
+	    /// </summary>
+	    public VisualLineConstructionStartEventArgs(DocumentLine firstLineInView)
+        {
             FirstLineInView = firstLineInView ?? throw new ArgumentNullException(nameof(firstLineInView));
-		}
-	}
+        }
+
+	    /// <summary>
+	    ///     Gets/Sets the first line that is visible in the TextView.
+	    /// </summary>
+	    public DocumentLine FirstLineInView { get; }
+    }
 }

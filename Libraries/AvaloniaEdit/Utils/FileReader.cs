@@ -23,29 +23,35 @@ using System.Text;
 namespace AvaloniaEdit.Utils
 {
     /// <summary>
-    /// Class that can open text files with auto-detection of the encoding.
+    ///     Class that can open text files with auto-detection of the encoding.
     /// </summary>
     internal static class FileReader
     {
+        // ReSharper disable once InconsistentNaming
+        private static readonly Encoding UTF8NoBOM = new UTF8Encoding(false);
+
         /// <summary>
-        /// Gets if the given encoding is a Unicode encoding (UTF).
+        ///     Gets if the given encoding is a Unicode encoding (UTF).
         /// </summary>
         /// <remarks>
-        /// Returns true for UTF-7, UTF-8, UTF-16 LE, UTF-16 BE, UTF-32 LE and UTF-32 BE.
-        /// Returns false for all other encodings.
+        ///     Returns true for UTF-7, UTF-8, UTF-16 LE, UTF-16 BE, UTF-32 LE and UTF-32 BE.
+        ///     Returns false for all other encodings.
         /// </remarks>
         public static bool IsUnicode(Encoding encoding)
         {
             if (encoding == null)
                 throw new ArgumentNullException(nameof(encoding));
+
             switch (encoding)
             {
                 case UnicodeEncoding _:
                 case UTF8Encoding _:
                     return true;
+
                 default:
                     return false;
             }
+
             //switch (encoding) {
             //	case 65000: // UTF-7
             //	case 65001: // UTF-8
@@ -68,9 +74,8 @@ namespace AvaloniaEdit.Utils
         private static Encoding RemoveBom(Encoding encoding)
         {
             if (encoding is UTF8Encoding)
-            {
                 return UTF8NoBOM;
-            }
+
             return encoding;
 
             //switch (encoding.CodePage) {
@@ -82,10 +87,12 @@ namespace AvaloniaEdit.Utils
         }
 
         /// <summary>
-        /// Reads the content of the given stream.
+        ///     Reads the content of the given stream.
         /// </summary>
-        /// <param name="stream">The stream to read.
-        /// The stream must support seeking and must be positioned at its beginning.</param>
+        /// <param name="stream">
+        ///     The stream to read.
+        ///     The stream must support seeking and must be positioned at its beginning.
+        /// </param>
         /// <param name="defaultEncoding">The encoding to use if the encoding cannot be auto-detected.</param>
         /// <returns>The file content as string.</returns>
         public static string ReadFileContent(Stream stream, Encoding defaultEncoding)
@@ -97,7 +104,7 @@ namespace AvaloniaEdit.Utils
         }
 
         /// <summary>
-        /// Reads the content of the file.
+        ///     Reads the content of the file.
         /// </summary>
         /// <param name="fileName">The file name.</param>
         /// <param name="defaultEncoding">The encoding to use if the encoding cannot be auto-detected.</param>
@@ -105,21 +112,25 @@ namespace AvaloniaEdit.Utils
         public static string ReadFileContent(string fileName, Encoding defaultEncoding)
         {
             throw new NotImplementedException();
+
             //using (FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read)) {
             //	return ReadFileContent(fs, defaultEncoding);
             //}
         }
 
         /// <summary>
-        /// Opens the specified file for reading.
+        ///     Opens the specified file for reading.
         /// </summary>
         /// <param name="fileName">The file to open.</param>
         /// <param name="defaultEncoding">The encoding to use if the encoding cannot be auto-detected.</param>
-        /// <returns>Returns a StreamReader that reads from the stream. Use
-        /// <see cref="StreamReader.CurrentEncoding"/> to get the encoding that was used.</returns>
+        /// <returns>
+        ///     Returns a StreamReader that reads from the stream. Use
+        ///     <see cref="StreamReader.CurrentEncoding" /> to get the encoding that was used.
+        /// </returns>
         public static StreamReader OpenFile(string fileName, Encoding defaultEncoding)
         {
             throw new NotImplementedException();
+
             //if (fileName == null)
             //	throw new ArgumentNullException("fileName");
             //FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
@@ -133,18 +144,22 @@ namespace AvaloniaEdit.Utils
         }
 
         /// <summary>
-        /// Opens the specified stream for reading.
+        ///     Opens the specified stream for reading.
         /// </summary>
         /// <param name="stream">The stream to open.</param>
         /// <param name="defaultEncoding">The encoding to use if the encoding cannot be auto-detected.</param>
-        /// <returns>Returns a StreamReader that reads from the stream. Use
-        /// <see cref="StreamReader.CurrentEncoding"/> to get the encoding that was used.</returns>
+        /// <returns>
+        ///     Returns a StreamReader that reads from the stream. Use
+        ///     <see cref="StreamReader.CurrentEncoding" /> to get the encoding that was used.
+        /// </returns>
         public static StreamReader OpenStream(Stream stream, Encoding defaultEncoding)
         {
             if (stream == null)
                 throw new ArgumentNullException(nameof(stream));
+
             if (stream.Position != 0)
                 throw new ArgumentException("stream is not positioned at beginning.", nameof(stream));
+
             if (defaultEncoding == null)
                 throw new ArgumentNullException(nameof(defaultEncoding));
 
@@ -154,6 +169,7 @@ namespace AvaloniaEdit.Utils
                 // between ISO-8859-1 and UTF-8 without BOM.
                 var firstByte = stream.ReadByte();
                 var secondByte = stream.ReadByte();
+
                 switch ((firstByte << 8) | secondByte)
                 {
                     case 0x0000: // either UTF-32 Big Endian or a binary file; use StreamReader
@@ -163,15 +179,14 @@ namespace AvaloniaEdit.Utils
                         // StreamReader autodetection works
                         stream.Position = 0;
                         return new StreamReader(stream);
+
                     default:
-                        return AutoDetect(stream, (byte) firstByte, (byte) secondByte, defaultEncoding);
+                        return AutoDetect(stream, (byte)firstByte, (byte)secondByte, defaultEncoding);
                 }
             }
+
             return new StreamReader(stream, defaultEncoding);
         }
-
-        // ReSharper disable once InconsistentNaming
-        private static readonly Encoding UTF8NoBOM = new UTF8Encoding(false);
 
         private static StreamReader AutoDetect(Stream fs, byte firstByte, byte secondByte, Encoding defaultEncoding)
         {
@@ -184,21 +199,18 @@ namespace AvaloniaEdit.Utils
             // ReSharper restore InconsistentNaming
             var state = ASCII;
             var sequenceLength = 0;
+
             for (var i = 0; i < max; i++)
             {
                 byte b;
+
                 if (i == 0)
-                {
                     b = firstByte;
-                }
                 else if (i == 1)
-                {
                     b = secondByte;
-                }
                 else
-                {
                     b = (byte)fs.ReadByte();
-                }
+
                 if (b < 0x80)
                 {
                     // normal ASCII character
@@ -214,12 +226,14 @@ namespace AvaloniaEdit.Utils
                     if (state == UTF8Sequence)
                     {
                         --sequenceLength;
+
                         if (sequenceLength < 0)
                         {
                             state = Error;
                             break;
                         }
-                        else if (sequenceLength == 0)
+
+                        if (sequenceLength == 0)
                         {
                             state = UTF8;
                         }
@@ -236,18 +250,13 @@ namespace AvaloniaEdit.Utils
                     if (state == UTF8 || state == ASCII)
                     {
                         state = UTF8Sequence;
+
                         if (b < 0xe0)
-                        {
                             sequenceLength = 1; // one more byte following
-                        }
                         else if (b < 0xf0)
-                        {
                             sequenceLength = 2; // two more bytes following
-                        }
                         else
-                        {
                             sequenceLength = 3; // three more bytes following
-                        }
                     }
                     else
                     {
@@ -262,24 +271,27 @@ namespace AvaloniaEdit.Utils
                     break;
                 }
             }
+
             fs.Position = 0;
+
             switch (state)
             {
                 case ASCII:
                     // TODO: Encoding.ASCII
                     return new StreamReader(fs, IsAsciiCompatible(defaultEncoding) ? RemoveBom(defaultEncoding) : Encoding.UTF8);
+
                 case Error:
                     // When the file seems to be non-UTF8,
                     // we read it using the user-specified encoding so it is saved again
                     // using that encoding.
                     if (IsUnicode(defaultEncoding))
-                    {
                         // the file is not Unicode, so don't read it using Unicode even if the
                         // user has choosen Unicode as the default encoding.
 
                         defaultEncoding = Encoding.UTF8; // use system encoding instead
-                    }
+
                     return new StreamReader(fs, RemoveBom(defaultEncoding));
+
                 default:
                     return new StreamReader(fs, UTF8NoBOM);
             }

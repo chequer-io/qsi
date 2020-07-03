@@ -25,19 +25,15 @@ using AvaloniaEdit.Utils;
 namespace AvaloniaEdit.Rendering
 {
     /// <summary>
-    /// Formatted text (not normal document text).
-    /// This is used as base class for various VisualLineElements that are displayed using a
-    /// FormattedText, for example newline markers or collapsed folding sections.
+    ///     Formatted text (not normal document text).
+    ///     This is used as base class for various VisualLineElements that are displayed using a
+    ///     FormattedText, for example newline markers or collapsed folding sections.
     /// </summary>
     public class FormattedTextElement : VisualLineElement
     {
-        internal FormattedText FormattedText { get; }
-        internal string Text { get; set; }
-        internal TextLine TextLine { get; set; }
-
         /// <summary>
-        /// Creates a new FormattedTextElement that displays the specified text
-        /// and occupies the specified length in the document.
+        ///     Creates a new FormattedTextElement that displays the specified text
+        ///     and occupies the specified length in the document.
         /// </summary>
         public FormattedTextElement(string text, int documentLength) : base(1, documentLength)
         {
@@ -45,8 +41,8 @@ namespace AvaloniaEdit.Rendering
         }
 
         /// <summary>
-        /// Creates a new FormattedTextElement that displays the specified text
-        /// and occupies the specified length in the document.
+        ///     Creates a new FormattedTextElement that displays the specified text
+        ///     and occupies the specified length in the document.
         /// </summary>
         internal FormattedTextElement(TextLine text, int documentLength) : base(1, documentLength)
         {
@@ -54,15 +50,21 @@ namespace AvaloniaEdit.Rendering
         }
 
         /// <summary>
-        /// Creates a new FormattedTextElement that displays the specified text
-        /// and occupies the specified length in the document.
+        ///     Creates a new FormattedTextElement that displays the specified text
+        ///     and occupies the specified length in the document.
         /// </summary>
         public FormattedTextElement(FormattedText text, int documentLength) : base(1, documentLength)
         {
             FormattedText = text ?? throw new ArgumentNullException(nameof(text));
         }
 
-        /// <inheritdoc/>
+        internal FormattedText FormattedText { get; }
+
+        internal string Text { get; set; }
+
+        internal TextLine TextLine { get; set; }
+
+        /// <inheritdoc />
         public override TextRun CreateTextRun(int startVisualColumn, ITextRunConstructionContext context)
         {
             if (TextLine == null)
@@ -71,20 +73,24 @@ namespace AvaloniaEdit.Rendering
                 TextLine = PrepareText(formatter, Text, TextRunProperties);
                 Text = null;
             }
+
             return new FormattedTextRun(this, TextRunProperties);
         }
 
         /// <summary>
-        /// Constructs a TextLine from a simple text.
+        ///     Constructs a TextLine from a simple text.
         /// </summary>
         internal static TextLine PrepareText(TextFormatter formatter, string text, TextRunProperties properties)
         {
             if (formatter == null)
                 throw new ArgumentNullException(nameof(formatter));
+
             if (text == null)
                 throw new ArgumentNullException(nameof(text));
+
             if (properties == null)
                 throw new ArgumentNullException(nameof(properties));
+
             return formatter.FormatLine(
                 new SimpleTextSource(text, properties),
                 0,
@@ -99,12 +105,12 @@ namespace AvaloniaEdit.Rendering
     }
 
     /// <summary>
-    /// This is the TextRun implementation used by the <see cref="FormattedTextElement"/> class.
+    ///     This is the TextRun implementation used by the <see cref="FormattedTextElement" /> class.
     /// </summary>
     public class FormattedTextRun : TextEmbeddedObject
     {
         /// <summary>
-        /// Creates a new FormattedTextRun.
+        ///     Creates a new FormattedTextRun.
         /// </summary>
         public FormattedTextRun(FormattedTextElement element, TextRunProperties properties)
         {
@@ -113,53 +119,50 @@ namespace AvaloniaEdit.Rendering
         }
 
         /// <summary>
-        /// Gets the element for which the FormattedTextRun was created.
+        ///     Gets the element for which the FormattedTextRun was created.
         /// </summary>
         public FormattedTextElement Element { get; }
 
-        /// <inheritdoc/>
-        public override StringRange StringRange => default(StringRange);
+        /// <inheritdoc />
+        public override StringRange StringRange => default;
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override int Length => Element.VisualLength;
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override bool HasFixedSize => true;
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override TextRunProperties Properties { get; }
 
         public override Size GetSize(double remainingParagraphWidth)
         {
             var formattedText = Element.FormattedText;
+
             if (formattedText != null)
-            {
                 return formattedText.Bounds.Size;
-            }
+
             var text = Element.TextLine;
+
             return new Size(text.WidthIncludingTrailingWhitespace,
                 text.Height);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override Rect ComputeBoundingBox()
         {
             return new Rect(GetSize(double.PositiveInfinity));
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override void Draw(DrawingContext drawingContext, Point origin)
         {
             if (Element.FormattedText != null)
-            {
                 //origin = origin.WithY(origin.Y - Element.formattedText.Baseline);
                 drawingContext.DrawText(null, origin, Element.FormattedText);
-            }
             else
-            {
                 //origin.Y -= element.textLine.Baseline;
                 Element.TextLine.Draw(drawingContext, origin);
-            }
         }
     }
 }

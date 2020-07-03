@@ -10,7 +10,7 @@ Get-ChildItem -Path "Qsi.*" -Directory | ForEach-Object {
 
     if (!(Test-Path $GrammarDirectory)) {
         Write-Host "Skip $($PSItem.Name)" -ForegroundColor DarkGray
-        continue
+        return
     }
 
     Write-Host "[Antlr4] Build $($PSItem.Name).." -ForegroundColor Green
@@ -30,7 +30,6 @@ Get-ChildItem -Path "Qsi.*" -Directory | ForEach-Object {
         -package "$Namespace" `
         -Xexact-output-dir `
         -o "$OutputDirectory" `
-        -visitor `
         "$GrammarDirectory\*.g4"
 
     # Move grammar cache (interp, tokens)
