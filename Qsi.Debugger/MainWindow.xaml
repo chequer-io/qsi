@@ -76,12 +76,12 @@
                     </Style>
 
                     <Style Selector="TreeViewItem/template/Border#SelectionBorder:pointerover">
-                        <Setter Property="Background" Value="#6623577B" />
+                        <Setter Property="Background" Value="{DynamicResource Blue.80.Brush.40}" />
                         <Setter Property="CornerRadius" Value="2" />
                     </Style>
 
                     <Style Selector="TreeViewItem:selected/template/Border#SelectionBorder">
-                        <Setter Property="Background" Value="#23577B" />
+                        <Setter Property="Background" Value="{DynamicResource Blue.80.Brush}" />
                     </Style>
                 </TreeView.Styles>
 
