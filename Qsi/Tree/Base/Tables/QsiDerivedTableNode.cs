@@ -8,8 +8,6 @@
 
         public QsiTreeNodeProperty<QsiTableNode> Source { get; }
 
-        public QsiTreeNodeProperty<QsiAliasNode> SourceAlias { get; }
-
         public QsiTreeNodeProperty<QsiAliasNode> Alias { get; }
 
         #region Explicit
@@ -19,8 +17,6 @@
 
         IQsiTableNode IQsiDerivedTableNode.Source => Source.GetValue();
 
-        IQsiAliasNode IQsiDerivedTableNode.SourceAlias => SourceAlias.GetValue();
-
         IQsiAliasNode IQsiDerivedTableNode.Alias => Alias.GetValue();
         #endregion
 
@@ -29,7 +25,6 @@
             Directives = new QsiTreeNodeProperty<QsiTableDirectivesNode>(this);
             Columns = new QsiTreeNodeProperty<QsiColumnsDeclarationNode>(this);
             Source = new QsiTreeNodeProperty<QsiTableNode>(this);
-            SourceAlias = new QsiTreeNodeProperty<QsiAliasNode>(this);
             Alias = new QsiTreeNodeProperty<QsiAliasNode>(this);
         }
     }

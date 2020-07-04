@@ -3,30 +3,13 @@ using Qsi.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Qsi.Utilities;
 
 namespace Qsi.Debugger.Vendor.MySql
 {
-    internal class MySqlReferenceResolver : IQsiReferenceResolver
+    internal class MySqlReferenceResolver : QsiReferenceResolverBase
     {
-        private readonly Dictionary<int, QsiDataTable> _fakeTables;
-        private readonly Dictionary<int, QsiScript> _fakeDefinitions;
-
-        #region Initialize
-        public MySqlReferenceResolver()
-        {
-            _fakeTables = new Dictionary<int, QsiDataTable>();
-            _fakeDefinitions = new Dictionary<int, QsiScript>();
-
-            var actor = CreateTable("sakila", "actor");
-            AddColumns(actor, "actor_id", "first_name", "last_name", "last_update");
-
-            var address = CreateTable("sakila", "address");
-            AddColumns(address, "address_id", "address", "address2", "district", "city_id", "postal_code", "phone", "location", "last_update");
-
-            var city = CreateTable("sakila", "`test 1`");
-            AddColumns(city, "`c 1`", "`c 2`");
-        }
-
+        #region Mock
         private QsiQualifiedIdentifier CreateIdentifier(params string[] path)
         {
             return new QsiQualifiedIdentifier(path.Select(p => new QsiIdentifier(p, p[0] == '`')));
@@ -34,11 +17,11 @@ namespace Qsi.Debugger.Vendor.MySql
 
         private QsiDataTable CreateTable(params string[] path)
         {
-            var t = new QsiDataTable();
-            t.Type = QsiDataTableType.Table;
-            t.Identifier = CreateIdentifier(path);
-            _fakeTables[t.Identifier.GetHashCode()] = t;
-            return t;
+            return new QsiDataTable
+            {
+                Type = QsiDataTableType.Table,
+                Identifier = CreateIdentifier(path)
+            };
         }
 
         private void AddColumns(QsiDataTable table, params string[] names)
@@ -51,20 +34,42 @@ namespace Qsi.Debugger.Vendor.MySql
         }
         #endregion
 
-        public QsiDataTable LookupTable(QsiQualifiedIdentifier identifier)
+        protected override QsiDataTable LookupTable(QsiQualifiedIdentifier identifier)
         {
-            if (_fakeTables.TryGetValue(identifier.GetHashCode(), out var table))
-                return table;
+            var tableName = IdentifierUtility.Unescape(identifier.Identifiers[^1].Value);
+
+            switch (tableName)
+            {
+                case "actor":
+                    var actor = CreateTable("sakila", "actor");
+                    AddColumns(actor, "actor_id", "first_name", "last_name", "last_update");
+                    return actor;
+                
+                case "address":
+                    var address = CreateTable("sakila", "address");
+                    AddColumns(address, "address_id", "address", "address2", "district", "city_id", "postal_code", "phone", "location", "last_update");
+                    return address;
+                
+                case "city":
+                    var city = CreateTable("sakila", "city");
+                    AddColumns(city, "city_id", "city", "country_id", "last_update", "test");
+                    return city;
+
+                case "test 1":
+                    var test1 = CreateTable("sakila", "`test 1`");
+                    AddColumns(test1, "`c 1`", "`c 2`");
+                    return test1;
+            }
 
             return null;
         }
 
-        public QsiScript LookupDefinition(QsiQualifiedIdentifier identifier, QsiDataTableType type)
+        protected override QsiScript LookupDefinition(QsiQualifiedIdentifier identifier, QsiDataTableType type)
         {
             return null;
         }
 
-        public QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier)
+        protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier)
         {
             if (identifier.Level == 1)
             {

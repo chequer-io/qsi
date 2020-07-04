@@ -132,18 +132,11 @@ namespace Qsi.Compiler
             // Table Source
 
             var alias = table.Alias?.Name;
-            var sourceAlias = table.SourceAlias?.Name;
 
             if (table.Source != null)
             {
-                var sourceContext = new CompileContext(scopedContext);
+                using var sourceContext = new CompileContext(scopedContext);
                 var sourceTable = await BuildTableStructure(sourceContext, table.Source);
-
-                if (sourceAlias != null)
-                {
-                    sourceTable = WrapDataTable(sourceTable, sourceAlias);
-                }
-
                 scopedContext.PushTable(sourceTable);
             }
 
