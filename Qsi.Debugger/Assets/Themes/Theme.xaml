@@ -3,4 +3,5 @@
     <StyleInclude Source="avares://Qsi.Debugger/Assets/Themes/Controls/ComboBox.xaml" />
     <StyleInclude Source="avares://Qsi.Debugger/Assets/Themes/Controls/ComboBoxItem.xaml" />
     <StyleInclude Source="avares://Qsi.Debugger/Assets/Themes/Controls/Switch.xaml" />
+    <StyleInclude Source="avares://Qsi.Debugger/Assets/Themes/Controls/TreeViewItem.xaml" />
 </Styles>

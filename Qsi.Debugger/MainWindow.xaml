@@ -16,93 +16,118 @@
     d:DesignWidth="900"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
+    <Window.Styles>
+        <Style Selector="TreeView">
+            <Setter Property="Background" Value="{DynamicResource Ink.90.Brush}" />
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+
+        <Style Selector="TreeViewItem">
+            <Setter Property="IsExpanded" Value="true" />
+        </Style>
+    </Window.Styles>
 
     <Grid Margin="16">
         <Grid.ColumnDefinitions>
             <ColumnDefinition />
             <ColumnDefinition Width="6" />
             <ColumnDefinition />
+            <ColumnDefinition Width="6" />
+            <ColumnDefinition />
         </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="8" />
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
 
-        <Grid Grid.Column="0">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
+        <!--  Splitter  -->
 
-            <ComboBox
-                x:Name="cbLanguages"
-                Padding="8,6"
-                HorizontalAlignment="Left" />
+        <GridSplitter
+            Grid.Row="2"
+            Grid.Column="1"
+            Opacity="0" />
 
-            <ae:TextEditor
-                x:Name="codeEditor"
-                Grid.Row="1"
-                Margin="0,8"
-                Background="#16191F"
-                FontSize="14"
-                FontWeight="Medium"
-                LineNumbersForeground="#7E7E7E" />
+        <GridSplitter
+            Grid.Row="2"
+            Grid.Column="3"
+            Opacity="0" />
+
+        <!--  Error  -->
+
+        <TextBlock
+            x:Name="tbError"
+            Grid.Row="3"
+            Grid.ColumnSpan="5"
+            Margin="8,8,8,0"
+            FontSize="12"
+            Foreground="#E36387"
+            Text="Error message"
+            TextAlignment="Left"
+            TextWrapping="Wrap" />
+
+        <!--  Editor  -->
+
+        <ComboBox x:Name="cbLanguages" HorizontalAlignment="Left" />
+
+        <ae:TextEditor
+            x:Name="codeEditor"
+            Grid.Row="2"
+            Background="#16191F"
+            FontSize="14"
+            FontWeight="Medium"
+            LineNumbersForeground="#7E7E7E" />
+
+        <!--  QSI Tree  -->
+
+        <Panel Grid.Column="2" VerticalAlignment="Bottom">
+            <CheckBox
+                x:Name="chkQsiProperty"
+                VerticalAlignment="Center"
+                Content="Hide Property" />
 
             <TextBlock
-                x:Name="tbError"
-                Grid.Row="2"
-                Margin="8"
-                FontSize="12"
-                Foreground="#E36387"
-                TextAlignment="Left"
-                TextWrapping="Wrap" />
-        </Grid>
+                x:Name="tbQsiStatus"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                Text="parsed in 0 ms" />
+        </Panel>
 
-        <GridSplitter Grid.Column="1" Opacity="0" />
+        <TreeView
+            x:Name="tvQsi"
+            Grid.Row="2"
+            Grid.Column="2">
+            <TreeView.Styles>
+                <Style Selector="TreeViewItem">
+                    <Setter Property="IsExpanded" Value="true" />
+                </Style>
+            </TreeView.Styles>
 
-        <DockPanel Grid.Column="2">
-            <Grid Margin="0,0,0,8" DockPanel.Dock="Top">
-                <CheckBox
-                    x:Name="chkQsiProperty"
-                    VerticalAlignment="Center"
-                    Content="Hide Property" />
-                <TextBlock
-                    x:Name="tbQsiStatus"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Center" />
-            </Grid>
+            <TreeView.DataTemplates>
+                <TreeDataTemplate DataType="md:QsiElementItem" ItemsSource="{Binding Items}">
+                    <TextBlock Foreground="#87CEEB" Text="{Binding Header}" />
+                </TreeDataTemplate>
 
-            <TreeView x:Name="tvQsi">
-                <TreeView.Styles>
-                    <Style Selector="TreeViewItem">
-                        <Setter Property="IsExpanded" Value="true" />
-                    </Style>
+                <TreeDataTemplate DataType="md:QsiChildElementItem" ItemsSource="{Binding Items}">
+                    <TextBlock Foreground="#B0B0B0" Text="{Binding Header}" />
+                </TreeDataTemplate>
 
-                    <Style Selector="TreeViewItem/template/Border#SelectionBorder:pointerover">
-                        <Setter Property="Background" Value="{DynamicResource Blue.80.Brush.40}" />
-                        <Setter Property="CornerRadius" Value="2" />
-                    </Style>
-
-                    <Style Selector="TreeViewItem:selected/template/Border#SelectionBorder">
-                        <Setter Property="Background" Value="{DynamicResource Blue.80.Brush}" />
-                    </Style>
-                </TreeView.Styles>
-
-                <TreeView.DataTemplates>
-                    <TreeDataTemplate DataType="md:QsiElementItem" ItemsSource="{Binding Items}">
-                        <TextBlock Foreground="#87CEEB" Text="{Binding Header}" />
-                    </TreeDataTemplate>
-
-                    <TreeDataTemplate DataType="md:QsiChildElementItem" ItemsSource="{Binding Items}">
+                <DataTemplate DataType="md:QsiPropertyItem">
+                    <StackPanel Orientation="Horizontal">
                         <TextBlock Foreground="#B0B0B0" Text="{Binding Header}" />
-                    </TreeDataTemplate>
+                        <TextBlock Text=": " />
+                        <TextBlock Foreground="#FA8072" Text="{Binding Value}" />
+                    </StackPanel>
+                </DataTemplate>
+            </TreeView.DataTemplates>
+        </TreeView>
 
-                    <DataTemplate DataType="md:QsiPropertyItem">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Foreground="#B0B0B0" Text="{Binding Header}" />
-                            <TextBlock Text=": " />
-                            <TextBlock Foreground="#FA8072" Text="{Binding Value}" />
-                        </StackPanel>
-                    </DataTemplate>
-                </TreeView.DataTemplates>
-            </TreeView>
-        </DockPanel>
+        <!--  Compile  -->
+
+        <TreeView
+            x:Name="tvQsiCompile"
+            Grid.Row="2"
+            Grid.Column="4" />
     </Grid>
 </Window>

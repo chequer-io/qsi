@@ -38,6 +38,7 @@ namespace Qsi.Debugger
         {
             InitializeComponent();
 
+            this.AttachDevTools();
             _parsers = new Dictionary<string, Lazy<IQsiTreeParser>>
             {
                 ["MySQL_1"] = new Lazy<IQsiTreeParser>(() => new MySqlParser()),
@@ -134,6 +135,7 @@ namespace Qsi.Debugger
             catch (Exception e)
             {
                 _tbError.Text = e.Message;
+                _tbError.IsVisible = true;
             }
 
             static void ErrorHandler(object sender, QsiSyntaxErrorException e)
@@ -145,6 +147,7 @@ namespace Qsi.Debugger
         private void ClearError()
         {
             _tbError.Text = null;
+            _tbError.IsVisible = false;
         }
 
         private void ClearVisualTree()
