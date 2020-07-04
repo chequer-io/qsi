@@ -278,7 +278,9 @@ namespace Qsi.Debugger
         #region Qsi Table TreeView
         private void BuildQsiTableTree(QsiDataTable table)
         {
-            _tvResult.Items = table.Columns;
+            _tvResult.Items = table.Columns
+                .Select(c => new QsiColumnTreeItem(c))
+                .ToArray();
         }
         #endregion
     }

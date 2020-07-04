@@ -8,7 +8,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:md="clr-namespace:Qsi.Debugger.Models"
     xmlns:cvt="clr-namespace:Qsi.Debugger.Converters"
-    xmlns:qsi="clr-namespace:Qsi.Data;assembly=Qsi"
     Title="Qsi Debugger"
     Width="900"
     Height="600"
@@ -100,12 +99,6 @@
             x:Name="tvQsi"
             Grid.Row="2"
             Grid.Column="2">
-            <TreeView.Styles>
-                <Style Selector="TreeViewItem">
-                    <Setter Property="IsExpanded" Value="true" />
-                </Style>
-            </TreeView.Styles>
-
             <TreeView.DataTemplates>
                 <TreeDataTemplate DataType="md:QsiElementItem" ItemsSource="{Binding Items}">
                     <TextBlock Foreground="#87CEEB" Text="{Binding Header}" />
@@ -132,7 +125,7 @@
             Grid.Row="2"
             Grid.Column="4">
 			<TreeView.DataTemplates>
-				<TreeDataTemplate DataType="qsi:QsiDataColumn" ItemsSource="{Binding References}">
+				<TreeDataTemplate DataType="md:QsiColumnTreeItem" ItemsSource="{Binding Items}">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Foreground="{Binding Converter={cvt:ColumnBrushConverter}}" Text="{Binding Converter={cvt:ColumnDisplayConverter}}" />
                         <TextBlock Text=" " />

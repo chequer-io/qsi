@@ -4,6 +4,7 @@ using Avalonia.Data.Converters;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Qsi.Data;
+using Qsi.Debugger.Models;
 
 namespace Qsi.Debugger.Converters
 {
@@ -11,18 +12,18 @@ namespace Qsi.Debugger.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (!(value is QsiDataColumn column))
+            if (!(value is QsiColumnTreeItem item))
                 return "<ERROR>";
 
-            if (column.IsAnonymous)
+            if (item.Column.IsExpression)
             {
-                if (column.IsExpression)
-                    return "{anonymous, expression}";
-                
-                return "{anonymous}";
+                if (!item.Column.IsAnonymous)
+                    return $"{item.Column.Name.Value} {{expression}}";
+
+                return "{expression}";
             }
 
-            return column.Name.Value;
+            return item.Column.Name.Value;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

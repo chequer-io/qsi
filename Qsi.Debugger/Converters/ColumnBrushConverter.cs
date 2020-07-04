@@ -6,43 +6,53 @@ using Avalonia.Data.Converters;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Qsi.Data;
+using Qsi.Debugger.Models;
 
 namespace Qsi.Debugger.Converters
 {
     public class ColumnBrushConverter : MarkupExtension, IValueConverter
     {
-        private readonly Brush _ink1;
-        private readonly Brush _skyblue;
-        private readonly Brush _grey;
-        private readonly Brush _orange;
+        private static readonly Brush _ink1;
+        private static readonly Brush _red;
+        private static readonly Brush _skyblue;
+        private static readonly Brush _grey;
+        private static readonly Brush _orange;
+        private static readonly Brush _yellow;
+        private static readonly Brush _yellowgreen;
 
-        public ColumnBrushConverter()
+        static ColumnBrushConverter()
         {
             _ink1 = (Brush)Application.Current.FindResource("Ink.1.Brush");
             _skyblue = (Brush)Application.Current.FindResource("Skyblue.Brush");
+            _red = (Brush)Application.Current.FindResource("Red.Brush");
             _grey = (Brush)Application.Current.FindResource("Grey.Brush");
             _orange = (Brush)Application.Current.FindResource("Orange.Brush");
+            _yellow = (Brush)Application.Current.FindResource("Yellow.Brush");
+            _yellowgreen = (Brush)Application.Current.FindResource("Yellowgreen.Brush");
         }
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (!(value is QsiDataColumn column))
+            if (!(value is QsiColumnTreeItem item))
                 return Brushes.Red;
 
-            if (column.IsExpression)
-                return _orange;
+            if (item.Depth == 0)
+                return _yellowgreen;
 
-            if (column.IsAnonymous)
+            if (item.Column.IsExpression)
+                return _yellow;
+
+            if (item.Column.IsAnonymous)
                 return _grey;
 
-            if (column.Parent.Type == QsiDataTableType.Table ||
-                column.Parent.Type == QsiDataTableType.View ||
-                column.Parent.Type == QsiDataTableType.MaterializedView)
+            if (item.Column.Parent.Type == QsiDataTableType.Table ||
+                item.Column.Parent.Type == QsiDataTableType.View ||
+                item.Column.Parent.Type == QsiDataTableType.MaterializedView)
             {
-                return _skyblue;
+                return _red;
             }
 
-            return _ink1;
+            return _grey;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
