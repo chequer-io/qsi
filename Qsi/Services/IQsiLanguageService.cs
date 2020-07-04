@@ -11,6 +11,6 @@ namespace Qsi.Services
 
         IQsiReferenceResolver CreateResolver();
 
-        bool MatchIdentifier(QsiQualifiedIdentifier x, QsiQualifiedIdentifier y);
+        bool MatchIdentifier(QsiIdentifier x, QsiIdentifier y);
     }
 }

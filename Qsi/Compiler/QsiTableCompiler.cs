@@ -99,7 +99,7 @@ namespace Qsi.Compiler
                 var script = _resolver.LookupDefinition(lookup.Identifier, lookup.Type);
                 var viewTable = (IQsiTableNode)_treeParser.Parse(script);
 
-                var viewCompileContext = new CompileContext();
+                using var viewCompileContext = new CompileContext();
                 var viewTableStructure = await BuildTableStructure(viewCompileContext, viewTable);
 
                 viewTableStructure.Identifier = _resolver.ResolveQualifiedIdentifier(viewTableStructure.Identifier);
@@ -114,20 +114,37 @@ namespace Qsi.Compiler
 
         private async Task<QsiDataTable> BuildDerivedTableStructure(CompileContext context, IQsiDerivedTableNode table)
         {
-            var scopedContext = new CompileContext(context);
+            using var scopedContext = new CompileContext(context);
+
+            // Directives
+
+            if (table.Directives?.Tables?.Length > 0)
+            {
+                foreach (var directive in table.Directives.Tables)
+                {
+                    using var directiveContext = new CompileContext(context);
+                    var directiveTable = await BuildTableStructure(directiveContext, directive);
+
+                    scopedContext.AddDirective(directiveTable);
+                }
+            }
+
+            // Table Source
 
             var alias = table.Alias?.Name;
             var sourceAlias = table.SourceAlias?.Name;
 
             if (table.Source != null)
             {
-                var sourceTable = await BuildTableStructure(scopedContext, table.Source);
+                var sourceContext = new CompileContext(scopedContext);
+                var sourceTable = await BuildTableStructure(sourceContext, table.Source);
 
                 if (sourceAlias != null)
                 {
                     sourceTable = WrapDataTable(sourceTable, sourceAlias);
-                    scopedContext.PushTable(sourceTable);
                 }
+
+                scopedContext.PushTable(sourceTable);
             }
 
             var declaredTable = new QsiDataTable
@@ -138,6 +155,8 @@ namespace Qsi.Compiler
 
             if (table.Columns == null || table.Columns.Count == 0)
                 throw ThrowCheckSyntax();
+
+            // Columns Definition
 
             foreach (var column in table.Columns.Columns)
             {
@@ -227,14 +246,14 @@ namespace Qsi.Compiler
 
         private QsiDataColumn ResolveDeclaredColumn(CompileContext context, QsiQualifiedIdentifier column)
         {
-            QsiDataTable[] sources;
+            IEnumerable<QsiDataTable> sources;
 
             if (column.Level > 1)
             {
                 var identifier = new QsiQualifiedIdentifier(column.Identifiers[..^1]);
                 sources = LookupDataTablesInExpression(context, identifier).ToArray();
 
-                if (sources.Length == 0)
+                if (!sources.Any())
                     throw ThrowUnknownTableIn(identifier, scopeFieldList);
             }
             else if (column.Level == 0)
@@ -243,13 +262,13 @@ namespace Qsi.Compiler
             }
             else
             {
-                sources = context.Tables.Where(t => t.HasIdentifier).ToArray();
+                sources = context.Tables;
             }
 
             var columnName = column.Identifiers[^1];
 
             QsiDataColumn[] columns = sources
-                .SelectMany(s => s.Columns.Where(c => c.Name == columnName))
+                .SelectMany(s => s.Columns.Where(c => Match(c.Name, columnName)))
                 .Take(2)
                 .ToArray();
 
@@ -458,9 +477,23 @@ namespace Qsi.Compiler
         #endregion
 
         #region Misc
-        private bool Match(QsiQualifiedIdentifier a, QsiQualifiedIdentifier b)
+        private bool Match(QsiIdentifier a, QsiIdentifier b)
         {
             return LanguageService.MatchIdentifier(a, b);
+        }
+        
+        private bool Match(QsiQualifiedIdentifier a, QsiQualifiedIdentifier b)
+        {
+            if (a.Level != b.Level)
+                return false;
+
+            for (int i = 0; i < a.Level; i++)
+            {
+                if (!Match(a.Identifiers[i], b.Identifiers[i]))
+                    return false;
+            }
+
+            return true;
         }
 
         private static bool IsReferenceType(QsiDataTableType type)

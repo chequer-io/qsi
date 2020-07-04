@@ -16,17 +16,10 @@ namespace Qsi.Services
 
         private IEqualityComparer<QsiIdentifier> _comparer;
 
-        public virtual bool MatchIdentifier(QsiQualifiedIdentifier x, QsiQualifiedIdentifier y)
+        public virtual bool MatchIdentifier(QsiIdentifier x, QsiIdentifier y)
         {
-            if (x == null && y == null)
-                return true;
-
-            if (x == null || y == null)
-                return false;
-
             _comparer ??= GetIdentifierComparer();
-
-            return x.Identifiers.SequenceEqual(y.Identifiers, _comparer);
+            return _comparer.Equals(x, y);
         }
 
         protected virtual IEqualityComparer<QsiIdentifier> GetIdentifierComparer()
