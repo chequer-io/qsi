@@ -7,3 +7,9 @@ It builds on the ANTLR to create a semantic query tree.
 Compile and predict query execution results based on the query structure interface.
 
 Implement the resolver interface for accurate prediction.
+
+## Debugger
+SQL Editor / QSI TreeView / Execution Result
+
+
+![Preview](https://github.com/chequer-io/qsi/blob/master/Qsi.Debugger/Screenshot.png?raw=true)
