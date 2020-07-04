@@ -7,6 +7,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:md="clr-namespace:Qsi.Debugger.Models"
+    xmlns:cvt="clr-namespace:Qsi.Debugger.Converters"
+    xmlns:qsi="clr-namespace:Qsi.Data;assembly=Qsi"
     Title="Qsi Debugger"
     Width="900"
     Height="600"
@@ -126,8 +128,18 @@
         <!--  Compile  -->
 
         <TreeView
-            x:Name="tvQsiCompile"
+            x:Name="tvResult"
             Grid.Row="2"
-            Grid.Column="4" />
+            Grid.Column="4">
+			<TreeView.DataTemplates>
+				<TreeDataTemplate DataType="qsi:QsiDataColumn" ItemsSource="{Binding References}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Foreground="{Binding Converter={cvt:ColumnBrushConverter}}" Text="{Binding Converter={cvt:ColumnDisplayConverter}}" />
+                        <TextBlock Text=" " />
+                        <TextBlock Foreground="{DynamicResource Ink.5.Brush}" Text="{Binding Converter={cvt:ColumnParentTypeConverter}, StringFormat='({0})'}" />
+                    </StackPanel>
+				</TreeDataTemplate>
+			</TreeView.DataTemplates>
+        </TreeView>
     </Grid>
 </Window>

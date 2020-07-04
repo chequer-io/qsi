@@ -30,6 +30,14 @@ namespace Qsi.Compiler
         }
 
         #region Execute
+        public async Task<QsiTableResult> ExecuteAsync(IQsiTableNode tableNode)
+        {
+            using var scope = new CompileContext();
+            var structure = await BuildTableStructure(scope, tableNode);
+
+            return new QsiTableResult(structure, null);
+        }
+
         public async Task<QsiTableResult> ExecuteAsync(QsiScript script)
         {
             try
@@ -44,10 +52,7 @@ namespace Qsi.Compiler
                 if (!(treeNode is IQsiTableNode tableNode))
                     throw Throw($"Not supported qsi tree type: {treeNode.GetType().FullName}");
 
-                using var scope = new CompileContext();
-                var structure = await BuildTableStructure(scope, tableNode);
-
-                return new QsiTableResult(structure, null);
+                return await ExecuteAsync(tableNode);
             }
             catch (Exception e)
             {

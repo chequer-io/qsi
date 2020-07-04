@@ -54,6 +54,21 @@
         <Color x:Key="Orange.50.Color">#FF552A</Color>
         <Color x:Key="Orange.90.Color">#F63200</Color>
 
+        <!-- Connection Colors -->
+
+        <Color x:Key="Lavender.Color">#AE89ED</Color>
+        <Color x:Key="Purple.Color">#DDA0DD</Color>
+        <Color x:Key="Pink.Color">#FFA3B3</Color>
+        <Color x:Key="Red.Color">#FA8072</Color>
+        <Color x:Key="Orange.Color">#FFAF79</Color>
+        <Color x:Key="Yellow.Color">#FFD882</Color>
+        <Color x:Key="Yellowgreen.Color">#93D88D</Color>
+        <Color x:Key="Mint.Color">#64C8BC</Color>
+        <Color x:Key="Cyan.Color">#6FE5DE</Color>
+        <Color x:Key="Skyblue.Color">#87CEEB</Color>
+        <Color x:Key="Blue.Color">#738DEE</Color>
+        <Color x:Key="Grey.Color">#B0B0B0</Color>
+
         <!-- Primary Brushes -->
 
         <!-- > Blue -->
@@ -108,8 +123,24 @@
         <SolidColorBrush x:Key="Orange.50.Brush" Color="{DynamicResource Orange.50.Color}" />
         <SolidColorBrush x:Key="Orange.90.Brush" Color="{DynamicResource Orange.90.Color}" />
 
+        <!-- Connection Colors -->
+
+        <SolidColorBrush x:Key="Lavender.Brush" Color="{DynamicResource Lavender.Color}"/>
+        <SolidColorBrush x:Key="Purple.Brush" Color="{DynamicResource Purple.Color}"/>
+        <SolidColorBrush x:Key="Pink.Brush" Color="{DynamicResource Pink.Color}"/>
+        <SolidColorBrush x:Key="Red.Brush" Color="{DynamicResource Red.Color}"/>
+        <SolidColorBrush x:Key="Orange.Brush" Color="{DynamicResource Orange.Color}"/>
+        <SolidColorBrush x:Key="Yellow.Brush" Color="{DynamicResource Yellow.Color}"/>
+        <SolidColorBrush x:Key="Yellowgreen.Brush" Color="{DynamicResource Yellowgreen.Color}"/>
+        <SolidColorBrush x:Key="Mint.Brush" Color="{DynamicResource Mint.Color}"/>
+        <SolidColorBrush x:Key="Cyan.Brush" Color="{DynamicResource Cyan.Color}"/>
+        <SolidColorBrush x:Key="Skyblue.Brush" Color="{DynamicResource Skyblue.Color}"/>
+        <SolidColorBrush x:Key="Blue.Brush" Color="{DynamicResource Blue.Color}"/>
+        <SolidColorBrush x:Key="Grey.Brush" Color="{DynamicResource Grey.Color}"/>
+
         <!-- Override -->
         <SolidColorBrush x:Key="ThemeBackgroundBrush" Color="{DynamicResource Ink.50.Color}"/>
         <SolidColorBrush x:Key="ThemeForegroundBrush" Color="{DynamicResource Ink.1.Color}"/>
+
     </Style.Resources>
 </Style>

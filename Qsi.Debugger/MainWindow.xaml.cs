@@ -7,15 +7,18 @@ using System.Xml;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using AvaloniaEdit;
 using AvaloniaEdit.Highlighting;
 using AvaloniaEdit.Highlighting.Xshd;
+using Qsi.Compiler;
 using Qsi.Data;
 using Qsi.Debugger.Models;
 using Qsi.Debugger.Utilities;
-using Qsi.MySql;
+using Qsi.Debugger.Vendor;
+using Qsi.Debugger.Vendor.MySql;
 using Qsi.Parsing;
 using Qsi.Tree;
 
@@ -29,22 +32,21 @@ namespace Qsi.Debugger
         private readonly CheckBox _chkQsiProperty;
         private readonly TextBlock _tbQsiStatus;
         private readonly TreeView _tvQsi;
+        private readonly TreeView _tvResult;
 
-        private readonly Dictionary<string, Lazy<IQsiTreeParser>> _parsers;
+        private readonly Dictionary<string, Lazy<VendorDebugger>> _vendors;
 
-        private IQsiTreeParser _qsiParser;
+        private VendorDebugger _vendor;
 
         public MainWindow()
         {
             InitializeComponent();
 
             this.AttachDevTools();
-            _parsers = new Dictionary<string, Lazy<IQsiTreeParser>>
+
+            _vendors = new Dictionary<string, Lazy<VendorDebugger>>
             {
-                ["MySQL_1"] = new Lazy<IQsiTreeParser>(() => new MySqlParser()),
-                ["MySQL_2"] = new Lazy<IQsiTreeParser>(() => new MySqlParser()),
-                ["MySQL_3"] = new Lazy<IQsiTreeParser>(() => new MySqlParser()),
-                ["MySQL_4"] = new Lazy<IQsiTreeParser>(() => new MySqlParser())
+                ["MySQL"] = new Lazy<VendorDebugger>(() => new MySqlDebugger())
             };
 
             _cbLanguages = this.Find<ComboBox>("cbLanguages");
@@ -53,11 +55,12 @@ namespace Qsi.Debugger
             _chkQsiProperty = this.Find<CheckBox>("chkQsiProperty");
             _tbQsiStatus = this.Find<TextBlock>("tbQsiStatus");
             _tvQsi = this.Find<TreeView>("tvQsi");
+            _tvResult = this.Find<TreeView>("tvResult");
 
             InitializeEditor();
 
             _cbLanguages.SelectionChanged += CbLanguagesOnSelectionChanged;
-            _cbLanguages.Items = _parsers.Keys;
+            _cbLanguages.Items = _vendors.Keys;
             _cbLanguages.SelectedIndex = 0;
 
             _chkQsiProperty.GetObservable(ToggleButton.IsCheckedProperty).Subscribe(_ => Update());
@@ -88,14 +91,14 @@ namespace Qsi.Debugger
 
         private void CbLanguagesOnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (_parsers.TryGetValue((string)_cbLanguages.SelectedItem, out Lazy<IQsiTreeParser> parser))
+            if (_vendors.TryGetValue((string)_cbLanguages.SelectedItem, out Lazy<VendorDebugger> vendor))
             {
-                _qsiParser = parser.Value;
+                _vendor = vendor.Value;
                 Update();
             }
             else
             {
-                _qsiParser = null;
+                _vendor = null;
             }
         }
 
@@ -104,14 +107,15 @@ namespace Qsi.Debugger
             Flow.Debounce(_codeEditor, Update, 500);
         }
 
-        private void Update()
+        private async void Update()
         {
             ClearError();
-            ClearVisualTree();
+            ClearQsiTree();
+            ClearResultTree();
 
             try
             {
-                if (_qsiParser == null || string.IsNullOrWhiteSpace(_codeEditor.Text))
+                if (_vendor == null || string.IsNullOrWhiteSpace(_codeEditor.Text))
                     return;
 
                 var input = _codeEditor.Text;
@@ -120,17 +124,32 @@ namespace Qsi.Debugger
                 var sentence = input.Split(';', 2)[0].Trim();
                 var script = new QsiScript(sentence, QsiScriptType.Select);
 
-                _qsiParser.SyntaxError += ErrorHandler;
+                _vendor.Parser.SyntaxError += ErrorHandler;
 
                 var sw = Stopwatch.StartNew();
-                var tree = _qsiParser.Parse(script);
+                var tree = _vendor.Parser.Parse(script);
                 sw.Stop();
 
-                _qsiParser.SyntaxError -= ErrorHandler;
+                _vendor.Parser.SyntaxError -= ErrorHandler;
 
                 _tbQsiStatus.Text = $"parsed in {sw.Elapsed.TotalMilliseconds:0.0000} ms";
 
-                BuildVisualTree(tree);
+                BuildQsiTree(tree);
+
+                // Execute
+
+                var compiler = new QsiTableCompiler(_vendor.LanguageService);
+                var result = await compiler.ExecuteAsync((IQsiTableNode)tree);
+
+                if (result.Exceptions?.Length > 0)
+                {
+                    if (result.Exceptions.Length == 1)
+                        throw result.Exceptions[0];
+
+                    throw new AggregateException(result.Exceptions);
+                }
+
+                BuildQsiTableTree(result.Table);
             }
             catch (Exception e)
             {
@@ -150,18 +169,23 @@ namespace Qsi.Debugger
             _tbError.IsVisible = false;
         }
 
-        private void ClearVisualTree()
+        private void ClearQsiTree()
         {
             _tvQsi.Items = null;
         }
 
-        #region Qsi TreeView
-        private void BuildVisualTree(IQsiTreeNode node)
+        private void ClearResultTree()
         {
-            _tvQsi.Items = new[] { BuildVisualTreeImpl(node) };
+            _tvResult.Items = null;
         }
 
-        private QsiTreeItem BuildVisualTreeImpl(IQsiTreeNode node)
+        #region Qsi TreeView
+        private void BuildQsiTree(IQsiTreeNode node)
+        {
+            _tvQsi.Items = new[] { BuildQsiTreeImpl(node) };
+        }
+
+        private QsiTreeItem BuildQsiTreeImpl(IQsiTreeNode node)
         {
             bool hideProperty = _chkQsiProperty.IsChecked ?? false;
 
@@ -188,7 +212,7 @@ namespace Qsi.Debugger
                 switch (value)
                 {
                     case IQsiTreeNode childNode:
-                        var childItem = BuildVisualTreeImpl(childNode);
+                        var childItem = BuildQsiTreeImpl(childNode);
 
                         if (hideProperty)
                         {
@@ -205,7 +229,7 @@ namespace Qsi.Debugger
                         break;
 
                     case IEnumerable<IQsiTreeNode> childNodes:
-                        QsiTreeItem[] childItems = childNodes.Select(BuildVisualTreeImpl).ToArray();
+                        QsiTreeItem[] childItems = childNodes.Select(BuildQsiTreeImpl).ToArray();
 
                         if (hideProperty)
                         {
@@ -248,6 +272,13 @@ namespace Qsi.Debugger
                 name = name[..^4];
 
             return name;
+        }
+        #endregion
+
+        #region Qsi Table TreeView
+        private void BuildQsiTableTree(QsiDataTable table)
+        {
+            _tvResult.Items = table.Columns;
         }
         #endregion
     }
