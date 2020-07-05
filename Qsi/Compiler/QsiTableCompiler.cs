@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Qsi.Data;
+using Qsi.Extensions;
 using Qsi.Parsing;
 using Qsi.Runtime.Internal;
 using Qsi.Services;
@@ -105,8 +106,8 @@ namespace Qsi.Compiler
                 lookup = viewTableStructure;
             }
 
-            // push table reference
-            context.PushTable(lookup);
+            // // push table reference
+            // context.PushTable(lookup);
 
             return lookup;
         }
@@ -123,7 +124,6 @@ namespace Qsi.Compiler
                 {
                     using var directiveContext = new CompileContext(context);
                     var directiveTable = await BuildTableStructure(directiveContext, directive);
-
                     scopedContext.AddDirective(directiveTable);
                 }
             }
@@ -132,11 +132,14 @@ namespace Qsi.Compiler
 
             var alias = table.Alias?.Name;
 
-            if (table.Source != null)
+            if (table.Source is IQsiJoinedTableNode joinedTableNode)
+            {
+                scopedContext.SourceTable = await BuildJoinedTable(scopedContext, joinedTableNode);
+            }
+            else if (table.Source != null)
             {
                 using var sourceContext = new CompileContext(scopedContext);
-                var sourceTable = await BuildTableStructure(sourceContext, table.Source);
-                scopedContext.PushTable(sourceTable);
+                scopedContext.SourceTable = await BuildTableStructure(scopedContext, table.Source);
             }
 
             var declaredTable = new QsiDataTable
@@ -173,18 +176,108 @@ namespace Qsi.Compiler
                 }
             }
 
-            // push table reference
-            if (declaredTable.HasIdentifier)
-            {
-                context.PushTable(declaredTable);
-            }
+            // // push table reference
+            // if (declaredTable.HasIdentifier)
+            // {
+            //     context.PushTable(declaredTable);
+            // }
 
             return declaredTable;
         }
 
-        private Task<QsiDataTable> BuildJoinedTable(CompileContext context, IQsiJoinedTableNode table)
+        private async Task<QsiDataTable> BuildJoinedTable(CompileContext context, IQsiJoinedTableNode table)
         {
-            throw new NotImplementedException();
+            if (table.Left == null || table.Right == null)
+                throw ThrowCheckSyntax();
+
+            // priority
+            // using > left > right
+
+            var joinedTable = new QsiDataTable
+            {
+                Type = QsiDataTableType.Join
+            };
+
+            QsiDataTable left;
+            QsiDataTable right;
+
+            if (table.Left is IQsiJoinedTableNode leftNode)
+            {
+                left = await BuildJoinedTable(context, leftNode);
+            }
+            else
+            {
+                using var leftContext = new CompileContext(context);
+                left = await BuildTableStructure(leftContext, table.Left);
+                context.SourceTables.Add(left);
+            }
+            
+            if (table.Right is IQsiJoinedTableNode rightNode)
+            {
+                right = await BuildJoinedTable(context, rightNode);
+            }
+            else
+            {
+                using var rightContext = new CompileContext(context);
+                right = await BuildTableStructure(rightContext, table.Right);
+                context.SourceTables.Add(right);
+            }
+
+            IQsiDeclaredColumnNode[] pivots = table.PivotColumns?.Columns
+                .Cast<IQsiDeclaredColumnNode>()
+                .ToArray();
+
+            HashSet<QsiDataColumn> leftColumns = left.Columns.ToHashSet();
+            HashSet<QsiDataColumn> rightColumns = right.Columns.ToHashSet();
+
+            if (pivots?.Length > 0)
+            {
+                var pivotPairs = new PivotColumnPair[pivots.Length];
+
+                for (int i = 0; i < pivotPairs.Length; i++)
+                {
+                    var pivotColumnName = pivots[i].Name.Identifiers[^1];
+                    var leftColumnIndex = left.Columns.IndexOf(c => Match(c.Name, pivotColumnName));
+                    var rightColumnIndex = right.Columns.IndexOf(c => Match(c.Name, pivotColumnName));
+
+                    if (leftColumnIndex == -1 || rightColumnIndex == -1)
+                    {
+                        throw ThrowUnableResolveColumn(pivots[i].Name);
+                    }
+
+                    pivotPairs[i] = new PivotColumnPair(
+                        leftColumnIndex,
+                        left.Columns[leftColumnIndex],
+                        right.Columns[rightColumnIndex]);
+                }
+
+                foreach (var pair in pivotPairs.OrderBy(p => p.Order))
+                {
+                    var column = joinedTable.NewColumn();
+                    column.Name = pair.Left.Name;
+                    column.References.Add(pair.Left);
+                    column.References.Add(pair.Right);
+
+                    leftColumns.Remove(pair.Left);
+                    rightColumns.Remove(pair.Right);
+                }
+            }
+
+            foreach (var leftColumn in leftColumns)
+            {
+                var column = joinedTable.NewColumn();
+                column.Name = leftColumn.Name;
+                column.References.Add(leftColumn);
+            }
+
+            foreach (var rightColumn in rightColumns)
+            {
+                var column = joinedTable.NewColumn();
+                column.Name = rightColumn.Name;
+                column.References.Add(rightColumn);
+            }
+
+            return joinedTable;
         }
 
         private async Task<QsiDataTable> BuildCompositeTable(CompileContext context, IQsiCompositeTableNode table)
@@ -192,7 +285,9 @@ namespace Qsi.Compiler
             if (table.Sources == null || table.Sources.Length == 0)
                 throw ThrowCheckSyntax();
 
-            QsiDataTable[] sources = await Task.WhenAll(table.Sources.Select(s => BuildTableStructure(context, s)));
+            QsiDataTable[] sources = await Task.WhenAll(
+                table.Sources.Select(s => BuildTableStructure(new CompileContext(context), s))
+            );
 
             int columnCount = sources[0].Columns.Count;
 
@@ -242,12 +337,10 @@ namespace Qsi.Compiler
             // *
             if (column.Path == null)
             {
-                var source = context.PeekTable();
-
-                if (source == null)
+                if (context.SourceTable == null)
                     throw ThrowNoTablesUsed();
 
-                return source.Columns;
+                return context.SourceTable.Columns;
             }
 
             // path.or.alias.*
@@ -262,7 +355,7 @@ namespace Qsi.Compiler
 
         private QsiDataColumn ResolveDeclaredColumn(CompileContext context, QsiQualifiedIdentifier column)
         {
-            IEnumerable<QsiDataTable> sources;
+            IEnumerable<QsiDataTable> sources = Enumerable.Empty<QsiDataTable>();
 
             if (column.Level > 1)
             {
@@ -276,9 +369,9 @@ namespace Qsi.Compiler
             {
                 throw new InvalidOperationException();
             }
-            else
+            else if (context.SourceTable != null)
             {
-                sources = context.Tables;
+                sources = new[] { context.SourceTable };
             }
 
             var columnName = column.Identifiers[^1];
@@ -307,12 +400,10 @@ namespace Qsi.Compiler
 
         private QsiDataColumn ResolveSequentialColumn(CompileContext context, IQsiSequentialColumnNode column)
         {
-            var table = context.PeekTable();
-
-            if (table == null)
+            if (context.SourceTable == null)
                 throw ThrowNoTablesUsed();
 
-            return table.Columns[column.Ordinal];
+            return context.SourceTable.Columns[column.Ordinal];
         }
         #endregion
 
@@ -331,7 +422,14 @@ namespace Qsi.Compiler
 
         private IEnumerable<QsiDataTable> LookupDataTablesInExpression(CompileContext context, QsiQualifiedIdentifier identifier)
         {
-            foreach (var table in context.Tables.Where(t => t.HasIdentifier))
+            var tables = new List<QsiDataTable>();
+
+            if (context.SourceTable != null)
+                tables.Add(context.SourceTable);
+
+            tables.AddRange(context.SourceTables);
+
+            foreach (var table in tables.Where(t => t.HasIdentifier))
             {
                 // * case - Exact access
                 // ┌──────────────────────────────────────────────────────────┐
@@ -497,7 +595,7 @@ namespace Qsi.Compiler
         {
             return LanguageService.MatchIdentifier(a, b);
         }
-        
+
         private bool Match(QsiQualifiedIdentifier a, QsiQualifiedIdentifier b)
         {
             if (a.Level != b.Level)
@@ -552,9 +650,9 @@ namespace Qsi.Compiler
             return Throw($"Unable to resolve table '{identifier}'");
         }
 
-        private static QsiException ThrowUnableResolveColumn(string name)
+        private static QsiException ThrowUnableResolveColumn(QsiQualifiedIdentifier identifier)
         {
-            return Throw($"Unable to resolve column '{name}'");
+            return Throw($"Unable to resolve column '{identifier}'");
         }
 
         private static QsiException ThrowUnknownTable(QsiQualifiedIdentifier identifier)
@@ -592,5 +690,21 @@ namespace Qsi.Compiler
             return new QsiException(message);
         }
         #endregion
+
+        private class PivotColumnPair
+        {
+            public int Order { get; }
+
+            public QsiDataColumn Left { get; }
+
+            public QsiDataColumn Right { get; }
+
+            public PivotColumnPair(int order, QsiDataColumn left, QsiDataColumn right)
+            {
+                Order = order;
+                Left = left;
+                Right = right;
+            }
+        }
     }
 }

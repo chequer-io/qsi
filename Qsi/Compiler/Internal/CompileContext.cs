@@ -13,10 +13,11 @@ namespace Qsi.Runtime.Internal
 
         public IEnumerable<QsiDataTable> Directives { get; }
 
-        public IEnumerable<QsiDataTable> Tables { get; }
+        public QsiDataTable SourceTable { get; set; }
+
+        public List<QsiDataTable> SourceTables { get; }
 
         private readonly List<QsiDataTable> _directives;
-        private readonly List<QsiDataTable> _tables;
 
         public CompileContext() : this(null)
         {
@@ -27,12 +28,9 @@ namespace Qsi.Runtime.Internal
             Parent = context;
 
             _directives = new List<QsiDataTable>();
-            _tables = new List<QsiDataTable>();
-
             Directives = _directives;
 
-            // Stack
-            Tables = _tables.AsEnumerable().Reverse();
+            SourceTables = new List<QsiDataTable>();
 
             if (context != null)
             {
@@ -40,18 +38,7 @@ namespace Qsi.Runtime.Internal
 
                 // Priority: this > parent
                 Directives = Directives.Concat(context.Directives);
-                Tables = Tables.Concat(context.Tables);
             }
-        }
-
-        public void PushTable(QsiDataTable table)
-        {
-            _tables.Add(table);
-        }
-
-        public QsiDataTable PeekTable()
-        {
-            return _tables.FirstOrDefault();
         }
 
         public void AddDirective(QsiDataTable directiveTable)
@@ -59,7 +46,7 @@ namespace Qsi.Runtime.Internal
             _directives.Add(directiveTable);
         }
 
-        public void AddDirectives(IEnumerable<QsiDataTable> directiveTables)
+        public void AddDirectives(params QsiDataTable[] directiveTables)
         {
             _directives.AddRange(directiveTables);
         }
@@ -67,7 +54,7 @@ namespace Qsi.Runtime.Internal
         void IDisposable.Dispose()
         {
             _directives.Clear();
-            _tables.Clear();
+            SourceTables.Clear();
         }
     }
 }
