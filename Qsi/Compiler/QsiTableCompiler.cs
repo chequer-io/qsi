@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -188,9 +187,33 @@ namespace Qsi.Compiler
             throw new NotImplementedException();
         }
 
-        private Task<QsiDataTable> BuildCompositeTable(CompileContext context, IQsiCompositeTableNode table)
+        private async Task<QsiDataTable> BuildCompositeTable(CompileContext context, IQsiCompositeTableNode table)
         {
-            throw new NotImplementedException();
+            if (table.Sources == null || table.Sources.Length == 0)
+                throw ThrowCheckSyntax();
+
+            QsiDataTable[] sources = await Task.WhenAll(table.Sources.Select(s => BuildTableStructure(context, s)));
+
+            int columnCount = sources[0].Columns.Count;
+
+            if (sources.Skip(1).Any(s => s.Columns.Count != columnCount))
+                throw Throw("The used Statements have a different number of columns.");
+
+            var compositeSource = new QsiDataTable
+            {
+                Type = QsiDataTableType.Union
+            };
+
+            for (int i = 0; i < columnCount; i++)
+            {
+                var baseColumn = sources[0].Columns[i];
+                var compositeColumn = compositeSource.NewColumn();
+
+                compositeColumn.Name = baseColumn.Name;
+                compositeColumn.References.AddRange(sources.Select(s => s.Columns[i]));
+            }
+
+            return compositeSource;
         }
 
         #region Column Lookup
