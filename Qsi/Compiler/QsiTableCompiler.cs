@@ -157,21 +157,42 @@ namespace Qsi.Compiler
             {
                 IEnumerable<QsiDataColumn> columns = ResolveColumns(scopedContext, column);
 
-                if (column is IQsiDerivedColumnNode derivedColum)
+                switch (column)
                 {
-                    var declaredColumn = declaredTable.NewColumn();
-                    declaredColumn.Name = derivedColum.Alias?.Name;
-                    declaredColumn.IsExpression = derivedColum.IsExpression;
-
-                    declaredColumn.References.AddRange(columns);
-                }
-                else
-                {
-                    foreach (var c in columns)
+                    case IQsiDerivedColumnNode derivedColum:
                     {
                         var declaredColumn = declaredTable.NewColumn();
-                        declaredColumn.Name = c.Name;
+
+                        declaredColumn.Name = derivedColum.Alias?.Name;
+                        declaredColumn.IsExpression = derivedColum.IsExpression;
+                        declaredColumn.References.AddRange(columns);
+                        break;
+                    }
+
+                    case IQsiSequentialColumnNode sequentialColum:
+                    {
+                        if (columns.Count() != 1)
+                            throw new InvalidOperationException();
+
+                        var c = columns.First();
+                        var declaredColumn = declaredTable.NewColumn();
+
+                        declaredColumn.Name = sequentialColum.Alias?.Name;
                         declaredColumn.References.Add(c);
+                        break;
+                    }
+
+                    default:
+                    {
+                        foreach (var c in columns)
+                        {
+                            var declaredColumn = declaredTable.NewColumn();
+
+                            declaredColumn.Name = c.Name;
+                            declaredColumn.References.Add(c);
+                        }
+
+                        break;
                     }
                 }
             }
@@ -211,7 +232,7 @@ namespace Qsi.Compiler
                 left = await BuildTableStructure(leftContext, table.Left);
                 context.SourceTables.Add(left);
             }
-            
+
             if (table.Right is IQsiJoinedTableNode rightNode)
             {
                 right = await BuildJoinedTable(context, rightNode);

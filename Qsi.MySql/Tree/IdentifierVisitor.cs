@@ -75,10 +75,35 @@ namespace Qsi.MySql.Tree
 
         public static QsiIdentifier VisitUid(UidContext context)
         {
-            if (context.children[0] is ITerminalNode terminalNode)
-                return VisitTerminalNode(terminalNode);
+            switch (context.children[0])
+            {
+                case SimpleIdContext simpleId:
+                    return VisitSimpleId(simpleId);
+
+                case ITerminalNode terminalNode:
+                    return VisitTerminalNode(terminalNode);
+            }
 
             return new QsiIdentifier(context.GetText(), false);
+        }
+
+        public static QsiIdentifier VisitSimpleId(SimpleIdContext context)
+        {
+            switch (context.children[0])
+            {
+                case EngineNameContext engineName:
+                    return VisitEngineName(engineName);
+
+                case ITerminalNode terminalNode:
+                    return VisitTerminalNode(terminalNode);
+            }
+
+            return new QsiIdentifier(context.GetText(), false);
+        }
+
+        private static QsiIdentifier VisitEngineName(EngineNameContext context)
+        {
+            return VisitTerminalNode((ITerminalNode)context.children[0]);
         }
 
         public static QsiIdentifier VisitDottedId(DottedIdContext context)
@@ -101,6 +126,7 @@ namespace Qsi.MySql.Tree
                 case DOT_ID:
                     return new QsiIdentifier(terminalNode.GetText().Substring(1), false);
 
+                case STRING_LITERAL:
                 case REVERSE_QUOTE_ID:
                 case CHARSET_REVERSE_QOUTE_STRING:
                     return new QsiIdentifier(terminalNode.GetText(), true);
