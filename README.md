@@ -1,4 +1,5 @@
-## QSI
+![Logo](https://github.com/chequer-io/qsi/blob/master/Resources/logo-256.png?raw=true)
+
 The QSI is the Query Structure Interface.
 
 It builds on the ANTLR to create a semantic query tree.
