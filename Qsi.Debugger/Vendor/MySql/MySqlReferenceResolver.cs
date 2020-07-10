@@ -44,12 +44,18 @@ namespace Qsi.Debugger.Vendor.MySql
                     var actor = CreateTable("sakila", "actor");
                     AddColumns(actor, "actor_id", "first_name", "last_name", "last_update");
                     return actor;
-                
+
+                case "actor_view":
+                    var actorView = CreateTable("sakila", "actor_view");
+                    actorView.Type = QsiDataTableType.View;
+                    AddColumns(actorView, "actor_id", "first_name", "last_name", "last_update");
+                    return actorView;
+
                 case "address":
                     var address = CreateTable("sakila", "address");
                     AddColumns(address, "address_id", "address", "address2", "district", "city_id", "postal_code", "phone", "location", "last_update");
                     return address;
-                
+
                 case "city":
                     var city = CreateTable("sakila", "city");
                     AddColumns(city, "city_id", "city", "country_id", "last_update", "test");
@@ -66,6 +72,14 @@ namespace Qsi.Debugger.Vendor.MySql
 
         protected override QsiScript LookupDefinition(QsiQualifiedIdentifier identifier, QsiDataTableType type)
         {
+            var name = IdentifierUtility.Unescape(identifier.Identifiers[^1].Value);
+
+            switch (name)
+            {
+                case "actor_view":
+                    return new QsiScript("CREATE VIEW `sakila`.`actor_view` AS SELECT * FROM `sakila`.`actor`", QsiScriptType.CreateView);
+            }
+
             return null;
         }
 

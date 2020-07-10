@@ -31,7 +31,7 @@ namespace Qsi.MySql.Tree
             return Enumerable.Empty<QsiTableNode>();
         }
 
-        private static IEnumerable<QsiTableNode> VisitRoot(RootContext context)
+        public static IEnumerable<QsiTableNode> VisitRoot(RootContext context)
         {
             if (context.sqlStatements() == null)
                 yield break;
@@ -45,7 +45,7 @@ namespace Qsi.MySql.Tree
             }
         }
 
-        private static QsiTableNode VisitSqlStatement(SqlStatementContext context)
+        public static QsiTableNode VisitSqlStatement(SqlStatementContext context)
         {
             if (context.children.Count == 0)
                 return null;
@@ -62,7 +62,7 @@ namespace Qsi.MySql.Tree
             return null;
         }
 
-        private static QsiTableNode VisitDmlStatement(DmlStatementContext context)
+        internal static QsiTableNode VisitDmlStatement(DmlStatementContext context)
         {
             if (context.selectStatement() != null)
             {
@@ -72,7 +72,7 @@ namespace Qsi.MySql.Tree
             return null;
         }
 
-        private static QsiTableNode VisitDdlStatement(DdlStatementContext context)
+        public static QsiTableNode VisitDdlStatement(DdlStatementContext context)
         {
             if (context.createView() != null)
             {
@@ -84,7 +84,7 @@ namespace Qsi.MySql.Tree
         #endregion
 
         #region Columns
-        private static IEnumerable<QsiSequentialColumnNode> CreateSequentialColumnNodes(IEnumerable<UidContext> uids)
+        public static IEnumerable<QsiSequentialColumnNode> CreateSequentialColumnNodes(IEnumerable<UidContext> uids)
         {
             return uids
                 .Select((uid, i) => TreeHelper.Create<QsiSequentialColumnNode>(n =>
@@ -96,7 +96,7 @@ namespace Qsi.MySql.Tree
         #endregion
 
         #region Alias
-        private static QsiAliasNode CreateAliasNode(UidContext context)
+        public static QsiAliasNode CreateAliasNode(UidContext context)
         {
             return new QsiAliasNode
             {
@@ -106,7 +106,7 @@ namespace Qsi.MySql.Tree
         #endregion
 
         #region Create View Statement
-        private static QsiTableNode VisitCreateView(CreateViewContext context)
+        public static QsiTableNode VisitCreateView(CreateViewContext context)
         {
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
@@ -187,7 +187,7 @@ namespace Qsi.MySql.Tree
             return derivedTableNode;
         }
 
-        private static QsiTableDirectivesNode VisitWithClause(WithClauseContext context)
+        public static QsiTableDirectivesNode VisitWithClause(WithClauseContext context)
         {
             return TreeHelper.Create<QsiTableDirectivesNode>(n =>
             {
@@ -195,7 +195,7 @@ namespace Qsi.MySql.Tree
             });
         }
 
-        private static QsiTableNode VisitWithExpression(WithExpressionContext context)
+        public static QsiTableNode VisitWithExpression(WithExpressionContext context)
         {
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
@@ -216,17 +216,17 @@ namespace Qsi.MySql.Tree
             });
         }
 
-        private static QsiTableNode VisitSimpleSelect(SimpleSelectContext context)
+        public static QsiTableNode VisitSimpleSelect(SimpleSelectContext context)
         {
             return VisitQuerySpecification(context.querySpecification());
         }
 
-        private static QsiTableNode VisitParenthesisSelect(ParenthesisSelectContext context)
+        public static QsiTableNode VisitParenthesisSelect(ParenthesisSelectContext context)
         {
             return VisitQueryExpression(context.queryExpression());
         }
 
-        private static QsiTableNode VisitUnionSelect(UnionSelectContext context)
+        public static QsiTableNode VisitUnionSelect(UnionSelectContext context)
         {
             return TreeHelper.Create<QsiCompositeTableNode>(n =>
             {
@@ -241,7 +241,7 @@ namespace Qsi.MySql.Tree
             });
         }
 
-        private static QsiTableNode VisitUnionParenthesisSelect(UnionParenthesisSelectContext context)
+        public static QsiTableNode VisitUnionParenthesisSelect(UnionParenthesisSelectContext context)
         {
             return TreeHelper.Create<QsiCompositeTableNode>(n =>
             {
@@ -253,7 +253,7 @@ namespace Qsi.MySql.Tree
             });
         }
 
-        private static QsiTableNode VisitUnionStatement(UnionStatementContext context)
+        public static QsiTableNode VisitUnionStatement(UnionStatementContext context)
         {
             if (context.querySpecificationNointo() != null)
                 return VisitQuerySpecificationNointo(context.querySpecificationNointo());
@@ -264,14 +264,14 @@ namespace Qsi.MySql.Tree
             return null;
         }
 
-        private static QsiTableNode VisitUnionParenthesis(UnionParenthesisContext context)
+        public static QsiTableNode VisitUnionParenthesis(UnionParenthesisContext context)
         {
             return VisitQueryExpressionNointo(context.queryExpressionNointo());
         }
         #endregion
 
         #region Select Query Specification
-        private static QsiTableNode VisitQueryExpression(QueryExpressionContext context)
+        public static QsiTableNode VisitQueryExpression(QueryExpressionContext context)
         {
             while (true)
             {
@@ -288,12 +288,12 @@ namespace Qsi.MySql.Tree
             }
         }
 
-        private static QsiTableNode VisitQuerySpecification(QuerySpecificationContext context)
+        public static QsiTableNode VisitQuerySpecification(QuerySpecificationContext context)
         {
             return VisitCommonSelectContext(new CommonSelectContext(context));
         }
 
-        private static QsiTableNode VisitQueryExpressionNointo(QueryExpressionNointoContext context)
+        public static QsiTableNode VisitQueryExpressionNointo(QueryExpressionNointoContext context)
         {
             while (true)
             {
@@ -310,14 +310,14 @@ namespace Qsi.MySql.Tree
             }
         }
 
-        private static QsiTableNode VisitQuerySpecificationNointo(QuerySpecificationNointoContext context)
+        public static QsiTableNode VisitQuerySpecificationNointo(QuerySpecificationNointoContext context)
         {
             return VisitCommonSelectContext(new CommonSelectContext(context));
         }
         #endregion
 
         #region Select Elements
-        private static QsiTableNode VisitCommonSelectContext(CommonSelectContext context)
+        public static QsiTableNode VisitCommonSelectContext(CommonSelectContext context)
         {
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
@@ -330,7 +330,7 @@ namespace Qsi.MySql.Tree
             });
         }
 
-        private static QsiColumnsDeclarationNode VisitSelectElements(SelectElementsContext context)
+        public static QsiColumnsDeclarationNode VisitSelectElements(SelectElementsContext context)
         {
             return TreeHelper.Create<QsiColumnsDeclarationNode>(n =>
             {
@@ -341,7 +341,7 @@ namespace Qsi.MySql.Tree
             });
         }
 
-        private static QsiColumnNode VisitSelectElement(SelectElementContext context)
+        public static QsiColumnNode VisitSelectElement(SelectElementContext context)
         {
             switch (context)
             {
@@ -393,7 +393,7 @@ namespace Qsi.MySql.Tree
             return null;
         }
 
-        private static QsiColumnNode VisitSelectColumnElement(SelectColumnElementContext columnElementContext)
+        public static QsiColumnNode VisitSelectColumnElement(SelectColumnElementContext columnElementContext)
         {
             var columnName = IdentifierVisitor.Visit(columnElementContext.fullColumnName());
 
@@ -431,7 +431,7 @@ namespace Qsi.MySql.Tree
         #endregion
 
         #region From Clause
-        private static QsiTableNode VisitTableSources(TableSourcesContext context)
+        public static QsiTableNode VisitTableSources(TableSourcesContext context)
         {
             QsiTableNode[] sources = context.tableSource()
                 .Select(VisitTableSource)
@@ -466,7 +466,7 @@ namespace Qsi.MySql.Tree
             return null;
         }
 
-        private static QsiTableNode VisitTableSource(TableSourceContext context)
+        public static QsiTableNode VisitTableSource(TableSourceContext context)
         {
             switch (context)
             {
@@ -494,7 +494,7 @@ namespace Qsi.MySql.Tree
             }
         }
 
-        private static QsiTableNode VisitTableSourceItem(TableSourceItemContext context)
+        public static QsiTableNode VisitTableSourceItem(TableSourceItemContext context)
         {
             switch (context)
             {
@@ -512,7 +512,7 @@ namespace Qsi.MySql.Tree
             }
         }
 
-        private static QsiTableNode VisitTableSource(CommonTableSourceContext context)
+        public static QsiTableNode VisitTableSource(CommonTableSourceContext context)
         {
             var anchor = VisitTableSourceItem(context.TableSourceItem);
 
@@ -589,7 +589,7 @@ namespace Qsi.MySql.Tree
         }
 
         // .. FROM db.table [AS alias]
-        private static QsiTableNode VisitAtomTableItem(AtomTableItemContext context)
+        public static QsiTableNode VisitAtomTableItem(AtomTableItemContext context)
         {
             var tableNode = new QsiTableAccessNode
             {
@@ -610,7 +610,7 @@ namespace Qsi.MySql.Tree
             });
         }
 
-        private static QsiTableAccessNode VisitFullId(FullIdContext context)
+        public static QsiTableAccessNode VisitFullId(FullIdContext context)
         {
             return new QsiTableAccessNode
             {
@@ -619,7 +619,7 @@ namespace Qsi.MySql.Tree
         }
 
         // .. FROM (subquery) alias
-        private static QsiTableNode VisitSubqueryTableItem(SubqueryTableItemContext context)
+        public static QsiTableNode VisitSubqueryTableItem(SubqueryTableItemContext context)
         {
             if (context.alias == null)
                 throw new Exception("Every derived table must have its own alias");
@@ -636,7 +636,7 @@ namespace Qsi.MySql.Tree
         }
 
         // .. FROM (sources, ..)
-        private static QsiTableNode VisitTableSourcesItem(TableSourcesItemContext context)
+        public static QsiTableNode VisitTableSourcesItem(TableSourcesItemContext context)
         {
             return VisitTableSources(context.tableSources());
         }

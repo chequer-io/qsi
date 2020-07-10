@@ -24,8 +24,21 @@ namespace Qsi.MySql
 
             switch (script.ScriptType)
             {
+                // ** DML **
+
+                case QsiScriptType.DataManipulation:
+                    return TableVisitor.VisitDmlStatement(mySqlParser.dmlStatement());
+
                 case QsiScriptType.Select:
                     return TableVisitor.VisitSelectStatement(mySqlParser.selectStatement());
+
+                // ** DDL **
+
+                case QsiScriptType.DataDefinition:
+                    return TableVisitor.VisitDdlStatement(mySqlParser.ddlStatement());
+
+                case QsiScriptType.CreateView:
+                    return TableVisitor.VisitCreateView(mySqlParser.createView());
 
                 default:
                     throw new NotImplementedException();
