@@ -355,19 +355,7 @@ namespace Qsi.MySql.Tree
 
                 case SelectColumnElementContext columnElementContext:
                 {
-                    var derivedColumn = new QsiDeclaredColumnNode
-                    {
-                        Name = IdentifierVisitor.Visit(columnElementContext.fullColumnName())
-                    };
-
-                    if (columnElementContext.alias == null)
-                        return derivedColumn;
-
-                    return TreeHelper.Create<QsiDerivedColumnNode>(n =>
-                    {
-                        n.Column.SetValue(derivedColumn);
-                        n.Alias.SetValue(CreateAliasNode(columnElementContext.alias));
-                    });
+                    return VisitSelectColumnElement(columnElementContext);
                 }
 
                 case SelectFunctionElementContext functionElementContext:
@@ -403,6 +391,42 @@ namespace Qsi.MySql.Tree
             }
 
             return null;
+        }
+
+        private static QsiColumnNode VisitSelectColumnElement(SelectColumnElementContext columnElementContext)
+        {
+            var columnName = IdentifierVisitor.Visit(columnElementContext.fullColumnName());
+
+            if (columnName.Level == 1 && 
+                columnName.Identifiers[0].IsEscaped && 
+                columnName.Identifiers[0].Value[0] != '`')
+            {
+                return TreeHelper.Create<QsiDerivedColumnNode>(n =>
+                {
+                    n.Expression.SetValue(new QsiLiteralExpressionNode
+                    {
+                        Value = columnName.Identifiers[0].Value,
+                        Type = QsiLiteralType.String
+                    });
+
+                    if (columnElementContext.alias != null)
+                        n.Alias.SetValue(CreateAliasNode(columnElementContext.alias));
+                });
+            }
+
+            var columnNode = new QsiDeclaredColumnNode
+            {
+                Name = columnName
+            };
+
+            if (columnElementContext.alias == null)
+                return columnNode;
+
+            return TreeHelper.Create<QsiDerivedColumnNode>(n =>
+            {
+                n.Column.SetValue(columnNode);
+                n.Alias.SetValue(CreateAliasNode(columnElementContext.alias));
+            });
         }
         #endregion
 
