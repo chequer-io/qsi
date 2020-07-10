@@ -65,6 +65,17 @@ namespace Qsi.Debugger.Vendor.MySql
                     var test1 = CreateTable("sakila", "`test 1`");
                     AddColumns(test1, "`c 1`", "`c 2`");
                     return test1;
+
+                case "cs_memo":
+                    var csMemo = CreateTable("sakila", "cs_memo");
+                    AddColumns(csMemo, "id", "memo");
+                    return csMemo;
+
+                case "cs_memo_view":
+                    var csMemoView = CreateTable("sakila", "cs_memo_view");
+                    csMemoView.Type = QsiDataTableType.View;
+                    AddColumns(csMemoView, "a", "b");
+                    return csMemoView;
             }
 
             return null;
@@ -76,6 +87,9 @@ namespace Qsi.Debugger.Vendor.MySql
 
             switch (name)
             {
+                case "cs_memo_view":
+                    return new QsiScript("CREATE ALGORITHM=UNDEFINED DEFINER=`chequer`@`%` SQL SECURITY DEFINER VIEW `cs_memo_view` AS select `cs_memo`.`id` AS `a`,`cs_memo`.`memo` AS `b` from `cs_memo`", QsiScriptType.CreateView);
+
                 case "actor_view":
                     return new QsiScript("CREATE VIEW `sakila`.`actor_view` AS SELECT * FROM `sakila`.`actor`", QsiScriptType.CreateView);
             }

@@ -91,7 +91,7 @@ namespace Qsi.Compiler
 
         private async Task<QsiDataTable> BuildTableAccessStructure(CompileContext context, IQsiTableAccessNode table)
         {
-            var lookup = ResolveDataTable(context, table.Identifier);
+            var lookup = ResolveDataTable(context, _resolver.ResolveQualifiedIdentifier(table.Identifier));
 
             // view
             if (lookup.Type == QsiDataTableType.View || lookup.Type == QsiDataTableType.MaterializedView)
