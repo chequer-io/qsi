@@ -2,11 +2,10 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
-        <Version>0.1.0</Version>
+        <Version>0.1.1</Version>
     </PropertyGroup>
 
     <PropertyGroup Label="Nuspec">
-        <PackageVersion>0.1.0</PackageVersion>
         <Title>Query Structure Interface</Title>
         <Authors>CHEQUER Inc.</Authors>
         <PackageProjectUrl>https://github.com/chequer-io/qsi</PackageProjectUrl>
