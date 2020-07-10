@@ -4,8 +4,21 @@
         <TargetFramework>netstandard2.1</TargetFramework>
     </PropertyGroup>
 
+    <PropertyGroup Label="Nuspec">
+        <PackageVersion>0.1.0</PackageVersion>
+        <Title>Query Structure Interface of MySql</Title>
+        <Authors>CHEQUER Inc.</Authors>
+        <PackageProjectUrl>https://github.com/chequer-io/qsi</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/chequer-io/qsi</RepositoryUrl>
+        <PackageIcon>icon-128.png</PackageIcon>
+    </PropertyGroup>
+
     <ItemGroup>
-      <ProjectReference Include="..\Qsi\Qsi.csproj" />
+        <None Include="../Resources/icon-128.png" Pack="true" PackagePath=""/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Qsi\Qsi.csproj"/>
     </ItemGroup>
 
 </Project>

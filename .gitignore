@@ -344,3 +344,6 @@ healthchecksdb
 Qsi.*/Antlr/generated/
 *.interp
 *.tokens
+
+# Build
+Build/Archive/
