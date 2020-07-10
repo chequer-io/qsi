@@ -5,8 +5,21 @@
         <Version>0.1.0</Version>
     </PropertyGroup>
 
+    <PropertyGroup Label="Nuspec">
+        <PackageVersion>0.1.0</PackageVersion>
+        <Title>Query Structure Interface</Title>
+        <Authors>CHEQUER Inc.</Authors>
+        <PackageProjectUrl>https://github.com/chequer-io/qsi</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/chequer-io/qsi</RepositoryUrl>
+        <PackageIcon>icon-128.png</PackageIcon>
+    </PropertyGroup>
+
     <ItemGroup>
-        <PackageReference Include="Antlr4.Runtime.Standard" Version="4.8.0" />
+        <None Include="../Resources/icon-128.png" Pack="true" PackagePath=""/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Antlr4.Runtime.Standard" Version="4.8.0"/>
     </ItemGroup>
 
 </Project>
