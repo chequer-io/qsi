@@ -31,6 +31,7 @@ namespace Qsi.Debugger
         private readonly TextBlock _tbError;
         private readonly CheckBox _chkQsiProperty;
         private readonly TextBlock _tbQsiStatus;
+        private readonly TreeView _tvRaw;
         private readonly TreeView _tvQsi;
         private readonly TreeView _tvResult;
 
@@ -54,6 +55,7 @@ namespace Qsi.Debugger
             _tbError = this.Find<TextBlock>("tbError");
             _chkQsiProperty = this.Find<CheckBox>("chkQsiProperty");
             _tbQsiStatus = this.Find<TextBlock>("tbQsiStatus");
+            _tvRaw = this.Find<TreeView>("tvRaw");
             _tvQsi = this.Find<TreeView>("tvQsi");
             _tvResult = this.Find<TreeView>("tvResult");
 
@@ -119,6 +121,10 @@ namespace Qsi.Debugger
                     return;
 
                 var input = _codeEditor.Text;
+
+                // Raw Tree
+
+                _tvRaw.Items = new[] { _vendor.RawParser.Parse(input) };
 
                 // TODO: change to IQsiScriptParser
                 var sentence = input.Split(';', 2)[0].Trim();

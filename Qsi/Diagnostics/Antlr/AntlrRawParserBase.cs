@@ -6,7 +6,7 @@ namespace Qsi.Diagnostics.Antlr
     {
         public IRawTree Parse(string input)
         {
-            return new AntlrTreeTree(ParseAntlrTree(input));            
+            return new AntlrRawTree(ParseAntlrTree(input));            
         }
 
         protected abstract ITree ParseAntlrTree(string input);

@@ -8,6 +8,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:md="clr-namespace:Qsi.Debugger.Models"
+    xmlns:qsi="clr-namespace:Qsi.Diagnostics;assembly=Qsi"
     Title="Qsi Debugger"
     Width="1200"
     Height="800"
@@ -93,22 +94,19 @@
             x:Name="tvRaw"
             Grid.Row="2"
             Grid.Column="2">
+            
             <TreeView.DataTemplates>
-                <TreeDataTemplate DataType="md:QsiElementItem" ItemsSource="{Binding Items}">
-                    <TextBlock Foreground="#87CEEB" Text="{Binding Header}" />
-                </TreeDataTemplate>
-
-                <TreeDataTemplate DataType="md:QsiChildElementItem" ItemsSource="{Binding Items}">
-                    <TextBlock Foreground="#B0B0B0" Text="{Binding Header}" />
-                </TreeDataTemplate>
-
-                <DataTemplate DataType="md:QsiPropertyItem">
+                <DataTemplate DataType="qsi:IRawTreeTerminalNode">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Foreground="#B0B0B0" Text="{Binding Header}" />
+                        <TextBlock Foreground="#B0B0B0" Text="TerminalNode" />
                         <TextBlock Text=": " />
-                        <TextBlock Foreground="#FA8072" Text="{Binding Value}" />
+                        <TextBlock Foreground="#FA8072" Text="{Binding DisplayName}" />
                     </StackPanel>
                 </DataTemplate>
+                
+                <TreeDataTemplate DataType="qsi:IRawTree" ItemsSource="{Binding Children}">
+                    <TextBlock Text="{Binding DisplayName}" />
+                </TreeDataTemplate>
             </TreeView.DataTemplates>
         </TreeView>
 

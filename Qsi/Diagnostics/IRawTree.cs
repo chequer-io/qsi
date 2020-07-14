@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Qsi.Diagnostics
+﻿namespace Qsi.Diagnostics
 {
     public interface IRawTree
     {
-        Type TreeType { get; }
-        
-        IEnumerable<IRawTree> Children { get; }
+        string DisplayName { get; }
+
+        IRawTree[] Children { get; }
     }
 }
