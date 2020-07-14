@@ -14,11 +14,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <None Include="../Resources/icon-128.png" Pack="true" PackagePath=""/>
+        <None Include="../Resources/icon-128.png" Pack="true" PackagePath="" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Antlr4.Runtime.Standard" Version="4.8.0"/>
+        <PackageReference Include="Antlr4.Runtime.Standard" Version="4.8.0" />
     </ItemGroup>
 
 </Project>

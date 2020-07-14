@@ -14,11 +14,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <None Include="../Resources/icon-128.png" Pack="true" PackagePath=""/>
+        <None Include="../Resources/icon-128.png" Pack="true" PackagePath="" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Qsi\Qsi.csproj"/>
+        <ProjectReference Include="..\Qsi\Qsi.csproj" />
     </ItemGroup>
 
 </Project>

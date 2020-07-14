@@ -4,10 +4,10 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ae="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
     xmlns:c="clr-namespace:Qsi.Debugger.Controls"
+    xmlns:cvt="clr-namespace:Qsi.Debugger.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:md="clr-namespace:Qsi.Debugger.Models"
-    xmlns:cvt="clr-namespace:Qsi.Debugger.Converters"
     Title="Qsi Debugger"
     Width="1200"
     Height="800"
@@ -35,6 +35,8 @@
             <ColumnDefinition />
             <ColumnDefinition Width="6" />
             <ColumnDefinition />
+            <ColumnDefinition Width="6" />
+            <ColumnDefinition />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -55,12 +57,17 @@
             Grid.Column="3"
             Opacity="0" />
 
+        <GridSplitter
+            Grid.Row="2"
+            Grid.Column="5"
+            Opacity="0" />
+
         <!--  Error  -->
 
         <TextBlock
             x:Name="tbError"
             Grid.Row="3"
-            Grid.ColumnSpan="5"
+            Grid.ColumnSpan="7"
             Margin="8,8,8,0"
             FontSize="12"
             Foreground="#E36387"
@@ -80,9 +87,34 @@
             FontWeight="Medium"
             LineNumbersForeground="#7E7E7E" />
 
+        <!--  Raw Tree  -->
+
+        <TreeView
+            x:Name="tvRaw"
+            Grid.Row="2"
+            Grid.Column="2">
+            <TreeView.DataTemplates>
+                <TreeDataTemplate DataType="md:QsiElementItem" ItemsSource="{Binding Items}">
+                    <TextBlock Foreground="#87CEEB" Text="{Binding Header}" />
+                </TreeDataTemplate>
+
+                <TreeDataTemplate DataType="md:QsiChildElementItem" ItemsSource="{Binding Items}">
+                    <TextBlock Foreground="#B0B0B0" Text="{Binding Header}" />
+                </TreeDataTemplate>
+
+                <DataTemplate DataType="md:QsiPropertyItem">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Foreground="#B0B0B0" Text="{Binding Header}" />
+                        <TextBlock Text=": " />
+                        <TextBlock Foreground="#FA8072" Text="{Binding Value}" />
+                    </StackPanel>
+                </DataTemplate>
+            </TreeView.DataTemplates>
+        </TreeView>
+
         <!--  QSI Tree  -->
 
-        <Panel Grid.Column="2" VerticalAlignment="Bottom">
+        <Panel Grid.Column="4" VerticalAlignment="Bottom">
             <CheckBox
                 x:Name="chkQsiProperty"
                 VerticalAlignment="Center"
@@ -98,7 +130,7 @@
         <TreeView
             x:Name="tvQsi"
             Grid.Row="2"
-            Grid.Column="2">
+            Grid.Column="4">
             <TreeView.DataTemplates>
                 <TreeDataTemplate DataType="md:QsiElementItem" ItemsSource="{Binding Items}">
                     <TextBlock Foreground="#87CEEB" Text="{Binding Header}" />
@@ -123,16 +155,16 @@
         <TreeView
             x:Name="tvResult"
             Grid.Row="2"
-            Grid.Column="4">
-			<TreeView.DataTemplates>
-				<TreeDataTemplate DataType="md:QsiColumnTreeItem" ItemsSource="{Binding Items}">
+            Grid.Column="6">
+            <TreeView.DataTemplates>
+                <TreeDataTemplate DataType="md:QsiColumnTreeItem" ItemsSource="{Binding Items}">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Foreground="{Binding Converter={cvt:ColumnBrushConverter}}" Text="{Binding Converter={cvt:ColumnDisplayConverter}}" />
                         <TextBlock Text=" " />
                         <TextBlock Foreground="{DynamicResource Ink.5.Brush}" Text="{Binding Converter={cvt:ColumnParentTypeConverter}, StringFormat='({0})'}" />
                     </StackPanel>
-				</TreeDataTemplate>
-			</TreeView.DataTemplates>
+                </TreeDataTemplate>
+            </TreeView.DataTemplates>
         </TreeView>
     </Grid>
 </Window>
