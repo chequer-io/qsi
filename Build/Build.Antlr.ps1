@@ -30,7 +30,9 @@ Get-ChildItem -Path "Qsi.*" -Directory | ForEach-Object {
         -package "$Namespace" `
         -Xexact-output-dir `
         -o "$OutputDirectory" `
-        "$GrammarDirectory\*.g4"
+        "$GrammarDirectory\*.g4" `
+        -no-listener `
+        -no-visitor
 
     # Move grammar cache (interp, tokens)
     Get-ChildItem -Path $OutputDirectory\* -Include *.interp, *.tokens | ForEach-Object {
