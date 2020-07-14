@@ -8,14 +8,14 @@ namespace Qsi.PostgreSql.Diagnostics
 {
     public class PostgreSqlRawParser : AntlrRawParserBase
     {
-        protected override ITree ParseAntlrTree(string input)
+        protected override (ITree Tree, string[] RuleNames) ParseAntlrTree(string input)
         {
             var stream = new AntlrUpperInputStream(input);
             var lexer = new PlSqlLexer(stream);
             var tokens = new CommonTokenStream(lexer);
             var parser = new PlSqlParser(tokens);
 
-            return parser.sql_script();
+            return (parser.sql_script(), parser.RuleNames);
         }
     }
 }

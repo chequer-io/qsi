@@ -49,7 +49,7 @@ namespace Qsi.Debugger
             _vendors = new Dictionary<string, Lazy<VendorDebugger>>
             {
                 ["MySQL"] = new Lazy<VendorDebugger>(() => new MySqlDebugger()),
-                ["PostgreSql"] = new Lazy<VendorDebugger>(() => new PostgreSqlDebugger())
+                ["PostgreSQL"] = new Lazy<VendorDebugger>(() => new PostgreSqlDebugger())
             };
 
             _cbLanguages = this.Find<ComboBox>("cbLanguages");
