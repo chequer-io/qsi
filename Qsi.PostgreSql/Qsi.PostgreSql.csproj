@@ -2,7 +2,20 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
+        <Version>0.1.2</Version>
     </PropertyGroup>
+
+    <PropertyGroup Label="Nuspec">
+        <Title>Query Structure Interface of PostgreSql</Title>
+        <Authors>CHEQUER Inc.</Authors>
+        <PackageProjectUrl>https://github.com/chequer-io/qsi</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/chequer-io/qsi</RepositoryUrl>
+        <PackageIcon>icon-128.png</PackageIcon>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="../Resources/icon-128.png" Pack="true" PackagePath="" />
+    </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\Qsi\Qsi.csproj" />
