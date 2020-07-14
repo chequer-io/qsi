@@ -48,7 +48,7 @@ namespace Qsi.Debugger.Vendor.MySql
                 case "actor_view":
                     var actorView = CreateTable("sakila", "actor_view");
                     actorView.Type = QsiDataTableType.View;
-                    AddColumns(actorView, "actor_id", "first_name", "last_name", "last_update");
+                    AddColumns(actorView, "actor_id", "first_name", "last_name", "last_update", "first_name || last_name");
                     return actorView;
 
                 case "address":
@@ -91,7 +91,7 @@ namespace Qsi.Debugger.Vendor.MySql
                     return new QsiScript("CREATE ALGORITHM=UNDEFINED DEFINER=`chequer`@`%` SQL SECURITY DEFINER VIEW `cs_memo_view` AS select `cs_memo`.`id` AS `a`,`cs_memo`.`memo` AS `b` from `cs_memo`", QsiScriptType.CreateView);
 
                 case "actor_view":
-                    return new QsiScript("CREATE VIEW `sakila`.`actor_view` AS SELECT * FROM `sakila`.`actor`", QsiScriptType.CreateView);
+                    return new QsiScript("CREATE VIEW `sakila`.`actor_view` (actor_id, first_name, last_name, last_update, `first_name || last_name`) AS SELECT *, first_name || last_name FROM `sakila`.`actor`", QsiScriptType.CreateView);
             }
 
             return null;
