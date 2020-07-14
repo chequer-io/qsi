@@ -2,7 +2,7 @@
 
 namespace Qsi.Diagnostics.Antlr
 {
-    public readonly struct AntlrRawTreeTerminalNode : IRawTreeTerminalNode
+    public class AntlrRawTreeTerminalNode : IRawTreeTerminalNode
     {
         public string DisplayName { get; }
 

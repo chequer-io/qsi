@@ -2,13 +2,13 @@
 
 namespace Qsi.Diagnostics.Antlr
 {
-    public readonly struct AntlrRawTree : IRawTree
+    public class AntlrRawTree : IRawTree
     {
         public string DisplayName { get; }
 
         public IRawTree[] Children { get; }
 
-        public AntlrRawTree(ITree tree)
+        public AntlrRawTree(ITree tree, string[] ruleNames)
         {
             int count = tree.ChildCount;
             var children = new IRawTree[count];
@@ -20,11 +20,19 @@ namespace Qsi.Diagnostics.Antlr
                 if (child is ITerminalNode terminalNode)
                     children[i] = new AntlrRawTreeTerminalNode(terminalNode);
                 else
-                    children[i] = new AntlrRawTree(child);
+                    children[i] = new AntlrRawTree(child, ruleNames);
             }
 
             Children = children;
-            DisplayName = tree.GetType().Name;
+
+            if (tree is IRuleNode ruleNode)
+            {
+                DisplayName = ruleNames[ruleNode.RuleContext.RuleIndex];
+            }
+            else
+            {
+                DisplayName = tree.GetType().Name;
+            }
 
             if (tree is ITerminalNode)
                 DisplayName += $": {tree}";
