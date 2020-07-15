@@ -21,4 +21,13 @@
       <ProjectReference Include="..\Qsi\Qsi.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="ChakraCore.NET.Core" Version="1.1.2" />
+      <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Include="Resources\*.js" />
+    </ItemGroup>
+
 </Project>

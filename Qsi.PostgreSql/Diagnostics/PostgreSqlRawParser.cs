@@ -1,21 +1,24 @@
-﻿using Antlr4.Runtime;
-using Antlr4.Runtime.Tree;
-using Qsi.Diagnostics.Antlr;
-using Qsi.Parsing.Antlr;
+﻿using System;
+using Qsi.Diagnostics;
 using Qsi.PostgreSql.Internal;
 
 namespace Qsi.PostgreSql.Diagnostics
 {
-    public class PostgreSqlRawParser : AntlrRawParserBase
+    public class PostgreSqlRawParser : IRawTreeParser, IDisposable
     {
-        protected override (ITree Tree, string[] RuleNames) ParseAntlrTree(string input)
-        {
-            var stream = new AntlrUpperInputStream(input);
-            var lexer = new PlSqlLexer(stream);
-            var tokens = new CommonTokenStream(lexer);
-            var parser = new PlSqlParser(tokens);
+        private IPgParser _pgParser;
 
-            return (parser.sql_script(), parser.RuleNames);
+        public IRawTree Parse(string input)
+        {
+            _pgParser ??= new PgQuery10();
+            var result = _pgParser.Parse(input);
+
+            return null;
+        }
+
+        void IDisposable.Dispose()
+        {
+            _pgParser?.Dispose();
         }
     }
 }

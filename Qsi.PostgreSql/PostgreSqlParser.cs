@@ -1,25 +1,35 @@
 ﻿using System;
-using Antlr4.Runtime;
 using Qsi.Data;
-using Qsi.Parsing.Antlr;
+using Qsi.Parsing;
 using Qsi.PostgreSql.Internal;
 using Qsi.Tree;
 
 namespace Qsi.PostgreSql
 {
-    public class PostgreSqlParser : AntlrParserBase
+    public class PostgreSqlParser : IQsiTreeParser, IDisposable
     {
-        protected override Parser CreateParser(QsiScript script)
+        public event EventHandler<QsiSyntaxErrorException> SyntaxError;
+
+        private IPgParser _pgParser;
+
+        public IQsiTreeNode Parse(QsiScript script)
         {
-            var stream = new AntlrUpperInputStream(script.Script);
-            var lexer = new PlSqlLexer(stream);
-            var tokens = new CommonTokenStream(lexer);
-            return new PlSqlParser(tokens);
+            try
+            {
+                _pgParser ??= new PgQuery10();
+                //return _pgQuery.Parse(script.Script);
+            }
+            catch (QsiSyntaxErrorException e)
+            {
+                SyntaxError?.Invoke(this, e);
+            }
+
+            return null;
         }
 
-        protected override IQsiTreeNode Parse(QsiScript script, Parser parser)
+        void IDisposable.Dispose()
         {
-            throw new NotImplementedException();
+            _pgParser?.Dispose();
         }
     }
 }
