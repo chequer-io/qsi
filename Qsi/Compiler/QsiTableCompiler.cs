@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -588,7 +588,25 @@ namespace Qsi.Compiler
 
                 case IQsiColumnAccessExpressionNode e:
                 {
-                    yield return ResolveDeclaredColumn(context, e.Identifier);
+                    if (e.IsAll)
+                    {
+                        // TODO: ITableCompileStrategy 인터페이스를 분리하여 Compiler 옵션으로 노출
+                        if (e.Parent is IQsiParametersExpressionNode p &&
+                            p.Parent is IQsiInvokeExpressionNode i &&
+                            i.Member != null &&
+                            i.Member.Identifier.Level == 1 &&
+                            i.Member.Identifier[0].Value.Equals("COUNT", StringComparison.OrdinalIgnoreCase))
+                        {
+                            yield break;
+                        }
+
+                        foreach (var column in ResolveAllColumns(context, e.Identifier))
+                            yield return column;
+                    }
+                    else
+                    {
+                        yield return ResolveDeclaredColumn(context, e.Identifier);
+                    }
 
                     break;
                 }

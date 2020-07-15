@@ -17,7 +17,12 @@
         public QsiInvokeExpressionNode()
         {
             Member = new QsiTreeNodeProperty<QsiFunctionAccessExpressionNode>(this);
-            _parameters = new QsiParametersExpressionNode();
+
+            _parameters = new QsiParametersExpressionNode
+            {
+                Parent = this
+            };
+
             Parameters = _parameters.Expressions;
         }
     }

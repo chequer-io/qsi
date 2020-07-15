@@ -254,7 +254,7 @@ namespace Qsi.MySql.Tree
                         {
                             n.Parameters.Add(new QsiColumnAccessExpressionNode
                             {
-                                Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(fContext.starArg.Text, false))
+                                IsAll = true
                             });
                         }
                         else
@@ -833,10 +833,20 @@ namespace Qsi.MySql.Tree
         #region ColumnExpression
         private static QsiColumnAccessExpressionNode VisitFullColumnName(FullColumnNameContext context)
         {
-            return new QsiColumnAccessExpressionNode
+            var node = new QsiColumnAccessExpressionNode();
+            var identifier = IdentifierVisitor.Visit(context);
+
+            if (identifier.Identifiers[^1].Value == "*")
             {
-                Identifier = IdentifierVisitor.Visit(context)
-            };
+                node.IsAll = true;
+                node.Identifier = identifier.Level == 1 ? null : new QsiQualifiedIdentifier(identifier.Identifiers[..^1]);
+            }
+            else
+            {
+                node.Identifier = identifier;
+            }
+
+            return node;
         }
         #endregion
 

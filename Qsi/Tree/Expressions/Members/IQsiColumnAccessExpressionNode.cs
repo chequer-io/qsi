@@ -2,5 +2,6 @@
 {
     public interface IQsiColumnAccessExpressionNode : IQsiMemberAccessExpressionNode
     {
+        bool IsAll { get; }
     }
 }
