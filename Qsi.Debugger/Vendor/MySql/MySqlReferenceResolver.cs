@@ -36,7 +36,7 @@ namespace Qsi.Debugger.Vendor.MySql
 
         protected override QsiDataTable LookupTable(QsiQualifiedIdentifier identifier)
         {
-            var tableName = IdentifierUtility.Unescape(identifier.Identifiers[^1].Value);
+            var tableName = IdentifierUtility.Unescape(identifier[^1].Value);
 
             switch (tableName)
             {
@@ -83,7 +83,7 @@ namespace Qsi.Debugger.Vendor.MySql
 
         protected override QsiScript LookupDefinition(QsiQualifiedIdentifier identifier, QsiDataTableType type)
         {
-            var name = IdentifierUtility.Unescape(identifier.Identifiers[^1].Value);
+            var name = IdentifierUtility.Unescape(identifier[^1].Value);
 
             switch (name)
             {
@@ -102,7 +102,7 @@ namespace Qsi.Debugger.Vendor.MySql
             if (identifier.Level == 1)
             {
                 var sakila = new QsiIdentifier("sakila", false);
-                identifier = new QsiQualifiedIdentifier(sakila, identifier.Identifiers[0]);
+                identifier = new QsiQualifiedIdentifier(sakila, identifier[0]);
             }
 
             if (identifier.Level != 2)

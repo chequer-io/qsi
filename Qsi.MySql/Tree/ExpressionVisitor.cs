@@ -836,10 +836,10 @@ namespace Qsi.MySql.Tree
             var node = new QsiColumnAccessExpressionNode();
             var identifier = IdentifierVisitor.Visit(context);
 
-            if (identifier.Identifiers[^1].Value == "*")
+            if (identifier[^1].Value == "*")
             {
                 node.IsAll = true;
-                node.Identifier = identifier.Level == 1 ? null : new QsiQualifiedIdentifier(identifier.Identifiers[..^1]);
+                node.Identifier = identifier.Level == 1 ? null : new QsiQualifiedIdentifier(identifier[..^1]);
             }
             else
             {

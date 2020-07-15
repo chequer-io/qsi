@@ -57,13 +57,13 @@ namespace Qsi.Services
                 if (x == null || y == null)
                     return false;
 
-                if (x.Identifiers.Length != y.Identifiers.Length)
+                if (x.Level != y.Level)
                     return false;
 
-                for (int i = 0; i < x.Identifiers.Length; i++)
+                for (int i = 0; i < x.Level; i++)
                 {
-                    var xIdentifier = x.Identifiers[i];
-                    var yIdentifier = y.Identifiers[i];
+                    var xIdentifier = x[i];
+                    var yIdentifier = y[i];
 
                     if (xIdentifier.IsEscaped != yIdentifier.IsEscaped)
                         return false;

@@ -127,7 +127,7 @@ namespace Qsi.MySql.Tree
 
                 n.Alias.SetValue(new QsiAliasNode
                 {
-                    Name = viewAccessNode.Identifier.Identifiers[^1]
+                    Name = viewAccessNode.Identifier[^1]
                 });
             });
         }
@@ -398,14 +398,14 @@ namespace Qsi.MySql.Tree
             var columnName = IdentifierVisitor.Visit(columnElementContext.fullColumnName());
 
             if (columnName.Level == 1 && 
-                columnName.Identifiers[0].IsEscaped && 
-                columnName.Identifiers[0].Value[0] != '`')
+                columnName[0].IsEscaped && 
+                columnName[0].Value[0] != '`')
             {
                 return TreeHelper.Create<QsiDerivedColumnNode>(n =>
                 {
                     n.Expression.SetValue(new QsiLiteralExpressionNode
                     {
-                        Value = columnName.Identifiers[0].Value,
+                        Value = columnName[0].Value,
                         Type = QsiLiteralType.String
                     });
 
