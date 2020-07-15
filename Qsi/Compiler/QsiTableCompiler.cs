@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -43,14 +43,14 @@ namespace Qsi.Compiler
             try
             {
                 if (script.ScriptType != QsiScriptType.Select)
-                    throw Throw($"Not supported script type: {script.ScriptType}");
+                    throw new QsiException(QsiError.NotSupportedTree, script.ScriptType);
 
                 var treeNode =
                     _treeParser.Parse(script) ??
-                    throw Throw($"{nameof(IQsiTreeParser)}.{nameof(IQsiTreeParser.Parse)} result was null");
+                    throw new QsiException(QsiError.Internal, $"{nameof(IQsiTreeParser)}.{nameof(IQsiTreeParser.Parse)} result was null");
 
                 if (!(treeNode is IQsiTableNode tableNode))
-                    throw Throw($"Not supported qsi tree type: {treeNode.GetType().FullName}");
+                    throw new QsiException(QsiError.NotSupportedTree, treeNode.GetType().FullName);
 
                 return await ExecuteAsync(tableNode);
             }
@@ -149,7 +149,7 @@ namespace Qsi.Compiler
             };
 
             if (table.Columns == null || table.Columns.Count == 0)
-                throw ThrowCheckSyntax();
+                throw new QsiException(QsiError.Syntax);
 
             // Columns Definition
 
@@ -209,7 +209,7 @@ namespace Qsi.Compiler
         private async Task<QsiDataTable> BuildJoinedTable(CompileContext context, IQsiJoinedTableNode table)
         {
             if (table.Left == null || table.Right == null)
-                throw ThrowCheckSyntax();
+                throw new QsiException(QsiError.Syntax);
 
             // priority
             // using > left > right
@@ -263,7 +263,7 @@ namespace Qsi.Compiler
 
                     if (leftColumnIndex == -1 || rightColumnIndex == -1)
                     {
-                        throw ThrowUnableResolveColumn(pivots[i].Name);
+                        throw new QsiException(QsiError.UnableResolveColumn, pivots[i].Name);
                     }
 
                     pivotPairs[i] = new PivotColumnPair(
@@ -304,7 +304,7 @@ namespace Qsi.Compiler
         private async Task<QsiDataTable> BuildCompositeTable(CompileContext context, IQsiCompositeTableNode table)
         {
             if (table.Sources == null || table.Sources.Length == 0)
-                throw ThrowCheckSyntax();
+                throw new QsiException(QsiError.Syntax);
 
             QsiDataTable[] sources = await Task.WhenAll(
                 table.Sources.Select(s => BuildTableStructure(new CompileContext(context), s))
@@ -313,7 +313,7 @@ namespace Qsi.Compiler
             int columnCount = sources[0].Columns.Count;
 
             if (sources.Skip(1).Any(s => s.Columns.Count != columnCount))
-                throw Throw("The used Statements have a different number of columns.");
+                throw new QsiException(QsiError.DifferentColumnsCount);
 
             var compositeSource = new QsiDataTable
             {
@@ -338,7 +338,7 @@ namespace Qsi.Compiler
             switch (column)
             {
                 case IQsiAllColumnNode allColumn:
-                    return ResolveAllColumns(context, allColumn);
+                    return ResolveAllColumns(context, allColumn.Path);
 
                 case IQsiDeclaredColumnNode declaredColumn:
                     return new[] { ResolveDeclaredColumn(context, declaredColumn.Name) };
@@ -353,23 +353,23 @@ namespace Qsi.Compiler
             throw new InvalidOperationException();
         }
 
-        private IEnumerable<QsiDataColumn> ResolveAllColumns(CompileContext context, IQsiAllColumnNode column)
+        private IEnumerable<QsiDataColumn> ResolveAllColumns(CompileContext context, QsiQualifiedIdentifier path)
         {
             // *
-            if (column.Path == null)
+            if (path == null)
             {
                 if (context.SourceTable == null)
-                    throw ThrowNoTablesUsed();
+                    throw new QsiException(QsiError.NoTablesUsed);
 
                 return context.SourceTable.Columns;
             }
 
             // path.or.alias.*
 
-            QsiDataTable[] tables = LookupDataTablesInExpression(context, column.Path).ToArray();
+            QsiDataTable[] tables = LookupDataTablesInExpression(context, path).ToArray();
 
             if (tables.Length == 0)
-                throw ThrowUnknownTable(column.Path);
+                throw new QsiException(QsiError.UnknownTable, path);
 
             return tables.SelectMany(t => t.Columns);
         }
@@ -384,7 +384,7 @@ namespace Qsi.Compiler
                 sources = LookupDataTablesInExpression(context, identifier).ToArray();
 
                 if (!sources.Any())
-                    throw ThrowUnknownTableIn(identifier, scopeFieldList);
+                    throw new QsiException(QsiError.UnknownTableIn, identifier, scopeFieldList);
             }
             else if (column.Level == 0)
             {
@@ -403,10 +403,10 @@ namespace Qsi.Compiler
                 .ToArray();
 
             if (columns.Length == 0)
-                throw ThrowUnknownColumnIn(columnName.Value, scopeFieldList);
+                throw new QsiException(QsiError.UnknownColumnIn, columnName.Value, scopeFieldList);
 
             if (columns.Length > 1)
-                throw ThrowAmbiguousColumnIn(column, scopeFieldList);
+                throw new QsiException(QsiError.AmbiguousColumnIn, column, scopeFieldList);
 
             return columns[0];
         }
@@ -422,7 +422,7 @@ namespace Qsi.Compiler
         private QsiDataColumn ResolveSequentialColumn(CompileContext context, IQsiSequentialColumnNode column)
         {
             if (context.SourceTable == null)
-                throw ThrowNoTablesUsed();
+                throw new QsiException(QsiError.NoTablesUsed);
 
             return context.SourceTable.Columns[column.Ordinal];
         }
@@ -431,7 +431,7 @@ namespace Qsi.Compiler
         #region Table Lookup
         private QsiDataTable ResolveDataTable(CompileContext context, QsiQualifiedIdentifier identifier)
         {
-            return LookupDataTable(context, identifier) ?? throw ThrowUnableResolveTable(identifier);
+            return LookupDataTable(context, identifier) ?? throw new QsiException(QsiError.UnableResolveTable, identifier);
         }
 
         private QsiDataTable LookupDataTable(CompileContext context, QsiQualifiedIdentifier identifier)
@@ -657,58 +657,6 @@ namespace Qsi.Compiler
             }
 
             return table;
-        }
-        #endregion
-
-        #region Exceptions
-        private static QsiException ThrowCheckSyntax()
-        {
-            return Throw("You have an error in your SQL syntax; check the manual that corresponds to your Database server version");
-        }
-
-        private static QsiException ThrowUnableResolveTable(QsiQualifiedIdentifier identifier)
-        {
-            return Throw($"Unable to resolve table '{identifier}'");
-        }
-
-        private static QsiException ThrowUnableResolveColumn(QsiQualifiedIdentifier identifier)
-        {
-            return Throw($"Unable to resolve column '{identifier}'");
-        }
-
-        private static QsiException ThrowUnknownTable(QsiQualifiedIdentifier identifier)
-        {
-            return Throw($"Unknown table '{identifier}'");
-        }
-
-        private static QsiException ThrowUnknownTableIn(QsiQualifiedIdentifier identifier, string scope)
-        {
-            return Throw($"Unknown table '{identifier}' in {scope}");
-        }
-
-        private static QsiException ThrowUnknownViewIn(QsiQualifiedIdentifier identifier, string scope)
-        {
-            return Throw($"Unknown view '{identifier}' in {scope}");
-        }
-
-        private static QsiException ThrowUnknownColumnIn(string name, string scope)
-        {
-            return Throw($"Unknown column '{name}' in {scope}");
-        }
-
-        private static QsiException ThrowAmbiguousColumnIn(QsiQualifiedIdentifier identifier, string scope)
-        {
-            return Throw($"Column '{identifier}' in {scope} is ambiguous");
-        }
-
-        private static QsiException ThrowNoTablesUsed()
-        {
-            return Throw("No tables used");
-        }
-
-        private static QsiException Throw(string message)
-        {
-            return new QsiException(message);
         }
         #endregion
 
