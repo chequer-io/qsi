@@ -257,7 +257,7 @@ namespace Qsi.Compiler
 
                 for (int i = 0; i < pivotPairs.Length; i++)
                 {
-                    var pivotColumnName = pivots[i].Name.Identifiers[^1];
+                    var pivotColumnName = pivots[i].Name[^1];
                     var leftColumnIndex = left.Columns.IndexOf(c => Match(c.Name, pivotColumnName));
                     var rightColumnIndex = right.Columns.IndexOf(c => Match(c.Name, pivotColumnName));
 
@@ -380,7 +380,7 @@ namespace Qsi.Compiler
 
             if (column.Level > 1)
             {
-                var identifier = new QsiQualifiedIdentifier(column.Identifiers[..^1]);
+                var identifier = new QsiQualifiedIdentifier(column[..^1]);
                 sources = LookupDataTablesInExpression(context, identifier).ToArray();
 
                 if (!sources.Any())
@@ -395,7 +395,7 @@ namespace Qsi.Compiler
                 sources = new[] { context.SourceTable };
             }
 
-            var columnName = column.Identifiers[^1];
+            var columnName = column[^1];
 
             QsiDataColumn[] columns = sources
                 .SelectMany(s => s.Columns.Where(c => Match(c.Name, columnName)))
@@ -482,7 +482,7 @@ namespace Qsi.Compiler
                 if (table.Identifier.Level <= identifier.Level)
                     continue;
 
-                QsiIdentifier[] partialIdentifiers = table.Identifier.Identifiers[^identifier.Level..];
+                QsiIdentifier[] partialIdentifiers = table.Identifier[^identifier.Level..];
                 var partialIdentifier = new QsiQualifiedIdentifier(partialIdentifiers);
 
                 if (Match(partialIdentifier, identifier))
@@ -642,7 +642,7 @@ namespace Qsi.Compiler
 
             for (int i = 0; i < a.Level; i++)
             {
-                if (!Match(a.Identifiers[i], b.Identifiers[i]))
+                if (!Match(a[i], b[i]))
                     return false;
             }
 
