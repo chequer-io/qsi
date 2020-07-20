@@ -7,7 +7,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     {
         public string source_text { get; set; }
 
-        public string /* oid */ langOid { get; set; }
+        public int /* oid */ langOid { get; set; }
 
         public bool langIsTrusted { get; set; }
 

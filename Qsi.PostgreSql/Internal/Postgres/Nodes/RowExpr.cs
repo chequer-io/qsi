@@ -8,7 +8,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public IPgTree[] args { get; set; }
 
-        public string /* oid */ row_typeid { get; set; }
+        public int /* oid */ row_typeid { get; set; }
 
         public CoercionForm row_format { get; set; }
 

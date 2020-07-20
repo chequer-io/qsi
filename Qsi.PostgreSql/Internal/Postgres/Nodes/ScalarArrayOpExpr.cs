@@ -6,13 +6,13 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     {
         public Expr xpr { get; set; }
 
-        public string /* oid */ opno { get; set; }
+        public int /* oid */ opno { get; set; }
 
-        public string /* oid */ opfuncid { get; set; }
+        public int /* oid */ opfuncid { get; set; }
 
         public bool useOr { get; set; }
 
-        public string /* oid */ inputcollid { get; set; }
+        public int /* oid */ inputcollid { get; set; }
 
         public IPgTree[] args { get; set; }
 

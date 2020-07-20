@@ -25,9 +25,9 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public string idxcomment { get; set; }
 
-        public string /* oid */ indexOid { get; set; }
+        public int /* oid */ indexOid { get; set; }
 
-        public string /* oid */ oldNode { get; set; }
+        public int /* oid */ oldNode { get; set; }
 
         public uint /* SubTransactionId */ oldCreateSubid { get; set; }
 

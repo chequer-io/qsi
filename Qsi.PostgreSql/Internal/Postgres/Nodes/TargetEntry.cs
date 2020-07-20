@@ -14,7 +14,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public index ressortgroupref { get; set; }
 
-        public string /* oid */ resorigtbl { get; set; }
+        public int /* oid */ resorigtbl { get; set; }
 
         public short /* AttrNumber */ resorigcol { get; set; }
 

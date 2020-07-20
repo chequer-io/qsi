@@ -10,11 +10,11 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public short /* AttrNumber */ varattno { get; set; }
 
-        public string /* oid */ vartype { get; set; }
+        public int /* oid */ vartype { get; set; }
 
         public int vartypmod { get; set; }
 
-        public string /* oid */ varcollid { get; set; }
+        public int /* oid */ varcollid { get; set; }
 
         public index varlevelsup { get; set; }
 

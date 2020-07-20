@@ -6,15 +6,15 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     {
         public Expr xpr { get; set; }
 
-        public string /* oid */ aggfnoid { get; set; }
+        public int /* oid */ aggfnoid { get; set; }
 
-        public string /* oid */ aggtype { get; set; }
+        public int /* oid */ aggtype { get; set; }
 
-        public string /* oid */ aggcollid { get; set; }
+        public int /* oid */ aggcollid { get; set; }
 
-        public string /* oid */ inputcollid { get; set; }
+        public int /* oid */ inputcollid { get; set; }
 
-        public string /* oid */ aggtranstype { get; set; }
+        public int /* oid */ aggtranstype { get; set; }
 
         public IPgTree[] aggargtypes { get; set; }
 

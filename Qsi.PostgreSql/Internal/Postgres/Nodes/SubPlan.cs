@@ -16,11 +16,11 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public string plan_name { get; set; }
 
-        public string /* oid */ firstColType { get; set; }
+        public int /* oid */ firstColType { get; set; }
 
         public int firstColTypmod { get; set; }
 
-        public string /* oid */ firstColCollation { get; set; }
+        public int /* oid */ firstColCollation { get; set; }
 
         public bool useHashTable { get; set; }
 

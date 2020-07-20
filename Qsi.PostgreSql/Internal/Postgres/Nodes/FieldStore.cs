@@ -12,6 +12,6 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public IPgTree[] fieldnums { get; set; }
 
-        public string /* oid */ resulttype { get; set; }
+        public int /* oid */ resulttype { get; set; }
     }
 }

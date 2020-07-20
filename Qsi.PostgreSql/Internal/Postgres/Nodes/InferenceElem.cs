@@ -8,8 +8,8 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public Node expr { get; set; }
 
-        public string /* oid */ infercollid { get; set; }
+        public int /* oid */ infercollid { get; set; }
 
-        public string /* oid */ inferopclass { get; set; }
+        public int /* oid */ inferopclass { get; set; }
     }
 }

@@ -8,7 +8,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public Expr arg { get; set; }
 
-        public string /* oid */ collOid { get; set; }
+        public int /* oid */ collOid { get; set; }
 
         public int location { get; set; }
     }

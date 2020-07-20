@@ -6,11 +6,11 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     {
         public Expr xpr { get; set; }
 
-        public string /* oid */ array_typeid { get; set; }
+        public int /* oid */ array_typeid { get; set; }
 
-        public string /* oid */ array_collid { get; set; }
+        public int /* oid */ array_collid { get; set; }
 
-        public string /* oid */ element_typeid { get; set; }
+        public int /* oid */ element_typeid { get; set; }
 
         public IPgTree[] elements { get; set; }
 

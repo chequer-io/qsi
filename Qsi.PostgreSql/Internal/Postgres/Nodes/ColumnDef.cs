@@ -31,7 +31,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public CollateClause collClause { get; set; }
 
-        public string /* oid */ collOid { get; set; }
+        public int /* oid */ collOid { get; set; }
 
         public IPgTree[] constraints { get; set; }
 

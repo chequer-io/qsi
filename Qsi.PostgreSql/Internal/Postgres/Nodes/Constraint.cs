@@ -55,7 +55,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public IPgTree[] old_conpfeqop { get; set; }
 
-        public string /* oid */ old_pktable_oid { get; set; }
+        public int /* oid */ old_pktable_oid { get; set; }
 
         public bool skip_validation { get; set; }
 

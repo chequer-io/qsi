@@ -7,7 +7,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     {
         public IPgTree[] names { get; set; }
 
-        public string /* oid */ typeOid { get; set; }
+        public int /* oid */ typeOid { get; set; }
 
         public bool setof { get; set; }
 

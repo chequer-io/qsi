@@ -19,11 +19,11 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public Node endOffset { get; set; }
 
-        public string /* oid */ startInRangeFunc { get; set; }
+        public int /* oid */ startInRangeFunc { get; set; }
 
-        public string /* oid */ endInRangeFunc { get; set; }
+        public int /* oid */ endInRangeFunc { get; set; }
 
-        public string /* oid */ inRangeColl { get; set; }
+        public int /* oid */ inRangeColl { get; set; }
 
         public bool inRangeAsc { get; set; }
 

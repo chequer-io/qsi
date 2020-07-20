@@ -9,7 +9,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public IPgTree[] options { get; set; }
 
-        public string /* oid */ ownerId { get; set; }
+        public int /* oid */ ownerId { get; set; }
 
         public bool for_identity { get; set; }
 

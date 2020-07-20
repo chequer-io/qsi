@@ -10,11 +10,11 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public Expr elemexpr { get; set; }
 
-        public string /* oid */ resulttype { get; set; }
+        public int /* oid */ resulttype { get; set; }
 
         public int resulttypmod { get; set; }
 
-        public string /* oid */ resultcollid { get; set; }
+        public int /* oid */ resultcollid { get; set; }
 
         public CoercionForm coerceformat { get; set; }
 

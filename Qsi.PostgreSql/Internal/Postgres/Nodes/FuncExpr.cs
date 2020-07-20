@@ -6,9 +6,9 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     {
         public Expr xpr { get; set; }
 
-        public string /* oid */ funcid { get; set; }
+        public int /* oid */ funcid { get; set; }
 
-        public string /* oid */ funcresulttype { get; set; }
+        public int /* oid */ funcresulttype { get; set; }
 
         public bool funcretset { get; set; }
 
@@ -16,9 +16,9 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public CoercionForm funcformat { get; set; }
 
-        public string /* oid */ funccollid { get; set; }
+        public int /* oid */ funccollid { get; set; }
 
-        public string /* oid */ inputcollid { get; set; }
+        public int /* oid */ inputcollid { get; set; }
 
         public IPgTree[] args { get; set; }
 

@@ -7,9 +7,9 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     {
         public index tleSortGroupRef { get; set; }
 
-        public string /* oid */ eqop { get; set; }
+        public int /* oid */ eqop { get; set; }
 
-        public string /* oid */ sortop { get; set; }
+        public int /* oid */ sortop { get; set; }
 
         public bool nulls_first { get; set; }
 

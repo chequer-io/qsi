@@ -7,7 +7,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     {
         public RangeVar relation { get; set; }
 
-        public string /* oid */ oid { get; set; }
+        public int /* oid */ oid { get; set; }
 
         public IPgTree[] va_cols { get; set; }
     }

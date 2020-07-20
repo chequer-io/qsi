@@ -6,13 +6,13 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     {
         public Expr xpr { get; set; }
 
-        public string /* oid */ winfnoid { get; set; }
+        public int /* oid */ winfnoid { get; set; }
 
-        public string /* oid */ wintype { get; set; }
+        public int /* oid */ wintype { get; set; }
 
-        public string /* oid */ wincollid { get; set; }
+        public int /* oid */ wincollid { get; set; }
 
-        public string /* oid */ inputcollid { get; set; }
+        public int /* oid */ inputcollid { get; set; }
 
         public IPgTree[] args { get; set; }
 

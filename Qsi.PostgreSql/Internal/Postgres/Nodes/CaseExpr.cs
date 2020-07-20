@@ -6,9 +6,9 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     {
         public Expr xpr { get; set; }
 
-        public string /* oid */ casetype { get; set; }
+        public int /* oid */ casetype { get; set; }
 
-        public string /* oid */ casecollid { get; set; }
+        public int /* oid */ casecollid { get; set; }
 
         public Expr arg { get; set; }
 

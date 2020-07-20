@@ -6,13 +6,13 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     {
         public Expr xpr { get; set; }
 
-        public string /* oid */ refcontainertype { get; set; }
+        public int /* oid */ refcontainertype { get; set; }
 
-        public string /* oid */ refelemtype { get; set; }
+        public int /* oid */ refelemtype { get; set; }
 
         public int reftypmod { get; set; }
 
-        public string /* oid */ refcollid { get; set; }
+        public int /* oid */ refcollid { get; set; }
 
         public IPgTree[] refupperindexpr { get; set; }
 

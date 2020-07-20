@@ -8,7 +8,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public Expr arg { get; set; }
 
-        public string /* oid */ resulttype { get; set; }
+        public int /* oid */ resulttype { get; set; }
 
         public CoercionForm convertformat { get; set; }
 

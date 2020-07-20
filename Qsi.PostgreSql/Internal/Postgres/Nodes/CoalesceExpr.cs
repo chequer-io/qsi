@@ -6,9 +6,9 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     {
         public Expr xpr { get; set; }
 
-        public string /* oid */ coalescetype { get; set; }
+        public int /* oid */ coalescetype { get; set; }
 
-        public string /* oid */ coalescecollid { get; set; }
+        public int /* oid */ coalescecollid { get; set; }
 
         public IPgTree[] args { get; set; }
 

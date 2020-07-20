@@ -6,8 +6,8 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     {
         public Expr xpr { get; set; }
 
-        public string /* oid */ seqid { get; set; }
+        public int /* oid */ seqid { get; set; }
 
-        public string /* oid */ typeId { get; set; }
+        public int /* oid */ typeId { get; set; }
     }
 }

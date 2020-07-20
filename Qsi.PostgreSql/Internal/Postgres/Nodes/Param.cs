@@ -10,11 +10,11 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public int paramid { get; set; }
 
-        public string /* oid */ paramtype { get; set; }
+        public int /* oid */ paramtype { get; set; }
 
         public int paramtypmod { get; set; }
 
-        public string /* oid */ paramcollid { get; set; }
+        public int /* oid */ paramcollid { get; set; }
 
         public int location { get; set; }
     }

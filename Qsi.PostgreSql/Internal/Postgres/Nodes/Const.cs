@@ -6,11 +6,11 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     {
         public Expr xpr { get; set; }
 
-        public string /* oid */ consttype { get; set; }
+        public int /* oid */ consttype { get; set; }
 
         public int consttypmod { get; set; }
 
-        public string /* oid */ constcollid { get; set; }
+        public int /* oid */ constcollid { get; set; }
 
         public int constlen { get; set; }
 

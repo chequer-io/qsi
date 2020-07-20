@@ -18,7 +18,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public XmlOptionType xmloption { get; set; }
 
-        public string /* oid */ type { get; set; }
+        public int /* oid */ type { get; set; }
 
         public int typmod { get; set; }
 

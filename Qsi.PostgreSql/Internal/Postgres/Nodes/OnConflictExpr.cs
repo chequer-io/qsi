@@ -11,7 +11,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public Node arbiterWhere { get; set; }
 
-        public string /* oid */ constraint { get; set; }
+        public int /* oid */ constraint { get; set; }
 
         public IPgTree[] onConflictSet { get; set; }
 

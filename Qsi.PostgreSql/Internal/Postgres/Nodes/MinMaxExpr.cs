@@ -6,11 +6,11 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     {
         public Expr xpr { get; set; }
 
-        public string /* oid */ minmaxtype { get; set; }
+        public int /* oid */ minmaxtype { get; set; }
 
-        public string /* oid */ minmaxcollid { get; set; }
+        public int /* oid */ minmaxcollid { get; set; }
 
-        public string /* oid */ inputcollid { get; set; }
+        public int /* oid */ inputcollid { get; set; }
 
         public MinMaxOp op { get; set; }
 

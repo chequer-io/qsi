@@ -6,10 +6,10 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     {
         public Expr xpr { get; set; }
 
-        public string /* oid */ typeId { get; set; }
+        public int /* oid */ typeId { get; set; }
 
         public int typeMod { get; set; }
 
-        public string /* oid */ collation { get; set; }
+        public int /* oid */ collation { get; set; }
     }
 }

@@ -7,7 +7,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     {
         public RTEKind rtekind { get; set; }
 
-        public string /* oid */ relid { get; set; }
+        public int /* oid */ relid { get; set; }
 
         public char relkind { get; set; }
 
@@ -65,7 +65,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public uint /* AclMode */ requiredPerms { get; set; }
 
-        public string /* oid */ checkAsUser { get; set; }
+        public int /* oid */ checkAsUser { get; set; }
 
         public Bitmapset selectedCols { get; set; }
 
