@@ -6,6 +6,6 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     {
         public ECPGtype type { get; set; }
 
-        public char name { get; set; }
+        public string name { get; set; }
     }
 }

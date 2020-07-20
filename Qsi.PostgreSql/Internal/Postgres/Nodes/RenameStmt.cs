@@ -13,9 +13,9 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public Node @object { get; set; }
 
-        public char subname { get; set; }
+        public string subname { get; set; }
 
-        public char newname { get; set; }
+        public string newname { get; set; }
 
         public DropBehavior behavior { get; set; }
 

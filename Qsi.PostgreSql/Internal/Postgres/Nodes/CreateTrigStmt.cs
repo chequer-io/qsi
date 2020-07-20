@@ -5,7 +5,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     [PgNodeAttribute("CreateTrigStmt")]
     internal class CreateTrigStmt : Node
     {
-        public char trigname { get; set; }
+        public string trigname { get; set; }
 
         public RangeVar relation { get; set; }
 

@@ -8,7 +8,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public Expr arg { get; set; }
 
-        public char name { get; set; }
+        public string name { get; set; }
 
         public int argnumber { get; set; }
 

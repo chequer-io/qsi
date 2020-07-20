@@ -7,7 +7,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     {
         public RoleSpec user { get; set; }
 
-        public char servername { get; set; }
+        public string servername { get; set; }
 
         public bool missing_ok { get; set; }
     }

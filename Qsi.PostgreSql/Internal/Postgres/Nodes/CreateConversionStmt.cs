@@ -7,9 +7,9 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     {
         public IPgTree[] conversion_name { get; set; }
 
-        public char for_encoding_name { get; set; }
+        public string for_encoding_name { get; set; }
 
-        public char to_encoding_name { get; set; }
+        public string to_encoding_name { get; set; }
 
         public IPgTree[] func_name { get; set; }
 

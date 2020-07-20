@@ -5,7 +5,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     [PgNodeAttribute("PartitionElem")]
     internal class PartitionElem : Node
     {
-        public char name { get; set; }
+        public string name { get; set; }
 
         public Node expr { get; set; }
 

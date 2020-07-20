@@ -7,7 +7,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     {
         public AlterTableType subtype { get; set; }
 
-        public char name { get; set; }
+        public string name { get; set; }
 
         public short num { get; set; }
 

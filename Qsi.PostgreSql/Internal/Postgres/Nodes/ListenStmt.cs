@@ -5,6 +5,6 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     [PgNodeAttribute("ListenStmt")]
     internal class ListenStmt : Node
     {
-        public char conditionname { get; set; }
+        public string conditionname { get; set; }
     }
 }

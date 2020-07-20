@@ -7,7 +7,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     {
         public VariableSetKind kind { get; set; }
 
-        public char name { get; set; }
+        public string name { get; set; }
 
         public IPgTree[] args { get; set; }
 

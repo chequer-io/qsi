@@ -5,7 +5,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     [PgNodeAttribute("InlineCodeBlock")]
     internal class InlineCodeBlock : Node
     {
-        public char source_text { get; set; }
+        public string source_text { get; set; }
 
         public string /* oid */ langOid { get; set; }
 

@@ -9,8 +9,8 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public Node @object { get; set; }
 
-        public char provider { get; set; }
+        public string provider { get; set; }
 
-        public char label { get; set; }
+        public string label { get; set; }
     }
 }

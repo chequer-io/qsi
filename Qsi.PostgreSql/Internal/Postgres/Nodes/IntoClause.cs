@@ -9,13 +9,13 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public IPgTree[] colNames { get; set; }
 
-        public char accessMethod { get; set; }
+        public string accessMethod { get; set; }
 
         public IPgTree[] options { get; set; }
 
         public OnCommitAction onCommit { get; set; }
 
-        public char tableSpaceName { get; set; }
+        public string tableSpaceName { get; set; }
 
         public Node viewQuery { get; set; }
 

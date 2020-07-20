@@ -7,7 +7,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     {
         public RoleStmtType stmt_type { get; set; }
 
-        public char role { get; set; }
+        public string role { get; set; }
 
         public IPgTree[] options { get; set; }
     }

@@ -5,7 +5,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     [PgNodeAttribute("FunctionParameter")]
     internal class FunctionParameter : Node
     {
-        public char name { get; set; }
+        public string name { get; set; }
 
         public TypeName argType { get; set; }
 

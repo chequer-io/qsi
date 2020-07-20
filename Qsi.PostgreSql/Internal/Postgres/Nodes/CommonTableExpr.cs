@@ -5,7 +5,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     [PgNodeAttribute("CommonTableExpr")]
     internal class CommonTableExpr : Node
     {
-        public char ctename { get; set; }
+        public string ctename { get; set; }
 
         public IPgTree[] aliascolnames { get; set; }
 

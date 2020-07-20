@@ -4,10 +4,10 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
     internal class index
     {
-        public char index1 { get; set; }
+        public string index1 { get; set; }
 
-        public char index2 { get; set; }
+        public string index2 { get; set; }
 
-        public char str { get; set; }
+        public string str { get; set; }
     }
 }

@@ -5,7 +5,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     [PgNodeAttribute("AlterPolicyStmt")]
     internal class AlterPolicyStmt : Node
     {
-        public char policy_name { get; set; }
+        public string policy_name { get; set; }
 
         public RangeVar table { get; set; }
 

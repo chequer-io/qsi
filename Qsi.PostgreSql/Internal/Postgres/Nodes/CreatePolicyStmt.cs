@@ -5,11 +5,11 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     [PgNodeAttribute("CreatePolicyStmt")]
     internal class CreatePolicyStmt : Node
     {
-        public char policy_name { get; set; }
+        public string policy_name { get; set; }
 
         public RangeVar table { get; set; }
 
-        public char cmd_name { get; set; }
+        public string cmd_name { get; set; }
 
         public bool permissive { get; set; }
 

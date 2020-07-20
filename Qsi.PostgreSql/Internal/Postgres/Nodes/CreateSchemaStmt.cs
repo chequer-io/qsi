@@ -5,7 +5,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     [PgNodeAttribute("CreateSchemaStmt")]
     internal class CreateSchemaStmt : Node
     {
-        public char schemaname { get; set; }
+        public string schemaname { get; set; }
 
         public RoleSpec authrole { get; set; }
 

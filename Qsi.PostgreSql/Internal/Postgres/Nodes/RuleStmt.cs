@@ -7,7 +7,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     {
         public RangeVar relation { get; set; }
 
-        public char rulename { get; set; }
+        public string rulename { get; set; }
 
         public Node whereClause { get; set; }
 

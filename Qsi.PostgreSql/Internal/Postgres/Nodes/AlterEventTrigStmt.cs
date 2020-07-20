@@ -5,7 +5,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     [PgNodeAttribute("AlterEventTrigStmt")]
     internal class AlterEventTrigStmt : Node
     {
-        public char trigname { get; set; }
+        public string trigname { get; set; }
 
         public char tgenabled { get; set; }
     }

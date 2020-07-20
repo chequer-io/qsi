@@ -5,7 +5,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     [PgNodeAttribute("AlterExtensionContentsStmt")]
     internal class AlterExtensionContentsStmt : Node
     {
-        public char extname { get; set; }
+        public string extname { get; set; }
 
         public int action { get; set; }
 

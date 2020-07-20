@@ -7,7 +7,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     {
         public RoleSpecType roletype { get; set; }
 
-        public char rolename { get; set; }
+        public string rolename { get; set; }
 
         public int location { get; set; }
     }

@@ -5,9 +5,9 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     [PgNodeAttribute("WindowDef")]
     internal class WindowDef : Node
     {
-        public char name { get; set; }
+        public string name { get; set; }
 
-        public char refname { get; set; }
+        public string refname { get; set; }
 
         public IPgTree[] partitionClause { get; set; }
 

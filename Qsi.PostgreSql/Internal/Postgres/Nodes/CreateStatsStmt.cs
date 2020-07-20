@@ -13,7 +13,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public IPgTree[] relations { get; set; }
 
-        public char stxcomment { get; set; }
+        public string stxcomment { get; set; }
 
         public bool if_not_exists { get; set; }
     }

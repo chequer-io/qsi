@@ -7,7 +7,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     {
         public RangeVar relation { get; set; }
 
-        public char indexname { get; set; }
+        public string indexname { get; set; }
 
         public int options { get; set; }
     }

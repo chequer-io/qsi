@@ -5,8 +5,8 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     [PgNodeAttribute("NotifyStmt")]
     internal class NotifyStmt : Node
     {
-        public char conditionname { get; set; }
+        public string conditionname { get; set; }
 
-        public char payload { get; set; }
+        public string payload { get; set; }
     }
 }

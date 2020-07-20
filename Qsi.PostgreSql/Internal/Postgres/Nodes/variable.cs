@@ -4,7 +4,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
     internal class variable
     {
-        public char name { get; set; }
+        public string name { get; set; }
 
         public ECPGtype type { get; set; }
 

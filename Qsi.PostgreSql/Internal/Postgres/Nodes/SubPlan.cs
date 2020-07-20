@@ -14,7 +14,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public int plan_id { get; set; }
 
-        public char plan_name { get; set; }
+        public string plan_name { get; set; }
 
         public string /* oid */ firstColType { get; set; }
 

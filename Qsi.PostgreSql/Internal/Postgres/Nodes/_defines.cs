@@ -4,9 +4,9 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
     internal class _defines
     {
-        public char olddef { get; set; }
+        public string olddef { get; set; }
 
-        public char newdef { get; set; }
+        public string newdef { get; set; }
 
         public int pertinent { get; set; }
 

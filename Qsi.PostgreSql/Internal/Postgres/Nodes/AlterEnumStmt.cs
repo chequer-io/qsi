@@ -7,11 +7,11 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     {
         public IPgTree[] typeName { get; set; }
 
-        public char oldVal { get; set; }
+        public string oldVal { get; set; }
 
-        public char newVal { get; set; }
+        public string newVal { get; set; }
 
-        public char newValNeighbor { get; set; }
+        public string newValNeighbor { get; set; }
 
         public bool newValIsAfter { get; set; }
 

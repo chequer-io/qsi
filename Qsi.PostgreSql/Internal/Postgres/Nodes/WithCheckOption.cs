@@ -7,9 +7,9 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     {
         public WCOKind kind { get; set; }
 
-        public char relname { get; set; }
+        public string relname { get; set; }
 
-        public char polname { get; set; }
+        public string polname { get; set; }
 
         public Node qual { get; set; }
 

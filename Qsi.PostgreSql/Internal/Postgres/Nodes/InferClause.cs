@@ -9,7 +9,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public Node whereClause { get; set; }
 
-        public char conname { get; set; }
+        public string conname { get; set; }
 
         public int location { get; set; }
     }

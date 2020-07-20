@@ -9,7 +9,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public TypeName type_name { get; set; }
 
-        public char lang { get; set; }
+        public string lang { get; set; }
 
         public ObjectWithArgs fromsql { get; set; }
 

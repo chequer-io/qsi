@@ -5,7 +5,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     [PgNodeAttribute("DropSubscriptionStmt")]
     internal class DropSubscriptionStmt : Node
     {
-        public char subname { get; set; }
+        public string subname { get; set; }
 
         public bool missing_ok { get; set; }
 

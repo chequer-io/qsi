@@ -9,7 +9,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public long howMany { get; set; }
 
-        public char portalname { get; set; }
+        public string portalname { get; set; }
 
         public bool ismove { get; set; }
     }

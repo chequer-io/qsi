@@ -8,7 +8,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public index cvarno { get; set; }
 
-        public char cursor_name { get; set; }
+        public string cursor_name { get; set; }
 
         public int cursor_param { get; set; }
     }

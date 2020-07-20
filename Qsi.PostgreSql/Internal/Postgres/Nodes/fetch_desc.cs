@@ -4,8 +4,8 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
     internal class fetch_desc
     {
-        public char str { get; set; }
+        public string str { get; set; }
 
-        public char name { get; set; }
+        public string name { get; set; }
     }
 }

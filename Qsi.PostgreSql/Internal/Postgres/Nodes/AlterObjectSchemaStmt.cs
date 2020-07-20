@@ -11,7 +11,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public Node @object { get; set; }
 
-        public char newschema { get; set; }
+        public string newschema { get; set; }
 
         public bool missing_ok { get; set; }
     }

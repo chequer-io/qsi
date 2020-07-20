@@ -4,7 +4,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
     internal class typedefs
     {
-        public char name { get; set; }
+        public string name { get; set; }
 
         public this_type type { get; set; }
 

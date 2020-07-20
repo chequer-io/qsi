@@ -7,7 +7,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     {
         public ConstrType contype { get; set; }
 
-        public char conname { get; set; }
+        public string conname { get; set; }
 
         public bool deferrable { get; set; }
 
@@ -19,7 +19,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public Node raw_expr { get; set; }
 
-        public char cooked_expr { get; set; }
+        public string cooked_expr { get; set; }
 
         public char generated_when { get; set; }
 
@@ -31,13 +31,13 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public IPgTree[] options { get; set; }
 
-        public char indexname { get; set; }
+        public string indexname { get; set; }
 
-        public char indexspace { get; set; }
+        public string indexspace { get; set; }
 
         public bool reset_default_tblspc { get; set; }
 
-        public char access_method { get; set; }
+        public string access_method { get; set; }
 
         public Node where_clause { get; set; }
 

@@ -5,9 +5,9 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     [PgNodeAttribute("CreateEventTrigStmt")]
     internal class CreateEventTrigStmt : Node
     {
-        public char trigname { get; set; }
+        public string trigname { get; set; }
 
-        public char eventname { get; set; }
+        public string eventname { get; set; }
 
         public IPgTree[] whenclause { get; set; }
 

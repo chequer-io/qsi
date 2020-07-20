@@ -5,11 +5,11 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     [PgNodeAttribute("ImportForeignSchemaStmt")]
     internal class ImportForeignSchemaStmt : Node
     {
-        public char server_name { get; set; }
+        public string server_name { get; set; }
 
-        public char remote_schema { get; set; }
+        public string remote_schema { get; set; }
 
-        public char local_schema { get; set; }
+        public string local_schema { get; set; }
 
         public ImportForeignSchemaType list_type { get; set; }
 

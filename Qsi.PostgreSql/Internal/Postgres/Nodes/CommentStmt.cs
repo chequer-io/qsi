@@ -9,6 +9,6 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public Node @object { get; set; }
 
-        public char comment { get; set; }
+        public string comment { get; set; }
     }
 }

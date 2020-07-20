@@ -5,11 +5,11 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     [PgNodeAttribute("RangeVar")]
     internal class RangeVar : Node
     {
-        public char catalogname { get; set; }
+        public string catalogname { get; set; }
 
-        public char schemaname { get; set; }
+        public string schemaname { get; set; }
 
-        public char relname { get; set; }
+        public string relname { get; set; }
 
         public bool inh { get; set; }
 

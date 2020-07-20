@@ -4,9 +4,9 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
     internal class descriptor
     {
-        public char name { get; set; }
+        public string name { get; set; }
 
-        public char connection { get; set; }
+        public string connection { get; set; }
 
         public descriptor next { get; set; }
     }

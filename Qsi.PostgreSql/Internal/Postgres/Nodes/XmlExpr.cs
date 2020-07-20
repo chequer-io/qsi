@@ -8,7 +8,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public XmlExprOp op { get; set; }
 
-        public char name { get; set; }
+        public string name { get; set; }
 
         public IPgTree[] named_args { get; set; }
 

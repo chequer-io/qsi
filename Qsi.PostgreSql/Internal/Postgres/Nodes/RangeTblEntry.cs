@@ -37,7 +37,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public IPgTree[] values_lists { get; set; }
 
-        public char ctename { get; set; }
+        public string ctename { get; set; }
 
         public index ctelevelsup { get; set; }
 
@@ -49,7 +49,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public IPgTree[] colcollations { get; set; }
 
-        public char enrname { get; set; }
+        public string enrname { get; set; }
 
         public double enrtuples { get; set; }
 

@@ -5,7 +5,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     [PgNodeAttribute("PrepareStmt")]
     internal class PrepareStmt : Node
     {
-        public char name { get; set; }
+        public string name { get; set; }
 
         public IPgTree[] argtypes { get; set; }
 

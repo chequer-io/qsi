@@ -5,7 +5,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     [PgNodeAttribute("DropdbStmt")]
     internal class DropdbStmt : Node
     {
-        public char dbname { get; set; }
+        public string dbname { get; set; }
 
         public bool missing_ok { get; set; }
 

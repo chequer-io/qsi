@@ -5,7 +5,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     [PgNodeAttribute("AlterPublicationStmt")]
     internal class AlterPublicationStmt : Node
     {
-        public char pubname { get; set; }
+        public string pubname { get; set; }
 
         public IPgTree[] options { get; set; }
 

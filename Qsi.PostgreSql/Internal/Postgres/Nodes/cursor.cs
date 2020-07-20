@@ -4,13 +4,13 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
     internal class cursor
     {
-        public char name { get; set; }
+        public string name { get; set; }
 
-        public char function { get; set; }
+        public string function { get; set; }
 
-        public char command { get; set; }
+        public string command { get; set; }
 
-        public char connection { get; set; }
+        public string connection { get; set; }
 
         public bool opened { get; set; }
 

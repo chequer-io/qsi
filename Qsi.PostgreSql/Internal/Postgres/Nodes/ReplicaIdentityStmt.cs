@@ -7,6 +7,6 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     {
         public char identity_type { get; set; }
 
-        public char name { get; set; }
+        public string name { get; set; }
     }
 }

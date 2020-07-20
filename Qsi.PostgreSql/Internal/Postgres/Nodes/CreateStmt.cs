@@ -23,9 +23,9 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public OnCommitAction oncommit { get; set; }
 
-        public char tablespacename { get; set; }
+        public string tablespacename { get; set; }
 
-        public char accessMethod { get; set; }
+        public string accessMethod { get; set; }
 
         public bool if_not_exists { get; set; }
     }

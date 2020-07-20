@@ -10,7 +10,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public short /* AttrNumber */ resno { get; set; }
 
-        public char resname { get; set; }
+        public string resname { get; set; }
 
         public index ressortgroupref { get; set; }
 

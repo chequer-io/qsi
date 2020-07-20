@@ -9,7 +9,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public IPgTree[] opfamilyname { get; set; }
 
-        public char amname { get; set; }
+        public string amname { get; set; }
 
         public TypeName datatype { get; set; }
 

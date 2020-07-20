@@ -9,9 +9,9 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public IPgTree[] options { get; set; }
 
-        public char savepoint_name { get; set; }
+        public string savepoint_name { get; set; }
 
-        public char gid { get; set; }
+        public string gid { get; set; }
 
         public bool chain { get; set; }
     }

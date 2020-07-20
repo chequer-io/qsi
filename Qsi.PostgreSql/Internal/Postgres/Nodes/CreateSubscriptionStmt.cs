@@ -5,9 +5,9 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     [PgNodeAttribute("CreateSubscriptionStmt")]
     internal class CreateSubscriptionStmt : Node
     {
-        public char subname { get; set; }
+        public string subname { get; set; }
 
-        public char conninfo { get; set; }
+        public string conninfo { get; set; }
 
         public IPgTree[] publication { get; set; }
 

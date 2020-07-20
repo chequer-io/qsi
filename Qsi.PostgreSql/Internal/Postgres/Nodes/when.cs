@@ -6,8 +6,8 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     {
         public WHEN_TYPE code { get; set; }
 
-        public char command { get; set; }
+        public string command { get; set; }
 
-        public char str { get; set; }
+        public string str { get; set; }
     }
 }

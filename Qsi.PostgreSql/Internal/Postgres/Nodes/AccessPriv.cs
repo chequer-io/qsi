@@ -5,7 +5,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     [PgNodeAttribute("AccessPriv")]
     internal class AccessPriv : Node
     {
-        public char priv_name { get; set; }
+        public string priv_name { get; set; }
 
         public IPgTree[] cols { get; set; }
     }

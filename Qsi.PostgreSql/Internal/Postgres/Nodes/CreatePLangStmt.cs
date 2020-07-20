@@ -7,7 +7,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     {
         public bool replace { get; set; }
 
-        public char plname { get; set; }
+        public string plname { get; set; }
 
         public IPgTree[] plhandler { get; set; }
 

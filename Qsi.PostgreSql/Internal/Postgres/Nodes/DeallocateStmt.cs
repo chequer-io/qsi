@@ -5,6 +5,6 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     [PgNodeAttribute("DeallocateStmt")]
     internal class DeallocateStmt : Node
     {
-        public char name { get; set; }
+        public string name { get; set; }
     }
 }

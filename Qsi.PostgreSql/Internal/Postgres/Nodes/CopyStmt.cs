@@ -15,7 +15,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public bool is_program { get; set; }
 
-        public char filename { get; set; }
+        public string filename { get; set; }
 
         public IPgTree[] options { get; set; }
 

@@ -4,7 +4,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
     internal class _include_path
     {
-        public char path { get; set; }
+        public string path { get; set; }
 
         public _include_path next { get; set; }
     }

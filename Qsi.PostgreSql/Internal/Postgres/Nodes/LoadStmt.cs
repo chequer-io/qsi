@@ -5,6 +5,6 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     [PgNodeAttribute("LoadStmt")]
     internal class LoadStmt : Node
     {
-        public char filename { get; set; }
+        public string filename { get; set; }
     }
 }

@@ -5,7 +5,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     [PgNodeAttribute("TriggerTransition")]
     internal class TriggerTransition : Node
     {
-        public char name { get; set; }
+        public string name { get; set; }
 
         public bool isNew { get; set; }
 

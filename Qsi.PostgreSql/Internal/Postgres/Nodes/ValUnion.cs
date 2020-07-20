@@ -6,6 +6,6 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     {
         public int ival { get; set; }
 
-        public char str { get; set; }
+        public string str { get; set; }
     }
 }

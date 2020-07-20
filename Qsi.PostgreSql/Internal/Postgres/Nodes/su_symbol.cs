@@ -4,8 +4,8 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
     internal class su_symbol
     {
-        public char su { get; set; }
+        public string su { get; set; }
 
-        public char symbol { get; set; }
+        public string symbol { get; set; }
     }
 }

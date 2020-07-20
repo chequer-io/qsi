@@ -5,7 +5,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     [PgNodeAttribute("Alias")]
     internal class Alias : Node
     {
-        public char aliasname { get; set; }
+        public string aliasname { get; set; }
 
         public IPgTree[] colnames { get; set; }
     }

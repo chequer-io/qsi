@@ -5,13 +5,13 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     [PgNodeAttribute("IndexStmt")]
     internal class IndexStmt : Node
     {
-        public char idxname { get; set; }
+        public string idxname { get; set; }
 
         public RangeVar relation { get; set; }
 
-        public char accessMethod { get; set; }
+        public string accessMethod { get; set; }
 
-        public char tableSpace { get; set; }
+        public string tableSpace { get; set; }
 
         public IPgTree[] indexParams { get; set; }
 
@@ -23,7 +23,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public IPgTree[] excludeOpNames { get; set; }
 
-        public char idxcomment { get; set; }
+        public string idxcomment { get; set; }
 
         public string /* oid */ indexOid { get; set; }
 

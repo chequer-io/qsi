@@ -7,9 +7,9 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     {
         public AlterSubscriptionType kind { get; set; }
 
-        public char subname { get; set; }
+        public string subname { get; set; }
 
-        public char conninfo { get; set; }
+        public string conninfo { get; set; }
 
         public IPgTree[] publication { get; set; }
 

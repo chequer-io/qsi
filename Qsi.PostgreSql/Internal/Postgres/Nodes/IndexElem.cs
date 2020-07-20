@@ -5,11 +5,11 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     [PgNodeAttribute("IndexElem")]
     internal class IndexElem : Node
     {
-        public char name { get; set; }
+        public string name { get; set; }
 
         public Node expr { get; set; }
 
-        public char indexcolname { get; set; }
+        public string indexcolname { get; set; }
 
         public IPgTree[] collation { get; set; }
 

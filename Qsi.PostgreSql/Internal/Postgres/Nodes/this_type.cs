@@ -6,12 +6,12 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     {
         public ECPGttype type_enum { get; set; }
 
-        public char type_str { get; set; }
+        public string type_str { get; set; }
 
-        public char type_dimension { get; set; }
+        public string type_dimension { get; set; }
 
-        public char type_index { get; set; }
+        public string type_index { get; set; }
 
-        public char type_sizeof { get; set; }
+        public string type_sizeof { get; set; }
     }
 }

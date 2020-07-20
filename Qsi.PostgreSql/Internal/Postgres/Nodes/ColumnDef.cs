@@ -5,7 +5,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     [PgNodeAttribute("ColumnDef")]
     internal class ColumnDef : Node
     {
-        public char colname { get; set; }
+        public string colname { get; set; }
 
         public TypeName typeName { get; set; }
 
