@@ -1973,8 +1973,7 @@ simpleId
     | privilegesBase
     | intervalTypeBase
     | dataTypeBase
-    | keywordsCanBeId
-    | functionNameBase
+    //| functionNameBase
     ;
 
 dottedId
