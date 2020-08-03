@@ -98,12 +98,14 @@ namespace Qsi.Compiler
             {
                 var script = _resolver.LookupDefinition(lookup.Identifier, lookup.Type);
                 var viewTable = (IQsiTableNode)_treeParser.Parse(script);
+                var typeBackup = lookup.Type;
 
                 using var viewCompileContext = new CompileContext();
                 var viewTableStructure = await BuildTableStructure(viewCompileContext, viewTable);
 
                 viewTableStructure.Identifier = _resolver.ResolveQualifiedIdentifier(viewTableStructure.Identifier);
                 lookup = viewTableStructure;
+                lookup.Type = typeBackup;
             }
 
             // // push table reference
