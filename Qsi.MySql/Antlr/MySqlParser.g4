@@ -1973,6 +1973,7 @@ simpleId
     | privilegesBase
     | intervalTypeBase
     | dataTypeBase
+    | keywordsCanBeId
     //| functionNameBase
     ;
 
