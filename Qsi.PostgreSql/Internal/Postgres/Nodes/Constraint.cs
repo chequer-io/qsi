@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("Constraint")]
-    internal class Constraint : Node
+    [PgNode("Constraint")]
+    internal class Constraint : IPgTree
     {
         public ConstrType contype { get; set; }
 
@@ -17,7 +17,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public bool is_no_inherit { get; set; }
 
-        public Node raw_expr { get; set; }
+        public IPgTree raw_expr { get; set; }
 
         public string cooked_expr { get; set; }
 
@@ -39,7 +39,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public string access_method { get; set; }
 
-        public Node where_clause { get; set; }
+        public IPgTree where_clause { get; set; }
 
         public RangeVar pktable { get; set; }
 

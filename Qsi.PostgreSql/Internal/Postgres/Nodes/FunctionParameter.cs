@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("FunctionParameter")]
-    internal class FunctionParameter : Node
+    [PgNode("FunctionParameter")]
+    internal class FunctionParameter : IPgTree
     {
         public string name { get; set; }
 
@@ -11,6 +11,6 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public FunctionParameterMode mode { get; set; }
 
-        public Node defexpr { get; set; }
+        public IPgTree defexpr { get; set; }
     }
 }

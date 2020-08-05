@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("CreateRoleStmt")]
-    internal class CreateRoleStmt : Node
+    [PgNode("CreateRoleStmt")]
+    internal class CreateRoleStmt : IPgTree
     {
         public RoleStmtType stmt_type { get; set; }
 

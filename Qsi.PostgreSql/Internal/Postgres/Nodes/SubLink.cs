@@ -10,11 +10,11 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public int subLinkId { get; set; }
 
-        public Node testexpr { get; set; }
+        public IPgTree testexpr { get; set; }
 
         public IPgTree[] operName { get; set; }
 
-        public Node subselect { get; set; }
+        public IPgTree subselect { get; set; }
 
         public int location { get; set; }
     }

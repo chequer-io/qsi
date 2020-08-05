@@ -2,10 +2,10 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("RawStmt")]
-    internal class RawStmt : Node
+    [PgNode("RawStmt")]
+    internal class RawStmt : IPgTree
     {
-        public Node stmt { get; set; }
+        public IPgTree stmt { get; set; }
 
         public int stmt_location { get; set; }
 

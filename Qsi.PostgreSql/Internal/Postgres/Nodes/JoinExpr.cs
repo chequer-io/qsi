@@ -2,20 +2,20 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("JoinExpr")]
-    internal class JoinExpr : Node
+    [PgNode("JoinExpr")]
+    internal class JoinExpr : IPgTree
     {
         public JoinType jointype { get; set; }
 
         public bool isNatural { get; set; }
 
-        public Node larg { get; set; }
+        public IPgTree larg { get; set; }
 
-        public Node rarg { get; set; }
+        public IPgTree rarg { get; set; }
 
         public IPgTree[] usingClause { get; set; }
 
-        public Node quals { get; set; }
+        public IPgTree quals { get; set; }
 
         public Alias alias { get; set; }
 

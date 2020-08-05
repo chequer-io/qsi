@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("CreateExtensionStmt")]
-    internal class CreateExtensionStmt : Node
+    [PgNode("CreateExtensionStmt")]
+    internal class CreateExtensionStmt : IPgTree
     {
         public string extname { get; set; }
 

@@ -2,14 +2,14 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("RangeTableFunc")]
-    internal class RangeTableFunc : Node
+    [PgNode("RangeTableFunc")]
+    internal class RangeTableFunc : IPgTree
     {
         public bool lateral { get; set; }
 
-        public Node docexpr { get; set; }
+        public IPgTree docexpr { get; set; }
 
-        public Node rowexpr { get; set; }
+        public IPgTree rowexpr { get; set; }
 
         public IPgTree[] namespaces { get; set; }
 

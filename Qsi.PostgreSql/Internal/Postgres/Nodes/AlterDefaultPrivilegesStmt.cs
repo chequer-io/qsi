@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("AlterDefaultPrivilegesStmt")]
-    internal class AlterDefaultPrivilegesStmt : Node
+    [PgNode("AlterDefaultPrivilegesStmt")]
+    internal class AlterDefaultPrivilegesStmt : IPgTree
     {
         public IPgTree[] options { get; set; }
 

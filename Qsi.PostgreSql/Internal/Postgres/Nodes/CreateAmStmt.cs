@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("CreateAmStmt")]
-    internal class CreateAmStmt : Node
+    [PgNode("CreateAmStmt")]
+    internal class CreateAmStmt : IPgTree
     {
         public string amname { get; set; }
 

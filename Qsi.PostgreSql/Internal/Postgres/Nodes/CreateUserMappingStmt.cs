@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("CreateUserMappingStmt")]
-    internal class CreateUserMappingStmt : Node
+    [PgNode("CreateUserMappingStmt")]
+    internal class CreateUserMappingStmt : IPgTree
     {
         public RoleSpec user { get; set; }
 

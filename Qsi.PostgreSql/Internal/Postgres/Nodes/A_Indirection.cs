@@ -2,10 +2,10 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("A_Indirection")]
-    internal class A_Indirection : Node
+    [PgNode("A_Indirection")]
+    internal class A_Indirection : IPgTree
     {
-        public Node arg { get; set; }
+        public IPgTree arg { get; set; }
 
         public IPgTree[] indirection { get; set; }
     }

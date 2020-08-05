@@ -2,12 +2,12 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("SecLabelStmt")]
-    internal class SecLabelStmt : Node
+    [PgNode("SecLabelStmt")]
+    internal class SecLabelStmt : IPgTree
     {
         public ObjectType objtype { get; set; }
 
-        public Node @object { get; set; }
+        public IPgTree @object { get; set; }
 
         public string provider { get; set; }
 

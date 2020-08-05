@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("TypeName")]
-    internal class TypeName : Node
+    [PgNode("TypeName")]
+    internal class TypeName : IPgTree
     {
         public IPgTree[] names { get; set; }
 

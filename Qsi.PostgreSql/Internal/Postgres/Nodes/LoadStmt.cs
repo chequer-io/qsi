@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("LoadStmt")]
-    internal class LoadStmt : Node
+    [PgNode("LoadStmt")]
+    internal class LoadStmt : IPgTree
     {
         public string filename { get; set; }
     }

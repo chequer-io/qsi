@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("AlterTSDictionaryStmt")]
-    internal class AlterTSDictionaryStmt : Node
+    [PgNode("AlterTSDictionaryStmt")]
+    internal class AlterTSDictionaryStmt : IPgTree
     {
         public IPgTree[] dictname { get; set; }
 

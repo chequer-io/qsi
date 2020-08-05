@@ -2,12 +2,12 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("PartitionElem")]
-    internal class PartitionElem : Node
+    [PgNode("PartitionElem")]
+    internal class PartitionElem : IPgTree
     {
         public string name { get; set; }
 
-        public Node expr { get; set; }
+        public IPgTree expr { get; set; }
 
         public IPgTree[] collation { get; set; }
 

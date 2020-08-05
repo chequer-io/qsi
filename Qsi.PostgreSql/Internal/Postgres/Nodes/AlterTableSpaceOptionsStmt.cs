@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("AlterTableSpaceOptionsStmt")]
-    internal class AlterTableSpaceOptionsStmt : Node
+    [PgNode("AlterTableSpaceOptionsStmt")]
+    internal class AlterTableSpaceOptionsStmt : IPgTree
     {
         public string tablespacename { get; set; }
 

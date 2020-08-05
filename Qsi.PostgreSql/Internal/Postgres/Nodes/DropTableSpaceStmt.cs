@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("DropTableSpaceStmt")]
-    internal class DropTableSpaceStmt : Node
+    [PgNode("DropTableSpaceStmt")]
+    internal class DropTableSpaceStmt : IPgTree
     {
         public string tablespacename { get; set; }
 

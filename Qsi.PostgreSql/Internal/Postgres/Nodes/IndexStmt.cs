@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("IndexStmt")]
-    internal class IndexStmt : Node
+    [PgNode("IndexStmt")]
+    internal class IndexStmt : IPgTree
     {
         public string idxname { get; set; }
 
@@ -19,7 +19,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public IPgTree[] options { get; set; }
 
-        public Node whereClause { get; set; }
+        public IPgTree whereClause { get; set; }
 
         public IPgTree[] excludeOpNames { get; set; }
 

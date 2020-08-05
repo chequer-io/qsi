@@ -30,8 +30,4 @@
       <EmbeddedResource Include="Resources\*.js" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Internal\Postgres\Serialization" />
-    </ItemGroup>
-
 </Project>

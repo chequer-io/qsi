@@ -2,16 +2,16 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("RangeTableSample")]
-    internal class RangeTableSample : Node
+    [PgNode("RangeTableSample")]
+    internal class RangeTableSample : IPgTree
     {
-        public Node relation { get; set; }
+        public IPgTree relation { get; set; }
 
         public IPgTree[] method { get; set; }
 
         public IPgTree[] args { get; set; }
 
-        public Node repeatable { get; set; }
+        public IPgTree repeatable { get; set; }
 
         public int location { get; set; }
     }

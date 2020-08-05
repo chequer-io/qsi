@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("AlterEnumStmt")]
-    internal class AlterEnumStmt : Node
+    [PgNode("AlterEnumStmt")]
+    internal class AlterEnumStmt : IPgTree
     {
         public IPgTree[] typeName { get; set; }
 

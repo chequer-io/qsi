@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("AlterOperatorStmt")]
-    internal class AlterOperatorStmt : Node
+    [PgNode("AlterOperatorStmt")]
+    internal class AlterOperatorStmt : IPgTree
     {
         public ObjectWithArgs opername { get; set; }
 

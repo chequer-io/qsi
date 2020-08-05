@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("A_ArrayExpr")]
-    internal class A_ArrayExpr : Node
+    [PgNode("A_ArrayExpr")]
+    internal class A_ArrayExpr : IPgTree
     {
         public IPgTree[] elements { get; set; }
 

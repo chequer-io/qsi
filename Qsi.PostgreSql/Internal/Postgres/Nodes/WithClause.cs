@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("WithClause")]
-    internal class WithClause : Node
+    [PgNode("WithClause")]
+    internal class WithClause : IPgTree
     {
         public IPgTree[] ctes { get; set; }
 

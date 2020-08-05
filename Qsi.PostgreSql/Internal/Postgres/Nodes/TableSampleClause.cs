@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("TableSampleClause")]
-    internal class TableSampleClause : Node
+    [PgNode("TableSampleClause")]
+    internal class TableSampleClause : IPgTree
     {
         public int /* oid */ tsmhandler { get; set; }
 

@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("TransactionStmt")]
-    internal class TransactionStmt : Node
+    [PgNode("TransactionStmt")]
+    internal class TransactionStmt : IPgTree
     {
         public TransactionStmtKind kind { get; set; }
 

@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("AlterSystemStmt")]
-    internal class AlterSystemStmt : Node
+    [PgNode("AlterSystemStmt")]
+    internal class AlterSystemStmt : IPgTree
     {
         public VariableSetStmt setstmt { get; set; }
     }

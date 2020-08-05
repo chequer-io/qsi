@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("CallContext")]
-    internal class CallContext : Node
+    [PgNode("CallContext")]
+    internal class CallContext : IPgTree
     {
         public bool atomic { get; set; }
     }

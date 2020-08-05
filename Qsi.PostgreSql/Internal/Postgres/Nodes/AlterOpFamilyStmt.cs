@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("AlterOpFamilyStmt")]
-    internal class AlterOpFamilyStmt : Node
+    [PgNode("AlterOpFamilyStmt")]
+    internal class AlterOpFamilyStmt : IPgTree
     {
         public IPgTree[] opfamilyname { get; set; }
 

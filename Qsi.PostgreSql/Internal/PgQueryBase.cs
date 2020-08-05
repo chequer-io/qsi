@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using ChakraCore.NET.API;
 using Newtonsoft.Json;
 using Qsi.Parsing;
+using Qsi.PostgreSql.Internal.Postgres.Converters;
 
 namespace Qsi.PostgreSql.Internal
 {
@@ -13,6 +14,18 @@ namespace Qsi.PostgreSql.Internal
         private JavaScriptSourceContext _srcContext;
 
         private bool _initialized;
+        private readonly JsonSerializerSettings _serializerSettings;
+
+        protected PgQueryBase()
+        {
+            _serializerSettings = new JsonSerializerSettings
+            {
+                Converters =
+                {
+                    new PgTreeConverter()
+                }
+            };
+        }
 
         private void Initialize()
         {
@@ -54,20 +67,20 @@ namespace Qsi.PostgreSql.Internal
             Native.JsStringToPointer(result, out var resultPtr, out _);
 
             var json = Marshal.PtrToStringUni(resultPtr);
-            var parseResult = JsonConvert.DeserializeObject<PgParseResult>(json!);
+            var parseResult = JsonConvert.DeserializeObject<PgParseResult>(json!, _serializerSettings);
 
-            if (parseResult.Error != null)
+            if (parseResult?.Error != null)
             {
                 // TODO: Measure line, column number by Error.CursorPosition
                 throw new QsiSyntaxErrorException(0, 0, parseResult.Error.Message);
             }
 
-            if (!string.IsNullOrEmpty(parseResult.StandardError))
+            if (!string.IsNullOrEmpty(parseResult?.StandardError))
             {
                 throw new QsiException(QsiError.Internal, parseResult.StandardError);
             }
 
-            if (parseResult.Tree?.Length != 1)
+            if (parseResult?.Tree?.Length != 1)
                 throw new InvalidOperationException();
 
             return parseResult.Tree[0];

@@ -2,12 +2,12 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("XmlSerialize")]
-    internal class XmlSerialize : Node
+    [PgNode("XmlSerialize")]
+    internal class XmlSerialize : IPgTree
     {
         public XmlOptionType xmloption { get; set; }
 
-        public Node expr { get; set; }
+        public IPgTree expr { get; set; }
 
         public TypeName typeName { get; set; }
 

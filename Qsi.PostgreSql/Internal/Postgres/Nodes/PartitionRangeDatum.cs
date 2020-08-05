@@ -2,12 +2,12 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("PartitionRangeDatum")]
-    internal class PartitionRangeDatum : Node
+    [PgNode("PartitionRangeDatum")]
+    internal class PartitionRangeDatum : IPgTree
     {
         public PartitionRangeDatumKind kind { get; set; }
 
-        public Node value { get; set; }
+        public IPgTree value { get; set; }
 
         public int location { get; set; }
     }

@@ -8,7 +8,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public SubLinkType subLinkType { get; set; }
 
-        public Node testexpr { get; set; }
+        public IPgTree testexpr { get; set; }
 
         public IPgTree[] paramIds { get; set; }
 

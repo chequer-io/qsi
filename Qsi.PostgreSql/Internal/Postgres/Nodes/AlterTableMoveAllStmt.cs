@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("AlterTableMoveAllStmt")]
-    internal class AlterTableMoveAllStmt : Node
+    [PgNode("AlterTableMoveAllStmt")]
+    internal class AlterTableMoveAllStmt : IPgTree
     {
         public string orig_tablespacename { get; set; }
 

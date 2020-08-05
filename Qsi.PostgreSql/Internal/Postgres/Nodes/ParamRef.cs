@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("ParamRef")]
-    internal class ParamRef : Node
+    [PgNode("ParamRef")]
+    internal class ParamRef : IPgTree
     {
         public int number { get; set; }
 

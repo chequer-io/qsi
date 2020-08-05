@@ -2,14 +2,14 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("DeleteStmt")]
-    internal class DeleteStmt : Node
+    [PgNode("DeleteStmt")]
+    internal class DeleteStmt : IPgTree
     {
         public RangeVar relation { get; set; }
 
         public IPgTree[] usingClause { get; set; }
 
-        public Node whereClause { get; set; }
+        public IPgTree whereClause { get; set; }
 
         public IPgTree[] returningList { get; set; }
 

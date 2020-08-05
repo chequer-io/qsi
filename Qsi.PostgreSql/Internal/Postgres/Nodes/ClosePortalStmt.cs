@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("ClosePortalStmt")]
-    internal class ClosePortalStmt : Node
+    [PgNode("ClosePortalStmt")]
+    internal class ClosePortalStmt : IPgTree
     {
         public string portalname { get; set; }
     }

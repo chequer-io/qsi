@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("AlterSubscriptionStmt")]
-    internal class AlterSubscriptionStmt : Node
+    [PgNode("AlterSubscriptionStmt")]
+    internal class AlterSubscriptionStmt : IPgTree
     {
         public AlterSubscriptionType kind { get; set; }
 

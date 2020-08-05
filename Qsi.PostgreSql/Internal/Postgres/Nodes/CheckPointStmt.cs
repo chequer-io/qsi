@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("CheckPointStmt")]
-    internal class CheckPointStmt : Node
+    [PgNode("CheckPointStmt")]
+    internal class CheckPointStmt : IPgTree
     {
     }
 }

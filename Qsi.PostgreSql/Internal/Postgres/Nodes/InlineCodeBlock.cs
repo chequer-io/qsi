@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("InlineCodeBlock")]
-    internal class InlineCodeBlock : Node
+    [PgNode("InlineCodeBlock")]
+    internal class InlineCodeBlock : IPgTree
     {
         public string source_text { get; set; }
 

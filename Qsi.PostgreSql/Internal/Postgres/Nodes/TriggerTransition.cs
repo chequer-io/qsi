@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("TriggerTransition")]
-    internal class TriggerTransition : Node
+    [PgNode("TriggerTransition")]
+    internal class TriggerTransition : IPgTree
     {
         public string name { get; set; }
 

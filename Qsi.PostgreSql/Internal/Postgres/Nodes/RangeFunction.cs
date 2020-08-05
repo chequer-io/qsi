@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("RangeFunction")]
-    internal class RangeFunction : Node
+    [PgNode("RangeFunction")]
+    internal class RangeFunction : IPgTree
     {
         public bool lateral { get; set; }
 

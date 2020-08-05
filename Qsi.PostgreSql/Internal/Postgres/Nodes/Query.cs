@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("Query")]
-    internal class Query : Node
+    [PgNode("Query")]
+    internal class Query : IPgTree
     {
         public CmdType commandType { get; set; }
 
@@ -13,7 +13,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public bool canSetTag { get; set; }
 
-        public Node utilityStmt { get; set; }
+        public IPgTree utilityStmt { get; set; }
 
         public int resultRelation { get; set; }
 
@@ -53,7 +53,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public IPgTree[] groupingSets { get; set; }
 
-        public Node havingQual { get; set; }
+        public IPgTree havingQual { get; set; }
 
         public IPgTree[] windowClause { get; set; }
 
@@ -61,15 +61,15 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public IPgTree[] sortClause { get; set; }
 
-        public Node limitOffset { get; set; }
+        public IPgTree limitOffset { get; set; }
 
-        public Node limitCount { get; set; }
+        public IPgTree limitCount { get; set; }
 
         public LimitOption limitOption { get; set; }
 
         public IPgTree[] rowMarks { get; set; }
 
-        public Node setOperations { get; set; }
+        public IPgTree setOperations { get; set; }
 
         public IPgTree[] constraintDeps { get; set; }
 

@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("PartitionCmd")]
-    internal class PartitionCmd : Node
+    [PgNode("PartitionCmd")]
+    internal class PartitionCmd : IPgTree
     {
         public RangeVar name { get; set; }
 

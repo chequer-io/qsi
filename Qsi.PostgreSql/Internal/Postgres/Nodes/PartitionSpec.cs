@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("PartitionSpec")]
-    internal class PartitionSpec : Node
+    [PgNode("PartitionSpec")]
+    internal class PartitionSpec : IPgTree
     {
         public string strategy { get; set; }
 

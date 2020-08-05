@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("CreatePolicyStmt")]
-    internal class CreatePolicyStmt : Node
+    [PgNode("CreatePolicyStmt")]
+    internal class CreatePolicyStmt : IPgTree
     {
         public string policy_name { get; set; }
 
@@ -15,8 +15,8 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public IPgTree[] roles { get; set; }
 
-        public Node qual { get; set; }
+        public IPgTree qual { get; set; }
 
-        public Node with_check { get; set; }
+        public IPgTree with_check { get; set; }
     }
 }

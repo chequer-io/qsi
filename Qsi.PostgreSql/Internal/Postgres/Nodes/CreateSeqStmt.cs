@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("CreateSeqStmt")]
-    internal class CreateSeqStmt : Node
+    [PgNode("CreateSeqStmt")]
+    internal class CreateSeqStmt : IPgTree
     {
         public RangeVar sequence { get; set; }
 

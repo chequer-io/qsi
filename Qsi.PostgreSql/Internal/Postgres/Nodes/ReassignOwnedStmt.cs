@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("ReassignOwnedStmt")]
-    internal class ReassignOwnedStmt : Node
+    [PgNode("ReassignOwnedStmt")]
+    internal class ReassignOwnedStmt : IPgTree
     {
         public IPgTree[] roles { get; set; }
 

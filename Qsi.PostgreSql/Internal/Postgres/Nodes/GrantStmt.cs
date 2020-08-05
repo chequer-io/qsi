@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("GrantStmt")]
-    internal class GrantStmt : Node
+    [PgNode("GrantStmt")]
+    internal class GrantStmt : IPgTree
     {
         public bool is_grant { get; set; }
 

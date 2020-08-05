@@ -6,7 +6,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
     {
         public Expr xpr { get; set; }
 
-        public Node expr { get; set; }
+        public IPgTree expr { get; set; }
 
         public int /* oid */ infercollid { get; set; }
 

@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("RangeVar")]
-    internal class RangeVar : Node
+    [PgNode("RangeVar")]
+    internal class RangeVar : IPgTree
     {
         public string catalogname { get; set; }
 

@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("AlterUserMappingStmt")]
-    internal class AlterUserMappingStmt : Node
+    [PgNode("AlterUserMappingStmt")]
+    internal class AlterUserMappingStmt : IPgTree
     {
         public RoleSpec user { get; set; }
 

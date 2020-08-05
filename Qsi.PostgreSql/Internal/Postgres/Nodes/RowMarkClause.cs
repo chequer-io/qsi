@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("RowMarkClause")]
-    internal class RowMarkClause : Node
+    [PgNode("RowMarkClause")]
+    internal class RowMarkClause : IPgTree
     {
         public index rti { get; set; }
 

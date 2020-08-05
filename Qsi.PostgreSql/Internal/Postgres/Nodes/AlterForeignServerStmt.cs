@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("AlterForeignServerStmt")]
-    internal class AlterForeignServerStmt : Node
+    [PgNode("AlterForeignServerStmt")]
+    internal class AlterForeignServerStmt : IPgTree
     {
         public string servername { get; set; }
 

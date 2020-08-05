@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("AlterDomainStmt")]
-    internal class AlterDomainStmt : Node
+    [PgNode("AlterDomainStmt")]
+    internal class AlterDomainStmt : IPgTree
     {
         public char subtype { get; set; }
 
@@ -11,7 +11,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public string name { get; set; }
 
-        public Node def { get; set; }
+        public IPgTree def { get; set; }
 
         public DropBehavior behavior { get; set; }
 

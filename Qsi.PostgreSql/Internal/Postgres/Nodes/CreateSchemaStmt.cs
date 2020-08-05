@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("CreateSchemaStmt")]
-    internal class CreateSchemaStmt : Node
+    [PgNode("CreateSchemaStmt")]
+    internal class CreateSchemaStmt : IPgTree
     {
         public string schemaname { get; set; }
 

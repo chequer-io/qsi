@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("NotifyStmt")]
-    internal class NotifyStmt : Node
+    [PgNode("NotifyStmt")]
+    internal class NotifyStmt : IPgTree
     {
         public string conditionname { get; set; }
 

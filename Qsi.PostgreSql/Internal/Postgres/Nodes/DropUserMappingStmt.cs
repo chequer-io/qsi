@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("DropUserMappingStmt")]
-    internal class DropUserMappingStmt : Node
+    [PgNode("DropUserMappingStmt")]
+    internal class DropUserMappingStmt : IPgTree
     {
         public RoleSpec user { get; set; }
 

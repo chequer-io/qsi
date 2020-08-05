@@ -2,12 +2,12 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("InferClause")]
-    internal class InferClause : Node
+    [PgNode("InferClause")]
+    internal class InferClause : IPgTree
     {
         public IPgTree[] indexElems { get; set; }
 
-        public Node whereClause { get; set; }
+        public IPgTree whereClause { get; set; }
 
         public string conname { get; set; }
 

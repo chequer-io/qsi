@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("IntoClause")]
-    internal class IntoClause : Node
+    [PgNode("IntoClause")]
+    internal class IntoClause : IPgTree
     {
         public RangeVar rel { get; set; }
 
@@ -17,7 +17,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public string tableSpaceName { get; set; }
 
-        public Node viewQuery { get; set; }
+        public IPgTree viewQuery { get; set; }
 
         public bool skipData { get; set; }
     }

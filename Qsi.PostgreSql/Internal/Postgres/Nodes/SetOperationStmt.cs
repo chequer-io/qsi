@@ -2,16 +2,16 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("SetOperationStmt")]
-    internal class SetOperationStmt : Node
+    [PgNode("SetOperationStmt")]
+    internal class SetOperationStmt : IPgTree
     {
         public SetOperation op { get; set; }
 
         public bool all { get; set; }
 
-        public Node larg { get; set; }
+        public IPgTree larg { get; set; }
 
-        public Node rarg { get; set; }
+        public IPgTree rarg { get; set; }
 
         public IPgTree[] colTypes { get; set; }
 

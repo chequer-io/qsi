@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("VariableSetStmt")]
-    internal class VariableSetStmt : Node
+    [PgNode("VariableSetStmt")]
+    internal class VariableSetStmt : IPgTree
     {
         public VariableSetKind kind { get; set; }
 

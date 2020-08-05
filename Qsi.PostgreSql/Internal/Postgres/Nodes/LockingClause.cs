@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("LockingClause")]
-    internal class LockingClause : Node
+    [PgNode("LockingClause")]
+    internal class LockingClause : IPgTree
     {
         public IPgTree[] lockedRels { get; set; }
 

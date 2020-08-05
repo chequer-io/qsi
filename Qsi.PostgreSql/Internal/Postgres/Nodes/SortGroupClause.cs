@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("SortGroupClause")]
-    internal class SortGroupClause : Node
+    [PgNode("SortGroupClause")]
+    internal class SortGroupClause : IPgTree
     {
         public index tleSortGroupRef { get; set; }
 

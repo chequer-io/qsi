@@ -2,16 +2,16 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("TableFunc")]
-    internal class TableFunc : Node
+    [PgNode("TableFunc")]
+    internal class TableFunc : IPgTree
     {
         public IPgTree[] ns_uris { get; set; }
 
         public IPgTree[] ns_names { get; set; }
 
-        public Node docexpr { get; set; }
+        public IPgTree docexpr { get; set; }
 
-        public Node rowexpr { get; set; }
+        public IPgTree rowexpr { get; set; }
 
         public IPgTree[] colnames { get; set; }
 

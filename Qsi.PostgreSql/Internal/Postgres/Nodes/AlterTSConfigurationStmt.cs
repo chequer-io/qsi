@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("AlterTSConfigurationStmt")]
-    internal class AlterTSConfigurationStmt : Node
+    [PgNode("AlterTSConfigurationStmt")]
+    internal class AlterTSConfigurationStmt : IPgTree
     {
         public AlterTSConfigType kind { get; set; }
 

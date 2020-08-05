@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("ReplicaIdentityStmt")]
-    internal class ReplicaIdentityStmt : Node
+    [PgNode("ReplicaIdentityStmt")]
+    internal class ReplicaIdentityStmt : IPgTree
     {
         public char identity_type { get; set; }
 

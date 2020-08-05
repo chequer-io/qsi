@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("CompositeTypeStmt")]
-    internal class CompositeTypeStmt : Node
+    [PgNode("CompositeTypeStmt")]
+    internal class CompositeTypeStmt : IPgTree
     {
         public RangeVar typevar { get; set; }
 

@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("ListenStmt")]
-    internal class ListenStmt : Node
+    [PgNode("ListenStmt")]
+    internal class ListenStmt : IPgTree
     {
         public string conditionname { get; set; }
     }

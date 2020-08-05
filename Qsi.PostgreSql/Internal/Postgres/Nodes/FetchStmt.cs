@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("FetchStmt")]
-    internal class FetchStmt : Node
+    [PgNode("FetchStmt")]
+    internal class FetchStmt : IPgTree
     {
         public FetchDirection direction { get; set; }
 

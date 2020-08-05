@@ -2,14 +2,14 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("InsertStmt")]
-    internal class InsertStmt : Node
+    [PgNode("InsertStmt")]
+    internal class InsertStmt : IPgTree
     {
         public RangeVar relation { get; set; }
 
         public IPgTree[] cols { get; set; }
 
-        public Node selectStmt { get; set; }
+        public IPgTree selectStmt { get; set; }
 
         public OnConflictClause onConflictClause { get; set; }
 

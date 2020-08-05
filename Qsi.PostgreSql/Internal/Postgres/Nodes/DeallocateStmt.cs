@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("DeallocateStmt")]
-    internal class DeallocateStmt : Node
+    [PgNode("DeallocateStmt")]
+    internal class DeallocateStmt : IPgTree
     {
         public string name { get; set; }
     }

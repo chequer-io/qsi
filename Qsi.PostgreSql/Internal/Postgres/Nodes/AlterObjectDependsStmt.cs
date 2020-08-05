@@ -2,16 +2,16 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("AlterObjectDependsStmt")]
-    internal class AlterObjectDependsStmt : Node
+    [PgNode("AlterObjectDependsStmt")]
+    internal class AlterObjectDependsStmt : IPgTree
     {
         public ObjectType objectType { get; set; }
 
         public RangeVar relation { get; set; }
 
-        public Node @object { get; set; }
+        public IPgTree @object { get; set; }
 
-        public Value extname { get; set; }
+        public PgValue extname { get; set; }
 
         public bool remove { get; set; }
     }

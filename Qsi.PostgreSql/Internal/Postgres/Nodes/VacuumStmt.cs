@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("VacuumStmt")]
-    internal class VacuumStmt : Node
+    [PgNode("VacuumStmt")]
+    internal class VacuumStmt : IPgTree
     {
         public IPgTree[] options { get; set; }
 

@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("ExecuteStmt")]
-    internal class ExecuteStmt : Node
+    [PgNode("ExecuteStmt")]
+    internal class ExecuteStmt : IPgTree
     {
         public string name { get; set; }
 

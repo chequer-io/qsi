@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("CreateTrigStmt")]
-    internal class CreateTrigStmt : Node
+    [PgNode("CreateTrigStmt")]
+    internal class CreateTrigStmt : IPgTree
     {
         public string trigname { get; set; }
 
@@ -21,7 +21,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public IPgTree[] columns { get; set; }
 
-        public Node whenClause { get; set; }
+        public IPgTree whenClause { get; set; }
 
         public bool isconstraint { get; set; }
 

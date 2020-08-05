@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("SelectStmt")]
-    internal class SelectStmt : Node
+    [PgNode("SelectStmt")]
+    internal class SelectStmt : IPgTree
     {
         public IPgTree[] distinctClause { get; set; }
 
@@ -13,11 +13,11 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public IPgTree[] fromClause { get; set; }
 
-        public Node whereClause { get; set; }
+        public IPgTree whereClause { get; set; }
 
         public IPgTree[] groupClause { get; set; }
 
-        public Node havingClause { get; set; }
+        public IPgTree havingClause { get; set; }
 
         public IPgTree[] windowClause { get; set; }
 
@@ -25,9 +25,9 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public IPgTree[] sortClause { get; set; }
 
-        public Node limitOffset { get; set; }
+        public IPgTree limitOffset { get; set; }
 
-        public Node limitCount { get; set; }
+        public IPgTree limitCount { get; set; }
 
         public LimitOption limitOption { get; set; }
 

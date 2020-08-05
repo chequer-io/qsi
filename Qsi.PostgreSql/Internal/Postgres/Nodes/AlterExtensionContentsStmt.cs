@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("AlterExtensionContentsStmt")]
-    internal class AlterExtensionContentsStmt : Node
+    [PgNode("AlterExtensionContentsStmt")]
+    internal class AlterExtensionContentsStmt : IPgTree
     {
         public string extname { get; set; }
 
@@ -11,6 +11,6 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public ObjectType objtype { get; set; }
 
-        public Node @object { get; set; }
+        public IPgTree @object { get; set; }
     }
 }

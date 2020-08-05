@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("RangeTblEntry")]
-    internal class RangeTblEntry : Node
+    [PgNode("RangeTblEntry")]
+    internal class RangeTblEntry : IPgTree
     {
         public RTEKind rtekind { get; set; }
 

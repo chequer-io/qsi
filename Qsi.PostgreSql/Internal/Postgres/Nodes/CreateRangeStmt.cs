@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("CreateRangeStmt")]
-    internal class CreateRangeStmt : Node
+    [PgNode("CreateRangeStmt")]
+    internal class CreateRangeStmt : IPgTree
     {
         public IPgTree[] typeName { get; set; }
 

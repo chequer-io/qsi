@@ -2,10 +2,10 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("RangeTblFunction")]
-    internal class RangeTblFunction : Node
+    [PgNode("RangeTblFunction")]
+    internal class RangeTblFunction : IPgTree
     {
-        public Node funcexpr { get; set; }
+        public IPgTree funcexpr { get; set; }
 
         public int funccolcount { get; set; }
 

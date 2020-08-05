@@ -2,13 +2,13 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("A_Indices")]
-    internal class A_Indices : Node
+    [PgNode("A_Indices")]
+    internal class A_Indices : IPgTree
     {
         public bool is_slice { get; set; }
 
-        public Node lidx { get; set; }
+        public IPgTree lidx { get; set; }
 
-        public Node uidx { get; set; }
+        public IPgTree uidx { get; set; }
     }
 }

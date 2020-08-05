@@ -2,11 +2,11 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("FromExpr")]
-    internal class FromExpr : Node
+    [PgNode("FromExpr")]
+    internal class FromExpr : IPgTree
     {
         public IPgTree[] fromlist { get; set; }
 
-        public Node quals { get; set; }
+        public IPgTree quals { get; set; }
     }
 }

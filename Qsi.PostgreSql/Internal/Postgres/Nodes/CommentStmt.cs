@@ -2,12 +2,12 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("CommentStmt")]
-    internal class CommentStmt : Node
+    [PgNode("CommentStmt")]
+    internal class CommentStmt : IPgTree
     {
         public ObjectType objtype { get; set; }
 
-        public Node @object { get; set; }
+        public IPgTree @object { get; set; }
 
         public string comment { get; set; }
     }

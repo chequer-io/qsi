@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("VacuumRelation")]
-    internal class VacuumRelation : Node
+    [PgNode("VacuumRelation")]
+    internal class VacuumRelation : IPgTree
     {
         public RangeVar relation { get; set; }
 

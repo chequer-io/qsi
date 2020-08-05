@@ -2,10 +2,10 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("CreateTableAsStmt")]
-    internal class CreateTableAsStmt : Node
+    [PgNode("CreateTableAsStmt")]
+    internal class CreateTableAsStmt : IPgTree
     {
-        public Node query { get; set; }
+        public IPgTree query { get; set; }
 
         public IntoClause into { get; set; }
 

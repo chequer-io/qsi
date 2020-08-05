@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("CreateTransformStmt")]
-    internal class CreateTransformStmt : Node
+    [PgNode("CreateTransformStmt")]
+    internal class CreateTransformStmt : IPgTree
     {
         public bool replace { get; set; }
 

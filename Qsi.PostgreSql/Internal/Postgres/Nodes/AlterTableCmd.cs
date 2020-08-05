@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("AlterTableCmd")]
-    internal class AlterTableCmd : Node
+    [PgNode("AlterTableCmd")]
+    internal class AlterTableCmd : IPgTree
     {
         public AlterTableType subtype { get; set; }
 
@@ -13,7 +13,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public RoleSpec newowner { get; set; }
 
-        public Node def { get; set; }
+        public IPgTree def { get; set; }
 
         public DropBehavior behavior { get; set; }
 

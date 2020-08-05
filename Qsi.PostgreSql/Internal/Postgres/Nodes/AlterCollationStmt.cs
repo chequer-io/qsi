@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("AlterCollationStmt")]
-    internal class AlterCollationStmt : Node
+    [PgNode("AlterCollationStmt")]
+    internal class AlterCollationStmt : IPgTree
     {
         public IPgTree[] collname { get; set; }
     }

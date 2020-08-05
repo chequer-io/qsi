@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("ObjectWithArgs")]
-    internal class ObjectWithArgs : Node
+    [PgNode("ObjectWithArgs")]
+    internal class ObjectWithArgs : IPgTree
     {
         public IPgTree[] objname { get; set; }
 

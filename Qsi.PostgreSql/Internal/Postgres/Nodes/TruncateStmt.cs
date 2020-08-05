@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("TruncateStmt")]
-    internal class TruncateStmt : Node
+    [PgNode("TruncateStmt")]
+    internal class TruncateStmt : IPgTree
     {
         public IPgTree[] relations { get; set; }
 

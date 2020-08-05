@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("RangeTableFuncCol")]
-    internal class RangeTableFuncCol : Node
+    [PgNode("RangeTableFuncCol")]
+    internal class RangeTableFuncCol : IPgTree
     {
         public string colname { get; set; }
 
@@ -13,9 +13,9 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public bool is_not_null { get; set; }
 
-        public Node colexpr { get; set; }
+        public IPgTree colexpr { get; set; }
 
-        public Node coldefexpr { get; set; }
+        public IPgTree coldefexpr { get; set; }
 
         public int location { get; set; }
     }

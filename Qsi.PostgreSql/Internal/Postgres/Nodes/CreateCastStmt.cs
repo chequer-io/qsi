@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("CreateCastStmt")]
-    internal class CreateCastStmt : Node
+    [PgNode("CreateCastStmt")]
+    internal class CreateCastStmt : IPgTree
     {
         public TypeName sourcetype { get; set; }
 

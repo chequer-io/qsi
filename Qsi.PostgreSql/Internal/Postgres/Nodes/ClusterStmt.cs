@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("ClusterStmt")]
-    internal class ClusterStmt : Node
+    [PgNode("ClusterStmt")]
+    internal class ClusterStmt : IPgTree
     {
         public RangeVar relation { get; set; }
 

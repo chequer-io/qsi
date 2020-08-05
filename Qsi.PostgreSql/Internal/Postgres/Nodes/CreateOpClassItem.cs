@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("CreateOpClassItem")]
-    internal class CreateOpClassItem : Node
+    [PgNode("CreateOpClassItem")]
+    internal class CreateOpClassItem : IPgTree
     {
         public int itemtype { get; set; }
 

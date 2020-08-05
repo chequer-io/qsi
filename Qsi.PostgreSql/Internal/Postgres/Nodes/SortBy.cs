@@ -2,10 +2,10 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("SortBy")]
-    internal class SortBy : Node
+    [PgNode("SortBy")]
+    internal class SortBy : IPgTree
     {
-        public Node node { get; set; }
+        public IPgTree node { get; set; }
 
         public SortByDir sortby_dir { get; set; }
 

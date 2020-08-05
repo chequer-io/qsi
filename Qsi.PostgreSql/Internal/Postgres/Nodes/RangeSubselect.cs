@@ -2,12 +2,12 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("RangeSubselect")]
-    internal class RangeSubselect : Node
+    [PgNode("RangeSubselect")]
+    internal class RangeSubselect : IPgTree
     {
         public bool lateral { get; set; }
 
-        public Node subquery { get; set; }
+        public IPgTree subquery { get; set; }
 
         public Alias alias { get; set; }
     }

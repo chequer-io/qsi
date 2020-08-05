@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("CreateDomainStmt")]
-    internal class CreateDomainStmt : Node
+    [PgNode("CreateDomainStmt")]
+    internal class CreateDomainStmt : IPgTree
     {
         public IPgTree[] domainname { get; set; }
 

@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("AlterFunctionStmt")]
-    internal class AlterFunctionStmt : Node
+    [PgNode("AlterFunctionStmt")]
+    internal class AlterFunctionStmt : IPgTree
     {
         public ObjectType objtype { get; set; }
 

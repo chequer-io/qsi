@@ -2,12 +2,12 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("IndexElem")]
-    internal class IndexElem : Node
+    [PgNode("IndexElem")]
+    internal class IndexElem : IPgTree
     {
         public string name { get; set; }
 
-        public Node expr { get; set; }
+        public IPgTree expr { get; set; }
 
         public string indexcolname { get; set; }
 

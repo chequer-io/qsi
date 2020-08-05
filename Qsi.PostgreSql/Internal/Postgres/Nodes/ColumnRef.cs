@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("ColumnRef")]
-    internal class ColumnRef : Node
+    [PgNode("ColumnRef")]
+    internal class ColumnRef : IPgTree
     {
         public IPgTree[] fields { get; set; }
 

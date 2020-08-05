@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("RefreshMatViewStmt")]
-    internal class RefreshMatViewStmt : Node
+    [PgNode("RefreshMatViewStmt")]
+    internal class RefreshMatViewStmt : IPgTree
     {
         public bool concurrent { get; set; }
 

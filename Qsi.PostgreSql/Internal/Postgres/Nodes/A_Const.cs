@@ -2,10 +2,10 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("A_Const")]
-    internal class A_Const : Node
+    [PgNode("A_Const")]
+    internal class A_Const : IPgTree
     {
-        public Value val { get; set; }
+        public PgValue val { get; set; }
 
         public int location { get; set; }
     }

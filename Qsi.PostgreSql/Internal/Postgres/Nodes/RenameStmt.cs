@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("RenameStmt")]
-    internal class RenameStmt : Node
+    [PgNode("RenameStmt")]
+    internal class RenameStmt : IPgTree
     {
         public ObjectType renameType { get; set; }
 
@@ -11,7 +11,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public RangeVar relation { get; set; }
 
-        public Node @object { get; set; }
+        public IPgTree @object { get; set; }
 
         public string subname { get; set; }
 

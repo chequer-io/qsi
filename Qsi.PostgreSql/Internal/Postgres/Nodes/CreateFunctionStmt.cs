@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("CreateFunctionStmt")]
-    internal class CreateFunctionStmt : Node
+    [PgNode("CreateFunctionStmt")]
+    internal class CreateFunctionStmt : IPgTree
     {
         public bool is_procedure { get; set; }
 

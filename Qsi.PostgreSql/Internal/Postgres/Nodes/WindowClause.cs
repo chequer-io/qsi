@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("WindowClause")]
-    internal class WindowClause : Node
+    [PgNode("WindowClause")]
+    internal class WindowClause : IPgTree
     {
         public string name { get; set; }
 
@@ -15,9 +15,9 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public int frameOptions { get; set; }
 
-        public Node startOffset { get; set; }
+        public IPgTree startOffset { get; set; }
 
-        public Node endOffset { get; set; }
+        public IPgTree endOffset { get; set; }
 
         public int /* oid */ startInRangeFunc { get; set; }
 

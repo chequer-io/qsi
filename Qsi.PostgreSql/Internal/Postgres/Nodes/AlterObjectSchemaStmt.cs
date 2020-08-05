@@ -2,14 +2,14 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("AlterObjectSchemaStmt")]
-    internal class AlterObjectSchemaStmt : Node
+    [PgNode("AlterObjectSchemaStmt")]
+    internal class AlterObjectSchemaStmt : IPgTree
     {
         public ObjectType objectType { get; set; }
 
         public RangeVar relation { get; set; }
 
-        public Node @object { get; set; }
+        public IPgTree @object { get; set; }
 
         public string newschema { get; set; }
 

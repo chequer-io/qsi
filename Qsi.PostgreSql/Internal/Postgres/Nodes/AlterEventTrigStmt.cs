@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("AlterEventTrigStmt")]
-    internal class AlterEventTrigStmt : Node
+    [PgNode("AlterEventTrigStmt")]
+    internal class AlterEventTrigStmt : IPgTree
     {
         public string trigname { get; set; }
 

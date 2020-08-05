@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("A_Star")]
-    internal class A_Star : Node
+    [PgNode("A_Star")]
+    internal class A_Star : IPgTree
     {
     }
 }

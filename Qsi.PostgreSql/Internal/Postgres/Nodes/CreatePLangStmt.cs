@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("CreatePLangStmt")]
-    internal class CreatePLangStmt : Node
+    [PgNode("CreatePLangStmt")]
+    internal class CreatePLangStmt : IPgTree
     {
         public bool replace { get; set; }
 

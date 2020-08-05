@@ -2,10 +2,10 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("MultiAssignRef")]
-    internal class MultiAssignRef : Node
+    [PgNode("MultiAssignRef")]
+    internal class MultiAssignRef : IPgTree
     {
-        public Node source { get; set; }
+        public IPgTree source { get; set; }
 
         public int colno { get; set; }
 

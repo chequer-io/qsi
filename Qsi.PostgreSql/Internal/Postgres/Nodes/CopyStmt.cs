@@ -2,12 +2,12 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("CopyStmt")]
-    internal class CopyStmt : Node
+    [PgNode("CopyStmt")]
+    internal class CopyStmt : IPgTree
     {
         public RangeVar relation { get; set; }
 
-        public Node query { get; set; }
+        public IPgTree query { get; set; }
 
         public IPgTree[] attlist { get; set; }
 
@@ -19,6 +19,6 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public IPgTree[] options { get; set; }
 
-        public Node whereClause { get; set; }
+        public IPgTree whereClause { get; set; }
     }
 }

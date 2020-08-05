@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("ImportForeignSchemaStmt")]
-    internal class ImportForeignSchemaStmt : Node
+    [PgNode("ImportForeignSchemaStmt")]
+    internal class ImportForeignSchemaStmt : IPgTree
     {
         public string server_name { get; set; }
 

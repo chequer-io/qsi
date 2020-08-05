@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("AlterRoleStmt")]
-    internal class AlterRoleStmt : Node
+    [PgNode("AlterRoleStmt")]
+    internal class AlterRoleStmt : IPgTree
     {
         public RoleSpec role { get; set; }
 

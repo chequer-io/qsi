@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("CreatePublicationStmt")]
-    internal class CreatePublicationStmt : Node
+    [PgNode("CreatePublicationStmt")]
+    internal class CreatePublicationStmt : IPgTree
     {
         public string pubname { get; set; }
 

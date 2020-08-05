@@ -4,8 +4,7 @@ namespace Qsi.PostgreSql.Internal
 {
     internal sealed class PgParseResult
     {
-        // TODO: tree modeling
-        //[JsonProperty("parse_tree")]
+        [JsonProperty("parse_tree")]
         public IPgTree[] Tree { get; set; }
 
         [JsonProperty("stderr_buffer")]

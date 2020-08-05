@@ -2,14 +2,14 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("RuleStmt")]
-    internal class RuleStmt : Node
+    [PgNode("RuleStmt")]
+    internal class RuleStmt : IPgTree
     {
         public RangeVar relation { get; set; }
 
         public string rulename { get; set; }
 
-        public Node whereClause { get; set; }
+        public IPgTree whereClause { get; set; }
 
         public CmdType @event { get; set; }
 

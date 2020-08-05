@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("CreateFdwStmt")]
-    internal class CreateFdwStmt : Node
+    [PgNode("CreateFdwStmt")]
+    internal class CreateFdwStmt : IPgTree
     {
         public string fdwname { get; set; }
 

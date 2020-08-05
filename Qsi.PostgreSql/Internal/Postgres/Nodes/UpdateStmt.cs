@@ -2,14 +2,14 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("UpdateStmt")]
-    internal class UpdateStmt : Node
+    [PgNode("UpdateStmt")]
+    internal class UpdateStmt : IPgTree
     {
         public RangeVar relation { get; set; }
 
         public IPgTree[] targetList { get; set; }
 
-        public Node whereClause { get; set; }
+        public IPgTree whereClause { get; set; }
 
         public IPgTree[] fromClause { get; set; }
 

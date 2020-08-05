@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("DiscardStmt")]
-    internal class DiscardStmt : Node
+    [PgNode("DiscardStmt")]
+    internal class DiscardStmt : IPgTree
     {
         public DiscardMode target { get; set; }
     }

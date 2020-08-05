@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("ConstraintsSetStmt")]
-    internal class ConstraintsSetStmt : Node
+    [PgNode("ConstraintsSetStmt")]
+    internal class ConstraintsSetStmt : IPgTree
     {
         public IPgTree[] constraints { get; set; }
 

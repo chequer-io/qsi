@@ -2,10 +2,10 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("CollateClause")]
-    internal class CollateClause : Node
+    [PgNode("CollateClause")]
+    internal class CollateClause : IPgTree
     {
-        public Node arg { get; set; }
+        public IPgTree arg { get; set; }
 
         public IPgTree[] collname { get; set; }
 

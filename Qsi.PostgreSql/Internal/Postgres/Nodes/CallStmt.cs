@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("CallStmt")]
-    internal class CallStmt : Node
+    [PgNode("CallStmt")]
+    internal class CallStmt : IPgTree
     {
         public FuncCall funccall { get; set; }
 

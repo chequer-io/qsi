@@ -2,10 +2,10 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("TypeCast")]
-    internal class TypeCast : Node
+    [PgNode("TypeCast")]
+    internal class TypeCast : IPgTree
     {
-        public Node arg { get; set; }
+        public IPgTree arg { get; set; }
 
         public TypeName typeName { get; set; }
 

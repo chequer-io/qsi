@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("FuncCall")]
-    internal class FuncCall : Node
+    [PgNode("FuncCall")]
+    internal class FuncCall : IPgTree
     {
         public IPgTree[] funcname { get; set; }
 
@@ -11,7 +11,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public IPgTree[] agg_order { get; set; }
 
-        public Node agg_filter { get; set; }
+        public IPgTree agg_filter { get; set; }
 
         public bool agg_within_group { get; set; }
 

@@ -2,14 +2,14 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("AlterOwnerStmt")]
-    internal class AlterOwnerStmt : Node
+    [PgNode("AlterOwnerStmt")]
+    internal class AlterOwnerStmt : IPgTree
     {
         public ObjectType objectType { get; set; }
 
         public RangeVar relation { get; set; }
 
-        public Node @object { get; set; }
+        public IPgTree @object { get; set; }
 
         public RoleSpec newowner { get; set; }
     }

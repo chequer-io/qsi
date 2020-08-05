@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("CommonTableExpr")]
-    internal class CommonTableExpr : Node
+    [PgNode("CommonTableExpr")]
+    internal class CommonTableExpr : IPgTree
     {
         public string ctename { get; set; }
 
@@ -11,7 +11,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public CTEMaterialize ctematerialized { get; set; }
 
-        public Node ctequery { get; set; }
+        public IPgTree ctequery { get; set; }
 
         public int location { get; set; }
 

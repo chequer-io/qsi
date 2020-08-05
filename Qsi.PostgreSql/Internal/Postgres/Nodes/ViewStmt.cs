@@ -2,14 +2,14 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("ViewStmt")]
-    internal class ViewStmt : Node
+    [PgNode("ViewStmt")]
+    internal class ViewStmt : IPgTree
     {
         public RangeVar view { get; set; }
 
         public IPgTree[] aliases { get; set; }
 
-        public Node query { get; set; }
+        public IPgTree query { get; set; }
 
         public bool replace { get; set; }
 

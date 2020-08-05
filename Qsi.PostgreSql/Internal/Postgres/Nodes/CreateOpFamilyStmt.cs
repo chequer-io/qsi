@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("CreateOpFamilyStmt")]
-    internal class CreateOpFamilyStmt : Node
+    [PgNode("CreateOpFamilyStmt")]
+    internal class CreateOpFamilyStmt : IPgTree
     {
         public IPgTree[] opfamilyname { get; set; }
 

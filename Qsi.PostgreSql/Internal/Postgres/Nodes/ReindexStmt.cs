@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("ReindexStmt")]
-    internal class ReindexStmt : Node
+    [PgNode("ReindexStmt")]
+    internal class ReindexStmt : IPgTree
     {
         public ReindexObjectType kind { get; set; }
 

@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("GroupingSet")]
-    internal class GroupingSet : Node
+    [PgNode("GroupingSet")]
+    internal class GroupingSet : IPgTree
     {
         public GroupingSetKind kind { get; set; }
 

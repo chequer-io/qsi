@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("AlterDatabaseSetStmt")]
-    internal class AlterDatabaseSetStmt : Node
+    [PgNode("AlterDatabaseSetStmt")]
+    internal class AlterDatabaseSetStmt : IPgTree
     {
         public string dbname { get; set; }
 

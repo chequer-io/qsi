@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("LockStmt")]
-    internal class LockStmt : Node
+    [PgNode("LockStmt")]
+    internal class LockStmt : IPgTree
     {
         public IPgTree[] relations { get; set; }
 

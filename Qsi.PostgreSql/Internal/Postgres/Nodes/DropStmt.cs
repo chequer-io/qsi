@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("DropStmt")]
-    internal class DropStmt : Node
+    [PgNode("DropStmt")]
+    internal class DropStmt : IPgTree
     {
         public IPgTree[] objects { get; set; }
 

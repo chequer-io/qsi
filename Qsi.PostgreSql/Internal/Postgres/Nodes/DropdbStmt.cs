@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("DropdbStmt")]
-    internal class DropdbStmt : Node
+    [PgNode("DropdbStmt")]
+    internal class DropdbStmt : IPgTree
     {
         public string dbname { get; set; }
 

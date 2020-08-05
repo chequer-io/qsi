@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("ColumnDef")]
-    internal class ColumnDef : Node
+    [PgNode("ColumnDef")]
+    internal class ColumnDef : IPgTree
     {
         public string colname { get; set; }
 
@@ -19,9 +19,9 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public char storage { get; set; }
 
-        public Node raw_default { get; set; }
+        public IPgTree raw_default { get; set; }
 
-        public Node cooked_default { get; set; }
+        public IPgTree cooked_default { get; set; }
 
         public char identity { get; set; }
 

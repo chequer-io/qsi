@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("DropSubscriptionStmt")]
-    internal class DropSubscriptionStmt : Node
+    [PgNode("DropSubscriptionStmt")]
+    internal class DropSubscriptionStmt : IPgTree
     {
         public string subname { get; set; }
 

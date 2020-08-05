@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("TableLikeClause")]
-    internal class TableLikeClause : Node
+    [PgNode("TableLikeClause")]
+    internal class TableLikeClause : IPgTree
     {
         public RangeVar relation { get; set; }
 

@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("CreatedbStmt")]
-    internal class CreatedbStmt : Node
+    [PgNode("CreatedbStmt")]
+    internal class CreatedbStmt : IPgTree
     {
         public string dbname { get; set; }
 

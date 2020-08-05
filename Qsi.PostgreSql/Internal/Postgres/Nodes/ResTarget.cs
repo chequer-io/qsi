@@ -2,14 +2,14 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("ResTarget")]
-    internal class ResTarget : Node
+    [PgNode("ResTarget")]
+    internal class ResTarget : IPgTree
     {
         public string name { get; set; }
 
         public IPgTree[] indirection { get; set; }
 
-        public Node val { get; set; }
+        public IPgTree val { get; set; }
 
         public int location { get; set; }
     }

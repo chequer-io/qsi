@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("AlterSeqStmt")]
-    internal class AlterSeqStmt : Node
+    [PgNode("AlterSeqStmt")]
+    internal class AlterSeqStmt : IPgTree
     {
         public RangeVar sequence { get; set; }
 

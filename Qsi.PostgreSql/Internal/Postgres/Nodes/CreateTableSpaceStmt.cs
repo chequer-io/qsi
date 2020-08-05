@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("CreateTableSpaceStmt")]
-    internal class CreateTableSpaceStmt : Node
+    [PgNode("CreateTableSpaceStmt")]
+    internal class CreateTableSpaceStmt : IPgTree
     {
         public string tablespacename { get; set; }
 

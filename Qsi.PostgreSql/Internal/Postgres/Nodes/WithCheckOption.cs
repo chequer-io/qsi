@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("WithCheckOption")]
-    internal class WithCheckOption : Node
+    [PgNode("WithCheckOption")]
+    internal class WithCheckOption : IPgTree
     {
         public WCOKind kind { get; set; }
 
@@ -11,7 +11,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public string polname { get; set; }
 
-        public Node qual { get; set; }
+        public IPgTree qual { get; set; }
 
         public bool cascaded { get; set; }
     }

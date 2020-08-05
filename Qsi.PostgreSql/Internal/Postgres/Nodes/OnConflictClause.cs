@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("OnConflictClause")]
-    internal class OnConflictClause : Node
+    [PgNode("OnConflictClause")]
+    internal class OnConflictClause : IPgTree
     {
         public OnConflictAction action { get; set; }
 
@@ -11,7 +11,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 
         public IPgTree[] targetList { get; set; }
 
-        public Node whereClause { get; set; }
+        public IPgTree whereClause { get; set; }
 
         public int location { get; set; }
     }

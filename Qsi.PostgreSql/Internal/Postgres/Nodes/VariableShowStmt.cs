@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("VariableShowStmt")]
-    internal class VariableShowStmt : Node
+    [PgNode("VariableShowStmt")]
+    internal class VariableShowStmt : IPgTree
     {
         public string name { get; set; }
     }

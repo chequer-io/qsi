@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("AlterTableStmt")]
-    internal class AlterTableStmt : Node
+    [PgNode("AlterTableStmt")]
+    internal class AlterTableStmt : IPgTree
     {
         public RangeVar relation { get; set; }
 

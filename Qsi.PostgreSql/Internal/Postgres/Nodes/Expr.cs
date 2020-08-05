@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("Expr")]
-    internal class Expr : Node
+    [PgNode("Expr")]
+    internal class Expr : IPgTree
     {
     }
 }

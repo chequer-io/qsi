@@ -2,10 +2,10 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("ExplainStmt")]
-    internal class ExplainStmt : Node
+    [PgNode("ExplainStmt")]
+    internal class ExplainStmt : IPgTree
     {
-        public Node query { get; set; }
+        public IPgTree query { get; set; }
 
         public IPgTree[] options { get; set; }
     }

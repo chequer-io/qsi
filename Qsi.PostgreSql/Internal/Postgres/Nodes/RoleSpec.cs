@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("RoleSpec")]
-    internal class RoleSpec : Node
+    [PgNode("RoleSpec")]
+    internal class RoleSpec : IPgTree
     {
         public RoleSpecType roletype { get; set; }
 

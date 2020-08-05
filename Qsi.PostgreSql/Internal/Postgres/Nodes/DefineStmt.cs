@@ -2,8 +2,8 @@
 
 namespace Qsi.PostgreSql.Internal.Postgres.Nodes
 {
-    [PgNodeAttribute("DefineStmt")]
-    internal class DefineStmt : Node
+    [PgNode("DefineStmt")]
+    internal class DefineStmt : IPgTree
     {
         public ObjectType kind { get; set; }
 
