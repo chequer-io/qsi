@@ -13,7 +13,7 @@ namespace Qsi.PostgreSql.Diagnostics
             _pgParser ??= new PgQuery10();
             var result = _pgParser.Parse(input);
 
-            return null;
+            return new PostgreSqlRawTree(result);
         }
 
         void IDisposable.Dispose()
