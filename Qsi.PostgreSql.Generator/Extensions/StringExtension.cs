@@ -7,8 +7,8 @@ namespace Qsi.PostgreSql.Generator.Extensions
         public static Regex MakeWildcardPattern(this string value)
         {
             value = Regex.Escape(value)
-                .Replace(@"/\*\*/", @"(?:\/.*)*\/")
-                .Replace(@"\*", ".*");
+                .Replace(@"/\*\*/", @"(?:/[^/]*)*/")
+                .Replace(@"\*", "[^/]*");
 
             return new Regex($"^{value}$");
         }

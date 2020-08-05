@@ -22,11 +22,11 @@ namespace Qsi.PostgreSql.Generator
 
         public static void Main()
         {
-            // if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            // {
-            //     Console.WriteLine("Not supported platform");
-            //     return;
-            // }
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                Console.WriteLine("Not supported platform");
+                return;
+            }
 
             var config = ResourceManager.FindJsonResource<GenerateConfig>("Config.10-latest.json");
 
@@ -208,11 +208,13 @@ namespace Qsi.PostgreSql.Generator
 
         private static void GenerateEnum(CppEnum cppEnum)
         {
+            Console.WriteLine(cppEnum.Name);
             // TODO: generate
         }
 
         private static void GenerateClass(CppClass cppClass)
         {
+            Console.WriteLine(cppClass.Name);
             // TODO: generate
         }
     }
