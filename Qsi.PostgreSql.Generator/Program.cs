@@ -201,61 +201,67 @@ namespace Qsi.PostgreSql.Generator
                 .Select(StringExtension.MakeWildcardPattern)
                 .ToArray();
 
-            var pathMap = new Dictionary<CppElement, string>();
-            var cppEnums = new List<CppEnum>();
-            var cppClasses = new List<CppClass>();
-
-            foreach (var element in result.Children().OfType<CppElement>())
-            {
-                var file = element.Span.Start.File;
-
-                if (string.IsNullOrEmpty(file) || !File.Exists(file))
-                    continue;
-
-                var relative = Path.GetRelativePath(directory, file);
-
-                if (relative.StartsWith("../"))
-                    continue;
-
-                if (!targets.Any(t => t.IsMatch(relative)))
-                    continue;
-
-                pathMap[element] = relative;
-
-                switch (element)
-                {
-                    case CppEnum cppEnum:
-                        cppEnums.Add(cppEnum);
-                        break;
-
-                    case CppClass cppClass:
-                        cppClasses.Add(cppClass);
-                        break;
-                }
-            }
-
             if (Directory.Exists(config.OutputDirectory))
                 Directory.Delete(config.OutputDirectory, true);
 
             Directory.CreateDirectory(config.OutputDirectory);
 
             var generator = CreateGenerator(config);
+            var pathMap = new Dictionary<CppElement, string>();
+
+            IEnumerable<CppElement> cppElements = result.Children()
+                .OfType<CppElement>()
+                .Where(e =>
+                {
+                    var file = e.Span.Start.File;
+
+                    if (string.IsNullOrEmpty(file) || !File.Exists(file))
+                        return false;
+
+                    var relative = Path.GetRelativePath(directory, file);
+
+                    if (relative.StartsWith("../"))
+                        return false;
+
+                    if (!targets.Any(t => t.IsMatch(relative)))
+                        return false;
+
+                    pathMap[e] = relative;
+
+                    return true;
+                });
 
             var namespaceSyntax = Syntax.NamespaceDeclaration(config.Namespace);
 
-            foreach (var cppEnum in cppEnums)
+            foreach (var element in cppElements)
             {
-                using var stream = File.Create(Path.Combine(config.OutputDirectory, $"{cppEnum.Name}.cs"));
-                using var writer = new StreamWriter(stream);
-                using var printer = new SyntaxPrinter(new SyntaxWriter(writer));
+                IEnumerable<BaseTypeDeclarationSyntax> csMembers;
+
+                switch (element)
+                {
+                    case CppEnum cppEnum:
+                        csMembers = generator.Generate(cppEnum);
+                        break;
+
+                    case CppClass cppClass:
+                        csMembers = generator.Generate(cppClass);
+                        break;
+
+                    default:
+                        throw new NotSupportedException();
+                }
 
                 namespaceSyntax.LeadingTrivia.Clear();
-                namespaceSyntax.LeadingTrivia.Add(Syntax.BlockComment(CreateLeadingComment(cppEnum, pathMap[cppEnum])));
+                namespaceSyntax.LeadingTrivia.Add(Syntax.BlockComment(CreateLeadingComment(element, pathMap[element])));
 
                 namespaceSyntax.Members.Clear();
 
-                foreach (var csEnum in generator.Generate(cppEnum))
-                    namespaceSyntax.Members.Add(csEnum);
+                foreach (var csMember in csMembers)
+                    namespaceSyntax.Members.Add(csMember);
+
+                using var stream = File.Create(Path.Combine(config.OutputDirectory, $"{((ICppMember)element).Name}.cs"));
+                using var writer = new StreamWriter(stream);
+                using var printer = new SyntaxPrinter(new SyntaxWriter(writer));
 
                 printer.Visit(namespaceSyntax);
             }
