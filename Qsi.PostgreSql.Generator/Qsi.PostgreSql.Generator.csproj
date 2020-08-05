@@ -8,6 +8,7 @@
     <ItemGroup>
       <PackageReference Include="CliWrap" Version="3.1.0" />
       <PackageReference Include="CppAst" Version="0.7.3" />
+      <PackageReference Include="CSharpSyntax" Version="0.2.0" />
       <PackageReference Include="LibGit2Sharp" Version="0.26.2" />
       <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     </ItemGroup>

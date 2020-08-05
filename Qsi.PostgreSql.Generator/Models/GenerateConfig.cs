@@ -8,6 +8,12 @@ namespace Qsi.PostgreSql.Generator.Models
         [JsonProperty("branch")]
         public string Branch { get; set; }
 
+        [JsonProperty("outputDirectory")]
+        public string OutputDirectory { get; set; }
+
+        [JsonProperty("namespace")]
+        public string Namespace { get; set; }
+
         [JsonProperty("fetch")]
         public FetchFile[] Fetches { get; set; }
 

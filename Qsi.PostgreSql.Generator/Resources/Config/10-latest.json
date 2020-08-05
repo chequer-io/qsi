@@ -1,5 +1,7 @@
 {
   "branch": "10-latest",
+  "outputDirectory": "$(SolutionDir)/Qsi.PostgreSql/Internal/PG10/Types",
+  "namespace": "Qsi.PostgreSql.Internal.PG10.Types",
   "fetch": [
     {
       "file": "src/postgres/include/plpgsql.h",
