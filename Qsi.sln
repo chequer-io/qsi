@@ -1,18 +1,23 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qsi", "Qsi\Qsi.csproj", "{82482593-EE23-40C7-BC0E-8C343D70D434}"
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30320.27
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Qsi", "Qsi\Qsi.csproj", "{82482593-EE23-40C7-BC0E-8C343D70D434}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qsi.MySql", "Qsi.MySql\Qsi.MySql.csproj", "{514AE9A8-6162-4ABE-AB66-8FF81DB8DFD0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Qsi.MySql", "Qsi.MySql\Qsi.MySql.csproj", "{514AE9A8-6162-4ABE-AB66-8FF81DB8DFD0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qsi.PostgreSql", "Qsi.PostgreSql\Qsi.PostgreSql.csproj", "{2AA051E7-77E4-4F7E-AD54-2CC04BC7DD78}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Qsi.PostgreSql", "Qsi.PostgreSql\Qsi.PostgreSql.csproj", "{2AA051E7-77E4-4F7E-AD54-2CC04BC7DD78}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Languages", "Languages", "{97493A14-DF8A-4A8A-A521-5900DFAC1CDA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qsi.Debugger", "Qsi.Debugger\Qsi.Debugger.csproj", "{DA61E58C-53AA-4D1E-ADD0-0BA63F7B2DC3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Qsi.Debugger", "Qsi.Debugger\Qsi.Debugger.csproj", "{DA61E58C-53AA-4D1E-ADD0-0BA63F7B2DC3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AvaloniaEdit", "Libraries\AvaloniaEdit\AvaloniaEdit.csproj", "{CFE5B121-8ABF-4646-97FD-AC5794A36C53}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AvaloniaEdit", "Libraries\AvaloniaEdit\AvaloniaEdit.csproj", "{CFE5B121-8ABF-4646-97FD-AC5794A36C53}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Debugger", "Debugger", "{D9187603-20FE-4487-A964-C1DD18874E04}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Qsi.PostgreSql.Generator", "Qsi.PostgreSql.Generator\Qsi.PostgreSql.Generator.csproj", "{1E2BE7BA-BE4A-45CA-A786-42EC20893991}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -40,11 +45,22 @@ Global
 		{CFE5B121-8ABF-4646-97FD-AC5794A36C53}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CFE5B121-8ABF-4646-97FD-AC5794A36C53}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CFE5B121-8ABF-4646-97FD-AC5794A36C53}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E2BE7BA-BE4A-45CA-A786-42EC20893991}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E2BE7BA-BE4A-45CA-A786-42EC20893991}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E2BE7BA-BE4A-45CA-A786-42EC20893991}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E2BE7BA-BE4A-45CA-A786-42EC20893991}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{514AE9A8-6162-4ABE-AB66-8FF81DB8DFD0} = {97493A14-DF8A-4A8A-A521-5900DFAC1CDA}
 		{2AA051E7-77E4-4F7E-AD54-2CC04BC7DD78} = {97493A14-DF8A-4A8A-A521-5900DFAC1CDA}
-		{CFE5B121-8ABF-4646-97FD-AC5794A36C53} = {D9187603-20FE-4487-A964-C1DD18874E04}
 		{DA61E58C-53AA-4D1E-ADD0-0BA63F7B2DC3} = {D9187603-20FE-4487-A964-C1DD18874E04}
+		{CFE5B121-8ABF-4646-97FD-AC5794A36C53} = {D9187603-20FE-4487-A964-C1DD18874E04}
+		{1E2BE7BA-BE4A-45CA-A786-42EC20893991} = {97493A14-DF8A-4A8A-A521-5900DFAC1CDA}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A12491D7-EB7D-4F23-A7B6-6B4AB1DD08D9}
 	EndGlobalSection
 EndGlobal

@@ -1,0 +1,63 @@
+{
+  "branch": "10-latest",
+  "fetch": [
+    {
+      "file": "src/postgres/include/plpgsql.h",
+      "fetch": [
+        {
+          "find": "PLpgSQL_datum *new",
+          "replace": "PLpgSQL_datum *_new"
+        },
+        {
+          "find": "Oid *typeid",
+          "replace": "Oid *_typeid"
+        }
+      ]
+    }
+  ],
+  "compile": {
+    "sources": [
+      "src/*.c"
+    ],
+    "sourceExcludes": [
+      "src/pg_query_fingerprint_defs.c",
+      "src/pg_query_fingerprint_conds.c",
+      "src/pg_query_json_defs.c",
+      "src/pg_query_json_conds.c",
+      "src/postgres/guc-file.c",
+      "src/postgres/scan.c",
+      "src/pg_query_json.c",
+      "src/pg_query_json_helper.c"
+    ],
+    "includeFolders": [
+      "src/postgres/include"
+    ]
+  },
+  "typeMap": {
+    "bits8": "sbyte",
+    "uint16": "ushort",
+    "uint32": "uint",
+    "bits32": "uint",
+    "Oid": "int",
+    "uint64": "ulong",
+    "int32": "int",
+    "int16": "short",
+    "void": "object",
+    "List": "IPgTree[]",
+    "Datum": "object",
+    "TransactionId": "uint",
+    "LocalTransactionId": "uint",
+    "SubTransactionId": "uint",
+    "MultiXactId": "TransactionId",
+    "MultiXactOffset": "uint",
+    "CommandId": "uint",
+    "Index": "index",
+    "AttrNumber": "short",
+    "Cost": "double",
+    "Selectivity": "double",
+    "AclMode": "uint"
+  },
+  "targets": [
+    "src/postgres/include/nodes/**/*"
+  ]
+}
