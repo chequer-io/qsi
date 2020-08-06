@@ -1,7 +1,7 @@
 
 Set-Location $(Get-Item "$PSScriptRoot").Parent.FullName
 
-$AntlrJar = Resolve-Path ".\Build\antlr-4.8-complete.jar"
+$AntlrJar = Resolve-Path "./Build/antlr-4.8-complete.jar"
 
 Get-ChildItem -Path "Qsi.*" -Directory | ForEach-Object {
     $Namespace = "$($PSItem.Name).Internal"
@@ -21,16 +21,16 @@ Get-ChildItem -Path "Qsi.*" -Directory | ForEach-Object {
     }
 
     # Clean grammar cache
-    Remove-Item -Path "$GrammarDirectory\*" -Include *.interp, *.tokens
+    Remove-Item -Path $GrammarDirectory/* -Include *.interp, *.tokens
 
     # Generate
     java `
-        -jar "$AntlrJar" `
+        -jar $AntlrJar `
         -Dlanguage=CSharp `
-        -package "$Namespace" `
+        -package $Namespace `
         -Xexact-output-dir `
-        -o "$OutputDirectory" `
-        "$GrammarDirectory\*.g4" `
+        -o $OutputDirectory `
+        $GrammarDirectory/*.g4 `
         -no-listener `
         -no-visitor
 
@@ -40,7 +40,7 @@ Get-ChildItem -Path "Qsi.*" -Directory | ForEach-Object {
     }
 
     # Fetch access modifier
-    Get-ChildItem -Path $OutputDirectory\* -Include *.cs | ForEach-Object {
+    Get-ChildItem -Path $OutputDirectory/* -Include *.cs | ForEach-Object {
         Write-Host "[Fetch] $($PSItem.Name)" -ForegroundColor Yellow
 
         $Content = Get-Content -Path $PSItem -Raw
