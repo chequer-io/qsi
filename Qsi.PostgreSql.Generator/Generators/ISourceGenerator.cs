@@ -6,8 +6,10 @@ namespace Qsi.PostgreSql.Generator.Generators
 {
     internal interface ISourceGenerator
     {
-        IEnumerable<BaseTypeDeclarationSyntax> Generate(CppClass cppClass);
+        IEnumerable<SyntaxNode> Generate(CppClass cppClass);
 
-        IEnumerable<BaseTypeDeclarationSyntax> Generate(CppEnum cppEnum);
+        IEnumerable<SyntaxNode> Generate(CppEnum cppEnum);
+
+        IEnumerable<SyntaxNode> Generate(CppTypedef typedef);
     }
 }

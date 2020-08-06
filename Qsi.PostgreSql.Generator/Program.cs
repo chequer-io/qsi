@@ -5,7 +5,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using CliWrap;
 using CliWrap.Buffered;
 using CppAst;
@@ -231,39 +230,66 @@ namespace Qsi.PostgreSql.Generator
                     return true;
                 });
 
-            var namespaceSyntax = Syntax.NamespaceDeclaration(config.Namespace);
-
             foreach (var element in cppElements)
             {
-                IEnumerable<BaseTypeDeclarationSyntax> csMembers;
+                IEnumerable<SyntaxNode> csNodes;
 
                 switch (element)
                 {
                     case CppEnum cppEnum:
-                        csMembers = generator.Generate(cppEnum);
+                        csNodes = generator.Generate(cppEnum);
                         break;
 
                     case CppClass cppClass:
-                        csMembers = generator.Generate(cppClass);
+                        csNodes = generator.Generate(cppClass);
+                        break;
+
+                    case CppTypedef cppTypedef:
+                        csNodes = generator.Generate(cppTypedef);
                         break;
 
                     default:
-                        throw new NotSupportedException();
+                        continue;
                 }
 
-                namespaceSyntax.LeadingTrivia.Clear();
-                namespaceSyntax.LeadingTrivia.Add(Syntax.BlockComment(CreateLeadingComment(element, pathMap[element])));
+                var namespaceSyntax = Syntax.NamespaceDeclaration(config.Namespace);
+
+                var unitSyntax = new CompilationUnitSyntax
+                {
+                    LeadingTrivia =
+                    {
+                        Syntax.BlockComment(CreateLeadingComment(element, pathMap[element]))
+                    },
+                    Members =
+                    {
+                        namespaceSyntax
+                    }
+                };
 
                 namespaceSyntax.Members.Clear();
 
-                foreach (var csMember in csMembers)
-                    namespaceSyntax.Members.Add(csMember);
+                foreach (var csNode in csNodes)
+                {
+                    switch (csNode)
+                    {
+                        case UsingDirectiveSyntax usingDirectiveSyntax:
+                            unitSyntax.Usings.Add(usingDirectiveSyntax);
+                            break;
+
+                        case MemberDeclarationSyntax memberDeclarationSyntax:
+                            namespaceSyntax.Members.Add(memberDeclarationSyntax);
+                            break;
+
+                        default:
+                            throw new NotSupportedException();
+                    }
+                }
 
                 using var stream = File.Create(Path.Combine(config.OutputDirectory, $"{((ICppMember)element).Name}.cs"));
                 using var writer = new StreamWriter(stream);
                 using var printer = new SyntaxPrinter(new SyntaxWriter(writer));
 
-                printer.Visit(namespaceSyntax);
+                printer.Visit(unitSyntax);
             }
         }
 
