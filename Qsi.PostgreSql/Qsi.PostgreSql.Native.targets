@@ -1,0 +1,19 @@
+﻿<Project>
+
+    <PropertyGroup>
+        <ChakraCoreVersion>3.5.6</ChakraCoreVersion>
+    </PropertyGroup>
+
+    <ItemGroup Condition=" '$(RuntimeIdentifier)' == '' ">
+        <PackageReference Include="JavaScriptEngineSwitcher.ChakraCore.Native.linux-x64" Version="$(ChakraCoreVersion)"/>
+        <PackageReference Include="JavaScriptEngineSwitcher.ChakraCore.Native.osx-x64" Version="$(ChakraCoreVersion)"/>
+        <PackageReference Include="JavaScriptEngineSwitcher.ChakraCore.Native.win-x64" Version="$(ChakraCoreVersion)"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Condition=" '$(RuntimeIdentifier)' == 'linux-x64' " Include="JavaScriptEngineSwitcher.ChakraCore.Native.linux-x64" Version="$(ChakraCoreVersion)"/>
+        <PackageReference Condition=" '$(RuntimeIdentifier)' == 'osx-x64' " Include="JavaScriptEngineSwitcher.ChakraCore.Native.osx-x64" Version="$(ChakraCoreVersion)"/>
+        <PackageReference Condition=" '$(RuntimeIdentifier)' == 'win-x64' " Include="JavaScriptEngineSwitcher.ChakraCore.Native.win-x64" Version="$(ChakraCoreVersion)"/>
+    </ItemGroup>
+
+</Project> 
