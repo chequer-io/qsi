@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Runtime.InteropServices;
-using ChakraCore.NET.API;
+using JavaScriptEngineSwitcher.ChakraCore;
 using Newtonsoft.Json;
 using Qsi.Parsing;
 using Qsi.PostgreSql.Internal.Postgres.Converters;
@@ -9,9 +8,7 @@ namespace Qsi.PostgreSql.Internal
 {
     internal abstract class PgQueryBase<T> : IPgParser
     {
-        private JavaScriptRuntime _runtime;
-        private JavaScriptContext _context;
-        private JavaScriptSourceContext _srcContext;
+        private ChakraCoreJsEngine _jsEngine;
 
         private bool _initialized;
         private readonly JsonSerializerSettings _serializerSettings;
@@ -36,17 +33,13 @@ namespace Qsi.PostgreSql.Internal
 
             try
             {
-                Native.ThrowIfError(Native.JsCreateRuntime(JavaScriptRuntimeAttributes.None, null, out _runtime));
-                Native.ThrowIfError(Native.JsCreateContext(_runtime, out _context));
-                Native.ThrowIfError(Native.JsSetCurrentContext(_context));
-
-                _srcContext = JavaScriptSourceContext.FromIntPtr(IntPtr.Zero);
-
-                Native.ThrowIfError(Native.JsRunScript(parserJs, _srcContext++, string.Empty, out _));
+                _jsEngine = new ChakraCoreJsEngine();
+                _jsEngine.Execute(parserJs);
             }
-            catch (Exception)
+            catch
             {
-                _runtime.Dispose();
+                _jsEngine?.Dispose();
+                _jsEngine = null;
                 throw;
             }
 
@@ -63,11 +56,8 @@ namespace Qsi.PostgreSql.Internal
 
             var parseJs = GetParseScript(input);
 
-            Native.ThrowIfError(Native.JsRunScript(parseJs, _srcContext++, string.Empty, out var result));
-            Native.JsStringToPointer(result, out var resultPtr, out _);
-
-            var json = Marshal.PtrToStringUni(resultPtr);
-            var parseResult = JsonConvert.DeserializeObject<PgParseResult>(json!, _serializerSettings);
+            var json = _jsEngine.Evaluate<string>(parseJs);
+            var parseResult = JsonConvert.DeserializeObject<PgParseResult>(json, _serializerSettings);
 
             if (parseResult?.Error != null)
             {
@@ -88,10 +78,8 @@ namespace Qsi.PostgreSql.Internal
 
         void IDisposable.Dispose()
         {
-            _runtime.Dispose();
-            _runtime = default;
-            _context = default;
-            _srcContext = default;
+            _jsEngine?.Dispose();
+            _jsEngine = null;
         }
     }
 }
