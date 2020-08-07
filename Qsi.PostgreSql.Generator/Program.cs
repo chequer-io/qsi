@@ -196,69 +196,59 @@ namespace Qsi.PostgreSql.Generator
             if (result.HasErrors)
                 throw new OperationCanceledException(result.Diagnostics.ToString());
 
-            Regex[] targets = config.Targets
-                .Select(StringExtension.MakeWildcardPattern)
-                .ToArray();
-
             if (Directory.Exists(config.OutputDirectory))
                 Directory.Delete(config.OutputDirectory, true);
 
             Directory.CreateDirectory(config.OutputDirectory);
 
             var generator = CreateGenerator(config);
-            var pathMap = new Dictionary<CppElement, string>();
+            var genCache = new Dictionary<CppType, GenerateResult>();
 
-            IEnumerable<CppElement> cppElements = result.Children()
-                .OfType<CppElement>()
-                .Where(e =>
-                {
-                    var file = e.Span.Start.File;
-
-                    if (string.IsNullOrEmpty(file) || !File.Exists(file))
-                        return false;
-
-                    var relative = Path.GetRelativePath(directory, file);
-
-                    if (relative.StartsWith("../"))
-                        return false;
-
-                    if (!targets.Any(t => t.IsMatch(relative)))
-                        return false;
-
-                    pathMap[e] = relative;
-
-                    return true;
-                });
-
-            foreach (var element in cppElements)
+            generator.ResolveType += unknownType =>
             {
-                IEnumerable<SyntaxNode> csNodes;
-
-                switch (element)
+                if (!genCache.TryGetValue(unknownType, out var genResult))
                 {
-                    case CppEnum cppEnum:
-                        csNodes = generator.Generate(cppEnum);
-                        break;
-
-                    case CppClass cppClass:
-                        csNodes = generator.Generate(cppClass);
-                        break;
-
-                    case CppTypedef cppTypedef:
-                        csNodes = generator.Generate(cppTypedef);
-                        break;
-
-                    default:
-                        continue;
+                    if (unknownType is CppTypeDeclaration typeDeclaration)
+                    {
+                        genResult = generator.Generate(typeDeclaration);
+                        genCache[unknownType] = genResult;
+                    }
+                    else
+                    {
+                        throw new NotSupportedException();
+                    }
                 }
 
+                return genResult;
+            };
+
+            IEnumerable<CppTypeDeclaration> cppMembers = result.Children()
+                .OfType<ICppMember>()
+                .Where(m => config.TargetTypes.Contains(m.Name))
+                .Cast<CppTypeDeclaration>()
+                .ToArray();
+
+            foreach (var element in cppMembers.OrderBy(e => e is CppTypedef ? 0 : 1))
+            {
+                if (genCache.ContainsKey(element))
+                    continue;
+
+                genCache[element] = generator.Generate(element);
+            }
+
+            foreach (var genResult in genCache.Values)
+            {
+                if (genResult.Type == null)
+                    continue;
+
+                var relativePath = Path.GetRelativePath(directory, genResult.CppType.Span.Start.File);
                 var namespaceSyntax = Syntax.NamespaceDeclaration(config.Namespace);
 
                 var unitSyntax = new CompilationUnitSyntax
                 {
                     LeadingTrivia =
                     {
-                        Syntax.BlockComment(CreateLeadingComment(element, pathMap[element]))
+                        Syntax.BlockComment(CreateLeadingComment(genResult.CppType, relativePath))
                     },
                     Members =
                     {
@@ -266,26 +256,17 @@ namespace Qsi.PostgreSql.Generator
                     }
                 };
 
-                namespaceSyntax.Members.Clear();
-
-                foreach (var csNode in csNodes)
+                if (genResult.UsingDirectives != null)
                 {
-                    switch (csNode)
+                    foreach (var usingDirective in genResult.UsingDirectives)
                     {
-                        case UsingDirectiveSyntax usingDirectiveSyntax:
-                            unitSyntax.Usings.Add(usingDirectiveSyntax);
-                            break;
-
-                        case MemberDeclarationSyntax memberDeclarationSyntax:
-                            namespaceSyntax.Members.Add(memberDeclarationSyntax);
-                            break;
-
-                        default:
-                            throw new NotSupportedException();
+                        unitSyntax.Usings.Add(usingDirective);
                     }
                 }
 
-                using var stream = File.Create(Path.Combine(config.OutputDirectory, $"{((ICppMember)element).Name}.cs"));
+                namespaceSyntax.Members.Add(genResult.Type);
+
+                using var stream = File.Create(Path.Combine(config.OutputDirectory, $"{genResult.Type.Identifier}.cs"));
                 using var writer = new StreamWriter(stream);
                 using var printer = new SyntaxPrinter(new SyntaxWriter(writer));
 

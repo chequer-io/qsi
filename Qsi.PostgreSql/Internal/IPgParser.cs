@@ -4,6 +4,6 @@ namespace Qsi.PostgreSql.Internal
 {
     internal interface IPgParser : IDisposable
     {
-        IPgTree Parse(string input);
+        IPgNode Parse(string input);
     }
 }

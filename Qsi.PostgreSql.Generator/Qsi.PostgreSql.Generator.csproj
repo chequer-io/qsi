@@ -10,6 +10,7 @@
       <PackageReference Include="CppAst" Version="0.7.3" />
       <PackageReference Include="CSharpSyntax" Version="0.2.0" />
       <PackageReference Include="LibGit2Sharp" Version="0.26.2" />
+      <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.7.0" />
       <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     </ItemGroup>
 

@@ -1,4 +1,5 @@
-﻿using System.Collections.Immutable;
+﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using Newtonsoft.Json;
 
 namespace Qsi.PostgreSql.Generator.Models
@@ -21,10 +22,9 @@ namespace Qsi.PostgreSql.Generator.Models
         public CompileConfig CompileConfig { get; set; }
 
         [JsonProperty("typeMap")]
-        public ImmutableDictionary<string, string> TypeMap { get; set; }
+        public Dictionary<string, string> TypeMap { get; set; }
 
-        // support wildcard
-        [JsonProperty("targets")]
-        public string[] Targets { get; set; }
+        [JsonProperty("targetTypes")]
+        public HashSet<string> TargetTypes { get; set; }
     }
 }

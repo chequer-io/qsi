@@ -11,13 +11,13 @@ namespace Qsi.PostgreSql.Diagnostics
 
         public IRawTree[] Children { get; }
 
-        internal PostgreSqlRawTree(IPgTree tree)
+        internal PostgreSqlRawTree(IPgNode tree)
         {
             DisplayName = tree.GetType().Name;
             Children = GetChildrenByProperties(tree);
         }
 
-        internal PostgreSqlRawTree(string name, IEnumerable<IPgTree> tree)
+        internal PostgreSqlRawTree(string name, IEnumerable<IPgNode> tree)
         {
             DisplayName = name;
 
@@ -36,7 +36,7 @@ namespace Qsi.PostgreSql.Diagnostics
             };
         }
 
-        private static IRawTree[] GetChildrenByProperties(IPgTree tree)
+        private static IRawTree[] GetChildrenByProperties(IPgNode tree)
         {
             return tree.GetType().GetProperties()
                 .Select(pi => (pi, pi.GetValue(tree)))
@@ -46,13 +46,13 @@ namespace Qsi.PostgreSql.Diagnostics
                     var (pi, value) = x;
                     IRawTree rawTree;
 
-                    if (typeof(IPgTree).IsAssignableFrom(pi.PropertyType))
+                    if (typeof(IPgNode).IsAssignableFrom(pi.PropertyType))
                     {
-                        rawTree = new PostgreSqlRawTree((IPgTree)value);
+                        rawTree = new PostgreSqlRawTree((IPgNode)value);
                     }
-                    else if (typeof(IPgTree[]).IsAssignableFrom(pi.PropertyType))
+                    else if (typeof(IPgNode[]).IsAssignableFrom(pi.PropertyType))
                     {
-                        rawTree = new PostgreSqlRawTree(pi.Name, (IPgTree[])value);
+                        rawTree = new PostgreSqlRawTree(pi.Name, (IPgNode[])value);
                     }
                     else
                     {

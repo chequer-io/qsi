@@ -3,7 +3,7 @@ using Qsi.PostgreSql.Resources;
 
 namespace Qsi.PostgreSql.Internal
 {
-    internal class PgQuery10 : PgQueryBase<IPgTree>
+    internal class PgQuery10 : PgQueryBase<IPgNode>
     {
         protected override string GetParserScript()
         {

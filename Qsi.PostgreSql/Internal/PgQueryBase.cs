@@ -50,7 +50,7 @@ namespace Qsi.PostgreSql.Internal
 
         protected abstract string GetParseScript(string input);
 
-        public IPgTree Parse(string input)
+        public IPgNode Parse(string input)
         {
             Initialize();
 

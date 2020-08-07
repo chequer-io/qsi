@@ -1,6 +1,6 @@
 ﻿namespace Qsi.PostgreSql.Internal
 {
-    internal interface IPgTree
+    internal interface IPgNode
     {
     }
 }

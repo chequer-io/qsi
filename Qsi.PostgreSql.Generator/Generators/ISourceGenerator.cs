@@ -1,15 +1,13 @@
-using System.Collections.Generic;
+using System;
 using CppAst;
-using CSharpSyntax;
+using Qsi.PostgreSql.Generator.Models;
 
 namespace Qsi.PostgreSql.Generator.Generators
 {
     internal interface ISourceGenerator
     {
-        IEnumerable<SyntaxNode> Generate(CppClass cppClass);
+        event Func<CppType, GenerateResult> ResolveType;
 
-        IEnumerable<SyntaxNode> Generate(CppEnum cppEnum);
-
-        IEnumerable<SyntaxNode> Generate(CppTypedef typedef);
+        GenerateResult Generate(CppTypeDeclaration cppType);
     }
 }

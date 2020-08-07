@@ -30,7 +30,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Converters
             // Value : Start Object
             VerifyNextExpected(reader, JsonToken.StartObject);
 
-            if (nodeType != typeof(IPgTree))
+            if (nodeType != typeof(IPgNode))
                 _skipNextType = nodeType;
 
             var node = serializer.Deserialize(reader, nodeType);
@@ -69,7 +69,7 @@ namespace Qsi.PostgreSql.Internal.Postgres.Converters
                 return false;
             }
 
-            return typeof(IPgTree).IsAssignableFrom(objectType); // && PgNodeContract.HasNodeType(objectType);
+            return typeof(IPgNode).IsAssignableFrom(objectType);
         }
     }
 }
