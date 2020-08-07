@@ -11,15 +11,14 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("DropRoleStmt")]
-    internal sealed class DropRoleStmt : IPg10Node
+    internal class DropRoleStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_DropRoleStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_DropRoleStmt;
+
+        public NodeTag? type { get; set; }
 
         public IPg10Node[] roles { get; set; }
 
-        public bool missing_ok { get; set; }
+        public bool? missing_ok { get; set; }
     }
 }

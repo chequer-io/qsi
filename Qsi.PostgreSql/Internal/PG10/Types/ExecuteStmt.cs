@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("ExecuteStmt")]
-    internal sealed class ExecuteStmt : IPg10Node
+    internal class ExecuteStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_ExecuteStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_ExecuteStmt;
+
+        public NodeTag? type { get; set; }
 
         public string name { get; set; }
 

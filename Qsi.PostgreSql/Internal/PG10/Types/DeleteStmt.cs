@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("DeleteStmt")]
-    internal sealed class DeleteStmt : IPg10Node
+    internal class DeleteStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_DeleteStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_DeleteStmt;
+
+        public NodeTag? type { get; set; }
 
         public RangeVar relation { get; set; }
 

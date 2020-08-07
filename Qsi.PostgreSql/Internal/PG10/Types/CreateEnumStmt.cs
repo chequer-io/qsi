@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("CreateEnumStmt")]
-    internal sealed class CreateEnumStmt : IPg10Node
+    internal class CreateEnumStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_CreateEnumStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_CreateEnumStmt;
+
+        public NodeTag? type { get; set; }
 
         public IPg10Node[] typeName { get; set; }
 

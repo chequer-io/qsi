@@ -6,10 +6,15 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class SubqueryScanState
+    [PgNode("SubqueryScanState")]
+    internal class SubqueryScanState : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_SubqueryScanState;
+
         public ScanState ss { get; set; }
 
         public PlanState subplan { get; set; }

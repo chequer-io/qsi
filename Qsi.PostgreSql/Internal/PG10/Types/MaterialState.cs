@@ -6,15 +6,20 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class MaterialState
+    [PgNode("MaterialState")]
+    internal class MaterialState : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_MaterialState;
+
         public ScanState ss { get; set; }
 
-        public int eflags { get; set; }
+        public int? eflags { get; set; }
 
-        public bool eof_underlying { get; set; }
+        public bool? eof_underlying { get; set; }
 
         public Tuplestorestate tuplestorestate { get; set; }
     }

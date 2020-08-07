@@ -6,12 +6,17 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class SeqScanState
+    [PgNode("SeqScanState")]
+    internal class SeqScanState : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_SeqScanState;
+
         public ScanState ss { get; set; }
 
-        public uint pscan_len { get; set; }
+        public uint? pscan_len { get; set; }
     }
 }

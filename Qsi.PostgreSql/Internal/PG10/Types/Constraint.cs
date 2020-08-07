@@ -11,30 +11,27 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("Constraint")]
-    internal sealed class Constraint : IPg10Node
+    internal class Constraint : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_Constraint; }
-        }
+        public virtual NodeTag Type => NodeTag.T_Constraint;
 
-        public ConstrType contype { get; set; }
+        public NodeTag? type { get; set; }
+
+        public ConstrType? contype { get; set; }
 
         public string conname { get; set; }
 
-        public bool deferrable { get; set; }
+        public bool? deferrable { get; set; }
 
-        public bool initdeferred { get; set; }
+        public bool? initdeferred { get; set; }
 
-        public int location { get; set; }
-
-        public bool is_no_inherit { get; set; }
+        public bool? is_no_inherit { get; set; }
 
         public IPg10Node raw_expr { get; set; }
 
         public string cooked_expr { get; set; }
 
-        public char generated_when { get; set; }
+        public char? generated_when { get; set; }
 
         public IPg10Node[] keys { get; set; }
 
@@ -56,18 +53,18 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] pk_attrs { get; set; }
 
-        public char fk_matchtype { get; set; }
+        public char? fk_matchtype { get; set; }
 
-        public char fk_upd_action { get; set; }
+        public char? fk_upd_action { get; set; }
 
-        public char fk_del_action { get; set; }
+        public char? fk_del_action { get; set; }
 
         public IPg10Node[] old_conpfeqop { get; set; }
 
-        public uint old_pktable_oid { get; set; }
+        public uint? old_pktable_oid { get; set; }
 
-        public bool skip_validation { get; set; }
+        public bool? skip_validation { get; set; }
 
-        public bool initially_valid { get; set; }
+        public bool? initially_valid { get; set; }
     }
 }

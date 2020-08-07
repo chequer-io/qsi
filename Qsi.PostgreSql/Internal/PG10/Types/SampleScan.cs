@@ -6,10 +6,15 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class SampleScan
+    [PgNode("SampleScan")]
+    internal class SampleScan : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_SampleScan;
+
         public Scan scan { get; set; }
 
         public TableSampleClause tablesample { get; set; }

@@ -8,23 +8,23 @@
 
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class SortSupportData
+    internal class SortSupportData
     {
-        public MemoryContextData[] ssup_cxt { get; set; }
+        public MemoryContext ssup_cxt { get; set; }
 
-        public uint ssup_collation { get; set; }
+        public uint? ssup_collation { get; set; }
 
-        public bool ssup_reverse { get; set; }
+        public bool? ssup_reverse { get; set; }
 
-        public bool ssup_nulls_first { get; set; }
+        public bool? ssup_nulls_first { get; set; }
 
-        public short ssup_attno { get; set; }
+        public short? ssup_attno { get; set; }
 
-        public object[] ssup_extra { get; set; }
+        public object?[] ssup_extra { get; set; }
 
         public string comparator { get; set; }
 
-        public bool abbreviate { get; set; }
+        public bool? abbreviate { get; set; }
 
         public string abbrev_converter { get; set; }
 

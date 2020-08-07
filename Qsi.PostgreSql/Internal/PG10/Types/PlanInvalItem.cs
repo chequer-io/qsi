@@ -11,15 +11,14 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("PlanInvalItem")]
-    internal sealed class PlanInvalItem : IPg10Node
+    internal class PlanInvalItem : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_PlanInvalItem; }
-        }
+        public virtual NodeTag Type => NodeTag.T_PlanInvalItem;
 
-        public int cacheId { get; set; }
+        public NodeTag? type { get; set; }
 
-        public uint hashValue { get; set; }
+        public int? cacheId { get; set; }
+
+        public uint? hashValue { get; set; }
     }
 }

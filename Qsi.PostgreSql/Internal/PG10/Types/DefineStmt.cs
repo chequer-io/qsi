@@ -11,16 +11,15 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("DefineStmt")]
-    internal sealed class DefineStmt : IPg10Node
+    internal class DefineStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_DefineStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_DefineStmt;
 
-        public ObjectType kind { get; set; }
+        public NodeTag? type { get; set; }
 
-        public bool oldstyle { get; set; }
+        public ObjectType? kind { get; set; }
+
+        public bool? oldstyle { get; set; }
 
         public IPg10Node[] defnames { get; set; }
 
@@ -28,6 +27,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] definition { get; set; }
 
-        public bool if_not_exists { get; set; }
+        public bool? if_not_exists { get; set; }
     }
 }

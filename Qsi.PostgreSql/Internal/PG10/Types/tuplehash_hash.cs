@@ -8,20 +8,20 @@
 
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class tuplehash_hash
+    internal class tuplehash_hash
     {
-        public uint size { get; set; }
+        public uint? size { get; set; }
 
-        public uint members { get; set; }
+        public uint? members { get; set; }
 
-        public uint sizemask { get; set; }
+        public uint? sizemask { get; set; }
 
-        public uint grow_threshold { get; set; }
+        public uint? grow_threshold { get; set; }
 
         public TupleHashEntryData data { get; set; }
 
-        public MemoryContextData[] ctx { get; set; }
+        public MemoryContext ctx { get; set; }
 
-        public object[] private_data { get; set; }
+        public object?[] private_data { get; set; }
     }
 }

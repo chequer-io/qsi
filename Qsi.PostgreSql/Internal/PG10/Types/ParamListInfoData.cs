@@ -8,17 +8,17 @@
 
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class ParamListInfoData
+    internal class ParamListInfoData
     {
         public string paramFetch { get; set; }
 
-        public object[] paramFetchArg { get; set; }
+        public object?[] paramFetchArg { get; set; }
 
         public string parserSetup { get; set; }
 
-        public object[] parserSetupArg { get; set; }
+        public object?[] parserSetupArg { get; set; }
 
-        public int numParams { get; set; }
+        public int? numParams { get; set; }
 
         public Bitmapset paramMask { get; set; }
 

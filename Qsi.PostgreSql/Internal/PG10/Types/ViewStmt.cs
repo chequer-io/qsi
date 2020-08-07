@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("ViewStmt")]
-    internal sealed class ViewStmt : IPg10Node
+    internal class ViewStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_ViewStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_ViewStmt;
+
+        public NodeTag? type { get; set; }
 
         public RangeVar view { get; set; }
 
@@ -24,10 +23,10 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node query { get; set; }
 
-        public bool replace { get; set; }
+        public bool? replace { get; set; }
 
         public IPg10Node[] options { get; set; }
 
-        public ViewCheckOption withCheckOption { get; set; }
+        public ViewCheckOption? withCheckOption { get; set; }
     }
 }

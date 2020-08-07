@@ -11,14 +11,13 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("AlterObjectDependsStmt")]
-    internal sealed class AlterObjectDependsStmt : IPg10Node
+    internal class AlterObjectDependsStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_AlterObjectDependsStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_AlterObjectDependsStmt;
 
-        public ObjectType objectType { get; set; }
+        public NodeTag? type { get; set; }
+
+        public ObjectType? objectType { get; set; }
 
         public RangeVar relation { get; set; }
 

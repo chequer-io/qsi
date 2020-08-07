@@ -6,14 +6,19 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class FunctionScan
+    [PgNode("FunctionScan")]
+    internal class FunctionScan : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_FunctionScan;
+
         public Scan scan { get; set; }
 
         public IPg10Node[] functions { get; set; }
 
-        public bool funcordinality { get; set; }
+        public bool? funcordinality { get; set; }
     }
 }

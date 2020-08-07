@@ -6,26 +6,29 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class OpExpr
+    [PgNode("OpExpr")]
+    internal class OpExpr : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_OpExpr;
+
         public Expr xpr { get; set; }
 
-        public uint opno { get; set; }
+        public uint? opno { get; set; }
 
-        public uint opfuncid { get; set; }
+        public uint? opfuncid { get; set; }
 
-        public uint opresulttype { get; set; }
+        public uint? opresulttype { get; set; }
 
-        public bool opretset { get; set; }
+        public bool? opretset { get; set; }
 
-        public uint opcollid { get; set; }
+        public uint? opcollid { get; set; }
 
-        public uint inputcollid { get; set; }
+        public uint? inputcollid { get; set; }
 
         public IPg10Node[] args { get; set; }
-
-        public int location { get; set; }
     }
 }

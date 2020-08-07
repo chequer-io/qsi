@@ -6,13 +6,18 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class IndexOnlyScan
+    [PgNode("IndexOnlyScan")]
+    internal class IndexOnlyScan : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_IndexOnlyScan;
+
         public Scan scan { get; set; }
 
-        public uint indexid { get; set; }
+        public uint? indexid { get; set; }
 
         public IPg10Node[] indexqual { get; set; }
 
@@ -20,6 +25,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] indextlist { get; set; }
 
-        public ScanDirection indexorderdir { get; set; }
+        public ScanDirection? indexorderdir { get; set; }
     }
 }

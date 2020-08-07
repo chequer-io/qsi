@@ -11,17 +11,16 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("LockingClause")]
-    internal sealed class LockingClause : IPg10Node
+    internal class LockingClause : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_LockingClause; }
-        }
+        public virtual NodeTag Type => NodeTag.T_LockingClause;
+
+        public NodeTag? type { get; set; }
 
         public IPg10Node[] lockedRels { get; set; }
 
-        public LockClauseStrength strength { get; set; }
+        public LockClauseStrength? strength { get; set; }
 
-        public LockWaitPolicy waitPolicy { get; set; }
+        public LockWaitPolicy? waitPolicy { get; set; }
     }
 }

@@ -8,12 +8,12 @@
 
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class tuplehash_iterator
+    internal class tuplehash_iterator
     {
-        public uint cur { get; set; }
+        public uint? cur { get; set; }
 
-        public uint end { get; set; }
+        public uint? end { get; set; }
 
-        public bool done { get; set; }
+        public bool? done { get; set; }
     }
 }

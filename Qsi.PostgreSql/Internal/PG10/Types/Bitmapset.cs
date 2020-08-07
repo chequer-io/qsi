@@ -8,10 +8,10 @@
 
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class Bitmapset
+    internal class Bitmapset
     {
-        public int nwords { get; set; }
+        public int? nwords { get; set; }
 
-        public uint words { get; set; }
+        public uint? words { get; set; }
     }
 }

@@ -11,21 +11,18 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("A_Expr")]
-    internal sealed class A_Expr : IPg10Node
+    internal class A_Expr : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_A_Expr; }
-        }
+        public virtual NodeTag Type => NodeTag.T_A_Expr;
 
-        public A_Expr_Kind kind { get; set; }
+        public NodeTag? type { get; set; }
+
+        public A_Expr_Kind? kind { get; set; }
 
         public IPg10Node[] name { get; set; }
 
         public IPg10Node lexpr { get; set; }
 
         public IPg10Node rexpr { get; set; }
-
-        public int location { get; set; }
     }
 }

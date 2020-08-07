@@ -6,16 +6,21 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class ResultState
+    [PgNode("ResultState")]
+    internal class ResultState : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_ResultState;
+
         public PlanState ps { get; set; }
 
         public ExprState resconstantqual { get; set; }
 
-        public bool rs_done { get; set; }
+        public bool? rs_done { get; set; }
 
-        public bool rs_checkqual { get; set; }
+        public bool? rs_checkqual { get; set; }
     }
 }

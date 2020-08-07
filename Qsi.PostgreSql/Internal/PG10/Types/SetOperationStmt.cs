@@ -11,16 +11,15 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("SetOperationStmt")]
-    internal sealed class SetOperationStmt : IPg10Node
+    internal class SetOperationStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_SetOperationStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_SetOperationStmt;
 
-        public SetOperation op { get; set; }
+        public NodeTag? type { get; set; }
 
-        public bool all { get; set; }
+        public SetOperation? op { get; set; }
+
+        public bool? all { get; set; }
 
         public IPg10Node larg { get; set; }
 

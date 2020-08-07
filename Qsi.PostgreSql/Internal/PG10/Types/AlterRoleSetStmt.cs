@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("AlterRoleSetStmt")]
-    internal sealed class AlterRoleSetStmt : IPg10Node
+    internal class AlterRoleSetStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_AlterRoleSetStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_AlterRoleSetStmt;
+
+        public NodeTag? type { get; set; }
 
         public RoleSpec role { get; set; }
 

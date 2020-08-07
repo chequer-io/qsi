@@ -8,20 +8,20 @@
 
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class tupleDesc
+    internal class tupleDesc
     {
-        public int natts { get; set; }
+        public int? natts { get; set; }
 
         public FormData_pg_attribute attrs { get; set; }
 
         public tupleConstr constr { get; set; }
 
-        public uint tdtypeid { get; set; }
+        public uint? tdtypeid { get; set; }
 
-        public int tdtypmod { get; set; }
+        public int? tdtypmod { get; set; }
 
-        public bool tdhasoid { get; set; }
+        public bool? tdhasoid { get; set; }
 
-        public int tdrefcount { get; set; }
+        public int? tdrefcount { get; set; }
     }
 }

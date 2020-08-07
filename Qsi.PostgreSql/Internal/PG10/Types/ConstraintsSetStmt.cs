@@ -11,15 +11,14 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("ConstraintsSetStmt")]
-    internal sealed class ConstraintsSetStmt : IPg10Node
+    internal class ConstraintsSetStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_ConstraintsSetStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_ConstraintsSetStmt;
+
+        public NodeTag? type { get; set; }
 
         public IPg10Node[] constraints { get; set; }
 
-        public bool deferred { get; set; }
+        public bool? deferred { get; set; }
     }
 }

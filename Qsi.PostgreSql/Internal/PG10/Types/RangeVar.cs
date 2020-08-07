@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("RangeVar")]
-    internal sealed class RangeVar : IPg10Node
+    internal class RangeVar : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_RangeVar; }
-        }
+        public virtual NodeTag Type => NodeTag.T_RangeVar;
+
+        public NodeTag? type { get; set; }
 
         public string catalogname { get; set; }
 
@@ -24,12 +23,10 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public string relname { get; set; }
 
-        public bool inh { get; set; }
+        public bool? inh { get; set; }
 
-        public char relpersistence { get; set; }
+        public char? relpersistence { get; set; }
 
         public Alias alias { get; set; }
-
-        public int location { get; set; }
     }
 }

@@ -11,14 +11,13 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("AlterSubscriptionStmt")]
-    internal sealed class AlterSubscriptionStmt : IPg10Node
+    internal class AlterSubscriptionStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_AlterSubscriptionStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_AlterSubscriptionStmt;
 
-        public AlterSubscriptionType kind { get; set; }
+        public NodeTag? type { get; set; }
+
+        public AlterSubscriptionType? kind { get; set; }
 
         public string subname { get; set; }
 

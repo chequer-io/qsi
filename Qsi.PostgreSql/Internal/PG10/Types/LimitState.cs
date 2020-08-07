@@ -6,25 +6,30 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class LimitState
+    [PgNode("LimitState")]
+    internal class LimitState : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_LimitState;
+
         public PlanState ps { get; set; }
 
         public ExprState limitOffset { get; set; }
 
         public ExprState limitCount { get; set; }
 
-        public int offset { get; set; }
+        public int? offset { get; set; }
 
-        public int count { get; set; }
+        public int? count { get; set; }
 
-        public bool noCount { get; set; }
+        public bool? noCount { get; set; }
 
-        public LimitStateCond lstate { get; set; }
+        public LimitStateCond? lstate { get; set; }
 
-        public int position { get; set; }
+        public int? position { get; set; }
 
         public TupleTableSlot subSlot { get; set; }
     }

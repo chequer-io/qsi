@@ -11,17 +11,16 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("DropUserMappingStmt")]
-    internal sealed class DropUserMappingStmt : IPg10Node
+    internal class DropUserMappingStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_DropUserMappingStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_DropUserMappingStmt;
+
+        public NodeTag? type { get; set; }
 
         public RoleSpec user { get; set; }
 
         public string servername { get; set; }
 
-        public bool missing_ok { get; set; }
+        public bool? missing_ok { get; set; }
     }
 }

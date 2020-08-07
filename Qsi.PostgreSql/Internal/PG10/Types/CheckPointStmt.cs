@@ -11,11 +11,10 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("CheckPointStmt")]
-    internal sealed class CheckPointStmt : IPg10Node
+    internal class CheckPointStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_CheckPointStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_CheckPointStmt;
+
+        public NodeTag? type { get; set; }
     }
 }

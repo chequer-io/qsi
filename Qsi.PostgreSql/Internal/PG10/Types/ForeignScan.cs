@@ -6,15 +6,20 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class ForeignScan
+    [PgNode("ForeignScan")]
+    internal class ForeignScan : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_ForeignScan;
+
         public Scan scan { get; set; }
 
-        public CmdType operation { get; set; }
+        public CmdType? operation { get; set; }
 
-        public uint fs_server { get; set; }
+        public uint? fs_server { get; set; }
 
         public IPg10Node[] fdw_exprs { get; set; }
 
@@ -26,6 +31,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public Bitmapset fs_relids { get; set; }
 
-        public bool fsSystemCol { get; set; }
+        public bool? fsSystemCol { get; set; }
     }
 }

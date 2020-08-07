@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("SelectStmt")]
-    internal sealed class SelectStmt : IPg10Node
+    internal class SelectStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_SelectStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_SelectStmt;
+
+        public NodeTag? type { get; set; }
 
         public IPg10Node[] distinctClause { get; set; }
 
@@ -46,9 +45,9 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public WithClause withClause { get; set; }
 
-        public SetOperation op { get; set; }
+        public SetOperation? op { get; set; }
 
-        public bool all { get; set; }
+        public bool? all { get; set; }
 
         public SelectStmt larg { get; set; }
 

@@ -6,29 +6,34 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class GatherMergeState
+    [PgNode("GatherMergeState")]
+    internal class GatherMergeState : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_GatherMergeState;
+
         public PlanState ps { get; set; }
 
-        public bool initialized { get; set; }
+        public bool? initialized { get; set; }
 
-        public bool gm_initialized { get; set; }
+        public bool? gm_initialized { get; set; }
 
-        public bool need_to_scan_locally { get; set; }
+        public bool? need_to_scan_locally { get; set; }
 
         public tupleDesc tupDesc { get; set; }
 
-        public int gm_nkeys { get; set; }
+        public int? gm_nkeys { get; set; }
 
         public SortSupportData gm_sortkeys { get; set; }
 
         public ParallelExecutorInfo pei { get; set; }
 
-        public int nworkers_launched { get; set; }
+        public int? nworkers_launched { get; set; }
 
-        public int nreaders { get; set; }
+        public int? nreaders { get; set; }
 
         public TupleTableSlot[] gm_slots { get; set; }
 

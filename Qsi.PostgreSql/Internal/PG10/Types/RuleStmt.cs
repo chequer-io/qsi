@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("RuleStmt")]
-    internal sealed class RuleStmt : IPg10Node
+    internal class RuleStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_RuleStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_RuleStmt;
+
+        public NodeTag? type { get; set; }
 
         public RangeVar relation { get; set; }
 
@@ -24,12 +23,12 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node whereClause { get; set; }
 
-        public CmdType @event { get; set; }
+        public CmdType? @event { get; set; }
 
-        public bool instead { get; set; }
+        public bool? instead { get; set; }
 
         public IPg10Node[] actions { get; set; }
 
-        public bool replace { get; set; }
+        public bool? replace { get; set; }
     }
 }

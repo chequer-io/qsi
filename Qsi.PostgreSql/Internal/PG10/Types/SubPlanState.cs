@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("SubPlanState")]
-    internal sealed class SubPlanState : IPg10Node
+    internal class SubPlanState : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_SubPlanState; }
-        }
+        public virtual NodeTag Type => NodeTag.T_SubPlanState;
+
+        public NodeTag? type { get; set; }
 
         public SubPlan subplan { get; set; }
 
@@ -30,7 +29,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public HeapTupleData curTuple { get; set; }
 
-        public uint curArray { get; set; }
+        public uint? curArray { get; set; }
 
         public ProjectionInfo projLeft { get; set; }
 
@@ -40,17 +39,17 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public TupleHashTableData hashnulls { get; set; }
 
-        public bool havehashrows { get; set; }
+        public bool? havehashrows { get; set; }
 
-        public bool havenullrows { get; set; }
+        public bool? havenullrows { get; set; }
 
-        public MemoryContextData[] hashtablecxt { get; set; }
+        public MemoryContext hashtablecxt { get; set; }
 
-        public MemoryContextData[] hashtempcxt { get; set; }
+        public MemoryContext hashtempcxt { get; set; }
 
         public ExprContext innerecontext { get; set; }
 
-        public short keyColIdx { get; set; }
+        public short? keyColIdx { get; set; }
 
         public FmgrInfo tab_hash_funcs { get; set; }
 

@@ -6,19 +6,13 @@
 
 */
 
-using Qsi.PostgreSql.Internal.Serialization;
-
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    [PgNode("Value")]
     internal class Value : IPg10Node
     {
-        public virtual NodeTag Type
-        {
-            get { return NodeTag.T_Value; }
-        }
+        public virtual NodeTag Type => NodeTag.T_Value;
 
-        public int ival { get; set; }
+        public int? ival { get; set; }
 
         public string str { get; set; }
     }

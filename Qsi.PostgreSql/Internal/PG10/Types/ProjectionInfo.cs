@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("ProjectionInfo")]
-    internal sealed class ProjectionInfo : IPg10Node
+    internal class ProjectionInfo : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_ProjectionInfo; }
-        }
+        public virtual NodeTag Type => NodeTag.T_ProjectionInfo;
+
+        public NodeTag? type { get; set; }
 
         public ExprState pi_state { get; set; }
 

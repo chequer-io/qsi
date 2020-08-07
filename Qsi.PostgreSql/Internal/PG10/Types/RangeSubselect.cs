@@ -11,14 +11,13 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("RangeSubselect")]
-    internal sealed class RangeSubselect : IPg10Node
+    internal class RangeSubselect : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_RangeSubselect; }
-        }
+        public virtual NodeTag Type => NodeTag.T_RangeSubselect;
 
-        public bool lateral { get; set; }
+        public NodeTag? type { get; set; }
+
+        public bool? lateral { get; set; }
 
         public IPg10Node subquery { get; set; }
 

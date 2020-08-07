@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("CreateTrigStmt")]
-    internal sealed class CreateTrigStmt : IPg10Node
+    internal class CreateTrigStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_CreateTrigStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_CreateTrigStmt;
+
+        public NodeTag? type { get; set; }
 
         public string trigname { get; set; }
 
@@ -26,23 +25,23 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] args { get; set; }
 
-        public bool row { get; set; }
+        public bool? row { get; set; }
 
-        public short timing { get; set; }
+        public short? timing { get; set; }
 
-        public short events { get; set; }
+        public short? events { get; set; }
 
         public IPg10Node[] columns { get; set; }
 
         public IPg10Node whenClause { get; set; }
 
-        public bool isconstraint { get; set; }
+        public bool? isconstraint { get; set; }
 
         public IPg10Node[] transitionRels { get; set; }
 
-        public bool deferrable { get; set; }
+        public bool? deferrable { get; set; }
 
-        public bool initdeferred { get; set; }
+        public bool? initdeferred { get; set; }
 
         public RangeVar constrrel { get; set; }
     }

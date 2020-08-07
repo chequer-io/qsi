@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("AlterForeignServerStmt")]
-    internal sealed class AlterForeignServerStmt : IPg10Node
+    internal class AlterForeignServerStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_AlterForeignServerStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_AlterForeignServerStmt;
+
+        public NodeTag? type { get; set; }
 
         public string servername { get; set; }
 
@@ -24,6 +23,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] options { get; set; }
 
-        public bool has_version { get; set; }
+        public bool? has_version { get; set; }
     }
 }

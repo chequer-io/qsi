@@ -11,14 +11,13 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("AlterObjectSchemaStmt")]
-    internal sealed class AlterObjectSchemaStmt : IPg10Node
+    internal class AlterObjectSchemaStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_AlterObjectSchemaStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_AlterObjectSchemaStmt;
 
-        public ObjectType objectType { get; set; }
+        public NodeTag? type { get; set; }
+
+        public ObjectType? objectType { get; set; }
 
         public RangeVar relation { get; set; }
 
@@ -26,6 +25,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public string newschema { get; set; }
 
-        public bool missing_ok { get; set; }
+        public bool? missing_ok { get; set; }
     }
 }

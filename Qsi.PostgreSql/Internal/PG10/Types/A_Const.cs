@@ -11,15 +11,12 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("A_Const")]
-    internal sealed class A_Const : IPg10Node
+    internal class A_Const : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_A_Const; }
-        }
+        public virtual NodeTag Type => NodeTag.T_A_Const;
+
+        public NodeTag? type { get; set; }
 
         public Value val { get; set; }
-
-        public int location { get; set; }
     }
 }

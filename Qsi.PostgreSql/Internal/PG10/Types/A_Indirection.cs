@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("A_Indirection")]
-    internal sealed class A_Indirection : IPg10Node
+    internal class A_Indirection : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_A_Indirection; }
-        }
+        public virtual NodeTag Type => NodeTag.T_A_Indirection;
+
+        public NodeTag? type { get; set; }
 
         public IPg10Node arg { get; set; }
 

@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("VariableShowStmt")]
-    internal sealed class VariableShowStmt : IPg10Node
+    internal class VariableShowStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_VariableShowStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_VariableShowStmt;
+
+        public NodeTag? type { get; set; }
 
         public string name { get; set; }
     }

@@ -11,13 +11,12 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("RangeTblRef")]
-    internal sealed class RangeTblRef : IPg10Node
+    internal class RangeTblRef : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_RangeTblRef; }
-        }
+        public virtual NodeTag Type => NodeTag.T_RangeTblRef;
 
-        public int rtindex { get; set; }
+        public NodeTag? type { get; set; }
+
+        public int? rtindex { get; set; }
     }
 }

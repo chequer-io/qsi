@@ -6,10 +6,15 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class BitmapHeapScan
+    [PgNode("BitmapHeapScan")]
+    internal class BitmapHeapScan : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_BitmapHeapScan;
+
         public Scan scan { get; set; }
 
         public IPg10Node[] bitmapqualorig { get; set; }

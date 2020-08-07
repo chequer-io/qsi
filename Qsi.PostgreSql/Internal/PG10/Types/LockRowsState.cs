@@ -6,10 +6,15 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class LockRowsState
+    [PgNode("LockRowsState")]
+    internal class LockRowsState : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_LockRowsState;
+
         public PlanState ps { get; set; }
 
         public IPg10Node[] lr_arowMarks { get; set; }
@@ -18,6 +23,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public HeapTupleData lr_curtuples { get; set; }
 
-        public int lr_ntables { get; set; }
+        public int? lr_ntables { get; set; }
     }
 }

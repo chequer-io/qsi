@@ -6,14 +6,19 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class UniqueState
+    [PgNode("UniqueState")]
+    internal class UniqueState : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_UniqueState;
+
         public PlanState ps { get; set; }
 
         public FmgrInfo eqfunctions { get; set; }
 
-        public MemoryContextData[] tempContext { get; set; }
+        public MemoryContext tempContext { get; set; }
     }
 }

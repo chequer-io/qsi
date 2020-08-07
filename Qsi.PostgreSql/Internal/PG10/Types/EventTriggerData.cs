@@ -11,17 +11,16 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("EventTriggerData")]
-    internal sealed class EventTriggerData : IPg10Node
+    internal class EventTriggerData : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_EventTriggerData; }
-        }
+        public virtual NodeTag Type => NodeTag.T_EventTriggerData;
 
-        public char @event { get; set; }
+        public NodeTag? type { get; set; }
+
+        public char? @event { get; set; }
 
         public IPg10Node parsetree { get; set; }
 
-        public char tag { get; set; }
+        public char? tag { get; set; }
     }
 }

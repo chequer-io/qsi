@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("CompositeTypeStmt")]
-    internal sealed class CompositeTypeStmt : IPg10Node
+    internal class CompositeTypeStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_CompositeTypeStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_CompositeTypeStmt;
+
+        public NodeTag? type { get; set; }
 
         public RangeVar typevar { get; set; }
 

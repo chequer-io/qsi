@@ -6,25 +6,30 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class GatherState
+    [PgNode("GatherState")]
+    internal class GatherState : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_GatherState;
+
         public PlanState ps { get; set; }
 
-        public bool initialized { get; set; }
+        public bool? initialized { get; set; }
 
-        public bool need_to_scan_locally { get; set; }
+        public bool? need_to_scan_locally { get; set; }
 
         public TupleTableSlot funnel_slot { get; set; }
 
         public ParallelExecutorInfo pei { get; set; }
 
-        public int nworkers_launched { get; set; }
+        public int? nworkers_launched { get; set; }
 
-        public int nreaders { get; set; }
+        public int? nreaders { get; set; }
 
-        public int nextreader { get; set; }
+        public int? nextreader { get; set; }
 
         public TupleQueueReader[] reader { get; set; }
     }

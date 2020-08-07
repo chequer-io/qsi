@@ -6,10 +6,15 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class ValuesScan
+    [PgNode("ValuesScan")]
+    internal class ValuesScan : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_ValuesScan;
+
         public Scan scan { get; set; }
 
         public IPg10Node[] values_lists { get; set; }

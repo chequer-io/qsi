@@ -11,14 +11,13 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("TriggerData")]
-    internal sealed class TriggerData : IPg10Node
+    internal class TriggerData : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_TriggerData; }
-        }
+        public virtual NodeTag Type => NodeTag.T_TriggerData;
 
-        public uint tg_event { get; set; }
+        public NodeTag? type { get; set; }
+
+        public uint? tg_event { get; set; }
 
         public RelationData tg_relation { get; set; }
 
@@ -28,9 +27,9 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public Trigger tg_trigger { get; set; }
 
-        public int tg_trigtuplebuf { get; set; }
+        public int? tg_trigtuplebuf { get; set; }
 
-        public int tg_newtuplebuf { get; set; }
+        public int? tg_newtuplebuf { get; set; }
 
         public Tuplestorestate tg_oldtable { get; set; }
 

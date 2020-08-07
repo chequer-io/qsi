@@ -11,17 +11,14 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("CollateClause")]
-    internal sealed class CollateClause : IPg10Node
+    internal class CollateClause : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_CollateClause; }
-        }
+        public virtual NodeTag Type => NodeTag.T_CollateClause;
+
+        public NodeTag? type { get; set; }
 
         public IPg10Node arg { get; set; }
 
         public IPg10Node[] collname { get; set; }
-
-        public int location { get; set; }
     }
 }

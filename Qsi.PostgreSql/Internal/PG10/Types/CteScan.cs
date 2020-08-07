@@ -6,14 +6,19 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class CteScan
+    [PgNode("CteScan")]
+    internal class CteScan : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_CteScan;
+
         public Scan scan { get; set; }
 
-        public int ctePlanId { get; set; }
+        public int? ctePlanId { get; set; }
 
-        public int cteParam { get; set; }
+        public int? cteParam { get; set; }
     }
 }

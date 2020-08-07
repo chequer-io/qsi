@@ -19,7 +19,11 @@
   ],
   "compile": {
     "sources": [
-      "src/*.c"
+      "src/*.c",
+      "src/postgres/include/utils/rel.h",
+      "src/postgres/include/nodes/relation.h",
+      "src/postgres/include/nodes/extensible.h",
+      "src/postgres/src_backend_utils_mmgr_aset.c"
     ],
     "sourceExcludes": [
       "src/pg_query_fingerprint_defs.c",
@@ -39,7 +43,7 @@
     "Node": "IPg10Node",
     "List": "IPg10Node[]"
   },
-  "targetTypes": [
+  "nodeTypes": [
     "Node",
     "Invalid",
     "IndexInfo",
@@ -253,10 +257,6 @@
     "AllocSetContext",
     "SlabContext",
     "Value",
-    "Integer",
-    "Float",
-    "String",
-    "BitString",
     "Null",
     "IntList",
     "OidList",

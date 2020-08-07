@@ -6,19 +6,24 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class TidScanState
+    [PgNode("TidScanState")]
+    internal class TidScanState : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_TidScanState;
+
         public ScanState ss { get; set; }
 
         public IPg10Node[] tss_tidexprs { get; set; }
 
-        public bool tss_isCurrentOf { get; set; }
+        public bool? tss_isCurrentOf { get; set; }
 
-        public int tss_NumTids { get; set; }
+        public int? tss_NumTids { get; set; }
 
-        public int tss_TidPtr { get; set; }
+        public int? tss_TidPtr { get; set; }
 
         public ItemPointerData tss_TidList { get; set; }
 

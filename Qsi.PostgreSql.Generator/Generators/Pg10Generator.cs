@@ -18,10 +18,12 @@ namespace Qsi.PostgreSql.Generator.Generators
 
         public event Func<CppType, GenerateResult> ResolveType;
 
+        private readonly GenerateConfig _config;
         private readonly Dictionary<string, string> _typeMap;
 
         public Pg10Generator(GenerateConfig config)
         {
+            _config = config;
             _typeMap = config.TypeMap ?? new Dictionary<string, string>();
         }
 
@@ -82,14 +84,56 @@ namespace Qsi.PostgreSql.Generator.Generators
             if (elementType.TypeKind != CppTypeKind.StructOrClass)
                 throw new NotSupportedException(elementType.GetDisplayName());
 
-            var csType = ConvertToCSharpType(elementType);
+            var csElementType = ConvertToCSharpType(elementType);
+            var usingDirectives = new List<UsingDirectiveSyntax>();
+
+            var csClass = new ClassDeclarationSyntax
+            {
+                Modifiers = Modifiers.Internal,
+                Identifier = cppTypedef.Name
+            };
 
             if (array)
-                csType += "[]";
+            {
+                if (_config.NodeTypes.Contains(csClass.Identifier))
+                {
+                    AddPgNodeAttribute(usingDirectives, csClass);
+                    usingDirectives.Add(Syntax.UsingDirective("System.Collections.Generic"));
 
-            _typeMap[cppTypedef.Name] = csType;
+                    csClass.BaseList = new BaseListSyntax
+                    {
+                        Types =
+                        {
+                            Syntax.ParseName($"List<{csElementType}>"),
+                            Syntax.ParseName(nodeInterfaceName)
+                        }
+                    };
+                }
 
-            return new GenerateResult(cppTypedef);
+                AddPgNodeTypeProperty(csClass, Modifiers.None);
+            }
+            else
+            {
+                csClass.BaseList = new BaseListSyntax
+                {
+                    Types =
+                    {
+                        Syntax.ParseName(csElementType)
+                    }
+                };
+
+                AddPgNodeAttribute(usingDirectives, csClass);
+
+                AddPgNodeTypeProperty(csClass, _config.NodeTypes.Contains(csElementType) ? Modifiers.Override : Modifiers.None);
+            }
+
+            _typeMap[cppTypedef.Name] = cppTypedef.Name;
+
+            return new GenerateResult(cppTypedef)
+            {
+                UsingDirectives = usingDirectives.ToArray(),
+                Type = csClass
+            };
         }
 
         private GenerateResult GenerateClass(CppClass cppClass)
@@ -102,26 +146,14 @@ namespace Qsi.PostgreSql.Generator.Generators
 
             var csClass = new ClassDeclarationSyntax
             {
-                Modifiers = Modifiers.Internal | Modifiers.Sealed,
+                Modifiers = Modifiers.Internal,
                 Identifier = CreateMemberName(cppClass)
             };
 
-            if (isValue)
+            if (_config.NodeTypes.Contains(cppClass.Name))
             {
-                csClass.Modifiers &= ~Modifiers.Sealed;
-            }
-
-            if (cppClass.Fields.Any(f => f.Type.GetDisplayName() == nodeTypeName))
-            {
-                // using Qsi.PostgreSql.Internal.Postgres;
-                usingDirectives.Add(Syntax.UsingDirective("Qsi.PostgreSql.Internal.Serialization"));
-
-                // [PgNode("..")]
-                var pgNodeAttribute = Syntax.Attribute(
-                    "PgNode",
-                    Syntax.AttributeArgumentList(Syntax.AttributeArgument(Syntax.LiteralExpression(cppClass.Name))));
-
-                csClass.AttributeLists.Add(Syntax.AttributeList(pgNodeAttribute));
+                if (!isValue)
+                    AddPgNodeAttribute(usingDirectives, csClass);
 
                 // .. : IPg10Node
                 csClass.BaseList = new BaseListSyntax
@@ -132,27 +164,8 @@ namespace Qsi.PostgreSql.Generator.Generators
                     }
                 };
 
-                string nodeTypeValue = cppClass.Name == "MemoryContextData" ?
-                    "T_MemoryContext" :
-                    $"T_{cppClass.Name}";
-
                 // IPg10Node::Type
-                csClass.Members.Add(new PropertyDeclarationSyntax
-                {
-                    Modifiers = Modifiers.Public | (isValue ? Modifiers.Virtual : Modifiers.None),
-                    Identifier = nodeTypeFieldName,
-                    Type = Syntax.ParseName(nodeTypeName),
-                    AccessorList = Syntax.AccessorList(
-                        Syntax.AccessorDeclaration(
-                            AccessorDeclarationKind.Get,
-                            Syntax.Block(
-                                Syntax.ReturnStatement(
-                                    Syntax.MemberAccessExpression(Syntax.ParseName(nodeTypeName), nodeTypeValue)
-                                )
-                            )
-                        )
-                    )
-                });
+                AddPgNodeTypeProperty(csClass, Modifiers.Virtual);
             }
 
             var nestedClasses = new List<GenerateResult>();
@@ -175,8 +188,11 @@ namespace Qsi.PostgreSql.Generator.Generators
                 }
 
                 // IPg10Node::Type
-                if (typeName == nodeTypeName && fieldName == "type")
+                if (typeName == "int?" && fieldName == "location" ||
+                    typeName == nodeTypeName && fieldName == "type")
+                {
                     continue;
+                }
 
                 if (SyntaxFacts.GetKeywordKind(fieldName) != SyntaxKind.None)
                     fieldName = $"@{fieldName}";
@@ -228,6 +244,39 @@ namespace Qsi.PostgreSql.Generator.Generators
                 Type = csClass,
                 UsingDirectives = usingDirectives.ToArray()
             };
+        }
+
+        private void AddPgNodeAttribute(List<UsingDirectiveSyntax> usingDirectives, ClassDeclarationSyntax csClass)
+        {
+            // using Qsi.PostgreSql.Internal.Postgres;
+            usingDirectives.Add(Syntax.UsingDirective("Qsi.PostgreSql.Internal.Serialization"));
+
+            // [PgNode("..")]
+            var pgNodeAttribute = Syntax.Attribute(
+                "PgNode",
+                Syntax.AttributeArgumentList(Syntax.AttributeArgument(Syntax.LiteralExpression(csClass.Identifier))));
+
+            csClass.AttributeLists.Add(Syntax.AttributeList(pgNodeAttribute));
+        }
+
+        private void AddPgNodeTypeProperty(ClassDeclarationSyntax csClass, Modifiers modifiers)
+        {
+            csClass.Members.Add(new PropertyDeclarationSyntax
+            {
+                Modifiers = Modifiers.Public | modifiers,
+                Identifier = nodeTypeFieldName,
+                Type = Syntax.ParseName(nodeTypeName),
+                AccessorList = Syntax.AccessorList(
+                    Syntax.AccessorDeclaration(
+                        AccessorDeclarationKind.Get,
+                        Syntax.Block(
+                            Syntax.ReturnStatement(
+                                Syntax.MemberAccessExpression(Syntax.ParseName(nodeTypeName), $"T_{csClass.Identifier}")
+                            )
+                        )
+                    )
+                )
+            });
         }
 
         private GenerateResult CreateNodeInterface(CppClass cppClass)
@@ -313,16 +362,20 @@ namespace Qsi.PostgreSql.Generator.Generators
                             break;
                         }
 
-                        _typeMap[memberName] = memberName;
+                        typeName = memberName;
 
-                        var resolve = ResolveType?.Invoke(type) ?? throw new InvalidOperationException();
-                        typeName = resolve.Type.Identifier;
+                        if (type.TypeKind == CppTypeKind.Enum)
+                            typeName += "?";
+
+                        _typeMap[memberName] = typeName;
+
+                        var _ = ResolveType?.Invoke(type) ?? throw new InvalidOperationException();
                         break;
                     }
 
                     case CppTypeKind.Primitive:
                     {
-                        typeName = ConvertToCSharpType((CppPrimitiveType)type);
+                        typeName = $"{ConvertToCSharpType((CppPrimitiveType)type)}?";
                         break;
                     }
 

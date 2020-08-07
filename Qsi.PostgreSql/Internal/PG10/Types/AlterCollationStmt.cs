@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("AlterCollationStmt")]
-    internal sealed class AlterCollationStmt : IPg10Node
+    internal class AlterCollationStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_AlterCollationStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_AlterCollationStmt;
+
+        public NodeTag? type { get; set; }
 
         public IPg10Node[] collname { get; set; }
     }

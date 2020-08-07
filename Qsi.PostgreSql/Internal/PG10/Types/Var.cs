@@ -6,28 +6,31 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class Var
+    [PgNode("Var")]
+    internal class Var : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_Var;
+
         public Expr xpr { get; set; }
 
-        public uint varno { get; set; }
+        public uint? varno { get; set; }
 
-        public short varattno { get; set; }
+        public short? varattno { get; set; }
 
-        public uint vartype { get; set; }
+        public uint? vartype { get; set; }
 
-        public int vartypmod { get; set; }
+        public int? vartypmod { get; set; }
 
-        public uint varcollid { get; set; }
+        public uint? varcollid { get; set; }
 
-        public uint varlevelsup { get; set; }
+        public uint? varlevelsup { get; set; }
 
-        public uint varnoold { get; set; }
+        public uint? varnoold { get; set; }
 
-        public short varoattno { get; set; }
-
-        public int location { get; set; }
+        public short? varoattno { get; set; }
     }
 }

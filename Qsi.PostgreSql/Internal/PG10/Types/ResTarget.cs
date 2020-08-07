@@ -11,19 +11,16 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("ResTarget")]
-    internal sealed class ResTarget : IPg10Node
+    internal class ResTarget : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_ResTarget; }
-        }
+        public virtual NodeTag Type => NodeTag.T_ResTarget;
+
+        public NodeTag? type { get; set; }
 
         public string name { get; set; }
 
         public IPg10Node[] indirection { get; set; }
 
         public IPg10Node val { get; set; }
-
-        public int location { get; set; }
     }
 }

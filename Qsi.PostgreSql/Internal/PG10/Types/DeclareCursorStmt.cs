@@ -11,16 +11,15 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("DeclareCursorStmt")]
-    internal sealed class DeclareCursorStmt : IPg10Node
+    internal class DeclareCursorStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_DeclareCursorStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_DeclareCursorStmt;
+
+        public NodeTag? type { get; set; }
 
         public string portalname { get; set; }
 
-        public int options { get; set; }
+        public int? options { get; set; }
 
         public IPg10Node query { get; set; }
     }

@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("CreatedbStmt")]
-    internal sealed class CreatedbStmt : IPg10Node
+    internal class CreatedbStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_CreatedbStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_CreatedbStmt;
+
+        public NodeTag? type { get; set; }
 
         public string dbname { get; set; }
 

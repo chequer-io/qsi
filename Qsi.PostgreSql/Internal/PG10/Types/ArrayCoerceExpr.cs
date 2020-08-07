@@ -6,26 +6,29 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class ArrayCoerceExpr
+    [PgNode("ArrayCoerceExpr")]
+    internal class ArrayCoerceExpr : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_ArrayCoerceExpr;
+
         public Expr xpr { get; set; }
 
         public Expr arg { get; set; }
 
-        public uint elemfuncid { get; set; }
+        public uint? elemfuncid { get; set; }
 
-        public uint resulttype { get; set; }
+        public uint? resulttype { get; set; }
 
-        public int resulttypmod { get; set; }
+        public int? resulttypmod { get; set; }
 
-        public uint resultcollid { get; set; }
+        public uint? resultcollid { get; set; }
 
-        public bool isExplicit { get; set; }
+        public bool? isExplicit { get; set; }
 
-        public CoercionForm coerceformat { get; set; }
-
-        public int location { get; set; }
+        public CoercionForm? coerceformat { get; set; }
     }
 }

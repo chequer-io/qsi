@@ -11,21 +11,18 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("PartitionBoundSpec")]
-    internal sealed class PartitionBoundSpec : IPg10Node
+    internal class PartitionBoundSpec : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_PartitionBoundSpec; }
-        }
+        public virtual NodeTag Type => NodeTag.T_PartitionBoundSpec;
 
-        public char strategy { get; set; }
+        public NodeTag? type { get; set; }
+
+        public char? strategy { get; set; }
 
         public IPg10Node[] listdatums { get; set; }
 
         public IPg10Node[] lowerdatums { get; set; }
 
         public IPg10Node[] upperdatums { get; set; }
-
-        public int location { get; set; }
     }
 }

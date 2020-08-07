@@ -6,15 +6,20 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class JoinState
+    [PgNode("JoinState")]
+    internal class JoinState : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_JoinState;
+
         public PlanState ps { get; set; }
 
-        public JoinType jointype { get; set; }
+        public JoinType? jointype { get; set; }
 
-        public bool single_match { get; set; }
+        public bool? single_match { get; set; }
 
         public ExprState joinqual { get; set; }
     }

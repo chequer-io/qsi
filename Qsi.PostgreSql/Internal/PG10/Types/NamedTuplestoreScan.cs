@@ -6,10 +6,15 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class NamedTuplestoreScan
+    [PgNode("NamedTuplestoreScan")]
+    internal class NamedTuplestoreScan : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_NamedTuplestoreScan;
+
         public Scan scan { get; set; }
 
         public string enrname { get; set; }

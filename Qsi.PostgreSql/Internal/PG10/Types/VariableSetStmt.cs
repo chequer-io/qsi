@@ -11,19 +11,18 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("VariableSetStmt")]
-    internal sealed class VariableSetStmt : IPg10Node
+    internal class VariableSetStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_VariableSetStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_VariableSetStmt;
 
-        public VariableSetKind kind { get; set; }
+        public NodeTag? type { get; set; }
+
+        public VariableSetKind? kind { get; set; }
 
         public string name { get; set; }
 
         public IPg10Node[] args { get; set; }
 
-        public bool is_local { get; set; }
+        public bool? is_local { get; set; }
     }
 }

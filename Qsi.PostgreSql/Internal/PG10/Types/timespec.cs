@@ -8,10 +8,10 @@
 
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class timespec
+    internal class timespec
     {
-        public int tv_sec { get; set; }
+        public int? tv_sec { get; set; }
 
-        public int tv_nsec { get; set; }
+        public int? tv_nsec { get; set; }
     }
 }

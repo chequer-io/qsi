@@ -6,18 +6,23 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class Gather
+    [PgNode("Gather")]
+    internal class Gather : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_Gather;
+
         public Plan plan { get; set; }
 
-        public int num_workers { get; set; }
+        public int? num_workers { get; set; }
 
-        public int rescan_param { get; set; }
+        public int? rescan_param { get; set; }
 
-        public bool single_copy { get; set; }
+        public bool? single_copy { get; set; }
 
-        public bool invisible { get; set; }
+        public bool? invisible { get; set; }
     }
 }

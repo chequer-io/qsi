@@ -11,14 +11,13 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("AlterOwnerStmt")]
-    internal sealed class AlterOwnerStmt : IPg10Node
+    internal class AlterOwnerStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_AlterOwnerStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_AlterOwnerStmt;
 
-        public ObjectType objectType { get; set; }
+        public NodeTag? type { get; set; }
+
+        public ObjectType? objectType { get; set; }
 
         public RangeVar relation { get; set; }
 

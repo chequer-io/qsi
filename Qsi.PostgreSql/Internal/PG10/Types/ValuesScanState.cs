@@ -6,18 +6,23 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class ValuesScanState
+    [PgNode("ValuesScanState")]
+    internal class ValuesScanState : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_ValuesScanState;
+
         public ScanState ss { get; set; }
 
         public ExprContext rowcontext { get; set; }
 
         public IPg10Node[][] exprlists { get; set; }
 
-        public int array_len { get; set; }
+        public int? array_len { get; set; }
 
-        public int curr_idx { get; set; }
+        public int? curr_idx { get; set; }
     }
 }

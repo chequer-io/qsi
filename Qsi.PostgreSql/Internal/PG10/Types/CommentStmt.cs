@@ -11,14 +11,13 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("CommentStmt")]
-    internal sealed class CommentStmt : IPg10Node
+    internal class CommentStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_CommentStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_CommentStmt;
 
-        public ObjectType objtype { get; set; }
+        public NodeTag? type { get; set; }
+
+        public ObjectType? objtype { get; set; }
 
         public IPg10Node @object { get; set; }
 

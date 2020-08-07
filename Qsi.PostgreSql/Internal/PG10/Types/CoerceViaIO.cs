@@ -6,20 +6,23 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class CoerceViaIO
+    [PgNode("CoerceViaIO")]
+    internal class CoerceViaIO : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_CoerceViaIO;
+
         public Expr xpr { get; set; }
 
         public Expr arg { get; set; }
 
-        public uint resulttype { get; set; }
+        public uint? resulttype { get; set; }
 
-        public uint resultcollid { get; set; }
+        public uint? resultcollid { get; set; }
 
-        public CoercionForm coerceformat { get; set; }
-
-        public int location { get; set; }
+        public CoercionForm? coerceformat { get; set; }
     }
 }

@@ -11,18 +11,17 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("FunctionParameter")]
-    internal sealed class FunctionParameter : IPg10Node
+    internal class FunctionParameter : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_FunctionParameter; }
-        }
+        public virtual NodeTag Type => NodeTag.T_FunctionParameter;
+
+        public NodeTag? type { get; set; }
 
         public string name { get; set; }
 
         public TypeName argType { get; set; }
 
-        public FunctionParameterMode mode { get; set; }
+        public FunctionParameterMode? mode { get; set; }
 
         public IPg10Node defexpr { get; set; }
     }

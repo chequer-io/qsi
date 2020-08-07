@@ -6,10 +6,15 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class Limit
+    [PgNode("Limit")]
+    internal class Limit : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_Limit;
+
         public Plan plan { get; set; }
 
         public IPg10Node limitOffset { get; set; }

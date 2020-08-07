@@ -6,17 +6,22 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class ExprState
+    [PgNode("ExprState")]
+    internal class ExprState : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_ExprState;
+
         public IPg10Node tag { get; set; }
 
-        public byte flags { get; set; }
+        public byte? flags { get; set; }
 
-        public bool resnull { get; set; }
+        public bool? resnull { get; set; }
 
-        public uint resvalue { get; set; }
+        public uint? resvalue { get; set; }
 
         public TupleTableSlot resultslot { get; set; }
 
@@ -26,16 +31,16 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public Expr expr { get; set; }
 
-        public int steps_len { get; set; }
+        public int? steps_len { get; set; }
 
-        public int steps_alloc { get; set; }
+        public int? steps_alloc { get; set; }
 
-        public uint innermost_caseval { get; set; }
+        public uint? innermost_caseval { get; set; }
 
-        public bool[] innermost_casenull { get; set; }
+        public bool?[] innermost_casenull { get; set; }
 
-        public uint innermost_domainval { get; set; }
+        public uint? innermost_domainval { get; set; }
 
-        public bool[] innermost_domainnull { get; set; }
+        public bool?[] innermost_domainnull { get; set; }
     }
 }

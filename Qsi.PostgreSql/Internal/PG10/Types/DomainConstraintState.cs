@@ -11,14 +11,13 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("DomainConstraintState")]
-    internal sealed class DomainConstraintState : IPg10Node
+    internal class DomainConstraintState : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_DomainConstraintState; }
-        }
+        public virtual NodeTag Type => NodeTag.T_DomainConstraintState;
 
-        public DomainConstraintType constrainttype { get; set; }
+        public NodeTag? type { get; set; }
+
+        public DomainConstraintType? constrainttype { get; set; }
 
         public string name { get; set; }
 

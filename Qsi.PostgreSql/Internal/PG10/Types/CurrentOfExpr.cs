@@ -6,16 +6,21 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class CurrentOfExpr
+    [PgNode("CurrentOfExpr")]
+    internal class CurrentOfExpr : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_CurrentOfExpr;
+
         public Expr xpr { get; set; }
 
-        public uint cvarno { get; set; }
+        public uint? cvarno { get; set; }
 
         public string cursor_name { get; set; }
 
-        public int cursor_param { get; set; }
+        public int? cursor_param { get; set; }
     }
 }

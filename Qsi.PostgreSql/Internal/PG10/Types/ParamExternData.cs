@@ -8,14 +8,14 @@
 
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class ParamExternData
+    internal class ParamExternData
     {
-        public uint value { get; set; }
+        public uint? value { get; set; }
 
-        public bool isnull { get; set; }
+        public bool? isnull { get; set; }
 
-        public ushort pflags { get; set; }
+        public ushort? pflags { get; set; }
 
-        public uint ptype { get; set; }
+        public uint? ptype { get; set; }
     }
 }

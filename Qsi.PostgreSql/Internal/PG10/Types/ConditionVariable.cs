@@ -8,9 +8,9 @@
 
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class ConditionVariable
+    internal class ConditionVariable
     {
-        public byte mutex { get; set; }
+        public byte? mutex { get; set; }
 
         public proclist_head wakeup { get; set; }
     }

@@ -6,17 +6,22 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class WindowAggState
+    [PgNode("WindowAggState")]
+    internal class WindowAggState : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_WindowAggState;
+
         public ScanState ss { get; set; }
 
         public IPg10Node[] funcs { get; set; }
 
-        public int numfuncs { get; set; }
+        public int? numfuncs { get; set; }
 
-        public int numaggs { get; set; }
+        public int? numaggs { get; set; }
 
         public WindowStatePerFuncData perfunc { get; set; }
 
@@ -28,51 +33,51 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public Tuplestorestate buffer { get; set; }
 
-        public int current_ptr { get; set; }
+        public int? current_ptr { get; set; }
 
-        public int spooled_rows { get; set; }
+        public int? spooled_rows { get; set; }
 
-        public int currentpos { get; set; }
+        public int? currentpos { get; set; }
 
-        public int frameheadpos { get; set; }
+        public int? frameheadpos { get; set; }
 
-        public int frametailpos { get; set; }
+        public int? frametailpos { get; set; }
 
         public WindowObjectData agg_winobj { get; set; }
 
-        public int aggregatedbase { get; set; }
+        public int? aggregatedbase { get; set; }
 
-        public int aggregatedupto { get; set; }
+        public int? aggregatedupto { get; set; }
 
-        public int frameOptions { get; set; }
+        public int? frameOptions { get; set; }
 
         public ExprState startOffset { get; set; }
 
         public ExprState endOffset { get; set; }
 
-        public uint startOffsetValue { get; set; }
+        public uint? startOffsetValue { get; set; }
 
-        public uint endOffsetValue { get; set; }
+        public uint? endOffsetValue { get; set; }
 
-        public MemoryContextData[] partcontext { get; set; }
+        public MemoryContext partcontext { get; set; }
 
-        public MemoryContextData[] aggcontext { get; set; }
+        public MemoryContext aggcontext { get; set; }
 
-        public MemoryContextData[] curaggcontext { get; set; }
+        public MemoryContext curaggcontext { get; set; }
 
         public ExprContext tmpcontext { get; set; }
 
-        public bool all_first { get; set; }
+        public bool? all_first { get; set; }
 
-        public bool all_done { get; set; }
+        public bool? all_done { get; set; }
 
-        public bool partition_spooled { get; set; }
+        public bool? partition_spooled { get; set; }
 
-        public bool more_partitions { get; set; }
+        public bool? more_partitions { get; set; }
 
-        public bool framehead_valid { get; set; }
+        public bool? framehead_valid { get; set; }
 
-        public bool frametail_valid { get; set; }
+        public bool? frametail_valid { get; set; }
 
         public TupleTableSlot first_part_slot { get; set; }
 

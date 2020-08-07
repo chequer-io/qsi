@@ -11,17 +11,16 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("InlineCodeBlock")]
-    internal sealed class InlineCodeBlock : IPg10Node
+    internal class InlineCodeBlock : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_InlineCodeBlock; }
-        }
+        public virtual NodeTag Type => NodeTag.T_InlineCodeBlock;
+
+        public NodeTag? type { get; set; }
 
         public string source_text { get; set; }
 
-        public uint langOid { get; set; }
+        public uint? langOid { get; set; }
 
-        public bool langIsTrusted { get; set; }
+        public bool? langIsTrusted { get; set; }
     }
 }

@@ -6,23 +6,28 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class ModifyTableState
+    [PgNode("ModifyTableState")]
+    internal class ModifyTableState : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_ModifyTableState;
+
         public PlanState ps { get; set; }
 
-        public CmdType operation { get; set; }
+        public CmdType? operation { get; set; }
 
-        public bool canSetTag { get; set; }
+        public bool? canSetTag { get; set; }
 
-        public bool mt_done { get; set; }
+        public bool? mt_done { get; set; }
 
         public PlanState[] mt_plans { get; set; }
 
-        public int mt_nplans { get; set; }
+        public int? mt_nplans { get; set; }
 
-        public int mt_whichplan { get; set; }
+        public int? mt_whichplan { get; set; }
 
         public ResultRelInfo resultRelInfo { get; set; }
 
@@ -32,9 +37,9 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public EPQState mt_epqstate { get; set; }
 
-        public bool fireBSTriggers { get; set; }
+        public bool? fireBSTriggers { get; set; }
 
-        public OnConflictAction mt_onconflict { get; set; }
+        public OnConflictAction? mt_onconflict { get; set; }
 
         public IPg10Node[] mt_arbiterindexes { get; set; }
 
@@ -46,9 +51,9 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public PartitionDispatchData[] mt_partition_dispatch_info { get; set; }
 
-        public int mt_num_dispatch { get; set; }
+        public int? mt_num_dispatch { get; set; }
 
-        public int mt_num_partitions { get; set; }
+        public int? mt_num_partitions { get; set; }
 
         public ResultRelInfo mt_partitions { get; set; }
 

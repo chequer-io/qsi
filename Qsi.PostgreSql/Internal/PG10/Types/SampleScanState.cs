@@ -6,10 +6,15 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class SampleScanState
+    [PgNode("SampleScanState")]
+    internal class SampleScanState : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_SampleScanState;
+
         public ScanState ss { get; set; }
 
         public IPg10Node[] args { get; set; }
@@ -18,14 +23,14 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public TsmRoutine tsmroutine { get; set; }
 
-        public object[] tsm_state { get; set; }
+        public object?[] tsm_state { get; set; }
 
-        public bool use_bulkread { get; set; }
+        public bool? use_bulkread { get; set; }
 
-        public bool use_pagemode { get; set; }
+        public bool? use_pagemode { get; set; }
 
-        public bool begun { get; set; }
+        public bool? begun { get; set; }
 
-        public uint seed { get; set; }
+        public uint? seed { get; set; }
     }
 }

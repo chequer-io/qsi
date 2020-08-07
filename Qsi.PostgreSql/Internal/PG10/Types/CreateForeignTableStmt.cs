@@ -6,10 +6,15 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class CreateForeignTableStmt
+    [PgNode("CreateForeignTableStmt")]
+    internal class CreateForeignTableStmt : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_CreateForeignTableStmt;
+
         public CreateStmt @base { get; set; }
 
         public string servername { get; set; }

@@ -8,20 +8,20 @@
 
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class ScanKeyData
+    internal class ScanKeyData
     {
-        public int sk_flags { get; set; }
+        public int? sk_flags { get; set; }
 
-        public short sk_attno { get; set; }
+        public short? sk_attno { get; set; }
 
-        public ushort sk_strategy { get; set; }
+        public ushort? sk_strategy { get; set; }
 
-        public uint sk_subtype { get; set; }
+        public uint? sk_subtype { get; set; }
 
-        public uint sk_collation { get; set; }
+        public uint? sk_collation { get; set; }
 
         public FmgrInfo sk_func { get; set; }
 
-        public uint sk_argument { get; set; }
+        public uint? sk_argument { get; set; }
     }
 }

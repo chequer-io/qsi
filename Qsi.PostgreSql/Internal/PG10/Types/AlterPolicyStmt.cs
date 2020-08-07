@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("AlterPolicyStmt")]
-    internal sealed class AlterPolicyStmt : IPg10Node
+    internal class AlterPolicyStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_AlterPolicyStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_AlterPolicyStmt;
+
+        public NodeTag? type { get; set; }
 
         public string policy_name { get; set; }
 

@@ -11,21 +11,20 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("AlterTableMoveAllStmt")]
-    internal sealed class AlterTableMoveAllStmt : IPg10Node
+    internal class AlterTableMoveAllStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_AlterTableMoveAllStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_AlterTableMoveAllStmt;
+
+        public NodeTag? type { get; set; }
 
         public string orig_tablespacename { get; set; }
 
-        public ObjectType objtype { get; set; }
+        public ObjectType? objtype { get; set; }
 
         public IPg10Node[] roles { get; set; }
 
         public string new_tablespacename { get; set; }
 
-        public bool nowait { get; set; }
+        public bool? nowait { get; set; }
     }
 }

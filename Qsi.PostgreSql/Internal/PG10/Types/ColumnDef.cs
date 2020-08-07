@@ -11,45 +11,42 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("ColumnDef")]
-    internal sealed class ColumnDef : IPg10Node
+    internal class ColumnDef : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_ColumnDef; }
-        }
+        public virtual NodeTag Type => NodeTag.T_ColumnDef;
+
+        public NodeTag? type { get; set; }
 
         public string colname { get; set; }
 
         public TypeName typeName { get; set; }
 
-        public int inhcount { get; set; }
+        public int? inhcount { get; set; }
 
-        public bool is_local { get; set; }
+        public bool? is_local { get; set; }
 
-        public bool is_not_null { get; set; }
+        public bool? is_not_null { get; set; }
 
-        public bool is_from_type { get; set; }
+        public bool? is_from_type { get; set; }
 
-        public bool is_from_parent { get; set; }
+        public bool? is_from_parent { get; set; }
 
-        public char storage { get; set; }
+        public char? storage { get; set; }
 
         public IPg10Node raw_default { get; set; }
 
         public IPg10Node cooked_default { get; set; }
 
-        public char identity { get; set; }
+        public char? identity { get; set; }
 
         public RangeVar identitySequence { get; set; }
 
         public CollateClause collClause { get; set; }
 
-        public uint collOid { get; set; }
+        public uint? collOid { get; set; }
 
         public IPg10Node[] constraints { get; set; }
 
         public IPg10Node[] fdwoptions { get; set; }
-
-        public int location { get; set; }
     }
 }

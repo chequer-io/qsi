@@ -11,18 +11,17 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("CreateUserMappingStmt")]
-    internal sealed class CreateUserMappingStmt : IPg10Node
+    internal class CreateUserMappingStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_CreateUserMappingStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_CreateUserMappingStmt;
+
+        public NodeTag? type { get; set; }
 
         public RoleSpec user { get; set; }
 
         public string servername { get; set; }
 
-        public bool if_not_exists { get; set; }
+        public bool? if_not_exists { get; set; }
 
         public IPg10Node[] options { get; set; }
     }

@@ -6,20 +6,25 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class RecursiveUnion
+    [PgNode("RecursiveUnion")]
+    internal class RecursiveUnion : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_RecursiveUnion;
+
         public Plan plan { get; set; }
 
-        public int wtParam { get; set; }
+        public int? wtParam { get; set; }
 
-        public int numCols { get; set; }
+        public int? numCols { get; set; }
 
-        public short dupColIdx { get; set; }
+        public short? dupColIdx { get; set; }
 
-        public uint dupOperators { get; set; }
+        public uint? dupOperators { get; set; }
 
-        public int numGroups { get; set; }
+        public int? numGroups { get; set; }
     }
 }

@@ -11,14 +11,13 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("AlterDomainStmt")]
-    internal sealed class AlterDomainStmt : IPg10Node
+    internal class AlterDomainStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_AlterDomainStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_AlterDomainStmt;
 
-        public char subtype { get; set; }
+        public NodeTag? type { get; set; }
+
+        public char? subtype { get; set; }
 
         public IPg10Node[] typeName { get; set; }
 
@@ -26,8 +25,8 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node def { get; set; }
 
-        public DropBehavior behavior { get; set; }
+        public DropBehavior? behavior { get; set; }
 
-        public bool missing_ok { get; set; }
+        public bool? missing_ok { get; set; }
     }
 }

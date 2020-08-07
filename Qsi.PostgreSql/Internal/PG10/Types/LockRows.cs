@@ -6,14 +6,19 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class LockRows
+    [PgNode("LockRows")]
+    internal class LockRows : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_LockRows;
+
         public Plan plan { get; set; }
 
         public IPg10Node[] rowMarks { get; set; }
 
-        public int epqParam { get; set; }
+        public int? epqParam { get; set; }
     }
 }

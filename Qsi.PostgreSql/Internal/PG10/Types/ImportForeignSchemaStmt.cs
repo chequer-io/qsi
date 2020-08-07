@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("ImportForeignSchemaStmt")]
-    internal sealed class ImportForeignSchemaStmt : IPg10Node
+    internal class ImportForeignSchemaStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_ImportForeignSchemaStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_ImportForeignSchemaStmt;
+
+        public NodeTag? type { get; set; }
 
         public string server_name { get; set; }
 
@@ -24,7 +23,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public string local_schema { get; set; }
 
-        public ImportForeignSchemaType list_type { get; set; }
+        public ImportForeignSchemaType? list_type { get; set; }
 
         public IPg10Node[] table_list { get; set; }
 

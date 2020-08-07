@@ -6,33 +6,38 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class SubPlan
+    [PgNode("SubPlan")]
+    internal class SubPlan : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_SubPlan;
+
         public Expr xpr { get; set; }
 
-        public SubLinkType subLinkType { get; set; }
+        public SubLinkType? subLinkType { get; set; }
 
         public IPg10Node testexpr { get; set; }
 
         public IPg10Node[] paramIds { get; set; }
 
-        public int plan_id { get; set; }
+        public int? plan_id { get; set; }
 
         public string plan_name { get; set; }
 
-        public uint firstColType { get; set; }
+        public uint? firstColType { get; set; }
 
-        public int firstColTypmod { get; set; }
+        public int? firstColTypmod { get; set; }
 
-        public uint firstColCollation { get; set; }
+        public uint? firstColCollation { get; set; }
 
-        public bool useHashTable { get; set; }
+        public bool? useHashTable { get; set; }
 
-        public bool unknownEqFalse { get; set; }
+        public bool? unknownEqFalse { get; set; }
 
-        public bool parallel_safe { get; set; }
+        public bool? parallel_safe { get; set; }
 
         public IPg10Node[] setParam { get; set; }
 
@@ -40,8 +45,8 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] args { get; set; }
 
-        public double startup_cost { get; set; }
+        public double? startup_cost { get; set; }
 
-        public double per_call_cost { get; set; }
+        public double? per_call_cost { get; set; }
     }
 }

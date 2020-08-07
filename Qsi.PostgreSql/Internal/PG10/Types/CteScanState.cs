@@ -6,15 +6,20 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class CteScanState
+    [PgNode("CteScanState")]
+    internal class CteScanState : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_CteScanState;
+
         public ScanState ss { get; set; }
 
-        public int eflags { get; set; }
+        public int? eflags { get; set; }
 
-        public int readptr { get; set; }
+        public int? readptr { get; set; }
 
         public PlanState cteplanstate { get; set; }
 
@@ -22,6 +27,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public Tuplestorestate cte_table { get; set; }
 
-        public bool eof_cte { get; set; }
+        public bool? eof_cte { get; set; }
     }
 }

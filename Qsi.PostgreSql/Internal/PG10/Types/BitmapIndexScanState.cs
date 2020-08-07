@@ -6,27 +6,32 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class BitmapIndexScanState
+    [PgNode("BitmapIndexScanState")]
+    internal class BitmapIndexScanState : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_BitmapIndexScanState;
+
         public ScanState ss { get; set; }
 
         public TIDBitmap biss_result { get; set; }
 
         public ScanKeyData biss_ScanKeys { get; set; }
 
-        public int biss_NumScanKeys { get; set; }
+        public int? biss_NumScanKeys { get; set; }
 
         public IndexRuntimeKeyInfo biss_RuntimeKeys { get; set; }
 
-        public int biss_NumRuntimeKeys { get; set; }
+        public int? biss_NumRuntimeKeys { get; set; }
 
         public IndexArrayKeyInfo biss_ArrayKeys { get; set; }
 
-        public int biss_NumArrayKeys { get; set; }
+        public int? biss_NumArrayKeys { get; set; }
 
-        public bool biss_RuntimeKeysReady { get; set; }
+        public bool? biss_RuntimeKeysReady { get; set; }
 
         public ExprContext biss_RuntimeContext { get; set; }
 

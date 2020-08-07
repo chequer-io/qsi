@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("DeallocateStmt")]
-    internal sealed class DeallocateStmt : IPg10Node
+    internal class DeallocateStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_DeallocateStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_DeallocateStmt;
+
+        public NodeTag? type { get; set; }
 
         public string name { get; set; }
     }

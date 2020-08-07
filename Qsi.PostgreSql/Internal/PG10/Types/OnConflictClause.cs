@@ -11,21 +11,18 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("OnConflictClause")]
-    internal sealed class OnConflictClause : IPg10Node
+    internal class OnConflictClause : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_OnConflictClause; }
-        }
+        public virtual NodeTag Type => NodeTag.T_OnConflictClause;
 
-        public OnConflictAction action { get; set; }
+        public NodeTag? type { get; set; }
+
+        public OnConflictAction? action { get; set; }
 
         public InferClause infer { get; set; }
 
         public IPg10Node[] targetList { get; set; }
 
         public IPg10Node whereClause { get; set; }
-
-        public int location { get; set; }
     }
 }

@@ -8,16 +8,16 @@
 
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class tupleConstr
+    internal class tupleConstr
     {
         public attrDefault defval { get; set; }
 
         public constrCheck check { get; set; }
 
-        public ushort num_defval { get; set; }
+        public ushort? num_defval { get; set; }
 
-        public ushort num_check { get; set; }
+        public ushort? num_check { get; set; }
 
-        public bool has_not_null { get; set; }
+        public bool? has_not_null { get; set; }
     }
 }

@@ -11,21 +11,20 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("SortGroupClause")]
-    internal sealed class SortGroupClause : IPg10Node
+    internal class SortGroupClause : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_SortGroupClause; }
-        }
+        public virtual NodeTag Type => NodeTag.T_SortGroupClause;
 
-        public uint tleSortGroupRef { get; set; }
+        public NodeTag? type { get; set; }
 
-        public uint eqop { get; set; }
+        public uint? tleSortGroupRef { get; set; }
 
-        public uint sortop { get; set; }
+        public uint? eqop { get; set; }
 
-        public bool nulls_first { get; set; }
+        public uint? sortop { get; set; }
 
-        public bool hashable { get; set; }
+        public bool? nulls_first { get; set; }
+
+        public bool? hashable { get; set; }
     }
 }

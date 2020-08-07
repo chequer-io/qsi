@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("AlterDefaultPrivilegesStmt")]
-    internal sealed class AlterDefaultPrivilegesStmt : IPg10Node
+    internal class AlterDefaultPrivilegesStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_AlterDefaultPrivilegesStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_AlterDefaultPrivilegesStmt;
+
+        public NodeTag? type { get; set; }
 
         public IPg10Node[] options { get; set; }
 

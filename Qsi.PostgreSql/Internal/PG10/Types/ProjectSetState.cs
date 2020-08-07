@@ -6,18 +6,23 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class ProjectSetState
+    [PgNode("ProjectSetState")]
+    internal class ProjectSetState : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_ProjectSetState;
+
         public PlanState ps { get; set; }
 
         public IPg10Node[] elems { get; set; }
 
-        public ExprDoneCond elemdone { get; set; }
+        public ExprDoneCond? elemdone { get; set; }
 
-        public int nelems { get; set; }
+        public int? nelems { get; set; }
 
-        public bool pending_srf_tuples { get; set; }
+        public bool? pending_srf_tuples { get; set; }
     }
 }

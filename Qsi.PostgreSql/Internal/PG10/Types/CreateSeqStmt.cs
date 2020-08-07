@@ -11,21 +11,20 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("CreateSeqStmt")]
-    internal sealed class CreateSeqStmt : IPg10Node
+    internal class CreateSeqStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_CreateSeqStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_CreateSeqStmt;
+
+        public NodeTag? type { get; set; }
 
         public RangeVar sequence { get; set; }
 
         public IPg10Node[] options { get; set; }
 
-        public uint ownerId { get; set; }
+        public uint? ownerId { get; set; }
 
-        public bool for_identity { get; set; }
+        public bool? for_identity { get; set; }
 
-        public bool if_not_exists { get; set; }
+        public bool? if_not_exists { get; set; }
     }
 }

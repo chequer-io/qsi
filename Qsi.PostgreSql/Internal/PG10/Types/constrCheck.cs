@@ -8,14 +8,14 @@
 
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class constrCheck
+    internal class constrCheck
     {
         public string ccname { get; set; }
 
         public string ccbin { get; set; }
 
-        public bool ccvalid { get; set; }
+        public bool? ccvalid { get; set; }
 
-        public bool ccnoinherit { get; set; }
+        public bool? ccnoinherit { get; set; }
     }
 }

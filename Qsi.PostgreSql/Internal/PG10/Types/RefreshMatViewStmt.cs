@@ -11,16 +11,15 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("RefreshMatViewStmt")]
-    internal sealed class RefreshMatViewStmt : IPg10Node
+    internal class RefreshMatViewStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_RefreshMatViewStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_RefreshMatViewStmt;
 
-        public bool concurrent { get; set; }
+        public NodeTag? type { get; set; }
 
-        public bool skipData { get; set; }
+        public bool? concurrent { get; set; }
+
+        public bool? skipData { get; set; }
 
         public RangeVar relation { get; set; }
     }

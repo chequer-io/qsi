@@ -8,27 +8,27 @@
 
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class BufferUsage
+    internal class BufferUsage
     {
-        public int shared_blks_hit { get; set; }
+        public int? shared_blks_hit { get; set; }
 
-        public int shared_blks_read { get; set; }
+        public int? shared_blks_read { get; set; }
 
-        public int shared_blks_dirtied { get; set; }
+        public int? shared_blks_dirtied { get; set; }
 
-        public int shared_blks_written { get; set; }
+        public int? shared_blks_written { get; set; }
 
-        public int local_blks_hit { get; set; }
+        public int? local_blks_hit { get; set; }
 
-        public int local_blks_read { get; set; }
+        public int? local_blks_read { get; set; }
 
-        public int local_blks_dirtied { get; set; }
+        public int? local_blks_dirtied { get; set; }
 
-        public int local_blks_written { get; set; }
+        public int? local_blks_written { get; set; }
 
-        public int temp_blks_read { get; set; }
+        public int? temp_blks_read { get; set; }
 
-        public int temp_blks_written { get; set; }
+        public int? temp_blks_written { get; set; }
 
         public timespec blk_read_time { get; set; }
 

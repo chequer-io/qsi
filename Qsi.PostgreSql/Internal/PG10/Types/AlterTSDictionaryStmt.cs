@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("AlterTSDictionaryStmt")]
-    internal sealed class AlterTSDictionaryStmt : IPg10Node
+    internal class AlterTSDictionaryStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_AlterTSDictionaryStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_AlterTSDictionaryStmt;
+
+        public NodeTag? type { get; set; }
 
         public IPg10Node[] dictname { get; set; }
 

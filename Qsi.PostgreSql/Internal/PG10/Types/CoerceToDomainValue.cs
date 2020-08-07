@@ -6,18 +6,21 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class CoerceToDomainValue
+    [PgNode("CoerceToDomainValue")]
+    internal class CoerceToDomainValue : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_CoerceToDomainValue;
+
         public Expr xpr { get; set; }
 
-        public uint typeId { get; set; }
+        public uint? typeId { get; set; }
 
-        public int typeMod { get; set; }
+        public int? typeMod { get; set; }
 
-        public uint collation { get; set; }
-
-        public int location { get; set; }
+        public uint? collation { get; set; }
     }
 }

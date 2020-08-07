@@ -11,14 +11,13 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("AlterTSConfigurationStmt")]
-    internal sealed class AlterTSConfigurationStmt : IPg10Node
+    internal class AlterTSConfigurationStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_AlterTSConfigurationStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_AlterTSConfigurationStmt;
 
-        public AlterTSConfigType kind { get; set; }
+        public NodeTag? type { get; set; }
+
+        public AlterTSConfigType? kind { get; set; }
 
         public IPg10Node[] cfgname { get; set; }
 
@@ -26,10 +25,10 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] dicts { get; set; }
 
-        public bool @override { get; set; }
+        public bool? @override { get; set; }
 
-        public bool replace { get; set; }
+        public bool? replace { get; set; }
 
-        public bool missing_ok { get; set; }
+        public bool? missing_ok { get; set; }
     }
 }

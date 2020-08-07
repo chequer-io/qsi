@@ -11,22 +11,21 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("ReturnSetInfo")]
-    internal sealed class ReturnSetInfo : IPg10Node
+    internal class ReturnSetInfo : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_ReturnSetInfo; }
-        }
+        public virtual NodeTag Type => NodeTag.T_ReturnSetInfo;
+
+        public NodeTag? type { get; set; }
 
         public ExprContext econtext { get; set; }
 
         public tupleDesc expectedDesc { get; set; }
 
-        public int allowedModes { get; set; }
+        public int? allowedModes { get; set; }
 
-        public SetFunctionReturnMode returnMode { get; set; }
+        public SetFunctionReturnMode? returnMode { get; set; }
 
-        public ExprDoneCond isDone { get; set; }
+        public ExprDoneCond? isDone { get; set; }
 
         public Tuplestorestate setResult { get; set; }
 

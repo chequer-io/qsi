@@ -6,10 +6,15 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class Append
+    [PgNode("Append")]
+    internal class Append : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_Append;
+
         public Plan plan { get; set; }
 
         public IPg10Node[] partitioned_rels { get; set; }

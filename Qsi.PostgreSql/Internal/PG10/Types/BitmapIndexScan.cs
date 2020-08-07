@@ -6,15 +6,20 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class BitmapIndexScan
+    [PgNode("BitmapIndexScan")]
+    internal class BitmapIndexScan : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_BitmapIndexScan;
+
         public Scan scan { get; set; }
 
-        public uint indexid { get; set; }
+        public uint? indexid { get; set; }
 
-        public bool isshared { get; set; }
+        public bool? isshared { get; set; }
 
         public IPg10Node[] indexqual { get; set; }
 

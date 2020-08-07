@@ -6,9 +6,13 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class TIDBitmap
+    [PgNode("TIDBitmap")]
+    internal class TIDBitmap : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_TIDBitmap;
     }
 }

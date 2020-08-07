@@ -11,26 +11,25 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("Plan")]
-    internal sealed class Plan : IPg10Node
+    internal class Plan : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_Plan; }
-        }
+        public virtual NodeTag Type => NodeTag.T_Plan;
 
-        public double startup_cost { get; set; }
+        public NodeTag? type { get; set; }
 
-        public double total_cost { get; set; }
+        public double? startup_cost { get; set; }
 
-        public double plan_rows { get; set; }
+        public double? total_cost { get; set; }
 
-        public int plan_width { get; set; }
+        public double? plan_rows { get; set; }
 
-        public bool parallel_aware { get; set; }
+        public int? plan_width { get; set; }
 
-        public bool parallel_safe { get; set; }
+        public bool? parallel_aware { get; set; }
 
-        public int plan_node_id { get; set; }
+        public bool? parallel_safe { get; set; }
+
+        public int? plan_node_id { get; set; }
 
         public IPg10Node[] targetlist { get; set; }
 

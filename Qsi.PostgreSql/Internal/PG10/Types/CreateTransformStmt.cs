@@ -11,14 +11,13 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("CreateTransformStmt")]
-    internal sealed class CreateTransformStmt : IPg10Node
+    internal class CreateTransformStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_CreateTransformStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_CreateTransformStmt;
 
-        public bool replace { get; set; }
+        public NodeTag? type { get; set; }
+
+        public bool? replace { get; set; }
 
         public TypeName type_name { get; set; }
 

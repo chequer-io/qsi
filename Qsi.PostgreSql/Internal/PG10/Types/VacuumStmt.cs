@@ -11,14 +11,13 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("VacuumStmt")]
-    internal sealed class VacuumStmt : IPg10Node
+    internal class VacuumStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_VacuumStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_VacuumStmt;
 
-        public int options { get; set; }
+        public NodeTag? type { get; set; }
+
+        public int? options { get; set; }
 
         public RangeVar relation { get; set; }
 

@@ -6,9 +6,13 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class FdwRoutine
+    [PgNode("FdwRoutine")]
+    internal class FdwRoutine : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_FdwRoutine;
     }
 }

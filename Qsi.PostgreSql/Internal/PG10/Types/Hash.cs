@@ -6,16 +6,21 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class Hash
+    [PgNode("Hash")]
+    internal class Hash : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_Hash;
+
         public Plan plan { get; set; }
 
-        public uint skewTable { get; set; }
+        public uint? skewTable { get; set; }
 
-        public short skewColumn { get; set; }
+        public short? skewColumn { get; set; }
 
-        public bool skewInherit { get; set; }
+        public bool? skewInherit { get; set; }
     }
 }

@@ -8,19 +8,19 @@
 
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class ParallelBitmapHeapState
+    internal class ParallelBitmapHeapState
     {
-        public uint tbmiterator { get; set; }
+        public uint? tbmiterator { get; set; }
 
-        public uint prefetch_iterator { get; set; }
+        public uint? prefetch_iterator { get; set; }
 
-        public byte mutex { get; set; }
+        public byte? mutex { get; set; }
 
-        public int prefetch_pages { get; set; }
+        public int? prefetch_pages { get; set; }
 
-        public int prefetch_target { get; set; }
+        public int? prefetch_target { get; set; }
 
-        public SharedBitmapState state { get; set; }
+        public SharedBitmapState? state { get; set; }
 
         public ConditionVariable cv { get; set; }
 

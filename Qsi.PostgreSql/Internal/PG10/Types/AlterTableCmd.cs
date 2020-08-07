@@ -11,14 +11,13 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("AlterTableCmd")]
-    internal sealed class AlterTableCmd : IPg10Node
+    internal class AlterTableCmd : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_AlterTableCmd; }
-        }
+        public virtual NodeTag Type => NodeTag.T_AlterTableCmd;
 
-        public AlterTableType subtype { get; set; }
+        public NodeTag? type { get; set; }
+
+        public AlterTableType? subtype { get; set; }
 
         public string name { get; set; }
 
@@ -26,8 +25,8 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node def { get; set; }
 
-        public DropBehavior behavior { get; set; }
+        public DropBehavior? behavior { get; set; }
 
-        public bool missing_ok { get; set; }
+        public bool? missing_ok { get; set; }
     }
 }

@@ -11,18 +11,17 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("ResultRelInfo")]
-    internal sealed class ResultRelInfo : IPg10Node
+    internal class ResultRelInfo : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_ResultRelInfo; }
-        }
+        public virtual NodeTag Type => NodeTag.T_ResultRelInfo;
 
-        public uint ri_RangeTableIndex { get; set; }
+        public NodeTag? type { get; set; }
+
+        public uint? ri_RangeTableIndex { get; set; }
 
         public RelationData ri_RelationDesc { get; set; }
 
-        public int ri_NumIndices { get; set; }
+        public int? ri_NumIndices { get; set; }
 
         public RelationData ri_IndexRelationDescs { get; set; }
 
@@ -38,9 +37,9 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public FdwRoutine ri_FdwRoutine { get; set; }
 
-        public object[] ri_FdwState { get; set; }
+        public object?[] ri_FdwState { get; set; }
 
-        public bool ri_usesFdwDirectModify { get; set; }
+        public bool? ri_usesFdwDirectModify { get; set; }
 
         public IPg10Node[] ri_WithCheckOptions { get; set; }
 

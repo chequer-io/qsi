@@ -11,13 +11,12 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("DiscardStmt")]
-    internal sealed class DiscardStmt : IPg10Node
+    internal class DiscardStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_DiscardStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_DiscardStmt;
 
-        public DiscardMode target { get; set; }
+        public NodeTag? type { get; set; }
+
+        public DiscardMode? target { get; set; }
     }
 }

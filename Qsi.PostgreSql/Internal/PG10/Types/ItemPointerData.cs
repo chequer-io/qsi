@@ -8,10 +8,10 @@
 
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class ItemPointerData
+    internal class ItemPointerData
     {
         public BlockIdData ip_blkid { get; set; }
 
-        public ushort ip_posid { get; set; }
+        public ushort? ip_posid { get; set; }
     }
 }

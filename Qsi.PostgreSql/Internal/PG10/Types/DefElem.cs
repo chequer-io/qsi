@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("DefElem")]
-    internal sealed class DefElem : IPg10Node
+    internal class DefElem : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_DefElem; }
-        }
+        public virtual NodeTag Type => NodeTag.T_DefElem;
+
+        public NodeTag? type { get; set; }
 
         public string defnamespace { get; set; }
 
@@ -24,8 +23,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node arg { get; set; }
 
-        public DefElemAction defaction { get; set; }
-
-        public int location { get; set; }
+        public DefElemAction? defaction { get; set; }
     }
 }

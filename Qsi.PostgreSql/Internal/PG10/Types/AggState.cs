@@ -6,27 +6,32 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class AggState
+    [PgNode("AggState")]
+    internal class AggState : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_AggState;
+
         public ScanState ss { get; set; }
 
         public IPg10Node[] aggs { get; set; }
 
-        public int numaggs { get; set; }
+        public int? numaggs { get; set; }
 
-        public int numtrans { get; set; }
+        public int? numtrans { get; set; }
 
-        public AggStrategy aggstrategy { get; set; }
+        public AggStrategy? aggstrategy { get; set; }
 
-        public AggSplit aggsplit { get; set; }
+        public AggSplit? aggsplit { get; set; }
 
         public AggStatePerPhaseData phase { get; set; }
 
-        public int numphases { get; set; }
+        public int? numphases { get; set; }
 
-        public int current_phase { get; set; }
+        public int? current_phase { get; set; }
 
         public AggStatePerAggData peragg { get; set; }
 
@@ -42,19 +47,19 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public AggStatePerTransData curpertrans { get; set; }
 
-        public bool input_done { get; set; }
+        public bool? input_done { get; set; }
 
-        public bool agg_done { get; set; }
+        public bool? agg_done { get; set; }
 
-        public int projected_set { get; set; }
+        public int? projected_set { get; set; }
 
-        public int current_set { get; set; }
+        public int? current_set { get; set; }
 
         public Bitmapset grouped_cols { get; set; }
 
         public IPg10Node[] all_grouped_cols { get; set; }
 
-        public int maxsets { get; set; }
+        public int? maxsets { get; set; }
 
         public AggStatePerPhaseData phases { get; set; }
 
@@ -68,9 +73,9 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public HeapTupleData grp_firstTuple { get; set; }
 
-        public bool table_filled { get; set; }
+        public bool? table_filled { get; set; }
 
-        public int num_hashes { get; set; }
+        public int? num_hashes { get; set; }
 
         public AggStatePerHashData perhash { get; set; }
 

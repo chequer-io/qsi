@@ -6,16 +6,21 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class CaseTestExpr
+    [PgNode("CaseTestExpr")]
+    internal class CaseTestExpr : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_CaseTestExpr;
+
         public Expr xpr { get; set; }
 
-        public uint typeId { get; set; }
+        public uint? typeId { get; set; }
 
-        public int typeMod { get; set; }
+        public int? typeMod { get; set; }
 
-        public uint collation { get; set; }
+        public uint? collation { get; set; }
     }
 }

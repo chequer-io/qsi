@@ -224,7 +224,7 @@ namespace Qsi.PostgreSql.Generator
 
             IEnumerable<CppTypeDeclaration> cppMembers = result.Children()
                 .OfType<ICppMember>()
-                .Where(m => config.TargetTypes.Contains(m.Name))
+                .Where(m => config.NodeTypes.Contains(m.Name))
                 .Cast<CppTypeDeclaration>()
                 .ToArray();
 

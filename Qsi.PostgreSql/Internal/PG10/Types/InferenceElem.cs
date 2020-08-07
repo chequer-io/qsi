@@ -6,16 +6,21 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class InferenceElem
+    [PgNode("InferenceElem")]
+    internal class InferenceElem : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_InferenceElem;
+
         public Expr xpr { get; set; }
 
         public IPg10Node expr { get; set; }
 
-        public uint infercollid { get; set; }
+        public uint? infercollid { get; set; }
 
-        public uint inferopclass { get; set; }
+        public uint? inferopclass { get; set; }
     }
 }

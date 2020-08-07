@@ -6,16 +6,21 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class Unique
+    [PgNode("Unique")]
+    internal class Unique : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_Unique;
+
         public Plan plan { get; set; }
 
-        public int numCols { get; set; }
+        public int? numCols { get; set; }
 
-        public short uniqColIdx { get; set; }
+        public short? uniqColIdx { get; set; }
 
-        public uint uniqOperators { get; set; }
+        public uint? uniqOperators { get; set; }
     }
 }

@@ -6,15 +6,20 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class RecursiveUnionState
+    [PgNode("RecursiveUnionState")]
+    internal class RecursiveUnionState : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_RecursiveUnionState;
+
         public PlanState ps { get; set; }
 
-        public bool recursing { get; set; }
+        public bool? recursing { get; set; }
 
-        public bool intermediate_empty { get; set; }
+        public bool? intermediate_empty { get; set; }
 
         public Tuplestorestate working_table { get; set; }
 
@@ -24,10 +29,10 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public FmgrInfo hashfunctions { get; set; }
 
-        public MemoryContextData[] tempContext { get; set; }
+        public MemoryContext tempContext { get; set; }
 
         public TupleHashTableData hashtable { get; set; }
 
-        public MemoryContextData[] tableContext { get; set; }
+        public MemoryContext tableContext { get; set; }
     }
 }

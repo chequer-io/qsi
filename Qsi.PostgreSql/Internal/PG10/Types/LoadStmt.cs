@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("LoadStmt")]
-    internal sealed class LoadStmt : IPg10Node
+    internal class LoadStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_LoadStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_LoadStmt;
+
+        public NodeTag? type { get; set; }
 
         public string filename { get; set; }
     }

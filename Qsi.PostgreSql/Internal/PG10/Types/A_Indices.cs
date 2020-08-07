@@ -11,14 +11,13 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("A_Indices")]
-    internal sealed class A_Indices : IPg10Node
+    internal class A_Indices : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_A_Indices; }
-        }
+        public virtual NodeTag Type => NodeTag.T_A_Indices;
 
-        public bool is_slice { get; set; }
+        public NodeTag? type { get; set; }
+
+        public bool? is_slice { get; set; }
 
         public IPg10Node lidx { get; set; }
 

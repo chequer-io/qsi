@@ -6,30 +6,33 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class WindowFunc
+    [PgNode("WindowFunc")]
+    internal class WindowFunc : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_WindowFunc;
+
         public Expr xpr { get; set; }
 
-        public uint winfnoid { get; set; }
+        public uint? winfnoid { get; set; }
 
-        public uint wintype { get; set; }
+        public uint? wintype { get; set; }
 
-        public uint wincollid { get; set; }
+        public uint? wincollid { get; set; }
 
-        public uint inputcollid { get; set; }
+        public uint? inputcollid { get; set; }
 
         public IPg10Node[] args { get; set; }
 
         public Expr aggfilter { get; set; }
 
-        public uint winref { get; set; }
+        public uint? winref { get; set; }
 
-        public bool winstar { get; set; }
+        public bool? winstar { get; set; }
 
-        public bool winagg { get; set; }
-
-        public int location { get; set; }
+        public bool? winagg { get; set; }
     }
 }

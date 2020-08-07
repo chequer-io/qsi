@@ -6,10 +6,15 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class WorkTableScanState
+    [PgNode("WorkTableScanState")]
+    internal class WorkTableScanState : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_WorkTableScanState;
+
         public ScanState ss { get; set; }
 
         public RecursiveUnionState rustate { get; set; }

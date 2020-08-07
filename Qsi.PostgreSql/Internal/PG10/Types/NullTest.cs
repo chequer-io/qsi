@@ -6,18 +6,21 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class NullTest
+    [PgNode("NullTest")]
+    internal class NullTest : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_NullTest;
+
         public Expr xpr { get; set; }
 
         public Expr arg { get; set; }
 
-        public NullTestType nulltesttype { get; set; }
+        public NullTestType? nulltesttype { get; set; }
 
-        public bool argisrow { get; set; }
-
-        public int location { get; set; }
+        public bool? argisrow { get; set; }
     }
 }

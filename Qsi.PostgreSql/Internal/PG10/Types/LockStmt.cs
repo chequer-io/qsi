@@ -11,17 +11,16 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("LockStmt")]
-    internal sealed class LockStmt : IPg10Node
+    internal class LockStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_LockStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_LockStmt;
+
+        public NodeTag? type { get; set; }
 
         public IPg10Node[] relations { get; set; }
 
-        public int mode { get; set; }
+        public int? mode { get; set; }
 
-        public bool nowait { get; set; }
+        public bool? nowait { get; set; }
     }
 }

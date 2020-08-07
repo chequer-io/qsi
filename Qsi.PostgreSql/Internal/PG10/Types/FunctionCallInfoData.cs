@@ -8,7 +8,7 @@
 
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class FunctionCallInfoData
+    internal class FunctionCallInfoData
     {
         public FmgrInfo flinfo { get; set; }
 
@@ -16,14 +16,14 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node resultinfo { get; set; }
 
-        public uint fncollation { get; set; }
+        public uint? fncollation { get; set; }
 
-        public bool isnull { get; set; }
+        public bool? isnull { get; set; }
 
-        public short nargs { get; set; }
+        public short? nargs { get; set; }
 
-        public uint arg { get; set; }
+        public uint? arg { get; set; }
 
-        public bool[] argnull { get; set; }
+        public bool?[] argnull { get; set; }
     }
 }

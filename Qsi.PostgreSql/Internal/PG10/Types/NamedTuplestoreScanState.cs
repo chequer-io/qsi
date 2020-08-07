@@ -6,13 +6,18 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class NamedTuplestoreScanState
+    [PgNode("NamedTuplestoreScanState")]
+    internal class NamedTuplestoreScanState : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_NamedTuplestoreScanState;
+
         public ScanState ss { get; set; }
 
-        public int readptr { get; set; }
+        public int? readptr { get; set; }
 
         public tupleDesc tupdesc { get; set; }
 

@@ -11,27 +11,26 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("PlanRowMark")]
-    internal sealed class PlanRowMark : IPg10Node
+    internal class PlanRowMark : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_PlanRowMark; }
-        }
+        public virtual NodeTag Type => NodeTag.T_PlanRowMark;
 
-        public uint rti { get; set; }
+        public NodeTag? type { get; set; }
 
-        public uint prti { get; set; }
+        public uint? rti { get; set; }
 
-        public uint rowmarkId { get; set; }
+        public uint? prti { get; set; }
 
-        public RowMarkType markType { get; set; }
+        public uint? rowmarkId { get; set; }
 
-        public int allMarkTypes { get; set; }
+        public RowMarkType? markType { get; set; }
 
-        public LockClauseStrength strength { get; set; }
+        public int? allMarkTypes { get; set; }
 
-        public LockWaitPolicy waitPolicy { get; set; }
+        public LockClauseStrength? strength { get; set; }
 
-        public bool isParent { get; set; }
+        public LockWaitPolicy? waitPolicy { get; set; }
+
+        public bool? isParent { get; set; }
     }
 }

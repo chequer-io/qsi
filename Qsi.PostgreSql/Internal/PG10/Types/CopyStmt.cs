@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("CopyStmt")]
-    internal sealed class CopyStmt : IPg10Node
+    internal class CopyStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_CopyStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_CopyStmt;
+
+        public NodeTag? type { get; set; }
 
         public RangeVar relation { get; set; }
 
@@ -24,9 +23,9 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] attlist { get; set; }
 
-        public bool is_from { get; set; }
+        public bool? is_from { get; set; }
 
-        public bool is_program { get; set; }
+        public bool? is_program { get; set; }
 
         public string filename { get; set; }
 

@@ -11,17 +11,16 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("ClusterStmt")]
-    internal sealed class ClusterStmt : IPg10Node
+    internal class ClusterStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_ClusterStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_ClusterStmt;
+
+        public NodeTag? type { get; set; }
 
         public RangeVar relation { get; set; }
 
         public string indexname { get; set; }
 
-        public bool verbose { get; set; }
+        public bool? verbose { get; set; }
     }
 }

@@ -8,7 +8,7 @@
 
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class pairingheap_node
+    internal class pairingheap_node
     {
         public pairingheap_node first_child { get; set; }
 

@@ -6,14 +6,19 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class NextValueExpr
+    [PgNode("NextValueExpr")]
+    internal class NextValueExpr : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_NextValueExpr;
+
         public Expr xpr { get; set; }
 
-        public uint seqid { get; set; }
+        public uint? seqid { get; set; }
 
-        public uint typeId { get; set; }
+        public uint? typeId { get; set; }
     }
 }

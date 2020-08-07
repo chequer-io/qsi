@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("CreateDomainStmt")]
-    internal sealed class CreateDomainStmt : IPg10Node
+    internal class CreateDomainStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_CreateDomainStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_CreateDomainStmt;
+
+        public NodeTag? type { get; set; }
 
         public IPg10Node[] domainname { get; set; }
 

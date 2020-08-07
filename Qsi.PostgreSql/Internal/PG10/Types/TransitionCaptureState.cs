@@ -8,15 +8,15 @@
 
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class TransitionCaptureState
+    internal class TransitionCaptureState
     {
-        public bool tcs_delete_old_table { get; set; }
+        public bool? tcs_delete_old_table { get; set; }
 
-        public bool tcs_update_old_table { get; set; }
+        public bool? tcs_update_old_table { get; set; }
 
-        public bool tcs_update_new_table { get; set; }
+        public bool? tcs_update_new_table { get; set; }
 
-        public bool tcs_insert_new_table { get; set; }
+        public bool? tcs_insert_new_table { get; set; }
 
         public TupleConversionMap tcs_map { get; set; }
 

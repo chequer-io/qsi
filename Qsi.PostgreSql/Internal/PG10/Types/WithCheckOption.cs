@@ -11,14 +11,13 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("WithCheckOption")]
-    internal sealed class WithCheckOption : IPg10Node
+    internal class WithCheckOption : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_WithCheckOption; }
-        }
+        public virtual NodeTag Type => NodeTag.T_WithCheckOption;
 
-        public WCOKind kind { get; set; }
+        public NodeTag? type { get; set; }
+
+        public WCOKind? kind { get; set; }
 
         public string relname { get; set; }
 
@@ -26,6 +25,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node qual { get; set; }
 
-        public bool cascaded { get; set; }
+        public bool? cascaded { get; set; }
     }
 }

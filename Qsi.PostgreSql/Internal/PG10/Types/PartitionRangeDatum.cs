@@ -11,17 +11,14 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("PartitionRangeDatum")]
-    internal sealed class PartitionRangeDatum : IPg10Node
+    internal class PartitionRangeDatum : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_PartitionRangeDatum; }
-        }
+        public virtual NodeTag Type => NodeTag.T_PartitionRangeDatum;
 
-        public PartitionRangeDatumKind kind { get; set; }
+        public NodeTag? type { get; set; }
+
+        public PartitionRangeDatumKind? kind { get; set; }
 
         public IPg10Node value { get; set; }
-
-        public int location { get; set; }
     }
 }

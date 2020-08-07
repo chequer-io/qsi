@@ -8,7 +8,7 @@
 
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class EPQState
+    internal class EPQState
     {
         public EState estate { get; set; }
 
@@ -20,6 +20,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] arowMarks { get; set; }
 
-        public int epqParam { get; set; }
+        public int? epqParam { get; set; }
     }
 }

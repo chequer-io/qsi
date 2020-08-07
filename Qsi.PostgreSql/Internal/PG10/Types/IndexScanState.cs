@@ -6,10 +6,15 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class IndexScanState
+    [PgNode("IndexScanState")]
+    internal class IndexScanState : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_IndexScanState;
+
         public ScanState ss { get; set; }
 
         public ExprState indexqualorig { get; set; }
@@ -18,17 +23,17 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public ScanKeyData iss_ScanKeys { get; set; }
 
-        public int iss_NumScanKeys { get; set; }
+        public int? iss_NumScanKeys { get; set; }
 
         public ScanKeyData iss_OrderByKeys { get; set; }
 
-        public int iss_NumOrderByKeys { get; set; }
+        public int? iss_NumOrderByKeys { get; set; }
 
         public IndexRuntimeKeyInfo iss_RuntimeKeys { get; set; }
 
-        public int iss_NumRuntimeKeys { get; set; }
+        public int? iss_NumRuntimeKeys { get; set; }
 
-        public bool iss_RuntimeKeysReady { get; set; }
+        public bool? iss_RuntimeKeysReady { get; set; }
 
         public ExprContext iss_RuntimeContext { get; set; }
 
@@ -38,18 +43,18 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public pairingheap iss_ReorderQueue { get; set; }
 
-        public bool iss_ReachedEnd { get; set; }
+        public bool? iss_ReachedEnd { get; set; }
 
-        public uint iss_OrderByValues { get; set; }
+        public uint? iss_OrderByValues { get; set; }
 
-        public bool[] iss_OrderByNulls { get; set; }
+        public bool?[] iss_OrderByNulls { get; set; }
 
         public SortSupportData iss_SortSupport { get; set; }
 
-        public bool[] iss_OrderByTypByVals { get; set; }
+        public bool?[] iss_OrderByTypByVals { get; set; }
 
-        public short iss_OrderByTypLens { get; set; }
+        public short? iss_OrderByTypLens { get; set; }
 
-        public uint iss_PscanLen { get; set; }
+        public uint? iss_PscanLen { get; set; }
     }
 }

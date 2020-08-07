@@ -11,15 +11,14 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("DropdbStmt")]
-    internal sealed class DropdbStmt : IPg10Node
+    internal class DropdbStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_DropdbStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_DropdbStmt;
+
+        public NodeTag? type { get; set; }
 
         public string dbname { get; set; }
 
-        public bool missing_ok { get; set; }
+        public bool? missing_ok { get; set; }
     }
 }

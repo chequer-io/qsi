@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("UpdateStmt")]
-    internal sealed class UpdateStmt : IPg10Node
+    internal class UpdateStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_UpdateStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_UpdateStmt;
+
+        public NodeTag? type { get; set; }
 
         public RangeVar relation { get; set; }
 

@@ -11,14 +11,13 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("NestLoopParam")]
-    internal sealed class NestLoopParam : IPg10Node
+    internal class NestLoopParam : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_NestLoopParam; }
-        }
+        public virtual NodeTag Type => NodeTag.T_NestLoopParam;
 
-        public int paramno { get; set; }
+        public NodeTag? type { get; set; }
+
+        public int? paramno { get; set; }
 
         public Var paramval { get; set; }
     }

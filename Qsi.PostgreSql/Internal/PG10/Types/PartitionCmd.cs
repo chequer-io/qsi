@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("PartitionCmd")]
-    internal sealed class PartitionCmd : IPg10Node
+    internal class PartitionCmd : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_PartitionCmd; }
-        }
+        public virtual NodeTag Type => NodeTag.T_PartitionCmd;
+
+        public NodeTag? type { get; set; }
 
         public RangeVar name { get; set; }
 

@@ -6,13 +6,18 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class XmlExpr
+    [PgNode("XmlExpr")]
+    internal class XmlExpr : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_XmlExpr;
+
         public Expr xpr { get; set; }
 
-        public XmlExprOp op { get; set; }
+        public XmlExprOp? op { get; set; }
 
         public string name { get; set; }
 
@@ -22,12 +27,10 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] args { get; set; }
 
-        public XmlOptionType xmloption { get; set; }
+        public XmlOptionType? xmloption { get; set; }
 
-        public uint type { get; set; }
+        public uint? type { get; set; }
 
-        public int typmod { get; set; }
-
-        public int location { get; set; }
+        public int? typmod { get; set; }
     }
 }

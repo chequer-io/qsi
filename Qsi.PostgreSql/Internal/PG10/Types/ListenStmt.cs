@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("ListenStmt")]
-    internal sealed class ListenStmt : IPg10Node
+    internal class ListenStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_ListenStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_ListenStmt;
+
+        public NodeTag? type { get; set; }
 
         public string conditionname { get; set; }
     }

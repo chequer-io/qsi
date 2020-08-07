@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("CreateOpClassStmt")]
-    internal sealed class CreateOpClassStmt : IPg10Node
+    internal class CreateOpClassStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_CreateOpClassStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_CreateOpClassStmt;
+
+        public NodeTag? type { get; set; }
 
         public IPg10Node[] opclassname { get; set; }
 
@@ -28,6 +27,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] items { get; set; }
 
-        public bool isDefault { get; set; }
+        public bool? isDefault { get; set; }
     }
 }

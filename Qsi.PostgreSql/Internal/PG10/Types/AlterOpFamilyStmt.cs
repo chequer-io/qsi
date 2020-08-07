@@ -11,18 +11,17 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("AlterOpFamilyStmt")]
-    internal sealed class AlterOpFamilyStmt : IPg10Node
+    internal class AlterOpFamilyStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_AlterOpFamilyStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_AlterOpFamilyStmt;
+
+        public NodeTag? type { get; set; }
 
         public IPg10Node[] opfamilyname { get; set; }
 
         public string amname { get; set; }
 
-        public bool isDrop { get; set; }
+        public bool? isDrop { get; set; }
 
         public IPg10Node[] items { get; set; }
     }

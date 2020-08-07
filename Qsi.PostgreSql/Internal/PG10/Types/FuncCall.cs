@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("FuncCall")]
-    internal sealed class FuncCall : IPg10Node
+    internal class FuncCall : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_FuncCall; }
-        }
+        public virtual NodeTag Type => NodeTag.T_FuncCall;
+
+        public NodeTag? type { get; set; }
 
         public IPg10Node[] funcname { get; set; }
 
@@ -26,16 +25,14 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node agg_filter { get; set; }
 
-        public bool agg_within_group { get; set; }
+        public bool? agg_within_group { get; set; }
 
-        public bool agg_star { get; set; }
+        public bool? agg_star { get; set; }
 
-        public bool agg_distinct { get; set; }
+        public bool? agg_distinct { get; set; }
 
-        public bool func_variadic { get; set; }
+        public bool? func_variadic { get; set; }
 
         public WindowDef over { get; set; }
-
-        public int location { get; set; }
     }
 }

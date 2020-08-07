@@ -6,10 +6,15 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class HashState
+    [PgNode("HashState")]
+    internal class HashState : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_HashState;
+
         public PlanState ps { get; set; }
 
         public HashJoinTableData hashtable { get; set; }

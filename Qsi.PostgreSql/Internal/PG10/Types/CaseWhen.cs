@@ -6,16 +6,19 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class CaseWhen
+    [PgNode("CaseWhen")]
+    internal class CaseWhen : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_CaseWhen;
+
         public Expr xpr { get; set; }
 
         public Expr expr { get; set; }
 
         public Expr result { get; set; }
-
-        public int location { get; set; }
     }
 }

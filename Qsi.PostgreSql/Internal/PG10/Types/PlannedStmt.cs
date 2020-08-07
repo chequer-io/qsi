@@ -11,28 +11,27 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("PlannedStmt")]
-    internal sealed class PlannedStmt : IPg10Node
+    internal class PlannedStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_PlannedStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_PlannedStmt;
 
-        public CmdType commandType { get; set; }
+        public NodeTag? type { get; set; }
 
-        public uint queryId { get; set; }
+        public CmdType? commandType { get; set; }
 
-        public bool hasReturning { get; set; }
+        public uint? queryId { get; set; }
 
-        public bool hasModifyingCTE { get; set; }
+        public bool? hasReturning { get; set; }
 
-        public bool canSetTag { get; set; }
+        public bool? hasModifyingCTE { get; set; }
 
-        public bool transientPlan { get; set; }
+        public bool? canSetTag { get; set; }
 
-        public bool dependsOnRole { get; set; }
+        public bool? transientPlan { get; set; }
 
-        public bool parallelModeNeeded { get; set; }
+        public bool? dependsOnRole { get; set; }
+
+        public bool? parallelModeNeeded { get; set; }
 
         public Plan planTree { get; set; }
 
@@ -54,12 +53,12 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] invalItems { get; set; }
 
-        public int nParamExec { get; set; }
+        public int? nParamExec { get; set; }
 
         public IPg10Node utilityStmt { get; set; }
 
-        public int stmt_location { get; set; }
+        public int? stmt_location { get; set; }
 
-        public int stmt_len { get; set; }
+        public int? stmt_len { get; set; }
     }
 }

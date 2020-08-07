@@ -11,21 +11,20 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("CreateTableAsStmt")]
-    internal sealed class CreateTableAsStmt : IPg10Node
+    internal class CreateTableAsStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_CreateTableAsStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_CreateTableAsStmt;
+
+        public NodeTag? type { get; set; }
 
         public IPg10Node query { get; set; }
 
         public IntoClause into { get; set; }
 
-        public ObjectType relkind { get; set; }
+        public ObjectType? relkind { get; set; }
 
-        public bool is_select_into { get; set; }
+        public bool? is_select_into { get; set; }
 
-        public bool if_not_exists { get; set; }
+        public bool? if_not_exists { get; set; }
     }
 }

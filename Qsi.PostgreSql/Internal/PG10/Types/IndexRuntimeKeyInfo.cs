@@ -8,12 +8,12 @@
 
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class IndexRuntimeKeyInfo
+    internal class IndexRuntimeKeyInfo
     {
         public ScanKeyData scan_key { get; set; }
 
         public ExprState key_expr { get; set; }
 
-        public bool key_toastable { get; set; }
+        public bool? key_toastable { get; set; }
     }
 }

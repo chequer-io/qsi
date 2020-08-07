@@ -6,14 +6,19 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class BitmapOrState
+    [PgNode("BitmapOrState")]
+    internal class BitmapOrState : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_BitmapOrState;
+
         public PlanState ps { get; set; }
 
         public PlanState[] bitmapplans { get; set; }
 
-        public int nplans { get; set; }
+        public int? nplans { get; set; }
     }
 }

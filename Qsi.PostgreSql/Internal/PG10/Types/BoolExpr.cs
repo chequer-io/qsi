@@ -6,16 +6,19 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class BoolExpr
+    [PgNode("BoolExpr")]
+    internal class BoolExpr : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_BoolExpr;
+
         public Expr xpr { get; set; }
 
-        public BoolExprType boolop { get; set; }
+        public BoolExprType? boolop { get; set; }
 
         public IPg10Node[] args { get; set; }
-
-        public int location { get; set; }
     }
 }

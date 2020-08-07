@@ -6,10 +6,15 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class Result
+    [PgNode("Result")]
+    internal class Result : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_Result;
+
         public Plan plan { get; set; }
 
         public IPg10Node resconstantqual { get; set; }

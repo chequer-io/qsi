@@ -6,23 +6,28 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class Agg
+    [PgNode("Agg")]
+    internal class Agg : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_Agg;
+
         public Plan plan { get; set; }
 
-        public AggStrategy aggstrategy { get; set; }
+        public AggStrategy? aggstrategy { get; set; }
 
-        public AggSplit aggsplit { get; set; }
+        public AggSplit? aggsplit { get; set; }
 
-        public int numCols { get; set; }
+        public int? numCols { get; set; }
 
-        public short grpColIdx { get; set; }
+        public short? grpColIdx { get; set; }
 
-        public uint grpOperators { get; set; }
+        public uint? grpOperators { get; set; }
 
-        public int numGroups { get; set; }
+        public int? numGroups { get; set; }
 
         public Bitmapset aggParams { get; set; }
 

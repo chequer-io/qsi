@@ -11,17 +11,16 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("TruncateStmt")]
-    internal sealed class TruncateStmt : IPg10Node
+    internal class TruncateStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_TruncateStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_TruncateStmt;
+
+        public NodeTag? type { get; set; }
 
         public IPg10Node[] relations { get; set; }
 
-        public bool restart_seqs { get; set; }
+        public bool? restart_seqs { get; set; }
 
-        public DropBehavior behavior { get; set; }
+        public DropBehavior? behavior { get; set; }
     }
 }

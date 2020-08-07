@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("CreateStatsStmt")]
-    internal sealed class CreateStatsStmt : IPg10Node
+    internal class CreateStatsStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_CreateStatsStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_CreateStatsStmt;
+
+        public NodeTag? type { get; set; }
 
         public IPg10Node[] defnames { get; set; }
 
@@ -26,6 +25,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] relations { get; set; }
 
-        public bool if_not_exists { get; set; }
+        public bool? if_not_exists { get; set; }
     }
 }

@@ -8,10 +8,10 @@
 
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class BlockIdData
+    internal class BlockIdData
     {
-        public ushort bi_hi { get; set; }
+        public ushort? bi_hi { get; set; }
 
-        public ushort bi_lo { get; set; }
+        public ushort? bi_lo { get; set; }
     }
 }

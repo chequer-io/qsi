@@ -6,22 +6,25 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class CaseExpr
+    [PgNode("CaseExpr")]
+    internal class CaseExpr : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_CaseExpr;
+
         public Expr xpr { get; set; }
 
-        public uint casetype { get; set; }
+        public uint? casetype { get; set; }
 
-        public uint casecollid { get; set; }
+        public uint? casecollid { get; set; }
 
         public Expr arg { get; set; }
 
         public IPg10Node[] args { get; set; }
 
         public Expr defresult { get; set; }
-
-        public int location { get; set; }
     }
 }

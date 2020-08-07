@@ -6,10 +6,15 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class TableFuncScan
+    [PgNode("TableFuncScan")]
+    internal class TableFuncScan : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_TableFuncScan;
+
         public Scan scan { get; set; }
 
         public TableFunc tablefunc { get; set; }

@@ -11,15 +11,14 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("TableLikeClause")]
-    internal sealed class TableLikeClause : IPg10Node
+    internal class TableLikeClause : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_TableLikeClause; }
-        }
+        public virtual NodeTag Type => NodeTag.T_TableLikeClause;
+
+        public NodeTag? type { get; set; }
 
         public RangeVar relation { get; set; }
 
-        public uint options { get; set; }
+        public uint? options { get; set; }
     }
 }

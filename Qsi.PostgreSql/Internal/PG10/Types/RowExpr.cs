@@ -6,20 +6,23 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class RowExpr
+    [PgNode("RowExpr")]
+    internal class RowExpr : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_RowExpr;
+
         public Expr xpr { get; set; }
 
         public IPg10Node[] args { get; set; }
 
-        public uint row_typeid { get; set; }
+        public uint? row_typeid { get; set; }
 
-        public CoercionForm row_format { get; set; }
+        public CoercionForm? row_format { get; set; }
 
         public IPg10Node[] colnames { get; set; }
-
-        public int location { get; set; }
     }
 }

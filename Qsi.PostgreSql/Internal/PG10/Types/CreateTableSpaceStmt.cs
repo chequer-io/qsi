@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("CreateTableSpaceStmt")]
-    internal sealed class CreateTableSpaceStmt : IPg10Node
+    internal class CreateTableSpaceStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_CreateTableSpaceStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_CreateTableSpaceStmt;
+
+        public NodeTag? type { get; set; }
 
         public string tablespacename { get; set; }
 

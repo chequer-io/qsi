@@ -6,21 +6,15 @@
 
 */
 
-using Qsi.PostgreSql.Internal.Serialization;
-
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    [PgNode("MemoryContextData")]
-    internal sealed class MemoryContextData : IPg10Node
+    internal class MemoryContextData
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_MemoryContext; }
-        }
+        public NodeTag? type { get; set; }
 
-        public bool isReset { get; set; }
+        public bool? isReset { get; set; }
 
-        public bool allowInCritSection { get; set; }
+        public bool? allowInCritSection { get; set; }
 
         public MemoryContextMethods methods { get; set; }
 

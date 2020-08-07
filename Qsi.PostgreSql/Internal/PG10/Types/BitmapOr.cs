@@ -6,13 +6,18 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class BitmapOr
+    [PgNode("BitmapOr")]
+    internal class BitmapOr : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_BitmapOr;
+
         public Plan plan { get; set; }
 
-        public bool isshared { get; set; }
+        public bool? isshared { get; set; }
 
         public IPg10Node[] bitmapplans { get; set; }
     }

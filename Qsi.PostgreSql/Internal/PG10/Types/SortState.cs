@@ -6,24 +6,29 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class SortState
+    [PgNode("SortState")]
+    internal class SortState : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_SortState;
+
         public ScanState ss { get; set; }
 
-        public bool randomAccess { get; set; }
+        public bool? randomAccess { get; set; }
 
-        public bool bounded { get; set; }
+        public bool? bounded { get; set; }
 
-        public int bound { get; set; }
+        public int? bound { get; set; }
 
-        public bool sort_Done { get; set; }
+        public bool? sort_Done { get; set; }
 
-        public bool bounded_Done { get; set; }
+        public bool? bounded_Done { get; set; }
 
-        public int bound_Done { get; set; }
+        public int? bound_Done { get; set; }
 
-        public object[] tuplesortstate { get; set; }
+        public object?[] tuplesortstate { get; set; }
     }
 }

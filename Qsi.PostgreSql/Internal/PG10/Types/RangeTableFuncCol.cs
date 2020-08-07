@@ -11,25 +11,22 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("RangeTableFuncCol")]
-    internal sealed class RangeTableFuncCol : IPg10Node
+    internal class RangeTableFuncCol : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_RangeTableFuncCol; }
-        }
+        public virtual NodeTag Type => NodeTag.T_RangeTableFuncCol;
+
+        public NodeTag? type { get; set; }
 
         public string colname { get; set; }
 
         public TypeName typeName { get; set; }
 
-        public bool for_ordinality { get; set; }
+        public bool? for_ordinality { get; set; }
 
-        public bool is_not_null { get; set; }
+        public bool? is_not_null { get; set; }
 
         public IPg10Node colexpr { get; set; }
 
         public IPg10Node coldefexpr { get; set; }
-
-        public int location { get; set; }
     }
 }

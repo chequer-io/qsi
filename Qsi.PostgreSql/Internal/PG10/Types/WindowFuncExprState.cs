@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("WindowFuncExprState")]
-    internal sealed class WindowFuncExprState : IPg10Node
+    internal class WindowFuncExprState : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_WindowFuncExprState; }
-        }
+        public virtual NodeTag Type => NodeTag.T_WindowFuncExprState;
+
+        public NodeTag? type { get; set; }
 
         public WindowFunc wfunc { get; set; }
 
@@ -24,6 +23,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public ExprState aggfilter { get; set; }
 
-        public int wfuncno { get; set; }
+        public int? wfuncno { get; set; }
     }
 }

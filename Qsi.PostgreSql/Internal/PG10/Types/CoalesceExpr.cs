@@ -6,18 +6,21 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class CoalesceExpr
+    [PgNode("CoalesceExpr")]
+    internal class CoalesceExpr : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_CoalesceExpr;
+
         public Expr xpr { get; set; }
 
-        public uint coalescetype { get; set; }
+        public uint? coalescetype { get; set; }
 
-        public uint coalescecollid { get; set; }
+        public uint? coalescecollid { get; set; }
 
         public IPg10Node[] args { get; set; }
-
-        public int location { get; set; }
     }
 }

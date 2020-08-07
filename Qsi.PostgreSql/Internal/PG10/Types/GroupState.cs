@@ -6,14 +6,19 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class GroupState
+    [PgNode("GroupState")]
+    internal class GroupState : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_GroupState;
+
         public ScanState ss { get; set; }
 
         public FmgrInfo eqfunctions { get; set; }
 
-        public bool grp_done { get; set; }
+        public bool? grp_done { get; set; }
     }
 }

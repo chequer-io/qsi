@@ -6,22 +6,25 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class Param
+    [PgNode("Param")]
+    internal class Param : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_Param;
+
         public Expr xpr { get; set; }
 
-        public ParamKind paramkind { get; set; }
+        public ParamKind? paramkind { get; set; }
 
-        public int paramid { get; set; }
+        public int? paramid { get; set; }
 
-        public uint paramtype { get; set; }
+        public uint? paramtype { get; set; }
 
-        public int paramtypmod { get; set; }
+        public int? paramtypmod { get; set; }
 
-        public uint paramcollid { get; set; }
-
-        public int location { get; set; }
+        public uint? paramcollid { get; set; }
     }
 }

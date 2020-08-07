@@ -11,17 +11,16 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("AlterTableSpaceOptionsStmt")]
-    internal sealed class AlterTableSpaceOptionsStmt : IPg10Node
+    internal class AlterTableSpaceOptionsStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_AlterTableSpaceOptionsStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_AlterTableSpaceOptionsStmt;
+
+        public NodeTag? type { get; set; }
 
         public string tablespacename { get; set; }
 
         public IPg10Node[] options { get; set; }
 
-        public bool isReset { get; set; }
+        public bool? isReset { get; set; }
     }
 }

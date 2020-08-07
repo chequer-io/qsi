@@ -11,16 +11,15 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("RenameStmt")]
-    internal sealed class RenameStmt : IPg10Node
+    internal class RenameStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_RenameStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_RenameStmt;
 
-        public ObjectType renameType { get; set; }
+        public NodeTag? type { get; set; }
 
-        public ObjectType relationType { get; set; }
+        public ObjectType? renameType { get; set; }
+
+        public ObjectType? relationType { get; set; }
 
         public RangeVar relation { get; set; }
 
@@ -30,8 +29,8 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public string newname { get; set; }
 
-        public DropBehavior behavior { get; set; }
+        public DropBehavior? behavior { get; set; }
 
-        public bool missing_ok { get; set; }
+        public bool? missing_ok { get; set; }
     }
 }

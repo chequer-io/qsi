@@ -6,10 +6,15 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class ScanState
+    [PgNode("ScanState")]
+    internal class ScanState : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_ScanState;
+
         public PlanState ps { get; set; }
 
         public RelationData ss_currentRelation { get; set; }

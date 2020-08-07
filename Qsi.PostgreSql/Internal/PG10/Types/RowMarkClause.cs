@@ -11,19 +11,18 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("RowMarkClause")]
-    internal sealed class RowMarkClause : IPg10Node
+    internal class RowMarkClause : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_RowMarkClause; }
-        }
+        public virtual NodeTag Type => NodeTag.T_RowMarkClause;
 
-        public uint rti { get; set; }
+        public NodeTag? type { get; set; }
 
-        public LockClauseStrength strength { get; set; }
+        public uint? rti { get; set; }
 
-        public LockWaitPolicy waitPolicy { get; set; }
+        public LockClauseStrength? strength { get; set; }
 
-        public bool pushedDown { get; set; }
+        public LockWaitPolicy? waitPolicy { get; set; }
+
+        public bool? pushedDown { get; set; }
     }
 }

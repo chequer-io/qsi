@@ -8,9 +8,9 @@
 
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class WorkerInstrumentation
+    internal class WorkerInstrumentation
     {
-        public int num_workers { get; set; }
+        public int? num_workers { get; set; }
 
         public Instrumentation instrument { get; set; }
     }

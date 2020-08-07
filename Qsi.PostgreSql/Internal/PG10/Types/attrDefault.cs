@@ -8,9 +8,9 @@
 
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class attrDefault
+    internal class attrDefault
     {
-        public short adnum { get; set; }
+        public short? adnum { get; set; }
 
         public string adbin { get; set; }
     }

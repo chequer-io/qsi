@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("IndexElem")]
-    internal sealed class IndexElem : IPg10Node
+    internal class IndexElem : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_IndexElem; }
-        }
+        public virtual NodeTag Type => NodeTag.T_IndexElem;
+
+        public NodeTag? type { get; set; }
 
         public string name { get; set; }
 
@@ -28,8 +27,8 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] opclass { get; set; }
 
-        public SortByDir ordering { get; set; }
+        public SortByDir? ordering { get; set; }
 
-        public SortByNulls nulls_ordering { get; set; }
+        public SortByNulls? nulls_ordering { get; set; }
     }
 }

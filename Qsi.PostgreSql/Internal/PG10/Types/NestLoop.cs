@@ -6,10 +6,15 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class NestLoop
+    [PgNode("NestLoop")]
+    internal class NestLoop : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_NestLoop;
+
         public Join join { get; set; }
 
         public IPg10Node[] nestParams { get; set; }

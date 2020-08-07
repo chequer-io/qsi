@@ -6,22 +6,25 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class MinMaxExpr
+    [PgNode("MinMaxExpr")]
+    internal class MinMaxExpr : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_MinMaxExpr;
+
         public Expr xpr { get; set; }
 
-        public uint minmaxtype { get; set; }
+        public uint? minmaxtype { get; set; }
 
-        public uint minmaxcollid { get; set; }
+        public uint? minmaxcollid { get; set; }
 
-        public uint inputcollid { get; set; }
+        public uint? inputcollid { get; set; }
 
-        public MinMaxOp op { get; set; }
+        public MinMaxOp? op { get; set; }
 
         public IPg10Node[] args { get; set; }
-
-        public int location { get; set; }
     }
 }

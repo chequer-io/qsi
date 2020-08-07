@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("SetExprState")]
-    internal sealed class SetExprState : IPg10Node
+    internal class SetExprState : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_SetExprState; }
-        }
+        public virtual NodeTag Type => NodeTag.T_SetExprState;
+
+        public NodeTag? type { get; set; }
 
         public Expr expr { get; set; }
 
@@ -32,13 +31,13 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public tupleDesc funcResultDesc { get; set; }
 
-        public bool funcReturnsTuple { get; set; }
+        public bool? funcReturnsTuple { get; set; }
 
-        public bool funcReturnsSet { get; set; }
+        public bool? funcReturnsSet { get; set; }
 
-        public bool setArgsValid { get; set; }
+        public bool? setArgsValid { get; set; }
 
-        public bool shutdown_reg { get; set; }
+        public bool? shutdown_reg { get; set; }
 
         public FunctionCallInfoData fcinfo_data { get; set; }
     }

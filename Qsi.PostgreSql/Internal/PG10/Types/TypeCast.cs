@@ -11,17 +11,14 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("TypeCast")]
-    internal sealed class TypeCast : IPg10Node
+    internal class TypeCast : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_TypeCast; }
-        }
+        public virtual NodeTag Type => NodeTag.T_TypeCast;
+
+        public NodeTag? type { get; set; }
 
         public IPg10Node arg { get; set; }
 
         public TypeName typeName { get; set; }
-
-        public int location { get; set; }
     }
 }

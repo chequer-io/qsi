@@ -11,18 +11,17 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("GrantStmt")]
-    internal sealed class GrantStmt : IPg10Node
+    internal class GrantStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_GrantStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_GrantStmt;
 
-        public bool is_grant { get; set; }
+        public NodeTag? type { get; set; }
 
-        public GrantTargetType targtype { get; set; }
+        public bool? is_grant { get; set; }
 
-        public GrantObjectType objtype { get; set; }
+        public GrantTargetType? targtype { get; set; }
+
+        public GrantObjectType? objtype { get; set; }
 
         public IPg10Node[] objects { get; set; }
 
@@ -30,8 +29,8 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] grantees { get; set; }
 
-        public bool grant_option { get; set; }
+        public bool? grant_option { get; set; }
 
-        public DropBehavior behavior { get; set; }
+        public DropBehavior? behavior { get; set; }
     }
 }

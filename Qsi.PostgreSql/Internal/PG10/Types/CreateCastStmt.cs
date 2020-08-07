@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("CreateCastStmt")]
-    internal sealed class CreateCastStmt : IPg10Node
+    internal class CreateCastStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_CreateCastStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_CreateCastStmt;
+
+        public NodeTag? type { get; set; }
 
         public TypeName sourcetype { get; set; }
 
@@ -24,8 +23,8 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public ObjectWithArgs func { get; set; }
 
-        public CoercionContext context { get; set; }
+        public CoercionContext? context { get; set; }
 
-        public bool inout { get; set; }
+        public bool? inout { get; set; }
     }
 }

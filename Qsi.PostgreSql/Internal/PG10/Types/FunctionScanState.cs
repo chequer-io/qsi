@@ -6,24 +6,29 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class FunctionScanState
+    [PgNode("FunctionScanState")]
+    internal class FunctionScanState : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_FunctionScanState;
+
         public ScanState ss { get; set; }
 
-        public int eflags { get; set; }
+        public int? eflags { get; set; }
 
-        public bool ordinality { get; set; }
+        public bool? ordinality { get; set; }
 
-        public bool simple { get; set; }
+        public bool? simple { get; set; }
 
-        public int ordinal { get; set; }
+        public int? ordinal { get; set; }
 
-        public int nfuncs { get; set; }
+        public int? nfuncs { get; set; }
 
         public FunctionScanPerFuncState funcstates { get; set; }
 
-        public MemoryContextData[] argcontext { get; set; }
+        public MemoryContext argcontext { get; set; }
     }
 }

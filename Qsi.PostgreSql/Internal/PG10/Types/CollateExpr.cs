@@ -6,16 +6,19 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class CollateExpr
+    [PgNode("CollateExpr")]
+    internal class CollateExpr : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_CollateExpr;
+
         public Expr xpr { get; set; }
 
         public Expr arg { get; set; }
 
-        public uint collOid { get; set; }
-
-        public int location { get; set; }
+        public uint? collOid { get; set; }
     }
 }

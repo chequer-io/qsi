@@ -6,9 +6,13 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class TsmRoutine
+    [PgNode("TsmRoutine")]
+    internal class TsmRoutine : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_TsmRoutine;
     }
 }

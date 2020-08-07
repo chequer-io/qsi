@@ -11,14 +11,13 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("CreateRoleStmt")]
-    internal sealed class CreateRoleStmt : IPg10Node
+    internal class CreateRoleStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_CreateRoleStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_CreateRoleStmt;
 
-        public RoleStmtType stmt_type { get; set; }
+        public NodeTag? type { get; set; }
+
+        public RoleStmtType? stmt_type { get; set; }
 
         public string role { get; set; }
 

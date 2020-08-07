@@ -6,27 +6,32 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class IndexOnlyScanState
+    [PgNode("IndexOnlyScanState")]
+    internal class IndexOnlyScanState : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_IndexOnlyScanState;
+
         public ScanState ss { get; set; }
 
         public ExprState indexqual { get; set; }
 
         public ScanKeyData ioss_ScanKeys { get; set; }
 
-        public int ioss_NumScanKeys { get; set; }
+        public int? ioss_NumScanKeys { get; set; }
 
         public ScanKeyData ioss_OrderByKeys { get; set; }
 
-        public int ioss_NumOrderByKeys { get; set; }
+        public int? ioss_NumOrderByKeys { get; set; }
 
         public IndexRuntimeKeyInfo ioss_RuntimeKeys { get; set; }
 
-        public int ioss_NumRuntimeKeys { get; set; }
+        public int? ioss_NumRuntimeKeys { get; set; }
 
-        public bool ioss_RuntimeKeysReady { get; set; }
+        public bool? ioss_RuntimeKeysReady { get; set; }
 
         public ExprContext ioss_RuntimeContext { get; set; }
 
@@ -34,10 +39,10 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IndexScanDescData ioss_ScanDesc { get; set; }
 
-        public int ioss_VMBuffer { get; set; }
+        public int? ioss_VMBuffer { get; set; }
 
-        public int ioss_HeapFetches { get; set; }
+        public int? ioss_HeapFetches { get; set; }
 
-        public uint ioss_PscanLen { get; set; }
+        public uint? ioss_PscanLen { get; set; }
     }
 }

@@ -6,10 +6,15 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class BitmapHeapScanState
+    [PgNode("BitmapHeapScanState")]
+    internal class BitmapHeapScanState : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_BitmapHeapScanState;
+
         public ScanState ss { get; set; }
 
         public ExprState bitmapqualorig { get; set; }
@@ -20,21 +25,21 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public TBMIterateResult tbmres { get; set; }
 
-        public int exact_pages { get; set; }
+        public int? exact_pages { get; set; }
 
-        public int lossy_pages { get; set; }
+        public int? lossy_pages { get; set; }
 
         public TBMIterator prefetch_iterator { get; set; }
 
-        public int prefetch_pages { get; set; }
+        public int? prefetch_pages { get; set; }
 
-        public int prefetch_target { get; set; }
+        public int? prefetch_target { get; set; }
 
-        public int prefetch_maximum { get; set; }
+        public int? prefetch_maximum { get; set; }
 
-        public uint pscan_len { get; set; }
+        public uint? pscan_len { get; set; }
 
-        public bool initialized { get; set; }
+        public bool? initialized { get; set; }
 
         public TBMSharedIterator shared_tbmiterator { get; set; }
 

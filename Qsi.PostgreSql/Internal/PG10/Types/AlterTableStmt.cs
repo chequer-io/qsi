@@ -11,19 +11,18 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("AlterTableStmt")]
-    internal sealed class AlterTableStmt : IPg10Node
+    internal class AlterTableStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_AlterTableStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_AlterTableStmt;
+
+        public NodeTag? type { get; set; }
 
         public RangeVar relation { get; set; }
 
         public IPg10Node[] cmds { get; set; }
 
-        public ObjectType relkind { get; set; }
+        public ObjectType? relkind { get; set; }
 
-        public bool missing_ok { get; set; }
+        public bool? missing_ok { get; set; }
     }
 }

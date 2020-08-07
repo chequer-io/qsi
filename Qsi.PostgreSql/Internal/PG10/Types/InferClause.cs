@@ -11,19 +11,16 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("InferClause")]
-    internal sealed class InferClause : IPg10Node
+    internal class InferClause : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_InferClause; }
-        }
+        public virtual NodeTag Type => NodeTag.T_InferClause;
+
+        public NodeTag? type { get; set; }
 
         public IPg10Node[] indexElems { get; set; }
 
         public IPg10Node whereClause { get; set; }
 
         public string conname { get; set; }
-
-        public int location { get; set; }
     }
 }

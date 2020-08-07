@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("PlanState")]
-    internal sealed class PlanState : IPg10Node
+    internal class PlanState : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_PlanState; }
-        }
+        public virtual NodeTag Type => NodeTag.T_PlanState;
+
+        public NodeTag? type { get; set; }
 
         public Plan plan { get; set; }
 

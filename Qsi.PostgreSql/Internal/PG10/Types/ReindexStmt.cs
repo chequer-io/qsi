@@ -11,19 +11,18 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("ReindexStmt")]
-    internal sealed class ReindexStmt : IPg10Node
+    internal class ReindexStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_ReindexStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_ReindexStmt;
 
-        public ReindexObjectType kind { get; set; }
+        public NodeTag? type { get; set; }
+
+        public ReindexObjectType? kind { get; set; }
 
         public RangeVar relation { get; set; }
 
-        public char name { get; set; }
+        public char? name { get; set; }
 
-        public int options { get; set; }
+        public int? options { get; set; }
     }
 }

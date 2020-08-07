@@ -11,14 +11,13 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("TransactionStmt")]
-    internal sealed class TransactionStmt : IPg10Node
+    internal class TransactionStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_TransactionStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_TransactionStmt;
 
-        public TransactionStmtKind kind { get; set; }
+        public NodeTag? type { get; set; }
+
+        public TransactionStmtKind? kind { get; set; }
 
         public IPg10Node[] options { get; set; }
 

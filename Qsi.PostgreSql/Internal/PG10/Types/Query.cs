@@ -11,42 +11,41 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("Query")]
-    internal sealed class Query : IPg10Node
+    internal class Query : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_Query; }
-        }
+        public virtual NodeTag Type => NodeTag.T_Query;
 
-        public CmdType commandType { get; set; }
+        public NodeTag? type { get; set; }
 
-        public QuerySource querySource { get; set; }
+        public CmdType? commandType { get; set; }
 
-        public uint queryId { get; set; }
+        public QuerySource? querySource { get; set; }
 
-        public bool canSetTag { get; set; }
+        public uint? queryId { get; set; }
+
+        public bool? canSetTag { get; set; }
 
         public IPg10Node utilityStmt { get; set; }
 
-        public int resultRelation { get; set; }
+        public int? resultRelation { get; set; }
 
-        public bool hasAggs { get; set; }
+        public bool? hasAggs { get; set; }
 
-        public bool hasWindowFuncs { get; set; }
+        public bool? hasWindowFuncs { get; set; }
 
-        public bool hasTargetSRFs { get; set; }
+        public bool? hasTargetSRFs { get; set; }
 
-        public bool hasSubLinks { get; set; }
+        public bool? hasSubLinks { get; set; }
 
-        public bool hasDistinctOn { get; set; }
+        public bool? hasDistinctOn { get; set; }
 
-        public bool hasRecursive { get; set; }
+        public bool? hasRecursive { get; set; }
 
-        public bool hasModifyingCTE { get; set; }
+        public bool? hasModifyingCTE { get; set; }
 
-        public bool hasForUpdate { get; set; }
+        public bool? hasForUpdate { get; set; }
 
-        public bool hasRowSecurity { get; set; }
+        public bool? hasRowSecurity { get; set; }
 
         public IPg10Node[] cteList { get; set; }
 
@@ -56,7 +55,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] targetList { get; set; }
 
-        public OverridingKind @override { get; set; }
+        public OverridingKind? @override { get; set; }
 
         public OnConflictExpr onConflict { get; set; }
 
@@ -86,8 +85,8 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] withCheckOptions { get; set; }
 
-        public int stmt_location { get; set; }
+        public int? stmt_location { get; set; }
 
-        public int stmt_len { get; set; }
+        public int? stmt_len { get; set; }
     }
 }

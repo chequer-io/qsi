@@ -6,24 +6,29 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class TargetEntry
+    [PgNode("TargetEntry")]
+    internal class TargetEntry : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_TargetEntry;
+
         public Expr xpr { get; set; }
 
         public Expr expr { get; set; }
 
-        public short resno { get; set; }
+        public short? resno { get; set; }
 
         public string resname { get; set; }
 
-        public uint ressortgroupref { get; set; }
+        public uint? ressortgroupref { get; set; }
 
-        public uint resorigtbl { get; set; }
+        public uint? resorigtbl { get; set; }
 
-        public short resorigcol { get; set; }
+        public short? resorigcol { get; set; }
 
-        public bool resjunk { get; set; }
+        public bool? resjunk { get; set; }
     }
 }

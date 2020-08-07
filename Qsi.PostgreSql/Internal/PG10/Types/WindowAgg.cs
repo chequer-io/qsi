@@ -6,27 +6,32 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class WindowAgg
+    [PgNode("WindowAgg")]
+    internal class WindowAgg : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_WindowAgg;
+
         public Plan plan { get; set; }
 
-        public uint winref { get; set; }
+        public uint? winref { get; set; }
 
-        public int partNumCols { get; set; }
+        public int? partNumCols { get; set; }
 
-        public short partColIdx { get; set; }
+        public short? partColIdx { get; set; }
 
-        public uint partOperators { get; set; }
+        public uint? partOperators { get; set; }
 
-        public int ordNumCols { get; set; }
+        public int? ordNumCols { get; set; }
 
-        public short ordColIdx { get; set; }
+        public short? ordColIdx { get; set; }
 
-        public uint ordOperators { get; set; }
+        public uint? ordOperators { get; set; }
 
-        public int frameOptions { get; set; }
+        public int? frameOptions { get; set; }
 
         public IPg10Node startOffset { get; set; }
 

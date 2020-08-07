@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("CreatePolicyStmt")]
-    internal sealed class CreatePolicyStmt : IPg10Node
+    internal class CreatePolicyStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_CreatePolicyStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_CreatePolicyStmt;
+
+        public NodeTag? type { get; set; }
 
         public string policy_name { get; set; }
 
@@ -24,7 +23,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public string cmd_name { get; set; }
 
-        public bool permissive { get; set; }
+        public bool? permissive { get; set; }
 
         public IPg10Node[] roles { get; set; }
 

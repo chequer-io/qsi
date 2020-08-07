@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("Alias")]
-    internal sealed class Alias : IPg10Node
+    internal class Alias : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_Alias; }
-        }
+        public virtual NodeTag Type => NodeTag.T_Alias;
+
+        public NodeTag? type { get; set; }
 
         public string aliasname { get; set; }
 

@@ -11,16 +11,15 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("IndexInfo")]
-    internal sealed class IndexInfo : IPg10Node
+    internal class IndexInfo : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_IndexInfo; }
-        }
+        public virtual NodeTag Type => NodeTag.T_IndexInfo;
 
-        public int ii_NumIndexAttrs { get; set; }
+        public NodeTag? type { get; set; }
 
-        public short ii_KeyAttrNumbers { get; set; }
+        public int? ii_NumIndexAttrs { get; set; }
+
+        public short? ii_KeyAttrNumbers { get; set; }
 
         public IPg10Node[] ii_Expressions { get; set; }
 
@@ -30,28 +29,28 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public ExprState ii_PredicateState { get; set; }
 
-        public uint ii_ExclusionOps { get; set; }
+        public uint? ii_ExclusionOps { get; set; }
 
-        public uint ii_ExclusionProcs { get; set; }
+        public uint? ii_ExclusionProcs { get; set; }
 
-        public ushort ii_ExclusionStrats { get; set; }
+        public ushort? ii_ExclusionStrats { get; set; }
 
-        public uint ii_UniqueOps { get; set; }
+        public uint? ii_UniqueOps { get; set; }
 
-        public uint ii_UniqueProcs { get; set; }
+        public uint? ii_UniqueProcs { get; set; }
 
-        public ushort ii_UniqueStrats { get; set; }
+        public ushort? ii_UniqueStrats { get; set; }
 
-        public bool ii_Unique { get; set; }
+        public bool? ii_Unique { get; set; }
 
-        public bool ii_ReadyForInserts { get; set; }
+        public bool? ii_ReadyForInserts { get; set; }
 
-        public bool ii_Concurrent { get; set; }
+        public bool? ii_Concurrent { get; set; }
 
-        public bool ii_BrokenHotChain { get; set; }
+        public bool? ii_BrokenHotChain { get; set; }
 
-        public object[] ii_AmCache { get; set; }
+        public object?[] ii_AmCache { get; set; }
 
-        public MemoryContextData[] ii_Context { get; set; }
+        public MemoryContext ii_Context { get; set; }
     }
 }

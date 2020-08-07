@@ -6,26 +6,29 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class Const
+    [PgNode("Const")]
+    internal class Const : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_Const;
+
         public Expr xpr { get; set; }
 
-        public uint consttype { get; set; }
+        public uint? consttype { get; set; }
 
-        public int consttypmod { get; set; }
+        public int? consttypmod { get; set; }
 
-        public uint constcollid { get; set; }
+        public uint? constcollid { get; set; }
 
-        public int constlen { get; set; }
+        public int? constlen { get; set; }
 
-        public uint constvalue { get; set; }
+        public uint? constvalue { get; set; }
 
-        public bool constisnull { get; set; }
+        public bool? constisnull { get; set; }
 
-        public bool constbyval { get; set; }
-
-        public int location { get; set; }
+        public bool? constbyval { get; set; }
     }
 }

@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("CreateEventTrigStmt")]
-    internal sealed class CreateEventTrigStmt : IPg10Node
+    internal class CreateEventTrigStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_CreateEventTrigStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_CreateEventTrigStmt;
+
+        public NodeTag? type { get; set; }
 
         public string trigname { get; set; }
 

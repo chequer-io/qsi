@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("IntoClause")]
-    internal sealed class IntoClause : IPg10Node
+    internal class IntoClause : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_IntoClause; }
-        }
+        public virtual NodeTag Type => NodeTag.T_IntoClause;
+
+        public NodeTag? type { get; set; }
 
         public RangeVar rel { get; set; }
 
@@ -24,12 +23,12 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] options { get; set; }
 
-        public OnCommitAction onCommit { get; set; }
+        public OnCommitAction? onCommit { get; set; }
 
         public string tableSpaceName { get; set; }
 
         public IPg10Node viewQuery { get; set; }
 
-        public bool skipData { get; set; }
+        public bool? skipData { get; set; }
     }
 }

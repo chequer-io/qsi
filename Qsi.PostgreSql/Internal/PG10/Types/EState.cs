@@ -11,14 +11,13 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("EState")]
-    internal sealed class EState : IPg10Node
+    internal class EState : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_EState; }
-        }
+        public virtual NodeTag Type => NodeTag.T_EState;
 
-        public ScanDirection es_direction { get; set; }
+        public NodeTag? type { get; set; }
+
+        public ScanDirection? es_direction { get; set; }
 
         public SnapshotData es_snapshot { get; set; }
 
@@ -28,21 +27,21 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public PlannedStmt es_plannedstmt { get; set; }
 
-        public char es_sourceText { get; set; }
+        public char? es_sourceText { get; set; }
 
         public JunkFilter es_junkFilter { get; set; }
 
-        public uint es_output_cid { get; set; }
+        public uint? es_output_cid { get; set; }
 
         public ResultRelInfo es_result_relations { get; set; }
 
-        public int es_num_result_relations { get; set; }
+        public int? es_num_result_relations { get; set; }
 
         public ResultRelInfo es_result_relation_info { get; set; }
 
         public ResultRelInfo es_root_result_relations { get; set; }
 
-        public int es_num_root_result_relations { get; set; }
+        public int? es_num_root_result_relations { get; set; }
 
         public IPg10Node[] es_leaf_result_relations { get; set; }
 
@@ -60,21 +59,21 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public QueryEnvironment es_queryEnv { get; set; }
 
-        public MemoryContextData[] es_query_cxt { get; set; }
+        public MemoryContext es_query_cxt { get; set; }
 
         public IPg10Node[] es_tupleTable { get; set; }
 
         public IPg10Node[] es_rowMarks { get; set; }
 
-        public uint es_processed { get; set; }
+        public uint? es_processed { get; set; }
 
-        public uint es_lastoid { get; set; }
+        public uint? es_lastoid { get; set; }
 
-        public int es_top_eflags { get; set; }
+        public int? es_top_eflags { get; set; }
 
-        public int es_instrument { get; set; }
+        public int? es_instrument { get; set; }
 
-        public bool es_finished { get; set; }
+        public bool? es_finished { get; set; }
 
         public IPg10Node[] es_exprcontexts { get; set; }
 
@@ -86,12 +85,12 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public HeapTupleData es_epqTuple { get; set; }
 
-        public bool[] es_epqTupleSet { get; set; }
+        public bool?[] es_epqTupleSet { get; set; }
 
-        public bool[] es_epqScanDone { get; set; }
+        public bool?[] es_epqScanDone { get; set; }
 
         public dsa_area es_query_dsa { get; set; }
 
-        public bool es_use_parallel_mode { get; set; }
+        public bool? es_use_parallel_mode { get; set; }
     }
 }

@@ -8,14 +8,14 @@
 
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class TBMIterateResult
+    internal class TBMIterateResult
     {
-        public uint blockno { get; set; }
+        public uint? blockno { get; set; }
 
-        public int ntuples { get; set; }
+        public int? ntuples { get; set; }
 
-        public bool recheck { get; set; }
+        public bool? recheck { get; set; }
 
-        public ushort offsets { get; set; }
+        public ushort? offsets { get; set; }
     }
 }

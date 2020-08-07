@@ -8,13 +8,13 @@
 
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class HeapTupleData
+    internal class HeapTupleData
     {
-        public uint t_len { get; set; }
+        public uint? t_len { get; set; }
 
         public ItemPointerData t_self { get; set; }
 
-        public uint t_tableOid { get; set; }
+        public uint? t_tableOid { get; set; }
 
         public HeapTupleHeaderData t_data { get; set; }
     }

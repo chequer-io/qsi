@@ -6,17 +6,22 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class CustomScanState
+    [PgNode("CustomScanState")]
+    internal class CustomScanState : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_CustomScanState;
+
         public ScanState ss { get; set; }
 
-        public uint flags { get; set; }
+        public uint? flags { get; set; }
 
         public IPg10Node[] custom_ps { get; set; }
 
-        public uint pscan_len { get; set; }
+        public uint? pscan_len { get; set; }
 
         public CustomExecMethods methods { get; set; }
     }

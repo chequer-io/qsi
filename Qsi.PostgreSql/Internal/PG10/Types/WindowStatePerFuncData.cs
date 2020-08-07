@@ -8,7 +8,7 @@
 
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class WindowStatePerFuncData
+    internal class WindowStatePerFuncData
     {
     }
 }

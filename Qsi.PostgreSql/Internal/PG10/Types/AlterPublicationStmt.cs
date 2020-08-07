@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("AlterPublicationStmt")]
-    internal sealed class AlterPublicationStmt : IPg10Node
+    internal class AlterPublicationStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_AlterPublicationStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_AlterPublicationStmt;
+
+        public NodeTag? type { get; set; }
 
         public string pubname { get; set; }
 
@@ -24,8 +23,8 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] tables { get; set; }
 
-        public bool for_all_tables { get; set; }
+        public bool? for_all_tables { get; set; }
 
-        public DefElemAction tableAction { get; set; }
+        public DefElemAction? tableAction { get; set; }
     }
 }

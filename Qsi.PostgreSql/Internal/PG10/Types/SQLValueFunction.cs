@@ -6,18 +6,21 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class SQLValueFunction
+    [PgNode("SQLValueFunction")]
+    internal class SQLValueFunction : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_SQLValueFunction;
+
         public Expr xpr { get; set; }
 
-        public SQLValueFunctionOp op { get; set; }
+        public SQLValueFunctionOp? op { get; set; }
 
-        public uint type { get; set; }
+        public uint? type { get; set; }
 
-        public int typmod { get; set; }
-
-        public int location { get; set; }
+        public int? typmod { get; set; }
     }
 }

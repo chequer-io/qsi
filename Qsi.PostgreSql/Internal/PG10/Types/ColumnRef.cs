@@ -11,15 +11,12 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("ColumnRef")]
-    internal sealed class ColumnRef : IPg10Node
+    internal class ColumnRef : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_ColumnRef; }
-        }
+        public virtual NodeTag Type => NodeTag.T_ColumnRef;
+
+        public NodeTag? type { get; set; }
 
         public IPg10Node[] fields { get; set; }
-
-        public int location { get; set; }
     }
 }

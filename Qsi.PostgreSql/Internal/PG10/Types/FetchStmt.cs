@@ -11,19 +11,18 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("FetchStmt")]
-    internal sealed class FetchStmt : IPg10Node
+    internal class FetchStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_FetchStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_FetchStmt;
 
-        public FetchDirection direction { get; set; }
+        public NodeTag? type { get; set; }
 
-        public int howMany { get; set; }
+        public FetchDirection? direction { get; set; }
+
+        public int? howMany { get; set; }
 
         public string portalname { get; set; }
 
-        public bool ismove { get; set; }
+        public bool? ismove { get; set; }
     }
 }

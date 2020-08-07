@@ -11,16 +11,15 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("JoinExpr")]
-    internal sealed class JoinExpr : IPg10Node
+    internal class JoinExpr : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_JoinExpr; }
-        }
+        public virtual NodeTag Type => NodeTag.T_JoinExpr;
 
-        public JoinType jointype { get; set; }
+        public NodeTag? type { get; set; }
 
-        public bool isNatural { get; set; }
+        public JoinType? jointype { get; set; }
+
+        public bool? isNatural { get; set; }
 
         public IPg10Node larg { get; set; }
 
@@ -32,6 +31,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public Alias alias { get; set; }
 
-        public int rtindex { get; set; }
+        public int? rtindex { get; set; }
     }
 }

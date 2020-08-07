@@ -8,40 +8,40 @@
 
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class SnapshotData
+    internal class SnapshotData
     {
         public string satisfies { get; set; }
 
-        public uint xmin { get; set; }
+        public uint? xmin { get; set; }
 
-        public uint xmax { get; set; }
+        public uint? xmax { get; set; }
 
-        public uint xip { get; set; }
+        public uint? xip { get; set; }
 
-        public uint xcnt { get; set; }
+        public uint? xcnt { get; set; }
 
-        public uint subxip { get; set; }
+        public uint? subxip { get; set; }
 
-        public int subxcnt { get; set; }
+        public int? subxcnt { get; set; }
 
-        public bool suboverflowed { get; set; }
+        public bool? suboverflowed { get; set; }
 
-        public bool takenDuringRecovery { get; set; }
+        public bool? takenDuringRecovery { get; set; }
 
-        public bool copied { get; set; }
+        public bool? copied { get; set; }
 
-        public uint curcid { get; set; }
+        public uint? curcid { get; set; }
 
-        public uint speculativeToken { get; set; }
+        public uint? speculativeToken { get; set; }
 
-        public uint active_count { get; set; }
+        public uint? active_count { get; set; }
 
-        public uint regd_count { get; set; }
+        public uint? regd_count { get; set; }
 
         public pairingheap_node ph_node { get; set; }
 
-        public int whenTaken { get; set; }
+        public int? whenTaken { get; set; }
 
-        public uint lsn { get; set; }
+        public uint? lsn { get; set; }
     }
 }

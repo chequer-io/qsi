@@ -11,17 +11,16 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("AlternativeSubPlanState")]
-    internal sealed class AlternativeSubPlanState : IPg10Node
+    internal class AlternativeSubPlanState : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_AlternativeSubPlanState; }
-        }
+        public virtual NodeTag Type => NodeTag.T_AlternativeSubPlanState;
+
+        public NodeTag? type { get; set; }
 
         public AlternativeSubPlan subplan { get; set; }
 
         public IPg10Node[] subplans { get; set; }
 
-        public int active { get; set; }
+        public int? active { get; set; }
     }
 }

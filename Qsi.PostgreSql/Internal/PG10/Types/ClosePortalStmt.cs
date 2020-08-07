@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("ClosePortalStmt")]
-    internal sealed class ClosePortalStmt : IPg10Node
+    internal class ClosePortalStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_ClosePortalStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_ClosePortalStmt;
+
+        public NodeTag? type { get; set; }
 
         public string portalname { get; set; }
     }

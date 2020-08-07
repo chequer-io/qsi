@@ -6,21 +6,26 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class SetOpState
+    [PgNode("SetOpState")]
+    internal class SetOpState : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_SetOpState;
+
         public PlanState ps { get; set; }
 
         public FmgrInfo eqfunctions { get; set; }
 
         public FmgrInfo hashfunctions { get; set; }
 
-        public bool setop_done { get; set; }
+        public bool? setop_done { get; set; }
 
-        public int numOutput { get; set; }
+        public int? numOutput { get; set; }
 
-        public MemoryContextData[] tempContext { get; set; }
+        public MemoryContext tempContext { get; set; }
 
         public SetOpStatePerGroupData pergroup { get; set; }
 
@@ -28,9 +33,9 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public TupleHashTableData hashtable { get; set; }
 
-        public MemoryContextData[] tableContext { get; set; }
+        public MemoryContext tableContext { get; set; }
 
-        public bool table_filled { get; set; }
+        public bool? table_filled { get; set; }
 
         public tuplehash_iterator hashiter { get; set; }
     }

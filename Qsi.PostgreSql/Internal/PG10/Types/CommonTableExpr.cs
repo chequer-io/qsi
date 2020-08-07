@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("CommonTableExpr")]
-    internal sealed class CommonTableExpr : IPg10Node
+    internal class CommonTableExpr : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_CommonTableExpr; }
-        }
+        public virtual NodeTag Type => NodeTag.T_CommonTableExpr;
+
+        public NodeTag? type { get; set; }
 
         public string ctename { get; set; }
 
@@ -24,11 +23,9 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node ctequery { get; set; }
 
-        public int location { get; set; }
+        public bool? cterecursive { get; set; }
 
-        public bool cterecursive { get; set; }
-
-        public int cterefcount { get; set; }
+        public int? cterefcount { get; set; }
 
         public IPg10Node[] ctecolnames { get; set; }
 

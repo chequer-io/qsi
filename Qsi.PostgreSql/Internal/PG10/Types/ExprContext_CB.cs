@@ -8,12 +8,12 @@
 
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class ExprContext_CB
+    internal class ExprContext_CB
     {
         public ExprContext_CB next { get; set; }
 
         public string function { get; set; }
 
-        public uint arg { get; set; }
+        public uint? arg { get; set; }
     }
 }

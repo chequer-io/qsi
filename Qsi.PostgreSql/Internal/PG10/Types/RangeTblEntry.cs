@@ -11,32 +11,31 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("RangeTblEntry")]
-    internal sealed class RangeTblEntry : IPg10Node
+    internal class RangeTblEntry : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_RangeTblEntry; }
-        }
+        public virtual NodeTag Type => NodeTag.T_RangeTblEntry;
 
-        public RTEKind rtekind { get; set; }
+        public NodeTag? type { get; set; }
 
-        public uint relid { get; set; }
+        public RTEKind? rtekind { get; set; }
 
-        public char relkind { get; set; }
+        public uint? relid { get; set; }
+
+        public char? relkind { get; set; }
 
         public TableSampleClause tablesample { get; set; }
 
         public Query subquery { get; set; }
 
-        public bool security_barrier { get; set; }
+        public bool? security_barrier { get; set; }
 
-        public JoinType jointype { get; set; }
+        public JoinType? jointype { get; set; }
 
         public IPg10Node[] joinaliasvars { get; set; }
 
         public IPg10Node[] functions { get; set; }
 
-        public bool funcordinality { get; set; }
+        public bool? funcordinality { get; set; }
 
         public TableFunc tablefunc { get; set; }
 
@@ -44,9 +43,9 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public string ctename { get; set; }
 
-        public uint ctelevelsup { get; set; }
+        public uint? ctelevelsup { get; set; }
 
-        public bool self_reference { get; set; }
+        public bool? self_reference { get; set; }
 
         public IPg10Node[] coltypes { get; set; }
 
@@ -56,21 +55,21 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public string enrname { get; set; }
 
-        public double enrtuples { get; set; }
+        public double? enrtuples { get; set; }
 
         public Alias alias { get; set; }
 
         public Alias eref { get; set; }
 
-        public bool lateral { get; set; }
+        public bool? lateral { get; set; }
 
-        public bool inh { get; set; }
+        public bool? inh { get; set; }
 
-        public bool inFromCl { get; set; }
+        public bool? inFromCl { get; set; }
 
-        public uint requiredPerms { get; set; }
+        public uint? requiredPerms { get; set; }
 
-        public uint checkAsUser { get; set; }
+        public uint? checkAsUser { get; set; }
 
         public Bitmapset selectedCols { get; set; }
 

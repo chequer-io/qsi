@@ -6,12 +6,17 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class Scan
+    [PgNode("Scan")]
+    internal class Scan : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_Scan;
+
         public Plan plan { get; set; }
 
-        public uint scanrelid { get; set; }
+        public uint? scanrelid { get; set; }
     }
 }

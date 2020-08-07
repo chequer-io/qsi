@@ -11,15 +11,12 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("A_ArrayExpr")]
-    internal sealed class A_ArrayExpr : IPg10Node
+    internal class A_ArrayExpr : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_A_ArrayExpr; }
-        }
+        public virtual NodeTag Type => NodeTag.T_A_ArrayExpr;
+
+        public NodeTag? type { get; set; }
 
         public IPg10Node[] elements { get; set; }
-
-        public int location { get; set; }
     }
 }

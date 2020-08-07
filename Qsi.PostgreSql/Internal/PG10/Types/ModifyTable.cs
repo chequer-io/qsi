@@ -6,25 +6,30 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class ModifyTable
+    [PgNode("ModifyTable")]
+    internal class ModifyTable : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_ModifyTable;
+
         public Plan plan { get; set; }
 
-        public CmdType operation { get; set; }
+        public CmdType? operation { get; set; }
 
-        public bool canSetTag { get; set; }
+        public bool? canSetTag { get; set; }
 
-        public uint nominalRelation { get; set; }
+        public uint? nominalRelation { get; set; }
 
         public IPg10Node[] partitioned_rels { get; set; }
 
         public IPg10Node[] resultRelations { get; set; }
 
-        public int resultRelIndex { get; set; }
+        public int? resultRelIndex { get; set; }
 
-        public int rootResultRelIndex { get; set; }
+        public int? rootResultRelIndex { get; set; }
 
         public IPg10Node[] plans { get; set; }
 
@@ -38,9 +43,9 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] rowMarks { get; set; }
 
-        public int epqParam { get; set; }
+        public int? epqParam { get; set; }
 
-        public OnConflictAction onConflictAction { get; set; }
+        public OnConflictAction? onConflictAction { get; set; }
 
         public IPg10Node[] arbiterIndexes { get; set; }
 
@@ -48,7 +53,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node onConflictWhere { get; set; }
 
-        public uint exclRelRTI { get; set; }
+        public uint? exclRelRTI { get; set; }
 
         public IPg10Node[] exclRelTlist { get; set; }
     }

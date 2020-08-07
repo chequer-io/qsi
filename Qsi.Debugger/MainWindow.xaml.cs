@@ -163,6 +163,9 @@ namespace Qsi.Debugger
             {
                 _tbError.Text = e.Message;
                 _tbError.IsVisible = true;
+
+                if (System.Diagnostics.Debugger.IsAttached)
+                    throw;
             }
 
             static void ErrorHandler(object sender, QsiSyntaxErrorException e)

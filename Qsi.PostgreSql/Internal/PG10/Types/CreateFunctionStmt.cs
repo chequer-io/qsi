@@ -11,14 +11,13 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("CreateFunctionStmt")]
-    internal sealed class CreateFunctionStmt : IPg10Node
+    internal class CreateFunctionStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_CreateFunctionStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_CreateFunctionStmt;
 
-        public bool replace { get; set; }
+        public NodeTag? type { get; set; }
+
+        public bool? replace { get; set; }
 
         public IPg10Node[] funcname { get; set; }
 

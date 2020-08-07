@@ -11,23 +11,22 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("GrantRoleStmt")]
-    internal sealed class GrantRoleStmt : IPg10Node
+    internal class GrantRoleStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_GrantRoleStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_GrantRoleStmt;
+
+        public NodeTag? type { get; set; }
 
         public IPg10Node[] granted_roles { get; set; }
 
         public IPg10Node[] grantee_roles { get; set; }
 
-        public bool is_grant { get; set; }
+        public bool? is_grant { get; set; }
 
-        public bool admin_opt { get; set; }
+        public bool? admin_opt { get; set; }
 
         public RoleSpec grantor { get; set; }
 
-        public DropBehavior behavior { get; set; }
+        public DropBehavior? behavior { get; set; }
     }
 }

@@ -6,22 +6,25 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class ArrayExpr
+    [PgNode("ArrayExpr")]
+    internal class ArrayExpr : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_ArrayExpr;
+
         public Expr xpr { get; set; }
 
-        public uint array_typeid { get; set; }
+        public uint? array_typeid { get; set; }
 
-        public uint array_collid { get; set; }
+        public uint? array_collid { get; set; }
 
-        public uint element_typeid { get; set; }
+        public uint? element_typeid { get; set; }
 
         public IPg10Node[] elements { get; set; }
 
-        public bool multidims { get; set; }
-
-        public int location { get; set; }
+        public bool? multidims { get; set; }
     }
 }

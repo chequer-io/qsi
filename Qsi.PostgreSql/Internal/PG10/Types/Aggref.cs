@@ -6,21 +6,26 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class Aggref
+    [PgNode("Aggref")]
+    internal class Aggref : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_Aggref;
+
         public Expr xpr { get; set; }
 
-        public uint aggfnoid { get; set; }
+        public uint? aggfnoid { get; set; }
 
-        public uint aggtype { get; set; }
+        public uint? aggtype { get; set; }
 
-        public uint aggcollid { get; set; }
+        public uint? aggcollid { get; set; }
 
-        public uint inputcollid { get; set; }
+        public uint? inputcollid { get; set; }
 
-        public uint aggtranstype { get; set; }
+        public uint? aggtranstype { get; set; }
 
         public IPg10Node[] aggargtypes { get; set; }
 
@@ -34,16 +39,14 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public Expr aggfilter { get; set; }
 
-        public bool aggstar { get; set; }
+        public bool? aggstar { get; set; }
 
-        public bool aggvariadic { get; set; }
+        public bool? aggvariadic { get; set; }
 
-        public char aggkind { get; set; }
+        public char? aggkind { get; set; }
 
-        public uint agglevelsup { get; set; }
+        public uint? agglevelsup { get; set; }
 
-        public AggSplit aggsplit { get; set; }
-
-        public int location { get; set; }
+        public AggSplit? aggsplit { get; set; }
     }
 }

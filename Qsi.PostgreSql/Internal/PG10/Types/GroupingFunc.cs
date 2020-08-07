@@ -6,10 +6,15 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class GroupingFunc
+    [PgNode("GroupingFunc")]
+    internal class GroupingFunc : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_GroupingFunc;
+
         public Expr xpr { get; set; }
 
         public IPg10Node[] args { get; set; }
@@ -18,8 +23,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] cols { get; set; }
 
-        public uint agglevelsup { get; set; }
-
-        public int location { get; set; }
+        public uint? agglevelsup { get; set; }
     }
 }

@@ -11,17 +11,14 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("GroupingSet")]
-    internal sealed class GroupingSet : IPg10Node
+    internal class GroupingSet : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_GroupingSet; }
-        }
+        public virtual NodeTag Type => NodeTag.T_GroupingSet;
 
-        public GroupingSetKind kind { get; set; }
+        public NodeTag? type { get; set; }
+
+        public GroupingSetKind? kind { get; set; }
 
         public IPg10Node[] content { get; set; }
-
-        public int location { get; set; }
     }
 }

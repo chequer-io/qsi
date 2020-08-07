@@ -24,7 +24,7 @@ namespace Qsi.PostgreSql.Generator.Models
         [JsonProperty("typeMap")]
         public Dictionary<string, string> TypeMap { get; set; }
 
-        [JsonProperty("targetTypes")]
-        public HashSet<string> TargetTypes { get; set; }
+        [JsonProperty("nodeTypes")]
+        public HashSet<string> NodeTypes { get; set; }
     }
 }

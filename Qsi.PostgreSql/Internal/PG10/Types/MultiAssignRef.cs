@@ -11,17 +11,16 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("MultiAssignRef")]
-    internal sealed class MultiAssignRef : IPg10Node
+    internal class MultiAssignRef : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_MultiAssignRef; }
-        }
+        public virtual NodeTag Type => NodeTag.T_MultiAssignRef;
+
+        public NodeTag? type { get; set; }
 
         public IPg10Node source { get; set; }
 
-        public int colno { get; set; }
+        public int? colno { get; set; }
 
-        public int ncolumns { get; set; }
+        public int? ncolumns { get; set; }
     }
 }

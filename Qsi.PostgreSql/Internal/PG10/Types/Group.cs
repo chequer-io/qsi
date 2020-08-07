@@ -6,16 +6,21 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class Group
+    [PgNode("Group")]
+    internal class Group : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_Group;
+
         public Plan plan { get; set; }
 
-        public int numCols { get; set; }
+        public int? numCols { get; set; }
 
-        public short grpColIdx { get; set; }
+        public short? grpColIdx { get; set; }
 
-        public uint grpOperators { get; set; }
+        public uint? grpOperators { get; set; }
     }
 }

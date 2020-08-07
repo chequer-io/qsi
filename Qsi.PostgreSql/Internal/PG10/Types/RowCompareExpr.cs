@@ -6,13 +6,18 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class RowCompareExpr
+    [PgNode("RowCompareExpr")]
+    internal class RowCompareExpr : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_RowCompareExpr;
+
         public Expr xpr { get; set; }
 
-        public RowCompareType rctype { get; set; }
+        public RowCompareType? rctype { get; set; }
 
         public IPg10Node[] opnos { get; set; }
 

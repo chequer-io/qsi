@@ -11,16 +11,15 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("RangeTblFunction")]
-    internal sealed class RangeTblFunction : IPg10Node
+    internal class RangeTblFunction : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_RangeTblFunction; }
-        }
+        public virtual NodeTag Type => NodeTag.T_RangeTblFunction;
+
+        public NodeTag? type { get; set; }
 
         public IPg10Node funcexpr { get; set; }
 
-        public int funccolcount { get; set; }
+        public int? funccolcount { get; set; }
 
         public IPg10Node[] funccolnames { get; set; }
 

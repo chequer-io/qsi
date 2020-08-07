@@ -8,23 +8,23 @@
 
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class FmgrInfo
+    internal class FmgrInfo
     {
         public string fn_addr { get; set; }
 
-        public uint fn_oid { get; set; }
+        public uint? fn_oid { get; set; }
 
-        public short fn_nargs { get; set; }
+        public short? fn_nargs { get; set; }
 
-        public bool fn_strict { get; set; }
+        public bool? fn_strict { get; set; }
 
-        public bool fn_retset { get; set; }
+        public bool? fn_retset { get; set; }
 
-        public byte fn_stats { get; set; }
+        public byte? fn_stats { get; set; }
 
-        public object[] fn_extra { get; set; }
+        public object?[] fn_extra { get; set; }
 
-        public MemoryContextData[] fn_mcxt { get; set; }
+        public MemoryContext fn_mcxt { get; set; }
 
         public IPg10Node fn_expr { get; set; }
     }

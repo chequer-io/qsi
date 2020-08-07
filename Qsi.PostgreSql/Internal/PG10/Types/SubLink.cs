@@ -6,22 +6,25 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class SubLink
+    [PgNode("SubLink")]
+    internal class SubLink : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_SubLink;
+
         public Expr xpr { get; set; }
 
-        public SubLinkType subLinkType { get; set; }
+        public SubLinkType? subLinkType { get; set; }
 
-        public int subLinkId { get; set; }
+        public int? subLinkId { get; set; }
 
         public IPg10Node testexpr { get; set; }
 
         public IPg10Node[] operName { get; set; }
 
         public IPg10Node subselect { get; set; }
-
-        public int location { get; set; }
     }
 }

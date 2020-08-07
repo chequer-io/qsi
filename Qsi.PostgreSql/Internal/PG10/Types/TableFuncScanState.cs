@@ -6,10 +6,15 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class TableFuncScanState
+    [PgNode("TableFuncScanState")]
+    internal class TableFuncScanState : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_TableFuncScanState;
+
         public ScanState ss { get; set; }
 
         public ExprState docexpr { get; set; }
@@ -26,17 +31,17 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public Bitmapset notnulls { get; set; }
 
-        public object[] opaque { get; set; }
+        public object?[] opaque { get; set; }
 
         public TableFuncRoutine routine { get; set; }
 
         public FmgrInfo in_functions { get; set; }
 
-        public uint typioparams { get; set; }
+        public uint? typioparams { get; set; }
 
-        public int ordinal { get; set; }
+        public int? ordinal { get; set; }
 
-        public MemoryContextData[] perValueCxt { get; set; }
+        public MemoryContext perValueCxt { get; set; }
 
         public Tuplestorestate tupstore { get; set; }
     }

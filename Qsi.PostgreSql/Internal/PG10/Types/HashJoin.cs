@@ -6,10 +6,15 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class HashJoin
+    [PgNode("HashJoin")]
+    internal class HashJoin : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_HashJoin;
+
         public Join join { get; set; }
 
         public IPg10Node[] hashclauses { get; set; }

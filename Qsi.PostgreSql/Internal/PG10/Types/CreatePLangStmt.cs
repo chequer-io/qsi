@@ -11,14 +11,13 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("CreatePLangStmt")]
-    internal sealed class CreatePLangStmt : IPg10Node
+    internal class CreatePLangStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_CreatePLangStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_CreatePLangStmt;
 
-        public bool replace { get; set; }
+        public NodeTag? type { get; set; }
+
+        public bool? replace { get; set; }
 
         public string plname { get; set; }
 
@@ -28,6 +27,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] plvalidator { get; set; }
 
-        public bool pltrusted { get; set; }
+        public bool? pltrusted { get; set; }
     }
 }

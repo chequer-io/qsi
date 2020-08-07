@@ -8,20 +8,20 @@
 
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class TupleConversionMap
+    internal class TupleConversionMap
     {
         public tupleDesc indesc { get; set; }
 
         public tupleDesc outdesc { get; set; }
 
-        public short attrMap { get; set; }
+        public short? attrMap { get; set; }
 
-        public uint invalues { get; set; }
+        public uint? invalues { get; set; }
 
-        public bool[] inisnull { get; set; }
+        public bool?[] inisnull { get; set; }
 
-        public uint outvalues { get; set; }
+        public uint? outvalues { get; set; }
 
-        public bool[] outisnull { get; set; }
+        public bool?[] outisnull { get; set; }
     }
 }

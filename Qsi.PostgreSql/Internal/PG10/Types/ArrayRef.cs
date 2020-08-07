@@ -6,19 +6,24 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class ArrayRef
+    [PgNode("ArrayRef")]
+    internal class ArrayRef : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_ArrayRef;
+
         public Expr xpr { get; set; }
 
-        public uint refarraytype { get; set; }
+        public uint? refarraytype { get; set; }
 
-        public uint refelemtype { get; set; }
+        public uint? refelemtype { get; set; }
 
-        public int reftypmod { get; set; }
+        public int? reftypmod { get; set; }
 
-        public uint refcollid { get; set; }
+        public uint? refcollid { get; set; }
 
         public IPg10Node[] refupperindexpr { get; set; }
 

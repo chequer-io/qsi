@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("WindowClause")]
-    internal sealed class WindowClause : IPg10Node
+    internal class WindowClause : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_WindowClause; }
-        }
+        public virtual NodeTag Type => NodeTag.T_WindowClause;
+
+        public NodeTag? type { get; set; }
 
         public string name { get; set; }
 
@@ -26,14 +25,14 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] orderClause { get; set; }
 
-        public int frameOptions { get; set; }
+        public int? frameOptions { get; set; }
 
         public IPg10Node startOffset { get; set; }
 
         public IPg10Node endOffset { get; set; }
 
-        public uint winref { get; set; }
+        public uint? winref { get; set; }
 
-        public bool copiedOrder { get; set; }
+        public bool? copiedOrder { get; set; }
     }
 }

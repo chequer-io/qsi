@@ -6,15 +6,20 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class NestLoopState
+    [PgNode("NestLoopState")]
+    internal class NestLoopState : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_NestLoopState;
+
         public JoinState js { get; set; }
 
-        public bool nl_NeedNewOuter { get; set; }
+        public bool? nl_NeedNewOuter { get; set; }
 
-        public bool nl_MatchedOuter { get; set; }
+        public bool? nl_MatchedOuter { get; set; }
 
         public TupleTableSlot nl_NullInnerTupleSlot { get; set; }
     }

@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("CreateStmt")]
-    internal sealed class CreateStmt : IPg10Node
+    internal class CreateStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_CreateStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_CreateStmt;
+
+        public NodeTag? type { get; set; }
 
         public RangeVar relation { get; set; }
 
@@ -34,10 +33,10 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] options { get; set; }
 
-        public OnCommitAction oncommit { get; set; }
+        public OnCommitAction? oncommit { get; set; }
 
         public string tablespacename { get; set; }
 
-        public bool if_not_exists { get; set; }
+        public bool? if_not_exists { get; set; }
     }
 }

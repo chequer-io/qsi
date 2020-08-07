@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("InsertStmt")]
-    internal sealed class InsertStmt : IPg10Node
+    internal class InsertStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_InsertStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_InsertStmt;
+
+        public NodeTag? type { get; set; }
 
         public RangeVar relation { get; set; }
 
@@ -30,6 +29,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public WithClause withClause { get; set; }
 
-        public OverridingKind @override { get; set; }
+        public OverridingKind? @override { get; set; }
     }
 }

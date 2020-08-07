@@ -6,10 +6,15 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class TidScan
+    [PgNode("TidScan")]
+    internal class TidScan : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_TidScan;
+
         public Scan scan { get; set; }
 
         public IPg10Node[] tidquals { get; set; }

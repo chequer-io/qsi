@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("AlterFunctionStmt")]
-    internal sealed class AlterFunctionStmt : IPg10Node
+    internal class AlterFunctionStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_AlterFunctionStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_AlterFunctionStmt;
+
+        public NodeTag? type { get; set; }
 
         public ObjectWithArgs func { get; set; }
 

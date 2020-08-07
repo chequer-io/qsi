@@ -8,14 +8,14 @@
 
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class TupleHashEntryData
+    internal class TupleHashEntryData
     {
         public MinimalTupleData firstTuple { get; set; }
 
-        public object[] additional { get; set; }
+        public object?[] additional { get; set; }
 
-        public uint status { get; set; }
+        public uint? status { get; set; }
 
-        public uint hash { get; set; }
+        public uint? hash { get; set; }
     }
 }

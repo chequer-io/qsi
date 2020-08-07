@@ -6,10 +6,15 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class HashJoinState
+    [PgNode("HashJoinState")]
+    internal class HashJoinState : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_HashJoinState;
+
         public JoinState js { get; set; }
 
         public ExprState hashclauses { get; set; }
@@ -22,11 +27,11 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public HashJoinTableData hj_HashTable { get; set; }
 
-        public uint hj_CurHashValue { get; set; }
+        public uint? hj_CurHashValue { get; set; }
 
-        public int hj_CurBucketNo { get; set; }
+        public int? hj_CurBucketNo { get; set; }
 
-        public int hj_CurSkewBucketNo { get; set; }
+        public int? hj_CurSkewBucketNo { get; set; }
 
         public HashJoinTupleData hj_CurTuple { get; set; }
 
@@ -40,10 +45,10 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public TupleTableSlot hj_FirstOuterTupleSlot { get; set; }
 
-        public int hj_JoinState { get; set; }
+        public int? hj_JoinState { get; set; }
 
-        public bool hj_MatchedOuter { get; set; }
+        public bool? hj_MatchedOuter { get; set; }
 
-        public bool hj_OuterNotEmpty { get; set; }
+        public bool? hj_OuterNotEmpty { get; set; }
     }
 }

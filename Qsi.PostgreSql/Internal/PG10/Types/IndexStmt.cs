@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("IndexStmt")]
-    internal sealed class IndexStmt : IPg10Node
+    internal class IndexStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_IndexStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_IndexStmt;
+
+        public NodeTag? type { get; set; }
 
         public string idxname { get; set; }
 
@@ -36,24 +35,24 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public string idxcomment { get; set; }
 
-        public uint indexOid { get; set; }
+        public uint? indexOid { get; set; }
 
-        public uint oldNode { get; set; }
+        public uint? oldNode { get; set; }
 
-        public bool unique { get; set; }
+        public bool? unique { get; set; }
 
-        public bool primary { get; set; }
+        public bool? primary { get; set; }
 
-        public bool isconstraint { get; set; }
+        public bool? isconstraint { get; set; }
 
-        public bool deferrable { get; set; }
+        public bool? deferrable { get; set; }
 
-        public bool initdeferred { get; set; }
+        public bool? initdeferred { get; set; }
 
-        public bool transformed { get; set; }
+        public bool? transformed { get; set; }
 
-        public bool concurrent { get; set; }
+        public bool? concurrent { get; set; }
 
-        public bool if_not_exists { get; set; }
+        public bool? if_not_exists { get; set; }
     }
 }

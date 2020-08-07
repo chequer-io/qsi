@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("ReassignOwnedStmt")]
-    internal sealed class ReassignOwnedStmt : IPg10Node
+    internal class ReassignOwnedStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_ReassignOwnedStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_ReassignOwnedStmt;
+
+        public NodeTag? type { get; set; }
 
         public IPg10Node[] roles { get; set; }
 

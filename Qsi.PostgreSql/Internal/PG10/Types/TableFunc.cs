@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("TableFunc")]
-    internal sealed class TableFunc : IPg10Node
+    internal class TableFunc : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_TableFunc; }
-        }
+        public virtual NodeTag Type => NodeTag.T_TableFunc;
+
+        public NodeTag? type { get; set; }
 
         public IPg10Node[] ns_uris { get; set; }
 
@@ -40,8 +39,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public Bitmapset notnulls { get; set; }
 
-        public int ordinalitycol { get; set; }
-
-        public int location { get; set; }
+        public int? ordinalitycol { get; set; }
     }
 }

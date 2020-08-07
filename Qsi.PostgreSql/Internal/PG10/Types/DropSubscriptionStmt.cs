@@ -11,17 +11,16 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("DropSubscriptionStmt")]
-    internal sealed class DropSubscriptionStmt : IPg10Node
+    internal class DropSubscriptionStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_DropSubscriptionStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_DropSubscriptionStmt;
+
+        public NodeTag? type { get; set; }
 
         public string subname { get; set; }
 
-        public bool missing_ok { get; set; }
+        public bool? missing_ok { get; set; }
 
-        public DropBehavior behavior { get; set; }
+        public DropBehavior? behavior { get; set; }
     }
 }

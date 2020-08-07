@@ -11,15 +11,14 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("DropTableSpaceStmt")]
-    internal sealed class DropTableSpaceStmt : IPg10Node
+    internal class DropTableSpaceStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_DropTableSpaceStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_DropTableSpaceStmt;
+
+        public NodeTag? type { get; set; }
 
         public string tablespacename { get; set; }
 
-        public bool missing_ok { get; set; }
+        public bool? missing_ok { get; set; }
     }
 }

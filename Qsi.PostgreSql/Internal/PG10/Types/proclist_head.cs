@@ -8,10 +8,10 @@
 
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class proclist_head
+    internal class proclist_head
     {
-        public int head { get; set; }
+        public int? head { get; set; }
 
-        public int tail { get; set; }
+        public int? tail { get; set; }
     }
 }

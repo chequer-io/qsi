@@ -6,12 +6,17 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class WorkTableScan
+    [PgNode("WorkTableScan")]
+    internal class WorkTableScan : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_WorkTableScan;
+
         public Scan scan { get; set; }
 
-        public int wtParam { get; set; }
+        public int? wtParam { get; set; }
     }
 }

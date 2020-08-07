@@ -6,10 +6,15 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class Material
+    [PgNode("Material")]
+    internal class Material : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_Material;
+
         public Plan plan { get; set; }
     }
 }

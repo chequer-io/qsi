@@ -6,24 +6,29 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class GatherMerge
+    [PgNode("GatherMerge")]
+    internal class GatherMerge : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_GatherMerge;
+
         public Plan plan { get; set; }
 
-        public int num_workers { get; set; }
+        public int? num_workers { get; set; }
 
-        public int rescan_param { get; set; }
+        public int? rescan_param { get; set; }
 
-        public int numCols { get; set; }
+        public int? numCols { get; set; }
 
-        public short sortColIdx { get; set; }
+        public short? sortColIdx { get; set; }
 
-        public uint sortOperators { get; set; }
+        public uint? sortOperators { get; set; }
 
-        public uint collations { get; set; }
+        public uint? collations { get; set; }
 
-        public bool[] nullsFirst { get; set; }
+        public bool?[] nullsFirst { get; set; }
     }
 }

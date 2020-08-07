@@ -11,17 +11,14 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("WithClause")]
-    internal sealed class WithClause : IPg10Node
+    internal class WithClause : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_WithClause; }
-        }
+        public virtual NodeTag Type => NodeTag.T_WithClause;
+
+        public NodeTag? type { get; set; }
 
         public IPg10Node[] ctes { get; set; }
 
-        public bool recursive { get; set; }
-
-        public int location { get; set; }
+        public bool? recursive { get; set; }
     }
 }

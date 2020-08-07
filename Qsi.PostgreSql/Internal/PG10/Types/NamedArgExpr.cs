@@ -6,18 +6,21 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class NamedArgExpr
+    [PgNode("NamedArgExpr")]
+    internal class NamedArgExpr : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_NamedArgExpr;
+
         public Expr xpr { get; set; }
 
         public Expr arg { get; set; }
 
         public string name { get; set; }
 
-        public int argnumber { get; set; }
-
-        public int location { get; set; }
+        public int? argnumber { get; set; }
     }
 }

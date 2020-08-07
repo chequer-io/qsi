@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("CreateOpFamilyStmt")]
-    internal sealed class CreateOpFamilyStmt : IPg10Node
+    internal class CreateOpFamilyStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_CreateOpFamilyStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_CreateOpFamilyStmt;
+
+        public NodeTag? type { get; set; }
 
         public IPg10Node[] opfamilyname { get; set; }
 

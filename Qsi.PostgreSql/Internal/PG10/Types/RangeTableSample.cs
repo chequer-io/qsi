@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("RangeTableSample")]
-    internal sealed class RangeTableSample : IPg10Node
+    internal class RangeTableSample : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_RangeTableSample; }
-        }
+        public virtual NodeTag Type => NodeTag.T_RangeTableSample;
+
+        public NodeTag? type { get; set; }
 
         public IPg10Node relation { get; set; }
 
@@ -25,7 +24,5 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
         public IPg10Node[] args { get; set; }
 
         public IPg10Node repeatable { get; set; }
-
-        public int location { get; set; }
     }
 }

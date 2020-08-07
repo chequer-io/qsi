@@ -8,12 +8,12 @@
 
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class ParamExecData
+    internal class ParamExecData
     {
-        public object[] execPlan { get; set; }
+        public object?[] execPlan { get; set; }
 
-        public uint value { get; set; }
+        public uint? value { get; set; }
 
-        public bool isnull { get; set; }
+        public bool? isnull { get; set; }
     }
 }

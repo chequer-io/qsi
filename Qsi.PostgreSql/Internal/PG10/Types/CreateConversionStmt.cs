@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("CreateConversionStmt")]
-    internal sealed class CreateConversionStmt : IPg10Node
+    internal class CreateConversionStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_CreateConversionStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_CreateConversionStmt;
+
+        public NodeTag? type { get; set; }
 
         public IPg10Node[] conversion_name { get; set; }
 
@@ -26,6 +25,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] func_name { get; set; }
 
-        public bool def { get; set; }
+        public bool? def { get; set; }
     }
 }

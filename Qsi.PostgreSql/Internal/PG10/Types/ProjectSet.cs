@@ -6,10 +6,15 @@
 
 */
 
+using Qsi.PostgreSql.Internal.Serialization;
+
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
-    internal sealed class ProjectSet
+    [PgNode("ProjectSet")]
+    internal class ProjectSet : IPg10Node
     {
+        public virtual NodeTag Type => NodeTag.T_ProjectSet;
+
         public Plan plan { get; set; }
     }
 }

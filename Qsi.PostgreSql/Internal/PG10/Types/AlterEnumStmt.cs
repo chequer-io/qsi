@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("AlterEnumStmt")]
-    internal sealed class AlterEnumStmt : IPg10Node
+    internal class AlterEnumStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_AlterEnumStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_AlterEnumStmt;
+
+        public NodeTag? type { get; set; }
 
         public IPg10Node[] typeName { get; set; }
 
@@ -26,8 +25,8 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public string newValNeighbor { get; set; }
 
-        public bool newValIsAfter { get; set; }
+        public bool? newValIsAfter { get; set; }
 
-        public bool skipIfNewValExists { get; set; }
+        public bool? skipIfNewValExists { get; set; }
     }
 }

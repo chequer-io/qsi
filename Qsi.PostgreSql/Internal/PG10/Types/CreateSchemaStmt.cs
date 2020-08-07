@@ -11,12 +11,11 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("CreateSchemaStmt")]
-    internal sealed class CreateSchemaStmt : IPg10Node
+    internal class CreateSchemaStmt : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_CreateSchemaStmt; }
-        }
+        public virtual NodeTag Type => NodeTag.T_CreateSchemaStmt;
+
+        public NodeTag? type { get; set; }
 
         public string schemaname { get; set; }
 
@@ -24,6 +23,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] schemaElts { get; set; }
 
-        public bool if_not_exists { get; set; }
+        public bool? if_not_exists { get; set; }
     }
 }

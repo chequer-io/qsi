@@ -11,15 +11,14 @@ using Qsi.PostgreSql.Internal.Serialization;
 namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     [PgNode("AggrefExprState")]
-    internal sealed class AggrefExprState : IPg10Node
+    internal class AggrefExprState : IPg10Node
     {
-        public NodeTag Type
-        {
-            get { return NodeTag.T_AggrefExprState; }
-        }
+        public virtual NodeTag Type => NodeTag.T_AggrefExprState;
+
+        public NodeTag? type { get; set; }
 
         public Aggref aggref { get; set; }
 
-        public int aggno { get; set; }
+        public int? aggno { get; set; }
     }
 }
