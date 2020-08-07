@@ -2,6 +2,7 @@
 using Qsi.Data;
 using Qsi.Parsing;
 using Qsi.PostgreSql.Internal;
+using Qsi.PostgreSql.Internal.PG10;
 using Qsi.Tree;
 
 namespace Qsi.PostgreSql

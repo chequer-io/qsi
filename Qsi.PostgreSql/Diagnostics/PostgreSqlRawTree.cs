@@ -2,6 +2,7 @@
 using System.Linq;
 using Qsi.Diagnostics;
 using Qsi.PostgreSql.Internal;
+using Qsi.PostgreSql.Internal.PG10.Types;
 
 namespace Qsi.PostgreSql.Diagnostics
 {
@@ -40,7 +41,7 @@ namespace Qsi.PostgreSql.Diagnostics
         {
             return tree.GetType().GetProperties()
                 .Select(pi => (pi, pi.GetValue(tree)))
-                .Where(x => x.Item2 != null)
+                .Where(x => x.Item2 != null && x.pi.PropertyType != typeof(NodeTag))
                 .Select(x =>
                 {
                     var (pi, value) = x;

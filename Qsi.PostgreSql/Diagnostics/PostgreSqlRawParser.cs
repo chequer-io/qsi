@@ -1,6 +1,7 @@
 ﻿using System;
 using Qsi.Diagnostics;
 using Qsi.PostgreSql.Internal;
+using Qsi.PostgreSql.Internal.PG10;
 
 namespace Qsi.PostgreSql.Diagnostics
 {

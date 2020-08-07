@@ -2,7 +2,7 @@
 using JavaScriptEngineSwitcher.ChakraCore;
 using Newtonsoft.Json;
 using Qsi.Parsing;
-using Qsi.PostgreSql.Internal.Postgres.Converters;
+using Qsi.PostgreSql.Internal.Serialization.Converters;
 
 namespace Qsi.PostgreSql.Internal
 {

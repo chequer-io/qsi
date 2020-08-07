@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Qsi.PostgreSql.Resources;
 
-namespace Qsi.PostgreSql.Internal
+namespace Qsi.PostgreSql.Internal.PG10
 {
     internal class PgQuery10 : PgQueryBase<IPgNode>
     {

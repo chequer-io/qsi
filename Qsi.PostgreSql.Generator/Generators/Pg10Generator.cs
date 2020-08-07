@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using CppAst;
 using CSharpSyntax;
 using Microsoft.CodeAnalysis.CSharp;
@@ -98,6 +97,7 @@ namespace Qsi.PostgreSql.Generator.Generators
             if (cppClass.Name == "Node")
                 return CreateNodeInterface(cppClass);
 
+            var isValue = cppClass.Name == "Value";
             var usingDirectives = new List<UsingDirectiveSyntax>();
 
             var csClass = new ClassDeclarationSyntax
@@ -106,10 +106,15 @@ namespace Qsi.PostgreSql.Generator.Generators
                 Identifier = CreateMemberName(cppClass)
             };
 
+            if (isValue)
+            {
+                csClass.Modifiers &= ~Modifiers.Sealed;
+            }
+
             if (cppClass.Fields.Any(f => f.Type.GetDisplayName() == nodeTypeName))
             {
                 // using Qsi.PostgreSql.Internal.Postgres;
-                usingDirectives.Add(Syntax.UsingDirective("Qsi.PostgreSql.Internal.Postgres"));
+                usingDirectives.Add(Syntax.UsingDirective("Qsi.PostgreSql.Internal.Serialization"));
 
                 // [PgNode("..")]
                 var pgNodeAttribute = Syntax.Attribute(
@@ -134,7 +139,7 @@ namespace Qsi.PostgreSql.Generator.Generators
                 // IPg10Node::Type
                 csClass.Members.Add(new PropertyDeclarationSyntax
                 {
-                    Modifiers = Modifiers.Public,
+                    Modifiers = Modifiers.Public | (isValue ? Modifiers.Virtual : Modifiers.None),
                     Identifier = nodeTypeFieldName,
                     Type = Syntax.ParseName(nodeTypeName),
                     AccessorList = Syntax.AccessorList(
@@ -198,6 +203,24 @@ namespace Qsi.PostgreSql.Generator.Generators
                 }
 
                 csClass.Members.Add(nestedClass.Type);
+            }
+
+            if (isValue)
+            {
+                var valueUnion = (ClassDeclarationSyntax)nestedClasses[0].Type;
+
+                var typeProperty = (PropertyDeclarationSyntax)csClass.Members[0];
+                PropertyDeclarationSyntax[] members = valueUnion.Members.OfType<PropertyDeclarationSyntax>().ToArray();
+
+                valueUnion.Members.Clear();
+                csClass.Members.Clear();
+
+                csClass.Members.Add(typeProperty);
+
+                foreach (var m in members)
+                {
+                    csClass.Members.Add(m);
+                }
             }
 
             return new GenerateResult(cppClass)

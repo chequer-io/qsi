@@ -36,7 +36,8 @@
     ]
   },
   "typeMap": {
-    "Node": "IPg10Node"
+    "Node": "IPg10Node",
+    "List": "IPg10Node[]"
   },
   "targetTypes": [
     "Node",
@@ -257,7 +258,6 @@
     "String",
     "BitString",
     "Null",
-    "List",
     "IntList",
     "OidList",
     "ExtensibleNode",
