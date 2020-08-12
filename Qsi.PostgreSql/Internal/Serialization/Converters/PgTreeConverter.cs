@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
@@ -13,8 +15,47 @@ namespace Qsi.PostgreSql.Internal.Serialization.Converters
             if (reader.TokenType == JsonToken.Null)
                 return null;
 
+            if (objectType.IsArray)
+                return ReadNodeArray(reader, objectType, serializer);
+
+            return ReadNode(reader, serializer);
+        }
+
+        private object ReadNodeArray(JsonReader reader, Type objectType, JsonSerializer serializer)
+        {
+            var list = new List<object>();
+
+            if (reader.TokenType == JsonToken.StartArray)
+            {
+                while (reader.Read() && reader.TokenType != JsonToken.EndArray)
+                {
+                    list.Add(ReadNode(reader, serializer));
+                }
+            }
+            else
+            {
+                list.Add(ReadNode(reader, serializer));
+            }
+
+            var elementType = objectType.GetElementType();
+            var result = Array.CreateInstance(elementType!, list.Count);
+
+            for (int i = 0; i < result.Length; i++)
+                result.SetValue(list[i], i);
+
+            return result;
+        }
+
+        private object ReadNode(JsonReader reader, JsonSerializer serializer)
+        {
             // Wrapper : Start Object
-            VerifyNextExpected(reader, JsonToken.PropertyName);
+            bool wrapped = reader.TokenType == JsonToken.StartObject;
+
+            if (wrapped)
+                reader.Read();
+
+            if (reader.TokenType != JsonToken.PropertyName)
+                throw new SerializationException($"'{JsonToken.PropertyName}' token expected.");
 
             var nodeName = (string)reader.Value;
 
@@ -22,10 +63,7 @@ namespace Qsi.PostgreSql.Internal.Serialization.Converters
                 throw new SerializationException("PostgreSql");
 
             if (!PgNodeContract.TryGetNodeType(nodeName, out var nodeType))
-            {
-                if (string.IsNullOrWhiteSpace(nodeName))
-                    throw new SerializationException($"Not supported node '{nodeName}'");
-            }
+                throw new SerializationException($"Not supported node '{nodeName}'");
 
             // Value : Start Object
             VerifyNextExpected(reader, JsonToken.StartObject);
@@ -37,7 +75,8 @@ namespace Qsi.PostgreSql.Internal.Serialization.Converters
             _skipNextType = null;
 
             // Wrapper : End Object
-            VerifyNext(reader, JsonToken.EndObject);
+            if (wrapped)
+                VerifyNext(reader, JsonToken.EndObject);
 
             return node;
         }
@@ -69,7 +108,9 @@ namespace Qsi.PostgreSql.Internal.Serialization.Converters
                 return false;
             }
 
-            return typeof(IPgNode).IsAssignableFrom(objectType);
+            return
+                typeof(IPgNode).IsAssignableFrom(objectType) ||
+                objectType.IsSZArray && typeof(IPgNode).IsAssignableFrom(objectType.GetElementType());
         }
     }
 }
