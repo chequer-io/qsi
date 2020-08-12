@@ -33,14 +33,14 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] qual { get; set; }
 
-        public Plan lefttree { get; set; }
+        public Plan[] lefttree { get; set; }
 
-        public Plan righttree { get; set; }
+        public Plan[] righttree { get; set; }
 
         public IPg10Node[] initPlan { get; set; }
 
-        public Bitmapset extParam { get; set; }
+        public Bitmapset[] extParam { get; set; }
 
-        public Bitmapset allParam { get; set; }
+        public Bitmapset[] allParam { get; set; }
     }
 }

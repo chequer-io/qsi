@@ -21,17 +21,17 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public bool? intermediate_empty { get; set; }
 
-        public Tuplestorestate working_table { get; set; }
+        public Tuplestorestate[] working_table { get; set; }
 
-        public Tuplestorestate intermediate_table { get; set; }
+        public Tuplestorestate[] intermediate_table { get; set; }
 
-        public FmgrInfo eqfunctions { get; set; }
+        public FmgrInfo[] eqfunctions { get; set; }
 
-        public FmgrInfo hashfunctions { get; set; }
+        public FmgrInfo[] hashfunctions { get; set; }
 
         public MemoryContext tempContext { get; set; }
 
-        public TupleHashTableData hashtable { get; set; }
+        public TupleHashTableData[] hashtable { get; set; }
 
         public MemoryContext tableContext { get; set; }
     }

@@ -15,9 +15,9 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_ReturnSetInfo;
 
-        public ExprContext econtext { get; set; }
+        public ExprContext[] econtext { get; set; }
 
-        public tupleDesc expectedDesc { get; set; }
+        public tupleDesc[] expectedDesc { get; set; }
 
         public int? allowedModes { get; set; }
 
@@ -25,8 +25,8 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public ExprDoneCond? isDone { get; set; }
 
-        public Tuplestorestate setResult { get; set; }
+        public Tuplestorestate[] setResult { get; set; }
 
-        public tupleDesc setDesc { get; set; }
+        public tupleDesc[] setDesc { get; set; }
     }
 }

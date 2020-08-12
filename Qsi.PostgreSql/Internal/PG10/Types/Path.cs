@@ -17,11 +17,11 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public NodeTag pathtype { get; set; }
 
-        public RelOptInfo parent { get; set; }
+        public RelOptInfo[] parent { get; set; }
 
-        public PathTarget pathtarget { get; set; }
+        public PathTarget[] pathtarget { get; set; }
 
-        public ParamPathInfo param_info { get; set; }
+        public ParamPathInfo[] param_info { get; set; }
 
         public bool? parallel_aware { get; set; }
 

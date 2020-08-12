@@ -10,11 +10,11 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     internal class AllocBlockData
     {
-        public AllocSetContext aset { get; set; }
+        public AllocSetContext[] aset { get; set; }
 
-        public AllocBlockData prev { get; set; }
+        public AllocBlockData[] prev { get; set; }
 
-        public AllocBlockData next { get; set; }
+        public AllocBlockData[] next { get; set; }
 
         public string freeptr { get; set; }
 

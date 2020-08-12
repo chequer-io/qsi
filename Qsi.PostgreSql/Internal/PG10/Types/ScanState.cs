@@ -17,10 +17,10 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public PlanState ps { get; set; }
 
-        public RelationData ss_currentRelation { get; set; }
+        public RelationData[] ss_currentRelation { get; set; }
 
-        public HeapScanDescData ss_currentScanDesc { get; set; }
+        public HeapScanDescData[] ss_currentScanDesc { get; set; }
 
-        public TupleTableSlot ss_ScanTupleSlot { get; set; }
+        public TupleTableSlot[] ss_ScanTupleSlot { get; set; }
     }
 }

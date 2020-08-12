@@ -21,7 +21,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] agg_order { get; set; }
 
-        public IPg10Node agg_filter { get; set; }
+        public IPg10Node[] agg_filter { get; set; }
 
         public bool? agg_within_group { get; set; }
 
@@ -31,6 +31,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public bool? func_variadic { get; set; }
 
-        public WindowDef over { get; set; }
+        public WindowDef[] over { get; set; }
     }
 }

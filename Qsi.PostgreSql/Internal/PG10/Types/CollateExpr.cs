@@ -17,7 +17,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node xpr { get; set; }
 
-        public IPg10Node arg { get; set; }
+        public IPg10Node[] arg { get; set; }
 
         public uint? collOid { get; set; }
     }

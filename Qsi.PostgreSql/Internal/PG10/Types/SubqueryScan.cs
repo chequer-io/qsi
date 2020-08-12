@@ -17,6 +17,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public Scan scan { get; set; }
 
-        public Plan subplan { get; set; }
+        public Plan[] subplan { get; set; }
     }
 }

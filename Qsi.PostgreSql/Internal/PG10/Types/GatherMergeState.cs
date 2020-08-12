@@ -23,24 +23,24 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public bool? need_to_scan_locally { get; set; }
 
-        public tupleDesc tupDesc { get; set; }
+        public tupleDesc[] tupDesc { get; set; }
 
         public int? gm_nkeys { get; set; }
 
-        public SortSupportData gm_sortkeys { get; set; }
+        public SortSupportData[] gm_sortkeys { get; set; }
 
-        public ParallelExecutorInfo pei { get; set; }
+        public ParallelExecutorInfo[] pei { get; set; }
 
         public int? nworkers_launched { get; set; }
 
         public int? nreaders { get; set; }
 
-        public TupleTableSlot[] gm_slots { get; set; }
+        public TupleTableSlot[][] gm_slots { get; set; }
 
-        public TupleQueueReader[] reader { get; set; }
+        public TupleQueueReader[][] reader { get; set; }
 
-        public GMReaderTupleBuffer gm_tuple_buffers { get; set; }
+        public GMReaderTupleBuffer[] gm_tuple_buffers { get; set; }
 
-        public binaryheap gm_heap { get; set; }
+        public binaryheap[] gm_heap { get; set; }
     }
 }

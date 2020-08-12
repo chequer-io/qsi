@@ -12,6 +12,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public int? nwords { get; set; }
 
-        public uint? words { get; set; }
+        public uint[] words { get; set; }
     }
 }

@@ -17,6 +17,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public string dbname { get; set; }
 
-        public VariableSetStmt setstmt { get; set; }
+        public VariableSetStmt[] setstmt { get; set; }
     }
 }

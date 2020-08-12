@@ -21,9 +21,9 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public char? relkind { get; set; }
 
-        public TableSampleClause tablesample { get; set; }
+        public TableSampleClause[] tablesample { get; set; }
 
-        public Query subquery { get; set; }
+        public Query[] subquery { get; set; }
 
         public bool? security_barrier { get; set; }
 
@@ -35,7 +35,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public bool? funcordinality { get; set; }
 
-        public TableFunc tablefunc { get; set; }
+        public TableFunc[] tablefunc { get; set; }
 
         public IPg10Node[] values_lists { get; set; }
 
@@ -55,9 +55,9 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public double? enrtuples { get; set; }
 
-        public Alias alias { get; set; }
+        public Alias[] alias { get; set; }
 
-        public Alias eref { get; set; }
+        public Alias[] eref { get; set; }
 
         public bool? lateral { get; set; }
 
@@ -69,11 +69,11 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public uint? checkAsUser { get; set; }
 
-        public Bitmapset selectedCols { get; set; }
+        public Bitmapset[] selectedCols { get; set; }
 
-        public Bitmapset insertedCols { get; set; }
+        public Bitmapset[] insertedCols { get; set; }
 
-        public Bitmapset updatedCols { get; set; }
+        public Bitmapset[] updatedCols { get; set; }
 
         public IPg10Node[] securityQuals { get; set; }
     }

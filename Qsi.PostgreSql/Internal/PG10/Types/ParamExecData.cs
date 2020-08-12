@@ -10,7 +10,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     internal class ParamExecData
     {
-        public object?[] execPlan { get; set; }
+        public object[] execPlan { get; set; }
 
         public uint? value { get; set; }
 

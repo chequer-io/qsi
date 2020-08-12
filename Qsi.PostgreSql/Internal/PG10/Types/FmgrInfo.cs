@@ -10,7 +10,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     internal class FmgrInfo
     {
-        public string fn_addr { get; set; }
+        public string[] fn_addr { get; set; }
 
         public uint? fn_oid { get; set; }
 
@@ -22,10 +22,10 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public byte? fn_stats { get; set; }
 
-        public object?[] fn_extra { get; set; }
+        public object[] fn_extra { get; set; }
 
         public MemoryContext fn_mcxt { get; set; }
 
-        public IPg10Node fn_expr { get; set; }
+        public IPg10Node[] fn_expr { get; set; }
     }
 }

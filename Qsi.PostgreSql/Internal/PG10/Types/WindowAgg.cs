@@ -21,20 +21,20 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public int? partNumCols { get; set; }
 
-        public short? partColIdx { get; set; }
+        public short[] partColIdx { get; set; }
 
-        public uint? partOperators { get; set; }
+        public uint[] partOperators { get; set; }
 
         public int? ordNumCols { get; set; }
 
-        public short? ordColIdx { get; set; }
+        public short[] ordColIdx { get; set; }
 
-        public uint? ordOperators { get; set; }
+        public uint[] ordOperators { get; set; }
 
         public int? frameOptions { get; set; }
 
-        public IPg10Node startOffset { get; set; }
+        public IPg10Node[] startOffset { get; set; }
 
-        public IPg10Node endOffset { get; set; }
+        public IPg10Node[] endOffset { get; set; }
     }
 }

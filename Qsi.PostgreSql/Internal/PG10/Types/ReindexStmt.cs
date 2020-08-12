@@ -17,9 +17,9 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public ReindexObjectType? kind { get; set; }
 
-        public RangeVar relation { get; set; }
+        public RangeVar[] relation { get; set; }
 
-        public char? name { get; set; }
+        public char[] name { get; set; }
 
         public int? options { get; set; }
     }

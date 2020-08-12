@@ -14,7 +14,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public CmdType? @event { get; set; }
 
-        public IPg10Node qual { get; set; }
+        public IPg10Node[] qual { get; set; }
 
         public IPg10Node[] actions { get; set; }
 

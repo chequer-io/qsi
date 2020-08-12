@@ -17,14 +17,14 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public bool? lateral { get; set; }
 
-        public IPg10Node docexpr { get; set; }
+        public IPg10Node[] docexpr { get; set; }
 
-        public IPg10Node rowexpr { get; set; }
+        public IPg10Node[] rowexpr { get; set; }
 
         public IPg10Node[] namespaces { get; set; }
 
         public IPg10Node[] columns { get; set; }
 
-        public Alias alias { get; set; }
+        public Alias[] alias { get; set; }
     }
 }

@@ -10,22 +10,22 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     internal class MemoryContextMethods
     {
-        public string alloc { get; set; }
+        public string[] alloc { get; set; }
 
-        public string free_p { get; set; }
+        public string[] free_p { get; set; }
 
-        public string realloc { get; set; }
+        public string[] realloc { get; set; }
 
-        public string init { get; set; }
+        public string[] init { get; set; }
 
-        public string reset { get; set; }
+        public string[] reset { get; set; }
 
-        public string delete_context { get; set; }
+        public string[] delete_context { get; set; }
 
-        public string get_chunk_space { get; set; }
+        public string[] get_chunk_space { get; set; }
 
-        public string is_empty { get; set; }
+        public string[] is_empty { get; set; }
 
-        public string stats { get; set; }
+        public string[] stats { get; set; }
     }
 }

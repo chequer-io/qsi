@@ -21,10 +21,10 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public int? nkeys { get; set; }
 
-        public short? conkey { get; set; }
+        public short[] conkey { get; set; }
 
-        public short? confkey { get; set; }
+        public short[] confkey { get; set; }
 
-        public uint? conpfeqop { get; set; }
+        public uint[] conpfeqop { get; set; }
     }
 }

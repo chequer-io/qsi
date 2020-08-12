@@ -19,9 +19,9 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public bool? all { get; set; }
 
-        public IPg10Node larg { get; set; }
+        public IPg10Node[] larg { get; set; }
 
-        public IPg10Node rarg { get; set; }
+        public IPg10Node[] rarg { get; set; }
 
         public IPg10Node[] colTypes { get; set; }
 

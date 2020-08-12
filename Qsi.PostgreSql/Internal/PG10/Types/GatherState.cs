@@ -21,9 +21,9 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public bool? need_to_scan_locally { get; set; }
 
-        public TupleTableSlot funnel_slot { get; set; }
+        public TupleTableSlot[] funnel_slot { get; set; }
 
-        public ParallelExecutorInfo pei { get; set; }
+        public ParallelExecutorInfo[] pei { get; set; }
 
         public int? nworkers_launched { get; set; }
 
@@ -31,6 +31,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public int? nextreader { get; set; }
 
-        public TupleQueueReader[] reader { get; set; }
+        public TupleQueueReader[][] reader { get; set; }
     }
 }

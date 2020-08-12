@@ -27,7 +27,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] args { get; set; }
 
-        public IPg10Node aggfilter { get; set; }
+        public IPg10Node[] aggfilter { get; set; }
 
         public uint? winref { get; set; }
 

@@ -19,9 +19,9 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public string name { get; set; }
 
-        public RoleSpec newowner { get; set; }
+        public RoleSpec[] newowner { get; set; }
 
-        public IPg10Node def { get; set; }
+        public IPg10Node[] def { get; set; }
 
         public DropBehavior? behavior { get; set; }
 

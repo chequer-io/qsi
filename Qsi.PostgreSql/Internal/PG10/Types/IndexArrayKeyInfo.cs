@@ -10,16 +10,16 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     internal class IndexArrayKeyInfo
     {
-        public ScanKeyData scan_key { get; set; }
+        public ScanKeyData[] scan_key { get; set; }
 
-        public ExprState array_expr { get; set; }
+        public ExprState[] array_expr { get; set; }
 
         public int? next_elem { get; set; }
 
         public int? num_elems { get; set; }
 
-        public uint? elem_values { get; set; }
+        public uint[] elem_values { get; set; }
 
-        public bool?[] elem_nulls { get; set; }
+        public bool[] elem_nulls { get; set; }
     }
 }

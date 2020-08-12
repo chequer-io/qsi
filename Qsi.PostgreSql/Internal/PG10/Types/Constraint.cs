@@ -25,7 +25,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public bool? is_no_inherit { get; set; }
 
-        public IPg10Node raw_expr { get; set; }
+        public IPg10Node[] raw_expr { get; set; }
 
         public string cooked_expr { get; set; }
 
@@ -43,9 +43,9 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public string access_method { get; set; }
 
-        public IPg10Node where_clause { get; set; }
+        public IPg10Node[] where_clause { get; set; }
 
-        public RangeVar pktable { get; set; }
+        public RangeVar[] pktable { get; set; }
 
         public IPg10Node[] fk_attrs { get; set; }
 

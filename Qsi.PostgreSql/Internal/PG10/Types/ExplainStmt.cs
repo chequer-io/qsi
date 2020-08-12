@@ -15,7 +15,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_ExplainStmt;
 
-        public IPg10Node query { get; set; }
+        public IPg10Node[] query { get; set; }
 
         public IPg10Node[] options { get; set; }
     }

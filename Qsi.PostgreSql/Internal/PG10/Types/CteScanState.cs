@@ -21,11 +21,11 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public int? readptr { get; set; }
 
-        public PlanState cteplanstate { get; set; }
+        public PlanState[] cteplanstate { get; set; }
 
-        public CteScanState leader { get; set; }
+        public CteScanState[] leader { get; set; }
 
-        public Tuplestorestate cte_table { get; set; }
+        public Tuplestorestate[] cte_table { get; set; }
 
         public bool? eof_cte { get; set; }
     }

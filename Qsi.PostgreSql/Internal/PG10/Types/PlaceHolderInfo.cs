@@ -17,13 +17,13 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public uint? phid { get; set; }
 
-        public PlaceHolderVar ph_var { get; set; }
+        public PlaceHolderVar[] ph_var { get; set; }
 
-        public Bitmapset ph_eval_at { get; set; }
+        public Bitmapset[] ph_eval_at { get; set; }
 
-        public Bitmapset ph_lateral { get; set; }
+        public Bitmapset[] ph_lateral { get; set; }
 
-        public Bitmapset ph_needed { get; set; }
+        public Bitmapset[] ph_needed { get; set; }
 
         public int? ph_width { get; set; }
     }

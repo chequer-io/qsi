@@ -37,7 +37,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] rowMarks { get; set; }
 
-        public OnConflictExpr onconflict { get; set; }
+        public OnConflictExpr[] onconflict { get; set; }
 
         public int? epqParam { get; set; }
     }

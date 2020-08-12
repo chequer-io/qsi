@@ -17,8 +17,8 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public bool? is_slice { get; set; }
 
-        public IPg10Node lidx { get; set; }
+        public IPg10Node[] lidx { get; set; }
 
-        public IPg10Node uidx { get; set; }
+        public IPg10Node[] uidx { get; set; }
     }
 }

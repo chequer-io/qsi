@@ -15,14 +15,14 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_DeleteStmt;
 
-        public RangeVar relation { get; set; }
+        public RangeVar[] relation { get; set; }
 
         public IPg10Node[] usingClause { get; set; }
 
-        public IPg10Node whereClause { get; set; }
+        public IPg10Node[] whereClause { get; set; }
 
         public IPg10Node[] returningList { get; set; }
 
-        public WithClause withClause { get; set; }
+        public WithClause[] withClause { get; set; }
     }
 }

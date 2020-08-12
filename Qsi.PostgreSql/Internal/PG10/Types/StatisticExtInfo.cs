@@ -17,10 +17,10 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public uint? statOid { get; set; }
 
-        public RelOptInfo rel { get; set; }
+        public RelOptInfo[] rel { get; set; }
 
         public char? kind { get; set; }
 
-        public Bitmapset keys { get; set; }
+        public Bitmapset[] keys { get; set; }
     }
 }

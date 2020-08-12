@@ -17,8 +17,8 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public bool? lateral { get; set; }
 
-        public IPg10Node subquery { get; set; }
+        public IPg10Node[] subquery { get; set; }
 
-        public Alias alias { get; set; }
+        public Alias[] alias { get; set; }
     }
 }

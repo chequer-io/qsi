@@ -21,10 +21,10 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public uint? casecollid { get; set; }
 
-        public IPg10Node arg { get; set; }
+        public IPg10Node[] arg { get; set; }
 
         public IPg10Node[] args { get; set; }
 
-        public IPg10Node defresult { get; set; }
+        public IPg10Node[] defresult { get; set; }
     }
 }

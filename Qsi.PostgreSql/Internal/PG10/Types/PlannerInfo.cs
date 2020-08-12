@@ -15,31 +15,31 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_PlannerInfo;
 
-        public Query parse { get; set; }
+        public Query[] parse { get; set; }
 
-        public PlannerGlobal glob { get; set; }
+        public PlannerGlobal[] glob { get; set; }
 
         public uint? query_level { get; set; }
 
-        public PlannerInfo parent_root { get; set; }
+        public PlannerInfo[] parent_root { get; set; }
 
         public IPg10Node[] plan_params { get; set; }
 
-        public Bitmapset outer_params { get; set; }
+        public Bitmapset[] outer_params { get; set; }
 
-        public RelOptInfo[] simple_rel_array { get; set; }
+        public RelOptInfo[][] simple_rel_array { get; set; }
 
         public int? simple_rel_array_size { get; set; }
 
-        public RangeTblEntry[] simple_rte_array { get; set; }
+        public RangeTblEntry[][] simple_rte_array { get; set; }
 
-        public Bitmapset all_baserels { get; set; }
+        public Bitmapset[] all_baserels { get; set; }
 
-        public Bitmapset nullable_baserels { get; set; }
+        public Bitmapset[] nullable_baserels { get; set; }
 
         public IPg10Node[] join_rel_list { get; set; }
 
-        public HTAB join_rel_hash { get; set; }
+        public HTAB[] join_rel_hash { get; set; }
 
         public IPg10Node[][] join_rel_level { get; set; }
 
@@ -87,11 +87,11 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[][] upper_rels { get; set; }
 
-        public PathTarget[] upper_targets { get; set; }
+        public PathTarget[][] upper_targets { get; set; }
 
         public IPg10Node[] processed_tlist { get; set; }
 
-        public short? grouping_map { get; set; }
+        public short[] grouping_map { get; set; }
 
         public IPg10Node[] minmax_aggs { get; set; }
 
@@ -121,12 +121,12 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public int? wt_param_id { get; set; }
 
-        public Path non_recursive_path { get; set; }
+        public Path[] non_recursive_path { get; set; }
 
-        public Bitmapset curOuterRels { get; set; }
+        public Bitmapset[] curOuterRels { get; set; }
 
         public IPg10Node[] curOuterParams { get; set; }
 
-        public object?[] join_search_private { get; set; }
+        public object[] join_search_private { get; set; }
     }
 }

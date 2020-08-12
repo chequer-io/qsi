@@ -15,27 +15,27 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_SubPlanState;
 
-        public SubPlan subplan { get; set; }
+        public SubPlan[] subplan { get; set; }
 
-        public PlanState planstate { get; set; }
+        public PlanState[] planstate { get; set; }
 
-        public PlanState parent { get; set; }
+        public PlanState[] parent { get; set; }
 
-        public ExprState testexpr { get; set; }
+        public ExprState[] testexpr { get; set; }
 
         public IPg10Node[] args { get; set; }
 
-        public HeapTupleData curTuple { get; set; }
+        public HeapTupleData[] curTuple { get; set; }
 
         public uint? curArray { get; set; }
 
-        public ProjectionInfo projLeft { get; set; }
+        public ProjectionInfo[] projLeft { get; set; }
 
-        public ProjectionInfo projRight { get; set; }
+        public ProjectionInfo[] projRight { get; set; }
 
-        public TupleHashTableData hashtable { get; set; }
+        public TupleHashTableData[] hashtable { get; set; }
 
-        public TupleHashTableData hashnulls { get; set; }
+        public TupleHashTableData[] hashnulls { get; set; }
 
         public bool? havehashrows { get; set; }
 
@@ -45,16 +45,16 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public MemoryContext hashtempcxt { get; set; }
 
-        public ExprContext innerecontext { get; set; }
+        public ExprContext[] innerecontext { get; set; }
 
-        public short? keyColIdx { get; set; }
+        public short[] keyColIdx { get; set; }
 
-        public FmgrInfo tab_hash_funcs { get; set; }
+        public FmgrInfo[] tab_hash_funcs { get; set; }
 
-        public FmgrInfo tab_eq_funcs { get; set; }
+        public FmgrInfo[] tab_eq_funcs { get; set; }
 
-        public FmgrInfo lhs_hash_funcs { get; set; }
+        public FmgrInfo[] lhs_hash_funcs { get; set; }
 
-        public FmgrInfo cur_eq_funcs { get; set; }
+        public FmgrInfo[] cur_eq_funcs { get; set; }
     }
 }

@@ -19,7 +19,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public string defname { get; set; }
 
-        public IPg10Node arg { get; set; }
+        public IPg10Node[] arg { get; set; }
 
         public DefElemAction? defaction { get; set; }
     }

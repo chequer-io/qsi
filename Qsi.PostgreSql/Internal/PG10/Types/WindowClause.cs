@@ -25,9 +25,9 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public int? frameOptions { get; set; }
 
-        public IPg10Node startOffset { get; set; }
+        public IPg10Node[] startOffset { get; set; }
 
-        public IPg10Node endOffset { get; set; }
+        public IPg10Node[] endOffset { get; set; }
 
         public uint? winref { get; set; }
 

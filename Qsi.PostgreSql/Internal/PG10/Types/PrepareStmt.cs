@@ -19,6 +19,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] argtypes { get; set; }
 
-        public IPg10Node query { get; set; }
+        public IPg10Node[] query { get; set; }
     }
 }

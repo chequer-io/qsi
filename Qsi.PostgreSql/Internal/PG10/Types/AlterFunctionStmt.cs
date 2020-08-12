@@ -15,7 +15,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_AlterFunctionStmt;
 
-        public ObjectWithArgs func { get; set; }
+        public ObjectWithArgs[] func { get; set; }
 
         public IPg10Node[] actions { get; set; }
     }

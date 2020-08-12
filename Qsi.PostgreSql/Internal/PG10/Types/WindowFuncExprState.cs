@@ -15,11 +15,11 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_WindowFuncExprState;
 
-        public WindowFunc wfunc { get; set; }
+        public WindowFunc[] wfunc { get; set; }
 
         public IPg10Node[] args { get; set; }
 
-        public ExprState aggfilter { get; set; }
+        public ExprState[] aggfilter { get; set; }
 
         public int? wfuncno { get; set; }
     }

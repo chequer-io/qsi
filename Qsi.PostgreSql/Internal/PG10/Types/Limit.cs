@@ -17,8 +17,8 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public Plan plan { get; set; }
 
-        public IPg10Node limitOffset { get; set; }
+        public IPg10Node[] limitOffset { get; set; }
 
-        public IPg10Node limitCount { get; set; }
+        public IPg10Node[] limitCount { get; set; }
     }
 }

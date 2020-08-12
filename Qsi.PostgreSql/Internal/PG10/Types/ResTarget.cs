@@ -19,6 +19,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] indirection { get; set; }
 
-        public IPg10Node val { get; set; }
+        public IPg10Node[] val { get; set; }
     }
 }

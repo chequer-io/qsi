@@ -15,7 +15,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_SortBy;
 
-        public IPg10Node node { get; set; }
+        public IPg10Node[] node { get; set; }
 
         public SortByDir? sortby_dir { get; set; }
 

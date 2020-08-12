@@ -10,15 +10,15 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     internal class TupleHashTableData
     {
-        public tuplehash_hash hashtab { get; set; }
+        public tuplehash_hash[] hashtab { get; set; }
 
         public int? numCols { get; set; }
 
-        public short? keyColIdx { get; set; }
+        public short[] keyColIdx { get; set; }
 
-        public FmgrInfo tab_hash_funcs { get; set; }
+        public FmgrInfo[] tab_hash_funcs { get; set; }
 
-        public FmgrInfo tab_eq_funcs { get; set; }
+        public FmgrInfo[] tab_eq_funcs { get; set; }
 
         public MemoryContext tablecxt { get; set; }
 
@@ -26,13 +26,13 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public uint? entrysize { get; set; }
 
-        public TupleTableSlot tableslot { get; set; }
+        public TupleTableSlot[] tableslot { get; set; }
 
-        public TupleTableSlot inputslot { get; set; }
+        public TupleTableSlot[] inputslot { get; set; }
 
-        public FmgrInfo in_hash_funcs { get; set; }
+        public FmgrInfo[] in_hash_funcs { get; set; }
 
-        public FmgrInfo cur_eq_funcs { get; set; }
+        public FmgrInfo[] cur_eq_funcs { get; set; }
 
         public uint? hash_iv { get; set; }
     }

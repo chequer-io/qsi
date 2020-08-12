@@ -10,9 +10,9 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     internal class tupleConstr
     {
-        public attrDefault defval { get; set; }
+        public attrDefault[] defval { get; set; }
 
-        public constrCheck check { get; set; }
+        public constrCheck[] check { get; set; }
 
         public ushort? num_defval { get; set; }
 

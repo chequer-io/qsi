@@ -23,7 +23,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public bool? admin_opt { get; set; }
 
-        public RoleSpec grantor { get; set; }
+        public RoleSpec[] grantor { get; set; }
 
         public DropBehavior? behavior { get; set; }
     }

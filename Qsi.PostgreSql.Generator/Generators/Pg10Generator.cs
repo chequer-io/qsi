@@ -392,8 +392,11 @@ namespace Qsi.PostgreSql.Generator.Generators
 
                         typeName = ConvertToCSharpType(elementType);
 
-                        if (elementType.TypeKind == CppTypeKind.Pointer || elementType.TypeKind == CppTypeKind.Primitive)
+                        if (elementType.GetDisplayName() != "List")
                         {
+                            if (typeName.EndsWith("?"))
+                                typeName = typeName[..^1];
+
                             typeName += "[]";
                         }
 

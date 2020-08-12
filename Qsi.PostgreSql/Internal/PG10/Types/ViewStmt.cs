@@ -15,11 +15,11 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_ViewStmt;
 
-        public RangeVar view { get; set; }
+        public RangeVar[] view { get; set; }
 
         public IPg10Node[] aliases { get; set; }
 
-        public IPg10Node query { get; set; }
+        public IPg10Node[] query { get; set; }
 
         public bool? replace { get; set; }
 

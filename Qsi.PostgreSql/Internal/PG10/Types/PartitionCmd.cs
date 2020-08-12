@@ -15,8 +15,8 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_PartitionCmd;
 
-        public RangeVar name { get; set; }
+        public RangeVar[] name { get; set; }
 
-        public PartitionBoundSpec bound { get; set; }
+        public PartitionBoundSpec[] bound { get; set; }
     }
 }

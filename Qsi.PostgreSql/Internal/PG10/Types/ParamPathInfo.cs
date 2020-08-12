@@ -15,7 +15,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_ParamPathInfo;
 
-        public Bitmapset ppi_req_outer { get; set; }
+        public Bitmapset[] ppi_req_outer { get; set; }
 
         public double? ppi_rows { get; set; }
 

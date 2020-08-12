@@ -17,7 +17,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public int? ii_NumIndexAttrs { get; set; }
 
-        public short? ii_KeyAttrNumbers { get; set; }
+        public short[] ii_KeyAttrNumbers { get; set; }
 
         public IPg10Node[] ii_Expressions { get; set; }
 
@@ -25,19 +25,19 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] ii_Predicate { get; set; }
 
-        public ExprState ii_PredicateState { get; set; }
+        public ExprState[] ii_PredicateState { get; set; }
 
-        public uint? ii_ExclusionOps { get; set; }
+        public uint[] ii_ExclusionOps { get; set; }
 
-        public uint? ii_ExclusionProcs { get; set; }
+        public uint[] ii_ExclusionProcs { get; set; }
 
-        public ushort? ii_ExclusionStrats { get; set; }
+        public ushort[] ii_ExclusionStrats { get; set; }
 
-        public uint? ii_UniqueOps { get; set; }
+        public uint[] ii_UniqueOps { get; set; }
 
-        public uint? ii_UniqueProcs { get; set; }
+        public uint[] ii_UniqueProcs { get; set; }
 
-        public ushort? ii_UniqueStrats { get; set; }
+        public ushort[] ii_UniqueStrats { get; set; }
 
         public bool? ii_Unique { get; set; }
 
@@ -47,7 +47,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public bool? ii_BrokenHotChain { get; set; }
 
-        public object?[] ii_AmCache { get; set; }
+        public object[] ii_AmCache { get; set; }
 
         public MemoryContext ii_Context { get; set; }
     }

@@ -10,17 +10,17 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     internal class SnapshotData
     {
-        public string satisfies { get; set; }
+        public string[] satisfies { get; set; }
 
         public uint? xmin { get; set; }
 
         public uint? xmax { get; set; }
 
-        public uint? xip { get; set; }
+        public uint[] xip { get; set; }
 
         public uint? xcnt { get; set; }
 
-        public uint? subxip { get; set; }
+        public uint[] subxip { get; set; }
 
         public int? subxcnt { get; set; }
 

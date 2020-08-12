@@ -23,6 +23,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public uint? pscan_len { get; set; }
 
-        public CustomExecMethods methods { get; set; }
+        public CustomExecMethods[] methods { get; set; }
     }
 }

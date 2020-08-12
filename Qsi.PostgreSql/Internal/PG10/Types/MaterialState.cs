@@ -21,6 +21,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public bool? eof_underlying { get; set; }
 
-        public Tuplestorestate tuplestorestate { get; set; }
+        public Tuplestorestate[] tuplestorestate { get; set; }
     }
 }

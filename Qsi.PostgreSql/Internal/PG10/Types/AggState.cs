@@ -27,25 +27,25 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public AggSplit? aggsplit { get; set; }
 
-        public AggStatePerPhaseData phase { get; set; }
+        public AggStatePerPhaseData[] phase { get; set; }
 
         public int? numphases { get; set; }
 
         public int? current_phase { get; set; }
 
-        public AggStatePerAggData peragg { get; set; }
+        public AggStatePerAggData[] peragg { get; set; }
 
-        public AggStatePerTransData pertrans { get; set; }
+        public AggStatePerTransData[] pertrans { get; set; }
 
-        public ExprContext hashcontext { get; set; }
+        public ExprContext[] hashcontext { get; set; }
 
-        public ExprContext[] aggcontexts { get; set; }
+        public ExprContext[][] aggcontexts { get; set; }
 
-        public ExprContext tmpcontext { get; set; }
+        public ExprContext[] tmpcontext { get; set; }
 
-        public ExprContext curaggcontext { get; set; }
+        public ExprContext[] curaggcontext { get; set; }
 
-        public AggStatePerTransData curpertrans { get; set; }
+        public AggStatePerTransData[] curpertrans { get; set; }
 
         public bool? input_done { get; set; }
 
@@ -55,34 +55,34 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public int? current_set { get; set; }
 
-        public Bitmapset grouped_cols { get; set; }
+        public Bitmapset[] grouped_cols { get; set; }
 
         public IPg10Node[] all_grouped_cols { get; set; }
 
         public int? maxsets { get; set; }
 
-        public AggStatePerPhaseData phases { get; set; }
+        public AggStatePerPhaseData[] phases { get; set; }
 
-        public Tuplesortstate sort_in { get; set; }
+        public Tuplesortstate[] sort_in { get; set; }
 
-        public Tuplesortstate sort_out { get; set; }
+        public Tuplesortstate[] sort_out { get; set; }
 
-        public TupleTableSlot sort_slot { get; set; }
+        public TupleTableSlot[] sort_slot { get; set; }
 
-        public AggStatePerGroupData pergroup { get; set; }
+        public AggStatePerGroupData[] pergroup { get; set; }
 
-        public HeapTupleData grp_firstTuple { get; set; }
+        public HeapTupleData[] grp_firstTuple { get; set; }
 
         public bool? table_filled { get; set; }
 
         public int? num_hashes { get; set; }
 
-        public AggStatePerHashData perhash { get; set; }
+        public AggStatePerHashData[] perhash { get; set; }
 
-        public AggStatePerGroupData hash_pergroup { get; set; }
+        public AggStatePerGroupData[][] hash_pergroup { get; set; }
 
-        public ProjectionInfo combinedproj { get; set; }
+        public ProjectionInfo[] combinedproj { get; set; }
 
-        public AggStatePerAggData curperagg { get; set; }
+        public AggStatePerAggData[] curperagg { get; set; }
     }
 }

@@ -23,12 +23,12 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public int? numCols { get; set; }
 
-        public short? sortColIdx { get; set; }
+        public short[] sortColIdx { get; set; }
 
-        public uint? sortOperators { get; set; }
+        public uint[] sortOperators { get; set; }
 
-        public uint? collations { get; set; }
+        public uint[] collations { get; set; }
 
-        public bool?[] nullsFirst { get; set; }
+        public bool[] nullsFirst { get; set; }
     }
 }

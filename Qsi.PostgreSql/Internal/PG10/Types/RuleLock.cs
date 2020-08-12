@@ -12,6 +12,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public int? numLocks { get; set; }
 
-        public RewriteRule[] rules { get; set; }
+        public RewriteRule[][] rules { get; set; }
     }
 }

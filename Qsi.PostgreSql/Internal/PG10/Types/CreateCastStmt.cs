@@ -15,11 +15,11 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_CreateCastStmt;
 
-        public TypeName sourcetype { get; set; }
+        public TypeName[] sourcetype { get; set; }
 
-        public TypeName targettype { get; set; }
+        public TypeName[] targettype { get; set; }
 
-        public ObjectWithArgs func { get; set; }
+        public ObjectWithArgs[] func { get; set; }
 
         public CoercionContext? context { get; set; }
 

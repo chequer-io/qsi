@@ -20,16 +20,16 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public short? ssup_attno { get; set; }
 
-        public object?[] ssup_extra { get; set; }
+        public object[] ssup_extra { get; set; }
 
-        public string comparator { get; set; }
+        public string[] comparator { get; set; }
 
         public bool? abbreviate { get; set; }
 
-        public string abbrev_converter { get; set; }
+        public string[] abbrev_converter { get; set; }
 
-        public string abbrev_abort { get; set; }
+        public string[] abbrev_abort { get; set; }
 
-        public string abbrev_full_comparator { get; set; }
+        public string[] abbrev_full_comparator { get; set; }
     }
 }

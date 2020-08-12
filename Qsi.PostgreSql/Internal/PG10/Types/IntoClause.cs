@@ -15,7 +15,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_IntoClause;
 
-        public RangeVar rel { get; set; }
+        public RangeVar[] rel { get; set; }
 
         public IPg10Node[] colNames { get; set; }
 
@@ -25,7 +25,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public string tableSpaceName { get; set; }
 
-        public IPg10Node viewQuery { get; set; }
+        public IPg10Node[] viewQuery { get; set; }
 
         public bool? skipData { get; set; }
     }

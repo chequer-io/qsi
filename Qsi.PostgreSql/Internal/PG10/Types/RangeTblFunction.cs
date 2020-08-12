@@ -15,7 +15,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_RangeTblFunction;
 
-        public IPg10Node funcexpr { get; set; }
+        public IPg10Node[] funcexpr { get; set; }
 
         public int? funccolcount { get; set; }
 
@@ -27,6 +27,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] funccolcollations { get; set; }
 
-        public Bitmapset funcparams { get; set; }
+        public Bitmapset[] funcparams { get; set; }
     }
 }

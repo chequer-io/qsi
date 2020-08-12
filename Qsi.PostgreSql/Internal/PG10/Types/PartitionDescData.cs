@@ -12,8 +12,8 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public int? nparts { get; set; }
 
-        public uint? oids { get; set; }
+        public uint[] oids { get; set; }
 
-        public PartitionBoundInfoData boundinfo { get; set; }
+        public PartitionBoundInfoData[] boundinfo { get; set; }
     }
 }

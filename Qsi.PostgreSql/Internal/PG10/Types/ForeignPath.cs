@@ -17,7 +17,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public Path path { get; set; }
 
-        public Path fdw_outerpath { get; set; }
+        public Path[] fdw_outerpath { get; set; }
 
         public IPg10Node[] fdw_private { get; set; }
     }

@@ -10,13 +10,13 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     internal class EPQState
     {
-        public EState estate { get; set; }
+        public EState[] estate { get; set; }
 
-        public PlanState planstate { get; set; }
+        public PlanState[] planstate { get; set; }
 
-        public TupleTableSlot origslot { get; set; }
+        public TupleTableSlot[] origslot { get; set; }
 
-        public Plan plan { get; set; }
+        public Plan[] plan { get; set; }
 
         public IPg10Node[] arowMarks { get; set; }
 

@@ -17,7 +17,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public string idxname { get; set; }
 
-        public RangeVar relation { get; set; }
+        public RangeVar[] relation { get; set; }
 
         public string accessMethod { get; set; }
 
@@ -27,7 +27,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] options { get; set; }
 
-        public IPg10Node whereClause { get; set; }
+        public IPg10Node[] whereClause { get; set; }
 
         public IPg10Node[] excludeOpNames { get; set; }
 

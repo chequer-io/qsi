@@ -16,6 +16,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public uint? t_tableOid { get; set; }
 
-        public HeapTupleHeaderData t_data { get; set; }
+        public HeapTupleHeaderData[] t_data { get; set; }
     }
 }

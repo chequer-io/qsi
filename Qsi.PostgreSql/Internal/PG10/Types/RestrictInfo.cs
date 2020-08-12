@@ -15,7 +15,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_RestrictInfo;
 
-        public IPg10Node clause { get; set; }
+        public IPg10Node[] clause { get; set; }
 
         public bool? is_pushed_down { get; set; }
 
@@ -29,21 +29,21 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public uint? security_level { get; set; }
 
-        public Bitmapset clause_relids { get; set; }
+        public Bitmapset[] clause_relids { get; set; }
 
-        public Bitmapset required_relids { get; set; }
+        public Bitmapset[] required_relids { get; set; }
 
-        public Bitmapset outer_relids { get; set; }
+        public Bitmapset[] outer_relids { get; set; }
 
-        public Bitmapset nullable_relids { get; set; }
+        public Bitmapset[] nullable_relids { get; set; }
 
-        public Bitmapset left_relids { get; set; }
+        public Bitmapset[] left_relids { get; set; }
 
-        public Bitmapset right_relids { get; set; }
+        public Bitmapset[] right_relids { get; set; }
 
-        public IPg10Node orclause { get; set; }
+        public IPg10Node[] orclause { get; set; }
 
-        public EquivalenceClass parent_ec { get; set; }
+        public EquivalenceClass[] parent_ec { get; set; }
 
         public QualCost eval_cost { get; set; }
 
@@ -53,13 +53,13 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] mergeopfamilies { get; set; }
 
-        public EquivalenceClass left_ec { get; set; }
+        public EquivalenceClass[] left_ec { get; set; }
 
-        public EquivalenceClass right_ec { get; set; }
+        public EquivalenceClass[] right_ec { get; set; }
 
-        public EquivalenceMember left_em { get; set; }
+        public EquivalenceMember[] left_em { get; set; }
 
-        public EquivalenceMember right_em { get; set; }
+        public EquivalenceMember[] right_em { get; set; }
 
         public IPg10Node[] scansel_cache { get; set; }
 

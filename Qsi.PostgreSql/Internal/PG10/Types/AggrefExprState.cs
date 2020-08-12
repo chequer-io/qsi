@@ -15,7 +15,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_AggrefExprState;
 
-        public Aggref aggref { get; set; }
+        public Aggref[] aggref { get; set; }
 
         public int? aggno { get; set; }
     }

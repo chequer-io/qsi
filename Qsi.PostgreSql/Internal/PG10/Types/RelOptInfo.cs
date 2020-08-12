@@ -17,7 +17,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public RelOptKind? reloptkind { get; set; }
 
-        public Bitmapset relids { get; set; }
+        public Bitmapset[] relids { get; set; }
 
         public double? rows { get; set; }
 
@@ -27,7 +27,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public bool? consider_parallel { get; set; }
 
-        public PathTarget reltarget { get; set; }
+        public PathTarget[] reltarget { get; set; }
 
         public IPg10Node[] pathlist { get; set; }
 
@@ -35,17 +35,17 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] partial_pathlist { get; set; }
 
-        public Path cheapest_startup_path { get; set; }
+        public Path[] cheapest_startup_path { get; set; }
 
-        public Path cheapest_total_path { get; set; }
+        public Path[] cheapest_total_path { get; set; }
 
-        public Path cheapest_unique_path { get; set; }
+        public Path[] cheapest_unique_path { get; set; }
 
         public IPg10Node[] cheapest_parameterized_paths { get; set; }
 
-        public Bitmapset direct_lateral_relids { get; set; }
+        public Bitmapset[] direct_lateral_relids { get; set; }
 
-        public Bitmapset lateral_relids { get; set; }
+        public Bitmapset[] lateral_relids { get; set; }
 
         public uint? relid { get; set; }
 
@@ -57,13 +57,13 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public short? max_attr { get; set; }
 
-        public Bitmapset attr_needed { get; set; }
+        public Bitmapset[][] attr_needed { get; set; }
 
-        public int? attr_widths { get; set; }
+        public int[] attr_widths { get; set; }
 
         public IPg10Node[] lateral_vars { get; set; }
 
-        public Bitmapset lateral_referencers { get; set; }
+        public Bitmapset[] lateral_referencers { get; set; }
 
         public IPg10Node[] indexlist { get; set; }
 
@@ -75,7 +75,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public double? allvisfrac { get; set; }
 
-        public PlannerInfo subroot { get; set; }
+        public PlannerInfo[] subroot { get; set; }
 
         public IPg10Node[] subplan_params { get; set; }
 
@@ -87,9 +87,9 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public bool? useridiscurrent { get; set; }
 
-        public FdwRoutine fdwroutine { get; set; }
+        public FdwRoutine[] fdwroutine { get; set; }
 
-        public object?[] fdw_private { get; set; }
+        public object[] fdw_private { get; set; }
 
         public IPg10Node[] unique_for_rels { get; set; }
 
@@ -105,6 +105,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public bool? has_eclass_joins { get; set; }
 
-        public Bitmapset top_parent_relids { get; set; }
+        public Bitmapset[] top_parent_relids { get; set; }
     }
 }

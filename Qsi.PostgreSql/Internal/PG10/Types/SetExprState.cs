@@ -15,19 +15,19 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_SetExprState;
 
-        public IPg10Node expr { get; set; }
+        public IPg10Node[] expr { get; set; }
 
         public IPg10Node[] args { get; set; }
 
-        public ExprState elidedFuncState { get; set; }
+        public ExprState[] elidedFuncState { get; set; }
 
         public FmgrInfo func { get; set; }
 
-        public Tuplestorestate funcResultStore { get; set; }
+        public Tuplestorestate[] funcResultStore { get; set; }
 
-        public TupleTableSlot funcResultSlot { get; set; }
+        public TupleTableSlot[] funcResultSlot { get; set; }
 
-        public tupleDesc funcResultDesc { get; set; }
+        public tupleDesc[] funcResultDesc { get; set; }
 
         public bool? funcReturnsTuple { get; set; }
 

@@ -23,7 +23,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] functions { get; set; }
 
-        public Alias alias { get; set; }
+        public Alias[] alias { get; set; }
 
         public IPg10Node[] coldeflist { get; set; }
     }

@@ -17,9 +17,9 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public MemoryContextData header { get; set; }
 
-        public AllocBlockData blocks { get; set; }
+        public AllocBlockData[] blocks { get; set; }
 
-        public AllocChunkData freelist { get; set; }
+        public AllocChunkData[][] freelist { get; set; }
 
         public uint? initBlockSize { get; set; }
 
@@ -29,6 +29,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public uint? allocChunkLimit { get; set; }
 
-        public AllocBlockData keeper { get; set; }
+        public AllocBlockData[] keeper { get; set; }
     }
 }

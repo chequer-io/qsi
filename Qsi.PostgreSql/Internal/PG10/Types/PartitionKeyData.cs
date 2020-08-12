@@ -14,28 +14,28 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public short? partnatts { get; set; }
 
-        public short? partattrs { get; set; }
+        public short[] partattrs { get; set; }
 
         public IPg10Node[] partexprs { get; set; }
 
-        public uint? partopfamily { get; set; }
+        public uint[] partopfamily { get; set; }
 
-        public uint? partopcintype { get; set; }
+        public uint[] partopcintype { get; set; }
 
-        public FmgrInfo partsupfunc { get; set; }
+        public FmgrInfo[] partsupfunc { get; set; }
 
-        public uint? partcollation { get; set; }
+        public uint[] partcollation { get; set; }
 
-        public uint? parttypid { get; set; }
+        public uint[] parttypid { get; set; }
 
-        public int? parttypmod { get; set; }
+        public int[] parttypmod { get; set; }
 
-        public short? parttyplen { get; set; }
+        public short[] parttyplen { get; set; }
 
-        public bool?[] parttypbyval { get; set; }
+        public bool[] parttypbyval { get; set; }
 
         public string parttypalign { get; set; }
 
-        public uint? parttypcoll { get; set; }
+        public uint[] parttypcoll { get; set; }
     }
 }

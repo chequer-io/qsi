@@ -12,6 +12,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public uint? size { get; set; }
 
-        public object?[] aset { get; set; }
+        public object[] aset { get; set; }
     }
 }

@@ -17,14 +17,14 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public string colname { get; set; }
 
-        public TypeName typeName { get; set; }
+        public TypeName[] typeName { get; set; }
 
         public bool? for_ordinality { get; set; }
 
         public bool? is_not_null { get; set; }
 
-        public IPg10Node colexpr { get; set; }
+        public IPg10Node[] colexpr { get; set; }
 
-        public IPg10Node coldefexpr { get; set; }
+        public IPg10Node[] coldefexpr { get; set; }
     }
 }

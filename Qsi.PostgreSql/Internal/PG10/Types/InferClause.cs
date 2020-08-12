@@ -17,7 +17,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] indexElems { get; set; }
 
-        public IPg10Node whereClause { get; set; }
+        public IPg10Node[] whereClause { get; set; }
 
         public string conname { get; set; }
     }

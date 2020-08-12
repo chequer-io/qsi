@@ -17,6 +17,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public ExprState pi_state { get; set; }
 
-        public ExprContext pi_exprContext { get; set; }
+        public ExprContext[] pi_exprContext { get; set; }
     }
 }

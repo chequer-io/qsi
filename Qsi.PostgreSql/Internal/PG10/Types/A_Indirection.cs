@@ -15,7 +15,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_A_Indirection;
 
-        public IPg10Node arg { get; set; }
+        public IPg10Node[] arg { get; set; }
 
         public IPg10Node[] indirection { get; set; }
     }

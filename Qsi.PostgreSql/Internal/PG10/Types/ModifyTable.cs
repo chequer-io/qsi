@@ -39,7 +39,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] fdwPrivLists { get; set; }
 
-        public Bitmapset fdwDirectModifyPlans { get; set; }
+        public Bitmapset[] fdwDirectModifyPlans { get; set; }
 
         public IPg10Node[] rowMarks { get; set; }
 
@@ -51,7 +51,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] onConflictSet { get; set; }
 
-        public IPg10Node onConflictWhere { get; set; }
+        public IPg10Node[] onConflictWhere { get; set; }
 
         public uint? exclRelRTI { get; set; }
 

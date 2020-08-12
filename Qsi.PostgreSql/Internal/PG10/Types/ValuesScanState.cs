@@ -17,7 +17,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public ScanState ss { get; set; }
 
-        public ExprContext rowcontext { get; set; }
+        public ExprContext[] rowcontext { get; set; }
 
         public IPg10Node[][] exprlists { get; set; }
 

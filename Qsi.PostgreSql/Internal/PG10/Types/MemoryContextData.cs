@@ -14,18 +14,18 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public bool? allowInCritSection { get; set; }
 
-        public MemoryContextMethods methods { get; set; }
+        public MemoryContextMethods[] methods { get; set; }
 
-        public MemoryContextData parent { get; set; }
+        public MemoryContextData[] parent { get; set; }
 
-        public MemoryContextData firstchild { get; set; }
+        public MemoryContextData[] firstchild { get; set; }
 
-        public MemoryContextData prevchild { get; set; }
+        public MemoryContextData[] prevchild { get; set; }
 
-        public MemoryContextData nextchild { get; set; }
+        public MemoryContextData[] nextchild { get; set; }
 
         public string name { get; set; }
 
-        public MemoryContextCallback reset_cbs { get; set; }
+        public MemoryContextCallback[] reset_cbs { get; set; }
     }
 }

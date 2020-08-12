@@ -17,20 +17,20 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public uint? tg_event { get; set; }
 
-        public RelationData tg_relation { get; set; }
+        public RelationData[] tg_relation { get; set; }
 
-        public HeapTupleData tg_trigtuple { get; set; }
+        public HeapTupleData[] tg_trigtuple { get; set; }
 
-        public HeapTupleData tg_newtuple { get; set; }
+        public HeapTupleData[] tg_newtuple { get; set; }
 
-        public Trigger tg_trigger { get; set; }
+        public Trigger[] tg_trigger { get; set; }
 
         public int? tg_trigtuplebuf { get; set; }
 
         public int? tg_newtuplebuf { get; set; }
 
-        public Tuplestorestate tg_oldtable { get; set; }
+        public Tuplestorestate[] tg_oldtable { get; set; }
 
-        public Tuplestorestate tg_newtable { get; set; }
+        public Tuplestorestate[] tg_newtable { get; set; }
     }
 }

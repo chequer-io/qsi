@@ -23,9 +23,9 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public bool? tts_slow { get; set; }
 
-        public HeapTupleData tts_tuple { get; set; }
+        public HeapTupleData[] tts_tuple { get; set; }
 
-        public tupleDesc tts_tupleDescriptor { get; set; }
+        public tupleDesc[] tts_tupleDescriptor { get; set; }
 
         public MemoryContext tts_mcxt { get; set; }
 
@@ -33,11 +33,11 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public int? tts_nvalid { get; set; }
 
-        public uint? tts_values { get; set; }
+        public uint[] tts_values { get; set; }
 
-        public bool?[] tts_isnull { get; set; }
+        public bool[] tts_isnull { get; set; }
 
-        public MinimalTupleData tts_mintuple { get; set; }
+        public MinimalTupleData[] tts_mintuple { get; set; }
 
         public HeapTupleData tts_minhdr { get; set; }
 

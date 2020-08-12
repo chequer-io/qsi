@@ -15,34 +15,34 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_PlanState;
 
-        public Plan plan { get; set; }
+        public Plan[] plan { get; set; }
 
-        public EState state { get; set; }
+        public EState[] state { get; set; }
 
-        public string ExecProcNode { get; set; }
+        public string[] ExecProcNode { get; set; }
 
-        public string ExecProcNodeReal { get; set; }
+        public string[] ExecProcNodeReal { get; set; }
 
-        public Instrumentation instrument { get; set; }
+        public Instrumentation[] instrument { get; set; }
 
-        public WorkerInstrumentation worker_instrument { get; set; }
+        public WorkerInstrumentation[] worker_instrument { get; set; }
 
-        public ExprState qual { get; set; }
+        public ExprState[] qual { get; set; }
 
-        public PlanState lefttree { get; set; }
+        public PlanState[] lefttree { get; set; }
 
-        public PlanState righttree { get; set; }
+        public PlanState[] righttree { get; set; }
 
         public IPg10Node[] initPlan { get; set; }
 
         public IPg10Node[] subPlan { get; set; }
 
-        public Bitmapset chgParam { get; set; }
+        public Bitmapset[] chgParam { get; set; }
 
-        public TupleTableSlot ps_ResultTupleSlot { get; set; }
+        public TupleTableSlot[] ps_ResultTupleSlot { get; set; }
 
-        public ExprContext ps_ExprContext { get; set; }
+        public ExprContext[] ps_ExprContext { get; set; }
 
-        public ProjectionInfo ps_ProjInfo { get; set; }
+        public ProjectionInfo[] ps_ProjInfo { get; set; }
     }
 }

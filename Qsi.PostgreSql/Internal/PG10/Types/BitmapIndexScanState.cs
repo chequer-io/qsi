@@ -17,26 +17,26 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public ScanState ss { get; set; }
 
-        public TIDBitmap biss_result { get; set; }
+        public TIDBitmap[] biss_result { get; set; }
 
-        public ScanKeyData biss_ScanKeys { get; set; }
+        public ScanKeyData[] biss_ScanKeys { get; set; }
 
         public int? biss_NumScanKeys { get; set; }
 
-        public IndexRuntimeKeyInfo biss_RuntimeKeys { get; set; }
+        public IndexRuntimeKeyInfo[] biss_RuntimeKeys { get; set; }
 
         public int? biss_NumRuntimeKeys { get; set; }
 
-        public IndexArrayKeyInfo biss_ArrayKeys { get; set; }
+        public IndexArrayKeyInfo[] biss_ArrayKeys { get; set; }
 
         public int? biss_NumArrayKeys { get; set; }
 
         public bool? biss_RuntimeKeysReady { get; set; }
 
-        public ExprContext biss_RuntimeContext { get; set; }
+        public ExprContext[] biss_RuntimeContext { get; set; }
 
-        public RelationData biss_RelationDesc { get; set; }
+        public RelationData[] biss_RelationDesc { get; set; }
 
-        public IndexScanDescData biss_ScanDesc { get; set; }
+        public IndexScanDescData[] biss_ScanDesc { get; set; }
     }
 }

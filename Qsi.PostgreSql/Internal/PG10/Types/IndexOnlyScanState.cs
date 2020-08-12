@@ -17,27 +17,27 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public ScanState ss { get; set; }
 
-        public ExprState indexqual { get; set; }
+        public ExprState[] indexqual { get; set; }
 
-        public ScanKeyData ioss_ScanKeys { get; set; }
+        public ScanKeyData[] ioss_ScanKeys { get; set; }
 
         public int? ioss_NumScanKeys { get; set; }
 
-        public ScanKeyData ioss_OrderByKeys { get; set; }
+        public ScanKeyData[] ioss_OrderByKeys { get; set; }
 
         public int? ioss_NumOrderByKeys { get; set; }
 
-        public IndexRuntimeKeyInfo ioss_RuntimeKeys { get; set; }
+        public IndexRuntimeKeyInfo[] ioss_RuntimeKeys { get; set; }
 
         public int? ioss_NumRuntimeKeys { get; set; }
 
         public bool? ioss_RuntimeKeysReady { get; set; }
 
-        public ExprContext ioss_RuntimeContext { get; set; }
+        public ExprContext[] ioss_RuntimeContext { get; set; }
 
-        public RelationData ioss_RelationDesc { get; set; }
+        public RelationData[] ioss_RelationDesc { get; set; }
 
-        public IndexScanDescData ioss_ScanDesc { get; set; }
+        public IndexScanDescData[] ioss_ScanDesc { get; set; }
 
         public int? ioss_VMBuffer { get; set; }
 

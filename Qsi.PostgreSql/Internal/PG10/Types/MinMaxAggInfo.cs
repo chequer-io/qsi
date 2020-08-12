@@ -19,14 +19,14 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public uint? aggsortop { get; set; }
 
-        public IPg10Node target { get; set; }
+        public IPg10Node[] target { get; set; }
 
-        public PlannerInfo subroot { get; set; }
+        public PlannerInfo[] subroot { get; set; }
 
-        public Path path { get; set; }
+        public Path[] path { get; set; }
 
         public double? pathcost { get; set; }
 
-        public Param param { get; set; }
+        public Param[] param { get; set; }
     }
 }

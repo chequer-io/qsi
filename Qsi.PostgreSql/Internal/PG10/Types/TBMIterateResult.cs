@@ -16,6 +16,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public bool? recheck { get; set; }
 
-        public ushort? offsets { get; set; }
+        public ushort[] offsets { get; set; }
     }
 }

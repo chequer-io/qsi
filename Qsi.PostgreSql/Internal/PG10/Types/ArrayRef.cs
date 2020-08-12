@@ -29,8 +29,8 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] reflowerindexpr { get; set; }
 
-        public IPg10Node refexpr { get; set; }
+        public IPg10Node[] refexpr { get; set; }
 
-        public IPg10Node refassgnexpr { get; set; }
+        public IPg10Node[] refassgnexpr { get; set; }
     }
 }

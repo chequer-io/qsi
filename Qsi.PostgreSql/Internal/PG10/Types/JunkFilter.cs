@@ -17,11 +17,11 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] jf_targetList { get; set; }
 
-        public tupleDesc jf_cleanTupType { get; set; }
+        public tupleDesc[] jf_cleanTupType { get; set; }
 
-        public short? jf_cleanMap { get; set; }
+        public short[] jf_cleanMap { get; set; }
 
-        public TupleTableSlot jf_resultSlot { get; set; }
+        public TupleTableSlot[] jf_resultSlot { get; set; }
 
         public short? jf_junkAttNo { get; set; }
     }

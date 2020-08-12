@@ -12,7 +12,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public RelFileNode rd_node { get; set; }
 
-        public SMgrRelationData rd_smgr { get; set; }
+        public SMgrRelationData[] rd_smgr { get; set; }
 
         public int? rd_refcnt { get; set; }
 
@@ -32,21 +32,21 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public uint? rd_newRelfilenodeSubid { get; set; }
 
-        public FormData_pg_class rd_rel { get; set; }
+        public FormData_pg_class[] rd_rel { get; set; }
 
-        public tupleDesc rd_att { get; set; }
+        public tupleDesc[] rd_att { get; set; }
 
         public uint? rd_id { get; set; }
 
         public LockInfoData rd_lockInfo { get; set; }
 
-        public RuleLock rd_rules { get; set; }
+        public RuleLock[] rd_rules { get; set; }
 
         public MemoryContext rd_rulescxt { get; set; }
 
-        public TriggerDesc trigdesc { get; set; }
+        public TriggerDesc[] trigdesc { get; set; }
 
-        public RowSecurityDesc rd_rsdesc { get; set; }
+        public RowSecurityDesc[] rd_rsdesc { get; set; }
 
         public IPg10Node[] rd_fkeylist { get; set; }
 
@@ -54,11 +54,11 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public MemoryContext rd_partkeycxt { get; set; }
 
-        public PartitionKeyData rd_partkey { get; set; }
+        public PartitionKeyData[] rd_partkey { get; set; }
 
         public MemoryContext rd_pdcxt { get; set; }
 
-        public PartitionDescData rd_partdesc { get; set; }
+        public PartitionDescData[] rd_partdesc { get; set; }
 
         public IPg10Node[] rd_partcheck { get; set; }
 
@@ -72,56 +72,56 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] rd_statlist { get; set; }
 
-        public Bitmapset rd_indexattr { get; set; }
+        public Bitmapset[] rd_indexattr { get; set; }
 
-        public Bitmapset rd_keyattr { get; set; }
+        public Bitmapset[] rd_keyattr { get; set; }
 
-        public Bitmapset rd_pkattr { get; set; }
+        public Bitmapset[] rd_pkattr { get; set; }
 
-        public Bitmapset rd_idattr { get; set; }
+        public Bitmapset[] rd_idattr { get; set; }
 
-        public PublicationActions rd_pubactions { get; set; }
+        public PublicationActions[] rd_pubactions { get; set; }
 
-        public varlena rd_options { get; set; }
+        public varlena[] rd_options { get; set; }
 
-        public FormData_pg_index rd_index { get; set; }
+        public FormData_pg_index[] rd_index { get; set; }
 
-        public HeapTupleData rd_indextuple { get; set; }
+        public HeapTupleData[] rd_indextuple { get; set; }
 
         public uint? rd_amhandler { get; set; }
 
         public MemoryContext rd_indexcxt { get; set; }
 
-        public IndexAmRoutine rd_amroutine { get; set; }
+        public IndexAmRoutine[] rd_amroutine { get; set; }
 
-        public uint? rd_opfamily { get; set; }
+        public uint[] rd_opfamily { get; set; }
 
-        public uint? rd_opcintype { get; set; }
+        public uint[] rd_opcintype { get; set; }
 
-        public uint? rd_support { get; set; }
+        public uint[] rd_support { get; set; }
 
-        public FmgrInfo rd_supportinfo { get; set; }
+        public FmgrInfo[] rd_supportinfo { get; set; }
 
-        public short? rd_indoption { get; set; }
+        public short[] rd_indoption { get; set; }
 
         public IPg10Node[] rd_indexprs { get; set; }
 
         public IPg10Node[] rd_indpred { get; set; }
 
-        public uint? rd_exclops { get; set; }
+        public uint[] rd_exclops { get; set; }
 
-        public uint? rd_exclprocs { get; set; }
+        public uint[] rd_exclprocs { get; set; }
 
-        public ushort? rd_exclstrats { get; set; }
+        public ushort[] rd_exclstrats { get; set; }
 
-        public object?[] rd_amcache { get; set; }
+        public object[] rd_amcache { get; set; }
 
-        public uint? rd_indcollation { get; set; }
+        public uint[] rd_indcollation { get; set; }
 
-        public FdwRoutine rd_fdwroutine { get; set; }
+        public FdwRoutine[] rd_fdwroutine { get; set; }
 
         public uint? rd_toastoid { get; set; }
 
-        public PgStat_TableStatus pgstat_info { get; set; }
+        public PgStat_TableStatus[] pgstat_info { get; set; }
     }
 }

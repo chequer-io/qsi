@@ -37,7 +37,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] aggdistinct { get; set; }
 
-        public IPg10Node aggfilter { get; set; }
+        public IPg10Node[] aggfilter { get; set; }
 
         public bool? aggstar { get; set; }
 

@@ -29,6 +29,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public int? bound_Done { get; set; }
 
-        public object?[] tuplesortstate { get; set; }
+        public object[] tuplesortstate { get; set; }
     }
 }

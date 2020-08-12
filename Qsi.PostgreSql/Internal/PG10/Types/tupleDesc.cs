@@ -12,9 +12,9 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public int? natts { get; set; }
 
-        public FormData_pg_attribute attrs { get; set; }
+        public FormData_pg_attribute[][] attrs { get; set; }
 
-        public tupleConstr constr { get; set; }
+        public tupleConstr[] constr { get; set; }
 
         public uint? tdtypeid { get; set; }
 

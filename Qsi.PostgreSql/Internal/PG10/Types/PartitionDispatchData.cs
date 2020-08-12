@@ -10,18 +10,18 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     internal class PartitionDispatchData
     {
-        public RelationData reldesc { get; set; }
+        public RelationData[] reldesc { get; set; }
 
-        public PartitionKeyData key { get; set; }
+        public PartitionKeyData[] key { get; set; }
 
         public IPg10Node[] keystate { get; set; }
 
-        public PartitionDescData partdesc { get; set; }
+        public PartitionDescData[] partdesc { get; set; }
 
-        public TupleTableSlot tupslot { get; set; }
+        public TupleTableSlot[] tupslot { get; set; }
 
-        public TupleConversionMap tupmap { get; set; }
+        public TupleConversionMap[] tupmap { get; set; }
 
-        public int?[] indexes { get; set; }
+        public int[] indexes { get; set; }
     }
 }

@@ -17,17 +17,17 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] distinctClause { get; set; }
 
-        public IntoClause intoClause { get; set; }
+        public IntoClause[] intoClause { get; set; }
 
         public IPg10Node[] targetList { get; set; }
 
         public IPg10Node[] fromClause { get; set; }
 
-        public IPg10Node whereClause { get; set; }
+        public IPg10Node[] whereClause { get; set; }
 
         public IPg10Node[] groupClause { get; set; }
 
-        public IPg10Node havingClause { get; set; }
+        public IPg10Node[] havingClause { get; set; }
 
         public IPg10Node[] windowClause { get; set; }
 
@@ -35,20 +35,20 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] sortClause { get; set; }
 
-        public IPg10Node limitOffset { get; set; }
+        public IPg10Node[] limitOffset { get; set; }
 
-        public IPg10Node limitCount { get; set; }
+        public IPg10Node[] limitCount { get; set; }
 
         public IPg10Node[] lockingClause { get; set; }
 
-        public WithClause withClause { get; set; }
+        public WithClause[] withClause { get; set; }
 
         public SetOperation? op { get; set; }
 
         public bool? all { get; set; }
 
-        public SelectStmt larg { get; set; }
+        public SelectStmt[] larg { get; set; }
 
-        public SelectStmt rarg { get; set; }
+        public SelectStmt[] rarg { get; set; }
     }
 }

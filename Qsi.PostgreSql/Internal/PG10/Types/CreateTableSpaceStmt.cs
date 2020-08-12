@@ -17,7 +17,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public string tablespacename { get; set; }
 
-        public RoleSpec owner { get; set; }
+        public RoleSpec[] owner { get; set; }
 
         public string location { get; set; }
 

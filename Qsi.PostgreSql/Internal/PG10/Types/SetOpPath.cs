@@ -17,7 +17,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public Path path { get; set; }
 
-        public Path subpath { get; set; }
+        public Path[] subpath { get; set; }
 
         public SetOpCmd? cmd { get; set; }
 

@@ -16,9 +16,9 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public bool? inner_unique { get; set; }
 
-        public Path outerjoinpath { get; set; }
+        public Path[] outerjoinpath { get; set; }
 
-        public Path innerjoinpath { get; set; }
+        public Path[] innerjoinpath { get; set; }
 
         public IPg10Node[] joinrestrictinfo { get; set; }
     }

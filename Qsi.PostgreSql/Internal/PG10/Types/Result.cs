@@ -17,6 +17,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public Plan plan { get; set; }
 
-        public IPg10Node resconstantqual { get; set; }
+        public IPg10Node[] resconstantqual { get; set; }
     }
 }

@@ -17,7 +17,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public PlanState ps { get; set; }
 
-        public FmgrInfo eqfunctions { get; set; }
+        public FmgrInfo[] eqfunctions { get; set; }
 
         public MemoryContext tempContext { get; set; }
     }

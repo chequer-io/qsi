@@ -23,13 +23,13 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public int? numCols { get; set; }
 
-        public short? grpColIdx { get; set; }
+        public short[] grpColIdx { get; set; }
 
-        public uint? grpOperators { get; set; }
+        public uint[] grpOperators { get; set; }
 
         public int? numGroups { get; set; }
 
-        public Bitmapset aggParams { get; set; }
+        public Bitmapset[] aggParams { get; set; }
 
         public IPg10Node[] groupingSets { get; set; }
 

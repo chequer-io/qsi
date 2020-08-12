@@ -21,7 +21,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] parameters { get; set; }
 
-        public TypeName returnType { get; set; }
+        public TypeName[] returnType { get; set; }
 
         public IPg10Node[] options { get; set; }
 

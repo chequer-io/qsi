@@ -17,6 +17,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] options { get; set; }
 
-        public GrantStmt action { get; set; }
+        public GrantStmt[] action { get; set; }
     }
 }

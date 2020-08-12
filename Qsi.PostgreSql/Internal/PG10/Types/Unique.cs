@@ -19,8 +19,8 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public int? numCols { get; set; }
 
-        public short? uniqColIdx { get; set; }
+        public short[] uniqColIdx { get; set; }
 
-        public uint? uniqOperators { get; set; }
+        public uint[] uniqOperators { get; set; }
     }
 }

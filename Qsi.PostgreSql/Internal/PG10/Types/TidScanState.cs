@@ -25,7 +25,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public int? tss_TidPtr { get; set; }
 
-        public ItemPointerData tss_TidList { get; set; }
+        public ItemPointerData[] tss_TidList { get; set; }
 
         public HeapTupleData tss_htup { get; set; }
     }

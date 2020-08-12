@@ -17,7 +17,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public PlanState ps { get; set; }
 
-        public ExprState resconstantqual { get; set; }
+        public ExprState[] resconstantqual { get; set; }
 
         public bool? rs_done { get; set; }
 

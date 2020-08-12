@@ -23,6 +23,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] custom_private { get; set; }
 
-        public CustomPathMethods methods { get; set; }
+        public CustomPathMethods[] methods { get; set; }
     }
 }

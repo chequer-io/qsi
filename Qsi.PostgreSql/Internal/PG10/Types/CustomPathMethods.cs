@@ -10,8 +10,8 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     internal class CustomPathMethods
     {
-        public char? CustomName { get; set; }
+        public char[] CustomName { get; set; }
 
-        public string PlanCustomPath { get; set; }
+        public string[] PlanCustomPath { get; set; }
     }
 }

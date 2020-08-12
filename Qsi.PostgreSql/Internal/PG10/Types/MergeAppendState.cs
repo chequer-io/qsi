@@ -17,17 +17,17 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public PlanState ps { get; set; }
 
-        public PlanState[] mergeplans { get; set; }
+        public PlanState[][] mergeplans { get; set; }
 
         public int? ms_nplans { get; set; }
 
         public int? ms_nkeys { get; set; }
 
-        public SortSupportData ms_sortkeys { get; set; }
+        public SortSupportData[] ms_sortkeys { get; set; }
 
-        public TupleTableSlot[] ms_slots { get; set; }
+        public TupleTableSlot[][] ms_slots { get; set; }
 
-        public binaryheap ms_heap { get; set; }
+        public binaryheap[] ms_heap { get; set; }
 
         public bool? ms_initialized { get; set; }
     }

@@ -17,7 +17,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public PlanState ps { get; set; }
 
-        public HashJoinTableData hashtable { get; set; }
+        public HashJoinTableData[] hashtable { get; set; }
 
         public IPg10Node[] hashkeys { get; set; }
     }

@@ -19,11 +19,11 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] args { get; set; }
 
-        public ExprState repeatable { get; set; }
+        public ExprState[] repeatable { get; set; }
 
-        public TsmRoutine tsmroutine { get; set; }
+        public TsmRoutine[] tsmroutine { get; set; }
 
-        public object?[] tsm_state { get; set; }
+        public object[] tsm_state { get; set; }
 
         public bool? use_bulkread { get; set; }
 

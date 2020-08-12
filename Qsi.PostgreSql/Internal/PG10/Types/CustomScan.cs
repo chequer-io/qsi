@@ -27,8 +27,8 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] custom_scan_tlist { get; set; }
 
-        public Bitmapset custom_relids { get; set; }
+        public Bitmapset[] custom_relids { get; set; }
 
-        public CustomScanMethods methods { get; set; }
+        public CustomScanMethods[] methods { get; set; }
     }
 }

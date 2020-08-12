@@ -15,7 +15,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_MultiAssignRef;
 
-        public IPg10Node source { get; set; }
+        public IPg10Node[] source { get; set; }
 
         public int? colno { get; set; }
 

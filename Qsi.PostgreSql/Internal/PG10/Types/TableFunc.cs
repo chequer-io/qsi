@@ -19,9 +19,9 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] ns_names { get; set; }
 
-        public IPg10Node docexpr { get; set; }
+        public IPg10Node[] docexpr { get; set; }
 
-        public IPg10Node rowexpr { get; set; }
+        public IPg10Node[] rowexpr { get; set; }
 
         public IPg10Node[] colnames { get; set; }
 
@@ -35,7 +35,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] coldefexprs { get; set; }
 
-        public Bitmapset notnulls { get; set; }
+        public Bitmapset[] notnulls { get; set; }
 
         public int? ordinalitycol { get; set; }
     }

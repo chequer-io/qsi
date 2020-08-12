@@ -15,11 +15,11 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_EquivalenceMember;
 
-        public IPg10Node em_expr { get; set; }
+        public IPg10Node[] em_expr { get; set; }
 
-        public Bitmapset em_relids { get; set; }
+        public Bitmapset[] em_relids { get; set; }
 
-        public Bitmapset em_nullable_relids { get; set; }
+        public Bitmapset[] em_nullable_relids { get; set; }
 
         public bool? em_is_const { get; set; }
 

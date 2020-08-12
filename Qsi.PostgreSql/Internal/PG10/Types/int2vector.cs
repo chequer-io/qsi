@@ -22,6 +22,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public int? lbound1 { get; set; }
 
-        public short? values { get; set; }
+        public short[] values { get; set; }
     }
 }

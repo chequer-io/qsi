@@ -23,15 +23,15 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public bool? mt_done { get; set; }
 
-        public PlanState[] mt_plans { get; set; }
+        public PlanState[][] mt_plans { get; set; }
 
         public int? mt_nplans { get; set; }
 
         public int? mt_whichplan { get; set; }
 
-        public ResultRelInfo resultRelInfo { get; set; }
+        public ResultRelInfo[] resultRelInfo { get; set; }
 
-        public ResultRelInfo rootResultRelInfo { get; set; }
+        public ResultRelInfo[] rootResultRelInfo { get; set; }
 
         public IPg10Node[][] mt_arowmarks { get; set; }
 
@@ -43,28 +43,28 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] mt_arbiterindexes { get; set; }
 
-        public TupleTableSlot mt_existing { get; set; }
+        public TupleTableSlot[] mt_existing { get; set; }
 
         public IPg10Node[] mt_excludedtlist { get; set; }
 
-        public TupleTableSlot mt_conflproj { get; set; }
+        public TupleTableSlot[] mt_conflproj { get; set; }
 
-        public PartitionDispatchData[] mt_partition_dispatch_info { get; set; }
+        public PartitionDispatchData[][] mt_partition_dispatch_info { get; set; }
 
         public int? mt_num_dispatch { get; set; }
 
         public int? mt_num_partitions { get; set; }
 
-        public ResultRelInfo mt_partitions { get; set; }
+        public ResultRelInfo[] mt_partitions { get; set; }
 
-        public TupleConversionMap[] mt_partition_tupconv_maps { get; set; }
+        public TupleConversionMap[][] mt_partition_tupconv_maps { get; set; }
 
-        public TupleTableSlot mt_partition_tuple_slot { get; set; }
+        public TupleTableSlot[] mt_partition_tuple_slot { get; set; }
 
-        public TransitionCaptureState mt_transition_capture { get; set; }
+        public TransitionCaptureState[] mt_transition_capture { get; set; }
 
-        public TransitionCaptureState mt_oc_transition_capture { get; set; }
+        public TransitionCaptureState[] mt_oc_transition_capture { get; set; }
 
-        public TupleConversionMap[] mt_transition_tupconv_maps { get; set; }
+        public TupleConversionMap[][] mt_transition_tupconv_maps { get; set; }
     }
 }

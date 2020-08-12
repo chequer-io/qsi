@@ -17,9 +17,9 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public PlanState ps { get; set; }
 
-        public IPg10Node[] elems { get; set; }
+        public IPg10Node[][] elems { get; set; }
 
-        public ExprDoneCond? elemdone { get; set; }
+        public ExprDoneCond[] elemdone { get; set; }
 
         public int? nelems { get; set; }
 

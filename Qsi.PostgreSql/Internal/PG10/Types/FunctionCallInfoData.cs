@@ -10,11 +10,11 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     internal class FunctionCallInfoData
     {
-        public FmgrInfo flinfo { get; set; }
+        public FmgrInfo[] flinfo { get; set; }
 
-        public IPg10Node context { get; set; }
+        public IPg10Node[] context { get; set; }
 
-        public IPg10Node resultinfo { get; set; }
+        public IPg10Node[] resultinfo { get; set; }
 
         public uint? fncollation { get; set; }
 
@@ -22,8 +22,8 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public short? nargs { get; set; }
 
-        public uint? arg { get; set; }
+        public uint[] arg { get; set; }
 
-        public bool?[] argnull { get; set; }
+        public bool[] argnull { get; set; }
     }
 }

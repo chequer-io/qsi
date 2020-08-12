@@ -15,7 +15,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_AlterRoleStmt;
 
-        public RoleSpec role { get; set; }
+        public RoleSpec[] role { get; set; }
 
         public IPg10Node[] options { get; set; }
 

@@ -17,6 +17,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public ScanState ss { get; set; }
 
-        public PlanState subplan { get; set; }
+        public PlanState[] subplan { get; set; }
     }
 }

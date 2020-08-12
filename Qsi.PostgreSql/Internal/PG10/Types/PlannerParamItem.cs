@@ -15,7 +15,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_PlannerParamItem;
 
-        public IPg10Node item { get; set; }
+        public IPg10Node[] item { get; set; }
 
         public int? paramId { get; set; }
     }

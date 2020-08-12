@@ -17,10 +17,10 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public OnConflictAction? action { get; set; }
 
-        public InferClause infer { get; set; }
+        public InferClause[] infer { get; set; }
 
         public IPg10Node[] targetList { get; set; }
 
-        public IPg10Node whereClause { get; set; }
+        public IPg10Node[] whereClause { get; set; }
     }
 }

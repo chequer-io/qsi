@@ -19,6 +19,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public bool? skipData { get; set; }
 
-        public RangeVar relation { get; set; }
+        public RangeVar[] relation { get; set; }
     }
 }

@@ -17,6 +17,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public PartitionRangeDatumKind? kind { get; set; }
 
-        public IPg10Node value { get; set; }
+        public IPg10Node[] value { get; set; }
     }
 }

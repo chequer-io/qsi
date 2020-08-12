@@ -25,7 +25,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] ec_derives { get; set; }
 
-        public Bitmapset ec_relids { get; set; }
+        public Bitmapset[] ec_relids { get; set; }
 
         public bool? ec_has_const { get; set; }
 
@@ -41,6 +41,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public uint? ec_max_security { get; set; }
 
-        public EquivalenceClass ec_merged { get; set; }
+        public EquivalenceClass[] ec_merged { get; set; }
     }
 }

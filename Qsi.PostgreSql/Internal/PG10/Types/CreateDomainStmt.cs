@@ -17,9 +17,9 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] domainname { get; set; }
 
-        public TypeName typeName { get; set; }
+        public TypeName[] typeName { get; set; }
 
-        public CollateClause collClause { get; set; }
+        public CollateClause[] collClause { get; set; }
 
         public IPg10Node[] constraints { get; set; }
     }

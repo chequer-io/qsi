@@ -18,10 +18,10 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public bool? tcs_insert_new_table { get; set; }
 
-        public TupleConversionMap tcs_map { get; set; }
+        public TupleConversionMap[] tcs_map { get; set; }
 
-        public HeapTupleData tcs_original_insert_tuple { get; set; }
+        public HeapTupleData[] tcs_original_insert_tuple { get; set; }
 
-        public AfterTriggersTableData tcs_private { get; set; }
+        public AfterTriggersTableData[] tcs_private { get; set; }
     }
 }

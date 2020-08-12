@@ -23,7 +23,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public bool? canSetTag { get; set; }
 
-        public IPg10Node utilityStmt { get; set; }
+        public IPg10Node[] utilityStmt { get; set; }
 
         public int? resultRelation { get; set; }
 
@@ -49,13 +49,13 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] rtable { get; set; }
 
-        public FromExpr jointree { get; set; }
+        public FromExpr[] jointree { get; set; }
 
         public IPg10Node[] targetList { get; set; }
 
         public OverridingKind? @override { get; set; }
 
-        public OnConflictExpr onConflict { get; set; }
+        public OnConflictExpr[] onConflict { get; set; }
 
         public IPg10Node[] returningList { get; set; }
 
@@ -63,7 +63,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] groupingSets { get; set; }
 
-        public IPg10Node havingQual { get; set; }
+        public IPg10Node[] havingQual { get; set; }
 
         public IPg10Node[] windowClause { get; set; }
 
@@ -71,13 +71,13 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] sortClause { get; set; }
 
-        public IPg10Node limitOffset { get; set; }
+        public IPg10Node[] limitOffset { get; set; }
 
-        public IPg10Node limitCount { get; set; }
+        public IPg10Node[] limitCount { get; set; }
 
         public IPg10Node[] rowMarks { get; set; }
 
-        public IPg10Node setOperations { get; set; }
+        public IPg10Node[] setOperations { get; set; }
 
         public IPg10Node[] constraintDeps { get; set; }
 

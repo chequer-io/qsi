@@ -17,7 +17,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public ObjectType? objtype { get; set; }
 
-        public IPg10Node @object { get; set; }
+        public IPg10Node[] @object { get; set; }
 
         public string comment { get; set; }
     }

@@ -17,9 +17,9 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public Path path { get; set; }
 
-        public Path subpath { get; set; }
+        public Path[] subpath { get; set; }
 
-        public WindowClause winclause { get; set; }
+        public WindowClause[] winclause { get; set; }
 
         public IPg10Node[] winpathkeys { get; set; }
     }

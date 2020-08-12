@@ -15,17 +15,17 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_CreateStmt;
 
-        public RangeVar relation { get; set; }
+        public RangeVar[] relation { get; set; }
 
         public IPg10Node[] tableElts { get; set; }
 
         public IPg10Node[] inhRelations { get; set; }
 
-        public PartitionBoundSpec partbound { get; set; }
+        public PartitionBoundSpec[] partbound { get; set; }
 
-        public PartitionSpec partspec { get; set; }
+        public PartitionSpec[] partspec { get; set; }
 
-        public TypeName ofTypename { get; set; }
+        public TypeName[] ofTypename { get; set; }
 
         public IPg10Node[] constraints { get; set; }
 

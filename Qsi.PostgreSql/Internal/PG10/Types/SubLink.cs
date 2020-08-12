@@ -21,10 +21,10 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public int? subLinkId { get; set; }
 
-        public IPg10Node testexpr { get; set; }
+        public IPg10Node[] testexpr { get; set; }
 
         public IPg10Node[] operName { get; set; }
 
-        public IPg10Node subselect { get; set; }
+        public IPg10Node[] subselect { get; set; }
     }
 }

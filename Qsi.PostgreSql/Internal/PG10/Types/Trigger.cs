@@ -36,7 +36,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public short? tgnattr { get; set; }
 
-        public short? tgattr { get; set; }
+        public short[] tgattr { get; set; }
 
         public string[] tgargs { get; set; }
 

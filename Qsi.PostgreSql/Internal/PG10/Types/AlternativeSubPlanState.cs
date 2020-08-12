@@ -15,7 +15,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_AlternativeSubPlanState;
 
-        public AlternativeSubPlan subplan { get; set; }
+        public AlternativeSubPlan[] subplan { get; set; }
 
         public IPg10Node[] subplans { get; set; }
 

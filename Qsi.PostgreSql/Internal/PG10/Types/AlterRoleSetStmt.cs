@@ -15,10 +15,10 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_AlterRoleSetStmt;
 
-        public RoleSpec role { get; set; }
+        public RoleSpec[] role { get; set; }
 
         public string database { get; set; }
 
-        public VariableSetStmt setstmt { get; set; }
+        public VariableSetStmt[] setstmt { get; set; }
     }
 }

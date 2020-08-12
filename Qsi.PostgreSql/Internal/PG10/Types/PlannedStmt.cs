@@ -31,7 +31,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public bool? parallelModeNeeded { get; set; }
 
-        public Plan planTree { get; set; }
+        public Plan[] planTree { get; set; }
 
         public IPg10Node[] rtable { get; set; }
 
@@ -43,7 +43,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] subplans { get; set; }
 
-        public Bitmapset rewindPlanIDs { get; set; }
+        public Bitmapset[] rewindPlanIDs { get; set; }
 
         public IPg10Node[] rowMarks { get; set; }
 
@@ -53,7 +53,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public int? nParamExec { get; set; }
 
-        public IPg10Node utilityStmt { get; set; }
+        public IPg10Node[] utilityStmt { get; set; }
 
         public int? stmt_location { get; set; }
 

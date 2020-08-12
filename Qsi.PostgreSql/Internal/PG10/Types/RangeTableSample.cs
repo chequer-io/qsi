@@ -15,12 +15,12 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_RangeTableSample;
 
-        public IPg10Node relation { get; set; }
+        public IPg10Node[] relation { get; set; }
 
         public IPg10Node[] method { get; set; }
 
         public IPg10Node[] args { get; set; }
 
-        public IPg10Node repeatable { get; set; }
+        public IPg10Node[] repeatable { get; set; }
     }
 }

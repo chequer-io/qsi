@@ -19,9 +19,9 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public ObjectType? relationType { get; set; }
 
-        public RangeVar relation { get; set; }
+        public RangeVar[] relation { get; set; }
 
-        public IPg10Node @object { get; set; }
+        public IPg10Node[] @object { get; set; }
 
         public string subname { get; set; }
 

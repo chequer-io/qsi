@@ -17,6 +17,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] fromlist { get; set; }
 
-        public IPg10Node quals { get; set; }
+        public IPg10Node[] quals { get; set; }
     }
 }

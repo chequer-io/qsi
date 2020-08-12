@@ -17,8 +17,8 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public XmlOptionType? xmloption { get; set; }
 
-        public IPg10Node expr { get; set; }
+        public IPg10Node[] expr { get; set; }
 
-        public TypeName typeName { get; set; }
+        public TypeName[] typeName { get; set; }
     }
 }

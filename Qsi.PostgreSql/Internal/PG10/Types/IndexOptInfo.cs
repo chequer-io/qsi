@@ -19,7 +19,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public uint? reltablespace { get; set; }
 
-        public RelOptInfo rel { get; set; }
+        public RelOptInfo[] rel { get; set; }
 
         public uint? pages { get; set; }
 
@@ -29,21 +29,21 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public int? ncolumns { get; set; }
 
-        public int?[] indexkeys { get; set; }
+        public int[] indexkeys { get; set; }
 
-        public uint? indexcollations { get; set; }
+        public uint[] indexcollations { get; set; }
 
-        public uint? opfamily { get; set; }
+        public uint[] opfamily { get; set; }
 
-        public uint? opcintype { get; set; }
+        public uint[] opcintype { get; set; }
 
-        public uint? sortopfamily { get; set; }
+        public uint[] sortopfamily { get; set; }
 
-        public bool?[] reverse_sort { get; set; }
+        public bool[] reverse_sort { get; set; }
 
-        public bool?[] nulls_first { get; set; }
+        public bool[] nulls_first { get; set; }
 
-        public bool?[] canreturn { get; set; }
+        public bool[] canreturn { get; set; }
 
         public uint? relam { get; set; }
 
@@ -77,6 +77,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public bool? amcanparallel { get; set; }
 
-        public string amcostestimate { get; set; }
+        public string[] amcostestimate { get; set; }
     }
 }

@@ -18,10 +18,10 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public uint? grow_threshold { get; set; }
 
-        public TupleHashEntryData data { get; set; }
+        public TupleHashEntryData[] data { get; set; }
 
         public MemoryContext ctx { get; set; }
 
-        public object?[] private_data { get; set; }
+        public object[] private_data { get; set; }
     }
 }

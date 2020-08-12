@@ -21,7 +21,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public string polname { get; set; }
 
-        public IPg10Node qual { get; set; }
+        public IPg10Node[] qual { get; set; }
 
         public bool? cascaded { get; set; }
     }

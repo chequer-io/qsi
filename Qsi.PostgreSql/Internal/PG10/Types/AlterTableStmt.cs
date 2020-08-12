@@ -15,7 +15,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_AlterTableStmt;
 
-        public RangeVar relation { get; set; }
+        public RangeVar[] relation { get; set; }
 
         public IPg10Node[] cmds { get; set; }
 

@@ -19,7 +19,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] aliascolnames { get; set; }
 
-        public IPg10Node ctequery { get; set; }
+        public IPg10Node[] ctequery { get; set; }
 
         public bool? cterecursive { get; set; }
 

@@ -21,9 +21,9 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public int? numCols { get; set; }
 
-        public short? dupColIdx { get; set; }
+        public short[] dupColIdx { get; set; }
 
-        public uint? dupOperators { get; set; }
+        public uint[] dupOperators { get; set; }
 
         public int? numGroups { get; set; }
     }

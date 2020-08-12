@@ -19,15 +19,15 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public bool? isNatural { get; set; }
 
-        public IPg10Node larg { get; set; }
+        public IPg10Node[] larg { get; set; }
 
-        public IPg10Node rarg { get; set; }
+        public IPg10Node[] rarg { get; set; }
 
         public IPg10Node[] usingClause { get; set; }
 
-        public IPg10Node quals { get; set; }
+        public IPg10Node[] quals { get; set; }
 
-        public Alias alias { get; set; }
+        public Alias[] alias { get; set; }
 
         public int? rtindex { get; set; }
     }

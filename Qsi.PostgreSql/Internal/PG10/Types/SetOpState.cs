@@ -17,9 +17,9 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public PlanState ps { get; set; }
 
-        public FmgrInfo eqfunctions { get; set; }
+        public FmgrInfo[] eqfunctions { get; set; }
 
-        public FmgrInfo hashfunctions { get; set; }
+        public FmgrInfo[] hashfunctions { get; set; }
 
         public bool? setop_done { get; set; }
 
@@ -27,11 +27,11 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public MemoryContext tempContext { get; set; }
 
-        public SetOpStatePerGroupData pergroup { get; set; }
+        public SetOpStatePerGroupData[] pergroup { get; set; }
 
-        public HeapTupleData grp_firstTuple { get; set; }
+        public HeapTupleData[] grp_firstTuple { get; set; }
 
-        public TupleHashTableData hashtable { get; set; }
+        public TupleHashTableData[] hashtable { get; set; }
 
         public MemoryContext tableContext { get; set; }
 

@@ -15,7 +15,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_AlterSeqStmt;
 
-        public RangeVar sequence { get; set; }
+        public RangeVar[] sequence { get; set; }
 
         public IPg10Node[] options { get; set; }
 

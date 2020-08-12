@@ -17,6 +17,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] roles { get; set; }
 
-        public RoleSpec newrole { get; set; }
+        public RoleSpec[] newrole { get; set; }
     }
 }

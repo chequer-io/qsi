@@ -17,6 +17,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public int? paramno { get; set; }
 
-        public Var paramval { get; set; }
+        public Var[] paramval { get; set; }
     }
 }

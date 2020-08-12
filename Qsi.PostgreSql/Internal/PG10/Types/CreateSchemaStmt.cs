@@ -17,7 +17,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public string schemaname { get; set; }
 
-        public RoleSpec authrole { get; set; }
+        public RoleSpec[] authrole { get; set; }
 
         public IPg10Node[] schemaElts { get; set; }
 

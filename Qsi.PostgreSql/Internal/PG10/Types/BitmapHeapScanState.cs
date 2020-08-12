@@ -17,19 +17,19 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public ScanState ss { get; set; }
 
-        public ExprState bitmapqualorig { get; set; }
+        public ExprState[] bitmapqualorig { get; set; }
 
-        public TIDBitmap tbm { get; set; }
+        public TIDBitmap[] tbm { get; set; }
 
-        public TBMIterator tbmiterator { get; set; }
+        public TBMIterator[] tbmiterator { get; set; }
 
-        public TBMIterateResult tbmres { get; set; }
+        public TBMIterateResult[] tbmres { get; set; }
 
         public int? exact_pages { get; set; }
 
         public int? lossy_pages { get; set; }
 
-        public TBMIterator prefetch_iterator { get; set; }
+        public TBMIterator[] prefetch_iterator { get; set; }
 
         public int? prefetch_pages { get; set; }
 
@@ -41,10 +41,10 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public bool? initialized { get; set; }
 
-        public TBMSharedIterator shared_tbmiterator { get; set; }
+        public TBMSharedIterator[] shared_tbmiterator { get; set; }
 
-        public TBMSharedIterator shared_prefetch_iterator { get; set; }
+        public TBMSharedIterator[] shared_prefetch_iterator { get; set; }
 
-        public ParallelBitmapHeapState pstate { get; set; }
+        public ParallelBitmapHeapState[] pstate { get; set; }
     }
 }

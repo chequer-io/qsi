@@ -17,7 +17,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public int? options { get; set; }
 
-        public RangeVar relation { get; set; }
+        public RangeVar[] relation { get; set; }
 
         public IPg10Node[] va_cols { get; set; }
     }

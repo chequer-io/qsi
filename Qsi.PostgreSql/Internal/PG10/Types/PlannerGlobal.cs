@@ -15,13 +15,13 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_PlannerGlobal;
 
-        public ParamListInfoData boundParams { get; set; }
+        public ParamListInfoData[] boundParams { get; set; }
 
         public IPg10Node[] subplans { get; set; }
 
         public IPg10Node[] subroots { get; set; }
 
-        public Bitmapset rewindPlanIDs { get; set; }
+        public Bitmapset[] rewindPlanIDs { get; set; }
 
         public IPg10Node[] finalrtable { get; set; }
 

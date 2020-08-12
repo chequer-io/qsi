@@ -17,9 +17,9 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public ScanState ss { get; set; }
 
-        public ExprState docexpr { get; set; }
+        public ExprState[] docexpr { get; set; }
 
-        public ExprState rowexpr { get; set; }
+        public ExprState[] rowexpr { get; set; }
 
         public IPg10Node[] colexprs { get; set; }
 
@@ -29,20 +29,20 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] ns_uris { get; set; }
 
-        public Bitmapset notnulls { get; set; }
+        public Bitmapset[] notnulls { get; set; }
 
-        public object?[] opaque { get; set; }
+        public object[] opaque { get; set; }
 
-        public TableFuncRoutine routine { get; set; }
+        public TableFuncRoutine[] routine { get; set; }
 
-        public FmgrInfo in_functions { get; set; }
+        public FmgrInfo[] in_functions { get; set; }
 
-        public uint? typioparams { get; set; }
+        public uint[] typioparams { get; set; }
 
         public int? ordinal { get; set; }
 
         public MemoryContext perValueCxt { get; set; }
 
-        public Tuplestorestate tupstore { get; set; }
+        public Tuplestorestate[] tupstore { get; set; }
     }
 }

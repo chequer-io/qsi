@@ -17,12 +17,12 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public string policy_name { get; set; }
 
-        public RangeVar table { get; set; }
+        public RangeVar[] table { get; set; }
 
         public IPg10Node[] roles { get; set; }
 
-        public IPg10Node qual { get; set; }
+        public IPg10Node[] qual { get; set; }
 
-        public IPg10Node with_check { get; set; }
+        public IPg10Node[] with_check { get; set; }
     }
 }

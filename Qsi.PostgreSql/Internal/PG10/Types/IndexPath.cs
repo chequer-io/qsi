@@ -17,7 +17,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public Path path { get; set; }
 
-        public IndexOptInfo indexinfo { get; set; }
+        public IndexOptInfo[] indexinfo { get; set; }
 
         public IPg10Node[] indexclauses { get; set; }
 

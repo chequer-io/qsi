@@ -10,8 +10,8 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     internal class CustomScanMethods
     {
-        public char? CustomName { get; set; }
+        public char[] CustomName { get; set; }
 
-        public string CreateCustomScanState { get; set; }
+        public string[] CreateCustomScanState { get; set; }
     }
 }

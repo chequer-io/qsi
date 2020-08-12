@@ -17,9 +17,9 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node xpr { get; set; }
 
-        public IPg10Node phexpr { get; set; }
+        public IPg10Node[] phexpr { get; set; }
 
-        public Bitmapset phrels { get; set; }
+        public Bitmapset[] phrels { get; set; }
 
         public uint? phid { get; set; }
 

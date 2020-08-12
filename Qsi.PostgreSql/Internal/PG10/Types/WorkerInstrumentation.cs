@@ -12,6 +12,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public int? num_workers { get; set; }
 
-        public Instrumentation instrument { get; set; }
+        public Instrumentation[] instrument { get; set; }
     }
 }

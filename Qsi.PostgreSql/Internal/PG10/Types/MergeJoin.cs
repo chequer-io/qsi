@@ -21,12 +21,12 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] mergeclauses { get; set; }
 
-        public uint? mergeFamilies { get; set; }
+        public uint[] mergeFamilies { get; set; }
 
-        public uint? mergeCollations { get; set; }
+        public uint[] mergeCollations { get; set; }
 
-        public int?[] mergeStrategies { get; set; }
+        public int[] mergeStrategies { get; set; }
 
-        public bool?[] mergeNullsFirst { get; set; }
+        public bool[] mergeNullsFirst { get; set; }
     }
 }

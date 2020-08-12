@@ -25,6 +25,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public char? relpersistence { get; set; }
 
-        public Alias alias { get; set; }
+        public Alias[] alias { get; set; }
     }
 }

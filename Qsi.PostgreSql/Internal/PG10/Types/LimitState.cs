@@ -17,9 +17,9 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public PlanState ps { get; set; }
 
-        public ExprState limitOffset { get; set; }
+        public ExprState[] limitOffset { get; set; }
 
-        public ExprState limitCount { get; set; }
+        public ExprState[] limitCount { get; set; }
 
         public int? offset { get; set; }
 
@@ -31,6 +31,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public int? position { get; set; }
 
-        public TupleTableSlot subSlot { get; set; }
+        public TupleTableSlot[] subSlot { get; set; }
     }
 }

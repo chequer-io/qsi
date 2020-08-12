@@ -15,7 +15,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_PathKey;
 
-        public EquivalenceClass pk_eclass { get; set; }
+        public EquivalenceClass[] pk_eclass { get; set; }
 
         public uint? pk_opfamily { get; set; }
 

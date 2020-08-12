@@ -15,7 +15,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_DropUserMappingStmt;
 
-        public RoleSpec user { get; set; }
+        public RoleSpec[] user { get; set; }
 
         public string servername { get; set; }
 

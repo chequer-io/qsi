@@ -15,9 +15,9 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_CreateTableAsStmt;
 
-        public IPg10Node query { get; set; }
+        public IPg10Node[] query { get; set; }
 
-        public IntoClause into { get; set; }
+        public IntoClause[] into { get; set; }
 
         public ObjectType? relkind { get; set; }
 

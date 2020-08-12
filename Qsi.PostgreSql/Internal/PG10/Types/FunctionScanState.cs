@@ -27,7 +27,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public int? nfuncs { get; set; }
 
-        public FunctionScanPerFuncState funcstates { get; set; }
+        public FunctionScanPerFuncState[] funcstates { get; set; }
 
         public MemoryContext argcontext { get; set; }
     }

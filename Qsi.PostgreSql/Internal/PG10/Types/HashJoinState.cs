@@ -17,7 +17,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public JoinState js { get; set; }
 
-        public ExprState hashclauses { get; set; }
+        public ExprState[] hashclauses { get; set; }
 
         public IPg10Node[] hj_OuterHashKeys { get; set; }
 
@@ -25,7 +25,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] hj_HashOperators { get; set; }
 
-        public HashJoinTableData hj_HashTable { get; set; }
+        public HashJoinTableData[] hj_HashTable { get; set; }
 
         public uint? hj_CurHashValue { get; set; }
 
@@ -33,17 +33,17 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public int? hj_CurSkewBucketNo { get; set; }
 
-        public HashJoinTupleData hj_CurTuple { get; set; }
+        public HashJoinTupleData[] hj_CurTuple { get; set; }
 
-        public TupleTableSlot hj_OuterTupleSlot { get; set; }
+        public TupleTableSlot[] hj_OuterTupleSlot { get; set; }
 
-        public TupleTableSlot hj_HashTupleSlot { get; set; }
+        public TupleTableSlot[] hj_HashTupleSlot { get; set; }
 
-        public TupleTableSlot hj_NullOuterTupleSlot { get; set; }
+        public TupleTableSlot[] hj_NullOuterTupleSlot { get; set; }
 
-        public TupleTableSlot hj_NullInnerTupleSlot { get; set; }
+        public TupleTableSlot[] hj_NullInnerTupleSlot { get; set; }
 
-        public TupleTableSlot hj_FirstOuterTupleSlot { get; set; }
+        public TupleTableSlot[] hj_FirstOuterTupleSlot { get; set; }
 
         public int? hj_JoinState { get; set; }
 

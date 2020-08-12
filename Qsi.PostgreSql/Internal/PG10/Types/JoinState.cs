@@ -21,6 +21,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public bool? single_match { get; set; }
 
-        public ExprState joinqual { get; set; }
+        public ExprState[] joinqual { get; set; }
     }
 }

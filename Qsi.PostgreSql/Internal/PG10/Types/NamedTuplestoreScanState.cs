@@ -19,8 +19,8 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public int? readptr { get; set; }
 
-        public tupleDesc tupdesc { get; set; }
+        public tupleDesc[] tupdesc { get; set; }
 
-        public Tuplestorestate relation { get; set; }
+        public Tuplestorestate[] relation { get; set; }
     }
 }

@@ -10,9 +10,9 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     internal class ExprContext_CB
     {
-        public ExprContext_CB next { get; set; }
+        public ExprContext_CB[] next { get; set; }
 
-        public string function { get; set; }
+        public string[] function { get; set; }
 
         public uint? arg { get; set; }
     }

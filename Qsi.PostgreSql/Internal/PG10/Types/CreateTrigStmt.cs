@@ -17,7 +17,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public string trigname { get; set; }
 
-        public RangeVar relation { get; set; }
+        public RangeVar[] relation { get; set; }
 
         public IPg10Node[] funcname { get; set; }
 
@@ -31,7 +31,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] columns { get; set; }
 
-        public IPg10Node whenClause { get; set; }
+        public IPg10Node[] whenClause { get; set; }
 
         public bool? isconstraint { get; set; }
 
@@ -41,6 +41,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public bool? initdeferred { get; set; }
 
-        public RangeVar constrrel { get; set; }
+        public RangeVar[] constrrel { get; set; }
     }
 }

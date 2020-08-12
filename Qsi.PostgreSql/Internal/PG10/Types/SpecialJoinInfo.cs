@@ -15,13 +15,13 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_SpecialJoinInfo;
 
-        public Bitmapset min_lefthand { get; set; }
+        public Bitmapset[] min_lefthand { get; set; }
 
-        public Bitmapset min_righthand { get; set; }
+        public Bitmapset[] min_righthand { get; set; }
 
-        public Bitmapset syn_lefthand { get; set; }
+        public Bitmapset[] syn_lefthand { get; set; }
 
-        public Bitmapset syn_righthand { get; set; }
+        public Bitmapset[] syn_righthand { get; set; }
 
         public JoinType? jointype { get; set; }
 

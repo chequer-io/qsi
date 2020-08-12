@@ -10,10 +10,10 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     internal class pairingheap_node
     {
-        public pairingheap_node first_child { get; set; }
+        public pairingheap_node[] first_child { get; set; }
 
-        public pairingheap_node next_sibling { get; set; }
+        public pairingheap_node[] next_sibling { get; set; }
 
-        public pairingheap_node prev_or_parent { get; set; }
+        public pairingheap_node[] prev_or_parent { get; set; }
     }
 }

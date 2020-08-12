@@ -17,10 +17,10 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public string name { get; set; }
 
-        public TypeName argType { get; set; }
+        public TypeName[] argType { get; set; }
 
         public FunctionParameterMode? mode { get; set; }
 
-        public IPg10Node defexpr { get; set; }
+        public IPg10Node[] defexpr { get; set; }
     }
 }

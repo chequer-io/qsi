@@ -29,7 +29,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] fdw_recheck_quals { get; set; }
 
-        public Bitmapset fs_relids { get; set; }
+        public Bitmapset[] fs_relids { get; set; }
 
         public bool? fsSystemCol { get; set; }
     }

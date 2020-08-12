@@ -15,11 +15,11 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_RuleStmt;
 
-        public RangeVar relation { get; set; }
+        public RangeVar[] relation { get; set; }
 
         public string rulename { get; set; }
 
-        public IPg10Node whereClause { get; set; }
+        public IPg10Node[] whereClause { get; set; }
 
         public CmdType? @event { get; set; }
 

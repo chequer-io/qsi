@@ -17,7 +17,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public int? itemtype { get; set; }
 
-        public ObjectWithArgs name { get; set; }
+        public ObjectWithArgs[] name { get; set; }
 
         public int? number { get; set; }
 
@@ -25,6 +25,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] class_args { get; set; }
 
-        public TypeName storedtype { get; set; }
+        public TypeName[] storedtype { get; set; }
     }
 }

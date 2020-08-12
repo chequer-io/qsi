@@ -15,8 +15,8 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_TypeCast;
 
-        public IPg10Node arg { get; set; }
+        public IPg10Node[] arg { get; set; }
 
-        public TypeName typeName { get; set; }
+        public TypeName[] typeName { get; set; }
     }
 }

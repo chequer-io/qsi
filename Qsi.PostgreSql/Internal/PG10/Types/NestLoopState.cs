@@ -21,6 +21,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public bool? nl_MatchedOuter { get; set; }
 
-        public TupleTableSlot nl_NullInnerTupleSlot { get; set; }
+        public TupleTableSlot[] nl_NullInnerTupleSlot { get; set; }
     }
 }

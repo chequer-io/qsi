@@ -10,7 +10,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     internal class TriggerDesc
     {
-        public Trigger triggers { get; set; }
+        public Trigger[] triggers { get; set; }
 
         public int? numtriggers { get; set; }
 

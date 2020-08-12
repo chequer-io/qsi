@@ -17,10 +17,10 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public ObjectType? objectType { get; set; }
 
-        public RangeVar relation { get; set; }
+        public RangeVar[] relation { get; set; }
 
-        public IPg10Node @object { get; set; }
+        public IPg10Node[] @object { get; set; }
 
-        public RoleSpec newowner { get; set; }
+        public RoleSpec[] newowner { get; set; }
     }
 }

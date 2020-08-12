@@ -10,10 +10,10 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 {
     internal class MemoryContextCallback
     {
-        public string func { get; set; }
+        public string[] func { get; set; }
 
-        public object?[] arg { get; set; }
+        public object[] arg { get; set; }
 
-        public MemoryContextCallback next { get; set; }
+        public MemoryContextCallback[] next { get; set; }
     }
 }

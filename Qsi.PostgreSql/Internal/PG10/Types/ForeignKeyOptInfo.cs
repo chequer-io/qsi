@@ -21,11 +21,11 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public int? nkeys { get; set; }
 
-        public short? conkey { get; set; }
+        public short[] conkey { get; set; }
 
-        public short? confkey { get; set; }
+        public short[] confkey { get; set; }
 
-        public uint? conpfeqop { get; set; }
+        public uint[] conpfeqop { get; set; }
 
         public int? nmatched_ec { get; set; }
 
@@ -33,7 +33,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public int? nmatched_ri { get; set; }
 
-        public EquivalenceClass[] eclass { get; set; }
+        public EquivalenceClass[][] eclass { get; set; }
 
         public IPg10Node[][] rinfos { get; set; }
     }

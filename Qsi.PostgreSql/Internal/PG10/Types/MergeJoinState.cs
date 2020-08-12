@@ -19,7 +19,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public int? mj_NumClauses { get; set; }
 
-        public MergeJoinClauseData mj_Clauses { get; set; }
+        public MergeJoinClauseData[] mj_Clauses { get; set; }
 
         public int? mj_JoinState { get; set; }
 
@@ -37,18 +37,18 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public bool? mj_MatchedInner { get; set; }
 
-        public TupleTableSlot mj_OuterTupleSlot { get; set; }
+        public TupleTableSlot[] mj_OuterTupleSlot { get; set; }
 
-        public TupleTableSlot mj_InnerTupleSlot { get; set; }
+        public TupleTableSlot[] mj_InnerTupleSlot { get; set; }
 
-        public TupleTableSlot mj_MarkedTupleSlot { get; set; }
+        public TupleTableSlot[] mj_MarkedTupleSlot { get; set; }
 
-        public TupleTableSlot mj_NullOuterTupleSlot { get; set; }
+        public TupleTableSlot[] mj_NullOuterTupleSlot { get; set; }
 
-        public TupleTableSlot mj_NullInnerTupleSlot { get; set; }
+        public TupleTableSlot[] mj_NullInnerTupleSlot { get; set; }
 
-        public ExprContext mj_OuterEContext { get; set; }
+        public ExprContext[] mj_OuterEContext { get; set; }
 
-        public ExprContext mj_InnerEContext { get; set; }
+        public ExprContext[] mj_InnerEContext { get; set; }
     }
 }

@@ -17,6 +17,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public Path path { get; set; }
 
-        public Path bitmapqual { get; set; }
+        public Path[] bitmapqual { get; set; }
     }
 }

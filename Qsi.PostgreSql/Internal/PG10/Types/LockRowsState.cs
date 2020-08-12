@@ -21,7 +21,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public EPQState lr_epqstate { get; set; }
 
-        public HeapTupleData lr_curtuples { get; set; }
+        public HeapTupleData[][] lr_curtuples { get; set; }
 
         public int? lr_ntables { get; set; }
     }

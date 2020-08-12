@@ -17,7 +17,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public string colname { get; set; }
 
-        public TypeName typeName { get; set; }
+        public TypeName[] typeName { get; set; }
 
         public int? inhcount { get; set; }
 
@@ -31,15 +31,15 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public char? storage { get; set; }
 
-        public IPg10Node raw_default { get; set; }
+        public IPg10Node[] raw_default { get; set; }
 
-        public IPg10Node cooked_default { get; set; }
+        public IPg10Node[] cooked_default { get; set; }
 
         public char? identity { get; set; }
 
-        public RangeVar identitySequence { get; set; }
+        public RangeVar[] identitySequence { get; set; }
 
-        public CollateClause collClause { get; set; }
+        public CollateClause[] collClause { get; set; }
 
         public uint? collOid { get; set; }
 

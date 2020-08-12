@@ -17,7 +17,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public ScanState ss { get; set; }
 
-        public FmgrInfo eqfunctions { get; set; }
+        public FmgrInfo[] eqfunctions { get; set; }
 
         public bool? grp_done { get; set; }
     }

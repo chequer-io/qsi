@@ -23,15 +23,15 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public int? numaggs { get; set; }
 
-        public WindowStatePerFuncData perfunc { get; set; }
+        public WindowStatePerFuncData[] perfunc { get; set; }
 
-        public WindowStatePerAggData peragg { get; set; }
+        public WindowStatePerAggData[] peragg { get; set; }
 
-        public FmgrInfo partEqfunctions { get; set; }
+        public FmgrInfo[] partEqfunctions { get; set; }
 
-        public FmgrInfo ordEqfunctions { get; set; }
+        public FmgrInfo[] ordEqfunctions { get; set; }
 
-        public Tuplestorestate buffer { get; set; }
+        public Tuplestorestate[] buffer { get; set; }
 
         public int? current_ptr { get; set; }
 
@@ -43,7 +43,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public int? frametailpos { get; set; }
 
-        public WindowObjectData agg_winobj { get; set; }
+        public WindowObjectData[] agg_winobj { get; set; }
 
         public int? aggregatedbase { get; set; }
 
@@ -51,9 +51,9 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public int? frameOptions { get; set; }
 
-        public ExprState startOffset { get; set; }
+        public ExprState[] startOffset { get; set; }
 
-        public ExprState endOffset { get; set; }
+        public ExprState[] endOffset { get; set; }
 
         public uint? startOffsetValue { get; set; }
 
@@ -65,7 +65,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public MemoryContext curaggcontext { get; set; }
 
-        public ExprContext tmpcontext { get; set; }
+        public ExprContext[] tmpcontext { get; set; }
 
         public bool? all_first { get; set; }
 
@@ -79,12 +79,12 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public bool? frametail_valid { get; set; }
 
-        public TupleTableSlot first_part_slot { get; set; }
+        public TupleTableSlot[] first_part_slot { get; set; }
 
-        public TupleTableSlot agg_row_slot { get; set; }
+        public TupleTableSlot[] agg_row_slot { get; set; }
 
-        public TupleTableSlot temp_slot_1 { get; set; }
+        public TupleTableSlot[] temp_slot_1 { get; set; }
 
-        public TupleTableSlot temp_slot_2 { get; set; }
+        public TupleTableSlot[] temp_slot_2 { get; set; }
     }
 }

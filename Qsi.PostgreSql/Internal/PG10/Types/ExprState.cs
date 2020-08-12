@@ -23,24 +23,24 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public uint? resvalue { get; set; }
 
-        public TupleTableSlot resultslot { get; set; }
+        public TupleTableSlot[] resultslot { get; set; }
 
-        public ExprEvalStep steps { get; set; }
+        public ExprEvalStep[] steps { get; set; }
 
-        public string evalfunc { get; set; }
+        public string[] evalfunc { get; set; }
 
-        public IPg10Node expr { get; set; }
+        public IPg10Node[] expr { get; set; }
 
         public int? steps_len { get; set; }
 
         public int? steps_alloc { get; set; }
 
-        public uint? innermost_caseval { get; set; }
+        public uint[] innermost_caseval { get; set; }
 
-        public bool?[] innermost_casenull { get; set; }
+        public bool[] innermost_casenull { get; set; }
 
-        public uint? innermost_domainval { get; set; }
+        public uint[] innermost_domainval { get; set; }
 
-        public bool?[] innermost_domainnull { get; set; }
+        public bool[] innermost_domainnull { get; set; }
     }
 }

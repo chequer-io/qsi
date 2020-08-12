@@ -19,7 +19,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public SubLinkType? subLinkType { get; set; }
 
-        public IPg10Node testexpr { get; set; }
+        public IPg10Node[] testexpr { get; set; }
 
         public IPg10Node[] paramIds { get; set; }
 

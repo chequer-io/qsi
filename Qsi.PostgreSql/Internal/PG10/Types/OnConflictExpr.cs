@@ -19,13 +19,13 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] arbiterElems { get; set; }
 
-        public IPg10Node arbiterWhere { get; set; }
+        public IPg10Node[] arbiterWhere { get; set; }
 
         public uint? constraint { get; set; }
 
         public IPg10Node[] onConflictSet { get; set; }
 
-        public IPg10Node onConflictWhere { get; set; }
+        public IPg10Node[] onConflictWhere { get; set; }
 
         public int? exclRelIndex { get; set; }
 

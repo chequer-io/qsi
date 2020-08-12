@@ -19,8 +19,8 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] name { get; set; }
 
-        public IPg10Node lexpr { get; set; }
+        public IPg10Node[] lexpr { get; set; }
 
-        public IPg10Node rexpr { get; set; }
+        public IPg10Node[] rexpr { get; set; }
     }
 }

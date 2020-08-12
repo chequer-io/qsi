@@ -17,7 +17,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] exprs { get; set; }
 
-        public uint? sortgrouprefs { get; set; }
+        public uint[] sortgrouprefs { get; set; }
 
         public QualCost cost { get; set; }
 
