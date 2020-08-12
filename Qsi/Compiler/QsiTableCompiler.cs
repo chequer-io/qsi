@@ -547,6 +547,14 @@ namespace Qsi.Compiler
                     break;
                 }
 
+                case IQsiArrayExpressionNode e:
+                {
+                    foreach (var c in e.Elements.SelectMany(x => InspectColumnsInExpression(context, x)))
+                        yield return c;
+
+                    break;
+                }
+
                 case IQsiSwitchExpressionNode e:
                 {
                     foreach (var c in InspectColumnsInExpression(context, e.Value))

@@ -512,16 +512,16 @@ namespace Qsi.MySql.Tree
             }
         }
 
-        private static QsiParametersExpressionNode VisitExpressions(ExpressionsContext context)
+        private static QsiArrayExpressionNode VisitExpressions(ExpressionsContext context)
         {
             return VisitExpressions(context.expression());
         }
 
-        private static QsiParametersExpressionNode VisitExpressions(IEnumerable<ExpressionContext> contexts)
+        private static QsiArrayExpressionNode VisitExpressions(IEnumerable<ExpressionContext> contexts)
         {
-            return TreeHelper.Create<QsiParametersExpressionNode>(n =>
+            return TreeHelper.Create<QsiArrayExpressionNode>(n =>
             {
-                n.Expressions.AddRange(contexts.Select(VisitExpression));
+                n.Elements.AddRange(contexts.Select(VisitExpression));
             });
         }
 
