@@ -539,7 +539,7 @@ namespace Qsi.MySql.Tree
 
         private static QsiLogicalExpressionNode VisitLogicalExpression(LogicalExpressionContext context)
         {
-            return TreeHelper.CreateLogicalExpression(
+            return CreateLogicalExpression(
                 context.logicalOperator().GetText(),
                 context.left, context.right,
                 VisitExpression);
@@ -580,6 +580,8 @@ namespace Qsi.MySql.Tree
                         {
                             n.Right.SetValue(VisitExpressions(pContext.expressions()));
                         }
+
+                        UnwrapLogicalExpressionNode(n);
                     });
                 }
 
@@ -593,6 +595,8 @@ namespace Qsi.MySql.Tree
                         n.Operator = pContext.IS().GetText();
                         n.Left.SetValue(VisitPredicate(pContext.predicate()));
                         n.Right.SetValue(VisitNullNotNull(pContext.nullNotnull()));
+
+                        UnwrapLogicalExpressionNode(n);
                     });
                 }
 
@@ -601,7 +605,7 @@ namespace Qsi.MySql.Tree
                     // predicate  { = | > | < | <= | >= | <> | != | <=> }  predicate
                     // ▔\LEFT/▔▔   ▔▔▔▔▔▔▔▔▔▔▔▔▔\OPERATOR/▔▔▔▔▔▔▔▔▔▔▔▔▔▔   ▔\RIGHT/▔
 
-                    return TreeHelper.CreateLogicalExpression(
+                    return CreateLogicalExpression(
                         pContext.comparisonOperator().GetText(),
                         pContext.left, pContext.right,
                         VisitPredicate);
@@ -617,6 +621,8 @@ namespace Qsi.MySql.Tree
                         n.Operator = $"{pContext.comparisonOperator().GetText()} {pContext.quantifier.Text}";
                         n.Left.SetValue(VisitPredicate(pContext.predicate()));
                         n.Right.SetValue(VisitSelectStatement(pContext.selectStatement()));
+
+                        UnwrapLogicalExpressionNode(n);
                     });
                 }
 
@@ -638,7 +644,7 @@ namespace Qsi.MySql.Tree
                     // predicate  SOUNDS LIKE  predicate
                     // ▔\LEFT/▔▔  ▔▔▔\OP/▔▔▔▔  ▔\RIGHT/▔
 
-                    return TreeHelper.CreateLogicalExpression(
+                    return CreateLogicalExpression(
                         JoinTokens(pContext.SOUNDS(), pContext.LIKE()),
                         pContext.left, pContext.right,
                         VisitPredicate);
@@ -650,7 +656,7 @@ namespace Qsi.MySql.Tree
                     // predicate  NOT? LIKE  predicate  (ESCAPE STRING_LITERAL)?
                     // ▔\LEFT/▔▔  ▔▔\OP/▔▔▔  ▔\RIGHT/▔   ▔▔▔▔▔▔▔\SKIP/▔▔▔▔▔▔▔▔
 
-                    return TreeHelper.CreateLogicalExpression(
+                    return CreateLogicalExpression(
                         JoinTokens(pContext.NOT(), pContext.LIKE()),
                         pContext.left, pContext.right,
                         VisitPredicate);
@@ -661,7 +667,7 @@ namespace Qsi.MySql.Tree
                     // predicate  NOT? {REGEXP | RLIKE}  predicate
                     // ▔\LEFT/▔▔  ▔▔▔▔▔▔▔▔\OP/▔▔▔▔▔▔▔▔   ▔\RIGHT/▔
 
-                    return TreeHelper.CreateLogicalExpression(
+                    return CreateLogicalExpression(
                         JoinTokens(pContext.NOT()?.GetText(), pContext.regex.Text),
                         pContext.left, pContext.right,
                         VisitPredicate);
@@ -714,6 +720,8 @@ namespace Qsi.MySql.Tree
                         n.Operator = pContext.COLLATE().GetText();
                         n.Left.SetValue(VisitExpressionAtom(pContext.expressionAtom()));
                         n.Right.SetValue(VisitCollationName(pContext.collationName()));
+
+                        UnwrapLogicalExpressionNode(n);
                     });
                 }
 
@@ -783,7 +791,7 @@ namespace Qsi.MySql.Tree
 
                 case BitExpressionAtomContext pContext:
                 {
-                    return TreeHelper.CreateLogicalExpression(
+                    return CreateLogicalExpression(
                         pContext.bitOperator().GetText(),
                         pContext.left,
                         pContext.right,
@@ -792,7 +800,7 @@ namespace Qsi.MySql.Tree
 
                 case MathExpressionAtomContext pContext:
                 {
-                    return TreeHelper.CreateLogicalExpression(
+                    return CreateLogicalExpression(
                         pContext.mathOperator().GetText(),
                         pContext.left,
                         pContext.right,
@@ -817,6 +825,45 @@ namespace Qsi.MySql.Tree
         private static QsiExpressionNode VisitOrderByExpression(OrderByExpressionContext context)
         {
             return VisitExpression(context.expression());
+        }
+
+        private static QsiLogicalExpressionNode CreateLogicalExpression<TContext>(
+            string @operator,
+            TContext left,
+            TContext right,
+            Func<TContext, QsiExpressionNode> visitor)
+        {
+            var node = new QsiLogicalExpressionNode
+            {
+                Operator = @operator
+            };
+
+            node.Left.SetValue(visitor(left));
+            node.Right.SetValue(visitor(right));
+
+            return UnwrapLogicalExpressionNode(node);
+        }
+
+        private static QsiLogicalExpressionNode UnwrapLogicalExpressionNode(QsiLogicalExpressionNode node)
+        {
+            if (node.Left.GetValue() is QsiArrayExpressionNode leftArrayExpr)
+                node.Left.SetValue(Unwrap(leftArrayExpr));
+
+            if (node.Right.GetValue() is QsiArrayExpressionNode rightArrayExpr)
+                node.Right.SetValue(Unwrap(rightArrayExpr));
+
+            return node;
+
+            static QsiExpressionNode Unwrap(QsiArrayExpressionNode arrayExpression)
+            {
+                if (arrayExpression.Elements.Count == 1 && 
+                    arrayExpression.Elements[0] is QsiLogicalExpressionNode innerLogicalExpr)
+                {
+                    return innerLogicalExpr;
+                }
+
+                return arrayExpression;
+            }
         }
         #endregion
 
