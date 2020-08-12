@@ -193,9 +193,25 @@ namespace Qsi.PostgreSql.Tree.PG10
         {
             return TreeHelper.Create<QsiParametersExpressionNode>(n =>
             {
+                var identifier = IdentifierVisitor.VisitStrings(typeName.names.Cast<PgString>());
+
+                if (typeName.arrayBounds != null)
+                {
+                    QsiIdentifier[] identifiers = identifier.ToArray();
+
+                    var bounds = new StringBuilder();
+                    bounds.Append(identifier[^1].Value);
+
+                    foreach (var bound in typeName.arrayBounds.OfType<PgInteger>())
+                        bounds.Append(bound.ival >= 0 ? $"[{bound.ival}]" : "[]");
+
+                    identifiers[^1] = new QsiIdentifier(bounds.ToString(), false);
+                    identifier = new QsiQualifiedIdentifier(identifiers);
+                }
+
                 n.Expressions.Add(new QsiUnknownMemberAcessExpressionNode
                 {
-                    Identifier = IdentifierVisitor.VisitStrings(typeName.names.Cast<PgString>())
+                    Identifier = identifier
                 });
             });
         }
