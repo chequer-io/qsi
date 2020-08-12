@@ -1,13 +1,16 @@
 ﻿using System;
+using System.Linq;
 using Qsi.Data;
 using Qsi.Parsing;
 using Qsi.PostgreSql.Internal;
 using Qsi.PostgreSql.Internal.PG10;
+using Qsi.PostgreSql.Internal.PG10.Types;
+using Qsi.PostgreSql.Tree.PG10;
 using Qsi.Tree;
 
 namespace Qsi.PostgreSql
 {
-    public class PostgreSqlParser : IQsiTreeParser, IDisposable
+    public sealed class PostgreSqlParser : IQsiTreeParser, IDisposable
     {
         public event EventHandler<QsiSyntaxErrorException> SyntaxError;
 
@@ -18,7 +21,10 @@ namespace Qsi.PostgreSql
             try
             {
                 _pgParser ??= new PgQuery10();
-                //return _pgQuery.Parse(script.Script);
+
+                var pgTree = _pgParser.Parse(script.Script);
+
+                return TableVisitor.Visit((IPg10Node)pgTree).SingleOrDefault();
             }
             catch (QsiSyntaxErrorException e)
             {

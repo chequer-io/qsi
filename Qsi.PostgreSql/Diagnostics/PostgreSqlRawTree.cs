@@ -22,7 +22,7 @@ namespace Qsi.PostgreSql.Diagnostics
         {
             DisplayName = name;
 
-            Children = tree.Select(t => new PostgreSqlRawTree(t))
+            Children = tree.Select(t => t == null ? new PostgreSqlRawTree("null") : new PostgreSqlRawTree(t))
                 .Cast<IRawTree>()
                 .ToArray();
         }
@@ -35,6 +35,11 @@ namespace Qsi.PostgreSql.Diagnostics
             {
                 new PostgreSqlRawTreeTerminalNode(value)
             };
+        }
+
+        internal PostgreSqlRawTree(string displayName)
+        {
+            DisplayName = displayName;
         }
 
         private static IRawTree[] GetChildrenByProperties(IPgNode tree)

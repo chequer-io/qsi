@@ -215,7 +215,7 @@ namespace Qsi.Debugger
             {
                 var value = property.GetValue(node);
 
-                if (value == null || value is bool || value is int)
+                if (value == null)
                     continue;
 
                 QsiTreeItem item;
