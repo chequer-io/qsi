@@ -16,6 +16,8 @@ namespace Qsi.PostgreSql.Generator.Generators
         private const string nodeTypeFieldName = "Type";
         private const string nodeTypeName = "NodeTag";
 
+        private const string exprNodeInterfaceName = "IPg10ExpressionNode";
+
         public event Func<CppType, GenerateResult> ResolveType;
 
         private readonly GenerateConfig _config;
@@ -138,10 +140,17 @@ namespace Qsi.PostgreSql.Generator.Generators
 
         private GenerateResult GenerateClass(CppClass cppClass)
         {
-            if (cppClass.Name == "Node")
-                return CreateNodeInterface(cppClass);
+            switch (cppClass.Name)
+            {
+                case "Node":
+                    return CreateNodeInterface(cppClass);
+
+                case "Expr":
+                    return CreateExpressionNodeInterface(cppClass);
+            }
 
             var isValue = cppClass.Name == "Value";
+            var isExpr = cppClass.Name == "A_Expr";
             var usingDirectives = new List<UsingDirectiveSyntax>();
 
             var csClass = new ClassDeclarationSyntax
@@ -160,12 +169,12 @@ namespace Qsi.PostgreSql.Generator.Generators
                 {
                     Types =
                     {
-                        Syntax.ParseName(nodeInterfaceName)
+                        Syntax.ParseName(isExpr ? exprNodeInterfaceName : nodeInterfaceName)
                     }
                 };
 
                 // IPg10Node::Type
-                AddPgNodeTypeProperty(csClass, Modifiers.Virtual);
+                AddPgNodeTypeProperty(csClass, isExpr ? Modifiers.None : Modifiers.Virtual);
             }
 
             var nestedClasses = new List<GenerateResult>();
@@ -307,6 +316,25 @@ namespace Qsi.PostgreSql.Generator.Generators
             };
         }
 
+        private GenerateResult CreateExpressionNodeInterface(CppClass cppClass)
+        {
+            return new GenerateResult(cppClass)
+            {
+                Type = new InterfaceDeclarationSyntax
+                {
+                    Modifiers = Modifiers.Internal,
+                    Identifier = exprNodeInterfaceName,
+                    BaseList = new BaseListSyntax
+                    {
+                        Types =
+                        {
+                            Syntax.ParseName(nodeInterfaceName)
+                        }
+                    }
+                }
+            };
+        }
+
         private static string CreateMemberName(ICppMember cppMember)
         {
             if (!string.IsNullOrWhiteSpace(cppMember.Name))
@@ -364,7 +392,7 @@ namespace Qsi.PostgreSql.Generator.Generators
 
                         typeName = memberName;
 
-                        if (type.TypeKind == CppTypeKind.Enum)
+                        if (type.TypeKind == CppTypeKind.Enum && typeName != nodeTypeName)
                             typeName += "?";
 
                         _typeMap[memberName] = typeName;

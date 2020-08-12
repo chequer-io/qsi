@@ -41,7 +41,8 @@
   },
   "typeMap": {
     "Node": "IPg10Node",
-    "List": "IPg10Node[]"
+    "List": "IPg10Node[]",
+    "Expr": "IPg10ExpressionNode"
   },
   "nodeTypes": [
     "Node",
