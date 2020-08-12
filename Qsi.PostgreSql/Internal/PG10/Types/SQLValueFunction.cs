@@ -15,7 +15,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_SQLValueFunction;
 
-        public IPg10ExpressionNode xpr { get; set; }
+        public IPg10Node xpr { get; set; }
 
         public SQLValueFunctionOp? op { get; set; }
 

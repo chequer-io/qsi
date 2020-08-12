@@ -15,7 +15,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_RestrictInfo;
 
-        public IPg10ExpressionNode clause { get; set; }
+        public IPg10Node clause { get; set; }
 
         public bool? is_pushed_down { get; set; }
 
@@ -41,7 +41,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public Bitmapset right_relids { get; set; }
 
-        public IPg10ExpressionNode orclause { get; set; }
+        public IPg10Node orclause { get; set; }
 
         public EquivalenceClass parent_ec { get; set; }
 

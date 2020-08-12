@@ -15,7 +15,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_SetExprState;
 
-        public IPg10ExpressionNode expr { get; set; }
+        public IPg10Node expr { get; set; }
 
         public IPg10Node[] args { get; set; }
 

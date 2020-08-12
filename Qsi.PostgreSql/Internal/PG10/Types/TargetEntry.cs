@@ -15,9 +15,9 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_TargetEntry;
 
-        public IPg10ExpressionNode xpr { get; set; }
+        public IPg10Node xpr { get; set; }
 
-        public IPg10ExpressionNode expr { get; set; }
+        public IPg10Node expr { get; set; }
 
         public short? resno { get; set; }
 

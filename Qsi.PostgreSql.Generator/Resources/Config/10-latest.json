@@ -42,7 +42,7 @@
   "typeMap": {
     "Node": "IPg10Node",
     "List": "IPg10Node[]",
-    "Expr": "IPg10ExpressionNode"
+    "Expr": "IPg10Node"
   },
   "nodeTypes": [
     "Node",
@@ -144,7 +144,6 @@
     "Alias",
     "RangeVar",
     "TableFunc",
-    "Expr",
     "Var",
     "Const",
     "Param",

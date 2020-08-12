@@ -19,6 +19,6 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] args { get; set; }
 
-        public IPg10ExpressionNode repeatable { get; set; }
+        public IPg10Node repeatable { get; set; }
     }
 }

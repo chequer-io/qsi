@@ -15,7 +15,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_EquivalenceMember;
 
-        public IPg10ExpressionNode em_expr { get; set; }
+        public IPg10Node em_expr { get; set; }
 
         public Bitmapset em_relids { get; set; }
 

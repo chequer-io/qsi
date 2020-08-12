@@ -19,7 +19,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public string name { get; set; }
 
-        public IPg10ExpressionNode check_expr { get; set; }
+        public IPg10Node check_expr { get; set; }
 
         public ExprState check_exprstate { get; set; }
     }

@@ -15,7 +15,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_WindowFunc;
 
-        public IPg10ExpressionNode xpr { get; set; }
+        public IPg10Node xpr { get; set; }
 
         public uint? winfnoid { get; set; }
 
@@ -27,7 +27,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] args { get; set; }
 
-        public IPg10ExpressionNode aggfilter { get; set; }
+        public IPg10Node aggfilter { get; set; }
 
         public uint? winref { get; set; }
 

@@ -15,7 +15,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_ArrayRef;
 
-        public IPg10ExpressionNode xpr { get; set; }
+        public IPg10Node xpr { get; set; }
 
         public uint? refarraytype { get; set; }
 
@@ -29,8 +29,8 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] reflowerindexpr { get; set; }
 
-        public IPg10ExpressionNode refexpr { get; set; }
+        public IPg10Node refexpr { get; set; }
 
-        public IPg10ExpressionNode refassgnexpr { get; set; }
+        public IPg10Node refassgnexpr { get; set; }
     }
 }

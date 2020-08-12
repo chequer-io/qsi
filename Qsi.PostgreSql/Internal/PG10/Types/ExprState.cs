@@ -29,7 +29,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public string evalfunc { get; set; }
 
-        public IPg10ExpressionNode expr { get; set; }
+        public IPg10Node expr { get; set; }
 
         public int? steps_len { get; set; }
 

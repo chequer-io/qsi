@@ -15,7 +15,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_Aggref;
 
-        public IPg10ExpressionNode xpr { get; set; }
+        public IPg10Node xpr { get; set; }
 
         public uint? aggfnoid { get; set; }
 
@@ -37,7 +37,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] aggdistinct { get; set; }
 
-        public IPg10ExpressionNode aggfilter { get; set; }
+        public IPg10Node aggfilter { get; set; }
 
         public bool? aggstar { get; set; }
 
