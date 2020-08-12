@@ -27,7 +27,7 @@ namespace Qsi.Utilities
             });
         }
 
-        public static Exception NotSupportedTree(IParseTree tree)
+        public static Exception NotSupportedTree(object tree)
         {
             return new QsiException(QsiError.NotSupportedTree, tree.GetType().FullName);
         }
