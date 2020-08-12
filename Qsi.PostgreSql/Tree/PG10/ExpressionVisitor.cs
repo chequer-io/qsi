@@ -91,6 +91,16 @@ namespace Qsi.PostgreSql.Tree.PG10
             if (expression.kind != A_Expr_Kind.AEXPR_OP)
                 builder.Append(expression.kind.ToString()[6..]);
 
+            // Unary
+            if (ListUtility.IsNullOrEmpty(expression.lexpr))
+            {
+                return TreeHelper.Create<QsiUnaryExpressionNode>(n =>
+                {
+                    n.Operator = builder.ToString();
+                    n.Expression.SetValue(VisitExpressions(expression.rexpr));
+                });
+            }
+
             return TreeHelper.CreateLogicalExpression(
                 builder.ToString(),
                 expression.lexpr,
@@ -144,9 +154,12 @@ namespace Qsi.PostgreSql.Tree.PG10
                     Identifier = IdentifierVisitor.VisitStrings(funcCall.funcname.Cast<PgString>())
                 });
 
-                foreach (var arg in funcCall.args ?? Array.Empty<IPg10Node>())
+                if (!ListUtility.IsNullOrEmpty(funcCall.args))
                 {
-                    n.Parameters.Add(Visit(arg));
+                    foreach (var arg in funcCall.args)
+                    {
+                        n.Parameters.Add(Visit(arg));
+                    }
                 }
 
                 if (funcCall.agg_star ?? false)
@@ -239,7 +252,7 @@ namespace Qsi.PostgreSql.Tree.PG10
             var switchExp = new QsiSwitchExpressionNode();
 
             // CASE <arg>
-            if (caseExpr.arg?.Length > 0)
+            if (!ListUtility.IsNullOrEmpty(caseExpr.arg))
             {
                 switchExp.Value.SetValue(Visit(caseExpr.arg[0]));
             }
@@ -259,13 +272,16 @@ namespace Qsi.PostgreSql.Tree.PG10
             }
 
             // ELSE <else>
-            foreach (var defResult in caseExpr.defresult ?? Array.Empty<IPg10Node>())
+            if (!ListUtility.IsNullOrEmpty(caseExpr.defresult))
             {
-                switchExp.Cases.Add(
-                    TreeHelper.Create<QsiSwitchCaseExpressionNode>(n =>
-                    {
-                        n.Consequent.SetValue(Visit(defResult));
-                    }));
+                foreach (var defResult in caseExpr.defresult)
+                {
+                    switchExp.Cases.Add(
+                        TreeHelper.Create<QsiSwitchCaseExpressionNode>(n =>
+                        {
+                            n.Consequent.SetValue(Visit(defResult));
+                        }));
+                }
             }
 
             return switchExp;
@@ -296,7 +312,7 @@ namespace Qsi.PostgreSql.Tree.PG10
         // ROW(..)
         private static QsiExpressionNode VisitRowExpression(RowExpr rowExpr)
         {
-            if (rowExpr.colnames?.Length > 0)
+            if (!ListUtility.IsNullOrEmpty(rowExpr.colnames))
                 throw TreeHelper.NotSupportedTree(rowExpr);
 
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
