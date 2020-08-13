@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
+using Qsi.PostgreSql.Internal.PG10.Types;
 
 namespace Qsi.PostgreSql.Internal.Serialization.Converters
 {
@@ -12,10 +13,7 @@ namespace Qsi.PostgreSql.Internal.Serialization.Converters
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            if (reader.TokenType == JsonToken.Null)
-                return null;
-
-            if (objectType.IsArray)
+            if (objectType.IsSZArray)
                 return ReadNodeArray(reader, objectType, serializer);
 
             return ReadNode(reader, serializer);
@@ -23,6 +21,9 @@ namespace Qsi.PostgreSql.Internal.Serialization.Converters
 
         private object ReadNodeArray(JsonReader reader, Type objectType, JsonSerializer serializer)
         {
+            if (reader.TokenType == JsonToken.Null)
+                return null;
+
             var list = new List<object>();
 
             if (reader.TokenType == JsonToken.StartArray)
@@ -48,6 +49,9 @@ namespace Qsi.PostgreSql.Internal.Serialization.Converters
 
         private object ReadNode(JsonReader reader, JsonSerializer serializer)
         {
+            if (reader.TokenType == JsonToken.Null)
+                return null;
+
             // Wrapper : Start Object
             bool wrapped = reader.TokenType == JsonToken.StartObject;
 
@@ -108,9 +112,15 @@ namespace Qsi.PostgreSql.Internal.Serialization.Converters
                 return false;
             }
 
-            return
+            var result =
                 typeof(IPgNode).IsAssignableFrom(objectType) ||
                 objectType.IsSZArray && typeof(IPgNode).IsAssignableFrom(objectType.GetElementType());
+
+            if (objectType == typeof(IPg10Node[][]))
+            {
+            }
+
+            return result;
         }
     }
 }

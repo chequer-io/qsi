@@ -145,7 +145,7 @@ namespace Qsi.PostgreSql.Tree.PG10
             });
         }
 
-        public static QsiExpressionNode VisitFunctionCall(FuncCall funcCall)
+        public static QsiInvokeExpressionNode VisitFunctionCall(FuncCall funcCall)
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {

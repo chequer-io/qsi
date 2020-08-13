@@ -7,6 +7,7 @@
         LeftAnti,
         RightOuter,
         RightAnti,
-        Full
+        Full,
+        Cross
     }
 }

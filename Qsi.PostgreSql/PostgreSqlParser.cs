@@ -24,7 +24,7 @@ namespace Qsi.PostgreSql
 
                 var pgTree = _pgParser.Parse(script.Script);
 
-                return TableVisitor.Visit((IPg10Node)pgTree).SingleOrDefault();
+                return TableVisitor.Visit((IPg10Node)pgTree);
             }
             catch (QsiSyntaxErrorException e)
             {

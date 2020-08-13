@@ -21,7 +21,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public bool? is_rowsfrom { get; set; }
 
-        public IPg10Node[] functions { get; set; }
+        public IPg10Node[][] functions { get; set; }
 
         public Alias[] alias { get; set; }
 

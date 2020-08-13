@@ -12,7 +12,7 @@ namespace Qsi.PostgreSql.Tree.PG10
 {
     internal static class TableVisitor
     {
-        public static IEnumerable<QsiTableNode> Visit(IPg10Node node)
+        public static QsiTableNode Visit(IPg10Node node)
         {
             switch (node)
             {
@@ -20,42 +20,35 @@ namespace Qsi.PostgreSql.Tree.PG10
                     return VisitRawStmt(rawStmt);
 
                 case SelectStmt selectStmt:
-                    return new[] { VisitSelectStmt(selectStmt) };
+                    return VisitSelectStmt(selectStmt);
             }
 
-            return Enumerable.Empty<QsiTableNode>();
+            throw TreeHelper.NotSupportedTree(node);
         }
 
-        public static IEnumerable<QsiTableNode> VisitRawStmt(RawStmt rawStmt)
+        public static QsiTableNode VisitRawStmt(RawStmt rawStmt)
         {
-            return rawStmt.stmt.SelectMany(Visit);
+            return Visit(rawStmt.stmt[0]);
         }
 
-        public static QsiTableNode VisitSelectStmt(SelectStmt selectStmt)
+        public static QsiDerivedTableNode VisitSelectStmt(SelectStmt selectStmt)
         {
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
-                if (selectStmt.targetList != null)
+                if (!ListUtility.IsNullOrEmpty(selectStmt.targetList))
                 {
-                    ResTarget[] targets = selectStmt.targetList
-                        .Cast<ResTarget>()
-                        .ToArray();
-
+                    IEnumerable<ResTarget> targets = selectStmt.targetList.Cast<ResTarget>();
                     n.Columns.SetValue(VisitResTargets(targets));
                 }
 
-                if (selectStmt.fromClause != null)
+                if (!ListUtility.IsNullOrEmpty(selectStmt.fromClause))
                 {
-                    RangeVar[] vars = selectStmt.fromClause
-                        .Cast<RangeVar>()
-                        .ToArray();
-
-                    n.Source.SetValue(VisitRangeVars(vars));
+                    n.Source.SetValue(VisitFromClauses(n, selectStmt.fromClause));
                 }
             });
         }
 
-        public static QsiColumnsDeclarationNode VisitResTargets(ResTarget[] targets)
+        public static QsiColumnsDeclarationNode VisitResTargets(IEnumerable<ResTarget> targets)
         {
             return TreeHelper.Create<QsiColumnsDeclarationNode>(dn =>
             {
@@ -145,9 +138,125 @@ namespace Qsi.PostgreSql.Tree.PG10
             throw TreeHelper.NotSupportedTree(columnRef);
         }
 
-        public static QsiTableNode VisitRangeVars(RangeVar[] vars)
+        public static QsiTableNode VisitFromClauses(QsiDerivedTableNode parentNode, IEnumerable<IPg10Node> fromClauses)
         {
+            QsiTableNode[] sources = fromClauses
+                .Select(VisitRange)
+                .ToArray();
+
+            if (sources.Length == 1)
+            {
+                return sources[0];
+            }
+
+            if (sources.Length > 1)
+            {
+                // comma join
+
+                var anchor = sources[0];
+
+                foreach (var source in sources.Skip(1))
+                {
+                    var nextJoin = new QsiJoinedTableNode
+                    {
+                        JoinType = QsiJoinType.Cross
+                    };
+
+                    nextJoin.Left.SetValue(anchor);
+                    nextJoin.Right.SetValue(source);
+                    anchor = nextJoin;
+                }
+
+                return anchor;
+            }
+
+            return null;
+        }
+
+        public static QsiTableNode VisitRange(IPg10Node rangeNode)
+        {
+            return rangeNode switch
+            {
+                RangeVar var => VisitRangeVar(var),
+                RangeSubselect subselect => VisitRangeSubselect(subselect),
+                RangeFunction function => VisitRangeFunction(function),
+                _ => throw TreeHelper.NotSupportedTree(rangeNode)
+            };
+        }
+
+        public static QsiTableNode VisitRangeVar(RangeVar var)
+        {
+            string[] names =
+            {
+                var.catalogname,
+                var.schemaname,
+                var.relname
+            };
+
+            var tableNode = new QsiTableAccessNode
+            {
+                Identifier = new QsiQualifiedIdentifier(
+                    names
+                        .Where(n => !string.IsNullOrEmpty(n))
+                        .Select(n => new QsiIdentifier(n, false))
+                )
+            };
+
+            if (ListUtility.IsNullOrEmpty(var.alias))
+                return tableNode;
+
+            return TreeHelper.Create<QsiDerivedTableNode>(n =>
+            {
+                Debug.Assert(var.alias.Length == 1);
+
+                var allDeclaration = new QsiColumnsDeclarationNode();
+                allDeclaration.Columns.Add(new QsiAllColumnNode());
+
+                n.Columns.SetValue(allDeclaration);
+                n.Source.SetValue(tableNode);
+
+                n.Alias.SetValue(new QsiAliasNode
+                {
+                    Name = new QsiIdentifier(var.alias[0].aliasname, false)
+                });
+            });
+        }
+
+        private static QsiTableNode VisitRangeSubselect(RangeSubselect subselect)
+        {
+            if (ListUtility.IsNullOrEmpty(subselect.subquery))
+                return null;
+
+            if (ListUtility.IsNullOrEmpty(subselect.alias))
+                throw new Exception("Every derived table must have its own alias");
+
+            Debug.Assert(subselect.alias.Length == 1);
+            Debug.Assert((subselect.alias[0].colnames?.Length ?? 0) == 0);
+
+            return TreeHelper.Create<QsiDerivedTableNode>(n =>
+            {
+                var allDeclaration = new QsiColumnsDeclarationNode();
+                allDeclaration.Columns.Add(new QsiAllColumnNode());
+
+                n.Columns.SetValue(allDeclaration);
+                n.Source.SetValue(VisitSelectStmt((SelectStmt)subselect.subquery[0]));
+
+                n.Alias.SetValue(new QsiAliasNode
+                {
+                    Name = new QsiIdentifier(subselect.alias[0].aliasname, false)
+                });
+            });
+        }
+
+        private static QsiTableNode VisitRangeFunction(RangeFunction function)
+        {
+            // TODO: Implement range function
             throw new NotImplementedException();
+        }
+
+        private static string ToString(IEnumerable<PgString> pgStrings)
+        {
+            return string.Join(".", pgStrings.Select(s => s.str));
         }
     }
 }
