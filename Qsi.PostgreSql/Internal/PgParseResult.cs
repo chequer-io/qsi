@@ -2,10 +2,10 @@
 
 namespace Qsi.PostgreSql.Internal
 {
-    internal sealed class PgParseResult
+    internal sealed class PgParseResult<T> where T : IPgNode
     {
         [JsonProperty("parse_tree")]
-        public IPgNode[] Tree { get; set; }
+        public T[] Tree { get; set; }
 
         [JsonProperty("stderr_buffer")]
         public string StandardError { get; set; }

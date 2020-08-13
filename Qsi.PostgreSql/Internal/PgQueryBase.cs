@@ -1,40 +1,22 @@
 ﻿using System;
 using JavaScriptEngineSwitcher.ChakraCore;
-using Newtonsoft.Json;
-using Qsi.Parsing;
-using Qsi.PostgreSql.Internal.Serialization.Converters;
 
 namespace Qsi.PostgreSql.Internal
 {
-    internal abstract class PgQueryBase<T> : IPgParser
+    internal abstract class PgQueryBase<T> : IPgParser where T : IPgNode
     {
         private ChakraCoreJsEngine _jsEngine;
-
         private bool _initialized;
-        private readonly JsonSerializerSettings _serializerSettings;
-
-        protected PgQueryBase()
-        {
-            _serializerSettings = new JsonSerializerSettings
-            {
-                Converters =
-                {
-                    new PgTreeConverter()
-                }
-            };
-        }
 
         private void Initialize()
         {
             if (_initialized)
                 return;
 
-            string parserJs = GetParserScript();
-
             try
             {
                 _jsEngine = new ChakraCoreJsEngine();
-                _jsEngine.Execute(parserJs);
+                OnInitialize();
             }
             catch
             {
@@ -46,34 +28,26 @@ namespace Qsi.PostgreSql.Internal
             _initialized = true;
         }
 
-        protected abstract string GetParserScript();
+        protected virtual void OnInitialize()
+        {
+        }
 
-        protected abstract string GetParseScript(string input);
+        protected abstract T Parse(string input);
 
-        public IPgNode Parse(string input)
+        protected string Evaluate(string expression)
+        {
+            return _jsEngine.Evaluate<string>(expression);
+        }
+
+        protected void Execute(string code)
+        {
+            _jsEngine.Execute(code);
+        }
+
+        IPgNode IPgParser.Parse(string input)
         {
             Initialize();
-
-            var parseJs = GetParseScript(input);
-
-            var json = _jsEngine.Evaluate<string>(parseJs);
-            var parseResult = JsonConvert.DeserializeObject<PgParseResult>(json, _serializerSettings);
-
-            if (parseResult?.Error != null)
-            {
-                // TODO: Measure line, column number by Error.CursorPosition
-                throw new QsiSyntaxErrorException(0, 0, parseResult.Error.Message);
-            }
-
-            if (!string.IsNullOrEmpty(parseResult?.StandardError))
-            {
-                throw new QsiException(QsiError.Internal, parseResult.StandardError);
-            }
-
-            if (parseResult?.Tree?.Length != 1)
-                throw new InvalidOperationException();
-
-            return parseResult.Tree[0];
+            return Parse(input);
         }
 
         void IDisposable.Dispose()
