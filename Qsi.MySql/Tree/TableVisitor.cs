@@ -539,7 +539,7 @@ namespace Qsi.MySql.Tree
 
                         case OuterJoinContext outerJoinContext:
                             joinType = outerJoinContext.joinOuter().joinType.Type == MySqlLexer.LEFT ?
-                                QsiJoinType.LeftOuter : QsiJoinType.RightOuter;
+                                QsiJoinType.Left : QsiJoinType.Right;
 
                             sourceItemContext = outerJoinContext.tableSourceItem();
                             uidListContext = outerJoinContext.uidList();
@@ -547,7 +547,7 @@ namespace Qsi.MySql.Tree
 
                         case NaturalJoinContext naturalJoinContext:
                             joinType = naturalJoinContext.joinOuter().joinType.Type == MySqlLexer.LEFT ?
-                                QsiJoinType.LeftOuter : QsiJoinType.RightOuter;
+                                QsiJoinType.Left : QsiJoinType.Right;
 
                             sourceItemContext = naturalJoinContext.tableSourceItem();
                             break;

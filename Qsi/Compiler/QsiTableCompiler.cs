@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -91,7 +91,7 @@ namespace Qsi.Compiler
 
         private async Task<QsiDataTable> BuildTableAccessStructure(CompileContext context, IQsiTableAccessNode table)
         {
-            var lookup = ResolveDataTable(context, _resolver.ResolveQualifiedIdentifier(table.Identifier));
+            var lookup = ResolveDataTable(context, table.Identifier);
 
             // view
             if (lookup.Type == QsiDataTableType.View || lookup.Type == QsiDataTableType.MaterializedView)
@@ -630,6 +630,12 @@ namespace Qsi.Compiler
                 case IQsiFunctionAccessExpressionNode e:
                 {
                     // TODO: Analyze function
+                    break;
+                }
+
+                case IQsiMemberAccessExpressionNode _:
+                {
+                    // Skip unknown member access
                     break;
                 }
 
