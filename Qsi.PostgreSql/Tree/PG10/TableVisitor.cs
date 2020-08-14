@@ -141,7 +141,7 @@ namespace Qsi.PostgreSql.Tree.PG10
         public static QsiTableNode VisitFromClauses(QsiDerivedTableNode parentNode, IEnumerable<IPg10Node> fromClauses)
         {
             QsiTableNode[] sources = fromClauses
-                .Select(VisitRange)
+                .Select(VisitFromClause)
                 .ToArray();
 
             if (sources.Length == 1)
@@ -159,7 +159,7 @@ namespace Qsi.PostgreSql.Tree.PG10
                 {
                     var nextJoin = new QsiJoinedTableNode
                     {
-                        JoinType = QsiJoinType.Cross
+                        JoinType = QsiJoinType.Full
                     };
 
                     nextJoin.Left.SetValue(anchor);
@@ -173,14 +173,15 @@ namespace Qsi.PostgreSql.Tree.PG10
             return null;
         }
 
-        public static QsiTableNode VisitRange(IPg10Node rangeNode)
+        public static QsiTableNode VisitFromClause(IPg10Node fromClause)
         {
-            return rangeNode switch
+            return fromClause switch
             {
                 RangeVar var => VisitRangeVar(var),
                 RangeSubselect subselect => VisitRangeSubselect(subselect),
                 RangeFunction function => VisitRangeFunction(function),
-                _ => throw TreeHelper.NotSupportedTree(rangeNode)
+                JoinExpr joinExpr => ViseitJoinExpression(joinExpr),
+                _ => throw TreeHelper.NotSupportedTree(fromClause)
             };
         }
 
@@ -252,6 +253,45 @@ namespace Qsi.PostgreSql.Tree.PG10
         {
             // TODO: Implement range function
             throw new NotImplementedException();
+        }
+
+        public static QsiJoinedTableNode ViseitJoinExpression(JoinExpr joinExpr)
+        {
+            return TreeHelper.Create<QsiJoinedTableNode>(n =>
+            {
+                Debug.Assert(!ListUtility.IsNullOrEmpty(joinExpr.larg));
+                Debug.Assert(!ListUtility.IsNullOrEmpty(joinExpr.rarg));
+
+                n.Left.SetValue(VisitFromClause(joinExpr.larg[0]));
+                n.Right.SetValue(VisitFromClause(joinExpr.rarg[0]));
+
+                n.JoinType = joinExpr.jointype switch
+                {
+                    JoinType.JOIN_INNER => QsiJoinType.Inner,
+                    JoinType.JOIN_LEFT => QsiJoinType.Left,
+                    JoinType.JOIN_FULL => QsiJoinType.Full,
+                    JoinType.JOIN_RIGHT => QsiJoinType.Right,
+                    JoinType.JOIN_SEMI => QsiJoinType.Semi,
+                    JoinType.JOIN_ANTI => QsiJoinType.Anti,
+                    JoinType.JOIN_UNIQUE_OUTER => QsiJoinType.UniqueOuter,
+                    JoinType.JOIN_UNIQUE_INNER => QsiJoinType.UniqueInner,
+                    _ => throw new InvalidOperationException()
+                };
+
+                if (!ListUtility.IsNullOrEmpty(joinExpr.usingClause))
+                {
+                    n.PivotColumns.SetValue(TreeHelper.Create<QsiColumnsDeclarationNode>(dn =>
+                    {
+                        foreach (var pgString in joinExpr.usingClause.Cast<PgString>())
+                        {
+                            dn.Columns.Add(new QsiDeclaredColumnNode
+                            {
+                                Name = new QsiQualifiedIdentifier(new QsiIdentifier(pgString.str, false))
+                            });
+                        }
+                    }));
+                }
+            });
         }
 
         private static string ToString(IEnumerable<PgString> pgStrings)
