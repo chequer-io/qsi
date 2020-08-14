@@ -3,10 +3,12 @@
     public enum QsiJoinType
     {
         Inner,
-        LeftOuter,
-        LeftAnti,
-        RightOuter,
-        RightAnti,
-        Full
+        Left,
+        Full,
+        Right,
+        Semi,
+        Anti,
+        UniqueOuter,
+        UniqueInner
     }
 }

@@ -633,6 +633,12 @@ namespace Qsi.Compiler
                     break;
                 }
 
+                case IQsiMemberAccessExpressionNode _:
+                {
+                    // Skip unknown member access
+                    break;
+                }
+
                 default:
                     throw new InvalidOperationException();
             }
