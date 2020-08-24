@@ -21,6 +21,9 @@ namespace Qsi.PostgreSql.Tree.PG10
 
                 case SelectStmt selectStmt:
                     return VisitSelectStmt(selectStmt);
+
+                case ViewStmt viewStmt:
+                    return VisitViewStmt(viewStmt);
             }
 
             throw TreeHelper.NotSupportedTree(node);
@@ -50,6 +53,32 @@ namespace Qsi.PostgreSql.Tree.PG10
                 {
                     n.Directives.SetValue(VisitWithClause(selectStmt.withClause[0]));
                 }
+            });
+        }
+
+        public static QsiDerivedTableNode VisitViewStmt(ViewStmt viewStmt)
+        {
+            return TreeHelper.Create<QsiDerivedTableNode>(n =>
+            {
+                var viewAccessNode = IdentifierVisitor.VisitRangeVar(viewStmt.view[0]);
+                var columnsDeclaration = new QsiColumnsDeclarationNode();
+
+                if (ListUtility.IsNullOrEmpty(viewStmt.aliases))
+                {
+                    columnsDeclaration.Columns.Add(new QsiAllColumnNode());
+                }
+                else
+                {
+                    columnsDeclaration.Columns.AddRange(CreateSequentialColumnNodes(viewStmt.aliases.Cast<PgString>()));
+                }
+
+                n.Columns.SetValue(columnsDeclaration);
+                n.Source.SetValue(Visit(viewStmt.query[0]));
+
+                n.Alias.SetValue(new QsiAliasNode
+                {
+                    Name = viewAccessNode[^1]
+                });
             });
         }
 
@@ -244,20 +273,9 @@ namespace Qsi.PostgreSql.Tree.PG10
 
         public static QsiTableNode VisitRangeVar(RangeVar var)
         {
-            string[] names =
-            {
-                var.catalogname,
-                var.schemaname,
-                var.relname
-            };
-
             var tableNode = new QsiTableAccessNode
             {
-                Identifier = new QsiQualifiedIdentifier(
-                    names
-                        .Where(n => !string.IsNullOrEmpty(n))
-                        .Select(n => new QsiIdentifier(n, false))
-                )
+                Identifier = IdentifierVisitor.VisitRangeVar(var)
             };
 
             if (ListUtility.IsNullOrEmpty(var.alias))

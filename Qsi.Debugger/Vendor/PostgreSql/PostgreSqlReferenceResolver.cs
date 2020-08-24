@@ -1,6 +1,5 @@
 ﻿using System;
 using Qsi.Data;
-using Qsi.Services;
 using Qsi.Utilities;
 
 namespace Qsi.Debugger.Vendor.PostgreSql
@@ -17,6 +16,12 @@ namespace Qsi.Debugger.Vendor.PostgreSql
                     var actor = CreateTable("postgres", "public", "actor");
                     AddColumns(actor, "actor_id", "first_name", "last_name", "last_update");
                     return actor;
+
+                case "actor_view":
+                    var actorView = CreateTable("postgres", "public", "actor_view");
+                    actorView.Type = QsiDataTableType.View;
+                    AddColumns(actorView, "actor_id", "first_name", "last_name", "last_update");
+                    return actorView;
 
                 case "address":
                     var address = CreateTable("postgres", "public", "address");
@@ -44,7 +49,15 @@ namespace Qsi.Debugger.Vendor.PostgreSql
 
         protected override QsiScript LookupDefinition(QsiQualifiedIdentifier identifier, QsiDataTableType type)
         {
-            throw new System.NotImplementedException();
+            var name = IdentifierUtility.Unescape(identifier[^1].Value);
+
+            switch (name)
+            {
+                case "actor_view":
+                    return new QsiScript("CREATE OR REPLACE VIEW public.actor_view AS SELECT actor.actor_id, actor.first_name, actor.last_name, actor.last_update FROM actor;", QsiScriptType.CreateView);
+            }
+
+            return null;
         }
 
         protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier)
