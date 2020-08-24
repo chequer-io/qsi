@@ -18,6 +18,7 @@
         UnknownColumnIn,
         AmbiguousColumnIn,
         DifferentColumnsCount,
+        SpecifiesMoreColumnNames,
         NoTablesUsed
     }
 
@@ -39,6 +40,7 @@
         public const string UnknownColumnIn = "Unknown column '{0}' in {1}";
         public const string AmbiguousColumnIn = "Column '{0}' in {1} is ambiguous";
         public const string DifferentColumnsCount = "The used Statements have a different number of columns.";
+        public const string SpecifiesMoreColumnNames = "Specifies more column names than columns.";
         public const string NoTablesUsed = "No tables used";
 
         public static string GetResource(QsiError error)
@@ -61,6 +63,7 @@
                 QsiError.UnknownColumnIn => UnknownColumnIn,
                 QsiError.AmbiguousColumnIn => AmbiguousColumnIn,
                 QsiError.DifferentColumnsCount => DifferentColumnsCount,
+                QsiError.SpecifiesMoreColumnNames => SpecifiesMoreColumnNames,
                 QsiError.NoTablesUsed => NoTablesUsed,
                 _ => null
             };
