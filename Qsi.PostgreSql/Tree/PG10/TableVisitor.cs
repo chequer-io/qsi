@@ -45,7 +45,64 @@ namespace Qsi.PostgreSql.Tree.PG10
                 {
                     n.Source.SetValue(VisitFromClauses(n, selectStmt.fromClause));
                 }
+
+                if (!ListUtility.IsNullOrEmpty(selectStmt.withClause))
+                {
+                    n.Directives.SetValue(VisitWithClause(selectStmt.withClause[0]));
+                }
             });
+        }
+
+        public static QsiTableDirectivesNode VisitWithClause(WithClause withClause)
+        {
+            return TreeHelper.Create<QsiTableDirectivesNode>(n =>
+            {
+                if (withClause.recursive ?? false)
+                    throw TreeHelper.NotSupportedFeature("Recursive CTE");
+
+                n.Tables.AddRange(withClause.ctes
+                    .Cast<CommonTableExpr>()
+                    .Select(VisitCommonTableExpression));
+            });
+        }
+
+        private static QsiTableNode VisitCommonTableExpression(CommonTableExpr cte)
+        {
+            return TreeHelper.Create<QsiDerivedTableNode>(n =>
+            {
+                var columnsDeclaration = new QsiColumnsDeclarationNode();
+
+                if (ListUtility.IsNullOrEmpty(cte.aliascolnames))
+                {
+                    columnsDeclaration.Columns.Add(new QsiAllColumnNode());
+                }
+                else
+                {
+                    columnsDeclaration.Columns.AddRange(CreateSequentialColumnNodes(cte.aliascolnames.Cast<PgString>()));
+                }
+
+                n.Columns.SetValue(columnsDeclaration);
+                n.Source.SetValue(Visit(cte.ctequery[0]));
+
+                n.Alias.SetValue(new QsiAliasNode
+                {
+                    Name = new QsiIdentifier(cte.ctename, false)
+                });
+            });
+        }
+
+        public static IEnumerable<QsiSequentialColumnNode> CreateSequentialColumnNodes(IEnumerable<PgString> uids)
+        {
+            return IdentifierVisitor.VisitStrings(uids)
+                .Select((identifier, i) => TreeHelper.Create<QsiSequentialColumnNode>(cn =>
+                {
+                    cn.Ordinal = i;
+
+                    cn.Alias.SetValue(new QsiAliasNode
+                    {
+                        Name = identifier
+                    });
+                }));
         }
 
         public static QsiColumnsDeclarationNode VisitResTargets(IEnumerable<ResTarget> targets)
@@ -251,8 +308,8 @@ namespace Qsi.PostgreSql.Tree.PG10
 
         private static QsiTableNode VisitRangeFunction(RangeFunction function)
         {
-            // TODO: Implement range function
-            throw new NotImplementedException();
+            // TODO: Implement table function
+            throw TreeHelper.NotSupportedFeature("Table function");
         }
 
         public static QsiJoinedTableNode ViseitJoinExpression(JoinExpr joinExpr)

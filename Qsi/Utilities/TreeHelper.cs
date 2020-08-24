@@ -31,5 +31,10 @@ namespace Qsi.Utilities
         {
             return new QsiException(QsiError.NotSupportedTree, tree.GetType().FullName);
         }
+
+        public static QsiException NotSupportedFeature(string feature)
+        {
+            return new QsiException(QsiError.NotSupportedFeature, feature);
+        }
     }
 }

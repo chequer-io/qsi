@@ -3,6 +3,7 @@
     public enum QsiError
     {
         Internal,
+        NotSupportedFeature,
         NotSupportedScript,
         NotSupportedTree,
         Syntax,
@@ -23,6 +24,7 @@
     internal static class SR
     {
         public const string Internal = "{0}";
+        public const string NotSupportedFeature = "'{0}' is not supported feature";
         public const string NotSupportedScript = "Not supported script type '{0}'";
         public const string NotSupportedTree = "Not supported tree type '{0}'";
         public const string Syntax = "You have an error in your SQL syntax; check the manual that corresponds to your Database server version";
@@ -44,6 +46,7 @@
             return error switch
             {
                 QsiError.Internal => Internal,
+                QsiError.NotSupportedFeature => NotSupportedFeature,
                 QsiError.NotSupportedScript => NotSupportedScript,
                 QsiError.NotSupportedTree => NotSupportedTree,
                 QsiError.Syntax => Syntax,
