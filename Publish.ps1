@@ -9,7 +9,23 @@ Remove-Module Antlr -Force
 Import-Module ".\Build\Common.ps1"
 Import-Module ".\Build\Antlr.ps1"
 
-$GitTagVersion = [Version]$(git describe --tags).trimstart('v')
+# git rev-parse HEAD
+$GitTagVersion = [Version]$(git describe --tags --abbrev=0).trimstart('v')
+
+if ($(git rev-parse --abbrev-ref HEAD) -ne "master") {
+    throw "Publish is only allow in 'master' branch."
+}
+
+$GitCurrentCommitId = git rev-parse HEAD
+$GitLatestCommitId = git rev-parse origin/master
+
+if ($GitCurrentCommitId -ne $GitLatestCommitId) {
+    throw "Not in the latest commit. (latest: $GitLatestCommitId)"
+}
+
+if ($(git diff --name-only).Length -gt 0) {
+    throw "There are files that have been changed."
+}
 
 if ($GitTagVersion -ge $Version) {
     throw "The version is lower than the git tag. ($GitTagVersion >= $Version)"
@@ -76,4 +92,3 @@ Get-ChildItem -Path $PublishDirectory/*.nupkg | ForEach-Object {
 }
 
 # Tag
-# git tag
