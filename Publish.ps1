@@ -52,7 +52,7 @@ Function DotNet-Pack {
         [Parameter(Mandatory = $true)][string] $ProjectName
     )
 
-    Write-Host "[.NET] $($ProjectName) Pack.." -ForegroundColor Cyan
+    Write-Host "[.NET] $($ProjectName) Pack" -ForegroundColor Cyan
 
     dotnet pack $ProjectName `
         --nologo `
@@ -69,9 +69,9 @@ Function Nuget-Publish {
         [Parameter(Mandatory = $true)][string] $Source
     )
 
-    Write-Host "[NuGet] $($PackageFile.Name) Push to $Source.." -ForegroundColor Cyan
+    Write-Host "[NuGet] '$($PackageFile.Name)' Push to '$Source'" -ForegroundColor Cyan
 
-    #dotnet nuget push $PackageFile -s $Source
+    dotnet nuget push $PackageFile -s $Source
 }
 
 # Clean publish
@@ -92,3 +92,8 @@ Get-ChildItem -Path $PublishDirectory/*.nupkg | ForEach-Object {
 }
 
 # Tag
+$GitTag = "v$Version"
+git tag $GitTag
+git push origin $GitTag
+
+Write-Host "Done $GitTag publish." -ForegroundColor Green

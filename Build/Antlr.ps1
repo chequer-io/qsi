@@ -14,7 +14,7 @@ Function Antlr-Generate {
         throw (New-Object System.IO.DirectoryNotFoundException("Grammar directory not found"))
     }
     
-    Write-Host "[Antlr4] $($ProjectName) Generate.." -ForegroundColor Green
+    Write-Host "[Antlr4] $($ProjectName) Generate" -ForegroundColor Green
 
     # Clean output
     if (Test-Path $OutputDirectory) {
