@@ -48,17 +48,17 @@
                 Version="$(ChakraCoreVersion)"/>
 
         <PackageReference
-                Condition=" $(RID.Equals('any')) Or $(RID.Equals('win')) Or $(RID.StartsWith('win')) And $(RID.EndsWith('-x64')) "
+                Condition=" ($(RID.Equals('any')) Or $(RID.Equals('win')) Or $(RID.StartsWith('win'))) And $(RID.EndsWith('-x64')) "
                 Include="JavaScriptEngineSwitcher.ChakraCore.Native.win-x64"
                 Version="$(ChakraCoreVersion)"/>
 
         <PackageReference
-                Condition=" $(RID.Equals('any')) Or $(RID.Equals('win')) Or $(RID.StartsWith('win')) And $(RID.EndsWith('-x86')) "
+                Condition=" ($(RID.Equals('any')) Or $(RID.Equals('win')) Or $(RID.StartsWith('win'))) And $(RID.EndsWith('-x86')) "
                 Include="JavaScriptEngineSwitcher.ChakraCore.Native.win-x86"
                 Version="$(ChakraCoreVersion)"/>
 
         <PackageReference
-                Condition=" $(RID.Equals('any')) Or $(RID.Equals('win')) Or $(RID.StartsWith('win')) And $(RID.EndsWith('-arm')) "
+                Condition=" ($(RID.Equals('any')) Or $(RID.Equals('win')) Or $(RID.StartsWith('win'))) And $(RID.EndsWith('-arm')) "
                 Include="JavaScriptEngineSwitcher.ChakraCore.Native.win-arm"
                 Version="$(ChakraCoreVersion)"/>
     </ItemGroup>
