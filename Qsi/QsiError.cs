@@ -3,6 +3,7 @@
     public enum QsiError
     {
         Internal,
+        NotSupportedFeature,
         NotSupportedScript,
         NotSupportedTree,
         Syntax,
@@ -17,12 +18,14 @@
         UnknownColumnIn,
         AmbiguousColumnIn,
         DifferentColumnsCount,
+        SpecifiesMoreColumnNames,
         NoTablesUsed
     }
 
     internal static class SR
     {
         public const string Internal = "{0}";
+        public const string NotSupportedFeature = "'{0}' is not supported feature";
         public const string NotSupportedScript = "Not supported script type '{0}'";
         public const string NotSupportedTree = "Not supported tree type '{0}'";
         public const string Syntax = "You have an error in your SQL syntax; check the manual that corresponds to your Database server version";
@@ -37,6 +40,7 @@
         public const string UnknownColumnIn = "Unknown column '{0}' in {1}";
         public const string AmbiguousColumnIn = "Column '{0}' in {1} is ambiguous";
         public const string DifferentColumnsCount = "The used Statements have a different number of columns.";
+        public const string SpecifiesMoreColumnNames = "Specifies more column names than columns.";
         public const string NoTablesUsed = "No tables used";
 
         public static string GetResource(QsiError error)
@@ -44,6 +48,7 @@
             return error switch
             {
                 QsiError.Internal => Internal,
+                QsiError.NotSupportedFeature => NotSupportedFeature,
                 QsiError.NotSupportedScript => NotSupportedScript,
                 QsiError.NotSupportedTree => NotSupportedTree,
                 QsiError.Syntax => Syntax,
@@ -58,6 +63,7 @@
                 QsiError.UnknownColumnIn => UnknownColumnIn,
                 QsiError.AmbiguousColumnIn => AmbiguousColumnIn,
                 QsiError.DifferentColumnsCount => DifferentColumnsCount,
+                QsiError.SpecifiesMoreColumnNames => SpecifiesMoreColumnNames,
                 QsiError.NoTablesUsed => NoTablesUsed,
                 _ => null
             };

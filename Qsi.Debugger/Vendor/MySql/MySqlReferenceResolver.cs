@@ -7,33 +7,8 @@ using Qsi.Utilities;
 
 namespace Qsi.Debugger.Vendor.MySql
 {
-    internal class MySqlReferenceResolver : QsiReferenceResolverBase
+    internal class MySqlReferenceResolver : VendorReferenceResolver
     {
-        #region Mock
-        private QsiQualifiedIdentifier CreateIdentifier(params string[] path)
-        {
-            return new QsiQualifiedIdentifier(path.Select(p => new QsiIdentifier(p, p[0] == '`')));
-        }
-
-        private QsiDataTable CreateTable(params string[] path)
-        {
-            return new QsiDataTable
-            {
-                Type = QsiDataTableType.Table,
-                Identifier = CreateIdentifier(path)
-            };
-        }
-
-        private void AddColumns(QsiDataTable table, params string[] names)
-        {
-            foreach (var name in names)
-            {
-                var c = table.NewColumn();
-                c.Name = new QsiIdentifier(name, name[0] == '`');
-            }
-        }
-        #endregion
-
         protected override QsiDataTable LookupTable(QsiQualifiedIdentifier identifier)
         {
             var tableName = IdentifierUtility.Unescape(identifier[^1].Value);

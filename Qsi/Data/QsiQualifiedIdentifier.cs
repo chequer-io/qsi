@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Qsi.Utilities;
 
 namespace Qsi.Data
 {
-    public sealed class QsiQualifiedIdentifier
+    public sealed class QsiQualifiedIdentifier : IEnumerable<QsiIdentifier>
     {
         public QsiIdentifier this[int index] => _identifiers[index];
 
@@ -27,6 +28,11 @@ namespace Qsi.Data
             Level = _identifiers?.Length ?? 0;
         }
 
+        public IEnumerator<QsiIdentifier> GetEnumerator()
+        {
+            return _identifiers.OfType<QsiIdentifier>().GetEnumerator();
+        }
+
         public override int GetHashCode()
         {
             return HashCodeUtility.Combine(_identifiers.Select(i => i.GetHashCode()));
@@ -35,6 +41,11 @@ namespace Qsi.Data
         public override string ToString()
         {
             return string.Join(".", _identifiers.Select(x => x.Value));
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }

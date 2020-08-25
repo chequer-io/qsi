@@ -4,8 +4,32 @@
         <TargetFramework>netstandard2.1</TargetFramework>
     </PropertyGroup>
 
+    <PropertyGroup Label="Nuspec">
+        <Title>Query Structure Interface of PostgreSql</Title>
+        <Authors>CHEQUER Inc.</Authors>
+        <PackageProjectUrl>https://github.com/chequer-io/qsi</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/chequer-io/qsi</RepositoryUrl>
+        <PackageIcon>icon-128.png</PackageIcon>
+    </PropertyGroup>
+
     <ItemGroup>
-      <ProjectReference Include="..\Qsi\Qsi.csproj" />
+        <None Include="../Resources/icon-128.png" Pack="true" PackagePath="" />
+        <None Include="Qsi.PostgreSql.Native.targets" Pack="true" PackagePath="build" />
     </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Qsi\Qsi.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="JavaScriptEngineSwitcher.ChakraCore" Version="3.5.6" />
+        <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="Resources\*.js" />
+    </ItemGroup>
+
+    <Import Project="Qsi.PostgreSql.Native.targets" />
 
 </Project>

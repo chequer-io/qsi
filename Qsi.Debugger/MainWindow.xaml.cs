@@ -19,6 +19,7 @@ using Qsi.Debugger.Models;
 using Qsi.Debugger.Utilities;
 using Qsi.Debugger.Vendor;
 using Qsi.Debugger.Vendor.MySql;
+using Qsi.Debugger.Vendor.PostgreSql;
 using Qsi.Parsing;
 using Qsi.Tree;
 
@@ -47,7 +48,8 @@ namespace Qsi.Debugger
 
             _vendors = new Dictionary<string, Lazy<VendorDebugger>>
             {
-                ["MySQL"] = new Lazy<VendorDebugger>(() => new MySqlDebugger())
+                ["MySQL"] = new Lazy<VendorDebugger>(() => new MySqlDebugger()),
+                ["PostgreSQL"] = new Lazy<VendorDebugger>(() => new PostgreSqlDebugger())
             };
 
             _cbLanguages = this.Find<ComboBox>("cbLanguages");
@@ -161,6 +163,9 @@ namespace Qsi.Debugger
             {
                 _tbError.Text = e.Message;
                 _tbError.IsVisible = true;
+
+                if (System.Diagnostics.Debugger.IsAttached)
+                    throw;
             }
 
             static void ErrorHandler(object sender, QsiSyntaxErrorException e)
@@ -210,7 +215,7 @@ namespace Qsi.Debugger
             {
                 var value = property.GetValue(node);
 
-                if (value == null || value is bool || value is int)
+                if (value == null)
                     continue;
 
                 QsiTreeItem item;

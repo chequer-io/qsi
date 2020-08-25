@@ -426,6 +426,9 @@ namespace Qsi.Compiler
             if (context.SourceTable == null)
                 throw new QsiException(QsiError.NoTablesUsed);
 
+            if (column.Ordinal >= context.SourceTable.Columns.Count)
+                throw new QsiException(QsiError.SpecifiesMoreColumnNames);
+
             return context.SourceTable.Columns[column.Ordinal];
         }
         #endregion
