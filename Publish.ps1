@@ -1,5 +1,6 @@
 Param (
-    [Parameter(Mandatory = $true)][Version] $Version
+    [Parameter(Mandatory = $true)][Version] $Version,
+    [bool] $Publish = $true
 )
 
 Set-Location $(Get-Item "$PSScriptRoot").FullName
@@ -9,26 +10,28 @@ Remove-Module Antlr -Force
 Import-Module ".\Build\Common.ps1"
 Import-Module ".\Build\Antlr.ps1"
 
-# git rev-parse HEAD
-$GitTagVersion = [Version]$(git describe --tags --abbrev=0).trimstart('v')
+if ($Publish) {
+    # git rev-parse HEAD
+    $GitTagVersion = [Version]$(git describe --tags --abbrev=0).trimstart('v')
 
-if ($(git rev-parse --abbrev-ref HEAD) -ne "master") {
-    throw "Publish is only allow in 'master' branch."
-}
+    if ($(git rev-parse --abbrev-ref HEAD) -ne "master") {
+        throw "Publish is only allow in 'master' branch."
+    }
 
-$GitCurrentCommitId = git rev-parse HEAD
-$GitLatestCommitId = git rev-parse origin/master
+    $GitCurrentCommitId = git rev-parse HEAD
+    $GitLatestCommitId = git rev-parse origin/master
 
-if ($GitCurrentCommitId -ne $GitLatestCommitId) {
-    throw "Not in the latest commit. (latest: $GitLatestCommitId)"
-}
+    if ($GitCurrentCommitId -ne $GitLatestCommitId) {
+        throw "Not in the latest commit. (latest: $GitLatestCommitId)"
+    }
 
-if ($(git diff --name-only).Length -gt 0) {
-    throw "There are files that have been changed."
-}
+    if ($(git diff --name-only).Length -gt 0) {
+        throw "There are files that have been changed."
+    }
 
-if ($GitTagVersion -ge $Version) {
-    throw "The version is lower than the git tag. ($GitTagVersion >= $Version)"
+    if ($GitTagVersion -ge $Version) {
+        throw "The version is lower than the git tag. ($GitTagVersion >= $Version)"
+    }
 }
 
 Class Task {
@@ -60,7 +63,8 @@ Function DotNet-Pack {
         -c Release `
         -o $PublishDirectory `
         -p:Version=$Version `
-        -p:PackageVersion=$Version
+        -p:PackageVersion=$Version `
+        -p:Packaging=true
 }
 
 Function Nuget-Publish {
@@ -85,15 +89,19 @@ $Tasks | ForEach-Object {
     DotNet-Pack $PSItem.Project
 }
 
-# Publish
-Get-ChildItem -Path $PublishDirectory/*.nupkg | ForEach-Object {
-    Nuget-Publish $PSItem "github"
-    Nuget-Publish $PSItem "nuget.org"
+Write-Host "Done pack." -ForegroundColor Green
+
+if ($Publish) {
+    # Publish
+    Get-ChildItem -Path $PublishDirectory/*.nupkg | ForEach-Object {
+        Nuget-Publish $PSItem "github"
+        Nuget-Publish $PSItem "nuget.org"
+    }
+
+    # Tag
+    $GitTag = "v$Version"
+    git tag $GitTag
+    git push origin $GitTag
+
+    Write-Host "Done $GitTag publish." -ForegroundColor Green
 }
-
-# Tag
-$GitTag = "v$Version"
-git tag $GitTag
-git push origin $GitTag
-
-Write-Host "Done $GitTag publish." -ForegroundColor Green

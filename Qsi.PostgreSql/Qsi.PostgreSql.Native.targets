@@ -9,7 +9,7 @@
         <RID>$(RuntimeIdentifier)</RID>
     </PropertyGroup>
 
-    <ItemGroup Condition=" '$(RID)' == '' ">
+    <ItemGroup Label="Development" Condition=" '$(RID)' == '' And '$(Packaging)' == '' ">
         <PackageReference
                 Condition=" '$(OSPlatform)' == 'Linux' And '$(OSArchitecture)' == 'X64' "
                 Include="JavaScriptEngineSwitcher.ChakraCore.Native.linux-x64"
@@ -36,7 +36,7 @@
                 Version="$(ChakraCoreVersion)"/>
     </ItemGroup>
 
-    <ItemGroup>
+    <ItemGroup Label="Packaging">
         <PackageReference
                 Condition=" $(RID.Equals('any')) Or $(RID.StartsWith('linux')) Or $(RID.StartsWith('rhel')) "
                 Include="JavaScriptEngineSwitcher.ChakraCore.Native.linux-x64"
