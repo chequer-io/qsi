@@ -74,6 +74,9 @@ Function DotNet-Pack {
 
     Write-Host "[.NET] $($ProjectName) Pack" -ForegroundColor Cyan
 
+    Remove-Directory-Safe "$ProjectName/bin"
+    Remove-Directory-Safe "$ProjectName/obj"
+
     dotnet pack $ProjectName `
         --nologo `
         -v=q `
