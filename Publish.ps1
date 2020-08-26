@@ -1,16 +1,33 @@
 Param (
-    [Parameter(Mandatory = $true)][Version] $Version,
-    [bool] $Publish = $true
+    [Parameter(Mandatory = $true)]
+    [Version] $Version,
+
+    [ValidateSet('Archive', 'Local', 'Publish')]
+    [string] $Mode = 'Publish'
 )
+
+Enum PublishMode {
+    Archive = 0
+    Local = 1
+    Publish = 2
+}
+
+$_Mode = [PublishMode]$Mode
 
 Set-Location $(Get-Item "$PSScriptRoot").FullName
 
-Remove-Module Common -Force
-Remove-Module Antlr -Force
+if (Get-Module Common) {
+    Remove-Module Common -Force
+}
+
+if (Get-Module Antlr) {
+    Remove-Module Antlr -Force
+}
+
 Import-Module ".\Build\Common.ps1"
 Import-Module ".\Build\Antlr.ps1"
 
-if ($Publish) {
+if ($_Mode -eq [PublishMode]::Publish) {
     # git rev-parse HEAD
     $GitTagVersion = [Version]$(git describe --tags --abbrev=0).trimstart('v')
 
@@ -67,14 +84,16 @@ Function DotNet-Pack {
         -p:Packaging=true
 }
 
-Function Nuget-Publish {
+Function NuGet-Push {
     Param (
-        [Parameter(Mandatory = $true)][System.IO.FileInfo] $PackageFile,
-        [Parameter(Mandatory = $true)][string] $Source
+        [Parameter(Mandatory = $true)]
+        [System.IO.FileInfo] $PackageFile,
+
+        [Parameter(Mandatory = $true)]
+        [string] $Source
     )
 
     Write-Host "[NuGet] '$($PackageFile.Name)' Push to '$Source'" -ForegroundColor Cyan
-
     dotnet nuget push $PackageFile -s $Source
 }
 
@@ -91,17 +110,23 @@ $Tasks | ForEach-Object {
 
 Write-Host "Done pack." -ForegroundColor Green
 
-if ($Publish) {
+if ($_Mode -ne [PublishMode]::Archive) {
     # Publish
     Get-ChildItem -Path $PublishDirectory/*.nupkg | ForEach-Object {
-        Nuget-Publish $PSItem "github"
-        Nuget-Publish $PSItem "nuget.org"
+        if ($_Mode -eq [PublishMode]::Publish) {
+            NuGet-Push $PSItem "github"
+            NuGet-Push $PSItem "nuget.org"
+        } else {
+            NuGet-Push $PSItem "local"
+        }
     }
 
     # Tag
-    $GitTag = "v$Version"
-    git tag $GitTag
-    git push origin $GitTag
+    if ($_Mode -eq [PublishMode]::Publish) {
+        $GitTag = "v$Version"
+        git tag $GitTag
+        git push origin $GitTag
+    }
 
-    Write-Host "Done $GitTag publish." -ForegroundColor Green
+    Write-Host "Done $Version publish." -ForegroundColor Green
 }
