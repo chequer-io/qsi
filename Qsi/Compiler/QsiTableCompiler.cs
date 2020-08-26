@@ -20,6 +20,7 @@ namespace Qsi.Compiler
         private readonly IQsiTreeParser _treeParser;
         private readonly IQsiScriptParser _scriptParser;
         private readonly IQsiReferenceResolver _resolver;
+        private readonly QsiTableCompileOptions _options;
 
         public QsiTableCompiler(IQsiLanguageService languageService)
         {
@@ -27,6 +28,7 @@ namespace Qsi.Compiler
             _treeParser = languageService.CreateTreeParser();
             _scriptParser = languageService.CreateScriptParser();
             _resolver = languageService.CreateResolver();
+            _options = languageService.CreateCompileOptions() ?? new QsiTableCompileOptions();
         }
 
         #region Execute
@@ -151,50 +153,57 @@ namespace Qsi.Compiler
             };
 
             if (table.Columns == null || table.Columns.Count == 0)
-                throw new QsiException(QsiError.Syntax);
-
-            // Columns Definition
-
-            foreach (var column in table.Columns.Columns)
             {
-                IEnumerable<QsiDataColumn> columns = ResolveColumns(scopedContext, column);
-
-                switch (column)
+                if (!_options.AllowEmptyColumnsInSelect)
                 {
-                    case IQsiDerivedColumnNode derivedColum:
+                    throw new QsiException(QsiError.Syntax);
+                }
+            }
+            else
+            {
+                // Columns Definition
+
+                foreach (var column in table.Columns.Columns)
+                {
+                    IEnumerable<QsiDataColumn> columns = ResolveColumns(scopedContext, column);
+
+                    switch (column)
                     {
-                        var declaredColumn = declaredTable.NewColumn();
-
-                        declaredColumn.Name = derivedColum.Alias?.Name;
-                        declaredColumn.IsExpression = derivedColum.IsExpression;
-                        declaredColumn.References.AddRange(columns);
-                        break;
-                    }
-
-                    case IQsiSequentialColumnNode sequentialColum:
-                    {
-                        if (columns.Count() != 1)
-                            throw new InvalidOperationException();
-
-                        var c = columns.First();
-                        var declaredColumn = declaredTable.NewColumn();
-
-                        declaredColumn.Name = sequentialColum.Alias?.Name;
-                        declaredColumn.References.Add(c);
-                        break;
-                    }
-
-                    default:
-                    {
-                        foreach (var c in columns)
+                        case IQsiDerivedColumnNode derivedColum:
                         {
                             var declaredColumn = declaredTable.NewColumn();
 
-                            declaredColumn.Name = c.Name;
-                            declaredColumn.References.Add(c);
+                            declaredColumn.Name = derivedColum.Alias?.Name;
+                            declaredColumn.IsExpression = derivedColum.IsExpression;
+                            declaredColumn.References.AddRange(columns);
+                            break;
                         }
 
-                        break;
+                        case IQsiSequentialColumnNode sequentialColum:
+                        {
+                            if (columns.Count() != 1)
+                                throw new InvalidOperationException();
+
+                            var c = columns.First();
+                            var declaredColumn = declaredTable.NewColumn();
+
+                            declaredColumn.Name = sequentialColum.Alias?.Name;
+                            declaredColumn.References.Add(c);
+                            break;
+                        }
+
+                        default:
+                        {
+                            foreach (var c in columns)
+                            {
+                                var declaredColumn = declaredTable.NewColumn();
+
+                                declaredColumn.Name = c.Name;
+                                declaredColumn.References.Add(c);
+                            }
+
+                            break;
+                        }
                     }
                 }
             }
@@ -674,26 +683,6 @@ namespace Qsi.Compiler
                 type == QsiDataTableType.Table ||
                 type == QsiDataTableType.View ||
                 type == QsiDataTableType.MaterializedView;
-        }
-
-        private static QsiDataTable WrapDataTable(QsiDataTable dataTable, QsiIdentifier identifier)
-        {
-            var table = new QsiDataTable
-            {
-                Type = dataTable.Type,
-                Identifier = new QsiQualifiedIdentifier(identifier)
-            };
-
-            foreach (var column in dataTable.Columns)
-            {
-                var newColumn = table.NewColumn();
-
-                newColumn.Name = column.Name;
-                newColumn._isExpression = column._isExpression;
-                newColumn.References.Add(column);
-            }
-
-            return table;
         }
         #endregion
 

@@ -11,7 +11,7 @@ namespace Qsi.Debugger.Vendor
             return new QsiQualifiedIdentifier(path.Select(p => new QsiIdentifier(p, p[0] == '`')));
         }
 
-        protected QsiDataTable CreateTable(params string[] path)
+        protected virtual QsiDataTable CreateTable(params string[] path)
         {
             return new QsiDataTable
             {

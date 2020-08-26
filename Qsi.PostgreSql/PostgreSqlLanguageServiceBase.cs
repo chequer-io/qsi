@@ -1,4 +1,5 @@
-﻿using Qsi.Parsing;
+﻿using Qsi.Compiler;
+using Qsi.Parsing;
 using Qsi.Services;
 
 namespace Qsi.PostgreSql
@@ -13,6 +14,14 @@ namespace Qsi.PostgreSql
         public override IQsiScriptParser CreateScriptParser()
         {
             return new PostgreSqlScriptParser();
+        }
+
+        public override QsiTableCompileOptions CreateCompileOptions()
+        {
+            return new QsiTableCompileOptions
+            {
+                AllowEmptyColumnsInSelect = true
+            };
         }
     }
 }

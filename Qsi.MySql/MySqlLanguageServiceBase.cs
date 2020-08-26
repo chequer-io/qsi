@@ -1,4 +1,5 @@
-﻿using Qsi.Parsing;
+﻿using Qsi.Compiler;
+using Qsi.Parsing;
 using Qsi.Services;
 
 namespace Qsi.MySql
@@ -13,6 +14,14 @@ namespace Qsi.MySql
         public override IQsiScriptParser CreateScriptParser()
         {
             return new MySqlScriptParser();
+        }
+
+        public override QsiTableCompileOptions CreateCompileOptions()
+        {
+            return new QsiTableCompileOptions
+            {
+                AllowEmptyColumnsInSelect = false
+            };
         }
     }
 }

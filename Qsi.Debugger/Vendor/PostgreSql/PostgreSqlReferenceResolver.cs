@@ -47,6 +47,31 @@ namespace Qsi.Debugger.Vendor.PostgreSql
             return null;
         }
 
+        protected override QsiDataTable CreateTable(params string[] path)
+        {
+            var hiddenColumns = new[]
+            {
+                "oid",
+                "tableoid",
+                "xmin",
+                "cmin",
+                "xmax",
+                "cmax",
+                "ctid"
+            };
+
+            var table = base.CreateTable(path);
+
+            foreach (var hiddenColumn in hiddenColumns)
+            {
+                var column = table.NewColumn();
+                column.Name = new QsiIdentifier(hiddenColumn, false);
+                column.IsVisible = false;
+            }
+
+            return table;
+        }
+
         protected override QsiScript LookupDefinition(QsiQualifiedIdentifier identifier, QsiDataTableType type)
         {
             var name = IdentifierUtility.Unescape(identifier[^1].Value);

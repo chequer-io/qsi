@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Qsi.Compiler;
 using Qsi.Data;
 using Qsi.Parsing;
 using Qsi.Utilities;
@@ -8,6 +9,8 @@ namespace Qsi.Services
 {
     public abstract class QsiLanguageServiceBase : IQsiLanguageService
     {
+        public abstract QsiTableCompileOptions CreateCompileOptions();
+
         public abstract IQsiTreeParser CreateTreeParser();
 
         public abstract IQsiScriptParser CreateScriptParser();
