@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace Qsi.Data
 {
@@ -9,6 +10,8 @@ namespace Qsi.Data
         public QsiQualifiedIdentifier Identifier { get; set; }
 
         public IReadOnlyList<QsiDataColumn> Columns => _columns;
+
+        internal IEnumerable<QsiDataColumn> VisibleColumns => _columns.Where(c => c.IsVisible);
 
         public bool HasIdentifier => Identifier != null;
 

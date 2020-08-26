@@ -363,7 +363,7 @@ namespace Qsi.Compiler
                 if (context.SourceTable == null)
                     throw new QsiException(QsiError.NoTablesUsed);
 
-                return context.SourceTable.Columns;
+                return context.SourceTable.VisibleColumns;
             }
 
             // path.or.alias.*
@@ -373,7 +373,7 @@ namespace Qsi.Compiler
             if (tables.Length == 0)
                 throw new QsiException(QsiError.UnknownTable, path);
 
-            return tables.SelectMany(t => t.Columns);
+            return tables.SelectMany(t => t.VisibleColumns);
         }
 
         private QsiDataColumn ResolveDeclaredColumn(CompileContext context, QsiQualifiedIdentifier column)
@@ -429,7 +429,7 @@ namespace Qsi.Compiler
             if (column.Ordinal >= context.SourceTable.Columns.Count)
                 throw new QsiException(QsiError.SpecifiesMoreColumnNames);
 
-            return context.SourceTable.Columns[column.Ordinal];
+            return context.SourceTable.VisibleColumns.ElementAt(column.Ordinal);
         }
         #endregion
 

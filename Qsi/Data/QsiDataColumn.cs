@@ -7,9 +7,11 @@ namespace Qsi.Data
     {
         public QsiDataTable Parent { get; }
 
-        public QsiIdentifier Name { get; set;}
+        public QsiIdentifier Name { get; set; }
 
         public List<QsiDataColumn> References { get; } = new List<QsiDataColumn>();
+
+        public bool IsVisible { get; set; } = true;
 
         public bool IsAnonymous => Name == null;
 
