@@ -14,7 +14,7 @@
 
     <ItemGroup>
         <None Include="../Resources/icon-128.png" Pack="true" PackagePath="" />
-        <None Include="Qsi.PostgreSql.Native.targets" Pack="true" PackagePath="build" />
+        <Content Include="build/*.props" PackagePath="build/" />
     </ItemGroup>
 
     <ItemGroup>
@@ -27,9 +27,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <EmbeddedResource Include="Resources\*.js" />
+        <EmbeddedResource Include="Resources/*.js" />
     </ItemGroup>
-
-    <Import Project="Qsi.PostgreSql.Native.targets" />
 
 </Project>

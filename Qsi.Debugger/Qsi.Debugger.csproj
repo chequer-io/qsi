@@ -37,4 +37,5 @@
       <UpToDateCheckInput Remove="Assets\Themes\Dark\Theme.xaml" />
     </ItemGroup>
 
+    <Import Project="../Qsi.PostgreSql/build/Qsi.PostgreSql.props" />
 </Project>

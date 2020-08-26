@@ -1,4 +1,4 @@
-﻿<Project>
+﻿<Project TreatAsLocalProperty="TaskFolder;TaskAssembly">
 
     <PropertyGroup>
         <ChakraCoreVersion>3.5.6</ChakraCoreVersion>
