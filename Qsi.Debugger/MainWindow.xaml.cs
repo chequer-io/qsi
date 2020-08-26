@@ -146,7 +146,7 @@ namespace Qsi.Debugger
 
                 // Execute
 
-                var compiler = new QsiTableCompiler(_vendor.LanguageService);
+                var compiler = _vendor.CreateCopmiler();
                 var result = await compiler.ExecuteAsync((IQsiTableNode)tree);
 
                 if (result.Exceptions?.Length > 0)

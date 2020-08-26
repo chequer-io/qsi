@@ -5,7 +5,7 @@ using Qsi.Data;
 
 namespace Qsi.Runtime.Internal
 {
-    internal sealed class CompileContext : IDisposable
+    public sealed class CompileContext : IDisposable
     {
         public CompileContext Parent { get; }
 

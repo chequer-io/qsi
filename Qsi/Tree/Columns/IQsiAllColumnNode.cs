@@ -11,5 +11,7 @@ namespace Qsi.Tree
         /// Get the path of the target table to search the entire columns.
         /// </summary>
         public QsiQualifiedIdentifier Path { get; }
+
+        public bool IncludeInvisibleColumns { get; } 
     }
 }

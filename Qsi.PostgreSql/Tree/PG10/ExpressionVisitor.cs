@@ -202,9 +202,9 @@ namespace Qsi.PostgreSql.Tree.PG10
             });
         }
 
-        private static QsiParametersExpressionNode VisitTypeName(TypeName typeName)
+        private static QsiTypeAccessExpressionNode VisitTypeName(TypeName typeName)
         {
-            return TreeHelper.Create<QsiParametersExpressionNode>(n =>
+            return TreeHelper.Create<QsiTypeAccessExpressionNode>(n =>
             {
                 var identifier = IdentifierVisitor.VisitStrings(typeName.names.Cast<PgString>());
 
@@ -222,10 +222,7 @@ namespace Qsi.PostgreSql.Tree.PG10
                     identifier = new QsiQualifiedIdentifier(identifiers);
                 }
 
-                n.Expressions.Add(new QsiUnknownMemberAcessExpressionNode
-                {
-                    Identifier = identifier
-                });
+                n.Identifier = identifier;
             });
         }
 

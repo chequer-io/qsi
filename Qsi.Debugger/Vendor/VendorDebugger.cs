@@ -1,4 +1,5 @@
-﻿using Qsi.Diagnostics;
+﻿using Qsi.Compiler;
+using Qsi.Diagnostics;
 using Qsi.Parsing;
 using Qsi.Services;
 
@@ -11,5 +12,10 @@ namespace Qsi.Debugger.Vendor
         public abstract IRawTreeParser RawParser { get; }
 
         public abstract IQsiLanguageService LanguageService { get; }
+
+        public virtual QsiTableCompiler CreateCopmiler()
+        {
+            return new QsiTableCompiler(LanguageService);
+        }
     }
 }

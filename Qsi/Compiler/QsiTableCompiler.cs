@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Qsi.Compiler.Proxy;
 using Qsi.Data;
 using Qsi.Extensions;
 using Qsi.Parsing;
@@ -11,7 +12,7 @@ using Qsi.Tree;
 
 namespace Qsi.Compiler
 {
-    public sealed class QsiTableCompiler
+    public class QsiTableCompiler
     {
         private const string scopeFieldList = "field list";
 
@@ -32,7 +33,7 @@ namespace Qsi.Compiler
         }
 
         #region Execute
-        public async Task<QsiTableResult> ExecuteAsync(IQsiTableNode tableNode)
+        public async ValueTask<QsiTableResult> ExecuteAsync(IQsiTableNode tableNode)
         {
             using var scope = new CompileContext();
             var structure = await BuildTableStructure(scope, tableNode);
@@ -40,7 +41,7 @@ namespace Qsi.Compiler
             return new QsiTableResult(structure, null);
         }
 
-        public async Task<QsiTableResult> ExecuteAsync(QsiScript script)
+        public async ValueTask<QsiTableResult> ExecuteAsync(QsiScript script)
         {
             try
             {
@@ -71,27 +72,28 @@ namespace Qsi.Compiler
         }
         #endregion
 
-        private Task<QsiDataTable> BuildTableStructure(CompileContext context, IQsiTableNode table)
+        #region Table
+        private async ValueTask<QsiDataTable> BuildTableStructure(CompileContext context, IQsiTableNode table)
         {
             switch (table)
             {
                 case IQsiTableAccessNode tableAccess:
-                    return BuildTableAccessStructure(context, tableAccess);
+                    return await BuildTableAccessStructure(context, tableAccess);
 
                 case IQsiDerivedTableNode derivedTable:
-                    return BuildDerivedTableStructure(context, derivedTable);
+                    return await BuildDerivedTableStructure(context, derivedTable);
 
                 case IQsiJoinedTableNode joinedTable:
-                    return BuildJoinedTable(context, joinedTable);
+                    return await BuildJoinedTable(context, joinedTable);
 
                 case IQsiCompositeTableNode compositeTable:
-                    return BuildCompositeTable(context, compositeTable);
+                    return await BuildCompositeTable(context, compositeTable);
             }
 
             throw new InvalidOperationException();
         }
 
-        private async Task<QsiDataTable> BuildTableAccessStructure(CompileContext context, IQsiTableAccessNode table)
+        protected virtual async ValueTask<QsiDataTable> BuildTableAccessStructure(CompileContext context, IQsiTableAccessNode table)
         {
             var lookup = ResolveDataTable(context, table.Identifier);
 
@@ -116,7 +118,7 @@ namespace Qsi.Compiler
             return lookup;
         }
 
-        private async Task<QsiDataTable> BuildDerivedTableStructure(CompileContext context, IQsiDerivedTableNode table)
+        protected virtual async ValueTask<QsiDataTable> BuildDerivedTableStructure(CompileContext context, IQsiDerivedTableNode table)
         {
             using var scopedContext = new CompileContext(context);
 
@@ -208,16 +210,10 @@ namespace Qsi.Compiler
                 }
             }
 
-            // // push table reference
-            // if (declaredTable.HasIdentifier)
-            // {
-            //     context.PushTable(declaredTable);
-            // }
-
             return declaredTable;
         }
 
-        private async Task<QsiDataTable> BuildJoinedTable(CompileContext context, IQsiJoinedTableNode table)
+        protected virtual async ValueTask<QsiDataTable> BuildJoinedTable(CompileContext context, IQsiJoinedTableNode table)
         {
             if (table.Left == null || table.Right == null)
                 throw new QsiException(QsiError.Syntax);
@@ -312,13 +308,13 @@ namespace Qsi.Compiler
             return joinedTable;
         }
 
-        private async Task<QsiDataTable> BuildCompositeTable(CompileContext context, IQsiCompositeTableNode table)
+        protected virtual async ValueTask<QsiDataTable> BuildCompositeTable(CompileContext context, IQsiCompositeTableNode table)
         {
             if (table.Sources == null || table.Sources.Length == 0)
                 throw new QsiException(QsiError.Syntax);
 
             QsiDataTable[] sources = await Task.WhenAll(
-                table.Sources.Select(s => BuildTableStructure(new CompileContext(context), s))
+                table.Sources.Select(s => BuildTableStructure(new CompileContext(context), s).AsTask())
             );
 
             int columnCount = sources[0].Columns.Count;
@@ -342,17 +338,18 @@ namespace Qsi.Compiler
 
             return compositeSource;
         }
+        #endregion
 
-        #region Column Lookup
+        #region Column
         private IEnumerable<QsiDataColumn> ResolveColumns(CompileContext context, IQsiColumnNode column)
         {
             switch (column)
             {
                 case IQsiAllColumnNode allColumn:
-                    return ResolveAllColumns(context, allColumn.Path);
+                    return ResolveAllColumns(context, allColumn);
 
                 case IQsiDeclaredColumnNode declaredColumn:
-                    return new[] { ResolveDeclaredColumn(context, declaredColumn.Name) };
+                    return new[] { ResolveDeclaredColumn(context, declaredColumn) };
 
                 case IQsiDerivedColumnNode derivedColumn:
                     return ResolveDerivedColumns(context, derivedColumn);
@@ -364,40 +361,42 @@ namespace Qsi.Compiler
             throw new InvalidOperationException();
         }
 
-        private IEnumerable<QsiDataColumn> ResolveAllColumns(CompileContext context, QsiQualifiedIdentifier path)
+        protected virtual IEnumerable<QsiDataColumn> ResolveAllColumns(CompileContext context, IQsiAllColumnNode column)
         {
             // *
-            if (path == null)
+            if (column.Path == null)
             {
                 if (context.SourceTable == null)
                     throw new QsiException(QsiError.NoTablesUsed);
 
-                return context.SourceTable.VisibleColumns;
+                return column.IncludeInvisibleColumns ?
+                    context.SourceTable.Columns :
+                    context.SourceTable.VisibleColumns;
             }
 
             // path.or.alias.*
 
-            QsiDataTable[] tables = LookupDataTablesInExpression(context, path).ToArray();
+            QsiDataTable[] tables = LookupDataTablesInExpression(context, column.Path).ToArray();
 
             if (tables.Length == 0)
-                throw new QsiException(QsiError.UnknownTable, path);
+                throw new QsiException(QsiError.UnknownTable, column.Path);
 
-            return tables.SelectMany(t => t.VisibleColumns);
+            return tables.SelectMany(t => column.IncludeInvisibleColumns ? t.Columns : t.VisibleColumns);
         }
 
-        private QsiDataColumn ResolveDeclaredColumn(CompileContext context, QsiQualifiedIdentifier column)
+        protected virtual QsiDataColumn ResolveDeclaredColumn(CompileContext context, IQsiDeclaredColumnNode columnn)
         {
             IEnumerable<QsiDataTable> sources = Enumerable.Empty<QsiDataTable>();
 
-            if (column.Level > 1)
+            if (columnn.Name.Level > 1)
             {
-                var identifier = new QsiQualifiedIdentifier(column[..^1]);
+                var identifier = new QsiQualifiedIdentifier(columnn.Name[..^1]);
                 sources = LookupDataTablesInExpression(context, identifier).ToArray();
 
                 if (!sources.Any())
                     throw new QsiException(QsiError.UnknownTableIn, identifier, scopeFieldList);
             }
-            else if (column.Level == 0)
+            else if (columnn.Name.Level == 0)
             {
                 throw new InvalidOperationException();
             }
@@ -406,31 +405,31 @@ namespace Qsi.Compiler
                 sources = new[] { context.SourceTable };
             }
 
-            var columnName = column[^1];
+            var lastName = columnn.Name[^1];
 
             QsiDataColumn[] columns = sources
-                .SelectMany(s => s.Columns.Where(c => Match(c.Name, columnName)))
+                .SelectMany(s => s.Columns.Where(c => Match(c.Name, lastName)))
                 .Take(2)
                 .ToArray();
 
             if (columns.Length == 0)
-                throw new QsiException(QsiError.UnknownColumnIn, columnName.Value, scopeFieldList);
+                throw new QsiException(QsiError.UnknownColumnIn, lastName.Value, scopeFieldList);
 
             if (columns.Length > 1)
-                throw new QsiException(QsiError.AmbiguousColumnIn, column, scopeFieldList);
+                throw new QsiException(QsiError.AmbiguousColumnIn, columnn.Name, scopeFieldList);
 
             return columns[0];
         }
 
-        private IEnumerable<QsiDataColumn> ResolveDerivedColumns(CompileContext context, IQsiDerivedColumnNode column)
+        protected virtual IEnumerable<QsiDataColumn> ResolveDerivedColumns(CompileContext context, IQsiDerivedColumnNode column)
         {
             if (column.IsExpression)
-                return InspectColumnsInExpression(context, column.Expression);
+                return ResolveColumnsInExpression(context, column.Expression);
 
             return ResolveColumns(context, column.Column);
         }
 
-        private QsiDataColumn ResolveSequentialColumn(CompileContext context, IQsiSequentialColumnNode column)
+        protected virtual QsiDataColumn ResolveSequentialColumn(CompileContext context, IQsiSequentialColumnNode column)
         {
             if (context.SourceTable == null)
                 throw new QsiException(QsiError.NoTablesUsed);
@@ -439,6 +438,154 @@ namespace Qsi.Compiler
                 throw new QsiException(QsiError.SpecifiesMoreColumnNames);
 
             return context.SourceTable.VisibleColumns.ElementAt(column.Ordinal);
+        }
+
+        protected virtual IEnumerable<QsiDataColumn> ResolveColumnsInExpression(CompileContext context, IQsiExpressionNode expression)
+        {
+            if (expression == null)
+                yield break;
+
+            switch (expression)
+            {
+                case IQsiAssignExpressionNode e:
+                {
+                    foreach (var c in ResolveColumnsInExpression(context, e.Variable))
+                        yield return c;
+
+                    foreach (var c in ResolveColumnsInExpression(context, e.Value))
+                        yield return c;
+
+                    break;
+                }
+
+                case IQsiInvokeExpressionNode e:
+                {
+                    foreach (var c in ResolveColumnsInExpression(context, e.Member))
+                        yield return c;
+
+                    foreach (var c in ResolveColumnsInExpression(context, e.Parameters))
+                        yield return c;
+
+                    break;
+                }
+
+                case IQsiLiteralExpressionNode e:
+                {
+                    break;
+                }
+
+                case IQsiLogicalExpressionNode e:
+                {
+                    foreach (var c in ResolveColumnsInExpression(context, e.Left))
+                        yield return c;
+
+                    foreach (var c in ResolveColumnsInExpression(context, e.Right))
+                        yield return c;
+
+                    break;
+                }
+
+                case IQsiParametersExpressionNode e:
+                {
+                    foreach (var c in e.Expressions.SelectMany(x => ResolveColumnsInExpression(context, x)))
+                        yield return c;
+
+                    break;
+                }
+
+                case IQsiArrayExpressionNode e:
+                {
+                    foreach (var c in e.Elements.SelectMany(x => ResolveColumnsInExpression(context, x)))
+                        yield return c;
+
+                    break;
+                }
+
+                case IQsiSwitchExpressionNode e:
+                {
+                    foreach (var c in ResolveColumnsInExpression(context, e.Value))
+                        yield return c;
+
+                    foreach (var c in e.Cases.SelectMany(c => ResolveColumnsInExpression(context, c)))
+                        yield return c;
+
+                    break;
+                }
+
+                case IQsiSwitchCaseExpressionNode e:
+                {
+                    foreach (var c in ResolveColumnsInExpression(context, e.Condition))
+                        yield return c;
+
+                    foreach (var c in ResolveColumnsInExpression(context, e.Consequent))
+                        yield return c;
+
+                    break;
+                }
+
+                case IQsiTableExpressionNode e:
+                {
+                    using var scopedContext = new CompileContext(context);
+                    var structure = BuildTableStructure(scopedContext, e.Table).Result;
+
+                    foreach (var c in structure.Columns)
+                        yield return c;
+
+                    break;
+                }
+
+                case IQsiUnaryExpressionNode e:
+                {
+                    foreach (var c in ResolveColumnsInExpression(context, e.Expression))
+                        yield return c;
+
+                    break;
+                }
+
+                case IQsiColumnAccessExpressionNode e:
+                {
+                    if (e.IsAll)
+                    {
+                        if (e.FindDescendant<IQsiParametersExpressionNode, IQsiInvokeExpressionNode>(out _, out var i) &&
+                            i.Member != null &&
+                            i.Member.Identifier.Level == 1 &&
+                            i.Member.Identifier[0].Value.Equals("COUNT", StringComparison.OrdinalIgnoreCase))
+                        {
+                            yield break;
+                        }
+
+                        foreach (var column in ResolveAllColumns(context, new AllColumnNodeProxy(e, e.Identifier)))
+                            yield return column;
+                    }
+                    else
+                    {
+                        yield return ResolveDeclaredColumn(context, new DeclaredColumnNodeProxy(e, e.Identifier));
+                    }
+
+                    break;
+                }
+
+                case IQsiVariableAccessExpressionNode e:
+                {
+                    // TODO: Analyze variable
+                    break;
+                }
+
+                case IQsiFunctionAccessExpressionNode e:
+                {
+                    // TODO: Analyze function
+                    break;
+                }
+
+                case IQsiMemberAccessExpressionNode _:
+                {
+                    // Skip unknown member access
+                    break;
+                }
+
+                default:
+                    throw new InvalidOperationException();
+            }
         }
         #endregion
 
@@ -501,158 +648,6 @@ namespace Qsi.Compiler
 
                 if (Match(partialIdentifier, identifier))
                     yield return table;
-            }
-        }
-        #endregion
-
-        #region Expression
-        private IEnumerable<QsiDataColumn> InspectColumnsInExpression(CompileContext context, IQsiExpressionNode expression)
-        {
-            if (expression == null)
-                yield break;
-
-            switch (expression)
-            {
-                case IQsiAssignExpressionNode e:
-                {
-                    foreach (var c in InspectColumnsInExpression(context, e.Variable))
-                        yield return c;
-
-                    foreach (var c in InspectColumnsInExpression(context, e.Value))
-                        yield return c;
-
-                    break;
-                }
-
-                case IQsiInvokeExpressionNode e:
-                {
-                    foreach (var c in InspectColumnsInExpression(context, e.Member))
-                        yield return c;
-
-                    foreach (var c in InspectColumnsInExpression(context, e.Parameters))
-                        yield return c;
-
-                    break;
-                }
-
-                case IQsiLiteralExpressionNode e:
-                {
-                    break;
-                }
-
-                case IQsiLogicalExpressionNode e:
-                {
-                    foreach (var c in InspectColumnsInExpression(context, e.Left))
-                        yield return c;
-
-                    foreach (var c in InspectColumnsInExpression(context, e.Right))
-                        yield return c;
-
-                    break;
-                }
-
-                case IQsiParametersExpressionNode e:
-                {
-                    foreach (var c in e.Expressions.SelectMany(x => InspectColumnsInExpression(context, x)))
-                        yield return c;
-
-                    break;
-                }
-
-                case IQsiArrayExpressionNode e:
-                {
-                    foreach (var c in e.Elements.SelectMany(x => InspectColumnsInExpression(context, x)))
-                        yield return c;
-
-                    break;
-                }
-
-                case IQsiSwitchExpressionNode e:
-                {
-                    foreach (var c in InspectColumnsInExpression(context, e.Value))
-                        yield return c;
-
-                    foreach (var c in e.Cases.SelectMany(c => InspectColumnsInExpression(context, c)))
-                        yield return c;
-
-                    break;
-                }
-
-                case IQsiSwitchCaseExpressionNode e:
-                {
-                    foreach (var c in InspectColumnsInExpression(context, e.Condition))
-                        yield return c;
-
-                    foreach (var c in InspectColumnsInExpression(context, e.Consequent))
-                        yield return c;
-
-                    break;
-                }
-
-                case IQsiTableExpressionNode e:
-                {
-                    using var scopedContext = new CompileContext(context);
-                    var structure = BuildTableStructure(scopedContext, e.Table).Result;
-
-                    foreach (var c in structure.Columns)
-                        yield return c;
-
-                    break;
-                }
-
-                case IQsiUnaryExpressionNode e:
-                {
-                    foreach (var c in InspectColumnsInExpression(context, e.Expression))
-                        yield return c;
-
-                    break;
-                }
-
-                case IQsiColumnAccessExpressionNode e:
-                {
-                    if (e.IsAll)
-                    {
-                        // TODO: ITableCompileStrategy 인터페이스를 분리하여 Compiler 옵션으로 노출
-                        if (e.Parent is IQsiParametersExpressionNode p &&
-                            p.Parent is IQsiInvokeExpressionNode i &&
-                            i.Member != null &&
-                            i.Member.Identifier.Level == 1 &&
-                            i.Member.Identifier[0].Value.Equals("COUNT", StringComparison.OrdinalIgnoreCase))
-                        {
-                            yield break;
-                        }
-
-                        foreach (var column in ResolveAllColumns(context, e.Identifier))
-                            yield return column;
-                    }
-                    else
-                    {
-                        yield return ResolveDeclaredColumn(context, e.Identifier);
-                    }
-
-                    break;
-                }
-
-                case IQsiVariableAccessExpressionNode e:
-                {
-                    // TODO: Analyze variable
-                    break;
-                }
-
-                case IQsiFunctionAccessExpressionNode e:
-                {
-                    // TODO: Analyze function
-                    break;
-                }
-
-                case IQsiMemberAccessExpressionNode _:
-                {
-                    // Skip unknown member access
-                    break;
-                }
-
-                default:
-                    throw new InvalidOperationException();
             }
         }
         #endregion

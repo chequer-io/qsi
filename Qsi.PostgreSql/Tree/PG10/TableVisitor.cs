@@ -286,7 +286,11 @@ namespace Qsi.PostgreSql.Tree.PG10
                 Debug.Assert(var.alias.Length == 1);
 
                 var allDeclaration = new QsiColumnsDeclarationNode();
-                allDeclaration.Columns.Add(new QsiAllColumnNode());
+
+                allDeclaration.Columns.Add(new QsiAllColumnNode
+                {
+                    IncludeInvisibleColumns = true
+                });
 
                 n.Columns.SetValue(allDeclaration);
                 n.Source.SetValue(tableNode);

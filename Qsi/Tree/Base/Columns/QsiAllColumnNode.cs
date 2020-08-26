@@ -5,5 +5,7 @@ namespace Qsi.Tree.Base
     public sealed class QsiAllColumnNode : QsiColumnNode, IQsiAllColumnNode
     {
         public QsiQualifiedIdentifier Path { get; set; }
+
+        public bool IncludeInvisibleColumns { get; set; }
     }
 }

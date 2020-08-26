@@ -441,7 +441,7 @@ namespace Qsi.MySql.Tree
         {
             if (context.uid() != null)
             {
-                return VisitUnknownAccess(context.uid());
+                return VisitTypeAccess(context.uid());
             }
 
             return new QsiLiteralExpressionNode
@@ -969,10 +969,10 @@ namespace Qsi.MySql.Tree
         }
         #endregion
 
-        #region UnknownAccess
-        private static QsiUnknownMemberAcessExpressionNode VisitUnknownAccess(UidContext context)
+        #region TypeAccess
+        private static QsiTypeAccessExpressionNode VisitTypeAccess(UidContext context)
         {
-            return new QsiUnknownMemberAcessExpressionNode
+            return new QsiTypeAccessExpressionNode
             {
                 Identifier = new QsiQualifiedIdentifier(IdentifierVisitor.VisitUid(context))
             };
