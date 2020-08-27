@@ -3,6 +3,12 @@ using Qsi.PostgreSql.Internal.Serialization;
 
 namespace Qsi.PostgreSql.Internal
 {
+    [PgNode("Null")]
+    internal sealed class PgNull : Value
+    {
+        public override NodeTag Type { get; } = NodeTag.T_Null;
+    }
+
     [PgNode("Integer")]
     internal sealed class PgInteger : Value
     {

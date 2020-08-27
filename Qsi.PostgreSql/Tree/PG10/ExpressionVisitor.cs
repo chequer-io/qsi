@@ -127,6 +127,7 @@ namespace Qsi.PostgreSql.Tree.PG10
             {
                 n.Type = value.Type switch
                 {
+                    NodeTag.T_Null => QsiLiteralType.Null,
                     NodeTag.T_Integer => QsiLiteralType.Numeric,
                     NodeTag.T_Float => QsiLiteralType.Decimal,
                     NodeTag.T_String => QsiLiteralType.String,

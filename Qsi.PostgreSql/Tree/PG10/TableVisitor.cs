@@ -37,46 +37,72 @@ namespace Qsi.PostgreSql.Tree.PG10
             return Visit(rawStmt.stmt[0]);
         }
 
-        public static QsiDerivedTableNode VisitSelectStmt(SelectStmt selectStmt)
+        public static QsiTableNode VisitSelectStmt(SelectStmt selectStmt)
+        {
+            switch (selectStmt.op)
+            {
+                case SetOperation.SETOP_NONE:
+                    return VisitSelectStmtNone(selectStmt);
+
+                case SetOperation.SETOP_UNION:
+                case SetOperation.SETOP_EXCEPT:
+                case SetOperation.SETOP_INTERSECT:
+                    return VisitSelectStmtComposite(selectStmt);
+
+                default:
+                    throw TreeHelper.NotSupportedTree($"{selectStmt.GetType().Name}({selectStmt.op})");
+            }
+        }
+
+        private static QsiDerivedTableNode VisitSelectStmtNone(SelectStmt stmt)
         {
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
-                if (!ListUtility.IsNullOrEmpty(selectStmt.targetList))
+                if (!ListUtility.IsNullOrEmpty(stmt.targetList))
                 {
-                    IEnumerable<ResTarget> targets = selectStmt.targetList.Cast<ResTarget>();
+                    IEnumerable<ResTarget> targets = stmt.targetList.Cast<ResTarget>();
                     n.Columns.SetValue(VisitResTargets(targets));
                 }
 
-                if (!ListUtility.IsNullOrEmpty(selectStmt.fromClause))
+                if (!ListUtility.IsNullOrEmpty(stmt.fromClause))
                 {
-                    n.Source.SetValue(VisitFromClauses(n, selectStmt.fromClause));
+                    n.Source.SetValue(VisitFromClauses(n, stmt.fromClause));
                 }
 
-                if (!ListUtility.IsNullOrEmpty(selectStmt.withClause))
+                if (!ListUtility.IsNullOrEmpty(stmt.withClause))
                 {
-                    n.Directives.SetValue(VisitWithClause(selectStmt.withClause[0]));
+                    n.Directives.SetValue(VisitWithClause(stmt.withClause[0]));
                 }
             });
         }
 
-        public static QsiDerivedTableNode VisitViewStmt(ViewStmt viewStmt)
+        private static QsiCompositeTableNode VisitSelectStmtComposite(SelectStmt stmt)
+        {
+            return TreeHelper.Create<QsiCompositeTableNode>(n =>
+            {
+                n.Sources.Add(VisitSelectStmt(stmt.larg[0]));
+                n.Sources.Add(VisitSelectStmt(stmt.rarg[0]));
+            });
+        }
+
+        public static QsiDerivedTableNode VisitViewStmt(ViewStmt stmt)
         {
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
-                var viewAccessNode = IdentifierVisitor.VisitRangeVar(viewStmt.view[0]);
+                var viewAccessNode = IdentifierVisitor.VisitRangeVar(stmt.view[0]);
                 var columnsDeclaration = new QsiColumnsDeclarationNode();
 
-                if (ListUtility.IsNullOrEmpty(viewStmt.aliases))
+                if (ListUtility.IsNullOrEmpty(stmt.aliases))
                 {
                     columnsDeclaration.Columns.Add(new QsiAllColumnNode());
                 }
                 else
                 {
-                    columnsDeclaration.Columns.AddRange(CreateSequentialColumnNodes(viewStmt.aliases.Cast<PgString>()));
+                    columnsDeclaration.Columns.AddRange(CreateSequentialColumnNodes(stmt.aliases.Cast<PgString>()));
                 }
 
                 n.Columns.SetValue(columnsDeclaration);
-                n.Source.SetValue(Visit(viewStmt.query[0]));
+                n.Source.SetValue(Visit(stmt.query[0]));
 
                 n.Alias.SetValue(new QsiAliasNode
                 {
