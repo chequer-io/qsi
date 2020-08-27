@@ -24,6 +24,9 @@ namespace Qsi.PostgreSql.Tree.PG10
 
                 case ViewStmt viewStmt:
                     return VisitViewStmt(viewStmt);
+
+                case CreateTableAsStmt createTableAsStmt:
+                    return VisitCreateTableAsStmt(createTableAsStmt);
             }
 
             throw TreeHelper.NotSupportedTree(node);
@@ -74,6 +77,28 @@ namespace Qsi.PostgreSql.Tree.PG10
 
                 n.Columns.SetValue(columnsDeclaration);
                 n.Source.SetValue(Visit(viewStmt.query[0]));
+
+                n.Alias.SetValue(new QsiAliasNode
+                {
+                    Name = viewAccessNode[^1]
+                });
+            });
+        }
+
+        private static QsiTableNode VisitCreateTableAsStmt(CreateTableAsStmt stmt)
+        {
+            if (stmt.relkind != ObjectType.OBJECT_MATVIEW)
+                throw TreeHelper.NotSupportedTree(stmt);
+
+            return TreeHelper.Create<QsiDerivedTableNode>(n =>
+            {
+                // CreateTableAsStmt / IntoClause / RangeVar
+                var viewAccessNode = IdentifierVisitor.VisitRangeVar(stmt.into[0].rel[0]);
+                var columnsDeclaration = new QsiColumnsDeclarationNode();
+                columnsDeclaration.Columns.Add(new QsiAllColumnNode());
+
+                n.Columns.SetValue(columnsDeclaration);
+                n.Source.SetValue(Visit(stmt.query[0]));
 
                 n.Alias.SetValue(new QsiAliasNode
                 {

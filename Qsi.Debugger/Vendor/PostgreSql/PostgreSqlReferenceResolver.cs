@@ -23,6 +23,12 @@ namespace Qsi.Debugger.Vendor.PostgreSql
                     AddColumns(actorView, "actor_id", "first_name", "last_name", "last_update");
                     return actorView;
 
+                case "actor_mat_view":
+                    var actorMatView = CreateTable("postgres", "public", "actor_mat_view");
+                    actorMatView.Type = QsiDataTableType.View;
+                    AddColumns(actorMatView, "actor_id", "first_name", "last_name", "last_update");
+                    return actorMatView;
+
                 case "address":
                     var address = CreateTable("postgres", "public", "address");
                     AddColumns(address, "address_id", "address", "address2", "district", "city_id", "postal_code", "phone", "location", "last_update");
@@ -80,6 +86,9 @@ namespace Qsi.Debugger.Vendor.PostgreSql
             {
                 case "actor_view":
                     return new QsiScript("CREATE OR REPLACE VIEW public.actor_view AS SELECT actor.actor_id, actor.first_name, actor.last_name, actor.last_update FROM actor;", QsiScriptType.CreateView);
+                
+                case "actor_mat_view":
+                    return new QsiScript("CREATE MATERIALIZED VIEW public.actor_view AS SELECT actor.actor_id, actor.first_name, actor.last_name, actor.last_update FROM actor;", QsiScriptType.CreateTable);
             }
 
             return null;
