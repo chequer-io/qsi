@@ -54,6 +54,9 @@ namespace Qsi.PostgreSql.Tree.PG10
 
                 case NullTest nullTest:
                     return VisitNullTest(nullTest);
+
+                case CoalesceExpr coalesceExpr:
+                    return VisitCoalesceExpr(coalesceExpr);
             }
 
             throw TreeHelper.NotSupportedTree(node);
@@ -341,12 +344,33 @@ namespace Qsi.PostgreSql.Tree.PG10
 
                 if (nullTest.xpr != null)
                 {
-                    // n.Parameters.Add(Visit(nullTest.xpr));
+                    n.Parameters.Add(Visit(nullTest.xpr));
                 }
 
                 if (!ListUtility.IsNullOrEmpty(nullTest.arg))
                 {
                     n.Parameters.AddRange(nullTest.arg.Select(Visit));
+                }
+            });
+        }
+
+        private static QsiExpressionNode VisitCoalesceExpr(CoalesceExpr coalesceExpr)
+        {
+            return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            {
+                n.Member.SetValue(new QsiFunctionAccessExpressionNode
+                {
+                    Identifier = new QsiQualifiedIdentifier(new QsiIdentifier("COALESCE", false))
+                });
+
+                if (coalesceExpr.xpr != null)
+                {
+                    n.Parameters.Add(Visit(coalesceExpr.xpr));
+                }
+
+                if (!ListUtility.IsNullOrEmpty(coalesceExpr.args))
+                {
+                    n.Parameters.AddRange(coalesceExpr.args.Select(Visit));
                 }
             });
         }
