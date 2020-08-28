@@ -268,7 +268,7 @@ namespace Qsi.PostgreSql.Tree.PG10
             {
                 return new QsiDeclaredColumnNode
                 {
-                    Name = IdentifierVisitor.VisitColumnRef(columnRef)
+                    Name = IdentifierVisitor.VisitStrings(columnRef.fields.Cast<PgString>())
                 };
             }
 

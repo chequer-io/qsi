@@ -231,17 +231,20 @@ namespace Qsi.PostgreSql.Tree.PG10
         {
             return TreeHelper.Create<QsiColumnAccessExpressionNode>(n =>
             {
-                var identifier = IdentifierVisitor.VisitColumnRef(columnRef);
+                var isAll = columnRef.fields[^1].Type == NodeTag.T_A_Star;
+                IEnumerable<PgString> fields;
 
-                if (identifier[^1].Value == "*")
+                if (isAll)
                 {
                     n.IsAll = true;
-                    n.Identifier = identifier.Level == 1 ? null : new QsiQualifiedIdentifier(identifier[..^1]);
+                    fields = columnRef.fields[..^1].Cast<PgString>();
                 }
                 else
                 {
-                    n.Identifier = identifier;
+                    fields = columnRef.fields.Cast<PgString>();
                 }
+
+                n.Identifier = IdentifierVisitor.VisitStrings(fields);
             });
         }
 
