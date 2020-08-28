@@ -51,6 +51,9 @@ namespace Qsi.PostgreSql.Tree.PG10
 
                 case RowExpr rowExpr:
                     return VisitRowExpression(rowExpr);
+
+                case NullTest nullTest:
+                    return VisitNullTest(nullTest);
             }
 
             throw TreeHelper.NotSupportedTree(node);
@@ -324,6 +327,27 @@ namespace Qsi.PostgreSql.Tree.PG10
                 });
 
                 n.Parameters.AddRange(rowExpr.args.Select(Visit));
+            });
+        }
+
+        public static QsiInvokeExpressionNode VisitNullTest(NullTest nullTest)
+        {
+            return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            {
+                n.Member.SetValue(new QsiFunctionAccessExpressionNode
+                {
+                    Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(nullTest.nulltesttype.ToString(), false))
+                });
+
+                if (nullTest.xpr != null)
+                {
+                    // n.Parameters.Add(Visit(nullTest.xpr));
+                }
+
+                if (!ListUtility.IsNullOrEmpty(nullTest.arg))
+                {
+                    n.Parameters.AddRange(nullTest.arg.Select(Visit));
+                }
             });
         }
     }
