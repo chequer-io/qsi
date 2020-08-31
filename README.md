@@ -61,13 +61,13 @@ PS> ./Publish <VERSION> [-Mode <PUBLISH_MODE>]
 
 It supports abstract syntax trees and semantic trees, and a debugger that can debug compilation results.
 
-![Preview](https://github.com/chequer-io/qsi/blob/master/Qsi.Debugger/Screenshot.png?raw=true)
-
 |OS|Support|
 |--|--|
 |Windows|O|
 |OSX|O|
 |Linux|X|
+
+![Preview](https://github.com/chequer-io/qsi/blob/master/Qsi.Debugger/Screenshot.png?raw=true)
 
 ### Run
 ```sh
