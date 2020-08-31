@@ -36,7 +36,7 @@ PS> ./Setup.ps1
 
 ```ps1
 PS> cd ./qsi
-PS> ./Publish <VERSION> [-Mode <PUBLISH_MODE>]
+PS> ./Publish.sh <VERSION> [-Mode <PUBLISH_MODE>]
 ```
 
 - `<VERSION>`
