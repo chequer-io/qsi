@@ -53,7 +53,7 @@ PS> ./Publish.ps1 <VERSION> [-Mode <PUBLISH_MODE>]
   |--|--|
   |Publish(Default)|Publish packages to NuGet, GitHub repositories|
   |Local|Publish packages to local repository|
-  |Archive|Build packages to `./qsi/Archive`|
+  |Archive|Build packages to `./qsi/Publish`|
   
   
 
