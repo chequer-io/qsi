@@ -137,8 +137,7 @@ namespace Qsi.PostgreSql.Tree.PG10
         {
             return TreeHelper.Create<QsiTableDirectivesNode>(n =>
             {
-                if (withClause.recursive ?? false)
-                    throw TreeHelper.NotSupportedFeature("Recursive CTE");
+                n.IsRecursive = withClause.recursive ?? false;
 
                 n.Tables.AddRange(withClause.ctes
                     .Cast<CommonTableExpr>()
