@@ -65,7 +65,8 @@ $PublishDirectory = $(Resolve-Path-Safe ".\Publish")
 $Tasks = 
 [Task]::new("Qsi", $false),
 [Task]::new("Qsi.MySql", $true),
-[Task]::new("Qsi.PostgreSql", $false)
+[Task]::new("Qsi.PostgreSql", $false),
+[Task]::new("Qsi.Oracle", $false)
 
 Function DotNet-Pack {
     Param (
