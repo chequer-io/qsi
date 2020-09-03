@@ -17,8 +17,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AvaloniaEdit", "Libraries\A
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Debugger", "Debugger", "{D9187603-20FE-4487-A964-C1DD18874E04}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Qsi.PostgreSql.Generator", "Qsi.PostgreSql.Generator\Qsi.PostgreSql.Generator.csproj", "{1E2BE7BA-BE4A-45CA-A786-42EC20893991}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,10 +43,6 @@ Global
 		{CFE5B121-8ABF-4646-97FD-AC5794A36C53}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CFE5B121-8ABF-4646-97FD-AC5794A36C53}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CFE5B121-8ABF-4646-97FD-AC5794A36C53}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1E2BE7BA-BE4A-45CA-A786-42EC20893991}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1E2BE7BA-BE4A-45CA-A786-42EC20893991}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1E2BE7BA-BE4A-45CA-A786-42EC20893991}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1E2BE7BA-BE4A-45CA-A786-42EC20893991}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -58,7 +52,6 @@ Global
 		{2AA051E7-77E4-4F7E-AD54-2CC04BC7DD78} = {97493A14-DF8A-4A8A-A521-5900DFAC1CDA}
 		{DA61E58C-53AA-4D1E-ADD0-0BA63F7B2DC3} = {D9187603-20FE-4487-A964-C1DD18874E04}
 		{CFE5B121-8ABF-4646-97FD-AC5794A36C53} = {D9187603-20FE-4487-A964-C1DD18874E04}
-		{1E2BE7BA-BE4A-45CA-A786-42EC20893991} = {97493A14-DF8A-4A8A-A521-5900DFAC1CDA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A12491D7-EB7D-4F23-A7B6-6B4AB1DD08D9}

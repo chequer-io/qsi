@@ -1,5 +1,12 @@
 <Project>
-  <PropertyGroup>
-    <AvaloniaVersion>0.9.11</AvaloniaVersion>
-  </PropertyGroup>
+    <PropertyGroup Label="Nuspec">
+        <Authors>CHEQUER Inc.</Authors>
+        <PackageProjectUrl>https://github.com/chequer-io/qsi</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/chequer-io/qsi</RepositoryUrl>
+        <PackageIcon>icon-128.png</PackageIcon>
+    </PropertyGroup>
+
+    <ItemGroup Condition=" '$(Packaging)' == 'true' ">
+        <None Include="../Resources/icon-128.png" Pack="true" PackagePath=""/>
+    </ItemGroup>
 </Project>
