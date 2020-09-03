@@ -6,15 +6,7 @@
 
     <PropertyGroup Label="Nuspec">
         <Title>Query Structure Interface of MySql</Title>
-        <Authors>CHEQUER Inc.</Authors>
-        <PackageProjectUrl>https://github.com/chequer-io/qsi</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/chequer-io/qsi</RepositoryUrl>
-        <PackageIcon>icon-128.png</PackageIcon>
     </PropertyGroup>
-
-    <ItemGroup>
-        <None Include="../Resources/icon-128.png" Pack="true" PackagePath="" />
-    </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Qsi\Qsi.csproj" />
