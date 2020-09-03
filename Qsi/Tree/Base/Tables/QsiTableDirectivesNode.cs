@@ -6,6 +6,8 @@ namespace Qsi.Tree.Base
     {
         public QsiTreeNodeList<QsiTableNode> Tables { get; }
 
+        public bool IsRecursive { get; set; }
+
         #region Explicit
         IQsiTableNode[] IQsiTableDirectivesNode.Tables => Tables.Cast<IQsiTableNode>().ToArray();
         #endregion
