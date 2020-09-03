@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -128,7 +128,7 @@ namespace Qsi.Compiler
             {
                 foreach (var directive in table.Directives.Tables)
                 {
-                    using var directiveContext = new CompileContext(context);
+                    using var directiveContext = new CompileContext(scopedContext);
                     var directiveTable = await BuildTableStructure(directiveContext, directive);
                     scopedContext.AddDirective(directiveTable);
                 }
