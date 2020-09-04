@@ -7,13 +7,12 @@ using System.Xml;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
-using Avalonia.Data;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using AvaloniaEdit;
 using AvaloniaEdit.Highlighting;
 using AvaloniaEdit.Highlighting.Xshd;
-using Qsi.Compiler;
+using Microsoft.SqlServer.Management.SqlParser.Common;
 using Qsi.Data;
 using Qsi.Debugger.Models;
 using Qsi.Debugger.Utilities;
@@ -51,7 +50,9 @@ namespace Qsi.Debugger
             {
                 ["MySQL"] = new Lazy<VendorDebugger>(() => new MySqlDebugger()),
                 ["PostgreSQL"] = new Lazy<VendorDebugger>(() => new PostgreSqlDebugger()),
-                ["SQLServer"] = new Lazy<VendorDebugger>(() => new SqlServerDebugger())
+                ["Azure SQL DB"] = new Lazy<VendorDebugger>(() => new SqlServerDebugger(DatabaseCompatibilityLevel.Azure)),
+                ["SQL Server 2019"] = new Lazy<VendorDebugger>(() => new SqlServerDebugger(DatabaseCompatibilityLevel.Version150)),
+                ["SQL Server 2000"] = new Lazy<VendorDebugger>(() => new SqlServerDebugger(DatabaseCompatibilityLevel.Version80))
             };
 
             _cbLanguages = this.Find<ComboBox>("cbLanguages");
@@ -187,7 +188,7 @@ namespace Qsi.Debugger
         {
             _tvRaw.Items = null;
         }
-        
+
         private void ClearQsiTree()
         {
             _tvQsi.Items = null;
