@@ -5,16 +5,16 @@
         public bool IsEmpty => _value == null;
 
         private TNode _value;
-        private readonly QsiTreeNode _parent;
+        private readonly QsiTreeNode _owner;
 
-        public QsiTreeNodeProperty(QsiTreeNode parent)
+        public QsiTreeNodeProperty(QsiTreeNode owner)
         {
-            _parent = parent;
+            _owner = owner;
         }
 
         public void SetValue(TNode value)
         {
-            value.Parent = _parent;
+            value.Parent = _owner;
             _value = value;
         }
 

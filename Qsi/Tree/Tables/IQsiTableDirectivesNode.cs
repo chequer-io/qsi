@@ -9,5 +9,10 @@
         /// Get delcared tables.
         /// </summary>
         IQsiTableNode[] Tables { get; }
+
+        /// <summary>
+        /// Gets whether recursion is supported.
+        /// </summary>
+        bool IsRecursive { get; }
     }
 }

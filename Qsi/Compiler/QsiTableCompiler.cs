@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -128,7 +128,7 @@ namespace Qsi.Compiler
             {
                 foreach (var directive in table.Directives.Tables)
                 {
-                    using var directiveContext = new CompileContext(context);
+                    using var directiveContext = new CompileContext(scopedContext);
                     var directiveTable = await BuildTableStructure(directiveContext, directive);
                     scopedContext.AddDirective(directiveTable);
                 }
@@ -313,9 +313,34 @@ namespace Qsi.Compiler
             if (table.Sources == null || table.Sources.Length == 0)
                 throw new QsiException(QsiError.Syntax);
 
-            QsiDataTable[] sources = await Task.WhenAll(
-                table.Sources.Select(s => BuildTableStructure(new CompileContext(context), s).AsTask())
-            );
+            QsiIdentifier recursiveAlias = null;
+
+            if (table.FindDescendant<IQsiDerivedTableNode, IQsiTableDirectivesNode>(
+                    out var derivedTableNode,
+                    out var directivesNode) &&
+                directivesNode.IsRecursive)
+            {
+                recursiveAlias = derivedTableNode.Alias.Name;
+            }
+
+            var sources = new QsiDataTable[table.Sources.Length];
+
+            for (int i = 0; i < sources.Length; i++)
+            {
+                using var tempContext = new CompileContext(context);
+
+                if (recursiveAlias != null && i > 0)
+                {
+                    tempContext.AddDirective(sources[0]);
+                }
+                
+                sources[i] = await BuildTableStructure(tempContext, table.Sources[i]);
+
+                if (recursiveAlias != null && i == 0)
+                {
+                    sources[i].Identifier = new QsiQualifiedIdentifier(recursiveAlias);
+                }
+            }
 
             int columnCount = sources[0].Columns.Count;
 

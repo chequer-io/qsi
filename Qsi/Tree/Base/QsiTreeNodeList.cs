@@ -9,26 +9,28 @@ namespace Qsi.Tree.Base
 
         public TNode this[int index] => _list[index];
 
-        private readonly QsiTreeNode _parent;
+        private readonly QsiTreeNode _owner;
         private readonly List<TNode> _list = new List<TNode>(4);
 
-        public QsiTreeNodeList(QsiTreeNode parent)
+        public QsiTreeNodeList(QsiTreeNode owner)
         {
-            _parent = parent;
+            _owner = owner;
         }
 
         public void Add(TNode item)
         {
             _list.Add(item);
-            item.Parent = _parent;
+            item.Parent = _owner;
         }
-        
+
         public void AddRange(IEnumerable<TNode> items)
         {
+            int start = _list.Count;
+
             _list.AddRange(items);
 
-            foreach (var item in items)
-                item.Parent = _parent;
+            for (int i = start; i < _list.Count; i++)
+                _list[i].Parent = _owner;
         }
 
         public void Clear()
@@ -63,7 +65,7 @@ namespace Qsi.Tree.Base
         public void Insert(int index, TNode item)
         {
             _list.Insert(index, item);
-            item.Parent = _parent;
+            item.Parent = _owner;
         }
 
         public void RemoveAt(int index)

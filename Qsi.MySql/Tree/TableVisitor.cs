@@ -191,6 +191,7 @@ namespace Qsi.MySql.Tree
         {
             return TreeHelper.Create<QsiTableDirectivesNode>(n =>
             {
+                n.IsRecursive = context.RECURSIVE() != null;
                 n.Tables.AddRange(context.withExpression().Select(VisitWithExpression));
             });
         }
@@ -397,8 +398,8 @@ namespace Qsi.MySql.Tree
         {
             var columnName = IdentifierVisitor.Visit(columnElementContext.fullColumnName());
 
-            if (columnName.Level == 1 && 
-                columnName[0].IsEscaped && 
+            if (columnName.Level == 1 &&
+                columnName[0].IsEscaped &&
                 columnName[0].Value[0] != '`')
             {
                 return TreeHelper.Create<QsiDerivedColumnNode>(n =>
