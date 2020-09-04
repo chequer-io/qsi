@@ -20,6 +20,7 @@ using Qsi.Debugger.Utilities;
 using Qsi.Debugger.Vendor;
 using Qsi.Debugger.Vendor.MySql;
 using Qsi.Debugger.Vendor.PostgreSql;
+using Qsi.Debugger.Vendor.SqlServer;
 using Qsi.Parsing;
 using Qsi.Tree;
 
@@ -49,7 +50,8 @@ namespace Qsi.Debugger
             _vendors = new Dictionary<string, Lazy<VendorDebugger>>
             {
                 ["MySQL"] = new Lazy<VendorDebugger>(() => new MySqlDebugger()),
-                ["PostgreSQL"] = new Lazy<VendorDebugger>(() => new PostgreSqlDebugger())
+                ["PostgreSQL"] = new Lazy<VendorDebugger>(() => new PostgreSqlDebugger()),
+                ["SQLServer"] = new Lazy<VendorDebugger>(() => new SqlServerDebugger())
             };
 
             _cbLanguages = this.Find<ComboBox>("cbLanguages");
@@ -114,6 +116,7 @@ namespace Qsi.Debugger
         private async void Update()
         {
             ClearError();
+            ClearRawTree();
             ClearQsiTree();
             ClearResultTree();
 
@@ -180,6 +183,11 @@ namespace Qsi.Debugger
             _tbError.IsVisible = false;
         }
 
+        private void ClearRawTree()
+        {
+            _tvRaw.Items = null;
+        }
+        
         private void ClearQsiTree()
         {
             _tvQsi.Items = null;
