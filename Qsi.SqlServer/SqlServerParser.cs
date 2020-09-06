@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.SqlServer.Management.SqlParser.Parser;
 using Qsi.Data;
 using Qsi.Parsing;
+using Qsi.SqlServer.Tree;
 using Qsi.Tree;
 using Qsi.Utilities;
 
@@ -44,7 +45,11 @@ namespace Qsi.SqlServer
                 return null;
             }
 
-            throw new NotImplementedException();
+            var statement = result
+                .Script.Batches.FirstOrDefault()?
+                .Statements.FirstOrDefault();
+            
+            return TableVisitor.Visit(statement);
         }
     }
 }
