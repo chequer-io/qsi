@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System;
 using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
 using Qsi.Data;
 using Qsi.Tree.Base;
@@ -20,11 +19,11 @@ namespace Qsi.SqlServer.Tree
                 case SqlSelectStatement selectStatement:
                     return VisitSelectStatement(selectStatement);
             }
-            
+
             return null;
         }
         #endregion
-        
+
         #region Select Statements
         public static QsiTableNode VisitSelectStatement(SqlSelectStatement selectStatement)
         {
@@ -37,6 +36,7 @@ namespace Qsi.SqlServer.Tree
             {
                 case SqlQuerySpecification querySpecification:
                     return VisitQuerySpecification(querySpecification);
+
                 case SqlBinaryQueryExpression binaryQueryExpression:
                     return VisitBinaryQueryExpression(binaryQueryExpression);
             }
@@ -44,7 +44,7 @@ namespace Qsi.SqlServer.Tree
             return null;
         }
 
-        public static QsiDerivedTableNode VisitQuerySpecification(SqlQuerySpecification querySpecification)
+        private static QsiDerivedTableNode VisitQuerySpecification(SqlQuerySpecification querySpecification)
         {
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
@@ -55,6 +55,7 @@ namespace Qsi.SqlServer.Tree
                         case SqlSelectClause selectClause:
                             n.Columns.SetValue(VisitSelectClause(selectClause));
                             break;
+
                         case SqlFromClause fromClause:
                             n.Source.SetValue(VisitFromClause(fromClause));
                             break;
@@ -63,7 +64,7 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
-        public static QsiCompositeTableNode VisitBinaryQueryExpression(SqlBinaryQueryExpression binaryQueryExpression)
+        private static QsiCompositeTableNode VisitBinaryQueryExpression(SqlBinaryQueryExpression binaryQueryExpression)
         {
             return TreeHelper.Create<QsiCompositeTableNode>(n =>
             {
@@ -71,7 +72,7 @@ namespace Qsi.SqlServer.Tree
                 n.Sources.Add(VisitQueryExpression(binaryQueryExpression.Right));
             });
         }
-        
+
         public static QsiColumnsDeclarationNode VisitSelectClause(SqlSelectClause selectClause)
         {
             return TreeHelper.Create<QsiColumnsDeclarationNode>(dn =>
@@ -83,7 +84,7 @@ namespace Qsi.SqlServer.Tree
                         case SqlSelectStarExpression starExpression:
                             dn.Columns.Add(VisitStarExpression(starExpression));
                             break;
-                        
+
                         case SqlSelectScalarExpression scalarExpression:
                             dn.Columns.Add(VisitSelectScalarExpression(scalarExpression));
                             break;
@@ -97,22 +98,27 @@ namespace Qsi.SqlServer.Tree
             // TODO: TableExpressions에 대응 (현재는 바로 return)
             foreach (var tableExpression in fromClause.TableExpressions)
             {
-                switch (tableExpression)
-                {
-                    case SqlTableRefExpression tableRefExpression:
-                        return VisitTableRefExpression(tableRefExpression);
-                }
+                return VisitTableExpression(tableExpression);
             }
 
             return null;
-            //
-            // return TreeHelper.Create<QsiTableAccessNode>(n =>
-            // {
-            //     n.Identifier = 
-            // });
         }
 
-        public static QsiTableNode VisitTableRefExpression(SqlTableRefExpression tableRefExpression)
+        private static QsiTableNode VisitTableExpression(SqlTableExpression tableExpression)
+        {
+            switch (tableExpression)
+            {
+                case SqlTableRefExpression tableRefExpression:
+                    return VisitTableRefExpression(tableRefExpression);
+
+                case SqlQualifiedJoinTableExpression qualifiedJoinTableExpression:
+                    return VisitQualifiedJoinTableExpression(qualifiedJoinTableExpression);
+            }
+
+            return null;
+        }
+
+        private static QsiTableNode VisitTableRefExpression(SqlTableRefExpression tableRefExpression)
         {
             var tableNode = new QsiTableAccessNode
             {
@@ -129,7 +135,7 @@ namespace Qsi.SqlServer.Tree
 
                 n.Columns.SetValue(allDeclaration);
                 n.Source.SetValue(tableNode);
-                
+
                 n.Alias.SetValue(new QsiAliasNode
                 {
                     Name = new QsiIdentifier(tableRefExpression.Alias.Value, false)
@@ -137,12 +143,46 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
+        private static QsiJoinedTableNode VisitQualifiedJoinTableExpression(SqlQualifiedJoinTableExpression qualifiedJoinTableExpression)
+        {
+            return TreeHelper.Create<QsiJoinedTableNode>(n =>
+            {
+                n.Left.SetValue(VisitTableExpression(qualifiedJoinTableExpression.Left));
+                n.Right.SetValue(VisitTableExpression(qualifiedJoinTableExpression.Right));
+
+                n.JoinType = qualifiedJoinTableExpression.JoinOperator switch
+                {
+                    SqlJoinOperatorType.CrossApply => QsiJoinType.Inner,
+                    SqlJoinOperatorType.CrossJoin => QsiJoinType.Cross,
+                    SqlJoinOperatorType.InnerJoin => QsiJoinType.Inner,
+                    SqlJoinOperatorType.OuterApply => QsiJoinType.Left,
+                    SqlJoinOperatorType.FullOuterJoin => QsiJoinType.Full,
+                    SqlJoinOperatorType.LeftOuterJoin => QsiJoinType.Left,
+                    SqlJoinOperatorType.RightOuterJoin => QsiJoinType.Right,
+                    _ => throw new InvalidOperationException()
+                };
+            });
+        }
+
         private static QsiColumnNode VisitSelectScalarExpression(SqlSelectScalarExpression scalarExpression)
         {
-            return new QsiDeclaredColumnNode
+            var columnNode = new QsiDeclaredColumnNode
             {
                 Name = IdentifierVisitor.VisitScalarExpression(scalarExpression.Expression),
             };
+
+            if (scalarExpression.Alias == null)
+                return columnNode;
+
+            return TreeHelper.Create<QsiDerivedColumnNode>(n =>
+            {
+                n.Column.SetValue(columnNode);
+
+                n.Alias.SetValue(new QsiAliasNode
+                {
+                    Name = new QsiIdentifier(scalarExpression.Alias.Value, false)
+                });
+            });
         }
 
         public static QsiColumnNode VisitStarExpression(SqlSelectStarExpression starExpression)
