@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
+using Qsi.Data;
 using Qsi.Tree.Base;
 using Qsi.Utilities;
 
@@ -18,9 +19,6 @@ namespace Qsi.SqlServer.Tree
             {
                 case SqlSelectStatement selectStatement:
                     return VisitSelectStatement(selectStatement);
-                // case SqlCreateViewStatement createViewStatement:
-                //
-                //     break;
             }
             
             return null;
@@ -30,8 +28,6 @@ namespace Qsi.SqlServer.Tree
         #region Select Statements
         public static QsiTableNode VisitSelectStatement(SqlSelectStatement selectStatement)
         {
-            QsiTableNode tableNode = null;
-            
             return VisitQueryExpression(selectStatement.SelectSpecification.QueryExpression);
         }
 
@@ -116,12 +112,29 @@ namespace Qsi.SqlServer.Tree
             // });
         }
 
-        public static QsiTableAccessNode VisitTableRefExpression(SqlTableRefExpression tableRefExpression)
+        public static QsiTableNode VisitTableRefExpression(SqlTableRefExpression tableRefExpression)
         {
-            return new QsiTableAccessNode
+            var tableNode = new QsiTableAccessNode
             {
                 Identifier = IdentifierVisitor.VisitMultipartIdentifier(tableRefExpression.ObjectIdentifier)
             };
+
+            if (tableRefExpression.Alias == null)
+                return tableNode;
+
+            return TreeHelper.Create<QsiDerivedTableNode>(n =>
+            {
+                var allDeclaration = new QsiColumnsDeclarationNode();
+                allDeclaration.Columns.Add(new QsiAllColumnNode());
+
+                n.Columns.SetValue(allDeclaration);
+                n.Source.SetValue(tableNode);
+                
+                n.Alias.SetValue(new QsiAliasNode
+                {
+                    Name = new QsiIdentifier(tableRefExpression.Alias.Value, false)
+                });
+            });
         }
 
         private static QsiColumnNode VisitSelectScalarExpression(SqlSelectScalarExpression scalarExpression)
