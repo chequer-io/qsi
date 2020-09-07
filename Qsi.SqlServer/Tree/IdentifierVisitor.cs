@@ -17,6 +17,10 @@ namespace Qsi.SqlServer.Tree
             {
                 case SqlScalarRefExpression scalarRefExpression:
                     return VisitMultipartIdentifier(scalarRefExpression.MultipartIdentifier);
+
+                case SqlLiteralExpression literal when literal.Type == LiteralValueType.Identifier:
+                    // TODO: Implement
+                    return VisitLiteralExpression();
             }
 
             return null;
