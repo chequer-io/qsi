@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
 using Qsi.Data;
 using Qsi.Tree.Base;
@@ -95,13 +96,32 @@ namespace Qsi.SqlServer.Tree
 
         public static QsiTableNode VisitFromClause(SqlFromClause fromClause)
         {
-            // TODO: TableExpressions에 대응 (현재는 바로 return)
-            foreach (var tableExpression in fromClause.TableExpressions)
+            var tableExpressions = fromClause.TableExpressions;
+            
+            if (tableExpressions.Count == 1)
+                return VisitTableExpression(tableExpressions.FirstOrDefault());
+
+            var joinedTableNode = TreeHelper.Create<QsiJoinedTableNode>(n =>
             {
-                return VisitTableExpression(tableExpression);
+                n.Left.SetValue(VisitTableExpression(tableExpressions[0]));
+                n.Right.SetValue(VisitTableExpression(tableExpressions[1]));
+                
+                n.JoinType = QsiJoinType.Full;
+            }); 
+            
+            foreach (var tableExpression in tableExpressions.Skip(2))
+            {
+                var node = joinedTableNode;
+
+                joinedTableNode = TreeHelper.Create<QsiJoinedTableNode>(n =>
+                {
+                    n.Left.SetValue(node);
+                    n.Right.SetValue(VisitTableExpression(tableExpression));
+                    n.JoinType = QsiJoinType.Full;
+                });
             }
 
-            return null;
+            return joinedTableNode;
         }
 
         private static QsiTableNode VisitTableExpression(SqlTableExpression tableExpression)
