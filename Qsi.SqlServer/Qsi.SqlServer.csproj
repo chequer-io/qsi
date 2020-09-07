@@ -9,12 +9,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Qsi\Qsi.csproj"/>
+        <ProjectReference Include="..\Qsi\Qsi.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.SqlServer.Management.SqlParser" Version="160.20216.14"/>
-        <PackageReference Include="Microsoft.SqlServer.Management.SqlParser.Loc" Version="160.20216.14"/>
+        <PackageReference Include="Microsoft.SqlServer.Management.SqlParser" Version="160.20216.14" />
+        <PackageReference Include="Microsoft.SqlServer.Management.SqlParser.Loc" Version="160.20216.14" />
     </ItemGroup>
 
 </Project>
