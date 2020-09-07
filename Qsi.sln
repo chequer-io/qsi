@@ -17,6 +17,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AvaloniaEdit", "Libraries\A
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Debugger", "Debugger", "{D9187603-20FE-4487-A964-C1DD18874E04}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qsi.JSql", "Qsi.JSql\Qsi.JSql.csproj", "{B69D2EB0-3D49-4460-8A77-0EF02586241F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,6 +45,10 @@ Global
 		{CFE5B121-8ABF-4646-97FD-AC5794A36C53}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CFE5B121-8ABF-4646-97FD-AC5794A36C53}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CFE5B121-8ABF-4646-97FD-AC5794A36C53}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B69D2EB0-3D49-4460-8A77-0EF02586241F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B69D2EB0-3D49-4460-8A77-0EF02586241F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B69D2EB0-3D49-4460-8A77-0EF02586241F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B69D2EB0-3D49-4460-8A77-0EF02586241F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
