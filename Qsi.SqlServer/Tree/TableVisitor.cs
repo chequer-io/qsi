@@ -207,10 +207,13 @@ namespace Qsi.SqlServer.Tree
 
         public static QsiColumnNode VisitStarExpression(SqlSelectStarExpression starExpression)
         {
-            return new QsiAllColumnNode
+            return TreeHelper.Create<QsiAllColumnNode>(n =>
             {
-                Path = IdentifierVisitor.VisitMultipartIdentifier(starExpression.Qualifier)
-            };
+                if (starExpression.Qualifier != null)
+                {
+                    n.Path = IdentifierVisitor.VisitMultipartIdentifier(starExpression.Qualifier);
+                }
+            });
         }
         #endregion
     }
