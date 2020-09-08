@@ -7,6 +7,7 @@ using net.sf.jsqlparser.statement;
 using net.sf.jsqlparser.statement.create.view;
 using net.sf.jsqlparser.statement.@select;
 using net.sf.jsqlparser.statement.values;
+using Qsi.Data;
 using Qsi.JSql.Extensions;
 using Qsi.Tree.Base;
 using Qsi.Utilities;
@@ -136,17 +137,70 @@ namespace Qsi.JSql.Tree
 
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
-                if (plainSelect.getSelectItems()?.size() > 0)
-                {
-                    IEnumerable<SelectItem> selectItems = plainSelect.getSelectItems().AsEnumerable<SelectItem>();
+                IList<SelectItem> selectItems = plainSelect.getSelectItems().AsList<SelectItem>();
+
+                if (!ListUtility.IsNullOrEmpty(selectItems))
                     n.Columns.SetValue(VisitSelectItems(selectItems));
-                }
 
                 if (plainSelect.getFromItem() != null)
                 {
-                    n.Source.SetValue(VisitFromItem(plainSelect.getFromItem()));
+                    var source = VisitFromItem(plainSelect.getFromItem());
+                    IList<Join> joins = plainSelect.getJoins().AsList<Join>();
+
+                    n.Source.SetValue(ListUtility.IsNullOrEmpty(joins) ? source : CreateJoins(source, joins));
                 }
             });
+        }
+
+        public virtual QsiTableNode CreateJoins(QsiTableNode source, IEnumerable<Join> joins)
+        {
+            foreach (var join in joins)
+            {
+                var rightSource = VisitFromItem(join.getRightItem());
+                IList<Column> usingColumns = join.getUsingColumns().AsList<Column>();
+
+                var joinNode = new QsiJoinedTableNode
+                {
+                    JoinType = GetJoinType(join)
+                };
+
+                joinNode.Left.SetValue(source);
+                joinNode.Right.SetValue(rightSource);
+
+                if (!ListUtility.IsNullOrEmpty(usingColumns))
+                {
+                    var pivotColumnsDeclaration = TreeHelper.Create<QsiColumnsDeclarationNode>(n =>
+                    {
+                        n.Columns.AddRange(usingColumns.Select(VisitColumn));
+                    });
+
+                    joinNode.PivotColumns.SetValue(pivotColumnsDeclaration);
+                }
+
+                source = joinNode;
+            }
+
+            return source;
+        }
+
+        protected virtual QsiJoinType GetJoinType(Join join)
+        {
+            if (join.isRight())
+                return QsiJoinType.Right;
+
+            if (join.isLeft())
+                return QsiJoinType.Left;
+
+            if (join.isInner())
+                return QsiJoinType.Inner;
+
+            if (join.isSemi())
+                return QsiJoinType.Semi;
+
+            if (join.isCross())
+                return QsiJoinType.Cross;
+
+            return QsiJoinType.Full;
         }
 
         public virtual QsiCompositeTableNode VisitSetOperationList(SetOperationList setOperationList)
@@ -276,8 +330,8 @@ namespace Qsi.JSql.Tree
                 case Table table:
                     return VisitTable(table);
 
-                case Join join:
-                    return VisitJoin(join);
+                // case Join join:
+                //     process on VisitPlainSelect
 
                 case SubJoin subJoin:
                     return VisitSubJoin(subJoin);
@@ -317,11 +371,6 @@ namespace Qsi.JSql.Tree
                 n.Source.SetValue(source);
                 n.Alias.SetValue(VisitAlias(table.getAlias()));
             });
-        }
-
-        public virtual QsiTableNode VisitJoin(Join join)
-        {
-            throw new NotImplementedException();
         }
 
         public virtual QsiTableNode VisitSubJoin(SubJoin subJoin)
