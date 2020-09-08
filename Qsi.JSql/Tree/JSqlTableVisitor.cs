@@ -347,8 +347,8 @@ namespace Qsi.JSql.Tree
                 case TableFunction tableFunction:
                     return VisitTableFunction(tableFunction);
 
-                case SpecialSubSelect specialSubSelect:
-                    return VisitSpecialSubSelect(specialSubSelect);
+                case LateralSubSelect lateralSubSelect:
+                    return VisitLateralSubSelect(lateralSubSelect);
 
                 case ValuesList valuesList:
                     return VisitValuesList(valuesList);
@@ -404,9 +404,11 @@ namespace Qsi.JSql.Tree
                 CreateJoins(subJoin.getLeft(), subJoin.getJoinList().AsEnumerable<Join>()));
         }
 
-        public virtual QsiDerivedTableNode VisitSubSelect(SubSelect subSelect)
+        public virtual QsiTableNode VisitSubSelect(SubSelect subSelect)
         {
-            throw new NotImplementedException();
+            return WrapFromItem(
+                subSelect,
+                VisitSelectBody(subSelect.getSelectBody()));
         }
 
         public virtual QsiTableNode VisitTableFunction(TableFunction tableFunction)
@@ -415,9 +417,11 @@ namespace Qsi.JSql.Tree
             throw TreeHelper.NotSupportedFeature("Table function");
         }
 
-        public virtual QsiTableNode VisitSpecialSubSelect(SpecialSubSelect specialSubSelect)
+        private QsiTableNode VisitLateralSubSelect(LateralSubSelect lateralSubSelect)
         {
-            throw new NotImplementedException();
+            return WrapFromItem(
+                lateralSubSelect,
+                VisitSubSelect(lateralSubSelect.getSubSelect()));
         }
 
         public virtual QsiTableNode VisitValuesList(ValuesList valuesList)
