@@ -3,6 +3,7 @@
     public enum QsiLiteralType
     {
         Unknown,
+        Default,
         Null,
         String,
         Numeric,

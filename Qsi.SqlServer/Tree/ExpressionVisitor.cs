@@ -12,11 +12,10 @@ namespace Qsi.SqlServer.Tree
         {
             return TreeHelper.Create<QsiLiteralExpressionNode>(n =>
             {
-                n.Type = literalExpression.Type switch 
+                n.Type = literalExpression.Type switch
                 {
                     LiteralValueType.Binary => QsiLiteralType.Binary,
-                    // TODO: Need to check type
-                    LiteralValueType.Default => QsiLiteralType.Unknown,
+                    LiteralValueType.Default => QsiLiteralType.Default,
                     LiteralValueType.Image => QsiLiteralType.Binary,
                     LiteralValueType.Integer => QsiLiteralType.Numeric,
                     LiteralValueType.Money => QsiLiteralType.Decimal,
