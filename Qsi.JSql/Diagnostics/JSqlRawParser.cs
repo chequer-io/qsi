@@ -1,5 +1,7 @@
-﻿using net.sf.jsqlparser.parser;
+﻿using net.sf.jsqlparser;
+using net.sf.jsqlparser.parser;
 using Qsi.Diagnostics;
+using Qsi.JSql.Extensions;
 
 namespace Qsi.JSql.Diagnostics
 {
@@ -7,7 +9,14 @@ namespace Qsi.JSql.Diagnostics
     {
         public IRawTree Parse(string input)
         {
-            return new JSqlRawTree(CCJSqlParserUtil.parse(input));
+            try
+            {
+                return new JSqlRawTree(CCJSqlParserUtil.parse(input));
+            }
+            catch (JSQLParserException e)
+            {
+                throw e.AsSyntaxError();
+            }
         }
     }
 }

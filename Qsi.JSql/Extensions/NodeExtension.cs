@@ -3,7 +3,7 @@ using net.sf.jsqlparser.parser;
 
 namespace Qsi.JSql.Extensions
 {
-    public static class NodeExtension
+    internal static class NodeExtension
     {
         public static IEnumerable<Node> GetChildren(this Node node)
         {

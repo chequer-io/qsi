@@ -1,4 +1,5 @@
 ﻿using Qsi.Diagnostics;
+using Qsi.JSql;
 using Qsi.JSql.Diagnostics;
 using Qsi.Parsing;
 using Qsi.Services;
@@ -15,6 +16,7 @@ namespace Qsi.Debugger.Vendor.JSql
 
         public JSqlDebugger()
         {
+            Parser = new JSqlParser();
             RawParser = new JSqlRawParser();
         }
     }
