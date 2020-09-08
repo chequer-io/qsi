@@ -7,7 +7,7 @@ namespace Qsi.JSql.Diagnostics
     {
         public IRawTree Parse(string input)
         {
-            return new JSqlRawTree(CCJSqlParserUtil.parseAST(input));
+            return new JSqlRawTree(CCJSqlParserUtil.parse(input));
         }
     }
 }

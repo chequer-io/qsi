@@ -13,5 +13,10 @@ namespace Qsi.JSql.Diagnostics
         {
             DisplayName = token.image;
         }
+
+        public JSqlRawTreeTerminalNode(string displayName)
+        {
+            DisplayName = displayName;
+        }
     }
 }
