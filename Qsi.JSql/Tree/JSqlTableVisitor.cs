@@ -6,6 +6,7 @@ using net.sf.jsqlparser.schema;
 using net.sf.jsqlparser.statement;
 using net.sf.jsqlparser.statement.create.view;
 using net.sf.jsqlparser.statement.@select;
+using net.sf.jsqlparser.statement.values;
 using Qsi.JSql.Extensions;
 using Qsi.Tree.Base;
 using Qsi.Utilities;
@@ -45,17 +46,32 @@ namespace Qsi.JSql.Tree
             throw TreeHelper.NotSupportedTree(statement);
         }
 
-        public virtual QsiDerivedTableNode VisitSelect(Select select)
+        public virtual QsiTableNode VisitSelect(Select select)
         {
             var tableNode = VisitSelectBody(select.getSelectBody());
+            IEnumerable<WithItem> withItems = select.getWithItemsList()?.AsEnumerable<WithItem>();
 
-            if (select.getWithItemsList()?.size() > 0)
+            if (withItems == null || !withItems.Any())
+                return tableNode;
+
+            QsiDerivedTableNode derivedNode;
+
+            if (tableNode is QsiDerivedTableNode derivedTableNode && derivedTableNode.Directives.IsEmpty)
             {
-                IEnumerable<WithItem> withItems = select.getWithItemsList().AsEnumerable<WithItem>();
-                tableNode.Directives.SetValue(VisitWithItems(withItems));
+                derivedNode = derivedTableNode;
+            }
+            else
+            {
+                derivedNode = TreeHelper.Create<QsiDerivedTableNode>(n =>
+                {
+                    n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+                    n.Source.SetValue(tableNode);
+                });
             }
 
-            return tableNode;
+            derivedNode.Directives.SetValue(VisitWithItems(withItems));
+
+            return derivedNode;
         }
 
         #region WithItem
@@ -65,32 +81,6 @@ namespace Qsi.JSql.Tree
             {
                 n.IsRecursive = withItems.First().isRecursive();
                 n.Tables.AddRange(withItems.Select(VisitWithItem));
-            });
-        }
-
-        public virtual QsiTableNode VisitWithItem(WithItem withItem)
-        {
-            return TreeHelper.Create<QsiDerivedTableNode>(n =>
-            {
-                if (withItem.getWithItemList()?.size() > 0)
-                {
-                    IEnumerable<Column> columns = withItem.getWithItemList()
-                        .AsEnumerable<SelectExpressionItem>()
-                        .Select(item => (Column)item.getExpression());
-
-                    n.Columns.SetValue(CreateSequentialColumnNodes(columns));
-                }
-                else
-                {
-                    n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
-                }
-
-                n.Source.SetValue(VisitSelectBody(withItem.getSelectBody()));
-
-                n.Alias.SetValue(new QsiAliasNode
-                {
-                    Name = IdentifierVisitor.Create(withItem.getName())
-                });
             });
         }
 
@@ -118,15 +108,21 @@ namespace Qsi.JSql.Tree
         #endregion
 
         #region SelectBody
-        public virtual QsiDerivedTableNode VisitSelectBody(SelectBody selectBody)
+        public virtual QsiTableNode VisitSelectBody(SelectBody selectBody)
         {
             switch (selectBody)
             {
                 case PlainSelect plainSelect:
                     return VisitPlainSelect(plainSelect);
 
-                case SubSelect subSelect:
-                    return VisitSubSelect(subSelect);
+                case SetOperationList setOperationList:
+                    return VisitSetOperationList(setOperationList);
+
+                case WithItem withItem:
+                    return VisitWithItem(withItem);
+
+                case ValuesStatement valuesStatement:
+                    return VisitValuesStatement(valuesStatement);
 
                 default:
                     throw TreeHelper.NotSupportedTree(selectBody);
@@ -135,6 +131,9 @@ namespace Qsi.JSql.Tree
 
         public virtual QsiDerivedTableNode VisitPlainSelect(PlainSelect plainSelect)
         {
+            if (plainSelect.getIntoTables()?.size() > 0)
+                throw TreeHelper.NotSupportedFeature("INTO");
+
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
                 if (plainSelect.getSelectItems()?.size() > 0)
@@ -150,9 +149,45 @@ namespace Qsi.JSql.Tree
             });
         }
 
-        private QsiDerivedTableNode VisitSubSelect(SubSelect subSelect)
+        public virtual QsiCompositeTableNode VisitSetOperationList(SetOperationList setOperationList)
         {
-            throw new NotImplementedException();
+            return TreeHelper.Create<QsiCompositeTableNode>(n =>
+            {
+                n.Sources.AddRange(setOperationList.getSelects()
+                    .AsEnumerable<SelectBody>()
+                    .Select(VisitSelectBody));
+            });
+        }
+
+        public virtual QsiDerivedTableNode VisitWithItem(WithItem withItem)
+        {
+            return TreeHelper.Create<QsiDerivedTableNode>(n =>
+            {
+                if (withItem.getWithItemList()?.size() > 0)
+                {
+                    IEnumerable<Column> columns = withItem.getWithItemList()
+                        .AsEnumerable<SelectExpressionItem>()
+                        .Select(item => (Column)item.getExpression());
+
+                    n.Columns.SetValue(CreateSequentialColumnNodes(columns));
+                }
+                else
+                {
+                    n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+                }
+
+                n.Source.SetValue(VisitSelectBody(withItem.getSelectBody()));
+
+                n.Alias.SetValue(new QsiAliasNode
+                {
+                    Name = IdentifierVisitor.Create(withItem.getName())
+                });
+            });
+        }
+
+        private QsiDerivedTableNode VisitValuesStatement(ValuesStatement valuesStatement)
+        {
+            throw TreeHelper.NotSupportedFeature("VALUES");
         }
         #endregion
 
@@ -266,7 +301,7 @@ namespace Qsi.JSql.Tree
             throw TreeHelper.NotSupportedTree(item);
         }
 
-        private QsiTableNode VisitTable(Table table)
+        public virtual QsiTableNode VisitTable(Table table)
         {
             var source = TreeHelper.Create<QsiTableAccessNode>(n =>
             {
@@ -284,32 +319,37 @@ namespace Qsi.JSql.Tree
             });
         }
 
-        private QsiTableNode VisitJoin(Join join)
+        public virtual QsiTableNode VisitJoin(Join join)
         {
             throw new NotImplementedException();
         }
 
-        private QsiTableNode VisitSubJoin(SubJoin subJoin)
+        public virtual QsiTableNode VisitSubJoin(SubJoin subJoin)
         {
             throw new NotImplementedException();
         }
 
-        private QsiTableNode VisitTableFunction(TableFunction tableFunction)
+        public virtual QsiDerivedTableNode VisitSubSelect(SubSelect subSelect)
         {
             throw new NotImplementedException();
         }
 
-        private QsiTableNode VisitSpecialSubSelect(SpecialSubSelect specialSubSelect)
+        public virtual QsiTableNode VisitTableFunction(TableFunction tableFunction)
         {
             throw new NotImplementedException();
         }
 
-        private QsiTableNode VisitValuesList(ValuesList valuesList)
+        public virtual QsiTableNode VisitSpecialSubSelect(SpecialSubSelect specialSubSelect)
         {
             throw new NotImplementedException();
         }
 
-        private QsiTableNode VisitParenthesisFromItem(ParenthesisFromItem parenthesisFromItem)
+        public virtual QsiTableNode VisitValuesList(ValuesList valuesList)
+        {
+            throw new NotImplementedException();
+        }
+
+        public virtual QsiTableNode VisitParenthesisFromItem(ParenthesisFromItem parenthesisFromItem)
         {
             var alias = parenthesisFromItem.getAlias();
             var source = VisitFromItem(parenthesisFromItem.getFromItem());
