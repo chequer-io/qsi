@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
 using Qsi.Data;
@@ -97,7 +97,7 @@ namespace Qsi.SqlServer.Tree
         public static QsiTableNode VisitFromClause(SqlFromClause fromClause)
         {
             var tableExpressions = fromClause.TableExpressions;
-            
+
             if (tableExpressions.Count == 1)
                 return VisitTableExpression(tableExpressions.FirstOrDefault());
 
@@ -105,10 +105,10 @@ namespace Qsi.SqlServer.Tree
             {
                 n.Left.SetValue(VisitTableExpression(tableExpressions[0]));
                 n.Right.SetValue(VisitTableExpression(tableExpressions[1]));
-                
+
                 n.JoinType = QsiJoinType.Full;
-            }); 
-            
+            });
+
             foreach (var tableExpression in tableExpressions.Skip(2))
             {
                 var node = joinedTableNode;
@@ -186,22 +186,45 @@ namespace Qsi.SqlServer.Tree
 
         private static QsiColumnNode VisitSelectScalarExpression(SqlSelectScalarExpression scalarExpression)
         {
-            var columnNode = new QsiDeclaredColumnNode
-            {
-                Name = IdentifierVisitor.VisitScalarExpression(scalarExpression.Expression),
-            };
+            QsiLiteralExpressionNode expression = null;
+            QsiDeclaredColumnNode column = null;
 
-            if (scalarExpression.Alias == null)
-                return columnNode;
+            switch (scalarExpression.Expression)
+            {
+                case SqlLiteralExpression literalExpression:
+                    expression = ExpressionVisitor.VisitLiteralExpression(literalExpression);
+                    break;
+
+                default:
+                    column = new QsiDeclaredColumnNode
+                    {
+                        Name = IdentifierVisitor.VisitScalarExpression(scalarExpression.Expression),
+                    };
+
+                    if (scalarExpression.Alias == null)
+                        return column;
+
+                    break;
+            }
 
             return TreeHelper.Create<QsiDerivedColumnNode>(n =>
             {
-                n.Column.SetValue(columnNode);
-
-                n.Alias.SetValue(new QsiAliasNode
+                if (column != null)
                 {
-                    Name = new QsiIdentifier(scalarExpression.Alias.Value, false)
-                });
+                    n.Column.SetValue(column);
+                }
+                else if (expression != null)
+                {
+                    n.Expression.SetValue(expression);
+                }
+
+                if (scalarExpression.Alias != null)
+                {
+                    n.Alias.SetValue(new QsiAliasNode
+                    {
+                        Name = new QsiIdentifier(scalarExpression.Alias.Value, false)
+                    });
+                }
             });
         }
 

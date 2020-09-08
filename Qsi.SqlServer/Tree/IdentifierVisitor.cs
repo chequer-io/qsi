@@ -10,7 +10,7 @@ namespace Qsi.SqlServer.Tree
         {
             return new QsiQualifiedIdentifier(objectIdentifier.Select(i => new QsiIdentifier(i.Value, false)));
         }
-
+        
         public static QsiQualifiedIdentifier VisitScalarExpression(SqlScalarExpression scalarExpression)
         {
             switch (scalarExpression)
@@ -20,10 +20,16 @@ namespace Qsi.SqlServer.Tree
 
                 case SqlLiteralExpression literal when literal.Type == LiteralValueType.Identifier:
                     // TODO: Implement
-                    return VisitLiteralExpression();
+                    // return VisitLiteralExpression();
+                    break;
             }
 
             return null;
+        }
+
+        public static QsiIdentifier CreateIdentifier(SqlIdentifier identifier)
+        {
+            return new QsiIdentifier(identifier.Value, false);
         }
     }
 }
