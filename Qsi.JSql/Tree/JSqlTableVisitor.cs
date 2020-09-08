@@ -360,37 +360,48 @@ namespace Qsi.JSql.Tree
             throw TreeHelper.NotSupportedTree(item);
         }
 
+        private QsiTableNode WrapFromItem(FromItem fromItem, QsiTableNode tableNode)
+        {
+            // TODO: Pivot, UnPivot
+
+            if (fromItem.getAlias() == null)
+                return tableNode;
+
+            QsiDerivedTableNode derivedNode;
+
+            if (tableNode is QsiDerivedTableNode derivedTableNode && derivedTableNode.Alias.IsEmpty)
+            {
+                derivedNode = derivedTableNode;
+            }
+            else
+            {
+                derivedNode = TreeHelper.Create<QsiDerivedTableNode>(n =>
+                {
+                    n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+                    n.Source.SetValue(tableNode);
+                });
+            }
+
+            derivedNode.Alias.SetValue(VisitAlias(fromItem.getAlias()));
+
+            return derivedNode;
+        }
+
         public virtual QsiTableNode VisitTable(Table table)
         {
-            var source = TreeHelper.Create<QsiTableAccessNode>(n =>
-            {
-                n.Identifier = IdentifierVisitor.VisitMultiPartName(table);
-            });
-
-            if (table.getAlias() == null)
-                return source;
-
-            return TreeHelper.Create<QsiDerivedTableNode>(n =>
-            {
-                n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
-                n.Source.SetValue(source);
-                n.Alias.SetValue(VisitAlias(table.getAlias()));
-            });
+            return WrapFromItem(
+                table,
+                TreeHelper.Create<QsiTableAccessNode>(n =>
+                {
+                    n.Identifier = IdentifierVisitor.VisitMultiPartName(table);
+                }));
         }
 
         public virtual QsiTableNode VisitSubJoin(SubJoin subJoin)
         {
-            var join = CreateJoins(subJoin.getLeft(), subJoin.getJoinList().AsEnumerable<Join>());
-
-            if (subJoin.getAlias() == null)
-                return join;
-
-            return TreeHelper.Create<QsiDerivedTableNode>(n =>
-            {
-                n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
-                n.Source.SetValue(join);
-                n.Alias.SetValue(VisitAlias(subJoin.getAlias()));
-            });
+            return WrapFromItem(
+                subJoin,
+                CreateJoins(subJoin.getLeft(), subJoin.getJoinList().AsEnumerable<Join>()));
         }
 
         public virtual QsiDerivedTableNode VisitSubSelect(SubSelect subSelect)
@@ -416,17 +427,9 @@ namespace Qsi.JSql.Tree
 
         public virtual QsiTableNode VisitParenthesisFromItem(ParenthesisFromItem parenthesisFromItem)
         {
-            var source = VisitFromItem(parenthesisFromItem.getFromItem());
-
-            if (parenthesisFromItem.getAlias() == null)
-                return source;
-
-            return TreeHelper.Create<QsiDerivedTableNode>(n =>
-            {
-                n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
-                n.Source.SetValue(source);
-                n.Alias.SetValue(VisitAlias(parenthesisFromItem.getAlias()));
-            });
+            return WrapFromItem(
+                parenthesisFromItem,
+                VisitFromItem(parenthesisFromItem.getFromItem()));
         }
         #endregion
 
