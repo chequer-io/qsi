@@ -39,19 +39,45 @@ namespace Qsi.PostgreSql.Tree.PG10
 
         public static QsiTableNode VisitSelectStmt(SelectStmt selectStmt)
         {
+            QsiTableNode tableNode;
+
             switch (selectStmt.op)
             {
                 case SetOperation.SETOP_NONE:
-                    return VisitSelectStmtNone(selectStmt);
+                    tableNode = VisitSelectStmtNone(selectStmt);
+                    break;
 
                 case SetOperation.SETOP_UNION:
                 case SetOperation.SETOP_EXCEPT:
                 case SetOperation.SETOP_INTERSECT:
-                    return VisitSelectStmtComposite(selectStmt);
+                    tableNode = VisitSelectStmtComposite(selectStmt);
+                    break;
 
                 default:
                     throw TreeHelper.NotSupportedTree($"{selectStmt.GetType().Name}({selectStmt.op})");
             }
+
+            if (ListUtility.IsNullOrEmpty(selectStmt.withClause))
+                return tableNode;
+
+            QsiDerivedTableNode derivedTableNode;
+
+            if (tableNode is QsiDerivedTableNode derivedTable && derivedTable.Directives.IsEmpty)
+            {
+                derivedTableNode = derivedTable;
+            }
+            else
+            {
+                derivedTableNode = TreeHelper.Create<QsiDerivedTableNode>(n =>
+                {
+                    n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+                    n.Source.SetValue(tableNode);
+                });
+            }
+
+            derivedTableNode.Directives.SetValue(VisitWithClause(selectStmt.withClause[0]));
+
+            return derivedTableNode;
         }
 
         private static QsiDerivedTableNode VisitSelectStmtNone(SelectStmt stmt)
@@ -67,11 +93,6 @@ namespace Qsi.PostgreSql.Tree.PG10
                 if (!ListUtility.IsNullOrEmpty(stmt.fromClause))
                 {
                     n.Source.SetValue(VisitFromClauses(n, stmt.fromClause));
-                }
-
-                if (!ListUtility.IsNullOrEmpty(stmt.withClause))
-                {
-                    n.Directives.SetValue(VisitWithClause(stmt.withClause[0]));
                 }
             });
         }
