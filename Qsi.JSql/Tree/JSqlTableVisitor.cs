@@ -133,7 +133,7 @@ namespace Qsi.JSql.Tree
         public virtual QsiDerivedTableNode VisitPlainSelect(PlainSelect plainSelect)
         {
             if (plainSelect.getIntoTables()?.size() > 0)
-                throw TreeHelper.NotSupportedFeature("INTO");
+                throw TreeHelper.NotSupportedFeature("Into clause");
 
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
@@ -246,7 +246,7 @@ namespace Qsi.JSql.Tree
 
         private QsiDerivedTableNode VisitValuesStatement(ValuesStatement valuesStatement)
         {
-            throw TreeHelper.NotSupportedFeature("VALUES");
+            throw TreeHelper.NotSupportedFeature("Values statement");
         }
         #endregion
 
@@ -400,7 +400,8 @@ namespace Qsi.JSql.Tree
 
         public virtual QsiTableNode VisitTableFunction(TableFunction tableFunction)
         {
-            throw new NotImplementedException();
+            // TODO: Implement table function
+            throw TreeHelper.NotSupportedFeature("Table function");
         }
 
         public virtual QsiTableNode VisitSpecialSubSelect(SpecialSubSelect specialSubSelect)
