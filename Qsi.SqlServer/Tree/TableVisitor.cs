@@ -186,24 +186,24 @@ namespace Qsi.SqlServer.Tree
 
         private static QsiColumnNode VisitSelectScalarExpression(SqlSelectScalarExpression scalarExpression)
         {
-            QsiLiteralExpressionNode expression = null;
+            QsiExpressionNode expression = null;
             QsiDeclaredColumnNode column = null;
 
             switch (scalarExpression.Expression)
             {
-                case SqlLiteralExpression literalExpression:
-                    expression = ExpressionVisitor.VisitLiteralExpression(literalExpression);
-                    break;
-
-                default:
+                case SqlScalarRefExpression refExpression:
                     column = new QsiDeclaredColumnNode
                     {
-                        Name = IdentifierVisitor.VisitScalarExpression(scalarExpression.Expression),
+                        Name = IdentifierVisitor.VisitMultipartIdentifier(refExpression.MultipartIdentifier)
                     };
 
                     if (scalarExpression.Alias == null)
                         return column;
 
+                    break;
+
+                default:
+                    expression = ExpressionVisitor.VisitScalarExpression(scalarExpression.Expression);
                     break;
             }
 
