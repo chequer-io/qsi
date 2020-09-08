@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Xml;
 using Avalonia;
 using Avalonia.Controls;
@@ -166,8 +167,8 @@ namespace Qsi.Debugger
                 _tbError.Text = e.Message;
                 _tbError.IsVisible = true;
 
-                // if (System.Diagnostics.Debugger.IsAttached)
-                //     throw;
+                if (System.Diagnostics.Debugger.IsAttached)
+                    ExceptionDispatchInfo.Throw(e);
             }
 
             static void ErrorHandler(object sender, QsiSyntaxErrorException e)
