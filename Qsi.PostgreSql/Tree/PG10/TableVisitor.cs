@@ -120,10 +120,8 @@ namespace Qsi.PostgreSql.Tree.PG10
             {
                 // CreateTableAsStmt / IntoClause / RangeVar
                 var viewAccessNode = IdentifierVisitor.VisitRangeVar(stmt.into[0].rel[0]);
-                var columnsDeclaration = new QsiColumnsDeclarationNode();
-                columnsDeclaration.Columns.Add(new QsiAllColumnNode());
 
-                n.Columns.SetValue(columnsDeclaration);
+                n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
                 n.Source.SetValue(Visit(stmt.query[0]));
 
                 n.Alias.SetValue(new QsiAliasNode
@@ -367,10 +365,7 @@ namespace Qsi.PostgreSql.Tree.PG10
 
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
-                var allDeclaration = new QsiColumnsDeclarationNode();
-                allDeclaration.Columns.Add(new QsiAllColumnNode());
-
-                n.Columns.SetValue(allDeclaration);
+                n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
                 n.Source.SetValue(VisitSelectStmt((SelectStmt)subselect.subquery[0]));
 
                 n.Alias.SetValue(new QsiAliasNode
