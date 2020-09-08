@@ -244,7 +244,7 @@ namespace Qsi.JSql.Tree
             });
         }
 
-        private QsiDerivedTableNode VisitValuesStatement(ValuesStatement valuesStatement)
+        public virtual QsiDerivedTableNode VisitValuesStatement(ValuesStatement valuesStatement)
         {
             throw TreeHelper.NotSupportedFeature("Values statement");
         }
@@ -417,7 +417,7 @@ namespace Qsi.JSql.Tree
             throw TreeHelper.NotSupportedFeature("Table function");
         }
 
-        private QsiTableNode VisitLateralSubSelect(LateralSubSelect lateralSubSelect)
+        public virtual QsiTableNode VisitLateralSubSelect(LateralSubSelect lateralSubSelect)
         {
             return WrapFromItem(
                 lateralSubSelect,
