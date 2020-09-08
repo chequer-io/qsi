@@ -27,7 +27,14 @@ namespace Qsi.Utilities
             });
         }
 
-        public static Exception NotSupportedTree(object tree)
+        public static QsiColumnsDeclarationNode CreateAllColumnsDeclaration()
+        {
+            var columns = new QsiColumnsDeclarationNode();
+            columns.Columns.Add(new QsiAllColumnNode());
+            return columns;
+        }
+
+        public static QsiException NotSupportedTree(object tree)
         {
             return new QsiException(QsiError.NotSupportedTree, tree.GetType().FullName);
         }
