@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
 using Qsi.Data;
@@ -19,6 +20,9 @@ namespace Qsi.SqlServer.Tree
             {
                 case SqlSelectStatement selectStatement:
                     return VisitSelectStatement(selectStatement);
+
+                case SqlCreateViewStatement createViewStatement:
+                    return VisitCreateViewStatement(createViewStatement);
             }
 
             return null;
@@ -236,6 +240,60 @@ namespace Qsi.SqlServer.Tree
                 {
                     n.Path = IdentifierVisitor.VisitMultipartIdentifier(starExpression.Qualifier);
                 }
+            });
+        }
+        #endregion
+
+        #region Columns
+        public static IEnumerable<QsiSequentialColumnNode> CreateSequentialColumnNodes(SqlIdentifierCollection identifierCollection)
+        {
+            return identifierCollection
+                .Select((identifier, i) => TreeHelper.Create<QsiSequentialColumnNode>(n =>
+                {
+                    n.Ordinal = i;
+                    n.Alias.SetValue(CreateAliasNode(identifier));
+                }));
+        }
+        #endregion
+
+        #region Alias
+        public static QsiAliasNode CreateAliasNode(SqlIdentifier identifier)
+        {
+            return new QsiAliasNode
+            {
+                Name = IdentifierVisitor.CreateIdentifier(identifier)
+            };
+        }
+        #endregion
+
+        #region CreateView Statements
+        public static QsiTableNode VisitCreateViewStatement(SqlCreateViewStatement createViewStatement)
+        {
+            return VisitViewDefinition(createViewStatement.Definition);
+        }
+
+        public static QsiTableNode VisitViewDefinition(SqlViewDefinition viewDefinition)
+        {
+            return TreeHelper.Create<QsiDerivedTableNode>(n =>
+            {
+                var columnsDeclaration = new QsiColumnsDeclarationNode();
+
+                if (viewDefinition.ColumnList.Count == 0)
+                {
+                    columnsDeclaration.Columns.Add(new QsiAllColumnNode());
+                }
+                else
+                {
+                    columnsDeclaration.Columns.AddRange(CreateSequentialColumnNodes(viewDefinition.ColumnList));
+                }
+
+                n.Columns.SetValue(columnsDeclaration);
+                n.Source.SetValue(VisitQueryExpression(viewDefinition.QueryExpression));
+
+                n.Alias.SetValue(new QsiAliasNode
+                {
+                    Name = IdentifierVisitor.VisitMultipartIdentifier(viewDefinition.Name)[^1]
+                });
             });
         }
         #endregion
