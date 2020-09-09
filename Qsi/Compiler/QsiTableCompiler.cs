@@ -281,19 +281,26 @@ namespace Qsi.Compiler
 
                     if (ContainsRecursiveQuery(compositeTableNode.Sources[0], cteName))
                     {
-                        if (!_options.UseAutoFixRecursiveQuery || compositeTableNode.Sources.Length != 2)
+                        if (!_options.UseAutoFixRecursiveQuery || compositeTableNode.Sources.Length < 2)
                             throw new QsiException(QsiError.NoAnchorInRecursiveQuery, cteName);
 
-                        if (ContainsRecursiveQuery(compositeTableNode.Sources[1], cteName))
+                        var fixedSources = compositeTableNode.Sources
+                            .Select(s => new
+                            {
+                                Source = s,
+                                Recursive = ContainsRecursiveQuery(s, cteName)
+                            })
+                            .OrderBy(x => x.Recursive ? 1 : 0)
+                            .ToArray();
+
+                        if (fixedSources[0].Recursive)
                             throw new QsiException(QsiError.NoAnchorInRecursiveQuery, cteName);
 
                         compositeTableNode = new CompositeTableNodeProxy(
                             compositeTableNode.Parent,
-                            new[]
-                            {
-                                compositeTableNode.Sources[1],
-                                compositeTableNode.Sources[0]
-                            });
+                            fixedSources
+                                .Select(s => s.Source)
+                                .ToArray());
                     }
 
                     using var directiveContext = new CompileContext(context);
