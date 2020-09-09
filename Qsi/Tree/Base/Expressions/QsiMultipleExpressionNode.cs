@@ -2,15 +2,15 @@
 
 namespace Qsi.Tree.Base
 {
-    public sealed class QsiArrayExpressionNode : QsiExpressionNode, IQsiArrayExpressionNode
+    public sealed class QsiMultipleExpressionNode : QsiExpressionNode, IQsiMultipleExpressionNode
     {
         public QsiTreeNodeList<QsiExpressionNode> Elements { get; }
 
         #region Explicit
-        IQsiExpressionNode[] IQsiArrayExpressionNode.Elements => Elements.Cast<IQsiExpressionNode>().ToArray();
+        IQsiExpressionNode[] IQsiMultipleExpressionNode.Elements => Elements.Cast<IQsiExpressionNode>().ToArray();
         #endregion
 
-        public QsiArrayExpressionNode()
+        public QsiMultipleExpressionNode()
         {
             Elements = new QsiTreeNodeList<QsiExpressionNode>(this);
         }
