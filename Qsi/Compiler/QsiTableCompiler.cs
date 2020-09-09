@@ -414,33 +414,12 @@ namespace Qsi.Compiler
             if (table.Sources == null || table.Sources.Length == 0)
                 throw new QsiException(QsiError.Syntax);
 
-            // QsiIdentifier recursiveAlias = null;
-
-            // if (table.FindDescendant<IQsiDerivedTableNode, IQsiTableDirectivesNode>(
-            //         out var derivedTableNode,
-            //         out var directivesNode) &&
-            //     directivesNode.IsRecursive)
-            // {
-            //     recursiveAlias = derivedTableNode.Alias.Name;
-            // }
-
             var sources = new QsiDataTable[table.Sources.Length];
 
             for (int i = 0; i < sources.Length; i++)
             {
                 using var tempContext = new CompileContext(context);
-
-                // if (recursiveAlias != null && i > 0)
-                // {
-                //     tempContext.AddDirective(sources[0]);
-                // }
-
                 sources[i] = await BuildTableStructure(tempContext, table.Sources[i]);
-
-                // if (recursiveAlias != null && i == 0)
-                // {
-                //     sources[i].Identifier = new QsiQualifiedIdentifier(recursiveAlias);
-                // }
             }
 
             int columnCount = sources[0].Columns.Count;
