@@ -302,9 +302,18 @@ namespace Qsi.PostgreSql.Tree.PG10
         {
             string op = boolExpr.boolop.ToString().Split("_", 2)[0];
 
-            var anchorExpr = TreeHelper.CreateLogicalExpression(op, boolExpr.args[0], boolExpr.args[1], Visit);
+            var anchorExpr = Visit(boolExpr.args[0]);
 
-            foreach (var arg in boolExpr.args.Skip(2))
+            if (boolExpr.args.Length == 1)
+            {
+                return TreeHelper.Create<QsiUnaryExpressionNode>(n =>
+                {
+                    n.Operator = op;
+                    n.Expression.SetValue(anchorExpr);
+                });
+            }
+
+            for (int i = 1; i < boolExpr.args.Length; i++)
             {
                 var expr = new QsiLogicalExpressionNode
                 {
@@ -312,7 +321,7 @@ namespace Qsi.PostgreSql.Tree.PG10
                 };
 
                 expr.Left.SetValue(anchorExpr);
-                expr.Right.SetValue(Visit(arg));
+                expr.Right.SetValue(Visit(boolExpr.args[i]));
                 anchorExpr = expr;
             }
 
