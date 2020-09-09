@@ -846,10 +846,10 @@ namespace Qsi.MySql.Tree
 
         private static QsiLogicalExpressionNode UnwrapLogicalExpressionNode(QsiLogicalExpressionNode node)
         {
-            if (node.Left.GetValue() is QsiMultipleExpressionNode leftArrayExpr)
+            if (node.Left.Value is QsiMultipleExpressionNode leftArrayExpr)
                 node.Left.SetValue(Unwrap(leftArrayExpr));
 
-            if (node.Right.GetValue() is QsiMultipleExpressionNode rightArrayExpr)
+            if (node.Right.Value is QsiMultipleExpressionNode rightArrayExpr)
                 node.Right.SetValue(Unwrap(rightArrayExpr));
 
             return node;

@@ -1,10 +1,13 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace Qsi.Tree.Base
 {
     public sealed class QsiCompositeTableNode : QsiTableNode, IQsiCompositeTableNode
     {
         public QsiTreeNodeList<QsiTableNode> Sources { get; }
+
+        public override IEnumerable<IQsiTreeNode> Children => Sources;
 
         #region Explicit
         IQsiTableNode[] IQsiCompositeTableNode.Sources => Sources.Cast<IQsiTableNode>().ToArray();

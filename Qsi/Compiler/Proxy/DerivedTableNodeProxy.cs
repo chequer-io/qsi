@@ -1,4 +1,5 @@
-﻿using Qsi.Tree;
+﻿using System.Collections.Generic;
+using Qsi.Tree;
 
 namespace Qsi.Compiler.Proxy
 {
@@ -13,6 +14,24 @@ namespace Qsi.Compiler.Proxy
         public IQsiTableNode Source { get; }
 
         public IQsiAliasNode Alias { get; }
+
+        public IEnumerable<IQsiTreeNode> Children
+        {
+            get
+            {
+                if (Directives != null)
+                    yield return Directives;
+
+                if (Columns != null)
+                    yield return Columns;
+
+                if (Source != null)
+                    yield return Source;
+
+                if (Alias != null)
+                    yield return Alias;
+            }
+        }
 
         public DerivedTableNodeProxy(
             IQsiTreeNode parent,

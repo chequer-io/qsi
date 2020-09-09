@@ -1,4 +1,6 @@
-﻿namespace Qsi.Tree.Base
+﻿using System.Collections.Generic;
+
+namespace Qsi.Tree.Base
 {
     public sealed class QsiDerivedTableNode : QsiTableNode, IQsiDerivedTableNode
     {
@@ -10,14 +12,32 @@
 
         public QsiTreeNodeProperty<QsiAliasNode> Alias { get; }
 
+        public override IEnumerable<IQsiTreeNode> Children
+        {
+            get
+            {
+                if (!Directives.IsEmpty)
+                    yield return Directives.Value;
+
+                if (!Columns.IsEmpty)
+                    yield return Columns.Value;
+
+                if (!Source.IsEmpty)
+                    yield return Source.Value;
+
+                if (!Alias.IsEmpty)
+                    yield return Alias.Value;
+            }
+        }
+
         #region Explicit
-        IQsiTableDirectivesNode IQsiDerivedTableNode.Directives => Directives.GetValue();
+        IQsiTableDirectivesNode IQsiDerivedTableNode.Directives => Directives.Value;
 
-        IQsiColumnsDeclarationNode IQsiDerivedTableNode.Columns => Columns.GetValue();
+        IQsiColumnsDeclarationNode IQsiDerivedTableNode.Columns => Columns.Value;
 
-        IQsiTableNode IQsiDerivedTableNode.Source => Source.GetValue();
+        IQsiTableNode IQsiDerivedTableNode.Source => Source.Value;
 
-        IQsiAliasNode IQsiDerivedTableNode.Alias => Alias.GetValue();
+        IQsiAliasNode IQsiDerivedTableNode.Alias => Alias.Value;
         #endregion
 
         public QsiDerivedTableNode()

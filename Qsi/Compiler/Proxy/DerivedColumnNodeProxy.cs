@@ -1,4 +1,6 @@
-﻿using Qsi.Tree;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Qsi.Tree;
 
 namespace Qsi.Compiler.Proxy
 {
@@ -11,6 +13,21 @@ namespace Qsi.Compiler.Proxy
         public IQsiExpressionNode Expression { get; }
 
         public IQsiAliasNode Alias { get; }
+
+        public IEnumerable<IQsiTreeNode> Children
+        {
+            get
+            {
+                if (Column != null)
+                    yield return Column;
+
+                if (Expression != null)
+                    yield return Expression;
+
+                if (Alias != null)
+                    yield return Alias;
+            }
+        }
 
         public DerivedColumnNodeProxy(IQsiTreeNode parent, IQsiColumnNode column, IQsiAliasNode alias)
         {
