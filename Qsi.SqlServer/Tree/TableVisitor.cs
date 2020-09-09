@@ -261,7 +261,20 @@ namespace Qsi.SqlServer.Tree
                 allDeclaration.Columns.Add(new QsiAllColumnNode());
 
                 n.Source.SetValue(VisitQueryExpression(commonTableExpression.QueryExpression));
-                n.Columns.SetValue(allDeclaration);
+
+                var columnsDeclaration = new QsiColumnsDeclarationNode();
+
+                if (commonTableExpression.ColumnList == null || commonTableExpression.ColumnList.Count == 0)
+                {
+                    columnsDeclaration.Columns.Add(new QsiAllColumnNode());
+                }
+                else
+                {
+                    columnsDeclaration.Columns.AddRange(CreateSequentialColumnNodes(commonTableExpression.ColumnList));
+                }
+
+                n.Columns.SetValue(columnsDeclaration);
+
 
                 if (commonTableExpression.Name != null)
                 {
