@@ -34,6 +34,9 @@ namespace Qsi.SqlServer.Tree
 
                 case SqlGlobalScalarVariableRefExpression globalScalarVariableRefExpression:
                     return VisitGlobalScalarVariableRefExpression(globalScalarVariableRefExpression);
+                
+                case SqlSimpleCaseExpression simpleCaseExpression:
+                    return VisitSimpleCaseExpression(simpleCaseExpression);
             }
 
             throw TreeHelper.NotSupportedTree(scalarExpression);
@@ -103,11 +106,8 @@ namespace Qsi.SqlServer.Tree
             // ignored seed, increment in identityFunctionCallExpression
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(TreeHelper.Create<QsiFunctionAccessExpressionNode>(fn =>
-                {
-                    fn.Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(identityFunctionCallExpression.FunctionName, false));
-                }));
-
+                n.Member.SetValue(TreeHelper.CreateFunctionAccess(identityFunctionCallExpression.FunctionName));
+                
                 if (identityFunctionCallExpression.Children.FirstOrDefault() is SqlDataTypeSpecification dataTypeSpecifiaction)
                 {
                     n.Parameters.Add(new QsiTypeAccessExpressionNode
@@ -122,10 +122,7 @@ namespace Qsi.SqlServer.Tree
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(TreeHelper.Create<QsiFunctionAccessExpressionNode>(fn =>
-                {
-                    fn.Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(builtinScalarFunctionCallExpression.FunctionName, false));
-                }));
+                n.Member.SetValue(TreeHelper.CreateFunctionAccess(builtinScalarFunctionCallExpression.FunctionName));
 
                 if (builtinScalarFunctionCallExpression.IsStar)
                 {
@@ -177,6 +174,30 @@ namespace Qsi.SqlServer.Tree
             return TreeHelper.Create<QsiVariableAccessExpressionNode>(n =>
             {
                 n.Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(globalScalarVariableRefExpression.VariableName, false));
+            });
+        }
+        
+        private static QsiSwitchExpressionNode VisitSimpleCaseExpression(SqlSimpleCaseExpression simpleCaseExpression)
+        {
+            return TreeHelper.Create<QsiSwitchExpressionNode>(n =>
+            {
+                n.Value.SetValue(VisitScalarExpression(simpleCaseExpression.TestExpression));
+                
+                n.Cases.AddRange(simpleCaseExpression.WhenClauses.Select(VisitSimpleWhenClause));
+
+                n.Cases.Add(TreeHelper.Create<QsiSwitchCaseExpressionNode>(en =>
+                {
+                    en.Consequent.SetValue(VisitScalarExpression(simpleCaseExpression.ElseExpression));
+                }));
+            });
+        }
+
+        private static QsiSwitchCaseExpressionNode VisitSimpleWhenClause(SqlSimpleWhenClause simpleWhenClause)
+        {
+            return TreeHelper.Create<QsiSwitchCaseExpressionNode>(n =>
+            {
+                n.Condition.SetValue(VisitScalarExpression(simpleWhenClause.WhenExpression));
+                n.Consequent.SetValue(VisitScalarExpression(simpleWhenClause.ThenExpression));
             });
         }
     }
