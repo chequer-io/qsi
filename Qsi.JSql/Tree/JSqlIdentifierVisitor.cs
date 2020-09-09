@@ -6,8 +6,12 @@ using Qsi.Utilities;
 
 namespace Qsi.JSql.Tree
 {
-    public class JSqlIdentifierVisitor
+    public class JSqlIdentifierVisitor : JSqlVisitorBase
     {
+        public JSqlIdentifierVisitor(IJSqlVisitorContext context) : base(context)
+        {
+        }
+
         public virtual QsiIdentifier Create(string value)
         {
             return new QsiIdentifier(value, IdentifierUtility.IsEscaped(value));

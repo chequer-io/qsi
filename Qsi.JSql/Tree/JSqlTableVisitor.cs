@@ -14,23 +14,10 @@ using Qsi.Utilities;
 
 namespace Qsi.JSql.Tree
 {
-    public class JSqlTableVisitor
+    public class JSqlTableVisitor : JSqlVisitorBase
     {
-        protected JSqlIdentifierVisitor IdentifierVisitor => _identifierVisitor ??= CreateIdentifierVisitor();
-
-        protected JSqlExpressionVisitor ExpressionVisitor => _expressionVIsitor ??= CreateExpressionVisitor();
-
-        private JSqlIdentifierVisitor _identifierVisitor;
-        private JSqlExpressionVisitor _expressionVIsitor;
-
-        protected virtual JSqlIdentifierVisitor CreateIdentifierVisitor()
+        public JSqlTableVisitor(IJSqlVisitorContext context) : base(context)
         {
-            return new JSqlIdentifierVisitor();
-        }
-
-        protected virtual JSqlExpressionVisitor CreateExpressionVisitor()
-        {
-            return new JSqlExpressionVisitor();
         }
 
         public virtual QsiTableNode Visit(Statement statement)

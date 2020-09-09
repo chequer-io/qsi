@@ -1,5 +1,6 @@
 ﻿using System;
 using Antlr4.Runtime.Tree;
+using Qsi.Data;
 using Qsi.Tree.Base;
 
 namespace Qsi.Utilities
@@ -32,6 +33,14 @@ namespace Qsi.Utilities
             var columns = new QsiColumnsDeclarationNode();
             columns.Columns.Add(new QsiAllColumnNode());
             return columns;
+        }
+
+        public static QsiFunctionAccessExpressionNode CreateFunctionAccess(string identifier)
+        {
+            return new QsiFunctionAccessExpressionNode
+            {
+                Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(identifier, false))
+            };
         }
 
         public static QsiException NotSupportedTree(object tree)
