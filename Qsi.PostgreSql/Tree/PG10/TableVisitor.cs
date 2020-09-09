@@ -164,7 +164,7 @@ namespace Qsi.PostgreSql.Tree.PG10
             });
         }
 
-        private static QsiTableNode VisitCommonTableExpression(CommonTableExpr cte)
+        private static QsiDerivedTableNode VisitCommonTableExpression(CommonTableExpr cte)
         {
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
