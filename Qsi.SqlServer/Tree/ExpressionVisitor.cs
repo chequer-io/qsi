@@ -85,6 +85,9 @@ namespace Qsi.SqlServer.Tree
         {
             switch (scalarFunctionCallExpression)
             {
+                case SqlIdentityFunctionCallExpression identityFunctionCallExpression:
+                    return VisitIdentityFunctionCallExpression(identityFunctionCallExpression);
+                
                 case SqlBuiltinScalarFunctionCallExpression builtinScalarFunctionCallExpression:
                     return VisitBuiltinScalarFunctionCallExpression(builtinScalarFunctionCallExpression);
                 
@@ -95,6 +98,27 @@ namespace Qsi.SqlServer.Tree
             return null;
         }
 
+        private static QsiInvokeExpressionNode VisitIdentityFunctionCallExpression(SqlIdentityFunctionCallExpression identityFunctionCallExpression)
+        {
+            // ignored seed, increment in identityFunctionCallExpression
+
+            return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            {
+                n.Member.SetValue(TreeHelper.Create<QsiFunctionAccessExpressionNode>(fn =>
+                {
+                    fn.Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(identityFunctionCallExpression.FunctionName, false));
+                }));
+                
+                if (identityFunctionCallExpression.Children.FirstOrDefault() is SqlDataTypeSpecification dataTypeSpecifiaction)
+                {
+                    n.Parameters.Add(new QsiTypeAccessExpressionNode
+                    {
+                        Identifier = IdentifierVisitor.VisitMultipartIdentifier(dataTypeSpecifiaction.DataType.ObjectIdentifier)
+                    });
+                }
+            });
+        }
+        
         private static QsiInvokeExpressionNode VisitBuiltinScalarFunctionCallExpression(SqlBuiltinScalarFunctionCallExpression builtinScalarFunctionCallExpression)
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
