@@ -65,6 +65,8 @@
                 QsiError.UnknownColumnIn => UnknownColumnIn,
                 QsiError.AmbiguousColumnIn => AmbiguousColumnIn,
                 QsiError.DifferentColumnsCount => DifferentColumnsCount,
+                QsiError.SpecifiesMoreColumnNames => SpecifiesMoreColumnNames,
+                QsiError.DuplicateColumnName => DuplicateColumnName,
                 QsiError.NoTablesUsed => NoTablesUsed,
                 _ => null
             };
