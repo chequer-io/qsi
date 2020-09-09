@@ -181,6 +181,13 @@ namespace Qsi.SqlServer.Tree
 
                 case SqlCommonTableExpression commonTableExpression:
                     return VisitCommonTableExpression(commonTableExpression);
+
+                case SqlDerivedTableExpression derivedTableExpression:
+                    return VisitDerivedTableExpression(derivedTableExpression);
+
+                // TODO: Implement table function
+                case SqlTableValuedFunctionRefExpression tableValuedFunctionRefExpression:
+                    throw TreeHelper.NotSupportedFeature("Table function");
             }
 
             return null;
@@ -255,6 +262,30 @@ namespace Qsi.SqlServer.Tree
                         Name = new QsiIdentifier(commonTableExpression.Name.Value, false)
                     });
                 }
+            });
+        }
+
+        private static QsiDerivedTableNode VisitDerivedTableExpression(SqlDerivedTableExpression derivedTableExpression)
+        {
+            return TreeHelper.Create<QsiDerivedTableNode>(n =>
+            {
+                if (derivedTableExpression.Alias != null)
+                {
+                    n.Alias.SetValue(new QsiAliasNode
+                    {
+                        Name = IdentifierVisitor.CreateIdentifier(derivedTableExpression.Alias)
+                    });
+                }
+                
+                n.Columns.SetValue(new QsiColumnsDeclarationNode
+                {
+                    Columns =
+                    {
+                        new QsiAllColumnNode()
+                    }
+                });
+
+                n.Source.SetValue(VisitQueryExpression(derivedTableExpression.QueryExpression));
             });
         }
 
