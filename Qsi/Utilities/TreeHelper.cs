@@ -34,6 +34,45 @@ namespace Qsi.Utilities
             return columns;
         }
 
+        public static QsiFunctionAccessExpressionNode CreateFunctionAccess(string identifier)
+        {
+            return new QsiFunctionAccessExpressionNode
+            {
+                Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(identifier, false))
+            };
+        }
+
+        #region Literal
+        public static QsiLiteralExpressionNode CreateNullLiteral()
+        {
+            return CreateLiteral(null, QsiLiteralType.Null);
+        }
+
+        public static QsiLiteralExpressionNode CreateLiteral(string value)
+        {
+            return CreateLiteral(value, QsiLiteralType.String);
+        }
+
+        public static QsiLiteralExpressionNode CreateLiteral(long value)
+        {
+            return CreateLiteral(value, QsiLiteralType.Numeric);
+        }
+
+        public static QsiLiteralExpressionNode CreateLiteral(double value)
+        {
+            return CreateLiteral(value, QsiLiteralType.Decimal);
+        }
+
+        public static QsiLiteralExpressionNode CreateLiteral(object value, QsiLiteralType type)
+        {
+            return new QsiLiteralExpressionNode
+            {
+                Type = type,
+                Value = value
+            };
+        }
+        #endregion
+
         public static QsiException NotSupportedTree(object tree)
         {
             return new QsiException(QsiError.NotSupportedTree, tree.GetType().FullName);
