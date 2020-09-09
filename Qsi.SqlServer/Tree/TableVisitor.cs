@@ -137,6 +137,9 @@ namespace Qsi.SqlServer.Tree
 
                 case SqlQualifiedJoinTableExpression qualifiedJoinTableExpression:
                     return VisitQualifiedJoinTableExpression(qualifiedJoinTableExpression);
+                
+                case SqlPivotTableExpression pivotTableExpression:
+                    return VisitPivotTableExpression(pivotTableExpression);
             }
 
             return null;
@@ -188,6 +191,12 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
+        private static QsiTableNode VisitPivotTableExpression(SqlPivotTableExpression pivotTableExpression)
+        {
+            // TODO: Implement
+            return null;
+        }
+        
         private static QsiColumnNode VisitSelectScalarExpression(SqlSelectScalarExpression scalarExpression)
         {
             QsiExpressionNode expression = null;
