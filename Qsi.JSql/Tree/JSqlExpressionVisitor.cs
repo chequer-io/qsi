@@ -239,15 +239,23 @@ namespace Qsi.JSql.Tree
 
         public virtual QsiExpressionNode VisitAllComparisonExpression(AllComparisonExpression expression)
         {
-            throw new NotImplementedException();
-        }
-
-        public virtual QsiExpressionNode VisitAnalyticExpression(AnalyticExpression expression)
-        {
-            throw new NotImplementedException();
+            return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            {
+                n.Member.SetValue(TreeHelper.CreateFunctionAccess(JSqlKnownFunction.All));
+                n.Parameters.Add(VisitSubSelect(expression.getSubSelect()));
+            });
         }
 
         public virtual QsiExpressionNode VisitAnyComparisonExpression(AnyComparisonExpression expression)
+        {
+            return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            {
+                n.Member.SetValue(TreeHelper.CreateFunctionAccess(JSqlKnownFunction.Any));
+                n.Parameters.Add(VisitSubSelect(expression.getSubSelect()));
+            });
+        }
+
+        public virtual QsiExpressionNode VisitAnalyticExpression(AnalyticExpression expression)
         {
             throw new NotImplementedException();
         }

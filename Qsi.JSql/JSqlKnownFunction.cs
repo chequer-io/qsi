@@ -12,5 +12,8 @@
         public const string IsNotFalse = "IS_NOT_FALSE";
 
         public const string MatchAgainst = "MATCH_AGAINST";
+
+        public const string All = "ALL";
+        public const string Any = "ANY";
     }
 }
