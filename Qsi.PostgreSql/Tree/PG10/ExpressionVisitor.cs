@@ -70,7 +70,7 @@ namespace Qsi.PostgreSql.Tree.PG10
             if (expressions.Length == 1)
                 return Visit(expressions[0]);
 
-            return TreeHelper.Create<QsiArrayExpressionNode>(n =>
+            return TreeHelper.Create<QsiMultipleExpressionNode>(n =>
             {
                 n.Elements.AddRange(expressions.Select(Visit));
             });
@@ -124,7 +124,7 @@ namespace Qsi.PostgreSql.Tree.PG10
 
         private static QsiExpressionNode VisitAtomicArrayExpression(A_ArrayExpr arrayExpression)
         {
-            return TreeHelper.Create<QsiArrayExpressionNode>(n =>
+            return TreeHelper.Create<QsiMultipleExpressionNode>(n =>
             {
                 n.Elements.AddRange(arrayExpression.elements.Select(Visit));
             });

@@ -518,7 +518,7 @@ namespace Qsi.Compiler
                     break;
                 }
 
-                case IQsiArrayExpressionNode e:
+                case IQsiMultipleExpressionNode e:
                 {
                     foreach (var c in e.Elements.SelectMany(x => ResolveColumnsInExpression(context, x)))
                         yield return c;
