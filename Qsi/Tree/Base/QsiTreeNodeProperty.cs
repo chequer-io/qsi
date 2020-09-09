@@ -2,11 +2,10 @@
 {
     public class QsiTreeNodeProperty<TNode> where TNode : QsiTreeNode
     {
-        public TNode Value => _value;
+        public TNode Value { get; private set; }
 
-        public bool IsEmpty => _value == null;
+        public bool IsEmpty => Value == null;
 
-        private TNode _value;
         private readonly QsiTreeNode _owner;
 
         public QsiTreeNodeProperty(QsiTreeNode owner)
@@ -17,7 +16,7 @@
         public void SetValue(TNode value)
         {
             value.Parent = _owner;
-            _value = value;
+            Value = value;
         }
     }
 }

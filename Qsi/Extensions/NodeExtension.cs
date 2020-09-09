@@ -1,10 +1,27 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Qsi.Tree;
 
 namespace Qsi.Extensions
 {
     public static class NodeExtension
     {
+        public static IEnumerable<T> FindAscendants<T>(this IQsiTreeNode node)
+        {
+            var queue = new Queue<IQsiTreeNode>();
+            queue.Enqueue(node);
+
+            while (queue.TryDequeue(out var item))
+            {
+                if (item is T tNode)
+                    yield return tNode;
+
+                foreach (var child in item.Children ?? Enumerable.Empty<IQsiTreeNode>())
+                    queue.Enqueue(child);
+            }
+        }
+
         #region FindDescendant
         public static bool FindDescendant<T1>(this IQsiTreeNode node, out T1 t1)
             where T1 : IQsiTreeNode
