@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using Qsi.Utilities;
 
 namespace Qsi.Data
 {
@@ -17,7 +19,7 @@ namespace Qsi.Data
 
         public bool IsExpression
         {
-            get => _isExpression || References.Any(r => r.IsExpression);
+            get => _isExpression || QsiUtility.FlattenReferenceColumns(this).Any(r => r._isExpression);
             set => _isExpression = value;
         }
 
