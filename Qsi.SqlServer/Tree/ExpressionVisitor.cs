@@ -28,6 +28,12 @@ namespace Qsi.SqlServer.Tree
                 
                 case SqlScalarSubQueryExpression subQueryExpression:
                     return VisitScalarSubQueryExpression(subQueryExpression);
+                
+                case SqlScalarVariableRefExpression scalarVariableRefExpression:
+                    return VisitScalarVariableRefExpression(scalarVariableRefExpression);
+                
+                case SqlGlobalScalarVariableRefExpression globalScalarVariableRefExpression:
+                    return VisitGlobalScalarVariableRefExpression(globalScalarVariableRefExpression);
             }
 
             return null;
@@ -130,6 +136,22 @@ namespace Qsi.SqlServer.Tree
             return TreeHelper.Create<QsiTableExpressionNode>(n =>
             {
                 n.Table.SetValue(TableVisitor.VisitQueryExpression(scalarSubQueryExpression.QueryExpression));
+            });
+        }
+
+        private static QsiVariableAccessExpressionNode VisitScalarVariableRefExpression(SqlScalarVariableRefExpression scalarVariableRefExpression)
+        {
+            return TreeHelper.Create<QsiVariableAccessExpressionNode>(n =>
+            {
+                n.Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(scalarVariableRefExpression.VariableName, false)); 
+            });
+        }
+        
+        private static QsiVariableAccessExpressionNode VisitGlobalScalarVariableRefExpression(SqlGlobalScalarVariableRefExpression globalScalarVariableRefExpression)
+        {
+            return TreeHelper.Create<QsiVariableAccessExpressionNode>(n =>
+            {
+                n.Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(globalScalarVariableRefExpression.VariableName, false)); 
             });
         }
     }
