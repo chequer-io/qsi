@@ -1,7 +1,6 @@
 using System.Linq;
 using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
 using Qsi.Data;
-using Qsi.Utilities;
 
 namespace Qsi.SqlServer.Tree
 {

@@ -6,7 +6,6 @@ using Qsi.Data;
 using Qsi.Parsing;
 using Qsi.SqlServer.Tree;
 using Qsi.Tree;
-using Qsi.Utilities;
 
 namespace Qsi.SqlServer
 {
@@ -47,7 +46,7 @@ namespace Qsi.SqlServer
 
             var statement = result
                 .Script.Batches.FirstOrDefault()?
-                .Statements.FirstOrDefault();
+                .Statements.FirstOrDefault() ?? throw new QsiException(QsiError.Syntax);
             
             return TableVisitor.Visit(statement);
         }

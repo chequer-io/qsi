@@ -25,18 +25,18 @@ namespace Qsi.SqlServer.Tree
 
                 case SqlScalarRefExpression scalarRefExpression:
                     return VisitScalarRefExpression(scalarRefExpression);
-                
+
                 case SqlScalarSubQueryExpression subQueryExpression:
                     return VisitScalarSubQueryExpression(subQueryExpression);
-                
+
                 case SqlScalarVariableRefExpression scalarVariableRefExpression:
                     return VisitScalarVariableRefExpression(scalarVariableRefExpression);
-                
+
                 case SqlGlobalScalarVariableRefExpression globalScalarVariableRefExpression:
                     return VisitGlobalScalarVariableRefExpression(globalScalarVariableRefExpression);
             }
 
-            return null;
+            throw TreeHelper.NotSupportedTree(scalarExpression);
         }
 
         private static QsiLogicalExpressionNode VisitBinaryScalarExpression(SqlBinaryScalarExpression binaryScalarExpression)
@@ -87,28 +87,27 @@ namespace Qsi.SqlServer.Tree
             {
                 case SqlIdentityFunctionCallExpression identityFunctionCallExpression:
                     return VisitIdentityFunctionCallExpression(identityFunctionCallExpression);
-                
+
                 case SqlBuiltinScalarFunctionCallExpression builtinScalarFunctionCallExpression:
                     return VisitBuiltinScalarFunctionCallExpression(builtinScalarFunctionCallExpression);
-                
+
                 case SqlUserDefinedScalarFunctionCallExpression userDefinedScalarFunctionCallExpression:
                     return VisitUserDefinedScalarFunctionCallExpression(userDefinedScalarFunctionCallExpression);
             }
 
-            return null;
+            throw TreeHelper.NotSupportedTree(scalarFunctionCallExpression);
         }
 
         private static QsiInvokeExpressionNode VisitIdentityFunctionCallExpression(SqlIdentityFunctionCallExpression identityFunctionCallExpression)
         {
             // ignored seed, increment in identityFunctionCallExpression
-
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
                 n.Member.SetValue(TreeHelper.Create<QsiFunctionAccessExpressionNode>(fn =>
                 {
                     fn.Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(identityFunctionCallExpression.FunctionName, false));
                 }));
-                
+
                 if (identityFunctionCallExpression.Children.FirstOrDefault() is SqlDataTypeSpecification dataTypeSpecifiaction)
                 {
                     n.Parameters.Add(new QsiTypeAccessExpressionNode
@@ -118,7 +117,7 @@ namespace Qsi.SqlServer.Tree
                 }
             });
         }
-        
+
         private static QsiInvokeExpressionNode VisitBuiltinScalarFunctionCallExpression(SqlBuiltinScalarFunctionCallExpression builtinScalarFunctionCallExpression)
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
@@ -154,7 +153,7 @@ namespace Qsi.SqlServer.Tree
                 n.Parameters.AddRange(userDefinedScalarFunctionCallExpression.Arguments.Select(VisitScalarExpression));
             });
         }
-        
+
         private static QsiTableExpressionNode VisitScalarSubQueryExpression(SqlScalarSubQueryExpression scalarSubQueryExpression)
         {
             return TreeHelper.Create<QsiTableExpressionNode>(n =>
@@ -163,19 +162,21 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
+        // TODO: Impl variable
         private static QsiVariableAccessExpressionNode VisitScalarVariableRefExpression(SqlScalarVariableRefExpression scalarVariableRefExpression)
         {
             return TreeHelper.Create<QsiVariableAccessExpressionNode>(n =>
             {
-                n.Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(scalarVariableRefExpression.VariableName, false)); 
+                n.Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(scalarVariableRefExpression.VariableName, false));
             });
         }
-        
+
+        // TODO: Impl variable
         private static QsiVariableAccessExpressionNode VisitGlobalScalarVariableRefExpression(SqlGlobalScalarVariableRefExpression globalScalarVariableRefExpression)
         {
             return TreeHelper.Create<QsiVariableAccessExpressionNode>(n =>
             {
-                n.Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(globalScalarVariableRefExpression.VariableName, false)); 
+                n.Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(globalScalarVariableRefExpression.VariableName, false));
             });
         }
     }

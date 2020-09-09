@@ -13,9 +13,6 @@ namespace Qsi.SqlServer.Tree
         #region Tree
         public static QsiTableNode Visit(SqlCodeObject codeObject)
         {
-            if (codeObject == null)
-                return null;
-
             switch (codeObject)
             {
                 case SqlSelectStatement selectStatement:
@@ -25,7 +22,7 @@ namespace Qsi.SqlServer.Tree
                     return VisitCreateViewStatement(createViewStatement);
             }
 
-            return null;
+            throw TreeHelper.NotSupportedTree(codeObject);
         }
         #endregion
 
@@ -84,7 +81,7 @@ namespace Qsi.SqlServer.Tree
                     return VisitBinaryQueryExpression(binaryQueryExpression);
             }
 
-            return null;
+            throw TreeHelper.NotSupportedTree(queryExpression);
         }
 
         private static QsiDerivedTableNode VisitQuerySpecification(SqlQuerySpecification querySpecification)
@@ -193,7 +190,7 @@ namespace Qsi.SqlServer.Tree
                     throw TreeHelper.NotSupportedFeature("Table function");
             }
 
-            return null;
+            throw TreeHelper.NotSupportedTree(tableExpression);
         }
 
         private static QsiTableNode VisitTableRefExpression(SqlTableRefExpression tableRefExpression)
@@ -250,7 +247,7 @@ namespace Qsi.SqlServer.Tree
         private static QsiTableNode VisitPivotTableExpression(SqlPivotTableExpression pivotTableExpression)
         {
             // TODO: Implement
-            return null;
+            throw TreeHelper.NotSupportedTree(pivotTableExpression);
         }
 
         private static QsiDerivedTableNode VisitCommonTableExpression(SqlCommonTableExpression commonTableExpression)
