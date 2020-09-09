@@ -18,6 +18,7 @@ namespace Qsi.Debugger.Vendor.JSql
         {
             Parser = new JSqlParser();
             RawParser = new JSqlRawParser();
+            LanguageService = new JSqlLanguageService();
         }
     }
 }
