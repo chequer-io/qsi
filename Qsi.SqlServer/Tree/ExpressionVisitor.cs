@@ -25,6 +25,9 @@ namespace Qsi.SqlServer.Tree
 
                 case SqlScalarRefExpression scalarRefExpression:
                     return VisitScalarRefExpression(scalarRefExpression);
+                
+                case SqlScalarSubQueryExpression subQueryExpression:
+                    return VisitScalarSubQueryExpression(subQueryExpression);
             }
 
             return null;
@@ -64,6 +67,14 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
+        private static QsiColumnAccessExpressionNode VisitScalarRefExpression(SqlScalarRefExpression scalarRefExpression)
+        {
+            return TreeHelper.Create<QsiColumnAccessExpressionNode>(n =>
+            {
+                n.Identifier = IdentifierVisitor.VisitMultipartIdentifier(scalarRefExpression.MultipartIdentifier);
+            });
+        }
+
         private static QsiInvokeExpressionNode VisitScalarFunctionCallExpression(SqlScalarFunctionCallExpression scalarFunctionCallExpression)
         {
             switch (scalarFunctionCallExpression)
@@ -76,14 +87,6 @@ namespace Qsi.SqlServer.Tree
             }
 
             return null;
-        }
-
-        private static QsiColumnAccessExpressionNode VisitScalarRefExpression(SqlScalarRefExpression scalarRefExpression)
-        {
-            return TreeHelper.Create<QsiColumnAccessExpressionNode>(n =>
-            {
-                n.Identifier = IdentifierVisitor.VisitMultipartIdentifier(scalarRefExpression.MultipartIdentifier);
-            });
         }
 
         private static QsiInvokeExpressionNode VisitBuiltinScalarFunctionCallExpression(SqlBuiltinScalarFunctionCallExpression builtinScalarFunctionCallExpression)
@@ -119,6 +122,14 @@ namespace Qsi.SqlServer.Tree
                 }));
 
                 n.Parameters.AddRange(userDefinedScalarFunctionCallExpression.Arguments.Select(VisitScalarExpression));
+            });
+        }
+        
+        private static QsiTableExpressionNode VisitScalarSubQueryExpression(SqlScalarSubQueryExpression scalarSubQueryExpression)
+        {
+            return TreeHelper.Create<QsiTableExpressionNode>(n =>
+            {
+                n.Table.SetValue(TableVisitor.VisitQueryExpression(scalarSubQueryExpression.QueryExpression));
             });
         }
     }
