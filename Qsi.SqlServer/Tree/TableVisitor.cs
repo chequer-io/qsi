@@ -173,6 +173,9 @@ namespace Qsi.SqlServer.Tree
                 case SqlTableRefExpression tableRefExpression:
                     return VisitTableRefExpression(tableRefExpression);
 
+                case SqlTableVariableRefExpression tableVariableRefExpression:
+                    return VisitTableVariableRefExpression(tableVariableRefExpression);
+
                 case SqlQualifiedJoinTableExpression qualifiedJoinTableExpression:
                     return VisitQualifiedJoinTableExpression(qualifiedJoinTableExpression);
 
@@ -218,6 +221,31 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
+        private static QsiTableNode VisitTableVariableRefExpression(SqlTableVariableRefExpression tableVariableRefExpression)
+        {
+            var tableNode = new QsiTableAccessNode
+            {
+                Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(tableVariableRefExpression.Name, false))
+            };
+
+            if (tableVariableRefExpression.Alias == null)
+                return tableNode;
+
+            return TreeHelper.Create<QsiDerivedTableNode>(n =>
+            {
+                var allDeclaration = new QsiColumnsDeclarationNode();
+                allDeclaration.Columns.Add(new QsiAllColumnNode());
+
+                n.Columns.SetValue(allDeclaration);
+                n.Source.SetValue(tableNode);
+
+                n.Alias.SetValue(new QsiAliasNode
+                {
+                    Name = new QsiIdentifier(tableVariableRefExpression.Alias.Value, false)
+                });
+            });
+        }
+        
         private static QsiJoinedTableNode VisitQualifiedJoinTableExpression(SqlQualifiedJoinTableExpression qualifiedJoinTableExpression)
         {
             return TreeHelper.Create<QsiJoinedTableNode>(n =>
@@ -276,7 +304,7 @@ namespace Qsi.SqlServer.Tree
                         Name = IdentifierVisitor.CreateIdentifier(derivedTableExpression.Alias)
                     });
                 }
-                
+
                 n.Columns.SetValue(new QsiColumnsDeclarationNode
                 {
                     Columns =
