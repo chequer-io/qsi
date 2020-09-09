@@ -1,4 +1,6 @@
-﻿namespace Qsi.Tree.Base
+﻿using System.Collections.Generic;
+
+namespace Qsi.Tree.Base
 {
     public sealed class QsiUnaryExpressionNode : QsiExpressionNode, IQsiUnaryExpressionNode
     {
@@ -6,8 +8,17 @@
 
         public QsiTreeNodeProperty<QsiExpressionNode> Expression { get; }
 
+        public override IEnumerable<IQsiTreeNode> Children
+        {
+            get
+            {
+                if (!Expression.IsEmpty)
+                    yield return Expression.Value;
+            }
+        }
+
         #region Explicit
-        IQsiExpressionNode IQsiUnaryExpressionNode.Expression => Expression.GetValue();
+        IQsiExpressionNode IQsiUnaryExpressionNode.Expression => Expression.Value;
         #endregion
 
         public QsiUnaryExpressionNode()

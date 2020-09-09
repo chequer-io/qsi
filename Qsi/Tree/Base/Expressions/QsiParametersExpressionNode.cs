@@ -1,10 +1,13 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace Qsi.Tree.Base
 {
     public sealed class QsiParametersExpressionNode : QsiExpressionNode, IQsiParametersExpressionNode
     {
         public QsiTreeNodeList<QsiExpressionNode> Expressions { get; }
+
+        public override IEnumerable<IQsiTreeNode> Children => Expressions;
 
         #region Explicit
         IQsiExpressionNode[] IQsiParametersExpressionNode.Expressions => Expressions.Cast<IQsiExpressionNode>().ToArray();

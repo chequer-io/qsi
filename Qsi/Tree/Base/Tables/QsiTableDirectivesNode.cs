@@ -1,20 +1,23 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace Qsi.Tree.Base
 {
     public sealed class QsiTableDirectivesNode : QsiTableNode, IQsiTableDirectivesNode
     {
-        public QsiTreeNodeList<QsiTableNode> Tables { get; }
+        public QsiTreeNodeList<QsiDerivedTableNode> Tables { get; }
 
         public bool IsRecursive { get; set; }
 
+        public override IEnumerable<IQsiTreeNode> Children => Tables;
+
         #region Explicit
-        IQsiTableNode[] IQsiTableDirectivesNode.Tables => Tables.Cast<IQsiTableNode>().ToArray();
+        IQsiDerivedTableNode[] IQsiTableDirectivesNode.Tables => Tables.Cast<IQsiDerivedTableNode>().ToArray();
         #endregion
 
         public QsiTableDirectivesNode()
         {
-            Tables = new QsiTreeNodeList<QsiTableNode>(this);
+            Tables = new QsiTreeNodeList<QsiDerivedTableNode>(this);
         }
     }
 }

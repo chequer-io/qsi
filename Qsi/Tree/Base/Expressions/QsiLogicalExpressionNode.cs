@@ -1,4 +1,6 @@
-﻿namespace Qsi.Tree.Base
+﻿using System.Collections.Generic;
+
+namespace Qsi.Tree.Base
 {
     public sealed class QsiLogicalExpressionNode : QsiExpressionNode, IQsiLogicalExpressionNode
     {
@@ -8,10 +10,22 @@
 
         public QsiTreeNodeProperty<QsiExpressionNode> Right { get; }
 
-        #region Explicit
-        IQsiExpressionNode IQsiLogicalExpressionNode.Left => Left.GetValue();
+        public override IEnumerable<IQsiTreeNode> Children
+        {
+            get
+            {
+                if (!Left.IsEmpty)
+                    yield return Left.Value;
 
-        IQsiExpressionNode IQsiLogicalExpressionNode.Right => Right.GetValue();
+                if (!Right.IsEmpty)
+                    yield return Right.Value;
+            }
+        }
+
+        #region Explicit
+        IQsiExpressionNode IQsiLogicalExpressionNode.Left => Left.Value;
+
+        IQsiExpressionNode IQsiLogicalExpressionNode.Right => Right.Value;
         #endregion
 
         public QsiLogicalExpressionNode()
