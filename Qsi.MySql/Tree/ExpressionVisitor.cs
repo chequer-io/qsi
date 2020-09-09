@@ -512,14 +512,14 @@ namespace Qsi.MySql.Tree
             }
         }
 
-        private static QsiArrayExpressionNode VisitExpressions(ExpressionsContext context)
+        private static QsiMultipleExpressionNode VisitExpressions(ExpressionsContext context)
         {
             return VisitExpressions(context.expression());
         }
 
-        private static QsiArrayExpressionNode VisitExpressions(IEnumerable<ExpressionContext> contexts)
+        private static QsiMultipleExpressionNode VisitExpressions(IEnumerable<ExpressionContext> contexts)
         {
-            return TreeHelper.Create<QsiArrayExpressionNode>(n =>
+            return TreeHelper.Create<QsiMultipleExpressionNode>(n =>
             {
                 n.Elements.AddRange(contexts.Select(VisitExpression));
             });
@@ -846,15 +846,15 @@ namespace Qsi.MySql.Tree
 
         private static QsiLogicalExpressionNode UnwrapLogicalExpressionNode(QsiLogicalExpressionNode node)
         {
-            if (node.Left.GetValue() is QsiArrayExpressionNode leftArrayExpr)
+            if (node.Left.GetValue() is QsiMultipleExpressionNode leftArrayExpr)
                 node.Left.SetValue(Unwrap(leftArrayExpr));
 
-            if (node.Right.GetValue() is QsiArrayExpressionNode rightArrayExpr)
+            if (node.Right.GetValue() is QsiMultipleExpressionNode rightArrayExpr)
                 node.Right.SetValue(Unwrap(rightArrayExpr));
 
             return node;
 
-            static QsiExpressionNode Unwrap(QsiArrayExpressionNode arrayExpression)
+            static QsiExpressionNode Unwrap(QsiMultipleExpressionNode arrayExpression)
             {
                 if (arrayExpression.Elements.Count == 1 && 
                     arrayExpression.Elements[0] is QsiLogicalExpressionNode innerLogicalExpr)
