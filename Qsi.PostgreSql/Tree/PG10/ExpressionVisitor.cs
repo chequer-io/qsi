@@ -55,6 +55,9 @@ namespace Qsi.PostgreSql.Tree.PG10
                 case NullTest nullTest:
                     return VisitNullTest(nullTest);
 
+                case BooleanTest booleanTest:
+                    return VisitBooleanTest(booleanTest);
+
                 case CoalesceExpr coalesceExpr:
                     return VisitCoalesceExpr(coalesceExpr);
             }
@@ -350,6 +353,27 @@ namespace Qsi.PostgreSql.Tree.PG10
                 if (!ListUtility.IsNullOrEmpty(nullTest.arg))
                 {
                     n.Parameters.AddRange(nullTest.arg.Select(Visit));
+                }
+            });
+        }
+
+        public static QsiInvokeExpressionNode VisitBooleanTest(BooleanTest booleanTest)
+        {
+            return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            {
+                n.Member.SetValue(new QsiFunctionAccessExpressionNode
+                {
+                    Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(booleanTest.booltesttype.ToString(), false))
+                });
+
+                if (booleanTest.xpr != null)
+                {
+                    n.Parameters.Add(Visit(booleanTest.xpr));
+                }
+
+                if (!ListUtility.IsNullOrEmpty(booleanTest.arg))
+                {
+                    n.Parameters.AddRange(booleanTest.arg.Select(Visit));
                 }
             });
         }
