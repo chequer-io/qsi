@@ -348,7 +348,7 @@ namespace Qsi.SqlServer.Tree
             {
                 var columnsDeclaration = new QsiColumnsDeclarationNode();
 
-                if (viewDefinition.ColumnList.Count == 0)
+                if (viewDefinition.ColumnList == null || viewDefinition.ColumnList.Count == 0)
                 {
                     columnsDeclaration.Columns.Add(new QsiAllColumnNode());
                 }
