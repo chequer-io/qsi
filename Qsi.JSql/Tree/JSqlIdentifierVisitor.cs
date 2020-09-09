@@ -28,5 +28,12 @@ namespace Qsi.JSql.Tree
                 IdentifierUtility.Parse(name.getFullyQualifiedName())
                     .Select(x => new QsiIdentifier(x, false)));
         }
+
+        public virtual QsiQualifiedIdentifier VisitFunction(Function function)
+        {
+            return new QsiQualifiedIdentifier(
+                IdentifierUtility.Parse(function.getName())
+                    .Select(x => new QsiIdentifier(x, false)));
+        }
     }
 }
