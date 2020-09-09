@@ -33,22 +33,23 @@ namespace Qsi.SqlServer.Tree
         public static QsiTableNode VisitSelectStatement(SqlSelectStatement selectStatement)
         {
             var tableNode = VisitSelectSpecification(selectStatement.SelectSpecification);
-            
+
             if (selectStatement.QueryWithClause != null)
             {
                 var tableDirectivesNode = VisitQueryWithClause(selectStatement.QueryWithClause);
-                
+
                 switch (tableNode)
                 {
                     case QsiDerivedTableNode derivedTableNode:
                         derivedTableNode.Directives.SetValue(tableDirectivesNode);
                         break;
+
                     default:
                         return TreeHelper.Create<QsiDerivedTableNode>(n =>
                         {
                             var columnsDeclaration = new QsiColumnsDeclarationNode();
                             columnsDeclaration.Columns.Add(new QsiAllColumnNode());
-                            
+
                             n.Columns.SetValue(columnsDeclaration);
                             n.Source.SetValue(tableNode);
                             n.Directives.SetValue(tableDirectivesNode);
@@ -66,12 +67,12 @@ namespace Qsi.SqlServer.Tree
                 n.Tables.AddRange(queryWithClause.CommonTableExpressions.Select(VisitTableExpression));
             });
         }
-        
+
         public static QsiTableNode VisitSelectSpecification(SqlSelectSpecification selectSpecification)
         {
             return VisitQueryExpression(selectSpecification.QueryExpression);
         }
-        
+
         public static QsiTableNode VisitQueryExpression(SqlQueryExpression queryExpression)
         {
             switch (queryExpression)
@@ -174,10 +175,10 @@ namespace Qsi.SqlServer.Tree
 
                 case SqlQualifiedJoinTableExpression qualifiedJoinTableExpression:
                     return VisitQualifiedJoinTableExpression(qualifiedJoinTableExpression);
-                
+
                 case SqlPivotTableExpression pivotTableExpression:
                     return VisitPivotTableExpression(pivotTableExpression);
-                
+
                 case SqlCommonTableExpression commonTableExpression:
                     return VisitCommonTableExpression(commonTableExpression);
             }
@@ -252,11 +253,11 @@ namespace Qsi.SqlServer.Tree
                     n.Alias.SetValue(new QsiAliasNode
                     {
                         Name = new QsiIdentifier(commonTableExpression.Name.Value, false)
-                    });    
+                    });
                 }
             });
         }
-        
+
         private static QsiColumnNode VisitSelectScalarExpression(SqlSelectScalarExpression scalarExpression)
         {
             QsiExpressionNode expression = null;
