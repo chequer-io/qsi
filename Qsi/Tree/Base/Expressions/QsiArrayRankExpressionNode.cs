@@ -2,7 +2,7 @@
 
 namespace Qsi.Tree.Base
 {
-    public sealed class QsiArrayRankExpressionNode : QsiExpressionNode, IQsArrayRankExpressionNode
+    public sealed class QsiArrayRankExpressionNode : QsiExpressionNode, IQsiArrayRankExpressionNode
     {
         public QsiTreeNodeProperty<QsiExpressionNode> Array { get; }
 
@@ -21,9 +21,9 @@ namespace Qsi.Tree.Base
         }
 
         #region Explicit
-        IQsiExpressionNode IQsArrayRankExpressionNode.Array => Array.Value;
+        IQsiExpressionNode IQsiArrayRankExpressionNode.Array => Array.Value;
 
-        IQsiExpressionNode IQsArrayRankExpressionNode.Rank => Rank.Value;
+        IQsiExpressionNode IQsiArrayRankExpressionNode.Rank => Rank.Value;
         #endregion
 
         public QsiArrayRankExpressionNode()

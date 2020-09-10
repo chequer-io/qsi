@@ -163,6 +163,14 @@ namespace Qsi.Compiler
 
                 foreach (var column in table.Columns.Columns)
                 {
+                    if (column is IQsiBindingColumnNode bindingColumn)
+                    {
+                        var declaredColumn = declaredTable.NewColumn();
+                        declaredColumn.Name = new QsiIdentifier(bindingColumn.Id, false);
+                        declaredColumn.IsBinding = true;
+                        continue;
+                    }
+
                     IEnumerable<QsiDataColumn> columns = ResolveColumns(scopedContext, column);
 
                     switch (column)
@@ -477,6 +485,10 @@ namespace Qsi.Compiler
 
                 case IQsiSequentialColumnNode sequentialColumn:
                     return new[] { ResolveSequentialColumn(context, sequentialColumn) };
+
+                case IQsiBindingColumnNode bindingColumn:
+                    // Process on 
+                    break;
             }
 
             throw new InvalidOperationException();
@@ -663,25 +675,47 @@ namespace Qsi.Compiler
                     break;
                 }
 
-                case IQsiColumnAccessExpressionNode e:
+                case IQsiColumnExpressionNode e:
                 {
-                    if (e.IsAll)
+                    switch (e.Column)
                     {
-                        if (e.FindDescendant<IQsiParametersExpressionNode, IQsiInvokeExpressionNode>(out _, out var i) &&
+                        case IQsiAllColumnNode _ when
+                            e.FindDescendant<IQsiParametersExpressionNode, IQsiInvokeExpressionNode>(out _, out var i) &&
                             i.Member != null &&
                             i.Member.Identifier.Level == 1 &&
-                            i.Member.Identifier[0].Value.Equals("COUNT", StringComparison.OrdinalIgnoreCase))
-                        {
+                            i.Member.Identifier[0].Value.Equals("COUNT", StringComparison.OrdinalIgnoreCase):
                             yield break;
+
+                        case IQsiAllColumnNode allColumnNode:
+                        {
+                            foreach (var column in ResolveAllColumns(context, allColumnNode))
+                                yield return column;
+
+                            break;
                         }
 
-                        foreach (var column in ResolveAllColumns(context, new AllColumnNodeProxy(e, e.Identifier)))
-                            yield return column;
+                        case IQsiDeclaredColumnNode declaredColumnNode:
+                            yield return ResolveDeclaredColumn(context, declaredColumnNode);
+
+                            break;
+
+                        case IQsiBindingColumnNode _:
+                            break;
+
+                        default:
+                            throw new InvalidOperationException();
                     }
-                    else
-                    {
-                        yield return ResolveDeclaredColumn(context, new DeclaredColumnNodeProxy(e, e.Identifier));
-                    }
+
+                    break;
+                }
+
+                case IQsiArrayRankExpressionNode e:
+                {
+                    foreach (var c in ResolveColumnsInExpression(context, e.Array))
+                        yield return c;
+
+                    foreach (var c in ResolveColumnsInExpression(context, e.Rank))
+                        yield return c;
 
                     break;
                 }
