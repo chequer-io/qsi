@@ -8,9 +8,9 @@
 
         protected IdentifierVisitor IdentifierVisitor => _context.IdentifierVisitor;
 
-        private readonly IVisitorContext _context;
+        private readonly IContext _context;
 
-        protected VisitorBase(IVisitorContext context)
+        protected VisitorBase(IContext context)
         {
             _context = context;
         }

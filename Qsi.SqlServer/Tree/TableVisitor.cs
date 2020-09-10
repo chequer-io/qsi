@@ -10,7 +10,7 @@ namespace Qsi.SqlServer.Tree
 {
     public sealed class TableVisitor : VisitorBase
     {
-        public TableVisitor(IVisitorContext context) : base(context)
+        public TableVisitor(IContext context) : base(context)
         {
         }
         
@@ -31,7 +31,7 @@ namespace Qsi.SqlServer.Tree
         #endregion
 
         #region Select Statements
-        public QsiTableNode VisitSelectStatement(SqlSelectStatement selectStatement)
+        private QsiTableNode VisitSelectStatement(SqlSelectStatement selectStatement)
         {
             var tableNode = VisitSelectSpecification(selectStatement.SelectSpecification);
 
@@ -61,7 +61,7 @@ namespace Qsi.SqlServer.Tree
             return tableNode;
         }
 
-        public QsiTableDirectivesNode VisitQueryWithClause(SqlQueryWithClause queryWithClause)
+        private QsiTableDirectivesNode VisitQueryWithClause(SqlQueryWithClause queryWithClause)
         {
             return TreeHelper.Create<QsiTableDirectivesNode>(n =>
             {
@@ -70,7 +70,7 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
-        public QsiTableNode VisitSelectSpecification(SqlSelectSpecification selectSpecification)
+        private QsiTableNode VisitSelectSpecification(SqlSelectSpecification selectSpecification)
         {
             return VisitQueryExpression(selectSpecification.QueryExpression);
         }

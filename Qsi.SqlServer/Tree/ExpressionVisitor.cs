@@ -10,7 +10,7 @@ namespace Qsi.SqlServer.Tree
 {
     public sealed class ExpressionVisitor : VisitorBase
     {
-        public ExpressionVisitor(IVisitorContext context) : base(context)
+        public ExpressionVisitor(IContext context) : base(context)
         {
         }
         
@@ -41,6 +41,9 @@ namespace Qsi.SqlServer.Tree
                 
                 case SqlSimpleCaseExpression simpleCaseExpression:
                     return VisitSimpleCaseExpression(simpleCaseExpression);
+                
+                case SqlNullScalarExpression nullScalarExpression:
+                    return VisitNullScalarExpression(nullScalarExpression);
             }
 
             throw TreeHelper.NotSupportedTree(scalarExpression);
@@ -203,6 +206,12 @@ namespace Qsi.SqlServer.Tree
                 n.Condition.SetValue(VisitScalarExpression(simpleWhenClause.WhenExpression));
                 n.Consequent.SetValue(VisitScalarExpression(simpleWhenClause.ThenExpression));
             });
+        }
+        
+        private QsiExpressionNode VisitNullScalarExpression(SqlNullScalarExpression nullScalarExpression)
+        {
+            
+            return null;
         }
     }
 }

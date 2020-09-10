@@ -6,7 +6,7 @@ namespace Qsi.SqlServer.Tree
 {
     public sealed class IdentifierVisitor : VisitorBase
     {
-        public IdentifierVisitor(IVisitorContext context) : base(context)
+        public IdentifierVisitor(IContext context) : base(context)
         {
         }
         

@@ -9,7 +9,7 @@ using Qsi.Tree;
 
 namespace Qsi.SqlServer
 {
-    public sealed class SqlServerParser : IQsiTreeParser, IVisitorContext
+    public sealed class SqlServerParser : IQsiTreeParser, IContext
     {
         public event EventHandler<QsiSyntaxErrorException> SyntaxError;
 
@@ -20,7 +20,9 @@ namespace Qsi.SqlServer
         public ExpressionVisitor ExpressionVisitor { get; }
 
         public IdentifierVisitor IdentifierVisitor { get; }
-        
+
+        public SqlServerParser ScriptParser => this;
+
         public SqlServerParser(ParseOptions options)
         {
             _options = options;
