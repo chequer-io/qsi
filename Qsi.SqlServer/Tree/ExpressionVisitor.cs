@@ -15,6 +15,32 @@ namespace Qsi.SqlServer.Tree
         public ExpressionVisitor(IContext context) : base(context)
         {
         }
+
+        public QsiExpressionNode VisitBooleanExpression(SqlBooleanExpression booleanExpression)
+        {
+            switch (booleanExpression)
+            {
+                case SqlIsNullBooleanExpression isNullBooleanExpression:
+                    return VisitIsNullBooleanExpression(isNullBooleanExpression);
+            }
+
+            throw TreeHelper.NotSupportedTree(booleanExpression);
+        }
+
+        private QsiLogicalExpressionNode VisitIsNullBooleanExpression(SqlIsNullBooleanExpression isNullBooleanExpression)
+        {
+            return TreeHelper.Create<QsiLogicalExpressionNode>(n =>
+            {
+                n.Left.SetValue(VisitScalarExpression(isNullBooleanExpression.Expression));
+                n.Right.SetValue(new QsiLiteralExpressionNode
+                {
+                    Value = null,
+                    Type = QsiLiteralType.Null
+                });
+
+                n.Operator = isNullBooleanExpression.HasNot ? "!=" : "=";
+            });
+        }
         
         public QsiExpressionNode VisitScalarExpression(SqlScalarExpression scalarExpression)
         {
@@ -46,6 +72,9 @@ namespace Qsi.SqlServer.Tree
                 
                 case SqlNullScalarExpression nullScalarExpression:
                     return VisitNullScalarExpression(nullScalarExpression);
+                
+                case SqlSearchedCaseExpression searchedCaseExpression:
+                    return VisitSearchedCaseExpression(searchedCaseExpression);
             }
 
             throw TreeHelper.NotSupportedTree(scalarExpression);
@@ -233,6 +262,28 @@ namespace Qsi.SqlServer.Tree
             }
 
             throw TreeHelper.NotSupportedTree(nullScalarExpression);
+        }
+
+        private QsiExpressionNode VisitSearchedCaseExpression(SqlSearchedCaseExpression searchedCaseExpression)
+        {
+            return TreeHelper.Create<QsiSwitchExpressionNode>(n =>
+            {
+                n.Cases.AddRange(searchedCaseExpression.WhenClauses.Select(VisitSearchedWhenClause));
+
+                n.Cases.Add(TreeHelper.Create<QsiSwitchCaseExpressionNode>(en =>
+                {
+                    en.Consequent.SetValue(VisitScalarExpression(searchedCaseExpression.ElseExpression));
+                }));
+            });
+        }
+
+        private QsiSwitchCaseExpressionNode VisitSearchedWhenClause(SqlSearchedWhenClause searchedWhenClause)
+        {
+            return TreeHelper.Create<QsiSwitchCaseExpressionNode>(n =>
+            {
+                n.Condition.SetValue(VisitBooleanExpression(searchedWhenClause.WhenExpression));
+                n.Consequent.SetValue(VisitScalarExpression(searchedWhenClause.ThenExpression));
+            });
         }
     }
 }
