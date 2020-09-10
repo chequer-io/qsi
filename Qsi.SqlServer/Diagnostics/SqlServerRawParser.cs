@@ -17,13 +17,15 @@ namespace Qsi.SqlServer.Diagnostics
 
         public IRawTree Parse(string input)
         {
-            var parserResult = Parser.Parse(input, new ParseOptions
+            var parserOptions = new ParseOptions
             {
                 CompatibilityLevel = _compatibilityLevel,
                 TransactSqlVersion = _transactSqlVersion
-            });
+            };
 
-            return new SqlServerRawTree(parserResult.Script, _compatibilityLevel);
+            var parserResult = Parser.Parse(input, parserOptions);
+
+            return new SqlServerRawTree(parserResult.Script, parserOptions);
         }
     }
 }
