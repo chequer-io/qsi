@@ -12,11 +12,12 @@ namespace Qsi.SqlServer
     {
         public ParseOptions ParseOptions { get; }
 
-        protected SqlServerLanguageServiceBase(DatabaseCompatibilityLevel compatibilityLevel)
+        protected SqlServerLanguageServiceBase(DatabaseCompatibilityLevel compatibilityLevel, TransactSqlVersion transactSqlVersion)
         {
             ParseOptions = new ParseOptions
             {
-                CompatibilityLevel = compatibilityLevel
+                CompatibilityLevel = compatibilityLevel,
+                TransactSqlVersion = transactSqlVersion
             };
         }
 
