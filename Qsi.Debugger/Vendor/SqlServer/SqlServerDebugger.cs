@@ -16,7 +16,7 @@ namespace Qsi.Debugger.Vendor.SqlServer
 
         public SqlServerDebugger(DatabaseCompatibilityLevel compatibilityLevel)
         {
-            RawParser = new SqlServerRawParser();
+            RawParser = new SqlServerRawParser(compatibilityLevel);
             LanguageService = new SqlServerLanguageService(compatibilityLevel);
             Parser = LanguageService.CreateTreeParser();
         }
