@@ -4,14 +4,18 @@ using Qsi.Data;
 
 namespace Qsi.SqlServer.Tree
 {
-    internal static class IdentifierVisitor
+    public sealed class IdentifierVisitor : VisitorBase
     {
-        public static QsiQualifiedIdentifier VisitMultipartIdentifier(SqlMultipartIdentifier objectIdentifier)
+        public IdentifierVisitor(IVisitorContext context) : base(context)
+        {
+        }
+        
+        public QsiQualifiedIdentifier VisitMultipartIdentifier(SqlMultipartIdentifier objectIdentifier)
         {
             return new QsiQualifiedIdentifier(objectIdentifier.Select(i => new QsiIdentifier(i.Value, false)));
         }
 
-        public static QsiIdentifier CreateIdentifier(SqlIdentifier identifier)
+        public QsiIdentifier CreateIdentifier(SqlIdentifier identifier)
         {
             return new QsiIdentifier(identifier.Value, false);
         }

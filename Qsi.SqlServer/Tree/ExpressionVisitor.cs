@@ -8,9 +8,13 @@ using Qsi.Utilities;
 
 namespace Qsi.SqlServer.Tree
 {
-    internal static class ExpressionVisitor
+    public sealed class ExpressionVisitor : VisitorBase
     {
-        public static QsiExpressionNode VisitScalarExpression(SqlScalarExpression scalarExpression)
+        public ExpressionVisitor(IVisitorContext context) : base(context)
+        {
+        }
+        
+        public QsiExpressionNode VisitScalarExpression(SqlScalarExpression scalarExpression)
         {
             switch (scalarExpression)
             {
@@ -42,7 +46,7 @@ namespace Qsi.SqlServer.Tree
             throw TreeHelper.NotSupportedTree(scalarExpression);
         }
 
-        private static QsiLogicalExpressionNode VisitBinaryScalarExpression(SqlBinaryScalarExpression binaryScalarExpression)
+        private QsiLogicalExpressionNode VisitBinaryScalarExpression(SqlBinaryScalarExpression binaryScalarExpression)
         {
             return TreeHelper.Create<QsiLogicalExpressionNode>(n =>
             {
@@ -53,7 +57,7 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
-        private static QsiLiteralExpressionNode VisitLiteralExpression(SqlLiteralExpression literalExpression)
+        private QsiLiteralExpressionNode VisitLiteralExpression(SqlLiteralExpression literalExpression)
         {
             return TreeHelper.Create<QsiLiteralExpressionNode>(n =>
             {
@@ -76,7 +80,7 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
-        private static QsiColumnAccessExpressionNode VisitScalarRefExpression(SqlScalarRefExpression scalarRefExpression)
+        private QsiColumnAccessExpressionNode VisitScalarRefExpression(SqlScalarRefExpression scalarRefExpression)
         {
             return TreeHelper.Create<QsiColumnAccessExpressionNode>(n =>
             {
@@ -84,7 +88,7 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
-        private static QsiInvokeExpressionNode VisitScalarFunctionCallExpression(SqlScalarFunctionCallExpression scalarFunctionCallExpression)
+        private QsiInvokeExpressionNode VisitScalarFunctionCallExpression(SqlScalarFunctionCallExpression scalarFunctionCallExpression)
         {
             switch (scalarFunctionCallExpression)
             {
@@ -101,7 +105,7 @@ namespace Qsi.SqlServer.Tree
             throw TreeHelper.NotSupportedTree(scalarFunctionCallExpression);
         }
 
-        private static QsiInvokeExpressionNode VisitIdentityFunctionCallExpression(SqlIdentityFunctionCallExpression identityFunctionCallExpression)
+        private QsiInvokeExpressionNode VisitIdentityFunctionCallExpression(SqlIdentityFunctionCallExpression identityFunctionCallExpression)
         {
             // ignored seed, increment in identityFunctionCallExpression
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
@@ -118,7 +122,7 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
-        private static QsiInvokeExpressionNode VisitBuiltinScalarFunctionCallExpression(SqlBuiltinScalarFunctionCallExpression builtinScalarFunctionCallExpression)
+        private QsiInvokeExpressionNode VisitBuiltinScalarFunctionCallExpression(SqlBuiltinScalarFunctionCallExpression builtinScalarFunctionCallExpression)
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
@@ -138,7 +142,7 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
-        private static QsiInvokeExpressionNode VisitUserDefinedScalarFunctionCallExpression(SqlUserDefinedScalarFunctionCallExpression userDefinedScalarFunctionCallExpression)
+        private QsiInvokeExpressionNode VisitUserDefinedScalarFunctionCallExpression(SqlUserDefinedScalarFunctionCallExpression userDefinedScalarFunctionCallExpression)
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
@@ -151,7 +155,7 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
-        private static QsiTableExpressionNode VisitScalarSubQueryExpression(SqlScalarSubQueryExpression scalarSubQueryExpression)
+        private QsiTableExpressionNode VisitScalarSubQueryExpression(SqlScalarSubQueryExpression scalarSubQueryExpression)
         {
             return TreeHelper.Create<QsiTableExpressionNode>(n =>
             {
@@ -160,7 +164,7 @@ namespace Qsi.SqlServer.Tree
         }
 
         // TODO: Impl variable
-        private static QsiVariableAccessExpressionNode VisitScalarVariableRefExpression(SqlScalarVariableRefExpression scalarVariableRefExpression)
+        private QsiVariableAccessExpressionNode VisitScalarVariableRefExpression(SqlScalarVariableRefExpression scalarVariableRefExpression)
         {
             return TreeHelper.Create<QsiVariableAccessExpressionNode>(n =>
             {
@@ -169,7 +173,7 @@ namespace Qsi.SqlServer.Tree
         }
 
         // TODO: Impl variable
-        private static QsiVariableAccessExpressionNode VisitGlobalScalarVariableRefExpression(SqlGlobalScalarVariableRefExpression globalScalarVariableRefExpression)
+        private QsiVariableAccessExpressionNode VisitGlobalScalarVariableRefExpression(SqlGlobalScalarVariableRefExpression globalScalarVariableRefExpression)
         {
             return TreeHelper.Create<QsiVariableAccessExpressionNode>(n =>
             {
@@ -177,7 +181,7 @@ namespace Qsi.SqlServer.Tree
             });
         }
         
-        private static QsiSwitchExpressionNode VisitSimpleCaseExpression(SqlSimpleCaseExpression simpleCaseExpression)
+        private QsiSwitchExpressionNode VisitSimpleCaseExpression(SqlSimpleCaseExpression simpleCaseExpression)
         {
             return TreeHelper.Create<QsiSwitchExpressionNode>(n =>
             {
@@ -192,7 +196,7 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
-        private static QsiSwitchCaseExpressionNode VisitSimpleWhenClause(SqlSimpleWhenClause simpleWhenClause)
+        private QsiSwitchCaseExpressionNode VisitSimpleWhenClause(SqlSimpleWhenClause simpleWhenClause)
         {
             return TreeHelper.Create<QsiSwitchCaseExpressionNode>(n =>
             {

@@ -8,10 +8,14 @@ using Qsi.Utilities;
 
 namespace Qsi.SqlServer.Tree
 {
-    internal static class TableVisitor
+    public sealed class TableVisitor : VisitorBase
     {
+        public TableVisitor(IVisitorContext context) : base(context)
+        {
+        }
+        
         #region Tree
-        public static QsiTableNode Visit(SqlCodeObject codeObject)
+        public QsiTableNode Visit(SqlCodeObject codeObject)
         {
             switch (codeObject)
             {
@@ -27,7 +31,7 @@ namespace Qsi.SqlServer.Tree
         #endregion
 
         #region Select Statements
-        public static QsiTableNode VisitSelectStatement(SqlSelectStatement selectStatement)
+        public QsiTableNode VisitSelectStatement(SqlSelectStatement selectStatement)
         {
             var tableNode = VisitSelectSpecification(selectStatement.SelectSpecification);
 
@@ -57,7 +61,7 @@ namespace Qsi.SqlServer.Tree
             return tableNode;
         }
 
-        public static QsiTableDirectivesNode VisitQueryWithClause(SqlQueryWithClause queryWithClause)
+        public QsiTableDirectivesNode VisitQueryWithClause(SqlQueryWithClause queryWithClause)
         {
             return TreeHelper.Create<QsiTableDirectivesNode>(n =>
             {
@@ -66,12 +70,12 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
-        public static QsiTableNode VisitSelectSpecification(SqlSelectSpecification selectSpecification)
+        public QsiTableNode VisitSelectSpecification(SqlSelectSpecification selectSpecification)
         {
             return VisitQueryExpression(selectSpecification.QueryExpression);
         }
 
-        public static QsiTableNode VisitQueryExpression(SqlQueryExpression queryExpression)
+        public QsiTableNode VisitQueryExpression(SqlQueryExpression queryExpression)
         {
             switch (queryExpression)
             {
@@ -85,7 +89,7 @@ namespace Qsi.SqlServer.Tree
             throw TreeHelper.NotSupportedTree(queryExpression);
         }
 
-        private static QsiDerivedTableNode VisitQuerySpecification(SqlQuerySpecification querySpecification)
+        private QsiDerivedTableNode VisitQuerySpecification(SqlQuerySpecification querySpecification)
         {
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
@@ -105,7 +109,7 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
-        private static QsiCompositeTableNode VisitBinaryQueryExpression(SqlBinaryQueryExpression binaryQueryExpression)
+        private QsiCompositeTableNode VisitBinaryQueryExpression(SqlBinaryQueryExpression binaryQueryExpression)
         {
             return TreeHelper.Create<QsiCompositeTableNode>(n =>
             {
@@ -114,7 +118,7 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
-        public static QsiColumnsDeclarationNode VisitSelectClause(SqlSelectClause selectClause)
+        public QsiColumnsDeclarationNode VisitSelectClause(SqlSelectClause selectClause)
         {
             return TreeHelper.Create<QsiColumnsDeclarationNode>(dn =>
             {
@@ -134,7 +138,7 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
-        public static QsiTableNode VisitFromClause(SqlFromClause fromClause)
+        public QsiTableNode VisitFromClause(SqlFromClause fromClause)
         {
             var tableExpressions = fromClause.TableExpressions;
 
@@ -164,7 +168,7 @@ namespace Qsi.SqlServer.Tree
             return joinedTableNode;
         }
 
-        private static QsiTableNode VisitTableExpression(SqlTableExpression tableExpression)
+        private QsiTableNode VisitTableExpression(SqlTableExpression tableExpression)
         {
             switch (tableExpression)
             {
@@ -194,7 +198,7 @@ namespace Qsi.SqlServer.Tree
             throw TreeHelper.NotSupportedTree(tableExpression);
         }
 
-        private static QsiTableNode VisitTableRefExpression(SqlTableRefExpression tableRefExpression)
+        private QsiTableNode VisitTableRefExpression(SqlTableRefExpression tableRefExpression)
         {
             var tableNode = new QsiTableAccessNode
             {
@@ -219,12 +223,12 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
-        private static QsiTableNode VisitTableVariableRefExpression(SqlTableVariableRefExpression tableVariableRefExpression)
+        private QsiTableNode VisitTableVariableRefExpression(SqlTableVariableRefExpression tableVariableRefExpression)
         {
             throw TreeHelper.NotSupportedFeature("Table variable");
         }
         
-        private static QsiJoinedTableNode VisitQualifiedJoinTableExpression(SqlQualifiedJoinTableExpression qualifiedJoinTableExpression)
+        private QsiJoinedTableNode VisitQualifiedJoinTableExpression(SqlQualifiedJoinTableExpression qualifiedJoinTableExpression)
         {
             return TreeHelper.Create<QsiJoinedTableNode>(n =>
             {
@@ -245,13 +249,13 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
-        private static QsiTableNode VisitPivotTableExpression(SqlPivotTableExpression pivotTableExpression)
+        private QsiTableNode VisitPivotTableExpression(SqlPivotTableExpression pivotTableExpression)
         {
             // TODO: Implement
             throw TreeHelper.NotSupportedTree(pivotTableExpression);
         }
 
-        private static QsiDerivedTableNode VisitCommonTableExpression(SqlCommonTableExpression commonTableExpression)
+        private QsiDerivedTableNode VisitCommonTableExpression(SqlCommonTableExpression commonTableExpression)
         {
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
@@ -284,7 +288,7 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
-        private static QsiDerivedTableNode VisitDerivedTableExpression(SqlDerivedTableExpression derivedTableExpression)
+        private QsiDerivedTableNode VisitDerivedTableExpression(SqlDerivedTableExpression derivedTableExpression)
         {
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
@@ -308,7 +312,7 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
-        private static QsiColumnNode VisitSelectScalarExpression(SqlSelectScalarExpression scalarExpression)
+        private QsiColumnNode VisitSelectScalarExpression(SqlSelectScalarExpression scalarExpression)
         {
             QsiExpressionNode expression = null;
             QsiDeclaredColumnNode column = null;
@@ -352,7 +356,7 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
-        public static QsiColumnNode VisitStarExpression(SqlSelectStarExpression starExpression)
+        public QsiColumnNode VisitStarExpression(SqlSelectStarExpression starExpression)
         {
             return TreeHelper.Create<QsiAllColumnNode>(n =>
             {
@@ -365,7 +369,7 @@ namespace Qsi.SqlServer.Tree
         #endregion
 
         #region Columns
-        public static IEnumerable<QsiSequentialColumnNode> CreateSequentialColumnNodes(SqlIdentifierCollection identifierCollection)
+        public IEnumerable<QsiSequentialColumnNode> CreateSequentialColumnNodes(SqlIdentifierCollection identifierCollection)
         {
             return identifierCollection
                 .Select((identifier, i) => TreeHelper.Create<QsiSequentialColumnNode>(n =>
@@ -377,7 +381,7 @@ namespace Qsi.SqlServer.Tree
         #endregion
 
         #region Alias
-        public static QsiAliasNode CreateAliasNode(SqlIdentifier identifier)
+        public QsiAliasNode CreateAliasNode(SqlIdentifier identifier)
         {
             return new QsiAliasNode
             {
@@ -387,12 +391,12 @@ namespace Qsi.SqlServer.Tree
         #endregion
 
         #region CreateView Statements
-        public static QsiTableNode VisitCreateViewStatement(SqlCreateViewStatement createViewStatement)
+        public QsiTableNode VisitCreateViewStatement(SqlCreateViewStatement createViewStatement)
         {
             return VisitViewDefinition(createViewStatement.Definition);
         }
 
-        public static QsiTableNode VisitViewDefinition(SqlViewDefinition viewDefinition)
+        public QsiTableNode VisitViewDefinition(SqlViewDefinition viewDefinition)
         {
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {

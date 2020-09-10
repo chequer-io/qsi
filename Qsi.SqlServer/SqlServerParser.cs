@@ -9,15 +9,39 @@ using Qsi.Tree;
 
 namespace Qsi.SqlServer
 {
-    public class SqlServerParser : IQsiTreeParser
+    public sealed class SqlServerParser : IQsiTreeParser, IVisitorContext
     {
         public event EventHandler<QsiSyntaxErrorException> SyntaxError;
 
         private readonly ParseOptions _options;
 
+        public TableVisitor TableVisitor { get; }
+
+        public ExpressionVisitor ExpressionVisitor { get; }
+
+        public IdentifierVisitor IdentifierVisitor { get; }
+        
         public SqlServerParser(ParseOptions options)
         {
             _options = options;
+            TableVisitor = CreateTableVisitor();
+            ExpressionVisitor = CreateExpressionVisitor();
+            IdentifierVisitor = CreateIdentifierVisitor();
+        }
+
+        private TableVisitor CreateTableVisitor()
+        {
+            return new TableVisitor(this);
+        }
+
+        private ExpressionVisitor CreateExpressionVisitor()
+        {
+            return new ExpressionVisitor(this);
+        }
+
+        private IdentifierVisitor CreateIdentifierVisitor()
+        {
+            return new IdentifierVisitor(this);
         }
 
         public IQsiTreeNode Parse(QsiScript script)
