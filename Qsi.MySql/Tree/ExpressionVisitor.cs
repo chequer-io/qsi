@@ -252,10 +252,10 @@ namespace Qsi.MySql.Tree
 
                         if (fContext.starArg != null)
                         {
-                            n.Parameters.Add(new QsiColumnAccessExpressionNode
+                            n.Parameters.Add(TreeHelper.Create<QsiColumnExpressionNode>(cn =>
                             {
-                                IsAll = true
-                            });
+                                cn.Column.SetValue(new QsiAllColumnNode());
+                            }));
                         }
                         else
                         {
@@ -856,7 +856,7 @@ namespace Qsi.MySql.Tree
 
             static QsiExpressionNode Unwrap(QsiMultipleExpressionNode arrayExpression)
             {
-                if (arrayExpression.Elements.Count == 1 && 
+                if (arrayExpression.Elements.Count == 1 &&
                     arrayExpression.Elements[0] is QsiLogicalExpressionNode innerLogicalExpr)
                 {
                     return innerLogicalExpr;
@@ -878,22 +878,27 @@ namespace Qsi.MySql.Tree
         #endregion
 
         #region ColumnExpression
-        private static QsiColumnAccessExpressionNode VisitFullColumnName(FullColumnNameContext context)
+        private static QsiColumnExpressionNode VisitFullColumnName(FullColumnNameContext context)
         {
-            var node = new QsiColumnAccessExpressionNode();
-            var identifier = IdentifierVisitor.Visit(context);
-
-            if (identifier[^1].Value == "*")
+            return TreeHelper.Create<QsiColumnExpressionNode>(n =>
             {
-                node.IsAll = true;
-                node.Identifier = identifier.Level == 1 ? null : new QsiQualifiedIdentifier(identifier[..^1]);
-            }
-            else
-            {
-                node.Identifier = identifier;
-            }
+                var identifier = IdentifierVisitor.Visit(context);
 
-            return node;
+                if (identifier[^1].Value == "*")
+                {
+                    n.Column.SetValue(new QsiAllColumnNode
+                    {
+                        Path = identifier.Level == 1 ? null : new QsiQualifiedIdentifier(identifier[..^1])
+                    });
+                }
+                else
+                {
+                    n.Column.SetValue(new QsiDeclaredColumnNode
+                    {
+                        Name = identifier
+                    });
+                }
+            });
         }
         #endregion
 

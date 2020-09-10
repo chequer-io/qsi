@@ -675,24 +675,32 @@ namespace Qsi.Compiler
                     break;
                 }
 
-                case IQsiColumnAccessExpressionNode e:
+                case IQsiColumnExpressionNode e:
                 {
-                    if (e.IsAll)
+                    switch (e.Column)
                     {
-                        if (e.FindDescendant<IQsiParametersExpressionNode, IQsiInvokeExpressionNode>(out _, out var i) &&
+                        case IQsiAllColumnNode _ when
+                            e.FindDescendant<IQsiParametersExpressionNode, IQsiInvokeExpressionNode>(out _, out var i) &&
                             i.Member != null &&
                             i.Member.Identifier.Level == 1 &&
-                            i.Member.Identifier[0].Value.Equals("COUNT", StringComparison.OrdinalIgnoreCase))
-                        {
+                            i.Member.Identifier[0].Value.Equals("COUNT", StringComparison.OrdinalIgnoreCase):
                             yield break;
+
+                        case IQsiAllColumnNode allColumnNode:
+                        {
+                            foreach (var column in ResolveAllColumns(context, allColumnNode))
+                                yield return column;
+
+                            break;
                         }
 
-                        foreach (var column in ResolveAllColumns(context, new AllColumnNodeProxy(e, e.Identifier)))
-                            yield return column;
-                    }
-                    else
-                    {
-                        yield return ResolveDeclaredColumn(context, new DeclaredColumnNodeProxy(e, e.Identifier));
+                        case IQsiDeclaredColumnNode declaredColumnNode:
+                            yield return ResolveDeclaredColumn(context, declaredColumnNode);
+
+                            break;
+
+                        default:
+                            throw new InvalidOperationException();
                     }
 
                     break;
