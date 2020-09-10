@@ -163,6 +163,14 @@ namespace Qsi.Compiler
 
                 foreach (var column in table.Columns.Columns)
                 {
+                    if (column is IQsiBindingColumnNode bindingColumn)
+                    {
+                        var declaredColumn = declaredTable.NewColumn();
+                        declaredColumn.Name = new QsiIdentifier(bindingColumn.Id, false);
+                        declaredColumn.IsBinding = true;
+                        continue;
+                    }
+
                     IEnumerable<QsiDataColumn> columns = ResolveColumns(scopedContext, column);
 
                     switch (column)
@@ -477,6 +485,10 @@ namespace Qsi.Compiler
 
                 case IQsiSequentialColumnNode sequentialColumn:
                     return new[] { ResolveSequentialColumn(context, sequentialColumn) };
+
+                case IQsiBindingColumnNode bindingColumn:
+                    // Process on 
+                    break;
             }
 
             throw new InvalidOperationException();
@@ -682,6 +694,17 @@ namespace Qsi.Compiler
                     {
                         yield return ResolveDeclaredColumn(context, new DeclaredColumnNodeProxy(e, e.Identifier));
                     }
+
+                    break;
+                }
+
+                case IQsiArrayRankExpressionNode e:
+                {
+                    foreach (var c in ResolveColumnsInExpression(context, e.Array))
+                        yield return c;
+
+                    foreach (var c in ResolveColumnsInExpression(context, e.Rank))
+                        yield return c;
 
                     break;
                 }
