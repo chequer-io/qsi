@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Qsi.Collections;
 using Qsi.Compiler.Proxy;
 using Qsi.Data;
 using Qsi.Extensions;
@@ -126,12 +127,7 @@ namespace Qsi.Compiler
 
             if (table.Directives?.Tables?.Length > 0)
             {
-                foreach (var directive in table.Directives.Tables)
-                {
-                    using var directiveContext = new CompileContext(scopedContext);
-                    var directiveTable = await BuildTableStructure(directiveContext, directive);
-                    scopedContext.AddDirective(directiveTable);
-                }
+                await BuildDirectives(scopedContext, table.Directives);
             }
 
             // Table Source
@@ -211,6 +207,127 @@ namespace Qsi.Compiler
             }
 
             return declaredTable;
+        }
+
+        protected virtual async ValueTask<QsiDataTable> BuildRecursiveCompositeTable(
+            CompileContext context,
+            IQsiDerivedTableNode table,
+            IQsiCompositeTableNode source)
+        {
+            var declaredTable = new QsiDataTable
+            {
+                Type = QsiDataTableType.Derived,
+                Identifier = new QsiQualifiedIdentifier(table.Alias.Name)
+            };
+
+            int sourceOffset = 0;
+            var structures = new List<QsiDataTable>(source.Sources.Length);
+
+            if (table.Columns.Columns.Any(c => !(c is IQsiAllColumnNode)))
+            {
+                foreach (var columnNode in table.Columns.Columns.Cast<IQsiSequentialColumnNode>())
+                {
+                    var column = declaredTable.NewColumn();
+                    column.Name = columnNode.Alias.Name;
+                }
+            }
+            else
+            {
+                using var anchorContext = new CompileContext(context);
+                var anchor = await BuildTableStructure(anchorContext, source.Sources[0]);
+
+                foreach (var anchorColumn in anchor.Columns)
+                {
+                    var column = declaredTable.NewColumn();
+                    column.Name = anchorColumn.Name;
+                }
+
+                sourceOffset++;
+                structures.Add(anchor);
+            }
+
+            for (int i = sourceOffset; i < source.Sources.Length; i++)
+            {
+                using var tempContext = new CompileContext(context);
+                tempContext.AddDirective(declaredTable);
+
+                structures.Add(await BuildTableStructure(tempContext, source.Sources[i]));
+            }
+
+            foreach (var structure in structures)
+            {
+                if (declaredTable.Columns.Count != structure.Columns.Count)
+                    throw new QsiException(QsiError.DifferentColumnsCount);
+
+                for (int i = 0; i < structure.Columns.Count; i++)
+                {
+                    declaredTable.Columns[i].References.Add(structure.Columns[i]);
+                }
+            }
+
+            return declaredTable;
+        }
+
+        private async ValueTask BuildDirectives(CompileContext context, IQsiTableDirectivesNode directivesNode)
+        {
+            foreach (var directiveTable in directivesNode.Tables)
+            {
+                var cteName = directiveTable.Alias.Name;
+
+                if (directivesNode.IsRecursive && ContainsRecursiveQuery(directiveTable.Source, cteName))
+                {
+                    if (!(directiveTable.Source is IQsiCompositeTableNode compositeTableNode))
+                        throw new QsiException(QsiError.NoTopLevelUnionInRecursiveQuery, cteName);
+
+                    if (ContainsRecursiveQuery(compositeTableNode.Sources[0], cteName))
+                    {
+                        if (!_options.UseAutoFixRecursiveQuery || compositeTableNode.Sources.Length < 2)
+                            throw new QsiException(QsiError.NoAnchorInRecursiveQuery, cteName);
+
+                        var fixedSources = compositeTableNode.Sources
+                            .Select(s => new
+                            {
+                                Source = s,
+                                Recursive = ContainsRecursiveQuery(s, cteName)
+                            })
+                            .OrderBy(x => x.Recursive ? 1 : 0)
+                            .ToArray();
+
+                        if (fixedSources[0].Recursive)
+                            throw new QsiException(QsiError.NoAnchorInRecursiveQuery, cteName);
+
+                        compositeTableNode = new CompositeTableNodeProxy(
+                            compositeTableNode.Parent,
+                            fixedSources
+                                .Select(s => s.Source)
+                                .ToArray());
+                    }
+
+                    using var directiveContext = new CompileContext(context);
+                    var directiveTableStructure = await BuildRecursiveCompositeTable(context, directiveTable, compositeTableNode);
+                    context.AddDirective(directiveTableStructure);
+                }
+                else
+                {
+                    using var directiveContext = new CompileContext(context);
+                    var directiveTableStructure = await BuildTableStructure(directiveContext, directiveTable);
+                    context.AddDirective(directiveTableStructure);
+                }
+            }
+        }
+
+        protected virtual bool ContainsRecursiveQuery(IQsiTableNode table, QsiIdentifier identifier)
+        {
+            foreach (var tableAccess in table.FindAscendants<IQsiTableAccessNode>())
+            {
+                if (tableAccess.Identifier.Level == 1 &&
+                    DefaultIdentifierComparer.Default.Equals(tableAccess.Identifier[0], identifier))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         protected virtual async ValueTask<QsiDataTable> BuildJoinedTable(CompileContext context, IQsiJoinedTableNode table)
@@ -313,33 +430,12 @@ namespace Qsi.Compiler
             if (table.Sources == null || table.Sources.Length == 0)
                 throw new QsiException(QsiError.Syntax);
 
-            QsiIdentifier recursiveAlias = null;
-
-            if (table.FindDescendant<IQsiDerivedTableNode, IQsiTableDirectivesNode>(
-                    out var derivedTableNode,
-                    out var directivesNode) &&
-                directivesNode.IsRecursive)
-            {
-                recursiveAlias = derivedTableNode.Alias.Name;
-            }
-
             var sources = new QsiDataTable[table.Sources.Length];
 
             for (int i = 0; i < sources.Length; i++)
             {
                 using var tempContext = new CompileContext(context);
-
-                if (recursiveAlias != null && i > 0)
-                {
-                    tempContext.AddDirective(sources[0]);
-                }
-                
                 sources[i] = await BuildTableStructure(tempContext, table.Sources[i]);
-
-                if (recursiveAlias != null && i == 0)
-                {
-                    sources[i].Identifier = new QsiQualifiedIdentifier(recursiveAlias);
-                }
             }
 
             int columnCount = sources[0].Columns.Count;

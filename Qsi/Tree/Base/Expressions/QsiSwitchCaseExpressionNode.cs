@@ -1,4 +1,6 @@
-﻿namespace Qsi.Tree.Base
+﻿using System.Collections.Generic;
+
+namespace Qsi.Tree.Base
 {
     public sealed class QsiSwitchCaseExpressionNode : QsiExpressionNode, IQsiSwitchCaseExpressionNode
     {
@@ -6,10 +8,22 @@
 
         public QsiTreeNodeProperty<QsiExpressionNode> Consequent { get; }
 
-        #region Explicit
-        IQsiExpressionNode IQsiSwitchCaseExpressionNode.Condition => Condition.GetValue();
+        public override IEnumerable<IQsiTreeNode> Children
+        {
+            get
+            {
+                if (!Condition.IsEmpty)
+                    yield return Condition.Value;
 
-        IQsiExpressionNode IQsiSwitchCaseExpressionNode.Consequent => Consequent.GetValue();
+                if (!Consequent.IsEmpty)
+                    yield return Consequent.Value;
+            }
+        }
+
+        #region Explicit
+        IQsiExpressionNode IQsiSwitchCaseExpressionNode.Condition => Condition.Value;
+
+        IQsiExpressionNode IQsiSwitchCaseExpressionNode.Consequent => Consequent.Value;
         #endregion
 
         public QsiSwitchCaseExpressionNode()

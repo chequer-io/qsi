@@ -192,7 +192,7 @@ namespace Qsi.MySql.Tree
             });
         }
 
-        public static QsiTableNode VisitWithExpression(WithExpressionContext context)
+        public static QsiDerivedTableNode VisitWithExpression(WithExpressionContext context)
         {
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {

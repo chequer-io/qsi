@@ -1,4 +1,6 @@
-﻿using Qsi.Data;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Qsi.Data;
 using Qsi.Tree;
 
 namespace Qsi.Compiler.Proxy
@@ -10,6 +12,8 @@ namespace Qsi.Compiler.Proxy
         public QsiQualifiedIdentifier Path { get; }
 
         public bool IncludeInvisibleColumns { get; }
+
+        public IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
 
         public AllColumnNodeProxy(IQsiTreeNode parent, QsiQualifiedIdentifier path)
         {

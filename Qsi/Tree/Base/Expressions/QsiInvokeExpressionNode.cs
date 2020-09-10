@@ -1,4 +1,6 @@
-﻿namespace Qsi.Tree.Base
+﻿using System.Collections.Generic;
+
+namespace Qsi.Tree.Base
 {
     public sealed class QsiInvokeExpressionNode : QsiExpressionNode, IQsiInvokeExpressionNode
     {
@@ -6,8 +8,19 @@
 
         public QsiTreeNodeList<QsiExpressionNode> Parameters { get; }
 
+        public override IEnumerable<IQsiTreeNode> Children
+        {
+            get
+            {
+                if (Member != null)
+                    yield return Member.Value;
+
+                yield return _parameters;
+            }
+        }
+
         #region Explicit
-        IQsiFunctionAccessExpressionNode IQsiInvokeExpressionNode.Member => Member.GetValue();
+        IQsiFunctionAccessExpressionNode IQsiInvokeExpressionNode.Member => Member.Value;
 
         IQsiParametersExpressionNode IQsiInvokeExpressionNode.Parameters => _parameters;
         #endregion

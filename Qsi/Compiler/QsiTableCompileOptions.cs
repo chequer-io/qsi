@@ -6,5 +6,10 @@
         /// Allow empty columns in <c>select statement</c>.
         /// </summary>
         public bool AllowEmptyColumnsInSelect { get; set; }
+
+        /// <summary>
+        /// Use auto fix invalid recursive query
+        /// </summary>
+        public bool UseAutoFixRecursiveQuery { get; set; }
     }
 }

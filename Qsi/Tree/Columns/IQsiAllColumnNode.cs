@@ -12,6 +12,6 @@ namespace Qsi.Tree
         /// </summary>
         public QsiQualifiedIdentifier Path { get; }
 
-        public bool IncludeInvisibleColumns { get; } 
+        public bool IncludeInvisibleColumns { get; }
     }
 }

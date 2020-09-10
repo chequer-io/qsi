@@ -1,4 +1,6 @@
-﻿using Qsi.Data;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Qsi.Data;
 using Qsi.Tree;
 
 namespace Qsi.Compiler.Proxy
@@ -8,6 +10,8 @@ namespace Qsi.Compiler.Proxy
         public IQsiTreeNode Parent { get; }
 
         public QsiQualifiedIdentifier Name { get; }
+
+        public IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
 
         public DeclaredColumnNodeProxy(IQsiTreeNode parent, QsiQualifiedIdentifier name)
         {
