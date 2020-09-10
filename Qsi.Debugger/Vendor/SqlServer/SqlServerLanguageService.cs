@@ -6,7 +6,7 @@ namespace Qsi.Debugger.Vendor.SqlServer
 {
     public class SqlServerLanguageService : SqlServerLanguageServiceBase
     {
-        public SqlServerLanguageService(DatabaseCompatibilityLevel compatibilityLevel) : base(compatibilityLevel)
+        public SqlServerLanguageService(DatabaseCompatibilityLevel compatibilityLevel, TransactSqlVersion transactSqlVersion) : base(compatibilityLevel, transactSqlVersion)
         {
         }
 

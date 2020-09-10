@@ -13,7 +13,7 @@ namespace Qsi.SqlServer.Diagnostics
 
         public IRawTree[] Children { get; }
 
-        internal SqlServerRawTree(SqlCodeObject tree, DatabaseCompatibilityLevel compatibilityLevel)
+        internal SqlServerRawTree(SqlCodeObject tree, ParseOptions parseOptions)
         {
             if (tree is SqlNullScalarExpression nullScalarExpression)
             {
@@ -22,11 +22,7 @@ namespace Qsi.SqlServer.Diagnostics
                 if (Regex.IsMatch(sql, @"^coalesce[^a-z]", RegexOptions.IgnoreCase))
                 {
                     var replaceSql = $"SELECT _{sql}";
-
-                    var result = Parser.Parse(replaceSql, new ParseOptions
-                    {
-                        CompatibilityLevel = compatibilityLevel
-                    });
+                    var result = Parser.Parse(replaceSql, parseOptions);
 
                     if (result.Script.Batches.FirstOrDefault()?.Statements.FirstOrDefault() is SqlSelectStatement selectStatement && 
                         selectStatement.SelectSpecification.QueryExpression is SqlQuerySpecification querySpecification &&
@@ -52,7 +48,7 @@ namespace Qsi.SqlServer.Diagnostics
                 for (int i = 0; i < count; i++)
                 {
                     var child = childrens[i];
-                    trees[i] = new SqlServerRawTree(child, compatibilityLevel);
+                    trees[i] = new SqlServerRawTree(child, parseOptions);
                 }
 
                 Children = trees;

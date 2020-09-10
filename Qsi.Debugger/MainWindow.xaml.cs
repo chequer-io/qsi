@@ -51,9 +51,9 @@ namespace Qsi.Debugger
             {
                 ["MySQL"] = new Lazy<VendorDebugger>(() => new MySqlDebugger()),
                 ["PostgreSQL"] = new Lazy<VendorDebugger>(() => new PostgreSqlDebugger()),
-                ["Azure SQL DB"] = new Lazy<VendorDebugger>(() => new SqlServerDebugger(DatabaseCompatibilityLevel.Azure)),
-                ["SQL Server 2019"] = new Lazy<VendorDebugger>(() => new SqlServerDebugger(DatabaseCompatibilityLevel.Version150)),
-                ["SQL Server 2000"] = new Lazy<VendorDebugger>(() => new SqlServerDebugger(DatabaseCompatibilityLevel.Version80))
+                ["Azure SQL DB"] = new Lazy<VendorDebugger>(() => new SqlServerDebugger(DatabaseCompatibilityLevel.Azure, TransactSqlVersion.Azure)),
+                ["SQL Server 2019"] = new Lazy<VendorDebugger>(() => new SqlServerDebugger(DatabaseCompatibilityLevel.Version150, TransactSqlVersion.Version150)),
+                ["SQL Server 2008"] = new Lazy<VendorDebugger>(() => new SqlServerDebugger(DatabaseCompatibilityLevel.Version100, TransactSqlVersion.Version105))
             };
 
             _cbLanguages = this.Find<ComboBox>("cbLanguages");

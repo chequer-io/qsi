@@ -14,10 +14,10 @@ namespace Qsi.Debugger.Vendor.SqlServer
 
         public override IQsiLanguageService LanguageService { get; }
 
-        public SqlServerDebugger(DatabaseCompatibilityLevel compatibilityLevel)
+        public SqlServerDebugger(DatabaseCompatibilityLevel compatibilityLevel, TransactSqlVersion transactSqlVersion)
         {
-            RawParser = new SqlServerRawParser(compatibilityLevel);
-            LanguageService = new SqlServerLanguageService(compatibilityLevel);
+            RawParser = new SqlServerRawParser(compatibilityLevel, transactSqlVersion);
+            LanguageService = new SqlServerLanguageService(compatibilityLevel, transactSqlVersion);
             Parser = LanguageService.CreateTreeParser();
         }
     }
