@@ -1,5 +1,7 @@
 using System;
 using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
 using Qsi.Data;
 using Qsi.SqlServer.Extensions;
@@ -210,8 +212,24 @@ namespace Qsi.SqlServer.Tree
         
         private QsiExpressionNode VisitNullScalarExpression(SqlNullScalarExpression nullScalarExpression)
         {
-            
-            return null;
+            var sql = nullScalarExpression.Sql;
+
+            if (Regex.IsMatch(sql, @"^coalesce[^a-z]", RegexOptions.IgnoreCase))
+            {
+                var name = sql[..8];
+                var replaceSql = $"SELECT _{sql}";
+                var result = SqlParser.Parse(new QsiScript(replaceSql, QsiScriptType.Select));
+
+                if (result is QsiDerivedTableNode tableNode &&
+                    tableNode.Columns.Value.Columns.First() is QsiDerivedColumnNode derivedColumnNode &&
+                    derivedColumnNode.Expression.Value is QsiInvokeExpressionNode invokeExpressionNode)
+                {
+                    invokeExpressionNode.Member.SetValue(TreeHelper.CreateFunctionAccess(name));
+                    return invokeExpressionNode;
+                }
+            }
+
+            throw TreeHelper.NotSupportedTree(nullScalarExpression);
         }
     }
 }

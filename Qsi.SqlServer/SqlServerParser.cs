@@ -21,7 +21,7 @@ namespace Qsi.SqlServer
 
         public IdentifierVisitor IdentifierVisitor { get; }
 
-        public SqlServerParser ScriptParser => this;
+        public SqlServerParser SqlParser => this;
 
         public SqlServerParser(ParseOptions options)
         {
@@ -49,7 +49,7 @@ namespace Qsi.SqlServer
         public IQsiTreeNode Parse(QsiScript script)
         {
             var result = Parser.Parse(script.Script, _options);
-
+            
             Error[] errors = result.Errors
                 .Where(e => !e.IsWarning)
                 .ToArray();

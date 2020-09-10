@@ -8,6 +8,6 @@
         
         IdentifierVisitor IdentifierVisitor { get; }
         
-        SqlServerParser ScriptParser { get; }
+        SqlServerParser SqlParser { get; }
     }
 }
