@@ -174,9 +174,9 @@ namespace Qsi.PostgreSql.Tree.PG10
 
                 if (funcCall.agg_star ?? false)
                 {
-                    n.Parameters.Add(TreeHelper.Create<QsiColumnAccessExpressionNode>(node =>
+                    n.Parameters.Add(TreeHelper.Create<QsiColumnExpressionNode>(node =>
                     {
-                        node.IsAll = true;
+                        node.Column.SetValue(new QsiAllColumnNode());
                     }));
                 }
             });
@@ -236,24 +236,24 @@ namespace Qsi.PostgreSql.Tree.PG10
             });
         }
 
-        private static QsiExpressionNode VisitColumnRef(ColumnRef columnRef)
+        private static QsiColumnExpressionNode VisitColumnRef(ColumnRef columnRef)
         {
-            return TreeHelper.Create<QsiColumnAccessExpressionNode>(n =>
+            return TreeHelper.Create<QsiColumnExpressionNode>(n =>
             {
-                var isAll = columnRef.fields[^1].Type == NodeTag.T_A_Star;
-                IEnumerable<PgString> fields;
-
-                if (isAll)
+                if (columnRef.fields[^1].Type == NodeTag.T_A_Star)
                 {
-                    n.IsAll = true;
-                    fields = columnRef.fields[..^1].Cast<PgString>();
+                    n.Column.SetValue(new QsiAllColumnNode
+                    {
+                        Path = IdentifierVisitor.VisitStrings(columnRef.fields[..^1].Cast<PgString>())
+                    });
                 }
                 else
                 {
-                    fields = columnRef.fields.Cast<PgString>();
+                    n.Column.SetValue(new QsiDeclaredColumnNode
+                    {
+                        Name = IdentifierVisitor.VisitStrings(columnRef.fields.Cast<PgString>())
+                    });
                 }
-
-                n.Identifier = IdentifierVisitor.VisitStrings(fields);
             });
         }
 

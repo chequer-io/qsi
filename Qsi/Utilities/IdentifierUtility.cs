@@ -89,7 +89,7 @@ namespace Qsi.Utilities
             for (int i = 0; i < span.Length; i++)
             {
                 var c = span[i];
-                bool end = i == buffer.Length - 1;
+                bool end = i == span.Length - 1;
 
                 switch (c)
                 {

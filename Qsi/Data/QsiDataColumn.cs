@@ -1,6 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Qsi.Tree;
 using Qsi.Utilities;
 
 namespace Qsi.Data
@@ -15,6 +15,8 @@ namespace Qsi.Data
 
         public bool IsVisible { get; set; } = true;
 
+        public bool IsBinding { get; set; }
+
         public bool IsAnonymous => Name == null;
 
         public bool IsExpression
@@ -28,6 +30,12 @@ namespace Qsi.Data
         internal QsiDataColumn(QsiDataTable parent)
         {
             Parent = parent;
+        }
+
+        internal QsiDataColumn(IQsiBindingColumnNode bindingColumn)
+        {
+            Name = new QsiIdentifier(bindingColumn.Id, false);
+            IsBinding = true;
         }
     }
 }
