@@ -85,11 +85,14 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
-        private QsiColumnAccessExpressionNode VisitScalarRefExpression(SqlScalarRefExpression scalarRefExpression)
+        private QsiColumnExpressionNode VisitScalarRefExpression(SqlScalarRefExpression scalarRefExpression)
         {
-            return TreeHelper.Create<QsiColumnAccessExpressionNode>(n =>
+            return TreeHelper.Create<QsiColumnExpressionNode>(n =>
             {
-                n.Identifier = IdentifierVisitor.VisitMultipartIdentifier(scalarRefExpression.MultipartIdentifier);
+                n.Column.SetValue(new QsiDeclaredColumnNode
+                {
+                    Name = IdentifierVisitor.VisitMultipartIdentifier(scalarRefExpression.MultipartIdentifier)
+                });
             });
         }
 
@@ -135,10 +138,10 @@ namespace Qsi.SqlServer.Tree
 
                 if (builtinScalarFunctionCallExpression.IsStar)
                 {
-                    n.Parameters.Add(new QsiColumnAccessExpressionNode
+                    n.Parameters.Add(TreeHelper.Create<QsiColumnExpressionNode>(cn =>
                     {
-                        IsAll = true
-                    });
+                        cn.Column.SetValue(new QsiAllColumnNode());
+                    }));
                 }
                 else
                 {
