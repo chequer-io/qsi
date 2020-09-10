@@ -699,6 +699,9 @@ namespace Qsi.Compiler
 
                             break;
 
+                        case IQsiBindingColumnNode _:
+                            break;
+
                         default:
                             throw new InvalidOperationException();
                     }
