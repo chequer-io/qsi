@@ -61,7 +61,8 @@ namespace Qsi.SqlServer.Tree
         {
             return TreeHelper.Create<QsiTableDirectivesNode>(n =>
             {
-                n.Tables.AddRange(queryWithClause.CommonTableExpressions.Select(VisitTableExpression));
+                n.IsRecursive = true;
+                n.Tables.AddRange(queryWithClause.CommonTableExpressions.Select(VisitCommonTableExpression));
             });
         }
 
