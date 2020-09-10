@@ -35,5 +35,19 @@ namespace Qsi.JSql.Tree
                 IdentifierUtility.Parse(function.getName())
                     .Select(x => new QsiIdentifier(x, false)));
         }
+
+        public virtual QsiQualifiedIdentifier VisitAnalyticExpression(AnalyticExpression expression)
+        {
+            return new QsiQualifiedIdentifier(
+                IdentifierUtility.Parse(expression.getName())
+                    .Select(x => new QsiIdentifier(x, false)));
+        }
+
+        public virtual QsiQualifiedIdentifier VisitNextValExpression(NextValExpression expression)
+        {
+            return new QsiQualifiedIdentifier(
+                IdentifierUtility.Parse(expression.getName())
+                    .Select(x => new QsiIdentifier(x, false)));
+        }
     }
 }

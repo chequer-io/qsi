@@ -98,8 +98,8 @@ namespace Qsi.JSql.Tree
                 case NotExpression notExpression:
                     return VisitNotExpression(notExpression);
 
-                case NullValue nullValue:
-                    return VisitNullValue(nullValue);
+                case NullValue _:
+                    return VisitNullValue();
 
                 case NumericBind numericBind:
                     return VisitNumericBind(numericBind);
@@ -174,48 +174,53 @@ namespace Qsi.JSql.Tree
             throw TreeHelper.NotSupportedTree(expression);
         }
 
-        public virtual QsiExpressionNode VisitNullValue(NullValue expression)
+        public virtual QsiLiteralExpressionNode VisitNullValue()
         {
             return TreeHelper.CreateNullLiteral();
         }
 
-        public virtual QsiExpressionNode VisitStringValue(StringValue expression)
+        public virtual QsiLiteralExpressionNode VisitStringValue(StringValue expression)
         {
             return TreeHelper.CreateLiteral(expression.getValue());
         }
 
-        public virtual QsiExpressionNode VisitLongValue(LongValue expression)
+        public virtual QsiLiteralExpressionNode VisitLongValue(LongValue expression)
         {
             return TreeHelper.CreateLiteral(expression.getValue());
         }
 
-        public virtual QsiExpressionNode VisitDoubleValue(DoubleValue expression)
+        public virtual QsiLiteralExpressionNode VisitDoubleValue(DoubleValue expression)
         {
             return TreeHelper.CreateLiteral(expression.getValue());
+        }
+
+        public virtual QsiExpressionNode VisitHexValue(HexValue expression)
+        {
+            return TreeHelper.CreateLiteral(expression.getValue(), QsiLiteralType.Hexadecimal);
         }
 
         // {d 'yyyy-mm-dd'}
-        public virtual QsiExpressionNode VisitDateValue(DateValue expression)
+        public virtual QsiLiteralExpressionNode VisitDateValue(DateValue expression)
         {
             var value = _dateTimePattern.Match(expression.toString()).Value;
             return TreeHelper.CreateLiteral(DateTime.Parse(value), QsiLiteralType.Date);
         }
 
         // {t 'hh:mm:ss'}
-        public virtual QsiExpressionNode VisitTimeValue(TimeValue expression)
+        public virtual QsiLiteralExpressionNode VisitTimeValue(TimeValue expression)
         {
             var value = _dateTimePattern.Match(expression.toString()).Value;
             return TreeHelper.CreateLiteral(TimeSpan.Parse(value), QsiLiteralType.Time);
         }
 
         // {ts 'yyyy-mm-dd hh:mm:ss.f . . .'}
-        public virtual QsiExpressionNode VisitTimestampValue(TimestampValue expression)
+        public virtual QsiLiteralExpressionNode VisitTimestampValue(TimestampValue expression)
         {
             var value = _dateTimePattern.Match(expression.toString()).Value;
             return TreeHelper.CreateLiteral(DateTimeOffset.Parse(value), QsiLiteralType.DateTimeOffset);
         }
 
-        public virtual QsiExpressionNode VisitDateTimeLiteralExpression(DateTimeLiteralExpression expression)
+        public virtual QsiLiteralExpressionNode VisitDateTimeLiteralExpression(DateTimeLiteralExpression expression)
         {
             QsiLiteralType literalType;
 
@@ -237,7 +242,7 @@ namespace Qsi.JSql.Tree
             return TreeHelper.CreateLiteral(expression.getValue(), literalType);
         }
 
-        public virtual QsiExpressionNode VisitAllComparisonExpression(AllComparisonExpression expression)
+        public virtual QsiInvokeExpressionNode VisitAllComparisonExpression(AllComparisonExpression expression)
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
@@ -246,7 +251,7 @@ namespace Qsi.JSql.Tree
             });
         }
 
-        public virtual QsiExpressionNode VisitAnyComparisonExpression(AnyComparisonExpression expression)
+        public virtual QsiInvokeExpressionNode VisitAnyComparisonExpression(AnyComparisonExpression expression)
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
@@ -255,12 +260,23 @@ namespace Qsi.JSql.Tree
             });
         }
 
-        public virtual QsiExpressionNode VisitAnalyticExpression(AnalyticExpression expression)
+        public virtual QsiInvokeExpressionNode VisitAnalyticExpression(AnalyticExpression expression)
         {
-            throw new NotImplementedException();
+            return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            {
+                n.Member.SetValue(new QsiFunctionAccessExpressionNode
+                {
+                    Identifier = IdentifierVisitor.VisitAnalyticExpression(expression)
+                });
+
+                if (expression.getExpression() != null)
+                {
+                    n.Parameters.Add(Visit(expression.getExpression()));
+                }
+            });
         }
 
-        public virtual QsiExpressionNode VisitArrayExpression(ArrayExpression expression)
+        public virtual QsiArrayRankExpressionNode VisitArrayExpression(ArrayExpression expression)
         {
             return TreeHelper.Create<QsiArrayRankExpressionNode>(n =>
             {
@@ -269,7 +285,7 @@ namespace Qsi.JSql.Tree
             });
         }
 
-        public virtual QsiExpressionNode VisitBinaryExpression(BinaryExpression expression)
+        public virtual QsiLogicalExpressionNode VisitBinaryExpression(BinaryExpression expression)
         {
             return TreeHelper.Create<QsiLogicalExpressionNode>(n =>
             {
@@ -279,27 +295,76 @@ namespace Qsi.JSql.Tree
             });
         }
 
-        public virtual QsiExpressionNode VisitCaseExpression(CaseExpression expression)
+        public virtual QsiSwitchExpressionNode VisitCaseExpression(CaseExpression expression)
         {
-            throw new NotImplementedException();
+            return TreeHelper.Create<QsiSwitchExpressionNode>(n =>
+            {
+                if (expression.getSwitchExpression() != null)
+                    n.Value.SetValue(Visit(expression.getSwitchExpression()));
+
+                n.Cases.AddRange(expression.getWhenClauses()
+                    .AsEnumerable<WhenClause>()
+                    .Select(VisitWhenClause));
+
+                if (expression.getElseExpression() != null)
+                {
+                    n.Cases.Add(TreeHelper.Create<QsiSwitchCaseExpressionNode>(en =>
+                    {
+                        en.Consequent.SetValue(Visit(expression.getElseExpression()));
+                    }));
+                }
+            });
         }
 
-        public virtual QsiExpressionNode VisitCastExpression(CastExpression expression)
+        public virtual QsiSwitchCaseExpressionNode VisitWhenClause(WhenClause expression)
         {
-            throw new NotImplementedException();
+            return TreeHelper.Create<QsiSwitchCaseExpressionNode>(n =>
+            {
+                n.Condition.SetValue(Visit(expression.getWhenExpression()));
+                n.Consequent.SetValue(Visit(expression.getThenExpression()));
+            });
         }
 
-        public virtual QsiExpressionNode VisitCollateExpression(CollateExpression expression)
+        public virtual QsiInvokeExpressionNode VisitCastExpression(CastExpression expression)
         {
-            throw new NotImplementedException();
+            return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            {
+                n.Member.SetValue(TreeHelper.CreateFunctionAccess(JSqlKnownFunction.Cast));
+                n.Parameters.Add(Visit(expression.getLeftExpression()));
+
+                n.Parameters.Add(new QsiTypeAccessExpressionNode
+                {
+                    Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(expression.getType().toString(), false))
+                });
+            });
         }
 
-        public virtual QsiExpressionNode VisitExtractExpression(ExtractExpression expression)
+        public virtual QsiInvokeExpressionNode VisitCollateExpression(CollateExpression expression)
         {
-            throw new NotImplementedException();
+            return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            {
+                n.Member.SetValue(TreeHelper.CreateFunctionAccess(JSqlKnownFunction.Collate));
+                n.Parameters.Add(Visit(expression.getLeftExpression()));
+                n.Parameters.Add(TreeHelper.CreateLiteral(expression.getCollate()));
+            });
         }
 
-        public virtual QsiExpressionNode VisitFunction(Function expression)
+        public virtual QsiInvokeExpressionNode VisitExtractExpression(ExtractExpression expression)
+        {
+            return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            {
+                n.Member.SetValue(TreeHelper.CreateFunctionAccess(JSqlKnownFunction.Extract));
+
+                n.Parameters.Add(TreeHelper.Create<QsiLogicalExpressionNode>(ln =>
+                {
+                    ln.Left.SetValue(TreeHelper.CreateLiteral(expression.getName()));
+                    ln.Operator = JSqlKnownOperator.From;
+                    ln.Right.SetValue(Visit(expression.getExpression()));
+                }));
+            });
+        }
+
+        public virtual QsiInvokeExpressionNode VisitFunction(Function expression)
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
@@ -323,10 +388,10 @@ namespace Qsi.JSql.Tree
 
                 if (expression.isAllColumns())
                 {
-                    n.Parameters.Add(new QsiColumnAccessExpressionNode
+                    n.Parameters.Add(TreeHelper.Create<QsiColumnExpressionNode>(cn =>
                     {
-                        IsAll = true
-                    });
+                        cn.Column.SetValue(new QsiAllColumnNode());
+                    }));
                 }
 
                 // TODO: Attribute
@@ -334,124 +399,241 @@ namespace Qsi.JSql.Tree
             });
         }
 
-        public virtual QsiExpressionNode VisitHexValue(HexValue expression)
+        public virtual QsiInvokeExpressionNode VisitIntervalExpression(IntervalExpression expression)
         {
-            throw new NotImplementedException();
-        }
+            return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            {
+                n.Member.SetValue(TreeHelper.CreateFunctionAccess(JSqlKnownFunction.Cast));
 
-        public virtual QsiExpressionNode VisitIntervalExpression(IntervalExpression expression)
-        {
-            throw new NotImplementedException();
-        }
+                if (expression.getParameter() != null)
+                    n.Parameters.Add(TreeHelper.CreateLiteral(expression.getParameter()));
 
-        public virtual QsiExpressionNode VisitJdbcNamedParameter(JdbcNamedParameter expression)
-        {
-            throw new NotImplementedException();
-        }
+                if (expression.getExpression() != null)
+                    n.Parameters.Add(Visit(expression.getExpression()));
 
-        public virtual QsiExpressionNode VisitJdbcParameter(JdbcParameter expression)
-        {
-            throw new NotImplementedException();
-        }
-
-        public virtual QsiExpressionNode VisitJsonExpression(JsonExpression expression)
-        {
-            throw TreeHelper.NotSupportedFeature("Json expression");
-        }
-
-        public virtual QsiExpressionNode VisitKeepExpression(KeepExpression expression)
-        {
-            throw new NotImplementedException();
-        }
-
-        public virtual QsiExpressionNode VisitMySQLGroupConcat(MySQLGroupConcat expression)
-        {
-            throw new NotImplementedException();
-        }
-
-        public virtual QsiExpressionNode VisitNextValExpression(NextValExpression expression)
-        {
-            throw new NotImplementedException();
-        }
-
-        public virtual QsiExpressionNode VisitNotExpression(NotExpression expression)
-        {
-            throw new NotImplementedException();
+                n.Parameters.Add(TreeHelper.Create<QsiTypeAccessExpressionNode>(tn =>
+                {
+                    tn.Identifier = new QsiQualifiedIdentifier(
+                        new QsiIdentifier("INTERVAL", false),
+                        new QsiIdentifier(expression.getIntervalType(), false)
+                    );
+                }));
+            });
         }
 
         public virtual QsiExpressionNode VisitNumericBind(NumericBind expression)
         {
-            throw new NotImplementedException();
+            return TreeHelper.Create<QsiColumnExpressionNode>(n =>
+            {
+                n.Column.SetValue(TableVisitor.VisitNumericBind(expression));
+            });
+        }
+
+        public virtual QsiExpressionNode VisitJdbcParameter(JdbcParameter expression)
+        {
+            return TreeHelper.Create<QsiColumnExpressionNode>(n =>
+            {
+                n.Column.SetValue(TableVisitor.VisitJdbcParameter(expression));
+            });
+        }
+
+        public virtual QsiExpressionNode VisitJdbcNamedParameter(JdbcNamedParameter expression)
+        {
+            return TreeHelper.Create<QsiColumnExpressionNode>(n =>
+            {
+                n.Column.SetValue(TableVisitor.VisitJdbcNamedParameter(expression));
+            });
+        }
+
+        public virtual QsiExpressionNode VisitJsonExpression(JsonExpression expression)
+        {
+            throw TreeHelper.NotSupportedFeature(expression.GetType().Name);
+        }
+
+        public virtual QsiExpressionNode VisitKeepExpression(KeepExpression expression)
+        {
+            return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            {
+                n.Member.SetValue(TreeHelper.CreateFunctionAccess(JSqlKnownFunction.Keep));
+                n.Parameters.Add(TreeHelper.CreateLiteral(expression.isFirst() ? "FIRST" : "LAST"));
+
+                if (expression.getOrderByElements() != null)
+                {
+                    n.Parameters.AddRange(expression.getOrderByElements()
+                        .AsEnumerable<OrderByElement>()
+                        .Select(VisitOrderByElement));
+                }
+            });
+        }
+
+        public virtual QsiExpressionNode VisitOrderByElement(OrderByElement expression)
+        {
+            return TreeHelper.Create<QsiMultipleExpressionNode>(n =>
+            {
+                n.Elements.Add(Visit(expression.getExpression()));
+                n.Elements.Add(TreeHelper.CreateLiteral(expression.isAsc() ? "ASC" : "DESC"));
+
+                if (expression.getNullOrdering() != null)
+                    n.Elements.Add(VisitNullOrdering(expression.getNullOrdering()));
+            });
+        }
+
+        public virtual QsiExpressionNode VisitNullOrdering(OrderByElement.NullOrdering nullOrdering)
+        {
+            return TreeHelper.CreateLiteral(
+                nullOrdering == OrderByElement.NullOrdering.NULLS_FIRST ? "NULLS FIRST" : "NULLS LAST");
+        }
+
+        public virtual QsiExpressionNode VisitMySQLGroupConcat(MySQLGroupConcat expression)
+        {
+            return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            {
+                n.Member.SetValue(TreeHelper.CreateFunctionAccess(JSqlKnownFunction.GroupConcat));
+
+                if (expression.isDistinct())
+                    n.Parameters.Add(TreeHelper.CreateLiteral("DISTINCT"));
+
+                n.Parameters.Add(VisitExpressionList(expression.getExpressionList()));
+
+                if (expression.getOrderByElements() != null)
+                {
+                    n.Parameters.Add(TreeHelper.Create<QsiMultipleExpressionNode>(mn =>
+                    {
+                        mn.Elements.AddRange(expression.getOrderByElements()
+                            .AsEnumerable<OrderByElement>()
+                            .Select(VisitOrderByElement));
+                    }));
+                }
+
+                if (expression.getSeparator() != null)
+                    n.Parameters.Add(TreeHelper.CreateLiteral(expression.getSeparator()));
+            });
+        }
+
+        public virtual QsiExpressionNode VisitNextValExpression(NextValExpression expression)
+        {
+            return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            {
+                n.Member.SetValue(TreeHelper.CreateFunctionAccess(JSqlKnownFunction.NextValFor));
+                n.Parameters.Add(TreeHelper.CreateLiteral(expression.getName()));
+            });
+        }
+
+        public virtual QsiUnaryExpressionNode VisitNotExpression(NotExpression expression)
+        {
+            return TreeHelper.Create<QsiUnaryExpressionNode>(n =>
+            {
+                n.Operator = JSqlKnownOperator.Not;
+                n.Expression.SetValue(Visit(expression.getExpression()));
+            });
         }
 
         public virtual QsiExpressionNode VisitOracleHierarchicalExpression(OracleHierarchicalExpression expression)
         {
-            throw new NotImplementedException();
+            throw TreeHelper.NotSupportedFeature("Hierarchical expression");
         }
 
         public virtual QsiExpressionNode VisitOracleHint(OracleHint expression)
         {
-            throw new NotImplementedException();
+            throw TreeHelper.NotSupportedFeature("Hint expression");
         }
 
         public virtual QsiExpressionNode VisitParenthesis(Parenthesis expression)
         {
-            throw new NotImplementedException();
+            return Visit(expression.getExpression());
         }
 
         public virtual QsiExpressionNode VisitRowConstructor(RowConstructor expression)
         {
-            throw new NotImplementedException();
+            return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            {
+                n.Member.SetValue(new QsiFunctionAccessExpressionNode
+                {
+                    Identifier = new QsiQualifiedIdentifier(
+                        IdentifierUtility.Parse(expression.getName())
+                            .Select(t => new QsiIdentifier(t, false)))
+                });
+
+                n.Parameters.AddRange(expression.getExprList().getExpressions()
+                    .AsEnumerable<Expression>()
+                    .Select(Visit));
+            });
         }
 
         public virtual QsiExpressionNode VisitSignedExpression(SignedExpression expression)
         {
-            throw new NotImplementedException();
+            return TreeHelper.CreateUnary(expression.getSign().ToString(), Visit(expression.getExpression()));
         }
 
         public virtual QsiExpressionNode VisitTimeKeyExpression(TimeKeyExpression expression)
         {
-            throw new NotImplementedException();
+            // TODO: Enum? Constant?
+            return TreeHelper.CreateLiteral(expression.getStringValue());
         }
 
         public virtual QsiExpressionNode VisitUserVariable(UserVariable expression)
         {
-            throw new NotImplementedException();
+            return TreeHelper.Create<QsiVariableAccessExpressionNode>(n =>
+            {
+                n.Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(expression.toString(), false));
+            });
         }
 
         public virtual QsiExpressionNode VisitValueListExpression(ValueListExpression expression)
         {
-            throw new NotImplementedException();
+            // ( <EXPRESSION_LIST> )
+            return VisitExpressionList(expression.getExpressionList());
         }
 
         public virtual QsiExpressionNode VisitVariableAssignment(VariableAssignment expression)
         {
-            throw new NotImplementedException();
-        }
-
-        public virtual QsiExpressionNode VisitWhenClause(WhenClause expression)
-        {
-            throw new NotImplementedException();
+            return TreeHelper.Create<QsiLogicalExpressionNode>(n =>
+            {
+                n.Left.SetValue(VisitUserVariable(expression.getVariable()));
+                n.Operator = expression.getOperation();
+                n.Right.SetValue(Visit(expression.getExpression()));
+            });
         }
 
         public virtual QsiExpressionNode VisitXMLSerializeExpr(XMLSerializeExpr expression)
         {
-            throw new NotImplementedException();
+            throw TreeHelper.NotSupportedFeature("XML Serialize");
         }
 
         public virtual QsiExpressionNode VisitBetween(Between expression)
         {
-            throw new NotImplementedException();
+            var invoke = TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            {
+                n.Member.SetValue(TreeHelper.CreateFunctionAccess(JSqlKnownFunction.Between));
+
+                n.Parameters.Add(Visit(expression.getLeftExpression()));
+                n.Parameters.Add(Visit(expression.getBetweenExpressionStart()));
+                n.Parameters.Add(Visit(expression.getBetweenExpressionEnd()));
+            });
+
+            if (expression.isNot())
+                return TreeHelper.CreateUnary(JSqlKnownOperator.Not, invoke);
+
+            return invoke;
         }
 
         public virtual QsiExpressionNode VisitExistsExpression(ExistsExpression expression)
         {
-            throw new NotImplementedException();
+            var invoke = TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            {
+                n.Member.SetValue(TreeHelper.CreateFunctionAccess(JSqlKnownFunction.Exists));
+                n.Parameters.Add(Visit(expression.getRightExpression()));
+            });
+
+            if (expression.isNot())
+                return TreeHelper.CreateUnary(JSqlKnownOperator.Not, invoke);
+
+            return invoke;
         }
 
         // MATCH (<COLUMNS..>) AGAINST (<SEARCH VALUE> [<SEARCH MODE>])
         // -> MATCH_AGAINST(<SEARCH MODE>, [<SEARCH MODE>], <COLUMNS..>)
-        public virtual QsiExpressionNode VisitFullTextSearch(FullTextSearch expression)
+        public virtual QsiInvokeExpressionNode VisitFullTextSearch(FullTextSearch expression)
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
@@ -471,7 +653,7 @@ namespace Qsi.JSql.Tree
             });
         }
 
-        public virtual QsiExpressionNode VisitInExpression(InExpression expression)
+        public virtual QsiLogicalExpressionNode VisitInExpression(InExpression expression)
         {
             return TreeHelper.Create<QsiLogicalExpressionNode>(n =>
             {
@@ -500,42 +682,48 @@ namespace Qsi.JSql.Tree
         // -> IS_NOT_TRUE(<L.Expr>) 
         public virtual QsiExpressionNode VisitIsBooleanExpression(IsBooleanExpression expression)
         {
-            string methodName;
-
-            if (expression.isTrue())
-                methodName = expression.isNot() ? JSqlKnownFunction.IsNotTrue : JSqlKnownFunction.IsTrue;
-            else
-                methodName = expression.isNot() ? JSqlKnownFunction.IsNotFalse : JSqlKnownFunction.IsFalse;
-
-            return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            var invoke = TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(TreeHelper.CreateFunctionAccess(methodName));
+                n.Member.SetValue(TreeHelper.CreateFunctionAccess(
+                    expression.isTrue() ? JSqlKnownFunction.IsTrue : JSqlKnownFunction.IsFalse));
+
                 n.Parameters.Add(Visit(expression.getLeftExpression()));
             });
+
+            if (expression.isNot())
+                return TreeHelper.CreateUnary(JSqlKnownOperator.Not, invoke);
+
+            return invoke;
         }
 
         // <L.Expr> IS NOT NULL
         // -> IS_NOT_NULL(<L.Expr>)
         public virtual QsiExpressionNode VisitIsNullExpression(IsNullExpression expression)
         {
-            var methodName = expression.isNot() ? JSqlKnownFunction.IsNotNull : JSqlKnownFunction.IsNull;
-
-            return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            var invoke = TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(TreeHelper.CreateFunctionAccess(methodName));
+                n.Member.SetValue(TreeHelper.CreateFunctionAccess(JSqlKnownFunction.IsNull));
                 n.Parameters.Add(Visit(expression.getLeftExpression()));
             });
+
+            if (expression.isNot())
+                return TreeHelper.CreateUnary(JSqlKnownOperator.Not, invoke);
+
+            return invoke;
         }
 
-        public virtual QsiExpressionNode VisitColumn(Column expression)
+        public virtual QsiColumnExpressionNode VisitColumn(Column expression)
         {
-            return TreeHelper.Create<QsiColumnAccessExpressionNode>(n =>
+            return TreeHelper.Create<QsiColumnExpressionNode>(n =>
             {
-                n.Identifier = IdentifierVisitor.VisitMultiPartName(expression);
+                n.Column.SetValue(new QsiDeclaredColumnNode
+                {
+                    Name = IdentifierVisitor.VisitMultiPartName(expression)
+                });
             });
         }
 
-        public virtual QsiExpressionNode VisitSubSelect(SubSelect expression)
+        public virtual QsiTableExpressionNode VisitSubSelect(SubSelect expression)
         {
             return TreeHelper.Create<QsiTableExpressionNode>(n =>
             {
@@ -543,7 +731,7 @@ namespace Qsi.JSql.Tree
             });
         }
 
-        public virtual QsiExpressionNode VisitMultipleExpression(MultipleExpression expression)
+        public virtual QsiMultipleExpressionNode VisitMultipleExpression(MultipleExpression expression)
         {
             return TreeHelper.Create<QsiMultipleExpressionNode>(n =>
             {
@@ -553,7 +741,7 @@ namespace Qsi.JSql.Tree
             });
         }
 
-        public virtual QsiExpressionNode VisitItemsList(ItemsList itemsList)
+        public virtual QsiMultipleExpressionNode VisitItemsList(ItemsList itemsList)
         {
             switch (itemsList)
             {
@@ -570,7 +758,7 @@ namespace Qsi.JSql.Tree
             throw TreeHelper.NotSupportedTree(itemsList);
         }
 
-        public virtual QsiExpressionNode VisitExpressionList(ExpressionList expression)
+        public virtual QsiMultipleExpressionNode VisitExpressionList(ExpressionList expression)
         {
             return TreeHelper.Create<QsiMultipleExpressionNode>(n =>
             {
@@ -580,7 +768,7 @@ namespace Qsi.JSql.Tree
             });
         }
 
-        public virtual QsiExpressionNode VisitMultipleExpressionList(MultiExpressionList expression)
+        public virtual QsiMultipleExpressionNode VisitMultipleExpressionList(MultiExpressionList expression)
         {
             return TreeHelper.Create<QsiMultipleExpressionNode>(n =>
             {
@@ -591,7 +779,7 @@ namespace Qsi.JSql.Tree
         }
 
         // ('xyzzy' from 2 for 3)
-        public virtual QsiExpressionNode VisitNamedExpressionList(NamedExpressionList expression)
+        public virtual QsiMultipleExpressionNode VisitNamedExpressionList(NamedExpressionList expression)
         {
             return TreeHelper.Create<QsiMultipleExpressionNode>(n =>
             {
