@@ -8,6 +8,7 @@ The QSI is the pure C# Query Structure Interface.
 |--|--|--|
 |MySql|Antlr4|[grammars-v4](https://github.com/antlr/grammars-v4)|
 |PostgreSql10|PostgreSQL server source code|[libpg_query](https://github.com/lfittl/libpg_query), [ChakraCore](https://github.com/microsoft/ChakraCore)|
+|JSql|JavaCC|[JSqlParser](https://github.com/JSQLParser/JSqlParser), [IKVM](https://github.com/ikvm-revived/ikvm)|
 
 
 ### Common Structure Compiler
