@@ -74,6 +74,11 @@ namespace Qsi.JSql.Tree
 
         public virtual QsiColumnsDeclarationNode CreateSequentialColumnNodes(IEnumerable<Column> columns)
         {
+            return CreateSequentialColumnNodes(columns.Cast<MultiPartName>());
+        }
+
+        public virtual QsiColumnsDeclarationNode CreateSequentialColumnNodes(IEnumerable<MultiPartName> columns)
+        {
             return TreeHelper.Create<QsiColumnsDeclarationNode>(n =>
             {
                 n.Columns.AddRange(columns
@@ -474,7 +479,37 @@ namespace Qsi.JSql.Tree
 
         public virtual QsiTableNode VisitCreateView(CreateView createView)
         {
-            throw new NotImplementedException();
+            return TreeHelper.Create<QsiDerivedTableNode>(n =>
+            {
+                IList<string> columns = createView.getColumnNames().AsList<string>();
+
+                n.Columns.SetValue(
+                    ListUtility.IsNullOrEmpty(columns) ?
+                        TreeHelper.CreateAllColumnsDeclaration() :
+                        CreateSequentialColumnNodes(columns.Select(c => (MultiPartName)new FakeMultiPartName(c))));
+
+                n.Source.SetValue(VisitSelect(createView.getSelect()));
+
+                n.Alias.SetValue(new QsiAliasNode
+                {
+                    Name = IdentifierVisitor.VisitMultiPartName(createView.getView())[^1]
+                });
+            });
+        }
+
+        private readonly struct FakeMultiPartName : MultiPartName
+        {
+            private readonly string _qualifiedName;
+
+            public FakeMultiPartName(string qualifiedName)
+            {
+                _qualifiedName = qualifiedName;
+            }
+
+            string MultiPartName.getFullyQualifiedName()
+            {
+                return _qualifiedName;
+            }
         }
     }
 }
