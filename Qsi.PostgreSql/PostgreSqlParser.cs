@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using Qsi.Data;
 using Qsi.Parsing;
 using Qsi.PostgreSql.Internal;
@@ -12,26 +11,15 @@ namespace Qsi.PostgreSql
 {
     public sealed class PostgreSqlParser : IQsiTreeParser, IDisposable
     {
-        public event EventHandler<QsiSyntaxErrorException> SyntaxError;
-
         private IPgParser _pgParser;
 
         public IQsiTreeNode Parse(QsiScript script)
         {
-            try
-            {
-                _pgParser ??= new PgQuery10();
+            _pgParser ??= new PgQuery10();
 
-                var pgTree = _pgParser.Parse(script.Script);
+            var pgTree = _pgParser.Parse(script.Script) ?? throw new QsiException(QsiError.NotSupportedScript);
 
-                return TableVisitor.Visit((IPg10Node)pgTree);
-            }
-            catch (QsiSyntaxErrorException e)
-            {
-                SyntaxError?.Invoke(this, e);
-            }
-
-            return null;
+            return TableVisitor.Visit((IPg10Node)pgTree);
         }
 
         void IDisposable.Dispose()

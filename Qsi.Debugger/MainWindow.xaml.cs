@@ -133,13 +133,9 @@ namespace Qsi.Debugger
                 var sentence = input.Split(';', 2)[0].Trim();
                 var script = new QsiScript(sentence, QsiScriptType.Select);
 
-                _vendor.Parser.SyntaxError += ErrorHandler;
-
                 var sw = Stopwatch.StartNew();
                 var tree = _vendor.Parser.Parse(script);
                 sw.Stop();
-
-                _vendor.Parser.SyntaxError -= ErrorHandler;
 
                 _tbQsiStatus.Text = $"parsed in {sw.Elapsed.TotalMilliseconds:0.0000} ms";
 
@@ -167,11 +163,6 @@ namespace Qsi.Debugger
 
                 if (System.Diagnostics.Debugger.IsAttached)
                     ExceptionDispatchInfo.Throw(e);
-            }
-
-            static void ErrorHandler(object sender, QsiSyntaxErrorException e)
-            {
-                throw e;
             }
         }
 
