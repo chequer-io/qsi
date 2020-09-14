@@ -17,4 +17,10 @@
         <PackageReference Include="Microsoft.SqlServer.Management.SqlParser.Loc" Version="160.20216.14" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Reference Include="Microsoft.SqlServer.TransactSql.ScriptDom, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91">
+        <HintPath>lib\Microsoft.SqlServer.TransactSql.ScriptDom.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
 </Project>
