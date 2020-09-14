@@ -10,9 +10,9 @@ using Qsi.Utilities;
 
 namespace Qsi.SqlServer.Tree
 {
-    public sealed class ExpressionVisitor : VisitorBase
+    public sealed class ExpressionVisitor_Legacy : VisitorBase
     {
-        public ExpressionVisitor(IContext context) : base(context)
+        public ExpressionVisitor_Legacy(IContext context) : base(context)
         {
         }
 

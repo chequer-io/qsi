@@ -2,11 +2,11 @@
 {
     public abstract class VisitorBase
     {
-        protected TableVisitor TableVisitor => _context.TableVisitor;
+        protected TableVisitor_Legacy TableVisitor => _context.TableVisitor;
 
-        protected ExpressionVisitor ExpressionVisitor => _context.ExpressionVisitor;
+        protected ExpressionVisitor_Legacy ExpressionVisitor => _context.ExpressionVisitor;
 
-        protected IdentifierVisitor IdentifierVisitor => _context.IdentifierVisitor;
+        protected IdentifierVisitor_Legacy IdentifierVisitor => _context.IdentifierVisitor;
 
         protected SqlServerParser SqlParser => _context.SqlParser;
         

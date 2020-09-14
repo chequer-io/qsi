@@ -3,7 +3,7 @@ using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
 
 namespace Qsi.SqlServer.Extensions
 {
-    internal static class SqlBinaryScalarOperatorTypeExtension
+    internal static class SqlBinaryScalarOperatorTypeExtension_Legacy
     {
         public static string ToOperatorString(this SqlBinaryScalarOperatorType operatorType)
         {

@@ -4,12 +4,12 @@ using Qsi.Diagnostics;
 
 namespace Qsi.SqlServer.Diagnostics
 {
-    public class SqlServerRawParser : IRawTreeParser
+    public class SqlServerRawParser_Legacy : IRawTreeParser
     {
         private readonly DatabaseCompatibilityLevel _compatibilityLevel;
         private readonly TransactSqlVersion _transactSqlVersion;
 
-        public SqlServerRawParser(DatabaseCompatibilityLevel compatibilityLevel, TransactSqlVersion transactSqlVersion)
+        public SqlServerRawParser_Legacy(DatabaseCompatibilityLevel compatibilityLevel, TransactSqlVersion transactSqlVersion)
         {
             _compatibilityLevel = compatibilityLevel;
             _transactSqlVersion = transactSqlVersion;
@@ -25,7 +25,7 @@ namespace Qsi.SqlServer.Diagnostics
 
             var parserResult = Parser.Parse(input, parserOptions);
 
-            return new SqlServerRawTree(parserResult.Script, parserOptions);
+            return new SqlServerRawTree_Legacy(parserResult.Script, parserOptions);
         }
     }
 }

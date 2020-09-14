@@ -15,11 +15,11 @@ namespace Qsi.SqlServer
 
         private readonly ParseOptions _options;
 
-        public TableVisitor TableVisitor { get; }
+        public TableVisitor_Legacy TableVisitor { get; }
 
-        public ExpressionVisitor ExpressionVisitor { get; }
+        public ExpressionVisitor_Legacy ExpressionVisitor { get; }
 
-        public IdentifierVisitor IdentifierVisitor { get; }
+        public IdentifierVisitor_Legacy IdentifierVisitor { get; }
 
         public SqlServerParser SqlParser => this;
 
@@ -31,19 +31,19 @@ namespace Qsi.SqlServer
             IdentifierVisitor = CreateIdentifierVisitor();
         }
 
-        private TableVisitor CreateTableVisitor()
+        private TableVisitor_Legacy CreateTableVisitor()
         {
-            return new TableVisitor(this);
+            return new TableVisitor_Legacy(this);
         }
 
-        private ExpressionVisitor CreateExpressionVisitor()
+        private ExpressionVisitor_Legacy CreateExpressionVisitor()
         {
-            return new ExpressionVisitor(this);
+            return new ExpressionVisitor_Legacy(this);
         }
 
-        private IdentifierVisitor CreateIdentifierVisitor()
+        private IdentifierVisitor_Legacy CreateIdentifierVisitor()
         {
-            return new IdentifierVisitor(this);
+            return new IdentifierVisitor_Legacy(this);
         }
 
         public IQsiTreeNode Parse(QsiScript script)

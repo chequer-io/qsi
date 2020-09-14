@@ -7,13 +7,13 @@ using Qsi.Diagnostics;
 
 namespace Qsi.SqlServer.Diagnostics
 {
-    internal sealed class SqlServerRawTree : IRawTree
+    internal sealed class SqlServerRawTree_Legacy : IRawTree
     {
         public string DisplayName { get; }
 
         public IRawTree[] Children { get; }
 
-        internal SqlServerRawTree(SqlCodeObject tree, ParseOptions parseOptions)
+        internal SqlServerRawTree_Legacy(SqlCodeObject tree, ParseOptions parseOptions)
         {
             if (tree is SqlNullScalarExpression nullScalarExpression)
             {
@@ -48,14 +48,14 @@ namespace Qsi.SqlServer.Diagnostics
                 for (int i = 0; i < count; i++)
                 {
                     var child = childrens[i];
-                    trees[i] = new SqlServerRawTree(child, parseOptions);
+                    trees[i] = new SqlServerRawTree_Legacy(child, parseOptions);
                 }
 
                 Children = trees;
             }
         }
 
-        internal SqlServerRawTree(string displayName)
+        internal SqlServerRawTree_Legacy(string displayName)
         {
             DisplayName = displayName;
         }

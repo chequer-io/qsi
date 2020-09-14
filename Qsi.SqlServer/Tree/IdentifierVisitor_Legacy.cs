@@ -4,9 +4,9 @@ using Qsi.Data;
 
 namespace Qsi.SqlServer.Tree
 {
-    public sealed class IdentifierVisitor : VisitorBase
+    public sealed class IdentifierVisitor_Legacy : VisitorBase
     {
-        public IdentifierVisitor(IContext context) : base(context)
+        public IdentifierVisitor_Legacy(IContext context) : base(context)
         {
         }
         
