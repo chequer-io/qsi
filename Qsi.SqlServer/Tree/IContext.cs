@@ -2,11 +2,11 @@
 {
     public interface IContext
     {
-        TableVisitor_Legacy TableVisitor { get; }
+        TableVisitor TableVisitor { get; }
         
-        ExpressionVisitor_Legacy ExpressionVisitor { get; }
+        ExpressionVisitor ExpressionVisitor { get; }
         
-        IdentifierVisitor_Legacy IdentifierVisitor { get; }
+        IdentifierVisitor IdentifierVisitor { get; }
         
         SqlServerParser SqlParser { get; }
     }

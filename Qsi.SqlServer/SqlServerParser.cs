@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using Microsoft.SqlServer.TransactSql.ScriptDom;
 using Qsi.Data;
 using Qsi.Parsing;
 using Qsi.SqlServer.Common;
@@ -10,11 +12,11 @@ namespace Qsi.SqlServer
 {
     public sealed class SqlServerParser : IQsiTreeParser, IContext
     {
-        public TableVisitor_Legacy TableVisitor { get; }
+        public TableVisitor TableVisitor { get; }
 
-        public ExpressionVisitor_Legacy ExpressionVisitor { get; }
+        public ExpressionVisitor ExpressionVisitor { get; }
 
-        public IdentifierVisitor_Legacy IdentifierVisitor { get; }
+        public IdentifierVisitor IdentifierVisitor { get; }
 
         public SqlServerParser SqlParser => this;
 
@@ -28,26 +30,31 @@ namespace Qsi.SqlServer
             IdentifierVisitor = CreateIdentifierVisitor();
         }
 
-        private TableVisitor_Legacy CreateTableVisitor()
+        private TableVisitor CreateTableVisitor()
         {
-            return new TableVisitor_Legacy(this);
+            return new TableVisitor(this);
         }
 
-        private ExpressionVisitor_Legacy CreateExpressionVisitor()
+        private ExpressionVisitor CreateExpressionVisitor()
         {
-            return new ExpressionVisitor_Legacy(this);
+            return new ExpressionVisitor(this);
         }
 
-        private IdentifierVisitor_Legacy CreateIdentifierVisitor()
+        private IdentifierVisitor CreateIdentifierVisitor()
         {
-            return new IdentifierVisitor_Legacy(this);
+            return new IdentifierVisitor(this);
         }
 
         public IQsiTreeNode Parse(QsiScript script)
         {
             var result = _parser.Parse(script.Script);
 
-            throw new NotImplementedException();
+            if (result is TSqlScript sqlScript)
+            {
+                return TableVisitor.Visit(sqlScript.Batches.FirstOrDefault());
+            }
+            
+            throw new InvalidOperationException();
         }
     }
 }

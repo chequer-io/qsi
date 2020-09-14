@@ -1,6 +1,7 @@
 ﻿using Qsi.Diagnostics;
 using Qsi.Parsing;
 using Qsi.Services;
+using Qsi.SqlServer;
 using Qsi.SqlServer.Common;
 using Qsi.SqlServer.Diagnostics;
 
@@ -17,10 +18,8 @@ namespace Qsi.Debugger.Vendor.SqlServer
         public SqlServerDebugger(TransactSqlVersion transactSqlVersion)
         {
             RawParser = new SqlServerRawTreeParser(transactSqlVersion);
-
-            // TODO: implement
-            //LanguageService = new SqlServerLanguageService(compatibilityLevel, transactSqlVersion);
-            //Parser = LanguageService.CreateTreeParser();
+            LanguageService = new SqlServerLanguageService(transactSqlVersion);
+            Parser = LanguageService.CreateTreeParser();
         }
     }
 }
