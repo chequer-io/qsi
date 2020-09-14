@@ -11,6 +11,7 @@ namespace Qsi.SqlServer.Diagnostics
         internal SqlServerRawTreeTerminalNode(object value)
         {
             DisplayName = value.ToString();
+            Children = null;
         }
     }
 }

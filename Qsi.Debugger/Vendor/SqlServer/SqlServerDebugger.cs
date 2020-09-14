@@ -1,7 +1,7 @@
-﻿using Microsoft.SqlServer.Management.SqlParser.Common;
-using Qsi.Diagnostics;
+﻿using Qsi.Diagnostics;
 using Qsi.Parsing;
 using Qsi.Services;
+using Qsi.SqlServer.Common;
 using Qsi.SqlServer.Diagnostics;
 
 namespace Qsi.Debugger.Vendor.SqlServer
@@ -14,11 +14,13 @@ namespace Qsi.Debugger.Vendor.SqlServer
 
         public override IQsiLanguageService LanguageService { get; }
 
-        public SqlServerDebugger(DatabaseCompatibilityLevel compatibilityLevel, TransactSqlVersion transactSqlVersion)
+        public SqlServerDebugger(TransactSqlVersion transactSqlVersion)
         {
-            RawParser = new SqlServerRawParser_Legacy(compatibilityLevel, transactSqlVersion);
-            LanguageService = new SqlServerLanguageService(compatibilityLevel, transactSqlVersion);
-            Parser = LanguageService.CreateTreeParser();
+            RawParser = new SqlServerRawTreeParser(transactSqlVersion);
+
+            // TODO: implement
+            //LanguageService = new SqlServerLanguageService(compatibilityLevel, transactSqlVersion);
+            //Parser = LanguageService.CreateTreeParser();
         }
     }
 }

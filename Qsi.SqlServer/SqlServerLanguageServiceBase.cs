@@ -1,39 +1,27 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.SqlServer.Management.SqlParser.Common;
-using Microsoft.SqlServer.Management.SqlParser.Parser;
-using Qsi.Compiler;
+﻿using Qsi.Compiler;
 using Qsi.Parsing;
 using Qsi.Services;
+using Qsi.SqlServer.Common;
 
 namespace Qsi.SqlServer
 {
     public abstract class SqlServerLanguageServiceBase : QsiLanguageServiceBase
     {
-        public ParseOptions ParseOptions { get; }
+        private readonly TransactSqlVersion _transactSqlVersion;
 
-        protected SqlServerLanguageServiceBase(DatabaseCompatibilityLevel compatibilityLevel, TransactSqlVersion transactSqlVersion)
+        protected SqlServerLanguageServiceBase(TransactSqlVersion transactSqlVersion)
         {
-            ParseOptions = new ParseOptions
-            {
-                CompatibilityLevel = compatibilityLevel,
-                TransactSqlVersion = transactSqlVersion
-            };
-        }
-
-        protected SqlServerLanguageServiceBase([NotNull] ParseOptions options)
-        {
-            ParseOptions = options ?? throw new ArgumentNullException(nameof(options));
+            _transactSqlVersion = transactSqlVersion;
         }
 
         public override IQsiTreeParser CreateTreeParser()
         {
-            return new SqlServerParser(ParseOptions);
+            return new SqlServerParser(_transactSqlVersion);
         }
 
         public override IQsiScriptParser CreateScriptParser()
         {
-            return new SqlServerScriptParser(ParseOptions);
+            return new SqlServerScriptParser();
         }
 
         public override QsiTableCompileOptions CreateCompileOptions()

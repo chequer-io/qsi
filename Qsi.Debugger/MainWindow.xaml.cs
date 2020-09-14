@@ -13,7 +13,6 @@ using Avalonia.Media;
 using AvaloniaEdit;
 using AvaloniaEdit.Highlighting;
 using AvaloniaEdit.Highlighting.Xshd;
-using Microsoft.SqlServer.Management.SqlParser.Common;
 using Qsi.Data;
 using Qsi.Debugger.Models;
 using Qsi.Debugger.Utilities;
@@ -22,6 +21,7 @@ using Qsi.Debugger.Vendor.MySql;
 using Qsi.Debugger.Vendor.PostgreSql;
 using Qsi.Debugger.Vendor.SqlServer;
 using Qsi.Parsing;
+using Qsi.SqlServer.Common;
 using Qsi.Tree;
 
 namespace Qsi.Debugger
@@ -51,9 +51,8 @@ namespace Qsi.Debugger
             {
                 ["MySQL"] = new Lazy<VendorDebugger>(() => new MySqlDebugger()),
                 ["PostgreSQL"] = new Lazy<VendorDebugger>(() => new PostgreSqlDebugger()),
-                ["Azure SQL DB"] = new Lazy<VendorDebugger>(() => new SqlServerDebugger(DatabaseCompatibilityLevel.Azure, TransactSqlVersion.Azure)),
-                ["SQL Server 2019"] = new Lazy<VendorDebugger>(() => new SqlServerDebugger(DatabaseCompatibilityLevel.Version150, TransactSqlVersion.Version150)),
-                ["SQL Server 2008"] = new Lazy<VendorDebugger>(() => new SqlServerDebugger(DatabaseCompatibilityLevel.Version100, TransactSqlVersion.Version105))
+                ["SQL Server 2000"] = new Lazy<VendorDebugger>(() => new SqlServerDebugger(TransactSqlVersion.Version80)),
+                ["SQL Server 2019"] = new Lazy<VendorDebugger>(() => new SqlServerDebugger(TransactSqlVersion.Version150))
             };
 
             _cbLanguages = this.Find<ComboBox>("cbLanguages");
