@@ -1,5 +1,5 @@
-﻿using net.sf.jsqlparser.parser;
-using Qsi.Data;
+﻿using Qsi.Data;
+using Qsi.JSql.Internal;
 using Qsi.JSql.Tree;
 using Qsi.Parsing;
 using Qsi.Tree;
@@ -38,7 +38,7 @@ namespace Qsi.JSql
 
         public IQsiTreeNode Parse(QsiScript script)
         {
-            var statement = CCJSqlParserUtil.parse(script.Script);
+            var statement = CCJSqlParserUtility.Parse(script.Script);
             return TableVisitor.Visit(statement) ?? throw new QsiException(QsiError.NotSupportedScript);
         }
     }

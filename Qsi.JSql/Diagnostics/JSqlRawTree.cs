@@ -5,7 +5,6 @@ using System.Reflection;
 using ikvm.extensions;
 using java.util;
 using net.sf.jsqlparser;
-using net.sf.jsqlparser.expression;
 using net.sf.jsqlparser.parser;
 using Qsi.Diagnostics;
 using Qsi.JSql.Extensions;
