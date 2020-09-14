@@ -3,6 +3,7 @@ using Antlr4.Runtime;
 using Qsi.Data;
 using Qsi.MySql.Internal;
 using Qsi.MySql.Tree;
+using Qsi.Parsing;
 using Qsi.Parsing.Antlr;
 using Qsi.Tree;
 
@@ -19,6 +20,11 @@ namespace Qsi.MySql
         }
 
         protected override IQsiTreeNode Parse(QsiScript script, Parser parser)
+        {
+            return ParseInternal(script, parser) ?? throw new QsiException(QsiError.NotSupportedScript);
+        }
+
+        private IQsiTreeNode ParseInternal(QsiScript script, Parser parser)
         {
             var mySqlParser = (Internal.MySqlParser)parser;
 
