@@ -1,15 +1,14 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using Microsoft.SqlServer.TransactSql.ScriptDom;
 using Qsi.Data;
-using Qsi.SqlServer.Tree.Common;
 using Qsi.Tree.Base;
 using Qsi.Utilities;
 
 namespace Qsi.SqlServer.Tree
 {
-    public class ExpressionVisitor : VisitorBase
+    public sealed class ExpressionVisitor : VisitorBase
     {
         public ExpressionVisitor(IContext context) : base(context)
         {
@@ -270,61 +269,84 @@ namespace Qsi.SqlServer.Tree
         {
             switch (primaryExpression)
             {
+                // inputdate AT TIME ZONE timezone
                 case AtTimeZoneCall atTimeZoneCall:
-                    return VisitCommonFunctionInvokeContext(new CommonFunctionInvokeContext(
-                        SqlServerKnownFunction.AtTimeZone,
-                        atTimeZoneCall.DateValue,
-                        atTimeZoneCall.TimeZone
-                    ));
+                    return CreateInvokeExpression(SqlServerKnownFunction.AtTimeZone, atTimeZoneCall.DateValue, atTimeZoneCall.TimeZone);
+
+                // COALESCE ( expression [ ,...n ] )
+                case CoalesceExpression coalesceExpression:
+                    return CreateInvokeExpression(SqlServerKnownFunction.Coalesce, coalesceExpression.Expressions);
+
+                // IIF ( boolean_expression, true_value, false_value )
+                case IIfCall iifCall:
+                    return CreateInvokeExpression(SqlServerKnownFunction.IIf, iifCall.Predicate, iifCall.ThenExpression, iifCall.ElseExpression);
+
+                // LEFT ( character_expression , integer_expression )
+                case LeftFunctionCall leftFunctionCall:
+                    return CreateInvokeExpression(SqlServerKnownFunction.Left, leftFunctionCall.Parameters);
+                
+                // RIGHT ( character_expression , integer_expression )
+                case RightFunctionCall rightFunctionCall:
+                    return CreateInvokeExpression(SqlServerKnownFunction.Right, rightFunctionCall.Parameters);
+
+                // NEXT VALUE FOR [ database_name . ] [ schema_name . ]  sequence_name [ OVER (<over_order_by_clause>) ]
+                case NextValueForExpression nextValueForExpression:
+                    return CreateInvokeExpression(SqlServerKnownFunction.NextValueFor, nextValueForExpression.SequenceName, nextValueForExpression.OverClause);
+
+                // NULLIF ( expression , expression )
+                case NullIfExpression nullIfExpression:
+                    return CreateInvokeExpression(SqlServerKnownFunction.NullIf, nullIfExpression.FirstExpression, nullIfExpression.SecondExpression);
+
+                // CAST ( expression AS data_type [ ( length ) ] )
+                case CastCall castCall:
+                    return CreateInvokeExpression(SqlServerKnownFunction.Cast, castCall.DataType, castCall.Parameter);
+
+                // TRY_CAST ( expression AS data_type [ ( length ) ] )
+                case TryCastCall tryCastCall:
+                    return CreateInvokeExpression(SqlServerKnownFunction.TryConvert, tryCastCall.Parameter, tryCastCall.DataType);
+
+                // CONVERT ( data_type [ ( length ) ] , expression [ , style ] )
+                case ConvertCall convertCall:
+                    return CreateInvokeExpression(SqlServerKnownFunction.Convert, convertCall.DataType, convertCall.Parameter, convertCall.Style);
+
+                // TRY_CONVERT ( data_type [ ( length ) ], expression [, style ] )
+                case TryConvertCall tryConvertCall:
+                    return CreateInvokeExpression(SqlServerKnownFunction.TryConvert, tryConvertCall.DataType, tryConvertCall.Parameter, tryConvertCall.Style);
+
+                // PARSE ( string_value AS data_type [ USING culture ] )
+                case ParseCall parseCall:
+                    return CreateInvokeExpression(SqlServerKnownFunction.Parse, parseCall.StringValue, parseCall.DataType, parseCall.Culture);
+
+                // TRY_PARSE ( string_value AS data_type [ USING culture ] )
+                case TryParseCall tryParseCall:
+                    return CreateInvokeExpression(SqlServerKnownFunction.TryParse, tryParseCall.StringValue, tryParseCall.DataType, tryParseCall.Culture);
+
+                case FunctionCall functionCall:
+                {
+                    var callTarget = functionCall.CallTarget switch
+                    {
+                        MultiPartIdentifierCallTarget multiPartIdentifierCallTarget => multiPartIdentifierCallTarget.MultiPartIdentifier,
+                        UserDefinedTypeCallTarget userDefinedTypeCallTarget => userDefinedTypeCallTarget.SchemaObjectName,
+                        ExpressionCallTarget _ => throw TreeHelper.NotSupportedFeature("expression call target"),
+                        _ => throw TreeHelper.NotSupportedTree(functionCall.CallTarget)
+                    };
+                    
+                    return CreateInvokeExpression(IdentifierVisitor.ConcatIdentifier(callTarget, functionCall.FunctionName), functionCall.Parameters);   
+                }
 
                 case CaseExpression caseExpression:
                     return VisitCaseExpression(caseExpression);
 
-                case CastCall castCall:
-                    return VisitCommonFunctionInvokeContext(new CommonFunctionInvokeContext(
-                        SqlServerKnownFunction.Cast,
-                        castCall.DataType,
-                        castCall.Parameter
-                    ));
-
-                case CoalesceExpression coalesceExpression:
-                    return VisitCommonFunctionInvokeContext(new CommonFunctionInvokeContext(
-                        SqlServerKnownFunction.Coalesce,
-                        coalesceExpression.Expressions
-                    ));
-
                 case ColumnReferenceExpression columnReferenceExpression:
                     return VisitColumnReferenceExpression(columnReferenceExpression);
 
-                case ConvertCall convertCall:
-                    return VisitCommonFunctionInvokeContext(new CommonFunctionInvokeContext(
-                        SqlServerKnownFunction.Convert,
-                        convertCall.DataType,
-                        convertCall.Parameter,
-                        convertCall.Style
-                    ));
+                case ScalarSubquery scalarSubquery:
+                    return VisitScalarSubquery(scalarSubquery);
 
-                case FunctionCall functionCall:
-                    return VisitCommonFunctionInvokeContext(new CommonFunctionInvokeContext(
-                        functionCall.FunctionName.Value,
-                        functionCall.Parameters
-                    ));
-
-                case IIfCall iifCall:
-                    return VisitCommonFunctionInvokeContext(new CommonFunctionInvokeContext(
-                        SqlServerKnownFunction.IIf,
-                        iifCall.Predicate,
-                        iifCall.ThenExpression,
-                        iifCall.ElseExpression
-                    ));
-
-                case LeftFunctionCall leftFunctionCall:
-                    break;
-
-                case NextValueForExpression nextValueForExpression:
-                    break;
-
-                case NullIfExpression nullIfExpression:
+                case ValueExpression valueExpression:
+                    return VisitValueExpression(valueExpression);
+                
+                case UserDefinedTypePropertyAccess userDefinedTypePropertyAccess:
                     break;
 
                 case OdbcFunctionCall odbcFunctionCall:
@@ -333,32 +355,8 @@ namespace Qsi.SqlServer.Tree
                 case ParameterlessCall parameterlessCall:
                     break;
 
-                case ParseCall parseCall:
-                    break;
-
                 case PartitionFunctionCall partitionFunctionCall:
                     break;
-
-                case RightFunctionCall rightFunctionCall:
-                    break;
-
-                case ScalarSubquery scalarSubquery:
-                    return VisitScalarSubquery(scalarSubquery);
-
-                case TryCastCall tryCastCall:
-                    break;
-
-                case TryConvertCall tryConvertCall:
-                    break;
-
-                case TryParseCall tryParseCall:
-                    break;
-
-                case UserDefinedTypePropertyAccess userDefinedTypePropertyAccess:
-                    break;
-
-                case ValueExpression valueExpression:
-                    return VisitValueExpression(valueExpression);
             }
 
             throw TreeHelper.NotSupportedTree(primaryExpression);
@@ -371,10 +369,11 @@ namespace Qsi.SqlServer.Tree
             {
                 case SearchedCaseExpression searchedCaseExpression:
                     return VisitSearchedCaseExpression(searchedCaseExpression);
+
                 case SimpleCaseExpression simpleCaseExpression:
                     return VisitSimpleCaseExpression(simpleCaseExpression);
             }
-            
+
             throw TreeHelper.NotSupportedTree(caseExpression);
         }
 
@@ -390,7 +389,7 @@ namespace Qsi.SqlServer.Tree
                 }));
             });
         }
-        
+
         private QsiSwitchCaseExpressionNode VisitSearchedWhenClause(SearchedWhenClause searchedWhenClause)
         {
             return TreeHelper.Create<QsiSwitchCaseExpressionNode>(n =>
@@ -399,7 +398,7 @@ namespace Qsi.SqlServer.Tree
                 n.Consequent.SetValue(VisitScalarExpression(searchedWhenClause.ThenExpression));
             });
         }
-        
+
         private QsiSwitchExpressionNode VisitSimpleCaseExpression(SimpleCaseExpression simpleCaseExpression)
         {
             return TreeHelper.Create<QsiSwitchExpressionNode>(n =>
@@ -407,7 +406,7 @@ namespace Qsi.SqlServer.Tree
                 n.Value.SetValue(VisitScalarExpression(simpleCaseExpression.InputExpression));
 
                 n.Cases.AddRange(simpleCaseExpression.WhenClauses.Select(VisitSimpleWhenClause));
-                
+
                 n.Cases.Add(TreeHelper.Create<QsiSwitchCaseExpressionNode>(en =>
                 {
                     en.Consequent.SetValue(VisitScalarExpression(simpleCaseExpression.ElseExpression));
@@ -424,15 +423,24 @@ namespace Qsi.SqlServer.Tree
             });
         }
         #endregion
-        
-        private QsiColumnExpressionNode VisitColumnReferenceExpression(ColumnReferenceExpression columnReferenceExpression)
+
+        internal QsiColumnExpressionNode VisitColumnReferenceExpression(ColumnReferenceExpression columnReferenceExpression)
         {
             return TreeHelper.Create<QsiColumnExpressionNode>(n =>
             {
-                n.Column.SetValue(new QsiDeclaredColumnNode
+                QsiQualifiedIdentifier name = null;
+
+                if (columnReferenceExpression.MultiPartIdentifier != null)
+                    name = IdentifierVisitor.CreateQualifiedIdentifier(columnReferenceExpression.MultiPartIdentifier);
+                
+                QsiColumnNode node = columnReferenceExpression.ColumnType switch
                 {
-                    Name = IdentifierVisitor.CreateQualifiedIdentifier(columnReferenceExpression.MultiPartIdentifier)
-                });
+                    ColumnType.Regular => new QsiDeclaredColumnNode { Name = name },
+                    ColumnType.Wildcard => new QsiAllColumnNode { Path = name },
+                    _ => throw TreeHelper.NotSupportedFeature($"{columnReferenceExpression.ColumnType} type column")
+                };
+                
+                n.Column.SetValue(node);
             });
         }
 
@@ -524,29 +532,52 @@ namespace Qsi.SqlServer.Tree
         }
         #endregion
 
-        internal QsiInvokeExpressionNode VisitCommonFunctionInvokeContext(CommonFunctionInvokeContext commonFunctionInvokeContext)
+        internal QsiInvokeExpressionNode CreateInvokeExpression(string functionName, IEnumerable<TSqlFragment> parameters)
+            => CreateInvokeExpression(functionName, parameters.ToArray());
+
+        internal QsiInvokeExpressionNode CreateInvokeExpression(QsiQualifiedIdentifier qualifiedIdentifier, IEnumerable<TSqlFragment> parameters)
+            => CreateInvokeExpression(qualifiedIdentifier, parameters.ToArray());
+
+        internal QsiInvokeExpressionNode CreateInvokeExpression(string functionName, params TSqlFragment[] parameters)
+            => CreateInvokeExpression(TreeHelper.CreateFunctionAccess(functionName), parameters);
+
+        internal QsiInvokeExpressionNode CreateInvokeExpression(QsiQualifiedIdentifier qualifiedIdentifier, params TSqlFragment[] parameters)
+        {
+            var functionAccessExpressionNode = new QsiFunctionAccessExpressionNode
+            {
+                Identifier = qualifiedIdentifier
+            };
+            
+            return CreateInvokeExpression(functionAccessExpressionNode, parameters);
+        }
+
+        internal QsiInvokeExpressionNode CreateInvokeExpression(QsiFunctionAccessExpressionNode functionAccessExpressionNode, params TSqlFragment[] parameters)
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(TreeHelper.CreateFunctionAccess(commonFunctionInvokeContext.FunctionName));
+                n.Member.SetValue(functionAccessExpressionNode);
 
-                if (commonFunctionInvokeContext.DataTypeReference != null)
-                {
-                    n.Parameters.Add(new QsiTypeAccessExpressionNode
+                n.Parameters.AddRange(parameters
+                    .Where(p => p != null)
+                    .Select(p =>
                     {
-                        Identifier = IdentifierVisitor.CreateQualifiedIdentifier(commonFunctionInvokeContext.DataTypeReference.Name)
-                    });
-                }
-
-                n.Parameters.AddRange(commonFunctionInvokeContext.Parameters.Select(p =>
-                {
-                    return p switch
-                    {
-                        BooleanExpression booleanExpression => VisitBooleanExpression(booleanExpression),
-                        ScalarExpression scalarExpression => VisitScalarExpression(scalarExpression),
-                        _ => throw new InvalidOperationException()
-                    };
-                }));
+                        return p switch
+                        {
+                            BooleanExpression booleanExpression => VisitBooleanExpression(booleanExpression),
+                            ScalarExpression scalarExpression => VisitScalarExpression(scalarExpression),
+                            DataTypeReference dataTypeReference => new QsiTypeAccessExpressionNode
+                            {
+                                Identifier = IdentifierVisitor.CreateQualifiedIdentifier(dataTypeReference.Name)
+                            },
+                            MultiPartIdentifier multiPartIdentifier => new QsiVariableAccessExpressionNode
+                            {
+                                Identifier = IdentifierVisitor.CreateQualifiedIdentifier(multiPartIdentifier)
+                            },
+                            OverClause _ => throw TreeHelper.NotSupportedFeature("over clause"),
+                            _ => throw new InvalidOperationException()
+                        };
+                    })
+                );
             });
         }
     }

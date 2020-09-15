@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.SqlServer.TransactSql.ScriptDom;
 using Qsi.Data;
-using Qsi.SqlServer.Tree.Common;
 using Qsi.Tree.Base;
 using Qsi.Utilities;
 
@@ -368,10 +367,10 @@ namespace Qsi.SqlServer.Tree
                 //
                 // case BuiltInFunctionTableReference builtInFunctionTableReference:
                 //     return VisitBuiltInFunctionTableReference(builtInFunctionTableReference);
-                //
-                // case FullTextTableReference fullTextTableReference:
-                //     return VisitFullTextTableReference(fullTextTableReference);
-                //
+
+                case FullTextTableReference fullTextTableReference:
+                    return VisitFullTextTableReference(fullTextTableReference);
+
                 // case GlobalFunctionTableReference globalFunctionTableReference:
                 //     return VisitGlobalFunctionTableReference(globalFunctionTableReference);
                 //
@@ -412,12 +411,6 @@ namespace Qsi.SqlServer.Tree
             throw TreeHelper.NotSupportedTree(tableReferenceWithAlias);
         }
 
-        private QsiTableNode VisitPivotedTableReference(PivotedTableReference pivotedTableReference)
-        {
-            // TODO: Implement
-            throw TreeHelper.NotSupportedTree(pivotedTableReference);
-        }
-
         private QsiTableNode VisitNamedTableReference(NamedTableReference namedTableReference)
         {
             var tableNode = new QsiTableAccessNode
@@ -438,6 +431,34 @@ namespace Qsi.SqlServer.Tree
                     Name = IdentifierVisitor.CreateIdentifier(namedTableReference.Alias)
                 });
             });
+        }
+
+        // FREETEXTTABLE (table , { column_name | (column_list) | * }, 'freetext_string' [ , LANGUAGE language_term ] [ , top_n_by_rank ] )  
+        private QsiTableNode VisitFullTextTableReference(FullTextTableReference fullTextTableReference)
+        {
+            throw TreeHelper.NotSupportedFeature("Table function");
+            
+            // var node = TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            // {
+            //     n.Member.SetValue(TreeHelper.CreateFunctionAccess(SqlServerKnownFunction.FreeTextTable));
+            //
+            //     n.Parameters.Add(TreeHelper.Create<QsiTableExpressionNode>(ten =>
+            //     {
+            //         ten.Table.SetValue(new QsiTableAccessNode
+            //         {
+            //             Identifier = IdentifierVisitor.CreateQualifiedIdentifier(fullTextTableReference.TableName)
+            //         });
+            //     }));
+            //
+            //     n.Parameters.AddRange(fullTextTableReference.Columns.Select(ExpressionVisitor.VisitColumnReferenceExpression));
+            //     n.Parameters.Add(ExpressionVisitor.VisitValueExpression(fullTextTableReference.SearchCondition));
+            //     
+            //     if (fullTextTableReference.Language != null)
+            //         n.Parameters.Add(ExpressionVisitor.VisitValueExpression(fullTextTableReference.Language));
+            //     
+            //     if (fullTextTableReference.TopN != null)
+            //         n.Parameters.Add(ExpressionVisitor.VisitValueExpression(fullTextTableReference.TopN));
+            // });
         }
 
         // OPENJSON(VARIABLE[, PATH]) Ex: OPENJSON(@json, '$.path.to."sub-object"')
@@ -480,44 +501,7 @@ namespace Qsi.SqlServer.Tree
 
         private QsiTableNode VisitOpenRowsetTableReference(OpenRowsetTableReference openRowsetTableReference)
         {
-            throw TreeHelper.NotSupportedFeature("Table function");
-
-            // var node = TreeHelper.Create<QsiInvokeExpressionNode>(n =>
-            // {
-            //     n.Member.SetValue(TreeHelper.CreateFunctionAccess(SqlServerKnownFunction.OpenRowSet));
-            //
-            //     if (openRowsetTableReference.ProviderName != null)
-            //     {
-            //         n.Parameters.Add(TreeHelper.CreateLiteral(openRowsetTableReference.ProviderName.Value));
-            //
-            //         if (openRowsetTableReference.ProviderString != null)
-            //         {
-            //             n.Parameters.Add(TreeHelper.CreateLiteral(openRowsetTableReference.ProviderString.Value));
-            //         }
-            //         else
-            //         {
-            //             n.Parameters.Add(TreeHelper.CreateLiteral(openRowsetTableReference.DataSource.Value));
-            //             n.Parameters.Add(TreeHelper.CreateLiteral(openRowsetTableReference.UserId.Value));
-            //             n.Parameters.Add(TreeHelper.CreateLiteral(openRowsetTableReference.Password.Value));
-            //         }
-            //
-            //         if (openRowsetTableReference.Object != null)
-            //         {
-            //             // TODO: This table is remote table (shouldn't tracing in current database)
-            //             n.Parameters.Add(TreeHelper.Create<QsiTableExpressionNode>(ten =>
-            //             {
-            //                 ten.Table.SetValue(new QsiTableAccessNode
-            //                 {
-            //                     Identifier = IdentifierVisitor.CreateQualifiedIdentifier(openRowsetTableReference.Object)
-            //                 });
-            //             }));
-            //         }
-            //         else
-            //         {
-            //             n.Parameters.Add(TreeHelper.CreateLiteral(openRowsetTableReference.Query.Value));
-            //         }
-            //     }
-            // });
+            throw TreeHelper.NotSupportedFeature("Remote table");
         }
 
         private QsiTableNode VisitOpenXmlTableReference(OpenXmlTableReference openXmlTableReference)
@@ -537,6 +521,12 @@ namespace Qsi.SqlServer.Tree
             //         n.Parameters.Add(ExpressionVisitor.VisitValueExpression(openXmlTableReference.Flags));    
             //     }
             // });
+        }
+
+        private QsiTableNode VisitPivotedTableReference(PivotedTableReference pivotedTableReference)
+        {
+            // TODO: Implement
+            throw TreeHelper.NotSupportedTree(pivotedTableReference);
         }
 
         #region TableReferenceWithAliasAndColumns
