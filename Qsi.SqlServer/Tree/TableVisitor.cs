@@ -61,7 +61,7 @@ namespace Qsi.SqlServer.Tree
         #endregion
 
         #region Query Expression
-        private QsiTableNode VisitQueryExpression(QueryExpression queryExpression)
+        public QsiTableNode VisitQueryExpression(QueryExpression queryExpression)
         {
             switch (queryExpression)
             {
@@ -85,8 +85,11 @@ namespace Qsi.SqlServer.Tree
                 var columnsDeclarationNode = new QsiColumnsDeclarationNode();
                 columnsDeclarationNode.Columns.AddRange(querySpecification.SelectElements.Select(VisitSelectElement));
                 n.Columns.SetValue(columnsDeclarationNode);
-                
-                n.Source.SetValue(VisitFromClause(querySpecification.FromClause));
+
+                if (querySpecification.FromClause != null)
+                {
+                    n.Source.SetValue(VisitFromClause(querySpecification.FromClause));
+                }
             });
         }
         #endregion
@@ -131,7 +134,7 @@ namespace Qsi.SqlServer.Tree
                 {
                     Name = IdentifierVisitor.CreateQualifiedIdentifier(columnReferenceExpression.MultiPartIdentifier)
                 };
-                
+
                 if (selectScalarExpression.ColumnName == null)
                     return column;
             }
@@ -150,12 +153,18 @@ namespace Qsi.SqlServer.Tree
                 {
                     n.Expression.SetValue(expression);
                 }
-            
-                if (selectScalarExpression.ColumnName != null)
+
+                var columnName = selectScalarExpression.ColumnName;
+
+                if (columnName != null)
                 {
+                    var identifier = columnName.Identifier != null ?
+                        IdentifierVisitor.CreateIdentifier(columnName.Identifier) :
+                        new QsiIdentifier(columnName.Value, false);
+
                     n.Alias.SetValue(new QsiAliasNode
                     {
-                        Name = IdentifierVisitor.CreateIdentifier(selectScalarExpression.ColumnName.Identifier)
+                        Name = identifier
                     });
                 }
             });
@@ -211,23 +220,55 @@ namespace Qsi.SqlServer.Tree
                 case TableReferenceWithAlias tableReferenceWithAlias:
                     return VisitTableReferenceWithAlias(tableReferenceWithAlias);
             }
-            
+
             throw TreeHelper.NotSupportedTree(tableReference);
         }
 
-        private QsiTableNode VisitJoinTableReference(JoinTableReference joinTableReference)
+        #region JoinTableReference
+        private QsiJoinedTableNode VisitJoinTableReference(JoinTableReference joinTableReference)
         {
             switch (joinTableReference)
             {
                 case QualifiedJoin qualifiedJoin:
-                    break;
+                {
+                    var joinType = qualifiedJoin.QualifiedJoinType switch
+                    {
+                        QualifiedJoinType.Inner => QsiJoinType.Inner,
+                        QualifiedJoinType.FullOuter => QsiJoinType.Full,
+                        QualifiedJoinType.LeftOuter => QsiJoinType.Left,
+                        QualifiedJoinType.RightOuter => QsiJoinType.Right,
+                        _ => throw new InvalidOperationException()
+                    };
 
+                    return CreateJoinedTableNode(joinType, qualifiedJoin);
+                }
                 case UnqualifiedJoin unqualifiedJoin:
-                    break;
+                {
+                    var joinType = unqualifiedJoin.UnqualifiedJoinType switch
+                    {
+                        UnqualifiedJoinType.CrossApply => QsiJoinType.Inner,
+                        UnqualifiedJoinType.CrossJoin => QsiJoinType.Cross,
+                        UnqualifiedJoinType.OuterApply => QsiJoinType.Left,
+                        _ => throw new InvalidOperationException()
+                    };
+
+                    return CreateJoinedTableNode(joinType, unqualifiedJoin);
+                }
             }
 
             throw TreeHelper.NotSupportedTree(joinTableReference);
         }
+
+        private QsiJoinedTableNode CreateJoinedTableNode(QsiJoinType qsiJoinType, JoinTableReference joinTableReference)
+        {
+            return TreeHelper.Create<QsiJoinedTableNode>(n =>
+            {
+                n.Left.SetValue(VisitTableReference(joinTableReference.FirstTableReference));
+                n.Right.SetValue(VisitTableReference(joinTableReference.SecondTableReference));
+                n.JoinType = qsiJoinType;
+            });
+        }
+        #endregion
 
         #region TableReferenceWithAlias
         private QsiTableNode VisitTableReferenceWithAlias(TableReferenceWithAlias tableReferenceWithAlias)
@@ -251,6 +292,7 @@ namespace Qsi.SqlServer.Tree
 
                 case NamedTableReference namedTableReference:
                     return VisitNamedTableReference(namedTableReference);
+
                 //
                 // case OpenJsonTableReference openJsonTableReference:
                 //     return VisitOpenJsonTableReference(openJsonTableReference);
@@ -297,6 +339,7 @@ namespace Qsi.SqlServer.Tree
             {
                 n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
                 n.Source.SetValue(tableNode);
+
                 n.Alias.SetValue(new QsiAliasNode
                 {
                     Name = IdentifierVisitor.CreateIdentifier(namedTableReference.Alias)
