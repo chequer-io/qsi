@@ -1,28 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Qsi.Data;
+using Qsi.Extensions;
 
 namespace Qsi.Utilities
 {
     public static class IdentifierUtility
     {
-        private static readonly char[] _openParen = { '\'', '"', '`', '[' };
-        private static readonly char[] _closeParen = { '\'', '"', '`', ']' };
+        private static readonly string[] _openParen = { "'", "\"", "`", "[", "$$" };
+        private static readonly string[] _closeParen = { "'", "\"", "`", "]", "$$" };
 
-        private static readonly char[] _escapedChars = { '\'', '"', '`', '\\', 'n', 'r', 't', 'b', '0' };
-        private static readonly char[] _escapeChars = { '\'', '"', '`', '\\', '\n', '\r', '\t', '\b', '\0' };
+        private static readonly char[] _escapedChars = { '\'', '"', '`', '[', ']', '\\', 'n', 'r', 't', 'b', '0' };
+        private static readonly char[] _escapeChars = { '\'', '"', '`', '[', ']', '\\', '\n', '\r', '\t', '\b', '\0' };
 
         public static bool IsEscaped(string value)
         {
-            if (string.IsNullOrEmpty(value) || value.Length < 2)
+            if (string.IsNullOrEmpty(value))
                 return false;
 
-            int index = Array.IndexOf(_openParen, value[0]);
+            int index = _openParen.IndexOf(value.StartsWith);
 
             if (index == -1)
                 return false;
 
-            return value[^1] == _closeParen[index];
+            return value.EndsWith(_closeParen[index]);
         }
 
         public static string Unescape(string value)
@@ -30,18 +32,22 @@ namespace Qsi.Utilities
             if (string.IsNullOrWhiteSpace(value))
                 return value;
 
-            int index = Array.IndexOf(_openParen, value[0]);
+            int index = _openParen.IndexOf(value.StartsWith);
 
-            if (index == -1 || _closeParen[index] != value[^1])
+            if (index == -1 || !value.EndsWith(_closeParen[index]))
                 return value;
 
-            return Unescape(value[1..^1], _openParen[index], _closeParen[index]);
+            var openParen = _openParen[index];
+            var closeParen = _closeParen[index];
+
+            return Unescape(value[openParen.Length..^closeParen.Length], openParen, closeParen);
         }
 
-        private static string Unescape(in ReadOnlySpan<char> value, char open, char close)
+        private static string Unescape(in ReadOnlySpan<char> value, string open, string close)
         {
             var buffer = new char[value.Length];
             int index = 0;
+            bool singleParent = close.Length == 1;
 
             for (int i = 0; i < buffer.Length; i++)
             {
@@ -59,9 +65,9 @@ namespace Qsi.Utilities
                     i++;
                     c = _escapeChars[escapeIndex];
                 }
-                else if (c == open)
+                else if (value.Slice(i).StartsWith(close))
                 {
-                    if (end || value[i + 1] != open)
+                    if (end || !value.Slice(i + close.Length).StartsWith(close))
                     {
 #if DEBUG
                         throw new Exception($"Invalid identifier format: {open}{value.ToString()}{close}");
@@ -79,12 +85,13 @@ namespace Qsi.Utilities
             return new string(buffer, 0, index);
         }
 
-        public static string[] Parse(string value)
+        public static QsiIdentifier[] Parse(string value)
         {
-            var result = new List<string>(4);
+            var result = new List<QsiIdentifier>();
             ReadOnlySpan<char> span = value.AsSpan();
             var buffer = new StringBuilder();
-            char? closeParen = null;
+            var escaped = false;
+            string closeParen = null;
 
             for (int i = 0; i < span.Length; i++)
             {
@@ -93,46 +100,55 @@ namespace Qsi.Utilities
 
                 switch (c)
                 {
-                    case '.' when !closeParen.HasValue:
-                        result.Add(buffer.ToString());
+                    case '.' when closeParen == null:
+                        result.Add(new QsiIdentifier(buffer.ToString(), escaped));
+                        escaped = false;
                         buffer.Clear();
                         break;
 
-                    case '\\':
-                        int escapeIndex = end ? -1 : Array.IndexOf(_escapedChars, span[i + 1]);
+                    case '\\' when !end && closeParen?.Length == 1:
+                        buffer.Append(c);
 
-                        // ignore
-                        if (escapeIndex == -1)
-                            continue;
+                        if (span[i + 1] == closeParen[0])
+                        {
+                            i++;
+                            buffer.Append(span[i]);
+                        }
 
-                        buffer.Append(_escapeChars[escapeIndex]);
-                        i++;
                         break;
 
-                    case var _ when closeParen.HasValue && c == closeParen.Value:
-                        if (!end && span[i + 1] == c)
-                        {
-                            buffer.Append(c);
-                            i++;
-                        }
-                        else
-                        {
-                            closeParen = null;
-                        }
-
+                    case var _ when closeParen != null &&
+                                    (closeParen.Length == 1 && closeParen[0] == c ||
+                                     span.Slice(i).StartsWith(closeParen)):
+                        buffer.Append(c);
+                        i += closeParen.Length - 1;
+                        closeParen = null;
                         break;
 
                     case '\'':
                     case '"':
                     case '`':
                     case '[':
-                        if (closeParen.HasValue)
+                    case '$' when !end && span[i + 1] == '$':
+                        buffer.Append(c);
+
+                        if (closeParen == null)
                         {
-                            goto default;
-                        }
-                        else
-                        {
-                            closeParen = _closeParen[Array.IndexOf(_openParen, c)];
+                            int index = -1;
+
+                            for (int j = 0; j < _openParen.Length; j++)
+                            {
+                                var paren = _openParen[j];
+
+                                if (paren.Length == 1 && paren[0] == c || span.Slice(i).StartsWith(paren))
+                                {
+                                    index = j;
+                                    break;
+                                }
+                            }
+
+                            escaped = true;
+                            closeParen = _closeParen[index];
                         }
 
                         break;
@@ -143,8 +159,7 @@ namespace Qsi.Utilities
                 }
             }
 
-            if (span[^1] != '.')
-                result.Add(buffer.ToString());
+            result.Add(new QsiIdentifier(buffer.ToString(), escaped));
 
             return result.ToArray();
         }

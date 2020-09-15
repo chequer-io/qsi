@@ -19,6 +19,7 @@ using Qsi.Data;
 using Qsi.Debugger.Models;
 using Qsi.Debugger.Utilities;
 using Qsi.Debugger.Vendor;
+using Qsi.Debugger.Vendor.JSql;
 using Qsi.Debugger.Vendor.MySql;
 using Qsi.Debugger.Vendor.PostgreSql;
 using Qsi.Parsing;
@@ -50,7 +51,8 @@ namespace Qsi.Debugger
             _vendors = new Dictionary<string, Lazy<VendorDebugger>>
             {
                 ["MySQL"] = new Lazy<VendorDebugger>(() => new MySqlDebugger()),
-                ["PostgreSQL"] = new Lazy<VendorDebugger>(() => new PostgreSqlDebugger())
+                ["PostgreSQL"] = new Lazy<VendorDebugger>(() => new PostgreSqlDebugger()),
+                ["JSqlParser"] = new Lazy<VendorDebugger>(() => new JSqlDebugger())
             };
 
             _cbLanguages = this.Find<ComboBox>("cbLanguages");

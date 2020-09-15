@@ -9,6 +9,7 @@
         Semi,
         Anti,
         UniqueOuter,
-        UniqueInner
+        UniqueInner,
+        Cross
     }
 }
