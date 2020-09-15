@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Microsoft.SqlServer.TransactSql.ScriptDom;
+using Qsi.Data;
 using Qsi.Tree.Base;
 using Qsi.Utilities;
 
@@ -14,7 +15,7 @@ namespace Qsi.SqlServer.Tree
 
         public QsiTreeNode Visit(TSqlBatch sqlBatch)
         {
-            var statement = sqlBatch.Statements.FirstOrDefault();
+            var statement = sqlBatch?.Statements?.FirstOrDefault();
 
             if (statement != null)
                 return VisitStatements(statement);
@@ -81,11 +82,11 @@ namespace Qsi.SqlServer.Tree
         {
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
-                var columns = new QsiColumnsDeclarationNode();
-                columns.Columns.AddRange(querySpecification.SelectElements.Select(VisitSelectElement));
-                n.Columns.SetValue(columns);
-
-                VisitFromClause(querySpecification.FromClause);
+                var columnsDeclarationNode = new QsiColumnsDeclarationNode();
+                columnsDeclarationNode.Columns.AddRange(querySpecification.SelectElements.Select(VisitSelectElement));
+                n.Columns.SetValue(columnsDeclarationNode);
+                
+                n.Source.SetValue(VisitFromClause(querySpecification.FromClause));
             });
         }
         #endregion
@@ -114,7 +115,7 @@ namespace Qsi.SqlServer.Tree
             {
                 if (selectStarExpression.Qualifier != null)
                 {
-                    // n.Path = IdentifierVisitor.VisitMultipartIdentifier(selectStarExpression.Qualifier);
+                    n.Path = IdentifierVisitor.CreateQualifiedIdentifier(selectStarExpression.Qualifier);
                 }
             });
         }
@@ -124,11 +125,40 @@ namespace Qsi.SqlServer.Tree
             QsiExpressionNode expression = null;
             QsiDeclaredColumnNode column = null;
 
-            switch (selectScalarExpression.Expression)
+            if (selectScalarExpression.Expression is ColumnReferenceExpression columnReferenceExpression)
             {
+                column = new QsiDeclaredColumnNode
+                {
+                    Name = IdentifierVisitor.CreateQualifiedIdentifier(columnReferenceExpression.MultiPartIdentifier)
+                };
+                
+                if (selectScalarExpression.ColumnName == null)
+                    return column;
+            }
+            else
+            {
+                expression = ExpressionVisitor.VisitScalarExpression(selectScalarExpression.Expression);
             }
 
-            throw TreeHelper.NotSupportedTree(selectScalarExpression);
+            return TreeHelper.Create<QsiDerivedColumnNode>(n =>
+            {
+                if (column != null)
+                {
+                    n.Column.SetValue(column);
+                }
+                else if (expression != null)
+                {
+                    n.Expression.SetValue(expression);
+                }
+            
+                if (selectScalarExpression.ColumnName != null)
+                {
+                    n.Alias.SetValue(new QsiAliasNode
+                    {
+                        Name = IdentifierVisitor.CreateIdentifier(selectScalarExpression.ColumnName.Identifier)
+                    });
+                }
+            });
         }
         #endregion
 
@@ -137,12 +167,30 @@ namespace Qsi.SqlServer.Tree
         {
             var tableReferences = fromClause.TableReferences;
 
-            // if (tableReferences.Count == 1)
-            // return
+            if (tableReferences.Count == 1)
+                return VisitTableReference(tableReferences.FirstOrDefault());
 
             var joinedTableNode = TreeHelper.Create<QsiJoinedTableNode>(n =>
             {
-            })
+                n.Left.SetValue(VisitTableReference(tableReferences[0]));
+                n.Right.SetValue(VisitTableReference(tableReferences[1]));
+
+                n.JoinType = QsiJoinType.Full;
+            });
+
+            foreach (var tableExpression in tableReferences.Skip(2))
+            {
+                var node = joinedTableNode;
+
+                joinedTableNode = TreeHelper.Create<QsiJoinedTableNode>(n =>
+                {
+                    n.Left.SetValue(node);
+                    n.Right.SetValue(VisitTableReference(tableExpression));
+                    n.JoinType = QsiJoinType.Full;
+                });
+            }
+
+            return joinedTableNode;
         }
         #endregion
 
@@ -151,19 +199,111 @@ namespace Qsi.SqlServer.Tree
         {
             switch (tableReference)
             {
-                case JoinParenthesisTableReference joinParenthesisTableReference:
-                    return VisitJoinParenthesisTableReference(joinParenthesisTableReference);
+                // case JoinParenthesisTableReference joinParenthesisTableReference:
+                //     return VisitJoinParenthesisTableReference(joinParenthesisTableReference);
 
                 case JoinTableReference joinTableReference:
                     return VisitJoinTableReference(joinTableReference);
 
-                case OdbcQualifiedJoinTableReference odbcQualifiedJoinTableReference:
-                    return VisitOdbcQualifiedJoinTableReference(odbcQualifiedJoinTableReference);
+                // case OdbcQualifiedJoinTableReference odbcQualifiedJoinTableReference:
+                //     return VisitOdbcQualifiedJoinTableReference(odbcQualifiedJoinTableReference);
 
                 case TableReferenceWithAlias tableReferenceWithAlias:
                     return VisitTableReferenceWithAlias(tableReferenceWithAlias);
             }
+            
+            throw TreeHelper.NotSupportedTree(tableReference);
         }
+
+        private QsiTableNode VisitJoinTableReference(JoinTableReference joinTableReference)
+        {
+            switch (joinTableReference)
+            {
+                case QualifiedJoin qualifiedJoin:
+                    break;
+
+                case UnqualifiedJoin unqualifiedJoin:
+                    break;
+            }
+
+            throw TreeHelper.NotSupportedTree(joinTableReference);
+        }
+
+        #region TableReferenceWithAlias
+        private QsiTableNode VisitTableReferenceWithAlias(TableReferenceWithAlias tableReferenceWithAlias)
+        {
+            switch (tableReferenceWithAlias)
+            {
+                // case AdHocTableReference adHocTableReference:
+                //     return VisitAdHocTableReference(adHocTableReference);
+                //
+                // case BuiltInFunctionTableReference builtInFunctionTableReference:
+                //     return VisitBuiltInFunctionTableReference(builtInFunctionTableReference);
+                //
+                // case FullTextTableReference fullTextTableReference:
+                //     return VisitFullTextTableReference(fullTextTableReference);
+                //
+                // case GlobalFunctionTableReference globalFunctionTableReference:
+                //     return VisitGlobalFunctionTableReference(globalFunctionTableReference);
+                //
+                // case InternalOpenRowset internalOpenRowset:
+                //     return VisitInternalOpenRowset(internalOpenRowset);
+
+                case NamedTableReference namedTableReference:
+                    return VisitNamedTableReference(namedTableReference);
+                //
+                // case OpenJsonTableReference openJsonTableReference:
+                //     return VisitOpenJsonTableReference(openJsonTableReference);
+                //
+                // case OpenQueryTableReference openQueryTableReference:
+                //     return VisitOpenQueryTableReference(openQueryTableReference);
+                //
+                // case OpenRowsetTableReference openRowsetTableReference:
+                //     return VisitOpenRowsetTableReference(openRowsetTableReference);
+                //
+                // case OpenXmlTableReference openXmlTableReference:
+                //     return VisitOpenXmlTableReference(openXmlTableReference);
+                //
+                // case PivotedTableReference pivotedTableReference:
+                //     return VisitPivotedTableReference(pivotedTableReference);
+                //
+                // case SemanticTableReference semanticTableReference:
+                //     return VisitSemanticTableReference(semanticTableReference);
+                //
+                // case TableReferenceWithAliasAndColumns tableReferenceWithAliasAndColumns:
+                //     return VisitTableReferenceWithAliasAndColumns(tableReferenceWithAliasAndColumns);
+                //
+                // case UnpivotedTableReference unpivotedTableReference:
+                //     return VisitUnpivotedTableReference(unpivotedTableReference);
+                //
+                // case VariableTableReference variableTableReference:
+                //     return VisitVariableTableReference(variableTableReference);
+            }
+
+            throw TreeHelper.NotSupportedTree(tableReferenceWithAlias);
+        }
+
+        private QsiTableNode VisitNamedTableReference(NamedTableReference namedTableReference)
+        {
+            var tableNode = new QsiTableAccessNode
+            {
+                Identifier = IdentifierVisitor.CreateQualifiedIdentifier(namedTableReference.SchemaObject)
+            };
+
+            if (namedTableReference.Alias == null)
+                return tableNode;
+
+            return TreeHelper.Create<QsiDerivedTableNode>(n =>
+            {
+                n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+                n.Source.SetValue(tableNode);
+                n.Alias.SetValue(new QsiAliasNode
+                {
+                    Name = IdentifierVisitor.CreateIdentifier(namedTableReference.Alias)
+                });
+            });
+        }
+        #endregion
         #endregion
     }
 }

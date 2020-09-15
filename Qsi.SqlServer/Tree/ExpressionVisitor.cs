@@ -1,4 +1,9 @@
+using System;
+using System.Linq;
+using System.Net.Http;
 using Microsoft.SqlServer.TransactSql.ScriptDom;
+using Qsi.Data;
+using Qsi.SqlServer.Tree.Common;
 using Qsi.Tree.Base;
 using Qsi.Utilities;
 
@@ -11,7 +16,7 @@ namespace Qsi.SqlServer.Tree
         }
 
         #region Scalar Expression
-        private QsiColumnNode VisitScalarExpression(ScalarExpression scalarExpression)
+        public QsiExpressionNode VisitScalarExpression(ScalarExpression scalarExpression)
         {
             switch (scalarExpression)
             {
@@ -43,28 +48,53 @@ namespace Qsi.SqlServer.Tree
             throw TreeHelper.NotSupportedTree(scalarExpression);
         }
 
-        private QsiColumnNode VisitBinaryExpression(BinaryExpression binaryExpression)
+        private QsiLogicalExpressionNode VisitBinaryExpression(BinaryExpression binaryExpression)
         {
-            throw new System.NotImplementedException();
+            return TreeHelper.Create<QsiLogicalExpressionNode>(n =>
+            {
+                n.Left.SetValue(VisitScalarExpression(binaryExpression.FirstExpression));
+                n.Right.SetValue(VisitScalarExpression(binaryExpression.SecondExpression));
+
+                n.Operator = binaryExpression.BinaryExpressionType switch
+                {
+                    BinaryExpressionType.Add => "+",
+                    BinaryExpressionType.Divide => "/",
+                    BinaryExpressionType.Modulo => "%",
+                    BinaryExpressionType.Multiply => "*",
+                    BinaryExpressionType.Subtract => "-",
+                    BinaryExpressionType.BitwiseAnd => "&",
+                    BinaryExpressionType.BitwiseOr => "|",
+                    BinaryExpressionType.BitwiseXor => "^",
+                    _ => throw new InvalidOperationException()
+                };
+            });
         }
 
-        private QsiColumnNode VisitUnaryExpression(UnaryExpression unaryExpression)
+        private QsiUnaryExpressionNode VisitUnaryExpression(UnaryExpression unaryExpression)
         {
-            throw new System.NotImplementedException();
+            var expressionType = unaryExpression.UnaryExpressionType switch
+            {
+                UnaryExpressionType.Positive => "+",
+                UnaryExpressionType.Negative => "-",
+                UnaryExpressionType.BitwiseNot => "~",
+                _ => throw new InvalidOperationException()
+            };
+            
+            return TreeHelper.CreateUnary(expressionType, VisitScalarExpression(unaryExpression.Expression));
         }
 
-        private QsiColumnNode VisitSourceDeclaration(SourceDeclaration sourceDeclaration)
+        private QsiExpressionNode VisitSourceDeclaration(SourceDeclaration sourceDeclaration)
         {
-            throw new System.NotImplementedException();
+            throw TreeHelper.NotSupportedFeature("source declaration");
         }
 
-        private QsiColumnNode VisitScalarExpressionSnippet(ScalarExpressionSnippet scalarExpressionSnippet)
+        private QsiExpressionNode VisitScalarExpressionSnippet(ScalarExpressionSnippet scalarExpressionSnippet)
         {
-            throw new System.NotImplementedException();
+            throw TreeHelper.NotSupportedFeature("expresssion snippet");
         }
 
         #region Primary Expression
-        private QsiColumnNode VisitPrimaryExpression(PrimaryExpression primaryExpression)
+        private QsiExpressionNode VisitPrimaryExpression(PrimaryExpression primaryExpression)
         {
             switch (primaryExpression)
             {
@@ -87,7 +117,7 @@ namespace Qsi.SqlServer.Tree
                     break;
 
                 case FunctionCall functionCall:
-                    break;
+                    return VisitCommonFunctionInvokeContext(new CommonFunctionInvokeContext(functionCall));
 
                 case IIfCall iifCall:
                     break;
@@ -132,27 +162,99 @@ namespace Qsi.SqlServer.Tree
                     break;
 
                 case ValueExpression valueExpression:
-                    break;
+                    return VisitValueExpression(valueExpression);
             }
 
             throw TreeHelper.NotSupportedTree(primaryExpression);
         }
+
+        #region ValueExpression
+        private QsiExpressionNode VisitValueExpression(ValueExpression valueExpression)
+        {
+            switch (valueExpression)
+            {
+                case GlobalVariableExpression globalVariableExpression:
+                    return VisitGlobalVariableExpression(globalVariableExpression);
+
+                case Literal literal:
+                    return VisitLiteral(literal);
+
+                case VariableReference variableReference:
+                    return VisitVariableReference(variableReference);
+            }
+
+            throw TreeHelper.NotSupportedTree(valueExpression);
+        }
+
+        #region Literal
+        private QsiLiteralExpressionNode VisitLiteral(Literal literal)
+        {
+            return TreeHelper.Create<QsiLiteralExpressionNode>(n =>
+            {
+                n.Type = literal.LiteralType switch
+                {
+                    LiteralType.Binary => QsiLiteralType.Binary,
+                    LiteralType.Default => QsiLiteralType.Default,
+                    LiteralType.Identifier => QsiLiteralType.String,
+                    LiteralType.Integer => QsiLiteralType.Numeric,
+                    LiteralType.Max => QsiLiteralType.Unknown,
+                    LiteralType.Money => QsiLiteralType.Decimal,
+                    LiteralType.Null => QsiLiteralType.Null,
+                    LiteralType.Numeric => QsiLiteralType.Numeric,
+                    LiteralType.Odbc => QsiLiteralType.Unknown,
+                    LiteralType.Real => QsiLiteralType.Decimal,
+                    LiteralType.String => QsiLiteralType.String,
+                    _ => throw new InvalidOperationException()
+                };
+
+                n.Value = literal.Value;
+            });
+        }
+
+        // TODO: Impl variable
+        private QsiExpressionNode VisitVariableReference(VariableReference variableReference)
+        {
+            return TreeHelper.Create<QsiVariableAccessExpressionNode>(n =>
+            {
+                n.Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(variableReference.Name, false));
+            });
+        }
+
+        // TODO: Impl variable
+        private QsiExpressionNode VisitGlobalVariableExpression(GlobalVariableExpression globalVariableExpression)
+        {
+            return TreeHelper.Create<QsiVariableAccessExpressionNode>(n =>
+            {
+                n.Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(globalVariableExpression.Name, false));
+            });
+        }
+        #endregion
+        #endregion
         #endregion
 
-        private QsiColumnNode VisitOdbcConvertSpecification(OdbcConvertSpecification odbcConvertSpecification)
+        private QsiExpressionNode VisitOdbcConvertSpecification(OdbcConvertSpecification odbcConvertSpecification)
+        {
+            throw TreeHelper.NotSupportedFeature("odbc convert specification");
+        }
+
+        private QsiExpressionNode VisitIdentityFunctionCall(IdentityFunctionCall identityFunctionCall)
         {
             throw new System.NotImplementedException();
         }
 
-        private QsiColumnNode VisitIdentityFunctionCall(IdentityFunctionCall identityFunctionCall)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        private QsiColumnNode VisitExtractFromExpression(ExtractFromExpression extractFromExpression)
+        private QsiExpressionNode VisitExtractFromExpression(ExtractFromExpression extractFromExpression)
         {
             throw new System.NotImplementedException();
         }
         #endregion
+
+        private QsiInvokeExpressionNode VisitCommonFunctionInvokeContext(CommonFunctionInvokeContext commonFunctionInvokeContext)
+        {
+            return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            {
+                n.Member.SetValue(TreeHelper.CreateFunctionAccess(commonFunctionInvokeContext.FunctionName));
+                n.Parameters.AddRange(commonFunctionInvokeContext.Parameters.Select(VisitScalarExpression));
+            });
+        }
     }
 }
