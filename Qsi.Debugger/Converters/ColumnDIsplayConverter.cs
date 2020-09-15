@@ -16,9 +16,10 @@ namespace Qsi.Debugger.Converters
             if (!(value is QsiColumnTreeItem item))
                 return "<ERROR>";
 
-            var name = item.Column.Name.IsEscaped ?
-                IdentifierUtility.Unescape(item.Column.Name.Value) :
-                item.Column.Name.Value;
+            var column = item.Column;
+
+            var name = column.IsAnonymous ? null :
+                column.Name.IsEscaped ? IdentifierUtility.Unescape(column.Name.Value) : column.Name.Value;
 
             if (item.Column.IsExpression)
             {
