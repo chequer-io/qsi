@@ -28,7 +28,7 @@ namespace Qsi.Services
 
         protected virtual IEqualityComparer<QsiIdentifier> GetIdentifierComparer()
         {
-            return DefaultIdentifierComparer.Default;
+            return QsiIdentifierEqualityComparer.Default;
         }
     }
 }

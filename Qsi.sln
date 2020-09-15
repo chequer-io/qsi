@@ -19,6 +19,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Debugger", "Debugger", "{D9
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qsi.SqlServer", "Qsi.SqlServer\Qsi.SqlServer.csproj", "{C9CD9F7B-4A37-4755-9D35-15659186104E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qsi.JSql", "Qsi.JSql\Qsi.JSql.csproj", "{B69D2EB0-3D49-4460-8A77-0EF02586241F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -49,6 +51,10 @@ Global
 		{C9CD9F7B-4A37-4755-9D35-15659186104E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C9CD9F7B-4A37-4755-9D35-15659186104E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C9CD9F7B-4A37-4755-9D35-15659186104E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B69D2EB0-3D49-4460-8A77-0EF02586241F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B69D2EB0-3D49-4460-8A77-0EF02586241F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B69D2EB0-3D49-4460-8A77-0EF02586241F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B69D2EB0-3D49-4460-8A77-0EF02586241F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

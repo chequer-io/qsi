@@ -4,11 +4,11 @@ using Qsi.Utilities;
 
 namespace Qsi.Collections
 {
-    public class DefaultIdentifierComparer : IEqualityComparer<QsiIdentifier>
+    public sealed class QsiIdentifierEqualityComparer : IEqualityComparer<QsiIdentifier>
     {
-        public static DefaultIdentifierComparer Default => _default ??= new DefaultIdentifierComparer();
+        public static QsiIdentifierEqualityComparer Default => _default ??= new QsiIdentifierEqualityComparer();
 
-        private static DefaultIdentifierComparer _default;
+        private static QsiIdentifierEqualityComparer _default;
 
         public bool Equals(QsiIdentifier x, QsiIdentifier y)
         {
