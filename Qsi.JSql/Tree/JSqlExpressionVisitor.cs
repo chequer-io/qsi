@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Text.RegularExpressions;
+using ikvm.extensions;
 using net.sf.jsqlparser.expression;
 using net.sf.jsqlparser.expression.operators.relational;
 using net.sf.jsqlparser.schema;
@@ -180,7 +181,7 @@ namespace Qsi.JSql.Tree
 
         public virtual QsiLiteralExpressionNode VisitStringValue(StringValue expression)
         {
-            return TreeHelper.CreateLiteral(expression.getValue());
+            return TreeHelper.CreateLiteral(expression.toString());
         }
 
         public virtual QsiLiteralExpressionNode VisitLongValue(LongValue expression)
@@ -548,9 +549,7 @@ namespace Qsi.JSql.Tree
             {
                 n.Member.SetValue(new QsiFunctionAccessExpressionNode
                 {
-                    Identifier = new QsiQualifiedIdentifier(
-                        IdentifierUtility.Parse(expression.getName())
-                            .Select(t => new QsiIdentifier(t, false)))
+                    Identifier = new QsiQualifiedIdentifier(IdentifierUtility.Parse(expression.getName()))
                 });
 
                 n.Parameters.AddRange(expression.getExprList().getExpressions()

@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using net.sf.jsqlparser.expression;
+﻿using net.sf.jsqlparser.expression;
 using net.sf.jsqlparser.schema;
 using Qsi.Data;
 using Qsi.Utilities;
@@ -24,30 +23,22 @@ namespace Qsi.JSql.Tree
 
         public virtual QsiQualifiedIdentifier VisitMultiPartName(MultiPartName name)
         {
-            return new QsiQualifiedIdentifier(
-                IdentifierUtility.Parse(name.getFullyQualifiedName())
-                    .Select(x => new QsiIdentifier(x, false)));
+            return new QsiQualifiedIdentifier(IdentifierUtility.Parse(name.getFullyQualifiedName()));
         }
 
         public virtual QsiQualifiedIdentifier VisitFunction(Function function)
         {
-            return new QsiQualifiedIdentifier(
-                IdentifierUtility.Parse(function.getName())
-                    .Select(x => new QsiIdentifier(x, false)));
+            return new QsiQualifiedIdentifier(IdentifierUtility.Parse(function.getName()));
         }
 
         public virtual QsiQualifiedIdentifier VisitAnalyticExpression(AnalyticExpression expression)
         {
-            return new QsiQualifiedIdentifier(
-                IdentifierUtility.Parse(expression.getName())
-                    .Select(x => new QsiIdentifier(x, false)));
+            return new QsiQualifiedIdentifier(IdentifierUtility.Parse(expression.getName()));
         }
 
         public virtual QsiQualifiedIdentifier VisitNextValExpression(NextValExpression expression)
         {
-            return new QsiQualifiedIdentifier(
-                IdentifierUtility.Parse(expression.getName())
-                    .Select(x => new QsiIdentifier(x, false)));
+            return new QsiQualifiedIdentifier(IdentifierUtility.Parse(expression.getName()));
         }
     }
 }
