@@ -329,7 +329,7 @@ namespace Qsi.Compiler
             foreach (var tableAccess in table.FindAscendants<IQsiTableAccessNode>())
             {
                 if (tableAccess.Identifier.Level == 1 &&
-                    DefaultIdentifierComparer.Default.Equals(tableAccess.Identifier[0], identifier))
+                    QsiIdentifierEqualityComparer.Default.Equals(tableAccess.Identifier[0], identifier))
                 {
                     return true;
                 }
