@@ -6,14 +6,10 @@
 
     <PropertyGroup Label="Nuspec">
         <Title>Query Structure Interface</Title>
-        <Authors>CHEQUER Inc.</Authors>
-        <PackageProjectUrl>https://github.com/chequer-io/qsi</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/chequer-io/qsi</RepositoryUrl>
-        <PackageIcon>icon-128.png</PackageIcon>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Antlr4.Runtime.Standard" Version="4.8.0" />
+        <PackageReference Include="Antlr4.Runtime.Standard" Version="4.8.0"/>
     </ItemGroup>
 
 </Project>
