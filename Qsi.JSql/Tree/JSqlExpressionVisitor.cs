@@ -736,7 +736,7 @@ namespace Qsi.JSql.Tree
             });
         }
 
-        public virtual QsiMultipleExpressionNode VisitItemsList(ItemsList itemsList)
+        public virtual QsiExpressionNode VisitItemsList(ItemsList itemsList)
         {
             switch (itemsList)
             {
@@ -748,6 +748,9 @@ namespace Qsi.JSql.Tree
 
                 case NamedExpressionList namedExpressionList:
                     return VisitNamedExpressionList(namedExpressionList);
+
+                case SubSelect subSelect:
+                    return VisitSubSelect(subSelect);
             }
 
             throw TreeHelper.NotSupportedTree(itemsList);
