@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using Qsi.Data;
 using Qsi.Services;
+using Qsi.Utilities;
 
 namespace Qsi.Debugger.Vendor
 {
@@ -8,7 +9,7 @@ namespace Qsi.Debugger.Vendor
     {
         protected QsiQualifiedIdentifier CreateIdentifier(params string[] path)
         {
-            return new QsiQualifiedIdentifier(path.Select(p => new QsiIdentifier(p, p[0] == '`')));
+            return new QsiQualifiedIdentifier(path.Select(p => new QsiIdentifier(p, IdentifierUtility.IsEscaped(p))));
         }
 
         protected virtual QsiDataTable CreateTable(params string[] path)
@@ -25,7 +26,7 @@ namespace Qsi.Debugger.Vendor
             foreach (var name in names)
             {
                 var c = table.NewColumn();
-                c.Name = new QsiIdentifier(name, name[0] == '`');
+                c.Name = new QsiIdentifier(name, IdentifierUtility.IsEscaped(name));
             }
         }
     }

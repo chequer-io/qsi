@@ -710,14 +710,11 @@ namespace Qsi.JSql.Tree
             return invoke;
         }
 
-        public virtual QsiColumnExpressionNode VisitColumn(Column expression)
+        public virtual QsiExpressionNode VisitColumn(Column expression)
         {
             return TreeHelper.Create<QsiColumnExpressionNode>(n =>
             {
-                n.Column.SetValue(new QsiDeclaredColumnNode
-                {
-                    Name = IdentifierVisitor.VisitMultiPartName(expression)
-                });
+                n.Column.SetValue(TableVisitor.VisitColumn(expression));
             });
         }
 

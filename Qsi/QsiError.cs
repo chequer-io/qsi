@@ -22,7 +22,8 @@
         DuplicateColumnName,
         NoTablesUsed,
         NoAnchorInRecursiveQuery,
-        NoTopLevelUnionInRecursiveQuery
+        NoTopLevelUnionInRecursiveQuery,
+        NoFromClause
     }
 
     internal static class SR
@@ -48,6 +49,7 @@
         public const string NoTablesUsed = "No tables used";
         public const string NoAnchorInRecursiveQuery = "No anchor member was specified for recursive query '{0}'.";
         public const string NoTopLevelUnionInRecursiveQuery = "Recursive common table expression '{0}' does not contain a top-level UNION ALL operator.";
+        public const string NoFromClause = "FROM clause not found where expected.";
 
         public static string GetResource(QsiError error)
         {
@@ -74,6 +76,7 @@
                 QsiError.NoTablesUsed => NoTablesUsed,
                 QsiError.NoAnchorInRecursiveQuery => NoAnchorInRecursiveQuery,
                 QsiError.NoTopLevelUnionInRecursiveQuery => NoTopLevelUnionInRecursiveQuery,
+                QsiError.NoFromClause => NoFromClause,
                 _ => null
             };
         }
