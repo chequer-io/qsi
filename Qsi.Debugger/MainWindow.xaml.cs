@@ -21,6 +21,7 @@ using Qsi.Debugger.Utilities;
 using Qsi.Debugger.Vendor;
 using Qsi.Debugger.Vendor.JSql;
 using Qsi.Debugger.Vendor.MySql;
+using Qsi.Debugger.Vendor.Oracle;
 using Qsi.Debugger.Vendor.PostgreSql;
 using Qsi.Parsing;
 using Qsi.Tree;
@@ -52,7 +53,8 @@ namespace Qsi.Debugger
             {
                 ["MySQL"] = new Lazy<VendorDebugger>(() => new MySqlDebugger()),
                 ["PostgreSQL"] = new Lazy<VendorDebugger>(() => new PostgreSqlDebugger()),
-                ["JSqlParser"] = new Lazy<VendorDebugger>(() => new JSqlDebugger())
+                ["JSqlParser"] = new Lazy<VendorDebugger>(() => new JSqlDebugger()),
+                ["Oracle"] = new Lazy<VendorDebugger>(() => new OracleDebugger())
             };
 
             _cbLanguages = this.Find<ComboBox>("cbLanguages");

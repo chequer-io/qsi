@@ -326,7 +326,7 @@ namespace Qsi.JSql.Tree
             });
         }
 
-        public virtual QsiDeclaredColumnNode VisitColumn(Column column)
+        public virtual QsiColumnNode VisitColumn(Column column)
         {
             return TreeHelper.Create<QsiDeclaredColumnNode>(n =>
             {
