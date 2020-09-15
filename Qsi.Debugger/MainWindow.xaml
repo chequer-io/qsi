@@ -160,6 +160,7 @@
                         <TextBlock Foreground="{Binding Converter={cvt:ColumnBrushConverter}}" Text="{Binding Converter={cvt:ColumnDisplayConverter}}" />
                         <TextBlock Text=" " />
                         <TextBlock Foreground="{DynamicResource Ink.5.Brush}" Text="{Binding Converter={cvt:ColumnParentTypeConverter}, StringFormat='({0})'}" />
+                        <TextBlock Foreground="{DynamicResource Red.10.Brush}" Text=" - Recursive" IsVisible="{Binding IsRecursive}" />
                     </StackPanel>
                 </TreeDataTemplate>
             </TreeView.DataTemplates>

@@ -1,4 +1,5 @@
-﻿using Qsi.Data;
+﻿using System.Collections.Generic;
+using Qsi.Data;
 
 namespace Qsi.Tree.Base
 {
@@ -12,14 +13,29 @@ namespace Qsi.Tree.Base
 
         public QsiTreeNodeProperty<QsiColumnsDeclarationNode> PivotColumns { get; }
 
+        public override IEnumerable<IQsiTreeNode> Children
+        {
+            get
+            {
+                if (!Left.IsEmpty)
+                    yield return Left.Value;
+
+                if (!Right.IsEmpty)
+                    yield return Right.Value;
+
+                if (!PivotColumns.IsEmpty)
+                    yield return PivotColumns.Value;
+            }
+        }
+
         #region Explicit
-        IQsiTableNode IQsiJoinedTableNode.Left => Left.GetValue();
+        IQsiTableNode IQsiJoinedTableNode.Left => Left.Value;
 
         QsiJoinType IQsiJoinedTableNode.JoinType => JoinType;
 
-        IQsiTableNode IQsiJoinedTableNode.Right => Right.GetValue();
+        IQsiTableNode IQsiJoinedTableNode.Right => Right.Value;
 
-        IQsiColumnsDeclarationNode IQsiJoinedTableNode.PivotColumns => PivotColumns.GetValue();
+        IQsiColumnsDeclarationNode IQsiJoinedTableNode.PivotColumns => PivotColumns.Value;
         #endregion
 
         public QsiJoinedTableNode()

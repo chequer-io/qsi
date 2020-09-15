@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Qsi.Collections;
 using Qsi.Compiler;
 using Qsi.Data;
 using Qsi.Parsing;
@@ -27,29 +28,7 @@ namespace Qsi.Services
 
         protected virtual IEqualityComparer<QsiIdentifier> GetIdentifierComparer()
         {
-            return new DefaultIdentifierComparer();
-        }
-
-        private class DefaultIdentifierComparer : IEqualityComparer<QsiIdentifier>
-        {
-            public bool Equals(QsiIdentifier x, QsiIdentifier y)
-            {
-                if (x == null && y == null)
-                    return true;
-
-                if (x == null || y == null)
-                    return false;
-
-                string nX = x.IsEscaped ? IdentifierUtility.Unescape(x.Value) : x.Value;
-                string nY = y.IsEscaped ? IdentifierUtility.Unescape(y.Value) : y.Value;
-
-                return nX == nY;
-            }
-
-            public int GetHashCode(QsiIdentifier obj)
-            {
-                return obj.GetHashCode();
-            }
+            return QsiIdentifierEqualityComparer.Default;
         }
     }
 }

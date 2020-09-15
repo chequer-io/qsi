@@ -172,11 +172,7 @@ namespace Qsi.MySql.Tree
                 derivedTableNode = TreeHelper.Create<QsiDerivedTableNode>(dn =>
                 {
                     dn.Source.SetValue(tableNode);
-
-                    dn.Columns.SetValue(TreeHelper.Create<QsiColumnsDeclarationNode>(cdn =>
-                    {
-                        cdn.Columns.Add(new QsiAllColumnNode());
-                    }));
+                    dn.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
 
                     // TODO: alias test
                 });
@@ -196,7 +192,7 @@ namespace Qsi.MySql.Tree
             });
         }
 
-        public static QsiTableNode VisitWithExpression(WithExpressionContext context)
+        public static QsiDerivedTableNode VisitWithExpression(WithExpressionContext context)
         {
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
@@ -480,10 +476,7 @@ namespace Qsi.MySql.Tree
                 {
                     return TreeHelper.Create<QsiDerivedTableNode>(n =>
                     {
-                        var allDeclaration = new QsiColumnsDeclarationNode();
-                        allDeclaration.Columns.Add(new QsiAllColumnNode());
-
-                        n.Columns.SetValue(allDeclaration);
+                        n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
                         n.Source.SetValue(VisitTableSource(new CommonTableSourceContext(nestedContext)));
                     });
                 }
@@ -602,10 +595,7 @@ namespace Qsi.MySql.Tree
 
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
-                var allDeclaration = new QsiColumnsDeclarationNode();
-                allDeclaration.Columns.Add(new QsiAllColumnNode());
-
-                n.Columns.SetValue(allDeclaration);
+                n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
                 n.Source.SetValue(tableNode);
                 n.Alias.SetValue(CreateAliasNode(context.alias));
             });
@@ -627,10 +617,7 @@ namespace Qsi.MySql.Tree
 
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
-                var allDeclaration = new QsiColumnsDeclarationNode();
-                allDeclaration.Columns.Add(new QsiAllColumnNode());
-
-                n.Columns.SetValue(allDeclaration);
+                n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
                 n.Source.SetValue(VisitSelectStatement(context.selectStatement()));
                 n.Alias.SetValue(CreateAliasNode(context.alias));
             });

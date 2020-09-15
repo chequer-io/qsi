@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Xml;
 using Avalonia;
 using Avalonia.Controls;
@@ -18,6 +19,7 @@ using Qsi.Data;
 using Qsi.Debugger.Models;
 using Qsi.Debugger.Utilities;
 using Qsi.Debugger.Vendor;
+using Qsi.Debugger.Vendor.JSql;
 using Qsi.Debugger.Vendor.MySql;
 using Qsi.Debugger.Vendor.PostgreSql;
 using Qsi.Parsing;
@@ -49,7 +51,8 @@ namespace Qsi.Debugger
             _vendors = new Dictionary<string, Lazy<VendorDebugger>>
             {
                 ["MySQL"] = new Lazy<VendorDebugger>(() => new MySqlDebugger()),
-                ["PostgreSQL"] = new Lazy<VendorDebugger>(() => new PostgreSqlDebugger())
+                ["PostgreSQL"] = new Lazy<VendorDebugger>(() => new PostgreSqlDebugger()),
+                ["JSqlParser"] = new Lazy<VendorDebugger>(() => new JSqlDebugger())
             };
 
             _cbLanguages = this.Find<ComboBox>("cbLanguages");
@@ -132,13 +135,9 @@ namespace Qsi.Debugger
                 var sentence = input.Split(';', 2)[0].Trim();
                 var script = new QsiScript(sentence, QsiScriptType.Select);
 
-                _vendor.Parser.SyntaxError += ErrorHandler;
-
                 var sw = Stopwatch.StartNew();
                 var tree = _vendor.Parser.Parse(script);
                 sw.Stop();
-
-                _vendor.Parser.SyntaxError -= ErrorHandler;
 
                 _tbQsiStatus.Text = $"parsed in {sw.Elapsed.TotalMilliseconds:0.0000} ms";
 
@@ -165,12 +164,7 @@ namespace Qsi.Debugger
                 _tbError.IsVisible = true;
 
                 if (System.Diagnostics.Debugger.IsAttached)
-                    throw;
-            }
-
-            static void ErrorHandler(object sender, QsiSyntaxErrorException e)
-            {
-                throw e;
+                    ExceptionDispatchInfo.Throw(e);
             }
         }
 

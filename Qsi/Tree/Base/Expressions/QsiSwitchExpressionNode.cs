@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace Qsi.Tree.Base
 {
@@ -8,8 +9,22 @@ namespace Qsi.Tree.Base
 
         public QsiTreeNodeList<QsiSwitchCaseExpressionNode> Cases { get; }
 
+        public override IEnumerable<IQsiTreeNode> Children
+        {
+            get
+            {
+                if (!Value.IsEmpty)
+                    yield return Value.Value;
+
+                foreach (var @case in Cases)
+                {
+                    yield return @case;
+                }
+            }
+        }
+
         #region Explicit
-        IQsiExpressionNode IQsiSwitchExpressionNode.Value => Value.GetValue();
+        IQsiExpressionNode IQsiSwitchExpressionNode.Value => Value.Value;
 
         IQsiSwitchCaseExpressionNode[] IQsiSwitchExpressionNode.Cases => Cases.Cast<IQsiSwitchCaseExpressionNode>().ToArray();
         #endregion

@@ -20,7 +20,9 @@
         DifferentColumnsCount,
         SpecifiesMoreColumnNames,
         DuplicateColumnName,
-        NoTablesUsed
+        NoTablesUsed,
+        NoAnchorInRecursiveQuery,
+        NoTopLevelUnionInRecursiveQuery
     }
 
     internal static class SR
@@ -44,6 +46,8 @@
         public const string SpecifiesMoreColumnNames = "Specifies more column names than columns.";
         public const string DuplicateColumnName = "Duplicate column name '{0}'";
         public const string NoTablesUsed = "No tables used";
+        public const string NoAnchorInRecursiveQuery = "No anchor member was specified for recursive query '{0}'.";
+        public const string NoTopLevelUnionInRecursiveQuery = "Recursive common table expression '{0}' does not contain a top-level UNION ALL operator.";
 
         public static string GetResource(QsiError error)
         {
@@ -65,7 +69,11 @@
                 QsiError.UnknownColumnIn => UnknownColumnIn,
                 QsiError.AmbiguousColumnIn => AmbiguousColumnIn,
                 QsiError.DifferentColumnsCount => DifferentColumnsCount,
+                QsiError.SpecifiesMoreColumnNames => SpecifiesMoreColumnNames,
+                QsiError.DuplicateColumnName => DuplicateColumnName,
                 QsiError.NoTablesUsed => NoTablesUsed,
+                QsiError.NoAnchorInRecursiveQuery => NoAnchorInRecursiveQuery,
+                QsiError.NoTopLevelUnionInRecursiveQuery => NoTopLevelUnionInRecursiveQuery,
                 _ => null
             };
         }

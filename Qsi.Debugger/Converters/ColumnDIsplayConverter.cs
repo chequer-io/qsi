@@ -5,6 +5,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Qsi.Data;
 using Qsi.Debugger.Models;
+using Qsi.Utilities;
 
 namespace Qsi.Debugger.Converters
 {
@@ -15,15 +16,19 @@ namespace Qsi.Debugger.Converters
             if (!(value is QsiColumnTreeItem item))
                 return "<ERROR>";
 
+            var name = item.Column.Name.IsEscaped ?
+                IdentifierUtility.Unescape(item.Column.Name.Value) :
+                item.Column.Name.Value;
+
             if (item.Column.IsExpression)
             {
                 if (!item.Column.IsAnonymous)
-                    return $"{item.Column.Name.Value} {{expression}}";
+                    return $"{name} {{expression}}";
 
                 return "{expression}";
             }
 
-            return item.Column.Name.Value;
+            return name;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
