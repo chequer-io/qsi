@@ -15,5 +15,11 @@
         public const string Exists = "EXISTS";
 
         public const string Ternary = "TERNARY";
+
+        public const string OpenJson = "OPENJSON";
+        public const string OpenQuery = "OPENQUERY";
+        public const string OpenRowSet = "OPENROWSET";
+        public const string OpenXml = "OPENXML";
+
     }
 }

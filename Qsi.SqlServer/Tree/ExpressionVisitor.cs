@@ -47,7 +47,6 @@ namespace Qsi.SqlServer.Tree
                 case ExistsPredicate existsPredicate:
                     return VisitExistsPredicate(existsPredicate);
 
-                //
                 // case FullTextPredicate fullTextPredicate:
                 //     return VisitFullTextPredicate(fullTextPredicate);
                 //
@@ -446,7 +445,7 @@ namespace Qsi.SqlServer.Tree
         }
 
         #region ValueExpression
-        private QsiExpressionNode VisitValueExpression(ValueExpression valueExpression)
+        internal QsiExpressionNode VisitValueExpression(ValueExpression valueExpression)
         {
             switch (valueExpression)
             {
@@ -464,7 +463,7 @@ namespace Qsi.SqlServer.Tree
         }
 
         #region Literal
-        private QsiLiteralExpressionNode VisitLiteral(Literal literal)
+        internal QsiLiteralExpressionNode VisitLiteral(Literal literal)
         {
             return TreeHelper.Create<QsiLiteralExpressionNode>(n =>
             {
@@ -489,7 +488,7 @@ namespace Qsi.SqlServer.Tree
         }
 
         // TODO: Impl variable
-        private QsiExpressionNode VisitVariableReference(VariableReference variableReference)
+        internal QsiExpressionNode VisitVariableReference(VariableReference variableReference)
         {
             return TreeHelper.Create<QsiVariableAccessExpressionNode>(n =>
             {
@@ -525,7 +524,7 @@ namespace Qsi.SqlServer.Tree
         }
         #endregion
 
-        private QsiInvokeExpressionNode VisitCommonFunctionInvokeContext(CommonFunctionInvokeContext commonFunctionInvokeContext)
+        internal QsiInvokeExpressionNode VisitCommonFunctionInvokeContext(CommonFunctionInvokeContext commonFunctionInvokeContext)
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {

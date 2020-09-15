@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.SqlServer.TransactSql.ScriptDom;
 using Qsi.Data;
+using Qsi.SqlServer.Tree.Common;
 using Qsi.Tree.Base;
 using Qsi.Utilities;
 
@@ -51,7 +53,29 @@ namespace Qsi.SqlServer.Tree
 
         private QsiTableNode VisitSelectStatement(SelectStatement selectStatement)
         {
-            return VisitQueryExpression(selectStatement.QueryExpression);
+            var tableNode = VisitQueryExpression(selectStatement.QueryExpression);
+
+            if (selectStatement.WithCtesAndXmlNamespaces != null)
+            {
+                var tableDirectivesNode = VisitWithCtesAndXmlNamespaces(selectStatement.WithCtesAndXmlNamespaces);
+
+                switch (tableNode)
+                {
+                    case QsiDerivedTableNode derivedTableNode:
+                        derivedTableNode.Directives.SetValue(tableDirectivesNode);
+                        break;
+
+                    default:
+                        return TreeHelper.Create<QsiDerivedTableNode>(n =>
+                        {
+                            n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+                            n.Source.SetValue(tableNode);
+                            n.Directives.SetValue(tableDirectivesNode);
+                        });
+                }
+            }
+
+            return tableNode;
         }
 
         private QsiTableNode VisitDataModificationStatement(DataModificationStatement dataModificationStatement)
@@ -60,16 +84,70 @@ namespace Qsi.SqlServer.Tree
         }
         #endregion
 
-        #region Query Expression
+        #region WithCtesAndXmlNamespaces (Table Directives)
+        private QsiTableDirectivesNode VisitWithCtesAndXmlNamespaces(WithCtesAndXmlNamespaces selectStatementWithCtesAndXmlNamespaces)
+        {
+            return TreeHelper.Create<QsiTableDirectivesNode>(n =>
+            {
+                n.IsRecursive = true;
+                n.Tables.AddRange(selectStatementWithCtesAndXmlNamespaces.CommonTableExpressions.Select(VisitCommonTableExpression));
+            });
+        }
+
+        private QsiDerivedTableNode VisitCommonTableExpression(CommonTableExpression commonTableExpression)
+        {
+            return TreeHelper.Create<QsiDerivedTableNode>(n =>
+            {
+                n.Source.SetValue(VisitQueryExpression(commonTableExpression.QueryExpression));
+
+                var columnsDeclaration = new QsiColumnsDeclarationNode();
+
+                if (commonTableExpression.Columns == null || commonTableExpression.Columns.Count == 0)
+                {
+                    columnsDeclaration.Columns.Add(new QsiAllColumnNode());
+                }
+                else
+                {
+                    columnsDeclaration.Columns.AddRange(CreateSequentialColumnNodes(commonTableExpression.Columns));
+                }
+
+                n.Columns.SetValue(columnsDeclaration);
+
+                if (commonTableExpression.ExpressionName != null)
+                {
+                    n.Alias.SetValue(new QsiAliasNode
+                    {
+                        Name = IdentifierVisitor.CreateIdentifier(commonTableExpression.ExpressionName)
+                    });
+                }
+            });
+        }
+
+        private IEnumerable<QsiColumnNode> CreateSequentialColumnNodes(IEnumerable<Identifier> columns)
+        {
+            return columns
+                .Select((identifier, i) => TreeHelper.Create<QsiSequentialColumnNode>(n =>
+                {
+                    n.Ordinal = i;
+
+                    n.Alias.SetValue(new QsiAliasNode
+                    {
+                        Name = IdentifierVisitor.CreateIdentifier(identifier)
+                    });
+                }));
+        }
+        #endregion
+
+        #region QueryExpression
         public QsiTableNode VisitQueryExpression(QueryExpression queryExpression)
         {
             switch (queryExpression)
             {
                 case BinaryQueryExpression binaryQueryExpression:
-                    return null;
+                    return VisitBinaryQueryExpression(binaryQueryExpression);
 
                 case QueryParenthesisExpression queryParenthesisExpression:
-                    return null;
+                    break;
 
                 case QuerySpecification querySpecification:
                     return VisitQuerySpecification(querySpecification);
@@ -78,7 +156,16 @@ namespace Qsi.SqlServer.Tree
             throw TreeHelper.NotSupportedTree(queryExpression);
         }
 
-        private QsiTableNode VisitQuerySpecification(QuerySpecification querySpecification)
+        private QsiCompositeTableNode VisitBinaryQueryExpression(BinaryQueryExpression binaryQueryExpression)
+        {
+            return TreeHelper.Create<QsiCompositeTableNode>(n =>
+            {
+                n.Sources.Add(VisitQueryExpression(binaryQueryExpression.FirstQueryExpression));
+                n.Sources.Add(VisitQueryExpression(binaryQueryExpression.SecondQueryExpression));
+            });
+        }
+
+        private QsiDerivedTableNode VisitQuerySpecification(QuerySpecification querySpecification)
         {
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
@@ -242,6 +329,7 @@ namespace Qsi.SqlServer.Tree
 
                     return CreateJoinedTableNode(joinType, qualifiedJoin);
                 }
+
                 case UnqualifiedJoin unqualifiedJoin:
                 {
                     var joinType = unqualifiedJoin.UnqualifiedJoinType switch
@@ -293,28 +381,27 @@ namespace Qsi.SqlServer.Tree
                 case NamedTableReference namedTableReference:
                     return VisitNamedTableReference(namedTableReference);
 
-                //
-                // case OpenJsonTableReference openJsonTableReference:
-                //     return VisitOpenJsonTableReference(openJsonTableReference);
-                //
-                // case OpenQueryTableReference openQueryTableReference:
-                //     return VisitOpenQueryTableReference(openQueryTableReference);
-                //
-                // case OpenRowsetTableReference openRowsetTableReference:
-                //     return VisitOpenRowsetTableReference(openRowsetTableReference);
-                //
-                // case OpenXmlTableReference openXmlTableReference:
-                //     return VisitOpenXmlTableReference(openXmlTableReference);
-                //
-                // case PivotedTableReference pivotedTableReference:
-                //     return VisitPivotedTableReference(pivotedTableReference);
-                //
+                case OpenJsonTableReference openJsonTableReference:
+                    return VisitOpenJsonTableReference(openJsonTableReference);
+
+                case OpenQueryTableReference openQueryTableReference:
+                    return VisitOpenQueryTableReference(openQueryTableReference);
+
+                case OpenRowsetTableReference openRowsetTableReference:
+                    return VisitOpenRowsetTableReference(openRowsetTableReference);
+
+                case OpenXmlTableReference openXmlTableReference:
+                    return VisitOpenXmlTableReference(openXmlTableReference);
+
+                case PivotedTableReference pivotedTableReference:
+                    return VisitPivotedTableReference(pivotedTableReference);
+
                 // case SemanticTableReference semanticTableReference:
                 //     return VisitSemanticTableReference(semanticTableReference);
-                //
-                // case TableReferenceWithAliasAndColumns tableReferenceWithAliasAndColumns:
-                //     return VisitTableReferenceWithAliasAndColumns(tableReferenceWithAliasAndColumns);
-                //
+
+                case TableReferenceWithAliasAndColumns tableReferenceWithAliasAndColumns:
+                    return VisitTableReferenceWithAliasAndColumns(tableReferenceWithAliasAndColumns);
+
                 // case UnpivotedTableReference unpivotedTableReference:
                 //     return VisitUnpivotedTableReference(unpivotedTableReference);
                 //
@@ -323,6 +410,12 @@ namespace Qsi.SqlServer.Tree
             }
 
             throw TreeHelper.NotSupportedTree(tableReferenceWithAlias);
+        }
+
+        private QsiTableNode VisitPivotedTableReference(PivotedTableReference pivotedTableReference)
+        {
+            // TODO: Implement
+            throw TreeHelper.NotSupportedTree(pivotedTableReference);
         }
 
         private QsiTableNode VisitNamedTableReference(NamedTableReference namedTableReference)
@@ -346,6 +439,157 @@ namespace Qsi.SqlServer.Tree
                 });
             });
         }
+
+        // OPENJSON(VARIABLE[, PATH]) Ex: OPENJSON(@json, '$.path.to."sub-object"')
+        // OPENJSON(VARIABLE[, PATH]) [WITH_CLAUSE]
+        private QsiDerivedTableNode VisitOpenJsonTableReference(OpenJsonTableReference openJsonTableReference)
+        {
+            throw TreeHelper.NotSupportedFeature("Table function");
+
+            // // TODO: Impl With Clause
+            // var node = TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            // {
+            //     n.Member.SetValue(TreeHelper.CreateFunctionAccess(SqlServerKnownFunction.OpenJson));
+            //     n.Parameters.Add(ExpressionVisitor.VisitVariableReference(openJsonTableReference.Variable));
+            //
+            //     if (openJsonTableReference.RowPattern != null)
+            //     {
+            //         n.Parameters.Add(TreeHelper.CreateLiteral(openJsonTableReference.RowPattern.Value));
+            //     }
+            // });
+        }
+
+        // OPENQUERY(linked_server ,'query') Ex: SELECT * FROM OPENQUERY(OracleSvr, 'SELECT name FROM actor WHERE actor_id = ''abc''');
+        private QsiTableNode VisitOpenQueryTableReference(OpenQueryTableReference openQueryTableReference)
+        {
+            throw TreeHelper.NotSupportedFeature("Table function");
+
+            // var node = TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            // {
+            //     n.Member.SetValue(TreeHelper.CreateFunctionAccess(SqlServerKnownFunction.OpenQuery));
+            //
+            //     // TODO: Server Identfiier is not variable
+            //     n.Parameters.Add(new QsiVariableAccessExpressionNode
+            //     {
+            //         Identifier = new QsiQualifiedIdentifier(IdentifierVisitor.CreateIdentifier(openQueryTableReference.LinkedServer))
+            //     });
+            //
+            //     n.Parameters.Add(ExpressionVisitor.VisitLiteral(openQueryTableReference.Query));
+            // });
+        }
+
+        private QsiTableNode VisitOpenRowsetTableReference(OpenRowsetTableReference openRowsetTableReference)
+        {
+            throw TreeHelper.NotSupportedFeature("Table function");
+
+            // var node = TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            // {
+            //     n.Member.SetValue(TreeHelper.CreateFunctionAccess(SqlServerKnownFunction.OpenRowSet));
+            //
+            //     if (openRowsetTableReference.ProviderName != null)
+            //     {
+            //         n.Parameters.Add(TreeHelper.CreateLiteral(openRowsetTableReference.ProviderName.Value));
+            //
+            //         if (openRowsetTableReference.ProviderString != null)
+            //         {
+            //             n.Parameters.Add(TreeHelper.CreateLiteral(openRowsetTableReference.ProviderString.Value));
+            //         }
+            //         else
+            //         {
+            //             n.Parameters.Add(TreeHelper.CreateLiteral(openRowsetTableReference.DataSource.Value));
+            //             n.Parameters.Add(TreeHelper.CreateLiteral(openRowsetTableReference.UserId.Value));
+            //             n.Parameters.Add(TreeHelper.CreateLiteral(openRowsetTableReference.Password.Value));
+            //         }
+            //
+            //         if (openRowsetTableReference.Object != null)
+            //         {
+            //             // TODO: This table is remote table (shouldn't tracing in current database)
+            //             n.Parameters.Add(TreeHelper.Create<QsiTableExpressionNode>(ten =>
+            //             {
+            //                 ten.Table.SetValue(new QsiTableAccessNode
+            //                 {
+            //                     Identifier = IdentifierVisitor.CreateQualifiedIdentifier(openRowsetTableReference.Object)
+            //                 });
+            //             }));
+            //         }
+            //         else
+            //         {
+            //             n.Parameters.Add(TreeHelper.CreateLiteral(openRowsetTableReference.Query.Value));
+            //         }
+            //     }
+            // });
+        }
+
+        private QsiTableNode VisitOpenXmlTableReference(OpenXmlTableReference openXmlTableReference)
+        {
+            throw TreeHelper.NotSupportedFeature("Table function");
+
+            // // TODO: Impl With Clause
+            // var node = TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            // {
+            //     n.Member.SetValue(TreeHelper.CreateFunctionAccess(SqlServerKnownFunction.OpenXml));
+            //     
+            //     n.Parameters.Add(ExpressionVisitor.VisitVariableReference(openXmlTableReference.Variable));
+            //     n.Parameters.Add(ExpressionVisitor.VisitValueExpression(openXmlTableReference.RowPattern));
+            //
+            //     if (openXmlTableReference.Flags != null)
+            //     {
+            //         n.Parameters.Add(ExpressionVisitor.VisitValueExpression(openXmlTableReference.Flags));    
+            //     }
+            // });
+        }
+
+        #region TableReferenceWithAliasAndColumns
+        private QsiTableNode VisitTableReferenceWithAliasAndColumns(TableReferenceWithAliasAndColumns tableReferenceWithAliasAndColumns)
+        {
+            switch (tableReferenceWithAliasAndColumns)
+            {
+                // case BulkOpenRowset bulkOpenRowset:
+                //     return VisitBulkOpenRowset(bulkOpenRowset);
+                //
+                // case ChangeTableChangesTableReference changeTableChangesTableReference:
+                //     return VisitChangeTableChangesTableReference(changeTableChangesTableReference);
+                //
+                // case ChangeTableVersionTableReference changeTableVersionTableReference:
+                //     return VisitChangeTableVersionTableReference(changeTableVersionTableReference);
+                //
+                // case DataModificationTableReference dataModificationTableReference:
+                //     return VisitDataModificationTableReference(dataModificationTableReference);
+                //
+                // case InlineDerivedTable inlineDerivedTable:
+                //     return VisitInlineDerivedTable(inlineDerivedTable);
+
+                case QueryDerivedTable queryDerivedTable:
+                    return VisitQueryDerivedTable(queryDerivedTable);
+
+                // case SchemaObjectFunctionTableReference schemaObjectFunctionTableReference:
+                //     return VisitSchemaObjectFunctionTableReference(schemaObjectFunctionTableReference);
+                //
+                // case VariableMethodCallTableReference variableMethodCallTableReference:
+                //     return VisitVariableMethodCallTableReference(variableMethodCallTableReference);
+            }
+
+            throw TreeHelper.NotSupportedTree(tableReferenceWithAliasAndColumns);
+        }
+
+        private QsiDerivedTableNode VisitQueryDerivedTable(QueryDerivedTable queryDerivedTable)
+        {
+            return TreeHelper.Create<QsiDerivedTableNode>(n =>
+            {
+                if (queryDerivedTable.Alias != null)
+                {
+                    n.Alias.SetValue(new QsiAliasNode
+                    {
+                        Name = IdentifierVisitor.CreateIdentifier(queryDerivedTable.Alias)
+                    });
+                }
+
+                n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+
+                n.Source.SetValue(VisitQueryExpression(queryDerivedTable.QueryExpression));
+            });
+        }
+        #endregion
         #endregion
         #endregion
     }
