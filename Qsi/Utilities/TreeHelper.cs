@@ -43,6 +43,18 @@ namespace Qsi.Utilities
             };
         }
 
+        public static QsiUnaryExpressionNode CreateUnary(string operand, QsiExpressionNode expression)
+        {
+            var node = new QsiUnaryExpressionNode
+            {
+                Operator = operand
+            };
+
+            node.Expression.SetValue(expression);
+
+            return node;
+        }
+
         #region Literal
         public static QsiLiteralExpressionNode CreateNullLiteral()
         {
