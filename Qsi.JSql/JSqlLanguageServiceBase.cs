@@ -18,10 +18,7 @@ namespace Qsi.JSql
 
         public override QsiTableCompileOptions CreateCompileOptions()
         {
-            return new QsiTableCompileOptions
-            {
-                UseAutoFixRecursiveQuery = true
-            };
+            return new QsiTableCompileOptions();
         }
     }
 }
