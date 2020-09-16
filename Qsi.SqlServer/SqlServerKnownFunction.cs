@@ -22,12 +22,18 @@
         public const string Right = "RIGHT";
 
         public const string NextValueFor = "NEXT_VALUE_FOR";
+
+        public const string Like = "LIKE";
         
         public const string Exists = "EXISTS";
 
         public const string Ternary = "TERNARY";
 
         public const string FreeTextTable = "FREETEXTTABLE";
+
+        public const string TsEqual = "TSEQUAL";
+
+        public const string Update = "UPDATE";
         
         public const string OpenJson = "OPENJSON";
         public const string OpenQuery = "OPENQUERY";

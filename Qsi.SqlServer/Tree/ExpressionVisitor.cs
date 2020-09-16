@@ -69,21 +69,23 @@ namespace Qsi.SqlServer.Tree
                 //
                 // case GraphRecursiveMatchQuantifier graphRecursiveMatchQuantifier:
                 //     return VisitGraphRecursiveMatchQuantifier(graphRecursiveMatchQuantifier);
-                //
-                // case InPredicate inPredicate:
-                //     return VisitInPredicate(inPredicate);
-                //
-                // case LikePredicate likePredicate:
-                //     return VisitLikePredicate(likePredicate);
-                //
+
+                case InPredicate inPredicate:
+                    return VisitInPredicate(inPredicate);
+
+                case LikePredicate likePredicate:
+                    return VisitLikePredicate(likePredicate);
+
                 // case SubqueryComparisonPredicate subqueryComparisonPredicate:
                 //     return VisitSubqueryComparisonPredicate(subqueryComparisonPredicate);
-                //
-                // case TSEqualCall tSEqualCall:
-                //     return VisitTSEqualCall(tSEqualCall);
-                //
-                // case UpdateCall updateCall:
-                //     return VisitUpdateCall(updateCall);
+
+                // TSEQUAL ( expression, expression )
+                case TSEqualCall tsEqualCall:
+                    return CreateInvokeExpression(SqlServerKnownFunction.TsEqual, tsEqualCall.FirstExpression, tsEqualCall.SecondExpression);
+
+                // UPDATE ( column )
+                case UpdateCall updateCall:
+                    return CreateInvokeExpression(SqlServerKnownFunction.Update, updateCall.Identifier);
             }
 
             throw TreeHelper.NotSupportedTree(booleanExpression);
@@ -183,6 +185,52 @@ namespace Qsi.SqlServer.Tree
             };
 
             return TreeHelper.CreateUnary(operand, invoke);
+        }
+
+        private QsiExpressionNode VisitInPredicate(InPredicate inPredicate)
+        {
+            var logicalNode = TreeHelper.Create<QsiLogicalExpressionNode>(n =>
+            {
+                n.Left.SetValue(VisitScalarExpression(inPredicate.Expression));
+
+                if (inPredicate.Subquery != null)
+                {
+                    n.Right.SetValue(VisitScalarSubquery(inPredicate.Subquery));
+                }
+                else
+                {
+                    n.Right.SetValue(TreeHelper.Create<QsiMultipleExpressionNode>(mn =>
+                    {
+                        mn.Elements.AddRange(inPredicate.Values.Select(VisitScalarExpression));
+                    }));
+                }
+            });
+            
+            if (!inPredicate.NotDefined)
+                return logicalNode;
+
+            return TreeHelper.CreateUnary(SqlServerKnownOperator.Not, logicalNode);
+        }
+
+        private QsiExpressionNode VisitLikePredicate(LikePredicate likePredicate)
+        {
+            var invokeNode = TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            {
+                n.Member.SetValue(TreeHelper.CreateFunctionAccess(SqlServerKnownFunction.Like));
+
+                n.Parameters.Add(VisitScalarExpression(likePredicate.FirstExpression));
+                n.Parameters.Add(VisitScalarExpression(likePredicate.SecondExpression));
+
+                if (likePredicate.EscapeExpression != null)
+                {
+                    n.Parameters.Add(VisitScalarExpression(likePredicate.EscapeExpression));
+                }
+            });
+
+            if (!likePredicate.NotDefined)
+                return invokeNode;
+
+            return TreeHelper.CreateUnary(SqlServerKnownOperator.Not, invokeNode);
         }
         #endregion
 
@@ -284,7 +332,7 @@ namespace Qsi.SqlServer.Tree
                 // LEFT ( character_expression , integer_expression )
                 case LeftFunctionCall leftFunctionCall:
                     return CreateInvokeExpression(SqlServerKnownFunction.Left, leftFunctionCall.Parameters);
-                
+
                 // RIGHT ( character_expression , integer_expression )
                 case RightFunctionCall rightFunctionCall:
                     return CreateInvokeExpression(SqlServerKnownFunction.Right, rightFunctionCall.Parameters);
@@ -331,8 +379,8 @@ namespace Qsi.SqlServer.Tree
                         null => new MultiPartIdentifier(),
                         _ => throw TreeHelper.NotSupportedTree(functionCall.CallTarget)
                     };
-                    
-                    return CreateInvokeExpression(IdentifierVisitor.ConcatIdentifier(callTarget, functionCall.FunctionName), functionCall.Parameters);   
+
+                    return CreateInvokeExpression(IdentifierVisitor.ConcatIdentifier(callTarget, functionCall.FunctionName), functionCall.Parameters);
                 }
 
                 case CaseExpression caseExpression:
@@ -346,7 +394,7 @@ namespace Qsi.SqlServer.Tree
 
                 case ValueExpression valueExpression:
                     return VisitValueExpression(valueExpression);
-                
+
                 case UserDefinedTypePropertyAccess userDefinedTypePropertyAccess:
                     break;
 
@@ -433,14 +481,14 @@ namespace Qsi.SqlServer.Tree
 
                 if (columnReferenceExpression.MultiPartIdentifier != null)
                     name = IdentifierVisitor.CreateQualifiedIdentifier(columnReferenceExpression.MultiPartIdentifier);
-                
+
                 QsiColumnNode node = columnReferenceExpression.ColumnType switch
                 {
                     ColumnType.Regular => new QsiDeclaredColumnNode { Name = name },
                     ColumnType.Wildcard => new QsiAllColumnNode { Path = name },
                     _ => throw TreeHelper.NotSupportedFeature($"{columnReferenceExpression.ColumnType} type column")
                 };
-                
+
                 n.Column.SetValue(node);
             });
         }
@@ -533,26 +581,22 @@ namespace Qsi.SqlServer.Tree
         }
         #endregion
 
-        internal QsiInvokeExpressionNode CreateInvokeExpression(string functionName, IEnumerable<TSqlFragment> parameters)
-            => CreateInvokeExpression(functionName, parameters.ToArray());
-
-        internal QsiInvokeExpressionNode CreateInvokeExpression(QsiQualifiedIdentifier qualifiedIdentifier, IEnumerable<TSqlFragment> parameters)
-            => CreateInvokeExpression(qualifiedIdentifier, parameters.ToArray());
-
-        internal QsiInvokeExpressionNode CreateInvokeExpression(string functionName, params TSqlFragment[] parameters)
-            => CreateInvokeExpression(TreeHelper.CreateFunctionAccess(functionName), parameters);
-
-        internal QsiInvokeExpressionNode CreateInvokeExpression(QsiQualifiedIdentifier qualifiedIdentifier, params TSqlFragment[] parameters)
+        internal QsiInvokeExpressionNode CreateInvokeExpression(QsiQualifiedIdentifier functionName, IEnumerable<TSqlFragment> parameters)
         {
-            var functionAccessExpressionNode = new QsiFunctionAccessExpressionNode
-            {
-                Identifier = qualifiedIdentifier
-            };
-            
-            return CreateInvokeExpression(functionAccessExpressionNode, parameters);
+            return CreateInvokeExpression(new QsiFunctionAccessExpressionNode { Identifier = functionName }, parameters);
         }
 
-        internal QsiInvokeExpressionNode CreateInvokeExpression(QsiFunctionAccessExpressionNode functionAccessExpressionNode, params TSqlFragment[] parameters)
+        internal QsiInvokeExpressionNode CreateInvokeExpression(string functionName, params TSqlFragment[] parameters)
+        {
+            return CreateInvokeExpression(TreeHelper.CreateFunctionAccess(functionName), parameters);
+        }
+
+        internal QsiInvokeExpressionNode CreateInvokeExpression(string functionName, IEnumerable<TSqlFragment> parameters)
+        {
+            return CreateInvokeExpression(TreeHelper.CreateFunctionAccess(functionName), parameters);
+        }
+
+        internal QsiInvokeExpressionNode CreateInvokeExpression(QsiFunctionAccessExpressionNode functionAccessExpressionNode, IEnumerable<TSqlFragment> parameters)
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
@@ -570,10 +614,20 @@ namespace Qsi.SqlServer.Tree
                             {
                                 Identifier = IdentifierVisitor.CreateQualifiedIdentifier(dataTypeReference.Name)
                             },
-                            MultiPartIdentifier multiPartIdentifier => new QsiVariableAccessExpressionNode
+                            Identifier identifier => TreeHelper.Create<QsiColumnExpressionNode>(cn =>
                             {
-                                Identifier = IdentifierVisitor.CreateQualifiedIdentifier(multiPartIdentifier)
-                            },
+                                cn.Column.SetValue(new QsiDeclaredColumnNode
+                                {
+                                    Name = new QsiQualifiedIdentifier(IdentifierVisitor.CreateIdentifier(identifier))
+                                });
+                            }),
+                            MultiPartIdentifier multiPartIdentifier => TreeHelper.Create<QsiTableExpressionNode>(tn =>
+                            {
+                                tn.Table.SetValue(new QsiTableAccessNode
+                                {
+                                    Identifier = IdentifierVisitor.CreateQualifiedIdentifier(multiPartIdentifier)
+                                });
+                            }),
                             OverClause _ => throw TreeHelper.NotSupportedFeature("over clause"),
                             _ => throw new InvalidOperationException()
                         };
