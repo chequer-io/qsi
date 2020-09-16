@@ -41,6 +41,9 @@ namespace Qsi.PostgreSql.Tree.PG10
         {
             QsiTableNode tableNode;
 
+            if (!ListUtility.IsNullOrEmpty(selectStmt.intoClause))
+                throw TreeHelper.NotSupportedFeature("Into clause");
+
             switch (selectStmt.op)
             {
                 case SetOperation.SETOP_NONE:
@@ -83,9 +86,7 @@ namespace Qsi.PostgreSql.Tree.PG10
         private static QsiTableNode VisitSelectStmtNone(SelectStmt stmt)
         {
             if (!ListUtility.IsNullOrEmpty(stmt.valuesLists))
-            {
                 return VisitValueList(stmt.valuesLists);
-            }
 
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
@@ -404,30 +405,43 @@ namespace Qsi.PostgreSql.Tree.PG10
             if (subselect.alias.Length != 1)
                 throw TreeHelper.NotSupportedTree(subselect);
 
+            var source = VisitSelectStmt((SelectStmt)subselect.subquery[0]);
+
+            var alias = new QsiAliasNode
+            {
+                Name = new QsiIdentifier(subselect.alias[0].aliasname, false)
+            };
+
+            QsiColumnsDeclarationNode columsDeclaration;
+
+            PgString[] columns = subselect.alias[0].colnames?
+                .Cast<PgString>()
+                .ToArray();
+
+            if (ListUtility.IsNullOrEmpty(columns))
+            {
+                columsDeclaration = TreeHelper.CreateAllColumnsDeclaration();
+            }
+            else
+            {
+                columsDeclaration = TreeHelper.Create<QsiColumnsDeclarationNode>(cn =>
+                {
+                    cn.Columns.AddRange(CreateSequentialColumnNodes(columns));
+                });
+            }
+
+            if (source is QsiInlineDerivedTableNode inline)
+            {
+                inline.Alias.SetValue(alias);
+                inline.Columns.SetValue(columsDeclaration);
+                return source;
+            }
+
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
-                n.Source.SetValue(VisitSelectStmt((SelectStmt)subselect.subquery[0]));
-
-                PgString[] columns = subselect.alias[0].colnames?
-                    .Cast<PgString>()
-                    .ToArray();
-
-                if (ListUtility.IsNullOrEmpty(subselect.alias[0].colnames))
-                {
-                    n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
-                }
-                else
-                {
-                    n.Columns.SetValue(TreeHelper.Create<QsiColumnsDeclarationNode>(cn =>
-                    {
-                        cn.Columns.AddRange(CreateSequentialColumnNodes(columns));
-                    }));
-                }
-
-                n.Alias.SetValue(new QsiAliasNode
-                {
-                    Name = new QsiIdentifier(subselect.alias[0].aliasname, false)
-                });
+                n.Columns.SetValue(columsDeclaration);
+                n.Source.SetValue(source);
+                n.Alias.SetValue(alias);
             });
         }
 
