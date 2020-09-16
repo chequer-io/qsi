@@ -9,6 +9,7 @@ using Qsi.Parsing;
 using Qsi.Runtime.Internal;
 using Qsi.Services;
 using Qsi.Tree;
+using Qsi.Utilities;
 
 namespace Qsi.Compiler
 {
@@ -248,21 +249,27 @@ namespace Qsi.Compiler
                 Identifier = alias == null ? null : new QsiQualifiedIdentifier(alias)
             };
 
-            IQsiSequentialColumnNode[] columns = table.Columns?.Columns
-                .Cast<IQsiSequentialColumnNode>()
-                .ToArray();
-
             int? columnCount = null;
 
-            if (columns?.Length > 0)
+            switch (table.Columns)
             {
-                foreach (var column in columns)
-                {
-                    var c = declaredTable.NewColumn();
-                    c.Name = column.Alias.Name;
-                }
+                case null:
+                case var cd when cd.Columns.All(c => c is IQsiAllColumnNode all && all.Path == null):
+                    // Skip
+                    break;
 
-                columnCount = columns.Length;
+                case var cd when cd.Columns.Is(out IQsiSequentialColumnNode[] sequentialColumns):
+                    foreach (var column in sequentialColumns)
+                    {
+                        var c = declaredTable.NewColumn();
+                        c.Name = column.Alias.Name;
+                    }
+
+                    columnCount = sequentialColumns.Length;
+                    break;
+
+                default:
+                    throw new NotSupportedException("Not supported columns in inline derived table.");
             }
 
             // Skip trace columns in expression.
@@ -280,7 +287,7 @@ namespace Qsi.Compiler
                 }
             }
 
-            if (!columnCount.HasValue)
+            if ((columnCount ?? 0) == 0)
             {
                 if (!_options.AllowEmptyColumnsInInline)
                     throw new QsiException(QsiError.NoColumnsSpecified, alias);
