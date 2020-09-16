@@ -23,7 +23,8 @@
         NoTablesUsed,
         NoAnchorInRecursiveQuery,
         NoTopLevelUnionInRecursiveQuery,
-        NoFromClause
+        NoFromClause,
+        UnableResolveDefinition
     }
 
     internal static class SR
@@ -50,6 +51,7 @@
         public const string NoAnchorInRecursiveQuery = "No anchor member was specified for recursive query '{0}'.";
         public const string NoTopLevelUnionInRecursiveQuery = "Recursive common table expression '{0}' does not contain a top-level UNION ALL operator.";
         public const string NoFromClause = "FROM clause not found where expected.";
+        public const string UnableResolveDefinition = "Unable to resolve definition '{0}'";
 
         public static string GetResource(QsiError error)
         {
@@ -77,6 +79,7 @@
                 QsiError.NoAnchorInRecursiveQuery => NoAnchorInRecursiveQuery,
                 QsiError.NoTopLevelUnionInRecursiveQuery => NoTopLevelUnionInRecursiveQuery,
                 QsiError.NoFromClause => NoFromClause,
+                QsiError.UnableResolveDefinition => UnableResolveDefinition,
                 _ => null
             };
         }

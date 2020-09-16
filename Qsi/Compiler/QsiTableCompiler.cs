@@ -99,10 +99,15 @@ namespace Qsi.Compiler
             var lookup = ResolveDataTable(context, table.Identifier);
 
             // view
-            if (lookup.Type == QsiDataTableType.View || lookup.Type == QsiDataTableType.MaterializedView)
+            if (!lookup.IsSystem && 
+                (lookup.Type == QsiDataTableType.View || lookup.Type == QsiDataTableType.MaterializedView))
             {
-                var script = _resolver.LookupDefinition(lookup.Identifier, lookup.Type);
-                var viewTable = (IQsiTableNode)_treeParser.Parse(script);
+                var script = _resolver.LookupDefinition(lookup.Identifier, lookup.Type) ??
+                    throw new QsiException(QsiError.UnableResolveDefinition, lookup.Identifier);
+
+                var viewTable = (IQsiTableNode)_treeParser.Parse(script) ??
+                    throw new QsiException(QsiError.Syntax);
+
                 var typeBackup = lookup.Type;
 
                 using var viewCompileContext = new CompileContext();
