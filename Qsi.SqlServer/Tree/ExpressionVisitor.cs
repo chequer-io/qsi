@@ -328,6 +328,7 @@ namespace Qsi.SqlServer.Tree
                         MultiPartIdentifierCallTarget multiPartIdentifierCallTarget => multiPartIdentifierCallTarget.MultiPartIdentifier,
                         UserDefinedTypeCallTarget userDefinedTypeCallTarget => userDefinedTypeCallTarget.SchemaObjectName,
                         ExpressionCallTarget _ => throw TreeHelper.NotSupportedFeature("expression call target"),
+                        null => new MultiPartIdentifier(),
                         _ => throw TreeHelper.NotSupportedTree(functionCall.CallTarget)
                     };
                     
