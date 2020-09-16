@@ -19,6 +19,7 @@ using Qsi.Debugger.Utilities;
 using Qsi.Debugger.Vendor;
 using Qsi.Debugger.Vendor.JSql;
 using Qsi.Debugger.Vendor.MySql;
+using Qsi.Debugger.Vendor.Oracle;
 using Qsi.Debugger.Vendor.PostgreSql;
 using Qsi.Debugger.Vendor.SqlServer;
 using Qsi.Parsing;
@@ -53,6 +54,7 @@ namespace Qsi.Debugger
                 ["MySQL"] = new Lazy<VendorDebugger>(() => new MySqlDebugger()),
                 ["PostgreSQL"] = new Lazy<VendorDebugger>(() => new PostgreSqlDebugger()),
                 ["JSqlParser"] = new Lazy<VendorDebugger>(() => new JSqlDebugger()),
+                ["Oracle"] = new Lazy<VendorDebugger>(() => new OracleDebugger()),
                 ["SQL Server 2000"] = new Lazy<VendorDebugger>(() => new SqlServerDebugger(TransactSqlVersion.Version80)),
                 ["SQL Server 2019"] = new Lazy<VendorDebugger>(() => new SqlServerDebugger(TransactSqlVersion.Version150))
             };

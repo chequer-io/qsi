@@ -5,11 +5,12 @@
     </PropertyGroup>
 
     <PropertyGroup Label="Nuspec">
-        <Title>Query Structure Interface</Title>
+        <Title>Query Structure Interface of Oracle</Title>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Antlr4.Runtime.Standard" Version="4.8.0"/>
+        <ProjectReference Include="..\Qsi.JSql\Qsi.JSql.csproj"/>
+        <ProjectReference Include="..\Qsi\Qsi.csproj"/>
     </ItemGroup>
 
 </Project>

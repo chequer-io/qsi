@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Qsi.Collections;
 using Qsi.Compiler.Proxy;
 using Qsi.Data;
 using Qsi.Extensions;
@@ -84,6 +83,9 @@ namespace Qsi.Compiler
                 case IQsiDerivedTableNode derivedTable:
                     return await BuildDerivedTableStructure(context, derivedTable);
 
+                case IQsiInlineDerivedTableNode inlineDerivedTableNode:
+                    return await BuildInlineDerivedTableStructure(context, inlineDerivedTableNode);
+
                 case IQsiJoinedTableNode joinedTable:
                     return await BuildJoinedTable(context, joinedTable);
 
@@ -99,10 +101,15 @@ namespace Qsi.Compiler
             var lookup = ResolveDataTable(context, table.Identifier);
 
             // view
-            if (lookup.Type == QsiDataTableType.View || lookup.Type == QsiDataTableType.MaterializedView)
+            if (!lookup.IsSystem &&
+                (lookup.Type == QsiDataTableType.View || lookup.Type == QsiDataTableType.MaterializedView))
             {
-                var script = _resolver.LookupDefinition(lookup.Identifier, lookup.Type);
-                var viewTable = (IQsiTableNode)_treeParser.Parse(script);
+                var script = _resolver.LookupDefinition(lookup.Identifier, lookup.Type) ??
+                             throw new QsiException(QsiError.UnableResolveDefinition, lookup.Identifier);
+
+                var viewTable = (IQsiTableNode)_treeParser.Parse(script) ??
+                                throw new QsiException(QsiError.Syntax);
+
                 var typeBackup = lookup.Type;
 
                 using var viewCompileContext = new CompileContext();
@@ -133,6 +140,9 @@ namespace Qsi.Compiler
             // Table Source
 
             var alias = table.Alias?.Name;
+
+            if (alias == null && !_options.AllowNoAliasInDerivedTable)
+                throw new QsiException(QsiError.NoAlias);
 
             if (table.Source is IQsiJoinedTableNode joinedTableNode)
             {
@@ -215,6 +225,70 @@ namespace Qsi.Compiler
             }
 
             return declaredTable;
+        }
+
+        protected virtual ValueTask<QsiDataTable> BuildInlineDerivedTableStructure(CompileContext context, IQsiInlineDerivedTableNode table)
+        {
+            var alias = table.Alias?.Name;
+
+            if (alias == null && !_options.AllowNoAliasInDerivedTable)
+                throw new QsiException(QsiError.NoAlias);
+
+            var declaredTable = new QsiDataTable
+            {
+                Type = QsiDataTableType.Inline,
+                Identifier = alias == null ? null : new QsiQualifiedIdentifier(alias)
+            };
+
+            IQsiSequentialColumnNode[] columns = table.Columns?.Columns
+                .Cast<IQsiSequentialColumnNode>()
+                .ToArray();
+
+            int? columnCount = null;
+
+            if (columns?.Length > 0)
+            {
+                foreach (var column in columns)
+                {
+                    var c = declaredTable.NewColumn();
+                    c.Name = column.Alias.Name;
+                }
+
+                columnCount = columns.Length;
+            }
+
+            // Skip trace columns in expression.
+            // Because don't know the possibility of declaring a referenceable column in the expression.
+            // ISSUE: row.ColumnValues
+            foreach (var row in table.Rows ?? Enumerable.Empty<IQsiRowValueExpressionNode>())
+            {
+                if (!columnCount.HasValue)
+                {
+                    columnCount = row.ColumnValues.Length;
+                }
+                else if (columnCount != row.ColumnValues.Length)
+                {
+                    throw new QsiException(QsiError.DifferentColumnsCount);
+                }
+            }
+
+            if (!columnCount.HasValue)
+            {
+                if (!_options.AllowEmptyColumnsInInline)
+                    throw new QsiException(QsiError.NoColumnsSpecified, alias);
+
+                columnCount = 0;
+            }
+
+            if (declaredTable.Columns.Count != columnCount)
+            {
+                for (int i = 0; i < columnCount; i++)
+                {
+                    declaredTable.NewColumn();
+                }
+            }
+
+            return new ValueTask<QsiDataTable>(declaredTable);
         }
 
         protected virtual async ValueTask<QsiDataTable> BuildRecursiveCompositeTable(
@@ -328,8 +402,7 @@ namespace Qsi.Compiler
         {
             foreach (var tableAccess in table.FindAscendants<IQsiTableAccessNode>())
             {
-                if (tableAccess.Identifier.Level == 1 &&
-                    QsiIdentifierEqualityComparer.Default.Equals(tableAccess.Identifier[0], identifier))
+                if (tableAccess.Identifier.Level == 1 && Match(tableAccess.Identifier[0], identifier))
                 {
                     return true;
                 }
@@ -768,7 +841,7 @@ namespace Qsi.Compiler
 
             foreach (var table in tables.Where(t => t.HasIdentifier))
             {
-                // * case - Exact access
+                // * case - Explicit access
                 // ┌──────────────────────────────────────────────────────────┐
                 // │ SELECT sakila.actor.column FROM sakila.actor             │
                 // │        ▔▔▔▔▔▔^▔▔▔▔▔      ==     ▔▔▔▔▔▔^▔▔▔▔▔             │
@@ -778,19 +851,22 @@ namespace Qsi.Compiler
                 if (Match(table.Identifier, identifier))
                     yield return table;
 
-                // * case - 2 Level implied access
+                // * case - 2 Level implicit access
                 // ┌──────────────────────────────────────────────────────────┐
                 // │ SELECT actor.column FROM sakila.actor                    │
                 // │        ▔▔▔▔▔      <       ▔▔▔▔▔^▔▔▔▔▔                    │
                 // │         └-> identifier(1)  └-> table.Identifier(2)       │
                 // └──────────────────────────────────────────────────────────┘ 
 
-                // * case - 3 Level implied access
+                // * case - 3 Level implicit access
                 // ┌──────────────────────────────────────────────────────────┐
                 // │ SELECT sakila.actor.column FROM db.sakila.actor          │
                 // │        ▔▔▔▔▔▔^▔▔▔▔▔       <     ▔▔^▔▔▔▔▔▔^▔▔▔▔▔          │
                 // │         └-> identifier(2)        └-> table.Identifier(3) │
                 // └──────────────────────────────────────────────────────────┘ 
+
+                if (_options.UseExplicitRelationAccess)
+                    continue;
 
                 if (!IsReferenceType(table.Type))
                     continue;

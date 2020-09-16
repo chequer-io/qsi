@@ -710,14 +710,11 @@ namespace Qsi.JSql.Tree
             return invoke;
         }
 
-        public virtual QsiColumnExpressionNode VisitColumn(Column expression)
+        public virtual QsiExpressionNode VisitColumn(Column expression)
         {
             return TreeHelper.Create<QsiColumnExpressionNode>(n =>
             {
-                n.Column.SetValue(new QsiDeclaredColumnNode
-                {
-                    Name = IdentifierVisitor.VisitMultiPartName(expression)
-                });
+                n.Column.SetValue(TableVisitor.VisitColumn(expression));
             });
         }
 
@@ -739,7 +736,7 @@ namespace Qsi.JSql.Tree
             });
         }
 
-        public virtual QsiMultipleExpressionNode VisitItemsList(ItemsList itemsList)
+        public virtual QsiExpressionNode VisitItemsList(ItemsList itemsList)
         {
             switch (itemsList)
             {
@@ -751,6 +748,9 @@ namespace Qsi.JSql.Tree
 
                 case NamedExpressionList namedExpressionList:
                     return VisitNamedExpressionList(namedExpressionList);
+
+                case SubSelect subSelect:
+                    return VisitSubSelect(subSelect);
             }
 
             throw TreeHelper.NotSupportedTree(itemsList);

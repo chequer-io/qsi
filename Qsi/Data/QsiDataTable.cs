@@ -9,11 +9,13 @@ namespace Qsi.Data
 
         public QsiQualifiedIdentifier Identifier { get; set; }
 
+        public bool HasIdentifier => Identifier != null;
+
+        public bool IsSystem { get; set; }
+
         public IReadOnlyList<QsiDataColumn> Columns => _columns;
 
         internal IEnumerable<QsiDataColumn> VisibleColumns => _columns.Where(c => c.IsVisible);
-
-        public bool HasIdentifier => Identifier != null;
 
         private readonly List<QsiDataColumn> _columns;
 
