@@ -2,6 +2,14 @@
 {
     public static class SqlServerKnownFunction
     {
+        public const string OpenJson = "OPENJSON";
+        public const string OpenQuery = "OPENQUERY";
+        public const string OpenRowSet = "OPENROWSET";
+        public const string OpenXml = "OPENXML";
+        
+        public const string All = "ALL";
+        public const string Any = "ANY";
+
         public const string AtTimeZone = "AT_TIME_ZONE";
         
         public const string Cast = "CAST";
@@ -31,14 +39,14 @@
 
         public const string FreeTextTable = "FREETEXTTABLE";
 
+        public const string EventDeclarationCompare = "EVENT_DECLARATION_COMPARE";
+
+        public const string ExtractFrom = "EXTRACT_FROM";
+        
         public const string TsEqual = "TSEQUAL";
 
         public const string Update = "UPDATE";
-        
-        public const string OpenJson = "OPENJSON";
-        public const string OpenQuery = "OPENQUERY";
-        public const string OpenRowSet = "OPENROWSET";
-        public const string OpenXml = "OPENXML";
 
+        public const string FullText = "FULLTEXT";
     }
 }

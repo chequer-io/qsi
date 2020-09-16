@@ -25,8 +25,8 @@ namespace Qsi.SqlServer.Tree
                 case BooleanComparisonExpression booleanComparisonExpression:
                     return VisitBooleanComparisonExpression(booleanComparisonExpression);
 
-                // case BooleanExpressionSnippet booleanExpressionSnippet:
-                //     return VisitBooleanExpressionSnippet(booleanExpressionSnippet);
+                case BooleanExpressionSnippet _:
+                    throw TreeHelper.NotSupportedFeature("Snippet");
 
                 case BooleanIsNullExpression booleanIsNullExpression:
                     return VisitBooleanIsNullExpression(booleanIsNullExpression);
@@ -34,41 +34,29 @@ namespace Qsi.SqlServer.Tree
                 case BooleanNotExpression booleanNotExpression:
                     return VisitBooleanNotExpression(booleanNotExpression);
 
-                // case BooleanParenthesisExpression booleanParenthesisExpression:
-                //     return VisitBooleanParenthesisExpression(booleanParenthesisExpression);
+                case BooleanParenthesisExpression booleanParenthesisExpression:
+                    return VisitBooleanParenthesisExpression(booleanParenthesisExpression);
 
                 case BooleanTernaryExpression booleanTernaryExpression:
                     return VisitBooleanTernaryExpression(booleanTernaryExpression);
 
-                // case EventDeclarationCompareFunctionParameter eventDeclarationCompareFunctionParameter:
-                //     return VisitEventDeclarationCompareFunctionParameter(eventDeclarationCompareFunctionParameter);
+                case EventDeclarationCompareFunctionParameter eventDeclarationCompareFunctionParameter:
+                    return VisitEventDeclarationCompareFunctionParameter(eventDeclarationCompareFunctionParameter);
 
                 case ExistsPredicate existsPredicate:
                     return VisitExistsPredicate(existsPredicate);
 
-                // case FullTextPredicate fullTextPredicate:
-                //     return VisitFullTextPredicate(fullTextPredicate);
-                //
-                // case GraphMatchCompositeExpression graphMatchCompositeExpression:
-                //     return VisitGraphMatchCompositeExpression(graphMatchCompositeExpression);
-                //
-                // case GraphMatchExpression graphMatchExpression:
-                //     return VisitGraphMatchExpression(graphMatchExpression);
-                //
-                // case GraphMatchLastNodePredicate graphMatchLastNodePredicate:
-                //     return VisitGraphMatchLastNodePredicate(graphMatchLastNodePredicate);
-                //
-                // case GraphMatchNodeExpression graphMatchNodeExpression:
-                //     return VisitGraphMatchNodeExpression(graphMatchNodeExpression);
-                //
-                // case GraphMatchPredicate graphMatchPredicate:
-                //     return VisitGraphMatchPredicate(graphMatchPredicate);
-                //
-                // case GraphMatchRecursivePredicate graphMatchRecursivePredicate:
-                //     return VisitGraphMatchRecursivePredicate(graphMatchRecursivePredicate);
-                //
-                // case GraphRecursiveMatchQuantifier graphRecursiveMatchQuantifier:
-                //     return VisitGraphRecursiveMatchQuantifier(graphRecursiveMatchQuantifier);
+                case FullTextPredicate fullTextPredicate:
+                    return VisitFullTextPredicate(fullTextPredicate);
+
+                case GraphMatchCompositeExpression _:
+                case GraphMatchExpression _:
+                case GraphMatchLastNodePredicate _:
+                case GraphMatchNodeExpression _:
+                case GraphMatchPredicate _:
+                case GraphMatchRecursivePredicate _:
+                case GraphRecursiveMatchQuantifier _:
+                    throw TreeHelper.NotSupportedFeature("Graph match");
 
                 case InPredicate inPredicate:
                     return VisitInPredicate(inPredicate);
@@ -76,8 +64,8 @@ namespace Qsi.SqlServer.Tree
                 case LikePredicate likePredicate:
                     return VisitLikePredicate(likePredicate);
 
-                // case SubqueryComparisonPredicate subqueryComparisonPredicate:
-                //     return VisitSubqueryComparisonPredicate(subqueryComparisonPredicate);
+                case SubqueryComparisonPredicate subqueryComparisonPredicate:
+                    return VisitSubqueryComparisonPredicate(subqueryComparisonPredicate);
 
                 // TSEQUAL ( expression, expression )
                 case TSEqualCall tsEqualCall:
@@ -114,21 +102,7 @@ namespace Qsi.SqlServer.Tree
                 n.Left.SetValue(VisitScalarExpression(booleanComparisonExpression.FirstExpression));
                 n.Right.SetValue(VisitScalarExpression(booleanComparisonExpression.SecondExpression));
 
-                n.Operator = booleanComparisonExpression.ComparisonType switch
-                {
-                    BooleanComparisonType.Equals => "=",
-                    BooleanComparisonType.GreaterThan => ">",
-                    BooleanComparisonType.GreaterThanOrEqualTo => ">=",
-                    BooleanComparisonType.LeftOuterJoin => "*=",
-                    BooleanComparisonType.LessThan => "<",
-                    BooleanComparisonType.LessThanOrEqualTo => "<=",
-                    BooleanComparisonType.NotEqualToBrackets => "<>",
-                    BooleanComparisonType.NotEqualToExclamation => "!=",
-                    BooleanComparisonType.NotGreaterThan => "!>",
-                    BooleanComparisonType.NotLessThan => "!<",
-                    BooleanComparisonType.RightOuterJoin => "=*",
-                    _ => throw new InvalidOperationException()
-                };
+                n.Operator = ConvertBooleanComparisonType(booleanComparisonExpression.ComparisonType);
             });
         }
 
@@ -157,12 +131,32 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
+        private QsiExpressionNode VisitBooleanParenthesisExpression(BooleanParenthesisExpression booleanParenthesisExpression)
+        {
+            return VisitBooleanExpression(booleanParenthesisExpression.Expression);
+        }
+
         private QsiInvokeExpressionNode VisitExistsPredicate(ExistsPredicate existsPredicate)
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
                 n.Member.SetValue(TreeHelper.CreateFunctionAccess(SqlServerKnownFunction.Exists));
                 n.Parameters.Add(VisitScalarSubquery(existsPredicate.Subquery));
+            });
+        }
+
+        private QsiExpressionNode VisitFullTextPredicate(FullTextPredicate fullTextPredicate)
+        {
+            return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            {
+                n.Member.SetValue(TreeHelper.CreateFunctionAccess(SqlServerKnownFunction.FullText));
+                n.Parameters.AddRange(fullTextPredicate.Columns.Select(ExpressionVisitor.VisitColumnReferenceExpression));
+
+                n.Parameters.Add(fullTextPredicate.Value != null ?
+                    VisitValueExpression(fullTextPredicate.Value) :
+                    VisitLiteral(fullTextPredicate.PropertyName));
+
+                n.Parameters.Add(VisitValueExpression(fullTextPredicate.LanguageTerm));
             });
         }
 
@@ -185,6 +179,35 @@ namespace Qsi.SqlServer.Tree
             };
 
             return TreeHelper.CreateUnary(operand, invoke);
+        }
+
+        private QsiExpressionNode VisitEventDeclarationCompareFunctionParameter(EventDeclarationCompareFunctionParameter eventDeclarationCompareFunctionParameter)
+        {
+            return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            {
+                n.Member.SetValue(TreeHelper.CreateFunctionAccess(SqlServerKnownFunction.EventDeclarationCompare));
+
+                if (eventDeclarationCompareFunctionParameter.Name != null)
+                {
+                    n.Parameters.Add(TreeHelper.Create<QsiTableExpressionNode>(tn =>
+                    {
+                        tn.Table.SetValue(new QsiTableAccessNode
+                        {
+                            Identifier = IdentifierVisitor.CreateQualifiedIdentifier(eventDeclarationCompareFunctionParameter.Name.MultiPartIdentifier)
+                        });
+                    }));
+                }
+
+                if (eventDeclarationCompareFunctionParameter.EventValue != null)
+                {
+                    n.Parameters.Add(VisitScalarExpression(eventDeclarationCompareFunctionParameter.EventValue));
+                }
+
+                if (eventDeclarationCompareFunctionParameter.SourceDeclaration != null)
+                {
+                    n.Parameters.Add(VisitSourceDeclaration(eventDeclarationCompareFunctionParameter.SourceDeclaration));
+                }
+            });
         }
 
         private QsiExpressionNode VisitInPredicate(InPredicate inPredicate)
@@ -232,6 +255,32 @@ namespace Qsi.SqlServer.Tree
 
             return TreeHelper.CreateUnary(SqlServerKnownOperator.Not, invokeNode);
         }
+
+        private QsiExpressionNode VisitSubqueryComparisonPredicate(SubqueryComparisonPredicate subqueryComparisonPredicate)
+        {
+            var expressionNode = TreeHelper.Create<QsiLogicalExpressionNode>(ln =>
+            {
+                ln.Left.SetValue(VisitScalarExpression(subqueryComparisonPredicate.Expression));
+                ln.Right.SetValue(VisitScalarSubquery(subqueryComparisonPredicate.Subquery));
+
+                ln.Operator = ConvertBooleanComparisonType(subqueryComparisonPredicate.ComparisonType);
+            });
+
+            if (subqueryComparisonPredicate.SubqueryComparisonPredicateType == SubqueryComparisonPredicateType.None)
+                return expressionNode;
+
+            return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            {
+                n.Member.SetValue(TreeHelper.CreateFunctionAccess(subqueryComparisonPredicate.SubqueryComparisonPredicateType switch
+                {
+                    SubqueryComparisonPredicateType.All => SqlServerKnownFunction.All,
+                    SubqueryComparisonPredicateType.Any => SqlServerKnownFunction.Any,
+                    _ => throw new InvalidOperationException()
+                }));
+
+                n.Parameters.Add(expressionNode);
+            });
+        }
         #endregion
 
         #region ScalarExpression
@@ -243,10 +292,10 @@ namespace Qsi.SqlServer.Tree
                     return VisitBinaryExpression(binaryExpression);
 
                 case ExtractFromExpression extractFromExpression:
-                    return VisitExtractFromExpression(extractFromExpression);
+                    return CreateInvokeExpression(SqlServerKnownFunction.ExtractFrom, extractFromExpression.Expression, extractFromExpression.ExtractedElement);
 
-                case IdentityFunctionCall identityFunctionCall:
-                    return VisitIdentityFunctionCall(identityFunctionCall);
+                case IdentityFunctionCall _:
+                    throw TreeHelper.NotSupportedFeature("Identity function");
 
                 case OdbcConvertSpecification odbcConvertSpecification:
                     return VisitOdbcConvertSpecification(odbcConvertSpecification);
@@ -254,8 +303,8 @@ namespace Qsi.SqlServer.Tree
                 case PrimaryExpression primaryExpression:
                     return VisitPrimaryExpression(primaryExpression);
 
-                case ScalarExpressionSnippet scalarExpressionSnippet:
-                    return VisitScalarExpressionSnippet(scalarExpressionSnippet);
+                case ScalarExpressionSnippet _:
+                    throw TreeHelper.NotSupportedFeature("Snippet");
 
                 case SourceDeclaration sourceDeclaration:
                     return VisitSourceDeclaration(sourceDeclaration);
@@ -302,14 +351,9 @@ namespace Qsi.SqlServer.Tree
             return TreeHelper.CreateUnary(expressionType, VisitScalarExpression(unaryExpression.Expression));
         }
 
-        private QsiExpressionNode VisitSourceDeclaration(SourceDeclaration sourceDeclaration)
+        private QsiExpressionNode VisitSourceDeclaration(SourceDeclaration _)
         {
             throw TreeHelper.NotSupportedFeature("source declaration");
-        }
-
-        private QsiExpressionNode VisitScalarExpressionSnippet(ScalarExpressionSnippet scalarExpressionSnippet)
-        {
-            throw TreeHelper.NotSupportedFeature("expresssion snippet");
         }
 
         #region Primary Expression
@@ -395,17 +439,17 @@ namespace Qsi.SqlServer.Tree
                 case ValueExpression valueExpression:
                     return VisitValueExpression(valueExpression);
 
-                case UserDefinedTypePropertyAccess userDefinedTypePropertyAccess:
-                    break;
+                case UserDefinedTypePropertyAccess _:
+                    throw TreeHelper.NotSupportedFeature("User defined type property access");
 
                 case OdbcFunctionCall odbcFunctionCall:
-                    break;
+                    return CreateInvokeExpression(odbcFunctionCall.Name.Value, odbcFunctionCall.Parameters);
 
                 case ParameterlessCall parameterlessCall:
-                    break;
+                    return VisitParameterlessCall(parameterlessCall);
 
                 case PartitionFunctionCall partitionFunctionCall:
-                    break;
+                    return VisitPartitionFunctionCall(partitionFunctionCall);
             }
 
             throw TreeHelper.NotSupportedTree(primaryExpression);
@@ -569,21 +613,32 @@ namespace Qsi.SqlServer.Tree
         }
         #endregion
         #endregion
+
+        private QsiInvokeExpressionNode VisitParameterlessCall(ParameterlessCall parameterlessCall)
+        {
+            return CreateInvokeExpression(parameterlessCall.ParameterlessCallType switch
+            {
+                ParameterlessCallType.User => "USER",
+                ParameterlessCallType.CurrentTimestamp => "CURRENT_TIMESTAMP",
+                ParameterlessCallType.CurrentUser => "CURRENT_USER",
+                ParameterlessCallType.SessionUser => "SESSION_USER",
+                ParameterlessCallType.SystemUser => "SYSTEM_USER",
+                _ => throw new InvalidOperationException()
+            });
+        }
+
+        private QsiExpressionNode VisitPartitionFunctionCall(PartitionFunctionCall partitionFunctionCall)
+        {
+            return CreateInvokeExpression(
+                IdentifierVisitor.CreateQualifiedIdentifier(partitionFunctionCall.DatabaseName, partitionFunctionCall.FunctionName),
+                partitionFunctionCall.Parameters
+            );
+        }
         #endregion
 
-        private QsiExpressionNode VisitOdbcConvertSpecification(OdbcConvertSpecification odbcConvertSpecification)
+        private QsiExpressionNode VisitOdbcConvertSpecification(OdbcConvertSpecification _)
         {
             throw TreeHelper.NotSupportedFeature("odbc convert specification");
-        }
-
-        private QsiExpressionNode VisitIdentityFunctionCall(IdentityFunctionCall identityFunctionCall)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        private QsiExpressionNode VisitExtractFromExpression(ExtractFromExpression extractFromExpression)
-        {
-            throw new System.NotImplementedException();
         }
         #endregion
 
@@ -640,6 +695,25 @@ namespace Qsi.SqlServer.Tree
                     })
                 );
             });
+        }
+
+        private string ConvertBooleanComparisonType(BooleanComparisonType booleanComparisonType)
+        {
+            return booleanComparisonType switch
+            {
+                BooleanComparisonType.Equals => "=",
+                BooleanComparisonType.GreaterThan => ">",
+                BooleanComparisonType.GreaterThanOrEqualTo => ">=",
+                BooleanComparisonType.LeftOuterJoin => "*=",
+                BooleanComparisonType.LessThan => "<",
+                BooleanComparisonType.LessThanOrEqualTo => "<=",
+                BooleanComparisonType.NotEqualToBrackets => "<>",
+                BooleanComparisonType.NotEqualToExclamation => "!=",
+                BooleanComparisonType.NotGreaterThan => "!>",
+                BooleanComparisonType.NotLessThan => "!<",
+                BooleanComparisonType.RightOuterJoin => "=*",
+                _ => throw new InvalidOperationException()
+            };
         }
     }
 }

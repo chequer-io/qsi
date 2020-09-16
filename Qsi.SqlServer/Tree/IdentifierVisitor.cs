@@ -31,6 +31,11 @@ namespace Qsi.SqlServer.Tree
             return new QsiQualifiedIdentifier(identifiers.Select(CreateIdentifier));
         }
         
+        public QsiQualifiedIdentifier CreateQualifiedIdentifier(params Identifier[] identifiers)
+        {
+            return new QsiQualifiedIdentifier(identifiers.Select(CreateIdentifier));
+        }
+        
         public QsiIdentifier CreateIdentifier(Identifier identifier)
         {
             return new QsiIdentifier(identifier.Value, false);
