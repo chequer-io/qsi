@@ -24,7 +24,9 @@
         NoAnchorInRecursiveQuery,
         NoTopLevelUnionInRecursiveQuery,
         NoFromClause,
-        UnableResolveDefinition
+        UnableResolveDefinition,
+        NoColumnsSpecified,
+        NoAlias
     }
 
     internal static class SR
@@ -52,6 +54,8 @@
         public const string NoTopLevelUnionInRecursiveQuery = "Recursive common table expression '{0}' does not contain a top-level UNION ALL operator.";
         public const string NoFromClause = "FROM clause not found where expected.";
         public const string UnableResolveDefinition = "Unable to resolve definition '{0}'";
+        public const string NoColumnsSpecified = "No columns specified in '{0}'";
+        public const string NoAlias = "Every derived table must have an alias";
 
         public static string GetResource(QsiError error)
         {
@@ -80,6 +84,8 @@
                 QsiError.NoTopLevelUnionInRecursiveQuery => NoTopLevelUnionInRecursiveQuery,
                 QsiError.NoFromClause => NoFromClause,
                 QsiError.UnableResolveDefinition => UnableResolveDefinition,
+                QsiError.NoColumnsSpecified => NoColumnsSpecified,
+                QsiError.NoAlias => NoAlias,
                 _ => null
             };
         }

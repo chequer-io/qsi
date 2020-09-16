@@ -380,7 +380,7 @@ namespace Qsi.PostgreSql.Tree.PG10
                 return null;
 
             if (ListUtility.IsNullOrEmpty(subselect.alias))
-                throw new Exception("Every derived table must have its own alias");
+                throw new QsiException(QsiError.NoAlias);
 
             Debug.Assert(subselect.alias.Length == 1);
             Debug.Assert((subselect.alias[0].colnames?.Length ?? 0) == 0);
