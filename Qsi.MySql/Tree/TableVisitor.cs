@@ -613,7 +613,7 @@ namespace Qsi.MySql.Tree
         public static QsiTableNode VisitSubqueryTableItem(SubqueryTableItemContext context)
         {
             if (context.alias == null)
-                throw new Exception("Every derived table must have its own alias");
+                throw new QsiException(QsiError.NoAlias);
 
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {

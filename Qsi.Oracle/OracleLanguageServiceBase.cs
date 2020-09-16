@@ -20,6 +20,7 @@ namespace Qsi.Oracle
         {
             return new QsiTableCompileOptions
             {
+                AllowNoAliasInDerivedTable = true,
                 UseAutoFixRecursiveQuery = true
             };
         }

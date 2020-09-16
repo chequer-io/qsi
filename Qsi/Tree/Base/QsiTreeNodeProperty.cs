@@ -1,6 +1,7 @@
 ﻿namespace Qsi.Tree.Base
 {
-    public class QsiTreeNodeProperty<TNode> where TNode : QsiTreeNode
+    public class QsiTreeNodeProperty<TNode> : IQsiTreeNodeProperty<TNode>
+        where TNode : QsiTreeNode
     {
         public TNode Value { get; private set; }
 

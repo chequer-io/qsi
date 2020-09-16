@@ -83,6 +83,9 @@ namespace Qsi.Compiler
                 case IQsiDerivedTableNode derivedTable:
                     return await BuildDerivedTableStructure(context, derivedTable);
 
+                case IQsiInlineDerivedTableNode inlineDerivedTableNode:
+                    return await BuildInlineDerivedTableStructure(context, inlineDerivedTableNode);
+
                 case IQsiJoinedTableNode joinedTable:
                     return await BuildJoinedTable(context, joinedTable);
 
@@ -137,6 +140,9 @@ namespace Qsi.Compiler
             // Table Source
 
             var alias = table.Alias?.Name;
+
+            if (alias == null && !_options.AllowNoAliasInDerivedTable)
+                throw new QsiException(QsiError.NoAlias);
 
             if (table.Source is IQsiJoinedTableNode joinedTableNode)
             {
@@ -219,6 +225,70 @@ namespace Qsi.Compiler
             }
 
             return declaredTable;
+        }
+
+        protected virtual ValueTask<QsiDataTable> BuildInlineDerivedTableStructure(CompileContext context, IQsiInlineDerivedTableNode table)
+        {
+            var alias = table.Alias?.Name;
+
+            if (alias == null && !_options.AllowNoAliasInDerivedTable)
+                throw new QsiException(QsiError.NoAlias);
+
+            var declaredTable = new QsiDataTable
+            {
+                Type = QsiDataTableType.Inline,
+                Identifier = alias == null ? null : new QsiQualifiedIdentifier(alias)
+            };
+
+            IQsiSequentialColumnNode[] columns = table.Columns?.Columns
+                .Cast<IQsiSequentialColumnNode>()
+                .ToArray();
+
+            int? columnCount = null;
+
+            if (columns?.Length > 0)
+            {
+                foreach (var column in columns)
+                {
+                    var c = declaredTable.NewColumn();
+                    c.Name = column.Alias.Name;
+                }
+
+                columnCount = columns.Length;
+            }
+
+            // Skip trace columns in expression.
+            // Because don't know the possibility of declaring a referenceable column in the expression.
+            // ISSUE: row.ColumnValues
+            foreach (var row in table.Rows ?? Enumerable.Empty<IQsiRowValueExpressionNode>())
+            {
+                if (!columnCount.HasValue)
+                {
+                    columnCount = row.ColumnValues.Length;
+                }
+                else if (columnCount != row.ColumnValues.Length)
+                {
+                    throw new QsiException(QsiError.DifferentColumnsCount);
+                }
+            }
+
+            if (!columnCount.HasValue)
+            {
+                if (!_options.AllowEmptyColumnsInInline)
+                    throw new QsiException(QsiError.NoColumnsSpecified, alias);
+
+                columnCount = 0;
+            }
+
+            if (declaredTable.Columns.Count != columnCount)
+            {
+                for (int i = 0; i < columnCount; i++)
+                {
+                    declaredTable.NewColumn();
+                }
+            }
+
+            return new ValueTask<QsiDataTable>(declaredTable);
         }
 
         protected virtual async ValueTask<QsiDataTable> BuildRecursiveCompositeTable(

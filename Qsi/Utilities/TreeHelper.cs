@@ -1,11 +1,13 @@
 ﻿using System;
-using Antlr4.Runtime.Tree;
+using System.Collections.Generic;
+using System.Linq;
 using Qsi.Data;
+using Qsi.Tree;
 using Qsi.Tree.Base;
 
 namespace Qsi.Utilities
 {
-    public class TreeHelper
+    public static class TreeHelper
     {
         public static TNode Create<TNode>(Action<TNode> action) where TNode : QsiTreeNode, new()
         {
@@ -94,6 +96,13 @@ namespace Qsi.Utilities
         public static QsiException NotSupportedFeature(string feature)
         {
             return new QsiException(QsiError.NotSupportedFeature, feature);
+        }
+
+        internal static IEnumerable<IQsiTreeNode> YieldChildren(params IQsiTreeNodeProperty<QsiTreeNode>[] properties)
+        {
+            return properties
+                .Where(p => !p.IsEmpty)
+                .Select(p => p.Value);
         }
     }
 }
