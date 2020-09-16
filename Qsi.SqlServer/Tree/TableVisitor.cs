@@ -30,7 +30,7 @@ namespace Qsi.SqlServer.Tree
             {
                 case StatementWithCtesAndXmlNamespaces statementWithCtesAndXmlNamespaces:
                     return VisitStatementWithCtesAndXmlNamespaces(statementWithCtesAndXmlNamespaces);
-                
+
                 case ViewStatementBody viewStatementBody:
                     return VisitStatementBody(viewStatementBody);
             }
@@ -82,7 +82,6 @@ namespace Qsi.SqlServer.Tree
         #endregion
 
         #region StatementBody
-
         private QsiTableNode VisitStatementBody(ViewStatementBody viewStatementBody)
         {
             switch (viewStatementBody)
@@ -108,10 +107,10 @@ namespace Qsi.SqlServer.Tree
                 {
                     columnsDeclaration.Columns.AddRange(CreateSequentialColumnNodes(createViewStatement.Columns));
                 }
-                
+
                 n.Columns.SetValue(columnsDeclaration);
                 n.Source.SetValue(VisitSelectStatement(createViewStatement.SelectStatement));
-                
+
                 n.Alias.SetValue(new QsiAliasNode
                 {
                     Name = IdentifierVisitor.CreateQualifiedIdentifier(createViewStatement.SchemaObjectName)[^1]
@@ -119,7 +118,7 @@ namespace Qsi.SqlServer.Tree
             });
         }
         #endregion
-        
+
         #region WithCtesAndXmlNamespaces (Table Directives)
         private QsiTableDirectivesNode VisitWithCtesAndXmlNamespaces(WithCtesAndXmlNamespaces selectStatementWithCtesAndXmlNamespaces)
         {
@@ -660,7 +659,7 @@ namespace Qsi.SqlServer.Tree
 
                 case DataModificationTableReference _:
                     throw TreeHelper.NotSupportedFeature("Data modification table");
-                
+
                 case InlineDerivedTable inlineDerivedTable:
                     return VisitInlineDerivedTable(inlineDerivedTable);
 
@@ -696,7 +695,25 @@ namespace Qsi.SqlServer.Tree
 
         private QsiTableNode VisitInlineDerivedTable(InlineDerivedTable inlineDerivedTable)
         {
-            throw TreeHelper.NotSupportedFeature("Inline derived table");
+            return TreeHelper.Create<QsiInlineDerivedTableNode>(n =>
+            {
+                if (inlineDerivedTable.Alias != null)
+                {
+                    n.Alias.SetValue(new QsiAliasNode
+                    {
+                        Name = IdentifierVisitor.CreateIdentifier(inlineDerivedTable.Alias)
+                    });
+                }
+
+                if (!ListUtility.IsNullOrEmpty(inlineDerivedTable.Columns))
+                {
+                    var columnsDeclaration = new QsiColumnsDeclarationNode();
+                    columnsDeclaration.Columns.AddRange(CreateSequentialColumnNodes(inlineDerivedTable.Columns));
+                    n.Columns.SetValue(columnsDeclaration);
+                }
+
+                n.Rows.AddRange(inlineDerivedTable.RowValues.Select(ExpressionVisitor.VisitRowValue));
+            });
         }
 
         private QsiDerivedTableNode VisitQueryDerivedTable(QueryDerivedTable queryDerivedTable)

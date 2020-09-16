@@ -642,6 +642,16 @@ namespace Qsi.SqlServer.Tree
         }
         #endregion
 
+        #region Fragment
+        public QsiRowValueExpressionNode VisitRowValue(RowValue rowValue)
+        {
+            return TreeHelper.Create<QsiRowValueExpressionNode>(n =>
+            {
+                n.ColumnValues.AddRange(rowValue.ColumnValues.Select(VisitScalarExpression));
+            });
+        }
+        #endregion
+        
         internal QsiInvokeExpressionNode CreateInvokeExpression(QsiQualifiedIdentifier functionName, IEnumerable<TSqlFragment> parameters)
         {
             return CreateInvokeExpression(new QsiFunctionAccessExpressionNode { Identifier = functionName }, parameters);
