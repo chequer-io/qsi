@@ -205,7 +205,7 @@ namespace Qsi.SqlServer.Tree
                     }));
                 }
             });
-            
+
             if (!inPredicate.NotDefined)
                 return logicalNode;
 
@@ -432,10 +432,13 @@ namespace Qsi.SqlServer.Tree
             {
                 n.Cases.AddRange(searchedCaseExpression.WhenClauses.Select(VisitSearchedWhenClause));
 
-                n.Cases.Add(TreeHelper.Create<QsiSwitchCaseExpressionNode>(en =>
+                if (searchedCaseExpression.ElseExpression != null)
                 {
-                    en.Consequent.SetValue(VisitScalarExpression(searchedCaseExpression.ElseExpression));
-                }));
+                    n.Cases.Add(TreeHelper.Create<QsiSwitchCaseExpressionNode>(en =>
+                    {
+                        en.Consequent.SetValue(VisitScalarExpression(searchedCaseExpression.ElseExpression));
+                    }));
+                }
             });
         }
 
@@ -456,10 +459,13 @@ namespace Qsi.SqlServer.Tree
 
                 n.Cases.AddRange(simpleCaseExpression.WhenClauses.Select(VisitSimpleWhenClause));
 
-                n.Cases.Add(TreeHelper.Create<QsiSwitchCaseExpressionNode>(en =>
+                if (simpleCaseExpression.ElseExpression != null)
                 {
-                    en.Consequent.SetValue(VisitScalarExpression(simpleCaseExpression.ElseExpression));
-                }));
+                    n.Cases.Add(TreeHelper.Create<QsiSwitchCaseExpressionNode>(en =>
+                    {
+                        en.Consequent.SetValue(VisitScalarExpression(simpleCaseExpression.ElseExpression));
+                    }));
+                }
             });
         }
 
