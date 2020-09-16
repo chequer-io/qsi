@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Qsi.Collections;
 using Qsi.Compiler.Proxy;
 using Qsi.Data;
 using Qsi.Extensions;
@@ -99,14 +98,14 @@ namespace Qsi.Compiler
             var lookup = ResolveDataTable(context, table.Identifier);
 
             // view
-            if (!lookup.IsSystem && 
+            if (!lookup.IsSystem &&
                 (lookup.Type == QsiDataTableType.View || lookup.Type == QsiDataTableType.MaterializedView))
             {
                 var script = _resolver.LookupDefinition(lookup.Identifier, lookup.Type) ??
-                    throw new QsiException(QsiError.UnableResolveDefinition, lookup.Identifier);
+                             throw new QsiException(QsiError.UnableResolveDefinition, lookup.Identifier);
 
                 var viewTable = (IQsiTableNode)_treeParser.Parse(script) ??
-                    throw new QsiException(QsiError.Syntax);
+                                throw new QsiException(QsiError.Syntax);
 
                 var typeBackup = lookup.Type;
 
@@ -333,8 +332,7 @@ namespace Qsi.Compiler
         {
             foreach (var tableAccess in table.FindAscendants<IQsiTableAccessNode>())
             {
-                if (tableAccess.Identifier.Level == 1 &&
-                    QsiIdentifierEqualityComparer.Default.Equals(tableAccess.Identifier[0], identifier))
+                if (tableAccess.Identifier.Level == 1 && Match(tableAccess.Identifier[0], identifier))
                 {
                     return true;
                 }
@@ -773,7 +771,7 @@ namespace Qsi.Compiler
 
             foreach (var table in tables.Where(t => t.HasIdentifier))
             {
-                // * case - Exact access
+                // * case - Explicit access
                 // ┌──────────────────────────────────────────────────────────┐
                 // │ SELECT sakila.actor.column FROM sakila.actor             │
                 // │        ▔▔▔▔▔▔^▔▔▔▔▔      ==     ▔▔▔▔▔▔^▔▔▔▔▔             │
@@ -783,19 +781,22 @@ namespace Qsi.Compiler
                 if (Match(table.Identifier, identifier))
                     yield return table;
 
-                // * case - 2 Level implied access
+                // * case - 2 Level implicit access
                 // ┌──────────────────────────────────────────────────────────┐
                 // │ SELECT actor.column FROM sakila.actor                    │
                 // │        ▔▔▔▔▔      <       ▔▔▔▔▔^▔▔▔▔▔                    │
                 // │         └-> identifier(1)  └-> table.Identifier(2)       │
                 // └──────────────────────────────────────────────────────────┘ 
 
-                // * case - 3 Level implied access
+                // * case - 3 Level implicit access
                 // ┌──────────────────────────────────────────────────────────┐
                 // │ SELECT sakila.actor.column FROM db.sakila.actor          │
                 // │        ▔▔▔▔▔▔^▔▔▔▔▔       <     ▔▔^▔▔▔▔▔▔^▔▔▔▔▔          │
                 // │         └-> identifier(2)        └-> table.Identifier(3) │
                 // └──────────────────────────────────────────────────────────┘ 
+
+                if (_options.UseExplicitRelationAccess)
+                    continue;
 
                 if (!IsReferenceType(table.Type))
                     continue;

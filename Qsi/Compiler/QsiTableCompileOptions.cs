@@ -11,5 +11,10 @@
         /// Use auto fix invalid recursive query
         /// </summary>
         public bool UseAutoFixRecursiveQuery { get; set; }
+
+        /// <summary>
+        /// Use explicit relation access
+        /// </summary>
+        public bool UseExplicitRelationAccess { get; set; }
     }
 }
