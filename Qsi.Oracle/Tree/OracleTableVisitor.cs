@@ -1,4 +1,5 @@
 ﻿using net.sf.jsqlparser.schema;
+using net.sf.jsqlparser.statement.@select;
 using Qsi.JSql.Tree;
 using Qsi.Tree.Base;
 using Qsi.Utilities;
@@ -37,6 +38,16 @@ namespace Qsi.Oracle.Tree
             }
 
             return columnNode;
+        }
+
+        public override QsiTableNode VisitSelect(Select select)
+        {
+            var tableNode = base.VisitSelect(select);
+
+            if (tableNode is QsiDerivedTableNode derivedTableNode && !derivedTableNode.Directives.IsEmpty)
+                derivedTableNode.Directives.Value.IsRecursive = true;
+
+            return tableNode;
         }
     }
 }
