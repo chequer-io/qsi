@@ -188,25 +188,14 @@ namespace Qsi.SqlServer.Tree
                 case SelectScalarExpression selectScalarExpression:
                     return VisitSelectScalarExpression(selectScalarExpression);
 
-                // case SelectSetVariable selectSetVariable:
-                //     return VisitSelectSetVariable(selectSetVariable);
+                case SelectSetVariable selectSetVariable:
+                    return VisitSelectSetVariable(selectSetVariable);
 
                 case SelectStarExpression selectStarExpression:
                     return VisitSelectStarExpression(selectStarExpression);
             }
 
             throw TreeHelper.NotSupportedTree(selectElement);
-        }
-
-        private QsiColumnNode VisitSelectStarExpression(SelectStarExpression selectStarExpression)
-        {
-            return TreeHelper.Create<QsiAllColumnNode>(n =>
-            {
-                if (selectStarExpression.Qualifier != null)
-                {
-                    n.Path = IdentifierVisitor.CreateQualifiedIdentifier(selectStarExpression.Qualifier);
-                }
-            });
         }
 
         private QsiColumnNode VisitSelectScalarExpression(SelectScalarExpression selectScalarExpression)
@@ -252,6 +241,43 @@ namespace Qsi.SqlServer.Tree
                     {
                         Name = identifier
                     });
+                }
+            });
+        }
+
+        private QsiDerivedColumnNode VisitSelectSetVariable(SelectSetVariable selectSetVariable)
+        {
+            return TreeHelper.Create<QsiDerivedColumnNode>(n =>
+            {
+                var op = selectSetVariable.AssignmentKind switch
+                {
+                    AssignmentKind.Equals => "=",
+                    AssignmentKind.AddEquals => "+=",
+                    AssignmentKind.DivideEquals => "/=",
+                    AssignmentKind.ModEquals => "%=",
+                    AssignmentKind.MultiplyEquals => "*=",
+                    AssignmentKind.SubtractEquals => "-=",
+                    AssignmentKind.BitwiseAndEquals => "&=",
+                    AssignmentKind.BitwiseOrEquals => "|=",
+                    AssignmentKind.BitwiseXorEquals => "^=",
+                    _ => throw new InvalidOperationException()
+                };
+
+                n.Expression.SetValue(TreeHelper.CreateLogicalExpression(
+                    op,
+                    selectSetVariable.Variable, selectSetVariable.Expression,
+                    ExpressionVisitor.VisitScalarExpression
+                ));
+            });
+        }
+
+        private QsiColumnNode VisitSelectStarExpression(SelectStarExpression selectStarExpression)
+        {
+            return TreeHelper.Create<QsiAllColumnNode>(n =>
+            {
+                if (selectStarExpression.Qualifier != null)
+                {
+                    n.Path = IdentifierVisitor.CreateQualifiedIdentifier(selectStarExpression.Qualifier);
                 }
             });
         }
@@ -437,7 +463,7 @@ namespace Qsi.SqlServer.Tree
         private QsiTableNode VisitFullTextTableReference(FullTextTableReference fullTextTableReference)
         {
             throw TreeHelper.NotSupportedFeature("Table function");
-            
+
             // var node = TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             // {
             //     n.Member.SetValue(TreeHelper.CreateFunctionAccess(SqlServerKnownFunction.FreeTextTable));
