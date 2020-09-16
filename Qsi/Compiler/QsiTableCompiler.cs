@@ -141,8 +141,12 @@ namespace Qsi.Compiler
 
             var alias = table.Alias?.Name;
 
-            if (alias == null && !_options.AllowNoAliasInDerivedTable)
+            if (alias == null &&
+                table.Parent is IQsiDerivedColumnNode &&
+                !_options.AllowNoAliasInDerivedTable)
+            {
                 throw new QsiException(QsiError.NoAlias);
+            }
 
             if (table.Source is IQsiJoinedTableNode joinedTableNode)
             {
@@ -231,8 +235,12 @@ namespace Qsi.Compiler
         {
             var alias = table.Alias?.Name;
 
-            if (alias == null && !_options.AllowNoAliasInDerivedTable)
+            if (alias == null &&
+                table.Parent is IQsiDerivedColumnNode &&
+                !_options.AllowNoAliasInDerivedTable)
+            {
                 throw new QsiException(QsiError.NoAlias);
+            }
 
             var declaredTable = new QsiDataTable
             {
