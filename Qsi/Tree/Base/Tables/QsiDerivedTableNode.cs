@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Qsi.Utilities;
 
 namespace Qsi.Tree.Base
 {
@@ -12,23 +13,8 @@ namespace Qsi.Tree.Base
 
         public QsiTreeNodeProperty<QsiAliasNode> Alias { get; }
 
-        public override IEnumerable<IQsiTreeNode> Children
-        {
-            get
-            {
-                if (!Directives.IsEmpty)
-                    yield return Directives.Value;
-
-                if (!Columns.IsEmpty)
-                    yield return Columns.Value;
-
-                if (!Source.IsEmpty)
-                    yield return Source.Value;
-
-                if (!Alias.IsEmpty)
-                    yield return Alias.Value;
-            }
-        }
+        public override IEnumerable<IQsiTreeNode> Children =>
+            TreeHelper.YieldChildren(Directives, Columns, Source, Alias);
 
         #region Explicit
         IQsiTableDirectivesNode IQsiDerivedTableNode.Directives => Directives.Value;

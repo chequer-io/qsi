@@ -10,7 +10,8 @@ namespace Qsi.Data
         MaterializedView = 1 << 2,
 
         Derived = 1 << 3,
-        Join = 1 << 4,
-        Union = 1 << 5
+        Inline = 1 << 4,
+        Join = 1 << 5,
+        Union = 1 << 6
     }
 }
