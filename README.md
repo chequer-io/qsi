@@ -28,21 +28,21 @@ based on semantic tree transformed by parser's  for each language.
 
 |Features                           |MySql   |PostgreSql|JSql    |Oracle  |SqlServer|
 |-----------------------------------|:------:|:--------:|:------:|:------:|:-------:|
-|No table                           |&#x2714;|&#x2714;  |&#x2714;|&#x274C;|&#x26A0; |
-|Table access                       |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x26A0; |
-|Derived table                      |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x26A0; |
-|Derived table (Non-Alias)          |&#x274C;|&#x274C;  |&#x2714;|&#x2714;|&#x26A0; |
-|Inline derived table               |&#x274C;|&#x2714;  |&#x2714;|&#x2714;|&#x26A0; |
+|No table                           |&#x2714;|&#x2714;  |&#x2714;|&#x274C;|&#x2714; |
+|Table access                       |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |
+|Derived table                      |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |
+|Derived table (Non-Alias)          |&#x274C;|&#x274C;  |&#x2714;|&#x2714;|&#x274C; |
+|Inline derived table               |&#x274C;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |
 |Table function                     |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |
-|Common table expression            |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x26A0; |
-|Common table expression (Aliases)  |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x26A0; |
-|Common table expression (Recursive)|&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x26A0; |
-|Join tables                        |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x26A0; |
-|Join tables (Pivot columns)        |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x26A0; |
-|Union many tables                  |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x26A0; |
+|Common table expression            |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |
+|Common table expression (Aliases)  |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |
+|Common table expression (Recursive)|&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |
+|Join tables                        |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |
+|Join tables (Pivot columns)        |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x274C; |
+|Union many tables                  |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |
 |Table pivot                        |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |
 |Table unpivot                      |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |
-|Trace view definition              |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x26A0; |
+|Trace view definition              |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |
 
 ## Table Features
 
