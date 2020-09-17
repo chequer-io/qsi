@@ -31,7 +31,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
 
         public IPg10Node[] windowClause { get; set; }
 
-        public IPg10Node[] valuesLists { get; set; }
+        public IPg10Node[][] valuesLists { get; set; }
 
         public IPg10Node[] sortClause { get; set; }
 
