@@ -108,12 +108,10 @@ SELECT * FROM
 </td>
 <td>
 
-|Column|References  |
-|:----:|------------|
-|`id`  |alias.`id`  |
-|      |table.`id`  |
-|`name`|alias.`name`|
-|      |table.`name`|
+|Column|References                   |
+|:----:|-----------------------------|
+|`id`  |alias.`id`</br>table.`id`    |
+|`name`|alias.`name`</br>table.`name`|
 </td>
 </tr>
 
@@ -131,12 +129,10 @@ SELECT * FROM
 </td>
 <td>
 
-|Column|References  |
-|:----:|------------|
-|`id`  |<em>derived</em>.`id`  |
-|      |table.`id`  |
-|`name`|<em>derived</em>.`name`|
-|      |table.`name`|
+|Column|References                              |
+|:----:|----------------------------------------|
+|`id`  |<em>derived</em>.`id`</br>table.`id`    |
+|`name`|<em>derived</em>.`name`</br>table.`name`|
 </td>
 </tr>
 
@@ -157,12 +153,8 @@ SELECT * FROM
 
 |Column|References          |
 |:----:|--------------------|
-|`a`   |inline_table.`a`    |
-|      |1 <em>(literal)</em>|
-|      |3 <em>(literal)</em>|
-|`b`   |inline_table.`b`    |
-|      |2 <em>(literal)</em>|
-|      |4 <em>(literal)</em>|
+|`a`   |inline_table.`a`</br>1 <em>(literal)</em></br>3 <em>(literal)</em>|
+|`b`   |inline_table.`b`</br>2 <em>(literal)</em></br>4 <em>(literal)</em>|
 </td>
 </tr>
 
@@ -291,12 +283,11 @@ SELECT * FROM
 </td>
 <td>
 
-|Column|References       |
-|:----:|-----------------|
-|`uid` |left_table.`uid` |
-|      |right_table.`uid`|
-|`name`|left_table.`name`|
-|`age` |right_table.`age`|
+|Column|References                            |
+|:----:|--------------------------------------|
+|`uid` |left_table.`uid`</br>right_table.`uid`|
+|`name`|left_table.`name`                     |
+|`age` |right_table.`age`                     |
 </td>
 </tr>
 
@@ -314,10 +305,9 @@ SELECT b FROM second_table
 </td>
 <td>
 
-|Column   |References            |
-|:-------:|----------------------|
-|`a`|first_table.`a` |
-|         |second_table.`b`|
+|Column   |References                          |
+|:-------:|------------------------------------|
+|`a`      |first_table.`a`</br>second_table.`b`|
 </td>
 </tr>
 
@@ -375,12 +365,10 @@ SELECT * FROM table_view
 </td>
 <td>
 
-|Column|References    |
-|:----:|--------------|
-|`a`   |table_view.`a`|
-|      |table.`id`    |
-|`b`   |table_view.`b`|
-|      |table.`name`  |
+|Column|References                     |
+|:----:|-------------------------------|
+|`a`   |table_view.`a`</br>table.`id`  |
+|`b`   |table_view.`b`</br>table.`name`|
 </td>
 </tr>
 
