@@ -43,6 +43,7 @@ based on semantic tree transformed by parser's  for each language.
 |Table pivot                        |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |
 |Table unpivot                      |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |
 |Trace view definition              |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |
+|Execute prepared table query       |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |
 
 ## Table Features
 
@@ -366,6 +367,34 @@ SELECT * FROM table_view
 |:----:|-------------------------------|
 |`a`   |table_view.`a`</br>table.`id`  |
 |`b`   |table_view.`b`</br>table.`name`|
+</td>
+</tr>
+
+<!--
+|Column|References|
+|:-:|-|
+|||
+-->
+</td>
+</tr>
+
+<!-- Execute prepared table query -->
+<tr>
+<td align="center">&#9744;</td>
+<td>Execute prepared table query</td>
+<td>
+
+```sql
+-- TODO
+```
+</td>
+<td>
+
+<!--
+|Column|References|
+|:-:|-|
+|||
+-->
 </td>
 </tr>
 
