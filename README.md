@@ -61,7 +61,6 @@ based on semantic tree transformed by parser's  for each language.
 <td>
 
 ```sql
--- table : id, name
 SELECT 1 AS a, '2' AS b
 ```
 </td>
@@ -108,12 +107,10 @@ SELECT * FROM
 </td>
 <td>
 
-|Column|References  |
-|:----:|------------|
-|`id`  |alias.`id`  |
-|      |table.`id`  |
-|`name`|alias.`name`|
-|      |table.`name`|
+|Column|References                   |
+|:----:|-----------------------------|
+|`id`  |alias.`id`</br>table.`id`    |
+|`name`|alias.`name`</br>table.`name`|
 </td>
 </tr>
 
@@ -131,12 +128,10 @@ SELECT * FROM
 </td>
 <td>
 
-|Column|References  |
-|:----:|------------|
-|`id`  |<em>derived</em>.`id`  |
-|      |table.`id`  |
-|`name`|<em>derived</em>.`name`|
-|      |table.`name`|
+|Column|References                              |
+|:----:|----------------------------------------|
+|`id`  |<em>derived</em>.`id`</br>table.`id`    |
+|`name`|<em>derived</em>.`name`</br>table.`name`|
 </td>
 </tr>
 
@@ -157,12 +152,8 @@ SELECT * FROM
 
 |Column|References          |
 |:----:|--------------------|
-|`a`   |inline_table.`a`    |
-|      |1 <em>(literal)</em>|
-|      |3 <em>(literal)</em>|
-|`b`   |inline_table.`b`    |
-|      |2 <em>(literal)</em>|
-|      |4 <em>(literal)</em>|
+|`a`   |inline_table.`a`</br>1 <em>(literal)</em></br>3 <em>(literal)</em>|
+|`b`   |inline_table.`b`</br>2 <em>(literal)</em></br>4 <em>(literal)</em>|
 </td>
 </tr>
 
@@ -194,7 +185,7 @@ SELECT * FROM
 
 ```sql
 WITH cte AS (SELECT 1 AS n)
-..
+SELECT * FROM cte
 ```
 </td>
 <td>
@@ -213,7 +204,7 @@ WITH cte AS (SELECT 1 AS n)
 
 ```sql
 WITH cte (n) AS (SELECT 1)
-..
+SELECT * FROM cte
 ```
 </td>
 <td>
@@ -236,7 +227,7 @@ WITH RECURSIVE cte AS (
     UNION ALL
     SELECT n + 1 FROM cte WHERE n < 10
 )
-..
+SELECT * FROM cte
 ```
 </td>
 <td>
@@ -258,9 +249,8 @@ WITH RECURSIVE cte AS (
 -- left_table : name, uid
 -- right_table : age, uid
 SELECT * FROM
-    left_table
-    JOIN right_table ON ..
-    ..
+    left_table l
+    JOIN right_table r ON l.uid = r.uid
 ```
 </td>
 <td>
@@ -286,17 +276,15 @@ SELECT * FROM
 SELECT * FROM
     left_table
     JOIN right_table USING (uid)
-    ..
 ```
 </td>
 <td>
 
-|Column|References       |
-|:----:|-----------------|
-|`uid` |left_table.`uid` |
-|      |right_table.`uid`|
-|`name`|left_table.`name`|
-|`age` |right_table.`age`|
+|Column|References                            |
+|:----:|--------------------------------------|
+|`uid` |left_table.`uid`</br>right_table.`uid`|
+|`name`|left_table.`name`                     |
+|`age` |right_table.`age`                     |
 </td>
 </tr>
 
@@ -314,10 +302,9 @@ SELECT b FROM second_table
 </td>
 <td>
 
-|Column   |References            |
-|:-------:|----------------------|
-|`a`|first_table.`a` |
-|         |second_table.`b`|
+|Column   |References                          |
+|:-------:|------------------------------------|
+|`a`      |first_table.`a`</br>second_table.`b`|
 </td>
 </tr>
 
@@ -375,12 +362,10 @@ SELECT * FROM table_view
 </td>
 <td>
 
-|Column|References    |
-|:----:|--------------|
-|`a`   |table_view.`a`|
-|      |table.`id`    |
-|`b`   |table_view.`b`|
-|      |table.`name`  |
+|Column|References                     |
+|:----:|-------------------------------|
+|`a`   |table_view.`a`</br>table.`id`  |
+|`b`   |table_view.`b`</br>table.`name`|
 </td>
 </tr>
 
