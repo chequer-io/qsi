@@ -8,9 +8,9 @@ using Qsi.Utilities;
 
 namespace Qsi.SqlServer.Tree
 {
-    public sealed class ExpressionVisitor : VisitorBase
+    internal sealed class ExpressionVisitor : VisitorBase
     {
-        public ExpressionVisitor(IContext context) : base(context)
+        public ExpressionVisitor(IVisitorContext visitorContext) : base(visitorContext)
         {
         }
 

@@ -1,13 +1,11 @@
 ﻿namespace Qsi.SqlServer.Tree
 {
-    public interface IContext
+    internal interface IVisitorContext
     {
         TableVisitor TableVisitor { get; }
         
         ExpressionVisitor ExpressionVisitor { get; }
         
         IdentifierVisitor IdentifierVisitor { get; }
-        
-        SqlServerParser SqlParser { get; }
     }
 }

@@ -8,9 +8,9 @@ using Qsi.Utilities;
 
 namespace Qsi.SqlServer.Tree
 {
-    public sealed class TableVisitor : VisitorBase
+    internal sealed class TableVisitor : VisitorBase
     {
-        public TableVisitor(IContext context) : base(context)
+        public TableVisitor(IVisitorContext visitorContext) : base(visitorContext)
         {
         }
 

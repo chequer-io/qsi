@@ -10,13 +10,19 @@ using Qsi.Tree;
 
 namespace Qsi.SqlServer
 {
-    public sealed class SqlServerParser : IQsiTreeParser, IContext
+    public sealed class SqlServerParser : IQsiTreeParser, IVisitorContext
     {
-        public TableVisitor TableVisitor { get; }
+        #region IContext
+        TableVisitor IVisitorContext.TableVisitor => _tableVisitor;
 
-        public ExpressionVisitor ExpressionVisitor { get; }
+        ExpressionVisitor IVisitorContext.ExpressionVisitor => _expressionVisitor;
 
-        public IdentifierVisitor IdentifierVisitor { get; }
+        IdentifierVisitor IVisitorContext.IdentifierVisitor => _identifierVisitor;
+
+        private readonly TableVisitor _tableVisitor;
+        private readonly ExpressionVisitor _expressionVisitor;
+        private readonly IdentifierVisitor _identifierVisitor;
+        #endregion
 
         public SqlServerParser SqlParser => this;
 
@@ -25,9 +31,9 @@ namespace Qsi.SqlServer
         public SqlServerParser(TransactSqlVersion transactSqlVersion)
         {
             _parser = new TSqlParserInternal(transactSqlVersion, false);
-            TableVisitor = CreateTableVisitor();
-            ExpressionVisitor = CreateExpressionVisitor();
-            IdentifierVisitor = CreateIdentifierVisitor();
+            _tableVisitor = CreateTableVisitor();
+            _expressionVisitor = CreateExpressionVisitor();
+            _identifierVisitor = CreateIdentifierVisitor();
         }
 
         private TableVisitor CreateTableVisitor()
@@ -51,9 +57,9 @@ namespace Qsi.SqlServer
 
             if (result is TSqlScript sqlScript)
             {
-                return TableVisitor.Visit(sqlScript.Batches.FirstOrDefault());
+                return _tableVisitor.Visit(sqlScript.Batches.FirstOrDefault());
             }
-            
+
             throw new InvalidOperationException();
         }
     }

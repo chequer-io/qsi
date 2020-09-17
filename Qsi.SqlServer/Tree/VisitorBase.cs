@@ -1,20 +1,18 @@
 ﻿namespace Qsi.SqlServer.Tree
 {
-    public abstract class VisitorBase
+    internal abstract class VisitorBase
     {
-        protected TableVisitor TableVisitor => _context.TableVisitor;
+        protected TableVisitor TableVisitor => _visitorContext.TableVisitor;
 
-        protected ExpressionVisitor ExpressionVisitor => _context.ExpressionVisitor;
+        protected ExpressionVisitor ExpressionVisitor => _visitorContext.ExpressionVisitor;
 
-        protected IdentifierVisitor IdentifierVisitor => _context.IdentifierVisitor;
+        protected IdentifierVisitor IdentifierVisitor => _visitorContext.IdentifierVisitor;
 
-        protected SqlServerParser SqlParser => _context.SqlParser;
-        
-        private readonly IContext _context;
+        private readonly IVisitorContext _visitorContext;
 
-        protected VisitorBase(IContext context)
+        protected VisitorBase(IVisitorContext visitorContext)
         {
-            _context = context;
+            _visitorContext = visitorContext;
         }
     }
 }
