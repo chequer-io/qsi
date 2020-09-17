@@ -32,7 +32,7 @@ based on semantic tree transformed by parser's  for each language.
 |Table access                       |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x26A0; |
 |Derived table                      |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x26A0; |
 |Derived table (Non-Alias)          |&#x274C;|&#x274C;  |&#x2714;|&#x2714;|&#x26A0; |
-|Inline derived table               |&#x274C;|&#x2714;  |&#x2714;|&#x2714;|&#x26A0; |
+|Inline derived table               |&#x274C;|&#x2714;  |&#x2714;|&#x274C;|&#x26A0; |
 |Table function                     |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |
 |Common table expression            |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x26A0; |
 |Common table expression (Aliases)  |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x26A0; |
