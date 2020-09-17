@@ -104,8 +104,8 @@ namespace Qsi.SqlServer.Tree
                 }
 
                 n.Source.SetValue(VisitSelectStatement(createViewStatement.SelectStatement));
-
-                n.Alias.SetValue(CreateAliasNode(IdentifierVisitor.CreateQualifiedIdentifier(createViewStatement.SchemaObjectName)[^1]));
+                
+                n.Alias.SetValue(CreateAliasNode(createViewStatement.SchemaObjectName[^1]));
             });
         }
         #endregion
@@ -141,7 +141,7 @@ namespace Qsi.SqlServer.Tree
 
                 if (commonTableExpression.ExpressionName != null)
                 {
-                    n.Alias.SetValue(CreateAliasNode(IdentifierVisitor.CreateIdentifier(commonTableExpression.ExpressionName)));
+                    n.Alias.SetValue(CreateAliasNode(commonTableExpression.ExpressionName));
                 }
             });
         }
@@ -153,7 +153,7 @@ namespace Qsi.SqlServer.Tree
                 {
                     n.Ordinal = i;
 
-                    n.Alias.SetValue(CreateAliasNode(IdentifierVisitor.CreateIdentifier(identifier)));
+                    n.Alias.SetValue(CreateAliasNode(identifier));
                 }));
         }
         #endregion
@@ -265,11 +265,17 @@ namespace Qsi.SqlServer.Tree
 
                 if (columnName != null)
                 {
-                    var identifier = columnName.Identifier != null ?
-                        IdentifierVisitor.CreateIdentifier(columnName.Identifier) :
-                        new QsiIdentifier(columnName.Value, false);
-
-                    n.Alias.SetValue(CreateAliasNode(identifier));
+                    if (columnName.Identifier == null)
+                    {
+                        n.Alias.SetValue(new QsiAliasNode
+                        {
+                            Name = new QsiIdentifier(columnName.Value, false)
+                        });
+                    }
+                    else
+                    {
+                        n.Alias.SetValue(CreateAliasNode(columnName.Identifier));
+                    }
                 }
             });
         }
@@ -527,7 +533,7 @@ namespace Qsi.SqlServer.Tree
                 n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
                 n.Source.SetValue(tableNode);
 
-                n.Alias.SetValue(CreateAliasNode(IdentifierVisitor.CreateIdentifier(namedTableReference.Alias)));
+                n.Alias.SetValue(CreateAliasNode(namedTableReference.Alias));
             });
         }
 
@@ -706,7 +712,7 @@ namespace Qsi.SqlServer.Tree
             {
                 if (inlineDerivedTable.Alias != null)
                 {
-                    n.Alias.SetValue(CreateAliasNode(IdentifierVisitor.CreateIdentifier(inlineDerivedTable.Alias)));
+                    n.Alias.SetValue(CreateAliasNode(inlineDerivedTable.Alias));
                 }
 
                 if (!ListUtility.IsNullOrEmpty(inlineDerivedTable.Columns))
@@ -726,7 +732,7 @@ namespace Qsi.SqlServer.Tree
             {
                 if (queryDerivedTable.Alias != null)
                 {
-                    n.Alias.SetValue(CreateAliasNode(IdentifierVisitor.CreateIdentifier(queryDerivedTable.Alias)));
+                    n.Alias.SetValue(CreateAliasNode(queryDerivedTable.Alias));
                 }
 
                 n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
@@ -742,11 +748,11 @@ namespace Qsi.SqlServer.Tree
         #endregion
         #endregion
 
-        public QsiAliasNode CreateAliasNode(QsiIdentifier identifier)
+        public QsiAliasNode CreateAliasNode(Identifier identifier)
         {
             return new QsiAliasNode
             {
-                Name = identifier
+                Name = IdentifierVisitor.CreateIdentifier(identifier)
             };
         }
     }
