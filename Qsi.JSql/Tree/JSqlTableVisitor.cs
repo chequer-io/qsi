@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using net.sf.jsqlparser.expression;
+using net.sf.jsqlparser.expression.operators.relational;
 using net.sf.jsqlparser.schema;
 using net.sf.jsqlparser.statement;
 using net.sf.jsqlparser.statement.create.view;
@@ -458,7 +459,43 @@ namespace Qsi.JSql.Tree
 
         public virtual QsiTableNode VisitValuesList(ValuesList valuesList)
         {
-            throw new NotImplementedException();
+            return TreeHelper.Create<QsiInlineDerivedTableNode>(n =>
+            {
+                IEnumerable<QsiRowValueExpressionNode> rows = valuesList.getMultiExpressionList().getExpressionLists()
+                    .AsEnumerable<ExpressionList>()
+                    .Select(e => TreeHelper.Create<QsiRowValueExpressionNode>(rn =>
+                    {
+                        rn.ColumnValues.AddRange(e.getExpressions()
+                            .AsEnumerable<Expression>()
+                            .Select(ExpressionVisitor.Visit));
+                    }));
+
+                n.Rows.AddRange(rows);
+
+                if (valuesList.getAlias() != null)
+                {
+                    n.Alias.SetValue(VisitAlias(valuesList.getAlias()));
+
+                    IList<string> columns = null;
+
+                    if (valuesList.getAlias() != null)
+                    {
+                        columns = valuesList.getAlias().getAliasColumns()?
+                            .AsEnumerable<Alias.AliasColumn>()
+                            .Select(c => c.name)
+                            .ToList();
+                    }
+
+                    if (ListUtility.IsNullOrEmpty(columns))
+                        columns = valuesList.getColumnNames().AsList<string>();
+
+                    n.Columns.SetValue(
+                        columns == null || columns.Count == 0 ?
+                            TreeHelper.CreateAllColumnsDeclaration() :
+                            CreateSequentialColumnNodes(columns.Select(c => (MultiPartName)new FakeMultiPartName(c)))
+                    );
+                }
+            });
         }
 
         public virtual QsiTableNode VisitParenthesisFromItem(ParenthesisFromItem parenthesisFromItem)

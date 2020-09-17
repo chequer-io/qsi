@@ -651,15 +651,15 @@ namespace Qsi.JSql.Tree
             });
         }
 
-        public virtual QsiLogicalExpressionNode VisitInExpression(InExpression expression)
+        public virtual QsiExpressionNode VisitInExpression(InExpression expression)
         {
-            return TreeHelper.Create<QsiLogicalExpressionNode>(n =>
+            var node = TreeHelper.Create<QsiLogicalExpressionNode>(n =>
             {
                 n.Left.SetValue(expression.getLeftExpression() == null ?
                     VisitItemsList(expression.getLeftItemsList()) :
                     Visit(expression.getLeftExpression()));
 
-                n.Operator = expression.isNot() ? "NOT IN" : "IN";
+                n.Operator = "IN";
 
                 if (expression.getMultiExpressionList() != null)
                 {
@@ -674,10 +674,15 @@ namespace Qsi.JSql.Tree
                     n.Right.SetValue(VisitItemsList(expression.getRightItemsList()));
                 }
             });
+
+            if (expression.isNot())
+                return TreeHelper.CreateUnary(JSqlKnownOperator.Not, node);
+
+            return node;
         }
 
-        // <L.Expr> IS NOT TRUE
-        // -> IS_NOT_TRUE(<L.Expr>) 
+        // <L.Expr> IS TRUE
+        // -> IS_TRUE(<L.Expr>) 
         public virtual QsiExpressionNode VisitIsBooleanExpression(IsBooleanExpression expression)
         {
             var invoke = TreeHelper.Create<QsiInvokeExpressionNode>(n =>
@@ -694,8 +699,8 @@ namespace Qsi.JSql.Tree
             return invoke;
         }
 
-        // <L.Expr> IS NOT NULL
-        // -> IS_NOT_NULL(<L.Expr>)
+        // <L.Expr> IS NULL
+        // -> IS_NULL(<L.Expr>)
         public virtual QsiExpressionNode VisitIsNullExpression(IsNullExpression expression)
         {
             var invoke = TreeHelper.Create<QsiInvokeExpressionNode>(n =>

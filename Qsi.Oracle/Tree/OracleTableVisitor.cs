@@ -49,5 +49,10 @@ namespace Qsi.Oracle.Tree
 
             return tableNode;
         }
+
+        public override QsiTableNode VisitValuesList(ValuesList valuesList)
+        {
+            throw new QsiException(QsiError.Syntax);
+        }
     }
 }
