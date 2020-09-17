@@ -45,9 +45,6 @@ namespace Qsi.SqlServer.Tree
             {
                 case SelectStatement selectStatement:
                     return VisitSelectStatement(selectStatement);
-
-                case DataModificationStatement _:
-                    break;
             }
 
             throw TreeHelper.NotSupportedTree(statementWithCtesAndXmlNamespaces);
