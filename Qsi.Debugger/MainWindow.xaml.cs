@@ -8,13 +8,11 @@ using System.Xml;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
-using Avalonia.Data;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using AvaloniaEdit;
 using AvaloniaEdit.Highlighting;
 using AvaloniaEdit.Highlighting.Xshd;
-using Qsi.Compiler;
 using Qsi.Data;
 using Qsi.Debugger.Models;
 using Qsi.Debugger.Utilities;
@@ -23,7 +21,9 @@ using Qsi.Debugger.Vendor.JSql;
 using Qsi.Debugger.Vendor.MySql;
 using Qsi.Debugger.Vendor.Oracle;
 using Qsi.Debugger.Vendor.PostgreSql;
+using Qsi.Debugger.Vendor.SqlServer;
 using Qsi.Parsing;
+using Qsi.SqlServer.Common;
 using Qsi.Tree;
 
 namespace Qsi.Debugger
@@ -54,7 +54,9 @@ namespace Qsi.Debugger
                 ["MySQL"] = new Lazy<VendorDebugger>(() => new MySqlDebugger()),
                 ["PostgreSQL"] = new Lazy<VendorDebugger>(() => new PostgreSqlDebugger()),
                 ["JSqlParser"] = new Lazy<VendorDebugger>(() => new JSqlDebugger()),
-                ["Oracle"] = new Lazy<VendorDebugger>(() => new OracleDebugger())
+                ["Oracle"] = new Lazy<VendorDebugger>(() => new OracleDebugger()),
+                ["SQL Server 2000"] = new Lazy<VendorDebugger>(() => new SqlServerDebugger(TransactSqlVersion.Version80)),
+                ["SQL Server 2019"] = new Lazy<VendorDebugger>(() => new SqlServerDebugger(TransactSqlVersion.Version150))
             };
 
             _cbLanguages = this.Find<ComboBox>("cbLanguages");
@@ -119,6 +121,7 @@ namespace Qsi.Debugger
         private async void Update()
         {
             ClearError();
+            ClearRawTree();
             ClearQsiTree();
             ClearResultTree();
 
@@ -174,6 +177,11 @@ namespace Qsi.Debugger
         {
             _tbError.Text = null;
             _tbError.IsVisible = false;
+        }
+
+        private void ClearRawTree()
+        {
+            _tvRaw.Items = null;
         }
 
         private void ClearQsiTree()

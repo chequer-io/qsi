@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+    </PropertyGroup>
+
+    <PropertyGroup Label="Nuspec">
+        <Title>Query Structure Interface of SqlServer</Title>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Qsi\Qsi.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="Microsoft.SqlServer.TransactSql.ScriptDom, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91">
+        <HintPath>lib\Microsoft.SqlServer.TransactSql.ScriptDom.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <_PackageFiles Include="lib\Microsoft.SqlServer.TransactSql.ScriptDom.dll">
+            <BuildAction>None</BuildAction>
+            <PackagePath>lib\netstandard2.1</PackagePath>
+        </_PackageFiles>
+    </ItemGroup>
+
+</Project>
