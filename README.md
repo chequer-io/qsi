@@ -61,7 +61,6 @@ based on semantic tree transformed by parser's  for each language.
 <td>
 
 ```sql
--- table : id, name
 SELECT 1 AS a, '2' AS b
 ```
 </td>
