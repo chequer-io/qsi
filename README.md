@@ -44,6 +44,7 @@ based on semantic tree transformed by parser's  for each language.
 |Table unpivot                      |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |
 |Trace view definition              |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |
 |Execute prepared table query       |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |
+|Call table procedure               |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |
 
 ## Table Features
 
@@ -382,6 +383,26 @@ SELECT * FROM table_view
 <tr>
 <td align="center">&#9744;</td>
 <td>Execute prepared table query</td>
+<td>
+
+```sql
+-- TODO
+```
+</td>
+<td>
+
+<!--
+|Column|References|
+|:-:|-|
+|||
+-->
+</td>
+</tr>
+
+<!-- Call table procedure -->
+<tr>
+<td align="center">&#9744;</td>
+<td>Call table procedure</td>
 <td>
 
 ```sql
