@@ -185,7 +185,7 @@ SELECT * FROM
 
 ```sql
 WITH cte AS (SELECT 1 AS n)
-..
+SELECT * FROM cte
 ```
 </td>
 <td>
@@ -204,7 +204,7 @@ WITH cte AS (SELECT 1 AS n)
 
 ```sql
 WITH cte (n) AS (SELECT 1)
-..
+SELECT * FROM cte
 ```
 </td>
 <td>
@@ -227,7 +227,7 @@ WITH RECURSIVE cte AS (
     UNION ALL
     SELECT n + 1 FROM cte WHERE n < 10
 )
-..
+SELECT * FROM cte
 ```
 </td>
 <td>
@@ -249,9 +249,8 @@ WITH RECURSIVE cte AS (
 -- left_table : name, uid
 -- right_table : age, uid
 SELECT * FROM
-    left_table
-    JOIN right_table ON ..
-    ..
+    left_table l
+    JOIN right_table r ON l.uid = r.uid
 ```
 </td>
 <td>
@@ -277,7 +276,6 @@ SELECT * FROM
 SELECT * FROM
     left_table
     JOIN right_table USING (uid)
-    ..
 ```
 </td>
 <td>
