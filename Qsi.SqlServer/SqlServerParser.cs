@@ -24,8 +24,6 @@ namespace Qsi.SqlServer
         private readonly IdentifierVisitor _identifierVisitor;
         #endregion
 
-        public SqlServerParser SqlParser => this;
-
         private readonly TSqlParserInternal _parser;
 
         public SqlServerParser(TransactSqlVersion transactSqlVersion)
