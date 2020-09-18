@@ -16,7 +16,7 @@ namespace Qsi.Data
 
         public int Level { get; }
 
-        private readonly QsiIdentifier[] _identifiers;
+        internal readonly QsiIdentifier[] _identifiers;
 
         public QsiQualifiedIdentifier(IEnumerable<QsiIdentifier> identifiers) : this(identifiers.ToArray())
         {
@@ -26,6 +26,16 @@ namespace Qsi.Data
         {
             _identifiers = identifiers;
             Level = _identifiers?.Length ?? 0;
+        }
+
+        public QsiQualifiedIdentifier SubIdentifier(Range range)
+        {
+            return new QsiQualifiedIdentifier(_identifiers[range]);
+        }
+
+        public QsiQualifiedIdentifier SubIdentifier(Index index)
+        {
+            return new QsiQualifiedIdentifier(_identifiers[index]);
         }
 
         public IEnumerator<QsiIdentifier> GetEnumerator()

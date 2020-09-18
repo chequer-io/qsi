@@ -114,15 +114,16 @@ namespace Qsi.Compiler
                 var typeBackup = lookup.Type;
 
                 using var viewCompileContext = new CompileContext();
+
+                if (lookup.Identifier.Level > 1)
+                    viewCompileContext.PushIdentifierScope(lookup.Identifier.SubIdentifier(..^1));
+
                 var viewTableStructure = await BuildTableStructure(viewCompileContext, viewTable);
 
-                viewTableStructure.Identifier = _resolver.ResolveQualifiedIdentifier(viewTableStructure.Identifier);
+                viewTableStructure.Identifier = ResolveQualifiedIdentifier(context, viewTableStructure.Identifier);
                 lookup = viewTableStructure;
                 lookup.Type = typeBackup;
             }
-
-            // // push table reference
-            // context.PushTable(lookup);
 
             return lookup;
         }
@@ -833,6 +834,25 @@ namespace Qsi.Compiler
         #endregion
 
         #region Table Lookup
+        private QsiQualifiedIdentifier ResolveQualifiedIdentifier(CompileContext context, QsiQualifiedIdentifier identifier)
+        {
+            // Qualified identifier without table
+            var identifierScope = context.PeekIdentifierScope();
+
+            if (identifierScope != null && identifier.Level <= identifierScope.Level)
+            {
+                int offset = identifierScope.Level - identifier.Level + 1;
+                Span<QsiIdentifier> identifiers = new QsiIdentifier[identifierScope.Level + 1].AsSpan();
+
+                identifierScope._identifiers[..offset].CopyTo(identifiers);
+                identifier._identifiers.AsSpan().CopyTo(identifiers.Slice(offset));
+
+                identifier = new QsiQualifiedIdentifier(identifiers.ToArray());
+            }
+
+            return _resolver.ResolveQualifiedIdentifier(identifier);
+        }
+
         private QsiDataTable ResolveDataTable(CompileContext context, QsiQualifiedIdentifier identifier)
         {
             return LookupDataTable(context, identifier) ?? throw new QsiException(QsiError.UnableResolveTable, identifier);
@@ -842,7 +862,7 @@ namespace Qsi.Compiler
         {
             return
                 context.Directives.FirstOrDefault(d => Match(d.Identifier, identifier)) ??
-                _resolver.LookupTable(_resolver.ResolveQualifiedIdentifier(identifier));
+                _resolver.LookupTable(ResolveQualifiedIdentifier(context, identifier));
         }
 
         private IEnumerable<QsiDataTable> LookupDataTablesInExpression(CompileContext context, QsiQualifiedIdentifier identifier)

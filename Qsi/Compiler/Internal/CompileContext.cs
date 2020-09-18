@@ -18,6 +18,7 @@ namespace Qsi.Runtime.Internal
         public List<QsiDataTable> SourceTables { get; }
 
         private readonly List<QsiDataTable> _directives;
+        private Stack<QsiQualifiedIdentifier> _identifierScope;
 
         public CompileContext() : this(null)
         {
@@ -51,9 +52,27 @@ namespace Qsi.Runtime.Internal
             _directives.AddRange(directiveTables);
         }
 
+        public QsiQualifiedIdentifier PeekIdentifierScope()
+        {
+            if (_identifierScope == null)
+                return Parent?.PeekIdentifierScope();
+
+            if (_identifierScope.TryPeek(out var scope))
+                return scope;
+
+            return null;
+        }
+
+        public void PushIdentifierScope(QsiQualifiedIdentifier identifier)
+        {
+            _identifierScope ??= new Stack<QsiQualifiedIdentifier>();
+            _identifierScope.Push(identifier);
+        }
+
         void IDisposable.Dispose()
         {
             _directives.Clear();
+            _identifierScope.Clear();
             SourceTables.Clear();
         }
     }
