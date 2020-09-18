@@ -32,6 +32,7 @@ based on semantic tree transformed by parser's  for each language.
 |Table access                       |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |
 |Derived table                      |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |
 |Derived table (Non-Alias)          |&#x274C;|&#x274C;  |&#x2714;|&#x2714;|&#x274C; |
+|Specify columns to table alias     |&#x274C;|&#x2714;  |&#x2714;|&#x274C;|&#x274C; |
 |Inline derived table               |&#x274C;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |
 |Table function                     |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |
 |Common table expression            |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |
@@ -43,6 +44,8 @@ based on semantic tree transformed by parser's  for each language.
 |Table pivot                        |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |
 |Table unpivot                      |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |
 |Trace view definition              |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |
+|Execute prepared table query       |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |
+|Call table procedure               |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |
 
 ## Table Features
 
@@ -132,6 +135,26 @@ SELECT * FROM
 |:----:|----------------------------------------|
 |`id`  |<em>derived</em>.`id`</br>table.`id`    |
 |`name`|<em>derived</em>.`name`</br>table.`name`|
+</td>
+</tr>
+
+<!-- Specify columns to table alias -->
+<tr>
+<td align="center">&#9745;</td>
+<td>Specify columns to table alias</td>
+<td>
+
+```sql
+-- table : id, name
+SELECT * FROM table AS alias(a, b)
+```
+</td>
+<td>
+
+|Column|References                |
+|:----:|--------------------------|
+|`a`   |alias.`a`</br>table.`id`  |
+|`b`   |alias.`b`</br>table.`name`|
 </td>
 </tr>
 
@@ -366,6 +389,54 @@ SELECT * FROM table_view
 |:----:|-------------------------------|
 |`a`   |table_view.`a`</br>table.`id`  |
 |`b`   |table_view.`b`</br>table.`name`|
+</td>
+</tr>
+
+<!--
+|Column|References|
+|:-:|-|
+|||
+-->
+</td>
+</tr>
+
+<!-- Execute prepared table query -->
+<tr>
+<td align="center">&#9744;</td>
+<td>Execute prepared table query</td>
+<td>
+
+```sql
+-- TODO
+```
+</td>
+<td>
+
+<!--
+|Column|References|
+|:-:|-|
+|||
+-->
+</td>
+</tr>
+
+<!-- Call table procedure -->
+<tr>
+<td align="center">&#9744;</td>
+<td>Call table procedure</td>
+<td>
+
+```sql
+-- TODO
+```
+</td>
+<td>
+
+<!--
+|Column|References|
+|:-:|-|
+|||
+-->
 </td>
 </tr>
 
