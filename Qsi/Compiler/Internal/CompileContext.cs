@@ -72,7 +72,7 @@ namespace Qsi.Runtime.Internal
         void IDisposable.Dispose()
         {
             _directives.Clear();
-            _identifierScope.Clear();
+            _identifierScope?.Clear();
             SourceTables.Clear();
         }
     }
