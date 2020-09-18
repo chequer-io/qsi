@@ -73,6 +73,16 @@ namespace Qsi.JSql.Tree
             });
         }
 
+        public virtual QsiColumnsDeclarationNode CreateSequentialColumnNodes(IEnumerable<string> columns)
+        {
+            return CreateSequentialColumnNodes(columns.Select(c => (MultiPartName)new FakeMultiPartName(c)));
+        }
+
+        public virtual QsiColumnsDeclarationNode CreateSequentialColumnNodes(IEnumerable<Alias.AliasColumn> columns)
+        {
+            return CreateSequentialColumnNodes(columns.Select(c => (MultiPartName)new FakeMultiPartName(c.name)));
+        }
+
         public virtual QsiColumnsDeclarationNode CreateSequentialColumnNodes(IEnumerable<Column> columns)
         {
             return CreateSequentialColumnNodes(columns.Cast<MultiPartName>());
@@ -396,13 +406,17 @@ namespace Qsi.JSql.Tree
         private QsiTableNode WrapFromItem(FromItem fromItem, QsiTableNode tableNode)
         {
             // TODO: Pivot, UnPivot
+            var alias = fromItem.getAlias();
 
-            if (fromItem.getAlias() == null)
+            if (alias == null)
                 return tableNode;
 
             QsiDerivedTableNode derivedNode;
+            IList<Alias.AliasColumn> aliasColumns = alias.getAliasColumns().AsList<Alias.AliasColumn>();
 
-            if (tableNode is QsiDerivedTableNode derivedTableNode && derivedTableNode.Alias.IsEmpty)
+            if (tableNode is QsiDerivedTableNode derivedTableNode &&
+                derivedTableNode.Alias.IsEmpty &&
+                ListUtility.IsNullOrEmpty(aliasColumns))
             {
                 derivedNode = derivedTableNode;
             }
@@ -410,12 +424,15 @@ namespace Qsi.JSql.Tree
             {
                 derivedNode = TreeHelper.Create<QsiDerivedTableNode>(n =>
                 {
-                    n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+                    n.Columns.SetValue(ListUtility.IsNullOrEmpty(aliasColumns)
+                        ? TreeHelper.CreateAllColumnsDeclaration() :
+                        CreateSequentialColumnNodes(aliasColumns));
+
                     n.Source.SetValue(tableNode);
                 });
             }
 
-            derivedNode.Alias.SetValue(VisitAlias(fromItem.getAlias()));
+            derivedNode.Alias.SetValue(VisitAlias(alias));
 
             return derivedNode;
         }
@@ -472,30 +489,37 @@ namespace Qsi.JSql.Tree
 
                 n.Rows.AddRange(rows);
 
-                if (valuesList.getAlias() != null)
+                var alias = valuesList.getAlias();
+
+                if (alias != null)
                 {
-                    n.Alias.SetValue(VisitAlias(valuesList.getAlias()));
+                    n.Alias.SetValue(VisitAlias(alias));
 
-                    IList<string> columns = null;
+                    QsiColumnsDeclarationNode columns = null;
 
-                    if (valuesList.getAlias() != null)
+                    if (alias.getAliasColumns() != null)
                     {
-                        columns = valuesList.getAlias().getAliasColumns()?
-                            .AsEnumerable<Alias.AliasColumn>()
-                            .Select(c => c.name)
-                            .ToList();
+                        columns = CreateSequentialColumnNodes(alias.getAliasColumns().AsEnumerable<Alias.AliasColumn>());
                     }
 
-                    if (ListUtility.IsNullOrEmpty(columns))
-                        columns = valuesList.getColumnNames().AsList<string>();
+                    if (IsEmpty(columns) && valuesList.getColumnNames() != null)
+                    {
+                        columns = CreateSequentialColumnNodes(valuesList.getColumnNames().AsEnumerable<string>());
+                    }
 
-                    n.Columns.SetValue(
-                        columns == null || columns.Count == 0 ?
-                            TreeHelper.CreateAllColumnsDeclaration() :
-                            CreateSequentialColumnNodes(columns.Select(c => (MultiPartName)new FakeMultiPartName(c)))
-                    );
+                    if (IsEmpty(columns))
+                    {
+                        columns = TreeHelper.CreateAllColumnsDeclaration();
+                    }
+
+                    n.Columns.SetValue(columns);
                 }
             });
+
+            static bool IsEmpty(QsiColumnsDeclarationNode c)
+            {
+                return c == null || c.Columns.Count == 0;
+            }
         }
 
         public virtual QsiTableNode VisitParenthesisFromItem(ParenthesisFromItem parenthesisFromItem)
