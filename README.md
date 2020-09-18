@@ -32,6 +32,7 @@ based on semantic tree transformed by parser's  for each language.
 |Table access                       |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |
 |Derived table                      |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |
 |Derived table (Non-Alias)          |&#x274C;|&#x274C;  |&#x2714;|&#x2714;|&#x274C; |
+|Specify columns to table alias     |&#x274C;|&#x2714;  |&#x2714;|&#x274C;|&#x274C; |
 |Inline derived table               |&#x274C;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |
 |Table function                     |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |
 |Common table expression            |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |
@@ -134,6 +135,26 @@ SELECT * FROM
 |:----:|----------------------------------------|
 |`id`  |<em>derived</em>.`id`</br>table.`id`    |
 |`name`|<em>derived</em>.`name`</br>table.`name`|
+</td>
+</tr>
+
+<!-- Specify columns to table alias -->
+<tr>
+<td align="center">&#9745;</td>
+<td>Specify columns to table alias</td>
+<td>
+
+```sql
+-- table : id, name
+SELECT * FROM table AS alias(a, b)
+```
+</td>
+<td>
+
+|Column|References                |
+|:----:|--------------------------|
+|`a`   |alias.`a`</br>table.`id`  |
+|`b`   |alias.`b`</br>table.`name`|
 </td>
 </tr>
 
