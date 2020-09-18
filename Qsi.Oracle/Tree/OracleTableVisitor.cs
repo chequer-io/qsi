@@ -50,6 +50,16 @@ namespace Qsi.Oracle.Tree
             return tableNode;
         }
 
+        public override QsiTableNode VisitFromItem(FromItem item)
+        {
+            if (item.getAlias()?.getAliasColumns()?.size() > 0)
+            {
+                throw new QsiException(QsiError.Syntax);
+            }
+
+            return base.VisitFromItem(item);
+        }
+
         public override QsiTableNode VisitValuesList(ValuesList valuesList)
         {
             throw new QsiException(QsiError.Syntax);
