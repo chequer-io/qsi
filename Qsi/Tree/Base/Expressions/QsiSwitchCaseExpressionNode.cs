@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Qsi.Utilities;
 
 namespace Qsi.Tree.Base
 {
@@ -9,16 +10,7 @@ namespace Qsi.Tree.Base
         public QsiTreeNodeProperty<QsiExpressionNode> Consequent { get; }
 
         public override IEnumerable<IQsiTreeNode> Children
-        {
-            get
-            {
-                if (!Condition.IsEmpty)
-                    yield return Condition.Value;
-
-                if (!Consequent.IsEmpty)
-                    yield return Consequent.Value;
-            }
-        }
+            => TreeHelper.YieldChildren(Condition, Consequent);
 
         #region Explicit
         IQsiExpressionNode IQsiSwitchCaseExpressionNode.Condition => Condition.Value;

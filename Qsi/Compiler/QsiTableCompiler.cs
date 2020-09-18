@@ -9,7 +9,6 @@ using Qsi.Parsing;
 using Qsi.Runtime.Internal;
 using Qsi.Services;
 using Qsi.Tree;
-using Qsi.Utilities;
 
 namespace Qsi.Compiler
 {

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Qsi.Utilities;
 
 namespace Qsi.Tree.Base
 {
@@ -11,16 +12,7 @@ namespace Qsi.Tree.Base
         public QsiTreeNodeProperty<QsiExpressionNode> Value { get; }
 
         public override IEnumerable<IQsiTreeNode> Children
-        {
-            get
-            {
-                if (!Variable.IsEmpty)
-                    yield return Variable.Value;
-
-                if (!Value.IsEmpty)
-                    yield return Value.Value;
-            }
-        }
+            => TreeHelper.YieldChildren(Variable, Value);
 
         #region Explicit
         IQsiVariableAccessExpressionNode IQsiAssignExpressionNode.Variable => Variable.Value;

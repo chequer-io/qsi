@@ -1,10 +1,8 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Qsi.Collections;
 using Qsi.Compiler;
 using Qsi.Data;
 using Qsi.Parsing;
-using Qsi.Utilities;
 
 namespace Qsi.Services
 {

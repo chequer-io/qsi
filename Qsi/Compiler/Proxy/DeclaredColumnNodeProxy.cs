@@ -5,7 +5,7 @@ using Qsi.Tree;
 
 namespace Qsi.Compiler.Proxy
 {
-    public readonly struct DeclaredColumnNodeProxy : IQsiDeclaredColumnNode
+    public readonly struct DeclaredColumnNodeProxy : IQsiDeclaredColumnNode, IQsiTerminalNode
     {
         public IQsiTreeNode Parent { get; }
 

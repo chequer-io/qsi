@@ -104,5 +104,12 @@ namespace Qsi.Utilities
                 .Where(p => !p.IsEmpty)
                 .Select(p => p.Value);
         }
+
+        internal static IEnumerable<IQsiTreeNode> YieldChildren(params IQsiTreeNode[] properties)
+        {
+            return properties
+                .Where(n => n != null)
+                .Select(n => n);
+        }
     }
 }

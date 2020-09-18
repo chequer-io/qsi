@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Qsi.Utilities;
 
 namespace Qsi.Tree.Base
 {
@@ -9,15 +10,7 @@ namespace Qsi.Tree.Base
         public QsiTreeNodeList<QsiExpressionNode> Parameters { get; }
 
         public override IEnumerable<IQsiTreeNode> Children
-        {
-            get
-            {
-                if (Member != null)
-                    yield return Member.Value;
-
-                yield return _parameters;
-            }
-        }
+            => TreeHelper.YieldChildren(Member?.Value, _parameters);
 
         #region Explicit
         IQsiFunctionAccessExpressionNode IQsiInvokeExpressionNode.Member => Member.Value;

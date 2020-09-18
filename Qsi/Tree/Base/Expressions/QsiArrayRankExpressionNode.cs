@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Qsi.Utilities;
 
 namespace Qsi.Tree.Base
 {
@@ -9,16 +10,7 @@ namespace Qsi.Tree.Base
         public QsiTreeNodeProperty<QsiExpressionNode> Rank { get; }
 
         public override IEnumerable<IQsiTreeNode> Children
-        {
-            get
-            {
-                if (!Array.IsEmpty)
-                    yield return Array.Value;
-
-                if (!Rank.IsEmpty)
-                    yield return Rank.Value;
-            }
-        }
+            => TreeHelper.YieldChildren(Array, Rank);
 
         #region Explicit
         IQsiExpressionNode IQsiArrayRankExpressionNode.Array => Array.Value;

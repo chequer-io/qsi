@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Qsi.Utilities;
 
 namespace Qsi.Tree.Base
 {
@@ -7,13 +8,7 @@ namespace Qsi.Tree.Base
         public QsiTreeNodeProperty<QsiTableNode> Table { get; }
 
         public override IEnumerable<IQsiTreeNode> Children
-        {
-            get
-            {
-                if (!Table.IsEmpty)
-                    yield return Table.Value;
-            }
-        }
+            => TreeHelper.YieldChildren(Table);
 
         #region Explicit
         IQsiTableNode IQsiTableExpressionNode.Table => Table.Value;

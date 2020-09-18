@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace Qsi.Tree.Base
 {
-    public sealed class QsiBindingColumnNode : QsiColumnNode, IQsiBindingColumnNode
+    public sealed class QsiBindingColumnNode : QsiColumnNode, IQsiBindingColumnNode, IQsiTerminalNode
     {
         public string Id { get; set; }
 
