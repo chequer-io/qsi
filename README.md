@@ -424,7 +424,7 @@ SELECT * FROM table_view
 
 <!-- Trace variable definition -->
 <tr>
-<td align="center">&#9745;</td>
+<td align="center">&#9744;</td>
 <td>Trace variable definition</td>
 <td>
 
