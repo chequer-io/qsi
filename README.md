@@ -45,7 +45,7 @@ based on semantic tree transformed by parser's  for each language.
 |Table pivot                        |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |
 |Table unpivot                      |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |
 |Trace view definition              |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |
-|Trace variable definition          |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |
+|Trace variable definition          |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |
 |Execute prepared table query       |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |
 |Call table procedure               |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |
 
