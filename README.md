@@ -35,6 +35,7 @@ based on semantic tree transformed by parser's  for each language.
 |Specify columns to table alias     |&#x274C;|&#x2714;  |&#x2714;|&#x274C;|&#x274C; |
 |Inline derived table               |&#x274C;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |
 |Table function                     |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |
+|Table variable                     |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |
 |Common table expression            |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |
 |Common table expression (Aliases)  |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |
 |Common table expression (Recursive)|&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |
@@ -44,6 +45,7 @@ based on semantic tree transformed by parser's  for each language.
 |Table pivot                        |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |
 |Table unpivot                      |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |
 |Trace view definition              |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |
+|Trace variable definition          |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |
 |Execute prepared table query       |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |
 |Call table procedure               |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |
 
@@ -184,6 +186,26 @@ SELECT * FROM
 <tr>
 <td align="center">&#9744;</td>
 <td>Table function</td>
+<td>
+
+```sql
+-- TODO
+```
+</td>
+<td>
+
+<!--
+|Column|References|
+|:-:|-|
+|||
+-->
+</td>
+</tr>
+
+<!-- Table variable -->
+<tr>
+<td align="center">&#9744;</td>
+<td>Table variable</td>
 <td>
 
 ```sql
@@ -389,6 +411,34 @@ SELECT * FROM table_view
 |:----:|-------------------------------|
 |`a`   |table_view.`a`</br>table.`id`  |
 |`b`   |table_view.`b`</br>table.`name`|
+</td>
+</tr>
+
+<!--
+|Column|References|
+|:-:|-|
+|||
+-->
+</td>
+</tr>
+
+<!-- Trace variable definition -->
+<tr>
+<td align="center">&#9745;</td>
+<td>Trace variable definition</td>
+<td>
+
+```sql
+-- TODO
+```
+</td>
+<td>
+
+<!--
+|Column|References|
+|:-:|-|
+|||
+-->
 </td>
 </tr>
 
