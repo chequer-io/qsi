@@ -1,14 +1,8 @@
-﻿using System.Collections.Generic;
-using Qsi.Data;
-using Qsi.Parsing;
+﻿using Qsi.Parsing.Common;
 
 namespace Qsi.JSql
 {
-    public class JSqlScriptParser : IQsiScriptParser
+    public class JSqlScriptParser : CommonScriptParser
     {
-        public IEnumerable<QsiScript> Parse(in string input)
-        {
-            throw new System.NotImplementedException();
-        }
     }
 }
