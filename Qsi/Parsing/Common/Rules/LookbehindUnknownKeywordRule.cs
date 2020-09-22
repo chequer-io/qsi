@@ -1,5 +1,7 @@
-﻿﻿namespace Qsi.Parsing.Common.Rules
+﻿namespace Qsi.Parsing.Common.Rules
 {
+    // ABCabc|..
+    //       ^
     public sealed class LookbehindUnknownKeywordRule : ITokenRule
     {
         public void Run(CommonScriptCursor cursor)
@@ -8,6 +10,7 @@
             {
                 var c = cursor.Value[i];
 
+                // A-Za-z
                 if (65 <= c && c <= 90 || 97 <= c && c <= 122)
                     continue;
 
