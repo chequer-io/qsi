@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Qsi.Data;
@@ -13,6 +14,7 @@ namespace Qsi.Parsing.Common
 
         private readonly ITokenRule _whiteSpace = new LookbehindWhiteSpaceRule();
         private readonly ITokenRule _newLine = new LookaheadNewLineRule();
+        private readonly ITokenRule _keyword = new LookbehindUnknownKeywordRule();
         private readonly ITokenRule _singleQuote = new LookbehindCharacterRule('\'');
         private readonly ITokenRule _doubleQuote = new LookbehindCharacterRule('"');
         private readonly ITokenRule _backQuote = new LookbehindCharacterRule('`');
@@ -34,7 +36,7 @@ namespace Qsi.Parsing.Common
                 {
                     FlushScript(context);
                 }
-                else if (SkipToNextTransition(context, out var token))
+                else if (TryParseToken(context, out var token))
                 {
                     FlushToken(context);
 
@@ -113,8 +115,8 @@ namespace Qsi.Parsing.Common
             if (context.Tokens.Count == 0)
                 yield break;
 
-            int bodyStartIndex = context.Tokens.FindIndex(t => t.Type == TokenType.Fragment);
-            int bodyEndIndex = context.Tokens.FindLastIndex(t => t.Type == TokenType.Fragment);
+            int bodyStartIndex = context.Tokens.FindIndex(t => t.Type == TokenType.Fragment || t.Type == TokenType.Keyword);
+            int bodyEndIndex = context.Tokens.FindLastIndex(t => t.Type == TokenType.Fragment || t.Type == TokenType.Keyword);
 
             if (bodyStartIndex > 0)
                 yield return ..bodyStartIndex;
@@ -187,11 +189,33 @@ namespace Qsi.Parsing.Common
             var endIndex = tokens[^1].Span.End.GetOffset(context.Cursor.Length) - 1;
             var (startPosition, endPosition) = MeasurePosition(context, startIndex, endIndex);
             var script = context.Cursor.Value[startIndex..(endIndex + 1)];
+            var scriptType = GetSuitableScriptType(context, tokens);
 
-            return new QsiScript(script, QsiScriptType.Unknown, startPosition, endPosition);
+            return new QsiScript(script, scriptType, startPosition, endPosition);
         }
 
-        protected virtual bool SkipToNextTransition(ParseContext context, out Token token)
+        protected virtual QsiScriptType GetSuitableScriptType(ParseContext context, IList<Token> tokens)
+        {
+            var firstToken = tokens[0];
+
+            if (firstToken.Type == TokenType.Keyword &&
+                Enum.TryParse<QsiScriptType>(context.Cursor.Value[firstToken.Span], true, out var type))
+            {
+                return type;
+            }
+
+            if (tokens.All(t =>
+                t.Type == TokenType.WhiteSpace ||
+                t.Type == TokenType.SingeLineComment ||
+                t.Type == TokenType.MultiLineComment))
+            {
+                return QsiScriptType.CommentGroup;
+            }
+
+            return QsiScriptType.Unknown;
+        }
+
+        protected virtual bool TryParseToken(ParseContext context, out Token token)
         {
             int offset;
             TokenType tokenType;
@@ -200,6 +224,13 @@ namespace Qsi.Parsing.Common
 
             switch (cursor.Current)
             {
+                // A-Za-z
+                case var c when 65 <= c && c <= 90 || 97 <= c && c <= 122:
+                    offset = 1;
+                    rule = _keyword;
+                    tokenType = TokenType.Keyword;
+                    break;
+                    
                 case '\'':
                     offset = 1;
                     rule = _singleQuote;
@@ -270,6 +301,7 @@ namespace Qsi.Parsing.Common
         }
 
         #region Context
+
         protected class ParseContext
         {
             public List<QsiScript> Scripts { get; }
@@ -294,11 +326,14 @@ namespace Qsi.Parsing.Common
                 Tokens = new List<Token>();
             }
         }
+
         #endregion
 
         #region Token
+
         protected enum TokenType
         {
+            Keyword,
             Fragment,
             WhiteSpace,
             SingeLineComment,
@@ -322,6 +357,7 @@ namespace Qsi.Parsing.Common
                 return $"{Span} ({Type})";
             }
         }
+
         #endregion
     }
 }

@@ -45,7 +45,7 @@ namespace Qsi.Compiler
         {
             try
             {
-                if (script.ScriptType != QsiScriptType.Select)
+                if (script.ScriptType != QsiScriptType.With && script.ScriptType != QsiScriptType.Select)
                     throw new QsiException(QsiError.NotSupportedTree, script.ScriptType);
 
                 var treeNode =
@@ -60,14 +60,6 @@ namespace Qsi.Compiler
             catch (Exception e)
             {
                 return new QsiTableResult(null, new[] { e });
-            }
-        }
-
-        public async IAsyncEnumerable<QsiTableResult> ExecuteAsync(string input)
-        {
-            foreach (var script in _scriptParser.Parse(input).Where(s => s.ScriptType == QsiScriptType.Select))
-            {
-                yield return await ExecuteAsync(script);
             }
         }
         #endregion

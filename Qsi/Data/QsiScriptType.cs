@@ -5,31 +5,37 @@
         Unknown,
 
         // ** DML **
-        DataManipulation,
+        With,
         Select,
         Insert,
         Update,
         Delete,
 
         // ** DDL **
-        DataDefinition,
-        CreateTable,
-        CreateView,
-        CreateFunction,
-        CreateProcedure,
-        AlterTable,
-        AlterView,
-        AlterFunction,
-        AlterProcedure,
-        DropTable,
-        DropView,
-        DropFunction,
-        DropProcedure
-
-        // ** TCL **
-        // TODO: Transaction Control Language
+        Create,
+        Alter,
+        Drop,
+        Rename,
+        Truncate,
 
         // ** DCL **
-        // TODO: Data Control Language
+        Grant,
+        Revoke,
+
+        // ** TCL **
+        Commit,
+        Rollback,
+        SavePoint,
+
+        // Others
+        Delimiter,
+        Call,
+        Execute,
+        Explain,
+        Use,
+        Show,
+        Describe,
+
+        CommentGroup
     }
 }

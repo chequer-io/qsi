@@ -1,9 +1,7 @@
-﻿using System;
-using Antlr4.Runtime;
+﻿using Antlr4.Runtime;
 using Qsi.Data;
 using Qsi.MySql.Internal;
 using Qsi.MySql.Tree;
-using Qsi.Parsing;
 using Qsi.Parsing.Antlr;
 using Qsi.Tree;
 
@@ -30,24 +28,15 @@ namespace Qsi.MySql
 
             switch (script.ScriptType)
             {
-                // ** DML **
-
-                case QsiScriptType.DataManipulation:
-                    return TableVisitor.VisitDmlStatement(mySqlParser.dmlStatement());
-
+                case QsiScriptType.With:
                 case QsiScriptType.Select:
                     return TableVisitor.VisitSelectStatement(mySqlParser.selectStatement());
 
-                // ** DDL **
-
-                case QsiScriptType.DataDefinition:
+                case QsiScriptType.Create:
                     return TableVisitor.VisitDdlStatement(mySqlParser.ddlStatement());
 
-                case QsiScriptType.CreateView:
-                    return TableVisitor.VisitCreateView(mySqlParser.createView());
-
                 default:
-                    throw new NotImplementedException();
+                    return null;
             }
         }
     }
