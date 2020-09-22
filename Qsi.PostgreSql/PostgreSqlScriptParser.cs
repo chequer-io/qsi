@@ -1,4 +1,4 @@
-﻿using Qsi.Parsing;
+﻿using Qsi.Parsing.Common;
 
 namespace Qsi.PostgreSql
 {
