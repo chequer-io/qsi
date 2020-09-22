@@ -99,7 +99,10 @@ namespace Qsi.Parsing.Common
                 tokenBuffer.Clear();
 
                 if (script != null)
+                {
                     context.Scripts.Add(script);
+                    context._lastLine = script.End.Line - 1;
+                }
             }
 
             tokens.Clear();
@@ -136,8 +139,7 @@ namespace Qsi.Parsing.Common
             return false;
         }
 
-        protected virtual (QsiScriptPosition Start, QsiScriptPosition End) MeasurePosition(ParseContext context,
-                                                                                           int start, int end)
+        protected virtual (QsiScriptPosition Start, QsiScriptPosition End) MeasurePosition(ParseContext context, int start, int end)
         {
             var value = context.Cursor.Value;
             ref int[] lineMap = ref context._lineMap;
@@ -186,7 +188,7 @@ namespace Qsi.Parsing.Common
             var (startPosition, endPosition) = MeasurePosition(context, startIndex, endIndex);
             var script = context.Cursor.Value[startIndex..(endIndex + 1)];
 
-            return new QsiScript(script, QsiScriptType.Delete, startPosition, endPosition);
+            return new QsiScript(script, QsiScriptType.Unknown, startPosition, endPosition);
         }
 
         protected virtual bool SkipToNextTransition(ParseContext context, out Token token)
