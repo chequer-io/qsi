@@ -4,15 +4,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using System.Threading;
 using Qsi.Data;
+using Qsi.Extensions;
 using Qsi.Parsing.Common.Rules;
 
 namespace Qsi.Parsing.Common
 {
     public class CommonScriptParser : IQsiScriptParser
     {
-        public string Delimiter { get; set; } = ";";
-
         private readonly ITokenRule _whiteSpace = new LookbehindWhiteSpaceRule();
         private readonly ITokenRule _newLine = new LookaheadEndOfLineRule();
         private readonly ITokenRule _keyword = new LookbehindUnknownKeywordRule();
@@ -23,10 +23,16 @@ namespace Qsi.Parsing.Common
         private readonly ITokenRule _multilineCommentClosing = new LookbehindKeywordRule("*/");
 
         private readonly Regex _dollarQuote = new Regex(@"\G\$(?:[\p{L}_][\p{L}\d_]*)?\$");
+        private readonly string _delimiter;
 
-        public IEnumerable<QsiScript> Parse(in string input)
+        public CommonScriptParser(string delimiter = ";")
         {
-            var context = new ParseContext(input, Delimiter);
+            _delimiter = delimiter;
+        }
+
+        public IEnumerable<QsiScript> Parse(in string input, CancellationToken cancellationToken)
+        {
+            var context = new ParseContext(input, _delimiter, cancellationToken);
             var cursor = context.Cursor;
             ref int? fragmentStart = ref context.FragmentStart;
             ref var fragmentEnd = ref context.FragmentEnd;
@@ -42,7 +48,7 @@ namespace Qsi.Parsing.Common
                     FlushToken(context);
 
                     if (context.Tokens.Count > 0 || token.Type != TokenType.WhiteSpace)
-                        context.Tokens.Add(token);
+                        context.AddToken(token);
                 }
                 else
                 {
@@ -64,7 +70,7 @@ namespace Qsi.Parsing.Common
             if (!context.FragmentStart.HasValue)
                 return;
 
-            context.Tokens.Add(new Token(TokenType.Fragment, context.FragmentStart.Value..(context.FragmentEnd + 1)));
+            context.AddToken(new Token(TokenType.Fragment, context.FragmentStart.Value..(context.FragmentEnd + 1)));
             context.FragmentStart = null;
             context.FragmentEnd = -1;
         }
@@ -77,19 +83,17 @@ namespace Qsi.Parsing.Common
             if (context.Tokens.Count == 0)
                 return;
 
-            List<Token> tokens = context.Tokens;
-
             foreach (var section in SplitScriptSection(context))
             {
-                var (offset, length) = section.GetOffsetAndLength(tokens.Count);
+                var (offset, length) = section.GetOffsetAndLength(context.Tokens.Count);
                 var end = offset + length;
 
-                var tokenBuffer = ArrayPool<Token>.Shared.Rent(length);
+                Token[] tokenBuffer = ArrayPool<Token>.Shared.Rent(length);
                 var tokenIndex = 0;
 
                 for (int i = offset; i < end; i++)
                 {
-                    var token = tokens[i];
+                    var token = context.Tokens[i];
 
                     if (token.Type == TokenType.WhiteSpace && (i == end - 1 || tokenIndex == 0))
                         continue;
@@ -111,7 +115,7 @@ namespace Qsi.Parsing.Common
                 ArrayPool<Token>.Shared.Return(tokenBuffer);
             }
 
-            tokens.Clear();
+            context.ClearTokens();
         }
 
         protected virtual IEnumerable<Range> SplitScriptSection(ParseContext context)
@@ -318,16 +322,15 @@ namespace Qsi.Parsing.Common
         }
 
         #region Context
-
         protected class ParseContext
         {
-            public List<QsiScript> Scripts { get; }
+            public readonly List<QsiScript> Scripts;
 
-            public CommonScriptCursor Cursor { get; }
+            public readonly CommonScriptCursor Cursor;
 
             public string Delimiter { get; set; }
 
-            public List<Token> Tokens { get; }
+            public readonly IReadOnlyList<Token> Tokens;
 
             internal int? FragmentStart;
             internal int FragmentEnd;
@@ -335,19 +338,33 @@ namespace Qsi.Parsing.Common
             internal int LastLine;
             internal int[] LineMap;
 
-            public ParseContext(string input, string delimiter)
+            private readonly List<Token> _tokens;
+            private readonly CancellationToken _cancellationToken;
+
+            public ParseContext(string input, string delimiter, CancellationToken cancellationToken)
             {
                 Scripts = new List<QsiScript>();
                 Cursor = new CommonScriptCursor(input);
                 Delimiter = delimiter;
-                Tokens = new List<Token>();
+                _tokens = new List<Token>();
+                Tokens = _tokens;
+                _cancellationToken = cancellationToken;
+            }
+
+            public void AddToken(Token token)
+            {
+                _cancellationToken.ThrowIfCancellationRequested();
+                _tokens.Add(token);
+            }
+
+            public void ClearTokens()
+            {
+                _tokens.Clear();
             }
         }
-
         #endregion
 
         #region Token
-
         protected enum TokenType
         {
             Keyword,
@@ -374,7 +391,6 @@ namespace Qsi.Parsing.Common
                 return $"{Span} ({Type})";
             }
         }
-
         #endregion
     }
 }

@@ -12,7 +12,7 @@ namespace Qsi.MySql
 
         protected override bool IsEndOfScript(ParseContext context)
         {
-            List<Token> tokens = context.Tokens;
+            IReadOnlyList<Token> tokens = context.Tokens;
 
             if (tokens.Count > 1 &&
                 tokens[^1].Type == TokenType.WhiteSpace &&
@@ -26,7 +26,7 @@ namespace Qsi.MySql
                 {
                     context.Cursor.Index = match.Index + match.Length - 1;
                     context.Delimiter = match.Value;
-                    context.Tokens.Add(new Token(TokenType.Fragment, match.Index..(context.Cursor.Index + 1)));
+                    context.AddToken(new Token(TokenType.Fragment, match.Index..(context.Cursor.Index + 1)));
 
                     return true;
                 }
