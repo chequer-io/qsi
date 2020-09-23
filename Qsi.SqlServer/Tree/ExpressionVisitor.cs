@@ -91,42 +91,42 @@ namespace Qsi.SqlServer.Tree
             throw TreeHelper.NotSupportedTree(booleanExpression);
         }
 
-        private QsiExpressionNode VisitGraphMatchCompositeExpression(GraphMatchCompositeExpression graphMatchCompositeExpression)
+        public QsiExpressionNode VisitGraphMatchCompositeExpression(GraphMatchCompositeExpression graphMatchCompositeExpression)
         {
             throw TreeHelper.NotSupportedFeature("Graph match");
         }
 
-        private QsiExpressionNode VisitGraphMatchExpression(GraphMatchExpression graphMatchExpression)
+        public QsiExpressionNode VisitGraphMatchExpression(GraphMatchExpression graphMatchExpression)
         {
             throw TreeHelper.NotSupportedFeature("Graph match");
         }
 
-        private QsiExpressionNode VisitGraphMatchLastNodePredicate(GraphMatchLastNodePredicate graphMatchLastNodePredicate)
+        public QsiExpressionNode VisitGraphMatchLastNodePredicate(GraphMatchLastNodePredicate graphMatchLastNodePredicate)
         {
             throw TreeHelper.NotSupportedFeature("Graph match");
         }
 
-        private QsiExpressionNode VisitGraphMatchNodeExpression(GraphMatchNodeExpression graphMatchNodeExpression)
+        public QsiExpressionNode VisitGraphMatchNodeExpression(GraphMatchNodeExpression graphMatchNodeExpression)
         {
             throw TreeHelper.NotSupportedFeature("Graph match");
         }
 
-        private QsiExpressionNode VisitGraphMatchPredicate(GraphMatchPredicate graphMatchPredicate)
+        public QsiExpressionNode VisitGraphMatchPredicate(GraphMatchPredicate graphMatchPredicate)
         {
             throw TreeHelper.NotSupportedFeature("Graph match");
         }
 
-        private QsiExpressionNode VisitGraphMatchRecursivePredicate(GraphMatchRecursivePredicate graphMatchRecursivePredicate)
+        public QsiExpressionNode VisitGraphMatchRecursivePredicate(GraphMatchRecursivePredicate graphMatchRecursivePredicate)
         {
             throw TreeHelper.NotSupportedFeature("Graph match");
         }
 
-        private QsiExpressionNode VisitGraphRecursiveMatchQuantifier(GraphRecursiveMatchQuantifier graphRecursiveMatchQuantifier)
+        public QsiExpressionNode VisitGraphRecursiveMatchQuantifier(GraphRecursiveMatchQuantifier graphRecursiveMatchQuantifier)
         {
             throw TreeHelper.NotSupportedFeature("Graph match");
         }
 
-        private QsiLogicalExpressionNode VisitBooleanBinaryExpression(BooleanBinaryExpression booleanBinaryExpression)
+        public QsiLogicalExpressionNode VisitBooleanBinaryExpression(BooleanBinaryExpression booleanBinaryExpression)
         {
             return TreeHelper.Create<QsiLogicalExpressionNode>(n =>
             {
@@ -142,7 +142,7 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
-        private QsiLogicalExpressionNode VisitBooleanComparisonExpression(BooleanComparisonExpression booleanComparisonExpression)
+        public QsiLogicalExpressionNode VisitBooleanComparisonExpression(BooleanComparisonExpression booleanComparisonExpression)
         {
             return TreeHelper.Create<QsiLogicalExpressionNode>(n =>
             {
@@ -153,12 +153,12 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
-        private QsiExpressionNode VisitBooleanExpressionSnippet(BooleanExpressionSnippet booleanExpressionSnippet)
+        public QsiExpressionNode VisitBooleanExpressionSnippet(BooleanExpressionSnippet booleanExpressionSnippet)
         {
             throw TreeHelper.NotSupportedFeature("Snippet");
         }
 
-        private QsiLogicalExpressionNode VisitBooleanIsNullExpression(BooleanIsNullExpression booleanIsNullExpression)
+        public QsiLogicalExpressionNode VisitBooleanIsNullExpression(BooleanIsNullExpression booleanIsNullExpression)
         {
             return TreeHelper.Create<QsiLogicalExpressionNode>(n =>
             {
@@ -169,7 +169,7 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
-        private QsiUnaryExpressionNode VisitBooleanNotExpression(BooleanNotExpression booleanNotExpression)
+        public QsiUnaryExpressionNode VisitBooleanNotExpression(BooleanNotExpression booleanNotExpression)
         {
             return TreeHelper.Create<QsiUnaryExpressionNode>(n =>
             {
@@ -178,12 +178,12 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
-        private QsiExpressionNode VisitBooleanParenthesisExpression(BooleanParenthesisExpression booleanParenthesisExpression)
+        public QsiExpressionNode VisitBooleanParenthesisExpression(BooleanParenthesisExpression booleanParenthesisExpression)
         {
             return VisitBooleanExpression(booleanParenthesisExpression.Expression);
         }
 
-        private QsiInvokeExpressionNode VisitExistsPredicate(ExistsPredicate existsPredicate)
+        public QsiInvokeExpressionNode VisitExistsPredicate(ExistsPredicate existsPredicate)
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
@@ -192,7 +192,7 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
-        private QsiExpressionNode VisitFullTextPredicate(FullTextPredicate fullTextPredicate)
+        public QsiExpressionNode VisitFullTextPredicate(FullTextPredicate fullTextPredicate)
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
@@ -207,7 +207,7 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
-        private QsiExpressionNode VisitBooleanTernaryExpression(BooleanTernaryExpression booleanTernaryExpression)
+        public QsiExpressionNode VisitBooleanTernaryExpression(BooleanTernaryExpression booleanTernaryExpression)
         {
             var invoke = TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
@@ -228,7 +228,7 @@ namespace Qsi.SqlServer.Tree
             return TreeHelper.CreateUnary(operand, invoke);
         }
 
-        private QsiExpressionNode VisitEventDeclarationCompareFunctionParameter(EventDeclarationCompareFunctionParameter eventDeclarationCompareFunctionParameter)
+        public QsiExpressionNode VisitEventDeclarationCompareFunctionParameter(EventDeclarationCompareFunctionParameter eventDeclarationCompareFunctionParameter)
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
@@ -257,7 +257,7 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
-        private QsiExpressionNode VisitInPredicate(InPredicate inPredicate)
+        public QsiExpressionNode VisitInPredicate(InPredicate inPredicate)
         {
             var logicalNode = TreeHelper.Create<QsiLogicalExpressionNode>(n =>
             {
@@ -282,7 +282,7 @@ namespace Qsi.SqlServer.Tree
             return TreeHelper.CreateUnary(SqlServerKnownOperator.Not, logicalNode);
         }
 
-        private QsiExpressionNode VisitLikePredicate(LikePredicate likePredicate)
+        public QsiExpressionNode VisitLikePredicate(LikePredicate likePredicate)
         {
             var invokeNode = TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
@@ -303,7 +303,7 @@ namespace Qsi.SqlServer.Tree
             return TreeHelper.CreateUnary(SqlServerKnownOperator.Not, invokeNode);
         }
 
-        private QsiExpressionNode VisitSubqueryComparisonPredicate(SubqueryComparisonPredicate subqueryComparisonPredicate)
+        public QsiExpressionNode VisitSubqueryComparisonPredicate(SubqueryComparisonPredicate subqueryComparisonPredicate)
         {
             var expressionNode = TreeHelper.Create<QsiLogicalExpressionNode>(ln =>
             {
@@ -363,7 +363,7 @@ namespace Qsi.SqlServer.Tree
             throw TreeHelper.NotSupportedTree(scalarExpression);
         }
 
-        private QsiLogicalExpressionNode VisitBinaryExpression(BinaryExpression binaryExpression)
+        public QsiLogicalExpressionNode VisitBinaryExpression(BinaryExpression binaryExpression)
         {
             return TreeHelper.Create<QsiLogicalExpressionNode>(n =>
             {
@@ -385,7 +385,7 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
-        private QsiUnaryExpressionNode VisitUnaryExpression(UnaryExpression unaryExpression)
+        public QsiUnaryExpressionNode VisitUnaryExpression(UnaryExpression unaryExpression)
         {
             var expressionType = unaryExpression.UnaryExpressionType switch
             {
@@ -398,13 +398,13 @@ namespace Qsi.SqlServer.Tree
             return TreeHelper.CreateUnary(expressionType, VisitScalarExpression(unaryExpression.Expression));
         }
 
-        private QsiExpressionNode VisitSourceDeclaration(SourceDeclaration _)
+        public QsiExpressionNode VisitSourceDeclaration(SourceDeclaration _)
         {
             throw TreeHelper.NotSupportedFeature("source declaration");
         }
 
         #region Primary Expression
-        private QsiExpressionNode VisitPrimaryExpression(PrimaryExpression primaryExpression)
+        public QsiExpressionNode VisitPrimaryExpression(PrimaryExpression primaryExpression)
         {
             switch (primaryExpression)
             {
@@ -503,7 +503,7 @@ namespace Qsi.SqlServer.Tree
         }
 
         #region CaseExpression
-        private QsiSwitchExpressionNode VisitCaseExpression(CaseExpression caseExpression)
+        public QsiSwitchExpressionNode VisitCaseExpression(CaseExpression caseExpression)
         {
             switch (caseExpression)
             {
@@ -517,7 +517,7 @@ namespace Qsi.SqlServer.Tree
             throw TreeHelper.NotSupportedTree(caseExpression);
         }
 
-        private QsiSwitchExpressionNode VisitSearchedCaseExpression(SearchedCaseExpression searchedCaseExpression)
+        public QsiSwitchExpressionNode VisitSearchedCaseExpression(SearchedCaseExpression searchedCaseExpression)
         {
             return TreeHelper.Create<QsiSwitchExpressionNode>(n =>
             {
@@ -533,7 +533,7 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
-        private QsiSwitchCaseExpressionNode VisitSearchedWhenClause(SearchedWhenClause searchedWhenClause)
+        public QsiSwitchCaseExpressionNode VisitSearchedWhenClause(SearchedWhenClause searchedWhenClause)
         {
             return TreeHelper.Create<QsiSwitchCaseExpressionNode>(n =>
             {
@@ -542,7 +542,7 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
-        private QsiSwitchExpressionNode VisitSimpleCaseExpression(SimpleCaseExpression simpleCaseExpression)
+        public QsiSwitchExpressionNode VisitSimpleCaseExpression(SimpleCaseExpression simpleCaseExpression)
         {
             return TreeHelper.Create<QsiSwitchExpressionNode>(n =>
             {
@@ -560,7 +560,7 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
-        private QsiSwitchCaseExpressionNode VisitSimpleWhenClause(SimpleWhenClause simpleWhenClause)
+        public QsiSwitchCaseExpressionNode VisitSimpleWhenClause(SimpleWhenClause simpleWhenClause)
         {
             return TreeHelper.Create<QsiSwitchCaseExpressionNode>(n =>
             {
@@ -570,7 +570,7 @@ namespace Qsi.SqlServer.Tree
         }
         #endregion
 
-        internal QsiColumnExpressionNode VisitColumnReferenceExpression(ColumnReferenceExpression columnReferenceExpression)
+        public QsiColumnExpressionNode VisitColumnReferenceExpression(ColumnReferenceExpression columnReferenceExpression)
         {
             return TreeHelper.Create<QsiColumnExpressionNode>(n =>
             {
@@ -590,7 +590,7 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
-        private QsiTableExpressionNode VisitScalarSubquery(ScalarSubquery scalarSubquery)
+        public QsiTableExpressionNode VisitScalarSubquery(ScalarSubquery scalarSubquery)
         {
             return TreeHelper.Create<QsiTableExpressionNode>(n =>
             {
@@ -599,7 +599,7 @@ namespace Qsi.SqlServer.Tree
         }
 
         #region ValueExpression
-        internal QsiExpressionNode VisitValueExpression(ValueExpression valueExpression)
+        public QsiExpressionNode VisitValueExpression(ValueExpression valueExpression)
         {
             switch (valueExpression)
             {
@@ -617,7 +617,7 @@ namespace Qsi.SqlServer.Tree
         }
 
         #region Literal
-        internal QsiLiteralExpressionNode VisitLiteral(Literal literal)
+        public QsiLiteralExpressionNode VisitLiteral(Literal literal)
         {
             return TreeHelper.Create<QsiLiteralExpressionNode>(n =>
             {
@@ -642,7 +642,7 @@ namespace Qsi.SqlServer.Tree
         }
 
         // TODO: Impl variable
-        internal QsiExpressionNode VisitVariableReference(VariableReference variableReference)
+        public QsiVariableAccessExpressionNode VisitVariableReference(VariableReference variableReference)
         {
             return TreeHelper.Create<QsiVariableAccessExpressionNode>(n =>
             {
@@ -651,7 +651,7 @@ namespace Qsi.SqlServer.Tree
         }
 
         // TODO: Impl variable
-        private QsiExpressionNode VisitGlobalVariableExpression(GlobalVariableExpression globalVariableExpression)
+        public QsiVariableAccessExpressionNode VisitGlobalVariableExpression(GlobalVariableExpression globalVariableExpression)
         {
             return TreeHelper.Create<QsiVariableAccessExpressionNode>(n =>
             {
@@ -661,7 +661,7 @@ namespace Qsi.SqlServer.Tree
         #endregion
         #endregion
 
-        private QsiInvokeExpressionNode VisitParameterlessCall(ParameterlessCall parameterlessCall)
+        public QsiInvokeExpressionNode VisitParameterlessCall(ParameterlessCall parameterlessCall)
         {
             return CreateInvokeExpression(parameterlessCall.ParameterlessCallType switch
             {
@@ -674,7 +674,7 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
-        private QsiExpressionNode VisitPartitionFunctionCall(PartitionFunctionCall partitionFunctionCall)
+        public QsiExpressionNode VisitPartitionFunctionCall(PartitionFunctionCall partitionFunctionCall)
         {
             return CreateInvokeExpression(
                 IdentifierVisitor.CreateQualifiedIdentifier(partitionFunctionCall.DatabaseName, partitionFunctionCall.FunctionName),
@@ -683,17 +683,17 @@ namespace Qsi.SqlServer.Tree
         }
         #endregion
 
-        private QsiExpressionNode VisitScalarExpressionSnippet(ScalarExpressionSnippet scalarExpressionSnippet)
+        public QsiExpressionNode VisitScalarExpressionSnippet(ScalarExpressionSnippet scalarExpressionSnippet)
         {
             throw TreeHelper.NotSupportedFeature("Snippet");
         }
 
-        private QsiExpressionNode VisitIdentityFunctionCall(IdentityFunctionCall identityFunctionCall)
+        public QsiExpressionNode VisitIdentityFunctionCall(IdentityFunctionCall identityFunctionCall)
         {
             throw TreeHelper.NotSupportedFeature("Identity function");
         }
 
-        private QsiExpressionNode VisitOdbcConvertSpecification(OdbcConvertSpecification _)
+        public QsiExpressionNode VisitOdbcConvertSpecification(OdbcConvertSpecification _)
         {
             throw TreeHelper.NotSupportedFeature("odbc convert specification");
         }
@@ -709,22 +709,22 @@ namespace Qsi.SqlServer.Tree
         }
         #endregion
 
-        internal QsiInvokeExpressionNode CreateInvokeExpression(QsiQualifiedIdentifier functionName, IEnumerable<TSqlFragment> parameters)
+        public QsiInvokeExpressionNode CreateInvokeExpression(QsiQualifiedIdentifier functionName, IEnumerable<TSqlFragment> parameters)
         {
             return CreateInvokeExpression(new QsiFunctionAccessExpressionNode { Identifier = functionName }, parameters);
         }
 
-        internal QsiInvokeExpressionNode CreateInvokeExpression(string functionName, params TSqlFragment[] parameters)
+        public QsiInvokeExpressionNode CreateInvokeExpression(string functionName, params TSqlFragment[] parameters)
         {
             return CreateInvokeExpression(TreeHelper.CreateFunctionAccess(functionName), parameters);
         }
 
-        internal QsiInvokeExpressionNode CreateInvokeExpression(string functionName, IEnumerable<TSqlFragment> parameters)
+        public QsiInvokeExpressionNode CreateInvokeExpression(string functionName, IEnumerable<TSqlFragment> parameters)
         {
             return CreateInvokeExpression(TreeHelper.CreateFunctionAccess(functionName), parameters);
         }
 
-        internal QsiInvokeExpressionNode CreateInvokeExpression(QsiFunctionAccessExpressionNode functionAccessExpressionNode, IEnumerable<TSqlFragment> parameters)
+        public QsiInvokeExpressionNode CreateInvokeExpression(QsiFunctionAccessExpressionNode functionAccessExpressionNode, IEnumerable<TSqlFragment> parameters)
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
@@ -777,7 +777,7 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
-        private string ConvertBooleanComparisonType(BooleanComparisonType booleanComparisonType)
+        public string ConvertBooleanComparisonType(BooleanComparisonType booleanComparisonType)
         {
             return booleanComparisonType switch
             {

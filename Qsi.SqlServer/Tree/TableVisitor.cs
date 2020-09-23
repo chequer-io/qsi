@@ -37,7 +37,7 @@ namespace Qsi.SqlServer.Tree
         }
 
         #region StatementWithCtesAndXmlNamespaces
-        private QsiTreeNode VisitStatementWithCtesAndXmlNamespaces(StatementWithCtesAndXmlNamespaces statementWithCtesAndXmlNamespaces)
+        public QsiTreeNode VisitStatementWithCtesAndXmlNamespaces(StatementWithCtesAndXmlNamespaces statementWithCtesAndXmlNamespaces)
         {
             switch (statementWithCtesAndXmlNamespaces)
             {
@@ -48,7 +48,7 @@ namespace Qsi.SqlServer.Tree
             throw TreeHelper.NotSupportedTree(statementWithCtesAndXmlNamespaces);
         }
 
-        private QsiTableNode VisitSelectStatement(SelectStatement selectStatement)
+        public QsiTableNode VisitSelectStatement(SelectStatement selectStatement)
         {
             var tableNode = VisitQueryExpression(selectStatement.QueryExpression);
 
@@ -77,7 +77,7 @@ namespace Qsi.SqlServer.Tree
         #endregion
 
         #region StatementBody
-        private QsiTableNode VisitStatementBody(ViewStatementBody viewStatementBody)
+        public QsiTableNode VisitStatementBody(ViewStatementBody viewStatementBody)
         {
             switch (viewStatementBody)
             {
@@ -88,7 +88,7 @@ namespace Qsi.SqlServer.Tree
             throw TreeHelper.NotSupportedTree(viewStatementBody);
         }
 
-        private QsiTableNode VisitCreateViewStatement(CreateViewStatement createViewStatement)
+        public QsiTableNode VisitCreateViewStatement(CreateViewStatement createViewStatement)
         {
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
@@ -104,14 +104,14 @@ namespace Qsi.SqlServer.Tree
                 }
 
                 n.Source.SetValue(VisitSelectStatement(createViewStatement.SelectStatement));
-                
+
                 n.Alias.SetValue(CreateAliasNode(createViewStatement.SchemaObjectName[^1]));
             });
         }
         #endregion
 
         #region WithCtesAndXmlNamespaces (Table Directives)
-        private QsiTableDirectivesNode VisitWithCtesAndXmlNamespaces(WithCtesAndXmlNamespaces selectStatementWithCtesAndXmlNamespaces)
+        public QsiTableDirectivesNode VisitWithCtesAndXmlNamespaces(WithCtesAndXmlNamespaces selectStatementWithCtesAndXmlNamespaces)
         {
             return TreeHelper.Create<QsiTableDirectivesNode>(n =>
             {
@@ -120,7 +120,7 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
-        private QsiDerivedTableNode VisitCommonTableExpression(CommonTableExpression commonTableExpression)
+        public QsiDerivedTableNode VisitCommonTableExpression(CommonTableExpression commonTableExpression)
         {
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
@@ -146,7 +146,7 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
-        private IEnumerable<QsiColumnNode> CreateSequentialColumnNodes(IEnumerable<Identifier> columns)
+        public IEnumerable<QsiColumnNode> CreateSequentialColumnNodes(IEnumerable<Identifier> columns)
         {
             return columns
                 .Select((identifier, i) => TreeHelper.Create<QsiSequentialColumnNode>(n =>
@@ -176,7 +176,7 @@ namespace Qsi.SqlServer.Tree
             throw TreeHelper.NotSupportedTree(queryExpression);
         }
 
-        private QsiCompositeTableNode VisitBinaryQueryExpression(BinaryQueryExpression binaryQueryExpression)
+        public QsiCompositeTableNode VisitBinaryQueryExpression(BinaryQueryExpression binaryQueryExpression)
         {
             return TreeHelper.Create<QsiCompositeTableNode>(n =>
             {
@@ -185,7 +185,7 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
-        private QsiDerivedTableNode VisitQueryParenthesisExpression(QueryParenthesisExpression queryParenthesisExpression)
+        public QsiDerivedTableNode VisitQueryParenthesisExpression(QueryParenthesisExpression queryParenthesisExpression)
         {
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
@@ -195,7 +195,7 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
-        private QsiDerivedTableNode VisitQuerySpecification(QuerySpecification querySpecification)
+        public QsiDerivedTableNode VisitQuerySpecification(QuerySpecification querySpecification)
         {
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
@@ -213,7 +213,7 @@ namespace Qsi.SqlServer.Tree
         #endregion
 
         #region SelectElement
-        private QsiColumnNode VisitSelectElement(SelectElement selectElement)
+        public QsiColumnNode VisitSelectElement(SelectElement selectElement)
         {
             switch (selectElement)
             {
@@ -230,7 +230,7 @@ namespace Qsi.SqlServer.Tree
             throw TreeHelper.NotSupportedTree(selectElement);
         }
 
-        private QsiColumnNode VisitSelectScalarExpression(SelectScalarExpression selectScalarExpression)
+        public QsiColumnNode VisitSelectScalarExpression(SelectScalarExpression selectScalarExpression)
         {
             QsiExpressionNode expression = null;
             QsiDeclaredColumnNode column = null;
@@ -280,7 +280,7 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
-        private QsiDerivedColumnNode VisitSelectSetVariable(SelectSetVariable selectSetVariable)
+        public QsiDerivedColumnNode VisitSelectSetVariable(SelectSetVariable selectSetVariable)
         {
             return TreeHelper.Create<QsiDerivedColumnNode>(n =>
             {
@@ -298,15 +298,16 @@ namespace Qsi.SqlServer.Tree
                     _ => throw new InvalidOperationException()
                 };
 
-                n.Expression.SetValue(TreeHelper.CreateLogicalExpression(
-                    op,
-                    selectSetVariable.Variable, selectSetVariable.Expression,
-                    ExpressionVisitor.VisitScalarExpression
-                ));
+                n.Expression.SetValue(TreeHelper.Create<QsiAssignExpressionNode>(en =>
+                {
+                    en.Variable.SetValue(ExpressionVisitor.VisitVariableReference(selectSetVariable.Variable));
+                    en.Operator = op;
+                    en.Value.SetValue(ExpressionVisitor.VisitScalarExpression(selectSetVariable.Expression));
+                }));
             });
         }
 
-        private QsiColumnNode VisitSelectStarExpression(SelectStarExpression selectStarExpression)
+        public QsiColumnNode VisitSelectStarExpression(SelectStarExpression selectStarExpression)
         {
             return TreeHelper.Create<QsiAllColumnNode>(n =>
             {
@@ -319,7 +320,7 @@ namespace Qsi.SqlServer.Tree
         #endregion
 
         #region FromClause
-        private QsiTableNode VisitFromClause(FromClause fromClause)
+        public QsiTableNode VisitFromClause(FromClause fromClause)
         {
             IList<TableReference> tableReferences = fromClause.TableReferences;
 
@@ -351,7 +352,7 @@ namespace Qsi.SqlServer.Tree
         #endregion
 
         #region TableReference
-        private QsiTableNode VisitTableReference(TableReference tableReference)
+        public QsiTableNode VisitTableReference(TableReference tableReference)
         {
             switch (tableReference)
             {
@@ -371,7 +372,7 @@ namespace Qsi.SqlServer.Tree
             throw TreeHelper.NotSupportedTree(tableReference);
         }
 
-        private QsiTableNode VisitJoinParenthesisTableReference(JoinParenthesisTableReference joinParenthesisTableReference)
+        public QsiTableNode VisitJoinParenthesisTableReference(JoinParenthesisTableReference joinParenthesisTableReference)
         {
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
@@ -381,7 +382,7 @@ namespace Qsi.SqlServer.Tree
         }
 
         #region JoinTableReference
-        private QsiJoinedTableNode VisitJoinTableReference(JoinTableReference joinTableReference)
+        public QsiJoinedTableNode VisitJoinTableReference(JoinTableReference joinTableReference)
         {
             switch (joinTableReference)
             {
@@ -416,7 +417,7 @@ namespace Qsi.SqlServer.Tree
             throw TreeHelper.NotSupportedTree(joinTableReference);
         }
 
-        private QsiJoinedTableNode CreateJoinedTableNode(QsiJoinType qsiJoinType, JoinTableReference joinTableReference)
+        public QsiJoinedTableNode CreateJoinedTableNode(QsiJoinType qsiJoinType, JoinTableReference joinTableReference)
         {
             return TreeHelper.Create<QsiJoinedTableNode>(n =>
             {
@@ -427,7 +428,7 @@ namespace Qsi.SqlServer.Tree
         }
         #endregion
 
-        private QsiDerivedTableNode VisitOdbcQualifiedJoinTableReference(OdbcQualifiedJoinTableReference odbcQualifiedJoinTableReference)
+        public QsiDerivedTableNode VisitOdbcQualifiedJoinTableReference(OdbcQualifiedJoinTableReference odbcQualifiedJoinTableReference)
         {
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
@@ -437,7 +438,7 @@ namespace Qsi.SqlServer.Tree
         }
 
         #region TableReferenceWithAlias
-        private QsiTableNode VisitTableReferenceWithAlias(TableReferenceWithAlias tableReferenceWithAlias)
+        public QsiTableNode VisitTableReferenceWithAlias(TableReferenceWithAlias tableReferenceWithAlias)
         {
             switch (tableReferenceWithAlias)
             {
@@ -493,32 +494,32 @@ namespace Qsi.SqlServer.Tree
             throw TreeHelper.NotSupportedTree(tableReferenceWithAlias);
         }
 
-        private QsiTableNode VisitAdHocTableReference(AdHocTableReference adHocTableReference)
+        public QsiTableNode VisitAdHocTableReference(AdHocTableReference adHocTableReference)
         {
             throw TreeHelper.NotSupportedFeature("Remote table");
         }
 
-        private QsiTableNode VisitBuiltInFunctionTableReference(BuiltInFunctionTableReference builtInFunctionTableReference)
+        public QsiTableNode VisitBuiltInFunctionTableReference(BuiltInFunctionTableReference builtInFunctionTableReference)
         {
             throw TreeHelper.NotSupportedFeature("Table function");
         }
 
-        private QsiTableNode VisitVariableTableReference(VariableTableReference variableTableReference)
+        public QsiTableNode VisitVariableTableReference(VariableTableReference variableTableReference)
         {
             throw TreeHelper.NotSupportedFeature("Table variable");
         }
 
-        private QsiTableNode VisitGlobalFunctionTableReference(GlobalFunctionTableReference globalFunctionTableReference)
+        public QsiTableNode VisitGlobalFunctionTableReference(GlobalFunctionTableReference globalFunctionTableReference)
         {
             throw TreeHelper.NotSupportedFeature("Table function");
         }
 
-        private QsiTableNode VisitInternalOpenRowSet(InternalOpenRowset internalOpenRowset)
+        public QsiTableNode VisitInternalOpenRowSet(InternalOpenRowset internalOpenRowset)
         {
             throw TreeHelper.NotSupportedFeature("Remote table");
         }
 
-        private QsiTableNode VisitNamedTableReference(NamedTableReference namedTableReference)
+        public QsiTableNode VisitNamedTableReference(NamedTableReference namedTableReference)
         {
             var tableNode = new QsiTableAccessNode
             {
@@ -537,13 +538,13 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
-        private QsiTableNode VisitOpenRowsetTableReference(OpenRowsetTableReference openRowsetTableReference)
+        public QsiTableNode VisitOpenRowsetTableReference(OpenRowsetTableReference openRowsetTableReference)
         {
             throw TreeHelper.NotSupportedFeature("Remote table");
         }
 
         // FREETEXTTABLE (table , { column_name | (column_list) | * }, 'freetext_string' [ , LANGUAGE language_term ] [ , top_n_by_rank ] )  
-        private QsiTableNode VisitFullTextTableReference(FullTextTableReference fullTextTableReference)
+        public QsiTableNode VisitFullTextTableReference(FullTextTableReference fullTextTableReference)
         {
             throw TreeHelper.NotSupportedFeature("Table function");
 
@@ -572,7 +573,7 @@ namespace Qsi.SqlServer.Tree
 
         // OPENJSON(VARIABLE[, PATH]) Ex: OPENJSON(@json, '$.path.to."sub-object"')
         // OPENJSON(VARIABLE[, PATH]) [WITH_CLAUSE]
-        private QsiDerivedTableNode VisitOpenJsonTableReference(OpenJsonTableReference openJsonTableReference)
+        public QsiDerivedTableNode VisitOpenJsonTableReference(OpenJsonTableReference openJsonTableReference)
         {
             throw TreeHelper.NotSupportedFeature("Table function");
 
@@ -590,7 +591,7 @@ namespace Qsi.SqlServer.Tree
         }
 
         // OPENQUERY(linked_server ,'query') Ex: SELECT * FROM OPENQUERY(OracleSvr, 'SELECT name FROM actor WHERE actor_id = ''abc''');
-        private QsiTableNode VisitOpenQueryTableReference(OpenQueryTableReference openQueryTableReference)
+        public QsiTableNode VisitOpenQueryTableReference(OpenQueryTableReference openQueryTableReference)
         {
             throw TreeHelper.NotSupportedFeature("Table function");
 
@@ -608,7 +609,7 @@ namespace Qsi.SqlServer.Tree
             // });
         }
 
-        private QsiTableNode VisitOpenXmlTableReference(OpenXmlTableReference openXmlTableReference)
+        public QsiTableNode VisitOpenXmlTableReference(OpenXmlTableReference openXmlTableReference)
         {
             throw TreeHelper.NotSupportedFeature("Table function");
 
@@ -627,26 +628,26 @@ namespace Qsi.SqlServer.Tree
             // });
         }
 
-        private QsiTableNode VisitPivotedTableReference(PivotedTableReference pivotedTableReference)
+        public QsiTableNode VisitPivotedTableReference(PivotedTableReference pivotedTableReference)
         {
             // TODO: Implement
             throw TreeHelper.NotSupportedFeature("Pivot table");
         }
 
-        private QsiTableNode VisitUnpivotedTableReference(UnpivotedTableReference unpivotedTableReference)
+        public QsiTableNode VisitUnpivotedTableReference(UnpivotedTableReference unpivotedTableReference)
         {
             // TODO: Implement
             throw TreeHelper.NotSupportedFeature("Unpivot table");
         }
 
-        private QsiTableNode VisitSemanticTableReference(SemanticTableReference semanticTableReference)
+        public QsiTableNode VisitSemanticTableReference(SemanticTableReference semanticTableReference)
         {
             // TODO: Implement
             throw TreeHelper.NotSupportedFeature("Semantic table");
         }
 
         #region TableReferenceWithAliasAndColumns
-        private QsiTableNode VisitTableReferenceWithAliasAndColumns(TableReferenceWithAliasAndColumns tableReferenceWithAliasAndColumns)
+        public QsiTableNode VisitTableReferenceWithAliasAndColumns(TableReferenceWithAliasAndColumns tableReferenceWithAliasAndColumns)
         {
             switch (tableReferenceWithAliasAndColumns)
             {
@@ -679,34 +680,34 @@ namespace Qsi.SqlServer.Tree
             throw TreeHelper.NotSupportedTree(tableReferenceWithAliasAndColumns);
         }
 
-        private QsiTableNode VisitBulkOpenRowset(BulkOpenRowset bulkOpenRowset)
+        public QsiTableNode VisitBulkOpenRowset(BulkOpenRowset bulkOpenRowset)
         {
             throw TreeHelper.NotSupportedFeature("Remote table");
         }
 
         // CHANGETABLE Function
-        private QsiTableNode VisitSchemaObjectFunctionTableReference(SchemaObjectFunctionTableReference schemaObjectFunctionTableReference)
+        public QsiTableNode VisitSchemaObjectFunctionTableReference(SchemaObjectFunctionTableReference schemaObjectFunctionTableReference)
         {
             throw TreeHelper.NotSupportedFeature("Table function");
         }
 
         // CHANGETABLE Function
-        private QsiTableNode VisitChangeTableChangesTableReference(ChangeTableChangesTableReference changeTableChangesTableReference)
+        public QsiTableNode VisitChangeTableChangesTableReference(ChangeTableChangesTableReference changeTableChangesTableReference)
         {
             throw TreeHelper.NotSupportedFeature("Table function");
         }
 
-        private QsiTableNode VisitChangeTableVersionTableReference(ChangeTableVersionTableReference changeTableVersionTableReference)
+        public QsiTableNode VisitChangeTableVersionTableReference(ChangeTableVersionTableReference changeTableVersionTableReference)
         {
             throw TreeHelper.NotSupportedFeature("Table function");
         }
 
-        private QsiTableNode VisitDataModificationTableReference(DataModificationTableReference dataModificationTableReference)
+        public QsiTableNode VisitDataModificationTableReference(DataModificationTableReference dataModificationTableReference)
         {
             throw TreeHelper.NotSupportedFeature("Data modification table");
         }
 
-        private QsiTableNode VisitInlineDerivedTable(InlineDerivedTable inlineDerivedTable)
+        public QsiTableNode VisitInlineDerivedTable(InlineDerivedTable inlineDerivedTable)
         {
             return TreeHelper.Create<QsiInlineDerivedTableNode>(n =>
             {
@@ -726,7 +727,7 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
-        private QsiDerivedTableNode VisitQueryDerivedTable(QueryDerivedTable queryDerivedTable)
+        public QsiDerivedTableNode VisitQueryDerivedTable(QueryDerivedTable queryDerivedTable)
         {
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
@@ -740,7 +741,7 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
-        private QsiTableNode VisitVariableMethodCallTableReference(VariableMethodCallTableReference variableMethodCallTableReference)
+        public QsiTableNode VisitVariableMethodCallTableReference(VariableMethodCallTableReference variableMethodCallTableReference)
         {
             throw TreeHelper.NotSupportedFeature("Table function");
         }
