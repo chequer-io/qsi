@@ -1,4 +1,6 @@
-﻿namespace Qsi.Parsing.Common.Rules
+﻿﻿using System;
+
+namespace Qsi.Parsing.Common.Rules
 {
     // ..Keyword|..
     //          ^
@@ -11,18 +13,15 @@
             _keyword = keyword;
         }
 
-        public void Run(CommonScriptCursor cursor)
+        public bool Run(CommonScriptCursor cursor)
         {
-            for (int i = cursor.Index; i < cursor.Length; i++)
-            {
-                if (!cursor.StartsWith(_keyword, i))
-                    continue;
+            int index = cursor.Value.IndexOf(_keyword, cursor.Index, StringComparison.Ordinal);
 
-                cursor.Index = i + _keyword.Length - 1;
-                return;
-            }
+            if (index == -1)
+                return false;
 
-            cursor.Index = cursor.Length - 1;
+            cursor.Index = index + _keyword.Length - 1;
+            return true;
         }
     }
 }

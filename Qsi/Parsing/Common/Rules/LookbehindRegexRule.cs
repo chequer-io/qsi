@@ -1,4 +1,4 @@
-﻿using System.Text.RegularExpressions;
+﻿﻿﻿﻿using System.Text.RegularExpressions;
 
 namespace Qsi.Parsing.Common.Rules
 {
@@ -13,20 +13,15 @@ namespace Qsi.Parsing.Common.Rules
             _regex = regex;
         }
 
-        public void Run(CommonScriptCursor cursor)
+        public bool Run(CommonScriptCursor cursor)
         {
-            for (int i = cursor.Index; i < cursor.Length; i++)
-            {
-                var match = _regex.Match(cursor.Value, i);
+            var match = _regex.Match(cursor.Value, cursor.Index);
 
-                if (!match.Success)
-                    continue;
+            if (!match.Success)
+                return false;
 
-                cursor.Index = i + match.Length - 1;
-                return;
-            }
-
-            cursor.Index = cursor.Length - 1;
+            cursor.Index = match.Index + match.Length - 1;
+            return true;
         }
     }
 }

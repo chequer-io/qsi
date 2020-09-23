@@ -1,4 +1,4 @@
-﻿namespace Qsi.Parsing.Common.Rules
+﻿﻿namespace Qsi.Parsing.Common.Rules
 {
     // ..chars|..
     //        ^
@@ -17,34 +17,31 @@
                 _chars = new string(chars);
         }
 
-        public void Run(CommonScriptCursor cursor)
+        public bool Run(CommonScriptCursor cursor)
         {
+            int index = -1;
+
             if (_single)
             {
-                for (int i = cursor.Index; i < cursor.Length; i++)
-                {
-                    if (cursor.Value[i] != _char)
-                        continue;
-
-                    cursor.Index = i;
-                    return;
-                }
+                index = cursor.Value.IndexOf(_char, cursor.Index);
             }
             else
             {
                 for (int i = cursor.Index; i < cursor.Length; i++)
                 {
                     if (_chars.IndexOf(cursor.Value[i]) == -1)
-                    {
                         continue;
-                    }
 
-                    cursor.Index = i;
-                    return;
+                    index = i;
+                    break;
                 }
             }
 
-            cursor.Index = cursor.Length - 1;
+            if (index == -1)
+                return false;
+
+            cursor.Index = index;
+            return true;
         }
     }
 }

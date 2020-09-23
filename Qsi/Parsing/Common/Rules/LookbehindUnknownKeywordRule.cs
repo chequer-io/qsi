@@ -1,24 +1,22 @@
-﻿namespace Qsi.Parsing.Common.Rules
+﻿﻿namespace Qsi.Parsing.Common.Rules
 {
-    // ABCabc|..
-    //       ^
     public sealed class LookbehindUnknownKeywordRule : ITokenRule
     {
-        public void Run(CommonScriptCursor cursor)
+        public bool Run(CommonScriptCursor cursor)
         {
             for (int i = cursor.Index; i < cursor.Length; i++)
             {
                 var c = cursor.Value[i];
 
-                // A-Za-z
-                if (65 <= c && c <= 90 || 97 <= c && c <= 122)
+                if ('A' <= c && c <= 'Z' || 'a' <= c && c <= 'z' || '0' <= c && c <= '9' ||c == '_')
                     continue;
 
                 cursor.Index = i - 1;
-                return;
+                return true;
             }
 
             cursor.Index = cursor.Length - 1;
+            return true;
         }
     }
 }

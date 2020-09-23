@@ -1,10 +1,10 @@
-﻿namespace Qsi.Parsing.Common.Rules
+﻿﻿﻿﻿namespace Qsi.Parsing.Common.Rules
 {
     // {space}*|..
     //         ^
     public sealed class LookbehindWhiteSpaceRule : ITokenRule
     {
-        public void Run(CommonScriptCursor cursor)
+        public bool Run(CommonScriptCursor cursor)
         {
             for (int i = cursor.Index; i < cursor.Length; i++)
             {
@@ -12,10 +12,11 @@
                     continue;
 
                 cursor.Index = i - 1;
-                return;
+                return true;
             }
 
             cursor.Index = cursor.Length - 1;
+            return true;
         }
     }
 }

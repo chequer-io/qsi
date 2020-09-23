@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -13,7 +14,7 @@ namespace Qsi.Parsing.Common
         public string Delimiter { get; set; } = ";";
 
         private readonly ITokenRule _whiteSpace = new LookbehindWhiteSpaceRule();
-        private readonly ITokenRule _newLine = new LookaheadNewLineRule();
+        private readonly ITokenRule _newLine = new LookaheadEndOfLineRule();
         private readonly ITokenRule _keyword = new LookbehindUnknownKeywordRule();
         private readonly ITokenRule _singleQuote = new LookbehindCharacterRule('\'');
         private readonly ITokenRule _doubleQuote = new LookbehindCharacterRule('"');
@@ -27,8 +28,8 @@ namespace Qsi.Parsing.Common
         {
             var context = new ParseContext(input, Delimiter);
             var cursor = context.Cursor;
-            ref int? fragmentStart = ref context._fragmentStart;
-            ref var fragmentEnd = ref context._fragmentEnd;
+            ref int? fragmentStart = ref context.FragmentStart;
+            ref var fragmentEnd = ref context.FragmentEnd;
 
             while (cursor.Index < cursor.Length)
             {
@@ -60,12 +61,12 @@ namespace Qsi.Parsing.Common
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void FlushToken(ParseContext context)
         {
-            if (!context._fragmentStart.HasValue)
+            if (!context.FragmentStart.HasValue)
                 return;
 
-            context.Tokens.Add(new Token(TokenType.Fragment, context._fragmentStart.Value..(context._fragmentEnd + 1)));
-            context._fragmentStart = null;
-            context._fragmentEnd = -1;
+            context.Tokens.Add(new Token(TokenType.Fragment, context.FragmentStart.Value..(context.FragmentEnd + 1)));
+            context.FragmentStart = null;
+            context.FragmentEnd = -1;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -76,35 +77,38 @@ namespace Qsi.Parsing.Common
             if (context.Tokens.Count == 0)
                 return;
 
-            var tokenBuffer = new List<Token>();
             List<Token> tokens = context.Tokens;
 
             foreach (var section in SplitScriptSection(context))
             {
-                var (offset, end) = section.GetOffsetAndLength(tokens.Count);
-                end += offset;
+                var (offset, length) = section.GetOffsetAndLength(tokens.Count);
+                var end = offset + length;
+
+                var tokenBuffer = ArrayPool<Token>.Shared.Rent(length);
+                var tokenIndex = 0;
 
                 for (int i = offset; i < end; i++)
                 {
                     var token = tokens[i];
 
-                    if (token.Type == TokenType.WhiteSpace && (i == end - 1 || tokenBuffer.Count == 0))
+                    if (token.Type == TokenType.WhiteSpace && (i == end - 1 || tokenIndex == 0))
                         continue;
 
-                    tokenBuffer.Add(token);
+                    tokenBuffer[tokenIndex++] = token;
                 }
 
-                if (tokenBuffer.Count == 0)
-                    continue;
-
-                var script = CreateScript(context, tokenBuffer);
-                tokenBuffer.Clear();
-
-                if (script != null)
+                if (tokenIndex > 0)
                 {
-                    context.Scripts.Add(script);
-                    context._lastLine = script.End.Line - 1;
+                    var script = CreateScript(context, new ArraySegment<Token>(tokenBuffer, 0, tokenIndex));
+
+                    if (script != null)
+                    {
+                        context.Scripts.Add(script);
+                        context.LastLine = script.End.Line - 1;
+                    }
                 }
+
+                ArrayPool<Token>.Shared.Return(tokenBuffer);
             }
 
             tokens.Clear();
@@ -144,7 +148,7 @@ namespace Qsi.Parsing.Common
         protected virtual (QsiScriptPosition Start, QsiScriptPosition End) MeasurePosition(ParseContext context, int start, int end)
         {
             var value = context.Cursor.Value;
-            ref int[] lineMap = ref context._lineMap;
+            ref int[] lineMap = ref context.LineMap;
 
             if (lineMap == null)
             {
@@ -157,7 +161,7 @@ namespace Qsi.Parsing.Common
                 lineMap = map.ToArray();
             }
 
-            var startLine = GetLine(start, context._lastLine) + 1;
+            var startLine = GetLine(start, context.LastLine) + 1;
             var startColumn = start + 1;
 
             if (startLine > 1)
@@ -173,17 +177,17 @@ namespace Qsi.Parsing.Common
 
             int GetLine(int index, int startIndex)
             {
-                for (int i = startIndex; i < context._lineMap.Length; i++)
+                for (int i = startIndex; i < context.LineMap.Length; i++)
                 {
-                    if (index < context._lineMap[i])
+                    if (index < context.LineMap[i])
                         return i;
                 }
 
-                return context._lineMap.Length;
+                return context.LineMap.Length;
             }
         }
 
-        protected virtual QsiScript CreateScript(ParseContext context, IList<Token> tokens)
+        protected virtual QsiScript CreateScript(ParseContext context, IReadOnlyList<Token> tokens)
         {
             var startIndex = tokens[0].Span.Start.GetOffset(context.Cursor.Length);
             var endIndex = tokens[^1].Span.End.GetOffset(context.Cursor.Length) - 1;
@@ -194,7 +198,7 @@ namespace Qsi.Parsing.Common
             return new QsiScript(script, scriptType, startPosition, endPosition);
         }
 
-        protected virtual QsiScriptType GetSuitableScriptType(ParseContext context, IList<Token> tokens)
+        protected virtual QsiScriptType GetSuitableScriptType(ParseContext context, IReadOnlyList<Token> tokens)
         {
             var firstToken = tokens[0];
 
@@ -224,13 +228,13 @@ namespace Qsi.Parsing.Common
 
             switch (cursor.Current)
             {
-                // A-Za-z
-                case var c when 65 <= c && c <= 90 || 97 <= c && c <= 122:
+                case '_':
+                case var c when 'A' <= c && c <= 'Z' || 'a' <= c && c <= 'z':
                     offset = 1;
                     rule = _keyword;
                     tokenType = TokenType.Keyword;
                     break;
-                    
+
                 case '\'':
                     offset = 1;
                     rule = _singleQuote;
@@ -293,11 +297,24 @@ namespace Qsi.Parsing.Common
 
             int start = cursor.Index;
             cursor.Index += offset;
-            rule.Run(cursor);
 
-            token = new Token(tokenType, start..(cursor.Index + 1));
+            if (rule.Run(cursor))
+            {
+                token = new Token(tokenType, start..(cursor.Index + 1));
+                return true;
+            }
 
-            return true;
+            if (tokenType == TokenType.MultiLineComment)
+            {
+                cursor.Index = cursor.Length - 1;
+                token = new Token(tokenType, start..(cursor.Index + 1));
+                return true;
+            }
+
+            token = default;
+            cursor.Index = start;
+
+            return false;
         }
 
         #region Context
@@ -312,11 +329,11 @@ namespace Qsi.Parsing.Common
 
             public List<Token> Tokens { get; }
 
-            internal int? _fragmentStart;
-            internal int _fragmentEnd;
+            internal int? FragmentStart;
+            internal int FragmentEnd;
 
-            internal int _lastLine;
-            internal int[] _lineMap;
+            internal int LastLine;
+            internal int[] LineMap;
 
             public ParseContext(string input, string delimiter)
             {
