@@ -45,10 +45,10 @@ namespace Qsi.Debugger.Vendor.Oracle
             switch (name)
             {
                 case "ACTOR_VIEW_1":
-                    return new QsiScript("CREATE VIEW \"CHEQUER\".\"ACTOR_VIEW_1\" (\"ACTOR_ID\", \"FIRST_NAME\", \"LAST_NAME\", \"LAST_UPDATE\") AS select \"ACTOR_ID\",\"FIRST_NAME\",\"LAST_NAME\",\"LAST_UPDATE\" from actor", QsiScriptType.CreateView);
+                    return new QsiScript("CREATE VIEW \"CHEQUER\".\"ACTOR_VIEW_1\" (\"ACTOR_ID\", \"FIRST_NAME\", \"LAST_NAME\", \"LAST_UPDATE\") AS select \"ACTOR_ID\",\"FIRST_NAME\",\"LAST_NAME\",\"LAST_UPDATE\" from actor", QsiScriptType.Create);
 
                 case "ACTOR_VIEW_2":
-                    return new QsiScript("CREATE VIEW \"CHEQUER\".\"ACTOR_VIEW_2\" (\"A\", \"B\", \"C\", \"D\") AS select \"ACTOR_ID\",\"FIRST_NAME\",\"LAST_NAME\",\"LAST_UPDATE\" from actor", QsiScriptType.CreateView);
+                    return new QsiScript("CREATE VIEW \"CHEQUER\".\"ACTOR_VIEW_2\" (\"A\", \"B\", \"C\", \"D\") AS select \"ACTOR_ID\",\"FIRST_NAME\",\"LAST_NAME\",\"LAST_UPDATE\" from actor", QsiScriptType.Create);
             }
 
             return null;

@@ -61,9 +61,9 @@ namespace Qsi.Debugger.Vendor.SqlServer
             switch (name)
             {
                 case "actor_view":
-                    return new QsiScript("CREATE VIEW [chequer].[actor_view] (actor_id, first_name, last_name, last_update, [first_name + last_name]) AS SELECT *, first_name + last_name FROM [chequer].[actor]", QsiScriptType.CreateView);
+                    return new QsiScript("CREATE VIEW [chequer].[actor_view] (actor_id, first_name, last_name, last_update, [first_name + last_name]) AS SELECT *, first_name + last_name FROM [chequer].[actor]", QsiScriptType.Create);
                 case "actor_view2":
-                    return new QsiScript("CREATE VIEW [chequer].[actor_view2] AS SELECT * FROM [chequer].[actor]", QsiScriptType.CreateView);
+                    return new QsiScript("CREATE VIEW [chequer].[actor_view2] AS SELECT * FROM [chequer].[actor]", QsiScriptType.Create);
             }
             
             return null;

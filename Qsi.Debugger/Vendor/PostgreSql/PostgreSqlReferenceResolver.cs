@@ -85,10 +85,10 @@ namespace Qsi.Debugger.Vendor.PostgreSql
             switch (name)
             {
                 case "actor_view":
-                    return new QsiScript("CREATE OR REPLACE VIEW public.actor_view AS SELECT actor.actor_id, actor.first_name, actor.last_name, actor.last_update FROM actor;", QsiScriptType.CreateView);
+                    return new QsiScript("CREATE OR REPLACE VIEW public.actor_view AS SELECT actor.actor_id, actor.first_name, actor.last_name, actor.last_update FROM actor;", QsiScriptType.Create);
                 
                 case "actor_mat_view":
-                    return new QsiScript("CREATE MATERIALIZED VIEW public.actor_view AS SELECT actor.actor_id, actor.first_name, actor.last_name, actor.last_update FROM actor;", QsiScriptType.CreateTable);
+                    return new QsiScript("CREATE MATERIALIZED VIEW public.actor_view AS SELECT actor.actor_id, actor.first_name, actor.last_name, actor.last_update FROM actor;", QsiScriptType.Create);
             }
 
             return null;

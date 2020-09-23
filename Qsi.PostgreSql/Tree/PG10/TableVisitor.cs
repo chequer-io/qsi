@@ -363,6 +363,7 @@ namespace Qsi.PostgreSql.Tree.PG10
             };
         }
 
+        // TODO: alias에 정의된 컬럼 + 정의되지 않은 컬럼 컴파일
         public static QsiTableNode VisitRangeVar(RangeVar var)
         {
             var tableNode = new QsiTableAccessNode
@@ -377,20 +378,37 @@ namespace Qsi.PostgreSql.Tree.PG10
             {
                 Debug.Assert(var.alias.Length == 1);
 
-                var allDeclaration = new QsiColumnsDeclarationNode();
-
-                allDeclaration.Columns.Add(new QsiAllColumnNode
-                {
-                    IncludeInvisibleColumns = true
-                });
-
-                n.Columns.SetValue(allDeclaration);
-                n.Source.SetValue(tableNode);
-
-                n.Alias.SetValue(new QsiAliasNode
+                var alias = new QsiAliasNode
                 {
                     Name = new QsiIdentifier(var.alias[0].aliasname, false)
-                });
+                };
+
+                QsiColumnsDeclarationNode columsDeclaration;
+
+                PgString[] columns = var.alias[0].colnames?
+                    .Cast<PgString>()
+                    .ToArray();
+
+                if (ListUtility.IsNullOrEmpty(columns))
+                {
+                    columsDeclaration = new QsiColumnsDeclarationNode();
+
+                    columsDeclaration.Columns.Add(new QsiAllColumnNode
+                    {
+                        IncludeInvisibleColumns = true
+                    });
+                }
+                else
+                {
+                    columsDeclaration = TreeHelper.Create<QsiColumnsDeclarationNode>(cn =>
+                    {
+                        cn.Columns.AddRange(CreateSequentialColumnNodes(columns));
+                    });
+                }
+
+                n.Columns.SetValue(columsDeclaration);
+                n.Source.SetValue(tableNode);
+                n.Alias.SetValue(alias);
             });
         }
 
