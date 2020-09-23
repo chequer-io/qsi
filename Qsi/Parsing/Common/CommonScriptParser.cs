@@ -33,6 +33,7 @@ namespace Qsi.Parsing.Common
         public IEnumerable<QsiScript> Parse(in string input, CancellationToken cancellationToken)
         {
             var context = new ParseContext(input, _delimiter, cancellationToken);
+
             var cursor = context.Cursor;
             ref int? fragmentStart = ref context.FragmentStart;
             ref var fragmentEnd = ref context.FragmentEnd;
@@ -322,6 +323,7 @@ namespace Qsi.Parsing.Common
         }
 
         #region Context
+
         protected class ParseContext
         {
             public readonly List<QsiScript> Scripts;
@@ -340,6 +342,8 @@ namespace Qsi.Parsing.Common
 
             private readonly List<Token> _tokens;
             private readonly CancellationToken _cancellationToken;
+
+            private Dictionary<string, object> _userData;
 
             public ParseContext(string input, string delimiter, CancellationToken cancellationToken)
             {
@@ -361,10 +365,26 @@ namespace Qsi.Parsing.Common
             {
                 _tokens.Clear();
             }
+
+            public T GetUserData<T>(string key)
+            {
+                if (_userData != null && _userData.TryGetValue(key, out var value))
+                    return (T) value;
+
+                return default;
+            }
+
+            public void SetUserData<T>(string key, T value)
+            {
+                _userData ??= new Dictionary<string, object>();
+                _userData[key] = value;
+            }
         }
+
         #endregion
 
         #region Token
+
         [Flags]
         protected enum TokenType
         {
@@ -396,6 +416,7 @@ namespace Qsi.Parsing.Common
                 return $"{Span} ({Type})";
             }
         }
+
         #endregion
     }
 }
