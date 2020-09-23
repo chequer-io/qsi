@@ -8,7 +8,7 @@ namespace Qsi.MySql
 {
     public class MySqlScriptParser : CommonScriptParser
     {
-        private readonly Regex _delimiterPattern = new Regex(@"\G(\S+)\s");
+        private readonly Regex _delimiterPattern = new Regex(@"\G\S+(?=\s|$)");
 
         protected override bool IsEndOfScript(ParseContext context)
         {
@@ -24,11 +24,9 @@ namespace Qsi.MySql
 
                 if (match.Success)
                 {
-                    var delimiter = match.Groups[1];
-
-                    context.Cursor.Index = delimiter.Index + delimiter.Length - 1;
-                    context.Delimiter = delimiter.Value;
-                    context.Tokens.Add(new Token(TokenType.Fragment, delimiter.Index..(context.Cursor.Index + 1)));
+                    context.Cursor.Index = match.Index + match.Length - 1;
+                    context.Delimiter = match.Value;
+                    context.Tokens.Add(new Token(TokenType.Fragment, match.Index..(context.Cursor.Index + 1)));
 
                     return true;
                 }
