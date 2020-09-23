@@ -16,8 +16,8 @@ namespace Qsi.Parsing.Common
         private readonly ITokenRule _whiteSpace = new LookbehindWhiteSpaceRule();
         private readonly ITokenRule _newLine = new LookaheadEndOfLineRule();
         private readonly ITokenRule _keyword = new LookbehindUnknownKeywordRule();
-        private readonly ITokenRule _singleQuote = new LookbehindCharacterRule('\'');
-        private readonly ITokenRule _doubleQuote = new LookbehindCharacterRule('"');
+        private readonly ITokenRule _singleQuote = new LookbehindLiteralRule('\'', true);
+        private readonly ITokenRule _doubleQuote = new LookbehindLiteralRule('"', true);
         private readonly ITokenRule _backQuote = new LookbehindCharacterRule('`');
         private readonly ITokenRule _squareBracketRight = new LookbehindCharacterRule(']');
         private readonly ITokenRule _multilineCommentClosing = new LookbehindKeywordRule("*/");
@@ -123,8 +123,8 @@ namespace Qsi.Parsing.Common
             if (context.Tokens.Count == 0)
                 yield break;
 
-            int bodyStartIndex = context.Tokens.FindIndex(t => t.Type == TokenType.Fragment || t.Type == TokenType.Keyword);
-            int bodyEndIndex = context.Tokens.FindLastIndex(t => t.Type == TokenType.Fragment || t.Type == TokenType.Keyword);
+            int bodyStartIndex = context.Tokens.FindIndex(t => TokenType.Effective.HasFlag(t.Type));
+            int bodyEndIndex = context.Tokens.FindLastIndex(t => TokenType.Effective.HasFlag(t.Type));
 
             if (bodyStartIndex > 0)
                 yield return ..bodyStartIndex;
@@ -242,13 +242,13 @@ namespace Qsi.Parsing.Common
                 case '\'':
                     offset = 1;
                     rule = _singleQuote;
-                    tokenType = TokenType.Fragment;
+                    tokenType = TokenType.Literal;
                     break;
 
                 case '"':
                     offset = 1;
                     rule = _doubleQuote;
-                    tokenType = TokenType.Fragment;
+                    tokenType = TokenType.Literal;
                     break;
 
                 case '`':
@@ -365,13 +365,18 @@ namespace Qsi.Parsing.Common
         #endregion
 
         #region Token
+        [Flags]
         protected enum TokenType
         {
-            Keyword,
-            Fragment,
-            WhiteSpace,
-            SingeLineComment,
-            MultiLineComment
+            Keyword = 1 << 1,
+            Literal = 1 << 2,
+            Fragment = 1 << 3,
+            WhiteSpace = 1 << 4,
+            SingeLineComment = 1 << 5,
+            MultiLineComment = 1 << 6,
+
+            Effective = Keyword | Literal | Fragment,
+            Trivia = WhiteSpace | SingeLineComment | MultiLineComment
         }
 
         protected readonly struct Token

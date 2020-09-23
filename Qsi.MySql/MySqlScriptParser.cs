@@ -18,7 +18,7 @@ namespace Qsi.MySql
                 tokens[^1].Type == TokenType.WhiteSpace &&
                 tokens[^2].Type == TokenType.Keyword &&
                 context.Cursor.Value[tokens[^2].Span].Equals("DELIMITER", StringComparison.OrdinalIgnoreCase) &&
-                tokens.SkipLast(2).All(t => t.Type != TokenType.Keyword && t.Type != TokenType.Fragment))
+                tokens.SkipLast(2).All(t => TokenType.Trivia.HasFlag(t.Type)))
             {
                 var match = _delimiterPattern.Match(context.Cursor.Value, context.Cursor.Index);
 
