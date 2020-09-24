@@ -9,6 +9,7 @@ namespace Qsi.MySql
     public class MySqlScriptParser : CommonScriptParser
     {
         private readonly Regex _delimiterPattern = new Regex(@"\G\S+(?=\s|$)");
+        private readonly TokenType _effectiveType = TokenType.Keyword | TokenType.Literal;
 
         protected override bool IsEndOfScript(ParseContext context)
         {
@@ -18,7 +19,7 @@ namespace Qsi.MySql
                 tokens[^1].Type == TokenType.WhiteSpace &&
                 tokens[^2].Type == TokenType.Keyword &&
                 context.Cursor.Value[tokens[^2].Span].Equals("DELIMITER", StringComparison.OrdinalIgnoreCase) &&
-                tokens.SkipLast(2).All(t => TokenType.Trivia.HasFlag(t.Type)))
+                (tokens.Count == 2 || _effectiveType.HasFlag(tokens[^3].Type)))
             {
                 var match = _delimiterPattern.Match(context.Cursor.Value, context.Cursor.Index);
 
