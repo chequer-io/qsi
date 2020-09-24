@@ -10,15 +10,15 @@ namespace Qsi.Debugger.Controls
 {
     public class QsiScriptRenderer : IBackgroundRenderer
     {
-        public KnownLayer Layer => KnownLayer.Text;
+        public KnownLayer Layer => KnownLayer.Caret;
 
-        private IPen _pen;
+        private readonly IPen _pen;
 
         private QsiScript[] _scripts;
 
-        public QsiScriptRenderer()
+        public QsiScriptRenderer(IPen pen)
         {
-            _pen = new Pen(Brushes.Red, 1);
+            _pen = pen;
         }
 
         public void Update(QsiScript[] scripts)
@@ -31,70 +31,60 @@ namespace Qsi.Debugger.Controls
             if (_scripts == null)
                 return;
 
-            var offsetY = textView.ScrollOffset.Y;
-            var top = textView.GetDocumentLineByVisualTop(offsetY);
-            var bottom = textView.GetDocumentLineByVisualTop(offsetY + textView.Bounds.Height);
-
-            BackgroundGeometryBuilder builder = null;
+            var scrollOffset = textView.ScrollOffset;
+            var top = textView.GetDocumentLineByVisualTop(scrollOffset.Y);
+            var bottom = textView.GetDocumentLineByVisualTop(scrollOffset.Y + textView.Bounds.Height);
 
             IEnumerable<QsiScript> scripts = _scripts
-                .Where(s => top.LineNumber <= s.Start.Line || s.End.Line <= bottom.LineNumber);
+                .Where(s => !(s.End.Line < top.LineNumber || bottom.LineNumber < s.Start.Line));
 
             foreach (var script in scripts)
             {
-                builder ??= new BackgroundGeometryBuilder();
-
                 var minTop = double.MaxValue;
                 var minLeft = double.MaxValue;
                 var maxRight = double.MinValue;
                 var maxBottom = double.MinValue;
 
-                for (int i = script.Start.Line; i <= script.End.Line; i++)
+                var singleLine = script.Start.Line == script.End.Line;
+
+                foreach (var line in textView.GetVisualLines(script.Start.Line, script.End.Line))
                 {
-                    var line = textView.GetVisualLine(i);
-
-                    if (line == null)
-                        continue;
-
                     Rect bounds;
 
-                    if (i == script.Start.Line)
+                    if (singleLine)
+                    {
+                        var textLine = line.TextLines[^1];
+                        bounds = textLine.GetTextBounds(script.Start.Column - 1, script.Script.Length);
+                    }
+                    else if (line.FirstDocumentLine.LineNumber == script.Start.Line)
                     {
                         var textLine = line.TextLines[^1];
                         bounds = textLine.GetTextBounds(script.Start.Column - 1, textLine.Length);
                     }
-                    else if (i == script.End.Line)
+                    else if (line.LastDocumentLine.LineNumber == script.End.Line)
                     {
                         bounds = line.TextLines[^1].GetTextBounds(0, script.End.Column);
                     }
                     else
                     {
-                        if (line == null)
-                            continue;
-
                         var textLine = line.TextLines[^1];
                         bounds = textLine.GetTextBounds(0, textLine.Length);
                     }
 
-                    minTop = Math.Min(minTop, bounds.Y);
+                    minTop = Math.Min(minTop, bounds.Y + line.VisualTop);
                     minLeft = Math.Min(minLeft, bounds.X);
                     maxRight = Math.Max(maxRight, bounds.Right);
-                    maxBottom = Math.Max(maxBottom, bounds.Bottom);
+                    maxBottom = Math.Max(maxBottom, bounds.Bottom + line.VisualTop);
                 }
 
                 var rect = new Rect(
-                    minLeft, 
-                    minTop, 
+                    minLeft - scrollOffset.X,
+                    minTop - scrollOffset.Y,
                     maxRight - minLeft,
                     maxBottom - minTop);
 
-                builder.AddRectangle(textView, rect);
+                drawingContext.DrawRectangle(_pen, rect);
             }
-
-            var geometry = builder?.CreateGeometry();
-
-            if (geometry != null)
-                drawingContext.DrawGeometry(null, _pen, geometry);
         }
     }
 }

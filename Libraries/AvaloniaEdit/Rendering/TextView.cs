@@ -1124,6 +1124,21 @@ namespace AvaloniaEdit.Rendering
             return null;
         }
 
+        public IEnumerable<VisualLine> GetVisualLines(int startLineNumber, int endLineNumber)
+        {
+            foreach (var visualLine in _allVisualLines)
+            {
+                Debug.Assert(visualLine.IsDisposed == false);
+                var start = visualLine.FirstDocumentLine.LineNumber;
+                var end = visualLine.LastDocumentLine.LineNumber;
+
+                if (end < startLineNumber || endLineNumber < start)
+                    continue;
+
+                yield return visualLine;
+            }
+        }
+
         /// <summary>
         ///     Gets the visual line that contains the document line with the specified number.
         ///     If that line is outside the visible range, a new VisualLine for that document line is constructed.

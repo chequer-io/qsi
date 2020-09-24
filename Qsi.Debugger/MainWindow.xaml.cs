@@ -101,7 +101,7 @@ namespace Qsi.Debugger
             _codeEditor.TextArea.TextView.CurrentLineBorder = new Pen(Brush.Parse("#1BFFFFFF"));
             _codeEditor.TextArea.Options.HighlightCurrentLine = true;
 
-            _scriptRenderer = new QsiScriptRenderer();
+            _scriptRenderer = new QsiScriptRenderer(_codeEditor.TextArea.TextView.CurrentLineBorder);
             _codeEditor.TextArea.TextView.BackgroundRenderers.Add(_scriptRenderer);
 
             _codeEditor.TextChanged += CodeEditorOnTextInput;
@@ -140,14 +140,14 @@ namespace Qsi.Debugger
 
                 var input = _codeEditor.Text;
 
-                // Raw Tree
-
-                _tvRaw.Items = new[] { _vendor.RawParser.Parse(input) };
-
                 QsiScript[] scripts = _vendor.ScriptParser.Parse(input, default).ToArray();
                 _scriptRenderer.Update(scripts);
 
-                var script = scripts.First(s => s.ScriptType != QsiScriptType.CommentGroup);
+                var script = scripts.First(s => s.ScriptType != QsiScriptType.CommentGroup && s.ScriptType != QsiScriptType.Delimiter);
+
+                // Raw Tree
+
+                _tvRaw.Items = new[] { _vendor.RawParser.Parse(script.Script) };
 
                 var sw = Stopwatch.StartNew();
                 var tree = _vendor.Parser.Parse(script);
