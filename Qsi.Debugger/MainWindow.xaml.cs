@@ -14,6 +14,7 @@ using AvaloniaEdit;
 using AvaloniaEdit.Highlighting;
 using AvaloniaEdit.Highlighting.Xshd;
 using Qsi.Data;
+using Qsi.Debugger.Controls;
 using Qsi.Debugger.Models;
 using Qsi.Debugger.Utilities;
 using Qsi.Debugger.Vendor;
@@ -42,6 +43,7 @@ namespace Qsi.Debugger
         private readonly Dictionary<string, Lazy<VendorDebugger>> _vendors;
 
         private VendorDebugger _vendor;
+        private QsiScriptRenderer _scriptRenderer;
 
         public MainWindow()
         {
@@ -99,6 +101,9 @@ namespace Qsi.Debugger
             _codeEditor.TextArea.TextView.CurrentLineBorder = new Pen(Brush.Parse("#1BFFFFFF"));
             _codeEditor.TextArea.Options.HighlightCurrentLine = true;
 
+            _scriptRenderer = new QsiScriptRenderer();
+            _codeEditor.TextArea.TextView.BackgroundRenderers.Add(_scriptRenderer);
+
             _codeEditor.TextChanged += CodeEditorOnTextInput;
         }
 
@@ -112,6 +117,7 @@ namespace Qsi.Debugger
             else
             {
                 _vendor = null;
+                _scriptRenderer.Update(null);
             }
         }
 
@@ -138,8 +144,10 @@ namespace Qsi.Debugger
 
                 _tvRaw.Items = new[] { _vendor.RawParser.Parse(input) };
 
-                var sentence = _vendor.ScriptParser.Parse(input, default).FirstOrDefault();
-                var script = sentence;
+                QsiScript[] scripts = _vendor.ScriptParser.Parse(input, default).ToArray();
+                _scriptRenderer.Update(scripts);
+
+                var script = scripts.First(s => s.ScriptType != QsiScriptType.CommentGroup);
 
                 var sw = Stopwatch.StartNew();
                 var tree = _vendor.Parser.Parse(script);
