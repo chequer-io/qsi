@@ -1,24 +1,19 @@
 ﻿using Qsi.Diagnostics;
-using Qsi.MySql;
 using Qsi.MySql.Diagnostics;
-using Qsi.Parsing;
 using Qsi.Services;
 
 namespace Qsi.Debugger.Vendor.MySql
 {
-    class MySqlDebugger : VendorDebugger
+    internal class MySqlDebugger : VendorDebugger
     {
-        public override IQsiTreeParser Parser { get; }
-
-        public override IRawTreeParser RawParser { get; }
-
-        public override IQsiLanguageService LanguageService { get; }
-
-        public MySqlDebugger()
+        public override IQsiLanguageService CreateLanguageService()
         {
-            Parser = new MySqlParser();
-            RawParser = new MySqlRawParser();
-            LanguageService = new MySqlLanguageService();
+            return new MySqlLanguageService();
+        }
+
+        public override IRawTreeParser CreateRawTreeParser()
+        {
+            return new MySqlRawParser();
         }
     }
 }

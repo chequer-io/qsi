@@ -30,7 +30,7 @@ namespace Qsi.Parsing.Common
             _delimiter = delimiter;
         }
 
-        public IEnumerable<QsiScript> Parse(in string input, CancellationToken cancellationToken)
+        public virtual IEnumerable<QsiScript> Parse(in string input, CancellationToken cancellationToken)
         {
             var context = new ParseContext(input, _delimiter, cancellationToken);
 

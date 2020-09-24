@@ -56,6 +56,8 @@ namespace Qsi.Debugger
                 ["JSqlParser"] = new Lazy<VendorDebugger>(() => new JSqlDebugger()),
                 ["Oracle"] = new Lazy<VendorDebugger>(() => new OracleDebugger()),
                 ["SQL Server 2000"] = new Lazy<VendorDebugger>(() => new SqlServerDebugger(TransactSqlVersion.Version80)),
+                ["SQL Server 2012"] = new Lazy<VendorDebugger>(() => new SqlServerDebugger(TransactSqlVersion.Version110)),
+                ["SQL Server 2017"] = new Lazy<VendorDebugger>(() => new SqlServerDebugger(TransactSqlVersion.Version140)),
                 ["SQL Server 2019"] = new Lazy<VendorDebugger>(() => new SqlServerDebugger(TransactSqlVersion.Version150))
             };
 
@@ -136,9 +138,8 @@ namespace Qsi.Debugger
 
                 _tvRaw.Items = new[] { _vendor.RawParser.Parse(input) };
 
-                // TODO: change to IQsiScriptParser
-                var sentence = input.Split(';', 2)[0].Trim();
-                var script = new QsiScript(sentence, QsiScriptType.Select);
+                var sentence = _vendor.ScriptParser.Parse(input, default).FirstOrDefault();
+                var script = sentence;
 
                 var sw = Stopwatch.StartNew();
                 var tree = _vendor.Parser.Parse(script);
