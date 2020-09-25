@@ -4,7 +4,7 @@ using Qsi.Utilities;
 
 namespace Qsi.Tree.Immutable
 {
-    public readonly struct ImmutableInlineTableNode : IQsiInlineDerivedTableNode
+    public readonly struct ImmutableInlineDerivedTableNode : IQsiInlineDerivedTableNode
     {
         public IQsiTreeNode Parent { get; }
 
@@ -16,7 +16,7 @@ namespace Qsi.Tree.Immutable
 
         public IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Alias, Columns).Concat(Rows);
 
-        public ImmutableInlineTableNode(
+        public ImmutableInlineDerivedTableNode(
             IQsiTreeNode parent,
             IQsiAliasNode alias,
             IQsiColumnsDeclarationNode columns,
