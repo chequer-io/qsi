@@ -369,7 +369,7 @@ namespace Qsi.Analyzers.Table
                         if (fixedSources[0].Recursive)
                             throw new QsiException(QsiError.NoAnchorInRecursiveQuery, cteName);
 
-                        compositeTableNode = new CompositeTableNodeProxy(
+                        compositeTableNode = new ImmutableCompositeTableNode(
                             compositeTableNode.Parent,
                             fixedSources
                                 .Select(s => s.Source)

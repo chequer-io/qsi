@@ -5,7 +5,7 @@ using Qsi.Tree;
 
 namespace Qsi.Tree.Immutable
 {
-    public readonly struct DeclaredColumnNodeProxy : IQsiDeclaredColumnNode, IQsiTerminalNode
+    public readonly struct ImmutableDeclaredColumnNode : IQsiDeclaredColumnNode, IQsiTerminalNode
     {
         public IQsiTreeNode Parent { get; }
 
@@ -13,7 +13,7 @@ namespace Qsi.Tree.Immutable
 
         public IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
 
-        public DeclaredColumnNodeProxy(IQsiTreeNode parent, QsiQualifiedIdentifier name)
+        public ImmutableDeclaredColumnNode(IQsiTreeNode parent, QsiQualifiedIdentifier name)
         {
             Parent = parent;
             Name = name;

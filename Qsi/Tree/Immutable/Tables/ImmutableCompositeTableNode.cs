@@ -3,7 +3,7 @@ using Qsi.Tree;
 
 namespace Qsi.Tree.Immutable
 {
-    public readonly struct CompositeTableNodeProxy : IQsiCompositeTableNode
+    public readonly struct ImmutableCompositeTableNode : IQsiCompositeTableNode
     {
         public IQsiTreeNode Parent { get; }
 
@@ -11,7 +11,7 @@ namespace Qsi.Tree.Immutable
 
         public IEnumerable<IQsiTreeNode> Children => Sources;
 
-        public CompositeTableNodeProxy(IQsiTreeNode parent, IQsiTableNode[] sources)
+        public ImmutableCompositeTableNode(IQsiTreeNode parent, IQsiTableNode[] sources)
         {
             Parent = parent;
             Sources = sources;
