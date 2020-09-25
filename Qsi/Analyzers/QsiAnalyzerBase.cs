@@ -1,6 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using Qsi.Data;
+using Qsi.Tree;
 
 namespace Qsi.Analyzers
 {
@@ -13,17 +14,21 @@ namespace Qsi.Analyzers
             Engine = engine;
         }
 
-        public ValueTask<IQsiAnalysisResult> Execute(QsiScript script, QsiAnalyzerOptions options, CancellationToken cancellationToken = default)
+        public ValueTask<IQsiAnalysisResult> Execute(
+            QsiScript script,
+            IQsiTreeNode tree,
+            QsiAnalyzerOptions options,
+            CancellationToken cancellationToken = default)
         {
-            if (!CanExecute(script, options))
+            if (!CanExecute(script, tree))
                 throw new QsiException(QsiError.NotSupportedScript, script.ScriptType);
 
-            return OnExecute(script, options, cancellationToken);
+            return OnExecute(new ExecutionContext(script, tree, options, cancellationToken));
         }
 
-        public abstract bool CanExecute(QsiScript script, QsiAnalyzerOptions options);
+        public abstract bool CanExecute(QsiScript script, IQsiTreeNode tree);
 
-        protected abstract ValueTask<IQsiAnalysisResult> OnExecute(QsiScript script, QsiAnalyzerOptions options, CancellationToken cancellationToken = default);
+        protected abstract ValueTask<IQsiAnalysisResult> OnExecute(ExecutionContext context);
 
         #region Utilities
         protected bool Match(QsiIdentifier a, QsiIdentifier b)
@@ -45,5 +50,22 @@ namespace Qsi.Analyzers
             return true;
         }
         #endregion
+
+        // TODO: For .NET 5 record feature
+        protected readonly struct ExecutionContext
+        {
+            public readonly QsiScript Script;
+            public readonly IQsiTreeNode Tree;
+            public readonly QsiAnalyzerOptions Options;
+            public readonly CancellationToken CancellationToken;
+
+            public ExecutionContext(QsiScript script, IQsiTreeNode tree, QsiAnalyzerOptions options, CancellationToken cancellationToken)
+            {
+                Script = script;
+                Tree = tree;
+                Options = options;
+                CancellationToken = cancellationToken;
+            }
+        }
     }
 }

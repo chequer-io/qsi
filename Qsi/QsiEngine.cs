@@ -59,8 +59,10 @@ namespace Qsi
 
         public async ValueTask<IQsiAnalysisResult> Execute(QsiScript script, CancellationToken cancellationToken = default)
         {
+            var tree = TreeParser.Parse(script, cancellationToken);
+
             var options = LanguageService.CreateAnalyzerOptions();
-            var analyzer = _analyzers.Value.FirstOrDefault(a => a.CanExecute(script, options));
+            var analyzer = _analyzers.Value.FirstOrDefault(a => a.CanExecute(script, tree));
 
             if (analyzer == null)
             {
@@ -70,7 +72,7 @@ namespace Qsi
                 throw new QsiException(QsiError.NotSupportedScript, script.ScriptType);
             }
 
-            return await analyzer.Execute(script, options, cancellationToken);
+            return await analyzer.Execute(script, tree, options, cancellationToken);
         }
     }
 }

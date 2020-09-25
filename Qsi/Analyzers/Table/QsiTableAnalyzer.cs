@@ -20,19 +20,19 @@ namespace Qsi.Analyzers.Table
         }
 
         #region Execute
-        public override bool CanExecute(QsiScript script, QsiAnalyzerOptions options)
+        public override bool CanExecute(QsiScript script, IQsiTreeNode tree)
         {
-            return script.ScriptType == QsiScriptType.With || script.ScriptType == QsiScriptType.Select;
+            return
+                tree is IQsiTableNode &&
+                (script.ScriptType == QsiScriptType.With || script.ScriptType == QsiScriptType.Select);
         }
 
-        protected override async ValueTask<IQsiAnalysisResult> OnExecute(QsiScript script, QsiAnalyzerOptions options, CancellationToken cancellationToken = default)
+        protected override async ValueTask<IQsiAnalysisResult> OnExecute(ExecutionContext context)
         {
-            var result = Engine.TreeParser.Parse(script, cancellationToken);
+            if (!(context.Tree is IQsiTableNode tableNode))
+                throw new InvalidOperationException();
 
-            if (!(result is IQsiTableNode tableNode))
-                throw TreeHelper.NotSupportedTree(result);
-
-            using var scope = new CompileContext(options, cancellationToken);
+            using var scope = new CompileContext(context.Options, context.CancellationToken);
             var table = await BuildTableStructure(scope, tableNode);
 
             return new QsiTableAnalysisResult(table);
