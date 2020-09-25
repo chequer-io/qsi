@@ -6,14 +6,14 @@ namespace Qsi.Services
     {
         public IQsiReferenceCacheRepository CacheRepository { get; set; }
 
-        protected abstract QsiDataTable LookupTable(QsiQualifiedIdentifier identifier);
+        protected abstract QsiTableStructure LookupTable(QsiQualifiedIdentifier identifier);
 
-        protected abstract QsiScript LookupDefinition(QsiQualifiedIdentifier identifier, QsiDataTableType type);
+        protected abstract QsiScript LookupDefinition(QsiQualifiedIdentifier identifier, QsiTableType type);
 
         protected abstract QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier);
 
         #region IQsiReferenceResolver
-        QsiDataTable IQsiReferenceResolver.LookupTable(QsiQualifiedIdentifier identifier)
+        QsiTableStructure IQsiReferenceResolver.LookupTable(QsiQualifiedIdentifier identifier)
         {
             if (CacheRepository == null)
                 return LookupTable(identifier);
@@ -27,7 +27,7 @@ namespace Qsi.Services
             return table;
         }
 
-        QsiScript IQsiReferenceResolver.LookupDefinition(QsiQualifiedIdentifier identifier, QsiDataTableType type)
+        QsiScript IQsiReferenceResolver.LookupDefinition(QsiQualifiedIdentifier identifier, QsiTableType type)
         {
             if (CacheRepository == null)
                 return LookupDefinition(identifier, type);

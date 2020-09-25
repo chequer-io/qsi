@@ -11,7 +11,7 @@ using Qsi.Parsing.Common.Rules;
 
 namespace Qsi.Parsing.Common
 {
-    public class CommonScriptParser : IQsiScriptParser
+    public partial class CommonScriptParser : IQsiScriptParser
     {
         private readonly ITokenRule _whiteSpace = new LookbehindWhiteSpaceRule();
         private readonly ITokenRule _newLine = new LookaheadEndOfLineRule();
@@ -218,7 +218,7 @@ namespace Qsi.Parsing.Common
                 t.Type == TokenType.SingeLineComment ||
                 t.Type == TokenType.MultiLineComment))
             {
-                return QsiScriptType.CommentGroup;
+                return QsiScriptType.Comment;
             }
 
             return QsiScriptType.Unknown;
@@ -321,102 +321,5 @@ namespace Qsi.Parsing.Common
 
             return false;
         }
-
-        #region Context
-
-        protected class ParseContext
-        {
-            public readonly List<QsiScript> Scripts;
-
-            public readonly CommonScriptCursor Cursor;
-
-            public string Delimiter { get; set; }
-
-            public readonly IReadOnlyList<Token> Tokens;
-
-            internal int? FragmentStart;
-            internal int FragmentEnd;
-
-            internal int LastLine;
-            internal int[] LineMap;
-
-            private readonly List<Token> _tokens;
-            private readonly CancellationToken _cancellationToken;
-
-            private Dictionary<string, object> _userData;
-
-            public ParseContext(string input, string delimiter, CancellationToken cancellationToken)
-            {
-                Scripts = new List<QsiScript>();
-                Cursor = new CommonScriptCursor(input);
-                Delimiter = delimiter;
-                _tokens = new List<Token>();
-                Tokens = _tokens;
-                _cancellationToken = cancellationToken;
-            }
-
-            public void AddToken(Token token)
-            {
-                _cancellationToken.ThrowIfCancellationRequested();
-                _tokens.Add(token);
-            }
-
-            public void ClearTokens()
-            {
-                _tokens.Clear();
-            }
-
-            public T GetUserData<T>(string key)
-            {
-                if (_userData != null && _userData.TryGetValue(key, out var value))
-                    return (T) value;
-
-                return default;
-            }
-
-            public void SetUserData<T>(string key, T value)
-            {
-                _userData ??= new Dictionary<string, object>();
-                _userData[key] = value;
-            }
-        }
-
-        #endregion
-
-        #region Token
-
-        [Flags]
-        protected enum TokenType
-        {
-            Keyword = 1 << 1,
-            Literal = 1 << 2,
-            Fragment = 1 << 3,
-            WhiteSpace = 1 << 4,
-            SingeLineComment = 1 << 5,
-            MultiLineComment = 1 << 6,
-
-            Effective = Keyword | Literal | Fragment,
-            Trivia = WhiteSpace | SingeLineComment | MultiLineComment
-        }
-
-        protected readonly struct Token
-        {
-            public Range Span { get; }
-
-            public TokenType Type { get; }
-
-            public Token(TokenType type, Range span)
-            {
-                Type = type;
-                Span = span;
-            }
-
-            public override string ToString()
-            {
-                return $"{Span} ({Type})";
-            }
-        }
-
-        #endregion
     }
 }

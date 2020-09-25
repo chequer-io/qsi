@@ -6,8 +6,8 @@ namespace Qsi.Services
     {
         QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier);
 
-        QsiDataTable LookupTable(QsiQualifiedIdentifier identifier);
+        QsiTableStructure LookupTable(QsiQualifiedIdentifier identifier);
 
-        QsiScript LookupDefinition(QsiQualifiedIdentifier identifier, QsiDataTableType type);
+        QsiScript LookupDefinition(QsiQualifiedIdentifier identifier, QsiTableType type);
     }
 }

@@ -1,5 +1,5 @@
 ﻿using System;
-using Qsi.Compiler;
+using Qsi.Analyzers;
 using Qsi.Data;
 using Qsi.Parsing;
 using Qsi.Services;
@@ -35,9 +35,9 @@ namespace Qsi.SqlServer
             return string.Equals(nX, nY, StringComparison.OrdinalIgnoreCase);
         }
 
-        public override QsiTableCompileOptions CreateCompileOptions()
+        public override QsiAnalyzerOptions CreateAnalyzerOptions()
         {
-            return new QsiTableCompileOptions
+            return new QsiAnalyzerOptions
             {
                 AllowEmptyColumnsInSelect = false
             };

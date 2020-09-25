@@ -1,72 +1,49 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
-using Qsi.Compiler.Proxy;
+using Qsi.Tree.Immutable;
 using Qsi.Data;
 using Qsi.Extensions;
-using Qsi.Parsing;
-using Qsi.Runtime.Internal;
-using Qsi.Services;
 using Qsi.Tree;
+using Qsi.Utilities;
 
-namespace Qsi.Compiler
+namespace Qsi.Analyzers.Table
 {
-    public class QsiTableCompiler
+    public partial class QsiTableAnalyzer : QsiAnalyzerBase
     {
         private const string scopeFieldList = "field list";
 
-        public IQsiLanguageService LanguageService { get; }
-
-        private readonly IQsiTreeParser _treeParser;
-        private readonly IQsiScriptParser _scriptParser;
-        private readonly IQsiReferenceResolver _resolver;
-        private readonly QsiTableCompileOptions _options;
-
-        public QsiTableCompiler(IQsiLanguageService languageService)
+        public QsiTableAnalyzer(QsiEngine engine) : base(engine)
         {
-            LanguageService = languageService;
-            _treeParser = languageService.CreateTreeParser();
-            _scriptParser = languageService.CreateScriptParser();
-            _resolver = languageService.CreateResolver();
-            _options = languageService.CreateCompileOptions() ?? new QsiTableCompileOptions();
         }
 
         #region Execute
-        public async ValueTask<QsiTableResult> ExecuteAsync(IQsiTableNode tableNode)
+        public override bool CanExecute(QsiScript script, IQsiTreeNode tree)
         {
-            using var scope = new CompileContext();
-            var structure = await BuildTableStructure(scope, tableNode);
-
-            return new QsiTableResult(structure, null);
+            return
+                tree is IQsiTableNode &&
+                (script.ScriptType == QsiScriptType.With || script.ScriptType == QsiScriptType.Select);
         }
 
-        public async ValueTask<QsiTableResult> ExecuteAsync(QsiScript script)
+        protected override async ValueTask<IQsiAnalysisResult> OnExecute(ExecutionContext context)
         {
-            try
-            {
-                if (script.ScriptType != QsiScriptType.With && script.ScriptType != QsiScriptType.Select)
-                    throw new QsiException(QsiError.NotSupportedTree, script.ScriptType);
+            if (!(context.Tree is IQsiTableNode tableNode))
+                throw new InvalidOperationException();
 
-                var treeNode =
-                    _treeParser.Parse(script) ??
-                    throw new QsiException(QsiError.Internal, $"{nameof(IQsiTreeParser)}.{nameof(IQsiTreeParser.Parse)} result was null");
+            using var scope = new CompileContext(context.Options, context.CancellationToken);
+            var table = await BuildTableStructure(scope, tableNode);
 
-                if (!(treeNode is IQsiTableNode tableNode))
-                    throw new QsiException(QsiError.NotSupportedTree, treeNode.GetType().FullName);
-
-                return await ExecuteAsync(tableNode);
-            }
-            catch (Exception e)
-            {
-                return new QsiTableResult(null, new[] { e });
-            }
+            return new QsiTableAnalysisResult(table);
         }
         #endregion
 
         #region Table
-        private async ValueTask<QsiDataTable> BuildTableStructure(CompileContext context, IQsiTableNode table)
+        private async ValueTask<QsiTableStructure> BuildTableStructure(CompileContext context, IQsiTableNode table)
         {
+            context.ThrowIfCancellationRequested();
+
             switch (table)
             {
                 case IQsiTableAccessNode tableAccess:
@@ -79,32 +56,34 @@ namespace Qsi.Compiler
                     return await BuildInlineDerivedTableStructure(context, inlineDerivedTableNode);
 
                 case IQsiJoinedTableNode joinedTable:
-                    return await BuildJoinedTable(context, joinedTable);
+                    return await BuildJoinedTableStructure(context, joinedTable);
 
                 case IQsiCompositeTableNode compositeTable:
-                    return await BuildCompositeTable(context, compositeTable);
+                    return await BuildCompositeTableStructure(context, compositeTable);
             }
 
             throw new InvalidOperationException();
         }
 
-        protected virtual async ValueTask<QsiDataTable> BuildTableAccessStructure(CompileContext context, IQsiTableAccessNode table)
+        protected virtual async ValueTask<QsiTableStructure> BuildTableAccessStructure(CompileContext context, IQsiTableAccessNode table)
         {
-            var lookup = ResolveDataTable(context, table.Identifier);
+            context.ThrowIfCancellationRequested();
+
+            var lookup = ResolveTableStructure(context, table.Identifier);
 
             // view
             if (!lookup.IsSystem &&
-                (lookup.Type == QsiDataTableType.View || lookup.Type == QsiDataTableType.MaterializedView))
+                (lookup.Type == QsiTableType.View || lookup.Type == QsiTableType.MaterializedView))
             {
-                var script = _resolver.LookupDefinition(lookup.Identifier, lookup.Type) ??
+                var script = Engine.ReferenceResolver.LookupDefinition(lookup.Identifier, lookup.Type) ??
                              throw new QsiException(QsiError.UnableResolveDefinition, lookup.Identifier);
 
-                var viewTable = (IQsiTableNode)_treeParser.Parse(script) ??
-                                throw new QsiException(QsiError.Syntax);
+                var viewTable = (IQsiTableNode)Engine.TreeParser.Parse(script) ??
+                                throw new QsiException(QsiError.Internal, "Invalid view node");
 
                 var typeBackup = lookup.Type;
 
-                using var viewCompileContext = new CompileContext();
+                using var viewCompileContext = new CompileContext(context.Options, context.CancellationToken);
 
                 if (lookup.Identifier.Level > 1)
                     viewCompileContext.PushIdentifierScope(lookup.Identifier.SubIdentifier(..^1));
@@ -119,8 +98,10 @@ namespace Qsi.Compiler
             return lookup;
         }
 
-        protected virtual async ValueTask<QsiDataTable> BuildDerivedTableStructure(CompileContext context, IQsiDerivedTableNode table)
+        protected virtual async ValueTask<QsiTableStructure> BuildDerivedTableStructure(CompileContext context, IQsiDerivedTableNode table)
         {
+            context.ThrowIfCancellationRequested();
+
             using var scopedContext = new CompileContext(context);
 
             // Directives
@@ -136,14 +117,14 @@ namespace Qsi.Compiler
 
             if (alias == null &&
                 table.Parent is IQsiDerivedColumnNode &&
-                !_options.AllowNoAliasInDerivedTable)
+                !context.Options.AllowNoAliasInDerivedTable)
             {
                 throw new QsiException(QsiError.NoAlias);
             }
 
             if (table.Source is IQsiJoinedTableNode joinedTableNode)
             {
-                scopedContext.SourceTable = await BuildJoinedTable(scopedContext, joinedTableNode);
+                scopedContext.SourceTable = await BuildJoinedTableStructure(scopedContext, joinedTableNode);
             }
             else if (table.Source != null)
             {
@@ -151,15 +132,15 @@ namespace Qsi.Compiler
                 scopedContext.SourceTable = await BuildTableStructure(scopedContext, table.Source);
             }
 
-            var declaredTable = new QsiDataTable
+            var declaredTable = new QsiTableStructure
             {
-                Type = QsiDataTableType.Derived,
+                Type = QsiTableType.Derived,
                 Identifier = alias == null ? null : new QsiQualifiedIdentifier(alias)
             };
 
             if (table.Columns == null || table.Columns.Count == 0)
             {
-                if (!_options.AllowEmptyColumnsInSelect)
+                if (!context.Options.AllowEmptyColumnsInSelect)
                 {
                     throw new QsiException(QsiError.Syntax);
                 }
@@ -178,7 +159,7 @@ namespace Qsi.Compiler
                         continue;
                     }
 
-                    IEnumerable<QsiDataColumn> columns = ResolveColumns(scopedContext, column);
+                    IEnumerable<QsiTableColumn> columns = ResolveColumns(scopedContext, column);
 
                     switch (column)
                     {
@@ -224,20 +205,22 @@ namespace Qsi.Compiler
             return declaredTable;
         }
 
-        protected virtual ValueTask<QsiDataTable> BuildInlineDerivedTableStructure(CompileContext context, IQsiInlineDerivedTableNode table)
+        protected virtual ValueTask<QsiTableStructure> BuildInlineDerivedTableStructure(CompileContext context, IQsiInlineDerivedTableNode table)
         {
+            context.ThrowIfCancellationRequested();
+
             var alias = table.Alias?.Name;
 
             if (alias == null &&
                 table.Parent is IQsiDerivedColumnNode &&
-                !_options.AllowNoAliasInDerivedTable)
+                !context.Options.AllowNoAliasInDerivedTable)
             {
                 throw new QsiException(QsiError.NoAlias);
             }
 
-            var declaredTable = new QsiDataTable
+            var declaredTable = new QsiTableStructure
             {
-                Type = QsiDataTableType.Inline,
+                Type = QsiTableType.Inline,
                 Identifier = alias == null ? null : new QsiQualifiedIdentifier(alias)
             };
 
@@ -281,7 +264,7 @@ namespace Qsi.Compiler
 
             if ((columnCount ?? 0) == 0)
             {
-                if (!_options.AllowEmptyColumnsInInline)
+                if (!context.Options.AllowEmptyColumnsInInline)
                     throw new QsiException(QsiError.NoColumnsSpecified, alias);
 
                 columnCount = 0;
@@ -295,22 +278,21 @@ namespace Qsi.Compiler
                 }
             }
 
-            return new ValueTask<QsiDataTable>(declaredTable);
+            return new ValueTask<QsiTableStructure>(declaredTable);
         }
 
-        protected virtual async ValueTask<QsiDataTable> BuildRecursiveCompositeTable(
-            CompileContext context,
-            IQsiDerivedTableNode table,
-            IQsiCompositeTableNode source)
+        protected virtual async ValueTask<QsiTableStructure> BuildRecursiveCompositeTableStructure(CompileContext context, IQsiDerivedTableNode table, IQsiCompositeTableNode source)
         {
-            var declaredTable = new QsiDataTable
+            context.ThrowIfCancellationRequested();
+
+            var declaredTable = new QsiTableStructure
             {
-                Type = QsiDataTableType.Derived,
+                Type = QsiTableType.Derived,
                 Identifier = new QsiQualifiedIdentifier(table.Alias.Name)
             };
 
             int sourceOffset = 0;
-            var structures = new List<QsiDataTable>(source.Sources.Length);
+            var structures = new List<QsiTableStructure>(source.Sources.Length);
 
             if (table.Columns.Columns.Any(c => !(c is IQsiAllColumnNode)))
             {
@@ -359,6 +341,8 @@ namespace Qsi.Compiler
 
         private async ValueTask BuildDirectives(CompileContext context, IQsiTableDirectivesNode directivesNode)
         {
+            context.ThrowIfCancellationRequested();
+
             foreach (var directiveTable in directivesNode.Tables)
             {
                 var cteName = directiveTable.Alias.Name;
@@ -370,7 +354,7 @@ namespace Qsi.Compiler
 
                     if (ContainsRecursiveQuery(compositeTableNode.Sources[0], cteName))
                     {
-                        if (!_options.UseAutoFixRecursiveQuery || compositeTableNode.Sources.Length < 2)
+                        if (!context.Options.UseAutoFixRecursiveQuery || compositeTableNode.Sources.Length < 2)
                             throw new QsiException(QsiError.NoAnchorInRecursiveQuery, cteName);
 
                         var fixedSources = compositeTableNode.Sources
@@ -385,7 +369,7 @@ namespace Qsi.Compiler
                         if (fixedSources[0].Recursive)
                             throw new QsiException(QsiError.NoAnchorInRecursiveQuery, cteName);
 
-                        compositeTableNode = new CompositeTableNodeProxy(
+                        compositeTableNode = new ImmutableCompositeTableNode(
                             compositeTableNode.Parent,
                             fixedSources
                                 .Select(s => s.Source)
@@ -393,7 +377,7 @@ namespace Qsi.Compiler
                     }
 
                     using var directiveContext = new CompileContext(context);
-                    var directiveTableStructure = await BuildRecursiveCompositeTable(context, directiveTable, compositeTableNode);
+                    var directiveTableStructure = await BuildRecursiveCompositeTableStructure(context, directiveTable, compositeTableNode);
                     context.AddDirective(directiveTableStructure);
                 }
                 else
@@ -418,25 +402,27 @@ namespace Qsi.Compiler
             return false;
         }
 
-        protected virtual async ValueTask<QsiDataTable> BuildJoinedTable(CompileContext context, IQsiJoinedTableNode table)
+        protected virtual async ValueTask<QsiTableStructure> BuildJoinedTableStructure(CompileContext context, IQsiJoinedTableNode table)
         {
+            context.ThrowIfCancellationRequested();
+
             if (table.Left == null || table.Right == null)
                 throw new QsiException(QsiError.Syntax);
 
             // priority
             // using > left > right
 
-            var joinedTable = new QsiDataTable
+            var joinedTable = new QsiTableStructure
             {
-                Type = QsiDataTableType.Join
+                Type = QsiTableType.Join
             };
 
-            QsiDataTable left;
-            QsiDataTable right;
+            QsiTableStructure left;
+            QsiTableStructure right;
 
             if (table.Left is IQsiJoinedTableNode leftNode)
             {
-                left = await BuildJoinedTable(context, leftNode);
+                left = await BuildJoinedTableStructure(context, leftNode);
             }
             else
             {
@@ -447,7 +433,7 @@ namespace Qsi.Compiler
 
             if (table.Right is IQsiJoinedTableNode rightNode)
             {
-                right = await BuildJoinedTable(context, rightNode);
+                right = await BuildJoinedTableStructure(context, rightNode);
             }
             else
             {
@@ -460,8 +446,8 @@ namespace Qsi.Compiler
                 .Cast<IQsiDeclaredColumnNode>()
                 .ToArray();
 
-            HashSet<QsiDataColumn> leftColumns = left.Columns.ToHashSet();
-            HashSet<QsiDataColumn> rightColumns = right.Columns.ToHashSet();
+            HashSet<QsiTableColumn> leftColumns = left.Columns.ToHashSet();
+            HashSet<QsiTableColumn> rightColumns = right.Columns.ToHashSet();
 
             if (pivots?.Length > 0)
             {
@@ -513,12 +499,14 @@ namespace Qsi.Compiler
             return joinedTable;
         }
 
-        protected virtual async ValueTask<QsiDataTable> BuildCompositeTable(CompileContext context, IQsiCompositeTableNode table)
+        protected virtual async ValueTask<QsiTableStructure> BuildCompositeTableStructure(CompileContext context, IQsiCompositeTableNode table)
         {
+            context.ThrowIfCancellationRequested();
+
             if (table.Sources == null || table.Sources.Length == 0)
                 throw new QsiException(QsiError.Syntax);
 
-            var sources = new QsiDataTable[table.Sources.Length];
+            var sources = new QsiTableStructure[table.Sources.Length];
 
             for (int i = 0; i < sources.Length; i++)
             {
@@ -531,9 +519,9 @@ namespace Qsi.Compiler
             if (sources.Skip(1).Any(s => s.Columns.Count != columnCount))
                 throw new QsiException(QsiError.DifferentColumnsCount);
 
-            var compositeSource = new QsiDataTable
+            var compositeSource = new QsiTableStructure
             {
-                Type = QsiDataTableType.Union
+                Type = QsiTableType.Union
             };
 
             for (int i = 0; i < columnCount; i++)
@@ -550,8 +538,10 @@ namespace Qsi.Compiler
         #endregion
 
         #region Column
-        private IEnumerable<QsiDataColumn> ResolveColumns(CompileContext context, IQsiColumnNode column)
+        private IEnumerable<QsiTableColumn> ResolveColumns(CompileContext context, IQsiColumnNode column)
         {
+            context.ThrowIfCancellationRequested();
+
             switch (column)
             {
                 case IQsiAllColumnNode allColumn:
@@ -574,8 +564,10 @@ namespace Qsi.Compiler
             throw new InvalidOperationException();
         }
 
-        protected virtual IEnumerable<QsiDataColumn> ResolveAllColumns(CompileContext context, IQsiAllColumnNode column)
+        protected virtual IEnumerable<QsiTableColumn> ResolveAllColumns(CompileContext context, IQsiAllColumnNode column)
         {
+            context.ThrowIfCancellationRequested();
+
             // *
             if (column.Path == null)
             {
@@ -589,7 +581,7 @@ namespace Qsi.Compiler
 
             // path.or.alias.*
 
-            QsiDataTable[] tables = LookupDataTablesInExpression(context, column.Path).ToArray();
+            QsiTableStructure[] tables = LookupDataTableStructuresInExpression(context, column.Path).ToArray();
 
             if (tables.Length == 0)
                 throw new QsiException(QsiError.UnknownTable, column.Path);
@@ -597,14 +589,16 @@ namespace Qsi.Compiler
             return tables.SelectMany(t => column.IncludeInvisibleColumns ? t.Columns : t.VisibleColumns);
         }
 
-        protected virtual QsiDataColumn ResolveDeclaredColumn(CompileContext context, IQsiDeclaredColumnNode columnn)
+        protected virtual QsiTableColumn ResolveDeclaredColumn(CompileContext context, IQsiDeclaredColumnNode columnn)
         {
-            IEnumerable<QsiDataTable> sources = Enumerable.Empty<QsiDataTable>();
+            context.ThrowIfCancellationRequested();
+
+            IEnumerable<QsiTableStructure> sources = Enumerable.Empty<QsiTableStructure>();
 
             if (columnn.Name.Level > 1)
             {
                 var identifier = new QsiQualifiedIdentifier(columnn.Name[..^1]);
-                sources = LookupDataTablesInExpression(context, identifier).ToArray();
+                sources = LookupDataTableStructuresInExpression(context, identifier).ToArray();
 
                 if (!sources.Any())
                     throw new QsiException(QsiError.UnknownTableIn, identifier, scopeFieldList);
@@ -620,7 +614,7 @@ namespace Qsi.Compiler
 
             var lastName = columnn.Name[^1];
 
-            QsiDataColumn[] columns = sources
+            QsiTableColumn[] columns = sources
                 .SelectMany(s => s.Columns.Where(c => Match(c.Name, lastName)))
                 .Take(2)
                 .ToArray();
@@ -634,16 +628,20 @@ namespace Qsi.Compiler
             return columns[0];
         }
 
-        protected virtual IEnumerable<QsiDataColumn> ResolveDerivedColumns(CompileContext context, IQsiDerivedColumnNode column)
+        protected virtual IEnumerable<QsiTableColumn> ResolveDerivedColumns(CompileContext context, IQsiDerivedColumnNode column)
         {
+            context.ThrowIfCancellationRequested();
+
             if (column.IsExpression)
                 return ResolveColumnsInExpression(context, column.Expression);
 
             return ResolveColumns(context, column.Column);
         }
 
-        protected virtual QsiDataColumn ResolveSequentialColumn(CompileContext context, IQsiSequentialColumnNode column)
+        protected virtual QsiTableColumn ResolveSequentialColumn(CompileContext context, IQsiSequentialColumnNode column)
         {
+            context.ThrowIfCancellationRequested();
+
             if (context.SourceTable == null)
                 throw new QsiException(QsiError.NoTablesUsed);
 
@@ -653,8 +651,10 @@ namespace Qsi.Compiler
             return context.SourceTable.VisibleColumns.ElementAt(column.Ordinal);
         }
 
-        protected virtual IEnumerable<QsiDataColumn> ResolveColumnsInExpression(CompileContext context, IQsiExpressionNode expression)
+        protected virtual IEnumerable<QsiTableColumn> ResolveColumnsInExpression(CompileContext context, IQsiExpressionNode expression)
         {
+            context.ThrowIfCancellationRequested();
+
             if (expression == null)
                 yield break;
 
@@ -827,6 +827,8 @@ namespace Qsi.Compiler
         #region Table Lookup
         private QsiQualifiedIdentifier ResolveQualifiedIdentifier(CompileContext context, QsiQualifiedIdentifier identifier)
         {
+            context.ThrowIfCancellationRequested();
+
             // Qualified identifier without table
             var identifierScope = context.PeekIdentifierScope();
 
@@ -841,24 +843,29 @@ namespace Qsi.Compiler
                 identifier = new QsiQualifiedIdentifier(identifiers.ToArray());
             }
 
-            return _resolver.ResolveQualifiedIdentifier(identifier);
+            return Engine.ReferenceResolver.ResolveQualifiedIdentifier(identifier);
         }
 
-        private QsiDataTable ResolveDataTable(CompileContext context, QsiQualifiedIdentifier identifier)
+        private QsiTableStructure ResolveTableStructure(CompileContext context, QsiQualifiedIdentifier identifier)
         {
-            return LookupDataTable(context, identifier) ?? throw new QsiException(QsiError.UnableResolveTable, identifier);
+            context.ThrowIfCancellationRequested();
+            return LookupTableStructure(context, identifier) ?? throw new QsiException(QsiError.UnableResolveTable, identifier);
         }
 
-        private QsiDataTable LookupDataTable(CompileContext context, QsiQualifiedIdentifier identifier)
+        private QsiTableStructure LookupTableStructure(CompileContext context, QsiQualifiedIdentifier identifier)
         {
+            context.ThrowIfCancellationRequested();
+
             return
                 context.Directives.FirstOrDefault(d => Match(d.Identifier, identifier)) ??
-                _resolver.LookupTable(ResolveQualifiedIdentifier(context, identifier));
+                Engine.ReferenceResolver.LookupTable(ResolveQualifiedIdentifier(context, identifier));
         }
 
-        private IEnumerable<QsiDataTable> LookupDataTablesInExpression(CompileContext context, QsiQualifiedIdentifier identifier)
+        private IEnumerable<QsiTableStructure> LookupDataTableStructuresInExpression(CompileContext context, QsiQualifiedIdentifier identifier)
         {
-            var tables = new List<QsiDataTable>();
+            context.ThrowIfCancellationRequested();
+
+            var tables = new List<QsiTableStructure>();
 
             if (context.SourceTable != null)
                 tables.Add(context.SourceTable);
@@ -891,7 +898,7 @@ namespace Qsi.Compiler
                 // │         └-> identifier(2)        └-> table.Identifier(3) │
                 // └──────────────────────────────────────────────────────────┘ 
 
-                if (_options.UseExplicitRelationAccess)
+                if (context.Options.UseExplicitRelationAccess)
                     continue;
 
                 if (!IsReferenceType(table.Type))
@@ -909,44 +916,23 @@ namespace Qsi.Compiler
         }
         #endregion
 
-        #region Misc
-        private bool Match(QsiIdentifier a, QsiIdentifier b)
-        {
-            return LanguageService.MatchIdentifier(a, b);
-        }
-
-        private bool Match(QsiQualifiedIdentifier a, QsiQualifiedIdentifier b)
-        {
-            if (a.Level != b.Level)
-                return false;
-
-            for (int i = 0; i < a.Level; i++)
-            {
-                if (!Match(a[i], b[i]))
-                    return false;
-            }
-
-            return true;
-        }
-
-        private static bool IsReferenceType(QsiDataTableType type)
+        private static bool IsReferenceType(QsiTableType type)
         {
             return
-                type == QsiDataTableType.Table ||
-                type == QsiDataTableType.View ||
-                type == QsiDataTableType.MaterializedView;
+                type == QsiTableType.Table ||
+                type == QsiTableType.View ||
+                type == QsiTableType.MaterializedView;
         }
-        #endregion
 
         private class PivotColumnPair
         {
             public int Order { get; }
 
-            public QsiDataColumn Left { get; }
+            public QsiTableColumn Left { get; }
 
-            public QsiDataColumn Right { get; }
+            public QsiTableColumn Right { get; }
 
-            public PivotColumnPair(int order, QsiDataColumn left, QsiDataColumn right)
+            public PivotColumnPair(int order, QsiTableColumn left, QsiTableColumn right)
             {
                 Order = order;
                 Left = left;

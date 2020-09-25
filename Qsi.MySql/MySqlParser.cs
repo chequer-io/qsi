@@ -19,7 +19,7 @@ namespace Qsi.MySql
 
         protected override IQsiTreeNode Parse(QsiScript script, Parser parser)
         {
-            return ParseInternal(script, parser) ?? throw new QsiException(QsiError.NotSupportedScript);
+            return ParseInternal(script, parser) ?? throw new QsiException(QsiError.NotSupportedScript, script.ScriptType);
         }
 
         private IQsiTreeNode ParseInternal(QsiScript script, Parser parser)

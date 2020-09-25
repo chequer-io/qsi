@@ -9,7 +9,7 @@ namespace Qsi.Debugger.Vendor.MySql
 {
     internal class MySqlReferenceResolver : VendorReferenceResolver
     {
-        protected override QsiDataTable LookupTable(QsiQualifiedIdentifier identifier)
+        protected override QsiTableStructure LookupTable(QsiQualifiedIdentifier identifier)
         {
             var tableName = IdentifierUtility.Unescape(identifier[^1].Value);
 
@@ -22,7 +22,7 @@ namespace Qsi.Debugger.Vendor.MySql
 
                 case "actor_view":
                     var actorView = CreateTable("sakila", "actor_view");
-                    actorView.Type = QsiDataTableType.View;
+                    actorView.Type = QsiTableType.View;
                     AddColumns(actorView, "actor_id", "first_name", "last_name", "last_update", "first_name || last_name");
                     return actorView;
 
@@ -48,7 +48,7 @@ namespace Qsi.Debugger.Vendor.MySql
 
                 case "cs_memo_view":
                     var csMemoView = CreateTable("sakila", "cs_memo_view");
-                    csMemoView.Type = QsiDataTableType.View;
+                    csMemoView.Type = QsiTableType.View;
                     AddColumns(csMemoView, "a", "b");
                     return csMemoView;
             }
@@ -56,7 +56,7 @@ namespace Qsi.Debugger.Vendor.MySql
             return null;
         }
 
-        protected override QsiScript LookupDefinition(QsiQualifiedIdentifier identifier, QsiDataTableType type)
+        protected override QsiScript LookupDefinition(QsiQualifiedIdentifier identifier, QsiTableType type)
         {
             var name = IdentifierUtility.Unescape(identifier[^1].Value);
 

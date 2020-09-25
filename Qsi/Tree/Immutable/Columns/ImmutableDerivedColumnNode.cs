@@ -2,9 +2,9 @@
 using Qsi.Tree;
 using Qsi.Utilities;
 
-namespace Qsi.Compiler.Proxy
+namespace Qsi.Tree.Immutable
 {
-    public readonly struct DerivedColumnNodeProxy : IQsiDerivedColumnNode
+    public readonly struct ImmutableDerivedColumnNode : IQsiDerivedColumnNode
     {
         public IQsiTreeNode Parent { get; }
 
@@ -14,10 +14,9 @@ namespace Qsi.Compiler.Proxy
 
         public IQsiAliasNode Alias { get; }
 
-        public IEnumerable<IQsiTreeNode> Children
-            => TreeHelper.YieldChildren(Column, Expression, Alias);
+        public IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Column, Expression, Alias);
 
-        public DerivedColumnNodeProxy(IQsiTreeNode parent, IQsiColumnNode column, IQsiAliasNode alias)
+        public ImmutableDerivedColumnNode(IQsiTreeNode parent, IQsiColumnNode column, IQsiAliasNode alias)
         {
             Parent = parent;
             Column = column;
@@ -25,7 +24,7 @@ namespace Qsi.Compiler.Proxy
             Alias = alias;
         }
 
-        public DerivedColumnNodeProxy(IQsiTreeNode parent, IQsiExpressionNode expression, IQsiAliasNode alias)
+        public ImmutableDerivedColumnNode(IQsiTreeNode parent, IQsiExpressionNode expression, IQsiAliasNode alias)
         {
             Parent = parent;
             Column = null;

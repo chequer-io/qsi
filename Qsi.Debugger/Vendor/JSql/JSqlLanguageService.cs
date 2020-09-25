@@ -5,7 +5,7 @@ namespace Qsi.Debugger.Vendor.JSql
 {
     internal class JSqlLanguageService : JSqlLanguageServiceBase
     {
-        public override IQsiReferenceResolver CreateResolver()
+        public override IQsiReferenceResolver CreateReferenceResolver()
         {
             return new JSqlReferenceResolver();
         }

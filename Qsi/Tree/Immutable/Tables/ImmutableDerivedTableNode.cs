@@ -2,9 +2,9 @@
 using Qsi.Tree;
 using Qsi.Utilities;
 
-namespace Qsi.Compiler.Proxy
+namespace Qsi.Tree.Immutable
 {
-    public readonly struct DerivedTableNodeProxy : IQsiDerivedTableNode
+    public readonly struct ImmutableDerivedTableNode : IQsiDerivedTableNode
     {
         public IQsiTreeNode Parent { get; }
 
@@ -16,10 +16,9 @@ namespace Qsi.Compiler.Proxy
 
         public IQsiAliasNode Alias { get; }
 
-        public IEnumerable<IQsiTreeNode> Children
-            => TreeHelper.YieldChildren(Directives, Columns, Source, Alias);
+        public IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Directives, Columns, Source, Alias);
 
-        public DerivedTableNodeProxy(
+        public ImmutableDerivedTableNode(
             IQsiTreeNode parent,
             IQsiTableDirectivesNode directives,
             IQsiColumnsDeclarationNode columns,

@@ -6,12 +6,12 @@ namespace Qsi.Utilities
 {
     public static class QsiUtility
     {
-        public static IEnumerable<QsiDataColumn> FlattenReferenceColumns(QsiDataColumn column)
+        public static IEnumerable<QsiTableColumn> FlattenReferenceColumns(QsiTableColumn column)
         {
-            return FlattenReferenceColumnsInternal(column, new HashSet<QsiDataColumn>());
+            return FlattenReferenceColumnsInternal(column, new HashSet<QsiTableColumn>());
         }
 
-        private static IEnumerable<QsiDataColumn> FlattenReferenceColumnsInternal(QsiDataColumn column, HashSet<QsiDataColumn> visited)
+        private static IEnumerable<QsiTableColumn> FlattenReferenceColumnsInternal(QsiTableColumn column, HashSet<QsiTableColumn> visited)
         {
             foreach (var reference in column.References.Where(r => !visited.Contains(r)))
             {

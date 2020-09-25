@@ -5,13 +5,13 @@ using Qsi.Utilities;
 
 namespace Qsi.Data
 {
-    public sealed class QsiDataColumn
+    public sealed class QsiTableColumn
     {
-        public QsiDataTable Parent { get; }
+        public QsiTableStructure Parent { get; }
 
         public QsiIdentifier Name { get; set; }
 
-        public List<QsiDataColumn> References { get; } = new List<QsiDataColumn>();
+        public List<QsiTableColumn> References { get; } = new List<QsiTableColumn>();
 
         public bool IsVisible { get; set; } = true;
 
@@ -27,12 +27,12 @@ namespace Qsi.Data
 
         internal bool _isExpression;
 
-        internal QsiDataColumn(QsiDataTable parent)
+        internal QsiTableColumn(QsiTableStructure parent)
         {
             Parent = parent;
         }
 
-        internal QsiDataColumn(IQsiBindingColumnNode bindingColumn)
+        internal QsiTableColumn(IQsiBindingColumnNode bindingColumn)
         {
             Name = new QsiIdentifier(bindingColumn.Id, false);
             IsBinding = true;

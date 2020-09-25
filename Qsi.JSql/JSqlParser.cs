@@ -1,4 +1,5 @@
-﻿using Qsi.Data;
+﻿using System.Threading;
+using Qsi.Data;
 using Qsi.JSql.Internal;
 using Qsi.JSql.Tree;
 using Qsi.Parsing;
@@ -36,10 +37,10 @@ namespace Qsi.JSql
             return new JSqlIdentifierVisitor(this);
         }
 
-        public IQsiTreeNode Parse(QsiScript script)
+        public IQsiTreeNode Parse(QsiScript script, CancellationToken cancellationToken = default)
         {
             var statement = CCJSqlParserUtility.Parse(script.Script);
-            return TableVisitor.Visit(statement) ?? throw new QsiException(QsiError.NotSupportedScript);
+            return TableVisitor.Visit(statement) ?? throw new QsiException(QsiError.NotSupportedScript, script.ScriptType);
         }
     }
 }

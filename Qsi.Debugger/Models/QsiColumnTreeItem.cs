@@ -8,17 +8,17 @@ namespace Qsi.Debugger.Models
     {
         public int Depth { get; }
 
-        public QsiDataColumn Column { get; }
+        public QsiTableColumn Column { get; }
 
         public QsiColumnTreeItem[] Items { get; }
 
         public bool IsRecursive { get; }
 
-        public QsiColumnTreeItem(QsiDataColumn column, int depth = 0) : this(column, depth, new HashSet<QsiDataColumn>())
+        public QsiColumnTreeItem(QsiTableColumn column, int depth = 0) : this(column, depth, new HashSet<QsiTableColumn>())
         {
         }
 
-        private QsiColumnTreeItem(QsiDataColumn column, int depth, HashSet<QsiDataColumn> recursiveTracker)
+        private QsiColumnTreeItem(QsiTableColumn column, int depth, HashSet<QsiTableColumn> recursiveTracker)
         {
             Depth = depth;
             Column = column;

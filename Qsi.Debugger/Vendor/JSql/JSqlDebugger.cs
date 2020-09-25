@@ -6,12 +6,12 @@ namespace Qsi.Debugger.Vendor.JSql
 {
     internal sealed class JSqlDebugger : VendorDebugger
     {
-        public override IQsiLanguageService CreateLanguageService()
+        protected override IQsiLanguageService CreateLanguageService()
         {
             return new JSqlLanguageService();
         }
 
-        public override IRawTreeParser CreateRawTreeParser()
+        protected override IRawTreeParser CreateRawTreeParser()
         {
             return new JSqlRawParser();
         }

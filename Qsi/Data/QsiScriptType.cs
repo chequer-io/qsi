@@ -36,6 +36,6 @@
         Show,
         Describe,
 
-        CommentGroup
+        Comment
     }
 }

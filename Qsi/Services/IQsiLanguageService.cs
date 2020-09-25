@@ -1,4 +1,5 @@
-﻿using Qsi.Compiler;
+﻿using System.Collections.Generic;
+using Qsi.Analyzers;
 using Qsi.Data;
 using Qsi.Parsing;
 
@@ -6,13 +7,15 @@ namespace Qsi.Services
 {
     public interface IQsiLanguageService
     {
-        QsiTableCompileOptions CreateCompileOptions();
+        QsiAnalyzerOptions CreateAnalyzerOptions();
+
+        IEnumerable<QsiAnalyzerBase> CreateAnalyzers(QsiEngine engine);
 
         IQsiTreeParser CreateTreeParser();
 
         IQsiScriptParser CreateScriptParser();
 
-        IQsiReferenceResolver CreateResolver();
+        IQsiReferenceResolver CreateReferenceResolver();
 
         bool MatchIdentifier(QsiIdentifier x, QsiIdentifier y);
     }

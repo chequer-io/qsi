@@ -3,9 +3,9 @@ using System.Linq;
 using Qsi.Data;
 using Qsi.Tree;
 
-namespace Qsi.Compiler.Proxy
+namespace Qsi.Tree.Immutable
 {
-    public readonly struct AllColumnNodeProxy : IQsiAllColumnNode, IQsiTerminalNode
+    public readonly struct ImmutableAllColumnNode : IQsiAllColumnNode, IQsiTerminalNode
     {
         public IQsiTreeNode Parent { get; }
 
@@ -15,7 +15,7 @@ namespace Qsi.Compiler.Proxy
 
         public IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
 
-        public AllColumnNodeProxy(IQsiTreeNode parent, QsiQualifiedIdentifier path)
+        public ImmutableAllColumnNode(IQsiTreeNode parent, QsiQualifiedIdentifier path)
         {
             Parent = parent;
             Path = path;

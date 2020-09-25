@@ -10,7 +10,7 @@ namespace Qsi.Debugger.Vendor.SqlServer
         {
         }
 
-        public override IQsiReferenceResolver CreateResolver()
+        public override IQsiReferenceResolver CreateReferenceResolver()
         {
             return new SqlServerReferenceResolver();
         }

@@ -13,6 +13,7 @@ using Avalonia.Media;
 using AvaloniaEdit;
 using AvaloniaEdit.Highlighting;
 using AvaloniaEdit.Highlighting.Xshd;
+using Qsi.Analyzers.Table;
 using Qsi.Data;
 using Qsi.Debugger.Controls;
 using Qsi.Debugger.Models;
@@ -140,17 +141,17 @@ namespace Qsi.Debugger
 
                 var input = _codeEditor.Text;
 
-                QsiScript[] scripts = _vendor.ScriptParser.Parse(input, default).ToArray();
+                QsiScript[] scripts = _vendor.Engine.ScriptParser.Parse(input, default).ToArray();
                 _scriptRenderer.Update(scripts);
 
-                var script = scripts.First(s => s.ScriptType != QsiScriptType.CommentGroup && s.ScriptType != QsiScriptType.Delimiter);
+                var script = scripts.First(s => s.ScriptType != QsiScriptType.Comment && s.ScriptType != QsiScriptType.Delimiter);
 
                 // Raw Tree
 
-                _tvRaw.Items = new[] { _vendor.RawParser.Parse(script.Script) };
+                _tvRaw.Items = new[] { _vendor.RawTreeParser.Parse(script.Script) };
 
                 var sw = Stopwatch.StartNew();
-                var tree = _vendor.Parser.Parse(script);
+                var tree = _vendor.Engine.TreeParser.Parse(script);
                 sw.Stop();
 
                 _tbQsiStatus.Text = $"parsed in {sw.Elapsed.TotalMilliseconds:0.0000} ms";
@@ -159,18 +160,16 @@ namespace Qsi.Debugger
 
                 // Execute
 
-                var compiler = _vendor.CreateCopmiler();
-                var result = await compiler.ExecuteAsync((IQsiTableNode)tree);
+                var result = await _vendor.Engine.Execute(script);
 
-                if (result.Exceptions?.Length > 0)
+                if (result is QsiTableAnalysisResult tableResult)
                 {
-                    if (result.Exceptions.Length == 1)
-                        throw result.Exceptions[0];
-
-                    throw new AggregateException(result.Exceptions);
+                    BuildQsiTableTree(tableResult.Table);
                 }
-
-                BuildQsiTableTree(result.Table);
+                else
+                {
+                    throw new NotSupportedException(result.GetType().Name);
+                }
             }
             catch (Exception e)
             {
@@ -300,7 +299,7 @@ namespace Qsi.Debugger
         #endregion
 
         #region Qsi Table TreeView
-        private void BuildQsiTableTree(QsiDataTable table)
+        private void BuildQsiTableTree(QsiTableStructure table)
         {
             _tvResult.Items = table.Columns
                 .Select(c => new QsiColumnTreeItem(c))

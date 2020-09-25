@@ -6,24 +6,24 @@ namespace Qsi.Services
 {
     public class QsiReferenceCacheRepository : IQsiReferenceCacheRepository
     {
-        private readonly ConcurrentDictionary<QsiQualifiedIdentifier, QsiDataTable> _lookupCache;
+        private readonly ConcurrentDictionary<QsiQualifiedIdentifier, QsiTableStructure> _lookupCache;
         private readonly ConcurrentDictionary<QsiQualifiedIdentifier, QsiScript> _lookupDefinitionCache;
 
         public QsiReferenceCacheRepository()
         {
             var comparer = new IdentifierEqualityComparer();
-            _lookupCache = new ConcurrentDictionary<QsiQualifiedIdentifier, QsiDataTable>(comparer);
+            _lookupCache = new ConcurrentDictionary<QsiQualifiedIdentifier, QsiTableStructure>(comparer);
             _lookupDefinitionCache = new ConcurrentDictionary<QsiQualifiedIdentifier, QsiScript>(comparer);
         }
 
-        public bool TryGetTable(QsiQualifiedIdentifier identifier, out QsiDataTable dataTable)
+        public bool TryGetTable(QsiQualifiedIdentifier identifier, out QsiTableStructure tableStructure)
         {
-            return _lookupCache.TryGetValue(identifier, out dataTable);
+            return _lookupCache.TryGetValue(identifier, out tableStructure);
         }
 
-        public void SetTable(QsiQualifiedIdentifier identifier, QsiDataTable dataTable)
+        public void SetTable(QsiQualifiedIdentifier identifier, QsiTableStructure tableStructure)
         {
-            _lookupCache[identifier] = dataTable;
+            _lookupCache[identifier] = tableStructure;
         }
 
         public bool TryGetDefinition(QsiQualifiedIdentifier identifier, out QsiScript script)
