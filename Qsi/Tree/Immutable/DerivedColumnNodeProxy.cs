@@ -2,7 +2,7 @@
 using Qsi.Tree;
 using Qsi.Utilities;
 
-namespace Qsi.Compiler.Proxy
+namespace Qsi.Tree.Immutable
 {
     public readonly struct DerivedColumnNodeProxy : IQsiDerivedColumnNode
     {

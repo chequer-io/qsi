@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using Qsi.Data;
 using Qsi.Parsing;
 using Qsi.PostgreSql.Internal;
@@ -13,11 +14,11 @@ namespace Qsi.PostgreSql
     {
         private IPgParser _pgParser;
 
-        public IQsiTreeNode Parse(QsiScript script)
+        public IQsiTreeNode Parse(QsiScript script, CancellationToken cancellationToken = default)
         {
             _pgParser ??= new PgQuery10();
 
-            var pgTree = _pgParser.Parse(script.Script) ?? throw new QsiException(QsiError.NotSupportedScript);
+            var pgTree = _pgParser.Parse(script.Script) ?? throw new QsiException(QsiError.NotSupportedScript, script.ScriptType);
 
             return TableVisitor.Visit((IPg10Node)pgTree);
         }

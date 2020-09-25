@@ -1,6 +1,6 @@
-﻿namespace Qsi.Compiler
+﻿namespace Qsi.Analyzers
 {
-    public sealed class QsiTableCompileOptions
+    public sealed class QsiAnalyzerOptions
     {
         /// <summary>
         /// Allow empty columns in <c>select statement</c>.

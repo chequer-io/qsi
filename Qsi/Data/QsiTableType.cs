@@ -3,7 +3,7 @@
 namespace Qsi.Data
 {
     [Flags]
-    public enum QsiDataTableType
+    public enum QsiTableType
     {
         Table = 1 << 0,
         View = 1 << 1,

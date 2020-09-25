@@ -1,4 +1,5 @@
-﻿using Antlr4.Runtime;
+﻿using System.Threading;
+using Antlr4.Runtime;
 using Qsi.Data;
 using Qsi.Tree;
 
@@ -18,7 +19,7 @@ namespace Qsi.Parsing.Antlr
         protected abstract IQsiTreeNode Parse(QsiScript script, Parser parser);
 
         #region IQsiParser
-        IQsiTreeNode IQsiTreeParser.Parse(QsiScript script)
+        IQsiTreeNode IQsiTreeParser.Parse(QsiScript script, CancellationToken cancellationToken = default)
         {
             var parser = CreateParser(script);
             parser.AddErrorListener(_errorHandler);

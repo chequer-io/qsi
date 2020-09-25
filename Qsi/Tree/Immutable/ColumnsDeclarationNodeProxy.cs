@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Qsi.Tree;
 
-namespace Qsi.Compiler.Proxy
+namespace Qsi.Tree.Immutable
 {
     public readonly struct ColumnsDeclarationNodeProxy : IQsiColumnsDeclarationNode
     {

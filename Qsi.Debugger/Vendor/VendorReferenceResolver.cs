@@ -12,16 +12,16 @@ namespace Qsi.Debugger.Vendor
             return new QsiQualifiedIdentifier(path.Select(p => new QsiIdentifier(p, IdentifierUtility.IsEscaped(p))));
         }
 
-        protected virtual QsiDataTable CreateTable(params string[] path)
+        protected virtual QsiTableStructure CreateTable(params string[] path)
         {
-            return new QsiDataTable
+            return new QsiTableStructure
             {
-                Type = QsiDataTableType.Table,
+                Type = QsiTableType.Table,
                 Identifier = CreateIdentifier(path)
             };
         }
 
-        protected void AddColumns(QsiDataTable table, params string[] names)
+        protected void AddColumns(QsiTableStructure table, params string[] names)
         {
             foreach (var name in names)
             {

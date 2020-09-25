@@ -3,7 +3,7 @@ using System.Linq;
 using Qsi.Data;
 using Qsi.Tree;
 
-namespace Qsi.Compiler.Proxy
+namespace Qsi.Tree.Immutable
 {
     public readonly struct AllColumnNodeProxy : IQsiAllColumnNode, IQsiTerminalNode
     {

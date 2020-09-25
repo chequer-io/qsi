@@ -10,12 +10,12 @@ namespace Qsi.Debugger.Vendor.PostgreSql
         {
         }
 
-        public override IQsiLanguageService CreateLanguageService()
+        protected override IQsiLanguageService CreateLanguageService()
         {
             return new PostgreSqlLanguageService();
         }
 
-        public override IRawTreeParser CreateRawTreeParser()
+        protected override IRawTreeParser CreateRawTreeParser()
         {
             return new PostgreSqlRawParser();
         }

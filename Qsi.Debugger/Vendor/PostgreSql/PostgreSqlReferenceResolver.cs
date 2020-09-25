@@ -6,7 +6,7 @@ namespace Qsi.Debugger.Vendor.PostgreSql
 {
     internal class PostgreSqlReferenceResolver : VendorReferenceResolver
     {
-        protected override QsiDataTable LookupTable(QsiQualifiedIdentifier identifier)
+        protected override QsiTableStructure LookupTable(QsiQualifiedIdentifier identifier)
         {
             var tableName = IdentifierUtility.Unescape(identifier[^1].Value);
 
@@ -19,13 +19,13 @@ namespace Qsi.Debugger.Vendor.PostgreSql
 
                 case "actor_view":
                     var actorView = CreateTable("postgres", "public", "actor_view");
-                    actorView.Type = QsiDataTableType.View;
+                    actorView.Type = QsiTableType.View;
                     AddColumns(actorView, "actor_id", "first_name", "last_name", "last_update");
                     return actorView;
 
                 case "actor_mat_view":
                     var actorMatView = CreateTable("postgres", "public", "actor_mat_view");
-                    actorMatView.Type = QsiDataTableType.View;
+                    actorMatView.Type = QsiTableType.View;
                     AddColumns(actorMatView, "actor_id", "first_name", "last_name", "last_update");
                     return actorMatView;
 
@@ -53,7 +53,7 @@ namespace Qsi.Debugger.Vendor.PostgreSql
             return null;
         }
 
-        protected override QsiDataTable CreateTable(params string[] path)
+        protected override QsiTableStructure CreateTable(params string[] path)
         {
             var hiddenColumns = new[]
             {
@@ -78,7 +78,7 @@ namespace Qsi.Debugger.Vendor.PostgreSql
             return table;
         }
 
-        protected override QsiScript LookupDefinition(QsiQualifiedIdentifier identifier, QsiDataTableType type)
+        protected override QsiScript LookupDefinition(QsiQualifiedIdentifier identifier, QsiTableType type)
         {
             var name = IdentifierUtility.Unescape(identifier[^1].Value);
 

@@ -1,4 +1,5 @@
-﻿using Qsi.Compiler;
+﻿using System.Collections.Generic;
+using Qsi.Analyzers;
 using Qsi.JSql;
 using Qsi.Parsing;
 
@@ -16,13 +17,18 @@ namespace Qsi.Oracle
             return new OracleScriptParser();
         }
 
-        public override QsiTableCompileOptions CreateCompileOptions()
+        public override QsiAnalyzerOptions CreateAnalyzerOptions()
         {
-            return new QsiTableCompileOptions
+            return new QsiAnalyzerOptions
             {
                 AllowNoAliasInDerivedTable = true,
                 UseAutoFixRecursiveQuery = true
             };
+        }
+
+        public override IEnumerable<QsiAnalyzerBase> CreateAnalyzers(QsiEngine engine)
+        {
+            yield return new OracleTableAnalyzer(engine);
         }
     }
 }

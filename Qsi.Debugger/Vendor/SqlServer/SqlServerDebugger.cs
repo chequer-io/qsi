@@ -14,12 +14,12 @@ namespace Qsi.Debugger.Vendor.SqlServer
             _transactSqlVersion = transactSqlVersion;
         }
 
-        public override IQsiLanguageService CreateLanguageService()
+        protected override IQsiLanguageService CreateLanguageService()
         {
             return new SqlServerLanguageService(_transactSqlVersion);
         }
 
-        public override IRawTreeParser CreateRawTreeParser()
+        protected override IRawTreeParser CreateRawTreeParser()
         {
             return new SqlServerRawTreeParser(_transactSqlVersion);
         }

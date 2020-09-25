@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
+using Qsi.Analyzers;
+using Qsi.Analyzers.Table;
 using Qsi.Collections;
-using Qsi.Compiler;
 using Qsi.Data;
 using Qsi.Parsing;
 
@@ -8,13 +9,18 @@ namespace Qsi.Services
 {
     public abstract class QsiLanguageServiceBase : IQsiLanguageService
     {
-        public abstract QsiTableCompileOptions CreateCompileOptions();
+        public abstract QsiAnalyzerOptions CreateAnalyzerOptions();
+
+        public virtual IEnumerable<QsiAnalyzerBase> CreateAnalyzers(QsiEngine engine)
+        {
+            yield return new QsiTableAnalyzer(engine);
+        }
 
         public abstract IQsiTreeParser CreateTreeParser();
 
         public abstract IQsiScriptParser CreateScriptParser();
 
-        public abstract IQsiReferenceResolver CreateResolver();
+        public abstract IQsiReferenceResolver CreateReferenceResolver();
 
         private IEqualityComparer<QsiIdentifier> _comparer;
 

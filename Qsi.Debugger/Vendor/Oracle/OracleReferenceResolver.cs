@@ -6,7 +6,7 @@ namespace Qsi.Debugger.Vendor.Oracle
 {
     internal sealed class OracleReferenceResolver : VendorReferenceResolver
     {
-        protected override QsiDataTable LookupTable(QsiQualifiedIdentifier identifier)
+        protected override QsiTableStructure LookupTable(QsiQualifiedIdentifier identifier)
         {
             var tableName = GetName(identifier[^1]);
 
@@ -24,13 +24,13 @@ namespace Qsi.Debugger.Vendor.Oracle
 
                 case "ACTOR_VIEW_1":
                     var actorView1 = CreateTable("PUBLIC", "ACTOR_VIEW_1");
-                    actorView1.Type = QsiDataTableType.View;
+                    actorView1.Type = QsiTableType.View;
                     AddColumns(actorView1, "ACTOR_ID", "FIRST_NAME", "LAST_NAME", "LAST_UPDATE");
                     return actorView1;
 
                 case "ACTOR_VIEW_2":
                     var actorView2 = CreateTable("PUBLIC", "ACTOR_VIEW_2");
-                    actorView2.Type = QsiDataTableType.View;
+                    actorView2.Type = QsiTableType.View;
                     AddColumns(actorView2, "A", "B", "C", "D");
                     return actorView2;
             }
@@ -38,7 +38,7 @@ namespace Qsi.Debugger.Vendor.Oracle
             return null;
         }
 
-        protected override QsiScript LookupDefinition(QsiQualifiedIdentifier identifier, QsiDataTableType type)
+        protected override QsiScript LookupDefinition(QsiQualifiedIdentifier identifier, QsiTableType type)
         {
             var name = GetName(identifier[^1]);
 

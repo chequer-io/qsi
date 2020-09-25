@@ -29,7 +29,7 @@ namespace Qsi.Debugger.Vendor.SqlServer
             return identifier;
         }
 
-        protected override QsiDataTable LookupTable(QsiQualifiedIdentifier identifier)
+        protected override QsiTableStructure LookupTable(QsiQualifiedIdentifier identifier)
         {
             var tableName = IdentifierUtility.Unescape(identifier[^1].Value);
 
@@ -41,12 +41,12 @@ namespace Qsi.Debugger.Vendor.SqlServer
                     return actor;
                 case "actor_view":
                     var actorView = CreateTable("master", "chequer", "actor_view");
-                    actorView.Type = QsiDataTableType.View;
+                    actorView.Type = QsiTableType.View;
                     AddColumns(actorView, "actor_id", "first_name", "last_name", "last_update", "first_name + last_name");
                     return actorView;
                 case "actor_view2":
                     var actorView2 = CreateTable("master", "chequer", "actor_view2");
-                    actorView2.Type = QsiDataTableType.View;
+                    actorView2.Type = QsiTableType.View;
                     AddColumns(actorView2, "actor_id", "first_name", "last_name", "last_update");
                     return actorView2;
             }
@@ -54,7 +54,7 @@ namespace Qsi.Debugger.Vendor.SqlServer
             return null;
         }
 
-        protected override QsiScript LookupDefinition(QsiQualifiedIdentifier identifier, QsiDataTableType type)
+        protected override QsiScript LookupDefinition(QsiQualifiedIdentifier identifier, QsiTableType type)
         {
             var name = IdentifierUtility.Unescape(identifier[^1].Value);
 

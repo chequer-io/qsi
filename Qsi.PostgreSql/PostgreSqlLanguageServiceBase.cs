@@ -1,4 +1,4 @@
-﻿using Qsi.Compiler;
+﻿using Qsi.Analyzers;
 using Qsi.Parsing;
 using Qsi.Services;
 
@@ -16,9 +16,9 @@ namespace Qsi.PostgreSql
             return new PostgreSqlScriptParser();
         }
 
-        public override QsiTableCompileOptions CreateCompileOptions()
+        public override QsiAnalyzerOptions CreateAnalyzerOptions()
         {
-            return new QsiTableCompileOptions
+            return new QsiAnalyzerOptions
             {
                 AllowEmptyColumnsInSelect = true
             };

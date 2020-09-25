@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using Microsoft.SqlServer.TransactSql.ScriptDom;
 using Qsi.Data;
 using Qsi.Parsing;
@@ -49,7 +50,7 @@ namespace Qsi.SqlServer
             return new IdentifierVisitor(this);
         }
 
-        public IQsiTreeNode Parse(QsiScript script)
+        public IQsiTreeNode Parse(QsiScript script, CancellationToken cancellationToken = default)
         {
             var result = _parser.Parse(script.Script);
 

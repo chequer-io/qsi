@@ -1,22 +1,19 @@
-﻿using System;
-using System.Threading.Tasks;
-using Qsi.Compiler;
+﻿using System.Threading.Tasks;
+using Qsi.Analyzers.Table;
 using Qsi.Data;
-using Qsi.Runtime.Internal;
-using Qsi.Services;
 using Qsi.Tree;
 
-namespace Qsi.Oracle.Compiler
+namespace Qsi.Oracle
 {
-    public sealed class OracleTableCompiler : QsiTableCompiler
+    public sealed class OracleTableAnalyzer : QsiTableAnalyzer
     {
-        private QsiDataTable _pseudoTable;
+        private QsiTableStructure _pseudoTable;
 
-        public OracleTableCompiler(IQsiLanguageService languageService) : base(languageService)
+        public OracleTableAnalyzer(QsiEngine engine) : base(engine)
         {
         }
 
-        protected override ValueTask<QsiDataTable> BuildDerivedTableStructure(CompileContext context, IQsiDerivedTableNode table)
+        protected override ValueTask<QsiTableStructure> BuildDerivedTableStructure(CompileContext context, IQsiDerivedTableNode table)
         {
             if (table.Source == null)
                 throw new QsiException(QsiError.NoFromClause);
@@ -24,7 +21,7 @@ namespace Qsi.Oracle.Compiler
             return base.BuildDerivedTableStructure(context, table);
         }
 
-        protected override QsiDataColumn ResolveDeclaredColumn(CompileContext context, IQsiDeclaredColumnNode columnn)
+        protected override QsiTableColumn ResolveDeclaredColumn(CompileContext context, IQsiDeclaredColumnNode columnn)
         {
             try
             {
@@ -42,9 +39,9 @@ namespace Qsi.Oracle.Compiler
             }
         }
 
-        private QsiDataTable CreatePseudoTable()
+        private QsiTableStructure CreatePseudoTable()
         {
-            var table = new QsiDataTable
+            var table = new QsiTableStructure
             {
                 Identifier = new QsiQualifiedIdentifier(new QsiIdentifier("PseudoColumns", false))
             };

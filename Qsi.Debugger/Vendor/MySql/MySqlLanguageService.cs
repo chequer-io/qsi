@@ -5,7 +5,7 @@ namespace Qsi.Debugger.Vendor.MySql
 {
     internal class MySqlLanguageService : MySqlLanguageServiceBase
     {
-        public override IQsiReferenceResolver CreateResolver()
+        public override IQsiReferenceResolver CreateReferenceResolver()
         {
             return new MySqlReferenceResolver();
         }
