@@ -213,10 +213,7 @@ namespace Qsi.Parsing.Common
                 return type;
             }
 
-            if (tokens.All(t =>
-                t.Type == TokenType.WhiteSpace ||
-                t.Type == TokenType.SingeLineComment ||
-                t.Type == TokenType.MultiLineComment))
+            if (tokens.All(t => TokenType.Trivia.HasFlag(t.Type)))
             {
                 return QsiScriptType.Comment;
             }
