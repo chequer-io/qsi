@@ -24,7 +24,7 @@ namespace Qsi.SqlServer
 
         public override IQsiScriptParser CreateScriptParser()
         {
-            return new SqlServerScriptParser();
+            return new SqlServerScriptParser(_transactSqlVersion);
         }
 
         public override bool MatchIdentifier(QsiIdentifier x, QsiIdentifier y)
