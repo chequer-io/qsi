@@ -4,7 +4,7 @@ using Qsi.Utilities;
 
 namespace Qsi.Tree.Immutable
 {
-    public readonly struct ImmutableExecuteActionNode : IQsiExecuteActionNode
+    public readonly struct ImmutableExecutePrepareActionNode : IQsiExecutePrepareActionNode
     {
         public IQsiTreeNode Parent { get; }
 
@@ -14,7 +14,7 @@ namespace Qsi.Tree.Immutable
 
         public IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Variables);
 
-        public ImmutableExecuteActionNode(
+        public ImmutableExecutePrepareActionNode(
             IQsiTreeNode parent,
             QsiQualifiedIdentifier identifier,
             IQsiMultipleExpressionNode variables)

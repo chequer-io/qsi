@@ -446,36 +446,42 @@ namespace Qsi.MySql.Tree
 
             return new QsiLiteralExpressionNode
             {
-                Value = context.STRING_LITERAL().GetText(),
+                Value = IdentifierUtility.Unescape(context.STRING_LITERAL().GetText()),
                 Type = QsiDataType.String
             };
         }
 
-        private static QsiExpressionNode VisitLiteral(ParserRuleContext context)
+        public static QsiExpressionNode VisitLiteral(ParserRuleContext context)
         {
             QsiDataType literalType;
+            object value;
 
             switch (context)
             {
                 case NullLiteralContext _:
                     literalType = QsiDataType.Null;
+                    value = null;
                     break;
 
                 case FileSizeLiteralContext _:
                 case StringLiteralContext _:
                     literalType = QsiDataType.String;
+                    value = IdentifierUtility.Unescape(context.GetText());
                     break;
 
                 case DecimalLiteralContext _:
                     literalType = QsiDataType.Decimal;
+                    value = context.GetText();
                     break;
 
                 case HexadecimalLiteralContext _:
                     literalType = QsiDataType.Hexadecimal;
+                    value = context.GetText();
                     break;
 
                 case BooleanLiteralContext _:
                     literalType = QsiDataType.Boolean;
+                    value = context.GetText();
                     break;
 
                 default:
@@ -484,7 +490,7 @@ namespace Qsi.MySql.Tree
 
             return new QsiLiteralExpressionNode
             {
-                Value = context.GetText(),
+                Value = value,
                 Type = literalType
             };
         }
@@ -903,7 +909,15 @@ namespace Qsi.MySql.Tree
         #endregion
 
         #region Variable
-        private static QsiVariableAccessExpressionNode VisitVariable(MysqlVariableContext context)
+        public static QsiMultipleExpressionNode VisitUserVariables(UserVariablesContext context)
+        {
+            return TreeHelper.Create<QsiMultipleExpressionNode>(n =>
+            {
+                n.Elements.AddRange(context.LOCAL_ID().Select(VisitLocalId));
+            });
+        }
+
+        public static QsiVariableAccessExpressionNode VisitVariable(MysqlVariableContext context)
         {
             if (!(context.children[0] is ITerminalNode terminalNode))
             {
@@ -922,10 +936,10 @@ namespace Qsi.MySql.Tree
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        private static QsiVariableAccessExpressionNode VisitLocalId(ITerminalNode node)
+        public static QsiVariableAccessExpressionNode VisitLocalId(ITerminalNode node)
         {
-            var text = node.GetText();
-            var identifier = new QsiIdentifier(text, Regex.IsMatch(text, @"^@(['""`]).+?\1$"));
+            var text = node.GetText()[1..];
+            var identifier = new QsiIdentifier(text, IdentifierUtility.IsEscaped(text));
 
             return new QsiVariableAccessExpressionNode
             {
@@ -933,10 +947,10 @@ namespace Qsi.MySql.Tree
             };
         }
 
-        private static QsiVariableAccessExpressionNode VisitGlobalId(ITerminalNode node)
+        public static QsiVariableAccessExpressionNode VisitGlobalId(ITerminalNode node)
         {
-            var text = node.GetText();
-            var identifier = new QsiIdentifier(text, Regex.IsMatch(text, @"^@@(['""`]).+?\1$"));
+            var text = node.GetText()[2..];
+            var identifier = new QsiIdentifier(text, IdentifierUtility.IsEscaped(text));
 
             return new QsiVariableAccessExpressionNode
             {

@@ -2,7 +2,7 @@
 
 namespace Qsi.Tree
 {
-    public interface IQsiExecuteActionNode : IQsiActionNode
+    public interface IQsiExecutePrepareActionNode : IQsiActionNode
     {
         QsiQualifiedIdentifier Identifier { get; }
 

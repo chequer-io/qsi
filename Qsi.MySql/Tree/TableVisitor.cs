@@ -402,7 +402,7 @@ namespace Qsi.MySql.Tree
                 {
                     n.Expression.SetValue(new QsiLiteralExpressionNode
                     {
-                        Value = columnName[0].Value,
+                        Value = IdentifierUtility.Unescape(columnName[0].Value),
                         Type = QsiDataType.String
                     });
 

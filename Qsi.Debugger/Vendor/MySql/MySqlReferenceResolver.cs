@@ -67,6 +67,9 @@ namespace Qsi.Debugger.Vendor.MySql
 
                 case "actor_view":
                     return new QsiScript("CREATE VIEW `sakila`.`actor_view` (actor_id, first_name, last_name, last_update, `first_name || last_name`) AS SELECT *, first_name || last_name FROM `sakila`.`actor`", QsiScriptType.Create);
+
+                case "stmt1" when type == QsiTableType.Prepared:
+                    return new QsiScript("SELECT * FROM actor", QsiScriptType.Select);
             }
 
             return null;

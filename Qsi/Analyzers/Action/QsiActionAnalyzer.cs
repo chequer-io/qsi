@@ -27,7 +27,7 @@ namespace Qsi.Analyzers.Action
                 case IQsiDropPrepareActionNode dropPrepareAction:
                     return await DropPrepareAction(dropPrepareAction);
 
-                case IQsiExecuteActionNode executeAction:
+                case IQsiExecutePrepareActionNode executeAction:
                     return await ExecuteAction(executeAction);
 
                 default:
@@ -80,7 +80,7 @@ namespace Qsi.Analyzers.Action
             return new ValueTask<IQsiAnalysisResult>(result);
         }
 
-        protected virtual ValueTask<IQsiAnalysisResult> ExecuteAction(IQsiExecuteActionNode node)
+        protected virtual ValueTask<IQsiAnalysisResult> ExecuteAction(IQsiExecutePrepareActionNode node)
         {
             var definition = Engine.ReferenceResolver.LookupDefinition(node.Identifier, QsiTableType.Prepared) ??
                              throw new QsiException(QsiError.UnableResolveDefinition, node.Identifier);
