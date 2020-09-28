@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Qsi.Tree;
 
 namespace Qsi.Tree.Immutable
 {

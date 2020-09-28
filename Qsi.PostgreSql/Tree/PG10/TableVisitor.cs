@@ -5,7 +5,7 @@ using System.Linq;
 using Qsi.Data;
 using Qsi.PostgreSql.Internal;
 using Qsi.PostgreSql.Internal.PG10.Types;
-using Qsi.Tree.Base;
+using Qsi.Tree;
 using Qsi.Utilities;
 
 namespace Qsi.PostgreSql.Tree.PG10

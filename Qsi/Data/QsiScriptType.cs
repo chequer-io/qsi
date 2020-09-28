@@ -35,6 +35,7 @@
         Use,
         Show,
         Describe,
+        Prepare,
 
         Comment
     }

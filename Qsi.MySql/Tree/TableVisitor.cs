@@ -5,7 +5,7 @@ using Antlr4.Runtime.Tree;
 using Qsi.Data;
 using Qsi.MySql.Internal;
 using Qsi.MySql.Tree.Common;
-using Qsi.Tree.Base;
+using Qsi.Tree;
 using Qsi.Utilities;
 using static Qsi.MySql.Internal.MySqlParser;
 

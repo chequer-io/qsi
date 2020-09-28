@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
 using Qsi.Data;
-using Qsi.Tree.Base;
+using Qsi.Tree;
 using Qsi.Utilities;
 using static Qsi.MySql.Internal.MySqlParser;
 

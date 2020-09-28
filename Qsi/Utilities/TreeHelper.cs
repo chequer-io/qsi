@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Qsi.Data;
 using Qsi.Tree;
-using Qsi.Tree.Base;
+using Qsi.Tree;
 
 namespace Qsi.Utilities
 {
