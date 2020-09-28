@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Qsi.Analyzers;
+using Qsi.Analyzers.Action;
 using Qsi.JSql;
 using Qsi.Parsing;
 
@@ -28,6 +29,7 @@ namespace Qsi.Oracle
 
         public override IEnumerable<QsiAnalyzerBase> CreateAnalyzers(QsiEngine engine)
         {
+            yield return new QsiActionAnalyzer(engine);
             yield return new OracleTableAnalyzer(engine);
         }
     }

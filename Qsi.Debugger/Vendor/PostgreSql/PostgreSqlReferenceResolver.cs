@@ -94,6 +94,11 @@ namespace Qsi.Debugger.Vendor.PostgreSql
             return null;
         }
 
+        protected override QsiVariable LookupVariable(QsiQualifiedIdentifier identifier)
+        {
+            throw new NotImplementedException();
+        }
+
         protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier)
         {
             identifier = identifier.Level switch

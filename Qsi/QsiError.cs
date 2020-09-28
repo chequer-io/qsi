@@ -26,7 +26,8 @@
         NoFromClause,
         UnableResolveDefinition,
         NoColumnsSpecified,
-        NoAlias
+        NoAlias,
+        UnknownVariable
     }
 
     internal static class SR
@@ -56,6 +57,7 @@
         public const string UnableResolveDefinition = "Unable to resolve definition '{0}'";
         public const string NoColumnsSpecified = "No columns specified in '{0}'";
         public const string NoAlias = "Every derived table must have an alias";
+        public const string UnknownVariable = "Unknown table '{0}'";
 
         public static string GetResource(QsiError error)
         {
@@ -86,6 +88,7 @@
                 QsiError.UnableResolveDefinition => UnableResolveDefinition,
                 QsiError.NoColumnsSpecified => NoColumnsSpecified,
                 QsiError.NoAlias => NoAlias,
+                QsiError.UnknownVariable => UnknownVariable,
                 _ => null
             };
         }

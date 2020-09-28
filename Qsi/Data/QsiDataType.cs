@@ -1,6 +1,6 @@
 ﻿namespace Qsi.Data
 {
-    public enum QsiLiteralType
+    public enum QsiDataType
     {
         Unknown,
         Default,

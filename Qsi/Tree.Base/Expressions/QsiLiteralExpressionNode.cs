@@ -8,7 +8,7 @@ namespace Qsi.Tree
     {
         public object Value { get; set; }
 
-        public QsiLiteralType Type { get; set; }
+        public QsiDataType Type { get; set; }
 
         public override IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
     }

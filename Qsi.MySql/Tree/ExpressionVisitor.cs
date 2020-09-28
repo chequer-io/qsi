@@ -398,7 +398,7 @@ namespace Qsi.MySql.Tree
                     return new QsiLiteralExpressionNode
                     {
                         Value = literalContext.GetText(),
-                        Type = QsiLiteralType.Decimal
+                        Type = QsiDataType.Decimal
                     };
                 }
 
@@ -407,7 +407,7 @@ namespace Qsi.MySql.Tree
                     return new QsiLiteralExpressionNode
                     {
                         Value = literalContext.GetText(),
-                        Type = QsiLiteralType.Binary
+                        Type = QsiDataType.Binary
                     };
                 }
 
@@ -447,35 +447,35 @@ namespace Qsi.MySql.Tree
             return new QsiLiteralExpressionNode
             {
                 Value = context.STRING_LITERAL().GetText(),
-                Type = QsiLiteralType.String
+                Type = QsiDataType.String
             };
         }
 
         private static QsiExpressionNode VisitLiteral(ParserRuleContext context)
         {
-            QsiLiteralType literalType;
+            QsiDataType literalType;
 
             switch (context)
             {
                 case NullLiteralContext _:
-                    literalType = QsiLiteralType.Null;
+                    literalType = QsiDataType.Null;
                     break;
 
                 case FileSizeLiteralContext _:
                 case StringLiteralContext _:
-                    literalType = QsiLiteralType.String;
+                    literalType = QsiDataType.String;
                     break;
 
                 case DecimalLiteralContext _:
-                    literalType = QsiLiteralType.Decimal;
+                    literalType = QsiDataType.Decimal;
                     break;
 
                 case HexadecimalLiteralContext _:
-                    literalType = QsiLiteralType.Hexadecimal;
+                    literalType = QsiDataType.Hexadecimal;
                     break;
 
                 case BooleanLiteralContext _:
-                    literalType = QsiLiteralType.Boolean;
+                    literalType = QsiDataType.Boolean;
                     break;
 
                 default:

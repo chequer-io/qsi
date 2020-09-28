@@ -10,6 +10,8 @@ namespace Qsi.Services
 
         protected abstract QsiScript LookupDefinition(QsiQualifiedIdentifier identifier, QsiTableType type);
 
+        protected abstract QsiVariable LookupVariable(QsiQualifiedIdentifier identifier);
+
         protected abstract QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier);
 
         #region IQsiReferenceResolver
@@ -39,6 +41,11 @@ namespace Qsi.Services
             }
 
             return definition;
+        }
+
+        QsiVariable IQsiReferenceResolver.LookupVariable(QsiQualifiedIdentifier identifier)
+        {
+            return LookupVariable(identifier);
         }
 
         QsiQualifiedIdentifier IQsiReferenceResolver.ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier)

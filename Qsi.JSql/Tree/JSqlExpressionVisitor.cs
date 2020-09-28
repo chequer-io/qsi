@@ -196,46 +196,46 @@ namespace Qsi.JSql.Tree
 
         public virtual QsiExpressionNode VisitHexValue(HexValue expression)
         {
-            return TreeHelper.CreateLiteral(expression.getValue(), QsiLiteralType.Hexadecimal);
+            return TreeHelper.CreateLiteral(expression.getValue(), QsiDataType.Hexadecimal);
         }
 
         // {d 'yyyy-mm-dd'}
         public virtual QsiLiteralExpressionNode VisitDateValue(DateValue expression)
         {
             var value = _dateTimePattern.Match(expression.toString()).Value;
-            return TreeHelper.CreateLiteral(DateTime.Parse(value), QsiLiteralType.Date);
+            return TreeHelper.CreateLiteral(DateTime.Parse(value), QsiDataType.Date);
         }
 
         // {t 'hh:mm:ss'}
         public virtual QsiLiteralExpressionNode VisitTimeValue(TimeValue expression)
         {
             var value = _dateTimePattern.Match(expression.toString()).Value;
-            return TreeHelper.CreateLiteral(TimeSpan.Parse(value), QsiLiteralType.Time);
+            return TreeHelper.CreateLiteral(TimeSpan.Parse(value), QsiDataType.Time);
         }
 
         // {ts 'yyyy-mm-dd hh:mm:ss.f . . .'}
         public virtual QsiLiteralExpressionNode VisitTimestampValue(TimestampValue expression)
         {
             var value = _dateTimePattern.Match(expression.toString()).Value;
-            return TreeHelper.CreateLiteral(DateTimeOffset.Parse(value), QsiLiteralType.DateTimeOffset);
+            return TreeHelper.CreateLiteral(DateTimeOffset.Parse(value), QsiDataType.DateTimeOffset);
         }
 
         public virtual QsiLiteralExpressionNode VisitDateTimeLiteralExpression(DateTimeLiteralExpression expression)
         {
-            QsiLiteralType literalType;
+            QsiDataType literalType;
 
             switch (expression.getType())
             {
                 case var t when t == DateTimeLiteralExpression.DateTime.TIME:
-                    literalType = QsiLiteralType.DateTime;
+                    literalType = QsiDataType.DateTime;
                     break;
 
                 case var t when t == DateTimeLiteralExpression.DateTime.DATE:
-                    literalType = QsiLiteralType.Date;
+                    literalType = QsiDataType.Date;
                     break;
 
                 default:
-                    literalType = QsiLiteralType.DateTimeOffset;
+                    literalType = QsiDataType.DateTimeOffset;
                     break;
             }
 

@@ -8,10 +8,11 @@ namespace Qsi.Data
         Table = 1 << 0,
         View = 1 << 1,
         MaterializedView = 1 << 2,
+        Prepared = 1 << 3,
 
-        Derived = 1 << 3,
-        Inline = 1 << 4,
-        Join = 1 << 5,
-        Union = 1 << 6
+        Derived = 1 << 4,
+        Inline = 1 << 5,
+        Join = 1 << 6,
+        Union = 1 << 7
     }
 }

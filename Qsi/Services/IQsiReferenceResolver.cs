@@ -9,5 +9,7 @@ namespace Qsi.Services
         QsiTableStructure LookupTable(QsiQualifiedIdentifier identifier);
 
         QsiScript LookupDefinition(QsiQualifiedIdentifier identifier, QsiTableType type);
+
+        QsiVariable LookupVariable(QsiQualifiedIdentifier identifier);
     }
 }

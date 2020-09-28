@@ -72,6 +72,24 @@ namespace Qsi.Debugger.Vendor.MySql
             return null;
         }
 
+        protected override QsiVariable LookupVariable(QsiQualifiedIdentifier identifier)
+        {
+            var name = IdentifierUtility.Unescape(identifier[^1].Value);
+
+            switch (name)
+            {
+                case "stmt1":
+                    return new QsiVariable
+                    {
+                        Identifier = CreateIdentifier("stmt1"),
+                        Type = QsiDataType.String,
+                        Value = "SELECT * FROM actor"
+                    };
+            }
+
+            return null;
+        }
+
         protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier)
         {
             if (identifier.Level == 1)

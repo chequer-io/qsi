@@ -403,7 +403,7 @@ namespace Qsi.MySql.Tree
                     n.Expression.SetValue(new QsiLiteralExpressionNode
                     {
                         Value = columnName[0].Value,
-                        Type = QsiLiteralType.String
+                        Type = QsiDataType.String
                     });
 
                     if (columnElementContext.alias != null)
