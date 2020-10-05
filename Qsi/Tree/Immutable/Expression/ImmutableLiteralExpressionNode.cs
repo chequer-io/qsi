@@ -10,11 +10,11 @@ namespace Qsi.Tree.Immutable
 
         public object Value { get; }
 
-        public QsiLiteralType Type { get; }
+        public QsiDataType Type { get; }
 
         public IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
 
-        public ImmutableLiteralExpressionNode(IQsiTreeNode parent, object value, QsiLiteralType type)
+        public ImmutableLiteralExpressionNode(IQsiTreeNode parent, object value, QsiDataType type)
         {
             Parent = parent;
             Value = value;

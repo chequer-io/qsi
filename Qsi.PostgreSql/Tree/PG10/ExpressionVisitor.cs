@@ -5,7 +5,7 @@ using System.Text;
 using Qsi.Data;
 using Qsi.PostgreSql.Internal;
 using Qsi.PostgreSql.Internal.PG10.Types;
-using Qsi.Tree.Base;
+using Qsi.Tree;
 using Qsi.Utilities;
 
 namespace Qsi.PostgreSql.Tree.PG10
@@ -136,11 +136,11 @@ namespace Qsi.PostgreSql.Tree.PG10
             {
                 n.Type = value.Type switch
                 {
-                    NodeTag.T_Null => QsiLiteralType.Null,
-                    NodeTag.T_Integer => QsiLiteralType.Numeric,
-                    NodeTag.T_Float => QsiLiteralType.Decimal,
-                    NodeTag.T_String => QsiLiteralType.String,
-                    NodeTag.T_BitString => QsiLiteralType.String,
+                    NodeTag.T_Null => QsiDataType.Null,
+                    NodeTag.T_Integer => QsiDataType.Numeric,
+                    NodeTag.T_Float => QsiDataType.Decimal,
+                    NodeTag.T_String => QsiDataType.String,
+                    NodeTag.T_BitString => QsiDataType.String,
                     _ => throw TreeHelper.NotSupportedTree(value)
                 };
 

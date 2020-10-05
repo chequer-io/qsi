@@ -1,6 +1,6 @@
 ﻿using net.sf.jsqlparser.schema;
 using Qsi.JSql.Tree;
-using Qsi.Tree.Base;
+using Qsi.Tree;
 
 namespace Qsi.Oracle.Tree
 {

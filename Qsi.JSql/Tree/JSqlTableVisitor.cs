@@ -10,7 +10,7 @@ using net.sf.jsqlparser.statement.@select;
 using net.sf.jsqlparser.statement.values;
 using Qsi.Data;
 using Qsi.JSql.Extensions;
-using Qsi.Tree.Base;
+using Qsi.Tree;
 using Qsi.Utilities;
 
 namespace Qsi.JSql.Tree

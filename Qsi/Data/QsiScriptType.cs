@@ -27,10 +27,14 @@
         Rollback,
         SavePoint,
 
+        // ** Prepared **
+        Prepare,
+        Deallocate,
+        Execute,
+
         // Others
         Delimiter,
         Call,
-        Execute,
         Explain,
         Use,
         Show,

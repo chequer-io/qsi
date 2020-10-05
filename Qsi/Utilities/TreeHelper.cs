@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Qsi.Data;
 using Qsi.Tree;
-using Qsi.Tree.Base;
+using Qsi.Tree;
 
 namespace Qsi.Utilities
 {
@@ -60,25 +60,25 @@ namespace Qsi.Utilities
         #region Literal
         public static QsiLiteralExpressionNode CreateNullLiteral()
         {
-            return CreateLiteral(null, QsiLiteralType.Null);
+            return CreateLiteral(null, QsiDataType.Null);
         }
 
         public static QsiLiteralExpressionNode CreateLiteral(string value)
         {
-            return CreateLiteral(value, QsiLiteralType.String);
+            return CreateLiteral(value, QsiDataType.String);
         }
 
         public static QsiLiteralExpressionNode CreateLiteral(long value)
         {
-            return CreateLiteral(value, QsiLiteralType.Numeric);
+            return CreateLiteral(value, QsiDataType.Numeric);
         }
 
         public static QsiLiteralExpressionNode CreateLiteral(double value)
         {
-            return CreateLiteral(value, QsiLiteralType.Decimal);
+            return CreateLiteral(value, QsiDataType.Decimal);
         }
 
-        public static QsiLiteralExpressionNode CreateLiteral(object value, QsiLiteralType type)
+        public static QsiLiteralExpressionNode CreateLiteral(object value, QsiDataType type)
         {
             return new QsiLiteralExpressionNode
             {

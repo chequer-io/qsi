@@ -5,7 +5,7 @@ using Antlr4.Runtime.Tree;
 using Qsi.Data;
 using Qsi.MySql.Internal;
 using Qsi.MySql.Tree.Common;
-using Qsi.Tree.Base;
+using Qsi.Tree;
 using Qsi.Utilities;
 using static Qsi.MySql.Internal.MySqlParser;
 
@@ -402,8 +402,8 @@ namespace Qsi.MySql.Tree
                 {
                     n.Expression.SetValue(new QsiLiteralExpressionNode
                     {
-                        Value = columnName[0].Value,
-                        Type = QsiLiteralType.String
+                        Value = IdentifierUtility.Unescape(columnName[0].Value),
+                        Type = QsiDataType.String
                     });
 
                     if (columnElementContext.alias != null)

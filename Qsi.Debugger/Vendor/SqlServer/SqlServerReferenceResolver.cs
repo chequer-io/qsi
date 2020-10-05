@@ -39,11 +39,13 @@ namespace Qsi.Debugger.Vendor.SqlServer
                     var actor = CreateTable("master", "chequer", "actor");
                     AddColumns(actor, "actor_id", "first_name", "last_name", "last_update");
                     return actor;
+
                 case "actor_view":
                     var actorView = CreateTable("master", "chequer", "actor_view");
                     actorView.Type = QsiTableType.View;
                     AddColumns(actorView, "actor_id", "first_name", "last_name", "last_update", "first_name + last_name");
                     return actorView;
+
                 case "actor_view2":
                     var actorView2 = CreateTable("master", "chequer", "actor_view2");
                     actorView2.Type = QsiTableType.View;
@@ -62,11 +64,17 @@ namespace Qsi.Debugger.Vendor.SqlServer
             {
                 case "actor_view":
                     return new QsiScript("CREATE VIEW [chequer].[actor_view] (actor_id, first_name, last_name, last_update, [first_name + last_name]) AS SELECT *, first_name + last_name FROM [chequer].[actor]", QsiScriptType.Create);
+
                 case "actor_view2":
                     return new QsiScript("CREATE VIEW [chequer].[actor_view2] AS SELECT * FROM [chequer].[actor]", QsiScriptType.Create);
             }
-            
+
             return null;
+        }
+
+        protected override QsiVariable LookupVariable(QsiQualifiedIdentifier identifier)
+        {
+            throw new NotImplementedException();
         }
     }
 }

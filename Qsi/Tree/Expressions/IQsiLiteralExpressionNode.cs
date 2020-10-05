@@ -6,6 +6,6 @@ namespace Qsi.Tree
     {
         object Value { get; }
 
-        QsiLiteralType Type { get; }
+        QsiDataType Type { get; }
     }
 }

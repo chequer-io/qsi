@@ -1,7 +1,7 @@
 ﻿using net.sf.jsqlparser.schema;
 using net.sf.jsqlparser.statement.@select;
 using Qsi.JSql.Tree;
-using Qsi.Tree.Base;
+using Qsi.Tree;
 using Qsi.Utilities;
 
 namespace Qsi.Oracle.Tree

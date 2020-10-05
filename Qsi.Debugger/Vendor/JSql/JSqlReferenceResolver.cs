@@ -72,6 +72,11 @@ namespace Qsi.Debugger.Vendor.JSql
             return null;
         }
 
+        protected override QsiVariable LookupVariable(QsiQualifiedIdentifier identifier)
+        {
+            throw new NotImplementedException();
+        }
+
         protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier)
         {
             if (identifier.Level == 1)

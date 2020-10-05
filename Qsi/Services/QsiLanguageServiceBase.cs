@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Qsi.Analyzers;
+using Qsi.Analyzers.Action;
 using Qsi.Analyzers.Table;
 using Qsi.Collections;
 using Qsi.Data;
@@ -13,6 +14,7 @@ namespace Qsi.Services
 
         public virtual IEnumerable<QsiAnalyzerBase> CreateAnalyzers(QsiEngine engine)
         {
+            yield return new QsiActionAnalyzer(engine);
             yield return new QsiTableAnalyzer(engine);
         }
 

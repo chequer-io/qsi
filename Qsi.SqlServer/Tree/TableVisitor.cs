@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.SqlServer.TransactSql.ScriptDom;
 using Qsi.Data;
-using Qsi.Tree.Base;
+using Qsi.Tree;
 using Qsi.Utilities;
 
 namespace Qsi.SqlServer.Tree

@@ -67,6 +67,27 @@ namespace Qsi.Debugger.Vendor.MySql
 
                 case "actor_view":
                     return new QsiScript("CREATE VIEW `sakila`.`actor_view` (actor_id, first_name, last_name, last_update, `first_name || last_name`) AS SELECT *, first_name || last_name FROM `sakila`.`actor`", QsiScriptType.Create);
+
+                case "stmt1" when type == QsiTableType.Prepared:
+                    return new QsiScript("SELECT * FROM actor", QsiScriptType.Select);
+            }
+
+            return null;
+        }
+
+        protected override QsiVariable LookupVariable(QsiQualifiedIdentifier identifier)
+        {
+            var name = IdentifierUtility.Unescape(identifier[^1].Value);
+
+            switch (name)
+            {
+                case "stmt1":
+                    return new QsiVariable
+                    {
+                        Identifier = CreateIdentifier("stmt1"),
+                        Type = QsiDataType.String,
+                        Value = "SELECT * FROM actor"
+                    };
             }
 
             return null;

@@ -35,7 +35,7 @@ namespace Qsi
             _analyzers = new Lazy<QsiAnalyzerBase[]>(() => LanguageService.CreateAnalyzers(this).ToArray());
         }
 
-        protected T GetAnalyzer<T>() where T : QsiAnalyzerBase
+        public T GetAnalyzer<T>() where T : QsiAnalyzerBase
         {
             return _analyzers.Value.OfType<T>().First();
         }

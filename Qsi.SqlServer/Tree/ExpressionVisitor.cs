@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.SqlServer.TransactSql.ScriptDom;
 using Qsi.Data;
-using Qsi.Tree.Base;
+using Qsi.Tree;
 using Qsi.Utilities;
 
 namespace Qsi.SqlServer.Tree
@@ -623,17 +623,17 @@ namespace Qsi.SqlServer.Tree
             {
                 n.Type = literal.LiteralType switch
                 {
-                    LiteralType.Binary => QsiLiteralType.Binary,
-                    LiteralType.Default => QsiLiteralType.Default,
-                    LiteralType.Identifier => QsiLiteralType.String,
-                    LiteralType.Integer => QsiLiteralType.Numeric,
-                    LiteralType.Max => QsiLiteralType.Unknown,
-                    LiteralType.Money => QsiLiteralType.Decimal,
-                    LiteralType.Null => QsiLiteralType.Null,
-                    LiteralType.Numeric => QsiLiteralType.Numeric,
-                    LiteralType.Odbc => QsiLiteralType.Unknown,
-                    LiteralType.Real => QsiLiteralType.Decimal,
-                    LiteralType.String => QsiLiteralType.String,
+                    LiteralType.Binary => QsiDataType.Binary,
+                    LiteralType.Default => QsiDataType.Default,
+                    LiteralType.Identifier => QsiDataType.String,
+                    LiteralType.Integer => QsiDataType.Numeric,
+                    LiteralType.Max => QsiDataType.Unknown,
+                    LiteralType.Money => QsiDataType.Decimal,
+                    LiteralType.Null => QsiDataType.Null,
+                    LiteralType.Numeric => QsiDataType.Numeric,
+                    LiteralType.Odbc => QsiDataType.Unknown,
+                    LiteralType.Real => QsiDataType.Decimal,
+                    LiteralType.String => QsiDataType.String,
                     _ => throw new InvalidOperationException()
                 };
 
