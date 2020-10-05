@@ -32,11 +32,11 @@ namespace Qsi.MySql
 
             switch (script.ScriptType)
             {
-                // TODO: refactor used CommonTokenStream
                 case QsiScriptType.Prepare:
                 case QsiScriptType.Execute:
-                case QsiScriptType.Drop when _dropPreparePattern.IsMatch(script.Script):
-                case QsiScriptType.Deallocate when _dropPreparePattern.IsMatch(script.Script):
+                case QsiScriptType.DropPrepare:
+                // case QsiScriptType.Drop when _dropPreparePattern.IsMatch(script.Script):
+                // case QsiScriptType.Deallocate when _dropPreparePattern.IsMatch(script.Script):
                     return ActionVisitor.VisitPreparedStatement(mySqlParser.preparedStatement());
 
                 case QsiScriptType.With:

@@ -30,7 +30,7 @@ namespace Qsi.Parsing.Common
             _delimiter = delimiter;
         }
 
-        public virtual IEnumerable<QsiScript> Parse(in string input, CancellationToken cancellationToken)
+        public virtual IEnumerable<QsiScript> Parse(string input, CancellationToken cancellationToken)
         {
             var context = new ParseContext(input, _delimiter, cancellationToken);
 
@@ -44,7 +44,7 @@ namespace Qsi.Parsing.Common
                 {
                     FlushScript(context);
                 }
-                else if (TryParseToken(context, out var token))
+                else if (TryParseToken(cursor, out var token))
                 {
                     FlushToken(context);
 
@@ -198,19 +198,29 @@ namespace Qsi.Parsing.Common
             var endIndex = tokens[^1].Span.End.GetOffset(context.Cursor.Length) - 1;
             var (startPosition, endPosition) = MeasurePosition(context, startIndex, endIndex);
             var script = context.Cursor.Value[startIndex..(endIndex + 1)];
-            var scriptType = GetSuitableScriptType(context, tokens);
+            var scriptType = GetSuitableScriptTypeInternal(context, tokens);
 
             return new QsiScript(script, scriptType, startPosition, endPosition);
         }
 
-        protected virtual QsiScriptType GetSuitableScriptType(ParseContext context, IReadOnlyList<Token> tokens)
+        private QsiScriptType GetSuitableScriptTypeInternal(ParseContext context, IReadOnlyList<Token> tokens)
         {
-            var firstToken = tokens[0];
+            Token[] leadingTokens = GetLeadingTokens(tokens, TokenType.Keyword, 2);
+            return GetSuitableScriptType(context, tokens, leadingTokens);
+        }
 
-            if (firstToken.Type == TokenType.Keyword &&
-                Enum.TryParse<QsiScriptType>(context.Cursor.Value[firstToken.Span], true, out var type))
+        protected virtual QsiScriptType GetSuitableScriptType(ParseContext context, IReadOnlyList<Token> tokens, Token[] leadingTokens)
+        {
+            if (leadingTokens.Length >= 2)
             {
-                return type;
+                if (Enum.TryParse<QsiScriptType>(context.JoinTokens(string.Empty, leadingTokens, 0, 2), true, out var type))
+                    return type;
+            }
+
+            if (leadingTokens.Length >= 1)
+            {
+                if (Enum.TryParse<QsiScriptType>(context.GetTokenText(leadingTokens[0]), true, out var type))
+                    return type;
             }
 
             if (tokens.All(t => TokenType.Trivia.HasFlag(t.Type)))
@@ -221,12 +231,11 @@ namespace Qsi.Parsing.Common
             return QsiScriptType.Unknown;
         }
 
-        protected virtual bool TryParseToken(ParseContext context, out Token token)
+        protected virtual bool TryParseToken(CommonScriptCursor cursor, out Token token)
         {
             int offset;
             TokenType tokenType;
             ITokenRule rule;
-            var cursor = context.Cursor;
 
             switch (cursor.Current)
             {
@@ -317,6 +326,28 @@ namespace Qsi.Parsing.Common
             cursor.Index = start;
 
             return false;
+        }
+
+        private Token[] GetLeadingTokens(IEnumerable<Token> tokens, TokenType tokenType, int count)
+        {
+            var result = new Token[count];
+            int resultIndex = 0;
+
+            foreach (var token in tokens)
+            {
+                if (TokenType.Trivia.HasFlag(token.Type))
+                    continue;
+
+                if (token.Type != tokenType)
+                    break;
+
+                result[resultIndex++] = token;
+
+                if (resultIndex >= count)
+                    break;
+            }
+
+            return result[..resultIndex];
         }
     }
 }

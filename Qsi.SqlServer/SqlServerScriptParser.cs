@@ -20,10 +20,9 @@ namespace Qsi.SqlServer
             _parser = new TSqlParserInternal(transactSqlVersion, false);
         }
 
-        public IEnumerable<QsiScript> Parse(in string input, CancellationToken cancellationToken)
+        public IEnumerable<QsiScript> Parse(string input, CancellationToken cancellationToken)
         {
             var result = _parser.Parse(input);
-            var sc = input;
 
             if (!(result is TSqlScript script))
                 return Enumerable.Empty<QsiScript>();
@@ -115,7 +114,7 @@ namespace Qsi.SqlServer
                 var last = listSegment[^1];
                 var (startPosition, endPosition) = GetScriptPosition(first, last);
 
-                var text = sc[first.Offset..(last.Offset + last.Text.Length)];
+                var text = input[first.Offset..(last.Offset + last.Text.Length)];
 
                 list.Add(new QsiScript(
                     in text,

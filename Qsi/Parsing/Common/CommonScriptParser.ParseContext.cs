@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Qsi.Data;
 
@@ -35,6 +36,48 @@ namespace Qsi.Parsing.Common
                 _tokens = new List<Token>();
                 Tokens = _tokens;
                 _cancellationToken = cancellationToken;
+            }
+
+            public string GetTokenText(Token token)
+            {
+                return Cursor.Value[token.Span];
+            }
+
+            public string JoinTokens(string delimiter, Token[] tokens)
+            {
+                return JoinTokens(delimiter, tokens, 0, tokens.Length);
+            }
+
+            public string JoinTokens(string delimiter, Token[] tokens, int startIndex, int count)
+            {
+                int bufferLength = 0;
+                int end = startIndex + count;
+
+                for (int i = startIndex; i < end; i++)
+                {
+                    bufferLength += tokens[i].Span.GetOffsetAndLength(Cursor.Length).Length;
+                }
+
+                bufferLength += (tokens.Length - 1) * delimiter.Length;
+
+                var buffer = new char[bufferLength];
+                int bufferIndex = 0;
+
+                for (int i = startIndex; i < end; i++)
+                {
+                    if (i > startIndex)
+                    {
+                        delimiter.CopyTo(0, buffer, bufferIndex, delimiter.Length);
+                        bufferIndex += delimiter.Length;
+                    }
+
+                    var (offset, length) = tokens[i].Span.GetOffsetAndLength(Cursor.Length);
+
+                    Cursor.Value.CopyTo(offset, buffer, bufferIndex, length);
+                    bufferIndex += length;
+                }
+
+                return new string(buffer);
             }
 
             public void AddToken(Token token)

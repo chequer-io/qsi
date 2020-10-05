@@ -29,7 +29,7 @@
 
         // ** Prepared **
         Prepare,
-        Deallocate,
+        DropPrepare,
         Execute,
 
         // Others

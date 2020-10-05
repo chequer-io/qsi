@@ -2,14 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Qsi.Data;
+using Qsi.Parsing;
 using Qsi.Parsing.Common;
 
 namespace Qsi.MySql
 {
     public class MySqlScriptParser : CommonScriptParser
     {
+        private const string _deallocate = "DEALLOCATE";
+        private const string _prepare = "PREPARE";
+
         private readonly Regex _delimiterPattern = new Regex(@"\G\S+(?=\s|$)");
-        private readonly TokenType _effectiveType = TokenType.Keyword | TokenType.Literal;
 
         protected override bool IsEndOfScript(ParseContext context)
         {
@@ -34,6 +38,18 @@ namespace Qsi.MySql
             }
 
             return base.IsEndOfScript(context);
+        }
+
+        protected override QsiScriptType GetSuitableScriptType(ParseContext context, IReadOnlyList<Token> tokens, Token[] leadingTokens)
+        {
+            if (leadingTokens.Length >= 2 &&
+                _deallocate.Equals(context.GetTokenText(leadingTokens[0]), StringComparison.OrdinalIgnoreCase) &&
+                _prepare.Equals(context.GetTokenText(leadingTokens[1]), StringComparison.OrdinalIgnoreCase))
+            {
+                return QsiScriptType.DropPrepare;
+            }
+
+            return base.GetSuitableScriptType(context, tokens, leadingTokens);
         }
     }
 }

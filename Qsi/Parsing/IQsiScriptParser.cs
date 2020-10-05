@@ -6,6 +6,6 @@ namespace Qsi.Parsing
 {
     public interface IQsiScriptParser
     {
-        IEnumerable<QsiScript> Parse(in string input, CancellationToken cancellationToken);
+        IEnumerable<QsiScript> Parse(string input, CancellationToken cancellationToken = default);
     }
 }
