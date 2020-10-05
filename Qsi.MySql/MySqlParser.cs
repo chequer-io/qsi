@@ -1,18 +1,14 @@
-﻿using System.Text.RegularExpressions;
-using Antlr4.Runtime;
+﻿using Antlr4.Runtime;
 using Qsi.Data;
 using Qsi.MySql.Internal;
 using Qsi.MySql.Tree;
 using Qsi.Parsing.Antlr;
-using Qsi.Parsing.Common;
 using Qsi.Tree;
 
 namespace Qsi.MySql
 {
     public sealed class MySqlParser : AntlrParserBase
     {
-        private readonly Regex _dropPreparePattern = new Regex(@"^\s*(?:DROP|DEALLOCATE)\s+PREPARE\b", RegexOptions.IgnoreCase);
-
         protected override Parser CreateParser(QsiScript script)
         {
             var stream = new AntlrUpperInputStream(script.Script);
@@ -35,8 +31,6 @@ namespace Qsi.MySql
                 case QsiScriptType.Prepare:
                 case QsiScriptType.Execute:
                 case QsiScriptType.DropPrepare:
-                // case QsiScriptType.Drop when _dropPreparePattern.IsMatch(script.Script):
-                // case QsiScriptType.Deallocate when _dropPreparePattern.IsMatch(script.Script):
                     return ActionVisitor.VisitPreparedStatement(mySqlParser.preparedStatement());
 
                 case QsiScriptType.With:

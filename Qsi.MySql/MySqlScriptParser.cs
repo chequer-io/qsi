@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Qsi.Data;
-using Qsi.Parsing;
 using Qsi.Parsing.Common;
 
 namespace Qsi.MySql
