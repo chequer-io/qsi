@@ -8,6 +8,7 @@
         With,
         Select,
         Insert,
+        Replace,
         Update,
         Delete,
 

@@ -59,6 +59,11 @@ namespace Qsi.Utilities
         }
 
         #region Literal
+        public static QsiLiteralExpressionNode CreateDefaultLiteral()
+        {
+            return CreateLiteral(null, QsiDataType.Default);
+        }
+        
         public static QsiLiteralExpressionNode CreateNullLiteral()
         {
             return CreateLiteral(null, QsiDataType.Null);

@@ -1,7 +1,8 @@
 ﻿namespace Qsi.Data
 {
-    public enum QsiDataConflictAction
+    public enum QsiDataConflictBehavior
     {
+        None,
         Ignore,
         Update
     }

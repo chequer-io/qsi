@@ -11,21 +11,21 @@ namespace Qsi.Tree.Immutable
 
         public QsiQualifiedIdentifier Target { get; }
 
-        public IQsiAssignExpressionNode[] Elements { get; }
+        public IQsiAssignExpressionNode[] SetValues { get; }
 
         public IQsiExpressionNode Condition { get; }
 
-        public IEnumerable<IQsiTreeNode> Children => Elements.Concat(TreeHelper.YieldChildren(Condition));
+        public IEnumerable<IQsiTreeNode> Children => SetValues.Concat(TreeHelper.YieldChildren(Condition));
 
         public ImmutableDataConflictActionNode(
             IQsiTreeNode parent,
             QsiQualifiedIdentifier target,
-            IQsiAssignExpressionNode[] elements,
+            IQsiAssignExpressionNode[] setValues,
             IQsiExpressionNode condition)
         {
             Parent = parent;
             Target = target;
-            Elements = elements;
+            SetValues = setValues;
             Condition = condition;
         }
     }

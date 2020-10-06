@@ -15,15 +15,21 @@ namespace Qsi.Tree
 
         public QsiTreeNodeProperty<QsiColumnsDeclarationNode> Columns { get; }
 
-        public QsiTreeNodeList<QsiRowValueExpressionNode> Rows { get; }
+        public QsiTreeNodeList<QsiRowValueExpressionNode> Values { get; }
 
-        public QsiTreeNodeList<QsiAssignExpressionNode> Elements { get; }
+        public QsiTreeNodeList<QsiAssignExpressionNode> SetValues { get; }
 
-        public QsiDataConflictAction ConflictAction { get; set; }
+        public QsiTreeNodeProperty<QsiTableNode> ValueTable { get; }
 
-        public QsiTreeNodeList<QsiDataConflictActionNode> ConflictActions { get; }
+        public QsiDataConflictBehavior ConflictBehavior { get; set; }
 
-        public override IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Directives, Target, Columns).Concat(Rows).Concat(Elements).Concat(ConflictActions);
+        public QsiTreeNodeProperty<QsiDataConflictActionNode> ConflictAction { get; }
+
+        public override IEnumerable<IQsiTreeNode> Children =>
+            TreeHelper.YieldChildren(Directives, Target, Columns)
+                .Concat(Values)
+                .Concat(SetValues)
+                .Concat(TreeHelper.YieldChildren(ValueTable, ConflictAction));
 
         #region Explicit
         IQsiTableDirectivesNode IQsiDataInsertActionNode.Directives => Directives.Value;
@@ -32,11 +38,13 @@ namespace Qsi.Tree
 
         IQsiColumnsDeclarationNode IQsiDataInsertActionNode.Columns => Columns.Value;
 
-        IQsiRowValueExpressionNode[] IQsiDataInsertActionNode.Rows => Rows.Cast<IQsiRowValueExpressionNode>().ToArray();
+        IQsiRowValueExpressionNode[] IQsiDataInsertActionNode.Values => Values.Cast<IQsiRowValueExpressionNode>().ToArray();
 
-        IQsiAssignExpressionNode[] IQsiDataInsertActionNode.Elements => Elements.Cast<IQsiAssignExpressionNode>().ToArray();
+        IQsiAssignExpressionNode[] IQsiDataInsertActionNode.SetValues => SetValues.Cast<IQsiAssignExpressionNode>().ToArray();
 
-        IQsiDataConflictActionNode[] IQsiDataInsertActionNode.ConflictActions => ConflictActions.Cast<IQsiDataConflictActionNode>().ToArray();
+        IQsiTableNode IQsiDataInsertActionNode.ValueTable => ValueTable.Value;
+
+        IQsiDataConflictActionNode IQsiDataInsertActionNode.ConflictAction => ConflictAction.Value;
         #endregion
 
         public QsiDataInsertActionNode()
@@ -44,9 +52,10 @@ namespace Qsi.Tree
             Directives = new QsiTreeNodeProperty<QsiTableDirectivesNode>(this);
             Target = new QsiTreeNodeProperty<QsiTableAccessNode>(this);
             Columns = new QsiTreeNodeProperty<QsiColumnsDeclarationNode>(this);
-            Rows = new QsiTreeNodeList<QsiRowValueExpressionNode>(this);
-            Elements = new QsiTreeNodeList<QsiAssignExpressionNode>(this);
-            ConflictActions = new QsiTreeNodeList<QsiDataConflictActionNode>(this);
+            Values = new QsiTreeNodeList<QsiRowValueExpressionNode>(this);
+            SetValues = new QsiTreeNodeList<QsiAssignExpressionNode>(this);
+            ValueTable = new QsiTreeNodeProperty<QsiTableNode>(this);
+            ConflictAction = new QsiTreeNodeProperty<QsiDataConflictActionNode>(this);
         }
     }
 }

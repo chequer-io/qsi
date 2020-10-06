@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Antlr4.Runtime.Tree;
 using Qsi.Data;
+using Qsi.MySql.Tree.Common;
 using Qsi.Tree;
 using Qsi.Utilities;
 using static Qsi.MySql.Internal.MySqlParser;
@@ -10,51 +10,7 @@ namespace Qsi.MySql.Tree
 {
     internal static class ActionVisitor
     {
-        public static IEnumerable<QsiActionNode> Visit(IParseTree tree)
-        {
-            switch (tree)
-            {
-                case RootContext rootContext:
-                    return VisitRoot(rootContext);
-
-                case SqlStatementContext statementContext:
-                    return new[] { VisitSqlStatement(statementContext) };
-
-                case PreparedStatementContext preparedStatementContext:
-                    return new[] { VisitPreparedStatement(preparedStatementContext) };
-            }
-
-            return Enumerable.Empty<QsiActionNode>();
-        }
-
-        public static IEnumerable<QsiActionNode> VisitRoot(RootContext context)
-        {
-            if (context.sqlStatements() == null)
-                yield break;
-
-            foreach (var statementContext in context.sqlStatements().sqlStatement())
-            {
-                var r = VisitSqlStatement(statementContext);
-
-                if (r != null)
-                    yield return r;
-            }
-        }
-
-        public static QsiActionNode VisitSqlStatement(SqlStatementContext context)
-        {
-            if (context.children.Count == 0)
-                return null;
-
-            switch (context.children[0])
-            {
-                case PreparedStatementContext preparedStatementContext:
-                    return VisitPreparedStatement(preparedStatementContext);
-            }
-
-            return null;
-        }
-
+        #region Prepared
         public static QsiActionNode VisitPreparedStatement(PreparedStatementContext context)
         {
             switch (context.children[0])
@@ -113,5 +69,82 @@ namespace Qsi.MySql.Tree
                 }
             });
         }
+        #endregion
+
+        #region Insert, Replace
+        public static QsiActionNode VisitInsertStatement(InsertStatementContext context)
+        {
+            return VisitInsertStatement(new CommonInsertStatementContext(context));
+        }
+
+        public static QsiActionNode VisitReplaceStatement(ReplaceStatementContext context)
+        {
+            return VisitInsertStatement(new CommonInsertStatementContext(context));
+        }
+
+        private static QsiActionNode VisitInsertStatement(CommonInsertStatementContext context)
+        {
+            var node = new QsiDataInsertActionNode
+            {
+                ConflictBehavior = context.ConflictBehavior
+            };
+
+            if (!ListUtility.IsNullOrEmpty(context.Partitions))
+            {
+                node.Partitions = context.Partitions
+                    .Select(uid => new QsiQualifiedIdentifier(IdentifierVisitor.VisitUid(uid)))
+                    .ToArray();
+            }
+
+            if (!ListUtility.IsNullOrEmpty(context.Columns))
+            {
+                IEnumerable<QsiDeclaredColumnNode> columns = context.Columns
+                    .Select(uid => new QsiDeclaredColumnNode
+                    {
+                        Name = new QsiQualifiedIdentifier(IdentifierVisitor.VisitUid(uid))
+                    });
+
+                node.Columns.SetValue(TreeHelper.Create<QsiColumnsDeclarationNode>(dn =>
+                {
+                    dn.Columns.AddRange(columns);
+                }));
+            }
+
+            if (context.InsertStatementValue != null)
+            {
+                var value = context.InsertStatementValue;
+
+                if (value.selectStatement() != null)
+                {
+                    node.ValueTable.SetValue(TableVisitor.VisitSelectStatement(value.selectStatement()));
+                }
+                else
+                {
+                    IEnumerable<QsiRowValueExpressionNode> rows = value.expressionsWithDefaults()
+                        .Select(ExpressionVisitor.VisitExpressionsWithDefaults);
+
+                    node.Values.AddRange(rows);
+                }
+            }
+            else if (!ListUtility.IsNullOrEmpty(context.SetElements))
+            {
+                node.SetValues.AddRange(context.SetElements.Select(ExpressionVisitor.VisitUpdatedElement));
+            }
+            else
+            {
+                throw new QsiException(QsiError.Syntax);
+            }
+
+            if (!ListUtility.IsNullOrEmpty(context.DuplicateSetElements))
+            {
+                var action = new QsiDataConflictActionNode();
+                action.SetValues.AddRange(context.DuplicateSetElements.Select(ExpressionVisitor.VisitUpdatedElement));
+
+                node.ConflictAction.SetValue(action);
+            }
+
+            return node;
+        }
+        #endregion
     }
 }

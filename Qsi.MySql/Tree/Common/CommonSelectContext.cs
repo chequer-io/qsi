@@ -2,7 +2,7 @@
 
 namespace Qsi.MySql.Tree.Common
 {
-    internal sealed class CommonSelectContext
+    internal readonly struct CommonSelectContext
     {
         public SelectElementsContext SelectElements { get; }
 

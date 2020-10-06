@@ -4,6 +4,7 @@ using System.Linq;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
 using Qsi.Data;
+using Qsi.MySql.Tree.Common;
 using Qsi.Tree;
 using Qsi.Utilities;
 using static Qsi.MySql.Internal.MySqlParser;
@@ -996,6 +997,47 @@ namespace Qsi.MySql.Tree
             };
         }
         #endregion
+
+        public static QsiRowValueExpressionNode VisitExpressionsWithDefaults(ExpressionsWithDefaultsContext context)
+        {
+            IEnumerable<QsiExpressionNode> expressions = context.expressionOrDefault()
+                .Select(c => new CommonExpressionOrDefaultContext(c.expression()))
+                .Select(VisitExpressionOrDefault);
+
+            var node = new QsiRowValueExpressionNode();
+            node.ColumnValues.AddRange(expressions);
+            return node;
+        }
+
+        public static QsiExpressionNode VisitExpressionOrDefault(CommonExpressionOrDefaultContext context)
+        {
+            if (context.IsDefault)
+                return TreeHelper.CreateDefaultLiteral();
+
+            return Visit(context.Expression);
+        }
+
+        public static QsiAssignExpressionNode VisitUpdatedElement(UpdatedElementContext context)
+        {
+            var assignNode = new QsiAssignExpressionNode
+            {
+                Operator = "="
+            };
+
+            var columnExpression = new QsiColumnExpressionNode();
+
+            columnExpression.Column.SetValue(new QsiDeclaredColumnNode
+            {
+                Name = IdentifierVisitor.VisitFullColumnName(context.fullColumnName())
+            });
+
+            var valueContext = new CommonExpressionOrDefaultContext(context.expression());
+
+            assignNode.Target.SetValue(columnExpression);
+            assignNode.Value.SetValue(VisitExpressionOrDefault(valueContext));
+
+            return assignNode;
+        }
 
         private static string JoinTokens(params string[] tokens)
         {

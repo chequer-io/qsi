@@ -2,7 +2,7 @@
 
 namespace Qsi.MySql.Tree.Common
 {
-    internal sealed class CommonTableSourceContext
+    internal readonly struct CommonTableSourceContext
     {
         public TableSourceItemContext TableSourceItem { get; }
 

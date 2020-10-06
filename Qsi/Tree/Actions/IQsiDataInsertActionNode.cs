@@ -12,12 +12,14 @@ namespace Qsi.Tree
 
         IQsiColumnsDeclarationNode Columns { get; }
 
-        IQsiRowValueExpressionNode[] Rows { get; }
+        IQsiRowValueExpressionNode[] Values { get; }
 
-        IQsiAssignExpressionNode[] Elements { get; }
+        IQsiAssignExpressionNode[] SetValues { get; }
 
-        QsiDataConflictAction ConflictAction { get; }
+        IQsiTableNode ValueTable { get; }
 
-        IQsiDataConflictActionNode[] ConflictActions { get; }
+        QsiDataConflictBehavior ConflictBehavior { get; }
+
+        IQsiDataConflictActionNode ConflictAction { get; }
     }
 }

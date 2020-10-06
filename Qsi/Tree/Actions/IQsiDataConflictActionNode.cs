@@ -6,7 +6,7 @@ namespace Qsi.Tree
     {
         QsiQualifiedIdentifier Target { get; }
 
-        IQsiAssignExpressionNode[] Elements { get; }
+        IQsiAssignExpressionNode[] SetValues { get; }
 
         IQsiExpressionNode Condition { get; }
     }

@@ -17,15 +17,21 @@ namespace Qsi.Tree.Immutable
 
         public IQsiColumnsDeclarationNode Columns { get; }
 
-        public IQsiRowValueExpressionNode[] Rows { get; }
+        public IQsiRowValueExpressionNode[] Values { get; }
 
-        public IQsiAssignExpressionNode[] Elements { get; }
+        public IQsiAssignExpressionNode[] SetValues { get; }
 
-        public QsiDataConflictAction ConflictAction { get; }
+        public IQsiTableNode ValueTable { get; }
 
-        public IQsiDataConflictActionNode[] ConflictActions { get; }
+        public QsiDataConflictBehavior ConflictBehavior { get; }
 
-        public IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Directives, Target, Columns).Concat(Rows).Concat(Elements).Concat(ConflictActions);
+        public IQsiDataConflictActionNode ConflictAction { get; }
+
+        public IEnumerable<IQsiTreeNode> Children => 
+            TreeHelper.YieldChildren(Directives, Target, Columns)
+                .Concat(Values)
+                .Concat(SetValues)
+                .Concat(TreeHelper.YieldChildren(ValueTable, ConflictAction));
 
         public ImmutableDataInsertActionNode(
             IQsiTreeNode parent,
@@ -33,20 +39,22 @@ namespace Qsi.Tree.Immutable
             IQsiTableAccessNode target,
             QsiQualifiedIdentifier[] partitions,
             IQsiColumnsDeclarationNode columns,
-            IQsiRowValueExpressionNode[] rows,
-            IQsiAssignExpressionNode[] elements,
-            QsiDataConflictAction conflictAction,
-            IQsiDataConflictActionNode[] conflictActions)
+            IQsiRowValueExpressionNode[] values,
+            IQsiAssignExpressionNode[] setValues,
+            IQsiTableNode valueTable,
+            QsiDataConflictBehavior conflictBehavior,
+            IQsiDataConflictActionNode conflictAction)
         {
             Parent = parent;
             Directives = directives;
             Target = target;
             Partitions = partitions;
             Columns = columns;
-            Rows = rows;
-            Elements = elements;
+            Values = values;
+            SetValues = setValues;
+            ValueTable = valueTable;
+            ConflictBehavior = conflictBehavior;
             ConflictAction = conflictAction;
-            ConflictActions = conflictActions;
         }
     }
 }
