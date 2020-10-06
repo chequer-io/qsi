@@ -7,5 +7,7 @@ namespace Qsi.Parsing
     public interface IQsiScriptParser
     {
         IEnumerable<QsiScript> Parse(string input, CancellationToken cancellationToken = default);
+
+        QsiScriptType GetSuitableType(string input);
     }
 }

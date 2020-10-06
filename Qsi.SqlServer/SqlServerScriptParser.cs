@@ -6,12 +6,13 @@ using System.Threading;
 using Microsoft.SqlServer.TransactSql.ScriptDom;
 using Qsi.Data;
 using Qsi.Parsing;
+using Qsi.Parsing.Common;
 using Qsi.SqlServer.Common;
 using Qsi.SqlServer.Internal;
 
 namespace Qsi.SqlServer
 {
-    public class SqlServerScriptParser : IQsiScriptParser
+    public class SqlServerScriptParser : CommonScriptParser
     {
         private readonly TSqlParserInternal _parser;
 
@@ -20,7 +21,7 @@ namespace Qsi.SqlServer
             _parser = new TSqlParserInternal(transactSqlVersion, false);
         }
 
-        public IEnumerable<QsiScript> Parse(string input, CancellationToken cancellationToken)
+        public override IEnumerable<QsiScript> Parse(string input, CancellationToken cancellationToken)
         {
             var result = _parser.Parse(input);
 

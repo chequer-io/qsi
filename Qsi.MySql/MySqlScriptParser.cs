@@ -9,6 +9,7 @@ namespace Qsi.MySql
 {
     public class MySqlScriptParser : CommonScriptParser
     {
+        private const string _delimiter = "DELIMITER";
         private const string _deallocate = "DEALLOCATE";
         private const string _prepare = "PREPARE";
 
@@ -21,7 +22,7 @@ namespace Qsi.MySql
             if (tokens.Count > 1 &&
                 tokens[^1].Type == TokenType.WhiteSpace &&
                 tokens[^2].Type == TokenType.Keyword &&
-                context.Cursor.Value[tokens[^2].Span].Equals("DELIMITER", StringComparison.OrdinalIgnoreCase) &&
+                _delimiter.Equals(context.Cursor.Value[tokens[^2].Span], StringComparison.OrdinalIgnoreCase) &&
                 tokens.SkipLast(2).All(t => TokenType.Trivia.HasFlag(t.Type)))
             {
                 var match = _delimiterPattern.Match(context.Cursor.Value, context.Cursor.Index);
@@ -39,16 +40,16 @@ namespace Qsi.MySql
             return base.IsEndOfScript(context);
         }
 
-        protected override QsiScriptType GetSuitableScriptType(ParseContext context, IReadOnlyList<Token> tokens, Token[] leadingTokens)
+        protected override QsiScriptType GetSuitableType(CommonScriptCursor cursor, IReadOnlyList<Token> tokens, Token[] leadingTokens)
         {
             if (leadingTokens.Length >= 2 &&
-                _deallocate.Equals(context.GetTokenText(leadingTokens[0]), StringComparison.OrdinalIgnoreCase) &&
-                _prepare.Equals(context.GetTokenText(leadingTokens[1]), StringComparison.OrdinalIgnoreCase))
+                _deallocate.Equals(cursor.Value[leadingTokens[0].Span], StringComparison.OrdinalIgnoreCase) &&
+                _prepare.Equals(cursor.Value[leadingTokens[1].Span], StringComparison.OrdinalIgnoreCase))
             {
                 return QsiScriptType.DropPrepare;
             }
 
-            return base.GetSuitableScriptType(context, tokens, leadingTokens);
+            return base.GetSuitableType(cursor, tokens, leadingTokens);
         }
     }
 }

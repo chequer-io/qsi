@@ -30,26 +30,25 @@ namespace Qsi.Parsing.Common
             _delimiter = delimiter;
         }
 
-        public virtual IEnumerable<QsiScript> Parse(string input, CancellationToken cancellationToken)
+        #region Lexing
+        private IEnumerable<Token> ParseTokens(CommonScriptCursor cursor)
         {
-            var context = new ParseContext(input, _delimiter, cancellationToken);
-
-            var cursor = context.Cursor;
-            ref int? fragmentStart = ref context.FragmentStart;
-            ref var fragmentEnd = ref context.FragmentEnd;
+            int? fragmentStart = null;
+            var fragmentEnd = -1;
 
             while (cursor.Index < cursor.Length)
             {
-                if (IsEndOfScript(context))
+                if (TryParseToken(cursor, out var token))
                 {
-                    FlushScript(context);
-                }
-                else if (TryParseToken(cursor, out var token))
-                {
-                    FlushToken(context);
+                    if (fragmentStart.HasValue)
+                    {
+                        yield return new Token(TokenType.Fragment, fragmentStart.Value..(fragmentEnd + 1));
 
-                    if (context.Tokens.Count > 0 || token.Type != TokenType.WhiteSpace)
-                        context.AddToken(token);
+                        fragmentStart = null;
+                        fragmentEnd = -1;
+                    }
+
+                    yield return token;
                 }
                 else
                 {
@@ -60,175 +59,10 @@ namespace Qsi.Parsing.Common
                 cursor.Index++;
             }
 
-            FlushScript(context);
-
-            return context.Scripts;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void FlushToken(ParseContext context)
-        {
-            if (!context.FragmentStart.HasValue)
-                return;
-
-            context.AddToken(new Token(TokenType.Fragment, context.FragmentStart.Value..(context.FragmentEnd + 1)));
-            context.FragmentStart = null;
-            context.FragmentEnd = -1;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void FlushScript(ParseContext context)
-        {
-            FlushToken(context);
-
-            if (context.Tokens.Count == 0)
-                return;
-
-            foreach (var section in SplitScriptSection(context))
+            if (fragmentStart.HasValue)
             {
-                var (offset, length) = section.GetOffsetAndLength(context.Tokens.Count);
-                var end = offset + length;
-
-                Token[] tokenBuffer = ArrayPool<Token>.Shared.Rent(length);
-                var tokenIndex = 0;
-
-                for (int i = offset; i < end; i++)
-                {
-                    var token = context.Tokens[i];
-
-                    if (token.Type == TokenType.WhiteSpace && (i == end - 1 || tokenIndex == 0))
-                        continue;
-
-                    tokenBuffer[tokenIndex++] = token;
-                }
-
-                if (tokenIndex > 0)
-                {
-                    var script = CreateScript(context, new ArraySegment<Token>(tokenBuffer, 0, tokenIndex));
-
-                    if (script != null)
-                    {
-                        context.Scripts.Add(script);
-                        context.LastLine = script.End.Line - 1;
-                    }
-                }
-
-                ArrayPool<Token>.Shared.Return(tokenBuffer);
+                yield return new Token(TokenType.Fragment, fragmentStart.Value..(fragmentEnd + 1));
             }
-
-            context.ClearTokens();
-        }
-
-        protected virtual IEnumerable<Range> SplitScriptSection(ParseContext context)
-        {
-            if (context.Tokens.Count == 0)
-                yield break;
-
-            int bodyStartIndex = context.Tokens.FindIndex(t => TokenType.Effective.HasFlag(t.Type));
-            int bodyEndIndex = context.Tokens.FindLastIndex(t => TokenType.Effective.HasFlag(t.Type));
-
-            if (bodyStartIndex > 0)
-                yield return ..bodyStartIndex;
-
-            yield return new Range(
-                bodyStartIndex == -1 ? Index.Start : bodyStartIndex,
-                bodyEndIndex == -1 ? Index.End : bodyEndIndex + 1);
-
-            if (bodyEndIndex >= 0 && bodyEndIndex + 1 < context.Tokens.Count)
-                yield return (bodyEndIndex + 1)..;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected virtual bool IsEndOfScript(ParseContext context)
-        {
-            if (context.Cursor.StartsWith(context.Delimiter))
-            {
-                context.Cursor.Index += context.Delimiter.Length - 1;
-                return true;
-            }
-
-            return false;
-        }
-
-        protected virtual (QsiScriptPosition Start, QsiScriptPosition End) MeasurePosition(ParseContext context, int start, int end)
-        {
-            var value = context.Cursor.Value;
-            ref int[] lineMap = ref context.LineMap;
-
-            if (lineMap == null)
-            {
-                var map = new List<int>();
-                int index = -1;
-
-                while ((index = value.IndexOf('\n', index + 1)) >= 0)
-                    map.Add(index);
-
-                lineMap = map.ToArray();
-            }
-
-            var startLine = GetLine(start, context.LastLine) + 1;
-            var startColumn = start + 1;
-
-            if (startLine > 1)
-                startColumn = start - lineMap[startLine - 2];
-
-            var endLine = GetLine(end, startLine - 1) + 1;
-            var endColumn = end + 1;
-
-            if (endLine > 1)
-                endColumn = end - lineMap[endLine - 2];
-
-            return (new QsiScriptPosition(startLine, startColumn), new QsiScriptPosition(endLine, endColumn + 1));
-
-            int GetLine(int index, int startIndex)
-            {
-                for (int i = startIndex; i < context.LineMap.Length; i++)
-                {
-                    if (index < context.LineMap[i])
-                        return i;
-                }
-
-                return context.LineMap.Length;
-            }
-        }
-
-        protected virtual QsiScript CreateScript(ParseContext context, IReadOnlyList<Token> tokens)
-        {
-            var startIndex = tokens[0].Span.Start.GetOffset(context.Cursor.Length);
-            var endIndex = tokens[^1].Span.End.GetOffset(context.Cursor.Length) - 1;
-            var (startPosition, endPosition) = MeasurePosition(context, startIndex, endIndex);
-            var script = context.Cursor.Value[startIndex..(endIndex + 1)];
-            var scriptType = GetSuitableScriptTypeInternal(context, tokens);
-
-            return new QsiScript(script, scriptType, startPosition, endPosition);
-        }
-
-        private QsiScriptType GetSuitableScriptTypeInternal(ParseContext context, IReadOnlyList<Token> tokens)
-        {
-            Token[] leadingTokens = GetLeadingTokens(tokens, TokenType.Keyword, 2);
-            return GetSuitableScriptType(context, tokens, leadingTokens);
-        }
-
-        protected virtual QsiScriptType GetSuitableScriptType(ParseContext context, IReadOnlyList<Token> tokens, Token[] leadingTokens)
-        {
-            if (leadingTokens.Length >= 2)
-            {
-                if (Enum.TryParse<QsiScriptType>(context.JoinTokens(string.Empty, leadingTokens, 0, 2), true, out var type))
-                    return type;
-            }
-
-            if (leadingTokens.Length >= 1)
-            {
-                if (Enum.TryParse<QsiScriptType>(context.GetTokenText(leadingTokens[0]), true, out var type))
-                    return type;
-            }
-
-            if (tokens.All(t => TokenType.Trivia.HasFlag(t.Type)))
-            {
-                return QsiScriptType.Comment;
-            }
-
-            return QsiScriptType.Unknown;
         }
 
         protected virtual bool TryParseToken(CommonScriptCursor cursor, out Token token)
@@ -327,8 +161,218 @@ namespace Qsi.Parsing.Common
 
             return false;
         }
+        #endregion
 
-        private Token[] GetLeadingTokens(IEnumerable<Token> tokens, TokenType tokenType, int count)
+        #region Script Parsing
+        public virtual IEnumerable<QsiScript> Parse(string input, CancellationToken cancellationToken)
+        {
+            var context = new ParseContext(input, _delimiter, cancellationToken);
+
+            var cursor = context.Cursor;
+            ref int? fragmentStart = ref context.FragmentStart;
+            ref var fragmentEnd = ref context.FragmentEnd;
+
+            while (cursor.Index < cursor.Length)
+            {
+                if (IsEndOfScript(context))
+                {
+                    FlushScript(context);
+                }
+                else if (TryParseToken(cursor, out var token))
+                {
+                    FlushToken(context);
+
+                    if (context.Tokens.Count > 0 || token.Type != TokenType.WhiteSpace)
+                        context.AddToken(token);
+                }
+                else
+                {
+                    fragmentStart ??= cursor.Index;
+                    fragmentEnd = cursor.Index;
+                }
+
+                cursor.Index++;
+            }
+
+            FlushScript(context);
+
+            return context.Scripts;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void FlushToken(ParseContext context)
+        {
+            if (!context.FragmentStart.HasValue)
+                return;
+
+            context.AddToken(new Token(TokenType.Fragment, context.FragmentStart.Value..(context.FragmentEnd + 1)));
+            context.FragmentStart = null;
+            context.FragmentEnd = -1;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void FlushScript(ParseContext context)
+        {
+            FlushToken(context);
+
+            if (context.Tokens.Count == 0)
+                return;
+
+            foreach (var section in SplitScriptSection(context))
+            {
+                var (offset, length) = section.GetOffsetAndLength(context.Tokens.Count);
+                var end = offset + length;
+
+                Token[] tokenBuffer = ArrayPool<Token>.Shared.Rent(length);
+                var tokenIndex = 0;
+
+                for (int i = offset; i < end; i++)
+                {
+                    var token = context.Tokens[i];
+
+                    if (token.Type == TokenType.WhiteSpace && (i == end - 1 || tokenIndex == 0))
+                        continue;
+
+                    tokenBuffer[tokenIndex++] = token;
+                }
+
+                if (tokenIndex > 0)
+                {
+                    var script = CreateScript(context, new ArraySegment<Token>(tokenBuffer, 0, tokenIndex));
+
+                    if (script != null)
+                    {
+                        context.Scripts.Add(script);
+                        context.LastLine = script.End.Line - 1;
+                    }
+                }
+
+                ArrayPool<Token>.Shared.Return(tokenBuffer);
+            }
+
+            context.ClearTokens();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected virtual bool IsEndOfScript(ParseContext context)
+        {
+            if (context.Cursor.StartsWith(context.Delimiter))
+            {
+                context.Cursor.Index += context.Delimiter.Length - 1;
+                return true;
+            }
+
+            return false;
+        }
+
+        protected virtual IEnumerable<Range> SplitScriptSection(ParseContext context)
+        {
+            if (context.Tokens.Count == 0)
+                yield break;
+
+            int bodyStartIndex = context.Tokens.FindIndex(t => TokenType.Effective.HasFlag(t.Type));
+            int bodyEndIndex = context.Tokens.FindLastIndex(t => TokenType.Effective.HasFlag(t.Type));
+
+            if (bodyStartIndex > 0)
+                yield return ..bodyStartIndex;
+
+            yield return new Range(
+                bodyStartIndex == -1 ? Index.Start : bodyStartIndex,
+                bodyEndIndex == -1 ? Index.End : bodyEndIndex + 1);
+
+            if (bodyEndIndex >= 0 && bodyEndIndex + 1 < context.Tokens.Count)
+                yield return (bodyEndIndex + 1)..;
+        }
+
+        protected virtual QsiScript CreateScript(ParseContext context, IReadOnlyList<Token> tokens)
+        {
+            var startIndex = tokens[0].Span.Start.GetOffset(context.Cursor.Length);
+            var endIndex = tokens[^1].Span.End.GetOffset(context.Cursor.Length) - 1;
+            var (startPosition, endPosition) = MeasurePosition(context, startIndex, endIndex);
+            var script = context.Cursor.Value[startIndex..(endIndex + 1)];
+
+            Token[] leadingTokens = GetLeadingTokens(tokens, TokenType.Keyword, 2);
+            var scriptType = GetSuitableType(context.Cursor, tokens, leadingTokens);
+
+            return new QsiScript(script, scriptType, startPosition, endPosition);
+        }
+
+        protected virtual (QsiScriptPosition Start, QsiScriptPosition End) MeasurePosition(ParseContext context, int start, int end)
+        {
+            var value = context.Cursor.Value;
+            ref int[] lineMap = ref context.LineMap;
+
+            if (lineMap == null)
+            {
+                var map = new List<int>();
+                int index = -1;
+
+                while ((index = value.IndexOf('\n', index + 1)) >= 0)
+                    map.Add(index);
+
+                lineMap = map.ToArray();
+            }
+
+            var startLine = GetLine(start, context.LastLine) + 1;
+            var startColumn = start + 1;
+
+            if (startLine > 1)
+                startColumn = start - lineMap[startLine - 2];
+
+            var endLine = GetLine(end, startLine - 1) + 1;
+            var endColumn = end + 1;
+
+            if (endLine > 1)
+                endColumn = end - lineMap[endLine - 2];
+
+            return (new QsiScriptPosition(startLine, startColumn), new QsiScriptPosition(endLine, endColumn + 1));
+
+            int GetLine(int index, int startIndex)
+            {
+                for (int i = startIndex; i < context.LineMap.Length; i++)
+                {
+                    if (index < context.LineMap[i])
+                        return i;
+                }
+
+                return context.LineMap.Length;
+            }
+        }
+        #endregion
+
+        #region ScriptType
+        public QsiScriptType GetSuitableType(string input)
+        {
+            var cursor = new CommonScriptCursor(input);
+            Token[] leadingTokens = GetLeadingTokens(ParseTokens(cursor), TokenType.Keyword, 2);
+            return GetSuitableType(cursor, leadingTokens, leadingTokens);
+        }
+
+        protected virtual QsiScriptType GetSuitableType(CommonScriptCursor cursor, IReadOnlyList<Token> tokens, Token[] leadingTokens)
+        {
+            if (leadingTokens.Length >= 2)
+            {
+                if (Enum.TryParse<QsiScriptType>(JoinTokens(cursor, string.Empty, leadingTokens, 0, 2), true, out var type))
+                    return type;
+            }
+
+            if (leadingTokens.Length >= 1)
+            {
+                if (Enum.TryParse<QsiScriptType>(cursor.Value[leadingTokens[0].Span], true, out var type))
+                    return type;
+            }
+
+            if (tokens.All(t => TokenType.Trivia.HasFlag(t.Type)))
+            {
+                return QsiScriptType.Comment;
+            }
+
+            return QsiScriptType.Unknown;
+        }
+        #endregion
+
+        #region Utilities
+        protected Token[] GetLeadingTokens(IEnumerable<Token> tokens, TokenType tokenType, int count)
         {
             var result = new Token[count];
             int resultIndex = 0;
@@ -349,5 +393,43 @@ namespace Qsi.Parsing.Common
 
             return result[..resultIndex];
         }
+
+        protected string JoinTokens(CommonScriptCursor cursor, string delimiter, Token[] tokens)
+        {
+            return JoinTokens(cursor, delimiter, tokens, 0, tokens.Length);
+        }
+
+        protected string JoinTokens(CommonScriptCursor cursor, string delimiter, Token[] tokens, int startIndex, int count)
+        {
+            int bufferLength = 0;
+            int end = startIndex + count;
+
+            for (int i = startIndex; i < end; i++)
+            {
+                bufferLength += tokens[i].Span.GetOffsetAndLength(cursor.Length).Length;
+            }
+
+            bufferLength += (tokens.Length - 1) * delimiter.Length;
+
+            var buffer = new char[bufferLength];
+            int bufferIndex = 0;
+
+            for (int i = startIndex; i < end; i++)
+            {
+                if (i > startIndex)
+                {
+                    delimiter.CopyTo(0, buffer, bufferIndex, delimiter.Length);
+                    bufferIndex += delimiter.Length;
+                }
+
+                var (offset, length) = tokens[i].Span.GetOffsetAndLength(cursor.Length);
+
+                cursor.Value.CopyTo(offset, buffer, bufferIndex, length);
+                bufferIndex += length;
+            }
+
+            return new string(buffer);
+        }
+        #endregion
     }
 }
