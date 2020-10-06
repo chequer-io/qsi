@@ -300,7 +300,7 @@ namespace Qsi.SqlServer.Tree
 
                 n.Expression.SetValue(TreeHelper.Create<QsiAssignExpressionNode>(en =>
                 {
-                    en.Variable.SetValue(ExpressionVisitor.VisitVariableReference(selectSetVariable.Variable));
+                    en.Target.SetValue(ExpressionVisitor.VisitVariableReference(selectSetVariable.Variable));
                     en.Operator = op;
                     en.Value.SetValue(ExpressionVisitor.VisitScalarExpression(selectSetVariable.Expression));
                 }));

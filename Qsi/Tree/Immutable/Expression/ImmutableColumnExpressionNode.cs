@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Qsi.Utilities;
 
 namespace Qsi.Tree.Immutable
 {
@@ -8,15 +9,11 @@ namespace Qsi.Tree.Immutable
 
         public IQsiColumnNode Column { get; }
 
-        public IEnumerable<IQsiTreeNode> Children
-        {
-            get
-            {
-                yield return Column;
-            }
-        }
+        public IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Column);
 
-        public ImmutableColumnExpressionNode(IQsiTreeNode parent, IQsiColumnNode column)
+        public ImmutableColumnExpressionNode(
+            IQsiTreeNode parent,
+            IQsiColumnNode column)
         {
             Parent = parent;
             Column = column;

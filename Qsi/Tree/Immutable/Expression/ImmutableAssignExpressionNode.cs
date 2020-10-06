@@ -7,22 +7,22 @@ namespace Qsi.Tree.Immutable
     {
         public IQsiTreeNode Parent { get; }
 
-        public IQsiVariableAccessExpressionNode Variable { get; }
+        public IQsiExpressionNode Target { get; }
 
         public string Operator { get; }
 
         public IQsiExpressionNode Value { get; }
 
-        public IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Variable, Value);
+        public IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Target, Value);
 
         public ImmutableAssignExpressionNode(
             IQsiTreeNode parent,
-            IQsiVariableAccessExpressionNode variable,
+            IQsiVariableAccessExpressionNode target,
             string @operator,
             IQsiExpressionNode value)
         {
             Parent = parent;
-            Variable = variable;
+            Target = target;
             Operator = @operator;
             Value = value;
         }

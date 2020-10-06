@@ -5,24 +5,24 @@ namespace Qsi.Tree
 {
     public sealed class QsiAssignExpressionNode : QsiExpressionNode, IQsiAssignExpressionNode
     {
-        public QsiTreeNodeProperty<QsiVariableAccessExpressionNode> Variable { get; }
+        public QsiTreeNodeProperty<QsiExpressionNode> Target { get; }
 
         public string Operator { get; set; }
 
         public QsiTreeNodeProperty<QsiExpressionNode> Value { get; }
 
         public override IEnumerable<IQsiTreeNode> Children
-            => TreeHelper.YieldChildren(Variable, Value);
+            => TreeHelper.YieldChildren(Target, Value);
 
         #region Explicit
-        IQsiVariableAccessExpressionNode IQsiAssignExpressionNode.Variable => Variable.Value;
+        IQsiExpressionNode IQsiAssignExpressionNode.Target => Target.Value;
 
         IQsiExpressionNode IQsiAssignExpressionNode.Value => Value.Value;
         #endregion
 
         public QsiAssignExpressionNode()
         {
-            Variable = new QsiTreeNodeProperty<QsiVariableAccessExpressionNode>(this);
+            Target = new QsiTreeNodeProperty<QsiExpressionNode>(this);
             Value = new QsiTreeNodeProperty<QsiExpressionNode>(this);
         }
     }

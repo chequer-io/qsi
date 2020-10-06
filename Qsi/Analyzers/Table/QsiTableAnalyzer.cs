@@ -660,7 +660,7 @@ namespace Qsi.Analyzers.Table
             {
                 case IQsiAssignExpressionNode e:
                 {
-                    foreach (var c in ResolveColumnsInExpression(context, e.Variable))
+                    foreach (var c in ResolveColumnsInExpression(context, e.Target))
                         yield return c;
 
                     foreach (var c in ResolveColumnsInExpression(context, e.Value))

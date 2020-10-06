@@ -822,7 +822,7 @@ namespace Qsi.MySql.Tree
             return TreeHelper.Create<QsiAssignExpressionNode>(n =>
             {
                 n.Operator = context.VAR_ASSIGN().GetText();
-                n.Variable.SetValue(VisitLocalId(context.LOCAL_ID()));
+                n.Target.SetValue(VisitLocalId(context.LOCAL_ID()));
                 n.Value.SetValue(expression);
             });
         }

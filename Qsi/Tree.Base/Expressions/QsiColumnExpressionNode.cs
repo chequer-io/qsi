@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Qsi.Utilities;
 
 namespace Qsi.Tree
 {
@@ -6,14 +7,7 @@ namespace Qsi.Tree
     {
         public QsiTreeNodeProperty<QsiColumnNode> Column { get; }
 
-        public override IEnumerable<IQsiTreeNode> Children
-        {
-            get
-            {
-                if (!Column.IsEmpty)
-                    yield return Column.Value;
-            }
-        }
+        public override IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Column);
 
         #region Explicit
         IQsiColumnNode IQsiColumnExpressionNode.Column => Column.Value;

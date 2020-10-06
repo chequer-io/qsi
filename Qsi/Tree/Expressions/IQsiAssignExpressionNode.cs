@@ -2,7 +2,7 @@ namespace Qsi.Tree
 {
     public interface IQsiAssignExpressionNode : IQsiExpressionNode
     {
-        IQsiVariableAccessExpressionNode Variable { get; }
+        IQsiExpressionNode Target { get; }
 
         string Operator { get; }
 

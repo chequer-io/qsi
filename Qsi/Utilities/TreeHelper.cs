@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Qsi.Data;
 using Qsi.Tree;
 using Qsi.Tree;
@@ -98,6 +99,7 @@ namespace Qsi.Utilities
             return new QsiException(QsiError.NotSupportedFeature, feature);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static IEnumerable<IQsiTreeNode> YieldChildren(params IQsiTreeNodeProperty<QsiTreeNode>[] properties)
         {
             return properties
@@ -105,11 +107,30 @@ namespace Qsi.Utilities
                 .Select(p => p.Value);
         }
 
-        internal static IEnumerable<IQsiTreeNode> YieldChildren(params IQsiTreeNode[] properties)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static IEnumerable<IQsiTreeNode> YieldChildren(params IQsiTreeNode[] ndoes)
         {
-            return properties
+            return ndoes
                 .Where(n => n != null)
                 .Select(n => n);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static IEnumerable<IQsiTreeNode> YieldChildren(IEnumerable<IQsiTreeNode> source, IQsiTreeNodeProperty<QsiTreeNode> property)
+        {
+            if (property.IsEmpty)
+                return source;
+
+            return source.Append(property.Value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static IEnumerable<IQsiTreeNode> YieldChildren(IQsiTreeNodeProperty<QsiTreeNode> property, IEnumerable<IQsiTreeNode> source)
+        {
+            if (property.IsEmpty)
+                return source;
+
+            return source.Prepend(property.Value);
         }
     }
 }
