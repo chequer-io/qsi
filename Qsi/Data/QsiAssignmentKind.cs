@@ -5,6 +5,9 @@
         /// <summary>=</summary>
         Equals,
 
+        /// <summary>:=</summary>
+        ColonEquals,
+
         /// <summary>+=</summary>
         AddEquals,
 

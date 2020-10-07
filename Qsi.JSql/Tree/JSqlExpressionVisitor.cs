@@ -588,7 +588,7 @@ namespace Qsi.JSql.Tree
             return TreeHelper.Create<QsiSetVariableExpressionNode>(n =>
             {
                 n.Target = IdentifierVisitor.VisitUserVariable(expression.getVariable());
-                n.AssignmentKind = QsiAssignmentKind.Equals;
+                n.AssignmentKind = expression.getOperation() == "=" ? QsiAssignmentKind.Equals : QsiAssignmentKind.ColonEquals;
                 n.Value.SetValue(Visit(expression.getExpression()));
             });
         }

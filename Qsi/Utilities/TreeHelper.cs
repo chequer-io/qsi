@@ -63,10 +63,15 @@ namespace Qsi.Utilities
         {
             return CreateLiteral(null, QsiDataType.Default);
         }
-        
+
         public static QsiLiteralExpressionNode CreateNullLiteral()
         {
             return CreateLiteral(null, QsiDataType.Null);
+        }
+
+        public static QsiExpressionNode CreateConstantLiteral(object value)
+        {
+            return CreateLiteral(value, QsiDataType.Constant);
         }
 
         public static QsiLiteralExpressionNode CreateLiteral(string value)

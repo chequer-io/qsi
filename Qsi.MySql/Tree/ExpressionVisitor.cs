@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
 using Qsi.Data;
+using Qsi.MySql.Data;
 using Qsi.MySql.Tree.Common;
 using Qsi.Tree;
 using Qsi.Utilities;
@@ -200,12 +202,12 @@ namespace Qsi.MySql.Tree
                 case GetFormatFunctionCallContext fContext:
                 {
                     // GET_FORMAT  ({DATE | TIME | DATETIME},  string)
-                    // ▔\MEMBER/▔   ▔▔▔▔▔▔▔▔\SKIP/▔▔▔▔▔▔▔▔▔    ▔\P1/▔
+                    // ▔\MEMBER/▔    ▔▔▔▔▔▔▔▔\P1/▔▔▔▔▔▔▔▔▔▔    ▔\P2/▔
 
                     return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
                     {
                         n.Member.SetValue(VisitFunctionAccess(fContext.children[0]));
-                        // n.Parameters.Add(VisitLiteral(fContext.datetimeFormat));
+                        n.Parameters.Add(TreeHelper.CreateConstantLiteral(fContext.datetimeFormat.Text));
                         n.Parameters.Add(VisitLiteral(fContext.stringLiteral()));
                     });
                 }
@@ -376,11 +378,9 @@ namespace Qsi.MySql.Tree
 
                 case NegativeDecimalLiteralConstantContext literalContext:
                 {
-                    return TreeHelper.Create<QsiUnaryExpressionNode>(n =>
-                    {
-                        n.Operator = literalContext.MINUS().GetText();
-                        n.Expression.SetValue(VisitLiteral(literalContext.decimalLiteral()));
-                    });
+                    var literal = VisitLiteral(literalContext.decimalLiteral());
+                    literal.Value = -(decimal)literal.Value;
+                    return literal;
                 }
 
                 case HexadecimalLiteralConstantContext literalContext:
@@ -397,17 +397,21 @@ namespace Qsi.MySql.Tree
                 {
                     return new QsiLiteralExpressionNode
                     {
-                        Value = literalContext.GetText(),
+                        Value = decimal.Parse(literalContext.GetText()),
                         Type = QsiDataType.Decimal
                     };
                 }
 
-                case BitStringConstantContext literalContext:
+                case BitStringConstantContext bitStringContext:
                 {
+                    // B'0101'
+                    //   ▔▔▔▔
+                    var value = IdentifierUtility.Unescape(bitStringContext.GetText()[1..]);
+
                     return new QsiLiteralExpressionNode
                     {
-                        Value = literalContext.GetText(),
-                        Type = QsiDataType.Binary
+                        Value = new MySqlString(MySqlStringKind.Bit, value, null),
+                        Type = QsiDataType.Custom
                     };
                 }
 
@@ -437,21 +441,7 @@ namespace Qsi.MySql.Tree
             return nullLiteral;
         }
 
-        private static QsiExpressionNode VisitCollationName(CollationNameContext context)
-        {
-            if (context.uid() != null)
-            {
-                return VisitTypeAccess(context.uid());
-            }
-
-            return new QsiLiteralExpressionNode
-            {
-                Value = IdentifierUtility.Unescape(context.STRING_LITERAL().GetText()),
-                Type = QsiDataType.String
-            };
-        }
-
-        public static QsiExpressionNode VisitLiteral(ParserRuleContext context)
+        public static QsiLiteralExpressionNode VisitLiteral(ParserRuleContext context)
         {
             QsiDataType literalType;
             object value;
@@ -464,24 +454,80 @@ namespace Qsi.MySql.Tree
                     break;
 
                 case FileSizeLiteralContext _:
-                case StringLiteralContext _:
-                    literalType = QsiDataType.String;
-                    value = IdentifierUtility.Unescape(context.GetText());
+                    literalType = QsiDataType.Unknown;
+                    value = context.GetText();
                     break;
+
+                case StringLiteralContext stringLiteral:
+                {
+                    var charSet = stringLiteral.STRING_CHARSET_NAME()?.GetText();
+                    var nationalLiteral = stringLiteral.START_NATIONAL_STRING_LITERAL()?.GetText();
+                    var collateName = stringLiteral.collationName()?.GetText();
+
+                    string[] literals = stringLiteral.STRING_LITERAL()?
+                        .Select(l => IdentifierUtility.Unescape(l.GetText()))
+                        .ToArray();
+
+                    string literalValue = null;
+
+                    if (literals?.Length > 0)
+                    {
+                        literalValue = literals.Length > 1 ? string.Join(string.Empty, literals) : literals[0];
+                    }
+
+                    if (!string.IsNullOrEmpty(charSet))
+                    {
+                        literalType = QsiDataType.Custom;
+                        value = new MySqlString(literalValue, charSet, collateName);
+                    }
+                    else if (!string.IsNullOrEmpty(nationalLiteral))
+                    {
+                        literalType = QsiDataType.Custom;
+                        literalValue = $"{IdentifierUtility.Unescape(nationalLiteral[1..])}{literalValue}";
+                        value = new MySqlString(MySqlStringKind.National, literalValue, collateName);
+                    }
+                    else if (!string.IsNullOrEmpty(collateName))
+                    {
+                        literalType = QsiDataType.Custom;
+                        value = new MySqlString(literalValue, collateName);
+                    }
+                    else
+                    {
+                        literalType = QsiDataType.String;
+                        value = literalValue;
+                    }
+
+                    break;
+                }
 
                 case DecimalLiteralContext _:
                     literalType = QsiDataType.Decimal;
-                    value = context.GetText();
+                    value = decimal.Parse(context.GetText());
                     break;
 
                 case HexadecimalLiteralContext _:
-                    literalType = QsiDataType.Hexadecimal;
-                    value = context.GetText();
+                {
+                    var literalText = context.GetText();
+
+                    if (literalText.StartsWith("X'") && literalText[^1] == '\'')
+                    {
+                        // X'00FF00'
+                        literalType = QsiDataType.Custom;
+                        value = new MySqlString(MySqlStringKind.Hexa, literalText[1..^1], null);
+                    }
+                    else
+                    {
+                        // 0x00FF00
+                        literalType = QsiDataType.Hexadecimal;
+                        value = literalText;
+                    }
+
                     break;
+                }
 
                 case BooleanLiteralContext _:
                     literalType = QsiDataType.Boolean;
-                    value = context.GetText();
+                    value = bool.Parse(context.GetText());
                     break;
 
                 default:
@@ -721,14 +767,7 @@ namespace Qsi.MySql.Tree
 
                 case CollateExpressionAtomContext pContext:
                 {
-                    return TreeHelper.Create<QsiLogicalExpressionNode>(n =>
-                    {
-                        n.Operator = pContext.COLLATE().GetText();
-                        n.Left.SetValue(VisitExpressionAtom(pContext.expressionAtom()));
-                        n.Right.SetValue(VisitCollationName(pContext.collationName()));
-
-                        UnwrapLogicalExpressionNode(n);
-                    });
+                    return VisitCollateExpressionAtom(pContext);
                 }
 
                 case MysqlVariableExpressionAtomContext pContext:
@@ -738,10 +777,27 @@ namespace Qsi.MySql.Tree
 
                 case UnaryExpressionAtomContext pContext:
                 {
+                    var unaryOperator = pContext.unaryOperator().GetText();
+                    var expression = VisitExpressionAtom(pContext.expressionAtom());
+
+                    if (expression is QsiLiteralExpressionNode literal)
+                    {
+                        switch (unaryOperator)
+                        {
+                            case "-" when literal.Type == QsiDataType.Decimal:
+                                literal.Value = -(decimal)literal.Value;
+                                return literal;
+
+                            case "!" when literal.Type == QsiDataType.Boolean:
+                                literal.Value = !(bool)literal.Value;
+                                return literal;
+                        }
+                    }
+
                     return TreeHelper.Create<QsiUnaryExpressionNode>(n =>
                     {
-                        n.Operator = pContext.unaryOperator().GetText();
-                        n.Expression.SetValue(VisitExpressionAtom(pContext.expressionAtom()));
+                        n.Operator = unaryOperator;
+                        n.Expression.SetValue(expression);
                     });
                 }
 
@@ -818,12 +874,38 @@ namespace Qsi.MySql.Tree
             }
         }
 
+        private static QsiExpressionNode VisitCollateExpressionAtom(CollateExpressionAtomContext pContext)
+        {
+            var left = VisitExpressionAtom(pContext.expressionAtom());
+            var collate = pContext.collationName().GetText();
+
+            if (left is QsiLiteralExpressionNode literal &&
+                literal.Value is MySqlString mySqlString &&
+                mySqlString.Kind != MySqlStringKind.Bit &&
+                mySqlString.Kind != MySqlStringKind.Hexa &&
+                string.IsNullOrEmpty(mySqlString.CollateName))
+            {
+                literal.Value = mySqlString.Kind == MySqlStringKind.National ?
+                    new MySqlString(MySqlStringKind.National, mySqlString.Value, collate) :
+                    new MySqlString(mySqlString.Value, mySqlString.CharacterSet, collate);
+
+                return literal;
+            }
+
+            return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            {
+                n.Member.SetValue(TreeHelper.CreateFunctionAccess("COLLATE"));
+                n.Parameters.Add(left);
+                n.Parameters.Add(TreeHelper.CreateConstantLiteral(collate));
+            });
+        }
+
         internal static QsiExpressionNode VisitLocalIdAssign(LocalIdAssignContext context, QsiExpressionNode expression)
         {
             return TreeHelper.Create<QsiSetVariableExpressionNode>(n =>
             {
                 n.Target = IdentifierVisitor.VisitLocalId(context.LOCAL_ID());
-                n.AssignmentKind = QsiAssignmentKind.Equals;
+                n.AssignmentKind = QsiAssignmentKind.ColonEquals;
                 n.Value.SetValue(expression);
             });
         }

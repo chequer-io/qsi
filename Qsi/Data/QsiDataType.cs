@@ -3,8 +3,10 @@
     public enum QsiDataType
     {
         Unknown,
+        Custom,
         Default,
         Null,
+        Constant,
         String,
         Numeric,
         Decimal,
