@@ -5,6 +5,7 @@
         Default,
         National,
         Bit,
-        Hexa
+        Hexa,
+        HexaString
     }
 }

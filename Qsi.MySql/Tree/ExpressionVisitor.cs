@@ -405,12 +405,9 @@ namespace Qsi.MySql.Tree
                 case BitStringConstantContext bitStringContext:
                 {
                     // B'0101'
-                    //   ▔▔▔▔
-                    var value = IdentifierUtility.Unescape(bitStringContext.GetText()[1..]);
-
                     return new QsiLiteralExpressionNode
                     {
-                        Value = new MySqlString(MySqlStringKind.Bit, value, null),
+                        Value = new MySqlString(MySqlStringKind.Bit, bitStringContext.GetText()[2..^1], null, null),
                         Type = QsiDataType.Custom
                     };
                 }
@@ -460,6 +457,7 @@ namespace Qsi.MySql.Tree
 
                 case StringLiteralContext stringLiteral:
                 {
+                    MySqlStringKind? stringKind = null;
                     var charSet = stringLiteral.STRING_CHARSET_NAME()?.GetText();
                     var nationalLiteral = stringLiteral.START_NATIONAL_STRING_LITERAL()?.GetText();
                     var collateName = stringLiteral.collationName()?.GetText();
@@ -471,25 +469,22 @@ namespace Qsi.MySql.Tree
                     string literalValue = null;
 
                     if (literals?.Length > 0)
-                    {
                         literalValue = literals.Length > 1 ? string.Join(string.Empty, literals) : literals[0];
+
+                    if (!string.IsNullOrEmpty(nationalLiteral))
+                    {
+                        stringKind = MySqlStringKind.National;
+                        literalValue = $"{IdentifierUtility.Unescape(nationalLiteral[1..])}{literalValue}";
+                    }
+                    else if (!string.IsNullOrEmpty(charSet) || !string.IsNullOrEmpty(collateName))
+                    {
+                        stringKind = MySqlStringKind.Default;
                     }
 
-                    if (!string.IsNullOrEmpty(charSet))
+                    if (stringKind.HasValue)
                     {
                         literalType = QsiDataType.Custom;
-                        value = new MySqlString(literalValue, charSet, collateName);
-                    }
-                    else if (!string.IsNullOrEmpty(nationalLiteral))
-                    {
-                        literalType = QsiDataType.Custom;
-                        literalValue = $"{IdentifierUtility.Unescape(nationalLiteral[1..])}{literalValue}";
-                        value = new MySqlString(MySqlStringKind.National, literalValue, collateName);
-                    }
-                    else if (!string.IsNullOrEmpty(collateName))
-                    {
-                        literalType = QsiDataType.Custom;
-                        value = new MySqlString(literalValue, collateName);
+                        value = new MySqlString(stringKind.Value, literalValue, charSet, collateName);
                     }
                     else
                     {
@@ -505,21 +500,22 @@ namespace Qsi.MySql.Tree
                     value = decimal.Parse(context.GetText());
                     break;
 
-                case HexadecimalLiteralContext _:
+                case HexadecimalLiteralContext hexadecimalLiteral:
                 {
-                    var literalText = context.GetText();
+                    var charSet = hexadecimalLiteral.STRING_CHARSET_NAME()?.GetText();
+                    var literalText = hexadecimalLiteral.HEXADECIMAL_LITERAL().GetText();
 
-                    if (literalText.StartsWith("X'") && literalText[^1] == '\'')
+                    if (literalText[0] == '0')
                     {
-                        // X'00FF00'
+                        // 0x00FF00
                         literalType = QsiDataType.Custom;
-                        value = new MySqlString(MySqlStringKind.Hexa, literalText[1..^1], null);
+                        value = new MySqlString(MySqlStringKind.Hexa, literalText[2..], charSet, null);
                     }
                     else
                     {
-                        // 0x00FF00
-                        literalType = QsiDataType.Hexadecimal;
-                        value = literalText;
+                        // X'00FF00'
+                        literalType = QsiDataType.Custom;
+                        value = new MySqlString(MySqlStringKind.HexaString, literalText[2..^1], charSet, null);
                     }
 
                     break;
@@ -881,14 +877,10 @@ namespace Qsi.MySql.Tree
 
             if (left is QsiLiteralExpressionNode literal &&
                 literal.Value is MySqlString mySqlString &&
-                mySqlString.Kind != MySqlStringKind.Bit &&
-                mySqlString.Kind != MySqlStringKind.Hexa &&
+                (mySqlString.Kind == MySqlStringKind.Default || mySqlString.Kind == MySqlStringKind.National) &&
                 string.IsNullOrEmpty(mySqlString.CollateName))
             {
-                literal.Value = mySqlString.Kind == MySqlStringKind.National ?
-                    new MySqlString(MySqlStringKind.National, mySqlString.Value, collate) :
-                    new MySqlString(mySqlString.Value, mySqlString.CharacterSet, collate);
-
+                literal.Value = mySqlString.WithCollate(collate);
                 return literal;
             }
 
