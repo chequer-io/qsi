@@ -4,7 +4,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Qsi.Data;
 using Qsi.Tree;
-using Qsi.Tree;
 
 namespace Qsi.Utilities
 {
