@@ -53,6 +53,10 @@ namespace Qsi.MySql.Data
                     builder.Append('B');
                     break;
 
+                case MySqlStringKind.Hexa:
+                    builder.Append('X');
+                    break;
+
                 default:
                     if (!string.IsNullOrWhiteSpace(CharacterSet))
                     {
