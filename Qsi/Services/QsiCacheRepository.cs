@@ -4,12 +4,12 @@ using Qsi.Data;
 
 namespace Qsi.Services
 {
-    public class QsiReferenceCacheRepository : IQsiReferenceCacheRepository
+    public class QsiCacheRepository : IQsiCacheRepository
     {
         private readonly ConcurrentDictionary<QsiQualifiedIdentifier, QsiTableStructure> _lookupCache;
         private readonly ConcurrentDictionary<QsiQualifiedIdentifier, QsiScript> _lookupDefinitionCache;
 
-        public QsiReferenceCacheRepository()
+        public QsiCacheRepository()
         {
             var comparer = new IdentifierEqualityComparer();
             _lookupCache = new ConcurrentDictionary<QsiQualifiedIdentifier, QsiTableStructure>(comparer);

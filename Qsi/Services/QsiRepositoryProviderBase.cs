@@ -2,9 +2,9 @@
 
 namespace Qsi.Services
 {
-    public abstract class QsiReferenceResolverBase : IQsiReferenceResolver
+    public abstract class QsiRepositoryProviderBase : IQsiRepositoryProvider
     {
-        public IQsiReferenceCacheRepository CacheRepository { get; set; }
+        public IQsiCacheRepository CacheRepository { get; set; }
 
         protected abstract QsiTableStructure LookupTable(QsiQualifiedIdentifier identifier);
 
@@ -14,8 +14,8 @@ namespace Qsi.Services
 
         protected abstract QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier);
 
-        #region IQsiReferenceResolver
-        QsiTableStructure IQsiReferenceResolver.LookupTable(QsiQualifiedIdentifier identifier)
+        #region IQsiRepositoryProvider
+        QsiTableStructure IQsiRepositoryProvider.LookupTable(QsiQualifiedIdentifier identifier)
         {
             if (CacheRepository == null)
                 return LookupTable(identifier);
@@ -29,7 +29,7 @@ namespace Qsi.Services
             return table;
         }
 
-        QsiScript IQsiReferenceResolver.LookupDefinition(QsiQualifiedIdentifier identifier, QsiTableType type)
+        QsiScript IQsiRepositoryProvider.LookupDefinition(QsiQualifiedIdentifier identifier, QsiTableType type)
         {
             if (CacheRepository == null)
                 return LookupDefinition(identifier, type);
@@ -43,12 +43,12 @@ namespace Qsi.Services
             return definition;
         }
 
-        QsiVariable IQsiReferenceResolver.LookupVariable(QsiQualifiedIdentifier identifier)
+        QsiVariable IQsiRepositoryProvider.LookupVariable(QsiQualifiedIdentifier identifier)
         {
             return LookupVariable(identifier);
         }
 
-        QsiQualifiedIdentifier IQsiReferenceResolver.ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier)
+        QsiQualifiedIdentifier IQsiRepositoryProvider.ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier)
         {
             return ResolveQualifiedIdentifier(identifier);
         }

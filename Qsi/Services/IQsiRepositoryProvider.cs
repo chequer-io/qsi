@@ -2,7 +2,7 @@
 
 namespace Qsi.Services
 {
-    public interface IQsiReferenceResolver
+    public interface IQsiRepositoryProvider
     {
         QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier);
 
@@ -11,5 +11,7 @@ namespace Qsi.Services
         QsiScript LookupDefinition(QsiQualifiedIdentifier identifier, QsiTableType type);
 
         QsiVariable LookupVariable(QsiQualifiedIdentifier identifier);
+
+        QsiDataRowCollection GetDataRows(string script);
     }
 }

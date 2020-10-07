@@ -7,7 +7,7 @@ using Qsi.Utilities;
 
 namespace Qsi.Debugger.Vendor.JSql
 {
-    internal class JSqlReferenceResolver : VendorReferenceResolver
+    internal class JSqlRepositoryProvider : VendorRepositoryProvider
     {
         protected override QsiTableStructure LookupTable(QsiQualifiedIdentifier identifier)
         {

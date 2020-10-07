@@ -4,6 +4,7 @@
     {
         Unknown,
         Custom,
+        Raw,
         Default,
         Null,
         Constant,

@@ -38,7 +38,7 @@ namespace Qsi.Analyzers.Table
         #endregion
 
         #region Table
-        private async ValueTask<QsiTableStructure> BuildTableStructure(CompileContext context, IQsiTableNode table)
+        internal async ValueTask<QsiTableStructure> BuildTableStructure(CompileContext context, IQsiTableNode table)
         {
             context.ThrowIfCancellationRequested();
 
@@ -70,10 +70,11 @@ namespace Qsi.Analyzers.Table
             var lookup = ResolveTableStructure(context, table.Identifier);
 
             // view
-            if (!lookup.IsSystem &&
+            if (context.Options.UseViewTracing &&
+                !lookup.IsSystem &&
                 (lookup.Type == QsiTableType.View || lookup.Type == QsiTableType.MaterializedView))
             {
-                var script = Engine.ReferenceResolver.LookupDefinition(lookup.Identifier, lookup.Type) ??
+                var script = Engine.RepositoryProvider.LookupDefinition(lookup.Identifier, lookup.Type) ??
                              throw new QsiException(QsiError.UnableResolveDefinition, lookup.Identifier);
 
                 var viewTable = (IQsiTableNode)Engine.TreeParser.Parse(script) ??
@@ -337,7 +338,7 @@ namespace Qsi.Analyzers.Table
             return declaredTable;
         }
 
-        private async ValueTask BuildDirectives(CompileContext context, IQsiTableDirectivesNode directivesNode)
+        internal async ValueTask BuildDirectives(CompileContext context, IQsiTableDirectivesNode directivesNode)
         {
             context.ThrowIfCancellationRequested();
 
@@ -846,7 +847,7 @@ namespace Qsi.Analyzers.Table
                 identifier = new QsiQualifiedIdentifier(identifiers.ToArray());
             }
 
-            return Engine.ReferenceResolver.ResolveQualifiedIdentifier(identifier);
+            return Engine.RepositoryProvider.ResolveQualifiedIdentifier(identifier);
         }
 
         private QsiTableStructure ResolveTableStructure(CompileContext context, QsiQualifiedIdentifier identifier)
@@ -861,7 +862,7 @@ namespace Qsi.Analyzers.Table
 
             return
                 context.Directives.FirstOrDefault(d => Match(d.Identifier, identifier)) ??
-                Engine.ReferenceResolver.LookupTable(ResolveQualifiedIdentifier(context, identifier));
+                Engine.RepositoryProvider.LookupTable(ResolveQualifiedIdentifier(context, identifier));
         }
 
         private IEnumerable<QsiTableStructure> LookupDataTableStructuresInExpression(CompileContext context, QsiQualifiedIdentifier identifier)

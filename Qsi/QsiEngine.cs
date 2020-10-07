@@ -14,15 +14,18 @@ namespace Qsi
     {
         public IQsiTreeParser TreeParser => _treeParser.Value;
 
+        public IQsiTreeDeparser TreeDeparser => _treeDeparser.Value;
+
         public IQsiScriptParser ScriptParser => _scriptParser.Value;
 
-        public IQsiReferenceResolver ReferenceResolver => _referenceResolver.Value;
+        public IQsiRepositoryProvider RepositoryProvider => _repositoryProvider.Value;
 
         public IQsiLanguageService LanguageService { get; }
 
         private readonly Lazy<IQsiTreeParser> _treeParser;
+        private readonly Lazy<IQsiTreeDeparser> _treeDeparser;
         private readonly Lazy<IQsiScriptParser> _scriptParser;
-        private readonly Lazy<IQsiReferenceResolver> _referenceResolver;
+        private readonly Lazy<IQsiRepositoryProvider> _repositoryProvider;
         private readonly Lazy<QsiAnalyzerBase[]> _analyzers;
 
         public QsiEngine(IQsiLanguageService languageService)
@@ -30,8 +33,9 @@ namespace Qsi
             LanguageService = languageService;
 
             _treeParser = new Lazy<IQsiTreeParser>(LanguageService.CreateTreeParser);
+            _treeDeparser = new Lazy<IQsiTreeDeparser>(LanguageService.CreateTreeDeparser);
             _scriptParser = new Lazy<IQsiScriptParser>(LanguageService.CreateScriptParser);
-            _referenceResolver = new Lazy<IQsiReferenceResolver>(LanguageService.CreateReferenceResolver);
+            _repositoryProvider = new Lazy<IQsiRepositoryProvider>(LanguageService.CreateRepositoryProvider);
             _analyzers = new Lazy<QsiAnalyzerBase[]>(() => LanguageService.CreateAnalyzers(this).ToArray());
         }
 

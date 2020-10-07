@@ -4,7 +4,7 @@ using Qsi.Utilities;
 
 namespace Qsi.Debugger.Vendor.PostgreSql
 {
-    internal class PostgreSqlReferenceResolver : VendorReferenceResolver
+    internal class PostgreSqlRepositoryProvider : VendorRepositoryProvider
     {
         protected override QsiTableStructure LookupTable(QsiQualifiedIdentifier identifier)
         {

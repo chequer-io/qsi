@@ -11,6 +11,11 @@ namespace Qsi.PostgreSql
             return new PostgreSqlParser();
         }
 
+        public override IQsiTreeDeparser CreateTreeDeparser()
+        {
+            throw new System.NotImplementedException();
+        }
+
         public override IQsiScriptParser CreateScriptParser()
         {
             return new PostgreSqlScriptParser();

@@ -4,9 +4,9 @@ namespace Qsi.Analyzers.Action
 {
     public sealed class QsiActionAnalysisResult : IQsiAnalysisResult
     {
-        public QsiAction Action { get; }
+        public IQsiAction Action { get; }
 
-        public QsiActionAnalysisResult(QsiAction action)
+        public QsiActionAnalysisResult(IQsiAction action)
         {
             Action = action;
         }

@@ -4,7 +4,7 @@ using Qsi.Utilities;
 
 namespace Qsi.Debugger.Vendor.SqlServer
 {
-    internal class SqlServerReferenceResolver : VendorReferenceResolver
+    internal class SqlServerRepositoryProvider : VendorRepositoryProvider
     {
         protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier)
         {

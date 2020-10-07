@@ -13,9 +13,11 @@ namespace Qsi.Services
 
         IQsiTreeParser CreateTreeParser();
 
+        IQsiTreeDeparser CreateTreeDeparser();
+
         IQsiScriptParser CreateScriptParser();
 
-        IQsiReferenceResolver CreateReferenceResolver();
+        IQsiRepositoryProvider CreateRepositoryProvider();
 
         bool MatchIdentifier(QsiIdentifier x, QsiIdentifier y);
     }

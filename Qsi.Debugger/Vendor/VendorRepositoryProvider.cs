@@ -5,7 +5,7 @@ using Qsi.Utilities;
 
 namespace Qsi.Debugger.Vendor
 {
-    internal abstract class VendorReferenceResolver : QsiReferenceResolverBase
+    internal abstract class VendorRepositoryProvider : QsiRepositoryProviderBase
     {
         protected QsiQualifiedIdentifier CreateIdentifier(params string[] path)
         {

@@ -4,7 +4,7 @@ using Qsi.Utilities;
 
 namespace Qsi.Debugger.Vendor.Oracle
 {
-    internal sealed class OracleReferenceResolver : VendorReferenceResolver
+    internal sealed class OracleRepositoryProvider : VendorRepositoryProvider
     {
         protected override QsiTableStructure LookupTable(QsiQualifiedIdentifier identifier)
         {

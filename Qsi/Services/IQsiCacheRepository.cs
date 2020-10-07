@@ -2,7 +2,7 @@
 
 namespace Qsi.Services
 {
-    public interface IQsiReferenceCacheRepository
+    public interface IQsiCacheRepository
     {
         bool TryGetTable(QsiQualifiedIdentifier identifier, out QsiTableStructure tableStructure);
 

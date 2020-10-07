@@ -7,7 +7,7 @@ using Qsi.Utilities;
 
 namespace Qsi.Debugger.Vendor.MySql
 {
-    internal class MySqlReferenceResolver : VendorReferenceResolver
+    internal class MySqlRepositoryProvider : VendorRepositoryProvider
     {
         protected override QsiTableStructure LookupTable(QsiQualifiedIdentifier identifier)
         {
