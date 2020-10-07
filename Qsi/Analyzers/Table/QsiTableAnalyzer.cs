@@ -658,11 +658,16 @@ namespace Qsi.Analyzers.Table
 
             switch (expression)
             {
-                case IQsiAssignExpressionNode e:
+                case IQsiSetColumnExpressionNode e:
                 {
-                    foreach (var c in ResolveColumnsInExpression(context, e.Target))
+                    foreach (var c in ResolveColumnsInExpression(context, e.Value))
                         yield return c;
 
+                    break;
+                }
+
+                case IQsiSetVariableExpressionNode e:
+                {
                     foreach (var c in ResolveColumnsInExpression(context, e.Value))
                         yield return c;
 

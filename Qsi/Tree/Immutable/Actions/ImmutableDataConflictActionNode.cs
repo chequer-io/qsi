@@ -11,7 +11,7 @@ namespace Qsi.Tree.Immutable
 
         public QsiQualifiedIdentifier Target { get; }
 
-        public IQsiAssignExpressionNode[] SetValues { get; }
+        public IQsiSetColumnExpressionNode[] SetValues { get; }
 
         public IQsiExpressionNode Condition { get; }
 
@@ -20,7 +20,7 @@ namespace Qsi.Tree.Immutable
         public ImmutableDataConflictActionNode(
             IQsiTreeNode parent,
             QsiQualifiedIdentifier target,
-            IQsiAssignExpressionNode[] setValues,
+            IQsiSetColumnExpressionNode[] setValues,
             IQsiExpressionNode condition)
         {
             Parent = parent;

@@ -134,5 +134,19 @@ namespace Qsi.MySql.Tree
 
             return new QsiIdentifier(terminalNode.GetText(), false);
         }
+
+        public static QsiQualifiedIdentifier VisitLocalId(ITerminalNode node)
+        {
+            var text = node.GetText()[1..];
+            var identifier = new QsiIdentifier(text, IdentifierUtility.IsEscaped(text));
+            return new QsiQualifiedIdentifier(identifier);
+        }
+
+        public static QsiQualifiedIdentifier VisitGlobalId(ITerminalNode node)
+        {
+            var text = node.GetText()[2..];
+            var identifier = new QsiIdentifier(text, IdentifierUtility.IsEscaped(text));
+            return new QsiQualifiedIdentifier(identifier);
+        }
     }
 }

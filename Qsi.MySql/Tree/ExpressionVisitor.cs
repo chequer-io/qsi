@@ -820,10 +820,10 @@ namespace Qsi.MySql.Tree
 
         internal static QsiExpressionNode VisitLocalIdAssign(LocalIdAssignContext context, QsiExpressionNode expression)
         {
-            return TreeHelper.Create<QsiAssignExpressionNode>(n =>
+            return TreeHelper.Create<QsiSetVariableExpressionNode>(n =>
             {
-                n.Operator = context.VAR_ASSIGN().GetText();
-                n.Target.SetValue(VisitLocalId(context.LOCAL_ID()));
+                n.Target = IdentifierVisitor.VisitLocalId(context.LOCAL_ID());
+                n.AssignmentKind = QsiAssignmentKind.Equals;
                 n.Value.SetValue(expression);
             });
         }
@@ -938,23 +938,17 @@ namespace Qsi.MySql.Tree
 
         public static QsiVariableAccessExpressionNode VisitLocalId(ITerminalNode node)
         {
-            var text = node.GetText()[1..];
-            var identifier = new QsiIdentifier(text, IdentifierUtility.IsEscaped(text));
-
             return new QsiVariableAccessExpressionNode
             {
-                Identifier = new QsiQualifiedIdentifier(identifier)
+                Identifier = IdentifierVisitor.VisitLocalId(node)
             };
         }
 
         public static QsiVariableAccessExpressionNode VisitGlobalId(ITerminalNode node)
         {
-            var text = node.GetText()[2..];
-            var identifier = new QsiIdentifier(text, IdentifierUtility.IsEscaped(text));
-
             return new QsiVariableAccessExpressionNode
             {
-                Identifier = new QsiQualifiedIdentifier(identifier)
+                Identifier = IdentifierVisitor.VisitGlobalId(node)
             };
         }
         #endregion
@@ -1017,23 +1011,14 @@ namespace Qsi.MySql.Tree
             return Visit(context.Expression);
         }
 
-        public static QsiAssignExpressionNode VisitUpdatedElement(UpdatedElementContext context)
+        public static QsiSetColumnExpressionNode VisitUpdatedElement(UpdatedElementContext context)
         {
-            var assignNode = new QsiAssignExpressionNode
+            var assignNode = new QsiSetColumnExpressionNode
             {
-                Operator = "="
+                Target = IdentifierVisitor.VisitFullColumnName(context.fullColumnName())
             };
 
-            var columnExpression = new QsiColumnExpressionNode();
-
-            columnExpression.Column.SetValue(new QsiDeclaredColumnNode
-            {
-                Name = IdentifierVisitor.VisitFullColumnName(context.fullColumnName())
-            });
-
             var valueContext = new CommonExpressionOrDefaultContext(context.expression());
-
-            assignNode.Target.SetValue(columnExpression);
             assignNode.Value.SetValue(VisitExpressionOrDefault(valueContext));
 
             return assignNode;

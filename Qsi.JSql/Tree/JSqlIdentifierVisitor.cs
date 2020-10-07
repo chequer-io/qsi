@@ -40,5 +40,10 @@ namespace Qsi.JSql.Tree
         {
             return new QsiQualifiedIdentifier(IdentifierUtility.Parse(expression.getName()));
         }
+
+        public virtual QsiQualifiedIdentifier VisitUserVariable(UserVariable variable)
+        {
+            return new QsiQualifiedIdentifier(new QsiIdentifier(variable.toString(), false));
+        }
     }
 }

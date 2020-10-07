@@ -14,7 +14,7 @@ namespace Qsi.Tree
 
         IQsiRowValueExpressionNode[] Values { get; }
 
-        IQsiAssignExpressionNode[] SetValues { get; }
+        IQsiSetColumnExpressionNode[] SetValues { get; }
 
         IQsiTableNode ValueTable { get; }
 

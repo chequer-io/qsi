@@ -17,7 +17,7 @@ namespace Qsi.Tree
 
         public QsiTreeNodeList<QsiRowValueExpressionNode> Values { get; }
 
-        public QsiTreeNodeList<QsiAssignExpressionNode> SetValues { get; }
+        public QsiTreeNodeList<QsiSetColumnExpressionNode> SetValues { get; }
 
         public QsiTreeNodeProperty<QsiTableNode> ValueTable { get; }
 
@@ -40,7 +40,7 @@ namespace Qsi.Tree
 
         IQsiRowValueExpressionNode[] IQsiDataInsertActionNode.Values => Values.Cast<IQsiRowValueExpressionNode>().ToArray();
 
-        IQsiAssignExpressionNode[] IQsiDataInsertActionNode.SetValues => SetValues.Cast<IQsiAssignExpressionNode>().ToArray();
+        IQsiSetColumnExpressionNode[] IQsiDataInsertActionNode.SetValues => SetValues.Cast<IQsiSetColumnExpressionNode>().ToArray();
 
         IQsiTableNode IQsiDataInsertActionNode.ValueTable => ValueTable.Value;
 
@@ -53,7 +53,7 @@ namespace Qsi.Tree
             Target = new QsiTreeNodeProperty<QsiTableAccessNode>(this);
             Columns = new QsiTreeNodeProperty<QsiColumnsDeclarationNode>(this);
             Values = new QsiTreeNodeList<QsiRowValueExpressionNode>(this);
-            SetValues = new QsiTreeNodeList<QsiAssignExpressionNode>(this);
+            SetValues = new QsiTreeNodeList<QsiSetColumnExpressionNode>(this);
             ValueTable = new QsiTreeNodeProperty<QsiTableNode>(this);
             ConflictAction = new QsiTreeNodeProperty<QsiDataConflictActionNode>(this);
         }

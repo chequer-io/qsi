@@ -40,5 +40,10 @@ namespace Qsi.SqlServer.Tree
         {
             return new QsiIdentifier(identifier.Value, false);
         }
+
+        public QsiQualifiedIdentifier VisitVariableReference(VariableReference variableReference)
+        {
+            return new QsiQualifiedIdentifier(new QsiIdentifier(variableReference.Name, false));
+        }
     }
 }

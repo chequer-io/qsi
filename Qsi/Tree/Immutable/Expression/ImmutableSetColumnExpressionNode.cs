@@ -1,23 +1,24 @@
 using System.Collections.Generic;
+using Qsi.Data;
 using Qsi.Utilities;
 
 namespace Qsi.Tree.Immutable
 {
-    public readonly struct ImmutableAssignExpressionNode : IQsiAssignExpressionNode
+    public readonly struct ImmutableSetColumnExpressionNode : IQsiSetColumnExpressionNode
     {
         public IQsiTreeNode Parent { get; }
 
-        public IQsiExpressionNode Target { get; }
+        public QsiQualifiedIdentifier Target { get; }
 
         public string Operator { get; }
 
         public IQsiExpressionNode Value { get; }
 
-        public IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Target, Value);
+        public IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Value);
 
-        public ImmutableAssignExpressionNode(
+        public ImmutableSetColumnExpressionNode(
             IQsiTreeNode parent,
-            IQsiVariableAccessExpressionNode target,
+            QsiQualifiedIdentifier target,
             string @operator,
             IQsiExpressionNode value)
         {

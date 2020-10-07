@@ -19,7 +19,7 @@ namespace Qsi.Tree.Immutable
 
         public IQsiRowValueExpressionNode[] Values { get; }
 
-        public IQsiAssignExpressionNode[] SetValues { get; }
+        public IQsiSetColumnExpressionNode[] SetValues { get; }
 
         public IQsiTableNode ValueTable { get; }
 
@@ -40,7 +40,7 @@ namespace Qsi.Tree.Immutable
             QsiQualifiedIdentifier[] partitions,
             IQsiColumnsDeclarationNode columns,
             IQsiRowValueExpressionNode[] values,
-            IQsiAssignExpressionNode[] setValues,
+            IQsiSetColumnExpressionNode[] setValues,
             IQsiTableNode valueTable,
             QsiDataConflictBehavior conflictBehavior,
             IQsiDataConflictActionNode conflictAction)
