@@ -27,5 +27,13 @@ namespace Qsi.Utilities
                 visited.Remove(reference);
             }
         }
+
+        public static bool IsReferenceType(QsiTableType type)
+        {
+            return
+                type == QsiTableType.Table ||
+                type == QsiTableType.View ||
+                type == QsiTableType.MaterializedView;
+        }
     }
 }

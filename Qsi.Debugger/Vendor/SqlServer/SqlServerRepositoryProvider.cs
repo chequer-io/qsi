@@ -6,6 +6,11 @@ namespace Qsi.Debugger.Vendor.SqlServer
 {
     internal class SqlServerRepositoryProvider : VendorRepositoryProvider
     {
+        protected override QsiDataRowCollection GetDataRows(QsiScript script)
+        {
+            throw new NotImplementedException();
+        }
+
         protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier)
         {
             identifier = identifier.Level switch

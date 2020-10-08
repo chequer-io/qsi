@@ -9,6 +9,11 @@ namespace Qsi.Debugger.Vendor.MySql
 {
     internal class MySqlRepositoryProvider : VendorRepositoryProvider
     {
+        protected override QsiDataRowCollection GetDataRows(QsiScript script)
+        {
+            throw new NotImplementedException();
+        }
+
         protected override QsiTableStructure LookupTable(QsiQualifiedIdentifier identifier)
         {
             var tableName = IdentifierUtility.Unescape(identifier[^1].Value);

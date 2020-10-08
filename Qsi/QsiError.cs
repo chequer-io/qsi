@@ -27,7 +27,8 @@
         UnableResolveDefinition,
         NoColumnsSpecified,
         NoAlias,
-        UnknownVariable
+        UnknownVariable,
+        NotUpdatableColumn
     }
 
     internal static class SR
@@ -58,6 +59,7 @@
         public const string NoColumnsSpecified = "No columns specified in '{0}'";
         public const string NoAlias = "Every derived table must have an alias";
         public const string UnknownVariable = "Unknown variable '{0}'";
+        public const string NotUpdatableColumn = "Column '{0}' is not updatable";
 
         public static string GetResource(QsiError error)
         {
@@ -89,6 +91,7 @@
                 QsiError.NoColumnsSpecified => NoColumnsSpecified,
                 QsiError.NoAlias => NoAlias,
                 QsiError.UnknownVariable => UnknownVariable,
+                QsiError.NotUpdatableColumn => NotUpdatableColumn,
                 _ => null
             };
         }

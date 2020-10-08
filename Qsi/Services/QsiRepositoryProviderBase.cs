@@ -14,6 +14,8 @@ namespace Qsi.Services
 
         protected abstract QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier);
 
+        protected abstract QsiDataRowCollection GetDataRows(QsiScript script);
+
         #region IQsiRepositoryProvider
         QsiTableStructure IQsiRepositoryProvider.LookupTable(QsiQualifiedIdentifier identifier)
         {
@@ -51,6 +53,11 @@ namespace Qsi.Services
         QsiQualifiedIdentifier IQsiRepositoryProvider.ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier)
         {
             return ResolveQualifiedIdentifier(identifier);
+        }
+
+        QsiDataRowCollection IQsiRepositoryProvider.GetDataRows(QsiScript script)
+        {
+            return GetDataRows(script);
         }
         #endregion
     }

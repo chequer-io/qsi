@@ -17,7 +17,7 @@ namespace Qsi.SqlServer.Tree
         public QsiTreeNode Visit(TSqlBatch sqlBatch)
         {
             var statement = sqlBatch?.Statements?.FirstOrDefault()
-                            ?? throw new QsiException(QsiError.SyntaxError);
+                            ?? throw new QsiException(QsiError.Syntax);
 
             return VisitStatements(statement);
         }

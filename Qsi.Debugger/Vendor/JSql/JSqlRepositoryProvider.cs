@@ -1,14 +1,16 @@
 ﻿using Qsi.Data;
-using Qsi.Services;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Qsi.Utilities;
 
 namespace Qsi.Debugger.Vendor.JSql
 {
     internal class JSqlRepositoryProvider : VendorRepositoryProvider
     {
+        protected override QsiDataRowCollection GetDataRows(QsiScript script)
+        {
+            throw new NotImplementedException();
+        }
+
         protected override QsiTableStructure LookupTable(QsiQualifiedIdentifier identifier)
         {
             var tableName = IdentifierUtility.Unescape(identifier[^1].Value);

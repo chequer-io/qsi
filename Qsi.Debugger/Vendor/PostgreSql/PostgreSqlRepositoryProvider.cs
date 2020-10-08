@@ -6,6 +6,11 @@ namespace Qsi.Debugger.Vendor.PostgreSql
 {
     internal class PostgreSqlRepositoryProvider : VendorRepositoryProvider
     {
+        protected override QsiDataRowCollection GetDataRows(QsiScript script)
+        {
+            throw new NotImplementedException();
+        }
+
         protected override QsiTableStructure LookupTable(QsiQualifiedIdentifier identifier)
         {
             var tableName = IdentifierUtility.Unescape(identifier[^1].Value);
@@ -86,7 +91,7 @@ namespace Qsi.Debugger.Vendor.PostgreSql
             {
                 case "actor_view":
                     return new QsiScript("CREATE OR REPLACE VIEW public.actor_view AS SELECT actor.actor_id, actor.first_name, actor.last_name, actor.last_update FROM actor;", QsiScriptType.Create);
-                
+
                 case "actor_mat_view":
                     return new QsiScript("CREATE MATERIALIZED VIEW public.actor_view AS SELECT actor.actor_id, actor.first_name, actor.last_name, actor.last_update FROM actor;", QsiScriptType.Create);
             }

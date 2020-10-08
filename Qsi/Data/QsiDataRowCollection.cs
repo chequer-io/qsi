@@ -20,9 +20,13 @@ namespace Qsi.Data
 
         private readonly List<QsiDataRow> _list;
 
-        public QsiDataRowCollection(int columnCount)
+        public QsiDataRowCollection(int columnCount) : this(columnCount, 0)
         {
-            _list = new List<QsiDataRow>();
+        }
+
+        public QsiDataRowCollection(int columnCount, int capacity)
+        {
+            _list = new List<QsiDataRow>(capacity);
             ColumnCount = columnCount;
         }
 
@@ -33,11 +37,25 @@ namespace Qsi.Data
             return row;
         }
 
-        void ICollection<QsiDataRow>.Add(QsiDataRow item)
+        public void Add(QsiDataRow row)
         {
-            throw new NotSupportedException();
+            if (row == null)
+                throw new ArgumentNullException(nameof(row));
+
+            if (row.Length != ColumnCount)
+                throw new ArgumentException(nameof(row));
+
+            _list.Add(row);
         }
 
+        public void AddRange(IEnumerable<QsiDataRow> rows)
+        {
+            foreach (var row in rows)
+            {
+                Add(row);
+            }
+        }
+        
         public void Clear()
         {
             _list.Clear();

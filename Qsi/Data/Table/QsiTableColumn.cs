@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using Qsi.Tree;
 using Qsi.Utilities;
@@ -16,6 +17,8 @@ namespace Qsi.Data
         public bool IsVisible { get; set; } = true;
 
         public bool IsBinding { get; set; }
+
+        public bool IsUnique { get; set; }
 
         public bool IsAnonymous => Name == null;
 

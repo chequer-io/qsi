@@ -6,6 +6,7 @@ using Qsi.Tree.Immutable;
 using Qsi.Data;
 using Qsi.Extensions;
 using Qsi.Tree;
+using Qsi.Utilities;
 
 namespace Qsi.Analyzers.Table
 {
@@ -905,7 +906,7 @@ namespace Qsi.Analyzers.Table
                 if (context.Options.UseExplicitRelationAccess)
                     continue;
 
-                if (!IsReferenceType(table.Type))
+                if (!QsiUtility.IsReferenceType(table.Type))
                     continue;
 
                 if (table.Identifier.Level <= identifier.Level)
@@ -919,14 +920,6 @@ namespace Qsi.Analyzers.Table
             }
         }
         #endregion
-
-        private static bool IsReferenceType(QsiTableType type)
-        {
-            return
-                type == QsiTableType.Table ||
-                type == QsiTableType.View ||
-                type == QsiTableType.MaterializedView;
-        }
 
         private class PivotColumnPair
         {
