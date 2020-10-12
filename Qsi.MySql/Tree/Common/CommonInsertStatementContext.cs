@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Antlr4.Runtime;
 using Qsi.Data;
 using Qsi.Utilities;
 using static Qsi.MySql.Internal.MySqlParser;
@@ -7,6 +8,8 @@ namespace Qsi.MySql.Tree.Common
 {
     internal readonly struct CommonInsertStatementContext
     {
+        public ParserRuleContext Context { get; }
+
         public QsiDataConflictBehavior ConflictBehavior { get; }
 
         public UidContext[] Partitions { get; }
@@ -21,6 +24,7 @@ namespace Qsi.MySql.Tree.Common
 
         public CommonInsertStatementContext(InsertStatementContext context)
         {
+            Context = context;
             Partitions = context.partitions?.uid();
             Columns = context.columns?.uid();
             InsertStatementValue = context.insertStatementValue();
@@ -43,6 +47,7 @@ namespace Qsi.MySql.Tree.Common
 
         public CommonInsertStatementContext(ReplaceStatementContext context)
         {
+            Context = context;
             ConflictBehavior = QsiDataConflictBehavior.Update;
             Partitions = context.partitions?.uid();
             Columns = context.columns?.uid();

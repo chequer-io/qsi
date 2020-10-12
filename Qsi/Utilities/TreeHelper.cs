@@ -88,6 +88,11 @@ namespace Qsi.Utilities
             return CreateLiteral(value, QsiDataType.Decimal);
         }
 
+        public static QsiLiteralExpressionNode CreateLiteral(bool value)
+        {
+            return CreateLiteral(value, QsiDataType.Boolean);
+        }
+
         public static QsiLiteralExpressionNode CreateLiteral(object value, QsiDataType type)
         {
             return new QsiLiteralExpressionNode

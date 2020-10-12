@@ -36,16 +36,17 @@ namespace Qsi.MySql.Tree
 
                 if (context.query != null)
                 {
-                    n.Query.SetValue(new QsiLiteralExpressionNode
-                    {
-                        Value = IdentifierUtility.Unescape(context.query.Text),
-                        Type = QsiDataType.String
-                    });
+                    var literal = TreeHelper.CreateLiteral(IdentifierUtility.Unescape(context.query.Text));
+                    MySqlTree.PutContextSpan(literal, context.query);
+
+                    n.Query.SetValue(literal);
                 }
                 else if (context.variable != null)
                 {
                     n.Query.SetValue(ExpressionVisitor.VisitLocalId(context.LOCAL_ID()));
                 }
+
+                MySqlTree.PutContextSpan(n, context);
             });
         }
 
@@ -54,6 +55,8 @@ namespace Qsi.MySql.Tree
             return TreeHelper.Create<QsiDropPrepareActionNode>(n =>
             {
                 n.Identifier = IdentifierVisitor.Visit(context.uid());
+
+                MySqlTree.PutContextSpan(n, context);
             });
         }
 
@@ -67,6 +70,8 @@ namespace Qsi.MySql.Tree
                 {
                     n.Variables.SetValue(ExpressionVisitor.VisitUserVariables(context.userVariables()));
                 }
+
+                MySqlTree.PutContextSpan(n, context);
             });
         }
         #endregion
@@ -99,14 +104,23 @@ namespace Qsi.MySql.Tree
             if (!ListUtility.IsNullOrEmpty(context.Columns))
             {
                 IEnumerable<QsiDeclaredColumnNode> columns = context.Columns
-                    .Select(uid => new QsiDeclaredColumnNode
+                    .Select(uid =>
                     {
-                        Name = new QsiQualifiedIdentifier(IdentifierVisitor.VisitUid(uid))
+                        var declaredColumn = new QsiDeclaredColumnNode
+                        {
+                            Name = new QsiQualifiedIdentifier(IdentifierVisitor.VisitUid(uid))
+                        };
+
+                        MySqlTree.PutContextSpan(declaredColumn, uid);
+
+                        return declaredColumn;
                     });
 
                 node.Columns.SetValue(TreeHelper.Create<QsiColumnsDeclarationNode>(dn =>
                 {
                     dn.Columns.AddRange(columns);
+
+                    MySqlTree.PutContextSpan(dn, context.Columns[0].Start, context.Columns[^1].Stop);
                 }));
             }
 
@@ -140,8 +154,13 @@ namespace Qsi.MySql.Tree
                 var action = new QsiDataConflictActionNode();
                 action.SetValues.AddRange(context.DuplicateSetElements.Select(ExpressionVisitor.VisitUpdatedElement));
 
+                var insertContext = (InsertStatementContext)context.Context;
+                MySqlTree.PutContextSpan(action, insertContext.ON().Symbol, insertContext.Stop);
+
                 node.ConflictAction.SetValue(action);
             }
+
+            MySqlTree.PutContextSpan(node, context.Context);
 
             return node;
         }

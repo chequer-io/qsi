@@ -13,7 +13,7 @@ namespace Qsi.MySql
 
         public override IQsiTreeDeparser CreateTreeDeparser()
         {
-            throw new System.NotImplementedException();
+            return new MySqlDeparser();
         }
 
         public override IQsiScriptParser CreateScriptParser()

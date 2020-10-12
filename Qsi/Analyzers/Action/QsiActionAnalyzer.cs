@@ -120,10 +120,10 @@ namespace Qsi.Analyzers.Action
 
             if (action.ValueTable != null)
             {
-                var script = Engine.TreeDeparser.Deparse(action.ValueTable);
+                var script = Engine.TreeDeparser.Deparse(action.ValueTable, context.Script);
 
                 if (action.Directives != null)
-                    script = $"{Engine.TreeDeparser.Deparse(action.Directives)}\n{script}";
+                    script = $"{Engine.TreeDeparser.Deparse(action.Directives, context.Script)}\n{script}";
 
                 var scriptType = Engine.ScriptParser.GetSuitableType(script);
                 rows = Engine.RepositoryProvider.GetDataRows(new QsiScript(script, scriptType));

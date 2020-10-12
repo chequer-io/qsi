@@ -1,16 +1,26 @@
-﻿using static Qsi.MySql.Internal.MySqlParser;
+﻿using Antlr4.Runtime;
+using static Qsi.MySql.Internal.MySqlParser;
 
 namespace Qsi.MySql.Tree.Common
 {
     internal readonly struct CommonExpressionOrDefaultContext
     {
+        public ParserRuleContext Context { get; }
+
         public ExpressionContext Expression { get; }
 
         public bool IsDefault => Expression == null;
 
-        public CommonExpressionOrDefaultContext(ExpressionContext expression)
+        public CommonExpressionOrDefaultContext(ExpressionOrDefaultContext context)
         {
-            Expression = expression;
+            Context = context;
+            Expression = context.expression();
+        }
+
+        public CommonExpressionOrDefaultContext(UpdatedElementContext context)
+        {
+            Context = context;
+            Expression = context.expression();
         }
     }
 }
