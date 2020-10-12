@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Qsi.Data;
+using Qsi.Tree.Data;
 
 namespace Qsi.Tree.Immutable
 {
@@ -12,12 +13,15 @@ namespace Qsi.Tree.Immutable
 
         public bool IncludeInvisibleColumns { get; }
 
+        public IUserDataHolder UserData { get; }
+
         public IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
 
-        public ImmutableAllColumnNode(IQsiTreeNode parent, QsiQualifiedIdentifier path)
+        public ImmutableAllColumnNode(IQsiTreeNode parent, QsiQualifiedIdentifier path, IUserDataHolder userData)
         {
             Parent = parent;
             Path = path;
+            UserData = userData;
             IncludeInvisibleColumns = false;
         }
     }

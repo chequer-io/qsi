@@ -373,7 +373,8 @@ namespace Qsi.Analyzers.Table
                             compositeTableNode.Parent,
                             fixedSources
                                 .Select(s => s.Source)
-                                .ToArray());
+                                .ToArray(),
+                            compositeTableNode.UserData);
                     }
 
                     using var directiveContext = new CompileContext(context);

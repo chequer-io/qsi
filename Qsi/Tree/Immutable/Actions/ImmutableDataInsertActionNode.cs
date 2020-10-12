@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Collections.Generic;
 using Qsi.Data;
+using Qsi.Tree.Data;
 using Qsi.Utilities;
 
 namespace Qsi.Tree.Immutable
@@ -27,6 +28,8 @@ namespace Qsi.Tree.Immutable
 
         public IQsiDataConflictActionNode ConflictAction { get; }
 
+        public IUserDataHolder UserData { get; }
+
         public IEnumerable<IQsiTreeNode> Children => 
             TreeHelper.YieldChildren(Directives, Target, Columns)
                 .Concat(Values)
@@ -43,7 +46,8 @@ namespace Qsi.Tree.Immutable
             IQsiSetColumnExpressionNode[] setValues,
             IQsiTableNode valueTable,
             QsiDataConflictBehavior conflictBehavior,
-            IQsiDataConflictActionNode conflictAction)
+            IQsiDataConflictActionNode conflictAction, 
+            IUserDataHolder userData)
         {
             Parent = parent;
             Directives = directives;
@@ -55,6 +59,7 @@ namespace Qsi.Tree.Immutable
             ValueTable = valueTable;
             ConflictBehavior = conflictBehavior;
             ConflictAction = conflictAction;
+            UserData = userData;
         }
     }
 }

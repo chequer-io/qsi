@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Qsi.Data;
+using Qsi.Tree.Data;
 using Qsi.Utilities;
 
 namespace Qsi.Tree.Immutable
@@ -16,6 +17,8 @@ namespace Qsi.Tree.Immutable
 
         public IQsiColumnsDeclarationNode PivotColumns { get; }
 
+        public IUserDataHolder UserData { get; }
+
         public IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Left, Right, PivotColumns);
 
         public ImmutableJoinedTableNode(
@@ -23,13 +26,15 @@ namespace Qsi.Tree.Immutable
             IQsiTableNode left,
             QsiJoinType joinType,
             IQsiTableNode right,
-            IQsiColumnsDeclarationNode pivotColumns)
+            IQsiColumnsDeclarationNode pivotColumns,
+            IUserDataHolder userData)
         {
             Parent = parent;
             Left = left;
             JoinType = joinType;
             Right = right;
             PivotColumns = pivotColumns;
+            UserData = userData;
         }
     }
 }

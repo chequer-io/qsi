@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Qsi.Tree.Data;
 
 namespace Qsi.Tree
 {
@@ -7,5 +8,7 @@ namespace Qsi.Tree
         IQsiTreeNode Parent { get; }
 
         IEnumerable<IQsiTreeNode> Children { get; }
+
+        IUserDataHolder UserData { get; }
     }
 }

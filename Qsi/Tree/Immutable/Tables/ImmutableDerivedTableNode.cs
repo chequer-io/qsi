@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Qsi.Tree.Data;
 using Qsi.Utilities;
 
 namespace Qsi.Tree.Immutable
@@ -15,6 +16,8 @@ namespace Qsi.Tree.Immutable
 
         public IQsiAliasNode Alias { get; }
 
+        public IUserDataHolder UserData { get; }
+
         public IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Directives, Columns, Source, Alias);
 
         public ImmutableDerivedTableNode(
@@ -22,13 +25,15 @@ namespace Qsi.Tree.Immutable
             IQsiTableDirectivesNode directives,
             IQsiColumnsDeclarationNode columns,
             IQsiTableNode source,
-            IQsiAliasNode alias)
+            IQsiAliasNode alias,
+            IUserDataHolder userData)
         {
             Parent = parent;
             Directives = directives;
             Columns = columns;
             Source = source;
             Alias = alias;
+            UserData = userData;
         }
     }
 }
