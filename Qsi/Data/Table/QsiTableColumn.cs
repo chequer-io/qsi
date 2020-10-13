@@ -18,9 +18,9 @@ namespace Qsi.Data
 
         public bool IsBinding { get; set; }
 
-        public bool IsUnique { get; set; }
-
         public bool IsAnonymous => Name == null;
+
+        public string Default { get; set; }
 
         public bool IsExpression
         {

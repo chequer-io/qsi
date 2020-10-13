@@ -12,6 +12,8 @@ namespace Qsi.MySql.Tree.Common
 
         public QsiDataConflictBehavior ConflictBehavior { get; }
 
+        public TableNameContext TableName { get; }
+
         public UidContext[] Partitions { get; }
 
         public UidContext[] Columns { get; }
@@ -25,6 +27,7 @@ namespace Qsi.MySql.Tree.Common
         public CommonInsertStatementContext(InsertStatementContext context)
         {
             Context = context;
+            TableName = context.tableName();
             Partitions = context.partitions?.uid();
             Columns = context.columns?.uid();
             InsertStatementValue = context.insertStatementValue();
@@ -48,6 +51,7 @@ namespace Qsi.MySql.Tree.Common
         public CommonInsertStatementContext(ReplaceStatementContext context)
         {
             Context = context;
+            TableName = context.tableName();
             ConflictBehavior = QsiDataConflictBehavior.Update;
             Partitions = context.partitions?.uid();
             Columns = context.columns?.uid();

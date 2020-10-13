@@ -1,4 +1,6 @@
-﻿using Qsi.Data;
+﻿using System.Threading.Tasks;
+using Qsi.Data;
+using Qsi.Tree;
 
 namespace Qsi.Services
 {
@@ -12,6 +14,8 @@ namespace Qsi.Services
 
         QsiVariable LookupVariable(QsiQualifiedIdentifier identifier);
 
-        QsiDataRowCollection GetDataRows(QsiScript script);
+        Task<QsiDataRowCollection> GetDataRows(QsiScript script);
+
+        Task<QsiDataRowCollection> GetDataRows(QsiQualifiedIdentifier identifier, string whereClause);
     }
 }

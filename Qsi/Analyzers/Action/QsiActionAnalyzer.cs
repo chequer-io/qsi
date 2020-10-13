@@ -10,8 +10,7 @@ using Qsi.Utilities;
 
 namespace Qsi.Analyzers.Action
 {
-    // 디버깅 없이 개발하는건 정신 나갈것 같다..
-    public class QsiActionAnalyzer : QsiAnalyzerBase
+    public partial class QsiActionAnalyzer : QsiAnalyzerBase
     {
         public QsiActionAnalyzer(QsiEngine engine) : base(engine)
         {
@@ -115,209 +114,137 @@ namespace Qsi.Analyzers.Action
                 table = await tableAnalyzer.BuildTableStructure(tableContext, action.Target).ConfigureAwait(false);
             }
 
-            UpdateTarget[] targets = BuildUpdateTargets(action, table);
-            QsiDataRowCollection rows;
+            var dataContext = new DataInsertContext(context, action, table);
+
+            ProcessDataTargets(dataContext);
 
             if (action.ValueTable != null)
             {
-                var script = Engine.TreeDeparser.Deparse(action.ValueTable, context.Script);
-
-                if (action.Directives != null)
-                    script = $"{Engine.TreeDeparser.Deparse(action.Directives, context.Script)}\n{script}";
-
-                var scriptType = Engine.ScriptParser.GetSuitableType(script);
-                rows = Engine.RepositoryProvider.GetDataRows(new QsiScript(script, scriptType));
+                await ProcessQueryValues(dataContext);
             }
             else if (!ListUtility.IsNullOrEmpty(action.Values))
             {
-                rows = new QsiDataRowCollection(action.Columns.Count, action.Values.Length);
-                rows.AddRange(action.Values.Select(e => BuildDataRow(e.ColumnValues)));
+                ProcessValues(dataContext);
             }
             else if (!ListUtility.IsNullOrEmpty(action.SetValues))
             {
-                rows = new QsiDataRowCollection(action.Columns.Count)
-                {
-                    BuildDataRow(action.SetValues.Select(e => e.Value).ToArray())
-                };
+                ProcessSetValues(dataContext);
             }
             else
             {
                 throw new QsiException(QsiError.Syntax);
             }
 
-            if (rows.ColumnCount != action.Columns.Count)
-                throw new QsiException(QsiError.SpecifiesMoreColumnNames);
-
-            var dataActions = new QsiDataAction[targets.Length];
-
-            for (int i = 0; i < targets.Length; i++)
-            {
-                var target = targets[i];
-                var targetColumnLength = target.Columns.Length;
-                var rowDatas = new (QsiDataRow OldRow, QsiDataRow NewRow)[rows.Count];
-                var indices = new Dictionary<int, int>();
-
-                for (int j = 0; j < rows.Count; j++)
+            IQsiAction[] result = dataContext.Targets
+                .Select(t => new QsiDataAction
                 {
-                    var values = new QsiDataValue[targetColumnLength];
+                    Table = t.Table,
+                    InsertRows = t.Rows
+                })
+                .OfType<IQsiAction>()
+                .ToArray();
 
-                    for (int k = 0; k < targetColumnLength; k++)
-                    {
-                        int order = target.Columns[k].DeclaredOrder;
-
-                        if (order >= 0)
-                        {
-                            indices[order] = k;
-                            values[k] = rows[j].Items[order];
-                        }
-                        else
-                        {
-                            // TODO: get default value of column
-                        }
-
-                        rowDatas[j] = (null, new QsiDataRow(values));
-                    }
-                }
-
-                UpdateColumnTarget[] uniqueColumns = target.Columns
-                    .Where(c => c.Column.IsUnique)
-                    .ToArray();
-
-                // TODO: Impl PK, UI
-                // foreach (var uniqueColumn in uniqueColumns)
-                // {
-                //     if (indices.TryGetValue(uniqueColumn.DeclaredOrder, out var index))
-                //     {
-                //         QsiDataValue[] uniqueKeys = rowDatas
-                //             .Select(r => r.NewRow.Items[index])
-                //             .ToArray();
-                //
-                //         // TODO: GetConflictUniqueKeys(uniqueKeys)
-                //         var conflictKeys = new QsiDataValue[0];
-                //
-                //         if (conflictKeys != null)
-                //         {
-                //             for (int j = 0; j < uniqueKeys.Length; j++)
-                //             {
-                //                 if (!conflictKeys.Contains(uniqueKeys[j]))
-                //                     continue;
-                //
-                //                 // rowDatas[j].OldRow
-                //                 // TODO: rowDatas[j].Row.Items = /* action.ConflictAction */ 
-                //             }
-                //         }
-                //     }
-                //     else
-                //     {
-                //         // TODO: Check auto inc
-                //     }
-                // }
-
-                QsiDataRowCollection updateBeforeRows = null;
-                QsiDataRowCollection updateAfterRows = null;
-                QsiDataRowCollection insertRows = null;
-
-                foreach (var (oldRow, newRow) in rowDatas)
-                {
-                    if (oldRow != null)
-                    {
-                        updateBeforeRows ??= new QsiDataRowCollection(targetColumnLength);
-                        updateBeforeRows.Add(oldRow);
-
-                        updateAfterRows ??= new QsiDataRowCollection(targetColumnLength);
-                        updateAfterRows.Add(newRow);
-                    }
-                    else
-                    {
-                        insertRows ??= new QsiDataRowCollection(targetColumnLength);
-                        insertRows.Add(newRow);
-                    }
-                }
-
-                dataActions[i] = new QsiDataAction
-                {
-                    Table = target.Table,
-                    UpdateBeforeRows = updateBeforeRows,
-                    UpdateAfterRows = updateAfterRows,
-                    InsertRows = insertRows
-                };
-            }
-
-            // TODO: analyze data rows
-
-            var result = new QsiDataActionSet<QsiDataAction>(dataActions);
-
-            return new QsiActionAnalysisResult(result);
+            return new QsiActionAnalysisResult(new QsiActionSet(result));
         }
 
-        private UpdateTarget[] BuildUpdateTargets(IQsiDataInsertActionNode action, QsiTableStructure table)
+        private void ProcessDataTargets(DataInsertContext context)
         {
-            IEnumerable<UpdateColumnTarget> targetColumns;
-            QsiIdentifier[] declaredColumnNames = null;
-
-            if (action.Columns != null)
+            if (!ListUtility.IsNullOrEmpty(context.Action.Columns))
             {
-                declaredColumnNames = GetDeclaredColumnNames(action.Columns);
+                context.ColumnsNames = context.Action.Columns;
             }
-            else if (!ListUtility.IsNullOrEmpty(action.SetValues))
+            else if (!ListUtility.IsNullOrEmpty(context.Action.SetValues))
             {
-                declaredColumnNames = GetDeclaredColumnNames(action.SetValues);
-            }
+                int count = context.Action.SetValues
+                    .Select(t => t.Target[^1])
+                    .Distinct(IdentifierComparer)
+                    .Count();
 
-            if (declaredColumnNames != null)
-            {
-                if (declaredColumnNames.Length > table.Columns.Count)
-                    throw new QsiException(QsiError.SpecifiesMoreColumnNames);
+                // Use last affected columns
+                // A, B, A, B, B
+                //       ^     ^
+                var set = new HashSet<QsiIdentifier>(IdentifierComparer);
+                int index = context.Action.SetValues.Length;
 
-                List<QsiTableColumn> buffer = table.Columns.ToList();
-                var result = new UpdateColumnTarget[declaredColumnNames.Length];
+                context.ColumnsNames = new QsiIdentifier[count];
+                context.AffectedIndices = new int[count];
 
-                for (int i = 0; i < declaredColumnNames.Length; i++)
+                foreach (var columnName in context.Action.SetValues.Reverse().Select(v => v.Target[^1]))
                 {
-                    var name = declaredColumnNames[i];
-                    var index = buffer.FindIndex(c => Match(c.Name, name));
+                    index--;
 
-                    if (index == -1)
-                        throw new QsiException(QsiError.UnknownColumn, name.Value);
+                    if (set.Contains(columnName))
+                        continue;
 
-                    result[i] = ResolveColumnTarget(buffer[index], i);
-                    buffer.RemoveAt(index);
+                    set.Add(columnName);
+                    context.ColumnsNames[count - set.Count] = columnName;
+                    context.AffectedIndices[count - set.Count] = index;
                 }
-
-                targetColumns = result;
             }
             else
             {
-                targetColumns = table.Columns.Select(ResolveColumnTarget);
+                context.ColumnsNames = null;
             }
 
-            return targetColumns
-                .GroupBy(c => c.Column.Parent)
+            var pivotColumns = new List<DataInsertColumnPivot>();
+
+            if (context.ColumnsNames != null)
+            {
+                var indices = new int[context.ColumnsNames.Length];
+
+                for (int i = 0; i < indices.Length; i++)
+                {
+                    ref int index = ref indices[i];
+                    var declaredName = context.ColumnsNames[i];
+
+                    index = context.Table.Columns.FindIndex(c => Match(c.Name, declaredName));
+
+                    if (index == -1)
+                        throw new QsiException(QsiError.UnknownColumn, declaredName);
+
+                    pivotColumns.Add(ResolveColumnPivot(context.Table.Columns[index], i));
+                }
+
+                context.ColumnsIndices = indices;
+            }
+            else
+            {
+                context.ColumnsIndices = new int[context.Table.Columns.Count];
+                context.ColumnsNames = new QsiIdentifier[context.ColumnsIndices.Length];
+
+                for (int i = 0; i < context.ColumnsIndices.Length; i++)
+                {
+                    context.ColumnsNames[i] = context.Table.Columns[i].Name;
+                    context.ColumnsIndices[i] = i;
+
+                    pivotColumns.Add(ResolveColumnPivot(context.Table.Columns[i], i));
+                }
+            }
+
+            IEnumerable<DataInsertTargetContext> targets = pivotColumns
+                .GroupBy(c => c.TargetColumn.Parent)
                 .Select(g =>
                 {
-                    IReadOnlyList<QsiTableColumn> tableColumns = g.Key.Columns;
-                    var columnTargets = new UpdateColumnTarget[tableColumns.Count];
+                    var buffer = new DataInsertColumnPivot[g.Key.Columns.Count];
 
-                    foreach (var columnTarget in g)
+                    foreach (var pivot in g)
+                        buffer[pivot.TargetOrder] = pivot;
+
+                    for (int i = 0; i < buffer.Length; i++)
                     {
-                        var index = tableColumns.IndexOf(columnTarget.Column);
-                        columnTargets[index] = columnTarget;
+                        if (buffer[i] != null)
+                            continue;
+
+                        buffer[i] = new DataInsertColumnPivot(i, g.Key.Columns[i], -1, null);
                     }
 
-                    for (int i = 0; i < columnTargets.Length; i++)
-                    {
-                        if (columnTargets[i].Column == null)
-                        {
-                            columnTargets[i] = new UpdateColumnTarget(tableColumns[i]);
-                        }
-                    }
+                    return new DataInsertTargetContext(g.Key, buffer);
+                });
 
-                    return new UpdateTarget(g.Key, columnTargets);
-                })
-                .ToArray();
+            context.Targets.AddRange(targets);
         }
 
-        private UpdateColumnTarget ResolveColumnTarget(QsiTableColumn declaredColumn, int declaredOrder)
+        private DataInsertColumnPivot ResolveColumnPivot(QsiTableColumn declaredColumn, int declaredOrder)
         {
             if (declaredColumn.IsAnonymous)
                 throw new QsiException(QsiError.NotUpdatableColumn, "anonymous");
@@ -336,120 +263,127 @@ namespace Qsi.Analyzers.Action
                 if (recursiveTracing?.Contains(column) ?? false)
                     throw new QsiException(QsiError.NotUpdatableColumn, declaredColumn.Name);
 
-                column = column.References[0];
-
                 recursiveTracing ??= new HashSet<QsiTableColumn>();
                 recursiveTracing.Add(column);
+
+                column = column.References[0];
             }
 
-            return new UpdateColumnTarget(declaredOrder, declaredColumn, column);
+            return new DataInsertColumnPivot(
+                column.Parent.Columns.IndexOf(column),
+                column,
+                declaredOrder,
+                declaredColumn);
         }
 
-        private QsiIdentifier[] GetDeclaredColumnNames(IQsiColumnsDeclarationNode columnsDeclaration)
+        private async ValueTask ProcessQueryValues(DataInsertContext context)
         {
-            var columns = new QsiIdentifier[columnsDeclaration.Count];
+            var script = Engine.TreeDeparser.Deparse(context.Action.ValueTable, context.ExecutionContext.Script);
 
-            for (int i = 0; i < columns.Length; i++)
+            if (context.Action.Directives != null)
+                script = $"{Engine.TreeDeparser.Deparse(context.Action.Directives, context.ExecutionContext.Script)}\n{script}";
+
+            var scriptType = Engine.ScriptParser.GetSuitableType(script);
+            var rows = await Engine.RepositoryProvider.GetDataRows(new QsiScript(script, scriptType));
+
+            if (rows.ColumnCount != context.ColumnsNames.Length)
+                throw new QsiException(QsiError.DifferentColumnsCount);
+
+            foreach (var row in rows)
             {
-                var c = columnsDeclaration.Columns[i];
-
-                if (c is IQsiDeclaredColumnNode column)
+                foreach (var target in context.Targets)
                 {
-                    if (column.Name.Level != 1)
-                        throw new QsiException(QsiError.Internal, $"Invalid column name '{column.Name}'");
+                    var targetRow = target.Rows.NewRow();
 
-                    columns[i] = column.Name[0];
-                    continue;
+                    foreach (var pivot in target.ColumnPivots)
+                    {
+                        if (pivot.DeclaredColumn != null)
+                        {
+                            targetRow.Items[pivot.TargetOrder] = row.Items[pivot.DeclaredOrder];
+                        }
+                        else if (pivot.TargetColumn.Default != null)
+                        {
+                            targetRow.Items[pivot.TargetOrder] = new QsiDataValue(pivot.TargetColumn.Default, QsiDataType.Raw);
+                        }
+                        else
+                        {
+                            targetRow.Items[pivot.TargetOrder] = new QsiDataValue(null, QsiDataType.Default);
+                        }
+                    }
                 }
-
-                throw new QsiException(QsiError.Internal, $"Not supported column type '{c.GetType().Name}'");
             }
-
-            return columns;
         }
 
-        private QsiIdentifier[] GetDeclaredColumnNames(IQsiSetColumnExpressionNode[] setColumns)
+        private void ProcessValues(DataInsertContext context)
         {
-            var columns = new QsiIdentifier[setColumns.Length];
+            int columnCount = context.ColumnsNames.Length;
 
-            for (int i = 0; i < columns.Length; i++)
+            for (int i = 0; i < context.Action.Values.Length; i++)
             {
-                var target = setColumns[i].Target;
+                var value = context.Action.Values[i];
 
-                if (target.Level != 1)
-                    throw new QsiException(QsiError.Internal, $"Invalid column name '{target}'");
+                if (columnCount != value.ColumnValues.Length)
+                    throw new QsiException(QsiError.DifferentColumnValueCount, i + 1);
 
-                columns[i] = target[0];
+                foreach (var target in context.Targets)
+                {
+                    var targetRow = target.Rows.NewRow();
+
+                    foreach (var pivot in target.ColumnPivots)
+                    {
+                        if (pivot.DeclaredColumn != null)
+                        {
+                            targetRow.Items[pivot.TargetOrder] = ResolveColumnValue(context, value.ColumnValues[pivot.DeclaredOrder]);
+                        }
+                        else if (pivot.TargetColumn.Default != null)
+                        {
+                            targetRow.Items[pivot.TargetOrder] = new QsiDataValue(pivot.TargetColumn.Default, QsiDataType.Raw);
+                        }
+                        else
+                        {
+                            targetRow.Items[pivot.TargetOrder] = new QsiDataValue(null, QsiDataType.Default);
+                        }
+                    }
+                }
             }
-
-            return columns;
         }
 
-        protected virtual QsiDataRow BuildDataRow(IQsiExpressionNode[] expressions)
+        private void ProcessSetValues(DataInsertContext context)
         {
-            var row = new QsiDataRow(expressions.Length);
-
-            for (int i = 0; i < expressions.Length; i++)
+            foreach (var target in context.Targets)
             {
-                row.Items[i] = ResolveColumnValue(expressions[i]);
-            }
+                var targetRow = target.Rows.NewRow();
 
-            return row;
+                foreach (var pivot in target.ColumnPivots)
+                {
+                    if (pivot.DeclaredColumn != null)
+                    {
+                        var affectedIndex = context.AffectedIndices[pivot.DeclaredOrder];
+                        targetRow.Items[pivot.TargetOrder] = ResolveColumnValue(context, context.Action.SetValues[affectedIndex].Value);
+                    }
+                    else if (pivot.TargetColumn.Default != null)
+                    {
+                        targetRow.Items[pivot.TargetOrder] = new QsiDataValue(pivot.TargetColumn.Default, QsiDataType.Raw);
+                    }
+                    else
+                    {
+                        targetRow.Items[pivot.TargetOrder] = new QsiDataValue(null, QsiDataType.Default);
+                    }
+                }
+            }
         }
 
-        protected virtual QsiDataValue ResolveColumnValue(IQsiExpressionNode expression)
+        protected virtual QsiDataValue ResolveColumnValue(DataInsertContext context, IQsiExpressionNode expression)
         {
-            throw new NotImplementedException();
+            if (expression is IQsiLiteralExpressionNode literal)
+            {
+                return new QsiDataValue(literal.Value, literal.Type);
+            }
+
+            var value = Engine.TreeDeparser.Deparse(expression, context.ExecutionContext.Script);
+
+            return new QsiDataValue(value, QsiDataType.Raw);
         }
         #endregion
-
-        private readonly struct UpdateTarget
-        {
-            public QsiTableStructure Table { get; }
-
-            public UpdateColumnTarget[] Columns { get; }
-
-            public UpdateTarget(QsiTableStructure table, UpdateColumnTarget[] columns)
-            {
-                if (table.Type != QsiTableType.Table)
-                    throw new NotSupportedException(table.Type.ToString());
-
-                Table = table;
-                Columns = columns;
-            }
-        }
-
-        private readonly struct UpdateColumnTarget
-        {
-            public int DeclaredOrder { get; }
-
-            public QsiTableColumn DeclaredColumn { get; }
-
-            public QsiTableColumn Column { get; }
-
-            public bool IsDeclared => DeclaredColumn != null;
-
-            public UpdateColumnTarget(QsiTableColumn column) : this(-1, null, column)
-            {
-            }
-
-            public UpdateColumnTarget(int declaredOrder, QsiTableColumn declaredColumn, QsiTableColumn column)
-            {
-                if (column.Parent.Type != QsiTableType.Table)
-                    throw new ArgumentException(nameof(column));
-
-                DeclaredOrder = declaredOrder;
-                DeclaredColumn = declaredColumn;
-                Column = column;
-            }
-        }
-
-        private enum RowAction
-        {
-            None,
-            Insert,
-            Update,
-            Delete
-        }
     }
 }

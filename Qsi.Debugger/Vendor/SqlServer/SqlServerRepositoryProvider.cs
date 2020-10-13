@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Qsi.Data;
 using Qsi.Utilities;
 
@@ -6,7 +7,12 @@ namespace Qsi.Debugger.Vendor.SqlServer
 {
     internal class SqlServerRepositoryProvider : VendorRepositoryProvider
     {
-        protected override QsiDataRowCollection GetDataRows(QsiScript script)
+        protected override Task<QsiDataRowCollection> GetDataRows(QsiScript script)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override Task<QsiDataRowCollection> GetDataRows(QsiQualifiedIdentifier identifier, string whereClause)
         {
             throw new NotImplementedException();
         }

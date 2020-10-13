@@ -1,15 +1,18 @@
 ﻿using Qsi.Data;
-using Qsi.Services;
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Threading.Tasks;
 using Qsi.Utilities;
 
 namespace Qsi.Debugger.Vendor.MySql
 {
     internal class MySqlRepositoryProvider : VendorRepositoryProvider
     {
-        protected override QsiDataRowCollection GetDataRows(QsiScript script)
+        protected override Task<QsiDataRowCollection> GetDataRows(QsiScript script)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override Task<QsiDataRowCollection> GetDataRows(QsiQualifiedIdentifier identifier, string whereClause)
         {
             throw new NotImplementedException();
         }

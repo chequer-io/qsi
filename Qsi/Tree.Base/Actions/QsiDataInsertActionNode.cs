@@ -13,7 +13,7 @@ namespace Qsi.Tree
 
         public QsiQualifiedIdentifier[] Partitions { get; set; }
 
-        public QsiTreeNodeProperty<QsiColumnsDeclarationNode> Columns { get; }
+        public QsiIdentifier[] Columns { get; set; }
 
         public QsiTreeNodeList<QsiRowValueExpressionNode> Values { get; }
 
@@ -26,7 +26,7 @@ namespace Qsi.Tree
         public QsiTreeNodeProperty<QsiDataConflictActionNode> ConflictAction { get; }
 
         public override IEnumerable<IQsiTreeNode> Children =>
-            TreeHelper.YieldChildren(Directives, Target, Columns)
+            TreeHelper.YieldChildren(Directives, Target)
                 .Concat(Values)
                 .Concat(SetValues)
                 .Concat(TreeHelper.YieldChildren(ValueTable, ConflictAction));
@@ -35,8 +35,6 @@ namespace Qsi.Tree
         IQsiTableDirectivesNode IQsiDataInsertActionNode.Directives => Directives.Value;
 
         IQsiTableAccessNode IQsiDataInsertActionNode.Target => Target.Value;
-
-        IQsiColumnsDeclarationNode IQsiDataInsertActionNode.Columns => Columns.Value;
 
         IQsiRowValueExpressionNode[] IQsiDataInsertActionNode.Values => Values.Cast<IQsiRowValueExpressionNode>().ToArray();
 
@@ -51,7 +49,6 @@ namespace Qsi.Tree
         {
             Directives = new QsiTreeNodeProperty<QsiTableDirectivesNode>(this);
             Target = new QsiTreeNodeProperty<QsiTableAccessNode>(this);
-            Columns = new QsiTreeNodeProperty<QsiColumnsDeclarationNode>(this);
             Values = new QsiTreeNodeList<QsiRowValueExpressionNode>(this);
             SetValues = new QsiTreeNodeList<QsiSetColumnExpressionNode>(this);
             ValueTable = new QsiTreeNodeProperty<QsiTableNode>(this);

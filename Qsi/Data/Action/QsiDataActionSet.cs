@@ -1,12 +1,30 @@
-﻿namespace Qsi.Data
-{
-    public sealed class QsiDataActionSet<T> : IQsiAction where T : IQsiAction
-    {
-        public T[] Items { get; }
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 
-        public QsiDataActionSet(T[] items)
+namespace Qsi.Data
+{
+    public sealed class QsiActionSet : IQsiAction, IReadOnlyList<IQsiAction>
+    {
+        public int Count => _items.Length;
+
+        public IQsiAction this[int index] => _items[index];
+
+        private readonly IQsiAction[] _items;
+
+        public QsiActionSet(IQsiAction[] items)
         {
-            Items = items;
+            _items = items;
+        }
+
+        public IEnumerator<IQsiAction> GetEnumerator()
+        {
+            return _items.OfType<IQsiAction>().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }

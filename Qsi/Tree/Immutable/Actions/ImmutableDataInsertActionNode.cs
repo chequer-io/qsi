@@ -16,7 +16,7 @@ namespace Qsi.Tree.Immutable
 
         public QsiQualifiedIdentifier[] Partitions { get; }
 
-        public IQsiColumnsDeclarationNode Columns { get; }
+        public QsiIdentifier[] Columns { get; }
 
         public IQsiRowValueExpressionNode[] Values { get; }
 
@@ -30,8 +30,8 @@ namespace Qsi.Tree.Immutable
 
         public IUserDataHolder UserData { get; }
 
-        public IEnumerable<IQsiTreeNode> Children => 
-            TreeHelper.YieldChildren(Directives, Target, Columns)
+        public IEnumerable<IQsiTreeNode> Children =>
+            TreeHelper.YieldChildren(Directives, Target)
                 .Concat(Values)
                 .Concat(SetValues)
                 .Concat(TreeHelper.YieldChildren(ValueTable, ConflictAction));
@@ -41,12 +41,12 @@ namespace Qsi.Tree.Immutable
             IQsiTableDirectivesNode directives,
             IQsiTableAccessNode target,
             QsiQualifiedIdentifier[] partitions,
-            IQsiColumnsDeclarationNode columns,
+            QsiIdentifier[] columns,
             IQsiRowValueExpressionNode[] values,
             IQsiSetColumnExpressionNode[] setValues,
             IQsiTableNode valueTable,
             QsiDataConflictBehavior conflictBehavior,
-            IQsiDataConflictActionNode conflictAction, 
+            IQsiDataConflictActionNode conflictAction,
             IUserDataHolder userData)
         {
             Parent = parent;

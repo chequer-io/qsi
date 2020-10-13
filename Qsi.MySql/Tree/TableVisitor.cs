@@ -180,7 +180,7 @@ namespace Qsi.MySql.Tree
                 n.Source.SetValue(tableNode);
                 n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
                 n.Directives.SetValue(VisitWithClause(withClauseContext));
-                
+
                 // TODO: alias test
 
                 MySqlTree.PutContextSpan(n, context);
@@ -635,13 +635,18 @@ namespace Qsi.MySql.Tree
             return anchor;
         }
 
+        public static QsiTableAccessNode VisitTableName(TableNameContext context)
+        {
+            return new QsiTableAccessNode
+            {
+                Identifier = IdentifierVisitor.VisitFullId(context.fullId())
+            };
+        }
+
         // .. FROM db.table [AS alias]
         public static QsiTableNode VisitAtomTableItem(AtomTableItemContext context)
         {
-            var tableNode = new QsiTableAccessNode
-            {
-                Identifier = IdentifierVisitor.VisitFullId(context.tableName().fullId())
-            };
+            var tableNode = VisitTableName(context.tableName());
 
             if (context.alias == null)
             {

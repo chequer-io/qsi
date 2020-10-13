@@ -10,7 +10,7 @@ namespace Qsi.Tree
 
         QsiQualifiedIdentifier[] Partitions { get; }
 
-        IQsiColumnsDeclarationNode Columns { get; }
+        QsiIdentifier[] Columns { get; }
 
         IQsiRowValueExpressionNode[] Values { get; }
 

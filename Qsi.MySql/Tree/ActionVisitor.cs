@@ -94,6 +94,11 @@ namespace Qsi.MySql.Tree
                 ConflictBehavior = context.ConflictBehavior
             };
 
+            if (context.TableName == null)
+                throw new QsiException(QsiError.Syntax);
+
+            node.Target.SetValue(TableVisitor.VisitTableName(context.TableName));
+
             if (!ListUtility.IsNullOrEmpty(context.Partitions))
             {
                 node.Partitions = context.Partitions
@@ -103,25 +108,7 @@ namespace Qsi.MySql.Tree
 
             if (!ListUtility.IsNullOrEmpty(context.Columns))
             {
-                IEnumerable<QsiDeclaredColumnNode> columns = context.Columns
-                    .Select(uid =>
-                    {
-                        var declaredColumn = new QsiDeclaredColumnNode
-                        {
-                            Name = new QsiQualifiedIdentifier(IdentifierVisitor.VisitUid(uid))
-                        };
-
-                        MySqlTree.PutContextSpan(declaredColumn, uid);
-
-                        return declaredColumn;
-                    });
-
-                node.Columns.SetValue(TreeHelper.Create<QsiColumnsDeclarationNode>(dn =>
-                {
-                    dn.Columns.AddRange(columns);
-
-                    MySqlTree.PutContextSpan(dn, context.Columns[0].Start, context.Columns[^1].Stop);
-                }));
+                node.Columns = context.Columns.Select(IdentifierVisitor.VisitUid).ToArray();
             }
 
             if (context.InsertStatementValue != null)

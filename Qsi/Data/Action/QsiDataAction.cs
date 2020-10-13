@@ -6,6 +6,8 @@
 
         public QsiDataRowCollection InsertRows { get; set; }
 
+        public QsiDataRowCollection DuplicateRows { get; set; }
+
         public QsiDataRowCollection UpdateBeforeRows { get; set; }
 
         public QsiDataRowCollection UpdateAfterRows { get; set; }
