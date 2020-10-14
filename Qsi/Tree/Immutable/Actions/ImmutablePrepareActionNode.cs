@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Qsi.Data;
+using Qsi.Tree.Data;
 using Qsi.Utilities;
 
 namespace Qsi.Tree.Immutable
@@ -12,16 +13,20 @@ namespace Qsi.Tree.Immutable
 
         public IQsiExpressionNode Query { get; }
 
+        public IUserDataHolder UserData { get; }
+
         public IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Query);
 
         public ImmutablePrepareActionNode(
             IQsiTreeNode parent,
             QsiQualifiedIdentifier identifier,
-            IQsiExpressionNode query)
+            IQsiExpressionNode query, 
+            IUserDataHolder userData)
         {
             Parent = parent;
             Identifier = identifier;
             Query = query;
+            UserData = userData;
         }
     }
 }

@@ -11,6 +11,11 @@ namespace Qsi.MySql
             return new MySqlParser();
         }
 
+        public override IQsiTreeDeparser CreateTreeDeparser()
+        {
+            return new MySqlDeparser();
+        }
+
         public override IQsiScriptParser CreateScriptParser()
         {
             return new MySqlScriptParser();

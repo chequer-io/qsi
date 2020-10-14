@@ -5,9 +5,9 @@ namespace Qsi.Debugger.Vendor.PostgreSql
 {
     internal class PostgreSqlLanguageService : PostgreSqlLanguageServiceBase
     {
-        public override IQsiReferenceResolver CreateReferenceResolver()
+        public override IQsiRepositoryProvider CreateRepositoryProvider()
         {
-            return new PostgreSqlReferenceResolver();
+            return new PostgreSqlRepositoryProvider();
         }
     }
 }

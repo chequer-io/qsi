@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Qsi.Tree.Data;
 
 namespace Qsi.Tree.Immutable
 {
@@ -8,12 +9,15 @@ namespace Qsi.Tree.Immutable
 
         public IQsiExpressionNode[] Expressions { get; }
 
+        public IUserDataHolder UserData { get; }
+
         public IEnumerable<IQsiTreeNode> Children => Expressions;
 
-        public ImmutableParametersExpressionNode(IQsiTreeNode parent, IQsiExpressionNode[] expressions)
+        public ImmutableParametersExpressionNode(IQsiTreeNode parent, IQsiExpressionNode[] expressions, IUserDataHolder userData)
         {
             Parent = parent;
             Expressions = expressions;
+            UserData = userData;
         }
     }
 }

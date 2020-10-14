@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Qsi.Tree.Data;
 
 namespace Qsi.Tree.Immutable
 {
@@ -10,13 +11,20 @@ namespace Qsi.Tree.Immutable
 
         public bool IsRecursive { get; }
 
+        public IUserDataHolder UserData { get; }
+
         public IEnumerable<IQsiTreeNode> Children => Tables;
 
-        public ImmutableTableDirectivesNode(IQsiTreeNode parent, IQsiDerivedTableNode[] tables, bool isRecursive)
+        public ImmutableTableDirectivesNode(
+            IQsiTreeNode parent,
+            IQsiDerivedTableNode[] tables,
+            bool isRecursive,
+            IUserDataHolder userData)
         {
             Parent = parent;
             Tables = tables;
             IsRecursive = isRecursive;
+            UserData = userData;
         }
     }
 }

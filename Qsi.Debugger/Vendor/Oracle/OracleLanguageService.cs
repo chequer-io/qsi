@@ -5,9 +5,9 @@ namespace Qsi.Debugger.Vendor.Oracle
 {
     internal sealed class OracleLanguageService : OracleLanguageServiceBase
     {
-        public override IQsiReferenceResolver CreateReferenceResolver()
+        public override IQsiRepositoryProvider CreateRepositoryProvider()
         {
-            return new OracleReferenceResolver();
+            return new OracleRepositoryProvider();
         }
     }
 }

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Qsi.Data;
-using Qsi.Tree;
 using Qsi.Tree;
 
 namespace Qsi.Utilities
@@ -58,9 +58,19 @@ namespace Qsi.Utilities
         }
 
         #region Literal
+        public static QsiLiteralExpressionNode CreateDefaultLiteral()
+        {
+            return CreateLiteral(null, QsiDataType.Default);
+        }
+
         public static QsiLiteralExpressionNode CreateNullLiteral()
         {
             return CreateLiteral(null, QsiDataType.Null);
+        }
+
+        public static QsiExpressionNode CreateConstantLiteral(object value)
+        {
+            return CreateLiteral(value, QsiDataType.Constant);
         }
 
         public static QsiLiteralExpressionNode CreateLiteral(string value)
@@ -76,6 +86,11 @@ namespace Qsi.Utilities
         public static QsiLiteralExpressionNode CreateLiteral(double value)
         {
             return CreateLiteral(value, QsiDataType.Decimal);
+        }
+
+        public static QsiLiteralExpressionNode CreateLiteral(bool value)
+        {
+            return CreateLiteral(value, QsiDataType.Boolean);
         }
 
         public static QsiLiteralExpressionNode CreateLiteral(object value, QsiDataType type)
@@ -98,6 +113,7 @@ namespace Qsi.Utilities
             return new QsiException(QsiError.NotSupportedFeature, feature);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static IEnumerable<IQsiTreeNode> YieldChildren(params IQsiTreeNodeProperty<QsiTreeNode>[] properties)
         {
             return properties
@@ -105,11 +121,30 @@ namespace Qsi.Utilities
                 .Select(p => p.Value);
         }
 
-        internal static IEnumerable<IQsiTreeNode> YieldChildren(params IQsiTreeNode[] properties)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static IEnumerable<IQsiTreeNode> YieldChildren(params IQsiTreeNode[] ndoes)
         {
-            return properties
+            return ndoes
                 .Where(n => n != null)
                 .Select(n => n);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static IEnumerable<IQsiTreeNode> YieldChildren(IEnumerable<IQsiTreeNode> source, IQsiTreeNodeProperty<QsiTreeNode> property)
+        {
+            if (property.IsEmpty)
+                return source;
+
+            return source.Append(property.Value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static IEnumerable<IQsiTreeNode> YieldChildren(IQsiTreeNodeProperty<QsiTreeNode> property, IEnumerable<IQsiTreeNode> source)
+        {
+            if (property.IsEmpty)
+                return source;
+
+            return source.Prepend(property.Value);
         }
     }
 }

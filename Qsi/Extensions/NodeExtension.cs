@@ -7,6 +7,16 @@ namespace Qsi.Extensions
 {
     public static class NodeExtension
     {
+        public static IEnumerable<IQsiTreeNode> Flatten(this IQsiTreeNode node)
+        {
+            yield return node;
+
+            foreach (var child in node.Children.SelectMany(Flatten))
+            {
+                yield return child;
+            }
+        }
+
         public static IEnumerable<T> FindAscendants<T>(this IQsiTreeNode node)
         {
             var queue = new Queue<IQsiTreeNode>();

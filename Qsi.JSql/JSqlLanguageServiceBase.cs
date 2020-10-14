@@ -11,6 +11,11 @@ namespace Qsi.JSql
             return new JSqlParser();
         }
 
+        public override IQsiTreeDeparser CreateTreeDeparser()
+        {
+            throw new System.NotImplementedException();
+        }
+
         public override IQsiScriptParser CreateScriptParser()
         {
             return new JSqlScriptParser();

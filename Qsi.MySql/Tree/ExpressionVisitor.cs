@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
 using Qsi.Data;
+using Qsi.MySql.Data;
+using Qsi.MySql.Tree.Common;
 using Qsi.Tree;
 using Qsi.Utilities;
 using static Qsi.MySql.Internal.MySqlParser;
@@ -63,6 +66,8 @@ namespace Qsi.MySql.Tree
                     return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
                     {
                         n.Member.SetValue(VisitFunctionAccess(fContext.children[0]));
+
+                        MySqlTree.PutContextSpan(n, fContext);
                     });
                 }
 
@@ -72,6 +77,8 @@ namespace Qsi.MySql.Tree
                     {
                         n.Member.SetValue(VisitFunctionAccess(fContext.children[0]));
                         n.Parameters.Add(VisitExpression(fContext.expression()));
+
+                        MySqlTree.PutContextSpan(n, fContext);
                     });
                 }
 
@@ -81,6 +88,8 @@ namespace Qsi.MySql.Tree
                     {
                         n.Member.SetValue(VisitFunctionAccess(fContext.children[0]));
                         n.Parameters.Add(VisitFullColumnName(fContext.fullColumnName()));
+
+                        MySqlTree.PutContextSpan(n, fContext);
                     });
                 }
 
@@ -102,6 +111,8 @@ namespace Qsi.MySql.Tree
                             {
                                 n.Condition.SetValue(VisitFunctionArg(caseFunc.condition));
                                 n.Consequent.SetValue(VisitFunctionArg(caseFunc.consequent));
+
+                                MySqlTree.PutContextSpan(n, caseFunc);
                             })
                         );
                     }
@@ -113,9 +124,13 @@ namespace Qsi.MySql.Tree
                             TreeHelper.Create<QsiSwitchCaseExpressionNode>(n =>
                             {
                                 n.Consequent.SetValue(VisitFunctionArg(fContext.elseArg));
+
+                                MySqlTree.PutContextSpan(n, fContext.elseArg);
                             })
                         );
                     }
+
+                    MySqlTree.PutContextSpan(switchExp, fContext);
 
                     return switchExp;
                 }
@@ -126,6 +141,8 @@ namespace Qsi.MySql.Tree
                     {
                         n.Member.SetValue(VisitFunctionAccess(fContext.children[0]));
                         n.Parameters.AddRange(VisitFunctionArgs(fContext.functionArgs()));
+
+                        MySqlTree.PutContextSpan(n, fContext);
                     });
                 }
 
@@ -140,6 +157,8 @@ namespace Qsi.MySql.Tree
 
                         if (LiteralOrExpression(fContext.inString, fContext.inExpression, out var param2))
                             n.Parameters.Add(param2);
+
+                        MySqlTree.PutContextSpan(n, fContext);
                     });
                 }
 
@@ -157,6 +176,8 @@ namespace Qsi.MySql.Tree
 
                         if (LiteralOrExpression(fContext.forDecimal, fContext.forExpression, out var param3))
                             n.Parameters.Add(param3);
+
+                        MySqlTree.PutContextSpan(n, fContext);
                     });
                 }
 
@@ -171,6 +192,8 @@ namespace Qsi.MySql.Tree
 
                         if (LiteralOrExpression(fContext.fromString, fContext.fromExpression, out var param2))
                             n.Parameters.Add(param2);
+
+                        MySqlTree.PutContextSpan(n, fContext);
                     });
                 }
 
@@ -182,6 +205,8 @@ namespace Qsi.MySql.Tree
 
                         if (LiteralOrExpression(fContext.stringLiteral(), fContext.expression(), out var param1))
                             n.Parameters.Add(param1);
+
+                        MySqlTree.PutContextSpan(n, fContext);
                     });
                 }
 
@@ -193,19 +218,24 @@ namespace Qsi.MySql.Tree
 
                         if (LiteralOrExpression(fContext.stringLiteral(), fContext.expression(), out var param1))
                             n.Parameters.Add(param1);
+
+                        MySqlTree.PutContextSpan(n, fContext);
                     });
                 }
 
                 case GetFormatFunctionCallContext fContext:
                 {
                     // GET_FORMAT  ({DATE | TIME | DATETIME},  string)
-                    // ▔\MEMBER/▔   ▔▔▔▔▔▔▔▔\SKIP/▔▔▔▔▔▔▔▔▔    ▔\P1/▔
+                    // ▔\MEMBER/▔    ▔▔▔▔▔▔▔▔\P1/▔▔▔▔▔▔▔▔▔▔    ▔\P2/▔
 
                     return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
                     {
                         n.Member.SetValue(VisitFunctionAccess(fContext.children[0]));
-                        // n.Parameters.Add(VisitLiteral(fContext.datetimeFormat));
+                        n.Parameters.Add(TreeHelper.CreateConstantLiteral(fContext.datetimeFormat.Text));
                         n.Parameters.Add(VisitLiteral(fContext.stringLiteral()));
+
+                        MySqlTree.PutContextSpan(n.Parameters[0], fContext.datetimeFormat);
+                        MySqlTree.PutContextSpan(n, fContext);
                     });
                 }
 
@@ -240,6 +270,8 @@ namespace Qsi.MySql.Tree
                     {
                         n.Member.SetValue(VisitFunctionAccess(fContext.children[0]));
                         n.Parameters.Add(VisitFunctionArg(fContext.functionArg()));
+
+                        MySqlTree.PutContextSpan(n, fContext);
                     });
                 }
 
@@ -254,12 +286,17 @@ namespace Qsi.MySql.Tree
                             n.Parameters.Add(TreeHelper.Create<QsiColumnExpressionNode>(cn =>
                             {
                                 cn.Column.SetValue(new QsiAllColumnNode());
+
+                                MySqlTree.PutContextSpan(cn, fContext.starArg);
+                                MySqlTree.PutContextSpan(cn.Column.Value, fContext.starArg);
                             }));
                         }
                         else
                         {
                             n.Parameters.Add(VisitFunctionArg(fContext.functionArg()));
                         }
+
+                        MySqlTree.PutContextSpan(n, fContext);
                     });
                 }
 
@@ -269,6 +306,8 @@ namespace Qsi.MySql.Tree
                     {
                         n.Member.SetValue(VisitFunctionAccess(fContext.children[0]));
                         n.Parameters.AddRange(VisitFunctionArgs(fContext.functionArgs()));
+
+                        MySqlTree.PutContextSpan(n, fContext);
                     });
                 }
 
@@ -278,6 +317,8 @@ namespace Qsi.MySql.Tree
                     {
                         n.Member.SetValue(VisitFunctionAccess(fContext.children[0]));
                         n.Parameters.Add(VisitFunctionArg(fContext.functionArg()));
+
+                        MySqlTree.PutContextSpan(n, fContext);
                     });
                 }
 
@@ -294,6 +335,8 @@ namespace Qsi.MySql.Tree
                         {
                             n.Parameters.AddRange(orderByExpressions.Select(VisitOrderByExpression));
                         }
+
+                        MySqlTree.PutContextSpan(n, fContext);
                     });
                 }
 
@@ -308,6 +351,8 @@ namespace Qsi.MySql.Tree
             {
                 n.Member.SetValue(VisitScalarFunctionName(context.scalarFunctionName()));
                 n.Parameters.AddRange(VisitFunctionArgs(context.functionArgs()));
+
+                MySqlTree.PutContextSpan(n, context);
             });
         }
 
@@ -317,6 +362,8 @@ namespace Qsi.MySql.Tree
             {
                 n.Member.SetValue(VisitFunctionAccess(context.fullId()));
                 n.Parameters.AddRange(VisitFunctionArgs(context.functionArgs()));
+
+                MySqlTree.PutContextSpan(n, context);
             });
         }
 
@@ -326,6 +373,8 @@ namespace Qsi.MySql.Tree
             {
                 n.Member.SetValue(VisitFunctionAccess(context.children[0]));
                 n.Parameters.Add(VisitFunctionArg(context.functionArg()));
+
+                MySqlTree.PutContextSpan(n, context);
             });
         }
 
@@ -375,11 +424,9 @@ namespace Qsi.MySql.Tree
 
                 case NegativeDecimalLiteralConstantContext literalContext:
                 {
-                    return TreeHelper.Create<QsiUnaryExpressionNode>(n =>
-                    {
-                        n.Operator = literalContext.MINUS().GetText();
-                        n.Expression.SetValue(VisitLiteral(literalContext.decimalLiteral()));
-                    });
+                    var literal = VisitLiteral(literalContext.decimalLiteral());
+                    literal.Value = -(decimal)literal.Value;
+                    return literal;
                 }
 
                 case HexadecimalLiteralConstantContext literalContext:
@@ -394,20 +441,29 @@ namespace Qsi.MySql.Tree
 
                 case RealLiteralConstantContext literalContext:
                 {
-                    return new QsiLiteralExpressionNode
+                    var node = new QsiLiteralExpressionNode
                     {
-                        Value = literalContext.GetText(),
+                        Value = decimal.Parse(literalContext.GetText()),
                         Type = QsiDataType.Decimal
                     };
+
+                    MySqlTree.PutContextSpan(node, literalContext);
+
+                    return node;
                 }
 
-                case BitStringConstantContext literalContext:
+                case BitStringConstantContext bitStringContext:
                 {
-                    return new QsiLiteralExpressionNode
+                    // B'0101'
+                    var node = new QsiLiteralExpressionNode
                     {
-                        Value = literalContext.GetText(),
-                        Type = QsiDataType.Binary
+                        Value = new MySqlString(MySqlStringKind.Bit, bitStringContext.GetText()[2..^1], null, null),
+                        Type = QsiDataType.Custom
                     };
+
+                    MySqlTree.PutContextSpan(node, bitStringContext);
+
+                    return node;
                 }
 
                 case NullLiteralConstantContext literalContext:
@@ -430,27 +486,15 @@ namespace Qsi.MySql.Tree
                 {
                     n.Operator = context.NOT().GetText();
                     n.Expression.SetValue(nullLiteral);
+
+                    MySqlTree.PutContextSpan(n, context);
                 });
             }
 
             return nullLiteral;
         }
 
-        private static QsiExpressionNode VisitCollationName(CollationNameContext context)
-        {
-            if (context.uid() != null)
-            {
-                return VisitTypeAccess(context.uid());
-            }
-
-            return new QsiLiteralExpressionNode
-            {
-                Value = IdentifierUtility.Unescape(context.STRING_LITERAL().GetText()),
-                Type = QsiDataType.String
-            };
-        }
-
-        public static QsiExpressionNode VisitLiteral(ParserRuleContext context)
+        public static QsiLiteralExpressionNode VisitLiteral(ParserRuleContext context)
         {
             QsiDataType literalType;
             object value;
@@ -463,35 +507,94 @@ namespace Qsi.MySql.Tree
                     break;
 
                 case FileSizeLiteralContext _:
-                case StringLiteralContext _:
-                    literalType = QsiDataType.String;
-                    value = IdentifierUtility.Unescape(context.GetText());
+                    literalType = QsiDataType.Unknown;
+                    value = context.GetText();
                     break;
+
+                case StringLiteralContext stringLiteral:
+                {
+                    MySqlStringKind? stringKind = null;
+                    var charSet = stringLiteral.STRING_CHARSET_NAME()?.GetText();
+                    var nationalLiteral = stringLiteral.START_NATIONAL_STRING_LITERAL()?.GetText();
+                    var collateName = stringLiteral.collationName()?.GetText();
+
+                    string[] literals = stringLiteral.STRING_LITERAL()?
+                        .Select(l => IdentifierUtility.Unescape(l.GetText()))
+                        .ToArray();
+
+                    string literalValue = null;
+
+                    if (literals?.Length > 0)
+                        literalValue = literals.Length > 1 ? string.Join(string.Empty, literals) : literals[0];
+
+                    if (!string.IsNullOrEmpty(nationalLiteral))
+                    {
+                        stringKind = MySqlStringKind.National;
+                        literalValue = $"{IdentifierUtility.Unescape(nationalLiteral[1..])}{literalValue}";
+                    }
+                    else if (!string.IsNullOrEmpty(charSet) || !string.IsNullOrEmpty(collateName))
+                    {
+                        stringKind = MySqlStringKind.Default;
+                    }
+
+                    if (stringKind.HasValue)
+                    {
+                        literalType = QsiDataType.Custom;
+                        value = new MySqlString(stringKind.Value, literalValue, charSet, collateName);
+                    }
+                    else
+                    {
+                        literalType = QsiDataType.String;
+                        value = literalValue;
+                    }
+
+                    break;
+                }
 
                 case DecimalLiteralContext _:
                     literalType = QsiDataType.Decimal;
-                    value = context.GetText();
+                    value = decimal.Parse(context.GetText());
                     break;
 
-                case HexadecimalLiteralContext _:
-                    literalType = QsiDataType.Hexadecimal;
-                    value = context.GetText();
+                case HexadecimalLiteralContext hexadecimalLiteral:
+                {
+                    var charSet = hexadecimalLiteral.STRING_CHARSET_NAME()?.GetText();
+                    var literalText = hexadecimalLiteral.HEXADECIMAL_LITERAL().GetText();
+
+                    if (literalText[0] == '0')
+                    {
+                        // 0x00FF00
+                        literalType = QsiDataType.Custom;
+                        value = new MySqlString(MySqlStringKind.Hexa, literalText[2..], charSet, null);
+                    }
+                    else
+                    {
+                        // X'00FF00'
+                        literalType = QsiDataType.Custom;
+                        value = new MySqlString(MySqlStringKind.HexaString, literalText[2..^1], charSet, null);
+                    }
+
                     break;
+                }
 
                 case BooleanLiteralContext _:
                     literalType = QsiDataType.Boolean;
-                    value = context.GetText();
+                    value = bool.Parse(context.GetText());
                     break;
 
                 default:
                     throw TreeHelper.NotSupportedTree(context);
             }
 
-            return new QsiLiteralExpressionNode
+            var node = new QsiLiteralExpressionNode
             {
                 Value = value,
                 Type = literalType
             };
+
+            MySqlTree.PutContextSpan(node, context);
+
+            return node;
         }
         #endregion
 
@@ -519,14 +622,16 @@ namespace Qsi.MySql.Tree
 
         private static QsiMultipleExpressionNode VisitExpressions(ExpressionsContext context)
         {
-            return VisitExpressions(context.expression());
+            return VisitExpressions(context, context.expression());
         }
 
-        private static QsiMultipleExpressionNode VisitExpressions(IEnumerable<ExpressionContext> contexts)
+        private static QsiMultipleExpressionNode VisitExpressions(ParserRuleContext context, IEnumerable<ExpressionContext> contexts)
         {
             return TreeHelper.Create<QsiMultipleExpressionNode>(n =>
             {
                 n.Elements.AddRange(contexts.Select(VisitExpression));
+
+                MySqlTree.PutContextSpan(n, context);
             });
         }
 
@@ -539,15 +644,21 @@ namespace Qsi.MySql.Tree
             {
                 n.Operator = context.notOperator.Text;
                 n.Expression.SetValue(VisitExpression(context.expression()));
+
+                MySqlTree.PutContextSpan(n, context);
             });
         }
 
         private static QsiLogicalExpressionNode VisitLogicalExpression(LogicalExpressionContext context)
         {
-            return CreateLogicalExpression(
+            var node = CreateLogicalExpression(
                 context.logicalOperator().GetText(),
                 context.left, context.right,
                 VisitExpression);
+
+            MySqlTree.PutContextSpan(node, context);
+
+            return node;
         }
 
         private static QsiExpressionNode VisitIsExpression(IsExpressionContext context)
@@ -555,7 +666,22 @@ namespace Qsi.MySql.Tree
             // predicate  IS NOT?  {TRUE | FALSE | UNKNOWN}
             // ▔\LEFT/▔▔  ▔\OP/▔▔   ▔▔▔▔▔▔▔▔\RIGHT/▔▔▔▔▔▔▔▔
 
-            return VisitPredicate(context.predicate());
+            return TreeHelper.Create<QsiLogicalExpressionNode>(n =>
+            {
+                n.Operator = context.NOT() == null ? "IS" : "IS NOT";
+
+                n.Left.SetValue(VisitPredicate(context.predicate()));
+
+                n.Right.SetValue(context.testValue.Text.ToUpper() switch
+                {
+                    "TRUE" => TreeHelper.CreateLiteral(true),
+                    "FALSE" => TreeHelper.CreateLiteral(false),
+                    "UNKNOWN" => TreeHelper.CreateConstantLiteral("UNKNOWN"),
+                    _ => throw new InvalidOperationException()
+                });
+
+                MySqlTree.PutContextSpan(n, context);
+            });
         }
 
         private static QsiExpressionNode VisitPredicateExpression(PredicateExpressionContext context)
@@ -587,6 +713,8 @@ namespace Qsi.MySql.Tree
                         }
 
                         UnwrapLogicalExpressionNode(n);
+
+                        MySqlTree.PutContextSpan(n, pContext);
                     });
                 }
 
@@ -602,6 +730,8 @@ namespace Qsi.MySql.Tree
                         n.Right.SetValue(VisitNullNotNull(pContext.nullNotnull()));
 
                         UnwrapLogicalExpressionNode(n);
+
+                        MySqlTree.PutContextSpan(n, pContext);
                     });
                 }
 
@@ -610,10 +740,14 @@ namespace Qsi.MySql.Tree
                     // predicate  { = | > | < | <= | >= | <> | != | <=> }  predicate
                     // ▔\LEFT/▔▔   ▔▔▔▔▔▔▔▔▔▔▔▔▔\OPERATOR/▔▔▔▔▔▔▔▔▔▔▔▔▔▔   ▔\RIGHT/▔
 
-                    return CreateLogicalExpression(
+                    var node = CreateLogicalExpression(
                         pContext.comparisonOperator().GetText(),
                         pContext.left, pContext.right,
                         VisitPredicate);
+
+                    MySqlTree.PutContextSpan(node, pContext);
+
+                    return node;
                 }
 
                 case SubqueryComparasionPredicateContext pContext:
@@ -628,6 +762,8 @@ namespace Qsi.MySql.Tree
                         n.Right.SetValue(VisitSelectStatement(pContext.selectStatement()));
 
                         UnwrapLogicalExpressionNode(n);
+
+                        MySqlTree.PutContextSpan(n, pContext);
                     });
                 }
 
@@ -641,6 +777,8 @@ namespace Qsi.MySql.Tree
                     return TreeHelper.Create<QsiParametersExpressionNode>(n =>
                     {
                         n.Expressions.AddRange(pContext.predicate().Select(VisitPredicate));
+
+                        MySqlTree.PutContextSpan(n, pContext);
                     });
                 }
 
@@ -649,10 +787,14 @@ namespace Qsi.MySql.Tree
                     // predicate  SOUNDS LIKE  predicate
                     // ▔\LEFT/▔▔  ▔▔▔\OP/▔▔▔▔  ▔\RIGHT/▔
 
-                    return CreateLogicalExpression(
+                    var node = CreateLogicalExpression(
                         JoinTokens(pContext.SOUNDS(), pContext.LIKE()),
                         pContext.left, pContext.right,
                         VisitPredicate);
+
+                    MySqlTree.PutContextSpan(node, pContext);
+
+                    return node;
                 }
 
                 case LikePredicateContext pContext:
@@ -661,10 +803,14 @@ namespace Qsi.MySql.Tree
                     // predicate  NOT? LIKE  predicate  (ESCAPE STRING_LITERAL)?
                     // ▔\LEFT/▔▔  ▔▔\OP/▔▔▔  ▔\RIGHT/▔   ▔▔▔▔▔▔▔\SKIP/▔▔▔▔▔▔▔▔
 
-                    return CreateLogicalExpression(
+                    var node = CreateLogicalExpression(
                         JoinTokens(pContext.NOT(), pContext.LIKE()),
                         pContext.left, pContext.right,
                         VisitPredicate);
+
+                    MySqlTree.PutContextSpan(node, pContext);
+
+                    return node;
                 }
 
                 case RegexpPredicateContext pContext:
@@ -672,10 +818,14 @@ namespace Qsi.MySql.Tree
                     // predicate  NOT? {REGEXP | RLIKE}  predicate
                     // ▔\LEFT/▔▔  ▔▔▔▔▔▔▔▔\OP/▔▔▔▔▔▔▔▔   ▔\RIGHT/▔
 
-                    return CreateLogicalExpression(
+                    var node = CreateLogicalExpression(
                         JoinTokens(pContext.NOT()?.GetText(), pContext.regex.Text),
                         pContext.left, pContext.right,
                         VisitPredicate);
+
+                    MySqlTree.PutContextSpan(node, pContext);
+
+                    return node;
                 }
 
                 case ExpressionAtomPredicateContext pContext:
@@ -720,14 +870,7 @@ namespace Qsi.MySql.Tree
 
                 case CollateExpressionAtomContext pContext:
                 {
-                    return TreeHelper.Create<QsiLogicalExpressionNode>(n =>
-                    {
-                        n.Operator = pContext.COLLATE().GetText();
-                        n.Left.SetValue(VisitExpressionAtom(pContext.expressionAtom()));
-                        n.Right.SetValue(VisitCollationName(pContext.collationName()));
-
-                        UnwrapLogicalExpressionNode(n);
-                    });
+                    return VisitCollateExpressionAtom(pContext);
                 }
 
                 case MysqlVariableExpressionAtomContext pContext:
@@ -737,10 +880,29 @@ namespace Qsi.MySql.Tree
 
                 case UnaryExpressionAtomContext pContext:
                 {
+                    var unaryOperator = pContext.unaryOperator().GetText();
+                    var expression = VisitExpressionAtom(pContext.expressionAtom());
+
+                    if (expression is QsiLiteralExpressionNode literal)
+                    {
+                        switch (unaryOperator)
+                        {
+                            case "-" when literal.Type == QsiDataType.Decimal:
+                                literal.Value = -(decimal)literal.Value;
+                                return literal;
+
+                            case "!" when literal.Type == QsiDataType.Boolean:
+                                literal.Value = !(bool)literal.Value;
+                                return literal;
+                        }
+                    }
+
                     return TreeHelper.Create<QsiUnaryExpressionNode>(n =>
                     {
-                        n.Operator = pContext.unaryOperator().GetText();
-                        n.Expression.SetValue(VisitExpressionAtom(pContext.expressionAtom()));
+                        n.Operator = unaryOperator;
+                        n.Expression.SetValue(expression);
+
+                        MySqlTree.PutContextSpan(n, pContext);
                     });
                 }
 
@@ -750,12 +912,14 @@ namespace Qsi.MySql.Tree
                     {
                         n.Operator = pContext.BINARY().GetText();
                         n.Expression.SetValue(VisitExpressionAtom(pContext.expressionAtom()));
+
+                        MySqlTree.PutContextSpan(n, pContext);
                     });
                 }
 
                 case NestedExpressionAtomContext pContext:
                 {
-                    return VisitExpressions(pContext.expression());
+                    return VisitExpressions(pContext, pContext.expression());
                 }
 
                 case NestedRowExpressionAtomContext pContext:
@@ -764,6 +928,8 @@ namespace Qsi.MySql.Tree
                     {
                         n.Member.SetValue(VisitFunctionAccess(pContext.children[0]));
                         n.Parameters.AddRange(pContext.expression().Select(VisitExpression));
+
+                        MySqlTree.PutContextSpan(n, pContext);
                     });
                 }
 
@@ -773,6 +939,8 @@ namespace Qsi.MySql.Tree
                     {
                         n.Member.SetValue(VisitFunctionAccess(pContext.children[0]));
                         n.Parameters.Add(VisitSelectStatement(pContext.selectStatement()));
+
+                        MySqlTree.PutContextSpan(n, pContext);
                     });
                 }
 
@@ -791,25 +959,35 @@ namespace Qsi.MySql.Tree
                     {
                         n.Operator = pContext.INTERVAL().GetText();
                         n.Expression.SetValue(VisitExpression(pContext.expression()));
+
+                        MySqlTree.PutContextSpan(n, pContext);
                     });
                 }
 
                 case BitExpressionAtomContext pContext:
                 {
-                    return CreateLogicalExpression(
+                    var node = CreateLogicalExpression(
                         pContext.bitOperator().GetText(),
                         pContext.left,
                         pContext.right,
                         VisitExpressionAtom);
+
+                    MySqlTree.PutContextSpan(node, pContext);
+
+                    return node;
                 }
 
                 case MathExpressionAtomContext pContext:
                 {
-                    return CreateLogicalExpression(
+                    var node = CreateLogicalExpression(
                         pContext.mathOperator().GetText(),
                         pContext.left,
                         pContext.right,
                         VisitExpressionAtom);
+
+                    MySqlTree.PutContextSpan(node, pContext);
+
+                    return node;
                 }
 
                 default:
@@ -817,13 +995,44 @@ namespace Qsi.MySql.Tree
             }
         }
 
+        private static QsiExpressionNode VisitCollateExpressionAtom(CollateExpressionAtomContext pContext)
+        {
+            var left = VisitExpressionAtom(pContext.expressionAtom());
+            var collate = pContext.collationName().GetText();
+
+            if (left is QsiLiteralExpressionNode literal &&
+                literal.Value is MySqlString mySqlString &&
+                (mySqlString.Kind == MySqlStringKind.Default || mySqlString.Kind == MySqlStringKind.National) &&
+                string.IsNullOrEmpty(mySqlString.CollateName))
+            {
+                literal.Value = mySqlString.WithCollate(collate);
+
+                MySqlTree.PutContextSpan(literal, pContext);
+
+                return literal;
+            }
+
+            return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            {
+                n.Member.SetValue(TreeHelper.CreateFunctionAccess("COLLATE"));
+                n.Parameters.Add(left);
+                n.Parameters.Add(TreeHelper.CreateConstantLiteral(collate));
+
+                MySqlTree.PutContextSpan(n, pContext);
+            });
+        }
+
         internal static QsiExpressionNode VisitLocalIdAssign(LocalIdAssignContext context, QsiExpressionNode expression)
         {
-            return TreeHelper.Create<QsiAssignExpressionNode>(n =>
+            return TreeHelper.Create<QsiSetVariableExpressionNode>(n =>
             {
-                n.Operator = context.VAR_ASSIGN().GetText();
-                n.Variable.SetValue(VisitLocalId(context.LOCAL_ID()));
+                n.Target = IdentifierVisitor.VisitLocalId(context.LOCAL_ID());
+                n.AssignmentKind = QsiAssignmentKind.ColonEquals;
                 n.Value.SetValue(expression);
+
+                var span = MySqlTree.GetSpan(expression);
+
+                MySqlTree.PutSpan(n, new Range(context.Start.StartIndex, span.End));
             });
         }
 
@@ -878,6 +1087,8 @@ namespace Qsi.MySql.Tree
             return TreeHelper.Create<QsiTableExpressionNode>(n =>
             {
                 n.Table.SetValue(TableVisitor.VisitSelectStatement(context));
+
+                MySqlTree.PutContextSpan(n, context);
             });
         }
         #endregion
@@ -903,6 +1114,9 @@ namespace Qsi.MySql.Tree
                         Name = identifier
                     });
                 }
+
+                MySqlTree.PutContextSpan(n.Column.Value, context);
+                MySqlTree.PutContextSpan(n, context);
             });
         }
         #endregion
@@ -913,6 +1127,7 @@ namespace Qsi.MySql.Tree
             return TreeHelper.Create<QsiMultipleExpressionNode>(n =>
             {
                 n.Elements.AddRange(context.LOCAL_ID().Select(VisitLocalId));
+                MySqlTree.PutContextSpan(n, context);
             });
         }
 
@@ -935,26 +1150,28 @@ namespace Qsi.MySql.Tree
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiVariableAccessExpressionNode VisitLocalId(ITerminalNode node)
+        public static QsiVariableAccessExpressionNode VisitLocalId(ITerminalNode terminalNode)
         {
-            var text = node.GetText()[1..];
-            var identifier = new QsiIdentifier(text, IdentifierUtility.IsEscaped(text));
-
-            return new QsiVariableAccessExpressionNode
+            var node = new QsiVariableAccessExpressionNode
             {
-                Identifier = new QsiQualifiedIdentifier(identifier)
+                Identifier = IdentifierVisitor.VisitLocalId(terminalNode)
             };
+
+            MySqlTree.PutContextSpan(node, terminalNode.Symbol);
+
+            return node;
         }
 
-        public static QsiVariableAccessExpressionNode VisitGlobalId(ITerminalNode node)
+        public static QsiVariableAccessExpressionNode VisitGlobalId(ITerminalNode terminalNode)
         {
-            var text = node.GetText()[2..];
-            var identifier = new QsiIdentifier(text, IdentifierUtility.IsEscaped(text));
-
-            return new QsiVariableAccessExpressionNode
+            var node = new QsiVariableAccessExpressionNode
             {
-                Identifier = new QsiQualifiedIdentifier(identifier)
+                Identifier = IdentifierVisitor.VisitGlobalId(terminalNode)
             };
+
+            MySqlTree.PutContextSpan(node, terminalNode.Symbol);
+
+            return node;
         }
         #endregion
 
@@ -964,38 +1181,98 @@ namespace Qsi.MySql.Tree
             if (context.children[0] is FunctionNameBaseContext functionNameBaseContext)
                 return VisitFunctionNameBase(functionNameBaseContext);
 
-            return new QsiFunctionAccessExpressionNode
+            var node = new QsiFunctionAccessExpressionNode
             {
                 Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(context.GetText(), false))
             };
+
+            MySqlTree.PutContextSpan(node, context);
+
+            return node;
         }
 
         private static QsiFunctionAccessExpressionNode VisitFunctionNameBase(FunctionNameBaseContext context)
         {
-            return new QsiFunctionAccessExpressionNode
+            var node = new QsiFunctionAccessExpressionNode
             {
                 Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(context.GetText(), false))
             };
+
+            MySqlTree.PutContextSpan(node, context);
+
+            return node;
         }
 
         private static QsiFunctionAccessExpressionNode VisitFunctionAccess(IParseTree tree)
         {
-            return new QsiFunctionAccessExpressionNode
+            var node = new QsiFunctionAccessExpressionNode
             {
                 Identifier = IdentifierVisitor.Visit(tree)
             };
+
+            if (tree.Payload is CommonToken token)
+                MySqlTree.PutContextSpan(node, token);
+
+            return node;
         }
         #endregion
 
         #region TypeAccess
         private static QsiTypeAccessExpressionNode VisitTypeAccess(UidContext context)
         {
-            return new QsiTypeAccessExpressionNode
+            var node = new QsiTypeAccessExpressionNode
             {
                 Identifier = new QsiQualifiedIdentifier(IdentifierVisitor.VisitUid(context))
             };
+
+            MySqlTree.PutContextSpan(node, context);
+
+            return node;
         }
         #endregion
+
+        public static QsiRowValueExpressionNode VisitExpressionsWithDefaults(ExpressionsWithDefaultsContext context)
+        {
+            IEnumerable<QsiExpressionNode> expressions = context.expressionOrDefault()
+                .Select(c => new CommonExpressionOrDefaultContext(c))
+                .Select(VisitExpressionOrDefault);
+
+            var node = new QsiRowValueExpressionNode();
+            node.ColumnValues.AddRange(expressions);
+
+            MySqlTree.PutContextSpan(node, context);
+
+            return node;
+        }
+
+        public static QsiExpressionNode VisitExpressionOrDefault(CommonExpressionOrDefaultContext context)
+        {
+            if (context.IsDefault)
+            {
+                var defaultLiteral = TreeHelper.CreateDefaultLiteral();
+
+                MySqlTree.PutContextSpan(defaultLiteral, context.Context);
+
+                return defaultLiteral;
+            }
+
+            return Visit(context.Expression);
+        }
+
+        public static QsiSetColumnExpressionNode VisitUpdatedElement(UpdatedElementContext context)
+        {
+            var assignNode = new QsiSetColumnExpressionNode
+            {
+                Target = IdentifierVisitor.VisitFullColumnName(context.fullColumnName())
+            };
+
+            var valueContext = new CommonExpressionOrDefaultContext(context);
+            assignNode.Value.SetValue(VisitExpressionOrDefault(valueContext));
+
+            MySqlTree.PutContextSpan(assignNode, context);
+
+            return assignNode;
+        }
 
         private static string JoinTokens(params string[] tokens)
         {

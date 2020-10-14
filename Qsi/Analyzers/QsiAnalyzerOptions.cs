@@ -1,6 +1,8 @@
-﻿namespace Qsi.Analyzers
+﻿using System;
+
+namespace Qsi.Analyzers
 {
-    public sealed class QsiAnalyzerOptions
+    public sealed class QsiAnalyzerOptions : ICloneable
     {
         /// <summary>
         /// Allow empty columns in <c>select statement</c>.
@@ -26,5 +28,25 @@
         /// Use explicit relation access
         /// </summary>
         public bool UseExplicitRelationAccess { get; set; }
+
+        /// <summary>
+        /// Use view tracing
+        /// </summary>
+        public bool UseViewTracing { get; set; } = true;
+
+        public QsiAnalyzerOptions Clone()
+        {
+            return new QsiAnalyzerOptions
+            {
+                AllowEmptyColumnsInSelect = AllowEmptyColumnsInSelect,
+                AllowEmptyColumnsInInline = AllowEmptyColumnsInInline,
+                AllowNoAliasInDerivedTable = AllowNoAliasInDerivedTable,
+                UseAutoFixRecursiveQuery = UseAutoFixRecursiveQuery,
+                UseExplicitRelationAccess = UseExplicitRelationAccess,
+                UseViewTracing = UseViewTracing,
+            };
+        }
+
+        object ICloneable.Clone() => Clone();
     }
 }

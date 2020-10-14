@@ -6,6 +6,7 @@ using Qsi.Tree.Immutable;
 using Qsi.Data;
 using Qsi.Extensions;
 using Qsi.Tree;
+using Qsi.Utilities;
 
 namespace Qsi.Analyzers.Table
 {
@@ -38,7 +39,7 @@ namespace Qsi.Analyzers.Table
         #endregion
 
         #region Table
-        private async ValueTask<QsiTableStructure> BuildTableStructure(CompileContext context, IQsiTableNode table)
+        internal async ValueTask<QsiTableStructure> BuildTableStructure(CompileContext context, IQsiTableNode table)
         {
             context.ThrowIfCancellationRequested();
 
@@ -70,10 +71,11 @@ namespace Qsi.Analyzers.Table
             var lookup = ResolveTableStructure(context, table.Identifier);
 
             // view
-            if (!lookup.IsSystem &&
+            if (context.Options.UseViewTracing &&
+                !lookup.IsSystem &&
                 (lookup.Type == QsiTableType.View || lookup.Type == QsiTableType.MaterializedView))
             {
-                var script = Engine.ReferenceResolver.LookupDefinition(lookup.Identifier, lookup.Type) ??
+                var script = Engine.RepositoryProvider.LookupDefinition(lookup.Identifier, lookup.Type) ??
                              throw new QsiException(QsiError.UnableResolveDefinition, lookup.Identifier);
 
                 var viewTable = (IQsiTableNode)Engine.TreeParser.Parse(script) ??
@@ -337,7 +339,7 @@ namespace Qsi.Analyzers.Table
             return declaredTable;
         }
 
-        private async ValueTask BuildDirectives(CompileContext context, IQsiTableDirectivesNode directivesNode)
+        internal async ValueTask BuildDirectives(CompileContext context, IQsiTableDirectivesNode directivesNode)
         {
             context.ThrowIfCancellationRequested();
 
@@ -371,7 +373,8 @@ namespace Qsi.Analyzers.Table
                             compositeTableNode.Parent,
                             fixedSources
                                 .Select(s => s.Source)
-                                .ToArray());
+                                .ToArray(),
+                            compositeTableNode.UserData);
                     }
 
                     using var directiveContext = new CompileContext(context);
@@ -658,11 +661,16 @@ namespace Qsi.Analyzers.Table
 
             switch (expression)
             {
-                case IQsiAssignExpressionNode e:
+                case IQsiSetColumnExpressionNode e:
                 {
-                    foreach (var c in ResolveColumnsInExpression(context, e.Variable))
+                    foreach (var c in ResolveColumnsInExpression(context, e.Value))
                         yield return c;
 
+                    break;
+                }
+
+                case IQsiSetVariableExpressionNode e:
+                {
                     foreach (var c in ResolveColumnsInExpression(context, e.Value))
                         yield return c;
 
@@ -841,7 +849,7 @@ namespace Qsi.Analyzers.Table
                 identifier = new QsiQualifiedIdentifier(identifiers.ToArray());
             }
 
-            return Engine.ReferenceResolver.ResolveQualifiedIdentifier(identifier);
+            return Engine.RepositoryProvider.ResolveQualifiedIdentifier(identifier);
         }
 
         private QsiTableStructure ResolveTableStructure(CompileContext context, QsiQualifiedIdentifier identifier)
@@ -856,7 +864,7 @@ namespace Qsi.Analyzers.Table
 
             return
                 context.Directives.FirstOrDefault(d => Match(d.Identifier, identifier)) ??
-                Engine.ReferenceResolver.LookupTable(ResolveQualifiedIdentifier(context, identifier));
+                Engine.RepositoryProvider.LookupTable(ResolveQualifiedIdentifier(context, identifier));
         }
 
         private IEnumerable<QsiTableStructure> LookupDataTableStructuresInExpression(CompileContext context, QsiQualifiedIdentifier identifier)
@@ -899,7 +907,7 @@ namespace Qsi.Analyzers.Table
                 if (context.Options.UseExplicitRelationAccess)
                     continue;
 
-                if (!IsReferenceType(table.Type))
+                if (!QsiUtility.IsReferenceType(table.Type))
                     continue;
 
                 if (table.Identifier.Level <= identifier.Level)
@@ -913,14 +921,6 @@ namespace Qsi.Analyzers.Table
             }
         }
         #endregion
-
-        private static bool IsReferenceType(QsiTableType type)
-        {
-            return
-                type == QsiTableType.Table ||
-                type == QsiTableType.View ||
-                type == QsiTableType.MaterializedView;
-        }
 
         private class PivotColumnPair
         {

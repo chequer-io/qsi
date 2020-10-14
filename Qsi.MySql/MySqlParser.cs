@@ -28,17 +28,23 @@ namespace Qsi.MySql
 
             switch (script.ScriptType)
             {
-                case QsiScriptType.Prepare:
-                case QsiScriptType.Execute:
-                case QsiScriptType.DropPrepare:
-                    return ActionVisitor.VisitPreparedStatement(mySqlParser.preparedStatement());
-
                 case QsiScriptType.With:
                 case QsiScriptType.Select:
                     return TableVisitor.VisitSelectStatement(mySqlParser.selectStatement());
 
                 case QsiScriptType.Create:
                     return TableVisitor.VisitDdlStatement(mySqlParser.ddlStatement());
+
+                case QsiScriptType.Prepare:
+                case QsiScriptType.Execute:
+                case QsiScriptType.DropPrepare:
+                    return ActionVisitor.VisitPreparedStatement(mySqlParser.preparedStatement());
+
+                case QsiScriptType.Insert:
+                    return ActionVisitor.VisitInsertStatement(mySqlParser.insertStatement());
+
+                case QsiScriptType.Replace:
+                    return ActionVisitor.VisitReplaceStatement(mySqlParser.replaceStatement());
 
                 default:
                     return null;

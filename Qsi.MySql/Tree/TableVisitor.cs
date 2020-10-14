@@ -91,6 +91,7 @@ namespace Qsi.MySql.Tree
                 {
                     n.Ordinal = i;
                     n.Alias.SetValue(CreateAliasNode(uid));
+                    MySqlTree.PutContextSpan(n, uid);
                 }));
         }
         #endregion
@@ -98,10 +99,14 @@ namespace Qsi.MySql.Tree
         #region Alias
         public static QsiAliasNode CreateAliasNode(UidContext context)
         {
-            return new QsiAliasNode
+            var node = new QsiAliasNode
             {
                 Name = IdentifierVisitor.VisitUid(context)
             };
+
+            MySqlTree.PutContextSpan(node, context);
+
+            return node;
         }
         #endregion
 
@@ -110,12 +115,13 @@ namespace Qsi.MySql.Tree
         {
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
-                var viewAccessNode = VisitFullId(context.fullId());
+                var viewIdentifier = IdentifierVisitor.VisitFullId(context.fullId());
                 var columnsDeclaration = new QsiColumnsDeclarationNode();
 
                 if (context.uidList() != null)
                 {
                     columnsDeclaration.Columns.AddRange(CreateSequentialColumnNodes(context.uidList().uid()));
+                    MySqlTree.PutContextSpan(columnsDeclaration, context.uidList());
                 }
                 else
                 {
@@ -127,8 +133,10 @@ namespace Qsi.MySql.Tree
 
                 n.Alias.SetValue(new QsiAliasNode
                 {
-                    Name = viewAccessNode.Identifier[^1]
+                    Name = viewIdentifier[^1]
                 });
+
+                MySqlTree.PutContextSpan(n, context);
             });
         }
         #endregion
@@ -167,20 +175,16 @@ namespace Qsi.MySql.Tree
                 return tableNode;
             }
 
-            if (!(tableNode is QsiDerivedTableNode derivedTableNode))
+            return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
-                derivedTableNode = TreeHelper.Create<QsiDerivedTableNode>(dn =>
-                {
-                    dn.Source.SetValue(tableNode);
-                    dn.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+                n.Source.SetValue(tableNode);
+                n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+                n.Directives.SetValue(VisitWithClause(withClauseContext));
 
-                    // TODO: alias test
-                });
-            }
+                // TODO: alias test
 
-            derivedTableNode.Directives.SetValue(VisitWithClause(withClauseContext));
-
-            return derivedTableNode;
+                MySqlTree.PutContextSpan(n, context);
+            });
         }
 
         public static QsiTableDirectivesNode VisitWithClause(WithClauseContext context)
@@ -189,6 +193,8 @@ namespace Qsi.MySql.Tree
             {
                 n.IsRecursive = context.RECURSIVE() != null;
                 n.Tables.AddRange(context.withExpression().Select(VisitWithExpression));
+
+                MySqlTree.PutContextSpan(n, context);
             });
         }
 
@@ -201,6 +207,7 @@ namespace Qsi.MySql.Tree
                 if (context.columns != null)
                 {
                     columnsDeclaration.Columns.AddRange(CreateSequentialColumnNodes(context.columns.uid()));
+                    MySqlTree.PutContextSpan(columnsDeclaration, context.columns);
                 }
                 else
                 {
@@ -210,6 +217,8 @@ namespace Qsi.MySql.Tree
                 n.Columns.SetValue(columnsDeclaration);
                 n.Source.SetValue(VisitSelectStatement(context.selectStatement()));
                 n.Alias.SetValue(CreateAliasNode(context.alias));
+
+                MySqlTree.PutContextSpan(n, context);
             });
         }
 
@@ -235,6 +244,8 @@ namespace Qsi.MySql.Tree
 
                 if (context.queryExpression() != null)
                     n.Sources.Add(VisitQueryExpression(context.queryExpression()));
+
+                MySqlTree.PutContextSpan(n, context);
             });
         }
 
@@ -247,6 +258,8 @@ namespace Qsi.MySql.Tree
 
                 if (context.queryExpression() != null)
                     n.Sources.Add(VisitQueryExpression(context.queryExpression()));
+
+                MySqlTree.PutContextSpan(n, context);
             });
         }
 
@@ -324,6 +337,8 @@ namespace Qsi.MySql.Tree
                 {
                     n.Source.SetValue(VisitTableSources(context.FromClause.tableSources()));
                 }
+
+                MySqlTree.PutContextSpan(n, context.Context);
             });
         }
 
@@ -335,35 +350,44 @@ namespace Qsi.MySql.Tree
                     n.Columns.Add(new QsiAllColumnNode());
 
                 n.Columns.AddRange(context.selectElement().Select(VisitSelectElement));
+
+                MySqlTree.PutContextSpan(n, context);
             });
         }
 
         public static QsiColumnNode VisitSelectElement(SelectElementContext context)
         {
+            QsiColumnNode node;
+
             switch (context)
             {
                 case SelectStarElementContext starElementContext:
                 {
-                    return new QsiAllColumnNode
+                    node = new QsiAllColumnNode
                     {
                         Path = IdentifierVisitor.VisitFullId(starElementContext.fullId())
                     };
+
+                    break;
                 }
 
                 case SelectColumnElementContext columnElementContext:
                 {
-                    return VisitSelectColumnElement(columnElementContext);
+                    node = VisitSelectColumnElement(columnElementContext);
+                    break;
                 }
 
                 case SelectFunctionElementContext functionElementContext:
                 {
-                    return TreeHelper.Create<QsiDerivedColumnNode>(n =>
+                    node = TreeHelper.Create<QsiDerivedColumnNode>(n =>
                     {
                         n.Expression.SetValue(ExpressionVisitor.VisitFunctionCall(functionElementContext.functionCall()));
 
                         if (functionElementContext.alias != null)
                             n.Alias.SetValue(CreateAliasNode(functionElementContext.alias));
                     });
+
+                    break;
                 }
 
                 case SelectExpressionElementContext expressionElementContext:
@@ -377,22 +401,30 @@ namespace Qsi.MySql.Tree
                             expression);
                     }
 
-                    return TreeHelper.Create<QsiDerivedColumnNode>(n =>
+                    node = TreeHelper.Create<QsiDerivedColumnNode>(n =>
                     {
                         n.Expression.SetValue(expression);
 
                         if (expressionElementContext.alias != null)
                             n.Alias.SetValue(CreateAliasNode(expressionElementContext.alias));
                     });
+
+                    break;
                 }
+
+                default:
+                    return null;
             }
 
-            return null;
+            MySqlTree.PutContextSpan(node, context);
+
+            return node;
         }
 
         public static QsiColumnNode VisitSelectColumnElement(SelectColumnElementContext columnElementContext)
         {
-            var columnName = IdentifierVisitor.Visit(columnElementContext.fullColumnName());
+            var nameContext = columnElementContext.fullColumnName();
+            var columnName = IdentifierVisitor.Visit(nameContext);
 
             if (columnName.Level == 1 &&
                 columnName[0].IsEscaped &&
@@ -408,6 +440,8 @@ namespace Qsi.MySql.Tree
 
                     if (columnElementContext.alias != null)
                         n.Alias.SetValue(CreateAliasNode(columnElementContext.alias));
+
+                    MySqlTree.PutContextSpan(n, columnElementContext);
                 });
             }
 
@@ -417,12 +451,19 @@ namespace Qsi.MySql.Tree
             };
 
             if (columnElementContext.alias == null)
+            {
+                MySqlTree.PutContextSpan(columnNode, columnElementContext);
                 return columnNode;
+            }
+
+            MySqlTree.PutContextSpan(columnNode, nameContext);
 
             return TreeHelper.Create<QsiDerivedColumnNode>(n =>
             {
                 n.Column.SetValue(columnNode);
                 n.Alias.SetValue(CreateAliasNode(columnElementContext.alias));
+
+                MySqlTree.PutContextSpan(n, columnElementContext);
             });
         }
         #endregion
@@ -454,7 +495,13 @@ namespace Qsi.MySql.Tree
 
                     nextJoin.Left.SetValue(anchor);
                     nextJoin.Right.SetValue(source);
+
+                    var leftSpan = MySqlTree.GetSpan(anchor);
+                    var rightSpan = MySqlTree.GetSpan(source);
+
                     anchor = nextJoin;
+
+                    MySqlTree.PutSpan(nextJoin, new Range(leftSpan.Start, rightSpan.End));
                 }
 
                 return anchor;
@@ -478,6 +525,8 @@ namespace Qsi.MySql.Tree
                     {
                         n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
                         n.Source.SetValue(VisitTableSource(new CommonTableSourceContext(nestedContext)));
+
+                        MySqlTree.PutContextSpan(n, nestedContext);
                     });
                 }
 
@@ -558,6 +607,10 @@ namespace Qsi.MySql.Tree
                     nextJoin.Left.SetValue(anchor);
                     nextJoin.Right.SetValue(VisitTableSourceItem(sourceItemContext));
 
+                    MySqlTree.PutContextSpan(nextJoin, join);
+
+                    anchor = nextJoin;
+
                     // PivotColumns: USING (..)
                     if (uidListContext != null)
                     {
@@ -573,40 +626,56 @@ namespace Qsi.MySql.Tree
                         });
 
                         nextJoin.PivotColumns.SetValue(columnsDeclaration);
-                    }
 
-                    anchor = nextJoin;
+                        MySqlTree.PutContextSpan(columnsDeclaration, uidListContext);
+                    }
                 }
             }
 
             return anchor;
         }
 
+        public static QsiTableAccessNode VisitTableName(TableNameContext context)
+        {
+            return new QsiTableAccessNode
+            {
+                Identifier = IdentifierVisitor.VisitFullId(context.fullId())
+            };
+        }
+
         // .. FROM db.table [AS alias]
         public static QsiTableNode VisitAtomTableItem(AtomTableItemContext context)
         {
-            var tableNode = new QsiTableAccessNode
-            {
-                Identifier = IdentifierVisitor.VisitFullId(context.tableName().fullId())
-            };
+            var tableNode = VisitTableName(context.tableName());
 
             if (context.alias == null)
+            {
+                MySqlTree.PutContextSpan(tableNode, context);
                 return tableNode;
+            }
+
+            MySqlTree.PutContextSpan(tableNode, context.tableName());
 
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
                 n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
                 n.Source.SetValue(tableNode);
                 n.Alias.SetValue(CreateAliasNode(context.alias));
+
+                MySqlTree.PutContextSpan(n, context);
             });
         }
 
         public static QsiTableAccessNode VisitFullId(FullIdContext context)
         {
-            return new QsiTableAccessNode
+            var node = new QsiTableAccessNode
             {
                 Identifier = IdentifierVisitor.VisitFullId(context)
             };
+
+            MySqlTree.PutContextSpan(node, context);
+
+            return node;
         }
 
         // .. FROM (subquery) alias
@@ -620,6 +689,8 @@ namespace Qsi.MySql.Tree
                 n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
                 n.Source.SetValue(VisitSelectStatement(context.selectStatement()));
                 n.Alias.SetValue(CreateAliasNode(context.alias));
+
+                MySqlTree.PutContextSpan(n, context);
             });
         }
 

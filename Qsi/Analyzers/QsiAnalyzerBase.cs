@@ -1,4 +1,6 @@
-﻿using System.Threading;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Qsi.Data;
 using Qsi.Tree;
@@ -9,9 +11,14 @@ namespace Qsi.Analyzers
     {
         public QsiEngine Engine { get; }
 
+        protected IEqualityComparer<QsiIdentifier> IdentifierComparer => _identifierComparer.Value;
+
+        private readonly Lazy<IEqualityComparer<QsiIdentifier>> _identifierComparer;
+
         protected QsiAnalyzerBase(QsiEngine engine)
         {
             Engine = engine;
+            _identifierComparer = new Lazy<IEqualityComparer<QsiIdentifier>>(() => new InternalIdentifierComparer(Match));
         }
 
         public ValueTask<IQsiAnalysisResult> Execute(
@@ -65,6 +72,26 @@ namespace Qsi.Analyzers
                 Tree = tree;
                 Options = options;
                 CancellationToken = cancellationToken;
+            }
+        }
+
+        private readonly struct InternalIdentifierComparer : IEqualityComparer<QsiIdentifier>
+        {
+            private readonly Func<QsiIdentifier, QsiIdentifier, bool> _equalsDelegate;
+
+            public InternalIdentifierComparer(Func<QsiIdentifier, QsiIdentifier, bool> equalsDelegate)
+            {
+                _equalsDelegate = equalsDelegate;
+            }
+
+            public bool Equals(QsiIdentifier x, QsiIdentifier y)
+            {
+                return _equalsDelegate(x, y);
+            }
+
+            public int GetHashCode(QsiIdentifier obj)
+            {
+                return obj.GetHashCode();
             }
         }
     }

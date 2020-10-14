@@ -20,9 +20,11 @@ namespace Qsi.Services
 
         public abstract IQsiTreeParser CreateTreeParser();
 
+        public abstract IQsiTreeDeparser CreateTreeDeparser();
+
         public abstract IQsiScriptParser CreateScriptParser();
 
-        public abstract IQsiReferenceResolver CreateReferenceResolver();
+        public abstract IQsiRepositoryProvider CreateRepositoryProvider();
 
         private IEqualityComparer<QsiIdentifier> _comparer;
 

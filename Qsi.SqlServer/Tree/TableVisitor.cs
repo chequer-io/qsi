@@ -17,7 +17,7 @@ namespace Qsi.SqlServer.Tree
         public QsiTreeNode Visit(TSqlBatch sqlBatch)
         {
             var statement = sqlBatch?.Statements?.FirstOrDefault()
-                            ?? throw new QsiException(QsiError.SyntaxError);
+                            ?? throw new QsiException(QsiError.Syntax);
 
             return VisitStatements(statement);
         }
@@ -284,24 +284,24 @@ namespace Qsi.SqlServer.Tree
         {
             return TreeHelper.Create<QsiDerivedColumnNode>(n =>
             {
-                var op = selectSetVariable.AssignmentKind switch
+                var kind = selectSetVariable.AssignmentKind switch
                 {
-                    AssignmentKind.Equals => "=",
-                    AssignmentKind.AddEquals => "+=",
-                    AssignmentKind.DivideEquals => "/=",
-                    AssignmentKind.ModEquals => "%=",
-                    AssignmentKind.MultiplyEquals => "*=",
-                    AssignmentKind.SubtractEquals => "-=",
-                    AssignmentKind.BitwiseAndEquals => "&=",
-                    AssignmentKind.BitwiseOrEquals => "|=",
-                    AssignmentKind.BitwiseXorEquals => "^=",
+                    AssignmentKind.Equals => QsiAssignmentKind.Equals,
+                    AssignmentKind.AddEquals => QsiAssignmentKind.AddEquals,
+                    AssignmentKind.DivideEquals => QsiAssignmentKind.DivideEquals,
+                    AssignmentKind.ModEquals => QsiAssignmentKind.ModEquals,
+                    AssignmentKind.MultiplyEquals => QsiAssignmentKind.MultiplyEquals,
+                    AssignmentKind.SubtractEquals => QsiAssignmentKind.SubtractEquals,
+                    AssignmentKind.BitwiseAndEquals => QsiAssignmentKind.BitwiseAndEquals,
+                    AssignmentKind.BitwiseOrEquals => QsiAssignmentKind.BitwiseOrEquals,
+                    AssignmentKind.BitwiseXorEquals => QsiAssignmentKind.BitwiseXorEquals,
                     _ => throw new InvalidOperationException()
                 };
 
-                n.Expression.SetValue(TreeHelper.Create<QsiAssignExpressionNode>(en =>
+                n.Expression.SetValue(TreeHelper.Create<QsiSetVariableExpressionNode>(en =>
                 {
-                    en.Variable.SetValue(ExpressionVisitor.VisitVariableReference(selectSetVariable.Variable));
-                    en.Operator = op;
+                    en.Target = IdentifierVisitor.VisitVariableReference(selectSetVariable.Variable);
+                    en.AssignmentKind = kind;
                     en.Value.SetValue(ExpressionVisitor.VisitScalarExpression(selectSetVariable.Expression));
                 }));
             });

@@ -19,7 +19,7 @@ namespace Qsi.Parsing.Antlr
         protected abstract IQsiTreeNode Parse(QsiScript script, Parser parser);
 
         #region IQsiParser
-        IQsiTreeNode IQsiTreeParser.Parse(QsiScript script, CancellationToken cancellationToken = default)
+        IQsiTreeNode IQsiTreeParser.Parse(QsiScript script, CancellationToken cancellationToken)
         {
             var parser = CreateParser(script);
             parser.AddErrorListener(_errorHandler);

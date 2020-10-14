@@ -573,7 +573,7 @@ namespace Qsi.JSql.Tree
         {
             return TreeHelper.Create<QsiVariableAccessExpressionNode>(n =>
             {
-                n.Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(expression.toString(), false));
+                n.Identifier = IdentifierVisitor.VisitUserVariable(expression);
             });
         }
 
@@ -585,11 +585,11 @@ namespace Qsi.JSql.Tree
 
         public virtual QsiExpressionNode VisitVariableAssignment(VariableAssignment expression)
         {
-            return TreeHelper.Create<QsiLogicalExpressionNode>(n =>
+            return TreeHelper.Create<QsiSetVariableExpressionNode>(n =>
             {
-                n.Left.SetValue(VisitUserVariable(expression.getVariable()));
-                n.Operator = expression.getOperation();
-                n.Right.SetValue(Visit(expression.getExpression()));
+                n.Target = IdentifierVisitor.VisitUserVariable(expression.getVariable());
+                n.AssignmentKind = expression.getOperation() == "=" ? QsiAssignmentKind.Equals : QsiAssignmentKind.ColonEquals;
+                n.Value.SetValue(Visit(expression.getExpression()));
             });
         }
 

@@ -22,6 +22,11 @@ namespace Qsi.SqlServer
             return new SqlServerParser(_transactSqlVersion);
         }
 
+        public override IQsiTreeDeparser CreateTreeDeparser()
+        {
+            throw new NotImplementedException();
+        }
+
         public override IQsiScriptParser CreateScriptParser()
         {
             return new SqlServerScriptParser(_transactSqlVersion);
