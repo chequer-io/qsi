@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Qsi.Analyzers.Context;
 using Qsi.Data;
 using Qsi.Tree;
 
@@ -9,15 +10,14 @@ namespace Qsi.Analyzers
 {
     public abstract class QsiAnalyzerBase
     {
-        public QsiEngine Engine { get; }
-
         protected IEqualityComparer<QsiIdentifier> IdentifierComparer => _identifierComparer.Value;
 
+        private readonly QsiEngine _engine;
         private readonly Lazy<IEqualityComparer<QsiIdentifier>> _identifierComparer;
 
         protected QsiAnalyzerBase(QsiEngine engine)
         {
-            Engine = engine;
+            _engine = engine;
             _identifierComparer = new Lazy<IEqualityComparer<QsiIdentifier>>(() => new InternalIdentifierComparer(Match));
         }
 
@@ -30,17 +30,17 @@ namespace Qsi.Analyzers
             if (!CanExecute(script, tree))
                 throw new QsiException(QsiError.NotSupportedScript, script.ScriptType);
 
-            return OnExecute(new ExecutionContext(script, tree, options, cancellationToken));
+            return OnExecute(new AnalyzerContext(_engine, script, tree, options, cancellationToken));
         }
 
         public abstract bool CanExecute(QsiScript script, IQsiTreeNode tree);
 
-        protected abstract ValueTask<IQsiAnalysisResult> OnExecute(ExecutionContext context);
+        protected abstract ValueTask<IQsiAnalysisResult> OnExecute(IAnalyzerContext context);
 
         #region Utilities
         protected bool Match(QsiIdentifier a, QsiIdentifier b)
         {
-            return Engine.LanguageService.MatchIdentifier(a, b);
+            return _engine.LanguageService.MatchIdentifier(a, b);
         }
 
         protected bool Match(QsiQualifiedIdentifier a, QsiQualifiedIdentifier b)
@@ -57,23 +57,6 @@ namespace Qsi.Analyzers
             return true;
         }
         #endregion
-
-        // TODO: For .NET 5 record feature
-        protected readonly struct ExecutionContext
-        {
-            public readonly QsiScript Script;
-            public readonly IQsiTreeNode Tree;
-            public readonly QsiAnalyzerOptions Options;
-            public readonly CancellationToken CancellationToken;
-
-            public ExecutionContext(QsiScript script, IQsiTreeNode tree, QsiAnalyzerOptions options, CancellationToken cancellationToken)
-            {
-                Script = script;
-                Tree = tree;
-                Options = options;
-                CancellationToken = cancellationToken;
-            }
-        }
 
         private readonly struct InternalIdentifierComparer : IEqualityComparer<QsiIdentifier>
         {
