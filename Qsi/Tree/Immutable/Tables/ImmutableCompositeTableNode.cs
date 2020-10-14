@@ -9,15 +9,26 @@ namespace Qsi.Tree.Immutable
 
         public IQsiTableNode[] Sources { get; }
 
+        public IQsiMultipleOrderExpressionNode OrderExpression { get; }
+
+        public IQsiLimitExpressionNode LimitExpression { get; }
+
         public IUserDataHolder UserData { get; }
 
         public IEnumerable<IQsiTreeNode> Children => Sources;
 
-        public ImmutableCompositeTableNode(IQsiTreeNode parent, IQsiTableNode[] sources, IUserDataHolder userData)
+        public ImmutableCompositeTableNode(
+            IQsiTreeNode parent,
+            IQsiTableNode[] sources,
+            IUserDataHolder userData, 
+            IQsiMultipleOrderExpressionNode orderExpression, 
+            IQsiLimitExpressionNode limitExpression)
         {
             Parent = parent;
             Sources = sources;
             UserData = userData;
+            OrderExpression = orderExpression;
+            LimitExpression = limitExpression;
         }
     }
 }

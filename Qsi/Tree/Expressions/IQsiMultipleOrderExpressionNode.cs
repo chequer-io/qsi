@@ -2,6 +2,6 @@
 {
     public interface IQsiMultipleOrderExpressionNode : IQsiExpressionNode
     {
-        IQsiOrderExpressionNode Orders { get; }
+        IQsiOrderExpressionNode[] Orders { get; }
     }
 }

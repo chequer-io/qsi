@@ -245,6 +245,12 @@ namespace Qsi.MySql.Tree
                 if (context.queryExpression() != null)
                     n.Sources.Add(VisitQueryExpression(context.queryExpression()));
 
+                if (context.orderByClause() != null)
+                    n.OrderExpression.SetValue(ExpressionVisitor.VisitOrderByClause(context.orderByClause()));
+
+                if (context.limitClause() != null)
+                    n.LimitExpression.SetValue(ExpressionVisitor.VisitLimitClause(context.limitClause()));
+
                 MySqlTree.PutContextSpan(n, context);
             });
         }
@@ -258,6 +264,12 @@ namespace Qsi.MySql.Tree
 
                 if (context.queryExpression() != null)
                     n.Sources.Add(VisitQueryExpression(context.queryExpression()));
+
+                if (context.orderByClause() != null)
+                    n.OrderExpression.SetValue(ExpressionVisitor.VisitOrderByClause(context.orderByClause()));
+
+                if (context.limitClause() != null)
+                    n.LimitExpression.SetValue(ExpressionVisitor.VisitLimitClause(context.limitClause()));
 
                 MySqlTree.PutContextSpan(n, context);
             });
@@ -327,19 +339,36 @@ namespace Qsi.MySql.Tree
         #endregion
 
         #region Select Elements
-        public static QsiTableNode VisitCommonSelectContext(CommonSelectContext context)
+        public static QsiTableNode VisitCommonSelectContext(in CommonSelectContext context)
         {
-            return TreeHelper.Create<QsiDerivedTableNode>(n =>
+            var node = new QsiDerivedTableNode();
+
+            node.Columns.SetValue(VisitSelectElements(context.SelectElements));
+
+            if (context.FromClause != null)
             {
-                n.Columns.SetValue(VisitSelectElements(context.SelectElements));
+                node.Source.SetValue(VisitTableSources(context.FromClause.tableSources()));
 
-                if (context.FromClause != null)
+                if (context.FromClause.whereExpr != null)
                 {
-                    n.Source.SetValue(VisitTableSources(context.FromClause.tableSources()));
+                    var whereContext = new CommonWhereContext(context.FromClause);
+                    node.WhereExpression.SetValue(ExpressionVisitor.VisitCommonWhereContext(whereContext));
                 }
+            }
 
-                MySqlTree.PutContextSpan(n, context.Context);
-            });
+            if (context.OrderByClause != null)
+            {
+                node.OrderExpression.SetValue(ExpressionVisitor.VisitOrderByClause(context.OrderByClause));
+            }
+
+            if (context.LimitClause != null)
+            {
+                node.LimitExpression.SetValue(ExpressionVisitor.VisitLimitClause(context.LimitClause));
+            }
+
+            MySqlTree.PutContextSpan(node, context.Context);
+
+            return node;
         }
 
         public static QsiColumnsDeclarationNode VisitSelectElements(SelectElementsContext context)

@@ -9,5 +9,9 @@
         /// Get all tables.
         /// </summary>
         IQsiTableNode[] Sources { get; }
+
+        IQsiMultipleOrderExpressionNode OrderExpression { get; }
+
+        IQsiLimitExpressionNode LimitExpression { get; }
     }
 }

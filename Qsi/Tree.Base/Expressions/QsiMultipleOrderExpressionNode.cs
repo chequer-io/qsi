@@ -1,22 +1,21 @@
 ﻿using System.Collections.Generic;
-using Qsi.Tree.Data;
-using Qsi.Utilities;
+using System.Linq;
 
 namespace Qsi.Tree
 {
     public sealed class QsiMultipleOrderExpressionNode : QsiExpressionNode, IQsiMultipleOrderExpressionNode
     {
-        public QsiTreeNodeProperty<QsiOrderExpressionNode> Orders { get; }
+        public QsiTreeNodeList<QsiOrderExpressionNode> Orders { get; }
 
-        public override IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Orders);
+        public override IEnumerable<IQsiTreeNode> Children => Orders;
 
         #region Explicit
-        IQsiOrderExpressionNode IQsiMultipleOrderExpressionNode.Orders => Orders.Value;
+        IQsiOrderExpressionNode[] IQsiMultipleOrderExpressionNode.Orders => Orders.Cast<IQsiOrderExpressionNode>().ToArray();
         #endregion
 
         public QsiMultipleOrderExpressionNode()
         {
-            Orders = new QsiTreeNodeProperty<QsiOrderExpressionNode>(this);
+            Orders = new QsiTreeNodeList<QsiOrderExpressionNode>(this);
         }
     }
 }

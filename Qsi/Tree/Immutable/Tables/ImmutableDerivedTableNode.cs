@@ -8,6 +8,8 @@ namespace Qsi.Tree.Immutable
     {
         public IQsiTreeNode Parent { get; }
 
+        public IUserDataHolder UserData { get; }
+
         public IQsiTableDirectivesNode Directives { get; }
 
         public IQsiColumnsDeclarationNode Columns { get; }
@@ -16,24 +18,35 @@ namespace Qsi.Tree.Immutable
 
         public IQsiAliasNode Alias { get; }
 
-        public IUserDataHolder UserData { get; }
+        public IQsiWhereExpressionNode WhereExpression { get; }
 
-        public IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Directives, Columns, Source, Alias);
+        public IQsiMultipleOrderExpressionNode OrderExpression { get; }
+
+        public IQsiLimitExpressionNode LimitExpression { get; }
+
+        public IEnumerable<IQsiTreeNode> Children => 
+            TreeHelper.YieldChildren(Directives, Columns, Source, Alias, WhereExpression, OrderExpression, LimitExpression);
 
         public ImmutableDerivedTableNode(
             IQsiTreeNode parent,
+            IUserDataHolder userData,
             IQsiTableDirectivesNode directives,
             IQsiColumnsDeclarationNode columns,
             IQsiTableNode source,
             IQsiAliasNode alias,
-            IUserDataHolder userData)
+            IQsiWhereExpressionNode whereExpression,
+            IQsiMultipleOrderExpressionNode orderExpression,
+            IQsiLimitExpressionNode limitExpression)
         {
             Parent = parent;
+            UserData = userData;
             Directives = directives;
             Columns = columns;
             Source = source;
             Alias = alias;
-            UserData = userData;
+            WhereExpression = whereExpression;
+            OrderExpression = orderExpression;
+            LimitExpression = limitExpression;
         }
     }
 }

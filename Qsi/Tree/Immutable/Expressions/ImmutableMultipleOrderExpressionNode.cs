@@ -10,14 +10,14 @@ namespace Qsi.Tree.Immutable
 
         public IUserDataHolder UserData { get; }
 
-        public IQsiOrderExpressionNode Orders { get; }
+        public IQsiOrderExpressionNode[] Orders { get; }
 
-        public IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Orders);
+        public IEnumerable<IQsiTreeNode> Children => Orders;
 
         public ImmutableMultipleOrderExpressionNode(
             IQsiTreeNode parent,
             IUserDataHolder userData,
-            IQsiOrderExpressionNode orders)
+            IQsiOrderExpressionNode[] orders)
         {
             Parent = parent;
             UserData = userData;
