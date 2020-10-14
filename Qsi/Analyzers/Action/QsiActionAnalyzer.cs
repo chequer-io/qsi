@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -15,7 +16,7 @@ using Qsi.Utilities;
 
 namespace Qsi.Analyzers.Action
 {
-    public partial class QsiActionAnalyzer : QsiAnalyzerBase
+    public class QsiActionAnalyzer : QsiAnalyzerBase
     {
         protected delegate QsiDataValue DataValueSelector(TableDataColumnPivot pivot);
 
@@ -121,9 +122,13 @@ namespace Qsi.Analyzers.Action
                 table = await tableAnalyzer.BuildTableStructure(tableContext, action.Target);
             }
 
-            var dataContext = new TableDataInsertContext(context, table);
+            QsiIdentifier[] columnNames = ResolveColumnNames(table, action);
 
-            ProcessDataTargets(dataContext, action);
+            var dataContext = new TableDataInsertContext(context, table)
+            {
+                ColumnNames = columnNames,
+                Targets = ResolveDataTargets(table, columnNames)
+            };
 
             if (action.ValueTable != null)
             {
@@ -142,84 +147,63 @@ namespace Qsi.Analyzers.Action
                 throw new QsiException(QsiError.Syntax);
             }
 
-            ProcessConflict(dataContext);
+            if (action.ConflictAction != null && action.ConflictBehavior != QsiDataConflictBehavior.Ignore)
+            {
+                ProcessConflict(dataContext, action.ConflictAction, action.ConflictBehavior);
+            }
 
             IQsiAction[] result = dataContext.Targets
                 .Select(t => new QsiDataAction
                 {
                     Table = t.Table,
-                    InsertRows = t.InsertRows
+                    InsertRows = ToNullIfEmpty(t.InsertRows),
+                    DuplicateRows = ToNullIfEmpty(t.DuplicateRows)
                 })
                 .OfType<IQsiAction>()
                 .ToArray();
 
             return new QsiActionAnalysisResult(new QsiActionSet(result));
+
+            static QsiDataRowCollection ToNullIfEmpty(QsiDataRowCollection collection)
+            {
+                if (collection?.Count > 0)
+                    return collection;
+
+                return null;
+            }
         }
 
-        private void ProcessDataTargets(TableDataInsertContext context, IQsiDataInsertActionNode action)
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        protected virtual QsiIdentifier[] ResolveColumnNames(QsiTableStructure table, IQsiDataInsertActionNode action)
         {
             if (!ListUtility.IsNullOrEmpty(action.Columns))
             {
-                context.ColumnNames = action.Columns;
+                return action.Columns;
             }
-            else if (!ListUtility.IsNullOrEmpty(action.SetValues))
+
+            if (!ListUtility.IsNullOrEmpty(action.SetValues))
             {
-                int count = action.SetValues
-                    .Select(t => t.Target[^1])
-                    .Distinct(IdentifierComparer)
-                    .Count();
+                return ResolveSetColumnsPivot(action.SetValues).ColumnNames;
+            }
 
-                // Use last affected columns
-                // A, B, A, B, B
-                //       ^     ^
-                var set = new HashSet<QsiIdentifier>(IdentifierComparer);
-                int index = action.SetValues.Length;
+            return table.Columns
+                .Select(c => c.Name)
+                .ToArray();
+        }
 
-                context.ColumnNames = new QsiIdentifier[count];
-                context.AffectedIndices = new int[count];
-
-                foreach (var columnName in action.SetValues.Reverse().Select(v => v.Target[^1]))
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        protected virtual TableDataInsertTarget[] ResolveDataTargets(QsiTableStructure table, IEnumerable<QsiIdentifier> columnNames)
+        {
+            return columnNames
+                .Select((declaredName, i) =>
                 {
-                    index--;
+                    var index = table.Columns.FindIndex(c => Match(c.Name, declaredName));
 
-                    if (set.Contains(columnName))
-                        continue;
+                    if (index == -1)
+                        throw new QsiException(QsiError.UnknownColumn, declaredName);
 
-                    set.Add(columnName);
-                    context.ColumnNames[count - set.Count] = columnName;
-                    context.AffectedIndices[count - set.Count] = index;
-                }
-            }
-            else
-            {
-                context.ColumnNames = null;
-            }
-
-            IEnumerable<TableDataColumnPivot> pivotColumns;
-
-            if (context.ColumnNames != null)
-            {
-                pivotColumns = context.ColumnNames
-                    .Select((declaredName, i) =>
-                    {
-                        var index = context.Table.Columns.FindIndex(c => Match(c.Name, declaredName));
-
-                        if (index == -1)
-                            throw new QsiException(QsiError.UnknownColumn, declaredName);
-
-                        return ResolveColumnPivot(context.Table.Columns[index], i);
-                    });
-            }
-            else
-            {
-                context.ColumnNames = context.Table.Columns
-                    .Select(c => c.Name)
-                    .ToArray();
-
-                pivotColumns = context.Table.Columns.Select(ResolveColumnPivot);
-            }
-
-            context.Targets = pivotColumns
+                    return ResolveColumnPivot(table.Columns[index], i);
+                })
                 .GroupBy(c => c.TargetColumn.Parent)
                 .Select(g =>
                 {
@@ -241,7 +225,40 @@ namespace Qsi.Analyzers.Action
                 .ToArray();
         }
 
-        private TableDataColumnPivot ResolveColumnPivot(QsiTableColumn declaredColumn, int declaredOrder)
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        protected virtual SetColumnsPivot ResolveSetColumnsPivot(IQsiSetColumnExpressionNode[] setValues)
+        {
+            int count = setValues
+                .Select(t => t.Target[^1])
+                .Distinct(IdentifierComparer)
+                .Count();
+
+            // Use last affected columns
+            // A, B, A, B, B
+            //       ^     ^
+            var set = new HashSet<QsiIdentifier>(IdentifierComparer);
+            int index = setValues.Length;
+
+            var columnNames = new QsiIdentifier[count];
+            var affectedIndices = new int[count];
+
+            foreach (var columnName in setValues.Reverse().Select(v => v.Target[^1]))
+            {
+                index--;
+
+                if (set.Contains(columnName))
+                    continue;
+
+                set.Add(columnName);
+                columnNames[count - set.Count] = columnName;
+                affectedIndices[count - set.Count] = index;
+            }
+
+            return new SetColumnsPivot(columnNames, affectedIndices);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        protected virtual TableDataColumnPivot ResolveColumnPivot(QsiTableColumn declaredColumn, int declaredOrder)
         {
             if (declaredColumn.IsAnonymous)
                 throw new QsiException(QsiError.NotUpdatableColumn, "anonymous");
@@ -310,16 +327,52 @@ namespace Qsi.Analyzers.Action
 
         private void ProcessSetValues(TableDataInsertContext context, IQsiSetColumnExpressionNode[] setValues)
         {
+            var setColumnsPivot = ResolveSetColumnsPivot(setValues);
+
             PopulateInsertRow(context, pivot =>
             {
-                var affectedIndex = context.AffectedIndices[pivot.DeclaredOrder];
+                var affectedIndex = setColumnsPivot.AffectedIndices[pivot.DeclaredOrder];
                 return ResolveColumnValue(context, setValues[affectedIndex].Value);
             });
         }
 
-        private void ProcessConflict(TableDataInsertContext context)
+        // TODO: action.Target, action.Condition
+        private void ProcessConflict(TableDataInsertContext context, IQsiDataConflictActionNode action, QsiDataConflictBehavior behavior)
         {
-            // TODO
+            if (behavior == QsiDataConflictBehavior.None)
+            {
+                // TODO: throw in duplicate rows
+                return;
+            }
+
+            if (action.SetValues == null)
+                throw new QsiException(QsiError.Syntax);
+
+            var setColumnsPivot = ResolveSetColumnsPivot(action.SetValues);
+            TableDataInsertTarget[] updateTargets = ResolveDataTargets(context.Table, setColumnsPivot.ColumnNames);
+
+            foreach (var updateTarget in updateTargets)
+            {
+                var target = context.Targets.FirstOrDefault(t => t.Table == updateTarget.Table);
+
+                if (target == null)
+                    continue;
+
+                var targetRow = target.DuplicateRows.NewRow();
+
+                foreach (var pivot in updateTarget.ColumnPivots)
+                {
+                    if (pivot.DeclaredColumn != null)
+                    {
+                        var affectedIndex = setColumnsPivot.AffectedIndices[pivot.DeclaredOrder];
+                        targetRow.Items[pivot.TargetOrder] = ResolveColumnValue(context, action.SetValues[affectedIndex].Value);
+                    }
+                    else
+                    {
+                        targetRow.Items[pivot.TargetOrder] = QsiDataValue.Unset;
+                    }
+                }
+            }
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -337,40 +390,19 @@ namespace Qsi.Analyzers.Action
                     }
                     else
                     {
-                        targetRow.Items[pivot.TargetOrder] = ResolveDefaultColumnValue(context, pivot);
+                        targetRow.Items[pivot.TargetOrder] = ResolveDefaultColumnValue(pivot);
                     }
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private void PopulateDuplicateRow(TableDataInsertContext context, DataValueSelector valueSelector)
-        {
-            foreach (var target in context.Targets)
-            {
-                var targetRow = target.DuplicateRows.NewRow();
-
-                foreach (var pivot in target.ColumnPivots)
-                {
-                    if (pivot.DeclaredColumn != null)
-                    {
-                        targetRow.Items[pivot.TargetOrder] = valueSelector(pivot);
-                    }
-                    else
-                    {
-                        targetRow.Items[pivot.TargetOrder] = ResolveDefaultColumnValue(context, pivot);
-                    }
-                }
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        protected virtual QsiDataValue ResolveDefaultColumnValue(TableDataInsertContext context, TableDataColumnPivot pivot)
+        protected virtual QsiDataValue ResolveDefaultColumnValue(TableDataColumnPivot pivot)
         {
             if (pivot.TargetColumn.Default != null)
                 return new QsiDataValue(pivot.TargetColumn.Default, QsiDataType.Raw);
 
-            return new QsiDataValue(null, QsiDataType.Default);
+            return QsiDataValue.Default;
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]

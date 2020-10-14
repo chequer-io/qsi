@@ -1,33 +1,25 @@
-﻿using System;
-using Qsi.Data;
+﻿using Qsi.Data;
 
 namespace Qsi.Analyzers.Action.Models
 {
-    public sealed class TableDataInsertTarget
+    public sealed class TableDataColumnPivot
     {
-        public QsiTableStructure Table { get; }
+        public QsiTableColumn TargetColumn { get; }
 
-        public int ColumnCount => Table.Columns.Count;
+        public QsiTableColumn DeclaredColumn { get; }
 
-        public TableDataColumnPivot[] ColumnPivots { get; }
+        public int TargetOrder { get; }
 
-        public QsiDataRowCollection InsertRows => _insertRows ??= new QsiDataRowCollection(ColumnCount);
+        public int DeclaredOrder { get; }
 
-        public QsiDataRowCollection DuplicateRows => _duplicateRows ??= new QsiDataRowCollection(ColumnCount);
-
-        internal QsiDataRowCollection _insertRows;
-        internal QsiDataRowCollection _duplicateRows;
-
-        public TableDataInsertTarget(QsiTableStructure table, TableDataColumnPivot[] pivots)
+        public TableDataColumnPivot(
+            int targetOrder, QsiTableColumn targetColumn,
+            int declaredOrder, QsiTableColumn declaredColumn)
         {
-            if (table.Type != QsiTableType.Table)
-                throw new ArgumentException(nameof(table));
-
-            if (pivots.Length != table.Columns.Count)
-                throw new ArgumentException(nameof(pivots));
-
-            Table = table;
-            ColumnPivots = pivots;
+            TargetOrder = targetOrder;
+            TargetColumn = targetColumn;
+            DeclaredOrder = declaredOrder;
+            DeclaredColumn = declaredColumn;
         }
     }
 }

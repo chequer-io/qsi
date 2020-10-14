@@ -12,7 +12,7 @@ using Qsi.Utilities;
 
 namespace Qsi.Analyzers.Table
 {
-    public partial class QsiTableAnalyzer : QsiAnalyzerBase
+    public class QsiTableAnalyzer : QsiAnalyzerBase
     {
         private const string scopeFieldList = "field list";
 

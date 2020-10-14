@@ -10,8 +10,6 @@ namespace Qsi.Analyzers.Action.Context
 
         public QsiIdentifier[] ColumnNames { get; set; }
 
-        public int[] AffectedIndices { get; set; }
-
         public TableDataInsertContext(IAnalyzerContext context, QsiTableStructure table) : base(context, table)
         {
         }
