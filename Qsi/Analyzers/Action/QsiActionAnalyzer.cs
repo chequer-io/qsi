@@ -271,7 +271,9 @@ namespace Qsi.Analyzers.Action
 
             while (column.Parent.Type != QsiTableType.Table)
             {
-                if (column.References.Count != 1)
+                var refCount = column.References.Count;
+
+                if (column.Parent.Type == QsiTableType.Join && refCount == 0 || refCount != 1)
                     throw new QsiException(QsiError.NotUpdatableColumn, declaredColumn.Name);
 
                 if (recursiveTracing?.Contains(column) ?? false)
