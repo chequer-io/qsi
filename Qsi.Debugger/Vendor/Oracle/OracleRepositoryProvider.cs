@@ -12,7 +12,7 @@ namespace Qsi.Debugger.Vendor.Oracle
             throw new NotImplementedException();
         }
 
-        protected override Task<QsiDataRowCollection> GetDataRows(QsiQualifiedIdentifier identifier, string whereClause)
+        protected override Task<QsiDataRowCollection> GetDataRows(string fromClause, string whereClause)
         {
             throw new NotImplementedException();
         }

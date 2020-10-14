@@ -16,6 +16,6 @@ namespace Qsi.Services
 
         Task<QsiDataRowCollection> GetDataRows(QsiScript script);
 
-        Task<QsiDataRowCollection> GetDataRows(QsiQualifiedIdentifier identifier, string whereClause);
+        Task<QsiDataRowCollection> GetDataRows(string fromClause, string whereClause);
     }
 }
