@@ -8,15 +8,15 @@ namespace Qsi.MongoDB.Diagnostics
     public class MongoDBRawTree : IRawTree
     {
         public string DisplayName { get; }
-        
+
         public IRawTree[] Children { get; }
 
         internal MongoDBRawTree(INode node)
         {
             DisplayName = node.GetType().Name;
-            Children =  GetChildrenByProperties(node);
+            Children = GetChildrenByProperties(node);
         }
-        
+
         internal MongoDBRawTree(string name, IEnumerable<INode> tree)
         {
             DisplayName = name;
@@ -41,11 +41,19 @@ namespace Qsi.MongoDB.Diagnostics
             DisplayName = displayName;
         }
 
+        public static readonly string[] UnnecessaryProperties = 
+            { "Start", "End", "Loc", "Range" };
+        
+        public static bool IsUnnecessaryProperty(string name)
+        {
+            return UnnecessaryProperties.Contains(name);
+        }
+        
         private static IRawTree[] GetChildrenByProperties(INode tree)
         {
             return tree.GetType().GetProperties()
                 .Select(pi => (pi, pi.GetValue(tree)))
-                .Where(x => x.Item2 != null)
+                .Where(x => x.Item2 != null && !IsUnnecessaryProperty(x.pi.Name))
                 .Select(x =>
                 {
                     var (pi, value) = x;

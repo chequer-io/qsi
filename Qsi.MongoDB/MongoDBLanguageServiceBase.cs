@@ -6,7 +6,7 @@ using Qsi.Services;
 
 namespace Qsi.MongoDB
 {
-    public class MongoDBLanguageServiceBase : IQsiLanguageService
+    public abstract class MongoDBLanguageServiceBase : IQsiLanguageService
     {
         public QsiAnalyzerOptions CreateAnalyzerOptions()
         {
@@ -33,10 +33,7 @@ namespace Qsi.MongoDB
             return new MongoDBScriptParser();
         }
 
-        public IQsiRepositoryProvider CreateRepositoryProvider()
-        {
-            throw new System.NotImplementedException();
-        }
+        public abstract IQsiRepositoryProvider CreateRepositoryProvider();
 
         public bool MatchIdentifier(QsiIdentifier x, QsiIdentifier y)
         {

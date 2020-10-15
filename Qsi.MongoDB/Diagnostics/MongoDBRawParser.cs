@@ -1,20 +1,14 @@
 ﻿using System;
 using Qsi.Diagnostics;
+using Qsi.MongoDB.Acorn;
 
 namespace Qsi.MongoDB.Diagnostics
 {
-    public class MongoDBRawParser : IRawTreeParser, IDisposable
+    public class MongoDBRawParser : IRawTreeParser
     {
-        
-        
         public IRawTree Parse(string input)
         {
-            throw new NotImplementedException();
-        }
-
-        public void Dispose()
-        {
-            throw new NotImplementedException();
+            return new MongoDBRawTree(AcornParser.GetAstNode(input));
         }
     }
 }
