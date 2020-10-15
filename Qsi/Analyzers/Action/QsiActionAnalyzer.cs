@@ -34,16 +34,22 @@ namespace Qsi.Analyzers.Action
             switch (context.Tree)
             {
                 case IQsiPrepareActionNode prepareActionNode:
-                    return await PrepareAction(context, prepareActionNode);
+                    return await ExecutePrepareAction(context, prepareActionNode);
 
                 case IQsiDropPrepareActionNode dropPrepareAction:
-                    return await DropPrepareAction(context, dropPrepareAction);
+                    return await ExecuteDropPrepareAction(context, dropPrepareAction);
 
                 case IQsiExecutePrepareActionNode executeAction:
-                    return await ExecuteAction(context, executeAction);
+                    return await ExecuteExecutePrepareAction(context, executeAction);
 
                 case IQsiDataInsertActionNode dataInsertAction:
-                    return await DataInsertAction(context, dataInsertAction);
+                    return await ExecuteDataInsertAction(context, dataInsertAction);
+
+                case IQsiDataDeleteActionNode dataDeleteAction:
+                    return await ExecuteDataDeleteAction(context, dataDeleteAction);
+
+                case IQsiDataUpdateActionNode dataUpdateAction:
+                    return await ExecuteDataUpdateAction(context, dataUpdateAction);
 
                 default:
                     throw TreeHelper.NotSupportedTree(context.Tree);
@@ -51,7 +57,7 @@ namespace Qsi.Analyzers.Action
         }
 
         #region Prepared
-        protected virtual ValueTask<IQsiAnalysisResult> PrepareAction(IAnalyzerContext context, IQsiPrepareActionNode action)
+        protected virtual ValueTask<IQsiAnalysisResult> ExecutePrepareAction(IAnalyzerContext context, IQsiPrepareActionNode action)
         {
             string query;
 
@@ -89,7 +95,7 @@ namespace Qsi.Analyzers.Action
             return new ValueTask<IQsiAnalysisResult>(result);
         }
 
-        protected virtual ValueTask<IQsiAnalysisResult> DropPrepareAction(IAnalyzerContext context, IQsiDropPrepareActionNode action)
+        protected virtual ValueTask<IQsiAnalysisResult> ExecuteDropPrepareAction(IAnalyzerContext context, IQsiDropPrepareActionNode action)
         {
             var result = new QsiActionAnalysisResult(new QsiReferenceAction
             {
@@ -102,7 +108,7 @@ namespace Qsi.Analyzers.Action
             return new ValueTask<IQsiAnalysisResult>(result);
         }
 
-        protected virtual ValueTask<IQsiAnalysisResult> ExecuteAction(IAnalyzerContext context, IQsiExecutePrepareActionNode action)
+        protected virtual ValueTask<IQsiAnalysisResult> ExecuteExecutePrepareAction(IAnalyzerContext context, IQsiExecutePrepareActionNode action)
         {
             var definition = context.Engine.RepositoryProvider.LookupDefinition(action.Identifier, QsiTableType.Prepared) ??
                              throw new QsiException(QsiError.UnableResolveDefinition, action.Identifier);
@@ -112,7 +118,7 @@ namespace Qsi.Analyzers.Action
         #endregion
 
         #region Insert, Replace
-        private async ValueTask<IQsiAnalysisResult> DataInsertAction(IAnalyzerContext context, IQsiDataInsertActionNode action)
+        private async ValueTask<IQsiAnalysisResult> ExecuteDataInsertAction(IAnalyzerContext context, IQsiDataInsertActionNode action)
         {
             var tableAnalyzer = context.Engine.GetAnalyzer<QsiTableAnalyzer>();
             QsiTableStructure table;
@@ -418,6 +424,20 @@ namespace Qsi.Analyzers.Action
             var value = context.Engine.TreeDeparser.Deparse(expression, context.Script);
 
             return new QsiDataValue(value, QsiDataType.Raw);
+        }
+        #endregion
+
+        #region Delete
+        protected virtual ValueTask<IQsiAnalysisResult> ExecuteDataDeleteAction(IAnalyzerContext context, IQsiDataDeleteActionNode action)
+        {
+            throw new NotImplementedException();
+        }
+        #endregion
+        
+        #region Update
+        protected virtual ValueTask<IQsiAnalysisResult> ExecuteDataUpdateAction(IAnalyzerContext context, IQsiDataUpdateActionNode action)
+        {
+            throw new NotImplementedException();
         }
         #endregion
     }
