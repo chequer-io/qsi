@@ -1,4 +1,6 @@
-﻿namespace Qsi.MongoDB.Internal.Nodes
+﻿using System.Collections.Generic;
+
+namespace Qsi.MongoDB.Internal.Nodes
 {
     public class VariableDeclarationNode : BaseNode, IDeclarationNode
     {
@@ -6,5 +8,14 @@
      
         // var, let, const
         public string Kind { get; set; }
+
+        public override IEnumerable<INode> Children
+        {
+            get
+            {
+                foreach (var node in Declarations)
+                    yield return node;
+            }
+        }
     }
 }

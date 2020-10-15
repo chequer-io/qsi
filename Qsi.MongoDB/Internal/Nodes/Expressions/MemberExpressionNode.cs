@@ -1,4 +1,6 @@
-﻿namespace Qsi.MongoDB.Internal.Nodes
+﻿using System.Collections.Generic;
+
+namespace Qsi.MongoDB.Internal.Nodes
 {
     public class MemberExpressionNode : BaseNode, IExpressionNode, IPatternNode
     {
@@ -10,5 +12,14 @@
         public bool Computed { get; set; }
         
         public bool Optional { get; set; }
+
+        public override IEnumerable<INode> Children
+        {
+            get
+            {
+                yield return Object;
+                yield return Property;
+            }
+        }
     }
 }

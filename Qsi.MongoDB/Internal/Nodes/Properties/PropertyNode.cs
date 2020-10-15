@@ -1,10 +1,13 @@
-﻿namespace Qsi.MongoDB.Internal.Nodes
+﻿using System.Collections.Generic;
+
+namespace Qsi.MongoDB.Internal.Nodes
 {
     public class PropertyNode : BaseNode, INode
     {
         public IExpressionNode Key { get; set; }
         
-        public IPropertyValueNode Value { get; set; }
+        // BaseExpression, Pattern
+        public INode Value { get; set; }
         
         public string Kind { get; set; }
         
@@ -13,10 +16,14 @@
         public bool Shorthand { get; set; }
         
         public bool Computed { get; set; }
-    }
 
-    // TODO: Impl to BaseExpression, Pattern
-    public interface IPropertyValueNode
-    {
+        public override IEnumerable<INode> Children
+        {
+            get
+            {
+                yield return Key;
+                yield return Value;
+            }
+        }
     }
 }

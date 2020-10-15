@@ -1,12 +1,18 @@
-﻿namespace Qsi.MongoDB.Internal.Nodes
+﻿using System.Collections.Generic;
+
+namespace Qsi.MongoDB.Internal.Nodes
 {
     public class ChainExpressionNode : BaseNode, IExpressionNode
     {
-        public IChainExpressionExpressionNode Expression { get; set; }
-    }
-    
-    // TODO: Implement this interface to SimpleCallExpression, MemberExpression
-    public interface IChainExpressionExpressionNode
-    {
+        // SimpleCallExpression, MemberExpression
+        public INode Expression { get; set; }
+
+        public override IEnumerable<INode> Children
+        {
+            get
+            {
+                yield return Expression;
+            }
+        }
     }
 }

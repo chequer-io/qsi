@@ -1,4 +1,6 @@
-﻿namespace Qsi.MongoDB.Internal.Nodes
+﻿using System.Collections.Generic;
+
+namespace Qsi.MongoDB.Internal.Nodes
 {
     public class UnaryExpressionNode : BaseNode, IExpressionNode
     {
@@ -7,5 +9,13 @@
         public bool Prefix { get; set; }
         
         public IExpressionNode Argument { get; set; }
+
+        public override IEnumerable<INode> Children
+        {
+            get
+            {
+                yield return Argument;
+            }
+        }
     }
 }

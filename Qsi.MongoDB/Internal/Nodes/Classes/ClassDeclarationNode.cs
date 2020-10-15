@@ -1,4 +1,6 @@
-﻿namespace Qsi.MongoDB.Internal.Nodes
+﻿using System.Collections.Generic;
+
+namespace Qsi.MongoDB.Internal.Nodes
 {
     public class ClassDeclarationNode : BaseNode, IClassNode, IDeclarationNode
     {
@@ -7,5 +9,15 @@
         public IExpressionNode SuperClass { get; set; }
 
         public ClassBodyNode Body { get; set; }
+
+        public override IEnumerable<INode> Children
+        {
+            get
+            {
+                yield return Id;
+                yield return SuperClass;
+                yield return Body;
+            }
+        }
     }
 }

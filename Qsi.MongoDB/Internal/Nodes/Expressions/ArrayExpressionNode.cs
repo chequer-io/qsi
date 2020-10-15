@@ -1,12 +1,12 @@
-﻿namespace Qsi.MongoDB.Internal.Nodes
+﻿using System.Collections.Generic;
+
+namespace Qsi.MongoDB.Internal.Nodes
 {
     public class ArrayExpressionNode : BaseNode, IExpressionNode
     {
-        public IArrayExpressionElementNode[] Elements { get; set; }
-    }
-    
-    // TODO: Impl this interface to BaseExpression, SpreadElement
-    public interface IArrayExpressionElementNode
-    {
+        // BaseExpression, SpreadElement
+        public INode[] Elements { get; set; }
+
+        public override IEnumerable<INode> Children => Elements;
     }
 }

@@ -2,7 +2,7 @@
 {
     public interface IForXStatementNode : IStatementNode
     {
-        public IForXStatementLeftNode Left { get; set; }
+        public INode Left { get; set; }
         
         public IExpressionNode Right { get; set; }
         
