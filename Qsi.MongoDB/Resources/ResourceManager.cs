@@ -14,7 +14,7 @@ namespace Qsi.MongoDB.Resources
 
         public static string GetResourceContent(string resource)
         {
-            var stream = _assembly.GetManifestResourceStream($"Acorn.NET.Resources.{resource}");
+            var stream = _assembly.GetManifestResourceStream($"Qsi.MongoDB.Resources.{resource}");
             var reader = new StreamReader(stream!);
 
             return reader.ReadToEnd();

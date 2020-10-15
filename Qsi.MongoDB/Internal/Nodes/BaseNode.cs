@@ -1,4 +1,5 @@
 ﻿using System;
+using Qsi.MongoDB.Internal.Nodes.Location;
 
 namespace Qsi.MongoDB.Internal.Nodes
 {
@@ -8,6 +9,8 @@ namespace Qsi.MongoDB.Internal.Nodes
         
         public int End { get; set; }
 
+        public NodeLocation Loc { get; set; }
+        
         public Range Range => Start..End;
     }
 }

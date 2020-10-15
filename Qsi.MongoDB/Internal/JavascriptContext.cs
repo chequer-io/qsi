@@ -1,7 +1,7 @@
 ﻿using System;
 using JavaScriptEngineSwitcher.ChakraCore;
 
-namespace Qsi.MongoDB.Internal.Acorn
+namespace Qsi.MongoDB.Internal
 {
     internal class JavascriptContext : IDisposable
     {

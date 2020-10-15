@@ -3,7 +3,7 @@
     public class MemberExpressionNode : BaseNode, IExpressionNode, IPatternNode
     {
         // TODO: MultiType (BaseExpression, Super)
-        public object Object { get; set; }
+        public INode Object { get; set; }
         
         public IExpressionNode Property { get; set; }
         

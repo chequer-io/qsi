@@ -2,11 +2,7 @@
 {
     public class ObjectExpressionNode : BaseNode, IExpressionNode
     {
-        public IObjectExpressionPropertyNode Properties { get; set; }
-    }
-
-    // TODO: Impl this interface to Property, SpreadElement
-    public interface IObjectExpressionPropertyNode
-    {
+        // Property, SpreadElement
+        public INode[] Properties { get; set; }
     }
 }
