@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Qsi.MongoDB.Internal.Nodes.Location;
 
 namespace Qsi.MongoDB.Acorn
 {
@@ -40,15 +41,17 @@ namespace Qsi.MongoDB.Acorn
             bool singlelineRemark = false;
             bool isLineStart = true;
 
-            int line = 0, column = 0;
+            int line = 1, column = 0;
             int capturedIndex = 0;
+            int capturedLine = -1, capturedColumn = -1;
             var sb = new StringBuilder(Script);
-            var ranges = new List<Range>();
+            var statements = new List<MongoDBStatement>();
             
             for (int i = 0; i < Script.Length; i++)
             {
                 column++;
                 var ch = Script[i];
+                var nextCh = i + 1 < Script.Length ? Script[i + 1] : '\0';
                 var remainLength = Script.Length - i;
 
                 if (multilineRemark)
@@ -81,22 +84,30 @@ namespace Qsi.MongoDB.Acorn
 
                 switch (ch)
                 {
-                    case '\r':
-                    case '\n':
+                    case '\r' when nextCh == '\n':
+                    case '\n' when nextCh == '\r':
                         if (isKeywordMatched && isPatternMatched)
                             AddItem(capturedIndex, capturedIndex..i);
 
-                        capturedIndex = -1;
-                        isKeywordMatched = false;
-                        isPatternMatched = false;
-                        isLineStart = true;
+                        Reset();
+                        i++;
+                        line++;
+                        column = 0;
                         break;
+                    case '\n':
+                    case '\r':
+                        if (isKeywordMatched && isPatternMatched)
+                            AddItem(capturedIndex, capturedIndex..i);
 
+                        Reset();
+                        line++;
+                        column = 0;
+                        break;
                     case 's':
                         if (isLineStart && remainLength >= 4 && Script[i..].StartsWith("show"))
                         {
                             isKeywordMatched = true;
-                            capturedIndex = i;
+                            Capture(i);
                             i += 3;
                             column += 3;
                         }
@@ -108,7 +119,7 @@ namespace Qsi.MongoDB.Acorn
                         if (isLineStart && remainLength >= 3 && Script[i..].StartsWith("use"))
                         {
                             isKeywordMatched = true;
-                            capturedIndex = i;
+                            Capture(i);
                             i += 2;
                             column += 2;
                         }
@@ -127,7 +138,7 @@ namespace Qsi.MongoDB.Acorn
                         if (Script[i..].StartsWith("//"))
                         {
                             singlelineRemark = true;
-                            capturedIndex = i;
+                            Capture(i);
                             i++;
                             column++;
                         }
@@ -135,7 +146,7 @@ namespace Qsi.MongoDB.Acorn
                         if (Script[i..].StartsWith("/*"))
                         {
                             multilineRemark = true;
-                            capturedIndex = i;
+                            Capture(i);
                             i++;
                             column++;
                         }
@@ -160,15 +171,37 @@ namespace Qsi.MongoDB.Acorn
             }
 
             PureScript = sb.ToString();
-            // SpecialStatements = ranges;
+            SpecialStatements = statements;
 
+            void Capture(int value)
+            {
+                capturedLine = line;
+                capturedColumn = column;
+                capturedIndex = value;
+            }
+
+            void Reset()
+            {
+                capturedLine = -1;
+                capturedColumn = -1;
+                capturedIndex = -1;
+                isKeywordMatched = false;
+                isPatternMatched = false;
+                isLineStart = true;
+            }
+            
             void AddItem(int index, Range range)
             {
                 var length = range.End.Value - range.Start.Value;
                 sb.Remove(index, length);
                 sb.Insert(index, new string(' ', length));
 
-                ranges.Add(range);
+                statements.Add(new MongoDBStatement
+                {
+                    Range = range,
+                    Start = new Location(capturedLine, capturedColumn - 1),
+                    End = new Location(line, column),
+                });
             }
         }
 

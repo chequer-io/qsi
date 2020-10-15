@@ -13,7 +13,7 @@ namespace Qsi.MongoDB
         public override IEnumerable<QsiScript> Parse(string input, CancellationToken cancellationToken = default)
         {
             return MongoDBScript.Parse(input)
-                .JavascriptStatements
+                .Statements
                 .Select(s => new QsiScript(
                     input[s.Range],
                     QsiScriptType.Unknown,

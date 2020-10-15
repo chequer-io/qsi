@@ -8,7 +8,14 @@ namespace Qsi.MongoDB.Diagnostics
     {
         public IRawTree Parse(string input)
         {
-            return new MongoDBRawTree(AcornParser.GetAstNode(input));
+            try
+            {
+                return new MongoDBRawTree(AcornParser.GetAstNode(input));
+            }
+            catch (Exception e)
+            {
+                return new MongoDBRawTreeTerminalNode(input);
+            }
         }
     }
 }
