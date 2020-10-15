@@ -1,37 +1,11 @@
-﻿using System.Threading.Tasks;
-using Qsi.Data;
-using Qsi.Services;
+﻿using Qsi.MongoDB;
+using Qsi.MongoDB.Lookup;
 
 namespace Qsi.Debugger.Vendor.MongoDB
 {
-    internal class MongoDBRepositoryProvider : VendorRepositoryProvider
+    internal class MongoDBRepositoryProvider : MongoDBRepositoryProviderBase
     {
-        protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        protected override Task<QsiDataRowCollection> GetDataRows(QsiScript script)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        protected override Task<QsiDataRowCollection> GetDataRows(QsiQualifiedIdentifier identifier, string whereClause)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        protected override QsiTableStructure LookupTable(QsiQualifiedIdentifier identifier)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        protected override QsiScript LookupDefinition(QsiQualifiedIdentifier identifier, QsiTableType type)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        protected override QsiVariable LookupVariable(QsiQualifiedIdentifier identifier)
+        public override MongoDBLookupResult LookupObject(string objectName)
         {
             throw new System.NotImplementedException();
         }
