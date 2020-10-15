@@ -59,9 +59,39 @@ namespace Qsi.MongoDB.Acorn
                 result = ParseLoose(code);
             }
 
-            return JObject.Parse(result)["body"]?
-                .Values<JObject>()
-                .Select(ConvertToStatement);
+            return FlattenNode(JsonConvert.DeserializeObject<ProgramNode>(result, _serializerSettings))
+                .Cast<BaseNode>()
+                .Select(n => new MongoDBStatement
+                {
+                    Range = n.Range,
+                    Start = n.Loc.Start,
+                    End = n.Loc.End
+                });
+        }
+
+        private static IEnumerable<INode> FlattenNode(INode rootNode)
+        {
+            var queue = new Queue<INode>();
+
+            foreach (var child in rootNode.Children)
+            {
+                queue.Enqueue(child);
+
+                while (queue.TryDequeue(out var node))
+                {
+                    if (node is BlockStatementNode scope)
+                    {
+                        foreach (var childNode in scope.Children)
+                        {
+                            queue.Enqueue(childNode);
+                        }
+
+                        continue;
+                    }
+
+                    yield return node;
+                }
+            }
         }
 
         public static string Execute(string code)
@@ -90,19 +120,6 @@ namespace Qsi.MongoDB.Acorn
             code = code.Replace("\r", "\\r");
 
             return code;
-        }
-
-        private static MongoDBStatement ConvertToStatement(JObject statement)
-        {
-            return new MongoDBStatement
-            {
-                Range = new Range(
-                    statement["start"]?.ToObject<int>() ?? -1,
-                    statement["end"]?.ToObject<int>() ?? -1
-                ),
-                Start = statement["loc"]?["start"]?.ToObject<Location>() ?? new Location(),
-                End = statement["loc"]?["end"]?.ToObject<Location>() ?? new Location(),
-            };
         }
     }
 }
