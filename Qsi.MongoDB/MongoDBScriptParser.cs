@@ -1,21 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Qsi.Data;
-using Qsi.Parsing;
+using Qsi.MongoDB.Acorn;
+using Qsi.MongoDB.Internal.Nodes.Location;
+using Qsi.Parsing.Common;
 
 namespace Qsi.MongoDB
 {
-    public class MongoDBScriptParser : IQsiScriptParser
+    public class MongoDBScriptParser : CommonScriptParser
     {
-        public IEnumerable<QsiScript> Parse(string input, CancellationToken cancellationToken = default)
+        public override IEnumerable<QsiScript> Parse(string input, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            return MongoDBScript.Parse(input)
+                .JavascriptStatements
+                .Select(s => new QsiScript(
+                    input[s.Range],
+                    QsiScriptType.Unknown,
+                    ConvertToPosition(s.Start),
+                    ConvertToPosition(s.End)
+                ));
         }
 
-        public QsiScriptType GetSuitableType(string input)
+        private QsiScriptPosition ConvertToPosition(Location location)
         {
-            throw new NotImplementedException();
+            return new QsiScriptPosition(location.Line, location.Column + 1);
         }
     }
 }
