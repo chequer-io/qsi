@@ -5,10 +5,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="Tree" />
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\Qsi\Qsi.csproj" />
     </ItemGroup>
 

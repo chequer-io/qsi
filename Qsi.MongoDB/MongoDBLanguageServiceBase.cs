@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using Qsi.Analyzers;
+using Qsi.Analyzers.Action;
 using Qsi.Data;
+using Qsi.MongoDB.Analyzers.Table;
 using Qsi.Parsing;
 using Qsi.Services;
 
@@ -10,17 +12,18 @@ namespace Qsi.MongoDB
     {
         public QsiAnalyzerOptions CreateAnalyzerOptions()
         {
-            throw new System.NotImplementedException();
+            return new QsiAnalyzerOptions();
         }
 
         public IEnumerable<QsiAnalyzerBase> CreateAnalyzers(QsiEngine engine)
         {
-            throw new System.NotImplementedException();
+            yield return new QsiActionAnalyzer(engine);
+            yield return new MongoDBTableAnalyzer(engine);
         }
 
         public IQsiTreeParser CreateTreeParser()
         {
-            throw new System.NotImplementedException();
+            return new MongoDBParser();
         }
 
         public IQsiTreeDeparser CreateTreeDeparser()

@@ -1,5 +1,6 @@
 ﻿using System.Threading;
 using Qsi.Data;
+using Qsi.MongoDB.Acorn;
 using Qsi.Parsing;
 using Qsi.Tree;
 
@@ -9,7 +10,7 @@ namespace Qsi.MongoDB
     {
         public IQsiTreeNode Parse(QsiScript script, CancellationToken cancellationToken = default)
         {
-            throw new System.NotImplementedException();
+            return new QsiTreeMongoNode(AcornParser.GetAstNode(script.Script));
         }
     }
 }
