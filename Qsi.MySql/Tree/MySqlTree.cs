@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 using Antlr4.Runtime;
+using Qsi.MySql.Tree.Common;
 using Qsi.Tree;
 using Qsi.Tree.Data;
 
@@ -24,6 +25,12 @@ namespace Qsi.MySql.Tree
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void PutContextSpan(IQsiTreeNode node, ParserRuleContext context)
+        {
+            PutContextSpan(node, context.Start, context.Stop);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void PutContextSpan(IQsiTreeNode node, ICommonContext context)
         {
             PutContextSpan(node, context.Start, context.Stop);
         }

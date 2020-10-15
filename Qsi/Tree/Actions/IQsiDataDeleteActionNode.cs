@@ -2,8 +2,6 @@
 {
     public interface IQsiDataDeleteActionNode : IQsiActionNode
     {
-        IQsiTableAccessNode Target { get; }
-
-        IQsiWhereExpressionNode WhereExpression { get; }
+        IQsiTableNode Target { get; }
     }
 }

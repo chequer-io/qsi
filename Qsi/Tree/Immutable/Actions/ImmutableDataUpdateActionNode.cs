@@ -11,37 +11,22 @@ namespace Qsi.Tree.Immutable
 
         public IUserDataHolder UserData { get; }
 
-        public IQsiTableAccessNode Target { get; }
+        public IQsiTableNode Target { get; }
 
         public IQsiSetColumnExpressionNode[] SetValues { get; }
 
-        public IQsiWhereExpressionNode WhereExpression { get; }
-
-        public IQsiMultipleOrderExpressionNode OrderExpression { get; }
-
-        public IQsiLimitExpressionNode LimitExpression { get; }
-
-        public IEnumerable<IQsiTreeNode> Children =>
-            TreeHelper.YieldChildren(Target)
-                .Concat(SetValues)
-                .Concat(TreeHelper.YieldChildren(WhereExpression, OrderExpression, LimitExpression));
+        public IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Target).Concat(SetValues);
 
         public ImmutableDataUpdateActionNode(
             IQsiTreeNode parent,
             IUserDataHolder userData,
             IQsiTableAccessNode target,
-            IQsiSetColumnExpressionNode[] setValues,
-            IQsiWhereExpressionNode whereExpression,
-            IQsiMultipleOrderExpressionNode orderExpression,
-            IQsiLimitExpressionNode limitExpression)
+            IQsiSetColumnExpressionNode[] setValues)
         {
             Parent = parent;
             UserData = userData;
             Target = target;
             SetValues = setValues;
-            WhereExpression = whereExpression;
-            OrderExpression = orderExpression;
-            LimitExpression = limitExpression;
         }
     }
 }

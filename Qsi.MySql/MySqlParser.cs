@@ -46,6 +46,12 @@ namespace Qsi.MySql
                 case QsiScriptType.Replace:
                     return ActionVisitor.VisitReplaceStatement(mySqlParser.replaceStatement());
 
+                case QsiScriptType.Delete:
+                    return ActionVisitor.VisitDeleteStatement(mySqlParser.deleteStatement());
+                
+                case QsiScriptType.Update:
+                    return ActionVisitor.VisitUpdateStatement(mySqlParser.updateStatement());
+
                 default:
                     return null;
             }

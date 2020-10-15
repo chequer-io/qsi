@@ -2,14 +2,8 @@
 {
     public interface IQsiDataUpdateActionNode : IQsiActionNode
     {
-        IQsiTableAccessNode Target { get; }
+        IQsiTableNode Target { get; }
 
         IQsiSetColumnExpressionNode[] SetValues { get; }
-
-        IQsiWhereExpressionNode WhereExpression { get; }
-
-        IQsiMultipleOrderExpressionNode OrderExpression { get; }
-
-        IQsiLimitExpressionNode LimitExpression { get; }
     }
 }

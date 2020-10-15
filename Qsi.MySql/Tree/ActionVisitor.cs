@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Qsi.Data;
 using Qsi.MySql.Tree.Common;
@@ -150,6 +151,122 @@ namespace Qsi.MySql.Tree
             MySqlTree.PutContextSpan(node, context.Context);
 
             return node;
+        }
+        #endregion
+
+        #region Delete
+        public static QsiDataDeleteActionNode VisitDeleteStatement(DeleteStatementContext context)
+        {
+            switch (context.children[0])
+            {
+                case SingleDeleteStatementContext singleDeleteStatement:
+                    return VisitSingleDeleteStatement(singleDeleteStatement);
+
+                case MultipleDeleteStatementContext multipleDeleteStatement:
+                    return VisitMultipleDeleteStatement(multipleDeleteStatement);
+
+                default:
+                    throw new QsiException(QsiError.Syntax);
+            }
+        }
+
+        private static QsiDataDeleteActionNode VisitSingleDeleteStatement(SingleDeleteStatementContext context)
+        {
+            var table = (QsiTableNode)TableVisitor.VisitTableName(context.tableName());
+            var where = context.expression();
+            var order = context.orderByClause();
+            var limitClause = context.limitClauseAtom();
+
+            if (where != null || order != null || limitClause != null)
+            {
+                var derivedTable = new QsiDerivedTableNode();
+
+                derivedTable.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+                derivedTable.Source.SetValue(table);
+
+                if (where != null)
+                {
+                    var whereContext = new CommonWhereContext(where, context.FROM().Symbol, where.Stop);
+                    derivedTable.WhereExpression.SetValue(ExpressionVisitor.VisitCommonWhere(whereContext));
+                }
+
+                if (order != null)
+                {
+                    derivedTable.OrderExpression.SetValue(ExpressionVisitor.VisitOrderByClause(order));
+                }
+
+                if (limitClause != null)
+                {
+                    var limitContext = new CommonLimitClauseContext(null, limitClause, context.LIMIT().Symbol, limitClause.Stop);
+                    derivedTable.LimitExpression.SetValue(ExpressionVisitor.VisitCommonLimitClause(limitContext));
+                }
+
+                table = derivedTable;
+            }
+
+            var node = new QsiDataDeleteActionNode();
+
+            node.Target.SetValue(table);
+            MySqlTree.PutContextSpan(node, context);
+
+            return node;
+        }
+
+        private static QsiDataDeleteActionNode VisitMultipleDeleteStatement(MultipleDeleteStatementContext context)
+        {
+            var derivedTable = TreeHelper.Create<QsiDerivedTableNode>(n =>
+            {
+                var columnsDeclaration = new QsiColumnsDeclarationNode();
+
+                columnsDeclaration.Columns.AddRange(context.tableName()
+                    .Select(name => new QsiAllColumnNode
+                    {
+                        Path = IdentifierVisitor.VisitFullId(name.fullId())
+                    }));
+
+                n.Columns.SetValue(columnsDeclaration);
+                n.Source.SetValue(TableVisitor.VisitTableSources(context.tableSources()));
+
+                if (context.expression() != null)
+                {
+                    var whereContext = new CommonWhereContext(context.expression(), context.WHERE().Symbol, context.Stop);
+                    n.WhereExpression.SetValue(ExpressionVisitor.VisitCommonWhere(whereContext));
+                }
+            });
+
+            var node = new QsiDataDeleteActionNode();
+
+            node.Target.SetValue(derivedTable);
+            MySqlTree.PutContextSpan(node, context);
+
+            return node;
+        }
+        #endregion
+
+        #region Update
+        public static QsiDataUpdateActionNode VisitUpdateStatement(UpdateStatementContext context)
+        {
+            switch (context.children[0])
+            {
+                case SingleUpdateStatementContext singleUpdateStatement:
+                    return VisitSingleUpdateStatement(singleUpdateStatement);
+
+                case MultipleUpdateStatementContext multipleUpdateStatement:
+                    return VisitMultipleUpdateStatement(multipleUpdateStatement);
+
+                default:
+                    throw new QsiException(QsiError.Syntax);
+            }
+        }
+
+        private static QsiDataUpdateActionNode VisitSingleUpdateStatement(SingleUpdateStatementContext singleUpdateStatement)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static QsiDataUpdateActionNode VisitMultipleUpdateStatement(MultipleUpdateStatementContext multipleUpdateStatement)
+        {
+            throw new NotImplementedException();
         }
         #endregion
     }

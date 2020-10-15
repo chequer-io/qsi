@@ -1269,12 +1269,12 @@ namespace Qsi.MySql.Tree
             return assignNode;
         }
 
-        public static QsiWhereExpressionNode VisitCommonWhereContext(in CommonWhereContext context)
+        public static QsiWhereExpressionNode VisitCommonWhere(in CommonWhereContext context)
         {
             var node = new QsiWhereExpressionNode();
 
             node.Expression.SetValue(VisitExpression(context.Expression));
-            MySqlTree.PutContextSpan(node, context.Start, context.Expression.Stop);
+            MySqlTree.PutContextSpan(node, context);
 
             return node;
         }
@@ -1307,13 +1307,18 @@ namespace Qsi.MySql.Tree
 
         public static QsiLimitExpressionNode VisitLimitClause(LimitClauseContext context)
         {
+            return VisitCommonLimitClause(new CommonLimitClauseContext(context));
+        }
+
+        public static QsiLimitExpressionNode VisitCommonLimitClause(in CommonLimitClauseContext context)
+        {
             var node = new QsiLimitExpressionNode();
 
-            if (context.offset != null)
-                node.Offset.SetValue(VisitLimitClauseAtom(context.offset));
+            if (context.Offset != null)
+                node.Offset.SetValue(VisitLimitClauseAtom(context.Offset));
 
-            if (context.limit != null)
-                node.Limit.SetValue(VisitLimitClauseAtom(context.limit));
+            if (context.Limit != null)
+                node.Limit.SetValue(VisitLimitClauseAtom(context.Limit));
 
             MySqlTree.PutContextSpan(node, context);
 

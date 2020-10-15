@@ -10,22 +10,19 @@ namespace Qsi.Tree.Immutable
 
         public IUserDataHolder UserData { get; }
 
-        public IQsiTableAccessNode Target { get; }
+        public IQsiTableNode Target { get; }
 
-        public IQsiWhereExpressionNode WhereExpression { get; }
-
-        public IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Target, WhereExpression);
+        public IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Target);
 
         public ImmutableDataDeleteActionNode(
             IQsiTreeNode parent,
             IUserDataHolder userData,
-            IQsiTableAccessNode target,
+            IQsiTableNode target,
             IQsiWhereExpressionNode whereExpression)
         {
             Parent = parent;
             UserData = userData;
             Target = target;
-            WhereExpression = whereExpression;
         }
     }
 }

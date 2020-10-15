@@ -312,7 +312,7 @@ namespace Qsi.MySql.Tree
 
         public static QsiTableNode VisitQuerySpecification(QuerySpecificationContext context)
         {
-            return VisitCommonSelectContext(new CommonSelectContext(context));
+            return VisitCommonSelect(new CommonSelectContext(context));
         }
 
         public static QsiTableNode VisitQueryExpressionNointo(QueryExpressionNointoContext context)
@@ -334,12 +334,12 @@ namespace Qsi.MySql.Tree
 
         public static QsiTableNode VisitQuerySpecificationNointo(QuerySpecificationNointoContext context)
         {
-            return VisitCommonSelectContext(new CommonSelectContext(context));
+            return VisitCommonSelect(new CommonSelectContext(context));
         }
         #endregion
 
         #region Select Elements
-        public static QsiTableNode VisitCommonSelectContext(in CommonSelectContext context)
+        public static QsiTableNode VisitCommonSelect(in CommonSelectContext context)
         {
             var node = new QsiDerivedTableNode();
 
@@ -352,7 +352,7 @@ namespace Qsi.MySql.Tree
                 if (context.FromClause.whereExpr != null)
                 {
                     var whereContext = new CommonWhereContext(context.FromClause);
-                    node.WhereExpression.SetValue(ExpressionVisitor.VisitCommonWhereContext(whereContext));
+                    node.WhereExpression.SetValue(ExpressionVisitor.VisitCommonWhere(whereContext));
                 }
             }
 
