@@ -249,24 +249,61 @@ namespace Qsi.MySql.Tree
             switch (context.children[0])
             {
                 case SingleUpdateStatementContext singleUpdateStatement:
-                    return VisitSingleUpdateStatement(singleUpdateStatement);
+                    return VisitCommonUpdateStatement(new CommonUpdateStatementContext(singleUpdateStatement));
 
                 case MultipleUpdateStatementContext multipleUpdateStatement:
-                    return VisitMultipleUpdateStatement(multipleUpdateStatement);
+                    return VisitCommonUpdateStatement(new CommonUpdateStatementContext(multipleUpdateStatement));
 
                 default:
                     throw new QsiException(QsiError.Syntax);
             }
         }
 
-        private static QsiDataUpdateActionNode VisitSingleUpdateStatement(SingleUpdateStatementContext singleUpdateStatement)
+        public static QsiDataUpdateActionNode VisitCommonUpdateStatement(in CommonUpdateStatementContext context)
         {
-            throw new NotImplementedException();
-        }
+            QsiTableNode table;
 
-        private static QsiDataUpdateActionNode VisitMultipleUpdateStatement(MultipleUpdateStatementContext multipleUpdateStatement)
-        {
-            throw new NotImplementedException();
+            switch (context.TableSource)
+            {
+                case TableNameContext tableName:
+                    table = TableVisitor.VisitTableName(tableName);
+                    break;
+
+                case TableSourcesContext tableSources:
+                    table = TableVisitor.VisitTableSources(tableSources);
+                    break;
+
+                default:
+                    throw new QsiException(QsiError.Syntax);
+            }
+
+            if (context.Where != null || context.Order != null || context.Limit != null)
+            {
+                var derivedTable = new QsiDerivedTableNode();
+
+                derivedTable.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+                derivedTable.Source.SetValue(table);
+
+                if (context.Where != null)
+                    derivedTable.WhereExpression.SetValue(ExpressionVisitor.VisitCommonWhere(context.Where.Value));
+
+                if (context.Order != null)
+                    derivedTable.OrderExpression.SetValue(ExpressionVisitor.VisitOrderByClause(context.Order));
+
+                if (context.Limit != null)
+                    derivedTable.LimitExpression.SetValue(ExpressionVisitor.VisitLimitClause(context.Limit));
+
+                table = derivedTable;
+            }
+
+            var node = new QsiDataUpdateActionNode();
+
+            node.Target.SetValue(table);
+            node.SetValues.AddRange(context.UpdatedElements.Select(ExpressionVisitor.VisitUpdatedElement));
+
+            MySqlTree.PutContextSpan(node, context);
+
+            return node;
         }
         #endregion
     }
