@@ -181,7 +181,7 @@ namespace Qsi.Parsing.Common
             if (node.Alias == null)
                 return;
 
-            writer.Write(' ');
+            writer.WriteSpace();
             DeparseTreeNode(writer, node.Alias, script);
         }
 
@@ -253,13 +253,13 @@ namespace Qsi.Parsing.Common
 
             if (node.OrderExpression != null)
             {
-                writer.Write(' ');
+                writer.WriteSpace();
                 DeparseTreeNode(writer, node.OrderExpression, script);
             }
 
             if (node.LimitExpression != null)
             {
-                writer.Write(' ');
+                writer.WriteSpace();
                 DeparseTreeNode(writer, node.LimitExpression, script);
             }
         }
@@ -270,7 +270,7 @@ namespace Qsi.Parsing.Common
             {
                 // IQsiTableAccessNode
                 DeparseTreeNode(writer, node.Source, script);
-                writer.Write(' ');
+                writer.WriteSpace();
                 DeparseTreeNode(writer, node.Alias, script);
                 return;
             }
@@ -285,6 +285,7 @@ namespace Qsi.Parsing.Common
 
             if (node.Source != null)
             {
+                writer.WriteSpace();
                 writer.Write("FROM ");
 
                 if (node.Source is IQsiDerivedTableNode leftSource && !IsAliasedTableAccessNode(leftSource) ||
@@ -300,19 +301,19 @@ namespace Qsi.Parsing.Common
 
             if (node.WhereExpression != null)
             {
-                writer.Write(' ');
+                writer.WriteSpace();
                 DeparseTreeNode(writer, node.WhereExpression, script);
             }
 
             if (node.OrderExpression != null)
             {
-                writer.Write(' ');
+                writer.WriteSpace();
                 DeparseTreeNode(writer, node.OrderExpression, script);
             }
 
             if (node.LimitExpression != null)
             {
-                writer.Write(' ');
+                writer.WriteSpace();
                 DeparseTreeNode(writer, node.LimitExpression, script);
             }
         }
@@ -400,8 +401,59 @@ namespace Qsi.Parsing.Common
                     DeparseLiteralExpressionNode(writer, literalExpressionNode, script);
                     break;
 
+                case IQsiWhereExpressionNode whereExpressionNode:
+                    DeparseWhereExpressionNode(writer, whereExpressionNode, script);
+                    break;
+
+                case IQsiMultipleOrderExpressionNode multipleOrderExpressionNode:
+                    DeparseMultipleOrderExpressionNode(writer, multipleOrderExpressionNode, script);
+                    break;
+
+                case IQsiOrderExpressionNode orderExpressionNode:
+                    DeparseOrderExpressionNode(writer, orderExpressionNode, script);
+                    break;
+
+                case IQsiLimitExpressionNode limitExpressionNode:
+                    DeparseLimitExpressionNode(writer, limitExpressionNode, script);
+                    break;
+
                 default:
                     throw new NotImplementedException();
+            }
+        }
+
+        protected virtual void DeparseWhereExpressionNode(ScriptWriter writer, IQsiWhereExpressionNode node, QsiScript script)
+        {
+            writer.Write("FROM ");
+            DeparseTreeNode(writer, node.Expression, script);
+        }
+
+        protected virtual void DeparseMultipleOrderExpressionNode(ScriptWriter writer, IQsiMultipleOrderExpressionNode node, QsiScript script)
+        {
+            writer.Write("ORDER BY ");
+            JoinElements(", ", writer, node.Orders, script);
+        }
+
+        protected virtual void DeparseOrderExpressionNode(ScriptWriter writer, IQsiOrderExpressionNode node, QsiScript script)
+        {
+            DeparseTreeNode(writer, node.Expression, script);
+            writer.WriteSpace();
+            writer.Write(node.Order == QsiSortOrder.Ascending ? "ASC" : "DESC");
+        }
+
+        protected virtual void DeparseLimitExpressionNode(ScriptWriter writer, IQsiLimitExpressionNode node, QsiScript script)
+        {
+            writer.Write("LIMIT ");
+
+            if (node.Offset != null)
+                DeparseTreeNode(writer, node.Offset, script);
+
+            if (node.Limit != null)
+            {
+                if (node.Offset != null)
+                    writer.Write(", ");
+
+                DeparseTreeNode(writer, node.Limit, script);
             }
         }
 

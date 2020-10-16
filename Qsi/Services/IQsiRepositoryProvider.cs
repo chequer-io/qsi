@@ -15,7 +15,5 @@ namespace Qsi.Services
         QsiVariable LookupVariable(QsiQualifiedIdentifier identifier);
 
         Task<QsiDataRowCollection> GetDataRows(QsiScript script);
-
-        Task<QsiDataRowCollection> GetDataRows(string fromClause, string whereClause);
     }
 }
