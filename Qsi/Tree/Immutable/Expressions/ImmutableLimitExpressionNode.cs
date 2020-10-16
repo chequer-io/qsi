@@ -8,24 +8,24 @@ namespace Qsi.Tree.Immutable
     {
         public IQsiTreeNode Parent { get; }
 
-        public IUserDataHolder UserData { get; }
-
         public IQsiExpressionNode Limit { get; }
 
         public IQsiExpressionNode Offset { get; }
+
+        public IUserDataHolder UserData { get; }
 
         public IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Limit, Offset);
 
         public ImmutableLimitExpressionNode(
             IQsiTreeNode parent,
-            IUserDataHolder userData,
             IQsiExpressionNode limit,
-            IQsiExpressionNode offset)
+            IQsiExpressionNode offset,
+            IUserDataHolder userData)
         {
             Parent = parent;
-            UserData = userData;
             Limit = limit;
             Offset = offset;
+            UserData = userData;
         }
     }
 }

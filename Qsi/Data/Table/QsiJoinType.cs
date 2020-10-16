@@ -2,14 +2,22 @@
 {
     public enum QsiJoinType
     {
+        Comma,
         Inner,
         Left,
-        Full,
         Right,
+        LeftOuter,
+        RightOuter,
+        NaturalLeft,
+        NaturalRight,
+        NaturalLeftOuter,
+        NaturalRightOuter,
+        Full,
         Semi,
         Anti,
         UniqueOuter,
         UniqueInner,
-        Cross
+        Cross,
+        Straight
     }
 }

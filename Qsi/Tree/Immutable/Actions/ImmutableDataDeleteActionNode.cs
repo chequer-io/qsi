@@ -16,13 +16,12 @@ namespace Qsi.Tree.Immutable
 
         public ImmutableDataDeleteActionNode(
             IQsiTreeNode parent,
-            IUserDataHolder userData,
             IQsiTableNode target,
-            IQsiWhereExpressionNode whereExpression)
+            IUserDataHolder userData)
         {
             Parent = parent;
-            UserData = userData;
             Target = target;
+            UserData = userData;
         }
     }
 }

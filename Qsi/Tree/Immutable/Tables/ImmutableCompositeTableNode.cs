@@ -20,15 +20,15 @@ namespace Qsi.Tree.Immutable
         public ImmutableCompositeTableNode(
             IQsiTreeNode parent,
             IQsiTableNode[] sources,
-            IUserDataHolder userData, 
-            IQsiMultipleOrderExpressionNode orderExpression, 
-            IQsiLimitExpressionNode limitExpression)
+            IQsiMultipleOrderExpressionNode orderExpression,
+            IQsiLimitExpressionNode limitExpression,
+            IUserDataHolder userData)
         {
             Parent = parent;
             Sources = sources;
-            UserData = userData;
             OrderExpression = orderExpression;
             LimitExpression = limitExpression;
+            UserData = userData;
         }
     }
 }

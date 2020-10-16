@@ -376,9 +376,9 @@ namespace Qsi.Analyzers.Table
                             fixedSources
                                 .Select(s => s.Source)
                                 .ToArray(),
-                            compositeTableNode.UserData,
                             compositeTableNode.OrderExpression,
-                            compositeTableNode.LimitExpression);
+                            compositeTableNode.LimitExpression,
+                            compositeTableNode.UserData);
                     }
 
                     using var directiveContext = new TableCompileContext(context);

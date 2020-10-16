@@ -519,7 +519,7 @@ namespace Qsi.MySql.Tree
                 {
                     var nextJoin = new QsiJoinedTableNode
                     {
-                        JoinType = QsiJoinType.Full
+                        JoinType = QsiJoinType.Comma
                     };
 
                     nextJoin.Left.SetValue(anchor);
@@ -599,30 +599,44 @@ namespace Qsi.MySql.Tree
                     switch (join)
                     {
                         case InnerJoinContext innerJoinContext:
-                            joinType = QsiJoinType.Inner;
+                            joinType = innerJoinContext.INNER() != null ? QsiJoinType.Inner : QsiJoinType.Cross;
                             sourceItemContext = innerJoinContext.tableSourceItem();
                             uidListContext = innerJoinContext.uidList();
                             break;
 
                         case StraightJoinContext straightJoinContext:
-                            joinType = QsiJoinType.Full;
+                            joinType = QsiJoinType.Straight;
                             sourceItemContext = straightJoinContext.tableSourceItem();
                             break;
 
                         case OuterJoinContext outerJoinContext:
-                            joinType = outerJoinContext.joinOuter().joinType.Type == MySqlLexer.LEFT ?
-                                QsiJoinType.Left : QsiJoinType.Right;
+                        {
+                            var joinOuter = outerJoinContext.joinOuter();
+                            var isLeft = joinOuter.joinType.Type == MySqlLexer.LEFT;
+
+                            if (joinOuter.OUTER() == null)
+                                joinType = isLeft ? QsiJoinType.Left : QsiJoinType.Right;
+                            else
+                                joinType = isLeft ? QsiJoinType.LeftOuter : QsiJoinType.RightOuter;
 
                             sourceItemContext = outerJoinContext.tableSourceItem();
                             uidListContext = outerJoinContext.uidList();
                             break;
+                        }
 
                         case NaturalJoinContext naturalJoinContext:
-                            joinType = naturalJoinContext.joinOuter().joinType.Type == MySqlLexer.LEFT ?
-                                QsiJoinType.Left : QsiJoinType.Right;
+                        {
+                            var joinOuter = naturalJoinContext.joinOuter();
+                            var isLeft = joinOuter.joinType.Type == MySqlLexer.LEFT;
+
+                            if (joinOuter.OUTER() == null)
+                                joinType = isLeft ? QsiJoinType.NaturalLeft : QsiJoinType.NaturalRight;
+                            else
+                                joinType = isLeft ? QsiJoinType.NaturalLeftOuter : QsiJoinType.NaturalRightOuter;
 
                             sourceItemContext = naturalJoinContext.tableSourceItem();
                             break;
+                        }
 
                         default:
                             throw new NotSupportedException();

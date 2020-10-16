@@ -186,7 +186,7 @@ namespace Qsi.MySql.Tree
 
                 if (where != null)
                 {
-                    var whereContext = new CommonWhereContext(where, context.FROM().Symbol, where.Stop);
+                    var whereContext = new CommonWhereContext(where, context.WHERE().Symbol, where.Stop);
                     derivedTable.WhereExpression.SetValue(ExpressionVisitor.VisitCommonWhere(whereContext));
                 }
 
@@ -223,6 +223,9 @@ namespace Qsi.MySql.Tree
                     {
                         Path = IdentifierVisitor.VisitFullId(name.fullId())
                     }));
+
+                if (columnsDeclaration.Columns.Count == 0)
+                    columnsDeclaration.Columns.Add(new QsiAllColumnNode());
 
                 n.Columns.SetValue(columnsDeclaration);
                 n.Source.SetValue(TableVisitor.VisitTableSources(context.tableSources()));
