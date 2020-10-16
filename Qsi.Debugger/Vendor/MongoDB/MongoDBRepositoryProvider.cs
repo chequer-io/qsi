@@ -16,11 +16,6 @@ namespace Qsi.Debugger.Vendor.MongoDB
             throw new System.NotImplementedException();
         }
 
-        protected override Task<QsiDataRowCollection> GetDataRows(QsiQualifiedIdentifier identifier, string whereClause)
-        {
-            throw new System.NotImplementedException();
-        }
-
         protected override QsiTableStructure LookupTable(QsiQualifiedIdentifier identifier)
         {
             throw new System.NotImplementedException();
