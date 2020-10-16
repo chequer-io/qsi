@@ -7,7 +7,7 @@ namespace Qsi.Debugger.Vendor.SqlServer
 {
     internal class SqlServerRepositoryProvider : VendorRepositoryProvider
     {
-        protected override Task<QsiDataRowCollection> GetDataRows(QsiScript script)
+        protected override Task<QsiDataTable> GetDataTable(QsiScript script)
         {
             throw new NotImplementedException();
         }
