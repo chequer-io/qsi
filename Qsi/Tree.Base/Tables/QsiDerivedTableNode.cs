@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Qsi.Tree.Data;
 using Qsi.Utilities;
 
 namespace Qsi.Tree
@@ -13,8 +14,13 @@ namespace Qsi.Tree
 
         public QsiTreeNodeProperty<QsiAliasNode> Alias { get; }
 
-        public override IEnumerable<IQsiTreeNode> Children =>
-            TreeHelper.YieldChildren(Directives, Columns, Source, Alias);
+        public QsiTreeNodeProperty<QsiWhereExpressionNode> WhereExpression { get; }
+
+        public QsiTreeNodeProperty<QsiMultipleOrderExpressionNode> OrderExpression { get; }
+
+        public QsiTreeNodeProperty<QsiLimitExpressionNode> LimitExpression { get; }
+
+        public override IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Directives, Columns, Source, Alias, WhereExpression, OrderExpression, LimitExpression);
 
         #region Explicit
         IQsiTableDirectivesNode IQsiDerivedTableNode.Directives => Directives.Value;
@@ -24,6 +30,12 @@ namespace Qsi.Tree
         IQsiTableNode IQsiDerivedTableNode.Source => Source.Value;
 
         IQsiAliasNode IQsiDerivedTableNode.Alias => Alias.Value;
+
+        IQsiWhereExpressionNode IQsiDerivedTableNode.WhereExpression => WhereExpression.Value;
+
+        IQsiMultipleOrderExpressionNode IQsiDerivedTableNode.OrderExpression => OrderExpression.Value;
+
+        IQsiLimitExpressionNode IQsiDerivedTableNode.LimitExpression => LimitExpression.Value;
         #endregion
 
         public QsiDerivedTableNode()
@@ -32,6 +44,9 @@ namespace Qsi.Tree
             Columns = new QsiTreeNodeProperty<QsiColumnsDeclarationNode>(this);
             Source = new QsiTreeNodeProperty<QsiTableNode>(this);
             Alias = new QsiTreeNodeProperty<QsiAliasNode>(this);
+            WhereExpression = new QsiTreeNodeProperty<QsiWhereExpressionNode>(this);
+            OrderExpression = new QsiTreeNodeProperty<QsiMultipleOrderExpressionNode>(this);
+            LimitExpression = new QsiTreeNodeProperty<QsiLimitExpressionNode>(this);
         }
     }
 }

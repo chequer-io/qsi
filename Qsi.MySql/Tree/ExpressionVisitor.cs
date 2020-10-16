@@ -1036,11 +1036,6 @@ namespace Qsi.MySql.Tree
             });
         }
 
-        private static QsiExpressionNode VisitOrderByExpression(OrderByExpressionContext context)
-        {
-            return VisitExpression(context.expression());
-        }
-
         private static QsiLogicalExpressionNode CreateLogicalExpression<TContext>(
             string @operator,
             TContext left,
@@ -1272,6 +1267,70 @@ namespace Qsi.MySql.Tree
             MySqlTree.PutContextSpan(assignNode, context);
 
             return assignNode;
+        }
+
+        public static QsiWhereExpressionNode VisitCommonWhere(in CommonWhereContext context)
+        {
+            var node = new QsiWhereExpressionNode();
+
+            node.Expression.SetValue(VisitExpression(context.Expression));
+            MySqlTree.PutContextSpan(node, context);
+
+            return node;
+        }
+
+        public static QsiMultipleOrderExpressionNode VisitOrderByClause(OrderByClauseContext context)
+        {
+            var node = new QsiMultipleOrderExpressionNode();
+
+            node.Orders.AddRange(context.orderByExpression().Select(VisitOrderByExpression));
+            MySqlTree.PutContextSpan(node, context);
+
+            return node;
+        }
+
+        public static QsiOrderExpressionNode VisitOrderByExpression(OrderByExpressionContext context)
+        {
+            var node = new QsiOrderExpressionNode
+            {
+                Order = QsiSortOrder.Ascending
+            };
+
+            if (context.order?.Text.Equals("DESC", StringComparison.OrdinalIgnoreCase) ?? false)
+                node.Order = QsiSortOrder.Descending;
+
+            node.Expression.SetValue(VisitExpression(context.expression()));
+            MySqlTree.PutContextSpan(node, context);
+
+            return node;
+        }
+
+        public static QsiLimitExpressionNode VisitLimitClause(LimitClauseContext context)
+        {
+            return VisitCommonLimitClause(new CommonLimitClauseContext(context));
+        }
+
+        public static QsiLimitExpressionNode VisitCommonLimitClause(in CommonLimitClauseContext context)
+        {
+            var node = new QsiLimitExpressionNode();
+
+            if (context.Offset != null)
+                node.Offset.SetValue(VisitLimitClauseAtom(context.Offset));
+
+            if (context.Limit != null)
+                node.Limit.SetValue(VisitLimitClauseAtom(context.Limit));
+
+            MySqlTree.PutContextSpan(node, context);
+
+            return node;
+        }
+
+        public static QsiExpressionNode VisitLimitClauseAtom(LimitClauseAtomContext context)
+        {
+            if (context.decimalLiteral() != null)
+                return VisitLiteral(context.decimalLiteral());
+
+            return VisitVariable(context.mysqlVariable());
         }
 
         private static string JoinTokens(params string[] tokens)

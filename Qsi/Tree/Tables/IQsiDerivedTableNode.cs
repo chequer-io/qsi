@@ -24,5 +24,20 @@
         /// Get the delcared alias.
         /// </summary>
         IQsiAliasNode Alias { get; }
+
+        /// <summary>
+        /// Get the where clause.
+        /// </summary>
+        IQsiWhereExpressionNode WhereExpression { get; }
+
+        /// <summary>
+        /// Get the order clause.
+        /// </summary>
+        IQsiMultipleOrderExpressionNode OrderExpression { get; }
+
+        /// <summary>
+        /// Get the limit clause.
+        /// </summary>
+        IQsiLimitExpressionNode LimitExpression { get; }
     }
 }

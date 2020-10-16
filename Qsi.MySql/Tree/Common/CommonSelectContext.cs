@@ -11,11 +11,17 @@ namespace Qsi.MySql.Tree.Common
 
         public FromClauseContext FromClause { get; }
 
+        public OrderByClauseContext OrderByClause { get; }
+
+        public LimitClauseContext LimitClause { get; }
+
         public CommonSelectContext(QuerySpecificationContext context)
         {
             Context = context;
             SelectElements = context.selectElements();
             FromClause = context.fromClause();
+            OrderByClause = context.orderByClause();
+            LimitClause = context.limitClause();
         }
 
         public CommonSelectContext(QuerySpecificationNointoContext context)
@@ -23,6 +29,8 @@ namespace Qsi.MySql.Tree.Common
             Context = context;
             SelectElements = context.selectElements();
             FromClause = context.fromClause();
+            OrderByClause = context.orderByClause();
+            LimitClause = context.limitClause();
         }
     }
 }

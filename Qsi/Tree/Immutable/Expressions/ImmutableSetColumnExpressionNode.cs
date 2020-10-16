@@ -11,8 +11,6 @@ namespace Qsi.Tree.Immutable
 
         public QsiQualifiedIdentifier Target { get; }
 
-        public string Operator { get; }
-
         public IQsiExpressionNode Value { get; }
 
         public IUserDataHolder UserData { get; }
@@ -22,13 +20,11 @@ namespace Qsi.Tree.Immutable
         public ImmutableSetColumnExpressionNode(
             IQsiTreeNode parent,
             QsiQualifiedIdentifier target,
-            string @operator,
             IQsiExpressionNode value,
             IUserDataHolder userData)
         {
             Parent = parent;
             Target = target;
-            Operator = @operator;
             Value = value;
             UserData = userData;
         }

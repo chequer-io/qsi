@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Qsi.Analyzers.Context;
+using Qsi.Analyzers.Table.Context;
 using Qsi.Tree.Immutable;
 using Qsi.Data;
 using Qsi.Extensions;
@@ -10,7 +12,7 @@ using Qsi.Utilities;
 
 namespace Qsi.Analyzers.Table
 {
-    public partial class QsiTableAnalyzer : QsiAnalyzerBase
+    public class QsiTableAnalyzer : QsiAnalyzerBase
     {
         private const string scopeFieldList = "field list";
 
@@ -26,12 +28,12 @@ namespace Qsi.Analyzers.Table
                 (script.ScriptType == QsiScriptType.With || script.ScriptType == QsiScriptType.Select);
         }
 
-        protected override async ValueTask<IQsiAnalysisResult> OnExecute(ExecutionContext context)
+        protected override async ValueTask<IQsiAnalysisResult> OnExecute(IAnalyzerContext context)
         {
             if (!(context.Tree is IQsiTableNode tableNode))
                 throw new InvalidOperationException();
 
-            using var scope = new CompileContext(context.Options, context.CancellationToken);
+            using var scope = new TableCompileContext(context);
             var table = await BuildTableStructure(scope, tableNode);
 
             return new QsiTableAnalysisResult(table);
@@ -39,7 +41,7 @@ namespace Qsi.Analyzers.Table
         #endregion
 
         #region Table
-        internal async ValueTask<QsiTableStructure> BuildTableStructure(CompileContext context, IQsiTableNode table)
+        internal async ValueTask<QsiTableStructure> BuildTableStructure(TableCompileContext context, IQsiTableNode table)
         {
             context.ThrowIfCancellationRequested();
 
@@ -64,7 +66,7 @@ namespace Qsi.Analyzers.Table
             throw new InvalidOperationException();
         }
 
-        protected virtual async ValueTask<QsiTableStructure> BuildTableAccessStructure(CompileContext context, IQsiTableAccessNode table)
+        protected virtual async ValueTask<QsiTableStructure> BuildTableAccessStructure(TableCompileContext context, IQsiTableAccessNode table)
         {
             context.ThrowIfCancellationRequested();
 
@@ -75,15 +77,15 @@ namespace Qsi.Analyzers.Table
                 !lookup.IsSystem &&
                 (lookup.Type == QsiTableType.View || lookup.Type == QsiTableType.MaterializedView))
             {
-                var script = Engine.RepositoryProvider.LookupDefinition(lookup.Identifier, lookup.Type) ??
+                var script = context.Engine.RepositoryProvider.LookupDefinition(lookup.Identifier, lookup.Type) ??
                              throw new QsiException(QsiError.UnableResolveDefinition, lookup.Identifier);
 
-                var viewTable = (IQsiTableNode)Engine.TreeParser.Parse(script) ??
+                var viewTable = (IQsiTableNode)context.Engine.TreeParser.Parse(script) ??
                                 throw new QsiException(QsiError.Internal, "Invalid view node");
 
                 var typeBackup = lookup.Type;
 
-                using var viewCompileContext = new CompileContext(context.Options, context.CancellationToken);
+                using var viewCompileContext = new TableCompileContext(context);
 
                 if (lookup.Identifier.Level > 1)
                     viewCompileContext.PushIdentifierScope(lookup.Identifier.SubIdentifier(..^1));
@@ -98,11 +100,11 @@ namespace Qsi.Analyzers.Table
             return lookup;
         }
 
-        protected virtual async ValueTask<QsiTableStructure> BuildDerivedTableStructure(CompileContext context, IQsiDerivedTableNode table)
+        protected virtual async ValueTask<QsiTableStructure> BuildDerivedTableStructure(TableCompileContext context, IQsiDerivedTableNode table)
         {
             context.ThrowIfCancellationRequested();
 
-            using var scopedContext = new CompileContext(context);
+            using var scopedContext = new TableCompileContext(context);
 
             // Directives
 
@@ -128,7 +130,7 @@ namespace Qsi.Analyzers.Table
             }
             else if (table.Source != null)
             {
-                using var sourceContext = new CompileContext(scopedContext);
+                using var sourceContext = new TableCompileContext(scopedContext);
                 scopedContext.SourceTable = await BuildTableStructure(scopedContext, table.Source);
             }
 
@@ -205,7 +207,7 @@ namespace Qsi.Analyzers.Table
             return declaredTable;
         }
 
-        protected virtual ValueTask<QsiTableStructure> BuildInlineDerivedTableStructure(CompileContext context, IQsiInlineDerivedTableNode table)
+        protected virtual ValueTask<QsiTableStructure> BuildInlineDerivedTableStructure(TableCompileContext context, IQsiInlineDerivedTableNode table)
         {
             context.ThrowIfCancellationRequested();
 
@@ -281,7 +283,7 @@ namespace Qsi.Analyzers.Table
             return new ValueTask<QsiTableStructure>(declaredTable);
         }
 
-        protected virtual async ValueTask<QsiTableStructure> BuildRecursiveCompositeTableStructure(CompileContext context, IQsiDerivedTableNode table, IQsiCompositeTableNode source)
+        protected virtual async ValueTask<QsiTableStructure> BuildRecursiveCompositeTableStructure(TableCompileContext context, IQsiDerivedTableNode table, IQsiCompositeTableNode source)
         {
             context.ThrowIfCancellationRequested();
 
@@ -304,7 +306,7 @@ namespace Qsi.Analyzers.Table
             }
             else
             {
-                using var anchorContext = new CompileContext(context);
+                using var anchorContext = new TableCompileContext(context);
                 var anchor = await BuildTableStructure(anchorContext, source.Sources[0]);
 
                 foreach (var anchorColumn in anchor.Columns)
@@ -319,7 +321,7 @@ namespace Qsi.Analyzers.Table
 
             for (int i = sourceOffset; i < source.Sources.Length; i++)
             {
-                using var tempContext = new CompileContext(context);
+                using var tempContext = new TableCompileContext(context);
                 tempContext.AddDirective(declaredTable);
 
                 structures.Add(await BuildTableStructure(tempContext, source.Sources[i]));
@@ -339,7 +341,7 @@ namespace Qsi.Analyzers.Table
             return declaredTable;
         }
 
-        internal async ValueTask BuildDirectives(CompileContext context, IQsiTableDirectivesNode directivesNode)
+        internal async ValueTask BuildDirectives(TableCompileContext context, IQsiTableDirectivesNode directivesNode)
         {
             context.ThrowIfCancellationRequested();
 
@@ -374,16 +376,18 @@ namespace Qsi.Analyzers.Table
                             fixedSources
                                 .Select(s => s.Source)
                                 .ToArray(),
+                            compositeTableNode.OrderExpression,
+                            compositeTableNode.LimitExpression,
                             compositeTableNode.UserData);
                     }
 
-                    using var directiveContext = new CompileContext(context);
+                    using var directiveContext = new TableCompileContext(context);
                     var directiveTableStructure = await BuildRecursiveCompositeTableStructure(context, directiveTable, compositeTableNode);
                     context.AddDirective(directiveTableStructure);
                 }
                 else
                 {
-                    using var directiveContext = new CompileContext(context);
+                    using var directiveContext = new TableCompileContext(context);
                     var directiveTableStructure = await BuildTableStructure(directiveContext, directiveTable);
                     context.AddDirective(directiveTableStructure);
                 }
@@ -403,7 +407,7 @@ namespace Qsi.Analyzers.Table
             return false;
         }
 
-        protected virtual async ValueTask<QsiTableStructure> BuildJoinedTableStructure(CompileContext context, IQsiJoinedTableNode table)
+        protected virtual async ValueTask<QsiTableStructure> BuildJoinedTableStructure(TableCompileContext context, IQsiJoinedTableNode table)
         {
             context.ThrowIfCancellationRequested();
 
@@ -427,7 +431,7 @@ namespace Qsi.Analyzers.Table
             }
             else
             {
-                using var leftContext = new CompileContext(context);
+                using var leftContext = new TableCompileContext(context);
                 left = await BuildTableStructure(leftContext, table.Left);
                 context.SourceTables.Add(left);
             }
@@ -438,7 +442,7 @@ namespace Qsi.Analyzers.Table
             }
             else
             {
-                using var rightContext = new CompileContext(context);
+                using var rightContext = new TableCompileContext(context);
                 right = await BuildTableStructure(rightContext, table.Right);
                 context.SourceTables.Add(right);
             }
@@ -500,7 +504,7 @@ namespace Qsi.Analyzers.Table
             return joinedTable;
         }
 
-        protected virtual async ValueTask<QsiTableStructure> BuildCompositeTableStructure(CompileContext context, IQsiCompositeTableNode table)
+        protected virtual async ValueTask<QsiTableStructure> BuildCompositeTableStructure(TableCompileContext context, IQsiCompositeTableNode table)
         {
             context.ThrowIfCancellationRequested();
 
@@ -511,7 +515,7 @@ namespace Qsi.Analyzers.Table
 
             for (int i = 0; i < sources.Length; i++)
             {
-                using var tempContext = new CompileContext(context);
+                using var tempContext = new TableCompileContext(context);
                 sources[i] = await BuildTableStructure(tempContext, table.Sources[i]);
             }
 
@@ -539,7 +543,7 @@ namespace Qsi.Analyzers.Table
         #endregion
 
         #region Column
-        private IEnumerable<QsiTableColumn> ResolveColumns(CompileContext context, IQsiColumnNode column)
+        private IEnumerable<QsiTableColumn> ResolveColumns(TableCompileContext context, IQsiColumnNode column)
         {
             context.ThrowIfCancellationRequested();
 
@@ -565,7 +569,7 @@ namespace Qsi.Analyzers.Table
             throw new InvalidOperationException();
         }
 
-        protected virtual IEnumerable<QsiTableColumn> ResolveAllColumns(CompileContext context, IQsiAllColumnNode column)
+        protected virtual IEnumerable<QsiTableColumn> ResolveAllColumns(TableCompileContext context, IQsiAllColumnNode column)
         {
             context.ThrowIfCancellationRequested();
 
@@ -590,7 +594,7 @@ namespace Qsi.Analyzers.Table
             return tables.SelectMany(t => column.IncludeInvisibleColumns ? t.Columns : t.VisibleColumns);
         }
 
-        protected virtual QsiTableColumn ResolveDeclaredColumn(CompileContext context, IQsiDeclaredColumnNode columnn)
+        protected virtual QsiTableColumn ResolveDeclaredColumn(TableCompileContext context, IQsiDeclaredColumnNode columnn)
         {
             context.ThrowIfCancellationRequested();
 
@@ -629,7 +633,7 @@ namespace Qsi.Analyzers.Table
             return columns[0];
         }
 
-        protected virtual IEnumerable<QsiTableColumn> ResolveDerivedColumns(CompileContext context, IQsiDerivedColumnNode column)
+        protected virtual IEnumerable<QsiTableColumn> ResolveDerivedColumns(TableCompileContext context, IQsiDerivedColumnNode column)
         {
             context.ThrowIfCancellationRequested();
 
@@ -639,7 +643,7 @@ namespace Qsi.Analyzers.Table
             return ResolveColumns(context, column.Column);
         }
 
-        protected virtual QsiTableColumn ResolveSequentialColumn(CompileContext context, IQsiSequentialColumnNode column)
+        protected virtual QsiTableColumn ResolveSequentialColumn(TableCompileContext context, IQsiSequentialColumnNode column)
         {
             context.ThrowIfCancellationRequested();
 
@@ -652,7 +656,7 @@ namespace Qsi.Analyzers.Table
             return context.SourceTable.VisibleColumns.ElementAt(column.Ordinal);
         }
 
-        protected virtual IEnumerable<QsiTableColumn> ResolveColumnsInExpression(CompileContext context, IQsiExpressionNode expression)
+        protected virtual IEnumerable<QsiTableColumn> ResolveColumnsInExpression(TableCompileContext context, IQsiExpressionNode expression)
         {
             context.ThrowIfCancellationRequested();
 
@@ -744,7 +748,7 @@ namespace Qsi.Analyzers.Table
 
                 case IQsiTableExpressionNode e:
                 {
-                    using var scopedContext = new CompileContext(context);
+                    using var scopedContext = new TableCompileContext(context);
                     var structure = BuildTableStructure(scopedContext, e.Table).Result;
 
                     foreach (var c in structure.Columns)
@@ -831,7 +835,7 @@ namespace Qsi.Analyzers.Table
         #endregion
 
         #region Table Lookup
-        private QsiQualifiedIdentifier ResolveQualifiedIdentifier(CompileContext context, QsiQualifiedIdentifier identifier)
+        private QsiQualifiedIdentifier ResolveQualifiedIdentifier(TableCompileContext context, QsiQualifiedIdentifier identifier)
         {
             context.ThrowIfCancellationRequested();
 
@@ -849,25 +853,25 @@ namespace Qsi.Analyzers.Table
                 identifier = new QsiQualifiedIdentifier(identifiers.ToArray());
             }
 
-            return Engine.RepositoryProvider.ResolveQualifiedIdentifier(identifier);
+            return context.Engine.RepositoryProvider.ResolveQualifiedIdentifier(identifier);
         }
 
-        private QsiTableStructure ResolveTableStructure(CompileContext context, QsiQualifiedIdentifier identifier)
+        private QsiTableStructure ResolveTableStructure(TableCompileContext context, QsiQualifiedIdentifier identifier)
         {
             context.ThrowIfCancellationRequested();
             return LookupTableStructure(context, identifier) ?? throw new QsiException(QsiError.UnableResolveTable, identifier);
         }
 
-        private QsiTableStructure LookupTableStructure(CompileContext context, QsiQualifiedIdentifier identifier)
+        private QsiTableStructure LookupTableStructure(TableCompileContext context, QsiQualifiedIdentifier identifier)
         {
             context.ThrowIfCancellationRequested();
 
             return
                 context.Directives.FirstOrDefault(d => Match(d.Identifier, identifier)) ??
-                Engine.RepositoryProvider.LookupTable(ResolveQualifiedIdentifier(context, identifier));
+                context.Engine.RepositoryProvider.LookupTable(ResolveQualifiedIdentifier(context, identifier));
         }
 
-        private IEnumerable<QsiTableStructure> LookupDataTableStructuresInExpression(CompileContext context, QsiQualifiedIdentifier identifier)
+        private IEnumerable<QsiTableStructure> LookupDataTableStructuresInExpression(TableCompileContext context, QsiQualifiedIdentifier identifier)
         {
             context.ThrowIfCancellationRequested();
 

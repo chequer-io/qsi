@@ -12,11 +12,6 @@ namespace Qsi.Debugger.Vendor.SqlServer
             throw new NotImplementedException();
         }
 
-        protected override Task<QsiDataRowCollection> GetDataRows(QsiQualifiedIdentifier identifier, string whereClause)
-        {
-            throw new NotImplementedException();
-        }
-
         protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier)
         {
             identifier = identifier.Level switch
