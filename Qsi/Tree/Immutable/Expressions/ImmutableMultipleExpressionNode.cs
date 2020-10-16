@@ -13,10 +13,14 @@ namespace Qsi.Tree.Immutable
 
         public IEnumerable<IQsiTreeNode> Children => Elements;
 
-        public ImmutableMultipleExpressionNode(IQsiTreeNode parent, IQsiExpressionNode[] elements) : this()
+        public ImmutableMultipleExpressionNode(
+            IQsiTreeNode parent,
+            IQsiExpressionNode[] elements,
+            IUserDataHolder userData)
         {
             Parent = parent;
             Elements = elements;
+            UserData = userData;
         }
     }
 }

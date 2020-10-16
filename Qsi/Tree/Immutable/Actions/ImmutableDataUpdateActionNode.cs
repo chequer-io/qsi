@@ -19,14 +19,14 @@ namespace Qsi.Tree.Immutable
 
         public ImmutableDataUpdateActionNode(
             IQsiTreeNode parent,
-            IUserDataHolder userData,
-            IQsiTableAccessNode target,
-            IQsiSetColumnExpressionNode[] setValues)
+            IQsiTableNode target,
+            IQsiSetColumnExpressionNode[] setValues,
+            IUserDataHolder userData)
         {
             Parent = parent;
-            UserData = userData;
             Target = target;
             SetValues = setValues;
+            UserData = userData;
         }
     }
 }

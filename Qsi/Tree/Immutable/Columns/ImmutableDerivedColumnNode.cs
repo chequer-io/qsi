@@ -18,19 +18,15 @@ namespace Qsi.Tree.Immutable
 
         public IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Column, Expression, Alias);
 
-        public ImmutableDerivedColumnNode(IQsiTreeNode parent, IQsiColumnNode column, IQsiAliasNode alias, IUserDataHolder userData)
+        public ImmutableDerivedColumnNode(
+            IQsiTreeNode parent,
+            IQsiColumnNode column,
+            IQsiExpressionNode expression,
+            IQsiAliasNode alias,
+            IUserDataHolder userData)
         {
             Parent = parent;
             Column = column;
-            Expression = null;
-            Alias = alias;
-            UserData = userData;
-        }
-
-        public ImmutableDerivedColumnNode(IQsiTreeNode parent, IQsiExpressionNode expression, IQsiAliasNode alias, IUserDataHolder userData)
-        {
-            Parent = parent;
-            Column = null;
             Expression = expression;
             Alias = alias;
             UserData = userData;

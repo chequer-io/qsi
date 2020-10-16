@@ -9,24 +9,24 @@ namespace Qsi.Tree.Immutable
     {
         public IQsiTreeNode Parent { get; }
 
-        public IUserDataHolder UserData { get; }
-
         public QsiSortOrder Order { get; }
 
         public IQsiExpressionNode Expression { get; }
+
+        public IUserDataHolder UserData { get; }
 
         public IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Expression);
 
         public ImmutableOrderExpressionNode(
             IQsiTreeNode parent,
-            IUserDataHolder userData,
             QsiSortOrder order,
-            IQsiExpressionNode expression)
+            IQsiExpressionNode expression,
+            IUserDataHolder userData)
         {
             Parent = parent;
-            UserData = userData;
             Order = order;
             Expression = expression;
+            UserData = userData;
         }
     }
 }

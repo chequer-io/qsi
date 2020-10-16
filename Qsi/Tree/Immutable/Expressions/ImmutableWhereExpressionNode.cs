@@ -8,20 +8,20 @@ namespace Qsi.Tree.Immutable
     {
         public IQsiTreeNode Parent { get; }
 
-        public IUserDataHolder UserData { get; }
-
         public IQsiExpressionNode Expression { get; }
+
+        public IUserDataHolder UserData { get; }
 
         public IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Expression);
 
         public ImmutableWhereExpressionNode(
             IQsiTreeNode parent,
-            IUserDataHolder userData,
-            IQsiExpressionNode expression)
+            IQsiExpressionNode expression,
+            IUserDataHolder userData)
         {
             Parent = parent;
-            UserData = userData;
             Expression = expression;
+            UserData = userData;
         }
     }
 }
