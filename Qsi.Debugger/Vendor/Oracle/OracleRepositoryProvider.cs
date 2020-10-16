@@ -7,7 +7,7 @@ namespace Qsi.Debugger.Vendor.Oracle
 {
     internal sealed class OracleRepositoryProvider : VendorRepositoryProvider
     {
-        protected override Task<QsiDataRowCollection> GetDataRows(QsiScript script)
+        protected override Task<QsiDataTable> GetDataTable(QsiScript script)
         {
             throw new NotImplementedException();
         }

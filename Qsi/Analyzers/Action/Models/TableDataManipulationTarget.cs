@@ -3,7 +3,7 @@ using Qsi.Data;
 
 namespace Qsi.Analyzers.Action.Models
 {
-    public sealed class TableDataInsertTarget
+    public sealed class TableDataManipulationTarget
     {
         public QsiTableStructure Table { get; }
 
@@ -15,10 +15,13 @@ namespace Qsi.Analyzers.Action.Models
 
         public QsiDataRowCollection DuplicateRows => _duplicateRows ??= new QsiDataRowCollection(ColumnCount);
 
+        public QsiDataRowCollection DeleteRows => _deleteRows ??= new QsiDataRowCollection(ColumnCount);
+
         private QsiDataRowCollection _insertRows;
         private QsiDataRowCollection _duplicateRows;
+        private QsiDataRowCollection _deleteRows;
 
-        public TableDataInsertTarget(QsiTableStructure table, TableDataColumnPivot[] pivots)
+        public TableDataManipulationTarget(QsiTableStructure table, TableDataColumnPivot[] pivots)
         {
             if (table.Type != QsiTableType.Table)
                 throw new ArgumentException(nameof(table));

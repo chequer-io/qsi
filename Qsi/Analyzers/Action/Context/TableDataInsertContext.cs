@@ -6,7 +6,7 @@ namespace Qsi.Analyzers.Action.Context
 {
     public sealed class TableDataInsertContext : TableDataContext
     {
-        public TableDataInsertTarget[] Targets { get; set; }
+        public TableDataManipulationTarget[] Targets { get; set; }
 
         public QsiIdentifier[] ColumnNames { get; set; }
 
