@@ -18,8 +18,6 @@ namespace Qsi.Services
 
         protected abstract Task<QsiDataRowCollection> GetDataRows(QsiScript script);
 
-        protected abstract Task<QsiDataRowCollection> GetDataRows(QsiQualifiedIdentifier identifier, string whereClause);
-
         #region IQsiRepositoryProvider
         QsiTableStructure IQsiRepositoryProvider.LookupTable(QsiQualifiedIdentifier identifier)
         {
@@ -62,11 +60,6 @@ namespace Qsi.Services
         Task<QsiDataRowCollection> IQsiRepositoryProvider.GetDataRows(QsiScript script)
         {
             return GetDataRows(script);
-        }
-
-        Task<QsiDataRowCollection> IQsiRepositoryProvider.GetDataRows(QsiQualifiedIdentifier identifier, string whereClause)
-        {
-            return GetDataRows(identifier, whereClause);
         }
         #endregion
     }

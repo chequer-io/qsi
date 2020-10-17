@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Qsi.Analyzers.Table;
+using Qsi.Analyzers.Table.Context;
 using Qsi.Data;
 using Qsi.Tree;
 
@@ -13,7 +14,7 @@ namespace Qsi.Oracle
         {
         }
 
-        protected override ValueTask<QsiTableStructure> BuildDerivedTableStructure(CompileContext context, IQsiDerivedTableNode table)
+        protected override ValueTask<QsiTableStructure> BuildDerivedTableStructure(TableCompileContext context, IQsiDerivedTableNode table)
         {
             if (table.Source == null)
                 throw new QsiException(QsiError.NoFromClause);
@@ -21,7 +22,7 @@ namespace Qsi.Oracle
             return base.BuildDerivedTableStructure(context, table);
         }
 
-        protected override QsiTableColumn ResolveDeclaredColumn(CompileContext context, IQsiDeclaredColumnNode columnn)
+        protected override QsiTableColumn ResolveDeclaredColumn(TableCompileContext context, IQsiDeclaredColumnNode columnn)
         {
             try
             {

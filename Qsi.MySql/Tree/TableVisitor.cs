@@ -245,6 +245,12 @@ namespace Qsi.MySql.Tree
                 if (context.queryExpression() != null)
                     n.Sources.Add(VisitQueryExpression(context.queryExpression()));
 
+                if (context.orderByClause() != null)
+                    n.OrderExpression.SetValue(ExpressionVisitor.VisitOrderByClause(context.orderByClause()));
+
+                if (context.limitClause() != null)
+                    n.LimitExpression.SetValue(ExpressionVisitor.VisitLimitClause(context.limitClause()));
+
                 MySqlTree.PutContextSpan(n, context);
             });
         }
@@ -258,6 +264,12 @@ namespace Qsi.MySql.Tree
 
                 if (context.queryExpression() != null)
                     n.Sources.Add(VisitQueryExpression(context.queryExpression()));
+
+                if (context.orderByClause() != null)
+                    n.OrderExpression.SetValue(ExpressionVisitor.VisitOrderByClause(context.orderByClause()));
+
+                if (context.limitClause() != null)
+                    n.LimitExpression.SetValue(ExpressionVisitor.VisitLimitClause(context.limitClause()));
 
                 MySqlTree.PutContextSpan(n, context);
             });
@@ -300,7 +312,7 @@ namespace Qsi.MySql.Tree
 
         public static QsiTableNode VisitQuerySpecification(QuerySpecificationContext context)
         {
-            return VisitCommonSelectContext(new CommonSelectContext(context));
+            return VisitCommonSelect(new CommonSelectContext(context));
         }
 
         public static QsiTableNode VisitQueryExpressionNointo(QueryExpressionNointoContext context)
@@ -322,24 +334,41 @@ namespace Qsi.MySql.Tree
 
         public static QsiTableNode VisitQuerySpecificationNointo(QuerySpecificationNointoContext context)
         {
-            return VisitCommonSelectContext(new CommonSelectContext(context));
+            return VisitCommonSelect(new CommonSelectContext(context));
         }
         #endregion
 
         #region Select Elements
-        public static QsiTableNode VisitCommonSelectContext(CommonSelectContext context)
+        public static QsiTableNode VisitCommonSelect(in CommonSelectContext context)
         {
-            return TreeHelper.Create<QsiDerivedTableNode>(n =>
+            var node = new QsiDerivedTableNode();
+
+            node.Columns.SetValue(VisitSelectElements(context.SelectElements));
+
+            if (context.FromClause != null)
             {
-                n.Columns.SetValue(VisitSelectElements(context.SelectElements));
+                node.Source.SetValue(VisitTableSources(context.FromClause.tableSources()));
 
-                if (context.FromClause != null)
+                if (context.FromClause.whereExpr != null)
                 {
-                    n.Source.SetValue(VisitTableSources(context.FromClause.tableSources()));
+                    var whereContext = new CommonWhereContext(context.FromClause);
+                    node.WhereExpression.SetValue(ExpressionVisitor.VisitCommonWhere(whereContext));
                 }
+            }
 
-                MySqlTree.PutContextSpan(n, context.Context);
-            });
+            if (context.OrderByClause != null)
+            {
+                node.OrderExpression.SetValue(ExpressionVisitor.VisitOrderByClause(context.OrderByClause));
+            }
+
+            if (context.LimitClause != null)
+            {
+                node.LimitExpression.SetValue(ExpressionVisitor.VisitLimitClause(context.LimitClause));
+            }
+
+            MySqlTree.PutContextSpan(node, context.Context);
+
+            return node;
         }
 
         public static QsiColumnsDeclarationNode VisitSelectElements(SelectElementsContext context)
@@ -490,7 +519,7 @@ namespace Qsi.MySql.Tree
                 {
                     var nextJoin = new QsiJoinedTableNode
                     {
-                        JoinType = QsiJoinType.Full
+                        JoinType = QsiJoinType.Comma
                     };
 
                     nextJoin.Left.SetValue(anchor);
@@ -570,30 +599,44 @@ namespace Qsi.MySql.Tree
                     switch (join)
                     {
                         case InnerJoinContext innerJoinContext:
-                            joinType = QsiJoinType.Inner;
+                            joinType = innerJoinContext.INNER() != null ? QsiJoinType.Inner : QsiJoinType.Cross;
                             sourceItemContext = innerJoinContext.tableSourceItem();
                             uidListContext = innerJoinContext.uidList();
                             break;
 
                         case StraightJoinContext straightJoinContext:
-                            joinType = QsiJoinType.Full;
+                            joinType = QsiJoinType.Straight;
                             sourceItemContext = straightJoinContext.tableSourceItem();
                             break;
 
                         case OuterJoinContext outerJoinContext:
-                            joinType = outerJoinContext.joinOuter().joinType.Type == MySqlLexer.LEFT ?
-                                QsiJoinType.Left : QsiJoinType.Right;
+                        {
+                            var joinOuter = outerJoinContext.joinOuter();
+                            var isLeft = joinOuter.joinType.Type == MySqlLexer.LEFT;
+
+                            if (joinOuter.OUTER() == null)
+                                joinType = isLeft ? QsiJoinType.Left : QsiJoinType.Right;
+                            else
+                                joinType = isLeft ? QsiJoinType.LeftOuter : QsiJoinType.RightOuter;
 
                             sourceItemContext = outerJoinContext.tableSourceItem();
                             uidListContext = outerJoinContext.uidList();
                             break;
+                        }
 
                         case NaturalJoinContext naturalJoinContext:
-                            joinType = naturalJoinContext.joinOuter().joinType.Type == MySqlLexer.LEFT ?
-                                QsiJoinType.Left : QsiJoinType.Right;
+                        {
+                            var joinOuter = naturalJoinContext.joinOuter();
+                            var isLeft = joinOuter.joinType.Type == MySqlLexer.LEFT;
+
+                            if (joinOuter.OUTER() == null)
+                                joinType = isLeft ? QsiJoinType.NaturalLeft : QsiJoinType.NaturalRight;
+                            else
+                                joinType = isLeft ? QsiJoinType.NaturalLeftOuter : QsiJoinType.NaturalRightOuter;
 
                             sourceItemContext = naturalJoinContext.tableSourceItem();
                             break;
+                        }
 
                         default:
                             throw new NotSupportedException();
