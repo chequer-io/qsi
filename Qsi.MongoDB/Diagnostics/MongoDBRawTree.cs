@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using Qsi.Diagnostics;
 using Qsi.MongoDB.Internal.Nodes;
@@ -42,7 +43,7 @@ namespace Qsi.MongoDB.Diagnostics
         }
 
         public static readonly string[] UnnecessaryProperties = 
-            { "Start", "End", "Loc", "Range" };
+            { "Start", "End", "Loc", "Range", "Children" };
         
         public static bool IsUnnecessaryProperty(string name)
         {
@@ -63,9 +64,9 @@ namespace Qsi.MongoDB.Diagnostics
                     {
                         rawTree = new MongoDBRawTree((INode)value);
                     }
-                    else if (typeof(INode[]).IsAssignableFrom(pi.PropertyType))
+                    else if (typeof(IEnumerable<INode>).IsAssignableFrom(pi.PropertyType))
                     {
-                        rawTree = new MongoDBRawTree(pi.Name, (INode[])value);
+                        rawTree = new MongoDBRawTree(pi.Name, (IEnumerable<INode>)value);
                     }
                     else
                     {

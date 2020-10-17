@@ -24,8 +24,5 @@ namespace Qsi.MongoDB
 
         Task<QsiDataRowCollection> IQsiRepositoryProvider.GetDataRows(QsiScript script)
             => throw new NotSupportedException();
-
-        Task<QsiDataRowCollection> IQsiRepositoryProvider.GetDataRows(QsiQualifiedIdentifier identifier, string whereClause)
-            => throw new NotSupportedException();
     }
 }
