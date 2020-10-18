@@ -170,7 +170,7 @@ namespace Qsi.Debugger
                 }
                 else
                 {
-                    throw new NotSupportedException(result.GetType().Name);
+                    // throw new NotSupportedException(result.GetType().Name);
                 }
             }
             catch (Exception e)

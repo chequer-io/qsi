@@ -2,7 +2,7 @@
 using Qsi.Analyzers;
 using Qsi.Analyzers.Action;
 using Qsi.Data;
-using Qsi.MongoDB.Analyzers.Table;
+using Qsi.MongoDB.Analyzers;
 using Qsi.Parsing;
 using Qsi.Services;
 
@@ -10,6 +10,13 @@ namespace Qsi.MongoDB
 {
     public abstract class MongoDBLanguageServiceBase : IQsiLanguageService
     {
+        private readonly MongoDBVariableStack _variableStack;
+
+        protected MongoDBLanguageServiceBase()
+        {
+            _variableStack = new MongoDBVariableStack();
+        }
+        
         public QsiAnalyzerOptions CreateAnalyzerOptions()
         {
             return new QsiAnalyzerOptions();
@@ -18,7 +25,7 @@ namespace Qsi.MongoDB
         public IEnumerable<QsiAnalyzerBase> CreateAnalyzers(QsiEngine engine)
         {
             yield return new QsiActionAnalyzer(engine);
-            yield return new MongoDBTableAnalyzer(engine);
+            yield return new MongoDBExpressionAnalyzer(_variableStack, engine);
         }
 
         public IQsiTreeParser CreateTreeParser()
