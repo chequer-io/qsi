@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using JavaScriptEngineSwitcher.Core;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
@@ -9,6 +10,7 @@ using Qsi.MongoDB.Internal.Nodes;
 using Qsi.MongoDB.Internal.Nodes.Location;
 using Qsi.MongoDB.Internal.Serialization;
 using Qsi.MongoDB.Resources;
+using Qsi.Parsing;
 
 namespace Qsi.MongoDB.Acorn
 {
@@ -41,9 +43,16 @@ namespace Qsi.MongoDB.Acorn
 
         public static INode GetAstNode(string code)
         {
-            string result = ParseStrict(code);
-            Console.WriteLine(result);
-            return JsonConvert.DeserializeObject<ProgramNode>(result, _serializerSettings);
+            try
+            {
+                string result = ParseStrict(code);
+                Console.WriteLine(result);
+                return JsonConvert.DeserializeObject<ProgramNode>(result, _serializerSettings);
+            }
+            catch (JsCompilationException e)
+            {
+                throw new QsiSyntaxErrorException(e.LineNumber, e.ColumnNumber, e.Description);
+            }
         }
 
         public static IEnumerable<MongoDBStatement> Parse(string code)
