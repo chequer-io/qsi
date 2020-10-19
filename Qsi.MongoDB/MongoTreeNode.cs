@@ -5,7 +5,7 @@ using Qsi.Tree.Data;
 
 namespace Qsi.MongoDB
 {
-    public class QsiMongoTreeNode : IQsiTreeNode
+    public class MongoTreeNode : IQsiTreeNode
     {
         public IQsiTreeNode Parent => null;
 
@@ -15,7 +15,7 @@ namespace Qsi.MongoDB
         
         public INode Node { get; set; }
 
-        public QsiMongoTreeNode(INode node)
+        public MongoTreeNode(INode node)
         {
             Node = node;
         }

@@ -16,7 +16,7 @@ namespace Qsi.MongoDB
             if (node is ProgramNode programNode)
                 node = programNode.Body[0];
             
-            return new QsiMongoTreeNode(node);
+            return new MongoTreeNode(node);
         }
     }
 }

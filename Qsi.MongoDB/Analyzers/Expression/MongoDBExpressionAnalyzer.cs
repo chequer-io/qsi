@@ -21,7 +21,7 @@ namespace Qsi.MongoDB.Analyzers
 
         public override bool CanExecute(QsiScript script, IQsiTreeNode tree)
         {
-            if (tree is QsiMongoTreeNode node)
+            if (tree is MongoTreeNode node)
                 return node.Node is ExpressionStatementNode;
 
             return false;
@@ -29,7 +29,7 @@ namespace Qsi.MongoDB.Analyzers
 
         protected override async ValueTask<IQsiAnalysisResult> OnExecute(IAnalyzerContext context)
         {
-            if (!(context.Tree is QsiMongoTreeNode mongoNode))
+            if (!(context.Tree is MongoTreeNode mongoNode))
                 throw new InvalidOperationException();
 
             var node = mongoNode.Node as ExpressionStatementNode
@@ -124,6 +124,7 @@ namespace Qsi.MongoDB.Analyzers
                 // if object name is not known function
                 if (!DatabaseMemberHandlers.ContainsKey(@object))
                 {
+                    // use collection name to inputted name
                     jsObjectInfo.CollectionName = @object;
                 }
 
@@ -153,7 +154,6 @@ namespace Qsi.MongoDB.Analyzers
 
                     if (jsObjectInfo.IsDatabase)
                     {
-                        // TODO: db.getSilbingDB("") cannot proceed.
                         throw new InvalidOperationException("Already object is database.");
                     }
 
