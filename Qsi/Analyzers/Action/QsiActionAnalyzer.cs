@@ -84,29 +84,29 @@ namespace Qsi.Analyzers.Action
 
             var scriptType = context.Engine.ScriptParser.GetSuitableType(query);
 
-            var result = new QsiActionAnalysisResult(new QsiReferenceAction
+            var refAction = new QsiReferenceAction
             {
                 Type = QsiReferenceType.Prepared,
                 Operation = QsiReferenceOperation.Create,
                 IsolationLevel = QsiReferenceIsolationLevel.Session,
                 Target = action.Identifier,
                 Definition = new QsiScript(query, scriptType)
-            });
+            };
 
-            return new ValueTask<IQsiAnalysisResult>(result);
+            return refAction.ToResult().AsValueTask();
         }
 
         protected virtual ValueTask<IQsiAnalysisResult> ExecuteDropPrepareAction(IAnalyzerContext context, IQsiDropPrepareActionNode action)
         {
-            var result = new QsiActionAnalysisResult(new QsiReferenceAction
+            var refAction = new QsiReferenceAction
             {
                 Type = QsiReferenceType.Prepared,
                 Operation = QsiReferenceOperation.Delete,
                 IsolationLevel = QsiReferenceIsolationLevel.Session,
                 Target = action.Identifier
-            });
+            };
 
-            return new ValueTask<IQsiAnalysisResult>(result);
+            return refAction.ToResult().AsValueTask();
         }
 
         protected virtual ValueTask<IQsiAnalysisResult> ExecuteExecutePrepareAction(IAnalyzerContext context, IQsiExecutePrepareActionNode action)
@@ -278,7 +278,7 @@ namespace Qsi.Analyzers.Action
                 ProcessConflict(dataContext, action.ConflictAction, action.ConflictBehavior);
             }
 
-            IQsiAction[] result = dataContext.Targets
+            return dataContext.Targets
                 .Select(t => new QsiDataAction
                 {
                     Table = t.Table,
@@ -286,9 +286,7 @@ namespace Qsi.Analyzers.Action
                     DuplicateRows = t.DuplicateRows.ToNullIfEmpty()
                 })
                 .OfType<IQsiAction>()
-                .ToArray();
-
-            return new QsiActionAnalysisResult(new QsiActionSet(result));
+                .ToResult();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -501,35 +499,33 @@ namespace Qsi.Analyzers.Action
                 table.Columns[i].Name = columnNames[i];
             }
 
-            var actions = new List<IQsiAction>();
-
-            foreach (var target in ResolveDataManipulationTargets(table, columnNames))
-            {
-                foreach (var row in dataTable.Rows)
+            return ResolveDataManipulationTargets(table, columnNames)
+                .Select(target =>
                 {
-                    var targetRow = target.DeleteRows.NewRow();
-
-                    foreach (var pivot in target.ColumnPivots)
+                    foreach (var row in dataTable.Rows)
                     {
-                        if (pivot.DeclaredColumn != null)
+                        var targetRow = target.DeleteRows.NewRow();
+
+                        foreach (var pivot in target.ColumnPivots)
                         {
-                            targetRow.Items[pivot.TargetOrder] = row.Items[pivot.DeclaredOrder];
-                        }
-                        else
-                        {
-                            targetRow.Items[pivot.TargetOrder] = QsiDataValue.Unknown;
+                            if (pivot.DeclaredColumn != null)
+                            {
+                                targetRow.Items[pivot.TargetOrder] = row.Items[pivot.DeclaredOrder];
+                            }
+                            else
+                            {
+                                targetRow.Items[pivot.TargetOrder] = QsiDataValue.Unknown;
+                            }
                         }
                     }
-                }
 
-                actions.Add(new QsiDataAction
-                {
-                    Table = target.Table,
-                    DeleteRows = target.DeleteRows.ToNullIfEmpty()
-                });
-            }
-
-            return new QsiActionAnalysisResult(new QsiActionSet(actions.ToArray()));
+                    return new QsiDataAction
+                    {
+                        Table = target.Table,
+                        DeleteRows = target.DeleteRows.ToNullIfEmpty()
+                    };
+                })
+                .ToResult();
         }
         #endregion
 
