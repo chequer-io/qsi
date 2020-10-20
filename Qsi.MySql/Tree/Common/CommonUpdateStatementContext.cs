@@ -12,6 +12,8 @@ namespace Qsi.MySql.Tree.Common
 
         public ParserRuleContext TableSource { get; }
 
+        public UidContext Alias { get; }
+
         public UpdatedElementContext[] UpdatedElements { get; }
 
         public CommonWhereContext? Where { get; }
@@ -25,6 +27,7 @@ namespace Qsi.MySql.Tree.Common
             Start = context.Start;
             Stop = context.Stop;
             TableSource = context.tableName();
+            Alias = context.uid();
             UpdatedElements = context.updatedElement();
 
             if (context.expression() != null)
@@ -41,6 +44,7 @@ namespace Qsi.MySql.Tree.Common
             Start = context.Start;
             Stop = context.Stop;
             TableSource = context.tableSources();
+            Alias = null;
             UpdatedElements = context.updatedElement();
 
             if (context.expression() != null)

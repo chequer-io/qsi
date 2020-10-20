@@ -255,7 +255,16 @@ namespace Qsi.Analyzers.Action
             switch (node)
             {
                 case IQsiDerivedTableNode derivedTable:
-                    return derivedTable.ToImmutable(true);
+                    return new ImmutableDerivedTableNode(
+                        derivedTable.Parent,
+                        derivedTable.Directives,
+                        derivedTable.Columns,
+                        derivedTable.Source,
+                        null,
+                        derivedTable.WhereExpression,
+                        derivedTable.OrderExpression,
+                        derivedTable.LimitExpression,
+                        null);
 
                 case IQsiCompositeTableNode compositeTable:
                     return compositeTable.ToImmutable(true);
@@ -559,8 +568,10 @@ namespace Qsi.Analyzers.Action
             var setColumnsPivot = ResolveSetColumnsPivot(action.SetValues, false);
 
             // table structure
-            var updateTable = await BuildUpdateTableStructure(context, action, setColumnsPivot.Columns);
-            var sourceTable = updateTable.Columns[0].References[0].Parent;
+            var tableAnalyzer = context.Engine.GetAnalyzer<QsiTableAnalyzer>();
+            using var tableContext = new TableCompileContext(context);
+
+            var sourceTable = await tableAnalyzer.BuildTableStructure(tableContext, action.Target);
 
             // update data (rows)
             var commonTableNode = ReassembleCommonTableNode(action.Target);
@@ -572,13 +583,12 @@ namespace Qsi.Analyzers.Action
             // set values
             var setValues = new QsiDataValue[sourceTable.Columns.Count];
 
-            for (int i = 0; i < updateTable.Columns.Count; i++)
+            for (int i = 0; i < setColumnsPivot.Columns.Length; i++)
             {
-                var targetColumn = updateTable.Columns[i].References[0];
-                var targetIndex = targetColumn.Parent.Columns.IndexOf(targetColumn);
-
+                int sourceIndex = FindColumnIndex(context, sourceTable, setColumnsPivot.Columns[i]);
                 var affectedIndex = setColumnsPivot.AffectedIndices[i];
-                setValues[targetIndex] = ResolveColumnValue(context, action.SetValues[affectedIndex].Value);
+
+                setValues[sourceIndex] = ResolveColumnValue(context, action.SetValues[affectedIndex].Value);
             }
 
             return ResolveDataManipulationTargets(sourceTable)
@@ -591,10 +601,18 @@ namespace Qsi.Analyzers.Action
 
                         foreach (var pivot in target.ColumnPivots)
                         {
-                            var value = row.Items[pivot.DeclaredOrder];
+                            if (pivot.DeclaredColumn != null)
+                            {
+                                var value = row.Items[pivot.DeclaredOrder];
 
-                            oldRow.Items[pivot.TargetOrder] = value;
-                            newRow.Items[pivot.TargetOrder] = setValues[pivot.DeclaredOrder] ?? value;
+                                oldRow.Items[pivot.TargetOrder] = value;
+                                newRow.Items[pivot.TargetOrder] = setValues[pivot.DeclaredOrder] ?? value;
+                            }
+                            else
+                            {
+                                oldRow.Items[pivot.TargetOrder] = QsiDataValue.Unknown;
+                                newRow.Items[pivot.TargetOrder] = QsiDataValue.Unknown;
+                            }
                         }
                     }
 
@@ -608,50 +626,64 @@ namespace Qsi.Analyzers.Action
                 .ToResult();
         }
 
-        protected virtual async ValueTask<QsiTableStructure> BuildUpdateTableStructure(
-            IAnalyzerContext context,
-            IQsiDataUpdateActionNode action,
-            IEnumerable<QsiQualifiedIdentifier> columns)
+        private int FindColumnIndex(IAnalyzerContext context, QsiTableStructure table, QsiQualifiedIdentifier identifier)
         {
-            if (ListUtility.IsNullOrEmpty(action.SetValues))
-                throw new QsiException(QsiError.Syntax);
+            var alias = new QsiQualifiedIdentifier(identifier[..^1]);
+            var name = identifier[^1];
 
-            IQsiColumnNode[] columnNodes = columns
-                .Select(c => new ImmutableDeclaredColumnNode(null, c, null))
-                .OfType<IQsiColumnNode>()
-                .ToArray();
+            var queue = new Queue<QsiTableColumn>();
+            var recursiveTracker = new HashSet<QsiTableColumn>();
 
-            IQsiDerivedTableNode tableNode;
-
-            if (action.Target is IQsiDerivedTableNode derivedTableNode &&
-                derivedTableNode.Columns.Columns.Length == 1 &&
-                derivedTableNode.Columns.Columns[0] is IQsiAllColumnNode allColumnNode &&
-                allColumnNode.Path == null)
+            for (int i = 0; i < table.Columns.Count; i++)
             {
-                tableNode = new ImmutableDerivedTableNode(
-                    derivedTableNode.Parent,
-                    derivedTableNode.Directives,
-                    new ImmutableColumnsDeclarationNode(null, columnNodes, null),
-                    derivedTableNode.Source,
-                    derivedTableNode.Alias,
-                    derivedTableNode.WhereExpression,
-                    derivedTableNode.OrderExpression,
-                    derivedTableNode.LimitExpression,
-                    null);
-            }
-            else
-            {
-                tableNode = new ImmutableDerivedTableNode(
-                    null, null,
-                    new ImmutableColumnsDeclarationNode(null, columnNodes, null),
-                    action.Target,
-                    null, null, null, null, null);
+                if (!IdentifierComparer.Equals(table.Columns[i].Name, name))
+                    continue;
+
+                if (identifier.Level == 1)
+                    return i;
+
+                queue.Clear();
+                recursiveTracker.Clear();
+
+                queue.Enqueue(table.Columns[i]);
+
+                while (queue.TryDequeue(out var column))
+                {
+                    recursiveTracker.Add(column);
+
+                    if (column.Parent.HasIdentifier)
+                    {
+                        // * case - Explicit access
+                        if (QualifiedIdentifierComparer.Equals(column.Parent.Identifier, alias))
+                            return i;
+
+                        // * case - N Level implicit access
+                        if (context.Options.UseExplicitRelationAccess)
+                            break;
+
+                        if (!QsiUtility.IsReferenceType(column.Parent.Type))
+                            break;
+
+                        if (column.Parent.Identifier.Level <= identifier.Level)
+                            break;
+
+                        QsiIdentifier[] partialIdentifiers = column.Parent.Identifier[^identifier.Level..];
+                        var partialIdentifier = new QsiQualifiedIdentifier(partialIdentifiers);
+
+                        if (QualifiedIdentifierComparer.Equals(partialIdentifier, alias))
+                            return i;
+
+                        break;
+                    }
+
+                    foreach (var refColumn in column.References.Where(refColumn => !recursiveTracker.Contains(refColumn)))
+                    {
+                        queue.Enqueue(refColumn);
+                    }
+                }
             }
 
-            var tableAnalyzer = context.Engine.GetAnalyzer<QsiTableAnalyzer>();
-            using var tableContext = new TableCompileContext(context);
-
-            return await tableAnalyzer.BuildTableStructure(tableContext, tableNode);
+            return -1;
         }
         #endregion
     }
