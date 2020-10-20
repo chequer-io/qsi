@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Qsi.Analyzers.Context;
+using Qsi.Collections;
 using Qsi.Data;
 using Qsi.Tree;
 
@@ -11,14 +12,18 @@ namespace Qsi.Analyzers
     public abstract class QsiAnalyzerBase
     {
         protected IEqualityComparer<QsiIdentifier> IdentifierComparer => _identifierComparer.Value;
+        
+        protected IEqualityComparer<QsiQualifiedIdentifier> QualifiedIdentifierComparer => _qualifiedIdentifierComparer.Value;
 
         private readonly QsiEngine _engine;
         private readonly Lazy<IEqualityComparer<QsiIdentifier>> _identifierComparer;
+        private readonly Lazy<IEqualityComparer<QsiQualifiedIdentifier>> _qualifiedIdentifierComparer;
 
         protected QsiAnalyzerBase(QsiEngine engine)
         {
             _engine = engine;
-            _identifierComparer = new Lazy<IEqualityComparer<QsiIdentifier>>(() => new InternalIdentifierComparer(Match));
+            _identifierComparer = new Lazy<IEqualityComparer<QsiIdentifier>>(() => new DelegateEqualityComparer<QsiIdentifier>(Match));
+            _qualifiedIdentifierComparer = new Lazy<IEqualityComparer<QsiQualifiedIdentifier>>(() => new DelegateEqualityComparer<QsiQualifiedIdentifier>(Match));
         }
 
         public ValueTask<IQsiAnalysisResult> Execute(
@@ -58,21 +63,21 @@ namespace Qsi.Analyzers
         }
         #endregion
 
-        private readonly struct InternalIdentifierComparer : IEqualityComparer<QsiIdentifier>
+        protected readonly struct DelegateEqualityComparer<T> : IEqualityComparer<T>
         {
-            private readonly Func<QsiIdentifier, QsiIdentifier, bool> _equalsDelegate;
+            private readonly Func<T, T, bool> _equalsDelegate;
 
-            public InternalIdentifierComparer(Func<QsiIdentifier, QsiIdentifier, bool> equalsDelegate)
+            public DelegateEqualityComparer(Func<T, T, bool> equalsDelegate)
             {
                 _equalsDelegate = equalsDelegate;
             }
 
-            public bool Equals(QsiIdentifier x, QsiIdentifier y)
+            public bool Equals(T x, T y)
             {
                 return _equalsDelegate(x, y);
             }
 
-            public int GetHashCode(QsiIdentifier obj)
+            public int GetHashCode(T obj)
             {
                 return obj.GetHashCode();
             }
