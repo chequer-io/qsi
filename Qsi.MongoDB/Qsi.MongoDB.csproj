@@ -20,4 +20,10 @@
       <EmbeddedResource Include="Resources\acorn-loose.min.js" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Content Include="build\Qsi.MongoDB.props">
+        <PackagePath>build/</PackagePath>
+      </Content>
+    </ItemGroup>
+
 </Project>

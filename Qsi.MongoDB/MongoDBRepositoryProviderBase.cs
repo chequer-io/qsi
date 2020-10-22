@@ -22,7 +22,7 @@ namespace Qsi.MongoDB
         QsiVariable IQsiRepositoryProvider.LookupVariable(QsiQualifiedIdentifier identifier)
             => throw new NotSupportedException();
 
-        Task<QsiDataRowCollection> IQsiRepositoryProvider.GetDataRows(QsiScript script)
+        public Task<QsiDataTable> GetDataTable(QsiScript script)
             => throw new NotSupportedException();
     }
 }
