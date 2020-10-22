@@ -337,7 +337,6 @@ namespace Qsi.Analyzers.Action
                     InsertRows = t.InsertRows.ToNullIfEmpty(),
                     DuplicateRows = t.DuplicateRows.ToNullIfEmpty()
                 })
-                .OfType<IQsiAction>()
                 .ToResult();
         }
 
