@@ -7,7 +7,7 @@ namespace Qsi.Debugger.Vendor.MySql
 {
     internal class MySqlRepositoryProvider : VendorRepositoryProvider
     {
-        protected override Task<QsiDataRowCollection> GetDataRows(QsiScript script)
+        protected override Task<QsiDataTable> GetDataTable(QsiScript script)
         {
             throw new NotImplementedException();
         }
