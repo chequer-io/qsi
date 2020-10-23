@@ -650,7 +650,8 @@ namespace Qsi.MySql.Tree
                     nextJoin.Left.SetValue(anchor);
                     nextJoin.Right.SetValue(VisitTableSourceItem(sourceItemContext));
 
-                    MySqlTree.PutContextSpan(nextJoin, join);
+                    var leftSpan = MySqlTree.GetSpan(anchor);
+                    MySqlTree.PutSpan(nextJoin, new Range(leftSpan.Start, join.Stop.StopIndex + 1));
 
                     anchor = nextJoin;
 
