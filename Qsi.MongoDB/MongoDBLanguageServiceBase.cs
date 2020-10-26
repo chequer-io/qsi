@@ -1,53 +1,35 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using Qsi.Analyzers;
-using Qsi.Analyzers.Action;
-using Qsi.Data;
-using Qsi.MongoDB.Analyzers;
 using Qsi.Parsing;
 using Qsi.Services;
 
 namespace Qsi.MongoDB
 {
-    public abstract class MongoDBLanguageServiceBase : IQsiLanguageService
+    public abstract class MongoDBLanguageServiceBase : QsiLanguageServiceBase
     {
-        private readonly MongoDBVariableStack _variableStack;
-
-        protected MongoDBLanguageServiceBase()
-        {
-            _variableStack = new MongoDBVariableStack();
-        }
-        
-        public QsiAnalyzerOptions CreateAnalyzerOptions()
-        {
-            return new QsiAnalyzerOptions();
-        }
-
-        public IEnumerable<QsiAnalyzerBase> CreateAnalyzers(QsiEngine engine)
-        {
-            yield return new QsiActionAnalyzer(engine);
-            yield return new MongoDBExpressionAnalyzer(_variableStack, engine);
-        }
-
-        public IQsiTreeParser CreateTreeParser()
-        {
-            return new MongoDBParser();
-        }
-
-        public IQsiTreeDeparser CreateTreeDeparser()
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public IQsiScriptParser CreateScriptParser()
+        public override IQsiScriptParser CreateScriptParser()
         {
             return new MongoDBScriptParser();
         }
 
-        public abstract IQsiRepositoryProvider CreateRepositoryProvider();
-
-        public bool MatchIdentifier(QsiIdentifier x, QsiIdentifier y)
+        public override QsiAnalyzerOptions CreateAnalyzerOptions()
         {
-            throw new System.NotImplementedException();
+            throw new NotSupportedException();
+        }
+
+        public override IQsiRepositoryProvider CreateRepositoryProvider()
+        {
+            throw new NotSupportedException();
+        }
+
+        public override IQsiTreeDeparser CreateTreeDeparser()
+        {
+            throw new NotSupportedException();
+        }
+
+        public override IQsiTreeParser CreateTreeParser()
+        {
+            throw new NotSupportedException();
         }
     }
 }
