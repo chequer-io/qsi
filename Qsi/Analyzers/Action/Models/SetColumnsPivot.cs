@@ -5,22 +5,22 @@ namespace Qsi.Analyzers.Action.Models
 {
     public sealed class SetColumnsPivot
     {
-        public QsiIdentifier[] ColumnNames { get; }
+        public QsiQualifiedIdentifier[] Columns { get; }
 
         public int[] AffectedIndices { get; }
 
-        public SetColumnsPivot(QsiIdentifier[] columnNames, int[] affectedIndices)
+        public SetColumnsPivot(QsiQualifiedIdentifier[] columns, int[] affectedIndices)
         {
-            if (columnNames == null)
-                throw new ArgumentNullException(nameof(columnNames));
+            if (columns == null)
+                throw new ArgumentNullException(nameof(columns));
             
             if (affectedIndices == null)
                 throw new ArgumentNullException(nameof(affectedIndices));
             
-            if (columnNames.Length < affectedIndices.Length)
-                throw new ArgumentException($"{nameof(columnNames)}.Length < {nameof(affectedIndices)}.Length");
+            if (columns.Length < affectedIndices.Length)
+                throw new ArgumentException($"{nameof(columns)}.Length < {nameof(affectedIndices)}.Length");
 
-            ColumnNames = columnNames;
+            Columns = columns;
             AffectedIndices = affectedIndices;
         }
     }
