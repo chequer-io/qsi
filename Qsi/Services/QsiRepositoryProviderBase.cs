@@ -16,7 +16,7 @@ namespace Qsi.Services
 
         protected abstract QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier);
 
-        protected abstract Task<QsiDataRowCollection> GetDataRows(QsiScript script);
+        protected abstract Task<QsiDataTable> GetDataTable(QsiScript script);
 
         #region IQsiRepositoryProvider
         QsiTableStructure IQsiRepositoryProvider.LookupTable(QsiQualifiedIdentifier identifier)
@@ -57,9 +57,9 @@ namespace Qsi.Services
             return ResolveQualifiedIdentifier(identifier);
         }
 
-        Task<QsiDataRowCollection> IQsiRepositoryProvider.GetDataRows(QsiScript script)
+        Task<QsiDataTable> IQsiRepositoryProvider.GetDataTable(QsiScript script)
         {
-            return GetDataRows(script);
+            return GetDataTable(script);
         }
         #endregion
     }

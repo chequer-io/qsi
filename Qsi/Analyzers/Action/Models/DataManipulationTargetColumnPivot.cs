@@ -2,7 +2,7 @@
 
 namespace Qsi.Analyzers.Action.Models
 {
-    public sealed class TableDataColumnPivot
+    public sealed class DataManipulationTargetColumnPivot
     {
         public QsiTableColumn TargetColumn { get; }
 
@@ -12,7 +12,7 @@ namespace Qsi.Analyzers.Action.Models
 
         public int DeclaredOrder { get; }
 
-        public TableDataColumnPivot(
+        public DataManipulationTargetColumnPivot(
             int targetOrder, QsiTableColumn targetColumn,
             int declaredOrder, QsiTableColumn declaredColumn)
         {

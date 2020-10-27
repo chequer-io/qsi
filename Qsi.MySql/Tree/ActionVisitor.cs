@@ -280,12 +280,15 @@ namespace Qsi.MySql.Tree
                     throw new QsiException(QsiError.Syntax);
             }
 
-            if (context.Where != null || context.Order != null || context.Limit != null)
+            if (context.Alias != null || context.Where != null || context.Order != null || context.Limit != null)
             {
                 var derivedTable = new QsiDerivedTableNode();
 
                 derivedTable.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
                 derivedTable.Source.SetValue(table);
+
+                if (context.Alias != null)
+                    derivedTable.Alias.SetValue(TableVisitor.CreateAliasNode(context.Alias));
 
                 if (context.Where != null)
                     derivedTable.WhereExpression.SetValue(ExpressionVisitor.VisitCommonWhere(context.Where.Value));
