@@ -87,9 +87,8 @@ namespace Qsi.MySql.Tree
         public static IEnumerable<QsiSequentialColumnNode> CreateSequentialColumnNodes(IEnumerable<UidContext> uids)
         {
             return uids
-                .Select((uid, i) => TreeHelper.Create<QsiSequentialColumnNode>(n =>
+                .Select(uid => TreeHelper.Create<QsiSequentialColumnNode>(n =>
                 {
-                    n.Ordinal = i;
                     n.Alias.SetValue(CreateAliasNode(uid));
                     MySqlTree.PutContextSpan(n, uid);
                 }));
