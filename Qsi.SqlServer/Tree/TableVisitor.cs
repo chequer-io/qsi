@@ -149,10 +149,8 @@ namespace Qsi.SqlServer.Tree
         public IEnumerable<QsiColumnNode> CreateSequentialColumnNodes(IEnumerable<Identifier> columns)
         {
             return columns
-                .Select((identifier, i) => TreeHelper.Create<QsiSequentialColumnNode>(n =>
+                .Select(identifier => TreeHelper.Create<QsiSequentialColumnNode>(n =>
                 {
-                    n.Ordinal = i;
-
                     n.Alias.SetValue(CreateAliasNode(identifier));
                 }));
         }

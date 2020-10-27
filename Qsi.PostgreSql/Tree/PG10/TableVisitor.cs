@@ -212,10 +212,8 @@ namespace Qsi.PostgreSql.Tree.PG10
         public static IEnumerable<QsiSequentialColumnNode> CreateSequentialColumnNodes(IEnumerable<PgString> uids)
         {
             return IdentifierVisitor.VisitStrings(uids)
-                .Select((identifier, i) => TreeHelper.Create<QsiSequentialColumnNode>(cn =>
+                .Select(identifier => TreeHelper.Create<QsiSequentialColumnNode>(cn =>
                 {
-                    cn.Ordinal = i;
-
                     cn.Alias.SetValue(new QsiAliasNode
                     {
                         Name = identifier

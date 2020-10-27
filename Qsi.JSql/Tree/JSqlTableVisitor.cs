@@ -93,14 +93,12 @@ namespace Qsi.JSql.Tree
             return TreeHelper.Create<QsiColumnsDeclarationNode>(n =>
             {
                 n.Columns.AddRange(columns
-                    .Select((column, i) => TreeHelper.Create<QsiSequentialColumnNode>(cn =>
+                    .Select(column => TreeHelper.Create<QsiSequentialColumnNode>(cn =>
                     {
                         var identifier = IdentifierVisitor.VisitMultiPartName(column);
 
                         if (identifier.Level != 1)
                             throw new InvalidOperationException();
-
-                        cn.Ordinal = i;
 
                         cn.Alias.SetValue(new QsiAliasNode
                         {

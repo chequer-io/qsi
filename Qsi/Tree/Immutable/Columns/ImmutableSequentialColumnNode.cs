@@ -9,8 +9,6 @@ namespace Qsi.Tree.Immutable
     {
         public IQsiTreeNode Parent { get; }
 
-        public int Ordinal { get; }
-
         public IQsiAliasNode Alias { get; }
 
         public QsiSequentialColumnType ColumnType { get; }
@@ -21,13 +19,11 @@ namespace Qsi.Tree.Immutable
 
         public ImmutableSequentialColumnNode(
             IQsiTreeNode parent,
-            int ordinal,
             IQsiAliasNode alias,
             QsiSequentialColumnType columnType,
             IUserDataHolder userData)
         {
             Parent = parent;
-            Ordinal = ordinal;
             Alias = alias;
             ColumnType = columnType;
             UserData = userData;
