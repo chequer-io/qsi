@@ -214,6 +214,8 @@ namespace Qsi.PostgreSql.Tree.PG10
             return IdentifierVisitor.VisitStrings(uids)
                 .Select(identifier => TreeHelper.Create<QsiSequentialColumnNode>(cn =>
                 {
+                    cn.ColumnType = QsiSequentialColumnType.Overwrite;
+
                     cn.Alias.SetValue(new QsiAliasNode
                     {
                         Name = identifier
