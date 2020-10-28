@@ -24,7 +24,6 @@ using Qsi.Debugger.Vendor.MySql;
 using Qsi.Debugger.Vendor.Oracle;
 using Qsi.Debugger.Vendor.PostgreSql;
 using Qsi.Debugger.Vendor.SqlServer;
-using Qsi.Parsing;
 using Qsi.SqlServer.Common;
 using Qsi.Tree;
 
@@ -168,7 +167,7 @@ namespace Qsi.Debugger
                 }
                 else
                 {
-                    throw new NotSupportedException(result.GetType().Name);
+                    // throw new NotSupportedException(result.GetType().Name);
                 }
             }
             catch (Exception e)
