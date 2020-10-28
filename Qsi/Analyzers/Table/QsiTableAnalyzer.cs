@@ -140,28 +140,55 @@ namespace Qsi.Analyzers.Table
                 Identifier = alias == null ? null : new QsiQualifiedIdentifier(alias)
             };
 
-            if (table.Columns == null || table.Columns.Count == 0)
+            var columns = table.Columns;
+
+            if (columns == null || columns.Count == 0)
             {
                 if (!context.Options.AllowEmptyColumnsInSelect)
                 {
                     throw new QsiException(QsiError.Syntax);
                 }
             }
+            else if (columns.Columns.Is(out IQsiSequentialColumnNode[] sequentialColumns))
+            {
+                // Sequential columns definition
+
+                if (scopedContext.SourceTable == null)
+                    throw new QsiException(QsiError.NoTablesUsed);
+
+                var columnType = sequentialColumns[0].ColumnType;
+                QsiTableColumn[] allColumns = scopedContext.SourceTable.VisibleColumns.ToArray();
+                int columnLength = allColumns.Length;
+
+                if (sequentialColumns.Length > allColumns.Length)
+                {
+                    throw new QsiException(QsiError.SpecifiesMoreColumnNames);
+                }
+
+                if (columnType == QsiSequentialColumnType.Default)
+                {
+                    if (sequentialColumns.Length != allColumns.Length)
+                        throw new QsiException(QsiError.DifferentColumnsCount);
+
+                    columnLength = sequentialColumns.Length;
+                }
+
+                for (int i = 0; i < columnLength; i++)
+                {
+                    var column = allColumns[i];
+                    var declaredColumn = declaredTable.NewColumn();
+
+                    declaredColumn.Name = i < sequentialColumns.Length ? sequentialColumns[i].Alias?.Name : column.Name;
+                    declaredColumn.References.Add(column);
+                }
+            }
             else
             {
-                // Columns Definition
+                // Compund columns definition
 
-                foreach (var column in table.Columns.Columns)
+                foreach (var column in columns.Columns)
                 {
-                    if (column is IQsiBindingColumnNode bindingColumn)
-                    {
-                        var declaredColumn = declaredTable.NewColumn();
-                        declaredColumn.Name = new QsiIdentifier(bindingColumn.Id, false);
-                        declaredColumn.IsBinding = true;
-                        continue;
-                    }
-
-                    IEnumerable<QsiTableColumn> columns = ResolveColumns(scopedContext, column);
+                    IEnumerable<QsiTableColumn> resolvedColumns = ResolveColumns(scopedContext, column);
 
                     switch (column)
                     {
@@ -171,26 +198,21 @@ namespace Qsi.Analyzers.Table
 
                             declaredColumn.Name = derivedColum.Alias?.Name;
                             declaredColumn.IsExpression = derivedColum.IsExpression;
-                            declaredColumn.References.AddRange(columns);
+                            declaredColumn.References.AddRange(resolvedColumns);
                             break;
                         }
 
-                        case IQsiSequentialColumnNode sequentialColum:
+                        case IQsiBindingColumnNode bindingColumn:
                         {
-                            if (columns.Count() != 1)
-                                throw new InvalidOperationException();
-
-                            var c = columns.First();
                             var declaredColumn = declaredTable.NewColumn();
-
-                            declaredColumn.Name = sequentialColum.Alias?.Name;
-                            declaredColumn.References.Add(c);
+                            declaredColumn.Name = new QsiIdentifier(bindingColumn.Id, false);
+                            declaredColumn.IsBinding = true;
                             break;
                         }
 
                         default:
                         {
-                            foreach (var c in columns)
+                            foreach (var c in resolvedColumns)
                             {
                                 var declaredColumn = declaredTable.NewColumn();
 
@@ -558,12 +580,11 @@ namespace Qsi.Analyzers.Table
                 case IQsiDerivedColumnNode derivedColumn:
                     return ResolveDerivedColumns(context, derivedColumn);
 
-                case IQsiSequentialColumnNode sequentialColumn:
-                    return new[] { ResolveSequentialColumn(context, sequentialColumn) };
+                case IQsiBindingColumnNode _:
+                    return Array.Empty<QsiTableColumn>();
 
-                case IQsiBindingColumnNode bindingColumn:
-                    // Process on 
-                    break;
+                case IQsiSequentialColumnNode _:
+                    throw new QsiException(QsiError.SyntaxError, "You cannot define sequential column in a compound column definition.");
             }
 
             throw new InvalidOperationException();
@@ -641,19 +662,6 @@ namespace Qsi.Analyzers.Table
                 return ResolveColumnsInExpression(context, column.Expression);
 
             return ResolveColumns(context, column.Column);
-        }
-
-        protected virtual QsiTableColumn ResolveSequentialColumn(TableCompileContext context, IQsiSequentialColumnNode column)
-        {
-            context.ThrowIfCancellationRequested();
-
-            if (context.SourceTable == null)
-                throw new QsiException(QsiError.NoTablesUsed);
-
-            if (column.Ordinal >= context.SourceTable.Columns.Count)
-                throw new QsiException(QsiError.SpecifiesMoreColumnNames);
-
-            return context.SourceTable.VisibleColumns.ElementAt(column.Ordinal);
         }
 
         protected virtual IEnumerable<QsiTableColumn> ResolveColumnsInExpression(TableCompileContext context, IQsiExpressionNode expression)

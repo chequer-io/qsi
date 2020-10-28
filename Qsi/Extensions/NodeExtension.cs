@@ -257,8 +257,8 @@ namespace Qsi.Extensions
         {
             return new ImmutableSequentialColumnNode(
                 node.Parent,
-                node.Ordinal,
                 node.Alias,
+                node.ColumnType,
                 ignoreUserData ? null : node.UserData);
         }
 
