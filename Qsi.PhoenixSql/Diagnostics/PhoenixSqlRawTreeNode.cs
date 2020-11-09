@@ -80,8 +80,11 @@ namespace Qsi.PhoenixSql.Diagnostics
 
             var valueType = value.GetType();
 
-            if (valueType.IsValueType && Activator.CreateInstance(valueType).Equals(value))
+            if (valueType.IsValueType && !valueType.IsEnum &&
+                Activator.CreateInstance(valueType).Equals(value))
+            {
                 return null;
+            }
 
             return new PhoenixSqlRawTreeNode(field.Name, value);
         }
