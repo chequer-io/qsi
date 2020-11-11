@@ -1,7 +1,11 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
+using PhoenixSql;
 using Qsi.Data;
 using Qsi.Parsing;
+using Qsi.PhoenixSql.Tree;
 using Qsi.Tree;
+using Qsi.Utilities;
 using PhoenixSqlParserInternal = PhoenixSql.PhoenixSqlParser;
 
 namespace Qsi.PhoenixSql
@@ -10,7 +14,18 @@ namespace Qsi.PhoenixSql
     {
         public IQsiTreeNode Parse(QsiScript script, CancellationToken cancellationToken = default)
         {
-            throw new System.NotImplementedException();
+            var result = PhoenixSqlParserInternal.Parse(script.Script);
+
+            switch (result)
+            {
+                case SelectStatement selectStatement:
+                    return TableVisitor.VisitSelectStatement(selectStatement);
+
+                case IDMLStatement dmlStatement:
+                    throw new NotImplementedException();
+            }
+
+            throw TreeHelper.NotSupportedTree(result);
         }
     }
 }

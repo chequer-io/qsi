@@ -18,7 +18,7 @@ namespace Qsi.PhoenixSql.Diagnostics
 
         public PhoenixSqlRawTreeNode(IMessage message)
         {
-            if (message is IProxyMessage<object> proxyMessage)
+            if (message is IPhoenixProxyNode<IPhoenixNode> proxyMessage)
             {
                 message = (IMessage)proxyMessage.Message;
             }
