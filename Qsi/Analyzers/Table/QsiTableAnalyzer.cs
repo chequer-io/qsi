@@ -580,6 +580,9 @@ namespace Qsi.Analyzers.Table
                 case IQsiDerivedColumnNode derivedColumn:
                     return ResolveDerivedColumns(context, derivedColumn);
 
+                case IQsiDynamicColumnNode dynamicColumn:
+                    return new[] { ResolveDynamicColumn(context, dynamicColumn) };
+
                 case IQsiBindingColumnNode _:
                     return Array.Empty<QsiTableColumn>();
 
@@ -662,6 +665,25 @@ namespace Qsi.Analyzers.Table
                 return ResolveColumnsInExpression(context, column.Expression);
 
             return ResolveColumns(context, column.Column);
+        }
+
+        private QsiTableColumn ResolveDynamicColumn(TableCompileContext context, IQsiDynamicColumnNode column)
+        {
+            if (context.SourceTable == null)
+                throw new QsiException(QsiError.NoTablesUsed);
+
+            if (context.SourceTable.Type != QsiTableType.Table)
+                throw new QsiException(QsiError.UnableResolveTable);
+
+            var tableColumn = context.SourceTable.Columns.FirstOrDefault(c => c.ColumnNode == column);
+
+            if (tableColumn == null)
+            {
+                tableColumn = context.SourceTable.NewColumn();
+                tableColumn.Name = column.Name[^1];
+            }
+
+            return tableColumn;
         }
 
         protected virtual IEnumerable<QsiTableColumn> ResolveColumnsInExpression(TableCompileContext context, IQsiExpressionNode expression)
