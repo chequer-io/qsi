@@ -1,5 +1,9 @@
-﻿using Qsi.Analyzers;
+﻿using System.Collections.Generic;
+using Qsi.Analyzers;
+using Qsi.Analyzers.Action;
+using Qsi.Analyzers.Table;
 using Qsi.Parsing;
+using Qsi.PhoenixSql.Analyzers;
 using Qsi.Services;
 
 namespace Qsi.PhoenixSql
@@ -24,6 +28,12 @@ namespace Qsi.PhoenixSql
         public override QsiAnalyzerOptions CreateAnalyzerOptions()
         {
             return new QsiAnalyzerOptions();
+        }
+        
+        public override IEnumerable<QsiAnalyzerBase> CreateAnalyzers(QsiEngine engine)
+        {
+            yield return new QsiActionAnalyzer(engine);
+            yield return new PhoenixSqlTableAnalyzer(engine);
         }
     }
 }

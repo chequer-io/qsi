@@ -140,6 +140,9 @@ namespace Qsi.Analyzers.Table
                 Identifier = alias == null ? null : new QsiQualifiedIdentifier(alias)
             };
 
+            if (scopedContext.SourceTable != null)
+                declaredTable.References.Add(scopedContext.SourceTable);
+
             var columns = table.Columns;
 
             if (columns == null || columns.Count == 0)
@@ -468,6 +471,9 @@ namespace Qsi.Analyzers.Table
                 right = await BuildTableStructure(rightContext, table.Right);
                 context.SourceTables.Add(right);
             }
+
+            joinedTable.References.Add(left);
+            joinedTable.References.Add(right);
 
             IQsiDeclaredColumnNode[] pivots = table.PivotColumns?.Columns
                 .Cast<IQsiDeclaredColumnNode>()
@@ -912,47 +918,7 @@ namespace Qsi.Analyzers.Table
 
             tables.AddRange(context.SourceTables);
 
-            foreach (var table in tables.Where(t => t.HasIdentifier))
-            {
-                // * case - Explicit access
-                // ┌──────────────────────────────────────────────────────────┐
-                // │ SELECT sakila.actor.column FROM sakila.actor             │
-                // │        ▔▔▔▔▔▔^▔▔▔▔▔      ==     ▔▔▔▔▔▔^▔▔▔▔▔             │
-                // │         └-> identifier(2)        └-> table.Identifier(2) │
-                // └──────────────────────────────────────────────────────────┘ 
-
-                if (Match(table.Identifier, identifier))
-                    yield return table;
-
-                // * case - 2 Level implicit access
-                // ┌──────────────────────────────────────────────────────────┐
-                // │ SELECT actor.column FROM sakila.actor                    │
-                // │        ▔▔▔▔▔      <       ▔▔▔▔▔^▔▔▔▔▔                    │
-                // │         └-> identifier(1)  └-> table.Identifier(2)       │
-                // └──────────────────────────────────────────────────────────┘ 
-
-                // * case - 3 Level implicit access
-                // ┌──────────────────────────────────────────────────────────┐
-                // │ SELECT sakila.actor.column FROM db.sakila.actor          │
-                // │        ▔▔▔▔▔▔^▔▔▔▔▔       <     ▔▔^▔▔▔▔▔▔^▔▔▔▔▔          │
-                // │         └-> identifier(2)        └-> table.Identifier(3) │
-                // └──────────────────────────────────────────────────────────┘ 
-
-                if (context.Options.UseExplicitRelationAccess)
-                    continue;
-
-                if (!QsiUtility.IsReferenceType(table.Type))
-                    continue;
-
-                if (table.Identifier.Level <= identifier.Level)
-                    continue;
-
-                QsiIdentifier[] partialIdentifiers = table.Identifier[^identifier.Level..];
-                var partialIdentifier = new QsiQualifiedIdentifier(partialIdentifiers);
-
-                if (Match(partialIdentifier, identifier))
-                    yield return table;
-            }
+            return tables.Where(t => Match(context, t, identifier));
         }
         #endregion
 

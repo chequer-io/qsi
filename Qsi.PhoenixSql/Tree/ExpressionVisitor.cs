@@ -1,6 +1,7 @@
 ﻿using System;
 using PhoenixSql;
 using PhoenixSql.Extensions;
+using Qsi.Data;
 using Qsi.Tree;
 using Qsi.Utilities;
 
@@ -525,22 +526,44 @@ namespace Qsi.PhoenixSql.Tree
 
         private static QsiExpressionNode VisitSequenceValueParseNode(SequenceValueParseNode node)
         {
+            // CURRENT VALUE FOR
             throw new NotImplementedException();
         }
 
         private static QsiExpressionNode VisitLiteralParseNode(LiteralParseNode node)
         {
-            throw new NotImplementedException();
+            var literalNode = new QsiLiteralExpressionNode
+            {
+                Type = QsiDataType.Raw,
+                Value = node.Value
+            };
+
+            PhoenixSqlTree.SetRawNode(literalNode, node);
+
+            return literalNode;
         }
 
         public static QsiWhereExpressionNode VisitWhere(IParseNode node)
         {
-            throw new NotImplementedException();
+            return TreeHelper.Create<QsiWhereExpressionNode>(n =>
+            {
+                n.Expression.SetValue(Visit(node));
+            });
         }
 
         public static QsiLimitExpressionNode VisitLimitOffset(LimitNode limitNode, OffsetNode offsetNode)
         {
-            throw new NotImplementedException();
+            return TreeHelper.Create<QsiLimitExpressionNode>(n =>
+            {
+                var limit = limitNode?.LimitParseNode;
+                var offset = offsetNode?.OffsetParseNode;
+
+                if (limit != null)
+                    n.Limit.SetValue(Visit(limit));
+
+                if (offsetNode != null)
+                    n.Offset.SetValue(Visit(offset));
+            });
         }
     }
 }

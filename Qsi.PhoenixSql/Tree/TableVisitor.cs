@@ -196,6 +196,15 @@ namespace Qsi.PhoenixSql.Tree
             return columnNode;
         }
 
+        private static IEnumerable<QsiColumnNode> VisitDynamicColumns(IEnumerable<ColumnDef> columns)
+        {
+            return columns.Select(c => TreeHelper.Create<QsiDynamicColumnNode>(n =>
+            {
+                n.Name = IdentifierVisitor.Visit(c.ColumnDefName);
+                PhoenixSqlTree.SetRawNode(n, c);
+            }));
+        }
+
         public static QsiTableNode VisitTableNode(ITableNode node)
         {
             switch (node.Unwrap())
@@ -224,7 +233,7 @@ namespace Qsi.PhoenixSql.Tree
                 Identifier = IdentifierVisitor.Visit(node.Name)
             };
 
-            if (string.IsNullOrEmpty(node.Alias))
+            if (string.IsNullOrEmpty(node.Alias) && node.DynamicColumns.Count == 0)
             {
                 PhoenixSqlTree.SetRawNode(tableNode, node);
                 return tableNode;
@@ -233,12 +242,19 @@ namespace Qsi.PhoenixSql.Tree
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
                 n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+
+                if (node.DynamicColumns.Count > 0)
+                    n.Columns.Value.Columns.AddRange(VisitDynamicColumns(node.DynamicColumns));
+
                 n.Source.SetValue(tableNode);
 
-                n.Alias.SetValue(new QsiAliasNode
+                if (!string.IsNullOrEmpty(node.Alias))
                 {
-                    Name = IdentifierVisitor.Visit(node)
-                });
+                    n.Alias.SetValue(new QsiAliasNode
+                    {
+                        Name = IdentifierVisitor.Visit(node)
+                    });   
+                }
 
                 PhoenixSqlTree.SetRawNode(n, node);
             });

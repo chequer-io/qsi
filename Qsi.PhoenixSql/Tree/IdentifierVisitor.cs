@@ -59,6 +59,19 @@ namespace Qsi.PhoenixSql.Tree
 
             return new QsiQualifiedIdentifier(identifiers);
         }
+        
+        public static QsiQualifiedIdentifier Visit(ColumnName node)
+        {
+            var hasFamilyName = !string.IsNullOrEmpty(node.FamilyNode?.Name);
+            var identifiers = new QsiIdentifier[hasFamilyName ? 2 : 1];
+
+            if (hasFamilyName)
+                identifiers[0] = CreateIdentifier(node.FamilyNode.Name, node.FamilyNode.IsCaseSensitive);
+
+            identifiers[^1] = CreateIdentifier(node.ColumnNode.Name, node.ColumnNode.IsCaseSensitive);
+
+            return new QsiQualifiedIdentifier(identifiers);
+        }
 
         private static QsiIdentifier CreateIdentifier(string value)
         {
