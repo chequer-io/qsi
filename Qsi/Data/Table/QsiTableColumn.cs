@@ -20,6 +20,8 @@ namespace Qsi.Data
 
         public bool IsAnonymous => Name == null;
 
+        public bool IsDynamic { get; set; }
+
         public string Default { get; set; }
 
         public bool IsExpression
@@ -28,17 +30,13 @@ namespace Qsi.Data
             set => _isExpression = value;
         }
 
+        internal IQsiColumnNode ColumnNode { get; set; }
+        
         internal bool _isExpression;
 
         internal QsiTableColumn(QsiTableStructure parent)
         {
             Parent = parent;
-        }
-
-        internal QsiTableColumn(IQsiBindingColumnNode bindingColumn)
-        {
-            Name = new QsiIdentifier(bindingColumn.Id, false);
-            IsBinding = true;
         }
     }
 }
