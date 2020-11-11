@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Google.Protobuf.Collections;
 using PhoenixSql;
 using PhoenixSql.Extensions;
 using Qsi.Data;
+using Qsi.Extensions;
 using Qsi.Tree;
 using Qsi.Utilities;
 
@@ -16,14 +18,15 @@ namespace Qsi.PhoenixSql.Tree
             var tableNode = new QsiDerivedTableNode();
             var columnsNode = new QsiColumnsDeclarationNode();
 
-            if (statement.IsUnion)
+            RepeatedField<AliasedNode> selects = statement.Select;
+
+            if (statement.IsUnion && selects.Select(s => s.Node.Unwrap()).Is(out IEnumerable<ColumnParseNode> columns))
             {
-                IEnumerable<ColumnParseNode> columns = statement.Select.Select(c => (ColumnParseNode)c.Node.Message);
                 columnsNode.Columns.AddRange(CreateSequentialColumns(columns));
             }
             else
             {
-                columnsNode.Columns.AddRange(statement.Select.Select(VisitAliasedNode));
+                columnsNode.Columns.AddRange(selects.Select(VisitAliasedNode));
             }
 
             tableNode.Columns.SetValue(columnsNode);

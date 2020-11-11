@@ -27,6 +27,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qsi.MongoDB", "Qsi.MongoDB\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qsi.PhoenixSql", "Qsi.PhoenixSql\Qsi.PhoenixSql.csproj", "{5823C989-9E6A-4521-9112-DF286CFF2107}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Qsi.Shared", "Qsi.Shared\Qsi.Shared.shproj", "{0107B316-4DF4-4B5F-914D-A43230E481F6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

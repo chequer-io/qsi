@@ -12,4 +12,6 @@
       <ProjectReference Include="..\Qsi\Qsi.csproj" />
     </ItemGroup>
 
+    <Import Project="..\Qsi.Shared\Qsi.Shared.projitems" Label="Shared" />
+
 </Project>
