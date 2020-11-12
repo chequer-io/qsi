@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace Qsi.Tree
 {
-    public sealed class QsiMultipleOrderExpressionNode : QsiExpressionNode, IQsiMultipleOrderExpressionNode
+    public class QsiMultipleOrderExpressionNode : QsiExpressionNode, IQsiMultipleOrderExpressionNode
     {
         public QsiTreeNodeList<QsiOrderExpressionNode> Orders { get; }
 

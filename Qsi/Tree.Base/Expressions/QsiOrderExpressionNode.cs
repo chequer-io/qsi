@@ -5,7 +5,7 @@ using Qsi.Utilities;
 
 namespace Qsi.Tree
 {
-    public sealed class QsiOrderExpressionNode : QsiExpressionNode, IQsiOrderExpressionNode
+    public class QsiOrderExpressionNode : QsiExpressionNode, IQsiOrderExpressionNode
     {
         public QsiSortOrder Order { get; set; }
 

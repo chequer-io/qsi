@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using PhoenixSql;
 using Qsi.Data;
 using Qsi.Parsing;
@@ -22,7 +21,7 @@ namespace Qsi.PhoenixSql
                     return TableVisitor.VisitSelectStatement(selectStatement);
 
                 case IDMLStatement dmlStatement:
-                    throw new NotImplementedException();
+                    return ActionVisitor.Visit(dmlStatement);
             }
 
             throw TreeHelper.NotSupportedTree(result);

@@ -4,7 +4,7 @@ using Qsi.Data;
 
 namespace Qsi.Tree
 {
-    public sealed class QsiDropPrepareActionNode : QsiActionNode, IQsiDropPrepareActionNode
+    public class QsiDropPrepareActionNode : QsiActionNode, IQsiDropPrepareActionNode
     {
         public QsiQualifiedIdentifier Identifier { get; set; }
 

@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace Qsi.Tree
 {
-    public sealed class QsiParametersExpressionNode : QsiExpressionNode, IQsiParametersExpressionNode
+    public class QsiParametersExpressionNode : QsiExpressionNode, IQsiParametersExpressionNode
     {
         public QsiTreeNodeList<QsiExpressionNode> Expressions { get; }
 

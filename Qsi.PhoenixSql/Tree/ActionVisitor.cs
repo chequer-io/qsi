@@ -1,0 +1,122 @@
+﻿using System.Linq;
+using PhoenixSql;
+using Qsi.Data;
+using Qsi.PhoenixSql.Internal;
+using Qsi.Tree;
+using Qsi.Utilities;
+
+namespace Qsi.PhoenixSql.Tree
+{
+    internal static class ActionVisitor
+    {
+        public static QsiActionNode Visit(IDMLStatement statement)
+        {
+            switch (statement)
+            {
+                case UpsertStatement upsertStatement:
+                    return VisitUpsertStatement(upsertStatement);
+
+                case DeleteStatement deleteStatement:
+                    return VisitDeleteStatement(deleteStatement);
+
+                default:
+                    throw TreeHelper.NotSupportedTree(statement);
+            }
+        }
+
+        public static QsiActionNode VisitUpsertStatement(UpsertStatement node)
+        {
+            var insertAction = new PUpsertActionNode
+            {
+                Hints = node.Hint.Hints
+            };
+
+            insertAction.Target.SetValue(new QsiTableAccessNode
+            {
+                Identifier = IdentifierVisitor.Visit(node.Table.Name)
+            });
+
+            if (node.Table.DynamicColumns.Any())
+            {
+                insertAction.DynamicColumns = node.Table.DynamicColumns
+                    .Select(c => IdentifierVisitor.Visit(c.ColumnDefName))
+                    .ToArray();
+            }
+
+            insertAction.Columns = node.Columns.Select(IdentifierVisitor.Visit).ToArray();
+
+            if (node.Values.Any())
+            {
+                var row = new QsiRowValueExpressionNode();
+                row.ColumnValues.AddRange(node.Values.Select(ExpressionVisitor.Visit));
+
+                insertAction.Values.Add(row);
+            }
+            else if (node.Select != null)
+            {
+                insertAction.ValueTable.SetValue(TableVisitor.VisitSelectStatement(node.Select));
+            }
+
+            if (node.OnDupKeyIgnore)
+            {
+                insertAction.ConflictBehavior = QsiDataConflictBehavior.Ignore;
+            }
+            else if (node.OnDupKeyPairs.Any())
+            {
+                var conflictAction = new QsiDataConflictActionNode();
+                conflictAction.SetValues.AddRange(node.OnDupKeyPairs.Select(VisitDupKeyPair));
+
+                insertAction.ConflictBehavior = QsiDataConflictBehavior.Update;
+                insertAction.ConflictAction.SetValue(conflictAction);
+            }
+
+            PTree.RawNode[insertAction] = node;
+
+            return insertAction;
+        }
+
+        private static QsiSetColumnExpressionNode VisitDupKeyPair(UpsertStatement.Types.Pair_ColumnName_ParseNode pair)
+        {
+            return TreeHelper.Create<QsiSetColumnExpressionNode>(n =>
+            {
+                n.Target = IdentifierVisitor.Visit(pair.First);
+                n.Value.SetValue(ExpressionVisitor.Visit(pair.Second));
+            });
+        }
+
+        public static QsiActionNode VisitDeleteStatement(DeleteStatement node)
+        {
+            var table = TableVisitor.VisitTableNode(node.Table);
+
+            if (node.Where != null || node.OrderBy.Any() || node.Limit != null)
+            {
+                var derivedTable = new QsiDerivedTableNode();
+
+                derivedTable.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+                derivedTable.Source.SetValue(table);
+
+                if (node.Where != null)
+                    derivedTable.WhereExpression.SetValue(ExpressionVisitor.VisitWhere(node.Where));
+
+                if (node.OrderBy.Any())
+                    derivedTable.OrderExpression.SetValue(ExpressionVisitor.VisitOrderBy(node.OrderBy));
+
+                if (node.Limit != null)
+                    derivedTable.LimitExpression.SetValue(ExpressionVisitor.VisitLimitOffset(node.Limit, null));
+
+                table = derivedTable;
+            }
+
+            var deleteAction = new PDeleteActionNode
+            {
+                Hints = node.Hint.Hints
+            };
+
+            deleteAction.Target.SetValue(table);
+
+            PTree.RawNode[deleteAction] = node;
+
+            return deleteAction;
+        }
+    }
+}

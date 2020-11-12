@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Google.Protobuf.Collections;
 using PhoenixSql;
 using PhoenixSql.Extensions;
 using Qsi.Data;
+using Qsi.PhoenixSql.Internal;
 using Qsi.Tree;
 using Qsi.Utilities;
 
@@ -107,7 +109,7 @@ namespace Qsi.PhoenixSql.Tree
         {
             var logicalNode = TreeHelper.CreateLogicalExpression(node.FilterOp.ToSql(), node.LHS, node.RHS, Visit);
 
-            PhoenixSqlTree.SetRawNode(logicalNode, node);
+            PTree.RawNode[logicalNode] = node;
 
             return logicalNode;
         }
@@ -133,7 +135,7 @@ namespace Qsi.PhoenixSql.Tree
                 n.Left.SetValue(leftExpressionNode);
                 n.Right.SetValue(rightExpressionNode);
 
-                PhoenixSqlTree.SetRawNode(n, node);
+                PTree.RawNode[n] = node;
             });
         }
         #endregion
@@ -150,7 +152,7 @@ namespace Qsi.PhoenixSql.Tree
                 n.Member.SetValue(TreeHelper.CreateFunctionAccess(node.Name));
                 n.Parameters.AddRange(node.Children.Select(Visit));
 
-                PhoenixSqlTree.SetRawNode(n, node);
+                PTree.RawNode[n] = node;
             });
         }
 
@@ -180,7 +182,7 @@ namespace Qsi.PhoenixSql.Tree
             if (node.IsNegate)
                 expressionNode = TreeHelper.CreateUnary(PhoenixSqlKnownOperator.UnaryNot, expressionNode);
 
-            PhoenixSqlTree.SetRawNode(expressionNode, node);
+            PTree.RawNode[expressionNode] = node;
 
             return expressionNode;
         }
@@ -199,7 +201,7 @@ namespace Qsi.PhoenixSql.Tree
             if (node.IsNegate)
                 expressionNode = TreeHelper.CreateUnary(PhoenixSqlKnownOperator.UnaryNot, expressionNode);
 
-            PhoenixSqlTree.SetRawNode(expressionNode, node);
+            PTree.RawNode[expressionNode] = node;
 
             return expressionNode;
         }
@@ -216,7 +218,7 @@ namespace Qsi.PhoenixSql.Tree
                 n.Array.SetValue(Visit(node.Children[0]));
                 n.Rank.SetValue(Visit(node.Children[1]));
 
-                PhoenixSqlTree.SetRawNode(n, node);
+                PTree.RawNode[n] = node;
             });
         }
 
@@ -231,7 +233,7 @@ namespace Qsi.PhoenixSql.Tree
             if (node.IsNegate)
                 expressionNode = TreeHelper.CreateUnary(PhoenixSqlKnownOperator.UnaryNot, expressionNode);
 
-            PhoenixSqlTree.SetRawNode(expressionNode, node);
+            PTree.RawNode[expressionNode] = node;
 
             return expressionNode;
         }
@@ -247,7 +249,7 @@ namespace Qsi.PhoenixSql.Tree
             if (node.IsNegate)
                 expressionNode = TreeHelper.CreateUnary(PhoenixSqlKnownOperator.UnaryNot, expressionNode);
 
-            PhoenixSqlTree.SetRawNode(expressionNode, node);
+            PTree.RawNode[expressionNode] = node;
 
             return expressionNode;
         }
@@ -255,7 +257,7 @@ namespace Qsi.PhoenixSql.Tree
         private static QsiExpressionNode VisitNotParseNode(NotParseNode node)
         {
             var expressionNode = TreeHelper.CreateUnary(PhoenixSqlKnownOperator.UnaryNot, Visit(node.Children[0]));
-            PhoenixSqlTree.SetRawNode(expressionNode, node);
+            PTree.RawNode[expressionNode] = node;
             return expressionNode;
         }
 
@@ -270,7 +272,7 @@ namespace Qsi.PhoenixSql.Tree
             if (node.IsNegate)
                 expressionNode = TreeHelper.CreateUnary(PhoenixSqlKnownOperator.UnaryNot, expressionNode);
 
-            PhoenixSqlTree.SetRawNode(expressionNode, node);
+            PTree.RawNode[expressionNode] = node;
 
             return expressionNode;
         }
@@ -309,7 +311,7 @@ namespace Qsi.PhoenixSql.Tree
                 n.Parameters.Add(Visit(node.Children[0]));
                 n.Parameters.Add(CreateTypeAccessExpression(typeName.ToString()));
 
-                PhoenixSqlTree.SetRawNode(n, node);
+                PTree.RawNode[n] = node;
             });
         }
 
@@ -319,7 +321,7 @@ namespace Qsi.PhoenixSql.Tree
 
             expressionNode.ColumnValues.AddRange(node.Children.Select(Visit));
 
-            PhoenixSqlTree.SetRawNode(expressionNode, node);
+            PTree.RawNode[expressionNode] = node;
 
             return expressionNode;
         }
@@ -331,7 +333,7 @@ namespace Qsi.PhoenixSql.Tree
                 n.Member.SetValue(TreeHelper.CreateFunctionAccess(PhoenixSqlKnownFunction.Array));
                 n.Parameters.AddRange(node.Children.Select(Visit));
 
-                PhoenixSqlTree.SetRawNode(n, node);
+                PTree.RawNode[n] = node;
             });
         }
 
@@ -359,7 +361,7 @@ namespace Qsi.PhoenixSql.Tree
                     n.Cases.Add(caseExpressionNode);
                 }
 
-                PhoenixSqlTree.SetRawNode(n, node);
+                PTree.RawNode[n] = node;
             });
         }
 
@@ -374,7 +376,7 @@ namespace Qsi.PhoenixSql.Tree
             if (node.IsNegate)
                 expressionNode = TreeHelper.CreateUnary(PhoenixSqlKnownOperator.UnaryNot, expressionNode);
 
-            PhoenixSqlTree.SetRawNode(expressionNode, node);
+            PTree.RawNode[expressionNode] = node;
 
             return expressionNode;
         }
@@ -384,7 +386,7 @@ namespace Qsi.PhoenixSql.Tree
             return TreeHelper.Create<QsiTableExpressionNode>(n =>
             {
                 n.Table.SetValue(TableVisitor.VisitSelectStatement(node.SelectNode));
-                PhoenixSqlTree.SetRawNode(n, node);
+                PTree.RawNode[n] = node;
             });
         }
 
@@ -393,7 +395,7 @@ namespace Qsi.PhoenixSql.Tree
             return TreeHelper.Create<QsiColumnExpressionNode>(n =>
             {
                 n.Column.SetValue(TableVisitor.VisitWildcardParseNode(node));
-                PhoenixSqlTree.SetRawNode(n, node);
+                PTree.RawNode[n] = node;
             });
         }
 
@@ -409,7 +411,7 @@ namespace Qsi.PhoenixSql.Tree
                 // SKIP: node.TableName -> string literal
                 n.Parameters.Add(TreeHelper.CreateLiteral(IdentifierVisitor.Visit(node.TableName).ToString()));
 
-                PhoenixSqlTree.SetRawNode(n, node);
+                PTree.RawNode[n] = node;
             });
         }
 
@@ -421,7 +423,7 @@ namespace Qsi.PhoenixSql.Tree
                 Value = node.Value
             };
 
-            PhoenixSqlTree.SetRawNode(literalNode, node);
+            PTree.RawNode[literalNode] = node;
 
             return literalNode;
         }
@@ -449,6 +451,24 @@ namespace Qsi.PhoenixSql.Tree
             });
         }
 
+        public static QsiMultipleOrderExpressionNode VisitOrderBy(IEnumerable<OrderByNode> nodes)
+        {
+            var node = new QsiMultipleOrderExpressionNode();
+            node.Orders.AddRange(nodes.Select(VisitOrderBy));
+            return node;
+        }
+
+        public static QsiOrderExpressionNode VisitOrderBy(OrderByNode node)
+        {
+            return TreeHelper.Create<QsiOrderExpressionNode>(n =>
+            {
+                n.Order = node.IsAscending ? QsiSortOrder.Ascending : QsiSortOrder.Descending;
+                n.Expression.SetValue(Visit(node.Node));
+
+                PTree.RawNode[n] = node;
+            });
+        }
+
         private static QsiExpressionNode CreateMultipleLogicalExpression(IPhoenixNode node, IReadOnlyList<IParseNode> children, string op)
         {
             var anchor = Visit(children[0]);
@@ -466,7 +486,7 @@ namespace Qsi.PhoenixSql.Tree
                 anchor = logicalNode;
             }
 
-            PhoenixSqlTree.SetRawNode(anchor, node);
+            PTree.RawNode[anchor] = node;
             return anchor;
         }
 

@@ -10,5 +10,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\EnumerableExtension.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)KeyIndexer.cs" />
   </ItemGroup>
 </Project>

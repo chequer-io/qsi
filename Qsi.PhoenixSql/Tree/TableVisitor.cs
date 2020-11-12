@@ -6,6 +6,8 @@ using PhoenixSql;
 using PhoenixSql.Extensions;
 using Qsi.Data;
 using Qsi.Extensions;
+using Qsi.PhoenixSql.Internal;
+using Qsi.Shared.Extensions;
 using Qsi.Tree;
 using Qsi.Utilities;
 
@@ -15,8 +17,10 @@ namespace Qsi.PhoenixSql.Tree
     {
         public static QsiTableNode VisitSelectStatement(SelectStatement statement)
         {
-            var tableNode = new QsiDerivedTableNode();
+            var tableNode = new PDerivedTableNode();
             var columnsNode = new QsiColumnsDeclarationNode();
+
+            tableNode.Hints = statement.Hint.Hints;
 
             RepeatedField<AliasedNode> selects = statement.Select;
 
@@ -46,10 +50,13 @@ namespace Qsi.PhoenixSql.Tree
             if (statement.Limit != null || statement.Offset != null)
                 tableNode.LimitExpression.SetValue(ExpressionVisitor.VisitLimitOffset(statement.Limit, statement.Offset));
 
+            if (statement.OrderBy.Any())
+                tableNode.OrderExpression.SetValue(ExpressionVisitor.VisitOrderBy(statement.OrderBy));
+
             // statement.GroupBy
             // statement.Having
 
-            PhoenixSqlTree.SetRawNode(tableNode, statement);
+            PTree.RawNode[tableNode] = statement;
 
             return tableNode;
         }
@@ -65,7 +72,7 @@ namespace Qsi.PhoenixSql.Tree
                     Name = IdentifierVisitor.Visit(c)[0]
                 });
 
-                PhoenixSqlTree.SetRawNode(node, c);
+                PTree.RawNode[node] = c;
 
                 return node;
             });
@@ -120,7 +127,7 @@ namespace Qsi.PhoenixSql.Tree
                 if (expressionNode != null)
                     n.Expression.SetValue(expressionNode);
 
-                PhoenixSqlTree.SetRawNode(n, node);
+                PTree.RawNode[n] = node;
             });
         }
 
@@ -148,7 +155,7 @@ namespace Qsi.PhoenixSql.Tree
         public static QsiColumnNode VisitWildcardParseNode(WildcardParseNode node)
         {
             var columnNode = new QsiAllColumnNode();
-            PhoenixSqlTree.SetRawNode(columnNode, node);
+            PTree.RawNode[columnNode] = node;
             return columnNode;
         }
 
@@ -159,7 +166,8 @@ namespace Qsi.PhoenixSql.Tree
             if (!string.IsNullOrEmpty(node.Name))
                 columnNode.Path = new QsiQualifiedIdentifier(IdentifierVisitor.Visit(node));
 
-            PhoenixSqlTree.SetRawNode(columnNode, node);
+            PTree.RawNode[columnNode] = node;
+
             return columnNode;
         }
 
@@ -170,7 +178,8 @@ namespace Qsi.PhoenixSql.Tree
                 Id = $":{node.Index}"
             };
 
-            PhoenixSqlTree.SetRawNode(columnNode, node);
+            PTree.RawNode[columnNode] = node;
+
             return columnNode;
         }
 
@@ -181,7 +190,8 @@ namespace Qsi.PhoenixSql.Tree
                 Name = IdentifierVisitor.Visit(node)
             };
 
-            PhoenixSqlTree.SetRawNode(columnNode, node);
+            PTree.RawNode[columnNode] = node;
+
             return columnNode;
         }
 
@@ -192,7 +202,8 @@ namespace Qsi.PhoenixSql.Tree
             if (!string.IsNullOrEmpty(node.Name))
                 columnNode.Path = new QsiQualifiedIdentifier(IdentifierVisitor.Visit(node));
 
-            PhoenixSqlTree.SetRawNode(columnNode, node);
+            PTree.RawNode[columnNode] = node;
+
             return columnNode;
         }
 
@@ -201,7 +212,7 @@ namespace Qsi.PhoenixSql.Tree
             return columns.Select(c => TreeHelper.Create<QsiDynamicColumnNode>(n =>
             {
                 n.Name = IdentifierVisitor.Visit(c.ColumnDefName);
-                PhoenixSqlTree.SetRawNode(n, c);
+                PTree.RawNode[n] = c;
             }));
         }
 
@@ -235,7 +246,7 @@ namespace Qsi.PhoenixSql.Tree
 
             if (string.IsNullOrEmpty(node.Alias) && node.DynamicColumns.Count == 0)
             {
-                PhoenixSqlTree.SetRawNode(tableNode, node);
+                PTree.RawNode[tableNode] = node;
                 return tableNode;
             }
 
@@ -253,10 +264,10 @@ namespace Qsi.PhoenixSql.Tree
                     n.Alias.SetValue(new QsiAliasNode
                     {
                         Name = IdentifierVisitor.Visit(node)
-                    });   
+                    });
                 }
 
-                PhoenixSqlTree.SetRawNode(n, node);
+                PTree.RawNode[n] = node;
             });
         }
 
@@ -286,7 +297,7 @@ namespace Qsi.PhoenixSql.Tree
 
             // node.OnNode
 
-            PhoenixSqlTree.SetRawNode(tableNode, node);
+            PTree.RawNode[tableNode] = node;
 
             return tableNode;
         }
@@ -306,7 +317,7 @@ namespace Qsi.PhoenixSql.Tree
                     });
                 }
 
-                PhoenixSqlTree.SetRawNode(n, node);
+                PTree.RawNode[n] = node;
             });
         }
     }

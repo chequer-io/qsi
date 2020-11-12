@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace Qsi.Tree
 {
-    public sealed class QsiTableDirectivesNode : QsiTableNode, IQsiTableDirectivesNode
+    public class QsiTableDirectivesNode : QsiTableNode, IQsiTableDirectivesNode
     {
         public QsiTreeNodeList<QsiDerivedTableNode> Tables { get; }
 

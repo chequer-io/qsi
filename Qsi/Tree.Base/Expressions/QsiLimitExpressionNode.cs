@@ -4,7 +4,7 @@ using Qsi.Utilities;
 
 namespace Qsi.Tree
 {
-    public sealed class QsiLimitExpressionNode : QsiExpressionNode, IQsiLimitExpressionNode
+    public class QsiLimitExpressionNode : QsiExpressionNode, IQsiLimitExpressionNode
     {
         public QsiTreeNodeProperty<QsiExpressionNode> Limit { get; }
 

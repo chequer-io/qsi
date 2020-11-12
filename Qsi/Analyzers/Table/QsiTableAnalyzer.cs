@@ -7,6 +7,7 @@ using Qsi.Analyzers.Table.Context;
 using Qsi.Tree.Immutable;
 using Qsi.Data;
 using Qsi.Extensions;
+using Qsi.Shared.Extensions;
 using Qsi.Tree;
 using Qsi.Utilities;
 

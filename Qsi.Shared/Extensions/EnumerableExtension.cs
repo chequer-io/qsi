@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Qsi.Extensions
+namespace Qsi.Shared.Extensions
 {
     internal static class EnumerableExtension
     {

@@ -4,7 +4,7 @@ using Qsi.Utilities;
 
 namespace Qsi.Tree
 {
-    public sealed class QsiSequentialColumnNode : QsiColumnNode, IQsiSequentialColumnNode
+    public class QsiSequentialColumnNode : QsiColumnNode, IQsiSequentialColumnNode
     {
         public QsiTreeNodeProperty<QsiAliasNode> Alias { get; }
 

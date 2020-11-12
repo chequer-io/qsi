@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -12,6 +10,7 @@ using Qsi.Analyzers.Table;
 using Qsi.Analyzers.Table.Context;
 using Qsi.Data;
 using Qsi.Extensions;
+using Qsi.Shared.Extensions;
 using Qsi.Tree;
 using Qsi.Tree.Immutable;
 using Qsi.Utilities;
@@ -149,14 +148,14 @@ namespace Qsi.Analyzers.Action
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected virtual IEnumerable<DataManipulationTarget> ResolveDataManipulationTargets(QsiTableStructure table, IEnumerable<QsiIdentifier> columnNames)
+        protected virtual IEnumerable<DataManipulationTarget> ResolveDataManipulationTargets(QsiTableStructure table, IEnumerable<QsiQualifiedIdentifier> columnNames)
         {
             QsiTableColumn[] columnsBuffer = table.Columns.ToArray();
 
             IEnumerable<DataManipulationTargetColumnPivot> rawPivots = columnNames
                 .SelectMany((declaredName, i) =>
                 {
-                    var index = columnsBuffer.FindIndex(c => c != null && Match(c.Name, declaredName));
+                    var index = columnsBuffer.FindIndex(c => c != null && Match(c.Name, declaredName[^1]));
 
                     if (index == -1)
                         throw new QsiException(QsiError.UnknownColumn, declaredName);
@@ -300,7 +299,7 @@ namespace Qsi.Analyzers.Action
                 table = await tableAnalyzer.BuildTableStructure(tableContext, action.Target);
             }
 
-            QsiIdentifier[] columnNames = ResolveColumnNames(table, action);
+            QsiQualifiedIdentifier[] columnNames = ResolveColumnNames(table, action);
 
             var dataContext = new TableDataInsertContext(context, table)
             {
@@ -341,7 +340,7 @@ namespace Qsi.Analyzers.Action
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected virtual QsiIdentifier[] ResolveColumnNames(QsiTableStructure table, IQsiDataInsertActionNode action)
+        protected virtual QsiQualifiedIdentifier[] ResolveColumnNames(QsiTableStructure table, IQsiDataInsertActionNode action)
         {
             if (!ListUtility.IsNullOrEmpty(action.Columns))
             {
@@ -351,12 +350,12 @@ namespace Qsi.Analyzers.Action
             if (!ListUtility.IsNullOrEmpty(action.SetValues))
             {
                 return ResolveSetColumnsPivot(action.SetValues, true).Columns
-                    .Select(n => n[^1])
+                    .Select(n => n)
                     .ToArray();
             }
 
             return table.Columns
-                .Select(c => c.Name)
+                .Select(c => new QsiQualifiedIdentifier(c.Name))
                 .ToArray();
         }
 
@@ -455,9 +454,8 @@ namespace Qsi.Analyzers.Action
                 throw new QsiException(QsiError.Syntax);
 
             var setColumnsPivot = ResolveSetColumnsPivot(action.SetValues, true);
-            IEnumerable<QsiIdentifier> columnNames = setColumnsPivot.Columns.Select(c => c[^1]);
 
-            foreach (var updateTarget in ResolveDataManipulationTargets(context.Table, columnNames))
+            foreach (var updateTarget in ResolveDataManipulationTargets(context.Table, setColumnsPivot.Columns))
             {
                 var target = context.Targets.FirstOrDefault(t => t.Table == updateTarget.Table);
 
@@ -522,12 +520,12 @@ namespace Qsi.Analyzers.Action
             if (dataTable.Table.Columns.Count != tableColumnCount)
                 throw new QsiException(QsiError.Internal, "Query results do not match target table structure");
 
-            var columnNames = new QsiIdentifier[tableColumnCount];
+            var columnNames = new QsiQualifiedIdentifier[tableColumnCount];
 
             for (int i = 0; i < tableColumnCount; i++)
             {
-                columnNames[i] = dataTable.Table.Columns[i].Name;
-                table.Columns[i].Name = columnNames[i];
+                columnNames[i] = new QsiQualifiedIdentifier(dataTable.Table.Columns[i].Name);
+                table.Columns[i].Name = columnNames[i][^1];
             }
 
             return ResolveDataManipulationTargets(table, columnNames)
