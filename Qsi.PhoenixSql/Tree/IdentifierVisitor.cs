@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Linq;
+using System.Text.RegularExpressions;
 using PhoenixSql;
 using PhoenixSql.Utilities;
 using Qsi.Data;
@@ -7,7 +8,7 @@ namespace Qsi.PhoenixSql.Tree
 {
     internal static class IdentifierVisitor
     {
-        private static readonly Regex _identifierPattern = new Regex(@"^[A-Z_][A-Z\d_]*$");
+        private static readonly Regex _namePattern = new Regex(@"^[A-Z][A-Z\d_\u0080-\u2001\u2003-\ufffe]*$");
         
         public static QsiIdentifier Visit(DerivedTableNode node)
         {
@@ -75,7 +76,8 @@ namespace Qsi.PhoenixSql.Tree
 
         private static QsiIdentifier CreateIdentifier(string value)
         {
-            return CreateIdentifier(value, !_identifierPattern.IsMatch(value));
+            var caseSensitive = !_namePattern.IsMatch(value) || value.Any(char.IsLower);
+            return CreateIdentifier(value, caseSensitive);
         }
         
         private static QsiIdentifier CreateIdentifier(string value, bool caseSensitive)
