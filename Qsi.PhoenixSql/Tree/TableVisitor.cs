@@ -20,7 +20,7 @@ namespace Qsi.PhoenixSql.Tree
             var tableNode = new PDerivedTableNode();
             var columnsNode = new QsiColumnsDeclarationNode();
 
-            tableNode.Hints = statement.Hint.Hints;
+            tableNode.Hints = statement.Hint?.Hints;
 
             RepeatedField<AliasedNode> selects = statement.Select;
 
@@ -207,15 +207,6 @@ namespace Qsi.PhoenixSql.Tree
             return columnNode;
         }
 
-        public static IEnumerable<QsiColumnNode> VisitDynamicColumns(IEnumerable<ColumnDef> columns)
-        {
-            return columns.Select(c => TreeHelper.Create<QsiDynamicColumnNode>(n =>
-            {
-                n.Name = IdentifierVisitor.Visit(c.ColumnDefName);
-                PTree.RawNode[n] = c;
-            }));
-        }
-
         public static QsiTableNode VisitTableNode(ITableNode node)
         {
             switch (node.Unwrap())
@@ -239,12 +230,19 @@ namespace Qsi.PhoenixSql.Tree
 
         public static QsiTableNode VisitNamedTableNode(NamedTableNode node)
         {
-            var tableNode = new QsiTableAccessNode
+            var tableNode = new PDynamicTableAccessNode
             {
                 Identifier = IdentifierVisitor.Visit(node.Name)
             };
 
-            if (string.IsNullOrEmpty(node.Alias) && node.DynamicColumns.Count == 0)
+            if (node.DynamicColumns.Any())
+            {
+                tableNode.DynamicColumns = node.DynamicColumns
+                    .Select(VisitDynamicColumn)
+                    .ToArray();
+            }
+
+            if (string.IsNullOrEmpty(node.Alias))
             {
                 PTree.RawNode[tableNode] = node;
                 return tableNode;
@@ -253,20 +251,22 @@ namespace Qsi.PhoenixSql.Tree
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
                 n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
-
-                if (node.DynamicColumns.Count > 0)
-                    n.Columns.Value.Columns.AddRange(VisitDynamicColumns(node.DynamicColumns));
-
                 n.Source.SetValue(tableNode);
 
-                if (!string.IsNullOrEmpty(node.Alias))
+                n.Alias.SetValue(new QsiAliasNode
                 {
-                    n.Alias.SetValue(new QsiAliasNode
-                    {
-                        Name = IdentifierVisitor.Visit(node)
-                    });
-                }
+                    Name = IdentifierVisitor.Visit(node)
+                });
 
+                PTree.RawNode[n] = node;
+            });
+        }
+
+        public static PDynamicDeclaredColumnNode VisitDynamicColumn(ColumnDef node)
+        {
+            return TreeHelper.Create<PDynamicDeclaredColumnNode>(n =>
+            {
+                n.Name = IdentifierVisitor.Visit(node.ColumnDefName);
                 PTree.RawNode[n] = node;
             });
         }

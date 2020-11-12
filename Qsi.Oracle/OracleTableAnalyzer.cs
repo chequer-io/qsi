@@ -22,15 +22,15 @@ namespace Qsi.Oracle
             return base.BuildDerivedTableStructure(context, table);
         }
 
-        protected override QsiTableColumn ResolveDeclaredColumn(TableCompileContext context, IQsiDeclaredColumnNode columnn)
+        protected override QsiTableColumn ResolveDeclaredColumn(TableCompileContext context, IQsiDeclaredColumnNode column)
         {
             try
             {
-                return base.ResolveDeclaredColumn(context, columnn);
+                return base.ResolveDeclaredColumn(context, column);
             }
             catch (QsiException e) when (e.Error == QsiError.UnknownColumn || e.Error == QsiError.UnknownColumnIn)
             {
-                if (OraclePseudoColumn.Contains(columnn.Name[0].Value))
+                if (OraclePseudoColumn.Contains(column.Name[0].Value))
                 {
                     _pseudoTable ??= CreatePseudoTable();
                     return _pseudoTable.Columns[0];

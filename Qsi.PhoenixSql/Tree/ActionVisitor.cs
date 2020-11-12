@@ -28,19 +28,16 @@ namespace Qsi.PhoenixSql.Tree
         {
             var insertAction = new PUpsertActionNode
             {
-                Hints = node.Hint.Hints
+                Hints = node.Hint?.Hints
             };
 
-            insertAction.Target.SetValue(new QsiTableAccessNode
+            if (TableVisitor.VisitNamedTableNode(node.Table) is QsiTableAccessNode tableAccessNode)
             {
-                Identifier = IdentifierVisitor.Visit(node.Table.Name)
-            });
-
-            if (node.Table.DynamicColumns.Any())
+                insertAction.Target.SetValue(tableAccessNode);
+            }
+            else
             {
-                insertAction.DynamicColumns = node.Table.DynamicColumns
-                    .Select(c => IdentifierVisitor.Visit(c.ColumnDefName))
-                    .ToArray();
+                throw new QsiException(QsiError.Syntax);
             }
 
             insertAction.Columns = node.Columns.Select(IdentifierVisitor.Visit).ToArray();
@@ -109,7 +106,7 @@ namespace Qsi.PhoenixSql.Tree
 
             var deleteAction = new PDeleteActionNode
             {
-                Hints = node.Hint.Hints
+                Hints = node.Hint?.Hints
             };
 
             deleteAction.Target.SetValue(table);

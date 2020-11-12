@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Qsi.Analyzers.Table;
 using Qsi.Analyzers.Table.Context;
 using Qsi.Data;
+using Qsi.PhoenixSql.Internal;
 using Qsi.Tree;
 
 namespace Qsi.PhoenixSql.Analyzers
@@ -15,14 +17,31 @@ namespace Qsi.PhoenixSql.Analyzers
         {
         }
 
-        protected override QsiTableColumn ResolveDeclaredColumn(TableCompileContext context, IQsiDeclaredColumnNode columnn)
+        protected override async ValueTask<QsiTableStructure> BuildTableAccessStructure(TableCompileContext context, IQsiTableAccessNode table)
+        {
+            var structure = await base.BuildTableAccessStructure(context, table);
+
+            if (table is PDynamicTableAccessNode dynamicTableAccessNode)
+            {
+                foreach (var dynamicColumn in dynamicTableAccessNode.DynamicColumns)
+                {
+                    var column = structure.NewColumn();
+                    column.Name = dynamicColumn.Name[^1];
+                    column.IsDynamic = true;
+                }
+            }
+
+            return structure;
+        }
+
+        protected override QsiTableColumn ResolveDeclaredColumn(TableCompileContext context, IQsiDeclaredColumnNode column)
         {
             context.ThrowIfCancellationRequested();
 
-            if (columnn.Name.Level > 1)
+            if (column.Name.Level > 1)
             {
-                var identifier = new QsiQualifiedIdentifier(columnn.Name[..^1]);
-                var name = columnn.Name[^1];
+                var identifier = new QsiQualifiedIdentifier(column.Name[..^1]);
+                var name = column.Name[^1];
 
                 if (context.SourceTable == null)
                     throw new QsiException(QsiError.UnknownTableIn, identifier, scopeFieldList);
@@ -43,7 +62,7 @@ namespace Qsi.PhoenixSql.Analyzers
                             throw new QsiException(QsiError.UnknownColumnIn, name.Value, scopeFieldList);
 
                         if (columns.Length > 1)
-                            throw new QsiException(QsiError.AmbiguousColumnIn, columnn.Name, scopeFieldList);
+                            throw new QsiException(QsiError.AmbiguousColumnIn, column.Name, scopeFieldList);
 
                         return columns[0];
                     }
@@ -55,7 +74,7 @@ namespace Qsi.PhoenixSql.Analyzers
                 }
             }
 
-            return base.ResolveDeclaredColumn(context, columnn);
+            return base.ResolveDeclaredColumn(context, column);
         }
     }
 }
