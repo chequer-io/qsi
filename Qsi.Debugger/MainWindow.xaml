@@ -142,7 +142,7 @@
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Foreground="#B0B0B0" Text="{Binding Header}" />
                         <TextBlock Text=": " />
-                        <TextBlock Foreground="#FA8072" Text="{Binding Value}" />
+                        <TextBlock Foreground="#FA8072" Text="{Binding Value, Converter={cvt:PropertyValueConverter}}" />
                     </StackPanel>
                 </DataTemplate>
             </TreeView.DataTemplates>
