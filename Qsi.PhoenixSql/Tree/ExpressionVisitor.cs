@@ -1,4 +1,6 @@
-﻿using System;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using PhoenixSql;
 using PhoenixSql.Extensions;
 using Qsi.Data;
@@ -25,107 +27,11 @@ namespace Qsi.PhoenixSql.Tree
                 case StringConcatParseNode stringConcatParseNode:
                     return VisitStringConcatParseNode(stringConcatParseNode);
 
-                case FunctionParseNode functionParseNode:
+                case IFunctionParseNode functionParseNode:
                     return VisitFunctionParseNode(functionParseNode);
 
-                case AggregateFunctionParseNode aggregateFunctionParseNode:
-                    return VisitAggregateFunctionParseNode(aggregateFunctionParseNode);
-
-                case AggregateFunctionWithinGroupParseNode aggregateFunctionWithinGroupParseNode:
-                    return VisitAggregateFunctionWithinGroupParseNode(aggregateFunctionWithinGroupParseNode);
-
-                case SumAggregateParseNode sumAggregateParseNode:
-                    return VisitSumAggregateParseNode(sumAggregateParseNode);
-
-                case LastValuesAggregateParseNode lastValuesAggregateParseNode:
-                    return VisitLastValuesAggregateParseNode(lastValuesAggregateParseNode);
-
-                case FirstValuesAggregateParseNode firstValuesAggregateParseNode:
-                    return VisitFirstValuesAggregateParseNode(firstValuesAggregateParseNode);
-
-                case NthValueAggregateParseNode nthValueAggregateParseNode:
-                    return VisitNthValueAggregateParseNode(nthValueAggregateParseNode);
-
-                case MinAggregateParseNode minAggregateParseNode:
-                    return VisitMinAggregateParseNode(minAggregateParseNode);
-
-                case MaxAggregateParseNode maxAggregateParseNode:
-                    return VisitMaxAggregateParseNode(maxAggregateParseNode);
-
-                case LastValueAggregateParseNode lastValueAggregateParseNode:
-                    return VisitLastValueAggregateParseNode(lastValueAggregateParseNode);
-
-                case DistinctCountHyperLogLogAggregateParseNode distinctCountHyperLogLogAggregateParseNode:
-                    return VisitDistinctCountHyperLogLogAggregateParseNode(distinctCountHyperLogLogAggregateParseNode);
-
-                case FirstValueAggregateParseNode firstValueAggregateParseNode:
-                    return VisitFirstValueAggregateParseNode(firstValueAggregateParseNode);
-
-                case DistinctCountParseNode distinctCountParseNode:
-                    return VisitDistinctCountParseNode(distinctCountParseNode);
-
-                case AvgAggregateParseNode avgAggregateParseNode:
-                    return VisitAvgAggregateParseNode(avgAggregateParseNode);
-
-                case ToTimeParseNode toTimeParseNode:
-                    return VisitToTimeParseNode(toTimeParseNode);
-
-                case CurrentTimeParseNode currentTimeParseNode:
-                    return VisitCurrentTimeParseNode(currentTimeParseNode);
-
-                case ToCharParseNode toCharParseNode:
-                    return VisitToCharParseNode(toCharParseNode);
-
-                case RegexpSplitParseNode regexpSplitParseNode:
-                    return VisitRegexpSplitParseNode(regexpSplitParseNode);
-
-                case ToTimestampParseNode toTimestampParseNode:
-                    return VisitToTimestampParseNode(toTimestampParseNode);
-
-                case CurrentDateParseNode currentDateParseNode:
-                    return VisitCurrentDateParseNode(currentDateParseNode);
-
-                case RegexpReplaceParseNode regexpReplaceParseNode:
-                    return VisitRegexpReplaceParseNode(regexpReplaceParseNode);
-
-                case ToNumberParseNode toNumberParseNode:
-                    return VisitToNumberParseNode(toNumberParseNode);
-
-                case ArrayModifierParseNode arrayModifierParseNode:
-                    return VisitArrayModifierParseNode(arrayModifierParseNode);
-
-                case RegexpSubstrParseNode regexpSubstrParseNode:
-                    return VisitRegexpSubstrParseNode(regexpSubstrParseNode);
-
-                case FloorParseNode floorParseNode:
-                    return VisitFloorParseNode(floorParseNode);
-
-                case UDFParseNode uDFParseNode:
-                    return VisitUDFParseNode(uDFParseNode);
-
-                case ToDateParseNode toDateParseNode:
-                    return VisitToDateParseNode(toDateParseNode);
-
-                case RoundParseNode roundParseNode:
-                    return VisitRoundParseNode(roundParseNode);
-
-                case CeilParseNode ceilParseNode:
-                    return VisitCeilParseNode(ceilParseNode);
-
-                case MultiplyParseNode multiplyParseNode:
-                    return VisitMultiplyParseNode(multiplyParseNode);
-
-                case AddParseNode addParseNode:
-                    return VisitAddParseNode(addParseNode);
-
-                case SubtractParseNode subtractParseNode:
-                    return VisitSubtractParseNode(subtractParseNode);
-
-                case ModulusParseNode modulusParseNode:
-                    return VisitModulusParseNode(modulusParseNode);
-
-                case DivideParseNode diviVisitNode:
-                    return VisitDivideParseNode(diviVisitNode);
+                case IArithmeticParseNode arithmeticParseNode:
+                    return VisitArithmeticParseNode(arithmeticParseNode);
 
                 case InParseNode inParseNode:
                     return VisitInParseNode(inParseNode);
@@ -189,345 +95,322 @@ namespace Qsi.PhoenixSql.Tree
         #region INamedParseNode
         private static QsiExpressionNode VisitNamedParseNode(INamedParseNode node)
         {
-            switch (node.UnwrapAs<INamedParseNode>())
+            return TreeHelper.Create<QsiColumnExpressionNode>(n =>
             {
-                case FamilyWildcardParseNode familyWildcardParseNode:
-                    return VisitFamilyWildcardParseNode(familyWildcardParseNode);
-
-                case BindParseNode bindParseNode:
-                    return VisitBindParseNode(bindParseNode);
-
-                case ColumnParseNode columnParseNode:
-                    return VisitColumnParseNode(columnParseNode);
-
-                case TableWildcardParseNode tableWildcardParseNode:
-                    return VisitTableWildcardParseNode(tableWildcardParseNode);
-
-                default:
-                    throw TreeHelper.NotSupportedTree(node);
-            }
-        }
-
-        private static QsiExpressionNode VisitFamilyWildcardParseNode(FamilyWildcardParseNode node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static QsiExpressionNode VisitBindParseNode(BindParseNode node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static QsiExpressionNode VisitColumnParseNode(ColumnParseNode node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static QsiExpressionNode VisitTableWildcardParseNode(TableWildcardParseNode node)
-        {
-            throw new NotImplementedException();
+                n.Column.SetValue(TableVisitor.VisitNamedParseNode(node));
+            });
         }
         #endregion
 
         #region IComparisonParseNode
         private static QsiExpressionNode VisitComparisonParseNode(IComparisonParseNode node)
         {
-            // NotEqualParseNode
-            // EqualParseNode
-            // GreaterThanOrEqualParseNode
-            // GreaterThanParseNode
-            // LessThanOrEqualParseNode
-            // LessThanParseNode
-            throw new NotImplementedException();
+            var logicalNode = TreeHelper.CreateLogicalExpression(node.FilterOp.ToSql(), node.LHS, node.RHS, Visit);
+
+            PhoenixSqlTree.SetRawNode(logicalNode, node);
+
+            return logicalNode;
         }
         #endregion
 
         #region IArrayAllAnyComparisonNode
         private static QsiExpressionNode VisitArrayAllAnyComparisonNode(IArrayAllAnyComparisonNode node)
         {
-            switch (node.UnwrapAs<IArrayAllAnyComparisonNode>())
+            var left = node.Children[0];
+            var comp = (IComparisonParseNode)node.Children[1];
+
+            var leftExpressionNode = Visit(left);
+
+            var rightExpressionNode = TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                case ArrayAnyComparisonNode arrayAnyComparisonNode:
-                    return VisitArrayAnyComparisonNode(arrayAnyComparisonNode);
+                n.Member.SetValue(TreeHelper.CreateFunctionAccess(node.Type));
+                n.Parameters.Add(Visit(comp.LHS));
+            });
 
-                case ArrayAllComparisonNode arrayAllComparisonNode:
-                    return VisitArrayAllComparisonNode(arrayAllComparisonNode);
+            return TreeHelper.Create<QsiLogicalExpressionNode>(n =>
+            {
+                n.Operator = comp.FilterOp.ToSql();
+                n.Left.SetValue(leftExpressionNode);
+                n.Right.SetValue(rightExpressionNode);
 
-                default:
-                    throw TreeHelper.NotSupportedTree(node);
-            }
-        }
-
-        private static QsiExpressionNode VisitArrayAnyComparisonNode(ArrayAnyComparisonNode node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static QsiExpressionNode VisitArrayAllComparisonNode(ArrayAllComparisonNode node)
-        {
-            throw new NotImplementedException();
+                PhoenixSqlTree.SetRawNode(n, node);
+            });
         }
         #endregion
 
         private static QsiExpressionNode VisitStringConcatParseNode(StringConcatParseNode node)
         {
-            throw new NotImplementedException();
+            return CreateMultipleLogicalExpression(node, node.Children, PhoenixSqlKnownOperator.StringConcat);
         }
 
-        private static QsiExpressionNode VisitFunctionParseNode(FunctionParseNode node)
+        private static QsiExpressionNode VisitFunctionParseNode(IFunctionParseNode node)
         {
-            throw new NotImplementedException();
+            return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            {
+                n.Member.SetValue(TreeHelper.CreateFunctionAccess(node.Name));
+                n.Parameters.AddRange(node.Children.Select(Visit));
+
+                PhoenixSqlTree.SetRawNode(n, node);
+            });
         }
 
-        private static QsiExpressionNode VisitAggregateFunctionParseNode(AggregateFunctionParseNode node)
+        private static QsiExpressionNode VisitArithmeticParseNode(IArithmeticParseNode node)
         {
-            throw new NotImplementedException();
-        }
+            var op = node switch
+            {
+                MultiplyParseNode _ => PhoenixSqlKnownOperator.Multiply,
+                AddParseNode _ => PhoenixSqlKnownOperator.Add,
+                SubtractParseNode _ => PhoenixSqlKnownOperator.Subtract,
+                ModulusParseNode _ => PhoenixSqlKnownOperator.Modulus,
+                DivideParseNode _ => PhoenixSqlKnownOperator.Divide,
+                _ => throw TreeHelper.NotSupportedTree(node)
+            };
 
-        private static QsiExpressionNode VisitAggregateFunctionWithinGroupParseNode(AggregateFunctionWithinGroupParseNode node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static QsiExpressionNode VisitSumAggregateParseNode(SumAggregateParseNode node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static QsiExpressionNode VisitLastValuesAggregateParseNode(LastValuesAggregateParseNode node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static QsiExpressionNode VisitFirstValuesAggregateParseNode(FirstValuesAggregateParseNode node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static QsiExpressionNode VisitNthValueAggregateParseNode(NthValueAggregateParseNode node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static QsiExpressionNode VisitMinAggregateParseNode(MinAggregateParseNode node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static QsiExpressionNode VisitMaxAggregateParseNode(MaxAggregateParseNode node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static QsiExpressionNode VisitLastValueAggregateParseNode(LastValueAggregateParseNode node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static QsiExpressionNode VisitDistinctCountHyperLogLogAggregateParseNode(DistinctCountHyperLogLogAggregateParseNode node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static QsiExpressionNode VisitFirstValueAggregateParseNode(FirstValueAggregateParseNode node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static QsiExpressionNode VisitDistinctCountParseNode(DistinctCountParseNode node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static QsiExpressionNode VisitAvgAggregateParseNode(AvgAggregateParseNode node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static QsiExpressionNode VisitToTimeParseNode(ToTimeParseNode node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static QsiExpressionNode VisitCurrentTimeParseNode(CurrentTimeParseNode node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static QsiExpressionNode VisitToCharParseNode(ToCharParseNode node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static QsiExpressionNode VisitRegexpSplitParseNode(RegexpSplitParseNode node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static QsiExpressionNode VisitToTimestampParseNode(ToTimestampParseNode node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static QsiExpressionNode VisitCurrentDateParseNode(CurrentDateParseNode node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static QsiExpressionNode VisitRegexpReplaceParseNode(RegexpReplaceParseNode node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static QsiExpressionNode VisitToNumberParseNode(ToNumberParseNode node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static QsiExpressionNode VisitArrayModifierParseNode(ArrayModifierParseNode node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static QsiExpressionNode VisitRegexpSubstrParseNode(RegexpSubstrParseNode node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static QsiExpressionNode VisitFloorParseNode(FloorParseNode node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static QsiExpressionNode VisitUDFParseNode(UDFParseNode node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static QsiExpressionNode VisitToDateParseNode(ToDateParseNode node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static QsiExpressionNode VisitRoundParseNode(RoundParseNode node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static QsiExpressionNode VisitCeilParseNode(CeilParseNode node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static QsiExpressionNode VisitMultiplyParseNode(MultiplyParseNode node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static QsiExpressionNode VisitAddParseNode(AddParseNode node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static QsiExpressionNode VisitSubtractParseNode(SubtractParseNode node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static QsiExpressionNode VisitModulusParseNode(ModulusParseNode node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static QsiExpressionNode VisitDivideParseNode(DivideParseNode node)
-        {
-            throw new NotImplementedException();
+            return CreateMultipleLogicalExpression(node, node.Children, op);
         }
 
         private static QsiExpressionNode VisitInParseNode(InParseNode node)
         {
-            throw new NotImplementedException();
+            QsiExpressionNode expressionNode = TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            {
+                n.Member.SetValue(TreeHelper.CreateFunctionAccess(PhoenixSqlKnownFunction.In));
+                n.Parameters.AddRange(node.Children.Select(Visit));
+            });
+
+            if (node.IsNegate)
+                expressionNode = TreeHelper.CreateUnary(PhoenixSqlKnownOperator.UnaryNot, expressionNode);
+
+            PhoenixSqlTree.SetRawNode(expressionNode, node);
+
+            return expressionNode;
         }
 
         private static QsiExpressionNode VisitLikeParseNode(LikeParseNode node)
         {
-            throw new NotImplementedException();
+            QsiExpressionNode expressionNode = TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            {
+                var function = node.LikeType == LikeType.CaseSensitive ?
+                    PhoenixSqlKnownFunction.Like : PhoenixSqlKnownFunction.ILike;
+
+                n.Member.SetValue(TreeHelper.CreateFunctionAccess(function));
+                n.Parameters.AddRange(node.Children.Select(Visit));
+            });
+
+            if (node.IsNegate)
+                expressionNode = TreeHelper.CreateUnary(PhoenixSqlKnownOperator.UnaryNot, expressionNode);
+
+            PhoenixSqlTree.SetRawNode(expressionNode, node);
+
+            return expressionNode;
         }
 
         private static QsiExpressionNode VisitOrParseNode(OrParseNode node)
         {
-            throw new NotImplementedException();
+            return CreateMultipleLogicalExpression(node, node.Children, PhoenixSqlKnownOperator.Or);
         }
 
         private static QsiExpressionNode VisitArrayElemRefNode(ArrayElemRefNode node)
         {
-            throw new NotImplementedException();
+            return TreeHelper.Create<QsiArrayRankExpressionNode>(n =>
+            {
+                n.Array.SetValue(Visit(node.Children[0]));
+                n.Rank.SetValue(Visit(node.Children[1]));
+
+                PhoenixSqlTree.SetRawNode(n, node);
+            });
         }
 
         private static QsiExpressionNode VisitInListParseNode(InListParseNode node)
         {
-            throw new NotImplementedException();
+            QsiExpressionNode expressionNode = TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            {
+                n.Member.SetValue(TreeHelper.CreateFunctionAccess(PhoenixSqlKnownFunction.ArrayIn));
+                n.Parameters.AddRange(node.Children.Select(Visit));
+            });
+
+            if (node.IsNegate)
+                expressionNode = TreeHelper.CreateUnary(PhoenixSqlKnownOperator.UnaryNot, expressionNode);
+
+            PhoenixSqlTree.SetRawNode(expressionNode, node);
+
+            return expressionNode;
         }
 
         private static QsiExpressionNode VisitExistsParseNode(ExistsParseNode node)
         {
-            throw new NotImplementedException();
+            QsiExpressionNode expressionNode = TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            {
+                n.Member.SetValue(TreeHelper.CreateFunctionAccess(PhoenixSqlKnownFunction.Exists));
+                n.Parameters.AddRange(node.Children.Select(Visit));
+            });
+
+            if (node.IsNegate)
+                expressionNode = TreeHelper.CreateUnary(PhoenixSqlKnownOperator.UnaryNot, expressionNode);
+
+            PhoenixSqlTree.SetRawNode(expressionNode, node);
+
+            return expressionNode;
         }
 
         private static QsiExpressionNode VisitNotParseNode(NotParseNode node)
         {
-            throw new NotImplementedException();
+            var expressionNode = TreeHelper.CreateUnary(PhoenixSqlKnownOperator.UnaryNot, Visit(node.Children[0]));
+            PhoenixSqlTree.SetRawNode(expressionNode, node);
+            return expressionNode;
         }
 
         private static QsiExpressionNode VisitIsNullParseNode(IsNullParseNode node)
         {
-            throw new NotImplementedException();
+            QsiExpressionNode expressionNode = TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            {
+                n.Member.SetValue(TreeHelper.CreateFunctionAccess(PhoenixSqlKnownFunction.IsNull));
+                n.Parameters.AddRange(node.Children.Select(Visit));
+            });
+
+            if (node.IsNegate)
+                expressionNode = TreeHelper.CreateUnary(PhoenixSqlKnownOperator.UnaryNot, expressionNode);
+
+            PhoenixSqlTree.SetRawNode(expressionNode, node);
+
+            return expressionNode;
         }
 
         private static QsiExpressionNode VisitCastParseNode(CastParseNode node)
         {
-            throw new NotImplementedException();
+            var typeName = new StringBuilder();
+            var dataType = node.DataType;
+            var isArray = dataType.IsArray();
+
+            if (isArray)
+                dataType = node.DataType.GetElementType();
+
+            typeName.Append(dataType.ToSqlTypeName());
+
+            if (node.MaxLength != 0)
+            {
+                typeName.Append('(');
+                typeName.Append(node.MaxLength);
+
+                if (node.Scale != 0)
+                {
+                    typeName.Append(',');
+                    typeName.Append(node.Scale);
+                }
+
+                typeName.Append(')');
+            }
+
+            if (isArray)
+                typeName.Append(" ARRAY");
+
+            return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            {
+                n.Member.SetValue(TreeHelper.CreateFunctionAccess(PhoenixSqlKnownFunction.Cast));
+                n.Parameters.Add(Visit(node.Children[0]));
+                n.Parameters.Add(CreateTypeAccessExpression(typeName.ToString()));
+
+                PhoenixSqlTree.SetRawNode(n, node);
+            });
         }
 
         private static QsiExpressionNode VisitRowValueConstructorParseNode(RowValueConstructorParseNode node)
         {
-            throw new NotImplementedException();
+            var expressionNode = new QsiRowValueExpressionNode();
+
+            expressionNode.ColumnValues.AddRange(node.Children.Select(Visit));
+
+            PhoenixSqlTree.SetRawNode(expressionNode, node);
+
+            return expressionNode;
         }
 
         private static QsiExpressionNode VisitArrayConstructorNode(ArrayConstructorNode node)
         {
-            throw new NotImplementedException();
+            return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            {
+                n.Member.SetValue(TreeHelper.CreateFunctionAccess(PhoenixSqlKnownFunction.Array));
+                n.Parameters.AddRange(node.Children.Select(Visit));
+
+                PhoenixSqlTree.SetRawNode(n, node);
+            });
         }
 
         private static QsiExpressionNode VisitAndParseNode(AndParseNode node)
         {
-            throw new NotImplementedException();
+            return CreateMultipleLogicalExpression(node, node.Children, PhoenixSqlKnownOperator.Or);
         }
 
         private static QsiExpressionNode VisitCaseParseNode(CaseParseNode node)
         {
-            throw new NotImplementedException();
+            return TreeHelper.Create<QsiSwitchExpressionNode>(n =>
+            {
+                for (int i = 0; i < node.Children.Count - 1; i += 2)
+                {
+                    var caseExpressionNode = new QsiSwitchCaseExpressionNode();
+                    caseExpressionNode.Condition.SetValue(Visit(node.Children[i + 1]));
+                    caseExpressionNode.Consequent.SetValue(Visit(node.Children[i]));
+                    n.Cases.Add(caseExpressionNode);
+                }
+
+                if (node.Children.Count % 2 != 0)
+                {
+                    var caseExpressionNode = new QsiSwitchCaseExpressionNode();
+                    caseExpressionNode.Consequent.SetValue(Visit(node.Children[^1]));
+                    n.Cases.Add(caseExpressionNode);
+                }
+
+                PhoenixSqlTree.SetRawNode(n, node);
+            });
         }
 
         private static QsiExpressionNode VisitBetweenParseNode(BetweenParseNode node)
         {
-            throw new NotImplementedException();
+            QsiExpressionNode expressionNode = TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            {
+                n.Member.SetValue(TreeHelper.CreateFunctionAccess(PhoenixSqlKnownFunction.Between));
+                n.Parameters.AddRange(node.Children.Select(Visit));
+            });
+
+            if (node.IsNegate)
+                expressionNode = TreeHelper.CreateUnary(PhoenixSqlKnownOperator.UnaryNot, expressionNode);
+
+            PhoenixSqlTree.SetRawNode(expressionNode, node);
+
+            return expressionNode;
         }
 
         private static QsiExpressionNode VisitSubqueryParseNode(SubqueryParseNode node)
         {
-            throw new NotImplementedException();
+            return TreeHelper.Create<QsiTableExpressionNode>(n =>
+            {
+                n.Table.SetValue(TableVisitor.VisitSelectStatement(node.SelectNode));
+                PhoenixSqlTree.SetRawNode(n, node);
+            });
         }
 
         private static QsiExpressionNode VisitWildcardParseNode(WildcardParseNode node)
         {
-            throw new NotImplementedException();
+            return TreeHelper.Create<QsiColumnExpressionNode>(n =>
+            {
+                n.Column.SetValue(TableVisitor.VisitWildcardParseNode(node));
+                PhoenixSqlTree.SetRawNode(n, node);
+            });
         }
 
         private static QsiExpressionNode VisitSequenceValueParseNode(SequenceValueParseNode node)
         {
-            // CURRENT VALUE FOR
-            throw new NotImplementedException();
+            return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            {
+                var function = node.Op == Op.CurrentValue ?
+                    PhoenixSqlKnownFunction.CurrentValueFor : PhoenixSqlKnownFunction.NextValueFor;
+
+                n.Member.SetValue(TreeHelper.CreateFunctionAccess(function));
+
+                // SKIP: node.TableName -> string literal
+                n.Parameters.Add(TreeHelper.CreateLiteral(IdentifierVisitor.Visit(node.TableName).ToString()));
+
+                PhoenixSqlTree.SetRawNode(n, node);
+            });
         }
 
         private static QsiExpressionNode VisitLiteralParseNode(LiteralParseNode node)
@@ -564,6 +447,35 @@ namespace Qsi.PhoenixSql.Tree
                 if (offsetNode != null)
                     n.Offset.SetValue(Visit(offset));
             });
+        }
+
+        private static QsiExpressionNode CreateMultipleLogicalExpression(IPhoenixNode node, IReadOnlyList<IParseNode> children, string op)
+        {
+            var anchor = Visit(children[0]);
+
+            foreach (var child in children.Skip(1))
+            {
+                var logicalNode = new QsiLogicalExpressionNode
+                {
+                    Operator = op
+                };
+
+                logicalNode.Left.SetValue(anchor);
+                logicalNode.Right.SetValue(Visit(child));
+
+                anchor = logicalNode;
+            }
+
+            PhoenixSqlTree.SetRawNode(anchor, node);
+            return anchor;
+        }
+
+        private static QsiTypeAccessExpressionNode CreateTypeAccessExpression(string value)
+        {
+            return new QsiTypeAccessExpressionNode
+            {
+                Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(value, false))
+            };
         }
     }
 }

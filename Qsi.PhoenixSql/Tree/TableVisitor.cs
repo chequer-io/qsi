@@ -54,7 +54,7 @@ namespace Qsi.PhoenixSql.Tree
             return tableNode;
         }
 
-        private static IEnumerable<QsiSequentialColumnNode> CreateSequentialColumns(IEnumerable<ColumnParseNode> columns)
+        public static IEnumerable<QsiSequentialColumnNode> CreateSequentialColumns(IEnumerable<ColumnParseNode> columns)
         {
             return columns.Select(c =>
             {
@@ -145,7 +145,7 @@ namespace Qsi.PhoenixSql.Tree
             }
         }
 
-        private static QsiColumnNode VisitWildcardParseNode(WildcardParseNode node)
+        public static QsiColumnNode VisitWildcardParseNode(WildcardParseNode node)
         {
             var columnNode = new QsiAllColumnNode();
             PhoenixSqlTree.SetRawNode(columnNode, node);
@@ -196,7 +196,7 @@ namespace Qsi.PhoenixSql.Tree
             return columnNode;
         }
 
-        private static IEnumerable<QsiColumnNode> VisitDynamicColumns(IEnumerable<ColumnDef> columns)
+        public static IEnumerable<QsiColumnNode> VisitDynamicColumns(IEnumerable<ColumnDef> columns)
         {
             return columns.Select(c => TreeHelper.Create<QsiDynamicColumnNode>(n =>
             {
@@ -226,7 +226,7 @@ namespace Qsi.PhoenixSql.Tree
             }
         }
 
-        private static QsiTableNode VisitNamedTableNode(NamedTableNode node)
+        public static QsiTableNode VisitNamedTableNode(NamedTableNode node)
         {
             var tableNode = new QsiTableAccessNode
             {
@@ -260,12 +260,12 @@ namespace Qsi.PhoenixSql.Tree
             });
         }
 
-        private static QsiTableNode VisitBindTableNode(BindTableNode node)
+        public static QsiTableNode VisitBindTableNode(BindTableNode node)
         {
             throw TreeHelper.NotSupportedFeature("Table binding");
         }
 
-        private static QsiTableNode VisitJoinTableNode(JoinTableNode node)
+        public static QsiTableNode VisitJoinTableNode(JoinTableNode node)
         {
             var tableNode = new QsiJoinedTableNode
             {
@@ -291,7 +291,7 @@ namespace Qsi.PhoenixSql.Tree
             return tableNode;
         }
 
-        private static QsiTableNode VisitDerivedTableNode(DerivedTableNode node)
+        public static QsiTableNode VisitDerivedTableNode(DerivedTableNode node)
         {
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
