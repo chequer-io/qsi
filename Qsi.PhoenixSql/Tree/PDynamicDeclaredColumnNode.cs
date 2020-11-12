@@ -1,6 +1,6 @@
 ﻿using Qsi.Tree;
 
-namespace Qsi.PhoenixSql.Internal
+namespace Qsi.PhoenixSql.Tree
 {
     internal sealed class PDynamicDeclaredColumnNode : QsiDeclaredColumnNode
     {

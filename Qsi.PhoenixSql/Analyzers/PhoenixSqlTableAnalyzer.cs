@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Qsi.Analyzers.Table;
 using Qsi.Analyzers.Table.Context;
 using Qsi.Data;
-using Qsi.PhoenixSql.Internal;
+using Qsi.PhoenixSql.Tree;
 using Qsi.Tree;
 
 namespace Qsi.PhoenixSql.Analyzers
@@ -21,9 +21,9 @@ namespace Qsi.PhoenixSql.Analyzers
         {
             var structure = await base.BuildTableAccessStructure(context, table);
 
-            if (table is PDynamicTableAccessNode dynamicTableAccessNode)
+            if (table is PDynamicTableAccessNode dynamicTableNode)
             {
-                foreach (var dynamicColumn in dynamicTableAccessNode.DynamicColumns)
+                foreach (var dynamicColumn in dynamicTableNode.DynamicColumns.Columns.Cast<PDynamicDeclaredColumnNode>())
                 {
                     var column = structure.NewColumn();
                     column.Name = dynamicColumn.Name[^1];

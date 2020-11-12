@@ -40,7 +40,12 @@ namespace Qsi.PhoenixSql.Tree
                 throw new QsiException(QsiError.Syntax);
             }
 
-            insertAction.Columns = node.Columns.Select(IdentifierVisitor.Visit).ToArray();
+            if (node.Columns.Any())
+            {
+                insertAction.Columns = node.Columns
+                    .Select(IdentifierVisitor.Visit)
+                    .ToArray();
+            }
 
             if (node.Values.Any())
             {

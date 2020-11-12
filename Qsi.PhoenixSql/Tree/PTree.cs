@@ -2,7 +2,7 @@
 using Qsi.Shared;
 using Qsi.Tree.Data;
 
-namespace Qsi.PhoenixSql.Internal
+namespace Qsi.PhoenixSql.Tree
 {
     internal static class PTree
     {

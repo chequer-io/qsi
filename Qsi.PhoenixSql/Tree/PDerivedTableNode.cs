@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
 using PhoenixSql;
-using Qsi.Data;
 using Qsi.Tree;
 
-namespace Qsi.PhoenixSql.Internal
+namespace Qsi.PhoenixSql.Tree
 {
-    internal sealed class PUpsertActionNode : QsiDataInsertActionNode
+    internal sealed class PDerivedTableNode : QsiDerivedTableNode
     {
         public IReadOnlyList<HintNode.Types.Entry> Hints { get; set; }
     }

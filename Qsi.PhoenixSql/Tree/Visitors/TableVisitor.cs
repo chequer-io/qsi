@@ -230,16 +230,25 @@ namespace Qsi.PhoenixSql.Tree
 
         public static QsiTableNode VisitNamedTableNode(NamedTableNode node)
         {
-            var tableNode = new PDynamicTableAccessNode
-            {
-                Identifier = IdentifierVisitor.Visit(node.Name)
-            };
+            var identifier = IdentifierVisitor.Visit(node.Name);
+
+            QsiTableAccessNode tableNode;
 
             if (node.DynamicColumns.Any())
             {
-                tableNode.DynamicColumns = node.DynamicColumns
-                    .Select(VisitDynamicColumn)
-                    .ToArray();
+                tableNode = TreeHelper.Create<PDynamicTableAccessNode>(n =>
+                {
+                    n.Identifier = identifier;
+                    n.DynamicColumns = new QsiColumnsDeclarationNode();
+                    n.DynamicColumns.Columns.AddRange(node.DynamicColumns.Select(VisitDynamicColumn));
+                });
+            }
+            else
+            {
+                tableNode = new QsiTableAccessNode
+                {
+                    Identifier = identifier
+                };
             }
 
             if (string.IsNullOrEmpty(node.Alias))
