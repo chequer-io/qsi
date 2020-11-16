@@ -45,11 +45,11 @@ namespace Qsi.Utilities
             };
         }
 
-        public static QsiUnaryExpressionNode CreateUnary(string operand, QsiExpressionNode expression)
+        public static QsiUnaryExpressionNode CreateUnary(string @operator, QsiExpressionNode expression)
         {
             var node = new QsiUnaryExpressionNode
             {
-                Operator = operand
+                Operator = @operator
             };
 
             node.Expression.SetValue(expression);

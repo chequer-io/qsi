@@ -5,7 +5,7 @@ using Qsi.Utilities;
 
 namespace Qsi.Tree
 {
-    public sealed class QsiDataUpdateActionNode : QsiActionNode, IQsiDataUpdateActionNode
+    public class QsiDataUpdateActionNode : QsiActionNode, IQsiDataUpdateActionNode
     {
         public QsiTreeNodeProperty<QsiTableNode> Target { get; }
 

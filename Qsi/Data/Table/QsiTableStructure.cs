@@ -13,6 +13,8 @@ namespace Qsi.Data
 
         public bool IsSystem { get; set; }
 
+        public List<QsiTableStructure> References { get; } = new List<QsiTableStructure>();
+
         public IReadOnlyList<QsiTableColumn> Columns => _columns;
 
         internal IEnumerable<QsiTableColumn> VisibleColumns => _columns.Where(c => c.IsVisible);

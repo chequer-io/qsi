@@ -6,13 +6,14 @@ using Qsi.Analyzers.Context;
 using Qsi.Collections;
 using Qsi.Data;
 using Qsi.Tree;
+using Qsi.Utilities;
 
 namespace Qsi.Analyzers
 {
     public abstract class QsiAnalyzerBase
     {
         protected IEqualityComparer<QsiIdentifier> IdentifierComparer => _identifierComparer.Value;
-        
+
         protected IEqualityComparer<QsiQualifiedIdentifier> QualifiedIdentifierComparer => _qualifiedIdentifierComparer.Value;
 
         private readonly QsiEngine _engine;
@@ -60,6 +61,50 @@ namespace Qsi.Analyzers
             }
 
             return true;
+        }
+
+        protected bool Match(IAnalyzerContext context, QsiTableStructure table, QsiQualifiedIdentifier identifier)
+        {
+            if (!table.HasIdentifier)
+                return false;
+
+            // * case - Explicit access
+            // ┌──────────────────────────────────────────────────────────┐
+            // │ SELECT sakila.actor.column FROM sakila.actor             │
+            // │        ▔▔▔▔▔▔^▔▔▔▔▔      ==     ▔▔▔▔▔▔^▔▔▔▔▔             │
+            // │         └-> identifier(2)        └-> table.Identifier(2) │
+            // └──────────────────────────────────────────────────────────┘ 
+
+            if (Match(table.Identifier, identifier))
+                return true;
+
+            // * case - 2 Level implicit access
+            // ┌──────────────────────────────────────────────────────────┐
+            // │ SELECT actor.column FROM sakila.actor                    │
+            // │        ▔▔▔▔▔      <       ▔▔▔▔▔^▔▔▔▔▔                    │
+            // │         └-> identifier(1)  └-> table.Identifier(2)       │
+            // └──────────────────────────────────────────────────────────┘ 
+
+            // * case - 3 Level implicit access
+            // ┌──────────────────────────────────────────────────────────┐
+            // │ SELECT sakila.actor.column FROM db.sakila.actor          │
+            // │        ▔▔▔▔▔▔^▔▔▔▔▔       <     ▔▔^▔▔▔▔▔▔^▔▔▔▔▔          │
+            // │         └-> identifier(2)        └-> table.Identifier(3) │
+            // └──────────────────────────────────────────────────────────┘ 
+
+            if (context.Options.UseExplicitRelationAccess)
+                return false;
+
+            if (!QsiUtility.IsReferenceType(table.Type))
+                return false;
+
+            if (table.Identifier.Level <= identifier.Level)
+                return false;
+
+            QsiIdentifier[] partialIdentifiers = table.Identifier[^identifier.Level..];
+            var partialIdentifier = new QsiQualifiedIdentifier(partialIdentifiers);
+
+            return Match(partialIdentifier, identifier);
         }
         #endregion
 

@@ -16,7 +16,7 @@ namespace Qsi.Tree.Immutable
 
         public QsiQualifiedIdentifier[] Partitions { get; }
 
-        public QsiIdentifier[] Columns { get; }
+        public QsiQualifiedIdentifier[] Columns { get; }
 
         public IQsiRowValueExpressionNode[] Values { get; }
 
@@ -41,7 +41,7 @@ namespace Qsi.Tree.Immutable
             IQsiTableDirectivesNode directives,
             IQsiTableAccessNode target,
             QsiQualifiedIdentifier[] partitions,
-            QsiIdentifier[] columns,
+            QsiQualifiedIdentifier[] columns,
             IQsiRowValueExpressionNode[] values,
             IQsiSetColumnExpressionNode[] setValues,
             IQsiTableNode valueTable,

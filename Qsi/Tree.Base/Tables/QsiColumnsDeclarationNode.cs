@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace Qsi.Tree
 {
-    public sealed class QsiColumnsDeclarationNode : QsiTreeNode, IQsiColumnsDeclarationNode
+    public class QsiColumnsDeclarationNode : QsiTreeNode, IQsiColumnsDeclarationNode
     {
         public QsiTreeNodeList<QsiColumnNode> Columns { get; }
 

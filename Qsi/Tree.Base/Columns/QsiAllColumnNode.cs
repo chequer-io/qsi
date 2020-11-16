@@ -4,7 +4,7 @@ using Qsi.Data;
 
 namespace Qsi.Tree
 {
-    public sealed class QsiAllColumnNode : QsiColumnNode, IQsiAllColumnNode, IQsiTerminalNode
+    public class QsiAllColumnNode : QsiColumnNode, IQsiAllColumnNode, IQsiTerminalNode
     {
         public QsiQualifiedIdentifier Path { get; set; }
 

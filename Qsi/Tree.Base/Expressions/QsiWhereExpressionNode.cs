@@ -4,7 +4,7 @@ using Qsi.Utilities;
 
 namespace Qsi.Tree
 {
-    public sealed class QsiWhereExpressionNode : QsiExpressionNode, IQsiWhereExpressionNode
+    public class QsiWhereExpressionNode : QsiExpressionNode, IQsiWhereExpressionNode
     {
         public QsiTreeNodeProperty<QsiExpressionNode> Expression { get; }
 

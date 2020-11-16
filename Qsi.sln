@@ -25,6 +25,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qsi.JSql", "Qsi.JSql\Qsi.JS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qsi.MongoDB", "Qsi.MongoDB\Qsi.MongoDB.csproj", "{1EFA1B3B-8A8F-4319-ACCE-E1C781DFA637}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qsi.PhoenixSql", "Qsi.PhoenixSql\Qsi.PhoenixSql.csproj", "{5823C989-9E6A-4521-9112-DF286CFF2107}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Qsi.Shared", "Qsi.Shared\Qsi.Shared.shproj", "{0107B316-4DF4-4B5F-914D-A43230E481F6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -67,6 +71,10 @@ Global
 		{1EFA1B3B-8A8F-4319-ACCE-E1C781DFA637}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1EFA1B3B-8A8F-4319-ACCE-E1C781DFA637}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1EFA1B3B-8A8F-4319-ACCE-E1C781DFA637}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5823C989-9E6A-4521-9112-DF286CFF2107}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5823C989-9E6A-4521-9112-DF286CFF2107}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5823C989-9E6A-4521-9112-DF286CFF2107}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5823C989-9E6A-4521-9112-DF286CFF2107}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -80,6 +88,7 @@ Global
 		{B69D2EB0-3D49-4460-8A77-0EF02586241F} = {97493A14-DF8A-4A8A-A521-5900DFAC1CDA}
 		{C9CD9F7B-4A37-4755-9D35-15659186104E} = {97493A14-DF8A-4A8A-A521-5900DFAC1CDA}
 		{1EFA1B3B-8A8F-4319-ACCE-E1C781DFA637} = {97493A14-DF8A-4A8A-A521-5900DFAC1CDA}
+		{5823C989-9E6A-4521-9112-DF286CFF2107} = {97493A14-DF8A-4A8A-A521-5900DFAC1CDA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A12491D7-EB7D-4F23-A7B6-6B4AB1DD08D9}
