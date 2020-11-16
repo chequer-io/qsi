@@ -26,28 +26,28 @@ based on semantic tree transformed by parser's  for each language.
 &#x26A0; ⚠
 -->
 
-|Features                           |MySql   |PostgreSql|JSql    |Oracle  |SqlServer|
-|-----------------------------------|:------:|:--------:|:------:|:------:|:-------:|
-|No table                           |&#x2714;|&#x2714;  |&#x2714;|&#x274C;|&#x2714; |
-|Table access                       |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |
-|Derived table                      |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |
-|Derived table (Non-Alias)          |&#x274C;|&#x274C;  |&#x2714;|&#x2714;|&#x274C; |
-|Specify columns to table alias     |&#x274C;|&#x2714;  |&#x2714;|&#x274C;|&#x274C; |
-|Inline derived table               |&#x274C;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |
-|Table function                     |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |
-|Table variable                     |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |
-|Common table expression            |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |
-|Common table expression (Aliases)  |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |
-|Common table expression (Recursive)|&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |
-|Join tables                        |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |
-|Join tables (Pivot columns)        |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x274C; |
-|Union many tables                  |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |
-|Table pivot                        |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |
-|Table unpivot                      |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |
-|Trace view definition              |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |
-|Trace variable definition          |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |
-|Execute prepared table query       |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |
-|Call table procedure               |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |
+|Features                           |MySql   |PostgreSql|JSql    |Oracle  |SqlServer|PhoenixSql|
+|-----------------------------------|:------:|:--------:|:------:|:------:|:-------:|:--------:|
+|No table                           |&#x2714;|&#x2714;  |&#x2714;|&#x274C;|&#x2714; |&#x2714;  |
+|Table access                       |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |&#x2714;  |
+|Derived table                      |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |&#x2714;  |
+|Derived table (Non-Alias)          |&#x274C;|&#x274C;  |&#x2714;|&#x2714;|&#x274C; |&#x2714;  |
+|Specify columns to table alias     |&#x274C;|&#x2714;  |&#x2714;|&#x274C;|&#x274C; |&#x274C;  |
+|Inline derived table               |&#x274C;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |&#x274C;  |
+|Table function                     |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |&#x274C;  |
+|Table variable                     |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |&#x274C;  |
+|Common table expression            |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |&#x274C;  |
+|Common table expression (Aliases)  |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |&#x274C;  |
+|Common table expression (Recursive)|&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |&#x274C;  |
+|Join tables                        |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |&#x2714;  |
+|Join tables (Pivot columns)        |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x274C; |&#x274C;  |
+|Union many tables                  |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |&#x2714;  |
+|Table pivot                        |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |&#x274C;  |
+|Table unpivot                      |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |&#x274C;  |
+|Trace view definition              |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |&#x2714;  |
+|Trace variable definition          |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |&#x274C;  |
+|Execute prepared table query       |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |&#x274C;  |
+|Call table procedure               |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |&#x26A0;  |
 
 ## Table Features
 
