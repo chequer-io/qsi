@@ -7,6 +7,7 @@ using Qsi.Analyzers.Table.Context;
 using Qsi.Tree.Immutable;
 using Qsi.Data;
 using Qsi.Extensions;
+using Qsi.Shared.Extensions;
 using Qsi.Tree;
 using Qsi.Utilities;
 
@@ -139,6 +140,9 @@ namespace Qsi.Analyzers.Table
                 Type = QsiTableType.Derived,
                 Identifier = alias == null ? null : new QsiQualifiedIdentifier(alias)
             };
+
+            if (scopedContext.SourceTable != null)
+                declaredTable.References.Add(scopedContext.SourceTable);
 
             var columns = table.Columns;
 
@@ -469,6 +473,9 @@ namespace Qsi.Analyzers.Table
                 context.SourceTables.Add(right);
             }
 
+            joinedTable.References.Add(left);
+            joinedTable.References.Add(right);
+
             IQsiDeclaredColumnNode[] pivots = table.PivotColumns?.Columns
                 .Cast<IQsiDeclaredColumnNode>()
                 .ToArray();
@@ -580,9 +587,6 @@ namespace Qsi.Analyzers.Table
                 case IQsiDerivedColumnNode derivedColumn:
                     return ResolveDerivedColumns(context, derivedColumn);
 
-                case IQsiDynamicColumnNode dynamicColumn:
-                    return new[] { ResolveDynamicColumn(context, dynamicColumn) };
-
                 case IQsiBindingColumnNode _:
                     return Array.Empty<QsiTableColumn>();
 
@@ -618,21 +622,21 @@ namespace Qsi.Analyzers.Table
             return tables.SelectMany(t => column.IncludeInvisibleColumns ? t.Columns : t.VisibleColumns);
         }
 
-        protected virtual QsiTableColumn ResolveDeclaredColumn(TableCompileContext context, IQsiDeclaredColumnNode columnn)
+        protected virtual QsiTableColumn ResolveDeclaredColumn(TableCompileContext context, IQsiDeclaredColumnNode column)
         {
             context.ThrowIfCancellationRequested();
 
             IEnumerable<QsiTableStructure> sources = Enumerable.Empty<QsiTableStructure>();
 
-            if (columnn.Name.Level > 1)
+            if (column.Name.Level > 1)
             {
-                var identifier = new QsiQualifiedIdentifier(columnn.Name[..^1]);
+                var identifier = new QsiQualifiedIdentifier(column.Name[..^1]);
                 sources = LookupDataTableStructuresInExpression(context, identifier).ToArray();
 
                 if (!sources.Any())
                     throw new QsiException(QsiError.UnknownTableIn, identifier, scopeFieldList);
             }
-            else if (columnn.Name.Level == 0)
+            else if (column.Name.Level == 0)
             {
                 throw new InvalidOperationException();
             }
@@ -641,7 +645,7 @@ namespace Qsi.Analyzers.Table
                 sources = new[] { context.SourceTable };
             }
 
-            var lastName = columnn.Name[^1];
+            var lastName = column.Name[^1];
 
             QsiTableColumn[] columns = sources
                 .SelectMany(s => s.Columns.Where(c => Match(c.Name, lastName)))
@@ -652,7 +656,7 @@ namespace Qsi.Analyzers.Table
                 throw new QsiException(QsiError.UnknownColumnIn, lastName.Value, scopeFieldList);
 
             if (columns.Length > 1)
-                throw new QsiException(QsiError.AmbiguousColumnIn, columnn.Name, scopeFieldList);
+                throw new QsiException(QsiError.AmbiguousColumnIn, column.Name, scopeFieldList);
 
             return columns[0];
         }
@@ -665,25 +669,6 @@ namespace Qsi.Analyzers.Table
                 return ResolveColumnsInExpression(context, column.Expression);
 
             return ResolveColumns(context, column.Column);
-        }
-
-        private QsiTableColumn ResolveDynamicColumn(TableCompileContext context, IQsiDynamicColumnNode column)
-        {
-            if (context.SourceTable == null)
-                throw new QsiException(QsiError.NoTablesUsed);
-
-            if (context.SourceTable.Type != QsiTableType.Table)
-                throw new QsiException(QsiError.UnableResolveTable);
-
-            var tableColumn = context.SourceTable.Columns.FirstOrDefault(c => c.ColumnNode == column);
-
-            if (tableColumn == null)
-            {
-                tableColumn = context.SourceTable.NewColumn();
-                tableColumn.Name = column.Name[^1];
-            }
-
-            return tableColumn;
         }
 
         protected virtual IEnumerable<QsiTableColumn> ResolveColumnsInExpression(TableCompileContext context, IQsiExpressionNode expression)
@@ -912,47 +897,7 @@ namespace Qsi.Analyzers.Table
 
             tables.AddRange(context.SourceTables);
 
-            foreach (var table in tables.Where(t => t.HasIdentifier))
-            {
-                // * case - Explicit access
-                // ┌──────────────────────────────────────────────────────────┐
-                // │ SELECT sakila.actor.column FROM sakila.actor             │
-                // │        ▔▔▔▔▔▔^▔▔▔▔▔      ==     ▔▔▔▔▔▔^▔▔▔▔▔             │
-                // │         └-> identifier(2)        └-> table.Identifier(2) │
-                // └──────────────────────────────────────────────────────────┘ 
-
-                if (Match(table.Identifier, identifier))
-                    yield return table;
-
-                // * case - 2 Level implicit access
-                // ┌──────────────────────────────────────────────────────────┐
-                // │ SELECT actor.column FROM sakila.actor                    │
-                // │        ▔▔▔▔▔      <       ▔▔▔▔▔^▔▔▔▔▔                    │
-                // │         └-> identifier(1)  └-> table.Identifier(2)       │
-                // └──────────────────────────────────────────────────────────┘ 
-
-                // * case - 3 Level implicit access
-                // ┌──────────────────────────────────────────────────────────┐
-                // │ SELECT sakila.actor.column FROM db.sakila.actor          │
-                // │        ▔▔▔▔▔▔^▔▔▔▔▔       <     ▔▔^▔▔▔▔▔▔^▔▔▔▔▔          │
-                // │         └-> identifier(2)        └-> table.Identifier(3) │
-                // └──────────────────────────────────────────────────────────┘ 
-
-                if (context.Options.UseExplicitRelationAccess)
-                    continue;
-
-                if (!QsiUtility.IsReferenceType(table.Type))
-                    continue;
-
-                if (table.Identifier.Level <= identifier.Level)
-                    continue;
-
-                QsiIdentifier[] partialIdentifiers = table.Identifier[^identifier.Level..];
-                var partialIdentifier = new QsiQualifiedIdentifier(partialIdentifiers);
-
-                if (Match(partialIdentifier, identifier))
-                    yield return table;
-            }
+            return tables.Where(t => Match(context, t, identifier));
         }
         #endregion
 

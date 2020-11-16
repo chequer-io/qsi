@@ -3,7 +3,7 @@ using Qsi.Utilities;
 
 namespace Qsi.Tree
 {
-    public sealed class QsiColumnExpressionNode : QsiExpressionNode, IQsiColumnExpressionNode
+    public class QsiColumnExpressionNode : QsiExpressionNode, IQsiColumnExpressionNode
     {
         public QsiTreeNodeProperty<QsiColumnNode> Column { get; }
 

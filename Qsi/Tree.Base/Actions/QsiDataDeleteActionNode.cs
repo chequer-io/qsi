@@ -3,7 +3,7 @@ using Qsi.Utilities;
 
 namespace Qsi.Tree
 {
-    public sealed class QsiDataDeleteActionNode : QsiActionNode, IQsiDataDeleteActionNode
+    public class QsiDataDeleteActionNode : QsiActionNode, IQsiDataDeleteActionNode
     {
         public QsiTreeNodeProperty<QsiTableNode> Target { get; }
 

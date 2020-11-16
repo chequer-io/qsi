@@ -4,7 +4,7 @@ using Qsi.Utilities;
 
 namespace Qsi.Tree
 {
-    public sealed class QsiJoinedTableNode : QsiTableNode, IQsiJoinedTableNode
+    public class QsiJoinedTableNode : QsiTableNode, IQsiJoinedTableNode
     {
         public QsiTreeNodeProperty<QsiTableNode> Left { get; }
 

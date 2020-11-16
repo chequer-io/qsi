@@ -5,7 +5,7 @@ using Qsi.Utilities;
 
 namespace Qsi.Tree
 {
-    public sealed class QsiDataInsertActionNode : QsiActionNode, IQsiDataInsertActionNode
+    public class QsiDataInsertActionNode : QsiActionNode, IQsiDataInsertActionNode
     {
         public QsiTreeNodeProperty<QsiTableDirectivesNode> Directives { get; }
 
@@ -13,7 +13,7 @@ namespace Qsi.Tree
 
         public QsiQualifiedIdentifier[] Partitions { get; set; }
 
-        public QsiIdentifier[] Columns { get; set; }
+        public QsiQualifiedIdentifier[] Columns { get; set; }
 
         public QsiTreeNodeList<QsiRowValueExpressionNode> Values { get; }
 

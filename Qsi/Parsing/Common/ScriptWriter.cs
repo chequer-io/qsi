@@ -1,12 +1,12 @@
-﻿using System.Text;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace Qsi.Parsing.Common
 {
     public class ScriptWriter
     {
         private readonly StringBuilder _builder;
-
-        private bool _space;
 
         public ScriptWriter()
         {
@@ -15,10 +15,9 @@ namespace Qsi.Parsing.Common
 
         public ScriptWriter WriteSpace()
         {
-            if (!_space)
+            if (_builder.Length > 0 && _builder[^1] != ' ')
             {
                 _builder.Append(' ');
-                _space = true;
             }
 
             return this;
@@ -26,23 +25,36 @@ namespace Qsi.Parsing.Common
 
         public ScriptWriter Write(object value)
         {
-            _space = false;
             _builder.Append(value);
             return this;
         }
 
         public ScriptWriter Write(char value)
         {
-            _space = false;
             _builder.Append(value);
             return this;
         }
 
         public ScriptWriter Write(string value)
         {
-            _space = false;
             _builder.Append(value);
             return this;
+        }
+
+        public void WriteJoin<T>(string delimiter, IEnumerable<T> elements, Action<ScriptWriter, T> action)
+        {
+            using IEnumerator<T> enumerator = elements.GetEnumerator();
+
+            if (!enumerator.MoveNext())
+                return;
+
+            action(this, enumerator.Current);
+
+            while (enumerator.MoveNext())
+            {
+                Write(delimiter);
+                action(this, enumerator.Current);
+            }
         }
 
         public override string ToString()

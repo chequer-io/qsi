@@ -48,24 +48,9 @@ namespace Qsi.Parsing.Common
             writer.Write(')');
         }
 
-        protected void JoinElements(string delimiter, ScriptWriter writer, IEnumerable<IQsiTreeNode> elements, QsiScript script)
+        protected void JoinElements<T>(ScriptWriter writer, string delimiter, IEnumerable<T> elements, QsiScript script) where T : IQsiTreeNode
         {
-            JoinElements(delimiter, writer, elements, node => DeparseTreeNode(writer, node, script));
-        }
-
-        protected void JoinElements<T>(string delimiter, ScriptWriter writer, IEnumerable<T> elements, Action<T> action) where T : IQsiTreeNode
-        {
-            bool first = true;
-
-            foreach (var element in elements)
-            {
-                if (first)
-                    first = false;
-                else
-                    writer.Write(delimiter);
-
-                action(element);
-            }
+            writer.WriteJoin(delimiter, elements, (w, n) => DeparseTreeNode(w, n, script));
         }
         #endregion
 
@@ -113,17 +98,17 @@ namespace Qsi.Parsing.Common
             if (node.IsRecursive)
                 writer.Write("RECURSIVE ");
 
-            JoinElements(", ", writer, node.Tables, table =>
+            writer.WriteJoin(", ", node.Tables, (w, table) =>
             {
-                writer.Write(table.Alias.Name);
+                w.Write(table.Alias.Name);
 
                 if (table.Columns != null && IsWildcard(table.Columns))
                 {
-                    DeparseTreeNodeWithParenthesis(writer, table.Columns, script);
+                    DeparseTreeNodeWithParenthesis(w, table.Columns, script);
                 }
 
-                writer.Write(" AS ");
-                DeparseTreeNodeWithParenthesis(writer, table.Source, script);
+                w.Write(" AS ");
+                DeparseTreeNodeWithParenthesis(w, table.Source, script);
             });
         }
 
@@ -132,7 +117,7 @@ namespace Qsi.Parsing.Common
             if (node.IsEmpty)
                 return;
 
-            JoinElements(", ", writer, node.Columns, script);
+            JoinElements(writer, ", ", node.Columns, script);
         }
 
         protected virtual void DeparseAliasNode(ScriptWriter writer, IQsiAliasNode node, QsiScript script)
@@ -246,7 +231,7 @@ namespace Qsi.Parsing.Common
             if (parenthesis)
                 writer.Write('(');
 
-            JoinElements(" UNION ", writer, node.Sources, script);
+            JoinElements(writer, " UNION ", node.Sources, script);
 
             if (parenthesis)
                 writer.Write(')');
@@ -431,7 +416,7 @@ namespace Qsi.Parsing.Common
         protected virtual void DeparseMultipleOrderExpressionNode(ScriptWriter writer, IQsiMultipleOrderExpressionNode node, QsiScript script)
         {
             writer.Write("ORDER BY ");
-            JoinElements(", ", writer, node.Orders, script);
+            JoinElements(writer, ", ", node.Orders, script);
         }
 
         protected virtual void DeparseOrderExpressionNode(ScriptWriter writer, IQsiOrderExpressionNode node, QsiScript script)

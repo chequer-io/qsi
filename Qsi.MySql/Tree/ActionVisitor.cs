@@ -109,7 +109,9 @@ namespace Qsi.MySql.Tree
 
             if (!ListUtility.IsNullOrEmpty(context.Columns))
             {
-                node.Columns = context.Columns.Select(IdentifierVisitor.VisitUid).ToArray();
+                node.Columns = context.Columns
+                    .Select(c => new QsiQualifiedIdentifier(IdentifierVisitor.VisitUid(c)))
+                    .ToArray();
             }
 
             if (context.InsertStatementValue != null)

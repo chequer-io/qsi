@@ -5,7 +5,7 @@ using Qsi.Utilities;
 
 namespace Qsi.Tree
 {
-    public sealed class QsiDataConflictActionNode : QsiActionNode, IQsiDataConflictActionNode
+    public class QsiDataConflictActionNode : QsiActionNode, IQsiDataConflictActionNode
     {
         public QsiQualifiedIdentifier Target { get; set; }
 
