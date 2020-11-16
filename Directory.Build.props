@@ -5,6 +5,7 @@
         <RepositoryUrl>https://github.com/chequer-io/qsi</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageIcon>icon-128.png</PackageIcon>
+        <PackageTags>qsi;sql</PackageTags>
     </PropertyGroup>
 
     <ItemGroup Condition=" '$(Packaging)' == 'true' ">

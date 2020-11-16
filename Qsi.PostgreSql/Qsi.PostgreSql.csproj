@@ -7,6 +7,7 @@
     <PropertyGroup Label="Nuspec">
         <Title>Query Structure Interface of PostgreSql</Title>
         <Description>$(Title)</Description>
+        <PackageTags>$(PackageTags);phostgresql;yacc</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>
