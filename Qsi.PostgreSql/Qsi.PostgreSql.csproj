@@ -6,6 +6,7 @@
 
     <PropertyGroup Label="Nuspec">
         <Title>Query Structure Interface of PostgreSql</Title>
+        <Description>$(Title)</Description>
     </PropertyGroup>
 
     <ItemGroup>
