@@ -3,10 +3,13 @@
         <Authors>CHEQUER Inc.</Authors>
         <PackageProjectUrl>https://github.com/chequer-io/qsi</PackageProjectUrl>
         <RepositoryUrl>https://github.com/chequer-io/qsi</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
         <PackageIcon>icon-128.png</PackageIcon>
+        <PackageTags>qsi;sql</PackageTags>
     </PropertyGroup>
 
     <ItemGroup Condition=" '$(Packaging)' == 'true' ">
         <None Include="../Resources/icon-128.png" Pack="true" PackagePath=""/>
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
     </ItemGroup>
 </Project>

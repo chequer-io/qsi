@@ -6,6 +6,8 @@
 
     <PropertyGroup Label="Nuspec">
         <Title>Query Structure Interface of JSqlParser</Title>
+        <Description>$(Title)</Description>
+        <PackageTags>$(PackageTags);jsql;javacc</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>

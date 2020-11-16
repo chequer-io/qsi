@@ -6,6 +6,8 @@
 
     <PropertyGroup Label="Nuspec">
         <Title>Query Structure Interface of MongoDB</Title>
+        <Description>$(Title)</Description>
+        <PackageTags>$(PackageTags);mongodb</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>

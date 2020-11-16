@@ -6,6 +6,8 @@
 
     <PropertyGroup Label="Nuspec">
         <Title>Query Structure Interface of MySql</Title>
+        <Description>$(Title)</Description>
+        <PackageTags>$(PackageTags);mysql;antlr4</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>

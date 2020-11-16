@@ -6,6 +6,8 @@
 
     <PropertyGroup Label="Nuspec">
         <Title>Query Structure Interface of PhoenixSql</Title>
+        <Description>$(Title)</Description>
+        <PackageTags>$(PackageTags);phoenix;phoenixsql;antlr3</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>
