@@ -9,5 +9,6 @@
 
     <ItemGroup Condition=" '$(Packaging)' == 'true' ">
         <None Include="../Resources/icon-128.png" Pack="true" PackagePath=""/>
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
     </ItemGroup>
 </Project>
