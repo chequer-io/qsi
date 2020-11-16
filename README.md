@@ -11,7 +11,7 @@ The QSI is the pure C# Query Structure Interface.
 |JSql|JavaCC|[JSqlParser](https://github.com/JSQLParser/JSqlParser), [IKVM](https://github.com/ikvm-revived/ikvm)|
 |Oracle|Qsi.JSql||
 |SqlServer|Microsoft.SqlServer.TransactSql.ScriptDom|[MSDN](https://docs.microsoft.com/en-us/dotnet/api/microsoft.sqlserver.transactsql.scriptdom?view=sql-dacfx-150), [NuGet](https://www.nuget.org/packages/Microsoft.SqlServer.TransactSql.ScriptDom)|
-|PhoenixSql|Phoenix server source code(Antlr3)|[phoenix](https://github.com/phoenixframework/phoenix)|
+|PhoenixSql|Phoenix server source code(Antlr3)|[PhoenixSql](https://github.com/chequer-io/PhoenixSql)|
 
 
 ## Structure Compiler
