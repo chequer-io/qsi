@@ -17,21 +17,34 @@ namespace Qsi.PhoenixSql.Analyzers
         {
         }
 
+        protected override async ValueTask<QsiTableStructure> BuildDerivedTableStructure(TableCompileContext context, IQsiDerivedTableNode table)
+        {
+            var structure = await base.BuildDerivedTableStructure(context, table);
+
+            if (table is IDynamicTableNode dynamicTableNode)
+                PatchDynamicTable(structure, dynamicTableNode);
+
+            return structure;
+        }
+
         protected override async ValueTask<QsiTableStructure> BuildTableAccessStructure(TableCompileContext context, IQsiTableAccessNode table)
         {
             var structure = await base.BuildTableAccessStructure(context, table);
 
-            if (table is PDynamicTableAccessNode dynamicTableNode)
-            {
-                foreach (var dynamicColumn in dynamicTableNode.DynamicColumns.Columns.Cast<PDynamicDeclaredColumnNode>())
-                {
-                    var column = structure.NewColumn();
-                    column.Name = dynamicColumn.Name[^1];
-                    column.IsDynamic = true;
-                }
-            }
+            if (table is IDynamicTableNode dynamicTableNode)
+                PatchDynamicTable(structure, dynamicTableNode);
 
             return structure;
+        }
+
+        private void PatchDynamicTable(QsiTableStructure structure, IDynamicTableNode dynamicTableNode)
+        {
+            foreach (var dynamicColumn in dynamicTableNode.DynamicColumns.Columns.Cast<PDynamicDeclaredColumnNode>())
+            {
+                var column = structure.NewColumn();
+                column.Name = dynamicColumn.Name[^1];
+                column.IsDynamic = true;
+            }
         }
 
         protected override QsiTableColumn ResolveDeclaredColumn(TableCompileContext context, IQsiDeclaredColumnNode column)
