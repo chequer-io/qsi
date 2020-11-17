@@ -18,42 +18,31 @@ namespace Qsi.Debugger.Vendor.PhoenixSql
 
             switch (tableName)
             {
-                case "actor":
-                    var actor = CreateTable("sakila", "actor");
-                    AddColumns(actor, "actor_id", "first_name", "last_name", "last_update");
+                case "ACTOR":
+                    var actor = CreateTable("SECURE", "ACTOR");
+                    AddColumns(actor, "ACTOR_ID", "FIRST_NAME", "LAST_NAME", "LAST_UPDATE");
                     return actor;
 
-                // case "actor_view":
-                //     var actorView = CreateTable("sakila", "actor_view");
-                //     actorView.Type = QsiTableType.View;
-                //     AddColumns(actorView, "actor_id", "first_name", "last_name", "last_update", "first_name || last_name");
-                //     return actorView;
-
-                case "address":
-                    var address = CreateTable("sakila", "address");
-                    AddColumns(address, "address_id", "address", "address2", "district", "city_id", "postal_code", "phone", "location", "last_update");
+                case "ADDRESS":
+                    var address = CreateTable("SECURE", "ADDRESS");
+                    AddColumns(address, "ADDRESS_ID", "ADDRESS", "ADDRESS2", "DISTRICT", "CITY_ID", "POSTAL_CODE", "PHONE", "LOCATION", "LAST_UPDATE");
                     return address;
 
-                case "city":
-                    var city = CreateTable("sakila", "city");
-                    AddColumns(city, "city_id", "city", "country_id", "last_update", "test");
+                case "CITY":
+                    var city = CreateTable("SECURE", "CITY");
+                    AddColumns(city, "CITY_ID", "CITY", "COUNTRY_ID", "LAST_UPDATE", "TEST");
                     return city;
 
-                case "test 1":
-                    var test1 = CreateTable("sakila", "`test 1`");
-                    AddColumns(test1, "`c 1`", "`c 2`");
-                    return test1;
-
-                case "cs_memo":
-                    var csMemo = CreateTable("sakila", "cs_memo");
-                    AddColumns(csMemo, "id", "memo");
+                case "CS_MEMO":
+                    var csMemo = CreateTable("SECURE", "CS_MEMO");
+                    AddColumns(csMemo, "ID", "MEMO");
                     return csMemo;
 
-                // case "cs_memo_view":
-                //     var csMemoView = CreateTable("sakila", "cs_memo_view");
-                //     csMemoView.Type = QsiTableType.View;
-                //     AddColumns(csMemoView, "a", "b");
-                //     return csMemoView;
+                case "CS_MEMO_VIEW":
+                    var csMemoView = CreateTable("SECURE", "CS_MEMO_VIEW");
+                    csMemoView.Type = QsiTableType.View;
+                    AddColumns(csMemoView, "ID", "MEMO");
+                    return csMemoView;
             }
 
             return null;
@@ -61,7 +50,13 @@ namespace Qsi.Debugger.Vendor.PhoenixSql
 
         protected override QsiScript LookupDefinition(QsiQualifiedIdentifier identifier, QsiTableType type)
         {
-            throw new System.NotImplementedException();
+            switch (identifier.ToString())
+            {
+                case "SECURE.CS_MEMO_VIEW":
+                    return new QsiScript("CREATE VIEW SECURE.CS_MEMO_VIEW (N INTEGER PRIMARY KEY DESC, Q DECIMAL(3, 1) ARRAY[2], P VARCHAR DEFAULT 'querypie') AS SELECT * FROM SECURE.CS_MEMO WHERE ID = 1", QsiScriptType.Create);
+            }
+
+            return null;
         }
 
         protected override QsiVariable LookupVariable(QsiQualifiedIdentifier identifier)
@@ -71,15 +66,6 @@ namespace Qsi.Debugger.Vendor.PhoenixSql
 
         protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier)
         {
-            if (identifier.Level == 1)
-            {
-                var sakila = new QsiIdentifier("sakila", false);
-                identifier = new QsiQualifiedIdentifier(sakila, identifier[0]);
-            }
-
-            if (identifier.Level != 2)
-                throw new InvalidOperationException();
-
             return identifier;
         }
     }

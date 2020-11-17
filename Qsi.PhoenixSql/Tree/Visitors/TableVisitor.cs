@@ -6,6 +6,7 @@ using PhoenixSql;
 using PhoenixSql.Extensions;
 using Qsi.Data;
 using Qsi.Extensions;
+using Qsi.Parsing;
 using Qsi.PhoenixSql.Internal;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
@@ -328,6 +329,62 @@ namespace Qsi.PhoenixSql.Tree
 
                 PTree.RawNode[n] = node;
             });
+        }
+
+        public static IQsiTreeNode VisitCreateViewStatement(CreateTableStatement node)
+        {
+            QsiDerivedTableNode derivedTableNode;
+
+            if (node.ColumnDefs.Any())
+            {
+                derivedTableNode = TreeHelper.Create<PDynamicDerivedTableNode>(n =>
+                {
+                    n.DynamicColumns = new QsiColumnsDeclarationNode();
+                    n.DynamicColumns.Columns.AddRange(node.ColumnDefs.Select(VisitDynamicColumn));
+                });
+            }
+            else
+            {
+                derivedTableNode = new PDerivedTableNode();
+            }
+
+            derivedTableNode.Alias.SetValue(new QsiAliasNode
+            {
+                Name = IdentifierVisitor.Visit(node.TableName)[^1]
+            });
+
+            derivedTableNode.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+
+            if (node.BaseTableName != null)
+            {
+                QsiTableNode tableNode = TreeHelper.Create<QsiTableAccessNode>(n =>
+                {
+                    n.Identifier = IdentifierVisitor.Visit(node.BaseTableName);
+                    PTree.RawNode[n] = node.BaseTableName;
+                });
+
+                if (node.WhereClause != null)
+                {
+                    var sourceDerivedTableNode = new QsiDerivedTableNode();
+                    sourceDerivedTableNode.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+                    sourceDerivedTableNode.WhereExpression.SetValue(ExpressionVisitor.VisitWhere(node.WhereClause));
+                    sourceDerivedTableNode.Source.SetValue(tableNode);
+
+                    derivedTableNode.Source.SetValue(sourceDerivedTableNode); 
+                }
+                else
+                {
+                    derivedTableNode.Source.SetValue(tableNode);   
+                }
+            }
+            else
+            {
+                throw new QsiException(QsiError.Syntax);
+            }
+
+            PTree.RawNode[derivedTableNode] = node;
+
+            return derivedTableNode;
         }
     }
 }
