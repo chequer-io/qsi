@@ -12,7 +12,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Qsi\Qsi.csproj" />
-        <Content Include="build/*.props" PackagePath="build/" />
     </ItemGroup>
 
     <ItemGroup>
