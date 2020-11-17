@@ -21,6 +21,7 @@
     <ItemGroup>
         <PackageReference Include="Avalonia" Version="0.9.11" />
         <PackageReference Include="Avalonia.Desktop" Version="0.9.11" />
+        <PackageReference Include="PhoenixSql" Version="1.0.9" />
     </ItemGroup>
 
     <ItemGroup>
@@ -42,6 +43,5 @@
       <UpToDateCheckInput Remove="Assets\Themes\Dark\Theme.xaml" />
     </ItemGroup>
 
-    <Import Project="../Qsi.PostgreSql/build/Qsi.PostgreSql.props" />
-    <Import Project="J2NET.props" />
+    <Import Project="Packages.props" />
 </Project>

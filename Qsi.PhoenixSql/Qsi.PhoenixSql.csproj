@@ -11,13 +11,15 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="PhoenixSql" Version="1.0.8" />
+        <PackageReference Include="PhoenixSql" Version="1.0.9">
+            <IncludeAssets>all</IncludeAssets>
+        </PackageReference>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Qsi\Qsi.csproj" />
+        <ProjectReference Include="..\Qsi\Qsi.csproj"/>
     </ItemGroup>
 
-    <Import Project="..\Qsi.Shared\Qsi.Shared.projitems" Label="Shared" />
+    <Import Project="..\Qsi.Shared\Qsi.Shared.projitems" Label="Shared"/>
 
 </Project>
