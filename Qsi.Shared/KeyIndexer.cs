@@ -3,7 +3,7 @@ using Qsi.Tree.Data;
 
 namespace Qsi.Shared
 {
-    internal sealed class KeyIndexer<T> where T : class
+    internal sealed class KeyIndexer<T>
     {
         private readonly Key<T> _key;
 
@@ -14,7 +14,7 @@ namespace Qsi.Shared
 
         public T this[IQsiTreeNode node]
         {
-            get => node.UserData?.GetData(_key);
+            get => node.UserData == null ? default : node.UserData.GetData(_key);
             set => node.UserData?.PutData(_key, value);
         }
     }

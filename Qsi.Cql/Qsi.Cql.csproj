@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <RootNamespace>Qsi.Cassandra</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Qsi\Qsi.csproj" />
+    </ItemGroup>
+
+    <Import Project="..\Qsi.Shared\Qsi.Shared.projitems" Label="Shared" />
+
+</Project>

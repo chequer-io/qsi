@@ -19,6 +19,7 @@ using Qsi.Debugger.Controls;
 using Qsi.Debugger.Models;
 using Qsi.Debugger.Utilities;
 using Qsi.Debugger.Vendor;
+using Qsi.Debugger.Vendor.Cql;
 using Qsi.Debugger.Vendor.JSql;
 using Qsi.Debugger.Vendor.MySql;
 using Qsi.Debugger.Vendor.Oracle;
@@ -62,7 +63,8 @@ namespace Qsi.Debugger
                 ["SQL Server 2012"] = new Lazy<VendorDebugger>(() => new SqlServerDebugger(TransactSqlVersion.Version110)),
                 ["SQL Server 2017"] = new Lazy<VendorDebugger>(() => new SqlServerDebugger(TransactSqlVersion.Version140)),
                 ["SQL Server 2019"] = new Lazy<VendorDebugger>(() => new SqlServerDebugger(TransactSqlVersion.Version150)),
-                ["Phoenix 5.0.0"] = new Lazy<VendorDebugger>(() => new PhoenixSqlDebugger())
+                ["Phoenix 5.0.0"] = new Lazy<VendorDebugger>(() => new PhoenixSqlDebugger()),
+                ["CassandraQL 3"] = new Lazy<VendorDebugger>(() => new CqlDebugger())
             };
 
             _cbLanguages = this.Find<ComboBox>("cbLanguages");
