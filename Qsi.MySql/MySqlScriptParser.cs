@@ -9,9 +9,9 @@ namespace Qsi.MySql
 {
     public class MySqlScriptParser : CommonScriptParser
     {
-        private const string _delimiter = "DELIMITER";
-        private const string _deallocate = "DEALLOCATE";
-        private const string _prepare = "PREPARE";
+        private const string delimiter = "DELIMITER";
+        private const string deallocate = "DEALLOCATE";
+        private const string prepare = "PREPARE";
 
         private readonly Regex _delimiterPattern = new Regex(@"\G\S+(?=\s|$)");
 
@@ -22,7 +22,7 @@ namespace Qsi.MySql
             if (tokens.Count > 1 &&
                 tokens[^1].Type == TokenType.WhiteSpace &&
                 tokens[^2].Type == TokenType.Keyword &&
-                _delimiter.Equals(context.Cursor.Value[tokens[^2].Span], StringComparison.OrdinalIgnoreCase) &&
+                delimiter.Equals(context.Cursor.Value[tokens[^2].Span], StringComparison.OrdinalIgnoreCase) &&
                 tokens.SkipLast(2).All(t => TokenType.Trivia.HasFlag(t.Type)))
             {
                 var match = _delimiterPattern.Match(context.Cursor.Value, context.Cursor.Index);
@@ -43,8 +43,8 @@ namespace Qsi.MySql
         protected override QsiScriptType GetSuitableType(CommonScriptCursor cursor, IReadOnlyList<Token> tokens, Token[] leadingTokens)
         {
             if (leadingTokens.Length >= 2 &&
-                _deallocate.Equals(cursor.Value[leadingTokens[0].Span], StringComparison.OrdinalIgnoreCase) &&
-                _prepare.Equals(cursor.Value[leadingTokens[1].Span], StringComparison.OrdinalIgnoreCase))
+                deallocate.Equals(cursor.Value[leadingTokens[0].Span], StringComparison.OrdinalIgnoreCase) &&
+                prepare.Equals(cursor.Value[leadingTokens[1].Span], StringComparison.OrdinalIgnoreCase))
             {
                 return QsiScriptType.DropPrepare;
             }
