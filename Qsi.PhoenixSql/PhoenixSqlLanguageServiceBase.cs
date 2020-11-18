@@ -17,7 +17,7 @@ namespace Qsi.PhoenixSql
 
         public override IQsiTreeDeparser CreateTreeDeparser()
         {
-            throw new System.NotImplementedException();
+            return new PhoenixSqlDeparser();
         }
 
         public override IQsiScriptParser CreateScriptParser()
