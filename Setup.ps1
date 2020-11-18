@@ -7,4 +7,4 @@ if (Get-Module Antlr) {
 Import-Module ".\Build\Antlr.ps1"
 
 Antlr-Generate Qsi.MySql
-Antlr-Generate Qsi.Cassandra
+Antlr-Generate Qsi.Cql

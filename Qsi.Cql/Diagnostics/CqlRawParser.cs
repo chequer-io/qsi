@@ -1,6 +1,6 @@
 ﻿using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
-using Qsi.Cassandra.Internal;
+using Qsi.Cql.Internal;
 using Qsi.Diagnostics.Antlr;
 
 namespace Qsi.Cassandra.Diagnostics
@@ -12,9 +12,9 @@ namespace Qsi.Cassandra.Diagnostics
             var stream = new AntlrInputStream(input);
             var lexer = new CqlLexer(stream);
             var tokens = new CommonTokenStream(lexer);
-            var parser = new Internal.CqlParser(tokens);
+            var parser = new Cql.Internal.CqlParser(tokens);
 
-            return (parser.cqls(), parser.RuleNames);
+            return (parser.root(), parser.RuleNames);
         }
     }
 }

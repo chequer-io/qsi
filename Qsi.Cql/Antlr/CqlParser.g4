@@ -1,1314 +1,673 @@
-/*
- * The MIT License (MIT)
- *
- * Copyright (c) 2014 by Domagoj Kovačević
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
- * associated documentation files (the "Software"), to deal in the Software without restriction,
- * including without limitation the rights to use, copy, modify, merge, publish, distribute,
- * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or
- * substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
- * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
- * Project : cql-parser; an ANTLR4 grammar for Apache Cassandra CQL  https://github.com/kdcro101cql-parser
- */
-
 parser grammar CqlParser;
 
-options
-   { tokenVocab = CqlLexer; }
+options { 
+    tokenVocab=CqlLexer;
+}
 
 root
-   : cqls? MINUSMINUS? eof
-   ;
-
-cqls
-   : (cql MINUSMINUS? statementSeparator | empty)* (cql (MINUSMINUS? statementSeparator)? | empty)
-   ;
-
-statementSeparator
-   : SEMI
-   ;
-
-empty
-   : statementSeparator
-   ;
-
-cql
-   : alterKeyspace
-   | alterMaterializedView
-   | alterRole
-   | alterTable
-   | alterType
-   | alterUser
-   | applyBatch
-   | createAggregate
-   | createFunction
-   | createIndex
-   | createKeyspace
-   | createMaterializedView
-   | createRole
-   | createTable
-   | createTrigger
-   | createType
-   | createUser
-   | delete
-   | dropAggregate
-   | dropFunction
-   | dropIndex
-   | dropKeyspace
-   | dropMaterializedView
-   | dropRole
-   | dropTable
-   | dropTrigger
-   | dropType
-   | dropUser
-   | grant
-   | insert
-   | listPermissions
-   | listRoles
-   | revoke
-   | select
-   | truncate
-   | update
-   | use
-   ;
-
-revoke
-   : kwRevoke priviledge kwOn resource kwFrom role
-   ;
-
-listUsers
-   : kwList kwUsers
-   ;
-
-listRoles
-   : kwList kwRoles (kwOf role)? kwNorecursive?
-   ;
-
-listPermissions
-   : kwList priviledge (kwOn resource)? (kwOf role)?
-   ;
-
-grant
-   : kwGrant priviledge kwOn resource kwTo role
-   ;
-
-priviledge
-   : (kwAll | kwAllPermissions)
-   | kwAlter
-   | kwAuthorize
-   | kwDescibe
-   | kwExecute
-   | kwCreate
-   | kwDrop
-   | kwModify
-   | kwSelect
-   ;
-
-resource
-   : kwAll kwFunctions
-   | kwAll kwFunctions kwIn kwKeyspace keyspace
-   | kwFunction (keyspace DOT)? function
-   | kwAll kwKeyspaces
-   | kwKeyspace keyspace
-   | (kwTable)? (keyspace DOT)? table
-   | kwAll kwRoles
-   | kwRole role
-   ;
-
-createUser
-   : kwCreate kwUser ifNotExist? user kwWith kwPassword stringLiteral (kwSuperuser | kwNosuperuser)?
-   ;
-
-createRole
-   : kwCreate kwRole ifNotExist? role roleWith?
-   ;
-
-createType
-   : kwCreate kwType ifNotExist? (keyspace DOT)? type syntaxBracketLr typeMemberColumnList syntaxBracketRr
-   ;
-
-typeMemberColumnList
-   : column dataType (syntaxComma column dataType)*
-   ;
-
-createTrigger
-   : kwCreate kwTrigger ifNotExist? (keyspace DOT)? trigger kwUsing triggerClass
-   ;
-
-createMaterializedView
-   : kwCreate kwMaterialized kwView ifNotExist? (keyspace DOT)? materializedView kwAs kwSelect columnList kwFrom (keyspace DOT)? table materializedViewWhere kwPrimary kwKey syntaxBracketLr columnList syntaxBracketRr (kwWith materializedViewOptions)?
-   ;
-
-materializedViewWhere
-   : kwWhere columnNotNullList (kwAnd relationElements)?
-   ;
-
-columnNotNullList
-   : columnNotNull (kwAnd columnNotNull)*
-   ;
-
-columnNotNull
-   : column kwIs kwNot kwNull
-   ;
-
-materializedViewOptions
-   : tableOptions
-   | tableOptions kwAnd clusteringOrder
-   | clusteringOrder
-   ;
-
-// CREATE MATERIALIZED VIEW [IF NOT EXISTS] [keyspace_name.] view_name
-// AS SELECT column_list
-// FROM [keyspace_name.] base_table_name
-// WHERE column_name IS NOT NULL [AND column_name IS NOT NULL ...]
-//       [AND relation...]
-// PRIMARY KEY ( column_list )
-// [WITH [table_properties]
-//       [AND CLUSTERING ORDER BY (cluster_column_name order_option )]]
-createKeyspace
-   : kwCreate kwKeyspace ifNotExist? keyspace kwWith kwReplication OPERATOR_EQ syntaxBracketLc replicationList syntaxBracketRc (kwAnd durableWrites)?
-   ;
-
-createFunction
-   : kwCreate orReplace? kwFunction ifNotExist? (keyspace DOT)? function syntaxBracketLr paramList? syntaxBracketRr returnMode kwReturns dataType kwLanguage language kwAs codeBlock
-   ;
-
-codeBlock
-   : CODE_BLOCK
-   ;
-
-paramList
-   : param (syntaxComma param)*
-   ;
-
-returnMode
-   : (kwCalled | kwReturns kwNull) kwOn kwNull kwInput
-   ;
-
-createAggregate
-   : kwCreate orReplace? kwAggregate ifNotExist? (keyspace DOT)? aggregate syntaxBracketLr dataType syntaxBracketRr kwSfunc function kwStype dataType kwFinalfunc function kwInitcond initCondDefinition
-   ;
-
-// paramList
-// :
-initCondDefinition
-   : constant
-   | initCondList
-   | initCondListNested
-   | initCondHash
-   ;
-
-initCondHash
-   : syntaxBracketLc initCondHashItem (syntaxComma initCondHashItem)* syntaxBracketRc
-   ;
-
-initCondHashItem
-   : hashKey COLON initCondDefinition
-   ;
-
-initCondListNested
-   : syntaxBracketLr initCondList (syntaxComma constant | initCondList)* syntaxBracketRr
-   ;
-
-initCondList
-   : syntaxBracketLr constant (syntaxComma constant)* syntaxBracketRr
-   ;
-
-orReplace
-   : kwOr kwReplace
-   ;
-
-alterUser
-   : kwAlter kwUser user kwWith userPassword userSuperUser?
-   ;
-
-userPassword
-   : kwPassword stringLiteral
-   ;
-
-userSuperUser
-   : kwSuperuser
-   | kwNosuperuser
-   ;
-
-alterType
-   : kwAlter kwType (keyspace DOT)? type alterTypeOperation
-   ;
-
-alterTypeOperation
-   : alterTypeAlterType
-   | alterTypeAdd
-   | alterTypeRename
-   ;
-
-alterTypeRename
-   : kwRename alterTypeRenameList
-   ;
-
-alterTypeRenameList
-   : alterTypeRenameItem (kwAnd alterTypeRenameItem)*
-   ;
-
-alterTypeRenameItem
-   : column kwTo column
-   ;
-
-alterTypeAdd
-   : kwAdd column dataType (syntaxComma column dataType)*
-   ;
-
-alterTypeAlterType
-   : kwAlter column kwType dataType
-   ;
-
-alterTable
-   : kwAlter kwTable (keyspace DOT)? table alterTableOperation
-   ;
-
-alterTableOperation
-   : alterTableAdd
-   | alterTableDropColumns
-   | alterTableDropColumns
-   | alterTableDropCompactStorage
-   | alterTableRename
-   | alterTableWith
-   ;
-
-alterTableWith
-   : kwWith tableOptions
-   ;
-
-alterTableRename
-   : kwRename column kwTo column
-   ;
-
-alterTableDropCompactStorage
-   : kwDrop kwCompact kwStorage
-   ;
-
-alterTableDropColumns
-   : kwDrop alterTableDropColumnList
-   ;
-
-alterTableDropColumnList
-   : column (syntaxComma column)*
-   ;
-
-alterTableAdd
-   : kwAdd alterTableColumnDefinition
-   ;
-
-alterTableColumnDefinition
-   : column dataType (syntaxComma column dataType)*
-   ;
-
-alterRole
-   : kwAlter kwRole role roleWith?
-   ;
-
-roleWith
-   : kwWith (roleWithOptions (kwAnd roleWithOptions)*)
-   ;
-
-roleWithOptions
-   : kwPassword OPERATOR_EQ stringLiteral
-   | kwLogin OPERATOR_EQ booleanLiteral
-   | kwSuperuser OPERATOR_EQ booleanLiteral
-   | kwOptions OPERATOR_EQ optionHash
-   ;
-
-alterMaterializedView
-   : kwAlter kwMaterialized kwView (keyspace DOT)? materializedView (kwWith tableOptions)?
-   ;
-
-dropUser
-   : kwDrop kwUser ifExist? user
-   ;
-
-dropType
-   : kwDrop kwType ifExist? (keyspace DOT)? type
-   ;
-
-dropMaterializedView
-   : kwDrop kwMaterialized kwView ifExist? (keyspace DOT)? materializedView
-   ;
-
-dropAggregate
-   : kwDrop kwAggregate ifExist? (keyspace DOT)? aggregate
-   ;
-
-dropFunction
-   : kwDrop kwFunction ifExist? (keyspace DOT)? function
-   ;
-
-dropTrigger
-   : kwDrop kwTrigger ifExist? trigger kwOn (keyspace DOT)? table
-   ;
-
-dropRole
-   : kwDrop kwRole ifExist? role
-   ;
-
-dropTable
-   : kwDrop kwTable ifExist? (keyspace DOT)? table
-   ;
-
-dropKeyspace
-   : kwDrop kwKeyspace ifExist? keyspace
-   ;
-
-dropIndex
-   : kwDrop kwIndex ifExist? (keyspace DOT)? indexName
-   ;
-
-createTable
-   : kwCreate kwTable ifNotExist? (keyspace DOT)? table syntaxBracketLr columnDefinitionList syntaxBracketRr withElement?
-   ;
-
-withElement
-   : kwWith tableOptions? clusteringOrder?
-   ;
-
-clusteringOrder
-   : kwClustering kwOrder kwBy syntaxBracketLr column orderDirection? syntaxBracketRr
-   ;
-
-tableOptions
-   : tableOptionItem (kwAnd tableOptionItem)*
-   ;
-
-tableOptionItem
-   : tableOptionName OPERATOR_EQ tableOptionValue
-   | tableOptionName OPERATOR_EQ optionHash
-   ;
-
-tableOptionName
-   : OBJECT_NAME
-   ;
-
-tableOptionValue
-   : stringLiteral
-   | floatLiteral
-   ;
-
-optionHash
-   : syntaxBracketLc optionHashItem (syntaxComma optionHashItem)* syntaxBracketRc
-   ;
-
-optionHashItem
-   : optionHashKey COLON optionHashValue
-   ;
-
-optionHashKey
-   : stringLiteral
-   ;
-
-optionHashValue
-   : stringLiteral
-   | floatLiteral
-   ;
-
-columnDefinitionList
-   : (columnDefinition) (syntaxComma columnDefinition)* (syntaxComma primaryKeyElement)?
-   ;
-
+    : cqlStatements? MINUSMINUS? EOF
+    ;
+
+cqlStatements
+    : (cqlStatement MINUSMINUS? SEMI? | emptyStatement)*
+    (cqlStatement (MINUSMINUS? SEMI)? | emptyStatement)
+    ;
+
+emptyStatement
+    : SEMI
+    ;
+
+cqlStatement
+    : selectStatement
+//    | insertStatement
+//    | updateStatement
+//    | deleteStatement
+//    | createMaterializedViewStatement
+    ;
+
+selectStatement
+    :
+        K_SELECT K_JSON? selectClause
+        K_FROM columnFamilyName
+        ( K_WHERE whereClause )?
+        ( K_GROUP K_BY groupByClause ( ',' groupByClause )* )?
+        ( K_ORDER K_BY orderByClause ( ',' orderByClause )* )?
+        ( K_PER K_PARTITION K_LIMIT intValue )?
+        ( K_LIMIT intValue )?
+        ( K_ALLOW K_FILTERING )?
+    ;
+
+selectClause
+    : K_DISTINCT? selectors
+    ;
+
+selectors
+    : selector (',' selector)*
+    | '*'
+    ;
+
+selector
+    : unaliasedSelector alias?
+    ;
+
+unaliasedSelector
+    : selectionAddition
+    ;
+
+selectionAddition
+    : l=selectionMultiplication ( op=(PLUS | MINUS) r=selectionMultiplication )*
+    ;
+
+selectionMultiplication
+    : l=selectionGroup ( op=(MULTIPLY | DIVIDE | MODULUS) r=selectionGroup )*
+    ;
+
+selectionGroup
+    : selectionGroupWithField
+    | selectionGroupWithoutField
+    | '-' selectionGroup
+    ;
+
+selectionGroupWithField
+    : selectionGroupWithoutField selectorModifier
+    ;
+
+selectorModifier
+    : fieldSelectorModifier selectorModifier?
+    | '[' collectionSubSelection ']' selectorModifier?
+    ;
+
+fieldSelectorModifier
+    : '.' fident
+    ;
+
+collectionSubSelection
+    : ( term ( RANGE term? )?
+      | RANGE term
+      )
+     ;
+
+selectionGroupWithoutField
+    : simpleUnaliasedSelector
+    | selectionTypeHint
+    | selectionTupleOrNestedSelector
+    | selectionList
+    | selectionMapOrSet
+    // UDTs are equivalent to maps from the syntax point of view, so the final decision will be done in Selectable.WithMapOrUdt
+    ;
+
+selectionTypeHint
+    : '(' comparatorType ')' selectionGroupWithoutField
+    ;
+
+selectionList
+    : '[' ( unaliasedSelector ( ',' unaliasedSelector )* )? ']'
+    ;
+
+selectionMapOrSet
+    : '{' unaliasedSelector ( selectionMap | selectionSet ) '}'
+    | '{' '}'
+    ;
+
+selectionMap
+      : ':' unaliasedSelector ( ',' unaliasedSelector ':' unaliasedSelector )*
+      ;
+
+selectionSet
+      : ( ',' unaliasedSelector )*
+      ;
+
+selectionTupleOrNestedSelector
+    : '(' unaliasedSelector (',' unaliasedSelector )* ')'
+    ;
+
+/*
+ * A single selection. The core of it is selecting a column, but we also allow any term and function, as well as
+ * sub-element selection for UDT.
+ */
+simpleUnaliasedSelector
+    : sident
+    | selectionLiteral
+    | selectionFunction
+    ;
+
+selectionFunction
+    : K_COUNT '(' '*' ')'
+    | K_WRITETIME '(' c=sident ')'
+    | K_TTL       '(' c=sident ')'
+    | K_CAST      '(' sn=unaliasedSelector K_AS t=native_type ')'
+    | functionName selectionFunctionArgs
+    ;
+
+selectionLiteral
+    : constant
+    | K_NULL
+    | ':' noncol_ident
+    | QMARK
+    ;
+
+selectionFunctionArgs
+    : '(' (s1=unaliasedSelector
+          ( ',' sn=unaliasedSelector )*)?
+      ')'
+    ;
+
+alias
+    : K_AS noncol_ident
+    ;
+
+sident
+    : IDENT
+    | QUOTED_NAME
+    | unreserved_keyword
+    ;
+
+whereClause
+    : relationOrExpression (K_AND relationOrExpression)*
+    ;
+
+relationOrExpression
+    : relation
+    | customIndexExpression
+    ;
+
+customIndexExpression
+    : K_EXPR '(' idxName ',' t=term ')'
+    ;
+
+orderByClause
+    : cident (K_ASC | K_DESC)?
+    ;
+
+groupByClause
+    : cident
+    ;
+
+//insertStatement
+//    : // TODO
+//    ;
 //
-columnDefinition
-   : column dataType primaryKeyColumn?
-   ;
-
+//updateStatement
+//    : // TODO
+//    ;
 //
-primaryKeyColumn
-   : kwPrimary kwKey
-   ;
+//deleteStatement
+//    : // TODO
+//    ;
+//
+//createMaterializedViewStatement
+//    : // TODO
+//    ;
 
-primaryKeyElement
-   : kwPrimary kwKey syntaxBracketLr primaryKeyDefinition syntaxBracketRr
-   ;
+fullMapLiteral
+    : '{' ( k1=term ':' v1=term ( ',' kn=term ':' vn=term )* )?
+      '}'
+    ;
 
-primaryKeyDefinition
-   : singlePrimaryKey
-   | compoundKey
-   | compositeKey
-   ;
+setOrMapLiteral
+    : m=mapLiteral
+    | s=setLiteral
+    ;
 
-singlePrimaryKey
-   : column
-   ;
+setLiteral
+    : ( ',' tn=term )*
+    ;
 
-compoundKey
-   : partitionKey (syntaxComma clusteringKeyList)
-   ;
+mapLiteral
+    : ':' v=term ( ',' kn=term ':' vn=term )*
+    ;
 
-compositeKey
-   : syntaxBracketLr partitionKeyList syntaxBracketRr (syntaxComma clusteringKeyList)
-   ;
+collectionLiteral
+    : l=listLiteral
+    | '{' t=term v=setOrMapLiteral '}'
+    // Note that we have an ambiguity between maps and set for "{}". So we force it to a set literal,
+    // and deal with it later based on the type of the column (SetLiteral.java).
+    | '{' '}'
+    ;
 
-partitionKeyList
-   : (partitionKey) (syntaxComma partitionKey)*
-   ;
+listLiteral
+    : '[' ( t1=term ( ',' tn=term )* )? ']'
+    ;
 
-clusteringKeyList
-   : (clusteringKey) (syntaxComma clusteringKey)*
-   ;
+usertypeLiteral
+    // We don't allow empty literals because that conflicts with sets/maps and is currently useless since we don't allow empty user types
+    : '{' k1=fident ':' v1=term ( ',' kn=fident ':' vn=term )* '}'
+    ;
 
-partitionKey
-   : column
-   ;
+tupleLiteral
+    : '(' t1=term ( ',' tn=term )* ')'
+    ;
 
-clusteringKey
-   : column
-   ;
+value
+    : c=constant
+    | l=collectionLiteral
+    | u=usertypeLiteral
+    | t=tupleLiteral
+    | K_NULL
+    | ':' id=noncol_ident
+    | QMARK
+    ;
 
-applyBatch
-   : kwApply kwBatch
-   ;
+intValue
+    : t=INTEGER
+    | ':' id=noncol_ident
+    | QMARK
+    ;
 
-beginBatch
-   : kwBegin batchType? kwBatch usingTimestampSpec?
-   ;
+functionName
+    : (keyspaceName '.')? allowedFunctionName
+    ;
 
-batchType
-   : kwLogged
-   | kwUnlogged
-   ;
+allowedFunctionName
+    : IDENT
+    | QUOTED_NAME
+    | unreserved_function_keyword
+    | K_TOKEN
+    | K_COUNT
+    ;
 
-alterKeyspace
-   : kwAlter kwKeyspace keyspace kwWith kwReplication OPERATOR_EQ syntaxBracketLc replicationList syntaxBracketRc (kwAnd durableWrites)?
-   ;
+/** DEFINITIONS **/
 
-replicationList
-   : (replicationListItem) (syntaxComma replicationListItem)*
-   ;
+// Like ident, but for case where we take a column name that can be the legacy super column empty name. Importantly,
+// this should not be used in DDL statements, as we don't want to let users create such column.
+cident
+    : EMPTY_QUOTED_NAME
+    | ident
+    ;
 
-replicationListItem
-   : STRING_LITERAL COLON STRING_LITERAL
-   | STRING_LITERAL COLON DECIMAL_LITERAL
-   ;
+ident
+    : IDENT
+    | QUOTED_NAME
+    | unreserved_keyword
+    ;
 
-durableWrites
-   : kwDurableWrites OPERATOR_EQ booleanLiteral
-   ;
+fident
+    : IDENT
+    | QUOTED_NAME
+    | unreserved_keyword
+    ;
 
-use
-   : kwUse keyspace
-   ;
+// Identifiers that do not refer to columns
+noncol_ident
+    : IDENT
+    | QUOTED_NAME
+    | unreserved_keyword
+    ;
 
-truncate
-   : kwTruncate (kwTable)? (keyspace DOT)? table
-   ;
-
-createIndex
-   : kwCreate kwIndex ifNotExist? indexName? kwOn (keyspace DOT)? table syntaxBracketLr indexColumnSpec syntaxBracketRr
-   ;
+// Keyspace & Column family names
+keyspaceName
+    : ksName |
+    ;
 
 indexName
-   : OBJECT_NAME
-   | stringLiteral
-   ;
+    : (ksName DOT)? idxName
+    ;
 
-indexColumnSpec
-   : column
-   | indexKeysSpec
-   | indexEntriesSSpec
-   | indexFullSpec
-   ;
+columnFamilyName
+    : (ksName DOT)? cfName
+    ;
 
-indexKeysSpec
-   : kwKeys syntaxBracketLr OBJECT_NAME syntaxBracketRr
-   ;
+userTypeName
+    : (noncol_ident DOT)? non_type_ident
+    ;
 
-indexEntriesSSpec
-   : kwEntries syntaxBracketLr OBJECT_NAME syntaxBracketRr
-   ;
+userOrRoleName
+    : roleName
+    ;
 
-indexFullSpec
-   : kwFull syntaxBracketLr OBJECT_NAME syntaxBracketRr
-   ;
+ksName
+    : IDENT
+    | QUOTED_NAME
+    | unreserved_keyword
+    | QMARK// {AddRecognitionError("Bind variables cannot be used for keyspace names");}
+    ;
 
-delete
-   : beginBatch? kwDelete deleteColumnList? fromSpec usingTimestampSpec? whereSpec (ifExist | ifSpec)?
-   ;
+cfName
+    : IDENT
+    | QUOTED_NAME
+    | unreserved_keyword
+    | QMARK// {AddRecognitionError("Bind variables cannot be used for table names");}
+    ;
 
-deleteColumnList
-   : (deleteColumnItem) (syntaxComma deleteColumnItem)*
-   ;
+idxName
+    : IDENT
+    | QUOTED_NAME
+    | unreserved_keyword
+    | QMARK// {AddRecognitionError("Bind variables cannot be used for index names");}
+    ;
 
-deleteColumnItem
-   : OBJECT_NAME
-   | OBJECT_NAME LS_BRACKET (stringLiteral | decimalLiteral) RS_BRACKET
-   ;
-
-update
-   : beginBatch? kwUpdate (keyspace DOT)? table usingTtlTimestamp? kwSet assignments whereSpec (ifExist | ifSpec)?
-   ;
-
-ifSpec
-   : kwIf ifConditionList
-   ;
-
-ifConditionList
-   : (ifCondition) (kwAnd ifCondition)*
-   ;
-
-ifCondition
-   : OBJECT_NAME OPERATOR_EQ constant
-   ;
-
-assignments
-   : (assignmentElement) (syntaxComma assignmentElement)*
-   ;
-
-assignmentElement
-   : OBJECT_NAME OPERATOR_EQ (constant | assignmentMap | assignmentSet | assignmentList)
-   | OBJECT_NAME OPERATOR_EQ OBJECT_NAME (PLUS | MINUS) decimalLiteral
-   | OBJECT_NAME OPERATOR_EQ OBJECT_NAME (PLUS | MINUS) assignmentSet
-   | OBJECT_NAME OPERATOR_EQ assignmentSet (PLUS | MINUS) OBJECT_NAME
-   | OBJECT_NAME OPERATOR_EQ OBJECT_NAME (PLUS | MINUS) assignmentMap
-   | OBJECT_NAME OPERATOR_EQ assignmentMap (PLUS | MINUS) OBJECT_NAME
-   | OBJECT_NAME OPERATOR_EQ OBJECT_NAME (PLUS | MINUS) assignmentList
-   | OBJECT_NAME OPERATOR_EQ assignmentList (PLUS | MINUS) OBJECT_NAME
-   | OBJECT_NAME syntaxBracketLs decimalLiteral syntaxBracketRs OPERATOR_EQ constant
-   ;
-
-assignmentSet
-   : syntaxBracketLc (constant (syntaxComma constant)*)?  syntaxBracketRc
-   ;
-
-assignmentMap
-   : syntaxBracketLc (constant syntaxColon constant) (constant syntaxColon constant)* syntaxBracketRc
-   ;
-
-assignmentList
-   : syntaxBracketLs constant (syntaxComma constant)* syntaxBracketRs
-   ;
-
-assignmentTuple
-   : syntaxBracketLr (
-         constant ((syntaxComma constant)* | (syntaxComma assignmentTuple)*) |
-         assignmentTuple (syntaxComma assignmentTuple)*
-     ) syntaxBracketRr
-   ;
-
-insert
-   : beginBatch? kwInsert kwInto (keyspace DOT)? table insertColumnSpec? insertValuesSpec ifNotExist? usingTtlTimestamp?
-   ;
-
-usingTtlTimestamp
-   : kwUsing ttl
-   | kwUsing ttl kwAnd timestamp
-   | kwUsing timestamp
-   | kwUsing timestamp kwAnd ttl
-   ;
-
-timestamp
-   : kwTimestamp decimalLiteral
-   ;
-
-ttl
-   : kwTtl decimalLiteral
-   ;
-
-usingTimestampSpec
-   : kwUsing timestamp
-   ;
-
-ifNotExist
-   : kwIf kwNot kwExists
-   ;
-
-ifExist
-   : kwIf kwExists
-   ;
-
-insertValuesSpec
-   : kwValues '(' expressionList ')'
-   | kwJson constant
-   ;
-
-insertColumnSpec
-   : '(' columnList ')'
-   ;
-
-columnList
-   : column (syntaxComma column)*
-   ;
-
-expressionList
-   : expression (syntaxComma expression)*
-   ;
-
-expression
-   : constant
-   | assignmentMap
-   | assignmentSet
-   | assignmentList
-   | assignmentTuple
-   ;
-
-select
-   : kwSelect distinctSpec? kwJson? selectElements fromSpec whereSpec? orderSpec? limitSpec? allowFilteringSpec?
-   ;
-
-allowFilteringSpec
-   : kwAllow kwFiltering
-   ;
-
-limitSpec
-   : kwLimit decimalLiteral
-   ;
-
-fromSpec
-   : kwFrom fromSpecElement
-   ;
-
-fromSpecElement
-   : OBJECT_NAME
-   | OBJECT_NAME '.' OBJECT_NAME
-   ;
-
-orderSpec
-   : kwOrder kwBy orderSpecElement
-   ;
-
-orderSpecElement
-   : OBJECT_NAME (kwAsc | kwDesc)?
-   ;
-
-whereSpec
-   : kwWhere relationElements
-   ;
-
-distinctSpec
-   : kwDistinct
-   ;
-
-selectElements
-   : (star = '*' | selectElement) (syntaxComma selectElement)*
-   ;
-
-selectElement
-   : OBJECT_NAME '.' '*'
-   | OBJECT_NAME (kwAs OBJECT_NAME)?
-   | functionCall (kwAs OBJECT_NAME)?
-   ;
-
-relationElements
-   : (relationElement) (kwAnd relationElement)*
-   ;
-
-relationElement
-   : OBJECT_NAME (OPERATOR_EQ | OPERATOR_LT | OPERATOR_GT | OPERATOR_LTE | OPERATOR_GTE) constant
-   | OBJECT_NAME '.' OBJECT_NAME (OPERATOR_EQ | OPERATOR_LT | OPERATOR_GT | OPERATOR_LTE | OPERATOR_GTE) constant
-   | functionCall (OPERATOR_EQ | OPERATOR_LT | OPERATOR_GT | OPERATOR_LTE | OPERATOR_GTE) constant
-   | functionCall (OPERATOR_EQ | OPERATOR_LT | OPERATOR_GT | OPERATOR_LTE | OPERATOR_GTE) functionCall
-   | OBJECT_NAME kwIn '(' functionArgs? ')'
-   | '(' OBJECT_NAME (syntaxComma OBJECT_NAME)* ')' kwIn '(' assignmentTuple (syntaxComma assignmentTuple)* ')'
-   | '(' OBJECT_NAME (syntaxComma OBJECT_NAME)* ')' (OPERATOR_EQ | OPERATOR_LT | OPERATOR_GT | OPERATOR_LTE | OPERATOR_GTE) ( assignmentTuple (syntaxComma assignmentTuple)* )
-   | relalationContainsKey
-   | relalationContains
-   ;
-
-relalationContains
-   : OBJECT_NAME kwContains constant
-   ;
-
-relalationContainsKey
-   : OBJECT_NAME (kwContains kwKey) constant
-   ;
-
-functionCall
-   : OBJECT_NAME '(' STAR ')'
-   | OBJECT_NAME '(' functionArgs? ')'
-   ;
-
-functionArgs
-   : (constant | OBJECT_NAME | functionCall) (syntaxComma (constant | OBJECT_NAME | functionCall))*
-   ;
+roleName
+    : IDENT
+    | QUOTED_NAME
+    | unreserved_keyword
+    | QMARK// {AddRecognitionError("Bind variables cannot be used for role names");}
+    ;
 
 constant
-   : UUID
-   | stringLiteral
-   | decimalLiteral
-   | floatLiteral
-   | hexadecimalLiteral
-   | booleanLiteral
-   | codeBlock
-   | kwNull
-   ;
-
-decimalLiteral
-   : DECIMAL_LITERAL
-   ;
-
-floatLiteral
-   : DECIMAL_LITERAL
-   | FLOAT_LITERAL
-   ;
-
-stringLiteral
-   : STRING_LITERAL
-   ;
-
-booleanLiteral
-   : K_TRUE
-   | K_FALSE
-   ;
-
-hexadecimalLiteral
-   : HEXADECIMAL_LITERAL
-   ;
-
-keyspace
-   : OBJECT_NAME
-   | DQUOTE OBJECT_NAME DQUOTE
-   ;
-
-table
-   : OBJECT_NAME
-   | DQUOTE OBJECT_NAME DQUOTE
-   ;
-
-column
-   : OBJECT_NAME
-   | DQUOTE OBJECT_NAME DQUOTE
-   ;
-
-dataType
-   : dataTypeName dataTypeDefinition?
-   ;
-
-dataTypeName
-   : OBJECT_NAME
-   | K_TIMESTAMP
-   | K_SET
-   | K_ASCII
-   | K_BIGINT
-   | K_BLOB
-   | K_BOOLEAN
-   | K_COUNTER
-   | K_DATE
-   | K_DECIMAL
-   | K_DOUBLE
-   | K_FLOAT
-   | K_FROZEN
-   | K_INET
-   | K_INT
-   | K_LIST
-   | K_MAP
-   | K_SMALLINT
-   | K_TEXT
-   | K_TIME
-   | K_TIMEUUID
-   | K_TINYINT
-   | K_TUPLE
-   | K_VARCHAR
-   | K_VARINT
-   | K_TIMESTAMP
-   | K_UUID
-   ;
-
-dataTypeDefinition
-   : syntaxBracketLa dataTypeName (syntaxComma dataTypeName)* syntaxBracketRa
-   ;
-
-orderDirection
-   : kwAsc
-   | kwDesc
-   ;
-
-role
-   : OBJECT_NAME
-   ;
-
-trigger
-   : OBJECT_NAME
-   ;
-
-triggerClass
-   : stringLiteral
-   ;
-
-materializedView
-   : OBJECT_NAME
-   ;
-
-type
-   : OBJECT_NAME
-   ;
-
-aggregate
-   : OBJECT_NAME
-   ;
+    : STRING_LITERAL
+    | INTEGER
+    | FLOAT
+    | BOOLEAN
+    | DURATION
+    | UUID
+    | HEXNUMBER
+    | (
+        (K_POSITIVE_NAN | K_NEGATIVE_NAN)
+        | K_POSITIVE_INFINITY
+        | K_NEGATIVE_INFINITY
+      )
+    ;
 
 function
-   : OBJECT_NAME
-   ;
-
-language
-   : OBJECT_NAME
-   ;
-
-user
-   : OBJECT_NAME
-   ;
-
-password
-   : stringLiteral
-   ;
-
-hashKey
-   : OBJECT_NAME
-   ;
-
-param
-   : paramName dataType
-   ;
-
-paramName
-   : OBJECT_NAME
-   ;
-
-kwAdd
-   : K_ADD
-   ;
-
-kwAggregate
-   : K_AGGREGATE
-   ;
-
-kwAll
-   : K_ALL
-   ;
-
-kwAllPermissions
-   : K_ALL K_PERMISSIONS
-   ;
-
-kwAllow
-   : K_ALLOW
-   ;
-
-kwAlter
-   : K_ALTER
-   ;
-
-kwAnd
-   : K_AND
-   ;
-
-kwApply
-   : K_APPLY
-   ;
-
-kwAs
-   : K_AS
-   ;
-
-kwAsc
-   : K_ASC
-   ;
-
-kwAuthorize
-   : K_AUTHORIZE
-   ;
-
-kwBatch
-   : K_BATCH
-   ;
-
-kwBegin
-   : K_BEGIN
-   ;
-
-kwBy
-   : K_BY
-   ;
-
-kwCalled
-   : K_CALLED
-   ;
-
-kwClustering
-   : K_CLUSTERING
-   ;
-
-kwCompact
-   : K_COMPACT
-   ;
-
-kwContains
-   : K_CONTAINS
-   ;
-
-kwCreate
-   : K_CREATE
-   ;
-
-kwDelete
-   : K_DELETE
-   ;
-
-kwDesc
-   : K_DESC
-   ;
-
-kwDescibe
-   : K_DESCRIBE
-   ;
-
-kwDistinct
-   : K_DISTINCT
-   ;
-
-kwDrop
-   : K_DROP
-   ;
-
-kwDurableWrites
-   : K_DURABLE_WRITES
-   ;
-
-kwEntries
-   : K_ENTRIES
-   ;
-
-kwExecute
-   : K_EXECUTE
-   ;
-
-kwExists
-   : K_EXISTS
-   ;
-
-kwFiltering
-   : K_FILTERING
-   ;
-
-kwFinalfunc
-   : K_FINALFUNC
-   ;
-
-kwFrom
-   : K_FROM
-   ;
-
-kwFull
-   : K_FULL
-   ;
-
-kwFunction
-   : K_FUNCTION
-   ;
-
-kwFunctions
-   : K_FUNCTIONS
-   ;
-
-kwGrant
-   : K_GRANT
-   ;
-
-kwIf
-   : K_IF
-   ;
-
-kwIn
-   : K_IN
-   ;
-
-kwIndex
-   : K_INDEX
-   ;
-
-kwInitcond
-   : K_INITCOND
-   ;
-
-kwInput
-   : K_INPUT
-   ;
-
-kwInsert
-   : K_INSERT
-   ;
-
-kwInto
-   : K_INTO
-   ;
-
-kwIs
-   : K_IS
-   ;
-
-kwJson
-   : K_JSON
-   ;
-
-kwKey
-   : K_KEY
-   ;
-
-kwKeys
-   : K_KEYS
-   ;
-
-kwKeyspace
-   : K_KEYSPACE
-   ;
-
-kwKeyspaces
-   : K_KEYSPACES
-   ;
-
-kwLanguage
-   : K_LANGUAGE
-   ;
-
-kwLimit
-   : K_LIMIT
-   ;
-
-kwList
-   : K_LIST
-   ;
-
-kwLogged
-   : K_LOGGED
-   ;
-
-kwLogin
-   : K_LOGIN
-   ;
-
-kwMaterialized
-   : K_MATERIALIZED
-   ;
-
-kwModify
-   : K_MODIFY
-   ;
-
-kwNosuperuser
-   : K_NOSUPERUSER
-   ;
-
-kwNorecursive
-   : K_NORECURSIVE
-   ;
-
-kwNot
-   : K_NOT
-   ;
-
-kwNull
-   : K_NULL
-   ;
-
-kwOf
-   : K_OF
-   ;
-
-kwOn
-   : K_ON
-   ;
-
-kwOptions
-   : K_OPTIONS
-   ;
-
-kwOr
-   : K_OR
-   ;
-
-kwOrder
-   : K_ORDER
-   ;
-
-kwPassword
-   : K_PASSWORD
-   ;
-
-kwPrimary
-   : K_PRIMARY
-   ;
-
-kwRename
-   : K_RENAME
-   ;
-
-kwReplace
-   : K_REPLACE
-   ;
-
-kwReplication
-   : K_REPLICATION
-   ;
-
-kwReturns
-   : K_RETURNS
-   ;
-
-kwRole
-   : K_ROLE
-   ;
-
-kwRoles
-   : K_ROLES
-   ;
-
-kwSelect
-   : K_SELECT
-   ;
-
-kwSet
-   : K_SET
-   ;
-
-kwSfunc
-   : K_SFUNC
-   ;
-
-kwStorage
-   : K_STORAGE
-   ;
-
-kwStype
-   : K_STYPE
-   ;
-
-kwSuperuser
-   : K_SUPERUSER
-   ;
-
-kwTable
-   : K_TABLE
-   ;
-
-kwTimestamp
-   : K_TIMESTAMP
-   ;
-
-kwTo
-   : K_TO
-   ;
-
-kwTrigger
-   : K_TRIGGER
-   ;
-
-kwTruncate
-   : K_TRUNCATE
-   ;
-
-kwTtl
-   : K_TTL
-   ;
-
-kwType
-   : K_TYPE
-   ;
-
-kwUnlogged
-   : K_UNLOGGED
-   ;
-
-kwUpdate
-   : K_UPDATE
-   ;
-
-kwUse
-   : K_USE
-   ;
-
-kwUser
-   : K_USER
-   ;
-
-kwUsers
-   : K_USERS
-   ;
-
-kwUsing
-   : K_USING
-   ;
-
-kwValues
-   : K_VALUES
-   ;
-
-kwView
-   : K_VIEW
-   ;
-
-kwWhere
-   : K_WHERE
-   ;
-
-kwWith
-   : K_WITH
-   ;
-
-kwRevoke
-   : K_REVOKE
-   ;
-
-eof
-   : EOF
-   ;
-
-// BRACKETS
-// L - left
-// R - right
-// a - angle
-// c - curly
-// r - rounded
-syntaxBracketLr
-   : LR_BRACKET
-   ;
-
-syntaxBracketRr
-   : RR_BRACKET
-   ;
-
-syntaxBracketLc
-   : LC_BRACKET
-   ;
-
-syntaxBracketRc
-   : RC_BRACKET
-   ;
-
-syntaxBracketLa
-   : OPERATOR_LT
-   ;
-
-syntaxBracketRa
-   : OPERATOR_GT
-   ;
-
-syntaxBracketLs
-   : LS_BRACKET
-   ;
-
-syntaxBracketRs
-   : RS_BRACKET
-   ;
-
-syntaxComma
-   : COMMA
-   ;
-
-syntaxColon
-   : COLON
-   ;
+    : f=functionName '(' ')'
+    | f=functionName '(' args=functionArgs ')'
+    ;
+
+functionArgs
+    : t1=term ( ',' tn=term )*
+    ;
+
+term
+    : t=termAddition
+    ;
+
+termAddition
+    : l=termMultiplication ( op=(PLUS | MINUS) r=termMultiplication )*
+    ;
+
+termMultiplication
+    : l=termGroup ( op=(MULTIPLY | DIVIDE | MODULUS) r=termGroup )*
+    ;
+
+termGroup
+    : t=simpleTerm
+    | '-' t=simpleTerm
+    ;
+
+simpleTerm
+    : v=value
+    | f=function
+    | '(' c=comparatorType ')' t=simpleTerm
+    ;
+
+columnOperation
+    : key=cident columnOperationDifferentiator
+    ;
+
+columnOperationDifferentiator
+    : '=' normalColumnOperation
+    | shorthandColumnOperation
+    | '[' k=term ']' collectionColumnOperation
+    | '.' field=fident udtColumnOperation
+    ;
+
+normalColumnOperation
+    : t=term ('+' c=cident )?
+      /*{
+          if (c == null)
+          {
+              addRawUpdate(operations, key, new Operation.SetValue(t));
+          }
+          else
+          {
+              if (!key.equals(c))
+                  addRecognitionError("Only expressions of the form X = <value> + X are supported.");
+              addRawUpdate(operations, key, new Operation.Prepend(t));
+          }
+      }*/
+    | c=cident sig=('+' | '-') t=term
+      /*{
+          if (!key.equals(c))
+              addRecognitionError("Only expressions of the form X = X " + $sig.text + "<value> are supported.");
+          addRawUpdate(operations, key, $sig.text.equals("+") ? new Operation.Addition(t) : new Operation.Substraction(t));
+      }*/
+    | c=cident i=INTEGER
+      /*{
+          // Note that this production *is* necessary because X = X - 3 will in fact be lexed as [ X, '=', X, INTEGER].
+          if (!key.equals(c))
+              // We don't yet allow a '+' in front of an integer, but we could in the future really, so let's be future-proof in our error message
+              addRecognitionError("Only expressions of the form X = X " + ($i.text.charAt(0) == '-' ? '-' : '+') + " <value> are supported.");
+          addRawUpdate(operations, key, new Operation.Addition(Constants.Literal.integer($i.text)));
+      }*/
+    ;
+
+shorthandColumnOperation
+    : sig=('+=' | '-=') t=term
+    ;
+
+collectionColumnOperation
+    : '=' t=term
+    ;
+
+udtColumnOperation
+    : '=' t=term
+    ;
+
+columnCondition
+    // Note: we'll reject duplicates later
+    : key=cident
+        ( op=relationType t=term
+        | K_IN
+            ( values=singleColumnInValues
+            | marker=inMarker
+            )
+        | '[' element=term ']'
+            ( op=relationType t=term
+            | K_IN
+                ( values=singleColumnInValues
+                | marker=inMarker
+                )
+            )
+        | '.' field=fident
+            ( op=relationType t=term
+            | K_IN
+                ( values=singleColumnInValues
+                | marker=inMarker
+                )
+            )
+        )
+    ;
+
+properties
+    : property (K_AND property)*
+    ;
+
+property
+    : k=noncol_ident '=' simple=propertyValue
+    | k=noncol_ident '=' map=fullMapLiteral
+    ;
+
+propertyValue
+    : c=constant
+    | u=unreserved_keyword
+    ;
+    
+relationType
+    : '='
+    | '<'
+    | '<='
+    | '>'
+    | '>='
+    | '!='
+    ;
+
+relation
+    : name=cident type=relationType t=term                   #logicalExpr1
+    | name=cident K_LIKE t=term                              #likeExpr
+    | name=cident K_IS K_NOT K_NULL                          #isNotNulExpr
+    | K_TOKEN l=tupleOfIdentifiers type=relationType t=term  #tokenExpr
+    | name=cident K_IN marker=inMarker                       #inExpr1
+    | name=cident K_IN inValues=singleColumnInValues         #inExpr2
+    | name=cident rt=containsOperator t=term                 #constainsExpr
+    | name=cident '[' key=term ']' type=relationType t=term  #logicalExpr2
+    | ids=tupleOfIdentifiers
+      ( K_IN
+          ( '(' ')'
+          | tupleInMarker=inMarkerForTuple /* (a, b, c) IN ? */
+          | literals=tupleOfTupleLiterals /* (a, b, c) IN ((1, 2, 3), (4, 5, 6), ...) */
+          | markers=tupleOfMarkersForTuples /* (a, b, c) IN (?, ?, ...) */
+          )
+      | type=relationType literal=tupleLiteral /* (a, b, c) > (1, 2, 3) or (a, b, c) > (?, ?, ?) */
+      | type=relationType tupleMarker=markerForTuple /* (a, b, c) >= ? */
+      )                                                      #inExpr3
+    | '(' relation ')'                                       #groupExpr
+    ;
+
+containsOperator
+    : K_CONTAINS (K_KEY)?
+    ;
+
+inMarker
+    : QMARK
+    | ':' name=noncol_ident
+    ;
+
+tupleOfIdentifiers
+    : '(' n1=cident (',' ni=cident)* ')'
+    ;
+
+singleColumnInValues
+    : '(' ( t1 = term (',' ti=term)* )? ')'
+    ;
+
+tupleOfTupleLiterals
+    : '(' t1=tupleLiteral (',' ti=tupleLiteral)* ')'
+    ;
+
+markerForTuple
+    : QMARK
+    | ':' name=noncol_ident
+    ;
+
+tupleOfMarkersForTuples
+    : '(' m1=markerForTuple (',' mi=markerForTuple)* ')'
+    ;
+
+inMarkerForTuple
+    : QMARK
+    | ':' name=noncol_ident
+    ;
+
+comparatorType
+    : native_type
+    | collection_type
+    | tuple_type
+    | userTypeName
+    | K_FROZEN L_BRACKET comparatorType R_BRACKET
+    ;
+
+native_type
+    : K_ASCII
+    | K_BIGINT
+    | K_BLOB
+    | K_BOOLEAN
+    | K_COUNTER
+    | K_DECIMAL
+    | K_DOUBLE
+    | K_DURATION
+    | K_FLOAT
+    | K_INET
+    | K_INT
+    | K_SMALLINT
+    | K_TEXT
+    | K_TIMESTAMP
+    | K_TINYINT
+    | K_UUID
+    | K_VARCHAR
+    | K_VARINT
+    | K_TIMEUUID
+    | K_DATE
+    | K_TIME
+    ;
+
+collection_type
+    : K_MAP L_BRACKET comparatorType COMMA comparatorType R_BRACKET
+    | K_LIST L_BRACKET comparatorType R_BRACKET
+    | K_SET L_BRACKET comparatorType R_BRACKET
+    ;
+
+tuple_type
+    : K_TUPLE L_BRACKET comparatorType COMMA comparatorType R_BRACKET
+    ;
+
+username
+    : IDENT
+    | STRING_LITERAL
+    | QUOTED_NAME// { AddRecognitionError("Quoted strings are are not supported for user names and USER is deprecated, please use ROLE"); }
+    ;
+
+mbean
+    : STRING_LITERAL
+    ;
+
+non_type_ident
+    : t=IDENT// { VerifyReservedTypeName($t.Text); } 
+    | QUOTED_NAME
+    | basic_unreserved_keyword
+    | K_KEY
+    ;
+
+unreserved_keyword
+    : unreserved_function_keyword
+    | (K_TTL | K_COUNT | K_WRITETIME | K_KEY | K_CAST | K_JSON | K_DISTINCT)
+    ;
+
+unreserved_function_keyword
+    : basic_unreserved_keyword
+    | native_type
+    ;
+
+basic_unreserved_keyword
+    : K_KEYS
+    | K_AS
+    | K_CLUSTER
+    | K_CLUSTERING
+    | K_COMPACT
+    | K_STORAGE
+    | K_TABLES
+    | K_TYPE
+    | K_TYPES
+    | K_VALUES
+    | K_MAP
+    | K_LIST
+    | K_FILTERING
+    | K_PERMISSION
+    | K_PERMISSIONS
+    | K_KEYSPACES
+    | K_ALL
+    | K_USER
+    | K_USERS
+    | K_ROLE
+    | K_ROLES
+    | K_SUPERUSER
+    | K_NOSUPERUSER
+    | K_LOGIN
+    | K_NOLOGIN
+    | K_OPTIONS
+    | K_PASSWORD
+    | K_EXISTS
+    | K_CUSTOM
+    | K_TRIGGER
+    | K_CONTAINS
+    | K_INTERNALS
+    | K_ONLY
+    | K_STATIC
+    | K_FROZEN
+    | K_TUPLE
+    | K_FUNCTION
+    | K_FUNCTIONS
+    | K_AGGREGATE
+    | K_AGGREGATES
+    | K_SFUNC
+    | K_STYPE
+    | K_FINALFUNC
+    | K_INITCOND
+    | K_RETURNS
+    | K_LANGUAGE
+    | K_CALLED
+    | K_INPUT
+    | K_LIKE
+    | K_PER
+    | K_PARTITION
+    | K_GROUP
+    ;
