@@ -16,11 +16,14 @@ namespace Qsi.Tree
 
         public QsiTreeNodeProperty<QsiWhereExpressionNode> WhereExpression { get; }
 
+        public QsiTreeNodeProperty<QsiGroupingExpressionNode> GroupingExpression { get; }
+
         public QsiTreeNodeProperty<QsiMultipleOrderExpressionNode> OrderExpression { get; }
 
         public QsiTreeNodeProperty<QsiLimitExpressionNode> LimitExpression { get; }
 
-        public override IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Directives, Columns, Source, Alias, WhereExpression, OrderExpression, LimitExpression);
+        public override IEnumerable<IQsiTreeNode> Children =>
+            TreeHelper.YieldChildren(Directives, Columns, Source, Alias, WhereExpression, GroupingExpression, OrderExpression, LimitExpression);
 
         #region Explicit
         IQsiTableDirectivesNode IQsiDerivedTableNode.Directives => Directives.Value;
@@ -32,6 +35,8 @@ namespace Qsi.Tree
         IQsiAliasNode IQsiDerivedTableNode.Alias => Alias.Value;
 
         IQsiWhereExpressionNode IQsiDerivedTableNode.WhereExpression => WhereExpression.Value;
+
+        IQsiGroupingExpressionNode IQsiDerivedTableNode.GroupingExpression => GroupingExpression.Value;
 
         IQsiMultipleOrderExpressionNode IQsiDerivedTableNode.OrderExpression => OrderExpression.Value;
 
@@ -45,6 +50,7 @@ namespace Qsi.Tree
             Source = new QsiTreeNodeProperty<QsiTableNode>(this);
             Alias = new QsiTreeNodeProperty<QsiAliasNode>(this);
             WhereExpression = new QsiTreeNodeProperty<QsiWhereExpressionNode>(this);
+            GroupingExpression = new QsiTreeNodeProperty<QsiGroupingExpressionNode>(this);
             OrderExpression = new QsiTreeNodeProperty<QsiMultipleOrderExpressionNode>(this);
             LimitExpression = new QsiTreeNodeProperty<QsiLimitExpressionNode>(this);
         }

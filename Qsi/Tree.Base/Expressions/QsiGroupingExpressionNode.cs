@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Qsi.Utilities;
 
 namespace Qsi.Tree
 {
@@ -9,7 +10,7 @@ namespace Qsi.Tree
 
         public QsiTreeNodeProperty<QsiExpressionNode> Having { get; }
 
-        public override IEnumerable<IQsiTreeNode> Children => Items;
+        public override IEnumerable<IQsiTreeNode> Children => Items.Concat(TreeHelper.YieldChildren(Having));
 
         #region Explicit
         IQsiExpressionNode[] IQsiGroupingExpressionNode.Items => Items.Cast<IQsiExpressionNode>().ToArray();

@@ -290,6 +290,12 @@ namespace Qsi.Parsing.Common
                 DeparseTreeNode(writer, node.WhereExpression, script);
             }
 
+            if (node.GroupingExpression != null)
+            {
+                writer.WriteSpace();
+                DeparseTreeNode(writer, node.GroupingExpression, script);
+            }
+
             if (node.OrderExpression != null)
             {
                 writer.WriteSpace();

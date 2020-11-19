@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Qsi.Tree.Data;
+using Qsi.Utilities;
 
 namespace Qsi.Tree.Immutable
 {
@@ -13,7 +15,7 @@ namespace Qsi.Tree.Immutable
 
         public IUserDataHolder UserData { get; }
 
-        public IEnumerable<IQsiTreeNode> Children => Items;
+        public IEnumerable<IQsiTreeNode> Children => Items.Concat(TreeHelper.YieldChildren(Having));
 
         public ImmutableGroupingExpressionNode(
             IQsiTreeNode parent,
