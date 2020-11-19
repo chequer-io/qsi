@@ -510,6 +510,7 @@ namespace Qsi.Extensions
             return new ImmutableGroupingExpressionNode(
                 node.Parent,
                 node.Items,
+                node.Having,
                 ignoreUserData ? null : node.UserData);
         }
         #endregion
