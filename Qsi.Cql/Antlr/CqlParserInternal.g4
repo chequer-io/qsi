@@ -349,32 +349,35 @@ keyspaceName returns [QsiIdentifier id]
     ;
 
 indexName returns [QsiQualifiedIdentifier id]
-    : (ks=ksName DOT)? idx=idxName
+    @init { QsiIdentifier first = null; }
+    : (f=ksName DOT { first = $f.id; } )? second=idxName
     {
-        if ($ks.id == null)
-            $id = new QsiQualifiedIdentifier($idx.id);
+        if (first == null)
+            $id = new QsiQualifiedIdentifier($second.id);
         else
-            $id = new QsiQualifiedIdentifier($ks.id, $idx.id);
+            $id = new QsiQualifiedIdentifier(first, $second.id);
     }
     ;
 
 columnFamilyName returns [QsiQualifiedIdentifier id]
-    : (ks=ksName DOT)? cf=cfName
+    @init { QsiIdentifier first = null; }
+    : (f=ksName DOT { first = $f.id; } )? second=cfName
     {
-        if ($ks.id == null)
-            $id = new QsiQualifiedIdentifier($cf.id);
+        if (first == null)
+            $id = new QsiQualifiedIdentifier($second.id);
         else
-            $id = new QsiQualifiedIdentifier($ks.id, $cf.id);
+            $id = new QsiQualifiedIdentifier(first, $second.id);
     }
     ;
 
 userTypeName returns [QsiQualifiedIdentifier id]
-    : (i1=noncol_ident DOT)? i2=non_type_ident
+    @init { QsiIdentifier first = null; }
+    : (f=noncol_ident DOT { first = $f.id; } )? second=non_type_ident
     {
-        if ($i1.id == null)
-            $id = new QsiQualifiedIdentifier($i2.id);
+        if (first == null)
+            $id = new QsiQualifiedIdentifier($second.id);
         else
-            $id = new QsiQualifiedIdentifier($i1.id, $i2.id);
+            $id = new QsiQualifiedIdentifier(first, $second.id);
     }
     ;
 
