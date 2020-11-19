@@ -64,11 +64,11 @@ unaliasedSelector
     ;
 
 selectionAddition
-    : l=selectionMultiplication ( op=(PLUS | MINUS) r=selectionMultiplication )*
+    : l=selectionMultiplication ( op=('+' | '-') r=selectionMultiplication )*
     ;
 
 selectionMultiplication
-    : l=selectionGroup ( op=(MULTIPLY | DIVIDE | MODULUS) r=selectionGroup )*
+    : l=selectionGroup ( op=('*' | '/' | '%') r=selectionGroup )*
     ;
 
 selectionGroup
