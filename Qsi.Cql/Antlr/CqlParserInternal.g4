@@ -1,7 +1,11 @@
-parser grammar CqlParser;
+parser grammar CqlParserInternal;
 
 options { 
-    tokenVocab=CqlLexer;
+    tokenVocab=CqlLexerInternal;
+}
+
+@header {
+    using Qsi.Data;
 }
 
 root
@@ -19,7 +23,7 @@ emptyStatement
 
 cqlStatement
     : selectStatement
-//    | insertStatement
+    | insertStatement
 //    | updateStatement
 //    | deleteStatement
 //    | createMaterializedViewStatement
@@ -156,10 +160,10 @@ alias
     : K_AS noncol_ident
     ;
 
-sident
-    : IDENT
-    | QUOTED_NAME
-    | unreserved_keyword
+sident returns [QsiIdentifier id]
+    : t=IDENT              { $id = new QsiIdentifier($t.text, false); }
+    | t=QUOTED_NAME        { $id = new QsiIdentifier($t.text, true); }
+    | k=unreserved_keyword { $id = new QsiIdentifier($k.text, false); }
     ;
 
 whereClause
@@ -183,10 +187,48 @@ groupByClause
     : cident
     ;
 
-//insertStatement
-//    : // TODO
-//    ;
-//
+/**
+ * INSERT INTO <CF> (<column>, <column>, <column>, ...)
+ * VALUES (<value>, <value>, <value>, ...)
+ * USING TIMESTAMP <long>;
+ *
+ */
+insertStatement
+    : K_INSERT K_INTO cf=columnFamilyName
+        ( st1=normalInsertStatement
+        | K_JSON st2=jsonInsertStatement)
+    ;
+
+normalInsertStatement
+    : '(' cidentList ')'
+      K_VALUES
+      '(' v1=term ( ',' vn=term )* ')'
+      ( K_IF K_NOT K_EXISTS )?
+      ( usingClause )?
+    ;
+
+jsonInsertStatement
+    : val=jsonValue
+      ( K_DEFAULT ( K_NULL | ( K_UNSET) ) )?
+      ( K_IF K_NOT K_EXISTS )?
+      ( usingClause )?
+    ;
+
+jsonValue
+    : s=STRING_LITERAL
+    | ':' id=noncol_ident
+    | QMARK
+    ;
+
+usingClause
+    : K_USING usingClauseObjective ( K_AND usingClauseObjective )*
+    ;
+
+usingClauseObjective
+    : K_TIMESTAMP ts=intValue
+    | K_TTL t=intValue
+    ;
+
 //updateStatement
 //    : // TODO
 //    ;
@@ -266,81 +308,106 @@ allowedFunctionName
     | K_COUNT
     ;
 
+cidentList returns [List<QsiIdentifier> list]
+    @init {
+        $list = new List<QsiIdentifier>();
+    }
+    : c1=cident { $list.Add($c1.id); } ( ',' cn=cident { $list.Add($cn.id); } )*
+    ;
+
 /** DEFINITIONS **/
 
 // Like ident, but for case where we take a column name that can be the legacy super column empty name. Importantly,
 // this should not be used in DDL statements, as we don't want to let users create such column.
-cident
-    : EMPTY_QUOTED_NAME
-    | ident
+cident returns [QsiIdentifier id]
+    : e=EMPTY_QUOTED_NAME { $id = new QsiIdentifier(string.Empty, false); }
+    | i=ident             { $id = $i.id; }
     ;
 
-ident
-    : IDENT
-    | QUOTED_NAME
-    | unreserved_keyword
+ident returns [QsiIdentifier id]
+    : t=IDENT              { $id = new QsiIdentifier($t.text, false); }
+    | t=QUOTED_NAME        { $id = new QsiIdentifier($t.text, true); }
+    | k=unreserved_keyword { $id = new QsiIdentifier($k.text, false); }
     ;
 
-fident
-    : IDENT
-    | QUOTED_NAME
-    | unreserved_keyword
+fident returns [QsiIdentifier id]
+    : t=IDENT              { $id = new QsiIdentifier($t.text, false); }
+    | t=QUOTED_NAME        { $id = new QsiIdentifier($t.text, true); }
+    | k=unreserved_keyword { $id = new QsiIdentifier($k.text, false); }
     ;
 
 // Identifiers that do not refer to columns
-noncol_ident
-    : IDENT
-    | QUOTED_NAME
-    | unreserved_keyword
+noncol_ident returns [QsiIdentifier id]
+    : t=IDENT              { $id = new QsiIdentifier($t.text, false); }
+    | t=QUOTED_NAME        { $id = new QsiIdentifier($t.text, true); }
+    | k=unreserved_keyword { $id = new QsiIdentifier($k.text, false); }
     ;
 
 // Keyspace & Column family names
-keyspaceName
-    : ksName |
+keyspaceName returns [QsiIdentifier id]
+    : n=ksName { $id = $n.id; }
     ;
 
-indexName
-    : (ksName DOT)? idxName
+indexName returns [QsiQualifiedIdentifier id]
+    : (ks=ksName DOT)? idx=idxName
+    {
+        if ($ks.id == null)
+            $id = new QsiQualifiedIdentifier($idx.id);
+        else
+            $id = new QsiQualifiedIdentifier($ks.id, $idx.id);
+    }
     ;
 
-columnFamilyName
-    : (ksName DOT)? cfName
+columnFamilyName returns [QsiQualifiedIdentifier id]
+    : (ks=ksName DOT)? cf=cfName
+    {
+        if ($ks.id == null)
+            $id = new QsiQualifiedIdentifier($cf.id);
+        else
+            $id = new QsiQualifiedIdentifier($ks.id, $cf.id);
+    }
     ;
 
-userTypeName
-    : (noncol_ident DOT)? non_type_ident
+userTypeName returns [QsiQualifiedIdentifier id]
+    : (i1=noncol_ident DOT)? i2=non_type_ident
+    {
+        if ($i1.id == null)
+            $id = new QsiQualifiedIdentifier($i2.id);
+        else
+            $id = new QsiQualifiedIdentifier($i1.id, $i2.id);
+    }
     ;
 
 userOrRoleName
     : roleName
     ;
 
-ksName
-    : IDENT
-    | QUOTED_NAME
-    | unreserved_keyword
-    | QMARK// {AddRecognitionError("Bind variables cannot be used for keyspace names");}
+ksName returns [QsiIdentifier id]
+    : t=IDENT              { $id = new QsiIdentifier($t.text, false); }
+    | t=QUOTED_NAME        { $id = new QsiIdentifier($t.text, true); }
+    | k=unreserved_keyword { $id = new QsiIdentifier($k.text, false); }
+    | QMARK                { AddRecognitionError("Bind variables cannot be used for keyspace names"); }
     ;
 
-cfName
-    : IDENT
-    | QUOTED_NAME
-    | unreserved_keyword
-    | QMARK// {AddRecognitionError("Bind variables cannot be used for table names");}
+cfName returns [QsiIdentifier id]
+    : t=IDENT              { $id = new QsiIdentifier($t.text, false); }
+    | t=QUOTED_NAME        { $id = new QsiIdentifier($t.text, true); }
+    | k=unreserved_keyword { $id = new QsiIdentifier($k.text, false); }
+    | QMARK { AddRecognitionError("Bind variables cannot be used for table names"); }
     ;
 
-idxName
-    : IDENT
-    | QUOTED_NAME
-    | unreserved_keyword
-    | QMARK// {AddRecognitionError("Bind variables cannot be used for index names");}
+idxName returns [QsiIdentifier id]
+    : t=IDENT              { $id = new QsiIdentifier($t.text, false); }
+    | t=QUOTED_NAME        { $id = new QsiIdentifier($t.text, true); }
+    | k=unreserved_keyword { $id = new QsiIdentifier($k.text, false); }
+    | QMARK { AddRecognitionError("Bind variables cannot be used for index names"); }
     ;
 
-roleName
-    : IDENT
-    | QUOTED_NAME
-    | unreserved_keyword
-    | QMARK// {AddRecognitionError("Bind variables cannot be used for role names");}
+roleName returns [QsiIdentifier id]
+    : t=IDENT              { $id = new QsiIdentifier($t.text, false); }
+    | t=QUOTED_NAME        { $id = new QsiIdentifier($t.text, true); }
+    | k=unreserved_keyword { $id = new QsiIdentifier($k.text, false); }
+    | QMARK { AddRecognitionError("Bind variables cannot be used for role names"); }
     ;
 
 constant
@@ -351,11 +418,10 @@ constant
     | DURATION
     | UUID
     | HEXNUMBER
-    | (
-        (K_POSITIVE_NAN | K_NEGATIVE_NAN)
-        | K_POSITIVE_INFINITY
-        | K_NEGATIVE_INFINITY
-      )
+    | K_POSITIVE_NAN
+    | K_NEGATIVE_NAN
+    | K_POSITIVE_INFINITY
+    | K_NEGATIVE_INFINITY
     ;
 
 function
@@ -372,16 +438,16 @@ term
     ;
 
 termAddition
-    : l=termMultiplication ( op=(PLUS | MINUS) r=termMultiplication )*
+    : l=termMultiplication ( op=('+' | '-') r=termMultiplication )*
     ;
 
 termMultiplication
-    : l=termGroup ( op=(MULTIPLY | DIVIDE | MODULUS) r=termGroup )*
+    : l=termGroup ( op=('*' | '/' | '%') r=termGroup )*
     ;
 
 termGroup
     : t=simpleTerm
-    | '-' t=simpleTerm
+    | u='-' t=simpleTerm
     ;
 
 simpleTerm
@@ -481,7 +547,7 @@ propertyValue
     : c=constant
     | u=unreserved_keyword
     ;
-    
+
 relationType
     : '='
     | '<'
@@ -492,25 +558,26 @@ relationType
     ;
 
 relation
-    : name=cident type=relationType t=term                   #logicalExpr1
-    | name=cident K_LIKE t=term                              #likeExpr
-    | name=cident K_IS K_NOT K_NULL                          #isNotNulExpr
-    | K_TOKEN l=tupleOfIdentifiers type=relationType t=term  #tokenExpr
-    | name=cident K_IN marker=inMarker                       #inExpr1
-    | name=cident K_IN inValues=singleColumnInValues         #inExpr2
-    | name=cident rt=containsOperator t=term                 #constainsExpr
-    | name=cident '[' key=term ']' type=relationType t=term  #logicalExpr2
-    | ids=tupleOfIdentifiers
+    : l=cident op=relationType r=term                      #logicalExpr1
+    | l=cident K_LIKE r=term                               #likeExpr
+    | l=cident K_IS K_NOT K_NULL                           #isNotNulExpr
+    | K_TOKEN l=tupleOfIdentifiers op=relationType r=term  #tokenExpr
+    | l=cident K_IN r=inMarker                             #inExpr1
+    | l=cident K_IN r=singleColumnInValues                 #inExpr2
+    | l=cident op=containsOperator r=term                  #constainsExpr
+    | l=cident '[' key=term ']' op=relationType r=term     #logicalExpr2
+    | l=tupleOfIdentifiers
       ( K_IN
-          ( '(' ')'
-          | tupleInMarker=inMarkerForTuple /* (a, b, c) IN ? */
-          | literals=tupleOfTupleLiterals /* (a, b, c) IN ((1, 2, 3), (4, 5, 6), ...) */
-          | markers=tupleOfMarkersForTuples /* (a, b, c) IN (?, ?, ...) */
+          (
+            '(' ')'
+            | tupleInMarker=inMarkerForTuple /* (a, b, c) IN ? */
+            | literals=tupleOfTupleLiterals /* (a, b, c) IN ((1, 2, 3), (4, 5, 6), ...) */
+            | markers=tupleOfMarkersForTuples /* (a, b, c) IN (?, ?, ...) */
           )
-      | type=relationType literal=tupleLiteral /* (a, b, c) > (1, 2, 3) or (a, b, c) > (?, ?, ?) */
-      | type=relationType tupleMarker=markerForTuple /* (a, b, c) >= ? */
-      )                                                      #inExpr3
-    | '(' relation ')'                                       #groupExpr
+          | op=relationType literal=tupleLiteral /* (a, b, c) > (1, 2, 3) or (a, b, c) > (?, ?, ?) */
+          | op=relationType tupleMarker=markerForTuple /* (a, b, c) >= ? */
+      )                                                    #inExpr3
+    | '(' relation ')'                                     #groupExpr
     ;
 
 containsOperator
@@ -523,7 +590,7 @@ inMarker
     ;
 
 tupleOfIdentifiers
-    : '(' n1=cident (',' ni=cident)* ')'
+    : '(' cidentList ')'
     ;
 
 singleColumnInValues
@@ -553,7 +620,7 @@ comparatorType
     | collection_type
     | tuple_type
     | userTypeName
-    | K_FROZEN L_BRACKET comparatorType R_BRACKET
+    | K_FROZEN '<' comparatorType '>'
     ;
 
 native_type
@@ -581,30 +648,31 @@ native_type
     ;
 
 collection_type
-    : K_MAP L_BRACKET comparatorType COMMA comparatorType R_BRACKET
-    | K_LIST L_BRACKET comparatorType R_BRACKET
-    | K_SET L_BRACKET comparatorType R_BRACKET
+    : K_MAP '<' comparatorType ',' comparatorType '>'
+    | K_LIST '<' comparatorType '>'
+    | K_SET '<' comparatorType '>'
     ;
 
 tuple_type
-    : K_TUPLE L_BRACKET comparatorType COMMA comparatorType R_BRACKET
+    : K_TUPLE '<' comparatorType ',' comparatorType '>'
     ;
 
 username
     : IDENT
     | STRING_LITERAL
-    | QUOTED_NAME// { AddRecognitionError("Quoted strings are are not supported for user names and USER is deprecated, please use ROLE"); }
+    | QUOTED_NAME { AddRecognitionError("Quoted strings are are not supported for user names and USER is deprecated, please use ROLE"); }
     ;
 
 mbean
     : STRING_LITERAL
     ;
 
-non_type_ident
-    : t=IDENT// { VerifyReservedTypeName($t.Text); } 
-    | QUOTED_NAME
-    | basic_unreserved_keyword
-    | K_KEY
+non_type_ident returns [QsiIdentifier id]
+    : t=IDENT                    { VerifyReservedTypeName($t.text); 
+                                   $id = new QsiIdentifier($t.text, false); } 
+    | t=QUOTED_NAME              { $id = new QsiIdentifier($t.text, true); }
+    | k=basic_unreserved_keyword { $id = new QsiIdentifier($k.text, false); }
+    | t=K_KEY                    { $id = new QsiIdentifier($t.text, false); }
     ;
 
 unreserved_keyword

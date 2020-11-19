@@ -1,4 +1,4 @@
-﻿using Qsi.Cassandra.Diagnostics;
+﻿using Qsi.Cql.Diagnostics;
 using Qsi.Diagnostics;
 using Qsi.Services;
 

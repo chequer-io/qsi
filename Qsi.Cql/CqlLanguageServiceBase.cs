@@ -2,7 +2,7 @@
 using Qsi.Parsing;
 using Qsi.Services;
 
-namespace Qsi.Cassandra
+namespace Qsi.Cql
 {
     public abstract class CqlLanguageServiceBase : QsiLanguageServiceBase
     {

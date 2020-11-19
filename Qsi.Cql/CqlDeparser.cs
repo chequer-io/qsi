@@ -1,10 +1,10 @@
 ﻿using System;
-using Qsi.Cassandra.Tree;
+using Qsi.Cql.Tree;
 using Qsi.Data;
 using Qsi.Parsing.Common;
 using Qsi.Tree;
 
-namespace Qsi.Cassandra
+namespace Qsi.Cql
 {
     public sealed class CqlDeparser : CommonTreeDeparser
     {

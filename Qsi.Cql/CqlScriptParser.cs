@@ -1,6 +1,6 @@
 ﻿using Qsi.Parsing.Common;
 
-namespace Qsi.Cassandra
+namespace Qsi.Cql
 {
     public sealed class CqlScriptParser : CommonScriptParser
     {

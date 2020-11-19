@@ -1,4 +1,4 @@
-﻿using Qsi.Cassandra;
+﻿using Qsi.Cql;
 using Qsi.Services;
 
 namespace Qsi.Debugger.Vendor.Cql

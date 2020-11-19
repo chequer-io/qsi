@@ -1,24 +1,23 @@
 ﻿using System;
+using System.Threading;
 using Antlr4.Runtime;
 using Qsi.Cql.Internal;
 using Qsi.Data;
-using Qsi.Parsing.Antlr;
+using Qsi.Parsing;
 using Qsi.Tree;
 
-namespace Qsi.Cassandra
+namespace Qsi.Cql
 {
-    public sealed class CqlParser : AntlrParserBase
+    public sealed class CqlParser : IQsiTreeParser
     {
-        protected override Parser CreateParser(QsiScript script)
+        public IQsiTreeNode Parse(QsiScript script, CancellationToken cancellationToken = default)
         {
             var stream = new AntlrInputStream(script.Script);
-            var lexer = new CqlLexer(stream);
+            var lexer = new CqlLexerInternal(stream);
             var tokens = new CommonTokenStream(lexer);
-            return new Cql.Internal.CqlParser(tokens);
-        }
+            var parser = new CqlParserInternal(tokens);
+            parser.AddErrorListener(new ErrorListener());
 
-        protected override IQsiTreeNode Parse(QsiScript script, Parser parser)
-        {
             throw new NotImplementedException();
         }
     }

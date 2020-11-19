@@ -1,4 +1,4 @@
-lexer grammar CqlLexer;
+lexer grammar CqlLexerInternal;
 
 channels { ERRORCHANNEL }
 

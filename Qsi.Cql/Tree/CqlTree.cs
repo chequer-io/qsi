@@ -1,8 +1,9 @@
 ﻿using System;
+using Qsi.Cql.Internal;
 using Qsi.Shared;
 using Qsi.Tree.Data;
 
-namespace Qsi.Cassandra.Tree
+namespace Qsi.Cql.Tree
 {
     internal static class CqlTree
     {
