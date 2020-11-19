@@ -27,7 +27,7 @@ cqlStatement
     | insertStatement
     | updateStatement
     | deleteStatement
-//    | createMaterializedViewStatement
+    | createMaterializedViewStatement
     ;
 
 /**
@@ -288,9 +288,46 @@ usingClauseDelete
     : K_USING K_TIMESTAMP ts=intValue
     ;
 
-//createMaterializedViewStatement
-//    : // TODO
-//    ;
+/**
+ * CREATE MATERIALIZED VIEW <viewName> AS
+ *  SELECT <columns>
+ *  FROM <CF>
+ *  WHERE <pkColumns> IS NOT NULL
+ *  PRIMARY KEY (<pkColumns>)
+ *  WITH <property> = <value> AND ...;
+ */
+createMaterializedViewStatement
+    : K_CREATE K_MATERIALIZED K_VIEW (K_IF K_NOT K_EXISTS)? cf=columnFamilyName K_AS
+        K_SELECT sclause=selectors K_FROM basecf=columnFamilyName
+        (K_WHERE wclause=whereClause)?
+        viewPrimaryKey
+        ( K_WITH viewProperty ( K_AND viewProperty )*)?
+    ;
+
+viewPrimaryKey
+    : K_PRIMARY K_KEY '(' viewPartitionKey (',' c=ident )* ')'
+    ;
+
+viewPartitionKey returns [List<QsiIdentifier> list]
+    @init {
+        $list = new List<QsiIdentifier>();
+    }
+    : k1=ident { $list.Add($k1.id); } 
+    | '(' 
+        k2=ident { $list.Add($k2.id); }  
+        ( ',' kn=ident { $list.Add($kn.id); } )* 
+      ')'
+    ;
+
+viewProperty
+    : property
+    | K_COMPACT K_STORAGE
+    | K_CLUSTERING K_ORDER K_BY '(' viewClusteringOrder (',' viewClusteringOrder)* ')'
+    ;
+
+viewClusteringOrder
+    : k=ident (K_ASC | K_DESC)
+    ;
 
 fullMapLiteral
     : '{' ( k1=term ':' v1=term ( ',' kn=term ':' vn=term )* )?
