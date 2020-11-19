@@ -189,8 +189,15 @@ fragment Y: ('y'|'Y');
 fragment Z: ('z'|'Z');
 
 STRING_LITERAL
-    : '\'' ('\'\'' | ~'\'')+ '\''
-    // | $$..$$
+    : '$$'
+     (
+         { 
+            (InputStream.Size - InputStream.Index > 1) &&
+            InputStream.Substring(InputStream.Index, InputStream.Index + 1) != "$$"
+         }? .
+     )* 
+     '$$'
+    | '\'' ('\'\'' | ~'\'')+ '\''
     ;
 
 QUOTED_NAME

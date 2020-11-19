@@ -6,6 +6,7 @@ options {
 
 @header {
     using Qsi.Data;
+    using Qsi.Tree;
 }
 
 root
@@ -24,14 +25,22 @@ emptyStatement
 cqlStatement
     : selectStatement
     | insertStatement
-//    | updateStatement
+    | updateStatement
 //    | deleteStatement
 //    | createMaterializedViewStatement
     ;
 
+/**
+ * SELECT [JSON] [DISTINCT] <expression>
+ * FROM <CF>
+ * [ WHERE KEY = "key1" AND COL > 1 AND COL < 100 ]
+ * [ PER PARTITION LIMIT <NUMBER> ]
+ * [ LIMIT <NUMBER> ]
+ * [ ALLOW FILTERING ]
+ */
 selectStatement
     :
-        K_SELECT K_JSON? selectClause
+        K_SELECT K_JSON? K_DISTINCT? selectors
         K_FROM columnFamilyName
         ( K_WHERE whereClause )?
         ( K_GROUP K_BY groupByClause ( ',' groupByClause )* )?
@@ -39,10 +48,6 @@ selectStatement
         ( K_PER K_PARTITION K_LIMIT intValue )?
         ( K_LIMIT intValue )?
         ( K_ALLOW K_FILTERING )?
-    ;
-
-selectClause
-    : K_DISTINCT? selectors
     ;
 
 selectors
@@ -156,8 +161,14 @@ selectionFunctionArgs
       ')'
     ;
 
-alias
-    : K_AS noncol_ident
+alias returns [QsiAliasNode node]
+    : K_AS n=noncol_ident
+    {
+        $node = new QsiAliasNode
+        {
+            Name = $n.id
+        };
+    }
     ;
 
 sident returns [QsiIdentifier id]
@@ -229,10 +240,25 @@ usingClauseObjective
     | K_TTL t=intValue
     ;
 
-//updateStatement
-//    : // TODO
-//    ;
-//
+/**
+ * UPDATE <CF>
+ * USING TIMESTAMP <long>
+ * SET name1 = value1, name2 = value2
+ * WHERE key = value;
+ * [IF (EXISTS | name = value, ...)];
+ */
+updateStatement
+    : K_UPDATE cf=columnFamilyName
+      ( usingClause )?
+      K_SET columnOperation (',' columnOperation)*
+      K_WHERE wclause=whereClause
+      ( K_IF ( K_EXISTS | conditions=updateConditions ))?
+    ;
+
+updateConditions
+    : columnCondition ( K_AND columnCondition )*
+    ;
+
 //deleteStatement
 //    : // TODO
 //    ;
@@ -396,21 +422,21 @@ cfName returns [QsiIdentifier id]
     : t=IDENT              { $id = new QsiIdentifier($t.text, false); }
     | t=QUOTED_NAME        { $id = new QsiIdentifier($t.text, true); }
     | k=unreserved_keyword { $id = new QsiIdentifier($k.text, false); }
-    | QMARK { AddRecognitionError("Bind variables cannot be used for table names"); }
+    | QMARK                { AddRecognitionError("Bind variables cannot be used for table names"); }
     ;
 
 idxName returns [QsiIdentifier id]
     : t=IDENT              { $id = new QsiIdentifier($t.text, false); }
     | t=QUOTED_NAME        { $id = new QsiIdentifier($t.text, true); }
     | k=unreserved_keyword { $id = new QsiIdentifier($k.text, false); }
-    | QMARK { AddRecognitionError("Bind variables cannot be used for index names"); }
+    | QMARK                { AddRecognitionError("Bind variables cannot be used for index names"); }
     ;
 
 roleName returns [QsiIdentifier id]
     : t=IDENT              { $id = new QsiIdentifier($t.text, false); }
     | t=QUOTED_NAME        { $id = new QsiIdentifier($t.text, true); }
     | k=unreserved_keyword { $id = new QsiIdentifier($k.text, false); }
-    | QMARK { AddRecognitionError("Bind variables cannot be used for role names"); }
+    | QMARK                { AddRecognitionError("Bind variables cannot be used for role names"); }
     ;
 
 constant
@@ -472,32 +498,8 @@ columnOperationDifferentiator
 
 normalColumnOperation
     : t=term ('+' c=cident )?
-      /*{
-          if (c == null)
-          {
-              addRawUpdate(operations, key, new Operation.SetValue(t));
-          }
-          else
-          {
-              if (!key.equals(c))
-                  addRecognitionError("Only expressions of the form X = <value> + X are supported.");
-              addRawUpdate(operations, key, new Operation.Prepend(t));
-          }
-      }*/
     | c=cident sig=('+' | '-') t=term
-      /*{
-          if (!key.equals(c))
-              addRecognitionError("Only expressions of the form X = X " + $sig.text + "<value> are supported.");
-          addRawUpdate(operations, key, $sig.text.equals("+") ? new Operation.Addition(t) : new Operation.Substraction(t));
-      }*/
     | c=cident i=INTEGER
-      /*{
-          // Note that this production *is* necessary because X = X - 3 will in fact be lexed as [ X, '=', X, INTEGER].
-          if (!key.equals(c))
-              // We don't yet allow a '+' in front of an integer, but we could in the future really, so let's be future-proof in our error message
-              addRecognitionError("Only expressions of the form X = X " + ($i.text.charAt(0) == '-' ? '-' : '+') + " <value> are supported.");
-          addRawUpdate(operations, key, new Operation.Addition(Constants.Literal.integer($i.text)));
-      }*/
     ;
 
 shorthandColumnOperation
