@@ -261,6 +261,7 @@ namespace Qsi.Analyzers.Action
                         derivedTable.Source,
                         null,
                         derivedTable.WhereExpression,
+                        derivedTable.GroupingExpression,
                         derivedTable.OrderExpression,
                         derivedTable.LimitExpression,
                         null);
@@ -274,7 +275,7 @@ namespace Qsi.Analyzers.Action
                         null,
                         TreeHelper.CreateAllColumnsDeclaration(),
                         node,
-                        null, null, null, null, null);
+                        null, null, null, null, null, null);
             }
         }
 

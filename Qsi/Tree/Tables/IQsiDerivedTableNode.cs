@@ -31,6 +31,11 @@
         IQsiWhereExpressionNode WhereExpression { get; }
 
         /// <summary>
+        /// Get the grouping clause.
+        /// </summary>
+        IQsiGroupingExpressionNode GroupingExpression { get; }
+
+        /// <summary>
         /// Get the order clause.
         /// </summary>
         IQsiMultipleOrderExpressionNode OrderExpression { get; }

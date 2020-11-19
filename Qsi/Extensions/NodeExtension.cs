@@ -462,6 +462,7 @@ namespace Qsi.Extensions
                 node.Source,
                 node.Alias,
                 node.WhereExpression,
+                node.GroupingExpression,
                 node.OrderExpression,
                 node.LimitExpression,
                 ignoreUserData ? null : node.UserData);
