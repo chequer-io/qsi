@@ -26,7 +26,7 @@ cqlStatement
     : selectStatement
     | insertStatement
     | updateStatement
-//    | deleteStatement
+    | deleteStatement
 //    | createMaterializedViewStatement
     ;
 
@@ -259,10 +259,35 @@ updateConditions
     : columnCondition ( K_AND columnCondition )*
     ;
 
-//deleteStatement
-//    : // TODO
-//    ;
-//
+/**
+ * DELETE name1, name2
+ * FROM <CF>
+ * USING TIMESTAMP <long>
+ * WHERE KEY = keyname
+   [IF (EXISTS | name = value, ...)];
+ */
+deleteStatement
+    : K_DELETE ( dels=deleteSelection )?
+      K_FROM cf=columnFamilyName
+      ( usingClauseDelete )?
+      K_WHERE wclause=whereClause
+      ( K_IF ( K_EXISTS | conditions=updateConditions ))?
+    ;
+
+deleteSelection
+    : deleteOp (',' deleteOp)*
+    ;
+
+deleteOp
+    : c=cident
+    | c=cident '[' t=term ']'
+    | c=cident '.' field=fident
+    ;
+
+usingClauseDelete
+    : K_USING K_TIMESTAMP ts=intValue
+    ;
+
 //createMaterializedViewStatement
 //    : // TODO
 //    ;
