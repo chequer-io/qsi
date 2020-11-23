@@ -351,18 +351,18 @@ namespace Qsi.MySql.Tree
                 if (context.FromClause.whereExpr != null)
                 {
                     var whereContext = new CommonWhereContext(context.FromClause);
-                    node.WhereExpression.SetValue(ExpressionVisitor.VisitCommonWhere(whereContext));
+                    node.Where.SetValue(ExpressionVisitor.VisitCommonWhere(whereContext));
                 }
             }
 
             if (context.OrderByClause != null)
             {
-                node.OrderExpression.SetValue(ExpressionVisitor.VisitOrderByClause(context.OrderByClause));
+                node.Order.SetValue(ExpressionVisitor.VisitOrderByClause(context.OrderByClause));
             }
 
             if (context.LimitClause != null)
             {
-                node.LimitExpression.SetValue(ExpressionVisitor.VisitLimitClause(context.LimitClause));
+                node.Limit.SetValue(ExpressionVisitor.VisitLimitClause(context.LimitClause));
             }
 
             MySqlTree.PutContextSpan(node, context.Context);

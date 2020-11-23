@@ -215,8 +215,8 @@ namespace Qsi.PhoenixSql.Tree
         {
             return TreeHelper.Create<QsiMemberAccessExpressionNode>(n =>
             {
-                n.Array.SetValue(Visit(node.Children[0]));
-                n.Rank.SetValue(Visit(node.Children[1]));
+                n.Target.SetValue(Visit(node.Children[0]));
+                n.Member.SetValue(Visit(node.Children[1]));
 
                 PTree.RawNode[n] = node;
             });
