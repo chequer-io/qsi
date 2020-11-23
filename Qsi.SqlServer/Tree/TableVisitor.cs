@@ -545,28 +545,6 @@ namespace Qsi.SqlServer.Tree
         public QsiTableNode VisitFullTextTableReference(FullTextTableReference fullTextTableReference)
         {
             throw TreeHelper.NotSupportedFeature("Table function");
-
-            // var node = TreeHelper.Create<QsiInvokeExpressionNode>(n =>
-            // {
-            //     n.Member.SetValue(TreeHelper.CreateFunctionAccess(SqlServerKnownFunction.FreeTextTable));
-            //
-            //     n.Parameters.Add(TreeHelper.Create<QsiTableExpressionNode>(ten =>
-            //     {
-            //         ten.Table.SetValue(new QsiTableAccessNode
-            //         {
-            //             Identifier = IdentifierVisitor.CreateQualifiedIdentifier(fullTextTableReference.TableName)
-            //         });
-            //     }));
-            //
-            //     n.Parameters.AddRange(fullTextTableReference.Columns.Select(ExpressionVisitor.VisitColumnReferenceExpression));
-            //     n.Parameters.Add(ExpressionVisitor.VisitValueExpression(fullTextTableReference.SearchCondition));
-            //     
-            //     if (fullTextTableReference.Language != null)
-            //         n.Parameters.Add(ExpressionVisitor.VisitValueExpression(fullTextTableReference.Language));
-            //     
-            //     if (fullTextTableReference.TopN != null)
-            //         n.Parameters.Add(ExpressionVisitor.VisitValueExpression(fullTextTableReference.TopN));
-            // });
         }
 
         // OPENJSON(VARIABLE[, PATH]) Ex: OPENJSON(@json, '$.path.to."sub-object"')
@@ -574,56 +552,17 @@ namespace Qsi.SqlServer.Tree
         public QsiDerivedTableNode VisitOpenJsonTableReference(OpenJsonTableReference openJsonTableReference)
         {
             throw TreeHelper.NotSupportedFeature("Table function");
-
-            // // TODO: Impl With Clause
-            // var node = TreeHelper.Create<QsiInvokeExpressionNode>(n =>
-            // {
-            //     n.Member.SetValue(TreeHelper.CreateFunctionAccess(SqlServerKnownFunction.OpenJson));
-            //     n.Parameters.Add(ExpressionVisitor.VisitVariableReference(openJsonTableReference.Variable));
-            //
-            //     if (openJsonTableReference.RowPattern != null)
-            //     {
-            //         n.Parameters.Add(TreeHelper.CreateLiteral(openJsonTableReference.RowPattern.Value));
-            //     }
-            // });
         }
 
         // OPENQUERY(linked_server ,'query') Ex: SELECT * FROM OPENQUERY(OracleSvr, 'SELECT name FROM actor WHERE actor_id = ''abc''');
         public QsiTableNode VisitOpenQueryTableReference(OpenQueryTableReference openQueryTableReference)
         {
             throw TreeHelper.NotSupportedFeature("Table function");
-
-            // var node = TreeHelper.Create<QsiInvokeExpressionNode>(n =>
-            // {
-            //     n.Member.SetValue(TreeHelper.CreateFunctionAccess(SqlServerKnownFunction.OpenQuery));
-            //
-            //     // TODO: Server Identfiier is not variable
-            //     n.Parameters.Add(new QsiVariableAccessExpressionNode
-            //     {
-            //         Identifier = new QsiQualifiedIdentifier(IdentifierVisitor.CreateIdentifier(openQueryTableReference.LinkedServer))
-            //     });
-            //
-            //     n.Parameters.Add(ExpressionVisitor.VisitLiteral(openQueryTableReference.Query));
-            // });
         }
 
         public QsiTableNode VisitOpenXmlTableReference(OpenXmlTableReference openXmlTableReference)
         {
             throw TreeHelper.NotSupportedFeature("Table function");
-
-            // // TODO: Impl With Clause
-            // var node = TreeHelper.Create<QsiInvokeExpressionNode>(n =>
-            // {
-            //     n.Member.SetValue(TreeHelper.CreateFunctionAccess(SqlServerKnownFunction.OpenXml));
-            //     
-            //     n.Parameters.Add(ExpressionVisitor.VisitVariableReference(openXmlTableReference.Variable));
-            //     n.Parameters.Add(ExpressionVisitor.VisitValueExpression(openXmlTableReference.RowPattern));
-            //
-            //     if (openXmlTableReference.Flags != null)
-            //     {
-            //         n.Parameters.Add(ExpressionVisitor.VisitValueExpression(openXmlTableReference.Flags));    
-            //     }
-            // });
         }
 
         public QsiTableNode VisitPivotedTableReference(PivotedTableReference pivotedTableReference)

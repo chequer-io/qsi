@@ -68,7 +68,7 @@ namespace Qsi.Analyzers.Action
                     query = literal.Value?.ToString();
                     break;
 
-                case IQsiVariableAccessExpressionNode variableAccess:
+                case IQsiVariableExpressionNode variableAccess:
                     var variable = context.Engine.RepositoryProvider.LookupVariable(variableAccess.Identifier) ??
                                    throw new QsiException(QsiError.UnknownVariable, variableAccess.Identifier);
 

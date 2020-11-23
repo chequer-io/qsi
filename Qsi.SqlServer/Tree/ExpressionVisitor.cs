@@ -187,7 +187,7 @@ namespace Qsi.SqlServer.Tree
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(TreeHelper.CreateFunctionAccess(SqlServerKnownFunction.Exists));
+                n.Member.SetValue(TreeHelper.CreateFunction(SqlServerKnownFunction.Exists));
                 n.Parameters.Add(VisitScalarSubquery(existsPredicate.Subquery));
             });
         }
@@ -196,7 +196,7 @@ namespace Qsi.SqlServer.Tree
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(TreeHelper.CreateFunctionAccess(SqlServerKnownFunction.FullText));
+                n.Member.SetValue(TreeHelper.CreateFunction(SqlServerKnownFunction.FullText));
                 n.Parameters.AddRange(fullTextPredicate.Columns.Select(ExpressionVisitor.VisitColumnReferenceExpression));
 
                 n.Parameters.Add(fullTextPredicate.Value != null ?
@@ -211,7 +211,7 @@ namespace Qsi.SqlServer.Tree
         {
             var invoke = TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(TreeHelper.CreateFunctionAccess(SqlServerKnownFunction.Ternary));
+                n.Member.SetValue(TreeHelper.CreateFunction(SqlServerKnownFunction.Ternary));
 
                 n.Parameters.Add(VisitScalarExpression(booleanTernaryExpression.FirstExpression));
                 n.Parameters.Add(VisitScalarExpression(booleanTernaryExpression.SecondExpression));
@@ -232,7 +232,7 @@ namespace Qsi.SqlServer.Tree
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(TreeHelper.CreateFunctionAccess(SqlServerKnownFunction.EventDeclarationCompare));
+                n.Member.SetValue(TreeHelper.CreateFunction(SqlServerKnownFunction.EventDeclarationCompare));
 
                 if (eventDeclarationCompareFunctionParameter.Name != null)
                 {
@@ -286,7 +286,7 @@ namespace Qsi.SqlServer.Tree
         {
             var invokeNode = TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(TreeHelper.CreateFunctionAccess(SqlServerKnownFunction.Like));
+                n.Member.SetValue(TreeHelper.CreateFunction(SqlServerKnownFunction.Like));
 
                 n.Parameters.Add(VisitScalarExpression(likePredicate.FirstExpression));
                 n.Parameters.Add(VisitScalarExpression(likePredicate.SecondExpression));
@@ -318,7 +318,7 @@ namespace Qsi.SqlServer.Tree
 
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(TreeHelper.CreateFunctionAccess(subqueryComparisonPredicate.SubqueryComparisonPredicateType switch
+                n.Member.SetValue(TreeHelper.CreateFunction(subqueryComparisonPredicate.SubqueryComparisonPredicateType switch
                 {
                     SubqueryComparisonPredicateType.All => SqlServerKnownFunction.All,
                     SubqueryComparisonPredicateType.Any => SqlServerKnownFunction.Any,
@@ -642,18 +642,18 @@ namespace Qsi.SqlServer.Tree
         }
 
         // TODO: Impl variable
-        public QsiVariableAccessExpressionNode VisitVariableReference(VariableReference variableReference)
+        public QsiVariableExpressionNode VisitVariableReference(VariableReference variableReference)
         {
-            return TreeHelper.Create<QsiVariableAccessExpressionNode>(n =>
+            return TreeHelper.Create<QsiVariableExpressionNode>(n =>
             {
                 n.Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(variableReference.Name, false));
             });
         }
 
         // TODO: Impl variable
-        public QsiVariableAccessExpressionNode VisitGlobalVariableExpression(GlobalVariableExpression globalVariableExpression)
+        public QsiVariableExpressionNode VisitGlobalVariableExpression(GlobalVariableExpression globalVariableExpression)
         {
-            return TreeHelper.Create<QsiVariableAccessExpressionNode>(n =>
+            return TreeHelper.Create<QsiVariableExpressionNode>(n =>
             {
                 n.Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(globalVariableExpression.Name, false));
             });
@@ -711,24 +711,24 @@ namespace Qsi.SqlServer.Tree
 
         public QsiInvokeExpressionNode CreateInvokeExpression(QsiQualifiedIdentifier functionName, IEnumerable<TSqlFragment> parameters)
         {
-            return CreateInvokeExpression(new QsiFunctionAccessExpressionNode { Identifier = functionName }, parameters);
+            return CreateInvokeExpression(new QsiFunctionExpressionNode { Identifier = functionName }, parameters);
         }
 
         public QsiInvokeExpressionNode CreateInvokeExpression(string functionName, params TSqlFragment[] parameters)
         {
-            return CreateInvokeExpression(TreeHelper.CreateFunctionAccess(functionName), parameters);
+            return CreateInvokeExpression(TreeHelper.CreateFunction(functionName), parameters);
         }
 
         public QsiInvokeExpressionNode CreateInvokeExpression(string functionName, IEnumerable<TSqlFragment> parameters)
         {
-            return CreateInvokeExpression(TreeHelper.CreateFunctionAccess(functionName), parameters);
+            return CreateInvokeExpression(TreeHelper.CreateFunction(functionName), parameters);
         }
 
-        public QsiInvokeExpressionNode CreateInvokeExpression(QsiFunctionAccessExpressionNode functionAccessExpressionNode, IEnumerable<TSqlFragment> parameters)
+        public QsiInvokeExpressionNode CreateInvokeExpression(QsiFunctionExpressionNode functionExpressionNode, IEnumerable<TSqlFragment> parameters)
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(functionAccessExpressionNode);
+                n.Member.SetValue(functionExpressionNode);
 
                 n.Parameters.AddRange(parameters
                     .Where(p => p != null)
@@ -743,7 +743,7 @@ namespace Qsi.SqlServer.Tree
                                 return VisitScalarExpression(scalarExpression);
 
                             case DataTypeReference dataTypeReference:
-                                return new QsiTypeAccessExpressionNode
+                                return new QsiTypeExpressionNode
                                 {
                                     Identifier = IdentifierVisitor.CreateQualifiedIdentifier(dataTypeReference.Name)
                                 };

@@ -37,9 +37,9 @@ namespace Qsi.Utilities
             return columns;
         }
 
-        public static QsiFunctionAccessExpressionNode CreateFunctionAccess(string identifier)
+        public static QsiFunctionExpressionNode CreateFunction(string identifier)
         {
-            return new QsiFunctionAccessExpressionNode
+            return new QsiFunctionExpressionNode
             {
                 Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(identifier, false))
             };

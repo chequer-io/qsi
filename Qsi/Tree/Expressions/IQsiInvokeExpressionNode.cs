@@ -2,7 +2,7 @@ namespace Qsi.Tree
 {
     public interface IQsiInvokeExpressionNode : IQsiExpressionNode
     {
-        IQsiFunctionAccessExpressionNode Member { get; }
+        IQsiFunctionExpressionNode Member { get; }
 
         IQsiParametersExpressionNode Parameters { get; }
     }
