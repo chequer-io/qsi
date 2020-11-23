@@ -25,7 +25,7 @@ namespace Qsi.PhoenixSql.Tree
 
             RepeatedField<AliasedNode> selects = statement.Select;
 
-            if (statement.IsUnion && selects.Select(s => s.Node.Unwrap()).Is(out IEnumerable<ColumnParseNode> columns))
+            if (statement.IsUnion && selects.Select(s => s.Node.Unwrap()).TryCast(out IEnumerable<ColumnParseNode> columns))
             {
                 columnsNode.Columns.AddRange(CreateSequentialColumns(columns));
             }
