@@ -18,7 +18,7 @@ namespace Qsi.Cql.Internal
 
             for (int i = 0; i < value.Length; i++)
             {
-                if (value[i] != (char)stream.LA(offset + i))
+                if (value[i] != (char)stream.LA(offset + i + 1))
                     return false;
             }
 

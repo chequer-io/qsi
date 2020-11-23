@@ -244,9 +244,8 @@ QMARK
     ;
 
 FLOAT
-    : { Save(); } INTEGER '.' RANGE { Restore(); } INTEGER '.'
-    | { Save(); } INTEGER RANGE { Restore(); } INTEGER { Type = INTEGER; }
-    | INTEGER ('.' DIGIT*)? EXPONENT?
+    : INTEGER { InputStream.StartsWith("..."); }? '.'
+    | INTEGER { !InputStream.StartsWith(".."); }? ('.' DIGIT*)? EXPONENT?
     ;
 
 BOOLEAN

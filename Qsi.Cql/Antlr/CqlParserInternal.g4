@@ -64,17 +64,17 @@ unaliasedSelector
     ;
 
 selectionAddition
-    : l=selectionMultiplication ( op=('+' | '-') r=selectionMultiplication )*
+    : left=selectionMultiplication (additionOperator selectionMultiplication)*
     ;
 
 selectionMultiplication
-    : l=selectionGroup ( op=('*' | '/' | '%') r=selectionGroup )*
+    : left=selectionGroup (multiplicationOperator selectionGroup)*
     ;
 
 selectionGroup
     : selectionGroupWithField
     | selectionGroupWithoutField
-    | '-' selectionGroup
+    | unary='-' selectionGroup
     ;
 
 selectionGroupWithField
@@ -82,8 +82,8 @@ selectionGroupWithField
     ;
 
 selectorModifier
-    : fieldSelectorModifier selectorModifier?
-    | '[' collectionSubSelection ']' selectorModifier?
+    : fieldSelectorModifier selectorModifier?          #fieldAccess
+    | '[' collectionSubSelection ']' selectorModifier? #rangeAccess
     ;
 
 fieldSelectorModifier
@@ -130,6 +130,17 @@ selectionTupleOrNestedSelector
     : '(' unaliasedSelector (',' unaliasedSelector )* ')'
     ;
 
+additionOperator
+    : '-' 
+    | '+'
+    ;
+
+multiplicationOperator
+    : '*'
+    | '/'
+    | '%'
+    ;
+
 /*
  * A single selection. The core of it is selecting a column, but we also allow any term and function, as well as
  * sub-element selection for UDT.
@@ -149,10 +160,9 @@ selectionFunction
     ;
 
 selectionLiteral
-    : constant
-    | K_NULL
-    | ':' noncol_ident
-    | QMARK
+    : c=constant
+    | n=K_NULL
+    | b=bindParameter
     ;
 
 selectionFunctionArgs
@@ -228,7 +238,6 @@ jsonInsertStatement
 jsonValue
     : s=STRING_LITERAL
     | bindParameter
-    | QMARK
     ;
 
 usingClause
@@ -373,19 +382,18 @@ value
     | l=collectionLiteral
     | u=usertypeLiteral
     | t=tupleLiteral
-    | K_NULL
+    | n=K_NULL
     | bindParameter
-    | QMARK
     ;
 
 intValue
     : t=INTEGER
     | bindParameter
-    | QMARK
     ;
 
 bindParameter
     : ':' id=noncol_ident
+    | QMARK
     ;
 
 functionName
@@ -506,17 +514,17 @@ roleName returns [QsiIdentifier id]
     ;
 
 constant
-    : STRING_LITERAL
-    | INTEGER
-    | FLOAT
-    | BOOLEAN
-    | DURATION
-    | UUID
-    | HEXNUMBER
-    | K_POSITIVE_NAN
-    | K_NEGATIVE_NAN
-    | K_POSITIVE_INFINITY
-    | K_NEGATIVE_INFINITY
+    : STRING_LITERAL      #literalString
+    | INTEGER             #literalInteger
+    | FLOAT               #literalFloat
+    | BOOLEAN             #literalBoolean
+    | DURATION            #literalDuration
+    | UUID                #literalUuid
+    | HEXNUMBER           #literalHexnumber
+    | K_POSITIVE_NAN      #literalPositiveNan
+    | K_NEGATIVE_NAN      #literalNegativeNan
+    | K_POSITIVE_INFINITY #literalPositiveInfinity
+    | K_NEGATIVE_INFINITY #literalNegativeInfinity
     ;
 
 function
@@ -533,11 +541,11 @@ term
     ;
 
 termAddition
-    : l=termMultiplication ( op=('+' | '-') r=termMultiplication )*
+    : left=termMultiplication (additionOperator termMultiplication)*
     ;
 
 termMultiplication
-    : l=termGroup ( op=('*' | '/' | '%') r=termGroup )*
+    : left=termGroup (multiplicationOperator termGroup)*
     ;
 
 termGroup

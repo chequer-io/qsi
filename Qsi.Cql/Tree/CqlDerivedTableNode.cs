@@ -8,6 +8,18 @@ namespace Qsi.Cql.Tree
 
         public bool AllowFiltering { get; set; }
 
-        public int? PerPartitionLimit { get; set; }
+        public QsiExpressionNode PerPartitionLimit
+        {
+            get => _perPartitionLimit;
+            set
+            {
+                if (value != null)
+                    value.Parent = this;
+
+                _perPartitionLimit = value;
+            }
+        }
+
+        private QsiExpressionNode _perPartitionLimit;
     }
 }

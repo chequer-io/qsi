@@ -23,7 +23,7 @@ namespace Qsi.Cql
 
         public override QsiAnalyzerOptions CreateAnalyzerOptions()
         {
-            return null;
+            return new QsiAnalyzerOptions();
         }
     }
 }

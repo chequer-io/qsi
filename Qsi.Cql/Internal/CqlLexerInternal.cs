@@ -10,15 +10,15 @@ namespace Qsi.Cql.Internal
         public void Save()
         {
             _saveStack ??= new Stack<int>();
-            _saveStack.Push(InputStream.Index);
+            _saveStack.Push(InputStream.Mark());
         }
 
         public void Restore()
         {
-            if (_saveStack == null || !_saveStack.TryPeek(out int index))
+            if (_saveStack == null || !_saveStack.TryPeek(out int mark))
                 throw new StackOverflowException();
 
-            InputStream.Seek(index);
+            InputStream.Release(mark);
         }
     }
 }
