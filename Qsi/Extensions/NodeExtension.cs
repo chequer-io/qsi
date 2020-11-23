@@ -419,6 +419,14 @@ namespace Qsi.Extensions
                 ignoreUserData ? null : node.UserData);
         }
 
+        public static ImmutableFieldExpressionNode ToImmutable(this IQsiFieldExpressionNode node, bool ignoreUserData = false)
+        {
+            return new ImmutableFieldExpressionNode(
+                node.Parent,
+                node.Identifier,
+                ignoreUserData ? null : node.UserData);
+        }
+
         public static ImmutableFunctionExpressionNode ToImmutable(this IQsiFunctionExpressionNode node, bool ignoreUserData = false)
         {
             return new ImmutableFunctionExpressionNode(
