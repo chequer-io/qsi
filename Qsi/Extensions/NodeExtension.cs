@@ -461,10 +461,10 @@ namespace Qsi.Extensions
                 node.Columns,
                 node.Source,
                 node.Alias,
-                node.WhereExpression,
-                node.GroupingExpression,
-                node.OrderExpression,
-                node.LimitExpression,
+                node.Where,
+                node.Grouping,
+                node.Order,
+                node.Limit,
                 ignoreUserData ? null : node.UserData);
         }
 

@@ -24,9 +24,9 @@ namespace Qsi.Parsing.Common
                 node.Source is IQsiTableAccessNode &&
                 node.Alias != null &&
                 node.Directives == null &&
-                node.WhereExpression == null &&
-                node.OrderExpression == null &&
-                node.LimitExpression == null &&
+                node.Where == null &&
+                node.Order == null &&
+                node.Limit == null &&
                 node.Columns != null &&
                 IsWildcard(node.Columns);
         }
@@ -284,28 +284,28 @@ namespace Qsi.Parsing.Common
                 }
             }
 
-            if (node.WhereExpression != null)
+            if (node.Where != null)
             {
                 writer.WriteSpace();
-                DeparseTreeNode(writer, node.WhereExpression, script);
+                DeparseTreeNode(writer, node.Where, script);
             }
 
-            if (node.GroupingExpression != null)
+            if (node.Grouping != null)
             {
                 writer.WriteSpace();
-                DeparseTreeNode(writer, node.GroupingExpression, script);
+                DeparseTreeNode(writer, node.Grouping, script);
             }
 
-            if (node.OrderExpression != null)
+            if (node.Order != null)
             {
                 writer.WriteSpace();
-                DeparseTreeNode(writer, node.OrderExpression, script);
+                DeparseTreeNode(writer, node.Order, script);
             }
 
-            if (node.LimitExpression != null)
+            if (node.Limit != null)
             {
                 writer.WriteSpace();
-                DeparseTreeNode(writer, node.LimitExpression, script);
+                DeparseTreeNode(writer, node.Limit, script);
             }
         }
 
