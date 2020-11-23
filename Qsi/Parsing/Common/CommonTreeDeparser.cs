@@ -117,7 +117,7 @@ namespace Qsi.Parsing.Common
             if (node.IsEmpty)
                 return;
 
-            JoinElements(writer, ", ", node.Columns, script);
+            JoinElements(writer, ", ", node, script);
         }
 
         protected virtual void DeparseAliasNode(ScriptWriter writer, IQsiAliasNode node, QsiScript script)
