@@ -5,7 +5,7 @@ using Qsi.Tree.Data;
 
 namespace Qsi.Tree.Immutable
 {
-    public readonly struct ImmutableFunctionAccessExpressionNode : IQsiFunctionAccessExpressionNode
+    public readonly struct ImmutableVariableExpressionNode : IQsiVariableExpressionNode
     {
         public IQsiTreeNode Parent { get; }
 
@@ -15,7 +15,7 @@ namespace Qsi.Tree.Immutable
 
         public IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
 
-        public ImmutableFunctionAccessExpressionNode(IQsiTreeNode parent, QsiQualifiedIdentifier identifier, IUserDataHolder userData)
+        public ImmutableVariableExpressionNode(IQsiTreeNode parent, QsiQualifiedIdentifier identifier, IUserDataHolder userData)
         {
             Parent = parent;
             Identifier = identifier;

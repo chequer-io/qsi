@@ -5,7 +5,7 @@ namespace Qsi.Tree
 {
     public class QsiInvokeExpressionNode : QsiExpressionNode, IQsiInvokeExpressionNode
     {
-        public QsiTreeNodeProperty<QsiFunctionAccessExpressionNode> Member { get; }
+        public QsiTreeNodeProperty<QsiFunctionExpressionNode> Member { get; }
 
         public QsiTreeNodeList<QsiExpressionNode> Parameters { get; }
 
@@ -13,7 +13,7 @@ namespace Qsi.Tree
             => TreeHelper.YieldChildren(Member?.Value, _parameters);
 
         #region Explicit
-        IQsiFunctionAccessExpressionNode IQsiInvokeExpressionNode.Member => Member.Value;
+        IQsiFunctionExpressionNode IQsiInvokeExpressionNode.Member => Member.Value;
 
         IQsiParametersExpressionNode IQsiInvokeExpressionNode.Parameters => _parameters;
         #endregion
@@ -22,7 +22,7 @@ namespace Qsi.Tree
 
         public QsiInvokeExpressionNode()
         {
-            Member = new QsiTreeNodeProperty<QsiFunctionAccessExpressionNode>(this);
+            Member = new QsiTreeNodeProperty<QsiFunctionExpressionNode>(this);
 
             _parameters = new QsiParametersExpressionNode
             {

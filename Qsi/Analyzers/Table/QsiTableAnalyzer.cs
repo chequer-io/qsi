@@ -814,30 +814,30 @@ namespace Qsi.Analyzers.Table
                     break;
                 }
 
-                case IQsiArrayRankExpressionNode e:
+                case IQsiMemberAccessExpressionNode e:
                 {
-                    foreach (var c in ResolveColumnsInExpression(context, e.Array))
+                    foreach (var c in ResolveColumnsInExpression(context, e.Target))
                         yield return c;
 
-                    foreach (var c in ResolveColumnsInExpression(context, e.Rank))
+                    foreach (var c in ResolveColumnsInExpression(context, e.Member))
                         yield return c;
 
                     break;
                 }
 
-                case IQsiVariableAccessExpressionNode e:
+                case IQsiVariableExpressionNode e:
                 {
                     // TODO: Analyze variable
                     break;
                 }
 
-                case IQsiFunctionAccessExpressionNode e:
+                case IQsiFunctionExpressionNode e:
                 {
                     // TODO: Analyze function
                     break;
                 }
 
-                case IQsiMemberAccessExpressionNode _:
+                case IQsiMemberExpressionNode _:
                 {
                     // Skip unknown member access
                     break;

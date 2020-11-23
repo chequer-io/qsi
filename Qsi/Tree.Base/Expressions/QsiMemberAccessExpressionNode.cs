@@ -3,7 +3,7 @@ using Qsi.Utilities;
 
 namespace Qsi.Tree
 {
-    public class QsiArrayRankExpressionNode : QsiExpressionNode, IQsiArrayRankExpressionNode
+    public class QsiMemberAccessExpressionNode : QsiExpressionNode, IQsiMemberAccessExpressionNode
     {
         public QsiTreeNodeProperty<QsiExpressionNode> Array { get; }
 
@@ -13,12 +13,12 @@ namespace Qsi.Tree
             => TreeHelper.YieldChildren(Array, Rank);
 
         #region Explicit
-        IQsiExpressionNode IQsiArrayRankExpressionNode.Array => Array.Value;
+        IQsiExpressionNode IQsiMemberAccessExpressionNode.Target => Array.Value;
 
-        IQsiExpressionNode IQsiArrayRankExpressionNode.Rank => Rank.Value;
+        IQsiExpressionNode IQsiMemberAccessExpressionNode.Member => Rank.Value;
         #endregion
 
-        public QsiArrayRankExpressionNode()
+        public QsiMemberAccessExpressionNode()
         {
             Array = new QsiTreeNodeProperty<QsiExpressionNode>(this);
             Rank = new QsiTreeNodeProperty<QsiExpressionNode>(this);

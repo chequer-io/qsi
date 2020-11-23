@@ -262,12 +262,12 @@ namespace Qsi.Extensions
                 ignoreUserData ? null : node.UserData);
         }
 
-        public static ImmutableArrayRankExpressionNode ToImmutable(this IQsiArrayRankExpressionNode node, bool ignoreUserData = false)
+        public static ImmutableMemberAccessExpressionNode ToImmutable(this IQsiMemberAccessExpressionNode node, bool ignoreUserData = false)
         {
-            return new ImmutableArrayRankExpressionNode(
+            return new ImmutableMemberAccessExpressionNode(
                 node.Parent,
-                node.Array,
-                node.Rank,
+                node.Target,
+                node.Member,
                 ignoreUserData ? null : node.UserData);
         }
 
@@ -419,17 +419,17 @@ namespace Qsi.Extensions
                 ignoreUserData ? null : node.UserData);
         }
 
-        public static ImmutableFunctionAccessExpressionNode ToImmutable(this IQsiFunctionAccessExpressionNode node, bool ignoreUserData = false)
+        public static ImmutableFunctionExpressionNode ToImmutable(this IQsiFunctionExpressionNode node, bool ignoreUserData = false)
         {
-            return new ImmutableFunctionAccessExpressionNode(
+            return new ImmutableFunctionExpressionNode(
                 node.Parent,
                 node.Identifier,
                 ignoreUserData ? null : node.UserData);
         }
 
-        public static ImmutableVariableAccessExpressionNode ToImmutable(this IQsiVariableAccessExpressionNode node, bool ignoreUserData = false)
+        public static ImmutableVariableExpressionNode ToImmutable(this IQsiVariableExpressionNode node, bool ignoreUserData = false)
         {
-            return new ImmutableVariableAccessExpressionNode(
+            return new ImmutableVariableExpressionNode(
                 node.Parent,
                 node.Identifier,
                 ignoreUserData ? null : node.UserData);

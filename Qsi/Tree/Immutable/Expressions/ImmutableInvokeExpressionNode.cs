@@ -8,7 +8,7 @@ namespace Qsi.Tree.Immutable
     {
         public IQsiTreeNode Parent { get; }
 
-        public IQsiFunctionAccessExpressionNode Member { get; }
+        public IQsiFunctionExpressionNode Member { get; }
 
         public IQsiParametersExpressionNode Parameters { get; }
 
@@ -18,7 +18,7 @@ namespace Qsi.Tree.Immutable
 
         public ImmutableInvokeExpressionNode(
             IQsiTreeNode parent,
-            IQsiFunctionAccessExpressionNode member,
+            IQsiFunctionExpressionNode member,
             IQsiParametersExpressionNode parameters,
             IUserDataHolder userData)
         {
