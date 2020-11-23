@@ -17,5 +17,61 @@ namespace Qsi.Cql
 
             writer.Write(script.Script[range]);
         }
+
+        protected override void DeparseDerivedTableNode(ScriptWriter writer, IQsiDerivedTableNode node, QsiScript script)
+        {
+            if (node is CqlDerivedTableNode cqlNode)
+            {
+                writer.Write("SELECT ");
+
+                if (cqlNode.IsJson)
+                    writer.Write("JSON ");
+
+                if (node.Columns != null)
+                    DeparseTreeNode(writer, node.Columns, script);
+
+                if (node.Source != null)
+                {
+                    writer.WriteSpace();
+                    writer.Write("FROM ");
+
+                    if (node.Source is IQsiDerivedTableNode leftSource && !IsAliasedTableAccessNode(leftSource) ||
+                        node.Source is IQsiCompositeTableNode)
+                    {
+                        DeparseTreeNodeWithParenthesis(writer, node.Source, script);
+                    }
+                    else
+                    {
+                        DeparseTreeNode(writer, node.Source, script);
+                    }
+                }
+
+                if (node.WhereExpression != null)
+                {
+                    writer.WriteSpace();
+                    DeparseTreeNode(writer, node.WhereExpression, script);
+                }
+
+                if (node.GroupingExpression != null)
+                {
+                    writer.WriteSpace();
+                    DeparseTreeNode(writer, node.GroupingExpression, script);
+                }
+
+                if (node.OrderExpression != null)
+                {
+                    writer.WriteSpace();
+                    DeparseTreeNode(writer, node.OrderExpression, script);
+                }
+
+                if (node.LimitExpression != null)
+                {
+                    writer.WriteSpace();
+                    DeparseTreeNode(writer, node.LimitExpression, script);
+                }
+            }
+
+            base.DeparseDerivedTableNode(writer, node, script);
+        }
     }
 }
