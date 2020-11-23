@@ -280,8 +280,8 @@ namespace Qsi.JSql.Tree
         {
             return TreeHelper.Create<QsiMemberAccessExpressionNode>(n =>
             {
-                n.Array.SetValue(Visit(expression.getObjExpression()));
-                n.Rank.SetValue(Visit(expression.getIndexExpression()));
+                n.Target.SetValue(Visit(expression.getObjExpression()));
+                n.Member.SetValue(Visit(expression.getIndexExpression()));
             });
         }
 

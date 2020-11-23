@@ -5,23 +5,23 @@ namespace Qsi.Tree
 {
     public class QsiMemberAccessExpressionNode : QsiExpressionNode, IQsiMemberAccessExpressionNode
     {
-        public QsiTreeNodeProperty<QsiExpressionNode> Array { get; }
+        public QsiTreeNodeProperty<QsiExpressionNode> Target { get; }
 
-        public QsiTreeNodeProperty<QsiExpressionNode> Rank { get; }
+        public QsiTreeNodeProperty<QsiExpressionNode> Member { get; }
 
         public override IEnumerable<IQsiTreeNode> Children
-            => TreeHelper.YieldChildren(Array, Rank);
+            => TreeHelper.YieldChildren(Target, Member);
 
         #region Explicit
-        IQsiExpressionNode IQsiMemberAccessExpressionNode.Target => Array.Value;
+        IQsiExpressionNode IQsiMemberAccessExpressionNode.Target => Target.Value;
 
-        IQsiExpressionNode IQsiMemberAccessExpressionNode.Member => Rank.Value;
+        IQsiExpressionNode IQsiMemberAccessExpressionNode.Member => Member.Value;
         #endregion
 
         public QsiMemberAccessExpressionNode()
         {
-            Array = new QsiTreeNodeProperty<QsiExpressionNode>(this);
-            Rank = new QsiTreeNodeProperty<QsiExpressionNode>(this);
+            Target = new QsiTreeNodeProperty<QsiExpressionNode>(this);
+            Member = new QsiTreeNodeProperty<QsiExpressionNode>(this);
         }
     }
 }
