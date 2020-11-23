@@ -45,8 +45,8 @@ selectStatement
         ( K_WHERE whereClause )?
         ( K_GROUP K_BY groupByClause ( ',' groupByClause )* )?
         ( K_ORDER K_BY orderByClause ( ',' orderByClause )* )?
-        ( K_PER K_PARTITION K_LIMIT intValue )?
-        ( K_LIMIT intValue )?
+        ( K_PER K_PARTITION K_LIMIT perLimit=intValue )?
+        ( K_LIMIT limit=intValue )?
         ( K_ALLOW K_FILTERING )?
     ;
 
@@ -91,10 +91,10 @@ fieldSelectorModifier
     ;
 
 collectionSubSelection
-    : ( term ( RANGE term? )?
-      | RANGE term
+    : ( t1=term ( RANGE (t2=term)? )?
+      | RANGE t2=term
       )
-     ;
+    ;
 
 selectionGroupWithoutField
     : simpleUnaliasedSelector
@@ -227,7 +227,7 @@ jsonInsertStatement
 
 jsonValue
     : s=STRING_LITERAL
-    | ':' id=noncol_ident
+    | bindParameter
     | QMARK
     ;
 
@@ -374,14 +374,18 @@ value
     | u=usertypeLiteral
     | t=tupleLiteral
     | K_NULL
-    | ':' id=noncol_ident
+    | bindParameter
     | QMARK
     ;
 
 intValue
     : t=INTEGER
-    | ':' id=noncol_ident
+    | bindParameter
     | QMARK
+    ;
+
+bindParameter
+    : ':' id=noncol_ident
     ;
 
 functionName

@@ -189,14 +189,7 @@ fragment Y: ('y'|'Y');
 fragment Z: ('z'|'Z');
 
 STRING_LITERAL
-    : '$$'
-     (
-         { 
-            (InputStream.Size - InputStream.Index > 1) &&
-            InputStream.Substring(InputStream.Index, InputStream.Index + 1) != "$$"
-         }? .
-     )* 
-     '$$'
+    : '$$' ( { !InputStream.StartsWith("$$"); }? . )* '$$'
     | '\'' ('\'\'' | ~'\'')+ '\''
     ;
 
@@ -251,8 +244,9 @@ QMARK
     ;
 
 FLOAT
-    : INTEGER '.' DIGIT* EXPONENT?
-    | INTEGER EXPONENT
+    : { Save(); } INTEGER '.' RANGE { Restore(); } INTEGER '.'
+    | { Save(); } INTEGER RANGE { Restore(); } INTEGER { Type = INTEGER; }
+    | INTEGER ('.' DIGIT*)? EXPONENT?
     ;
 
 BOOLEAN
