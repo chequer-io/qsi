@@ -12,68 +12,67 @@ namespace Qsi.Cql.Tree
         #region SelectStatement
         public static QsiTableNode VisitSelectStatement(SelectStatementContext context)
         {
+            return VisitCommonSelectStatement(new CommonSelectStatementContext(context));
+        }
+
+        public static QsiTableNode VisitCommonSelectStatement(CommonSelectStatementContext context)
+        {
             var node = new CqlDerivedTableNode
             {
-                IsJson = context.json,
-                IsDistinct = context.distinct,
-                AllowFiltering = context.allowFiltering
+                IsJson = context.IsJson,
+                IsDistinct = context.IsDistinct,
+                AllowFiltering = context.AllowFiltering
             };
 
-            node.Columns.SetValue(VisitSelectors(context.selectors()));
-            node.Source.SetValue(VisitColumnFamilyName(context.columnFamilyName()));
+            node.Columns.SetValue(VisitSelectors(context.Selectors));
+            node.Source.SetValue(VisitColumnFamilyName(context.FromSource));
 
-            if (context.whereClause() != null)
+            if (context.WhereClause != null)
             {
-                var clause = context.whereClause();
-
                 var whereContext = new ParserRuleContextWrapper<WhereClauseContext>
                 (
-                    clause,
-                    context.w,
-                    clause.Stop
+                    context.WhereClause,
+                    context.WhereStart,
+                    context.WhereClause.Stop
                 );
 
                 node.Where.SetValue(ExpressionVisitor.CreateWhere(whereContext));
             }
 
-            if (!ListUtility.IsNullOrEmpty(context.groupByClause()))
+            if (!ListUtility.IsNullOrEmpty(context.GroupByClauses))
             {
-                GroupByClauseContext[] clauses = context.groupByClause();
-
                 var groupingContext = new ParserRuleContextWrapper<GroupByClauseContext[]>
                 (
-                    clauses,
-                    context.g,
-                    clauses[^1].Stop
+                    context.GroupByClauses,
+                    context.GroupByStart,
+                    context.GroupByClauses[^1].Stop
                 );
 
                 node.Grouping.SetValue(ExpressionVisitor.CreateGrouping(groupingContext));
             }
 
-            if (!ListUtility.IsNullOrEmpty(context.orderByClause()))
+            if (!ListUtility.IsNullOrEmpty(context.OrderByClauses))
             {
-                OrderByClauseContext[] clauses = context.orderByClause();
-
                 var orderContext = new ParserRuleContextWrapper<OrderByClauseContext[]>
                 (
-                    clauses,
-                    context.o,
-                    clauses[^1].Stop
+                    context.OrderByClauses,
+                    context.OrderByStart,
+                    context.OrderByClauses[^1].Stop
                 );
 
                 node.Order.SetValue(ExpressionVisitor.CreateOrder(orderContext));
             }
 
-            if (context.perLimit != null)
-                node.PerPartitionLimit.SetValue(ExpressionVisitor.VisitIntValue(context.perLimit));
+            if (context.PerLimit != null)
+                node.PerPartitionLimit.SetValue(ExpressionVisitor.VisitIntValue(context.PerLimit));
 
-            if (context.limit != null)
+            if (context.Limit != null)
             {
                 var limitContext = new ParserRuleContextWrapper<IntValueContext>
                 (
-                    context.limit,
-                    context.l,
-                    context.limit.Stop
+                    context.Limit,
+                    context.LimitStart,
+                    context.Limit.Stop
                 );
 
                 node.Limit.SetValue(ExpressionVisitor.CreateLimit(limitContext));
@@ -83,7 +82,7 @@ namespace Qsi.Cql.Tree
 
             return node;
         }
-
+        
         public static QsiTableNode VisitColumnFamilyName(ColumnFamilyNameContext context)
         {
             var node = new QsiTableAccessNode
@@ -250,7 +249,17 @@ namespace Qsi.Cql.Tree
         #region CreateMaterializedViewStatement
         public static QsiTableNode VisitCreateMaterializedViewStatement(CreateMaterializedViewStatementContext context)
         {
-            throw new System.NotImplementedException();
+            var node = new QsiDerivedTableNode();
+
+            node.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+            node.Source.SetValue(VisitCommonSelectStatement(new CommonSelectStatementContext(context)));
+
+            node.Alias.SetValue(new QsiAliasNode
+            {
+                Name = context.cf.id[^1]
+            });
+
+            return node;
         }
         #endregion
     }

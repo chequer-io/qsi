@@ -20,7 +20,7 @@ namespace Qsi.Cql.Tree
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void PutContextSpan<T>(IQsiTreeNode node, ParserRuleContextWrapper<T> context)
+        public static void PutContextSpan(IQsiTreeNode node, IParserRuleContext context)
         {
             PutContextSpan(node, context.Start, context.Stop);
         }

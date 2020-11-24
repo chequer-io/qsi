@@ -2,7 +2,7 @@
 
 namespace Qsi.Cql.Tree.Common
 {
-    internal readonly struct ParserRuleContextWrapper<T>
+    internal readonly struct ParserRuleContextWrapper<T> : IParserRuleContext
     {
         public T Value { get; }
 

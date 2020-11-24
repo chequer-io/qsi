@@ -315,7 +315,7 @@ usingClauseDelete
 createMaterializedViewStatement
     : K_CREATE K_MATERIALIZED K_VIEW (K_IF K_NOT K_EXISTS)? cf=columnFamilyName K_AS
         K_SELECT sclause=selectors K_FROM basecf=columnFamilyName
-        (K_WHERE wclause=whereClause)?
+        (w=K_WHERE wclause=whereClause)?
         viewPrimaryKey
         ( K_WITH viewProperty ( K_AND viewProperty )*)?
     ;
