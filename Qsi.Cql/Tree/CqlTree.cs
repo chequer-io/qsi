@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 using Antlr4.Runtime;
+using Qsi.Cql.Tree.Common;
 using Qsi.Shared;
 using Qsi.Tree;
 using Qsi.Tree.Data;
@@ -16,6 +17,12 @@ namespace Qsi.Cql.Tree
         static CqlTree()
         {
             Span = new KeyIndexer<Range>(SpanKey);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void PutContextSpan<T>(IQsiTreeNode node, ParserRuleContextWrapper<T> context)
+        {
+            PutContextSpan(node, context.Start, context.Stop);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

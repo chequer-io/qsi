@@ -27,24 +27,16 @@ namespace Qsi.Cql
                 if (cqlNode.IsJson)
                     writer.Write("JSON ");
 
+                if (cqlNode.IsDistinct)
+                    writer.Write("DISTINCT ");
+
                 if (node.Columns != null)
                     DeparseTreeNode(writer, node.Columns, script);
 
-                if (node.Source != null)
-                {
-                    writer.WriteSpace();
-                    writer.Write("FROM ");
+                writer.WriteSpace();
+                writer.Write("FROM ");
 
-                    if (node.Source is IQsiDerivedTableNode leftSource && !IsAliasedTableAccessNode(leftSource) ||
-                        node.Source is IQsiCompositeTableNode)
-                    {
-                        DeparseTreeNodeWithParenthesis(writer, node.Source, script);
-                    }
-                    else
-                    {
-                        DeparseTreeNode(writer, node.Source, script);
-                    }
-                }
+                DeparseTreeNode(writer, node.Source, script);
 
                 if (node.Where != null)
                 {
@@ -64,11 +56,26 @@ namespace Qsi.Cql
                     DeparseTreeNode(writer, node.Order, script);
                 }
 
+                if (!cqlNode.PerPartitionLimit.IsEmpty)
+                {
+                    writer.WriteSpace();
+                    writer.Write("PER PARTITION LIMIT ");
+                    DeparseTreeNode(writer, cqlNode.PerPartitionLimit.Value, script);
+                }
+
                 if (node.Limit != null)
                 {
                     writer.WriteSpace();
                     DeparseTreeNode(writer, node.Limit, script);
                 }
+
+                if (cqlNode.AllowFiltering)
+                {
+                    writer.WriteSpace();
+                    writer.Write("ALLOW FILTERING");
+                }
+
+                return;
             }
 
             base.DeparseDerivedTableNode(writer, node, script);

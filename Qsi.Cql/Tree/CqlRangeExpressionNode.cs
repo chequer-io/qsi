@@ -20,5 +20,11 @@ namespace Qsi.Cql.Tree
                     yield return End.Value;
             }
         }
+
+        public CqlRangeExpressionNode()
+        {
+            Start = new QsiTreeNodeProperty<QsiExpressionNode>(this);
+            End = new QsiTreeNodeProperty<QsiExpressionNode>(this);
+        }
     }
 }

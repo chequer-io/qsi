@@ -38,16 +38,23 @@ cqlStatement
  * [ LIMIT <NUMBER> ]
  * [ ALLOW FILTERING ]
  */
-selectStatement
+selectStatement returns [
+    bool json,
+    bool distinct,
+    bool allowFiltering
+]
     :
-        K_SELECT K_JSON? K_DISTINCT? selectors
+        K_SELECT
+        ( K_JSON { $json = true; } )? 
+        ( K_DISTINCT { $distinct = true; } )? 
+        selectors
         K_FROM columnFamilyName
-        ( K_WHERE whereClause )?
-        ( K_GROUP K_BY groupByClause ( ',' groupByClause )* )?
-        ( K_ORDER K_BY orderByClause ( ',' orderByClause )* )?
-        ( K_PER K_PARTITION K_LIMIT perLimit=intValue )?
-        ( K_LIMIT limit=intValue )?
-        ( K_ALLOW K_FILTERING )?
+        ( w=K_WHERE whereClause )?
+        ( g=K_GROUP K_BY groupByClause ( ',' groupByClause )* )?
+        ( o=K_ORDER K_BY orderByClause ( ',' orderByClause )* )?
+        ( p=K_PER K_PARTITION K_LIMIT perLimit=intValue )?
+        ( l=K_LIMIT limit=intValue )?
+        ( K_ALLOW K_FILTERING { $allowFiltering = true; } )?
     ;
 
 selectors
@@ -90,9 +97,9 @@ fieldSelectorModifier
     : '.' fident
     ;
 
-collectionSubSelection
-    : ( t1=term ( RANGE (t2=term)? )?
-      | RANGE t2=term
+collectionSubSelection returns [bool range]
+    : ( t1=term ( RANGE (t2=term)? { $range = true; } )?
+      | RANGE t2=term { $range = true; }
       )
     ;
 
@@ -114,7 +121,7 @@ selectionList
     ;
 
 selectionMapOrSet
-    : '{' unaliasedSelector ( selectionMap | selectionSet ) '}'
+    : '{' unaliasedSelector ( m=selectionMap | s=selectionSet ) '}'
     | '{' '}'
     ;
 
@@ -127,7 +134,7 @@ selectionSet
       ;
 
 selectionTupleOrNestedSelector
-    : '(' unaliasedSelector (',' unaliasedSelector )* ')'
+    : '(' list+=unaliasedSelector (',' list+=unaliasedSelector )* ')'
     ;
 
 additionOperator
@@ -152,11 +159,11 @@ simpleUnaliasedSelector
     ;
 
 selectionFunction
-    : K_COUNT '(' '*' ')'
-    | K_WRITETIME '(' c=sident ')'
-    | K_TTL       '(' c=sident ')'
-    | K_CAST      '(' sn=unaliasedSelector K_AS t=native_type ')'
-    | functionName selectionFunctionArgs
+    : K_COUNT '(' '*' ')'                                         #countFunction
+    | K_WRITETIME '(' c=sident ')'                                #writetimeFunction
+    | K_TTL       '(' c=sident ')'                                #ttlFunction
+    | K_CAST      '(' sn=unaliasedSelector K_AS t=native_type ')' #castFunction
+    | n=functionName args=selectionFunctionArgs                   #userFunction
     ;
 
 selectionLiteral
@@ -200,8 +207,8 @@ customIndexExpression
     : K_EXPR '(' idxName ',' t=term ')'
     ;
 
-orderByClause
-    : cident (K_ASC | K_DESC)?
+orderByClause returns [bool isDescending]
+    : cident (K_ASC | K_DESC { $isDescending = true; })?
     ;
 
 groupByClause
@@ -317,14 +324,11 @@ viewPrimaryKey
     : K_PRIMARY K_KEY '(' viewPartitionKey (',' c=ident )* ')'
     ;
 
-viewPartitionKey returns [List<QsiIdentifier> list]
-    @init {
-        $list = new List<QsiIdentifier>();
-    }
-    : k1=ident { $list.Add($k1.id); } 
+viewPartitionKey
+    : keys+=ident 
     | '(' 
-        k2=ident { $list.Add($k2.id); }  
-        ( ',' kn=ident { $list.Add($kn.id); } )* 
+        keys+=ident  
+        ( ',' keys+=ident )* 
       ')'
     ;
 
@@ -374,7 +378,7 @@ usertypeLiteral
     ;
 
 tupleLiteral
-    : '(' t1=term ( ',' tn=term )* ')'
+    : '(' list+=term ( ',' list+=term )* ')'
     ;
 
 value
@@ -396,23 +400,27 @@ bindParameter
     | QMARK
     ;
 
-functionName
-    : (keyspaceName '.')? allowedFunctionName
-    ;
-
-allowedFunctionName
-    : IDENT
-    | QUOTED_NAME
-    | unreserved_function_keyword
-    | K_TOKEN
-    | K_COUNT
-    ;
-
-cidentList returns [List<QsiIdentifier> list]
-    @init {
-        $list = new List<QsiIdentifier>();
+functionName returns [QsiQualifiedIdentifier id]
+    @init { QsiIdentifier first = null; }
+    : (f=keyspaceName '.' { first = $f.id; } )? second=allowedFunctionName
+    {
+        if (first == null)
+            $id = new QsiQualifiedIdentifier($second.id);
+        else
+            $id = new QsiQualifiedIdentifier(first, $second.id);
     }
-    : c1=cident { $list.Add($c1.id); } ( ',' cn=cident { $list.Add($cn.id); } )*
+    ;
+
+allowedFunctionName returns [QsiIdentifier id]
+    : t=IDENT                       { $id = new QsiIdentifier($t.text, false); }
+    | t=QUOTED_NAME                 { $id = new QsiIdentifier($t.text, true); }
+    | k=unreserved_function_keyword { $id = new QsiIdentifier($k.text, false); }
+    | t=K_TOKEN                     { $id = new QsiIdentifier($t.text, false); }
+    | t=K_COUNT                     { $id = new QsiIdentifier($t.text, false); }
+    ;
+
+cidentList
+    : list+=cident ( ',' list+=cident )*
     ;
 
 /** DEFINITIONS **/
@@ -528,8 +536,8 @@ constant
     ;
 
 function
-    : f=functionName '(' ')'
-    | f=functionName '(' args=functionArgs ')'
+    : n=functionName '(' ')'
+    | n=functionName '(' args=functionArgs ')'
     ;
 
 functionArgs
@@ -643,29 +651,36 @@ relation
     | K_TOKEN l=tupleOfIdentifiers op=relationType r=term  #tokenExpr
     | l=cident K_IN r=inMarker                             #inExpr1
     | l=cident K_IN r=singleColumnInValues                 #inExpr2
-    | l=cident op=containsOperator r=term                  #constainsExpr
+    | l=cident op=containsOperator r=term                  #containsExpr
     | l=cident '[' key=term ']' op=relationType r=term     #logicalExpr2
     | l=tupleOfIdentifiers
-      ( K_IN
+      ( 
+          K_IN
           (
+            /* (a, b, c) IN () */
             '(' ')'
-            | tupleInMarker=inMarkerForTuple /* (a, b, c) IN ? */
-            | literals=tupleOfTupleLiterals /* (a, b, c) IN ((1, 2, 3), (4, 5, 6), ...) */
-            | markers=tupleOfMarkersForTuples /* (a, b, c) IN (?, ?, ...) */
+            /* (a, b, c) IN ? */
+            | tupleInMarker=inMarkerForTuple
+            /* (a, b, c) IN ((1, 2, 3), (4, 5, 6), ...) */
+            | literals=tupleOfTupleLiterals
+            /* (a, b, c) IN (?, ?, ...) */
+            | markers=tupleOfMarkersForTuples
           )
-          | op=relationType literal=tupleLiteral /* (a, b, c) > (1, 2, 3) or (a, b, c) > (?, ?, ?) */
-          | op=relationType tupleMarker=markerForTuple /* (a, b, c) >= ? */
-      )                                                    #inExpr3
+          /* (a, b, c) > (1, 2, 3) or (a, b, c) > (?, ?, ?) */
+          | op=relationType literal=tupleLiteral
+          /* (a, b, c) >= ? */
+          | op=relationType tupleMarker=markerForTuple
+      )                                                    #tupleExpr
     | '(' relation ')'                                     #groupExpr
     ;
 
-containsOperator
-    : K_CONTAINS (K_KEY)?
+containsOperator returns [bool key]
+    : K_CONTAINS (K_KEY { $key = true; } )?
     ;
 
 inMarker
     : QMARK
-    | ':' name=noncol_ident
+    | ':' id=noncol_ident
     ;
 
 tupleOfIdentifiers
@@ -673,25 +688,25 @@ tupleOfIdentifiers
     ;
 
 singleColumnInValues
-    : '(' ( t1 = term (',' ti=term)* )? ')'
+    : '(' ( list+=term (',' list+=term)* )? ')'
     ;
 
 tupleOfTupleLiterals
-    : '(' t1=tupleLiteral (',' ti=tupleLiteral)* ')'
+    : '(' list+=tupleLiteral (',' list+=tupleLiteral)* ')'
     ;
 
 markerForTuple
     : QMARK
-    | ':' name=noncol_ident
+    | ':' id=noncol_ident
     ;
 
 tupleOfMarkersForTuples
-    : '(' m1=markerForTuple (',' mi=markerForTuple)* ')'
+    : '(' list+=markerForTuple (',' list+=markerForTuple)* ')'
     ;
 
 inMarkerForTuple
     : QMARK
-    | ':' name=noncol_ident
+    | ':' id=noncol_ident
     ;
 
 comparatorType

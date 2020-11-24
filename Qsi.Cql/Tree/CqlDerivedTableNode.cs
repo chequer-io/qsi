@@ -6,20 +6,15 @@ namespace Qsi.Cql.Tree
     {
         public bool IsJson { get; set; }
 
+        public bool IsDistinct { get; set; }
+
         public bool AllowFiltering { get; set; }
 
-        public QsiExpressionNode PerPartitionLimit
+        public QsiTreeNodeProperty<QsiExpressionNode> PerPartitionLimit { get; }
+
+        public CqlDerivedTableNode()
         {
-            get => _perPartitionLimit;
-            set
-            {
-                if (value != null)
-                    value.Parent = this;
-
-                _perPartitionLimit = value;
-            }
+            PerPartitionLimit = new QsiTreeNodeProperty<QsiExpressionNode>(this);
         }
-
-        private QsiExpressionNode _perPartitionLimit;
     }
 }

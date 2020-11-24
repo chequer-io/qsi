@@ -14,27 +14,70 @@ namespace Qsi.Cql.Tree
         {
             var node = new CqlDerivedTableNode
             {
-                IsJson = context.K_JSON() != null,
-                AllowFiltering = context.K_FILTERING() != null
+                IsJson = context.json,
+                IsDistinct = context.distinct,
+                AllowFiltering = context.allowFiltering
             };
 
             node.Columns.SetValue(VisitSelectors(context.selectors()));
             node.Source.SetValue(VisitColumnFamilyName(context.columnFamilyName()));
 
             if (context.whereClause() != null)
-                node.Where.SetValue(ExpressionVisitor.VisitWhereClause(context.whereClause()));
+            {
+                var clause = context.whereClause();
+
+                var whereContext = new ParserRuleContextWrapper<WhereClauseContext>
+                (
+                    clause,
+                    context.w,
+                    clause.Stop
+                );
+
+                node.Where.SetValue(ExpressionVisitor.CreateWhere(whereContext));
+            }
 
             if (!ListUtility.IsNullOrEmpty(context.groupByClause()))
-                node.Grouping.SetValue(ExpressionVisitor.VisitGroupByClauses(context.groupByClause()));
+            {
+                GroupByClauseContext[] clauses = context.groupByClause();
+
+                var groupingContext = new ParserRuleContextWrapper<GroupByClauseContext[]>
+                (
+                    clauses,
+                    context.g,
+                    clauses[^1].Stop
+                );
+
+                node.Grouping.SetValue(ExpressionVisitor.CreateGrouping(groupingContext));
+            }
 
             if (!ListUtility.IsNullOrEmpty(context.orderByClause()))
-                node.Order.SetValue(ExpressionVisitor.VisitOrderByClauses(context.orderByClause()));
+            {
+                OrderByClauseContext[] clauses = context.orderByClause();
+
+                var orderContext = new ParserRuleContextWrapper<OrderByClauseContext[]>
+                (
+                    clauses,
+                    context.o,
+                    clauses[^1].Stop
+                );
+
+                node.Order.SetValue(ExpressionVisitor.CreateOrder(orderContext));
+            }
 
             if (context.perLimit != null)
-                node.PerPartitionLimit = ExpressionVisitor.VisitIntValue(context.perLimit);
+                node.PerPartitionLimit.SetValue(ExpressionVisitor.VisitIntValue(context.perLimit));
 
             if (context.limit != null)
-                node.Limit.SetValue(ExpressionVisitor.CreateLimit(context.limit));
+            {
+                var limitContext = new ParserRuleContextWrapper<IntValueContext>
+                (
+                    context.limit,
+                    context.l,
+                    context.limit.Stop
+                );
+
+                node.Limit.SetValue(ExpressionVisitor.CreateLimit(limitContext));
+            }
 
             CqlTree.PutContextSpan(node, context);
 
@@ -153,7 +196,7 @@ namespace Qsi.Cql.Tree
                     return new SelectorPair(ExpressionVisitor.VisitSelectionTypeHint(selectionTypeHint));
 
                 case SelectionTupleOrNestedSelectorContext selectionTupleOrNestedSelector:
-                    return new SelectorPair(ExpressionVisitor.VisitSelectionTupleOrNestedSelector(selectionTupleOrNestedSelector));
+                    return VisitSelectionTupleOrNestedSelector(selectionTupleOrNestedSelector);
 
                 case SelectionListContext selectionList:
                     return new SelectorPair(ExpressionVisitor.VisitSelectionList(selectionList));
@@ -164,6 +207,14 @@ namespace Qsi.Cql.Tree
                 default:
                     throw TreeHelper.NotSupportedTree(context);
             }
+        }
+
+        private static SelectorPair VisitSelectionTupleOrNestedSelector(SelectionTupleOrNestedSelectorContext context)
+        {
+            if (context._list.Count > 1)
+                return new SelectorPair(ExpressionVisitor.VisitSelectionTupleOrNestedSelector(context));
+
+            return VisitUnaliasedSelector(context._list[0]);
         }
 
         public static SelectorPair VisitSimpleUnaliasedSelector(SimpleUnaliasedSelectorContext context)
