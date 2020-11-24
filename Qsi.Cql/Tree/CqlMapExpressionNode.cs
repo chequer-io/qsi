@@ -3,7 +3,8 @@
 namespace Qsi.Cql.Tree
 {
     // Map<K, V>
-    public sealed class CqlMapExpressionNode : QsiMultipleExpressionNode
+    // { K: V, K: V, .. }
+    public sealed class CqlMapExpressionNode : CqlCollectionExpressionNode
     {
     }
 }

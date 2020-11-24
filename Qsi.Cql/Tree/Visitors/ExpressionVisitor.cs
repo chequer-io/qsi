@@ -595,7 +595,7 @@ namespace Qsi.Cql.Tree
 
         public static QsiExpressionNode VisitSelectionList(SelectionListContext context)
         {
-            return TreeHelper.Create<CqlArrayExpressionNode>(n =>
+            return TreeHelper.Create<CqlListExpressionNode>(n =>
             {
                 n.Elements.AddRange(context.unaliasedSelector().Select(VisitUnaliasedSelector));
                 CqlTree.PutContextSpan(n, context);
@@ -1004,7 +1004,7 @@ namespace Qsi.Cql.Tree
 
             if (context.l != null)
             {
-                node = TreeHelper.Create<CqlArrayExpressionNode>(n =>
+                node = TreeHelper.Create<CqlListExpressionNode>(n =>
                 {
                     n.Elements.AddRange(context.l.term().Select(VisitTerm));
                 });
@@ -1030,7 +1030,7 @@ namespace Qsi.Cql.Tree
             }
             else
             {
-                node = new CqlArrayExpressionNode();
+                node = new CqlSetExpressionNode();
             }
 
             CqlTree.PutContextSpan(node, context);

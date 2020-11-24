@@ -1,9 +1,8 @@
-﻿using Qsi.Tree;
-
-namespace Qsi.Cql.Tree
+﻿namespace Qsi.Cql.Tree
 {
     // Set<T>
-    public sealed class CqlSetExpressionNode : QsiMultipleExpressionNode
+    // { T, T, .. }
+    public sealed class CqlSetExpressionNode : CqlCollectionExpressionNode
     {
     }
 }
