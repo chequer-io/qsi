@@ -14,6 +14,7 @@ using AvaloniaEdit;
 using AvaloniaEdit.Highlighting;
 using AvaloniaEdit.Highlighting.Xshd;
 using Qsi.Analyzers.Table;
+using Qsi.Cql.Tree;
 using Qsi.Data;
 using Qsi.Debugger.Controls;
 using Qsi.Debugger.Models;
@@ -33,6 +34,8 @@ namespace Qsi.Debugger
 {
     public class MainWindow : Window
     {
+        private static readonly Assembly _qsiAssembly = typeof(IQsiTreeNode).Assembly;
+
         private readonly ComboBox _cbLanguages;
         private readonly TextEditor _codeEditor;
         private readonly TextBlock _tbError;
@@ -213,25 +216,48 @@ namespace Qsi.Debugger
 
         private QsiTreeItem BuildQsiTreeImpl(IQsiTreeNode node)
         {
+            var nodeType = node.GetType();
             bool hideProperty = _chkQsiProperty.IsChecked ?? false;
 
             var nodeItem = new QsiElementItem
             {
-                Header = NormalizeElementName(node.GetType().Name)
+                Header = NormalizeElementName(nodeType.Name)
             };
 
             var nodeItemChild = new List<QsiTreeItem>();
 
-            IEnumerable<PropertyInfo> properties = node.GetType().GetInterfaces()
-                .Where(t => t != typeof(IQsiTreeNode))
+            IEnumerable<PropertyInfo> properties = nodeType.GetInterfaces()
+                .Where(t => t != typeof(IQsiTreeNode) && typeof(IQsiTreeNode).IsAssignableFrom(t))
                 .SelectMany(t => t.GetProperties());
+
+            if (nodeType.Assembly != _qsiAssembly)
+            {
+                IEnumerable<PropertyInfo> customProperties = nodeType.GetProperties()
+                    .Where(pi => IsCustomProperty(nodeType, pi));
+
+                properties = properties.Concat(customProperties);
+            }
 
             foreach (var property in properties)
             {
                 var value = property.GetValue(node);
 
-                if (value == null)
+                switch (value)
+                {
+                    case null:
+                    case IQsiTreeNodeProperty<QsiTreeNode> nodeProperty when nodeProperty.IsEmpty:
+                        continue;
+
+                    case IQsiTreeNodeProperty<QsiTreeNode> nodeProperty:
+                        value = nodeProperty.Value;
+                        break;
+                }
+
+                if (value.GetType().IsValueType &&
+                    value.Equals(Activator.CreateInstance(value.GetType())))
+                {
                     continue;
+                }
 
                 QsiTreeItem item;
 
@@ -287,6 +313,31 @@ namespace Qsi.Debugger
             nodeItem.Items = nodeItemChild.ToArray();
 
             return nodeItem;
+        }
+
+        private bool IsCustomProperty(Type type, PropertyInfo property)
+        {
+            if (type != property.DeclaringType)
+                return false;
+
+            var method = property.GetMethod;
+
+            while (method != null)
+            {
+                if (method.DeclaringType!.Assembly == _qsiAssembly)
+                {
+                    return false;
+                }
+
+                var baseMethod = method.GetBaseDefinition();
+
+                if (baseMethod == method)
+                    break;
+
+                method = baseMethod;
+            }
+
+            return true;
         }
 
         private string NormalizeElementName(string name)
