@@ -4,6 +4,13 @@ namespace Qsi.Cql.Tree
 {
     public sealed class CqlDataInsertActionNode : QsiDataInsertActionNode
     {
+        public QsiTreeNodeProperty<QsiExpressionNode> Using { get; }
+
         public string Json { get; set; }
+
+        public CqlDataInsertActionNode()
+        {
+            Using = new QsiTreeNodeProperty<QsiExpressionNode>(this);
+        }
     }
 }
