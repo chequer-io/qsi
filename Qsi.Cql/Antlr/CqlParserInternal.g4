@@ -191,9 +191,7 @@ alias returns [QsiAliasNode node]
     ;
 
 sident returns [QsiIdentifier id]
-    : t=IDENT              { $id = new QsiIdentifier($t.text, false); }
-    | t=QUOTED_NAME        { $id = new QsiIdentifier($t.text, true); }
-    | k=unreserved_keyword { $id = new QsiIdentifier($k.text, false); }
+    : i=ident { $id = $i.id; }
     ;
 
 whereClause
@@ -416,11 +414,11 @@ functionName returns [QsiQualifiedIdentifier id]
     ;
 
 allowedFunctionName returns [QsiIdentifier id]
-    : t=IDENT                       { $id = new QsiIdentifier($t.text, false); }
+    : t=IDENT                       { $id = new QsiIdentifier($t.text.ToLower(), false); }
     | t=QUOTED_NAME                 { $id = new QsiIdentifier($t.text, true); }
-    | k=unreserved_function_keyword { $id = new QsiIdentifier($k.text, false); }
-    | t=K_TOKEN                     { $id = new QsiIdentifier($t.text, false); }
-    | t=K_COUNT                     { $id = new QsiIdentifier($t.text, false); }
+    | k=unreserved_function_keyword { $id = new QsiIdentifier($k.text.ToLower(), false); }
+    | t=K_TOKEN                     { $id = new QsiIdentifier($t.text.ToLower(), false); }
+    | t=K_COUNT                     { $id = new QsiIdentifier($t.text.ToLower(), false); }
     ;
 
 cidentList returns [List<QsiIdentifier> list]
@@ -438,22 +436,18 @@ cident returns [QsiIdentifier id]
     ;
 
 ident returns [QsiIdentifier id]
-    : t=IDENT              { $id = new QsiIdentifier($t.text, false); }
+    : t=IDENT              { $id = new QsiIdentifier($t.text.ToLower(), false); }
     | t=QUOTED_NAME        { $id = new QsiIdentifier($t.text, true); }
-    | k=unreserved_keyword { $id = new QsiIdentifier($k.text, false); }
+    | k=unreserved_keyword { $id = new QsiIdentifier($k.text.ToLower(), false); }
     ;
 
 fident returns [QsiIdentifier id]
-    : t=IDENT              { $id = new QsiIdentifier($t.text, false); }
-    | t=QUOTED_NAME        { $id = new QsiIdentifier($t.text, true); }
-    | k=unreserved_keyword { $id = new QsiIdentifier($k.text, false); }
+    : i=ident { $id = $i.id; }
     ;
 
 // Identifiers that do not refer to columns
 noncol_ident returns [QsiIdentifier id]
-    : t=IDENT              { $id = new QsiIdentifier($t.text, false); }
-    | t=QUOTED_NAME        { $id = new QsiIdentifier($t.text, true); }
-    | k=unreserved_keyword { $id = new QsiIdentifier($k.text, false); }
+    : i=ident { $id = $i.id; }
     ;
 
 // Keyspace & Column family names
@@ -499,31 +493,23 @@ userOrRoleName
     ;
 
 ksName returns [QsiIdentifier id]
-    : t=IDENT              { $id = new QsiIdentifier($t.text, false); }
-    | t=QUOTED_NAME        { $id = new QsiIdentifier($t.text, true); }
-    | k=unreserved_keyword { $id = new QsiIdentifier($k.text, false); }
-    | QMARK                { AddRecognitionError("Bind variables cannot be used for keyspace names"); }
+    : i=ident { $id = $i.id; }
+    | QMARK   { AddRecognitionError("Bind variables cannot be used for keyspace names"); }
     ;
 
 cfName returns [QsiIdentifier id]
-    : t=IDENT              { $id = new QsiIdentifier($t.text, false); }
-    | t=QUOTED_NAME        { $id = new QsiIdentifier($t.text, true); }
-    | k=unreserved_keyword { $id = new QsiIdentifier($k.text, false); }
-    | QMARK                { AddRecognitionError("Bind variables cannot be used for table names"); }
+    : i=ident { $id = $i.id; }
+    | QMARK   { AddRecognitionError("Bind variables cannot be used for table names"); }
     ;
 
 idxName returns [QsiIdentifier id]
-    : t=IDENT              { $id = new QsiIdentifier($t.text, false); }
-    | t=QUOTED_NAME        { $id = new QsiIdentifier($t.text, true); }
-    | k=unreserved_keyword { $id = new QsiIdentifier($k.text, false); }
-    | QMARK                { AddRecognitionError("Bind variables cannot be used for index names"); }
+    : i=ident { $id = $i.id; }
+    | QMARK   { AddRecognitionError("Bind variables cannot be used for index names"); }
     ;
 
 roleName returns [QsiIdentifier id]
-    : t=IDENT              { $id = new QsiIdentifier($t.text, false); }
-    | t=QUOTED_NAME        { $id = new QsiIdentifier($t.text, true); }
-    | k=unreserved_keyword { $id = new QsiIdentifier($k.text, false); }
-    | QMARK                { AddRecognitionError("Bind variables cannot be used for role names"); }
+    : i=ident { $id = $i.id; }
+    | QMARK   { AddRecognitionError("Bind variables cannot be used for role names"); }
     ;
 
 constant
@@ -754,10 +740,10 @@ stringLiteral returns [string raw]
 
 non_type_ident returns [QsiIdentifier id]
     : t=IDENT                    { VerifyReservedTypeName($t.text); 
-                                   $id = new QsiIdentifier($t.text, false); } 
+                                   $id = new QsiIdentifier($t.text.ToLower(), false); } 
     | t=QUOTED_NAME              { $id = new QsiIdentifier($t.text, true); }
-    | k=basic_unreserved_keyword { $id = new QsiIdentifier($k.text, false); }
-    | t=K_KEY                    { $id = new QsiIdentifier($t.text, false); }
+    | k=basic_unreserved_keyword { $id = new QsiIdentifier($k.text.ToLower(), false); }
+    | t=K_KEY                    { $id = new QsiIdentifier($t.text.ToLower(), false); }
     ;
 
 unreserved_keyword
