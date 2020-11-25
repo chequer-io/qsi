@@ -7,6 +7,7 @@ options {
 @header {
     using Qsi.Data;
     using Qsi.Tree;
+    using Qsi.Cql.Schema;
 }
 
 root
@@ -235,15 +236,15 @@ normalInsertStatement
       ( usingClause )?
     ;
 
-jsonInsertStatement
+jsonInsertStatement returns [string defaultValue, bool ifNotExists]
     : val=jsonValue
-      ( K_DEFAULT ( K_NULL | ( K_UNSET) ) )?
-      ( K_IF K_NOT K_EXISTS )?
+      ( K_DEFAULT ( k=K_NULL { $defaultValue = $k.text; } | ( k=K_UNSET { $defaultValue = $k.text; }) ) )?
+      ( K_IF K_NOT K_EXISTS { $ifNotExists = true; })?
       ( usingClause )?
     ;
 
 jsonValue
-    : s=STRING_LITERAL
+    : s=stringLiteral
     | bindParameter
     ;
 
@@ -478,14 +479,14 @@ columnFamilyName returns [QsiQualifiedIdentifier id]
     }
     ;
 
-userTypeName returns [QsiQualifiedIdentifier id]
+userTypeName returns [CqlUserType type]
     @init { QsiIdentifier first = null; }
     : (f=noncol_ident DOT { first = $f.id; } )? second=non_type_ident
     {
         if (first == null)
-            $id = new QsiQualifiedIdentifier($second.id);
+            $type = new CqlUserType(new QsiQualifiedIdentifier($second.id));
         else
-            $id = new QsiQualifiedIdentifier(first, $second.id);
+            $type = new CqlUserType(new QsiQualifiedIdentifier(first, $second.id));
     }
     ;
 
@@ -522,7 +523,7 @@ roleName returns [QsiIdentifier id]
     ;
 
 constant
-    : STRING_LITERAL      #literalString
+    : s=stringLiteral     #literalString
     | INTEGER             #literalInteger
     | FLOAT               #literalFloat
     | BOOLEAN             #literalBoolean
@@ -709,56 +710,57 @@ inMarkerForTuple
     | ':' id=noncol_ident
     ;
 
-comparatorType
-    : native_type
-    | collection_type
-    | tuple_type
-    | userTypeName
-    | K_FROZEN '<' comparatorType '>'
+comparatorType returns [CqlType type]
+    : nt=native_type                     { $type = $nt.type; }
+    | ct=collection_type                 { $type = $ct.type; }
+    | tt=tuple_type                      { $type = $tt.type; }
+    | ut=userTypeName                    { $type = $ut.type; }
+    | K_FROZEN '<' ft=comparatorType '>' { $type = new CqlFrozenType($ft.type); }
     ;
 
-native_type
-    : K_ASCII
-    | K_BIGINT
-    | K_BLOB
-    | K_BOOLEAN
-    | K_COUNTER
-    | K_DECIMAL
-    | K_DOUBLE
-    | K_DURATION
-    | K_FLOAT
-    | K_INET
-    | K_INT
-    | K_SMALLINT
-    | K_TEXT
-    | K_TIMESTAMP
-    | K_TINYINT
-    | K_UUID
-    | K_VARCHAR
-    | K_VARINT
-    | K_TIMEUUID
-    | K_DATE
-    | K_TIME
+native_type returns [CqlNativeType type]
+    : K_ASCII     { $type = new CqlNativeType(CqlDataType.Ascii); }
+    | K_BIGINT    { $type = new CqlNativeType(CqlDataType.BigInt); }
+    | K_BLOB      { $type = new CqlNativeType(CqlDataType.Blob); }
+    | K_BOOLEAN   { $type = new CqlNativeType(CqlDataType.Boolean); }
+    | K_COUNTER   { $type = new CqlNativeType(CqlDataType.Counter); }
+    | K_DECIMAL   { $type = new CqlNativeType(CqlDataType.Decimal); }
+    | K_DOUBLE    { $type = new CqlNativeType(CqlDataType.Double); }
+    | K_DURATION  { $type = new CqlNativeType(CqlDataType.Duration); }
+    | K_FLOAT     { $type = new CqlNativeType(CqlDataType.Float); }
+    | K_INET      { $type = new CqlNativeType(CqlDataType.Inet); }
+    | K_INT       { $type = new CqlNativeType(CqlDataType.Int); }
+    | K_SMALLINT  { $type = new CqlNativeType(CqlDataType.SmallInt); }
+    | K_TEXT      { $type = new CqlNativeType(CqlDataType.Text); }
+    | K_TIMESTAMP { $type = new CqlNativeType(CqlDataType.Timestamp); }
+    | K_TINYINT   { $type = new CqlNativeType(CqlDataType.Tinyint); }
+    | K_UUID      { $type = new CqlNativeType(CqlDataType.Uuid); }
+    | K_VARCHAR   { $type = new CqlNativeType(CqlDataType.Varchar); }
+    | K_VARINT    { $type = new CqlNativeType(CqlDataType.Varint); }
+    | K_TIMEUUID  { $type = new CqlNativeType(CqlDataType.TimeUuid); }
+    | K_DATE      { $type = new CqlNativeType(CqlDataType.Date); }
+    | K_TIME      { $type = new CqlNativeType(CqlDataType.Time); }
     ;
 
-collection_type
-    : K_MAP '<' comparatorType ',' comparatorType '>'
-    | K_LIST '<' comparatorType '>'
-    | K_SET '<' comparatorType '>'
+collection_type returns [CqlCollectionType type]
+    : K_MAP '<' g1=comparatorType ',' g2=comparatorType '>' { $type = new CqlMapType($g1.type, $g2.type); }
+    | K_LIST '<' g1=comparatorType '>'                      { $type = new CqlListType($g1.type); }
+    | K_SET '<' g1=comparatorType '>'                       { $type = new CqlSetType($g1.type); }
     ;
 
-tuple_type
-    : K_TUPLE '<' comparatorType ',' comparatorType '>'
+tuple_type returns [CqlTupleType type]
+    : K_TUPLE '<' f=comparatorType ',' s=comparatorType '>' { $type = new CqlTupleType($f.type, $s.type); }
     ;
 
 username
     : IDENT
-    | STRING_LITERAL
+    | stringLiteral
     | QUOTED_NAME { AddRecognitionError("Quoted strings are are not supported for user names and USER is deprecated, please use ROLE"); }
     ;
 
-mbean
-    : STRING_LITERAL
+stringLiteral returns [string raw]
+    : t=STRING_LITERAL        { $raw = $t.text[1..^1].Replace("''", "'"); }
+    | t=DOLLAR_STRING_LITERAL { $raw = $t.text[2..^2]; }
     ;
 
 non_type_ident returns [QsiIdentifier id]

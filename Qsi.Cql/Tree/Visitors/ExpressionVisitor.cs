@@ -926,15 +926,9 @@ namespace Qsi.Cql.Tree
 
             switch (context)
             {
-                case LiteralStringContext _:
+                case LiteralStringContext literalString:
                 {
-                    // '..'
-                    // $$..$$ 
-                    string value = text[0] == '\'' ?
-                        IdentifierUtility.Unescape(text) :
-                        text[2..^2];
-
-                    node = TreeHelper.CreateLiteral(value);
+                    node = TreeHelper.CreateLiteral(literalString.s.raw);
                     break;
                 }
 

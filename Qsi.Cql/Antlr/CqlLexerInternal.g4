@@ -189,8 +189,11 @@ fragment Y: ('y'|'Y');
 fragment Z: ('z'|'Z');
 
 STRING_LITERAL
+    : '\'' ('\'\'' | ~'\'')+ '\''
+    ;
+
+DOLLAR_STRING_LITERAL
     : '$$' ( { !InputStream.StartsWith("$$"); }? . )* '$$'
-    | '\'' ('\'\'' | ~'\'')+ '\''
     ;
 
 QUOTED_NAME

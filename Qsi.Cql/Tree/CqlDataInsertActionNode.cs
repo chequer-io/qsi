@@ -8,6 +8,10 @@ namespace Qsi.Cql.Tree
 
         public string Json { get; set; }
 
+        public string DefaultValue { get; set; }
+        
+        public bool IfNotExists { get; set; }
+
         public CqlDataInsertActionNode()
         {
             Using = new QsiTreeNodeProperty<QsiExpressionNode>(this);
