@@ -518,15 +518,20 @@ namespace Qsi.Analyzers.Action
             var commonTableNode = ReassembleCommonTableNode(action.Target);
             var dataTable = await GetDataTableByCommonTableNode(context, commonTableNode);
 
-            if (dataTable.Table.Columns.Count != tableColumnCount)
+            if (ListUtility.IsNullOrEmpty(action.Columns) && dataTable.Table.Columns.Count != tableColumnCount)
                 throw new QsiException(QsiError.Internal, "Query results do not match target table structure");
 
-            var columnNames = new QsiQualifiedIdentifier[tableColumnCount];
+            QsiQualifiedIdentifier[] columnNames = action.Columns;
 
-            for (int i = 0; i < tableColumnCount; i++)
+            if (columnNames == null)
             {
-                columnNames[i] = new QsiQualifiedIdentifier(dataTable.Table.Columns[i].Name);
-                table.Columns[i].Name = columnNames[i][^1];
+                columnNames = new QsiQualifiedIdentifier[tableColumnCount];
+
+                for (int i = 0; i < tableColumnCount; i++)
+                {
+                    columnNames[i] = new QsiQualifiedIdentifier(dataTable.Table.Columns[i].Name);
+                    table.Columns[i].Name = columnNames[i][^1];
+                }
             }
 
             return ResolveDataManipulationTargets(table, columnNames)
@@ -544,7 +549,7 @@ namespace Qsi.Analyzers.Action
                             }
                             else
                             {
-                                targetRow.Items[pivot.TargetOrder] = QsiDataValue.Unknown;
+                                targetRow.Items[pivot.TargetOrder] = QsiDataValue.Unset;
                             }
                         }
                     }
