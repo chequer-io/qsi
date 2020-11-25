@@ -165,6 +165,7 @@ namespace Qsi.Extensions
             return new ImmutableDataDeleteActionNode(
                 node.Parent,
                 node.Target,
+                node.Columns,
                 ignoreUserData ? null : node.UserData);
         }
 
