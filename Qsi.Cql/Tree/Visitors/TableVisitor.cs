@@ -244,6 +244,14 @@ namespace Qsi.Cql.Tree
                 Name = new QsiQualifiedIdentifier(context.id)
             };
         }
+
+        public static QsiDeclaredColumnNode VisitCident(CidentContext context)
+        {
+            return new QsiDeclaredColumnNode
+            {
+                Name = new QsiQualifiedIdentifier(context.id)
+            };
+        }
         #endregion
 
         #region CreateMaterializedViewStatement

@@ -287,7 +287,7 @@ deleteStatement
     : K_DELETE ( dels=deleteSelection )?
       K_FROM cf=columnFamilyName
       ( usingClauseDelete )?
-      K_WHERE wclause=whereClause
+      w=K_WHERE wclause=whereClause
       ( K_IF ( K_EXISTS | conditions=updateConditions ))?
     ;
 
@@ -296,9 +296,9 @@ deleteSelection
     ;
 
 deleteOp
-    : c=cident
-    | c=cident '[' t=term ']'
-    | c=cident '.' field=fident
+    : c=cident                  #deleteSingle
+    | c=cident '[' t=term ']'   #deleteIndex
+    | c=cident '.' field=fident #deleteField
     ;
 
 usingClauseDelete

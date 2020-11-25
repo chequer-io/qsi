@@ -2,6 +2,7 @@
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Qsi.Cql.Tree.Common;
 using Qsi.Data;
 using Qsi.Tree;
 using Qsi.Utilities;
@@ -128,7 +129,106 @@ namespace Qsi.Cql.Tree
         #region DeleteStatement
         public static QsiActionNode VisitDeleteStatement(DeleteStatementContext context)
         {
-            throw new System.NotImplementedException();
+            var node = new CqlDataDeleteActionNode();
+
+            var tableNode = new CqlDerivedTableNode();
+            tableNode.Columns.SetValue(VisitDeleteSelection(context.dels));
+            tableNode.Source.SetValue(TableVisitor.VisitColumnFamilyName(context.cf));
+
+            var whereContext = new ParserRuleContextWrapper<WhereClauseContext>
+            (
+                context.wclause,
+                context.w,
+                context.wclause.Stop
+            );
+
+            tableNode.Where.SetValue(ExpressionVisitor.CreateWhere(whereContext));
+
+            // TODO: need test 'IF EXISTS | IF <conditions>'
+
+            node.Target.SetValue(tableNode);
+
+            if (context.usingClauseDelete() != null)
+                node.Using.SetValue(ExpressionVisitor.VisitUsingClauseDelete(context.usingClauseDelete()));
+
+            CqlTree.PutContextSpan(node, context);
+
+            return node;
+        }
+
+        private static QsiColumnsDeclarationNode VisitDeleteSelection(DeleteSelectionContext context)
+        {
+            var node = new QsiColumnsDeclarationNode();
+
+            node.Columns.AddRange(context.deleteOp().Select(VisitDeleteOp));
+            CqlTree.PutContextSpan(node, context);
+
+            return node;
+        }
+
+        private static QsiColumnNode VisitDeleteOp(DeleteOpContext context)
+        {
+            switch (context)
+            {
+                case DeleteSingleContext deleteSingle:
+                    return VisitDeleteSingle(deleteSingle);
+
+                case DeleteIndexContext deleteIndex:
+                    return VisitDeleteIndex(deleteIndex);
+
+                case DeleteFieldContext deleteField:
+                    return VisitDeleteField(deleteField);
+
+                default:
+                    throw TreeHelper.NotSupportedTree(context);
+            }
+        }
+
+        private static QsiDeclaredColumnNode VisitDeleteSingle(DeleteSingleContext context)
+        {
+            return TableVisitor.VisitCident(context.c);
+        }
+
+        private static QsiDerivedColumnNode VisitDeleteIndex(DeleteIndexContext context)
+        {
+            var accessTargetNode = new QsiColumnExpressionNode();
+            var accessMemberNode = new CqlIndexerExpressionNode();
+
+            accessTargetNode.Column.SetValue(TableVisitor.VisitCident(context.c));
+            accessMemberNode.Indexer.SetValue(ExpressionVisitor.VisitTerm(context.term()));
+
+            var accessNode = new QsiMemberAccessExpressionNode();
+
+            accessNode.Target.SetValue(accessTargetNode);
+            accessNode.Member.SetValue(accessMemberNode);
+
+            var node = new QsiDerivedColumnNode();
+
+            node.Expression.SetValue(accessNode);
+            CqlTree.PutContextSpan(node, context);
+
+            return node;
+        }
+
+        private static QsiDerivedColumnNode VisitDeleteField(DeleteFieldContext context)
+        {
+            var accessTargetNode = new QsiColumnExpressionNode();
+            var accessMemberNode = new QsiFieldExpressionNode();
+
+            accessTargetNode.Column.SetValue(TableVisitor.VisitCident(context.c));
+            accessMemberNode.Identifier = new QsiQualifiedIdentifier(context.field.id);
+
+            var accessNode = new QsiMemberAccessExpressionNode();
+
+            accessNode.Target.SetValue(accessTargetNode);
+            accessNode.Member.SetValue(accessMemberNode);
+
+            var node = new QsiDerivedColumnNode();
+
+            node.Expression.SetValue(accessNode);
+            CqlTree.PutContextSpan(node, context);
+
+            return node;
         }
         #endregion
     }

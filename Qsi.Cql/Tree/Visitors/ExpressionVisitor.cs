@@ -801,10 +801,7 @@ namespace Qsi.Cql.Tree
         {
             var node = new QsiColumnExpressionNode();
 
-            node.Column.SetValue(new QsiDeclaredColumnNode
-            {
-                Name = new QsiQualifiedIdentifier(context.id)
-            });
+            node.Column.SetValue(TableVisitor.VisitCident(context));
 
             CqlTree.PutContextSpan(node, context);
 
@@ -1098,6 +1095,19 @@ namespace Qsi.Cql.Tree
             {
                 Type = context.type,
                 Value = context.time
+            };
+
+            CqlTree.PutContextSpan(node, context);
+
+            return node;
+        }
+
+        public static CqlUsingExpressionNode VisitUsingClauseDelete(UsingClauseDeleteContext context)
+        {
+            var node = new CqlUsingExpressionNode
+            {
+                Type = CqlUsingType.Timestamp,
+                Value = int.Parse(context.ts.GetText())
             };
 
             CqlTree.PutContextSpan(node, context);
