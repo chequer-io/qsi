@@ -562,12 +562,24 @@ namespace Qsi.Cql.Tree
 
         public static QsiExpressionNode VisitSelectionTypeHint(SelectionTypeHintContext context)
         {
-            var type = new QsiQualifiedIdentifier(new QsiIdentifier(context.comparatorType().GetText(), false));
+            var typeNode = VisitComparatorType(context.comparatorType());
             var node = new QsiInvokeExpressionNode();
 
             node.Member.SetValue(TreeHelper.CreateFunction(CqlKnownFunction.InlineCast));
             node.Parameters.Add(VisitSelectionGroupWithoutField(context.selectionGroupWithoutField()));
-            node.Parameters.Add(new QsiTypeExpressionNode { Identifier = type });
+            node.Parameters.Add(typeNode);
+
+            CqlTree.PutContextSpan(node, context);
+
+            return node;
+        }
+
+        private static QsiExpressionNode VisitComparatorType(ComparatorTypeContext context)
+        {
+            var node = new CqlTypeExpressionNode
+            {
+                Type = context.type
+            };
 
             CqlTree.PutContextSpan(node, context);
 

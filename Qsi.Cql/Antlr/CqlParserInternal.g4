@@ -719,27 +719,27 @@ comparatorType returns [CqlType type]
     ;
 
 native_type returns [CqlNativeType type]
-    : K_ASCII     { $type = new CqlNativeType(CqlDataType.Ascii); }
-    | K_BIGINT    { $type = new CqlNativeType(CqlDataType.BigInt); }
-    | K_BLOB      { $type = new CqlNativeType(CqlDataType.Blob); }
-    | K_BOOLEAN   { $type = new CqlNativeType(CqlDataType.Boolean); }
-    | K_COUNTER   { $type = new CqlNativeType(CqlDataType.Counter); }
-    | K_DECIMAL   { $type = new CqlNativeType(CqlDataType.Decimal); }
-    | K_DOUBLE    { $type = new CqlNativeType(CqlDataType.Double); }
-    | K_DURATION  { $type = new CqlNativeType(CqlDataType.Duration); }
-    | K_FLOAT     { $type = new CqlNativeType(CqlDataType.Float); }
-    | K_INET      { $type = new CqlNativeType(CqlDataType.Inet); }
-    | K_INT       { $type = new CqlNativeType(CqlDataType.Int); }
-    | K_SMALLINT  { $type = new CqlNativeType(CqlDataType.SmallInt); }
-    | K_TEXT      { $type = new CqlNativeType(CqlDataType.Text); }
-    | K_TIMESTAMP { $type = new CqlNativeType(CqlDataType.Timestamp); }
-    | K_TINYINT   { $type = new CqlNativeType(CqlDataType.Tinyint); }
-    | K_UUID      { $type = new CqlNativeType(CqlDataType.Uuid); }
-    | K_VARCHAR   { $type = new CqlNativeType(CqlDataType.Varchar); }
-    | K_VARINT    { $type = new CqlNativeType(CqlDataType.Varint); }
-    | K_TIMEUUID  { $type = new CqlNativeType(CqlDataType.TimeUuid); }
-    | K_DATE      { $type = new CqlNativeType(CqlDataType.Date); }
-    | K_TIME      { $type = new CqlNativeType(CqlDataType.Time); }
+    : K_ASCII     { $type = CqlAsciiType.Default; }
+    | K_BIGINT    { $type = CqlBigIntType.Default; }
+    | K_BLOB      { $type = CqlBlobType.Default; }
+    | K_BOOLEAN   { $type = CqlBooleanType.Default; }
+    | K_COUNTER   { $type = CqlCounterType.Default; }
+    | K_DECIMAL   { $type = CqlDecimalType.Default; }
+    | K_DOUBLE    { $type = CqlDoubleType.Default; }
+    | K_DURATION  { $type = CqlDurationType.Default; }
+    | K_FLOAT     { $type = CqlFloatType.Default; }
+    | K_INET      { $type = CqlInetType.Default; }
+    | K_INT       { $type = CqlIntType.Default; }
+    | K_SMALLINT  { $type = CqlSmallIntType.Default; }
+    | K_TEXT      { $type = CqlTextType.Default; }
+    | K_TIMESTAMP { $type = CqlTimestampType.Default; }
+    | K_TINYINT   { $type = CqlTinyintType.Default; }
+    | K_UUID      { $type = CqlUuidType.Default; }
+    | K_VARCHAR   { $type = CqlVarcharType.Default; }
+    | K_VARINT    { $type = CqlVarintType.Default; }
+    | K_TIMEUUID  { $type = CqlTimeUuidType.Default; }
+    | K_DATE      { $type = CqlDateType.Default; }
+    | K_TIME      { $type = CqlTimeType.Default; }
     ;
 
 collection_type returns [CqlCollectionType type]
