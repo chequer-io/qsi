@@ -8,13 +8,13 @@ namespace Qsi.Cql.Tree
 
         public QsiTreeNodeProperty<QsiExpressionNode> StaticColumnCondition { get; }
 
-        public QsiTreeNodeProperty<QsiExpressionNode> Using { get; }
+        public QsiTreeNodeProperty<CqlUsingExpressionNode> Using { get; }
 
         public CqlDataDeleteActionNode()
         {
             TargetColumns = new QsiTreeNodeProperty<QsiColumnsDeclarationNode>(this);
             StaticColumnCondition = new QsiTreeNodeProperty<QsiExpressionNode>(this);
-            Using = new QsiTreeNodeProperty<QsiExpressionNode>(this);
+            Using = new QsiTreeNodeProperty<CqlUsingExpressionNode>(this);
         }
     }
 }

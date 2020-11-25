@@ -7,6 +7,7 @@ options {
 @header {
     using Qsi.Data;
     using Qsi.Tree;
+    using Qsi.Cql.Tree;
     using Qsi.Cql.Schema;
 }
 
@@ -228,11 +229,11 @@ insertStatement
         | K_JSON st2=jsonInsertStatement)
     ;
 
-normalInsertStatement
+normalInsertStatement returns [bool ifNotExists]
     : '(' cidentList ')'
       K_VALUES
-      '(' v1=term ( ',' vn=term )* ')'
-      ( K_IF K_NOT K_EXISTS )?
+      '(' values+=term ( ',' values+=term )* ')'
+      ( K_IF K_NOT K_EXISTS { $ifNotExists = true; })?
       ( usingClause )?
     ;
 
@@ -252,9 +253,10 @@ usingClause
     : K_USING usingClauseObjective ( K_AND usingClauseObjective )*
     ;
 
-usingClauseObjective
-    : K_TIMESTAMP ts=intValue
-    | K_TTL t=intValue
+usingClauseObjective returns [CqlUsingType type, int time]
+    @after { $time = int.Parse($t.text); }
+    : K_TIMESTAMP t=intValue { $type = CqlUsingType.Timestamp; }
+    | K_TTL t=intValue       { $type = CqlUsingType.Ttl; }
     ;
 
 /**
@@ -397,6 +399,7 @@ intValue
     ;
 
 bindParameter
+    @after { throw new QsiException(QsiError.NotSupportedFeature, "BindParameter"); }
     : ':' id=noncol_ident
     | QMARK
     ;
@@ -420,8 +423,9 @@ allowedFunctionName returns [QsiIdentifier id]
     | t=K_COUNT                     { $id = new QsiIdentifier($t.text, false); }
     ;
 
-cidentList
-    : list+=cident ( ',' list+=cident )*
+cidentList returns [List<QsiIdentifier> list]
+    @init { $list = new List<QsiIdentifier>(); }
+    : i=cident { $list.Add($i.id); } ( ',' i=cident { $list.Add($i.id); })*
     ;
 
 /** DEFINITIONS **/
@@ -603,20 +607,20 @@ columnCondition
         ( op=relationType t=term
         | K_IN
             ( values=singleColumnInValues
-            | marker=inMarker
+            | marker=bindParameter
             )
         | '[' element=term ']'
             ( op=relationType t=term
             | K_IN
                 ( values=singleColumnInValues
-                | marker=inMarker
+                | marker=bindParameter
                 )
             )
         | '.' field=fident
             ( op=relationType t=term
             | K_IN
                 ( values=singleColumnInValues
-                | marker=inMarker
+                | marker=bindParameter
                 )
             )
         )
@@ -650,7 +654,7 @@ relation
     | l=cident K_LIKE r=term                               #likeExpr
     | l=cident K_IS K_NOT K_NULL                           #isNotNulExpr
     | K_TOKEN l=tupleOfIdentifiers op=relationType r=term  #tokenExpr
-    | l=cident K_IN r=inMarker                             #inExpr1
+    | l=cident K_IN r=bindParameter                        #inExpr1
     | l=cident K_IN r=singleColumnInValues                 #inExpr2
     | l=cident op=containsOperator r=term                  #containsExpr
     | l=cident '[' key=term ']' op=relationType r=term     #logicalExpr2
@@ -661,7 +665,7 @@ relation
             /* (a, b, c) IN () */
             '(' ')'
             /* (a, b, c) IN ? */
-            | tupleInMarker=inMarkerForTuple
+            | tupleInMarker=bindParameter
             /* (a, b, c) IN ((1, 2, 3), (4, 5, 6), ...) */
             | literals=tupleOfTupleLiterals
             /* (a, b, c) IN (?, ?, ...) */
@@ -670,18 +674,13 @@ relation
           /* (a, b, c) > (1, 2, 3) or (a, b, c) > (?, ?, ?) */
           | op=relationType literal=tupleLiteral
           /* (a, b, c) >= ? */
-          | op=relationType tupleMarker=markerForTuple
+          | op=relationType tupleMarker=bindParameter
       )                                                    #tupleExpr
     | '(' relation ')'                                     #groupExpr
     ;
 
 containsOperator returns [bool key]
     : K_CONTAINS (K_KEY { $key = true; } )?
-    ;
-
-inMarker
-    : QMARK
-    | ':' id=noncol_ident
     ;
 
 tupleOfIdentifiers
@@ -696,18 +695,8 @@ tupleOfTupleLiterals
     : '(' list+=tupleLiteral (',' list+=tupleLiteral)* ')'
     ;
 
-markerForTuple
-    : QMARK
-    | ':' id=noncol_ident
-    ;
-
 tupleOfMarkersForTuples
-    : '(' list+=markerForTuple (',' list+=markerForTuple)* ')'
-    ;
-
-inMarkerForTuple
-    : QMARK
-    | ':' id=noncol_ident
+    : '(' list+=bindParameter (',' list+=bindParameter)* ')'
     ;
 
 comparatorType returns [CqlType type]

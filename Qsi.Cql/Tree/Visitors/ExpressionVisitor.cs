@@ -137,7 +137,7 @@ namespace Qsi.Cql.Tree
             return whereNode;
         }
 
-        private static QsiExpressionNode VisitRelationOrExpression(RelationOrExpressionContext context)
+        public static QsiExpressionNode VisitRelationOrExpression(RelationOrExpressionContext context)
         {
             if (context.ChildCount != 1)
                 throw new QsiException(QsiError.Syntax);
@@ -155,7 +155,7 @@ namespace Qsi.Cql.Tree
             }
         }
 
-        private static QsiExpressionNode VisitRelation(RelationContext context)
+        public static QsiExpressionNode VisitRelation(RelationContext context)
         {
             switch (context)
             {
@@ -194,7 +194,7 @@ namespace Qsi.Cql.Tree
             }
         }
 
-        private static QsiExpressionNode VisitLogicalExpr1(LogicalExpr1Context context)
+        public static QsiExpressionNode VisitLogicalExpr1(LogicalExpr1Context context)
         {
             var node = new QsiLogicalExpressionNode
             {
@@ -209,7 +209,7 @@ namespace Qsi.Cql.Tree
             return node;
         }
 
-        private static QsiExpressionNode VisitLikeExpr(LikeExprContext context)
+        public static QsiExpressionNode VisitLikeExpr(LikeExprContext context)
         {
             var node = new QsiInvokeExpressionNode();
 
@@ -222,7 +222,7 @@ namespace Qsi.Cql.Tree
             return node;
         }
 
-        private static QsiExpressionNode VisitIsNotNulExpr(IsNotNulExprContext context)
+        public static QsiExpressionNode VisitIsNotNulExpr(IsNotNulExprContext context)
         {
             var node = new QsiInvokeExpressionNode();
 
@@ -234,7 +234,7 @@ namespace Qsi.Cql.Tree
             return node;
         }
 
-        private static QsiExpressionNode VisitTokenExpr(TokenExprContext context)
+        public static QsiExpressionNode VisitTokenExpr(TokenExprContext context)
         {
             var node = new QsiInvokeExpressionNode();
 
@@ -248,20 +248,20 @@ namespace Qsi.Cql.Tree
             return node;
         }
 
-        private static QsiExpressionNode VisitInExpr1(InExpr1Context context)
+        public static QsiExpressionNode VisitInExpr1(InExpr1Context context)
         {
             var node = new QsiInvokeExpressionNode();
 
             node.Member.SetValue(TreeHelper.CreateFunction(CqlKnownFunction.In));
             node.Parameters.Add(VisitCident(context.l));
-            node.Parameters.Add(VisitInMarker(context.r));
+            node.Parameters.Add(VisitBindParameter(context.r));
 
             CqlTree.PutContextSpan(node, context);
 
             return node;
         }
 
-        private static QsiExpressionNode VisitInExpr2(InExpr2Context context)
+        public static QsiExpressionNode VisitInExpr2(InExpr2Context context)
         {
             var node = new QsiInvokeExpressionNode();
 
@@ -274,7 +274,7 @@ namespace Qsi.Cql.Tree
             return node;
         }
 
-        private static QsiExpressionNode VisitContainsExpr(ContainsExprContext context)
+        public static QsiExpressionNode VisitContainsExpr(ContainsExprContext context)
         {
             var functionName = context.op.key ?
                 CqlKnownFunction.ContainsKey :
@@ -291,7 +291,7 @@ namespace Qsi.Cql.Tree
             return node;
         }
 
-        private static QsiExpressionNode VisitLogicalExpr2(LogicalExpr2Context context)
+        public static QsiExpressionNode VisitLogicalExpr2(LogicalExpr2Context context)
         {
             var node = new QsiLogicalExpressionNode
             {
@@ -314,7 +314,7 @@ namespace Qsi.Cql.Tree
             return node;
         }
 
-        private static QsiExpressionNode VisitTupleExpr(TupleExprContext context)
+        public static QsiExpressionNode VisitTupleExpr(TupleExprContext context)
         {
             QsiExpressionNode node;
 
@@ -328,7 +328,7 @@ namespace Qsi.Cql.Tree
                 invokeNode.Parameters.Add(leftNode);
 
                 if (context.tupleInMarker != null)
-                    invokeNode.Parameters.Add(VisitInMarkerForTuple(context.tupleInMarker));
+                    invokeNode.Parameters.Add(VisitBindParameter(context.tupleInMarker));
 
                 if (context.literals != null)
                     invokeNode.Parameters.Add(VisitTupleOfTupleLiterals(context.literals));
@@ -351,7 +351,7 @@ namespace Qsi.Cql.Tree
                     logicalNode.Right.SetValue(VisitTupleLiteral(context.literal));
 
                 if (context.tupleMarker != null)
-                    logicalNode.Right.SetValue(VisitMarkerForTuple(context.tupleMarker));
+                    logicalNode.Right.SetValue(VisitBindParameter(context.tupleMarker));
 
                 node = logicalNode;
             }
@@ -365,17 +365,17 @@ namespace Qsi.Cql.Tree
             return node;
         }
 
-        private static QsiExpressionNode VisitTupleOfIdentifiers(TupleOfIdentifiersContext context)
+        public static QsiExpressionNode VisitTupleOfIdentifiers(TupleOfIdentifiersContext context)
         {
             var node = new CqlTupleExpressionNode();
 
-            node.Elements.AddRange(context.cidentList()._list.Select(VisitCident));
+            node.Elements.AddRange(context.cidentList().cident().Select(VisitCident));
             CqlTree.PutContextSpan(node, context);
 
             return node;
         }
 
-        private static QsiExpressionNode VisitSingleColumnInValues(SingleColumnInValuesContext context)
+        public static QsiExpressionNode VisitSingleColumnInValues(SingleColumnInValuesContext context)
         {
             var node = new QsiMultipleExpressionNode();
 
@@ -385,14 +385,14 @@ namespace Qsi.Cql.Tree
             return node;
         }
 
-        private static QsiExpressionNode VisitGroupExpr(GroupExprContext context)
+        public static QsiExpressionNode VisitGroupExpr(GroupExprContext context)
         {
             var node = VisitRelation(context.relation());
             CqlTree.PutContextSpan(node, context);
             return node;
         }
 
-        private static QsiExpressionNode VisitCustomIndexExpression(CustomIndexExpressionContext context)
+        public static QsiExpressionNode VisitCustomIndexExpression(CustomIndexExpressionContext context)
         {
             var node = new QsiInvokeExpressionNode();
 
@@ -405,7 +405,7 @@ namespace Qsi.Cql.Tree
             return node;
         }
 
-        private static QsiExpressionNode VisitIdxName(IdxNameContext context)
+        public static QsiExpressionNode VisitIdxName(IdxNameContext context)
         {
             var node = new CqlIndexExpressionNode
             {
@@ -427,7 +427,7 @@ namespace Qsi.Cql.Tree
             return node;
         }
 
-        private static QsiExpressionNode VisitGroupByClause(GroupByClauseContext context)
+        public static QsiExpressionNode VisitGroupByClause(GroupByClauseContext context)
         {
             return VisitCident(context.cident());
         }
@@ -442,7 +442,7 @@ namespace Qsi.Cql.Tree
             return node;
         }
 
-        private static QsiOrderExpressionNode VisitOrderByClause(OrderByClauseContext context)
+        public static QsiOrderExpressionNode VisitOrderByClause(OrderByClauseContext context)
         {
             var node = new QsiOrderExpressionNode();
 
@@ -485,7 +485,7 @@ namespace Qsi.Cql.Tree
             return node;
         }
 
-        private static QsiExpressionNode VisitSelectorModifier(QsiExpressionNode target, SelectorModifierContext context)
+        public static QsiExpressionNode VisitSelectorModifier(QsiExpressionNode target, SelectorModifierContext context)
         {
             QsiExpressionNode access1;
             SelectorModifierContext access2;
@@ -519,7 +519,7 @@ namespace Qsi.Cql.Tree
             return memberAccessNode;
         }
 
-        private static QsiExpressionNode VisitCollectionSubSelection(CollectionSubSelectionContext context)
+        public static QsiExpressionNode VisitCollectionSubSelection(CollectionSubSelectionContext context)
         {
             QsiExpressionNode node;
 
@@ -551,7 +551,7 @@ namespace Qsi.Cql.Tree
             return node;
         }
 
-        private static QsiExpressionNode VisitFieldSelectorModifier(FieldSelectorModifierContext context)
+        public static QsiExpressionNode VisitFieldSelectorModifier(FieldSelectorModifierContext context)
         {
             return TreeHelper.Create<QsiFieldExpressionNode>(n =>
             {
@@ -574,7 +574,7 @@ namespace Qsi.Cql.Tree
             return node;
         }
 
-        private static QsiExpressionNode VisitComparatorType(ComparatorTypeContext context)
+        public static QsiExpressionNode VisitComparatorType(ComparatorTypeContext context)
         {
             var node = new CqlTypeExpressionNode
             {
@@ -637,7 +637,7 @@ namespace Qsi.Cql.Tree
             return node;
         }
 
-        private static QsiExpressionNode VisitSelectionMap(UnaliasedSelectorContext first, SelectionMapContext context)
+        public static QsiExpressionNode VisitSelectionMap(UnaliasedSelectorContext first, SelectionMapContext context)
         {
             return TreeHelper.Create<CqlMapExpressionNode>(n =>
             {
@@ -648,7 +648,7 @@ namespace Qsi.Cql.Tree
             });
         }
 
-        private static QsiExpressionNode VisitSelectionSet(UnaliasedSelectorContext first, SelectionSetContext context)
+        public static QsiExpressionNode VisitSelectionSet(UnaliasedSelectorContext first, SelectionSetContext context)
         {
             return TreeHelper.Create<CqlSetExpressionNode>(n =>
             {
@@ -694,7 +694,7 @@ namespace Qsi.Cql.Tree
             }
         }
 
-        private static QsiExpressionNode VisitCountFunction(CountFunctionContext context)
+        public static QsiExpressionNode VisitCountFunction(CountFunctionContext context)
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
@@ -709,7 +709,7 @@ namespace Qsi.Cql.Tree
             });
         }
 
-        private static QsiExpressionNode VisitWritetimeFunction(WritetimeFunctionContext context)
+        public static QsiExpressionNode VisitWritetimeFunction(WritetimeFunctionContext context)
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
@@ -720,7 +720,7 @@ namespace Qsi.Cql.Tree
             });
         }
 
-        private static QsiExpressionNode VisitTtlFunction(TtlFunctionContext context)
+        public static QsiExpressionNode VisitTtlFunction(TtlFunctionContext context)
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
@@ -731,7 +731,7 @@ namespace Qsi.Cql.Tree
             });
         }
 
-        private static QsiExpressionNode VisitCastFunction(CastFunctionContext context)
+        public static QsiExpressionNode VisitCastFunction(CastFunctionContext context)
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
@@ -743,7 +743,7 @@ namespace Qsi.Cql.Tree
             });
         }
 
-        private static QsiExpressionNode VisitUserFunction(UserFunctionContext context)
+        public static QsiExpressionNode VisitUserFunction(UserFunctionContext context)
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
@@ -759,7 +759,7 @@ namespace Qsi.Cql.Tree
             });
         }
 
-        private static QsiExpressionNode VisitFunction(FunctionContext context)
+        public static QsiExpressionNode VisitFunction(FunctionContext context)
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
@@ -775,7 +775,7 @@ namespace Qsi.Cql.Tree
             });
         }
 
-        private static QsiExpressionNode VisitNativeType(Native_typeContext context)
+        public static QsiExpressionNode VisitNativeType(Native_typeContext context)
         {
             return new QsiTypeExpressionNode
             {
@@ -783,7 +783,7 @@ namespace Qsi.Cql.Tree
             };
         }
 
-        private static QsiExpressionNode VisitSident(SidentContext context)
+        public static QsiExpressionNode VisitSident(SidentContext context)
         {
             var node = new QsiColumnExpressionNode();
 
@@ -797,7 +797,7 @@ namespace Qsi.Cql.Tree
             return node;
         }
 
-        private static QsiExpressionNode VisitCident(CidentContext context)
+        public static QsiExpressionNode VisitCident(CidentContext context)
         {
             var node = new QsiColumnExpressionNode();
 
@@ -811,26 +811,12 @@ namespace Qsi.Cql.Tree
             return node;
         }
 
-        private static QsiExpressionNode VisitIdent(IdentContext context)
-        {
-            var node = new QsiColumnExpressionNode();
-
-            node.Column.SetValue(new QsiDeclaredColumnNode
-            {
-                Name = new QsiQualifiedIdentifier(context.id)
-            });
-
-            CqlTree.PutContextSpan(node, context);
-
-            return node;
-        }
-
-        private static QsiExpressionNode VisitTerm(TermContext context)
+        public static QsiExpressionNode VisitTerm(TermContext context)
         {
             return VisitTermAddition(context.termAddition());
         }
 
-        private static QsiExpressionNode VisitTermAddition(TermAdditionContext context)
+        public static QsiExpressionNode VisitTermAddition(TermAdditionContext context)
         {
             AdditionOperatorContext[] operators = context.additionOperator();
             var left = VisitTermMultiplication(context.left);
@@ -856,7 +842,7 @@ namespace Qsi.Cql.Tree
             return left;
         }
 
-        private static QsiExpressionNode VisitTermMultiplication(TermMultiplicationContext context)
+        public static QsiExpressionNode VisitTermMultiplication(TermMultiplicationContext context)
         {
             MultiplicationOperatorContext[] operators = context.multiplicationOperator();
             var left = VisitTermGroup(context.left);
@@ -882,7 +868,7 @@ namespace Qsi.Cql.Tree
             return left;
         }
 
-        private static QsiExpressionNode VisitTermGroup(TermGroupContext context)
+        public static QsiExpressionNode VisitTermGroup(TermGroupContext context)
         {
             var node = VisitSimpleTerm(context.simpleTerm());
 
@@ -895,7 +881,7 @@ namespace Qsi.Cql.Tree
             return node;
         }
 
-        private static QsiExpressionNode VisitSimpleTerm(SimpleTermContext context)
+        public static QsiExpressionNode VisitSimpleTerm(SimpleTermContext context)
         {
             if (context.v != null)
                 return VisitValue(context.v);
@@ -911,7 +897,7 @@ namespace Qsi.Cql.Tree
             return node;
         }
 
-        private static QsiExpressionNode VisitValue(ValueContext context)
+        public static QsiExpressionNode VisitValue(ValueContext context)
         {
             if (context.c != null)
                 return VisitConstant(context.c);
@@ -931,7 +917,7 @@ namespace Qsi.Cql.Tree
             return VisitBindParameter(context.bindParameter());
         }
 
-        private static QsiExpressionNode VisitConstant(ConstantContext context)
+        public static QsiExpressionNode VisitConstant(ConstantContext context)
         {
             string text = context.GetText();
             QsiExpressionNode node;
@@ -1004,7 +990,7 @@ namespace Qsi.Cql.Tree
             return node;
         }
 
-        private static QsiExpressionNode VisitCollectionLiteral(CollectionLiteralContext context)
+        public static QsiExpressionNode VisitCollectionLiteral(CollectionLiteralContext context)
         {
             QsiExpressionNode node;
 
@@ -1044,7 +1030,7 @@ namespace Qsi.Cql.Tree
             return node;
         }
 
-        private static QsiExpressionNode VisitUsertypeLiteral(UsertypeLiteralContext context)
+        public static QsiExpressionNode VisitUsertypeLiteral(UsertypeLiteralContext context)
         {
             var node = TreeHelper.CreateLiteral(context.GetText());
 
@@ -1053,7 +1039,7 @@ namespace Qsi.Cql.Tree
             return node;
         }
 
-        private static QsiExpressionNode VisitTupleLiteral(TupleLiteralContext context)
+        public static QsiExpressionNode VisitTupleLiteral(TupleLiteralContext context)
         {
             var node = new CqlTupleExpressionNode();
 
@@ -1063,7 +1049,7 @@ namespace Qsi.Cql.Tree
             return node;
         }
 
-        private static QsiExpressionNode VisitTupleOfTupleLiterals(TupleOfTupleLiteralsContext context)
+        public static QsiExpressionNode VisitTupleOfTupleLiterals(TupleOfTupleLiteralsContext context)
         {
             var node = new CqlTupleExpressionNode();
 
@@ -1073,49 +1059,50 @@ namespace Qsi.Cql.Tree
             return node;
         }
 
-        private static QsiExpressionNode VisitTupleOfMarkersForTuples(TupleOfMarkersForTuplesContext context)
+        public static QsiExpressionNode VisitTupleOfMarkersForTuples(TupleOfMarkersForTuplesContext context)
         {
             var node = new CqlTupleExpressionNode();
 
-            node.Elements.AddRange(context._list.Select(VisitMarkerForTuple));
+            node.Elements.AddRange(context._list.Select(VisitBindParameter));
             CqlTree.PutContextSpan(node, context);
 
             return node;
         }
 
-        #region BindParameter
-        private static QsiExpressionNode VisitBindParameter(BindParameterContext context)
-        {
-            return CreateBindingColumn(new ParserRuleContextWrapper<QsiIdentifier>(context.id?.id, context));
-        }
-
-        private static QsiExpressionNode VisitInMarker(InMarkerContext context)
-        {
-            return CreateBindingColumn(new ParserRuleContextWrapper<QsiIdentifier>(context.id?.id, context));
-        }
-
-        private static QsiExpressionNode VisitInMarkerForTuple(InMarkerForTupleContext context)
-        {
-            return CreateBindingColumn(new ParserRuleContextWrapper<QsiIdentifier>(context.id?.id, context));
-        }
-
-        private static QsiExpressionNode VisitMarkerForTuple(MarkerForTupleContext context)
-        {
-            return CreateBindingColumn(new ParserRuleContextWrapper<QsiIdentifier>(context.id?.id, context));
-        }
-
-        private static QsiExpressionNode CreateBindingColumn(ParserRuleContextWrapper<QsiIdentifier> context)
+        public static QsiExpressionNode VisitBindParameter(BindParameterContext context)
         {
             return TreeHelper.Create<QsiColumnExpressionNode>(n =>
             {
                 n.Column.SetValue(new QsiBindingColumnNode
                 {
-                    Id = context.Value?.Value ?? "?"
+                    Id = context.id?.id?.Value ?? "?"
                 });
 
                 CqlTree.PutContextSpan(n, context);
             });
         }
-        #endregion
+
+        public static CqlMultipleUsingExpressionNode VisitUsingClause(UsingClauseContext context)
+        {
+            var node = new CqlMultipleUsingExpressionNode();
+
+            node.Elements.AddRange(context.usingClauseObjective().Select(VisitUsingClauseObjective));
+            CqlTree.PutContextSpan(node, context);
+
+            return node;
+        }
+
+        public static CqlUsingExpressionNode VisitUsingClauseObjective(UsingClauseObjectiveContext context)
+        {
+            var node = new CqlUsingExpressionNode
+            {
+                Type = context.type,
+                Value = context.time
+            };
+
+            CqlTree.PutContextSpan(node, context);
+
+            return node;
+        }
     }
 }

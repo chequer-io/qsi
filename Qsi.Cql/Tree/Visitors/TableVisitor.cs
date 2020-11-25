@@ -83,7 +83,7 @@ namespace Qsi.Cql.Tree
             return node;
         }
         
-        public static QsiTableNode VisitColumnFamilyName(ColumnFamilyNameContext context)
+        public static QsiTableAccessNode VisitColumnFamilyName(ColumnFamilyNameContext context)
         {
             var node = new QsiTableAccessNode
             {
