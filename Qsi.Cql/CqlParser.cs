@@ -12,6 +12,14 @@ namespace Qsi.Cql
 {
     public sealed class CqlParser : IQsiTreeParser
     {
+        public static CqlParser Instance => _instance ??= new CqlParser();
+
+        private static CqlParser _instance;
+
+        private CqlParser()
+        {
+        }
+
         public IQsiTreeNode Parse(QsiScript script, CancellationToken cancellationToken = default)
         {
             var stream = new AntlrInputStream(script.Script);
@@ -29,6 +37,9 @@ namespace Qsi.Cql
 
                 case CreateMaterializedViewStatementContext createMaterializedViewStatement:
                     return TableVisitor.VisitCreateMaterializedViewStatement(createMaterializedViewStatement);
+
+                case UseStatementContext useStatement:
+                    return ActionVisitor.VisitUseStatement(useStatement);
 
                 case InsertStatementContext insertStatement:
                     return ActionVisitor.VisitInsertStatement(insertStatement);

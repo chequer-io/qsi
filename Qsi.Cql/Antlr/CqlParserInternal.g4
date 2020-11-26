@@ -29,7 +29,15 @@ cqlStatement
     | insertStatement
     | updateStatement
     | deleteStatement
+    | useStatement
     | createMaterializedViewStatement
+    ;
+
+/*
+ * USE <KEYSPACE>;
+ */
+useStatement
+    : K_USE ks=keyspaceName
     ;
 
 /**

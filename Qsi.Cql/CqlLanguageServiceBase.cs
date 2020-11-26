@@ -8,7 +8,7 @@ namespace Qsi.Cql
     {
         public override IQsiTreeParser CreateTreeParser()
         {
-            return new CqlParser();
+            return CqlParser.Instance;
         }
 
         public override IQsiTreeDeparser CreateTreeDeparser()

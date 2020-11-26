@@ -12,6 +12,20 @@ namespace Qsi.Cql.Tree
 {
     internal static class ActionVisitor
     {
+        #region UseStatement
+        public static QsiActionNode VisitUseStatement(UseStatementContext context)
+        {
+            var node = new CqlUseActionNode
+            {
+                Identifier = context.ks.id
+            };
+
+            CqlTree.PutContextSpan(node, context);
+
+            return node;
+        }
+        #endregion
+
         #region InsertStatement
         public static QsiActionNode VisitInsertStatement(InsertStatementContext context)
         {
