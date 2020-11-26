@@ -8,7 +8,7 @@ using Qsi.Tree.Data;
 
 namespace Qsi.Cql.Tree
 {
-    internal static class CqlTree
+    public static class CqlTree
     {
         public static KeyIndexer<Range> Span { get; }
 
@@ -20,25 +20,25 @@ namespace Qsi.Cql.Tree
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void PutContextSpan(IQsiTreeNode node, IParserRuleContext context)
+        internal static void PutContextSpan(IQsiTreeNode node, IParserRuleContext context)
         {
             PutContextSpan(node, context.Start, context.Stop);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void PutContextSpan(IQsiTreeNode node, ParserRuleContext context)
+        internal static void PutContextSpan(IQsiTreeNode node, ParserRuleContext context)
         {
             PutContextSpan(node, context.Start, context.Stop);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void PutContextSpan(IQsiTreeNode node, IToken token)
+        internal static void PutContextSpan(IQsiTreeNode node, IToken token)
         {
             PutContextSpan(node, token, token);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void PutContextSpan(IQsiTreeNode node, IToken start, IToken stop)
+        internal static void PutContextSpan(IQsiTreeNode node, IToken start, IToken stop)
         {
             Span[node] = new Range(start.StartIndex, stop.StopIndex + 1);
         }

@@ -3,7 +3,7 @@ using Qsi.Tree.Data;
 
 namespace Qsi.Shared
 {
-    internal sealed class KeyIndexer<T>
+    public sealed class KeyIndexer<T>
     {
         private readonly Key<T> _key;
 
