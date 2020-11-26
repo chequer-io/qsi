@@ -110,7 +110,7 @@ namespace Qsi.PostgreSql.Tree.PG10
                 });
             }
 
-            return TreeHelper.CreateLogicalExpression(
+            return TreeHelper.CreateBinaryExpression(
                 builder.ToString(),
                 expression.lexpr,
                 expression.rexpr,
@@ -315,7 +315,7 @@ namespace Qsi.PostgreSql.Tree.PG10
 
             for (int i = 1; i < boolExpr.args.Length; i++)
             {
-                var expr = new QsiLogicalExpressionNode
+                var expr = new QsiBinaryExpressionNode
                 {
                     Operator = op
                 };

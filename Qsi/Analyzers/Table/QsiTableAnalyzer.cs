@@ -712,7 +712,7 @@ namespace Qsi.Analyzers.Table
                     break;
                 }
 
-                case IQsiLogicalExpressionNode e:
+                case IQsiBinaryExpressionNode e:
                 {
                     foreach (var c in ResolveColumnsInExpression(context, e.Left))
                         yield return c;

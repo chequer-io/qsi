@@ -649,9 +649,9 @@ namespace Qsi.MySql.Tree
             });
         }
 
-        private static QsiLogicalExpressionNode VisitLogicalExpression(LogicalExpressionContext context)
+        private static QsiBinaryExpressionNode VisitLogicalExpression(LogicalExpressionContext context)
         {
-            var node = CreateLogicalExpression(
+            var node = CreateBinaryExpression(
                 context.logicalOperator().GetText(),
                 context.left, context.right,
                 VisitExpression);
@@ -666,7 +666,7 @@ namespace Qsi.MySql.Tree
             // predicate  IS NOT?  {TRUE | FALSE | UNKNOWN}
             // ▔\LEFT/▔▔  ▔\OP/▔▔   ▔▔▔▔▔▔▔▔\RIGHT/▔▔▔▔▔▔▔▔
 
-            return TreeHelper.Create<QsiLogicalExpressionNode>(n =>
+            return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
             {
                 n.Operator = context.NOT() == null ? "IS" : "IS NOT";
 
@@ -698,7 +698,7 @@ namespace Qsi.MySql.Tree
                     // predicate  NOT? IN  ({selectStatement | expressions})
                     // ▔\LEFT/▔▔  ▔\OP/▔▔   ▔▔▔▔▔▔▔▔▔▔▔▔\RIGHT/▔▔▔▔▔▔▔▔▔▔▔▔
 
-                    return TreeHelper.Create<QsiLogicalExpressionNode>(n =>
+                    return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
                     {
                         n.Operator = JoinTokens(pContext.NOT(), pContext.IN());
                         n.Left.SetValue(VisitPredicate(pContext.predicate()));
@@ -712,7 +712,7 @@ namespace Qsi.MySql.Tree
                             n.Right.SetValue(VisitExpressions(pContext.expressions()));
                         }
 
-                        UnwrapLogicalExpressionNode(n);
+                        UnwrapBinaryExpressionNode(n);
 
                         MySqlTree.PutContextSpan(n, pContext);
                     });
@@ -723,13 +723,13 @@ namespace Qsi.MySql.Tree
                     // predicate   IS   NOT?  { NULL | \\N }
                     // ▔\LEFT/▔▔  \OP/  ▔▔▔▔▔▔\RIGHT/▔▔▔▔▔▔▔
 
-                    return TreeHelper.Create<QsiLogicalExpressionNode>(n =>
+                    return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
                     {
                         n.Operator = pContext.IS().GetText();
                         n.Left.SetValue(VisitPredicate(pContext.predicate()));
                         n.Right.SetValue(VisitNullNotNull(pContext.nullNotnull()));
 
-                        UnwrapLogicalExpressionNode(n);
+                        UnwrapBinaryExpressionNode(n);
 
                         MySqlTree.PutContextSpan(n, pContext);
                     });
@@ -740,7 +740,7 @@ namespace Qsi.MySql.Tree
                     // predicate  { = | > | < | <= | >= | <> | != | <=> }  predicate
                     // ▔\LEFT/▔▔   ▔▔▔▔▔▔▔▔▔▔▔▔▔\OPERATOR/▔▔▔▔▔▔▔▔▔▔▔▔▔▔   ▔\RIGHT/▔
 
-                    var node = CreateLogicalExpression(
+                    var node = CreateBinaryExpression(
                         pContext.comparisonOperator().GetText(),
                         pContext.left, pContext.right,
                         VisitPredicate);
@@ -755,13 +755,13 @@ namespace Qsi.MySql.Tree
                     // predicate  { = | > | < | <= | >= | <> | != | <=> } {ALL | ANY | SOME}  (selectStatement)
                     // ▔\LEFT/▔▔   ▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔\OPERATOR/▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔    ▔▔▔▔\RIGHT/▔▔▔▔
 
-                    return TreeHelper.Create<QsiLogicalExpressionNode>(n =>
+                    return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
                     {
                         n.Operator = $"{pContext.comparisonOperator().GetText()} {pContext.quantifier.Text}";
                         n.Left.SetValue(VisitPredicate(pContext.predicate()));
                         n.Right.SetValue(VisitSelectStatement(pContext.selectStatement()));
 
-                        UnwrapLogicalExpressionNode(n);
+                        UnwrapBinaryExpressionNode(n);
 
                         MySqlTree.PutContextSpan(n, pContext);
                     });
@@ -787,7 +787,7 @@ namespace Qsi.MySql.Tree
                     // predicate  SOUNDS LIKE  predicate
                     // ▔\LEFT/▔▔  ▔▔▔\OP/▔▔▔▔  ▔\RIGHT/▔
 
-                    var node = CreateLogicalExpression(
+                    var node = CreateBinaryExpression(
                         JoinTokens(pContext.SOUNDS(), pContext.LIKE()),
                         pContext.left, pContext.right,
                         VisitPredicate);
@@ -803,7 +803,7 @@ namespace Qsi.MySql.Tree
                     // predicate  NOT? LIKE  predicate  (ESCAPE STRING_LITERAL)?
                     // ▔\LEFT/▔▔  ▔▔\OP/▔▔▔  ▔\RIGHT/▔   ▔▔▔▔▔▔▔\SKIP/▔▔▔▔▔▔▔▔
 
-                    var node = CreateLogicalExpression(
+                    var node = CreateBinaryExpression(
                         JoinTokens(pContext.NOT(), pContext.LIKE()),
                         pContext.left, pContext.right,
                         VisitPredicate);
@@ -818,7 +818,7 @@ namespace Qsi.MySql.Tree
                     // predicate  NOT? {REGEXP | RLIKE}  predicate
                     // ▔\LEFT/▔▔  ▔▔▔▔▔▔▔▔\OP/▔▔▔▔▔▔▔▔   ▔\RIGHT/▔
 
-                    var node = CreateLogicalExpression(
+                    var node = CreateBinaryExpression(
                         JoinTokens(pContext.NOT()?.GetText(), pContext.regex.Text),
                         pContext.left, pContext.right,
                         VisitPredicate);
@@ -966,7 +966,7 @@ namespace Qsi.MySql.Tree
 
                 case BitExpressionAtomContext pContext:
                 {
-                    var node = CreateLogicalExpression(
+                    var node = CreateBinaryExpression(
                         pContext.bitOperator().GetText(),
                         pContext.left,
                         pContext.right,
@@ -979,7 +979,7 @@ namespace Qsi.MySql.Tree
 
                 case MathExpressionAtomContext pContext:
                 {
-                    var node = CreateLogicalExpression(
+                    var node = CreateBinaryExpression(
                         pContext.mathOperator().GetText(),
                         pContext.left,
                         pContext.right,
@@ -1036,13 +1036,13 @@ namespace Qsi.MySql.Tree
             });
         }
 
-        private static QsiLogicalExpressionNode CreateLogicalExpression<TContext>(
+        private static QsiBinaryExpressionNode CreateBinaryExpression<TContext>(
             string @operator,
             TContext left,
             TContext right,
             Func<TContext, QsiExpressionNode> visitor)
         {
-            var node = new QsiLogicalExpressionNode
+            var node = new QsiBinaryExpressionNode
             {
                 Operator = @operator
             };
@@ -1050,10 +1050,10 @@ namespace Qsi.MySql.Tree
             node.Left.SetValue(visitor(left));
             node.Right.SetValue(visitor(right));
 
-            return UnwrapLogicalExpressionNode(node);
+            return UnwrapBinaryExpressionNode(node);
         }
 
-        private static QsiLogicalExpressionNode UnwrapLogicalExpressionNode(QsiLogicalExpressionNode node)
+        private static QsiBinaryExpressionNode UnwrapBinaryExpressionNode(QsiBinaryExpressionNode node)
         {
             if (node.Left.Value is QsiMultipleExpressionNode leftArrayExpr)
                 node.Left.SetValue(Unwrap(leftArrayExpr));
@@ -1066,7 +1066,7 @@ namespace Qsi.MySql.Tree
             static QsiExpressionNode Unwrap(QsiMultipleExpressionNode arrayExpression)
             {
                 if (arrayExpression.Elements.Count == 1 &&
-                    arrayExpression.Elements[0] is QsiLogicalExpressionNode innerLogicalExpr)
+                    arrayExpression.Elements[0] is QsiBinaryExpressionNode innerLogicalExpr)
                 {
                     return innerLogicalExpr;
                 }

@@ -574,30 +574,22 @@ normalColumnOperation
     | /* c=cident */ i=INTEGER        #normalColumnOperation3
     ;
 
+// <cident> 
 columnCondition
     // Note: we'll reject duplicates later
-    : key=cident
-        ( op=relationType t=term
-        | K_IN
-            ( values=singleColumnInValues
-            | marker=bindParameter
-            )
-        | '[' element=term ']'
-            ( op=relationType t=term
-            | K_IN
-                ( values=singleColumnInValues
-                | marker=bindParameter
-                )
-            )
-        | '.' field=fident
-            ( op=relationType t=term
-            | K_IN
-                ( values=singleColumnInValues
-                | marker=bindParameter
-                )
-            )
+    : l=cident (
+        op=relationType r1=term
+        | K_IN (r2=singleColumnInValues | bindParameter)
+        | '[' element=term ']' (
+            op=relationType r1=term
+            | K_IN (r2=singleColumnInValues | bindParameter)
         )
-    ;
+        | '.' field=fident (
+            op=relationType r1=term
+            | K_IN (r2=singleColumnInValues | bindParameter)
+        )
+    )
+    ; 
 
 properties
     : property (K_AND property)*

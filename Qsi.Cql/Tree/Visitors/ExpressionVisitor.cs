@@ -61,7 +61,7 @@ namespace Qsi.Cql.Tree
 
             for (int i = 0; i < operators.Length; i++)
             {
-                var node = new QsiLogicalExpressionNode
+                var node = new QsiBinaryExpressionNode
                 {
                     Operator = operators[i].GetText()
                 };
@@ -87,7 +87,7 @@ namespace Qsi.Cql.Tree
 
             for (int i = 0; i < operators.Length; i++)
             {
-                var node = new QsiLogicalExpressionNode
+                var node = new QsiBinaryExpressionNode
                 {
                     Operator = operators[i].GetText()
                 };
@@ -111,7 +111,7 @@ namespace Qsi.Cql.Tree
 
             for (int i = 1; i < nodes.Length; i++)
             {
-                var binaryNode = new QsiLogicalExpressionNode
+                var binaryNode = new QsiBinaryExpressionNode
                 {
                     Operator = "AND"
                 };
@@ -194,7 +194,7 @@ namespace Qsi.Cql.Tree
 
         public static QsiExpressionNode VisitLogicalExpr1(LogicalExpr1Context context)
         {
-            var node = new QsiLogicalExpressionNode
+            var node = new QsiBinaryExpressionNode
             {
                 Operator = context.op.GetText()
             };
@@ -291,7 +291,7 @@ namespace Qsi.Cql.Tree
 
         public static QsiExpressionNode VisitLogicalExpr2(LogicalExpr2Context context)
         {
-            var node = new QsiLogicalExpressionNode
+            var node = new QsiBinaryExpressionNode
             {
                 Operator = context.op.GetText()
             };
@@ -338,20 +338,20 @@ namespace Qsi.Cql.Tree
             }
             else if (context.literal != null || context.tupleMarker != null)
             {
-                var logicalNode = new QsiLogicalExpressionNode
+                var binaryNode = new QsiBinaryExpressionNode
                 {
                     Operator = context.op.GetText()
                 };
 
-                logicalNode.Left.SetValue(leftNode);
+                binaryNode.Left.SetValue(leftNode);
 
                 if (context.literal != null)
-                    logicalNode.Right.SetValue(VisitTupleLiteral(context.literal));
+                    binaryNode.Right.SetValue(VisitTupleLiteral(context.literal));
 
                 if (context.tupleMarker != null)
-                    logicalNode.Right.SetValue(VisitBindParameter(context.tupleMarker));
+                    binaryNode.Right.SetValue(VisitBindParameter(context.tupleMarker));
 
-                node = logicalNode;
+                node = binaryNode;
             }
             else
             {
@@ -823,7 +823,7 @@ namespace Qsi.Cql.Tree
 
             for (int i = 0; i < operators.Length; i++)
             {
-                var node = new QsiLogicalExpressionNode
+                var node = new QsiBinaryExpressionNode
                 {
                     Operator = operators[i].GetText()
                 };
@@ -849,7 +849,7 @@ namespace Qsi.Cql.Tree
 
             for (int i = 0; i < operators.Length; i++)
             {
-                var node = new QsiLogicalExpressionNode
+                var node = new QsiBinaryExpressionNode
                 {
                     Operator = operators[i].GetText()
                 };
@@ -1171,11 +1171,11 @@ namespace Qsi.Cql.Tree
             if (context.r == null)
                 return VisitTerm(context.l);
 
-            var node = new QsiLogicalExpressionNode();
+            var node = new QsiBinaryExpressionNode();
 
             node.Left.SetValue(VisitTerm(context.l));
             node.Operator = "+";
-            
+
             node.Right.SetValue(VisitCident(context.r));
 
             CqlTree.PutContextSpan(node, context);
@@ -1185,7 +1185,7 @@ namespace Qsi.Cql.Tree
 
         public static QsiExpressionNode VisitNormalColumnOperation2(NormalColumnOperation2Context context)
         {
-            var node = new QsiLogicalExpressionNode();
+            var node = new QsiBinaryExpressionNode();
 
             node.Left.SetValue(VisitCident(context.l));
             node.Operator = context.sig.Text;
@@ -1255,6 +1255,15 @@ namespace Qsi.Cql.Tree
 
             node.TargetExpression.SetValue(memberAccessNode);
             node.Value.SetValue(VisitTerm(context.r));
+
+            CqlTree.PutContextSpan(node, context);
+
+            return node;
+        }
+
+        public static QsiExpressionNode VisitColumnCondition(ColumnConditionContext context)
+        {
+            var node = new QsiBinaryExpressionNode();
 
             CqlTree.PutContextSpan(node, context);
 

@@ -285,9 +285,9 @@ namespace Qsi.JSql.Tree
             });
         }
 
-        public virtual QsiLogicalExpressionNode VisitBinaryExpression(BinaryExpression expression)
+        public virtual QsiBinaryExpressionNode VisitBinaryExpression(BinaryExpression expression)
         {
-            return TreeHelper.Create<QsiLogicalExpressionNode>(n =>
+            return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
             {
                 n.Left.SetValue(Visit(expression.getLeftExpression()));
                 n.Operator = expression.getStringExpression();
@@ -355,7 +355,7 @@ namespace Qsi.JSql.Tree
             {
                 n.Member.SetValue(TreeHelper.CreateFunction(JSqlKnownFunction.Extract));
 
-                n.Parameters.Add(TreeHelper.Create<QsiLogicalExpressionNode>(ln =>
+                n.Parameters.Add(TreeHelper.Create<QsiBinaryExpressionNode>(ln =>
                 {
                     ln.Left.SetValue(TreeHelper.CreateLiteral(expression.getName()));
                     ln.Operator = JSqlKnownOperator.From;
@@ -653,7 +653,7 @@ namespace Qsi.JSql.Tree
 
         public virtual QsiExpressionNode VisitInExpression(InExpression expression)
         {
-            var node = TreeHelper.Create<QsiLogicalExpressionNode>(n =>
+            var node = TreeHelper.Create<QsiBinaryExpressionNode>(n =>
             {
                 n.Left.SetValue(expression.getLeftExpression() == null ?
                     VisitItemsList(expression.getLeftItemsList()) :
