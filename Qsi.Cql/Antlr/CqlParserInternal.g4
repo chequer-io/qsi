@@ -273,7 +273,7 @@ updateStatement
     ;
 
 updateConditions
-    : columnCondition ( K_AND columnCondition )*
+    : list+=columnCondition ( K_AND list+=columnCondition )*
     ;
 
 /**

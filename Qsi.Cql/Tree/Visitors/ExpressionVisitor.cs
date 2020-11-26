@@ -103,36 +103,40 @@ namespace Qsi.Cql.Tree
 
         public static QsiWhereExpressionNode CreateWhere(ParserRuleContextWrapper<WhereClauseContext> context)
         {
-            QsiExpressionNode[] nodes = context.Value.relationOrExpression()
-                .Select(VisitRelationOrExpression)
-                .ToArray();
-
-            var node = nodes[0];
-
-            for (int i = 1; i < nodes.Length; i++)
-            {
-                var binaryNode = new QsiBinaryExpressionNode
-                {
-                    Operator = "AND"
-                };
-
-                binaryNode.Left.SetValue(node);
-                binaryNode.Right.SetValue(nodes[i]);
-
-                var leftSpan = CqlTree.Span[node];
-                var rightSpan = CqlTree.Span[nodes[i]];
-
-                CqlTree.Span[binaryNode] = new Range(leftSpan.Start, rightSpan.End);
-
-                node = binaryNode;
-            }
-
             var whereNode = new QsiWhereExpressionNode();
-            whereNode.Expression.SetValue(node);
 
+            var exprNode = CreateChainedBinaryExpression(
+                "AND",
+                context.Value.relationOrExpression(),
+                VisitRelationOrExpression);
+
+            whereNode.Expression.SetValue(exprNode);
             CqlTree.PutContextSpan(whereNode, context);
 
             return whereNode;
+        }
+
+        private static QsiExpressionNode CreateChainedBinaryExpression<TContext>(
+            string @operator,
+            IEnumerable<TContext> contexts,
+            Func<TContext, QsiExpressionNode> visitor)
+            where TContext : ParserRuleContext
+        {
+            return TreeHelper.CreateChainedBinaryExpression(@operator, contexts, visitor,
+                (eContext, eNode) =>
+                {
+                    if (eNode is IQsiBinaryExpressionNode binaryNode)
+                    {
+                        var leftSpan = CqlTree.Span[binaryNode.Left];
+                        var rightSpan = CqlTree.Span[binaryNode.Right];
+
+                        CqlTree.Span[binaryNode] = new Range(leftSpan.Start, rightSpan.End);
+                    }
+                    else
+                    {
+                        CqlTree.PutContextSpan(eNode, eContext);
+                    }
+                });
         }
 
         public static QsiExpressionNode VisitRelationOrExpression(RelationOrExpressionContext context)
@@ -1261,9 +1265,62 @@ namespace Qsi.Cql.Tree
             return node;
         }
 
+        public static QsiExpressionNode VisitUpdateConditions(UpdateConditionsContext context)
+        {
+            return CreateChainedBinaryExpression("AND", context._list, VisitColumnCondition);
+        }
+
         public static QsiExpressionNode VisitColumnCondition(ColumnConditionContext context)
         {
-            var node = new QsiBinaryExpressionNode();
+            QsiExpressionNode node;
+
+            var leftNode = VisitCident(context.l);
+
+            if (context.element != null || context.field != null)
+            {
+                var memberAccessNode = new QsiMemberAccessExpressionNode();
+
+                memberAccessNode.Target.SetValue(leftNode);
+
+                if (context.element != null)
+                {
+                    var indexerNode = new CqlIndexerExpressionNode();
+                    indexerNode.Indexer.SetValue(VisitTerm(context.element));
+                    memberAccessNode.Member.SetValue(indexerNode);
+                }
+                else
+                {
+                    memberAccessNode.Member.SetValue(new QsiFieldExpressionNode
+                    {
+                        Identifier = new QsiQualifiedIdentifier(context.field.id)
+                    });
+                }
+
+                leftNode = memberAccessNode;
+            }
+
+            if (context.op != null)
+            {
+                var binaryNode = new QsiBinaryExpressionNode
+                {
+                    Operator = context.op.GetText()
+                };
+
+                binaryNode.Left.SetValue(leftNode);
+                binaryNode.Right.SetValue(VisitTerm(context.r1));
+
+                node = binaryNode;
+            }
+            else
+            {
+                var invokeNode = new QsiInvokeExpressionNode();
+
+                invokeNode.Member.SetValue(TreeHelper.CreateFunction(CqlKnownFunction.In));
+                invokeNode.Parameters.Add(leftNode);
+                invokeNode.Parameters.Add(VisitSingleColumnInValues(context.r2));
+
+                node = invokeNode;
+            }
 
             CqlTree.PutContextSpan(node, context);
 

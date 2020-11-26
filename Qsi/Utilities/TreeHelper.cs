@@ -30,6 +30,41 @@ namespace Qsi.Utilities
             });
         }
 
+        public static QsiExpressionNode CreateChainedBinaryExpression<TContext>(
+            string @operator,
+            IEnumerable<TContext> contexts,
+            Func<TContext, QsiExpressionNode> visitor,
+            Action<TContext, QsiExpressionNode> callback = null)
+        {
+            QsiExpressionNode node = null;
+
+            foreach (var context in contexts)
+            {
+                var elementNode = visitor(context);
+
+                if (node == null)
+                {
+                    node = elementNode;
+                }
+                else
+                {
+                    var binaryNode = new QsiBinaryExpressionNode
+                    {
+                        Operator = @operator
+                    };
+
+                    binaryNode.Left.SetValue(node);
+                    binaryNode.Right.SetValue(elementNode);
+
+                    node = binaryNode;
+                }
+
+                callback?.Invoke(context, node);
+            }
+
+            return node;
+        }
+
         public static QsiColumnsDeclarationNode CreateAllColumnsDeclaration()
         {
             var columns = new QsiColumnsDeclarationNode();

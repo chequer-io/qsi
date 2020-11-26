@@ -151,7 +151,8 @@ namespace Qsi.Cql.Tree
 
             node.SetValues.AddRange(context.columnOperation().Select(ExpressionVisitor.VisitColumnOperation));
 
-            // TODO: need test 'IF EXISTS | IF <conditions>'
+            if (context.conditions != null)
+                node.StaticColumnCondition.SetValue(ExpressionVisitor.VisitUpdateConditions(context.conditions));
 
             CqlTree.PutContextSpan(node, context);
 
@@ -165,7 +166,14 @@ namespace Qsi.Cql.Tree
             var node = new CqlDataDeleteActionNode();
 
             var tableNode = new CqlDerivedTableNode();
-            tableNode.Columns.SetValue(VisitDeleteSelection(context.dels));
+
+            tableNode.Columns.SetValue
+            (
+                context.dels != null ?
+                    VisitDeleteSelection(context.dels) :
+                    TreeHelper.CreateAllColumnsDeclaration()
+            );
+
             tableNode.Source.SetValue(TableVisitor.VisitColumnFamilyName(context.cf));
 
             var whereContext = new ParserRuleContextWrapper<WhereClauseContext>
@@ -177,12 +185,13 @@ namespace Qsi.Cql.Tree
 
             tableNode.Where.SetValue(ExpressionVisitor.CreateWhere(whereContext));
 
-            // TODO: need test 'IF EXISTS | IF <conditions>'
-
             node.Target.SetValue(tableNode);
 
             if (context.usingClauseDelete() != null)
                 node.Using.SetValue(ExpressionVisitor.VisitUsingClauseDelete(context.usingClauseDelete()));
+
+            if (context.conditions != null)
+                node.StaticColumnCondition.SetValue(ExpressionVisitor.VisitUpdateConditions(context.conditions));
 
             CqlTree.PutContextSpan(node, context);
 
