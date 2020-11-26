@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Antlr4.Runtime;
+using Qsi.Cql.Schema;
 using Qsi.Cql.Tree.Common;
 using Qsi.Data;
 using Qsi.Tree;
@@ -99,6 +100,17 @@ namespace Qsi.Cql.Tree
             }
 
             return left;
+        }
+
+        public static QsiInvokeExpressionNode CreateInlineCast(CqlTypeExpressionNode type, QsiExpressionNode value)
+        {
+            var node = new QsiInvokeExpressionNode();
+
+            node.Member.SetValue(TreeHelper.CreateFunction(CqlKnownFunction.InlineCast));
+            node.Parameters.Add(value);
+            node.Parameters.Add(type);
+
+            return node;
         }
 
         public static QsiWhereExpressionNode CreateWhere(ParserRuleContextWrapper<WhereClauseContext> context)
@@ -565,18 +577,15 @@ namespace Qsi.Cql.Tree
         public static QsiExpressionNode VisitSelectionTypeHint(SelectionTypeHintContext context)
         {
             var typeNode = VisitComparatorType(context.comparatorType());
-            var node = new QsiInvokeExpressionNode();
-
-            node.Member.SetValue(TreeHelper.CreateFunction(CqlKnownFunction.InlineCast));
-            node.Parameters.Add(VisitSelectionGroupWithoutField(context.selectionGroupWithoutField()));
-            node.Parameters.Add(typeNode);
+            var valueNode = VisitSelectionGroupWithoutField(context.selectionGroupWithoutField());
+            var node = CreateInlineCast(typeNode, valueNode);
 
             CqlTree.PutContextSpan(node, context);
 
             return node;
         }
 
-        public static QsiExpressionNode VisitComparatorType(ComparatorTypeContext context)
+        public static CqlTypeExpressionNode VisitComparatorType(ComparatorTypeContext context)
         {
             var node = new CqlTypeExpressionNode
             {
@@ -888,8 +897,9 @@ namespace Qsi.Cql.Tree
             if (context.f != null)
                 return VisitFunction(context.f);
 
-            var type = context.comparatorType().GetText();
-            var node = TreeHelper.CreateUnary($"({type})", VisitSimpleTerm(context.t));
+            var typeNode = VisitComparatorType(context.comparatorType());
+            var valueNode = VisitSimpleTerm(context.t);
+            var node = CreateInlineCast(typeNode, valueNode);
 
             CqlTree.PutContextSpan(node, context);
 

@@ -128,6 +128,9 @@ namespace Qsi.Cql.Tree
             {
                 var derivedTableNode = new QsiDerivedTableNode();
 
+                derivedTableNode.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+                derivedTableNode.Source.SetValue(tableNode);
+
                 var whereContext = new ParserRuleContextWrapper<WhereClauseContext>
                 (
                     context.wclause,
@@ -135,9 +138,7 @@ namespace Qsi.Cql.Tree
                     context.wclause.Stop
                 );
 
-                derivedTableNode.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
-                derivedTableNode.Source.SetValue(tableNode);
-                derivedTableNode.Where.SetValue(ExpressionVisitor.CreateWhere(whereContext));
+                derivedTableNode.Where.SetValue(CreateWhere(whereContext, context.conditions));
 
                 tableNode = derivedTableNode;
             }
@@ -150,9 +151,6 @@ namespace Qsi.Cql.Tree
                 node.Usings.SetValue(ExpressionVisitor.VisitUsingClause(context.usingClause()));
 
             node.SetValues.AddRange(context.columnOperation().Select(ExpressionVisitor.VisitColumnOperation));
-
-            if (context.conditions != null)
-                node.StaticColumnCondition.SetValue(ExpressionVisitor.VisitUpdateConditions(context.conditions));
 
             CqlTree.PutContextSpan(node, context);
 
@@ -183,15 +181,12 @@ namespace Qsi.Cql.Tree
                 context.wclause.Stop
             );
 
-            tableNode.Where.SetValue(ExpressionVisitor.CreateWhere(whereContext));
+            tableNode.Where.SetValue(CreateWhere(whereContext, context.conditions));
 
             node.Target.SetValue(tableNode);
 
             if (context.usingClauseDelete() != null)
                 node.Using.SetValue(ExpressionVisitor.VisitUsingClauseDelete(context.usingClauseDelete()));
-
-            if (context.conditions != null)
-                node.StaticColumnCondition.SetValue(ExpressionVisitor.VisitUpdateConditions(context.conditions));
 
             CqlTree.PutContextSpan(node, context);
 
@@ -273,5 +268,27 @@ namespace Qsi.Cql.Tree
             return node;
         }
         #endregion
+
+        private static QsiWhereExpressionNode CreateWhere(
+            ParserRuleContextWrapper<WhereClauseContext> context,
+            UpdateConditionsContext conditionContext)
+        {
+            var node = ExpressionVisitor.CreateWhere(context);
+
+            if (conditionContext != null)
+            {
+                var binaryNode = new QsiBinaryExpressionNode
+                {
+                    Operator = "AND"
+                };
+
+                binaryNode.Left.SetValue(node.Expression.Value);
+                binaryNode.Right.SetValue(ExpressionVisitor.VisitUpdateConditions(conditionContext));
+
+                node.Expression.SetValue(binaryNode);
+            }
+
+            return node;
+        }
     }
 }
