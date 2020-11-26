@@ -126,7 +126,10 @@ namespace Qsi.Cql.Tree
 
             if (context.wclause != null)
             {
-                var derivedTableNode = new QsiDerivedTableNode();
+                var derivedTableNode = new CqlDerivedTableNode
+                {
+                    AllowFiltering = true
+                };
 
                 derivedTableNode.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
                 derivedTableNode.Source.SetValue(tableNode);
@@ -163,7 +166,10 @@ namespace Qsi.Cql.Tree
         {
             var node = new CqlDataDeleteActionNode();
 
-            var tableNode = new CqlDerivedTableNode();
+            var tableNode = new CqlDerivedTableNode
+            {
+                AllowFiltering = true
+            };
 
             tableNode.Columns.SetValue
             (
