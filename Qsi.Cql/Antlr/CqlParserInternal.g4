@@ -268,7 +268,7 @@ updateStatement
     : K_UPDATE cf=columnFamilyName
       ( usingClause )?
       K_SET columnOperation (',' columnOperation)*
-      K_WHERE wclause=whereClause
+      w=K_WHERE wclause=whereClause
       ( K_IF ( K_EXISTS | conditions=updateConditions ))?
     ;
 
@@ -558,33 +558,20 @@ simpleTerm
     | '(' c=comparatorType ')' t=simpleTerm
     ;
 
-columnOperation
-    : key=cident columnOperationDifferentiator
-    ;
-
-columnOperationDifferentiator
-    : '=' normalColumnOperation
-    | shorthandColumnOperation
-    | '[' k=term ']' collectionColumnOperation
-    | '.' field=fident udtColumnOperation
+columnOperation returns [CqlSetOperator op]
+    : l=cident '=' r=normalColumnOperation #simpleColumnOp
+    | l=cident (
+        '+=' { $op = CqlSetOperator.AdditionAssignment; }
+        | '-=' { $op = CqlSetOperator.SubtractionAssignment; }
+      ) r=term                             #additionAssignColumnOp
+    | l=cident '[' k=term ']' '=' r=term   #collectionColumnOp
+    | l=cident '.' field=fident '=' r=term #fieldColumnOp
     ;
 
 normalColumnOperation
-    : t=term ('+' c=cident )?
-    | c=cident sig=('+' | '-') t=term
-    | c=cident i=INTEGER
-    ;
-
-shorthandColumnOperation
-    : sig=('+=' | '-=') t=term
-    ;
-
-collectionColumnOperation
-    : '=' t=term
-    ;
-
-udtColumnOperation
-    : '=' t=term
+    : l=term ('+' r=cident )?         #normalColumnOperation1
+    | l=cident sig=('+' | '-') r=term #normalColumnOperation2
+    | /* c=cident */ i=INTEGER        #normalColumnOperation3
     ;
 
 columnCondition

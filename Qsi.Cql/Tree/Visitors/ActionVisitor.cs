@@ -122,7 +122,40 @@ namespace Qsi.Cql.Tree
         #region UpdateStatement
         public static QsiActionNode VisitUpdateStatement(UpdateStatementContext context)
         {
-            throw new System.NotImplementedException();
+            QsiTableNode tableNode = TableVisitor.VisitColumnFamilyName(context.cf);
+
+            if (context.wclause != null)
+            {
+                var derivedTableNode = new QsiDerivedTableNode();
+
+                var whereContext = new ParserRuleContextWrapper<WhereClauseContext>
+                (
+                    context.wclause,
+                    context.w,
+                    context.wclause.Stop
+                );
+
+                derivedTableNode.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+                derivedTableNode.Source.SetValue(tableNode);
+                derivedTableNode.Where.SetValue(ExpressionVisitor.CreateWhere(whereContext));
+
+                tableNode = derivedTableNode;
+            }
+
+            var node = new CqlDataUpdateActionNode();
+
+            node.Target.SetValue(tableNode);
+
+            if (context.usingClause() != null)
+                node.Usings.SetValue(ExpressionVisitor.VisitUsingClause(context.usingClause()));
+
+            node.SetValues.AddRange(context.columnOperation().Select(ExpressionVisitor.VisitColumnOperation));
+
+            // TODO: need test 'IF EXISTS | IF <conditions>'
+
+            CqlTree.PutContextSpan(node, context);
+
+            return node;
         }
         #endregion
 

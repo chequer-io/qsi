@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using Antlr4.Runtime;
-using Antlr4.Runtime.Tree;
 using Qsi.Cql.Tree.Common;
 using Qsi.Data;
 using Qsi.Tree;
@@ -1109,6 +1107,154 @@ namespace Qsi.Cql.Tree
                 Type = CqlUsingType.Timestamp,
                 Value = int.Parse(context.ts.GetText())
             };
+
+            CqlTree.PutContextSpan(node, context);
+
+            return node;
+        }
+
+        public static QsiSetColumnExpressionNode VisitColumnOperation(ColumnOperationContext context)
+        {
+            switch (context)
+            {
+                case SimpleColumnOpContext simpleColumnOp:
+                    return VisitSimpleColumnOp(simpleColumnOp);
+
+                case AdditionAssignColumnOpContext additionAssignColumnOp:
+                    return VisitAdditionAssignColumnOp(additionAssignColumnOp);
+
+                case CollectionColumnOpContext collectionColumnOp:
+                    return VisitCollectionColumnOp(collectionColumnOp);
+
+                case FieldColumnOpContext fieldColumnOp:
+                    return VisitFieldColumnOp(fieldColumnOp);
+
+                default:
+                    throw TreeHelper.NotSupportedTree(context);
+            }
+        }
+
+        public static QsiSetColumnExpressionNode VisitSimpleColumnOp(SimpleColumnOpContext context)
+        {
+            var node = new CqlSetColumnExpressionNode
+            {
+                Target = new QsiQualifiedIdentifier(context.l.id),
+                Operator = context.op
+            };
+
+            node.Value.SetValue(VisitNormalColumnOperation(context.r));
+            CqlTree.PutContextSpan(node, context);
+
+            return node;
+        }
+
+        public static QsiExpressionNode VisitNormalColumnOperation(NormalColumnOperationContext context)
+        {
+            switch (context)
+            {
+                case NormalColumnOperation1Context op1:
+                    return VisitNormalColumnOperation1(op1);
+
+                case NormalColumnOperation2Context op2:
+                    return VisitNormalColumnOperation2(op2);
+
+                case NormalColumnOperation3Context op2:
+                    return VisitNormalColumnOperation3(op2);
+
+                default:
+                    throw TreeHelper.NotSupportedTree(context);
+            }
+        }
+
+        public static QsiExpressionNode VisitNormalColumnOperation1(NormalColumnOperation1Context context)
+        {
+            if (context.r == null)
+                return VisitTerm(context.l);
+
+            var node = new QsiLogicalExpressionNode();
+
+            node.Left.SetValue(VisitTerm(context.l));
+            node.Operator = "+";
+            
+            node.Right.SetValue(VisitCident(context.r));
+
+            CqlTree.PutContextSpan(node, context);
+
+            return node;
+        }
+
+        public static QsiExpressionNode VisitNormalColumnOperation2(NormalColumnOperation2Context context)
+        {
+            var node = new QsiLogicalExpressionNode();
+
+            node.Left.SetValue(VisitCident(context.l));
+            node.Operator = context.sig.Text;
+            node.Right.SetValue(VisitTerm(context.r));
+
+            CqlTree.PutContextSpan(node, context);
+
+            return node;
+        }
+
+        public static QsiExpressionNode VisitNormalColumnOperation3(NormalColumnOperation3Context context)
+        {
+            return TreeHelper.CreateLiteral(int.Parse(context.i.Text));
+        }
+
+        public static QsiSetColumnExpressionNode VisitAdditionAssignColumnOp(AdditionAssignColumnOpContext context)
+        {
+            var node = new CqlSetColumnExpressionNode
+            {
+                Target = new QsiQualifiedIdentifier(context.l.id),
+                Operator = context.op
+            };
+
+            node.Value.SetValue(VisitTerm(context.r));
+            CqlTree.PutContextSpan(node, context);
+
+            return node;
+        }
+
+        public static QsiSetColumnExpressionNode VisitCollectionColumnOp(CollectionColumnOpContext context)
+        {
+            var node = new CqlSetColumnExpressionNode
+            {
+                Operator = context.op
+            };
+
+            var memberAccessNode = new QsiMemberAccessExpressionNode();
+            var indexerNode = new CqlIndexerExpressionNode();
+
+            indexerNode.Indexer.SetValue(VisitTerm(context.k));
+            memberAccessNode.Target.SetValue(VisitCident(context.l));
+            memberAccessNode.Member.SetValue(indexerNode);
+
+            node.TargetExpression.SetValue(memberAccessNode);
+            node.Value.SetValue(VisitTerm(context.r));
+
+            CqlTree.PutContextSpan(node, context);
+
+            return node;
+        }
+
+        public static QsiSetColumnExpressionNode VisitFieldColumnOp(FieldColumnOpContext context)
+        {
+            var node = new CqlSetColumnExpressionNode
+            {
+                Operator = context.op
+            };
+
+            var memberAccessNode = new QsiMemberAccessExpressionNode();
+
+            memberAccessNode.Target.SetValue(VisitCident(context.l));
+
+            memberAccessNode.Member.SetValue(new QsiFieldExpressionNode
+            {
+                Identifier = new QsiQualifiedIdentifier(context.field.id)
+            });
+
+            node.TargetExpression.SetValue(memberAccessNode);
+            node.Value.SetValue(VisitTerm(context.r));
 
             CqlTree.PutContextSpan(node, context);
 
