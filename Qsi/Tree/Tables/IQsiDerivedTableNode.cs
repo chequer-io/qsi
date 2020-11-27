@@ -28,16 +28,21 @@
         /// <summary>
         /// Get the where clause.
         /// </summary>
-        IQsiWhereExpressionNode WhereExpression { get; }
+        IQsiWhereExpressionNode Where { get; }
+
+        /// <summary>
+        /// Get the grouping clause.
+        /// </summary>
+        IQsiGroupingExpressionNode Grouping { get; }
 
         /// <summary>
         /// Get the order clause.
         /// </summary>
-        IQsiMultipleOrderExpressionNode OrderExpression { get; }
+        IQsiMultipleOrderExpressionNode Order { get; }
 
         /// <summary>
         /// Get the limit clause.
         /// </summary>
-        IQsiLimitExpressionNode LimitExpression { get; }
+        IQsiLimitExpressionNode Limit { get; }
     }
 }

@@ -24,9 +24,9 @@ namespace Qsi.Parsing.Common
                 node.Source is IQsiTableAccessNode &&
                 node.Alias != null &&
                 node.Directives == null &&
-                node.WhereExpression == null &&
-                node.OrderExpression == null &&
-                node.LimitExpression == null &&
+                node.Where == null &&
+                node.Order == null &&
+                node.Limit == null &&
                 node.Columns != null &&
                 IsWildcard(node.Columns);
         }
@@ -117,7 +117,7 @@ namespace Qsi.Parsing.Common
             if (node.IsEmpty)
                 return;
 
-            JoinElements(writer, ", ", node.Columns, script);
+            JoinElements(writer, ", ", node, script);
         }
 
         protected virtual void DeparseAliasNode(ScriptWriter writer, IQsiAliasNode node, QsiScript script)
@@ -284,22 +284,28 @@ namespace Qsi.Parsing.Common
                 }
             }
 
-            if (node.WhereExpression != null)
+            if (node.Where != null)
             {
                 writer.WriteSpace();
-                DeparseTreeNode(writer, node.WhereExpression, script);
+                DeparseTreeNode(writer, node.Where, script);
             }
 
-            if (node.OrderExpression != null)
+            if (node.Grouping != null)
             {
                 writer.WriteSpace();
-                DeparseTreeNode(writer, node.OrderExpression, script);
+                DeparseTreeNode(writer, node.Grouping, script);
             }
 
-            if (node.LimitExpression != null)
+            if (node.Order != null)
             {
                 writer.WriteSpace();
-                DeparseTreeNode(writer, node.LimitExpression, script);
+                DeparseTreeNode(writer, node.Order, script);
+            }
+
+            if (node.Limit != null)
+            {
+                writer.WriteSpace();
+                DeparseTreeNode(writer, node.Limit, script);
             }
         }
 
@@ -402,6 +408,10 @@ namespace Qsi.Parsing.Common
                     DeparseLimitExpressionNode(writer, limitExpressionNode, script);
                     break;
 
+                case IQsiGroupingExpressionNode groupingExpressionNode:
+                    DeparseGroupingExpressionNode(writer, groupingExpressionNode, script);
+                    break;
+
                 default:
                     throw new NotImplementedException();
             }
@@ -439,6 +449,18 @@ namespace Qsi.Parsing.Common
                     writer.Write(", ");
 
                 DeparseTreeNode(writer, node.Limit, script);
+            }
+        }
+
+        private void DeparseGroupingExpressionNode(ScriptWriter writer, IQsiGroupingExpressionNode node, QsiScript script)
+        {
+            writer.Write("GROUP BY ");
+            writer.WriteJoin(", ", node.Items, (_, item) => DeparseTreeNode(writer, item, script));
+
+            if (node.Having != null)
+            {
+                writer.Write("HAVING ");
+                DeparseTreeNode(writer, node.Having, script);
             }
         }
 

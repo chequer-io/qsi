@@ -165,6 +165,7 @@ namespace Qsi.Extensions
             return new ImmutableDataDeleteActionNode(
                 node.Parent,
                 node.Target,
+                node.Columns,
                 ignoreUserData ? null : node.UserData);
         }
 
@@ -262,12 +263,12 @@ namespace Qsi.Extensions
                 ignoreUserData ? null : node.UserData);
         }
 
-        public static ImmutableArrayRankExpressionNode ToImmutable(this IQsiArrayRankExpressionNode node, bool ignoreUserData = false)
+        public static ImmutableMemberAccessExpressionNode ToImmutable(this IQsiMemberAccessExpressionNode node, bool ignoreUserData = false)
         {
-            return new ImmutableArrayRankExpressionNode(
+            return new ImmutableMemberAccessExpressionNode(
                 node.Parent,
-                node.Array,
-                node.Rank,
+                node.Target,
+                node.Member,
                 ignoreUserData ? null : node.UserData);
         }
 
@@ -306,9 +307,9 @@ namespace Qsi.Extensions
                 ignoreUserData ? null : node.UserData);
         }
 
-        public static ImmutableLogicalExpressionNode ToImmutable(this IQsiLogicalExpressionNode node, bool ignoreUserData = false)
+        public static ImmutableBinaryExpressionNode ToImmutable(this IQsiBinaryExpressionNode node, bool ignoreUserData = false)
         {
-            return new ImmutableLogicalExpressionNode(
+            return new ImmutableBinaryExpressionNode(
                 node.Parent,
                 node.Left,
                 node.Operator,
@@ -419,17 +420,25 @@ namespace Qsi.Extensions
                 ignoreUserData ? null : node.UserData);
         }
 
-        public static ImmutableFunctionAccessExpressionNode ToImmutable(this IQsiFunctionAccessExpressionNode node, bool ignoreUserData = false)
+        public static ImmutableFieldExpressionNode ToImmutable(this IQsiFieldExpressionNode node, bool ignoreUserData = false)
         {
-            return new ImmutableFunctionAccessExpressionNode(
+            return new ImmutableFieldExpressionNode(
                 node.Parent,
                 node.Identifier,
                 ignoreUserData ? null : node.UserData);
         }
 
-        public static ImmutableVariableAccessExpressionNode ToImmutable(this IQsiVariableAccessExpressionNode node, bool ignoreUserData = false)
+        public static ImmutableFunctionExpressionNode ToImmutable(this IQsiFunctionExpressionNode node, bool ignoreUserData = false)
         {
-            return new ImmutableVariableAccessExpressionNode(
+            return new ImmutableFunctionExpressionNode(
+                node.Parent,
+                node.Identifier,
+                ignoreUserData ? null : node.UserData);
+        }
+
+        public static ImmutableVariableExpressionNode ToImmutable(this IQsiVariableExpressionNode node, bool ignoreUserData = false)
+        {
+            return new ImmutableVariableExpressionNode(
                 node.Parent,
                 node.Identifier,
                 ignoreUserData ? null : node.UserData);
@@ -461,9 +470,10 @@ namespace Qsi.Extensions
                 node.Columns,
                 node.Source,
                 node.Alias,
-                node.WhereExpression,
-                node.OrderExpression,
-                node.LimitExpression,
+                node.Where,
+                node.Grouping,
+                node.Order,
+                node.Limit,
                 ignoreUserData ? null : node.UserData);
         }
 
@@ -502,6 +512,15 @@ namespace Qsi.Extensions
                 node.Parent,
                 node.Tables,
                 node.IsRecursive,
+                ignoreUserData ? null : node.UserData);
+        }
+
+        public static ImmutableGroupingExpressionNode ToImmutable(this IQsiGroupingExpressionNode node, bool ignoreUserData = false)
+        {
+            return new ImmutableGroupingExpressionNode(
+                node.Parent,
+                node.Items,
+                node.Having,
                 ignoreUserData ? null : node.UserData);
         }
         #endregion

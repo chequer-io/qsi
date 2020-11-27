@@ -4,7 +4,7 @@ using Qsi.Utilities;
 
 namespace Qsi.Tree.Immutable
 {
-    public readonly struct ImmutableLogicalExpressionNode : IQsiLogicalExpressionNode
+    public readonly struct ImmutableBinaryExpressionNode : IQsiBinaryExpressionNode
     {
         public IQsiTreeNode Parent { get; }
 
@@ -18,7 +18,7 @@ namespace Qsi.Tree.Immutable
 
         public IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Left, Right);
 
-        public ImmutableLogicalExpressionNode(
+        public ImmutableBinaryExpressionNode(
             IQsiTreeNode parent,
             IQsiExpressionNode left,
             string @operator,
