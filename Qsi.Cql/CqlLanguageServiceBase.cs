@@ -1,4 +1,6 @@
-﻿using Qsi.Analyzers;
+﻿using System.Collections.Generic;
+using Qsi.Analyzers;
+using Qsi.Cql.Analyzers;
 using Qsi.Parsing;
 using Qsi.Services;
 
@@ -24,6 +26,12 @@ namespace Qsi.Cql
         public override QsiAnalyzerOptions CreateAnalyzerOptions()
         {
             return new QsiAnalyzerOptions();
+        }
+
+        public override IEnumerable<QsiAnalyzerBase> CreateAnalyzers(QsiEngine engine)
+        {
+            yield return new CqlTableAnalzyer(engine);
+            yield return new CqlActionAnalzyer(engine);
         }
     }
 }

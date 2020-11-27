@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Qsi.Analyzers;
 using Qsi.Analyzers.Action;
 using Qsi.Analyzers.Context;
 using Qsi.Cql.Tree;
@@ -13,11 +15,48 @@ namespace Qsi.Cql.Analyzers
         {
         }
 
-        protected override async ValueTask<QsiDataTable> GetDataTableByCommonTableNode(IAnalyzerContext context, IQsiTableNode commonTableNode)
+        protected override async ValueTask<IQsiAnalysisResult> ExecuteDataDeleteAction(IAnalyzerContext context, IQsiDataDeleteActionNode action)
         {
-            var table = await base.GetDataTableByCommonTableNode(context, commonTableNode);
+            var tableNode = (CqlDerivedTableNode)action.Target;
+            var columns = tableNode.Columns.Value;
+            var normalizedColumns = new List<QsiIdentifier>();
 
-            return table;
+            foreach (var column in columns)
+            {
+                QsiIdentifier identifier;
+
+                switch (column)
+                {
+                    case IQsiDeclaredColumnNode declaredColumn:
+                    {
+                        identifier = declaredColumn.Name[^1];
+                        break;
+                    }
+
+                    case IQsiDerivedColumnNode derivedColumn when
+                        derivedColumn.IsExpression &&
+                        derivedColumn.Expression is IQsiMemberAccessExpressionNode memberAccess:
+                    {
+                        while (memberAccess.Target is IQsiMemberAccessExpressionNode prevMemberAccess)
+                            memberAccess = prevMemberAccess;
+
+                        var columnExpression = (IQsiColumnExpressionNode)memberAccess.Target;
+                        var declaredColumn = (IQsiDeclaredColumnNode)columnExpression.Column;
+
+                        identifier = declaredColumn.Name[^1];
+                        break;
+                    }
+
+                    default:
+                        throw new QsiException(QsiError.Syntax);
+                }
+
+                normalizedColumns.Add(identifier);
+            }
+
+            var result = new QsiDataAction();
+
+            return new QsiActionAnalysisResult(result);
         }
 
         protected override IQsiTableNode ReassembleCommonTableNode(IQsiTableNode node)
