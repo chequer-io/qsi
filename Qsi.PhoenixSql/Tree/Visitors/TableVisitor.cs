@@ -25,7 +25,7 @@ namespace Qsi.PhoenixSql.Tree
 
             RepeatedField<AliasedNode> selects = statement.Select;
 
-            if (statement.IsUnion && selects.Select(s => s.Node.Unwrap()).Is(out IEnumerable<ColumnParseNode> columns))
+            if (statement.IsUnion && selects.Select(s => s.Node.Unwrap()).TryCast(out IEnumerable<ColumnParseNode> columns))
             {
                 columnsNode.Columns.AddRange(CreateSequentialColumns(columns));
             }
@@ -46,13 +46,13 @@ namespace Qsi.PhoenixSql.Tree
             }
 
             if (statement.Where != null)
-                tableNode.WhereExpression.SetValue(ExpressionVisitor.VisitWhere(statement.Where));
+                tableNode.Where.SetValue(ExpressionVisitor.VisitWhere(statement.Where));
 
             if (statement.Limit != null || statement.Offset != null)
-                tableNode.LimitExpression.SetValue(ExpressionVisitor.VisitLimitOffset(statement.Limit, statement.Offset));
+                tableNode.Limit.SetValue(ExpressionVisitor.VisitLimitOffset(statement.Limit, statement.Offset));
 
             if (statement.OrderBy.Any())
-                tableNode.OrderExpression.SetValue(ExpressionVisitor.VisitOrderBy(statement.OrderBy));
+                tableNode.Order.SetValue(ExpressionVisitor.VisitOrderBy(statement.OrderBy));
 
             // statement.GroupBy
             // statement.Having
@@ -367,7 +367,7 @@ namespace Qsi.PhoenixSql.Tree
                 {
                     var sourceDerivedTableNode = new QsiDerivedTableNode();
                     sourceDerivedTableNode.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
-                    sourceDerivedTableNode.WhereExpression.SetValue(ExpressionVisitor.VisitWhere(node.WhereClause));
+                    sourceDerivedTableNode.Where.SetValue(ExpressionVisitor.VisitWhere(node.WhereClause));
                     sourceDerivedTableNode.Source.SetValue(tableNode);
 
                     derivedTableNode.Source.SetValue(sourceDerivedTableNode); 

@@ -98,13 +98,13 @@ namespace Qsi.PhoenixSql.Tree
                 derivedTable.Source.SetValue(table);
 
                 if (node.Where != null)
-                    derivedTable.WhereExpression.SetValue(ExpressionVisitor.VisitWhere(node.Where));
+                    derivedTable.Where.SetValue(ExpressionVisitor.VisitWhere(node.Where));
 
                 if (node.OrderBy.Any())
-                    derivedTable.OrderExpression.SetValue(ExpressionVisitor.VisitOrderBy(node.OrderBy));
+                    derivedTable.Order.SetValue(ExpressionVisitor.VisitOrderBy(node.OrderBy));
 
                 if (node.Limit != null)
-                    derivedTable.LimitExpression.SetValue(ExpressionVisitor.VisitLimitOffset(node.Limit, null));
+                    derivedTable.Limit.SetValue(ExpressionVisitor.VisitLimitOffset(node.Limit, null));
 
                 table = derivedTable;
             }

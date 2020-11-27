@@ -24,7 +24,7 @@ namespace Qsi.Oracle.Tree
                 {
                     cn.Expression.SetValue(TreeHelper.Create<QsiInvokeExpressionNode>(n =>
                     {
-                        n.Member.SetValue(new QsiFunctionAccessExpressionNode
+                        n.Member.SetValue(new QsiFunctionExpressionNode
                         {
                             Identifier = declaredColumn.Name
                         });

@@ -107,11 +107,11 @@ namespace Qsi.PhoenixSql.Tree
         #region IComparisonParseNode
         private static QsiExpressionNode VisitComparisonParseNode(IComparisonParseNode node)
         {
-            var logicalNode = TreeHelper.CreateLogicalExpression(node.FilterOp.ToSql(), node.LHS, node.RHS, Visit);
+            var binaryNode = TreeHelper.CreateBinaryExpression(node.FilterOp.ToSql(), node.LHS, node.RHS, Visit);
 
-            PTree.RawNode[logicalNode] = node;
+            PTree.RawNode[binaryNode] = node;
 
-            return logicalNode;
+            return binaryNode;
         }
         #endregion
 
@@ -125,11 +125,11 @@ namespace Qsi.PhoenixSql.Tree
 
             var rightExpressionNode = TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(TreeHelper.CreateFunctionAccess(node.Type));
+                n.Member.SetValue(TreeHelper.CreateFunction(node.Type));
                 n.Parameters.Add(Visit(comp.LHS));
             });
 
-            return TreeHelper.Create<QsiLogicalExpressionNode>(n =>
+            return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
             {
                 n.Operator = comp.FilterOp.ToSql();
                 n.Left.SetValue(leftExpressionNode);
@@ -142,14 +142,14 @@ namespace Qsi.PhoenixSql.Tree
 
         private static QsiExpressionNode VisitStringConcatParseNode(StringConcatParseNode node)
         {
-            return CreateMultipleLogicalExpression(node, node.Children, PhoenixSqlKnownOperator.StringConcat);
+            return CreateChainedBinaryExpression(node, node.Children, PhoenixSqlKnownOperator.StringConcat);
         }
 
         private static QsiExpressionNode VisitFunctionParseNode(IFunctionParseNode node)
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(TreeHelper.CreateFunctionAccess(node.Name));
+                n.Member.SetValue(TreeHelper.CreateFunction(node.Name));
                 n.Parameters.AddRange(node.Children.Select(Visit));
 
                 PTree.RawNode[n] = node;
@@ -168,14 +168,14 @@ namespace Qsi.PhoenixSql.Tree
                 _ => throw TreeHelper.NotSupportedTree(node)
             };
 
-            return CreateMultipleLogicalExpression(node, node.Children, op);
+            return CreateChainedBinaryExpression(node, node.Children, op);
         }
 
         private static QsiExpressionNode VisitInParseNode(InParseNode node)
         {
             QsiExpressionNode expressionNode = TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(TreeHelper.CreateFunctionAccess(PhoenixSqlKnownFunction.In));
+                n.Member.SetValue(TreeHelper.CreateFunction(PhoenixSqlKnownFunction.In));
                 n.Parameters.AddRange(node.Children.Select(Visit));
             });
 
@@ -194,7 +194,7 @@ namespace Qsi.PhoenixSql.Tree
                 var function = node.LikeType == LikeType.CaseSensitive ?
                     PhoenixSqlKnownFunction.Like : PhoenixSqlKnownFunction.ILike;
 
-                n.Member.SetValue(TreeHelper.CreateFunctionAccess(function));
+                n.Member.SetValue(TreeHelper.CreateFunction(function));
                 n.Parameters.AddRange(node.Children.Select(Visit));
             });
 
@@ -208,15 +208,15 @@ namespace Qsi.PhoenixSql.Tree
 
         private static QsiExpressionNode VisitOrParseNode(OrParseNode node)
         {
-            return CreateMultipleLogicalExpression(node, node.Children, PhoenixSqlKnownOperator.Or);
+            return CreateChainedBinaryExpression(node, node.Children, PhoenixSqlKnownOperator.Or);
         }
 
         private static QsiExpressionNode VisitArrayElemRefNode(ArrayElemRefNode node)
         {
-            return TreeHelper.Create<QsiArrayRankExpressionNode>(n =>
+            return TreeHelper.Create<QsiMemberAccessExpressionNode>(n =>
             {
-                n.Array.SetValue(Visit(node.Children[0]));
-                n.Rank.SetValue(Visit(node.Children[1]));
+                n.Target.SetValue(Visit(node.Children[0]));
+                n.Member.SetValue(Visit(node.Children[1]));
 
                 PTree.RawNode[n] = node;
             });
@@ -226,7 +226,7 @@ namespace Qsi.PhoenixSql.Tree
         {
             QsiExpressionNode expressionNode = TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(TreeHelper.CreateFunctionAccess(PhoenixSqlKnownFunction.ArrayIn));
+                n.Member.SetValue(TreeHelper.CreateFunction(PhoenixSqlKnownFunction.ArrayIn));
                 n.Parameters.AddRange(node.Children.Select(Visit));
             });
 
@@ -242,7 +242,7 @@ namespace Qsi.PhoenixSql.Tree
         {
             QsiExpressionNode expressionNode = TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(TreeHelper.CreateFunctionAccess(PhoenixSqlKnownFunction.Exists));
+                n.Member.SetValue(TreeHelper.CreateFunction(PhoenixSqlKnownFunction.Exists));
                 n.Parameters.AddRange(node.Children.Select(Visit));
             });
 
@@ -265,7 +265,7 @@ namespace Qsi.PhoenixSql.Tree
         {
             QsiExpressionNode expressionNode = TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(TreeHelper.CreateFunctionAccess(PhoenixSqlKnownFunction.IsNull));
+                n.Member.SetValue(TreeHelper.CreateFunction(PhoenixSqlKnownFunction.IsNull));
                 n.Parameters.AddRange(node.Children.Select(Visit));
             });
 
@@ -307,7 +307,7 @@ namespace Qsi.PhoenixSql.Tree
 
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(TreeHelper.CreateFunctionAccess(PhoenixSqlKnownFunction.Cast));
+                n.Member.SetValue(TreeHelper.CreateFunction(PhoenixSqlKnownFunction.Cast));
                 n.Parameters.Add(Visit(node.Children[0]));
                 n.Parameters.Add(CreateTypeAccessExpression(typeName.ToString()));
 
@@ -330,7 +330,7 @@ namespace Qsi.PhoenixSql.Tree
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(TreeHelper.CreateFunctionAccess(PhoenixSqlKnownFunction.Array));
+                n.Member.SetValue(TreeHelper.CreateFunction(PhoenixSqlKnownFunction.Array));
                 n.Parameters.AddRange(node.Children.Select(Visit));
 
                 PTree.RawNode[n] = node;
@@ -339,7 +339,7 @@ namespace Qsi.PhoenixSql.Tree
 
         private static QsiExpressionNode VisitAndParseNode(AndParseNode node)
         {
-            return CreateMultipleLogicalExpression(node, node.Children, PhoenixSqlKnownOperator.Or);
+            return CreateChainedBinaryExpression(node, node.Children, PhoenixSqlKnownOperator.Or);
         }
 
         private static QsiExpressionNode VisitCaseParseNode(CaseParseNode node)
@@ -369,7 +369,7 @@ namespace Qsi.PhoenixSql.Tree
         {
             QsiExpressionNode expressionNode = TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(TreeHelper.CreateFunctionAccess(PhoenixSqlKnownFunction.Between));
+                n.Member.SetValue(TreeHelper.CreateFunction(PhoenixSqlKnownFunction.Between));
                 n.Parameters.AddRange(node.Children.Select(Visit));
             });
 
@@ -406,7 +406,7 @@ namespace Qsi.PhoenixSql.Tree
                 var function = node.Op == Op.CurrentValue ?
                     PhoenixSqlKnownFunction.CurrentValueFor : PhoenixSqlKnownFunction.NextValueFor;
 
-                n.Member.SetValue(TreeHelper.CreateFunctionAccess(function));
+                n.Member.SetValue(TreeHelper.CreateFunction(function));
 
                 // SKIP: node.TableName -> string literal
                 n.Parameters.Add(TreeHelper.CreateLiteral(IdentifierVisitor.Visit(node.TableName).ToString()));
@@ -469,30 +469,30 @@ namespace Qsi.PhoenixSql.Tree
             });
         }
 
-        private static QsiExpressionNode CreateMultipleLogicalExpression(IPhoenixNode node, IReadOnlyList<IParseNode> children, string op)
+        private static QsiExpressionNode CreateChainedBinaryExpression(IPhoenixNode node, IReadOnlyList<IParseNode> children, string op)
         {
             var anchor = Visit(children[0]);
 
             foreach (var child in children.Skip(1))
             {
-                var logicalNode = new QsiLogicalExpressionNode
+                var binaryNode = new QsiBinaryExpressionNode
                 {
                     Operator = op
                 };
 
-                logicalNode.Left.SetValue(anchor);
-                logicalNode.Right.SetValue(Visit(child));
+                binaryNode.Left.SetValue(anchor);
+                binaryNode.Right.SetValue(Visit(child));
 
-                anchor = logicalNode;
+                anchor = binaryNode;
             }
 
             PTree.RawNode[anchor] = node;
             return anchor;
         }
 
-        private static QsiTypeAccessExpressionNode CreateTypeAccessExpression(string value)
+        private static QsiTypeExpressionNode CreateTypeAccessExpression(string value)
         {
-            return new QsiTypeAccessExpressionNode
+            return new QsiTypeExpressionNode
             {
                 Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(value, false))
             };
