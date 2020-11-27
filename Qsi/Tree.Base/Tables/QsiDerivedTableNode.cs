@@ -34,13 +34,13 @@ namespace Qsi.Tree
 
         IQsiAliasNode IQsiDerivedTableNode.Alias => Alias.Value;
 
-        IQsiWhereExpressionNode IQsiDerivedTableNode.WhereExpression => WhereExpression.Value;
+        IQsiWhereExpressionNode IQsiDerivedTableNode.Where => WhereExpression.Value;
 
-        IQsiGroupingExpressionNode IQsiDerivedTableNode.GroupingExpression => GroupingExpression.Value;
+        IQsiGroupingExpressionNode IQsiDerivedTableNode.Grouping => GroupingExpression.Value;
 
-        IQsiMultipleOrderExpressionNode IQsiDerivedTableNode.OrderExpression => OrderExpression.Value;
+        IQsiMultipleOrderExpressionNode IQsiDerivedTableNode.Order => OrderExpression.Value;
 
-        IQsiLimitExpressionNode IQsiDerivedTableNode.LimitExpression => LimitExpression.Value;
+        IQsiLimitExpressionNode IQsiDerivedTableNode.Limit => LimitExpression.Value;
         #endregion
 
         public QsiDerivedTableNode()

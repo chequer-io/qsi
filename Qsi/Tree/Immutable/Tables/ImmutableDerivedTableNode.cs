@@ -16,18 +16,18 @@ namespace Qsi.Tree.Immutable
 
         public IQsiAliasNode Alias { get; }
 
-        public IQsiWhereExpressionNode WhereExpression { get; }
+        public IQsiWhereExpressionNode Where { get; }
 
-        public IQsiGroupingExpressionNode GroupingExpression { get; }
+        public IQsiGroupingExpressionNode Grouping { get; }
 
-        public IQsiMultipleOrderExpressionNode OrderExpression { get; }
+        public IQsiMultipleOrderExpressionNode Order { get; }
 
-        public IQsiLimitExpressionNode LimitExpression { get; }
+        public IQsiLimitExpressionNode Limit { get; }
 
         public IUserDataHolder UserData { get; }
 
         public IEnumerable<IQsiTreeNode> Children =>
-            TreeHelper.YieldChildren(Directives, Columns, Source, Alias, WhereExpression, GroupingExpression, OrderExpression, LimitExpression);
+            TreeHelper.YieldChildren(Directives, Columns, Source, Alias, Where, Grouping, Order, Limit);
 
         public ImmutableDerivedTableNode(
             IQsiTreeNode parent,
@@ -35,10 +35,10 @@ namespace Qsi.Tree.Immutable
             IQsiColumnsDeclarationNode columns,
             IQsiTableNode source,
             IQsiAliasNode alias,
-            IQsiWhereExpressionNode whereExpression,
-            IQsiGroupingExpressionNode groupingExpression,
-            IQsiMultipleOrderExpressionNode orderExpression,
-            IQsiLimitExpressionNode limitExpression,
+            IQsiWhereExpressionNode @where,
+            IQsiGroupingExpressionNode grouping,
+            IQsiMultipleOrderExpressionNode order,
+            IQsiLimitExpressionNode limit,
             IUserDataHolder userData)
         {
             Parent = parent;
@@ -46,10 +46,10 @@ namespace Qsi.Tree.Immutable
             Columns = columns;
             Source = source;
             Alias = alias;
-            WhereExpression = whereExpression;
-            GroupingExpression = groupingExpression;
-            OrderExpression = orderExpression;
-            LimitExpression = limitExpression;
+            Where = @where;
+            Grouping = grouping;
+            Order = order;
+            Limit = limit;
             UserData = userData;
         }
     }

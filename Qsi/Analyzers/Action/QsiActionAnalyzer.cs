@@ -260,10 +260,10 @@ namespace Qsi.Analyzers.Action
                         derivedTable.Columns,
                         derivedTable.Source,
                         null,
-                        derivedTable.WhereExpression,
-                        derivedTable.GroupingExpression,
-                        derivedTable.OrderExpression,
-                        derivedTable.LimitExpression,
+                        derivedTable.Where,
+                        derivedTable.Grouping,
+                        derivedTable.Order,
+                        derivedTable.Limit,
                         null);
 
                 case IQsiCompositeTableNode compositeTable:
