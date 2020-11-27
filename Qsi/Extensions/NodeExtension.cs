@@ -504,6 +504,14 @@ namespace Qsi.Extensions
                 node.IsRecursive,
                 ignoreUserData ? null : node.UserData);
         }
+
+        public static ImmutableGroupingExpressionNode ToImmutable(this IQsiGroupingExpressionNode node, bool ignoreUserData = false)
+        {
+            return new ImmutableGroupingExpressionNode(
+                node.Parent,
+                node.Items,
+                ignoreUserData ? null : node.UserData);
+        }
         #endregion
     }
 }
