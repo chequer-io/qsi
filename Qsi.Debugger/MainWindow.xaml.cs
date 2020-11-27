@@ -14,7 +14,6 @@ using AvaloniaEdit;
 using AvaloniaEdit.Highlighting;
 using AvaloniaEdit.Highlighting.Xshd;
 using Qsi.Analyzers.Table;
-using Qsi.Cql.Tree;
 using Qsi.Data;
 using Qsi.Debugger.Controls;
 using Qsi.Debugger.Models;
