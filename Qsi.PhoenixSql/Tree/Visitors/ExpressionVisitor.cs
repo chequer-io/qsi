@@ -107,11 +107,11 @@ namespace Qsi.PhoenixSql.Tree
         #region IComparisonParseNode
         private static QsiExpressionNode VisitComparisonParseNode(IComparisonParseNode node)
         {
-            var logicalNode = TreeHelper.CreateLogicalExpression(node.FilterOp.ToSql(), node.LHS, node.RHS, Visit);
+            var binaryNode = TreeHelper.CreateBinaryExpression(node.FilterOp.ToSql(), node.LHS, node.RHS, Visit);
 
-            PTree.RawNode[logicalNode] = node;
+            PTree.RawNode[binaryNode] = node;
 
-            return logicalNode;
+            return binaryNode;
         }
         #endregion
 
@@ -129,7 +129,7 @@ namespace Qsi.PhoenixSql.Tree
                 n.Parameters.Add(Visit(comp.LHS));
             });
 
-            return TreeHelper.Create<QsiLogicalExpressionNode>(n =>
+            return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
             {
                 n.Operator = comp.FilterOp.ToSql();
                 n.Left.SetValue(leftExpressionNode);
@@ -142,7 +142,7 @@ namespace Qsi.PhoenixSql.Tree
 
         private static QsiExpressionNode VisitStringConcatParseNode(StringConcatParseNode node)
         {
-            return CreateMultipleLogicalExpression(node, node.Children, PhoenixSqlKnownOperator.StringConcat);
+            return CreateChainedBinaryExpression(node, node.Children, PhoenixSqlKnownOperator.StringConcat);
         }
 
         private static QsiExpressionNode VisitFunctionParseNode(IFunctionParseNode node)
@@ -168,7 +168,7 @@ namespace Qsi.PhoenixSql.Tree
                 _ => throw TreeHelper.NotSupportedTree(node)
             };
 
-            return CreateMultipleLogicalExpression(node, node.Children, op);
+            return CreateChainedBinaryExpression(node, node.Children, op);
         }
 
         private static QsiExpressionNode VisitInParseNode(InParseNode node)
@@ -208,7 +208,7 @@ namespace Qsi.PhoenixSql.Tree
 
         private static QsiExpressionNode VisitOrParseNode(OrParseNode node)
         {
-            return CreateMultipleLogicalExpression(node, node.Children, PhoenixSqlKnownOperator.Or);
+            return CreateChainedBinaryExpression(node, node.Children, PhoenixSqlKnownOperator.Or);
         }
 
         private static QsiExpressionNode VisitArrayElemRefNode(ArrayElemRefNode node)
@@ -339,7 +339,7 @@ namespace Qsi.PhoenixSql.Tree
 
         private static QsiExpressionNode VisitAndParseNode(AndParseNode node)
         {
-            return CreateMultipleLogicalExpression(node, node.Children, PhoenixSqlKnownOperator.Or);
+            return CreateChainedBinaryExpression(node, node.Children, PhoenixSqlKnownOperator.Or);
         }
 
         private static QsiExpressionNode VisitCaseParseNode(CaseParseNode node)
@@ -469,21 +469,21 @@ namespace Qsi.PhoenixSql.Tree
             });
         }
 
-        private static QsiExpressionNode CreateMultipleLogicalExpression(IPhoenixNode node, IReadOnlyList<IParseNode> children, string op)
+        private static QsiExpressionNode CreateChainedBinaryExpression(IPhoenixNode node, IReadOnlyList<IParseNode> children, string op)
         {
             var anchor = Visit(children[0]);
 
             foreach (var child in children.Skip(1))
             {
-                var logicalNode = new QsiLogicalExpressionNode
+                var binaryNode = new QsiBinaryExpressionNode
                 {
                     Operator = op
                 };
 
-                logicalNode.Left.SetValue(anchor);
-                logicalNode.Right.SetValue(Visit(child));
+                binaryNode.Left.SetValue(anchor);
+                binaryNode.Right.SetValue(Visit(child));
 
-                anchor = logicalNode;
+                anchor = binaryNode;
             }
 
             PTree.RawNode[anchor] = node;

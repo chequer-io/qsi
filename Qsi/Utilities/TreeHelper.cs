@@ -16,13 +16,13 @@ namespace Qsi.Utilities
             return node;
         }
 
-        public static QsiLogicalExpressionNode CreateLogicalExpression<TContext>(
+        public static QsiBinaryExpressionNode CreateBinaryExpression<TContext>(
             string @operator,
             TContext left,
             TContext right,
             Func<TContext, QsiExpressionNode> visitor)
         {
-            return Create<QsiLogicalExpressionNode>(n =>
+            return Create<QsiBinaryExpressionNode>(n =>
             {
                 n.Operator = @operator;
                 n.Left.SetValue(visitor(left));

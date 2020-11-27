@@ -126,9 +126,9 @@ namespace Qsi.SqlServer.Tree
             throw TreeHelper.NotSupportedFeature("Graph match");
         }
 
-        public QsiLogicalExpressionNode VisitBooleanBinaryExpression(BooleanBinaryExpression booleanBinaryExpression)
+        public QsiBinaryExpressionNode VisitBooleanBinaryExpression(BooleanBinaryExpression booleanBinaryExpression)
         {
-            return TreeHelper.Create<QsiLogicalExpressionNode>(n =>
+            return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
             {
                 n.Left.SetValue(VisitBooleanExpression(booleanBinaryExpression.FirstExpression));
                 n.Right.SetValue(VisitBooleanExpression(booleanBinaryExpression.SecondExpression));
@@ -142,9 +142,9 @@ namespace Qsi.SqlServer.Tree
             });
         }
 
-        public QsiLogicalExpressionNode VisitBooleanComparisonExpression(BooleanComparisonExpression booleanComparisonExpression)
+        public QsiBinaryExpressionNode VisitBooleanComparisonExpression(BooleanComparisonExpression booleanComparisonExpression)
         {
-            return TreeHelper.Create<QsiLogicalExpressionNode>(n =>
+            return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
             {
                 n.Left.SetValue(VisitScalarExpression(booleanComparisonExpression.FirstExpression));
                 n.Right.SetValue(VisitScalarExpression(booleanComparisonExpression.SecondExpression));
@@ -158,9 +158,9 @@ namespace Qsi.SqlServer.Tree
             throw TreeHelper.NotSupportedFeature("Snippet");
         }
 
-        public QsiLogicalExpressionNode VisitBooleanIsNullExpression(BooleanIsNullExpression booleanIsNullExpression)
+        public QsiBinaryExpressionNode VisitBooleanIsNullExpression(BooleanIsNullExpression booleanIsNullExpression)
         {
-            return TreeHelper.Create<QsiLogicalExpressionNode>(n =>
+            return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
             {
                 n.Left.SetValue(VisitScalarExpression(booleanIsNullExpression.Expression));
                 n.Right.SetValue(TreeHelper.CreateNullLiteral());
@@ -259,7 +259,7 @@ namespace Qsi.SqlServer.Tree
 
         public QsiExpressionNode VisitInPredicate(InPredicate inPredicate)
         {
-            var logicalNode = TreeHelper.Create<QsiLogicalExpressionNode>(n =>
+            var binaryNode = TreeHelper.Create<QsiBinaryExpressionNode>(n =>
             {
                 n.Left.SetValue(VisitScalarExpression(inPredicate.Expression));
 
@@ -277,9 +277,9 @@ namespace Qsi.SqlServer.Tree
             });
 
             if (!inPredicate.NotDefined)
-                return logicalNode;
+                return binaryNode;
 
-            return TreeHelper.CreateUnary(SqlServerKnownOperator.Not, logicalNode);
+            return TreeHelper.CreateUnary(SqlServerKnownOperator.Not, binaryNode);
         }
 
         public QsiExpressionNode VisitLikePredicate(LikePredicate likePredicate)
@@ -305,7 +305,7 @@ namespace Qsi.SqlServer.Tree
 
         public QsiExpressionNode VisitSubqueryComparisonPredicate(SubqueryComparisonPredicate subqueryComparisonPredicate)
         {
-            var expressionNode = TreeHelper.Create<QsiLogicalExpressionNode>(ln =>
+            var expressionNode = TreeHelper.Create<QsiBinaryExpressionNode>(ln =>
             {
                 ln.Left.SetValue(VisitScalarExpression(subqueryComparisonPredicate.Expression));
                 ln.Right.SetValue(VisitScalarSubquery(subqueryComparisonPredicate.Subquery));
@@ -363,9 +363,9 @@ namespace Qsi.SqlServer.Tree
             throw TreeHelper.NotSupportedTree(scalarExpression);
         }
 
-        public QsiLogicalExpressionNode VisitBinaryExpression(BinaryExpression binaryExpression)
+        public QsiBinaryExpressionNode VisitBinaryExpression(BinaryExpression binaryExpression)
         {
-            return TreeHelper.Create<QsiLogicalExpressionNode>(n =>
+            return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
             {
                 n.Left.SetValue(VisitScalarExpression(binaryExpression.FirstExpression));
                 n.Right.SetValue(VisitScalarExpression(binaryExpression.SecondExpression));

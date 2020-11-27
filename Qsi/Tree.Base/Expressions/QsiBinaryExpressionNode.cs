@@ -3,7 +3,7 @@ using Qsi.Utilities;
 
 namespace Qsi.Tree
 {
-    public class QsiLogicalExpressionNode : QsiExpressionNode, IQsiLogicalExpressionNode
+    public class QsiBinaryExpressionNode : QsiExpressionNode, IQsiBinaryExpressionNode
     {
         public QsiTreeNodeProperty<QsiExpressionNode> Left { get; }
 
@@ -15,12 +15,12 @@ namespace Qsi.Tree
             => TreeHelper.YieldChildren(Left, Right);
 
         #region Explicit
-        IQsiExpressionNode IQsiLogicalExpressionNode.Left => Left.Value;
+        IQsiExpressionNode IQsiBinaryExpressionNode.Left => Left.Value;
 
-        IQsiExpressionNode IQsiLogicalExpressionNode.Right => Right.Value;
+        IQsiExpressionNode IQsiBinaryExpressionNode.Right => Right.Value;
         #endregion
 
-        public QsiLogicalExpressionNode()
+        public QsiBinaryExpressionNode()
         {
             Left = new QsiTreeNodeProperty<QsiExpressionNode>(this);
             Right = new QsiTreeNodeProperty<QsiExpressionNode>(this);

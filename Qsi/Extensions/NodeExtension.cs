@@ -307,9 +307,9 @@ namespace Qsi.Extensions
                 ignoreUserData ? null : node.UserData);
         }
 
-        public static ImmutableLogicalExpressionNode ToImmutable(this IQsiLogicalExpressionNode node, bool ignoreUserData = false)
+        public static ImmutableBinaryExpressionNode ToImmutable(this IQsiBinaryExpressionNode node, bool ignoreUserData = false)
         {
-            return new ImmutableLogicalExpressionNode(
+            return new ImmutableBinaryExpressionNode(
                 node.Parent,
                 node.Left,
                 node.Operator,
