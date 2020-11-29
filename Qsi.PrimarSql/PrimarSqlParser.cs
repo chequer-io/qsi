@@ -3,6 +3,7 @@ using Antlr4.Runtime;
 using PrimarSql.Internal;
 using Qsi.Data;
 using Qsi.Parsing.Antlr;
+using Qsi.PrimarSql.Tree;
 using Qsi.Tree;
 
 namespace Qsi.PrimarSql
@@ -26,38 +27,25 @@ namespace Qsi.PrimarSql
         {
             var primarSqlParser = (global::PrimarSql.Internal.PrimarSqlParser)parser;
 
-            return null;
-
-            //
-            // switch (script.ScriptType)
-            // {
-            //     case QsiScriptType.With:
-            //     case QsiScriptType.Select:
-            //         return TableVisitor.VisitSelectStatement(primarSqlParser.selectStatement());
-            //
-            //     case QsiScriptType.Create:
-            //         return TableVisitor.VisitDdlStatement(primarSqlParser.ddlStatement());
-            //
-            //     case QsiScriptType.Prepare:
-            //     case QsiScriptType.Execute:
-            //     case QsiScriptType.DropPrepare:
-            //         return ActionVisitor.VisitPreparedStatement(primarSqlParser.preparedStatement());
-            //
-            //     case QsiScriptType.Insert:
-            //         return ActionVisitor.VisitInsertStatement(primarSqlParser.insertStatement());
-            //
-            //     case QsiScriptType.Replace:
-            //         return ActionVisitor.VisitReplaceStatement(primarSqlParser.replaceStatement());
-            //
-            //     case QsiScriptType.Delete:
-            //         return ActionVisitor.VisitDeleteStatement(primarSqlParser.deleteStatement());
-            //     
-            //     case QsiScriptType.Update:
-            //         return ActionVisitor.VisitUpdateStatement(primarSqlParser.updateStatement());
-            //
-            //     default:
-            //         return null;
-            // }
+            switch (script.ScriptType)
+            {
+                case QsiScriptType.Select:
+                    return TableVisitor.VisitSelectStatement(primarSqlParser.selectStatement());
+                
+                // case QsiScriptType.Insert:
+                //     return ActionVisitor.VisitInsertStatement(primarSqlParser.insertStatement());
+                //
+                // case QsiScriptType.Replace:
+                //     return ActionVisitor.VisitReplaceStatement(primarSqlParser.replaceStatement());
+                //
+                // case QsiScriptType.Delete:
+                //     return ActionVisitor.VisitDeleteStatement(primarSqlParser.deleteStatement());
+                //
+                // case QsiScriptType.Update:
+                //     return ActionVisitor.VisitUpdateStatement(primarSqlParser.updateStatement());
+                default:
+                    return null;
+            }
         }
     }
 }
