@@ -27,9 +27,9 @@ namespace Qsi.Shared.Extensions
             return -1;
         }
 
-        public static bool Is<TOut>(this IEnumerable source, out TOut[] cast)
+        public static bool TryCast<TOut>(this IEnumerable source, out TOut[] cast)
         {
-            if (!source.Is(out IEnumerable<TOut> result))
+            if (!source.TryCast(out IEnumerable<TOut> result))
             {
                 cast = null;
                 return false;
@@ -43,7 +43,7 @@ namespace Qsi.Shared.Extensions
             return true;
         }
 
-        public static bool Is<TOut>(this IEnumerable source, out IEnumerable<TOut> cast)
+        public static bool TryCast<TOut>(this IEnumerable source, out IEnumerable<TOut> cast)
         {
             switch (source)
             {
@@ -51,7 +51,7 @@ namespace Qsi.Shared.Extensions
                     cast = null;
                     return false;
 
-                case TOut[] result:
+                case IEnumerable<TOut> result:
                     cast = result;
                     return true;
             }

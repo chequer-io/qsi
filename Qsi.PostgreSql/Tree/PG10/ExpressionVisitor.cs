@@ -110,7 +110,7 @@ namespace Qsi.PostgreSql.Tree.PG10
                 });
             }
 
-            return TreeHelper.CreateLogicalExpression(
+            return TreeHelper.CreateBinaryExpression(
                 builder.ToString(),
                 expression.lexpr,
                 expression.rexpr,
@@ -159,7 +159,7 @@ namespace Qsi.PostgreSql.Tree.PG10
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(new QsiFunctionAccessExpressionNode
+                n.Member.SetValue(new QsiFunctionExpressionNode
                 {
                     Identifier = IdentifierVisitor.VisitStrings(funcCall.funcname.Cast<PgString>())
                 });
@@ -202,7 +202,7 @@ namespace Qsi.PostgreSql.Tree.PG10
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(new QsiFunctionAccessExpressionNode
+                n.Member.SetValue(new QsiFunctionExpressionNode
                 {
                     Identifier = new QsiQualifiedIdentifier(new QsiIdentifier("CAST", false))
                 });
@@ -212,9 +212,9 @@ namespace Qsi.PostgreSql.Tree.PG10
             });
         }
 
-        private static QsiTypeAccessExpressionNode VisitTypeName(TypeName typeName)
+        private static QsiTypeExpressionNode VisitTypeName(TypeName typeName)
         {
-            return TreeHelper.Create<QsiTypeAccessExpressionNode>(n =>
+            return TreeHelper.Create<QsiTypeExpressionNode>(n =>
             {
                 var identifier = IdentifierVisitor.VisitStrings(typeName.names.Cast<PgString>());
 
@@ -315,7 +315,7 @@ namespace Qsi.PostgreSql.Tree.PG10
 
             for (int i = 1; i < boolExpr.args.Length; i++)
             {
-                var expr = new QsiLogicalExpressionNode
+                var expr = new QsiBinaryExpressionNode
                 {
                     Operator = op
                 };
@@ -336,7 +336,7 @@ namespace Qsi.PostgreSql.Tree.PG10
 
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(new QsiFunctionAccessExpressionNode
+                n.Member.SetValue(new QsiFunctionExpressionNode
                 {
                     Identifier = new QsiQualifiedIdentifier(new QsiIdentifier("ROW", false))
                 });
@@ -349,7 +349,7 @@ namespace Qsi.PostgreSql.Tree.PG10
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(new QsiFunctionAccessExpressionNode
+                n.Member.SetValue(new QsiFunctionExpressionNode
                 {
                     Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(nullTest.nulltesttype.ToString(), false))
                 });
@@ -370,7 +370,7 @@ namespace Qsi.PostgreSql.Tree.PG10
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(new QsiFunctionAccessExpressionNode
+                n.Member.SetValue(new QsiFunctionExpressionNode
                 {
                     Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(booleanTest.booltesttype.ToString(), false))
                 });
@@ -391,7 +391,7 @@ namespace Qsi.PostgreSql.Tree.PG10
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(new QsiFunctionAccessExpressionNode
+                n.Member.SetValue(new QsiFunctionExpressionNode
                 {
                     Identifier = new QsiQualifiedIdentifier(new QsiIdentifier("COALESCE", false))
                 });

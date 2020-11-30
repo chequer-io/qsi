@@ -42,7 +42,7 @@ namespace Qsi.Analyzers.Table
         #endregion
 
         #region Table
-        internal async ValueTask<QsiTableStructure> BuildTableStructure(TableCompileContext context, IQsiTableNode table)
+        public async ValueTask<QsiTableStructure> BuildTableStructure(TableCompileContext context, IQsiTableNode table)
         {
             context.ThrowIfCancellationRequested();
 
@@ -153,7 +153,7 @@ namespace Qsi.Analyzers.Table
                     throw new QsiException(QsiError.Syntax);
                 }
             }
-            else if (columns.Columns.Is(out IQsiSequentialColumnNode[] sequentialColumns))
+            else if (columns.TryCast(out IQsiSequentialColumnNode[] sequentialColumns))
             {
                 // Sequential columns definition
 
@@ -190,7 +190,7 @@ namespace Qsi.Analyzers.Table
             {
                 // Compund columns definition
 
-                foreach (var column in columns.Columns)
+                foreach (var column in columns)
                 {
                     IEnumerable<QsiTableColumn> resolvedColumns = ResolveColumns(scopedContext, column);
 
@@ -257,11 +257,11 @@ namespace Qsi.Analyzers.Table
             switch (table.Columns)
             {
                 case null:
-                case var cd when cd.Columns.All(c => c is IQsiAllColumnNode all && all.Path == null):
+                case var cd when cd.All(c => c is IQsiAllColumnNode all && all.Path == null):
                     // Skip
                     break;
 
-                case var cd when cd.Columns.Is(out IQsiSequentialColumnNode[] sequentialColumns):
+                case var cd when cd.TryCast(out IQsiSequentialColumnNode[] sequentialColumns):
                     foreach (var column in sequentialColumns)
                     {
                         var c = declaredTable.NewColumn();
@@ -322,9 +322,9 @@ namespace Qsi.Analyzers.Table
             int sourceOffset = 0;
             var structures = new List<QsiTableStructure>(source.Sources.Length);
 
-            if (table.Columns.Columns.Any(c => !(c is IQsiAllColumnNode)))
+            if (table.Columns.Any(c => !(c is IQsiAllColumnNode)))
             {
-                foreach (var columnNode in table.Columns.Columns.Cast<IQsiSequentialColumnNode>())
+                foreach (var columnNode in table.Columns.Cast<IQsiSequentialColumnNode>())
                 {
                     var column = declaredTable.NewColumn();
                     column.Name = columnNode.Alias.Name;
@@ -476,7 +476,7 @@ namespace Qsi.Analyzers.Table
             joinedTable.References.Add(left);
             joinedTable.References.Add(right);
 
-            IQsiDeclaredColumnNode[] pivots = table.PivotColumns?.Columns
+            IQsiDeclaredColumnNode[] pivots = table.PivotColumns?
                 .Cast<IQsiDeclaredColumnNode>()
                 .ToArray();
 
@@ -712,7 +712,7 @@ namespace Qsi.Analyzers.Table
                     break;
                 }
 
-                case IQsiLogicalExpressionNode e:
+                case IQsiBinaryExpressionNode e:
                 {
                     foreach (var c in ResolveColumnsInExpression(context, e.Left))
                         yield return c;
@@ -814,30 +814,30 @@ namespace Qsi.Analyzers.Table
                     break;
                 }
 
-                case IQsiArrayRankExpressionNode e:
+                case IQsiMemberAccessExpressionNode e:
                 {
-                    foreach (var c in ResolveColumnsInExpression(context, e.Array))
+                    foreach (var c in ResolveColumnsInExpression(context, e.Target))
                         yield return c;
 
-                    foreach (var c in ResolveColumnsInExpression(context, e.Rank))
+                    foreach (var c in ResolveColumnsInExpression(context, e.Member))
                         yield return c;
 
                     break;
                 }
 
-                case IQsiVariableAccessExpressionNode e:
+                case IQsiVariableExpressionNode e:
                 {
                     // TODO: Analyze variable
                     break;
                 }
 
-                case IQsiFunctionAccessExpressionNode e:
+                case IQsiFunctionExpressionNode e:
                 {
                     // TODO: Analyze function
                     break;
                 }
 
-                case IQsiMemberAccessExpressionNode _:
+                case IQsiMemberExpressionNode _:
                 {
                     // Skip unknown member access
                     break;

@@ -246,7 +246,7 @@ namespace Qsi.JSql.Tree
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(TreeHelper.CreateFunctionAccess(JSqlKnownFunction.All));
+                n.Member.SetValue(TreeHelper.CreateFunction(JSqlKnownFunction.All));
                 n.Parameters.Add(VisitSubSelect(expression.getSubSelect()));
             });
         }
@@ -255,7 +255,7 @@ namespace Qsi.JSql.Tree
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(TreeHelper.CreateFunctionAccess(JSqlKnownFunction.Any));
+                n.Member.SetValue(TreeHelper.CreateFunction(JSqlKnownFunction.Any));
                 n.Parameters.Add(VisitSubSelect(expression.getSubSelect()));
             });
         }
@@ -264,7 +264,7 @@ namespace Qsi.JSql.Tree
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(new QsiFunctionAccessExpressionNode
+                n.Member.SetValue(new QsiFunctionExpressionNode
                 {
                     Identifier = IdentifierVisitor.VisitAnalyticExpression(expression)
                 });
@@ -276,18 +276,18 @@ namespace Qsi.JSql.Tree
             });
         }
 
-        public virtual QsiArrayRankExpressionNode VisitArrayExpression(ArrayExpression expression)
+        public virtual QsiMemberAccessExpressionNode VisitArrayExpression(ArrayExpression expression)
         {
-            return TreeHelper.Create<QsiArrayRankExpressionNode>(n =>
+            return TreeHelper.Create<QsiMemberAccessExpressionNode>(n =>
             {
-                n.Array.SetValue(Visit(expression.getObjExpression()));
-                n.Rank.SetValue(Visit(expression.getIndexExpression()));
+                n.Target.SetValue(Visit(expression.getObjExpression()));
+                n.Member.SetValue(Visit(expression.getIndexExpression()));
             });
         }
 
-        public virtual QsiLogicalExpressionNode VisitBinaryExpression(BinaryExpression expression)
+        public virtual QsiBinaryExpressionNode VisitBinaryExpression(BinaryExpression expression)
         {
-            return TreeHelper.Create<QsiLogicalExpressionNode>(n =>
+            return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
             {
                 n.Left.SetValue(Visit(expression.getLeftExpression()));
                 n.Operator = expression.getStringExpression();
@@ -329,10 +329,10 @@ namespace Qsi.JSql.Tree
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(TreeHelper.CreateFunctionAccess(JSqlKnownFunction.Cast));
+                n.Member.SetValue(TreeHelper.CreateFunction(JSqlKnownFunction.Cast));
                 n.Parameters.Add(Visit(expression.getLeftExpression()));
 
-                n.Parameters.Add(new QsiTypeAccessExpressionNode
+                n.Parameters.Add(new QsiTypeExpressionNode
                 {
                     Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(expression.getType().toString(), false))
                 });
@@ -343,7 +343,7 @@ namespace Qsi.JSql.Tree
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(TreeHelper.CreateFunctionAccess(JSqlKnownFunction.Collate));
+                n.Member.SetValue(TreeHelper.CreateFunction(JSqlKnownFunction.Collate));
                 n.Parameters.Add(Visit(expression.getLeftExpression()));
                 n.Parameters.Add(TreeHelper.CreateLiteral(expression.getCollate()));
             });
@@ -353,9 +353,9 @@ namespace Qsi.JSql.Tree
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(TreeHelper.CreateFunctionAccess(JSqlKnownFunction.Extract));
+                n.Member.SetValue(TreeHelper.CreateFunction(JSqlKnownFunction.Extract));
 
-                n.Parameters.Add(TreeHelper.Create<QsiLogicalExpressionNode>(ln =>
+                n.Parameters.Add(TreeHelper.Create<QsiBinaryExpressionNode>(ln =>
                 {
                     ln.Left.SetValue(TreeHelper.CreateLiteral(expression.getName()));
                     ln.Operator = JSqlKnownOperator.From;
@@ -368,7 +368,7 @@ namespace Qsi.JSql.Tree
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(new QsiFunctionAccessExpressionNode
+                n.Member.SetValue(new QsiFunctionExpressionNode
                 {
                     Identifier = IdentifierVisitor.VisitFunction(expression)
                 });
@@ -403,7 +403,7 @@ namespace Qsi.JSql.Tree
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(TreeHelper.CreateFunctionAccess(JSqlKnownFunction.Cast));
+                n.Member.SetValue(TreeHelper.CreateFunction(JSqlKnownFunction.Cast));
 
                 if (expression.getParameter() != null)
                     n.Parameters.Add(TreeHelper.CreateLiteral(expression.getParameter()));
@@ -411,7 +411,7 @@ namespace Qsi.JSql.Tree
                 if (expression.getExpression() != null)
                     n.Parameters.Add(Visit(expression.getExpression()));
 
-                n.Parameters.Add(TreeHelper.Create<QsiTypeAccessExpressionNode>(tn =>
+                n.Parameters.Add(TreeHelper.Create<QsiTypeExpressionNode>(tn =>
                 {
                     tn.Identifier = new QsiQualifiedIdentifier(
                         new QsiIdentifier("INTERVAL", false),
@@ -454,7 +454,7 @@ namespace Qsi.JSql.Tree
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(TreeHelper.CreateFunctionAccess(JSqlKnownFunction.Keep));
+                n.Member.SetValue(TreeHelper.CreateFunction(JSqlKnownFunction.Keep));
                 n.Parameters.Add(TreeHelper.CreateLiteral(expression.isFirst() ? "FIRST" : "LAST"));
 
                 if (expression.getOrderByElements() != null)
@@ -488,7 +488,7 @@ namespace Qsi.JSql.Tree
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(TreeHelper.CreateFunctionAccess(JSqlKnownFunction.GroupConcat));
+                n.Member.SetValue(TreeHelper.CreateFunction(JSqlKnownFunction.GroupConcat));
 
                 if (expression.isDistinct())
                     n.Parameters.Add(TreeHelper.CreateLiteral("DISTINCT"));
@@ -514,7 +514,7 @@ namespace Qsi.JSql.Tree
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(TreeHelper.CreateFunctionAccess(JSqlKnownFunction.NextValFor));
+                n.Member.SetValue(TreeHelper.CreateFunction(JSqlKnownFunction.NextValFor));
                 n.Parameters.Add(TreeHelper.CreateLiteral(expression.getName()));
             });
         }
@@ -547,7 +547,7 @@ namespace Qsi.JSql.Tree
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(new QsiFunctionAccessExpressionNode
+                n.Member.SetValue(new QsiFunctionExpressionNode
                 {
                     Identifier = new QsiQualifiedIdentifier(IdentifierUtility.Parse(expression.getName()))
                 });
@@ -571,7 +571,7 @@ namespace Qsi.JSql.Tree
 
         public virtual QsiExpressionNode VisitUserVariable(UserVariable expression)
         {
-            return TreeHelper.Create<QsiVariableAccessExpressionNode>(n =>
+            return TreeHelper.Create<QsiVariableExpressionNode>(n =>
             {
                 n.Identifier = IdentifierVisitor.VisitUserVariable(expression);
             });
@@ -602,7 +602,7 @@ namespace Qsi.JSql.Tree
         {
             var invoke = TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(TreeHelper.CreateFunctionAccess(JSqlKnownFunction.Between));
+                n.Member.SetValue(TreeHelper.CreateFunction(JSqlKnownFunction.Between));
 
                 n.Parameters.Add(Visit(expression.getLeftExpression()));
                 n.Parameters.Add(Visit(expression.getBetweenExpressionStart()));
@@ -619,7 +619,7 @@ namespace Qsi.JSql.Tree
         {
             var invoke = TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(TreeHelper.CreateFunctionAccess(JSqlKnownFunction.Exists));
+                n.Member.SetValue(TreeHelper.CreateFunction(JSqlKnownFunction.Exists));
                 n.Parameters.Add(Visit(expression.getRightExpression()));
             });
 
@@ -635,7 +635,7 @@ namespace Qsi.JSql.Tree
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(TreeHelper.CreateFunctionAccess(JSqlKnownFunction.MatchAgainst));
+                n.Member.SetValue(TreeHelper.CreateFunction(JSqlKnownFunction.MatchAgainst));
 
                 n.Parameters.Add(VisitStringValue(expression.getAgainstValue()));
 
@@ -653,7 +653,7 @@ namespace Qsi.JSql.Tree
 
         public virtual QsiExpressionNode VisitInExpression(InExpression expression)
         {
-            var node = TreeHelper.Create<QsiLogicalExpressionNode>(n =>
+            var node = TreeHelper.Create<QsiBinaryExpressionNode>(n =>
             {
                 n.Left.SetValue(expression.getLeftExpression() == null ?
                     VisitItemsList(expression.getLeftItemsList()) :
@@ -687,7 +687,7 @@ namespace Qsi.JSql.Tree
         {
             var invoke = TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(TreeHelper.CreateFunctionAccess(
+                n.Member.SetValue(TreeHelper.CreateFunction(
                     expression.isTrue() ? JSqlKnownFunction.IsTrue : JSqlKnownFunction.IsFalse));
 
                 n.Parameters.Add(Visit(expression.getLeftExpression()));
@@ -705,7 +705,7 @@ namespace Qsi.JSql.Tree
         {
             var invoke = TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(TreeHelper.CreateFunctionAccess(JSqlKnownFunction.IsNull));
+                n.Member.SetValue(TreeHelper.CreateFunction(JSqlKnownFunction.IsNull));
                 n.Parameters.Add(Visit(expression.getLeftExpression()));
             });
 

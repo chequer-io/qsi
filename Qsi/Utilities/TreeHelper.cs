@@ -16,18 +16,53 @@ namespace Qsi.Utilities
             return node;
         }
 
-        public static QsiLogicalExpressionNode CreateLogicalExpression<TContext>(
+        public static QsiBinaryExpressionNode CreateBinaryExpression<TContext>(
             string @operator,
             TContext left,
             TContext right,
             Func<TContext, QsiExpressionNode> visitor)
         {
-            return Create<QsiLogicalExpressionNode>(n =>
+            return Create<QsiBinaryExpressionNode>(n =>
             {
                 n.Operator = @operator;
                 n.Left.SetValue(visitor(left));
                 n.Right.SetValue(visitor(right));
             });
+        }
+
+        public static QsiExpressionNode CreateChainedBinaryExpression<TContext>(
+            string @operator,
+            IEnumerable<TContext> contexts,
+            Func<TContext, QsiExpressionNode> visitor,
+            Action<TContext, QsiExpressionNode> callback = null)
+        {
+            QsiExpressionNode node = null;
+
+            foreach (var context in contexts)
+            {
+                var elementNode = visitor(context);
+
+                if (node == null)
+                {
+                    node = elementNode;
+                }
+                else
+                {
+                    var binaryNode = new QsiBinaryExpressionNode
+                    {
+                        Operator = @operator
+                    };
+
+                    binaryNode.Left.SetValue(node);
+                    binaryNode.Right.SetValue(elementNode);
+
+                    node = binaryNode;
+                }
+
+                callback?.Invoke(context, node);
+            }
+
+            return node;
         }
 
         public static QsiColumnsDeclarationNode CreateAllColumnsDeclaration()
@@ -37,9 +72,9 @@ namespace Qsi.Utilities
             return columns;
         }
 
-        public static QsiFunctionAccessExpressionNode CreateFunctionAccess(string identifier)
+        public static QsiFunctionExpressionNode CreateFunction(string identifier)
         {
-            return new QsiFunctionAccessExpressionNode
+            return new QsiFunctionExpressionNode
             {
                 Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(identifier, false))
             };

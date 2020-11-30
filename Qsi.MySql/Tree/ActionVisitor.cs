@@ -189,18 +189,18 @@ namespace Qsi.MySql.Tree
                 if (where != null)
                 {
                     var whereContext = new CommonWhereContext(where, context.WHERE().Symbol, where.Stop);
-                    derivedTable.WhereExpression.SetValue(ExpressionVisitor.VisitCommonWhere(whereContext));
+                    derivedTable.Where.SetValue(ExpressionVisitor.VisitCommonWhere(whereContext));
                 }
 
                 if (order != null)
                 {
-                    derivedTable.OrderExpression.SetValue(ExpressionVisitor.VisitOrderByClause(order));
+                    derivedTable.Order.SetValue(ExpressionVisitor.VisitOrderByClause(order));
                 }
 
                 if (limitClause != null)
                 {
                     var limitContext = new CommonLimitClauseContext(null, limitClause, context.LIMIT().Symbol, limitClause.Stop);
-                    derivedTable.LimitExpression.SetValue(ExpressionVisitor.VisitCommonLimitClause(limitContext));
+                    derivedTable.Limit.SetValue(ExpressionVisitor.VisitCommonLimitClause(limitContext));
                 }
 
                 table = derivedTable;
@@ -235,7 +235,7 @@ namespace Qsi.MySql.Tree
                 if (context.expression() != null)
                 {
                     var whereContext = new CommonWhereContext(context.expression(), context.WHERE().Symbol, context.Stop);
-                    n.WhereExpression.SetValue(ExpressionVisitor.VisitCommonWhere(whereContext));
+                    n.Where.SetValue(ExpressionVisitor.VisitCommonWhere(whereContext));
                 }
             });
 
@@ -293,13 +293,13 @@ namespace Qsi.MySql.Tree
                     derivedTable.Alias.SetValue(TableVisitor.CreateAliasNode(context.Alias));
 
                 if (context.Where != null)
-                    derivedTable.WhereExpression.SetValue(ExpressionVisitor.VisitCommonWhere(context.Where.Value));
+                    derivedTable.Where.SetValue(ExpressionVisitor.VisitCommonWhere(context.Where.Value));
 
                 if (context.Order != null)
-                    derivedTable.OrderExpression.SetValue(ExpressionVisitor.VisitOrderByClause(context.Order));
+                    derivedTable.Order.SetValue(ExpressionVisitor.VisitOrderByClause(context.Order));
 
                 if (context.Limit != null)
-                    derivedTable.LimitExpression.SetValue(ExpressionVisitor.VisitLimitClause(context.Limit));
+                    derivedTable.Limit.SetValue(ExpressionVisitor.VisitLimitClause(context.Limit));
 
                 table = derivedTable;
             }

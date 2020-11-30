@@ -2,7 +2,7 @@
 
 namespace Qsi.Analyzers.Table
 {
-    public sealed class QsiTableAnalysisResult : IQsiAnalysisResult
+    public class QsiTableAnalysisResult : IQsiAnalysisResult
     {
         public QsiTableStructure Table { get; }
 
