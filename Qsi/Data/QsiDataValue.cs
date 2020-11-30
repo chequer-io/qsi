@@ -9,7 +9,7 @@
 
         public static QsiDataValue Default => _default ??= new QsiDataValue(null, QsiDataType.Default);
 
-        public static QsiDataValue Null => _default ??= new QsiDataValue(null, QsiDataType.Null);
+        public static QsiDataValue Null => _null ??= new QsiDataValue(null, QsiDataType.Null);
 
         private static QsiDataValue _unknown;
         private static QsiDataValue _unset;
