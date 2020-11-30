@@ -1,11 +1,12 @@
 ﻿using Antlr4.Runtime.Tree;
 using Qsi.Data;
+using Qsi.Tree;
 using Qsi.Utilities;
 using static PrimarSql.Internal.PrimarSqlParser;
 
 namespace Qsi.PrimarSql.Tree
 {
- internal static class IdentifierVisitor
+    internal static class IdentifierVisitor
     {
         public static QsiQualifiedIdentifier Visit(IParseTree tree)
         {
@@ -13,9 +14,6 @@ namespace Qsi.PrimarSql.Tree
             {
                 case FullIdContext fullIdContext:
                     return VisitFullId(fullIdContext);
-
-                case FullColumnNameContext fullColumnNameContext:
-                    return VisitFullColumnName(fullColumnNameContext);
 
                 case UidContext uidContext:
                     return new QsiQualifiedIdentifier(VisitUid(uidContext));
@@ -60,17 +58,30 @@ namespace Qsi.PrimarSql.Tree
             return new QsiQualifiedIdentifier(identifiers);
         }
 
-        public static QsiQualifiedIdentifier VisitFullColumnName(FullColumnNameContext context)
+        public static QsiColumnNode VisitFullColumnName(FullColumnNameContext context)
         {
-            ColumnDottedIdContext[] columnDottedIds = context.columnDottedId();
-            var identifiers = new QsiIdentifier[columnDottedIds.Length + 1];
+            // TODO: Impl
+            QsiColumnNode columnNode = TreeHelper.Create<QsiDeclaredColumnNode>(cn =>
+            {
+                cn.Name = new QsiQualifiedIdentifier(VisitUid(context.uid()));
+            });
+            
+            QsiExpressionNode node = TreeHelper.Create<QsiColumnExpressionNode>(n =>
+            {
+                n.Column.SetValue();
+            });
 
-            identifiers[0] = VisitUid(context.uid());
-
-            for (int i = 0; i < columnDottedIds.Length; i++)
-                identifiers[i + 1] = VisitColumnDottedId(columnDottedIds[i]);
-
-            return new QsiQualifiedIdentifier(identifiers);
+            foreach (var columnDottedIdContext in context.columnDottedId())
+            {
+                var currentNode = node;
+                node = TreeHelper.Create<QsiMemberAccessExpressionNode>(n =>
+                {
+                    n.Target.SetValue(currentNode);
+                    n.Member.SetValue(VisitColumnDottedId(columnDottedIdContext));
+                });
+            }
+            
+            return node;
         }
 
         public static QsiIdentifier VisitUid(UidContext context)
@@ -98,20 +109,25 @@ namespace Qsi.PrimarSql.Tree
             return new QsiIdentifier(context.GetText(), false);
         }
 
-        public static QsiIdentifier VisitColumnDottedId(ColumnDottedIdContext context)
+        public static QsiExpressionNode VisitColumnDottedId(ColumnDottedIdContext context)
         {
             if (context.columnIndex() != null)
                 return VisitColumnIndex(context.columnIndex());
 
-            return VisitDottedId(context.dottedId());
+            return TreeHelper.Create<QsiFieldExpressionNode>( n =>
+            {
+                n.Identifier = new QsiQualifiedIdentifier(VisitDottedId(context.dottedId()));
+            });
         }
 
-        public static QsiIdentifier VisitColumnIndex(ColumnIndexContext context)
+        public static PrimarSqlIndexerExpressionNode VisitColumnIndex(ColumnIndexContext context)
         {
-            // TODO: Impl
-            throw TreeHelper.NotSupportedTree(context);
+            return TreeHelper.Create<PrimarSqlIndexerExpressionNode>(n =>
+            {
+                n.Indexer.SetValue(ExpressionVisitor.VisitLiteral(context.decimalLiteral()));
+            });
         }
-        
+
         public static QsiIdentifier VisitDottedId(DottedIdContext context)
         {
             var uid = context.uid();

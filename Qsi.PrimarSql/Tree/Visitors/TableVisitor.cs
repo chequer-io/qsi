@@ -130,12 +130,7 @@ namespace Qsi.PrimarSql.Tree
         public static QsiColumnNode VisitSelectColumnElement(SelectColumnElementContext context)
         {
             var nameContext = context.fullColumnName();
-            var columnName = IdentifierVisitor.Visit(nameContext);
-
-            var column = TreeHelper.Create<QsiDeclaredColumnNode>(n =>
-            {
-                n.Name = columnName;
-            });
+            var column = IdentifierVisitor.VisitFullColumnName(nameContext);
 
             if (context.alias == null)
                 return column;
@@ -216,11 +211,10 @@ namespace Qsi.PrimarSql.Tree
 
         public static QsiWhereExpressionNode VisitExpression(ExpressionContext context)
         {
-            var whereExpressionNode = new QsiWhereExpressionNode();
-
-            // TODO: Implement
-
-            return whereExpressionNode;
+            return TreeHelper.Create<QsiWhereExpressionNode>(n =>
+            {
+                n.Expression.SetValue(ExpressionVisitor.VisitExpression(context));
+            });
         }
 
         #region Alias
