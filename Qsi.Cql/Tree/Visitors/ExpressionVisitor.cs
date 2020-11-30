@@ -71,6 +71,11 @@ namespace Qsi.Cql.Tree
                 node.Right.SetValue(VisitSelectionMultiplication(rights[i + 1]));
 
                 left = node;
+
+                var leftSpan = CqlTree.Span[node.Left.Value];
+                var rightSpan = CqlTree.Span[node.Right.Value];
+
+                CqlTree.Span[node] = new Range(leftSpan.Start, rightSpan.End);
             }
 
             return left;
@@ -97,6 +102,11 @@ namespace Qsi.Cql.Tree
                 node.Right.SetValue(VisitSelectionGroup(rights[i + 1]));
 
                 left = node;
+
+                var leftSpan = CqlTree.Span[node.Left.Value];
+                var rightSpan = CqlTree.Span[node.Right.Value];
+
+                CqlTree.Span[node] = new Range(leftSpan.Start, rightSpan.End);
             }
 
             return left;
@@ -845,6 +855,11 @@ namespace Qsi.Cql.Tree
                 node.Right.SetValue(VisitTermMultiplication(rights[i + 1]));
 
                 left = node;
+
+                var leftSpan = CqlTree.Span[node.Left.Value];
+                var rightSpan = CqlTree.Span[node.Right.Value];
+
+                CqlTree.Span[node] = new Range(leftSpan.Start, rightSpan.End);
             }
 
             return left;
@@ -871,6 +886,11 @@ namespace Qsi.Cql.Tree
                 node.Right.SetValue(VisitTermGroup(rights[i + 1]));
 
                 left = node;
+
+                var leftSpan = CqlTree.Span[node.Left.Value];
+                var rightSpan = CqlTree.Span[node.Right.Value];
+
+                CqlTree.Span[node] = new Range(leftSpan.Start, rightSpan.End);
             }
 
             return left;
