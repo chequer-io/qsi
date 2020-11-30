@@ -3,7 +3,12 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
-        <RootNamespace>Qsi.Cql</RootNamespace>
+    </PropertyGroup>
+
+    <PropertyGroup Label="Nuspec">
+        <Title>Query Structure Interface of Cql</Title>
+        <Description>$(Title)</Description>
+        <PackageTags>$(PackageTags);cassandra;cql;antlr4</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>
