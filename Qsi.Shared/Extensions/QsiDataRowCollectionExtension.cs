@@ -1,8 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using Qsi.Data;
+﻿using Qsi.Data;
 
-namespace Qsi.Extensions
+namespace Qsi.Shared.Extensions
 {
     internal static class QsiDataRowCollectionExtension
     {

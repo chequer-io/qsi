@@ -2,7 +2,7 @@
 
 namespace Qsi.Analyzers.Action
 {
-    public sealed class QsiActionAnalysisResult : IQsiAnalysisResult
+    public class QsiActionAnalysisResult : IQsiAnalysisResult
     {
         public IQsiAction Action { get; }
 
