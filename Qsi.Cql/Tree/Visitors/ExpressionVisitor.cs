@@ -327,8 +327,8 @@ namespace Qsi.Cql.Tree
 
             indexerNode.Indexer.SetValue(VisitTerm(context.key));
 
-            leftNode.Member.SetValue(VisitCident(context.l));
-            leftNode.Target.SetValue(indexerNode);
+            leftNode.Target.SetValue(VisitCident(context.l));
+            leftNode.Member.SetValue(indexerNode);
 
             node.Left.SetValue(leftNode);
             node.Right.SetValue(VisitTerm(context.r));
@@ -531,8 +531,8 @@ namespace Qsi.Cql.Tree
             }
 
             var node = new QsiMemberAccessExpressionNode();
-            node.Member.SetValue(target);
-            node.Target.SetValue(access1);
+            node.Target.SetValue(target);
+            node.Member.SetValue(access1);
 
             if (access2 == null)
                 return node;
