@@ -53,8 +53,8 @@ namespace Qsi.PrimarSql.Analyzers
                     IsSystem = false
                 };
 
-                var jsonColumn = jsonTable.NewColumn();
-                jsonColumn.Name = new QsiIdentifier("Document", false);
+                var documentColumn = jsonTable.NewColumn();
+                documentColumn.Name = new QsiIdentifier("Document", false);
 
                 return new PrimarSqlJsonTableAnalysisResult(jsonTable);
             }

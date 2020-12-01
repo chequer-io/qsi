@@ -1,4 +1,11 @@
-﻿using Qsi.Analyzers.Action;
+﻿using System.Threading.Tasks;
+using Qsi.Analyzers;
+using Qsi.Analyzers.Action;
+using Qsi.Analyzers.Action.Models;
+using Qsi.Analyzers.Context;
+using Qsi.Analyzers.Table;
+using Qsi.Analyzers.Table.Context;
+using Qsi.Data;
 using Qsi.PrimarSql.Tree;
 using Qsi.Tree;
 
@@ -9,6 +16,42 @@ namespace Qsi.PrimarSql.Analyzers
         public PrimarSqlActionAnalyzer(QsiEngine engine) : base(engine)
         {
         }
+
+        #region Delete
+        protected override async ValueTask<IQsiAnalysisResult> ExecuteDataDeleteAction(IAnalyzerContext context, IQsiDataDeleteActionNode action)
+        {
+            var tableAnalyzer = context.Engine.GetAnalyzer<QsiTableAnalyzer>();
+            QsiTableStructure table;
+
+            using (var tableContext = new TableCompileContext(context))
+            {
+                table = (await tableAnalyzer.BuildTableStructure(tableContext, action.Target)).References[0];
+            }
+
+            var commonTableNode = ReassembleCommonTableNode(action.Target);
+            var dataTable = await GetDataTableByCommonTableNode(context, commonTableNode);
+
+            var documentColumn = table.NewColumn();
+            documentColumn.Name = new QsiIdentifier("Document", false);
+
+            var documentColumnPivot = new DataManipulationTargetColumnPivot(0, documentColumn, 0, documentColumn);
+            var target = new DataManipulationTarget(table, new[] { documentColumnPivot });
+
+            foreach (var row in dataTable.Rows)
+            {
+                var targetRow = target.DeleteRows.NewRow();
+                targetRow.Items[0] = row.Items[0];
+            }
+
+            var dataAction = new QsiDataAction
+            {
+                Table = target.Table,
+                DeleteRows = target.DeleteRows.Count == 0 ? null : target.DeleteRows
+            };
+
+            return new QsiActionAnalysisResult(new QsiActionSet<QsiDataAction>(new[] { dataAction }));
+        }
+        #endregion
 
         protected override IQsiTableNode ReassembleCommonTableNode(IQsiTableNode node)
         {
