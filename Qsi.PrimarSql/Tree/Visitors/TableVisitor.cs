@@ -65,7 +65,7 @@ namespace Qsi.PrimarSql.Tree
 
                 if (context.fromClause().whereExpr != null)
                 {
-                    node.Where.SetValue(VisitExpression(context.fromClause().whereExpr));
+                    node.Where.SetValue(VisitWhereExpression(context.fromClause()));
                 }
             }
 
@@ -234,11 +234,12 @@ namespace Qsi.PrimarSql.Tree
             });
         }
 
-        public static QsiWhereExpressionNode VisitExpression(ExpressionContext context)
+        public static QsiWhereExpressionNode VisitWhereExpression(FromClauseContext context)
         {
             return TreeHelper.Create<QsiWhereExpressionNode>(n =>
             {
-                n.Expression.SetValue(ExpressionVisitor.VisitExpression(context));
+                n.Expression.SetValue(ExpressionVisitor.VisitExpression(context.whereExpr));
+                PrimarSqlTree.PutContextSpan(n, context.whereKeyword, context.whereExpr.Stop);
             });
         }
 

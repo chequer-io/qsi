@@ -12,7 +12,7 @@ namespace Qsi.PrimarSql.Analyzers
 {
     public class PrimarSqlTableAnalyzer : QsiTableAnalyzer
     {
-        private IEnumerable<QsiIdentifier> _identifiers;
+        private IEnumerable<QsiIdentifier> _identifiers = Enumerable.Empty<QsiIdentifier>();
         
         public PrimarSqlTableAnalyzer(QsiEngine engine) : base(engine)
         {

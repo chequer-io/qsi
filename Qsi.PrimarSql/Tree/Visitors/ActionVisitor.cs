@@ -58,6 +58,7 @@ namespace Qsi.PrimarSql.Tree
                 derivedTable.Where.SetValue(TreeHelper.Create<QsiWhereExpressionNode>(n =>
                 {
                     n.Expression.SetValue(ExpressionVisitor.VisitExpression(where));
+                    PrimarSqlTree.PutContextSpan(n, context.whereKeyword, where.Stop);
                 }));
             }
 
@@ -93,6 +94,7 @@ namespace Qsi.PrimarSql.Tree
                 derivedTable.Where.SetValue(TreeHelper.Create<QsiWhereExpressionNode>(n =>
                 {
                     n.Expression.SetValue(ExpressionVisitor.VisitExpression(where));
+                    PrimarSqlTree.PutContextSpan(n, context.whereKeyword, where.Stop);
                 }));
             }
 
