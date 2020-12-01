@@ -3,7 +3,7 @@ using Qsi.Analyzers;
 using Qsi.Analyzers.Action;
 using Qsi.Data;
 
-namespace Qsi.Extensions
+namespace Qsi.Shared.Extensions
 {
     internal static class IQsiActionExtension
     {

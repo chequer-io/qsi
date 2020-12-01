@@ -11,7 +11,7 @@ namespace Qsi.Parsing.Antlr
 
         protected AntlrParserBase()
         {
-            _errorHandler = new AntlrErrorHandler();
+            _errorHandler =  new AntlrErrorHandler();
         }
 
         protected abstract Parser CreateParser(QsiScript script);

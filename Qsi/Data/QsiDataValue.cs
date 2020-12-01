@@ -9,9 +9,12 @@
 
         public static QsiDataValue Default => _default ??= new QsiDataValue(null, QsiDataType.Default);
 
+        public static QsiDataValue Null => _null ??= new QsiDataValue(null, QsiDataType.Null);
+
         private static QsiDataValue _unknown;
         private static QsiDataValue _unset;
         private static QsiDataValue _default;
+        private static QsiDataValue _null;
         #endregion
 
         public object Value { get; }
