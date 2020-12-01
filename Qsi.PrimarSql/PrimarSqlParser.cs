@@ -1,5 +1,4 @@
-﻿using System;
-using Antlr4.Runtime;
+﻿using Antlr4.Runtime;
 using PrimarSql.Internal;
 using Qsi.Data;
 using Qsi.Parsing.Antlr;
@@ -17,7 +16,7 @@ namespace Qsi.PrimarSql
             var tokens = new CommonTokenStream(lexer);
             return new global::PrimarSql.Internal.PrimarSqlParser(tokens);
         }
-        
+
         protected override IQsiTreeNode Parse(QsiScript script, Parser parser)
         {
             return ParseInternal(script, parser) ?? throw new QsiException(QsiError.NotSupportedScript, script.ScriptType);
@@ -31,18 +30,16 @@ namespace Qsi.PrimarSql
             {
                 case QsiScriptType.Select:
                     return TableVisitor.VisitSelectStatement(primarSqlParser.selectStatement());
-                
-                // case QsiScriptType.Insert:
-                //     return ActionVisitor.VisitInsertStatement(primarSqlParser.insertStatement());
-                //
-                // case QsiScriptType.Replace:
-                //     return ActionVisitor.VisitReplaceStatement(primarSqlParser.replaceStatement());
-                //
-                // case QsiScriptType.Delete:
-                //     return ActionVisitor.VisitDeleteStatement(primarSqlParser.deleteStatement());
-                //
-                // case QsiScriptType.Update:
-                //     return ActionVisitor.VisitUpdateStatement(primarSqlParser.updateStatement());
+
+                case QsiScriptType.Insert:
+                    return ActionVisitor.VisitInsertStatement(primarSqlParser.insertStatement());
+
+                case QsiScriptType.Delete:
+                    return ActionVisitor.VisitDeleteStatement(primarSqlParser.deleteStatement());
+
+                case QsiScriptType.Update:
+                    return ActionVisitor.VisitUpdateStatement(primarSqlParser.updateStatement());
+
                 default:
                     return null;
             }

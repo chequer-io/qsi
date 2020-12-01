@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Antlr4.Runtime;
@@ -164,10 +165,10 @@ namespace Qsi.PrimarSql.Tree
                     PrimarSqlTree.PutContextSpan(node, context);
                     return node;
                 }
-                
+
                 case ExistsExpressionAtomContext _:
                     throw TreeHelper.NotSupportedFeature("Exists expression");
-                
+
                 case SubqueryExpressionAtomContext subqueryExpressionAtomContext:
                     return VisitSelectStatement(subqueryExpressionAtomContext.selectStatement());
 
@@ -178,7 +179,7 @@ namespace Qsi.PrimarSql.Tree
                         n.Left.SetValue(VisitExpressionAtom(bitExpressionAtomContext.left));
                         n.Operator = bitExpressionAtomContext.bitOperator().GetText();
                         n.Right.SetValue(VisitExpressionAtom(bitExpressionAtomContext.right));
-                        
+
                         PrimarSqlTree.PutContextSpan(n, context);
                     });
                 }
@@ -190,7 +191,7 @@ namespace Qsi.PrimarSql.Tree
                         n.Left.SetValue(VisitExpressionAtom(mathExpressionAtomContext.left));
                         n.Operator = mathExpressionAtomContext.mathOperator().GetText();
                         n.Right.SetValue(VisitExpressionAtom(mathExpressionAtomContext.right));
-                        
+
                         PrimarSqlTree.PutContextSpan(n, context);
                     });
                 }
@@ -372,7 +373,7 @@ namespace Qsi.PrimarSql.Tree
                     literal.Value = -(decimal)literal.Value;
                     return literal;
                 }
-                
+
                 case PositiveDecimalLiteralConstantContext literalContext:
                 {
                     return VisitLiteral(literalContext.decimalLiteral());
@@ -493,7 +494,7 @@ namespace Qsi.PrimarSql.Tree
             return TreeHelper.Create<QsiLimitExpressionNode>(n =>
             {
                 n.Limit.SetValue(VisitLiteral(context.limit.decimalLiteral()));
-                
+
                 if (context.offset != null)
                     n.Offset.SetValue(VisitLiteral(context.offset.decimalLiteral()));
             });
@@ -511,7 +512,53 @@ namespace Qsi.PrimarSql.Tree
                 }
             });
         }
-        
+
+        public static QsiRowValueExpressionNode VisitExpressionsWithDefaults(ExpressionsWithDefaultsContext context)
+        {
+            IEnumerable<QsiExpressionNode> expressions = context.expressionOrDefault()
+                .Select(VisitExpressionOrDefault);
+
+            var node = new QsiRowValueExpressionNode();
+            node.ColumnValues.AddRange(expressions);
+
+            PrimarSqlTree.PutContextSpan(node, context);
+
+            return node;
+        }
+
+        public static QsiExpressionNode VisitExpressionOrDefault(ExpressionOrDefaultContext context)
+        {
+            if (context.DEFAULT() != null)
+            {
+                var defaultLiteral = TreeHelper.CreateDefaultLiteral();
+
+                PrimarSqlTree.PutContextSpan(defaultLiteral, context);
+
+                return defaultLiteral;
+            }
+
+            return VisitExpression(context.expression());
+        }
+
+        public static QsiSetColumnExpressionNode VisitUpdatedElement(UpdatedElementContext context)
+        {
+            var column = IdentifierVisitor.VisitFullColumnName(context.fullColumnName());
+
+            if (!(column is QsiDeclaredColumnNode columnNode))
+                throw new NotSupportedException("Update element only contains declared column.");
+
+            var assignNode = new QsiSetColumnExpressionNode
+            {
+                Target = columnNode.Name
+            };
+
+            assignNode.Value.SetValue(VisitExpression(context.expression()));
+
+            PrimarSqlTree.PutContextSpan(assignNode, context);
+
+            return assignNode;
+        }
+
         #region TableVisitor
         public static QsiTableExpressionNode VisitSelectStatement(SelectStatementContext context)
         {

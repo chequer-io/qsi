@@ -168,6 +168,14 @@ namespace Qsi.PrimarSql.Tree
             return VisitTableSource(context.tableSource());
         }
 
+        public static QsiTableAccessNode VisitTableName(TableNameContext context)
+        {
+            return TreeHelper.Create<QsiTableAccessNode>(n =>
+            {
+                n.Identifier = IdentifierVisitor.VisitFullId(context.fullId());
+            });
+        }
+        
         public static QsiTableNode VisitTableSource(TableSourceContext context)
         {
             switch (context)
@@ -198,10 +206,7 @@ namespace Qsi.PrimarSql.Tree
 
         public static QsiTableNode VisitAtomTableItem(AtomTableItemContext context)
         {
-            QsiTableNode node = TreeHelper.Create<QsiTableAccessNode>(n =>
-            {
-                n.Identifier = IdentifierVisitor.VisitFullId(context.tableName().fullId());
-            });
+            QsiTableNode node = VisitTableName(context.tableName());
 
             if (context.alias == null)
                 return node;

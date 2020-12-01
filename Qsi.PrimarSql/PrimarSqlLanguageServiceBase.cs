@@ -12,17 +12,17 @@ namespace Qsi.PrimarSql
         {
             return new PrimarSqlParser();
         }
-        
+
         public override IQsiTreeDeparser CreateTreeDeparser()
         {
             return new PrimarSqlDeparser();
         }
-        
+
         public override IQsiScriptParser CreateScriptParser()
         {
             return new PrimarSqlScriptParser();
         }
-        
+
         public override QsiAnalyzerOptions CreateAnalyzerOptions()
         {
             return new QsiAnalyzerOptions
@@ -30,11 +30,11 @@ namespace Qsi.PrimarSql
                 AllowEmptyColumnsInSelect = false
             };
         }
-        
+
         public override IEnumerable<QsiAnalyzerBase> CreateAnalyzers(QsiEngine engine)
         {
             yield return new PrimarSqlTableAnalyzer(engine);
-            // yield return new PrimarSqlActionAnalzyer(engine);
+            yield return new PrimarSqlActionAnalyzer(engine);
         }
     }
 }
