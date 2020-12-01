@@ -60,17 +60,19 @@ namespace Qsi.PrimarSql.Tree
 
         public static QsiColumnNode VisitFullColumnName(FullColumnNameContext context)
         {
-            // TODO: Impl
             QsiColumnNode columnNode = TreeHelper.Create<QsiDeclaredColumnNode>(cn =>
             {
                 cn.Name = new QsiQualifiedIdentifier(VisitUid(context.uid()));
             });
-            
-            QsiExpressionNode node = TreeHelper.Create<QsiColumnExpressionNode>(n =>
-            {
-                n.Column.SetValue();
-            });
 
+            if (context.columnDottedId().Length == 0)
+                return columnNode;
+
+            QsiExpressionNode node = TreeHelper.Create<QsiColumnExpressionNode>(cn =>
+            {
+                cn.Column.SetValue(columnNode);
+            });
+            
             foreach (var columnDottedIdContext in context.columnDottedId())
             {
                 var currentNode = node;
@@ -81,7 +83,10 @@ namespace Qsi.PrimarSql.Tree
                 });
             }
             
-            return node;
+            return TreeHelper.Create<QsiDerivedColumnNode>(n =>
+            {
+                n.Expression.SetValue(node);
+            });
         }
 
         public static QsiIdentifier VisitUid(UidContext context)

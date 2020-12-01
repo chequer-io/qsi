@@ -1,5 +1,7 @@
-﻿using Qsi.Analyzers;
+﻿using System.Collections.Generic;
+using Qsi.Analyzers;
 using Qsi.Parsing;
+using Qsi.PrimarSql.Analyzers;
 using Qsi.Services;
 
 namespace Qsi.PrimarSql
@@ -27,6 +29,12 @@ namespace Qsi.PrimarSql
             {
                 AllowEmptyColumnsInSelect = false
             };
+        }
+        
+        public override IEnumerable<QsiAnalyzerBase> CreateAnalyzers(QsiEngine engine)
+        {
+            yield return new PrimarSqlTableAnalyzer(engine);
+            // yield return new PrimarSqlActionAnalzyer(engine);
         }
     }
 }

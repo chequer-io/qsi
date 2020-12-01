@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
@@ -63,7 +64,7 @@ namespace Qsi.PrimarSql.Tree
                 case IsNullPredicateContext isNullPredicateContext:
                     return VisitIsNullPredicate(isNullPredicateContext);
 
-                case BinaryComparasionPredicateContext binaryComparisonPredicateContext:
+                case BinaryComparisonPredicateContext binaryComparisonPredicateContext:
                     return VisitBinaryComparisonPredicate(binaryComparisonPredicateContext);
 
                 case BetweenPredicateContext betweenPredicateContext:
@@ -115,7 +116,7 @@ namespace Qsi.PrimarSql.Tree
             });
         }
 
-        public static QsiBinaryExpressionNode VisitBinaryComparisonPredicate(BinaryComparasionPredicateContext context)
+        public static QsiBinaryExpressionNode VisitBinaryComparisonPredicate(BinaryComparisonPredicateContext context)
         {
             return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
             {
@@ -155,9 +156,45 @@ namespace Qsi.PrimarSql.Tree
 
                 case FunctionCallExpressionAtomContext functionCallExpressionAtomContext:
                     return VisitFunctionCall(functionCallExpressionAtomContext.functionCall());
-            }
 
-            // TODO: Impl
+                case NestedExpressionAtomContext nestedExpressionAtomContext:
+                {
+                    var node = CreateMultipleExpression(nestedExpressionAtomContext.expression());
+
+                    PrimarSqlTree.PutContextSpan(node, context);
+                    return node;
+                }
+                
+                case ExistsExpressionAtomContext _:
+                    throw TreeHelper.NotSupportedFeature("Exists expression");
+                
+                case SubqueryExpressionAtomContext subqueryExpressionAtomContext:
+                    return VisitSelectStatement(subqueryExpressionAtomContext.selectStatement());
+
+                case BitExpressionAtomContext bitExpressionAtomContext:
+                {
+                    return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
+                    {
+                        n.Left.SetValue(VisitExpressionAtom(bitExpressionAtomContext.left));
+                        n.Operator = bitExpressionAtomContext.bitOperator().GetText();
+                        n.Right.SetValue(VisitExpressionAtom(bitExpressionAtomContext.right));
+                        
+                        PrimarSqlTree.PutContextSpan(n, context);
+                    });
+                }
+
+                case MathExpressionAtomContext mathExpressionAtomContext:
+                {
+                    return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
+                    {
+                        n.Left.SetValue(VisitExpressionAtom(mathExpressionAtomContext.left));
+                        n.Operator = mathExpressionAtomContext.mathOperator().GetText();
+                        n.Right.SetValue(VisitExpressionAtom(mathExpressionAtomContext.right));
+                        
+                        PrimarSqlTree.PutContextSpan(n, context);
+                    });
+                }
+            }
 
             throw TreeHelper.NotSupportedTree(context);
         }
@@ -279,7 +316,7 @@ namespace Qsi.PrimarSql.Tree
                         n.Parameters.Add(VisitLiteral(pContext.stringLiteral()));
                     });
                 }
-                
+
                 case ContainsFunctionCallContext pContext:
                 {
                     return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
@@ -290,7 +327,7 @@ namespace Qsi.PrimarSql.Tree
                         n.Parameters.Add(VisitLiteral(pContext.stringLiteral()));
                     });
                 }
-                
+
                 case SizeFunctionCallContext pContext:
                 {
                     return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
@@ -311,12 +348,7 @@ namespace Qsi.PrimarSql.Tree
         {
             return TreeHelper.Create<QsiColumnExpressionNode>(n =>
             {
-                var identifier = IdentifierVisitor.Visit(context);
-
-                n.Column.SetValue(new QsiDeclaredColumnNode
-                {
-                    Name = identifier
-                });
+                n.Column.SetValue(IdentifierVisitor.VisitFullColumnName(context));
 
                 PrimarSqlTree.PutContextSpan(n.Column.Value, context);
                 PrimarSqlTree.PutContextSpan(n, context);
@@ -329,9 +361,9 @@ namespace Qsi.PrimarSql.Tree
         {
             switch (context)
             {
-                case StringLiteralConstantContext pContext:
+                case StringLiteralConstantContext literalContext:
                 {
-                    return VisitLiteral(pContext.stringLiteral());
+                    return VisitLiteral(literalContext.stringLiteral());
                 }
 
                 case NegativeDecimalLiteralConstantContext literalContext:
@@ -340,10 +372,10 @@ namespace Qsi.PrimarSql.Tree
                     literal.Value = -(decimal)literal.Value;
                     return literal;
                 }
-
-                case HexadecimalLiteralConstantContext literalContext:
+                
+                case PositiveDecimalLiteralConstantContext literalContext:
                 {
-                    return VisitLiteral(literalContext.hexadecimalLiteral());
+                    return VisitLiteral(literalContext.decimalLiteral());
                 }
 
                 case BooleanLiteralConstantContext literalContext:
@@ -431,17 +463,55 @@ namespace Qsi.PrimarSql.Tree
         }
         #endregion
 
-        public static QsiMultipleExpressionNode VisitExpressions(ExpressionsContext context)
+        public static QsiMultipleExpressionNode CreateMultipleExpression(IEnumerable<ExpressionContext> contexts)
         {
             return TreeHelper.Create<QsiMultipleExpressionNode>(n =>
             {
-                foreach (var expression in context.expression())
+                foreach (var expression in contexts)
                     n.Elements.Add(VisitExpression(expression));
-
-                PrimarSqlTree.PutContextSpan(n, context);
             });
         }
 
+        public static QsiMultipleExpressionNode VisitExpressions(ExpressionsContext context)
+        {
+            var node = CreateMultipleExpression(context.expression());
+
+            PrimarSqlTree.PutContextSpan(node, context);
+            return node;
+        }
+
+        public static QsiOrderExpressionNode VisitOrderCluase(OrderClauseContext context)
+        {
+            return new QsiOrderExpressionNode
+            {
+                Order = context.ASC() != null ? QsiSortOrder.Ascending : QsiSortOrder.Descending
+            };
+        }
+
+        public static QsiLimitExpressionNode VisitLimitClause(LimitClauseContext context)
+        {
+            return TreeHelper.Create<QsiLimitExpressionNode>(n =>
+            {
+                n.Limit.SetValue(VisitLiteral(context.limit.decimalLiteral()));
+                
+                if (context.offset != null)
+                    n.Offset.SetValue(VisitLiteral(context.offset.decimalLiteral()));
+            });
+        }
+
+        public static PrimarSqlStartKeyExpressionNode VisitStartKeyClause(StartKeyClauseContext context)
+        {
+            return TreeHelper.Create<PrimarSqlStartKeyExpressionNode>(n =>
+            {
+                n.HashKey.SetValue(VisitConstant(context.hashKey));
+
+                if (context.sortKey != null)
+                {
+                    n.SortKey.SetValue(VisitConstant(context.sortKey));
+                }
+            });
+        }
+        
         #region TableVisitor
         public static QsiTableExpressionNode VisitSelectStatement(SelectStatementContext context)
         {
