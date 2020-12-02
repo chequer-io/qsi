@@ -11,9 +11,9 @@ using Qsi.Tree;
 
 namespace Qsi.Cql.Analyzers
 {
-    public class CqlTableAnalzyer : QsiTableAnalyzer
+    public class CqlTableAnalyzer : QsiTableAnalyzer
     {
-        public CqlTableAnalzyer(QsiEngine engine) : base(engine)
+        public CqlTableAnalyzer(QsiEngine engine) : base(engine)
         {
         }
 
