@@ -152,6 +152,21 @@ namespace Qsi.PrimarSql.Tree
                 case ConstantExpressionAtomContext constantExpressionAtomContext:
                     return VisitConstant(constantExpressionAtomContext.constant());
 
+                case JsonExpressionAtomContext jsonExpressionAtomContext:
+                    return TreeHelper.Create<QsiLiteralExpressionNode>(n =>
+                    {
+                        n.Type = QsiDataType.Json;
+                        n.Value = jsonExpressionAtomContext.jsonObject().GetText();
+                    });
+                
+                // TODO: Check
+                case BinaryExpressionAtomContext binaryExpressionAtomContext:
+                    return TreeHelper.Create<QsiLiteralExpressionNode>(n =>
+                    {
+                        n.Type = QsiDataType.Binary;
+                        n.Value = Convert.FromBase64String(binaryExpressionAtomContext.stringLiteral().GetText());
+                    });
+                
                 case FullColumnNameExpressionAtomContext fullColumnNameContext:
                     return VisitFullColumnName(fullColumnNameContext.fullColumnName());
 
