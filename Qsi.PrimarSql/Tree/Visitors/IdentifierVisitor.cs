@@ -80,6 +80,8 @@ namespace Qsi.PrimarSql.Tree
                 {
                     n.Target.SetValue(currentNode);
                     n.Member.SetValue(VisitColumnDottedId(columnDottedIdContext));
+                    
+                    PrimarSqlTree.PutContextSpan(n, context.Start, columnDottedIdContext.Stop);
                 });
             }
             

@@ -555,23 +555,39 @@ namespace Qsi.PrimarSql.Tree
             return VisitExpression(context.expression());
         }
 
-        public static QsiSetColumnExpressionNode VisitUpdatedElement(UpdatedElementContext context)
+        public static PrimarSqlSetColumnExpressionNode VisitUpdatedElement(UpdatedElementContext context)
         {
             var column = IdentifierVisitor.VisitFullColumnName(context.fullColumnName());
 
-            if (!(column is QsiDeclaredColumnNode columnNode))
-                throw new NotSupportedException("Update element only contains declared column.");
-
-            var assignNode = new QsiSetColumnExpressionNode
+            if (column is QsiDeclaredColumnNode columnNode)
             {
-                Target = columnNode.Name
-            };
+                var assignNode = new PrimarSqlSetColumnExpressionNode
+                {
+                    Target = columnNode.Name
+                };
 
-            assignNode.Value.SetValue(VisitExpression(context.expression()));
+                assignNode.Value.SetValue(VisitExpression(context.expression()));
 
-            PrimarSqlTree.PutContextSpan(assignNode, context);
+                PrimarSqlTree.PutContextSpan(assignNode, context);
+                return assignNode;
+            }
 
-            return assignNode;
+            if (column is QsiDerivedColumnNode derivedColumnNode)
+            {
+                return TreeHelper.Create<PrimarSqlSetColumnExpressionNode>(n =>
+                {
+                    var memberAccessExpression = derivedColumnNode.Expression.Value as QsiMemberAccessExpressionNode
+                                                 ?? throw new InvalidOperationException("DerivedColumn has no MemberAccessExpressionNode");
+                    
+                    n.TargetExpression.SetValue(memberAccessExpression);
+                    n.Value.SetValue(VisitExpression(context.expression()));
+                    
+                    PrimarSqlTree.PutContextSpan(n, context);
+                });
+            }
+
+
+            throw TreeHelper.NotSupportedTree(column);
         }
 
         #region TableVisitor
