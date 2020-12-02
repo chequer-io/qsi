@@ -30,8 +30,8 @@ namespace Qsi.Cql
 
         public override IEnumerable<QsiAnalyzerBase> CreateAnalyzers(QsiEngine engine)
         {
-            yield return new CqlTableAnalzyer(engine);
-            yield return new CqlActionAnalzyer(engine);
+            yield return new CqlTableAnalyzer(engine);
+            yield return new CqlActionAnalyzer(engine);
         }
     }
 }

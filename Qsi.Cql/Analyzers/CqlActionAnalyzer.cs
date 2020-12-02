@@ -20,9 +20,9 @@ using Qsi.Utilities;
 
 namespace Qsi.Cql.Analyzers
 {
-    public class CqlActionAnalzyer : QsiActionAnalyzer
+    public class CqlActionAnalyzer : QsiActionAnalyzer
     {
-        public CqlActionAnalzyer(QsiEngine engine) : base(engine)
+        public CqlActionAnalyzer(QsiEngine engine) : base(engine)
         {
         }
 
