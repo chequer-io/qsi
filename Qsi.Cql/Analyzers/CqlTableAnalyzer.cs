@@ -7,6 +7,7 @@ using Qsi.Analyzers.Table;
 using Qsi.Analyzers.Table.Context;
 using Qsi.Cql.Tree;
 using Qsi.Data;
+using Qsi.Shared.Extensions;
 using Qsi.Tree;
 
 namespace Qsi.Cql.Analyzers
