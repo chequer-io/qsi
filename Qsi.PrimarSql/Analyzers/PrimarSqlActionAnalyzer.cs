@@ -68,23 +68,8 @@ namespace Qsi.PrimarSql.Analyzers
             using var tableContext = new TableCompileContext(context);
             var table = (await tableAnalyzer.BuildTableStructure(tableContext, action.Target)).References[0];
 
-#if DEBUG
-            var tempTable = new QsiTableStructure
-            {
-                Type = QsiTableType.Table,
-                Identifier = new QsiQualifiedIdentifier(new QsiIdentifier("actor", false))
-            };
-
-            var c = tempTable.NewColumn();
-            c.Name = new QsiIdentifier("Document", false);
-            var dataTable = new QsiDataTable(tempTable);
-
-            var tRow = dataTable.Rows.NewRow();
-            tRow.Items[0] = new QsiDataValue("{\"a\": 1, \"actor_id\": 123}", QsiDataType.Object);
-#else
             var commonTableNode = ReassembleCommonTableNode(action.Target);
             var dataTable = await GetDataTableByCommonTableNode(context, commonTableNode);
-#endif
 
             var documentColumn = table.NewColumn();
             documentColumn.Name = new QsiIdentifier("Document", false);
