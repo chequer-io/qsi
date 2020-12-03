@@ -7,6 +7,7 @@ using Newtonsoft.Json.Linq;
 using PrimarSql.Data.Models.Columns;
 using Qsi.Analyzers;
 using Qsi.Analyzers.Action;
+using Qsi.Analyzers.Action.Context;
 using Qsi.Analyzers.Action.Models;
 using Qsi.Analyzers.Context;
 using Qsi.Analyzers.Table;
@@ -16,6 +17,7 @@ using Qsi.PrimarSql.Tree;
 using Qsi.PrimarSql.Utilities;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
+using Qsi.Utilities;
 
 namespace Qsi.PrimarSql.Analyzers
 {
@@ -76,7 +78,7 @@ namespace Qsi.PrimarSql.Analyzers
             var c = tempTable.NewColumn();
             c.Name = new QsiIdentifier("Document", false);
             var dataTable = new QsiDataTable(tempTable);
-            
+
             var tRow = dataTable.Rows.NewRow();
             tRow.Items[0] = new QsiDataValue("{\"a\": 1, \"actor_id\": 123}", QsiDataType.Object);
 #else
@@ -135,6 +137,48 @@ namespace Qsi.PrimarSql.Analyzers
                 Table = target.Table,
                 UpdateBeforeRows = target.UpdateBeforeRows.ToNullIfEmpty(),
                 UpdateAfterRows = target.UpdateAfterRows.ToNullIfEmpty()
+            };
+
+            return (new[] { dataAction }).ToResult();
+        }
+        #endregion
+
+        #region Insert
+        protected override async ValueTask<IQsiAnalysisResult> ExecuteDataInsertAction(IAnalyzerContext context, IQsiDataInsertActionNode action)
+        {
+            var tableAnalyzer = context.Engine.GetAnalyzer<QsiTableAnalyzer>();
+
+            using var tableContext = new TableCompileContext(context);
+            var table = await tableAnalyzer.BuildTableStructure(tableContext, action.Target);
+
+            // TODO: Impl when column not provided (Get primary key)
+
+            var documentColumn = table.NewColumn();
+            documentColumn.Name = new QsiIdentifier("Document", false);
+
+            var documentColumnPivot = new DataManipulationTargetColumnPivot(0, documentColumn, -1, null);
+            var target = new DataManipulationTarget(table, new[] { documentColumnPivot });
+
+            foreach (var value in action.Values)
+            {
+                var obj = new JObject();
+                
+                for (int i = 0; i < action.Columns.Length; i++)
+                {
+                    var column = action.Columns[i][^1];
+                    var columnValue = value.ColumnValues[i];
+
+                    obj[column.Value] = ConvertToToken(columnValue, context);
+                }
+
+                var row = target.InsertRows.NewRow();
+                row.Items[0] = new QsiDataValue(obj.ToString(Formatting.None), QsiDataType.Object);
+            }
+
+            var dataAction = new QsiDataAction
+            {
+                Table = target.Table,
+                InsertRows = target.InsertRows.ToNullIfEmpty(),
             };
 
             return (new[] { dataAction }).ToResult();
@@ -223,8 +267,9 @@ namespace Qsi.PrimarSql.Analyzers
                     QsiDataType.Boolean => new JValue((bool)literalNode.Value),
                     QsiDataType.Json => JObject.Parse(literalNode.Value.ToString()),
                     QsiDataType.Numeric => new JValue(double.Parse(literalNode.Value.ToString())),
+                    QsiDataType.Decimal => new JValue(double.Parse(literalNode.Value.ToString())),
                     QsiDataType.Null => null,
-                    _ => literalNode.ToString()
+                    _ => literalNode.Value.ToString()
                 };
             }
 
