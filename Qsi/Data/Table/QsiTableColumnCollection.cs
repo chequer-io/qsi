@@ -10,8 +10,8 @@ namespace Qsi.Data
 
         public QsiTableColumn this[int index]
         {
-            get => throw new NotImplementedException();
-            set => throw new NotImplementedException();
+            get => _list[index];
+            set => _list[index] = value;
         }
 
         bool ICollection<QsiTableColumn>.IsReadOnly => false;
