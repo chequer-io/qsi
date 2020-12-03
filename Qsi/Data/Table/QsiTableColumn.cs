@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using Qsi.Tree;
 using Qsi.Utilities;
@@ -8,7 +7,7 @@ namespace Qsi.Data
 {
     public sealed class QsiTableColumn
     {
-        public QsiTableStructure Parent { get; }
+        public QsiTableStructure Parent { get; internal set; }
 
         public QsiIdentifier Name { get; set; }
 
@@ -33,10 +32,5 @@ namespace Qsi.Data
         internal IQsiColumnNode ColumnNode { get; set; }
         
         internal bool _isExpression;
-
-        internal QsiTableColumn(QsiTableStructure parent)
-        {
-            Parent = parent;
-        }
     }
 }

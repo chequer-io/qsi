@@ -13,23 +13,24 @@ namespace Qsi.Data
 
         public bool IsSystem { get; set; }
 
-        public List<QsiTableStructure> References { get; } = new List<QsiTableStructure>();
+        public IList<QsiTableStructure> References { get; } = new List<QsiTableStructure>();
 
-        public IReadOnlyList<QsiTableColumn> Columns => _columns;
-
+        public IList<QsiTableColumn> Columns => _columns;
+        
         internal IEnumerable<QsiTableColumn> VisibleColumns => _columns.Where(c => c.IsVisible);
 
-        private readonly List<QsiTableColumn> _columns;
+        private readonly QsiTableColumnCollection _columns;
 
         public QsiTableStructure()
         {
-            _columns = new List<QsiTableColumn>();
+            _columns = new QsiTableColumnCollection(this);
         }
 
         public QsiTableColumn NewColumn()
         {
-            var column = new QsiTableColumn(this);
+            var column = new QsiTableColumn();
             _columns.Add(column);
+            
             return column;
         }
     }
