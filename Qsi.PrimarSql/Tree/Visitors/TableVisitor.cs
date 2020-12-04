@@ -74,7 +74,7 @@ namespace Qsi.PrimarSql.Tree
                 node.Order.SetValue(TreeHelper.Create<QsiMultipleOrderExpressionNode>(n =>
                 {
                     n.Orders.Add(ExpressionVisitor.VisitOrderCluase(context.orderClause()));
-                    
+
                     PrimarSqlTree.PutContextSpan(n, context.orderClause());
                 }));
             }
@@ -127,8 +127,26 @@ namespace Qsi.PrimarSql.Tree
                     break;
                 }
 
-                case SelectFunctionElementContext _:
+                case SelectFunctionElementContext selectFunctionElementContext:
+                {
+                    if (selectFunctionElementContext.builtInFunctionCall() is CountFunctionCallContext countFunctionCallContext)
+                    {
+                        return TreeHelper.Create<QsiDerivedColumnNode>(n =>
+                        {
+                            n.Expression.SetValue(TreeHelper.Create<QsiInvokeExpressionNode>(en =>
+                            {
+                                en.Member.SetValue(TreeHelper.CreateFunction("count"));
+                            }));
+
+                            if (selectFunctionElementContext.alias != null)
+                                n.Alias.SetValue(CreateAliasNode(selectFunctionElementContext.alias));
+
+                            PrimarSqlTree.PutContextSpan(n, countFunctionCallContext);
+                        });
+                    }
+
                     throw TreeHelper.NotSupportedFeature("Select Element Function");
+                }
 
                 case SelectExpressionElementContext _:
                     throw TreeHelper.NotSupportedFeature("Select Element Expression");
@@ -168,7 +186,7 @@ namespace Qsi.PrimarSql.Tree
             return TreeHelper.Create<QsiTableAccessNode>(n =>
             {
                 n.Identifier = IdentifierVisitor.VisitFullId(context.fullId());
-                
+
                 PrimarSqlTree.PutContextSpan(n, context);
             });
         }

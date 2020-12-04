@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -25,6 +25,7 @@ namespace Qsi.PrimarSql.Analyzers
             var identifierSet = new HashSet<QsiIdentifier>(IdentifierComparer);
             QsiQualifiedIdentifier tableIdentifier = null;
             QsiTableNode node = (context.Tree as QsiDerivedTableNode);
+            bool isCountFunction = false;
 
             while (node is QsiDerivedTableNode tableNode)
             {
@@ -32,6 +33,15 @@ namespace Qsi.PrimarSql.Analyzers
                     .Columns.Value
                     .FindAscendants<QsiDeclaredColumnNode>()
                     .Select(c => c.Name);
+
+                var hasCountFunction = tableNode
+                    .Columns.Value
+                    .FindAscendants<QsiDerivedColumnNode>()
+                    .Any(c => c.Expression.Value is QsiInvokeExpressionNode invokeExpressionNode &&
+                              invokeExpressionNode.Member.Value.Identifier[^1].Value.Equals("COUNT", StringComparison.OrdinalIgnoreCase));
+
+                if (hasCountFunction)
+                    isCountFunction = true;
 
                 foreach (var column in columns)
                 {
@@ -53,8 +63,11 @@ namespace Qsi.PrimarSql.Analyzers
                     IsSystem = false
                 };
 
-                var documentColumn = jsonTable.NewColumn();
-                documentColumn.Name = new QsiIdentifier("Document", false);
+                if (!isCountFunction)
+                {
+                    var documentColumn = jsonTable.NewColumn();
+                    documentColumn.Name = new QsiIdentifier("Document", false);
+                }
 
                 return new PrimarSqlJsonTableAnalysisResult(jsonTable);
             }
@@ -68,11 +81,11 @@ namespace Qsi.PrimarSql.Analyzers
 
             if (!(column is PrimarSqlDeclaredColumnNode declaredColumnNode))
                 throw new ArgumentException(nameof(column));
-            
+
             var source = context.SourceTable;
             var columnName = declaredColumnNode.Name[^1];
             object[] path = declaredColumnNode.Accessors.Select(AccessorToValue).ToArray();
-            
+
             if (source.Type != QsiTableType.Table)
                 throw new QsiException(QsiError.Internal);
 
