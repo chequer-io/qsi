@@ -559,20 +559,16 @@ namespace Qsi.PrimarSql.Tree
         {
             var column = IdentifierVisitor.VisitFullColumnName(context.fullColumnName());
 
-            if (column is QsiDeclaredColumnNode columnNode)
+            var assignNode = new PrimarSqlSetColumnExpressionNode
             {
-                var assignNode = new PrimarSqlSetColumnExpressionNode
-                {
-                    Target = columnNode.Name
-                };
+                Target = column.Name,
+            };
 
-                assignNode.Value.SetValue(VisitExpression(context.expression()));
+            assignNode.Accessors.AddRange(column.Accessors);
+            assignNode.Value.SetValue(VisitExpression(context.expression()));
 
-                PrimarSqlTree.PutContextSpan(assignNode, context);
-                return assignNode;
-            }
-
-            throw TreeHelper.NotSupportedTree(column);
+            PrimarSqlTree.PutContextSpan(assignNode, context);
+            return assignNode;
         }
 
         #region TableVisitor

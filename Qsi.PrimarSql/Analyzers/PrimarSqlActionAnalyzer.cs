@@ -70,22 +70,18 @@ namespace Qsi.PrimarSql.Analyzers
             var updateBeforeRows = new QsiDataRowCollection(1);
             var updateAfterRows = new QsiDataRowCollection(1);
 
-            var setValues = action.SetValues
+            (object[], QsiExpressionNode)[] setValues = action.SetValues
                 .OfType<PrimarSqlSetColumnExpressionNode>()
                 .Select(x =>
                 {
-                    IPart[] part;
-
-                    if (x.TargetExpression.IsEmpty)
-                        part = PartUtility.Parse(x.Target.ToString());
-                    else
-                        part = PartUtility.Parse(context.Engine.TreeDeparser.Deparse(x.TargetExpression.Value, context.Script));
-
-                    return (part, x.Value.Value);
+                    return (
+                        new[] { x.Target[^1].Value }.Concat(x.Accessors.Select(AccessorToValue)).ToArray(),
+                        x.Value.Value
+                    );
                 })
                 .ToArray();
 
-            if (setValues.Select(x => x.Item1).Distinct(new PartArrayComparer()).Count() != setValues.Length)
+            if (setValues.Select(x => x.Item1).Distinct(new EnumerableComparer()).Count() != setValues.Length)
             {
                 throw new InvalidOperationException("one or more document path overlapped.");
             }
@@ -98,7 +94,7 @@ namespace Qsi.PrimarSql.Analyzers
                 var beforeValue = row.Items[0];
                 var afterValue = JObject.Parse(beforeValue.Value.ToString());
 
-                foreach ((IPart[] part, var value) in setValues)
+                foreach ((object[] part, var value) in setValues)
                 {
                     if (!SetValueToToken(afterValue, part, ConvertToToken(value, context)))
                     {
@@ -192,7 +188,7 @@ namespace Qsi.PrimarSql.Analyzers
             return base.ReassembleCommonTableNode(node);
         }
 
-        private bool SetValueToToken(JToken token, IPart[] parts, JToken value)
+        private bool SetValueToToken(JToken token, object[] parts, JToken value)
         {
             var currentToken = token;
 
@@ -203,19 +199,19 @@ namespace Qsi.PrimarSql.Analyzers
 
                 switch (part)
                 {
-                    case IdentifierPart identifierPart when currentToken is JObject jObject:
-                        currentToken = jObject[identifierPart.Identifier];
+                    case string s when currentToken is JObject jObject:
+                        currentToken = jObject[s];
 
                         if (currentToken == null && isLastPart)
                         {
-                            jObject[identifierPart.Identifier] = value;
+                            jObject[s] = value;
                             return true;
                         }
 
                         break;
 
-                    case IndexPart indexPart when currentToken is JArray jArray:
-                        currentToken = jArray[indexPart.Index];
+                    case int index when currentToken is JArray jArray:
+                        currentToken = jArray[index];
                         break;
 
                     default:
@@ -262,9 +258,9 @@ namespace Qsi.PrimarSql.Analyzers
             return context.Engine.TreeDeparser.Deparse(node, context.Script);
         }
 
-        private class PartArrayComparer : IEqualityComparer<IPart[]>
+        private class EnumerableComparer : IEqualityComparer<IEnumerable<object>>
         {
-            public bool Equals(IPart[] x, IPart[] y)
+            public bool Equals(IEnumerable<object> x, IEnumerable<object> y)
             {
                 if (x == null && y == null)
                     return true;
@@ -272,25 +268,34 @@ namespace Qsi.PrimarSql.Analyzers
                 if (x == null || y == null)
                     return false;
 
-                if (x.Length != y.Length)
-                    return false;
-
-                for (int i = 0; i < x.Length; i++)
-                {
-                    var left = x[i];
-                    var right = y[i];
-
-                    if (!left.Equals(right))
-                        return false;
-                }
-
-                return true;
+                return x.SequenceEqual(y);
             }
 
-            public int GetHashCode(IPart[] obj)
+            public int GetHashCode(IEnumerable<object> obj)
             {
                 return 0;
             }
+        }
+
+        private object AccessorToValue(QsiExpressionNode accessor)
+        {
+            switch (accessor)
+            {
+                case PrimarSqlIndexerExpressionNode indexerExpressionNode:
+                {
+                    if (!(indexerExpressionNode.Indexer.Value is QsiLiteralExpressionNode literalExpressionNode))
+                        throw new ArgumentException(nameof(accessor));
+
+                    return (long)Convert.ChangeType(literalExpressionNode.Value, TypeCode.Int64)!;
+                }
+
+                case QsiFieldExpressionNode fieldExpressionNode:
+                {
+                    return fieldExpressionNode.Identifier.ToString();
+                }
+            }
+
+            throw new ArgumentException(nameof(accessor));
         }
     }
 }
