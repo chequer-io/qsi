@@ -572,21 +572,6 @@ namespace Qsi.PrimarSql.Tree
                 return assignNode;
             }
 
-            if (column is QsiDerivedColumnNode derivedColumnNode)
-            {
-                return TreeHelper.Create<PrimarSqlSetColumnExpressionNode>(n =>
-                {
-                    var memberAccessExpression = derivedColumnNode.Expression.Value as QsiMemberAccessExpressionNode
-                                                 ?? throw new InvalidOperationException("DerivedColumn has no MemberAccessExpressionNode");
-                    
-                    n.TargetExpression.SetValue(memberAccessExpression);
-                    n.Value.SetValue(VisitExpression(context.expression()));
-                    
-                    PrimarSqlTree.PutContextSpan(n, context);
-                });
-            }
-
-
             throw TreeHelper.NotSupportedTree(column);
         }
 

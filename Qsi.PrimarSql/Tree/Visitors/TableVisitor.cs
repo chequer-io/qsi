@@ -74,6 +74,8 @@ namespace Qsi.PrimarSql.Tree
                 node.Order.SetValue(TreeHelper.Create<QsiMultipleOrderExpressionNode>(n =>
                 {
                     n.Orders.Add(ExpressionVisitor.VisitOrderCluase(context.orderClause()));
+                    
+                    PrimarSqlTree.PutContextSpan(n, context.orderClause());
                 }));
             }
 
@@ -82,7 +84,7 @@ namespace Qsi.PrimarSql.Tree
 
             if (context.startKeyClause() != null)
                 node.StartKey.SetValue(ExpressionVisitor.VisitStartKeyClause(context.startKeyClause()));
-            
+
             PrimarSqlTree.PutContextSpan(node, context);
 
             return node;
@@ -124,13 +126,13 @@ namespace Qsi.PrimarSql.Tree
                     node = VisitSelectColumnElement(columnElementContext);
                     break;
                 }
-                
+
                 case SelectFunctionElementContext _:
                     throw TreeHelper.NotSupportedFeature("Select Element Function");
 
                 case SelectExpressionElementContext _:
                     throw TreeHelper.NotSupportedFeature("Select Element Expression");
-                
+
                 default:
                 {
                     node = null;
@@ -149,18 +151,11 @@ namespace Qsi.PrimarSql.Tree
             if (context.alias == null)
                 return column;
 
-            if (!(column is QsiDerivedColumnNode derivedColumnNode))
+            return TreeHelper.Create<QsiDerivedColumnNode>(n =>
             {
-                derivedColumnNode = TreeHelper.Create<QsiDerivedColumnNode>(n =>
-                {
-                    n.Column.SetValue(column);
-                    PrimarSqlTree.PutContextSpan(n, context);
-                });
-            }
-            
-            derivedColumnNode.Alias.SetValue(CreateAliasNode(context.alias));
-            
-            return derivedColumnNode;
+                n.Column.SetValue(column);
+                n.Alias.SetValue(CreateAliasNode(context.alias));
+            });
         }
 
         public static QsiTableNode VisitFromCluase(FromClauseContext context)
@@ -173,9 +168,11 @@ namespace Qsi.PrimarSql.Tree
             return TreeHelper.Create<QsiTableAccessNode>(n =>
             {
                 n.Identifier = IdentifierVisitor.VisitFullId(context.fullId());
+                
+                PrimarSqlTree.PutContextSpan(n, context);
             });
         }
-        
+
         public static QsiTableNode VisitTableSource(TableSourceContext context)
         {
             switch (context)
@@ -229,7 +226,7 @@ namespace Qsi.PrimarSql.Tree
                 n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
                 n.Source.SetValue(VisitSelectStatement(context.selectStatement()));
                 n.Alias.SetValue(CreateAliasNode(context.alias));
-                
+
                 PrimarSqlTree.PutContextSpan(n, context);
             });
         }

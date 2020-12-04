@@ -7,8 +7,6 @@ using Newtonsoft.Json.Linq;
 using PrimarSql.Data.Models.Columns;
 using Qsi.Analyzers;
 using Qsi.Analyzers.Action;
-using Qsi.Analyzers.Action.Context;
-using Qsi.Analyzers.Action.Models;
 using Qsi.Analyzers.Context;
 using Qsi.Analyzers.Table;
 using Qsi.Analyzers.Table.Context;
@@ -31,29 +29,26 @@ namespace Qsi.PrimarSql.Analyzers
         protected override async ValueTask<IQsiAnalysisResult> ExecuteDataDeleteAction(IAnalyzerContext context, IQsiDataDeleteActionNode action)
         {
             var tableAnalyzer = context.Engine.GetAnalyzer<QsiTableAnalyzer>();
-
             using var tableContext = new TableCompileContext(context);
+
             var table = (await tableAnalyzer.BuildTableStructure(tableContext, action.Target)).References[0];
+            var tempTable = CreateTemporaryTable(table.Identifier);
 
             var commonTableNode = ReassembleCommonTableNode(action.Target);
             var dataTable = await GetDataTableByCommonTableNode(context, commonTableNode);
 
-            var documentColumn = table.NewColumn();
-            documentColumn.Name = new QsiIdentifier("Document", false);
-
-            var documentColumnPivot = new DataManipulationTargetColumnPivot(0, documentColumn, -1, null);
-            var target = new DataManipulationTarget(table, new[] { documentColumnPivot });
+            var deleteRows = new QsiDataRowCollection(1);
 
             foreach (var row in dataTable.Rows)
             {
-                var targetRow = target.DeleteRows.NewRow();
+                var targetRow = deleteRows.NewRow();
                 targetRow.Items[0] = row.Items[0];
             }
 
             var dataAction = new QsiDataAction
             {
-                Table = target.Table,
-                DeleteRows = target.DeleteRows.ToNullIfEmpty()
+                Table = tempTable,
+                DeleteRows = deleteRows.ToNullIfEmpty()
             };
 
             return (new[] { dataAction }).ToResult();
@@ -64,18 +59,16 @@ namespace Qsi.PrimarSql.Analyzers
         protected override async ValueTask<IQsiAnalysisResult> ExecuteDataUpdateAction(IAnalyzerContext context, IQsiDataUpdateActionNode action)
         {
             var tableAnalyzer = context.Engine.GetAnalyzer<QsiTableAnalyzer>();
-
             using var tableContext = new TableCompileContext(context);
+
             var table = (await tableAnalyzer.BuildTableStructure(tableContext, action.Target)).References[0];
+            var tempTable = CreateTemporaryTable(table.Identifier);
 
             var commonTableNode = ReassembleCommonTableNode(action.Target);
             var dataTable = await GetDataTableByCommonTableNode(context, commonTableNode);
 
-            var documentColumn = table.NewColumn();
-            documentColumn.Name = new QsiIdentifier("Document", false);
-
-            var documentColumnPivot = new DataManipulationTargetColumnPivot(0, documentColumn, -1, null);
-            var target = new DataManipulationTarget(table, new[] { documentColumnPivot });
+            var updateBeforeRows = new QsiDataRowCollection(1);
+            var updateAfterRows = new QsiDataRowCollection(1);
 
             var setValues = action.SetValues
                 .OfType<PrimarSqlSetColumnExpressionNode>()
@@ -99,8 +92,8 @@ namespace Qsi.PrimarSql.Analyzers
 
             foreach (var row in dataTable.Rows)
             {
-                var oldRow = target.UpdateBeforeRows.NewRow();
-                var newRow = target.UpdateAfterRows.NewRow();
+                var oldRow = updateBeforeRows.NewRow();
+                var newRow = updateAfterRows.NewRow();
 
                 var beforeValue = row.Items[0];
                 var afterValue = JObject.Parse(beforeValue.Value.ToString());
@@ -119,9 +112,9 @@ namespace Qsi.PrimarSql.Analyzers
 
             var dataAction = new QsiDataAction
             {
-                Table = target.Table,
-                UpdateBeforeRows = target.UpdateBeforeRows.ToNullIfEmpty(),
-                UpdateAfterRows = target.UpdateAfterRows.ToNullIfEmpty()
+                Table = tempTable,
+                UpdateBeforeRows = updateBeforeRows.ToNullIfEmpty(),
+                UpdateAfterRows = updateAfterRows.ToNullIfEmpty()
             };
 
             return (new[] { dataAction }).ToResult();
@@ -132,38 +125,33 @@ namespace Qsi.PrimarSql.Analyzers
         protected override async ValueTask<IQsiAnalysisResult> ExecuteDataInsertAction(IAnalyzerContext context, IQsiDataInsertActionNode action)
         {
             var tableAnalyzer = context.Engine.GetAnalyzer<QsiTableAnalyzer>();
-
             using var tableContext = new TableCompileContext(context);
+
             var table = await tableAnalyzer.BuildTableStructure(tableContext, action.Target);
+            var tempTable = CreateTemporaryTable(table.Identifier);
 
-            // TODO: Impl when column not provided (Get primary key)
-
-            var documentColumn = table.NewColumn();
-            documentColumn.Name = new QsiIdentifier("Document", false);
-
-            var documentColumnPivot = new DataManipulationTargetColumnPivot(0, documentColumn, -1, null);
-            var target = new DataManipulationTarget(table, new[] { documentColumnPivot });
+            var insertRows = new QsiDataRowCollection(1);
 
             foreach (var value in action.Values)
             {
                 var obj = new JObject();
-                
+
                 for (int i = 0; i < action.Columns.Length; i++)
                 {
                     var column = action.Columns[i][^1];
                     var columnValue = value.ColumnValues[i];
 
-                    obj[column.Value] = ConvertToToken(columnValue, context);
+                    obj[IdentifierUtility.Unescape(column.Value)] = ConvertToToken(columnValue, context);
                 }
 
-                var row = target.InsertRows.NewRow();
+                var row = insertRows.NewRow();
                 row.Items[0] = new QsiDataValue(obj.ToString(Formatting.None), QsiDataType.Object);
             }
 
             var dataAction = new QsiDataAction
             {
-                Table = target.Table,
-                InsertRows = target.InsertRows.ToNullIfEmpty(),
+                Table = tempTable,
+                InsertRows = insertRows.ToNullIfEmpty(),
             };
 
             return (new[] { dataAction }).ToResult();
@@ -240,6 +228,19 @@ namespace Qsi.PrimarSql.Analyzers
 
             currentToken.Replace(value);
             return true;
+        }
+
+        private QsiTableStructure CreateTemporaryTable(QsiQualifiedIdentifier identifier)
+        {
+            var table = new QsiTableStructure
+            {
+                Identifier = identifier
+            };
+
+            var column = table.NewColumn();
+            column.Name = new QsiIdentifier("Document", false);
+
+            return table;
         }
 
         private JToken ConvertToToken(IQsiExpressionNode node, IAnalyzerContext context)

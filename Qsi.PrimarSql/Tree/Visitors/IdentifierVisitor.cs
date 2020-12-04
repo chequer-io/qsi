@@ -1,4 +1,5 @@
-﻿using Antlr4.Runtime.Tree;
+﻿using System.Linq;
+using Antlr4.Runtime.Tree;
 using Qsi.Data;
 using Qsi.Tree;
 using Qsi.Utilities;
@@ -58,39 +59,15 @@ namespace Qsi.PrimarSql.Tree
             return new QsiQualifiedIdentifier(identifiers);
         }
 
-        public static QsiColumnNode VisitFullColumnName(FullColumnNameContext context)
+        public static PrimarSqlDeclaredColumnNode VisitFullColumnName(FullColumnNameContext context)
         {
-            QsiColumnNode columnNode = TreeHelper.Create<QsiDeclaredColumnNode>(cn =>
+            return TreeHelper.Create<PrimarSqlDeclaredColumnNode>(n =>
             {
-                cn.Name = new QsiQualifiedIdentifier(VisitUid(context.uid()));
-            });
-
-            if (context.columnDottedId().Length == 0)
-                return columnNode;
-
-            QsiExpressionNode node = TreeHelper.Create<QsiColumnExpressionNode>(cn =>
-            {
-                cn.Column.SetValue(columnNode);
-            });
-            
-            foreach (var columnDottedIdContext in context.columnDottedId())
-            {
-                var currentNode = node;
-                node = TreeHelper.Create<QsiMemberAccessExpressionNode>(n =>
-                {
-                    n.Target.SetValue(currentNode);
-                    n.Member.SetValue(VisitColumnDottedId(columnDottedIdContext));
-                    
-                    PrimarSqlTree.PutContextSpan(n, context.Start, columnDottedIdContext.Stop);
-                });
-            }
-            
-            return TreeHelper.Create<QsiDerivedColumnNode>(n =>
-            {
-                n.Expression.SetValue(node);
+                n.Name = new QsiQualifiedIdentifier(VisitUid(context.uid()));
+                n.Accessors.AddRange(context.columnDottedId().Select(VisitColumnDottedId));
             });
         }
-
+        
         public static QsiIdentifier VisitUid(UidContext context)
         {
             switch (context.children[0])
@@ -121,10 +98,10 @@ namespace Qsi.PrimarSql.Tree
             if (context.columnIndex() != null)
                 return VisitColumnIndex(context.columnIndex());
 
-            return TreeHelper.Create<QsiFieldExpressionNode>( n =>
+            return new QsiFieldExpressionNode
             {
-                n.Identifier = new QsiQualifiedIdentifier(VisitDottedId(context.dottedId()));
-            });
+                Identifier = new QsiQualifiedIdentifier(VisitDottedId(context.dottedId()))
+            };
         }
 
         public static PrimarSqlIndexerExpressionNode VisitColumnIndex(ColumnIndexContext context)

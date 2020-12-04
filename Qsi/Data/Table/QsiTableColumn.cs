@@ -5,7 +5,7 @@ using Qsi.Utilities;
 
 namespace Qsi.Data
 {
-    public sealed class QsiTableColumn
+    public class QsiTableColumn
     {
         public QsiTableStructure Parent { get; internal set; }
 

@@ -9,7 +9,6 @@ using Qsi.Data;
 using Qsi.Extensions;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
-using Qsi.Utilities;
 
 namespace Qsi.Analyzers.Table
 {
