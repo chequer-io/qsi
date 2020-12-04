@@ -33,6 +33,7 @@
         <ProjectReference Include="..\Qsi.Oracle\Qsi.Oracle.csproj" />
         <ProjectReference Include="..\Qsi.PhoenixSql\Qsi.PhoenixSql.csproj" />
         <ProjectReference Include="..\Qsi.PostgreSql\Qsi.PostgreSql.csproj" />
+        <ProjectReference Include="..\Qsi.PrimarSql\Qsi.PrimarSql.csproj" />
         <ProjectReference Include="..\Qsi.SqlServer\Qsi.SqlServer.csproj" />
         <ProjectReference Include="..\Qsi\Qsi.csproj" />
     </ItemGroup>
