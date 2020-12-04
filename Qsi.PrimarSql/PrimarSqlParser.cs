@@ -1,6 +1,8 @@
-﻿using Antlr4.Runtime;
+﻿using System.Threading;
+using Antlr4.Runtime;
 using PrimarSql.Internal;
 using Qsi.Data;
+using Qsi.Parsing;
 using Qsi.Parsing.Antlr;
 using Qsi.PrimarSql.Tree;
 using Qsi.Tree;
@@ -9,6 +11,19 @@ namespace Qsi.PrimarSql
 {
     public class PrimarSqlParser : AntlrParserBase
     {
+        public static PrimarSqlParser Instance => _instance ??= new PrimarSqlParser();
+
+        private static PrimarSqlParser _instance;
+
+        private PrimarSqlParser()
+        {
+        }
+
+        public IQsiTreeNode Parse(QsiScript script, CancellationToken cancellationToken = default)
+        {
+            return ((IQsiTreeParser)this).Parse(script, cancellationToken);
+        }
+
         protected override Parser CreateParser(QsiScript script)
         {
             var stream = new AntlrUpperInputStream(script.Script);

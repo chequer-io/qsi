@@ -10,7 +10,7 @@ namespace Qsi.PrimarSql
     {
         public override IQsiTreeParser CreateTreeParser()
         {
-            return new PrimarSqlParser();
+            return PrimarSqlParser.Instance;
         }
 
         public override IQsiTreeDeparser CreateTreeDeparser()
