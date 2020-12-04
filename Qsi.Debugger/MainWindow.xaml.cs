@@ -26,6 +26,7 @@ using Qsi.Debugger.Vendor.MySql;
 using Qsi.Debugger.Vendor.Oracle;
 using Qsi.Debugger.Vendor.PhoenixSql;
 using Qsi.Debugger.Vendor.PostgreSql;
+using Qsi.Debugger.Vendor.PrimarSql;
 using Qsi.Debugger.Vendor.SqlServer;
 using Qsi.SqlServer.Common;
 using Qsi.Tree;
@@ -67,7 +68,8 @@ namespace Qsi.Debugger
                 ["SQL Server 2017"] = new Lazy<VendorDebugger>(() => new SqlServerDebugger(TransactSqlVersion.Version140)),
                 ["SQL Server 2019"] = new Lazy<VendorDebugger>(() => new SqlServerDebugger(TransactSqlVersion.Version150)),
                 ["Phoenix 5.0.0"] = new Lazy<VendorDebugger>(() => new PhoenixSqlDebugger()),
-                ["CassandraQL 3"] = new Lazy<VendorDebugger>(() => new CqlDebugger())
+                ["CassandraQL 3"] = new Lazy<VendorDebugger>(() => new CqlDebugger()),
+                ["PrimarSql"] = new Lazy<VendorDebugger>(() => new PrimarSqlDebugger())
             };
 
             _cbLanguages = this.Find<ComboBox>("cbLanguages");

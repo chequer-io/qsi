@@ -71,7 +71,8 @@ $Tasks =
 [Task]::new("Qsi.SqlServer", $false),
 [Task]::new("Qsi.MongoDB", $false),
 [Task]::new("Qsi.PhoenixSql", $false),
-[Task]::new("Qsi.Cql", $true)
+[Task]::new("Qsi.Cql", $true),
+[Task]::new("Qsi.PrimarSql", $false)
 
 Function DotNet-Pack {
     Param (

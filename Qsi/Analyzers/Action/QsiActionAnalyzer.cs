@@ -290,7 +290,7 @@ namespace Qsi.Analyzers.Action
         #endregion
 
         #region Insert, Replace
-        private async ValueTask<IQsiAnalysisResult> ExecuteDataInsertAction(IAnalyzerContext context, IQsiDataInsertActionNode action)
+        protected virtual async ValueTask<IQsiAnalysisResult> ExecuteDataInsertAction(IAnalyzerContext context, IQsiDataInsertActionNode action)
         {
             var tableAnalyzer = context.Engine.GetAnalyzer<QsiTableAnalyzer>();
             QsiTableStructure table;
