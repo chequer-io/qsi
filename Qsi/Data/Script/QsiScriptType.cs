@@ -40,6 +40,7 @@
         Use,
         Show,
         Describe,
+        Set,
 
         Comment
     }

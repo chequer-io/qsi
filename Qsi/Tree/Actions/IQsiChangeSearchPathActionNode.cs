@@ -4,6 +4,6 @@ namespace Qsi.Tree
 {
     public interface IQsiChangeSearchPathActionNode : IQsiActionNode
     {
-        QsiQualifiedIdentifier[] Identifiers { get; }
+        QsiIdentifier[] Identifiers { get; }
     }
 }

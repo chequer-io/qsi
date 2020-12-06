@@ -25,6 +25,9 @@ namespace Qsi.PhoenixSql
 
                 case IDMLStatement dmlStatement:
                     return ActionVisitor.Visit(dmlStatement);
+
+                case UseSchemaStatement useSchemaStatement:
+                    return ActionVisitor.VisitUseSchemaStatement(useSchemaStatement);
             }
 
             throw TreeHelper.NotSupportedTree(result);

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Qsi.Data;
 using Qsi.MySql.Tree.Common;
@@ -308,6 +307,23 @@ namespace Qsi.MySql.Tree
 
             node.Target.SetValue(table);
             node.SetValues.AddRange(context.UpdatedElements.Select(ExpressionVisitor.VisitUpdatedElement));
+
+            MySqlTree.PutContextSpan(node, context);
+
+            return node;
+        }
+        #endregion
+
+        #region Use
+        public static QsiChangeSearchPathActionNode VisitUseStatement(UseStatementContext context)
+        {
+            var node = new QsiChangeSearchPathActionNode
+            {
+                Identifiers = new[]
+                {
+                    IdentifierVisitor.VisitUid(context.uid())
+                }
+            };
 
             MySqlTree.PutContextSpan(node, context);
 

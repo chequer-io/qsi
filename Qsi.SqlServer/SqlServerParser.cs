@@ -20,9 +20,12 @@ namespace Qsi.SqlServer
 
         IdentifierVisitor IVisitorContext.IdentifierVisitor => _identifierVisitor;
 
+        ActionVisitor IVisitorContext.ActionVisitor => _actionVisitor;
+
         private readonly TableVisitor _tableVisitor;
         private readonly ExpressionVisitor _expressionVisitor;
         private readonly IdentifierVisitor _identifierVisitor;
+        private readonly ActionVisitor _actionVisitor;
         #endregion
 
         private readonly TSqlParserInternal _parser;
@@ -33,6 +36,7 @@ namespace Qsi.SqlServer
             _tableVisitor = CreateTableVisitor();
             _expressionVisitor = CreateExpressionVisitor();
             _identifierVisitor = CreateIdentifierVisitor();
+            _actionVisitor = CreateActionVisitor();
         }
 
         private TableVisitor CreateTableVisitor()
@@ -50,13 +54,28 @@ namespace Qsi.SqlServer
             return new IdentifierVisitor(this);
         }
 
+        private ActionVisitor CreateActionVisitor()
+        {
+            return new ActionVisitor(this);
+        }
+
         public IQsiTreeNode Parse(QsiScript script, CancellationToken cancellationToken = default)
         {
             var result = _parser.Parse(script.Script);
 
             if (result is TSqlScript sqlScript)
             {
-                return _tableVisitor.Visit(sqlScript.Batches.FirstOrDefault());
+                var batch = sqlScript.Batches.FirstOrDefault();
+                var statement = batch?.Statements?.FirstOrDefault()
+                                ?? throw new QsiException(QsiError.Syntax);
+
+                switch (statement)
+                {
+                    case UseStatement useStatement:
+                        return _actionVisitor.VisitUseStatement(useStatement);
+                    default:
+                        return _tableVisitor.Visit(statement);
+                }
             }
 
             throw new InvalidOperationException();
