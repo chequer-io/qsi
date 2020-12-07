@@ -1,4 +1,5 @@
 ﻿using System;
+using Qsi.Utilities;
 
 namespace Qsi.Data
 {
@@ -8,6 +9,10 @@ namespace Qsi.Data
 
         public bool IsEscaped { get; }
 
+        internal string UnescapedValue => _unescapedValue ??= IsEscaped ? IdentifierUtility.Unescape(Value) : Value;
+
+        private string _unescapedValue;
+
         public QsiIdentifier(string value, bool escaped)
         {
             Value = value;
@@ -16,7 +21,7 @@ namespace Qsi.Data
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(IsEscaped, Value);
+            return UnescapedValue.GetHashCode();
         }
 
         public override string ToString()
