@@ -11,6 +11,7 @@
         Replace,
         Update,
         Delete,
+        MergeInto,
 
         // ** DDL **
         Create,
@@ -41,6 +42,7 @@
         Show,
         Describe,
         Set,
+        Begin,
 
         Comment
     }

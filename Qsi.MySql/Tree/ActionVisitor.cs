@@ -321,7 +321,7 @@ namespace Qsi.MySql.Tree
             {
                 Identifiers = new[]
                 {
-                    IdentifierVisitor.VisitUid(context.uid())
+                    IdentifierVisitor.VisitUid(context.uid()), 
                 }
             };
 

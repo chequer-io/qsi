@@ -19,7 +19,7 @@ namespace Qsi.Cql.Tree
             {
                 Identifiers = new []
                 {
-                    context.ks.id
+                    context.ks.id, 
                 }
             };
 

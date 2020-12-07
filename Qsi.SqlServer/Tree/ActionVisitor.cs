@@ -1,4 +1,5 @@
 ﻿using Microsoft.SqlServer.TransactSql.ScriptDom;
+using Qsi.Data;
 using Qsi.Tree;
 
 namespace Qsi.SqlServer.Tree
@@ -15,7 +16,7 @@ namespace Qsi.SqlServer.Tree
             {
                 Identifiers = new[]
                 {
-                    IdentifierVisitor.CreateIdentifier(useStatement.DatabaseName)
+                    IdentifierVisitor.CreateIdentifier(useStatement.DatabaseName), 
                 }
             };
         }
