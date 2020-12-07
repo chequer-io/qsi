@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using PhoenixSql;
 using Qsi.Data;
-using Qsi.PhoenixSql.Internal;
 using Qsi.Tree;
 using Qsi.Utilities;
 
@@ -119,6 +118,28 @@ namespace Qsi.PhoenixSql.Tree
             PTree.RawNode[deleteAction] = node;
 
             return deleteAction;
+        }
+
+        public static QsiChangeSearchPathActionNode VisitUseSchemaStatement(UseSchemaStatement context)
+        {
+            var schemaName = context.SchemaName;
+
+            if (string.IsNullOrEmpty(schemaName))
+                schemaName = "DEFAULT";
+
+            var identifier = new QsiIdentifier(schemaName, IdentifierUtility.IsEscaped(schemaName));
+
+            var node = new QsiChangeSearchPathActionNode
+            {
+                Identifiers = new[]
+                {
+                    identifier
+                }
+            };
+
+            PTree.RawNode[node] = context;
+
+            return node;
         }
     }
 }

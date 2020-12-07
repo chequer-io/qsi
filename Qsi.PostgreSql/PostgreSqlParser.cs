@@ -18,9 +18,16 @@ namespace Qsi.PostgreSql
         {
             _pgParser ??= new PgQuery10();
 
-            var pgTree = _pgParser.Parse(script.Script) ?? throw new QsiException(QsiError.NotSupportedScript, script.ScriptType);
+            var pgTree = (IPg10Node)_pgParser.Parse(script.Script) ?? throw new QsiException(QsiError.NotSupportedScript, script.ScriptType);
 
-            return TableVisitor.Visit((IPg10Node)pgTree);
+            switch (script.ScriptType)
+            {
+                case QsiScriptType.Set:
+                    return ActionVisitor.Visit(pgTree);
+
+                default:
+                    return TableVisitor.Visit(pgTree);
+            }
         }
 
         void IDisposable.Dispose()

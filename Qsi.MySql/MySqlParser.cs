@@ -52,6 +52,9 @@ namespace Qsi.MySql
                 case QsiScriptType.Update:
                     return ActionVisitor.VisitUpdateStatement(mySqlParser.updateStatement());
 
+                case QsiScriptType.Use:
+                    return ActionVisitor.VisitUseStatement(mySqlParser.useStatement());
+                
                 default:
                     return null;
             }

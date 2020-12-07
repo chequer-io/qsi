@@ -52,6 +52,9 @@ namespace Qsi.Analyzers.Action
                 case IQsiDataUpdateActionNode dataUpdateAction:
                     return await ExecuteDataUpdateAction(context, dataUpdateAction);
 
+                case IQsiChangeSearchPathActionNode searchPathAction:
+                    return await ExecuteSearchPathAction(context, searchPathAction);
+
                 default:
                     throw TreeHelper.NotSupportedTree(context.Tree);
             }
@@ -687,6 +690,26 @@ namespace Qsi.Analyzers.Action
             }
 
             return -1;
+        }
+        #endregion
+
+        #region SearchPath
+        protected virtual Task<IQsiAnalysisResult> ExecuteSearchPathAction(IAnalyzerContext context, IQsiChangeSearchPathActionNode action)
+        {
+            var fakeRefIdentifier = new QsiIdentifier(string.Empty, false);
+
+            QsiQualifiedIdentifier[] identifiers = action.Identifiers
+                .Select(identifier =>
+                {
+                    var qualifiedIdentifier = new QsiQualifiedIdentifier(identifier, fakeRefIdentifier);
+                    qualifiedIdentifier = context.Engine.RepositoryProvider.ResolveQualifiedIdentifier(qualifiedIdentifier);
+                    return new QsiQualifiedIdentifier(qualifiedIdentifier[..^1]);
+                })
+                .ToArray();
+
+            IQsiAnalysisResult result = new QsiActionAnalysisResult(new QsiChangeSearchPathAction(identifiers));
+
+            return Task.FromResult(result);
         }
         #endregion
     }
