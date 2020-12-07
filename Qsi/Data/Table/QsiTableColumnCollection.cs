@@ -108,7 +108,7 @@ namespace Qsi.Data
 
         void ICollection<QsiTableColumn>.CopyTo(QsiTableColumn[] array, int arrayIndex)
         {
-            throw new NotSupportedException();
+            _list.CopyTo(array, arrayIndex);
         }
 
         public IEnumerator<QsiTableColumn> GetEnumerator()
