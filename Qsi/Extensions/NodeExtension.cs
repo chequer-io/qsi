@@ -523,6 +523,14 @@ namespace Qsi.Extensions
                 node.Having,
                 ignoreUserData ? null : node.UserData);
         }
+
+        public static ImmutableChangeSearchPathActionNode ToImmutable(this IQsiChangeSearchPathActionNode node, bool ignoreUserData = false)
+        {
+            return new ImmutableChangeSearchPathActionNode(
+                node.Parent,
+                node.Identifiers,
+                ignoreUserData ? null : node.UserData);
+        }
         #endregion
     }
 }
