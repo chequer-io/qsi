@@ -13,11 +13,14 @@ namespace Qsi.Cql.Tree
     internal static class ActionVisitor
     {
         #region UseStatement
-        public static QsiActionNode VisitUseStatement(UseStatementContext context)
+        public static QsiChangeSearchPathActionNode VisitUseStatement(UseStatementContext context)
         {
-            var node = new CqlUseActionNode
+            var node = new QsiChangeSearchPathActionNode
             {
-                Identifier = context.ks.id
+                Identifiers = new []
+                {
+                    context.ks.id, 
+                }
             };
 
             CqlTree.PutContextSpan(node, context);

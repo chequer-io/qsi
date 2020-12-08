@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Qsi.Data;
 using Qsi.JSql;
+using Qsi.Parsing.Common;
 
 namespace Qsi.Oracle
 {
@@ -23,7 +25,20 @@ namespace Qsi.Oracle
         private const string Case = "CASE";
         private const string If = "IF";
 
+        private const string Exec = "EXEC";
+
         private const string SectionKey = "Oracle::Type";
+
+        protected override QsiScriptType GetSuitableType(CommonScriptCursor cursor, IReadOnlyList<Token> tokens, Token[] leadingTokens)
+        {
+            if (leadingTokens.Length >= 1 &&
+                Exec.Equals(cursor.Value[leadingTokens[0].Span], StringComparison.OrdinalIgnoreCase))
+            {
+                return QsiScriptType.Execute;
+            }
+
+            return base.GetSuitableType(cursor, tokens, leadingTokens);
+        }
 
         protected override bool IsEndOfScript(ParseContext context)
         {
