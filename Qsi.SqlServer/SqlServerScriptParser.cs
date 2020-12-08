@@ -5,7 +5,6 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using Microsoft.SqlServer.TransactSql.ScriptDom;
 using Qsi.Data;
-using Qsi.Parsing;
 using Qsi.Parsing.Common;
 using Qsi.SqlServer.Common;
 using Qsi.SqlServer.Internal;
@@ -14,11 +13,24 @@ namespace Qsi.SqlServer
 {
     public class SqlServerScriptParser : CommonScriptParser
     {
+        private const string Exec = "EXEC";
+
         private readonly TSqlParserInternal _parser;
 
         public SqlServerScriptParser(TransactSqlVersion transactSqlVersion)
         {
             _parser = new TSqlParserInternal(transactSqlVersion, false);
+        }
+
+        protected override QsiScriptType GetSuitableType(CommonScriptCursor cursor, IReadOnlyList<Token> tokens, Token[] leadingTokens)
+        {
+            if (leadingTokens.Length >= 1 &&
+                Exec.Equals(cursor.Value[leadingTokens[0].Span], StringComparison.OrdinalIgnoreCase))
+            {
+                return QsiScriptType.Execute;
+            }
+
+            return base.GetSuitableType(cursor, tokens, leadingTokens);
         }
 
         public override IEnumerable<QsiScript> Parse(string input, CancellationToken cancellationToken)
@@ -136,12 +148,26 @@ namespace Qsi.SqlServer
 
         private QsiScriptType GetScriptType(ref ListSegment<TSqlParserToken> tokens)
         {
-            var token = tokens[0];
+            TSqlParserToken[] leadingTokens = tokens.AsEnumerable()
+                .Where(t => t.TokenType > TSqlTokenType.EndOfFile && t.TokenType < TSqlTokenType.Bang)
+                .Take(2)
+                .ToArray();
 
-            if (token.TokenType > TSqlTokenType.EndOfFile && token.TokenType < TSqlTokenType.Bang &&
-                Enum.TryParse<QsiScriptType>(token.Text, true, out var type))
+            if (leadingTokens.Length >= 2)
             {
-                return type;
+                var fragment = $"{leadingTokens[0].Text}{leadingTokens[1].Text}";
+
+                if (Enum.TryParse<QsiScriptType>(fragment, out var type))
+                    return type;
+            }
+
+            if (leadingTokens.Length >= 1)
+            {
+                if (Enum.TryParse<QsiScriptType>(leadingTokens[0].Text, out var type))
+                    return type;
+
+                if (Exec.Equals(leadingTokens[0].Text, StringComparison.OrdinalIgnoreCase))
+                    return QsiScriptType.Execute;
             }
 
             if (tokens.All(t =>

@@ -41,4 +41,9 @@ public readonly ref struct ListSegment<T>
 
         return true;
     }
+
+    public IEnumerable<T> AsEnumerable()
+    {
+        return _list;
+    }
 }
