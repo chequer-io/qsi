@@ -14,6 +14,7 @@ namespace Qsi.SqlServer
     public class SqlServerScriptParser : CommonScriptParser
     {
         private const string Exec = "EXEC";
+        private const string BulkInsert = "BULKINSERT";
 
         private readonly TSqlParserInternal _parser;
 
@@ -159,6 +160,9 @@ namespace Qsi.SqlServer
 
                 if (Enum.TryParse<QsiScriptType>(fragment, out var type))
                     return type;
+
+                if (BulkInsert.Equals(fragment, StringComparison.OrdinalIgnoreCase))
+                    return QsiScriptType.Insert;
             }
 
             if (leadingTokens.Length >= 1)
