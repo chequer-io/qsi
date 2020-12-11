@@ -32,7 +32,10 @@ namespace Qsi.PhoenixSql.Analyzers
             var structure = await base.BuildTableAccessStructure(context, table);
 
             if (table is IDynamicTableNode dynamicTableNode)
+            {
+                structure = structure.Clone();
                 PatchDynamicTable(structure, dynamicTableNode);
+            }
 
             return structure;
         }
