@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Qsi.Tree;
 using Qsi.Utilities;
@@ -30,7 +31,28 @@ namespace Qsi.Data
         }
 
         internal IQsiColumnNode ColumnNode { get; set; }
-        
+
         internal bool _isExpression;
+
+        internal QsiTableColumn CloneInternal()
+        {
+            var column = Clone();
+
+            column.Name = Name;
+            column.References.AddRange(References);
+            column.IsVisible = IsVisible;
+            column.IsBinding = IsBinding;
+            column.IsDynamic = IsDynamic;
+            column.Default = Default;
+            column.ColumnNode = ColumnNode;
+            column._isExpression = _isExpression;
+
+            return column;
+        }
+
+        protected virtual QsiTableColumn Clone()
+        {
+            return new QsiTableColumn();
+        }
     }
 }
