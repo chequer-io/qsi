@@ -1,4 +1,4 @@
-﻿namespace Qsi.Data
+namespace Qsi.Data
 {
     public enum QsiScriptType
     {
@@ -8,6 +8,7 @@
         With,
         Select,
         Insert,
+        Upsert,
         Replace,
         Update,
         Delete,
