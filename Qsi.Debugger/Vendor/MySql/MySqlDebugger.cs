@@ -6,6 +6,13 @@ namespace Qsi.Debugger.Vendor.MySql
 {
     internal class MySqlDebugger : VendorDebugger
     {
+        private readonly int _version;
+
+        public MySqlDebugger(int version)
+        {
+            _version = version;
+        }
+
         protected override IQsiLanguageService CreateLanguageService()
         {
             return new MySqlLanguageService();
@@ -13,7 +20,7 @@ namespace Qsi.Debugger.Vendor.MySql
 
         protected override IRawTreeParser CreateRawTreeParser()
         {
-            return new MySqlRawParser();
+            return new MySqlRawParser(_version);
         }
     }
 }

@@ -8,14 +8,30 @@ namespace Qsi.MySql.Diagnostics
 {
     public class MySqlRawParser : AntlrRawParserBase
     {
+        private readonly int _version;
+
+        public MySqlRawParser(int version)
+        {
+            _version = version;
+        }
+
         protected override (ITree Tree, string[] RuleNames) ParseAntlrTree(string input)
         {
             var stream = new AntlrUpperInputStream(input);
-            var lexer = new MySqlLexer(stream);
-            var tokens = new CommonTokenStream(lexer);
-            var parser = new Internal.MySqlParser(tokens);
 
-            return (parser.root(), parser.RuleNames);
+            var lexer = new MySQLLexer(stream)
+            {
+                serverVersion = _version
+            };
+
+            var tokens = new CommonTokenStream(lexer);
+
+            var parser = new MySQLParser(tokens)
+            {
+                serverVersion = _version
+            };
+
+            return (parser.query(), parser.RuleNames);
         }
     }
 }

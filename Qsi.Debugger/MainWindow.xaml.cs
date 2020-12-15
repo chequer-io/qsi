@@ -59,7 +59,8 @@ namespace Qsi.Debugger
 
             _vendors = new Dictionary<string, Lazy<VendorDebugger>>
             {
-                ["MySQL"] = new Lazy<VendorDebugger>(() => new MySqlDebugger()),
+                ["MySQL 5.7.13"] = new Lazy<VendorDebugger>(() => new MySqlDebugger(50713)),
+                ["MySQL 8.0.22"] = new Lazy<VendorDebugger>(() => new MySqlDebugger(80022)),
                 ["PostgreSQL"] = new Lazy<VendorDebugger>(() => new PostgreSqlDebugger()),
                 ["JSqlParser"] = new Lazy<VendorDebugger>(() => new JSqlDebugger()),
                 ["Oracle"] = new Lazy<VendorDebugger>(() => new OracleDebugger()),
