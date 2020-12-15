@@ -11,7 +11,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="JSqlParser.NET" Version="4.0.0"/>
+        <PackageReference Include="JSqlParser.NET" Version="4.0.0">
+            <NoWarn>NU1701</NoWarn>
+        </PackageReference>
     </ItemGroup>
 
     <ItemGroup>
