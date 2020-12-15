@@ -20,8 +20,8 @@ namespace Qsi.MySql.Internal
 
         protected bool inVersionComment;
 
-        private readonly Queue<IToken> _pendingTokens = new Queue<IToken>();
-        private readonly HashSet<string> _charsets = new HashSet<string>();
+        private readonly Queue<IToken> _pendingTokens = new();
+        private readonly HashSet<string> _charsets = new();
 
         protected MySQLBaseLexer(ICharStream input) : base(input)
         {

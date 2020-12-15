@@ -13,7 +13,7 @@ namespace Qsi.MySql
         private const string deallocate = "DEALLOCATE";
         private const string prepare = "PREPARE";
 
-        private readonly Regex _delimiterPattern = new Regex(@"\G\S+(?=\s|$)");
+        private readonly Regex _delimiterPattern = new(@"\G\S+(?=\s|$)");
 
         protected override bool IsEndOfScript(ParseContext context)
         {

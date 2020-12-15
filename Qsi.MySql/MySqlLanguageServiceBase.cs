@@ -23,7 +23,7 @@ namespace Qsi.MySql
 
         public override QsiAnalyzerOptions CreateAnalyzerOptions()
         {
-            return new QsiAnalyzerOptions
+            return new()
             {
                 AllowEmptyColumnsInSelect = false
             };

@@ -22,7 +22,7 @@ namespace Qsi.Parsing.Common
         private readonly ITokenRule _squareBracketRight = new LookbehindCharacterRule(']');
         private readonly ITokenRule _multilineCommentClosing = new LookbehindKeywordRule("*/");
 
-        private readonly Regex _dollarQuote = new Regex(@"\G\$(?:[\p{L}_][\p{L}\d_]*)?\$");
+        private readonly Regex _dollarQuote = new(@"\G\$(?:[\p{L}_][\p{L}\d_]*)?\$");
         private readonly string _delimiter;
 
         public CommonScriptParser(string delimiter = ";")

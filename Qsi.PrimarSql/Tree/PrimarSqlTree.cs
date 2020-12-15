@@ -11,7 +11,7 @@ namespace Qsi.PrimarSql.Tree
     {
         public static KeyIndexer<Range> Span { get; }
 
-        private static readonly Key<Range> SpanKey = new Key<Range>("node_span");
+        private static readonly Key<Range> SpanKey = new("node_span");
 
         static PrimarSqlTree()
         {

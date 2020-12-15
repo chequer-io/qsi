@@ -36,7 +36,7 @@ namespace Qsi.Analyzers
 
         public QsiAnalyzerOptions Clone()
         {
-            return new QsiAnalyzerOptions
+            return new()
             {
                 AllowEmptyColumnsInSelect = AllowEmptyColumnsInSelect,
                 AllowEmptyColumnsInInline = AllowEmptyColumnsInInline,

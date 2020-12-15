@@ -42,7 +42,7 @@ namespace Qsi.SqlServer
 
         public override QsiAnalyzerOptions CreateAnalyzerOptions()
         {
-            return new QsiAnalyzerOptions
+            return new()
             {
                 AllowEmptyColumnsInSelect = false
             };

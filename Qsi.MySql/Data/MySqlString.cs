@@ -25,7 +25,7 @@ namespace Qsi.MySql.Data
 
         internal MySqlString WithCollate(string collate)
         {
-            return new MySqlString(Kind, Value, CharacterSet, collate);
+            return new(Kind, Value, CharacterSet, collate);
         }
 
         public override string ToString()

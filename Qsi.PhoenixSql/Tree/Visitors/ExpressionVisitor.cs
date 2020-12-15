@@ -492,7 +492,7 @@ namespace Qsi.PhoenixSql.Tree
 
         private static QsiTypeExpressionNode CreateTypeAccessExpression(string value)
         {
-            return new QsiTypeExpressionNode
+            return new()
             {
                 Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(value, false))
             };
