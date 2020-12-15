@@ -79,7 +79,7 @@ namespace Qsi.PrimarSql.Analyzers
         {
             context.ThrowIfCancellationRequested();
 
-            if (!(column is PrimarSqlDeclaredColumnNode declaredColumnNode))
+            if (column is not PrimarSqlDeclaredColumnNode declaredColumnNode)
                 throw new ArgumentException(nameof(column));
 
             var source = context.SourceTable;

@@ -12,7 +12,7 @@ namespace Qsi.Debugger.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (!(value is QsiColumnTreeItem item))
+            if (value is not QsiColumnTreeItem item)
                 return value;
 
             var type = item.Column.Parent.Type.ToString().ToLower();

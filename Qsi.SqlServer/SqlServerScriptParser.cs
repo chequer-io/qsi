@@ -38,7 +38,7 @@ namespace Qsi.SqlServer
         {
             var result = _parser.Parse(input);
 
-            if (!(result is TSqlScript script))
+            if (result is not TSqlScript script)
                 return Enumerable.Empty<QsiScript>();
 
             IList<TSqlParserToken> tokenStream = script.ScriptTokenStream;

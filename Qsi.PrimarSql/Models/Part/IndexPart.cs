@@ -11,7 +11,7 @@
 
         public override bool Equals(object obj)
         {
-            if (!(obj is IndexPart indexPart))
+            if (obj is not IndexPart indexPart)
                 return false;
 
             return Index == indexPart.Index;

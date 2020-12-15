@@ -321,7 +321,7 @@ namespace Qsi.Analyzers.Table
             int sourceOffset = 0;
             var structures = new List<QsiTableStructure>(source.Sources.Length);
 
-            if (table.Columns.Any(c => !(c is IQsiAllColumnNode)))
+            if (table.Columns.Any(c => c is not IQsiAllColumnNode))
             {
                 foreach (var columnNode in table.Columns.Cast<IQsiSequentialColumnNode>())
                 {
