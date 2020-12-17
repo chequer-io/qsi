@@ -27,6 +27,23 @@ namespace Qsi.MySql
             if (node is not MySqlDerivedTableNode mysqlNode)
                 return;
 
+            if (!mysqlNode.ProcedureAnalyse.IsEmpty)
+            {
+                var procedureAnalyse = mysqlNode.ProcedureAnalyse.Value;
+
+                writer.WriteSpace();
+                writer.Write("PROCEDURE ANALYSE (");
+                writer.Write(procedureAnalyse.MaxElements);
+
+                if (procedureAnalyse.MaxMemory.HasValue)
+                {
+                    writer.Write(", ");
+                    writer.Write(procedureAnalyse.MaxMemory.Value);
+                }
+
+                writer.Write(')');
+            }
+
             if (mysqlNode.Lockings?.Count > 0)
             {
                 writer.WriteSpace();
