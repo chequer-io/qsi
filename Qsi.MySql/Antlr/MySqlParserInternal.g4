@@ -1,4 +1,4 @@
-parser grammar MySQLParser;
+parser grammar MySqlParserInternal;
 
 /*
  * Copyright (c) 2012, 2020, Oracle and/or its affiliates. All rights reserved.
@@ -46,7 +46,7 @@ parser grammar MySQLParser;
 
 options {
     superClass = MySQLBaseRecognizer;
-    tokenVocab = MySQLLexer;
+    tokenVocab = MySqlLexerInternal;
     exportMacro = PARSERS_PUBLIC_TYPE;
 }
 

@@ -16,12 +16,82 @@ namespace Qsi.MySql.Internal
         protected const int NoBackslashEscapes = 1 << 4;
         #endregion
 
-        public long serverVersion { get; set; }
+        #region Charsets
+        // modules/db.mysql/res/mysql_rdbms_info.xml
+        private static readonly string[] CharacterSets =
+        {
+            "_big5",
+            "_dec8",
+            "_cp850",
+            "_hp8",
+            "_koi8r",
+            "_latin1",
+            "_latin2",
+            "_swe7",
+            "_ascii",
+            "_ujis",
+            "_sjis",
+            "_hebrew",
+            "_tis620",
+            "_euckr",
+            "_koi8u",
+            "_gb18030",
+            "_gb2312",
+            "_greek",
+            "_cp1250",
+            "_gbk",
+            "_latin5",
+            "_armscii8",
+            "_utf8",
+            "_ucs2",
+            "_cp866",
+            "_keybcs2",
+            "_macce",
+            "_macroman",
+            "_cp852",
+            "_latin7",
+            "_cp1251",
+            "_cp1256",
+            "_cp1257",
+            "_binary",
+            "_geostd8",
+            "_cp932",
+            "_eucjpms",
+            "_utf8mb4",
+            "_utf16",
+            "_utf32"
+        };
+        #endregion
+
+        public int serverVersion
+        {
+            get => _serverVersion;
+            init
+            {
+                _serverVersion = value;
+
+                #region modules/db.mysql.parser/src/mysql_parser_module.cpp
+                // updateServerVersion
+                if (value < 50503)
+                {
+                    Charsets.Remove("_utf8mb4");
+                    Charsets.Remove("_utf16");
+                    Charsets.Remove("_utf32");
+                }
+                else
+                {
+                    Charsets.Add("_utf8mb3");
+                }
+                #endregion
+            }
+        }
+
+        public HashSet<string> Charsets { get; } = new(CharacterSets);
 
         protected bool inVersionComment;
 
+        private readonly int _serverVersion;
         private readonly Queue<IToken> _pendingTokens = new();
-        private readonly HashSet<string> _charsets = new();
 
         protected MySQLBaseLexer(ICharStream input) : base(input)
         {
@@ -94,7 +164,7 @@ namespace Qsi.MySql.Internal
         // MySQLBaseLexer::checkCharset
         protected int checkCharset(string text)
         {
-            return _charsets.Contains(text) ? MySQLLexer.UNDERSCORE_CHARSET : MySQLLexer.IDENTIFIER;
+            return Charsets.Contains(text) ? MySqlLexerInternal.UNDERSCORE_CHARSET : MySqlLexerInternal.IDENTIFIER;
         }
 
         // MySQLBaseLexer::emitDot
@@ -102,7 +172,7 @@ namespace Qsi.MySql.Internal
         {
             var token = TokenFactory.Create(
                 new Tuple<ITokenSource, ICharStream>(this, (ICharStream)InputStream),
-                MySQLLexer.DOT_SYMBOL,
+                MySqlLexerInternal.DOT_SYMBOL,
                 Text,
                 Channel,
                 TokenStartCharIndex,
@@ -126,16 +196,16 @@ namespace Qsi.MySql.Internal
                 {
                     Interpreter.Consume((ICharStream)InputStream);
                     Channel = Hidden;
-                    Type = MySQLLexer.WHITESPACE;
+                    Type = MySqlLexerInternal.WHITESPACE;
                     input = InputStream.LA(1);
                 }
             }
 
-            return InputStream.LA(1) == '(' ? proposed : MySQLLexer.IDENTIFIER;
+            return InputStream.LA(1) == '(' ? proposed : MySqlLexerInternal.IDENTIFIER;
         }
 
         // MySQLBaseLexer::determineNumericType
-        protected int determineNumericType(string text)
+        protected static int determineNumericType(string text)
         {
             const string long_str = "2147483647";
             const int long_len = 10;
@@ -150,7 +220,7 @@ namespace Qsi.MySql.Internal
             int length = text.Length - 1;
 
             if (length < long_len)
-                return MySQLLexer.INT_NUMBER;
+                return MySqlLexerInternal.INT_NUMBER;
 
             bool negative = false;
             int index = 0;
@@ -176,7 +246,7 @@ namespace Qsi.MySql.Internal
             }
 
             if (length < long_len)
-                return MySQLLexer.INT_NUMBER;
+                return MySqlLexerInternal.INT_NUMBER;
 
             int smaller;
             int bigger;
@@ -184,53 +254,54 @@ namespace Qsi.MySql.Internal
 
             if (negative)
             {
-                if (length == long_len)
+                switch (length)
                 {
-                    cmp = signed_long_str[1..];
-                    smaller = MySQLLexer.INT_NUMBER;
-                    bigger = MySQLLexer.LONG_NUMBER;
-                }
-                else if (length < signed_longlong_len)
-                {
-                    return MySQLLexer.LONG_NUMBER;
-                }
-                else if (length > signed_longlong_len)
-                {
-                    return MySQLLexer.DECIMAL_NUMBER;
-                }
-                else
-                {
-                    cmp = signed_longlong_str[1..];
-                    smaller = MySQLLexer.LONG_NUMBER;
-                    bigger = MySQLLexer.DECIMAL_NUMBER;
+                    case long_len:
+                        cmp = signed_long_str[1..];
+                        smaller = MySqlLexerInternal.INT_NUMBER;
+                        bigger = MySqlLexerInternal.LONG_NUMBER;
+                        break;
+
+                    case < signed_longlong_len:
+                        return MySqlLexerInternal.LONG_NUMBER;
+
+                    case > signed_longlong_len:
+                        return MySqlLexerInternal.DECIMAL_NUMBER;
+
+                    default:
+                        cmp = signed_longlong_str[1..];
+                        smaller = MySqlLexerInternal.LONG_NUMBER;
+                        bigger = MySqlLexerInternal.DECIMAL_NUMBER;
+                        break;
                 }
             }
             else
             {
-                if (length == long_len)
+                switch (length)
                 {
-                    cmp = long_str;
-                    smaller = MySQLLexer.INT_NUMBER;
-                    bigger = MySQLLexer.LONG_NUMBER;
-                }
-                else if (length < longlong_len)
-                {
-                    return MySQLLexer.LONG_NUMBER;
-                }
-                else if (length > longlong_len)
-                {
-                    if (length > unsigned_longlong_len)
-                        return MySQLLexer.DECIMAL_NUMBER;
+                    case long_len:
+                        cmp = long_str;
+                        smaller = MySqlLexerInternal.INT_NUMBER;
+                        bigger = MySqlLexerInternal.LONG_NUMBER;
+                        break;
 
-                    cmp = unsigned_longlong_str;
-                    smaller = MySQLLexer.ULONGLONG_NUMBER;
-                    bigger = MySQLLexer.DECIMAL_NUMBER;
-                }
-                else
-                {
-                    cmp = longlong_str;
-                    smaller = MySQLLexer.LONG_NUMBER;
-                    bigger = MySQLLexer.ULONGLONG_NUMBER;
+                    case < longlong_len:
+                        return MySqlLexerInternal.LONG_NUMBER;
+
+                    case > longlong_len when length > unsigned_longlong_len:
+                        return MySqlLexerInternal.DECIMAL_NUMBER;
+
+                    case > longlong_len:
+                        cmp = unsigned_longlong_str;
+                        smaller = MySqlLexerInternal.ULONGLONG_NUMBER;
+                        bigger = MySqlLexerInternal.DECIMAL_NUMBER;
+                        break;
+
+                    default:
+                        cmp = longlong_str;
+                        smaller = MySqlLexerInternal.LONG_NUMBER;
+                        bigger = MySqlLexerInternal.ULONGLONG_NUMBER;
+                        break;
                 }
             }
 

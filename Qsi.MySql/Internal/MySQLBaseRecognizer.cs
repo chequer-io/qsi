@@ -14,7 +14,7 @@ namespace Qsi.MySql.Internal
         protected const int NoBackslashEscapes = 1 << 4;
         #endregion
 
-        public long serverVersion { get; set; }
+        public int serverVersion { get; init; }
 
         protected MySQLBaseRecognizer(ITokenStream input) : base(input)
         {
@@ -24,11 +24,12 @@ namespace Qsi.MySql.Internal
         {
         }
 
-        // library/parsers/mysql/MySQLRecognizerCommon.cpp
+        #region library/parsers/mysql/MySQLRecognizerCommon.cpp
         // MySQLRecognizerCommon::isSqlModeActive
         public bool isSqlModeActive(int mode)
         {
             return mode == 0;
         }
+        #endregion
     }
 }

@@ -1,4 +1,5 @@
-﻿using Qsi.Analyzers;
+﻿using System;
+using Qsi.Analyzers;
 using Qsi.Parsing;
 using Qsi.Services;
 
@@ -6,9 +7,11 @@ namespace Qsi.MySql
 {
     public abstract class MySqlLanguageServiceBase : QsiLanguageServiceBase
     {
+        public abstract Version Version { get; }
+
         public override IQsiTreeParser CreateTreeParser()
         {
-            return new MySqlParser();
+            return new MySqlParser(Version);
         }
 
         public override IQsiTreeDeparser CreateTreeDeparser()

@@ -1,8 +1,8 @@
 ﻿namespace Qsi.MySql.Internal
 {
-    public interface IMySQLRecognizerCommon
+    internal interface IMySQLRecognizerCommon
     {
-        long serverVersion { get; set; }
+        int serverVersion { get; }
 
         bool isSqlModeActive(int mode);
     }

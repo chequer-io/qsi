@@ -1,4 +1,4 @@
-lexer grammar MySQLLexer;
+lexer grammar MySqlLexerInternal;
 
 /*
  * Copyright (c) 2012, 2020, Oracle and/or its affiliates. All rights reserved.
