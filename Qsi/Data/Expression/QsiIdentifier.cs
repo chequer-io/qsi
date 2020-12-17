@@ -1,10 +1,11 @@
-﻿using System;
-using Qsi.Utilities;
+﻿using Qsi.Utilities;
 
 namespace Qsi.Data
 {
     public sealed class QsiIdentifier
     {
+        public static QsiIdentifier Empty { get; } = new QsiIdentifier(string.Empty, false);
+
         public string Value { get; }
 
         public bool IsEscaped { get; }

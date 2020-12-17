@@ -2,8 +2,11 @@
 using Antlr4.Runtime;
 using Qsi.Data;
 using Qsi.MySql.Internal;
+using Qsi.MySql.Tree;
 using Qsi.Parsing.Antlr;
 using Qsi.Tree;
+using Qsi.Utilities;
+using static Qsi.MySql.Internal.MySqlParserInternal;
 
 namespace Qsi.MySql
 {
@@ -28,42 +31,28 @@ namespace Qsi.MySql
 
         private IQsiTreeNode ParseInternal(QsiScript script, Parser parser)
         {
-            throw new System.NotImplementedException();
+            var query = ((MySqlParserInternal)parser).query();
 
-            // var mySqlParser = (Internal.MySqlParser)parser;
-            //
-            // switch (script.ScriptType)
-            // {
-            //     case QsiScriptType.With:
-            //     case QsiScriptType.Select:
-            //         return TableVisitor.VisitSelectStatement(mySqlParser.selectStatement());
-            //
-            //     case QsiScriptType.Create:
-            //         return TableVisitor.VisitDdlStatement(mySqlParser.ddlStatement());
-            //
-            //     case QsiScriptType.Prepare:
-            //     case QsiScriptType.Execute:
-            //     case QsiScriptType.DropPrepare:
-            //         return ActionVisitor.VisitPreparedStatement(mySqlParser.preparedStatement());
-            //
-            //     case QsiScriptType.Insert:
-            //         return ActionVisitor.VisitInsertStatement(mySqlParser.insertStatement());
-            //
-            //     case QsiScriptType.Replace:
-            //         return ActionVisitor.VisitReplaceStatement(mySqlParser.replaceStatement());
-            //
-            //     case QsiScriptType.Delete:
-            //         return ActionVisitor.VisitDeleteStatement(mySqlParser.deleteStatement());
-            //     
-            //     case QsiScriptType.Update:
-            //         return ActionVisitor.VisitUpdateStatement(mySqlParser.updateStatement());
-            //
-            //     case QsiScriptType.Use:
-            //         return ActionVisitor.VisitUseStatement(mySqlParser.useStatement());
-            //     
-            //     default:
-            //         return null;
-            // }
+            if (query.children[0] is not SimpleStatementContext simpleStatement)
+                return null;
+
+            switch (simpleStatement.children[0])
+            {
+                case SelectStatementContext selectStatement:
+                    return TableVisitor.VisitSelectStatement(selectStatement);
+
+                case DeleteStatementContext deleteStatement:
+                    return ActionVisitor.VisitDeleteStatement(deleteStatement);
+
+                case ReplaceStatementContext replaceStatement:
+                    return ActionVisitor.VisitReplaceStatement(replaceStatement);
+
+                case UpdateStatementContext updateStatement:
+                    return ActionVisitor.VisitUpdateStatement(updateStatement);
+
+                default:
+                    throw TreeHelper.NotSupportedTree(simpleStatement.children[0]);
+            }
         }
     }
 }

@@ -41,13 +41,14 @@ namespace Qsi.Parsing.Common
             return this;
         }
 
-        public void WriteJoin<T>(string delimiter, IEnumerable<T> elements, Action<ScriptWriter, T> action)
+        public void WriteJoin<T>(string delimiter, IEnumerable<T> elements, Action<ScriptWriter, T> action = null)
         {
             using IEnumerator<T> enumerator = elements.GetEnumerator();
 
             if (!enumerator.MoveNext())
                 return;
 
+            action ??= (w, i) => w.Write(i);
             action(this, enumerator.Current);
 
             while (enumerator.MoveNext())
