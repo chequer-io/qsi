@@ -3,7 +3,7 @@ using Antlr4.Runtime;
 
 namespace Qsi.MySql.Internal
 {
-    internal abstract class MySQLBaseRecognizer : Parser, IMySQLRecognizerCommon
+    internal abstract class MySqlBaseRecognizer : Parser, IMySqlRecognizerCommon
     {
         #region SqlMode
         protected const int NoMode = 0;
@@ -16,11 +16,11 @@ namespace Qsi.MySql.Internal
 
         public int serverVersion { get; init; }
 
-        protected MySQLBaseRecognizer(ITokenStream input) : base(input)
+        protected MySqlBaseRecognizer(ITokenStream input) : base(input)
         {
         }
 
-        protected MySQLBaseRecognizer(ITokenStream input, TextWriter output, TextWriter errorOutput) : base(input, output, errorOutput)
+        protected MySqlBaseRecognizer(ITokenStream input, TextWriter output, TextWriter errorOutput) : base(input, output, errorOutput)
         {
         }
 

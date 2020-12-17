@@ -45,7 +45,7 @@ lexer grammar MySqlLexerInternal;
 // $antlr-format allowShortRulesOnASingleLine on, alignSemicolons ownLine
 
 options {
-    superClass = MySQLBaseLexer;
+    superClass = MySqlBaseLexer;
     tokenVocab = predefined; // Keyword tokens in a predefined order for simpler checks.
     exportMacro = PARSERS_PUBLIC_TYPE;
 }

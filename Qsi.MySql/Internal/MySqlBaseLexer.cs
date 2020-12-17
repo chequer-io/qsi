@@ -5,7 +5,7 @@ using Antlr4.Runtime;
 
 namespace Qsi.MySql.Internal
 {
-    internal abstract class MySQLBaseLexer : Lexer, IMySQLRecognizerCommon
+    internal abstract class MySqlBaseLexer : Lexer, IMySqlRecognizerCommon
     {
         #region SqlMode
         protected const int NoMode = 0;
@@ -93,11 +93,11 @@ namespace Qsi.MySql.Internal
         private readonly int _serverVersion;
         private readonly Queue<IToken> _pendingTokens = new();
 
-        protected MySQLBaseLexer(ICharStream input) : base(input)
+        protected MySqlBaseLexer(ICharStream input) : base(input)
         {
         }
 
-        protected MySQLBaseLexer(ICharStream input, TextWriter output, TextWriter errorOutput) : base(input, output, errorOutput)
+        protected MySqlBaseLexer(ICharStream input, TextWriter output, TextWriter errorOutput) : base(input, output, errorOutput)
         {
         }
 

@@ -1,6 +1,6 @@
 ﻿namespace Qsi.MySql.Internal
 {
-    internal interface IMySQLRecognizerCommon
+    internal interface IMySqlRecognizerCommon
     {
         int serverVersion { get; }
 
