@@ -110,6 +110,12 @@ namespace Qsi.Parsing.Common
                     tokenType = TokenType.MultiLineComment;
                     break;
 
+                case '#':
+                    offset = 1;
+                    rule = _newLine;
+                    tokenType = TokenType.SingeLineComment;
+                    break;
+
                 case '-' when cursor.Next == '-':
                     offset = 2;
                     rule = _newLine;
