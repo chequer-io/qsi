@@ -34,5 +34,10 @@ namespace Qsi.MySql.Tree
         {
             throw new System.NotImplementedException();
         }
+
+        public static QsiLiteralExpressionNode VisitRealUlongNumber(Real_ulong_numberContext context)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

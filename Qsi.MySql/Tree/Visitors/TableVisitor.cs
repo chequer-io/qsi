@@ -1,5 +1,8 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Antlr4.Runtime.Tree;
+using Qsi.Data;
 using Qsi.MySql.Data;
 using Qsi.MySql.Tree.Common;
 using Qsi.Shared.Extensions;
@@ -32,24 +35,13 @@ namespace Qsi.MySql.Tree
 
         public static QsiTableNode VisitQueryExpression(in CommonQueryContext context)
         {
-            var source = context.Source switch
-            {
-                QueryExpressionBodyContext c => VisitQueryExpressionBody(c),
-                QueryExpressionParensContext c => VisitQueryExpressionParens(c),
-                FromClauseContext c => VisitFromClause(c),
-                _ => throw TreeHelper.NotSupportedTree(context.Source)
-            };
+            var source = context.QueryExpressionBody != null ?
+                VisitQueryExpressionBody(context.QueryExpressionBody) :
+                VisitQueryExpressionParens(context.QueryExpressionParens);
 
             var contexts = new object[]
             {
                 context.WithClause,
-                context.SelectOptions,
-                context.SelectItemList,
-                context.IntoClause,
-                context.WhereClause,
-                context.GroupByClause,
-                context.HavingClause,
-                context.WindowClause,
                 context.OrderClause,
                 context.LimitClause,
                 context.ProcedureAnalyseClause,
@@ -64,29 +56,9 @@ namespace Qsi.MySql.Tree
             if (context.WithClause != null)
                 node.Directives.SetValue(VisitWithClause(context.WithClause));
 
-            if (!ListUtility.IsNullOrEmpty(context.SelectOptions))
-                node.SelectOptions.AddRange(context.SelectOptions.Select(VisitSelectOption));
-
-            node.Columns.SetValue(context.SelectItemList != null ?
-                VisitSelectItemList(context.SelectItemList) :
-                TreeHelper.CreateAllColumnsDeclaration());
-
-            // TODO: context.IntoClause
+            node.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
 
             node.Source.SetValue(source);
-
-            if (context.WhereClause != null)
-                node.Where.SetValue(ExpressionVisitor.VisitWhereClause(context.WhereClause));
-
-            if (context.GroupByClause != null)
-            {
-                node.Grouping.SetValue(ExpressionVisitor.VisitGroupByClause(context.GroupByClause));
-
-                if (context.HavingClause != null)
-                    node.Grouping.Value.Having.SetValue(ExpressionVisitor.VisitHavingClause(context.HavingClause));
-            }
-
-            // TODO: context.WindowClause
 
             if (context.OrderClause != null)
                 node.Order.SetValue(ExpressionVisitor.VisitOrderClause(context.OrderClause));
@@ -110,17 +82,430 @@ namespace Qsi.MySql.Tree
 
         public static MySqlSelectOptionNode VisitSelectOption(SelectOptionContext context)
         {
-            throw new System.NotImplementedException();
+            var node = new MySqlSelectOptionNode();
+
+            if (context.children[0] is ITerminalNode terminalNode)
+            {
+                switch (terminalNode.Symbol.Type)
+                {
+                    case SQL_NO_CACHE_SYMBOL:
+                        node.Option = MySqlSelectOption.SqlNoCache;
+                        break;
+
+                    case SQL_CACHE_SYMBOL:
+                        node.Option = MySqlSelectOption.SqlCache;
+                        break;
+
+                    case MAX_STATEMENT_TIME_SYMBOL:
+                        node.Option = MySqlSelectOption.MaxStatementTime;
+                        node.MaxStatementTime.SetValue(ExpressionVisitor.VisitRealUlongNumber(context.real_ulong_number()));
+                        break;
+                }
+            }
+            else
+            {
+                var querySpecOption = context.querySpecOption();
+                var token = (ITerminalNode)querySpecOption.children[0];
+
+                switch (token.Symbol.Type)
+                {
+                    case ALL_SYMBOL:
+                        node.Option = MySqlSelectOption.All;
+                        break;
+
+                    case DISTINCT_SYMBOL:
+                        node.Option = MySqlSelectOption.Distinct;
+                        break;
+
+                    case STRAIGHT_JOIN_SYMBOL:
+                        node.Option = MySqlSelectOption.StraightJoin;
+                        break;
+
+                    case HIGH_PRIORITY_SYMBOL:
+                        node.Option = MySqlSelectOption.HighPriority;
+                        break;
+
+                    case SQL_SMALL_RESULT_SYMBOL:
+                        node.Option = MySqlSelectOption.SqlSmallResult;
+                        break;
+
+                    case SQL_BIG_RESULT_SYMBOL:
+                        node.Option = MySqlSelectOption.SqlBigResult;
+                        break;
+
+                    case SQL_BUFFER_RESULT_SYMBOL:
+                        node.Option = MySqlSelectOption.SqlBufferResult;
+                        break;
+
+                    case SQL_CALC_FOUND_ROWS_SYMBOL:
+                        node.Option = MySqlSelectOption.SqlCalcFoundRows;
+                        break;
+                }
+            }
+
+            MySqlTree.PutContextSpan(node, context);
+
+            return node;
         }
 
         public static QsiColumnsDeclarationNode VisitSelectItemList(SelectItemListContext context)
+        {
+            var node = new QsiColumnsDeclarationNode();
+
+            foreach (var child in context.children)
+            {
+                switch (child)
+                {
+                    case ITerminalNode { Symbol: { Type: MULT_OPERATOR } }:
+                        node.Columns.Add(new QsiAllColumnNode());
+                        break;
+
+                    case SelectItemContext selectItem:
+                        node.Columns.Add(VisitSelectItem(selectItem));
+                        break;
+                }
+            }
+
+            return node;
+        }
+
+        public static QsiColumnNode VisitSelectItem(SelectItemContext context)
+        {
+            var child = context.children[0];
+
+            if (child is TableWildContext tableWild)
+                return VisitTableWild(tableWild);
+
+            var node = VisitExpr((ExprContext)child);
+            var alias = context.selectAlias();
+
+            if (alias == null)
+                return node;
+
+            if (node is not QsiDerivedColumnNode derivedColumnNode)
+            {
+                derivedColumnNode = new QsiDerivedColumnNode();
+                derivedColumnNode.Column.SetValue(node);
+            }
+
+            derivedColumnNode.Alias.SetValue(VisitSelectAlias(alias));
+            MySqlTree.PutContextSpan(derivedColumnNode, context);
+
+            return derivedColumnNode;
+        }
+
+        public static QsiAliasNode VisitSelectAlias(SelectAliasContext context)
+        {
+            var node = new QsiAliasNode
+            {
+                Name = context.identifier() != null ?
+                    IdentifierVisitor.VisitIdentifier(context.identifier()) :
+                    IdentifierVisitor.VisitTextStringLiteral(context.textStringLiteral())
+            };
+
+            MySqlTree.PutContextSpan(node, context);
+
+            return node;
+        }
+
+        public static QsiColumnNode VisitTableWild(TableWildContext context)
+        {
+            var node = new QsiAllColumnNode
+            {
+                Path = new QsiQualifiedIdentifier(context.identifier().Select(IdentifierVisitor.VisitIdentifier))
+            };
+
+            MySqlTree.PutContextSpan(node, context);
+
+            return node;
+        }
+
+        public static QsiColumnNode VisitExpr(ExprContext context)
         {
             throw new System.NotImplementedException();
         }
 
         public static QsiTableNode VisitFromClause(FromClauseContext context)
         {
-            throw new System.NotImplementedException();
+            if (context.HasToken(DUAL_SYMBOL))
+                return null;
+
+            return VisitTableReferenceList(context.tableReferenceList());
+        }
+
+        public static QsiTableNode VisitTableReferenceList(TableReferenceListContext context)
+        {
+            QsiTableNode[] sources = context.tableReference()
+                .Select(VisitTableReference)
+                .ToArray();
+
+            if (sources.Length == 1)
+                return sources[0];
+
+            var anchor = sources[0];
+
+            for (int i = 1; i < sources.Length; i++)
+            {
+                var join = new QsiJoinedTableNode
+                {
+                    JoinType = QsiJoinType.Inner
+                };
+
+                join.Left.SetValue(anchor);
+                join.Right.SetValue(sources[i]);
+
+                var leftSpan = MySqlTree.Span[join.Left.Value];
+                var rightSpan = MySqlTree.Span[join.Right.Value];
+
+                MySqlTree.Span[join] = new Range(leftSpan.Start, rightSpan.End);
+
+                anchor = join;
+            }
+
+            return anchor;
+        }
+
+        public static QsiTableNode VisitTableReference(TableReferenceContext context)
+        {
+            if (context.children[0] is not TableFactorContext tableFactor)
+                throw TreeHelper.NotSupportedFeature("ODBC Join");
+
+            var source = VisitTableFactor(tableFactor);
+
+            foreach (var joinedTable in context.joinedTable())
+                source = VisitJoinedTable(joinedTable, source);
+
+            return source;
+        }
+
+        public static QsiTableNode VisitEscapedTableReference(EscapedTableReferenceContext context)
+        {
+            var source = VisitTableFactor(context.tableFactor());
+
+            foreach (var joinedTable in context.joinedTable())
+                source = VisitJoinedTable(joinedTable, source);
+
+            return source;
+        }
+
+        public static QsiTableNode VisitTableFactor(TableFactorContext context)
+        {
+            var child = context.children[0];
+
+            switch (child)
+            {
+                case SingleTableContext singleTable:
+                    return VisitSingleTable(singleTable);
+
+                case SingleTableParensContext singleTableParens:
+                    return VisitSingleTableParens(singleTableParens);
+
+                case DerivedTableContext derivedTable:
+                    return VisitDerivedTable(derivedTable);
+
+                case TableReferenceListParensContext tableReferenceListParens:
+                    return VisitTableReferenceListParens(tableReferenceListParens);
+
+                case TableFunctionContext tableFunction:
+                    return VisitTableFunction(tableFunction);
+
+                default:
+                    throw TreeHelper.NotSupportedTree(child);
+            }
+        }
+
+        public static QsiTableNode VisitSingleTable(SingleTableContext context)
+        {
+            var tableAccess = VisitTableRef(context.tableRef());
+            var alias = context.tableAlias();
+
+            // TODO: usePartition
+            // TODO: indexHintList
+
+            if (alias == null)
+                return tableAccess;
+
+            var derivedTableNode = new QsiDerivedTableNode();
+
+            derivedTableNode.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+            derivedTableNode.Source.SetValue(tableAccess);
+            derivedTableNode.Alias.SetValue(VisitTableAlias(alias));
+
+            MySqlTree.PutContextSpan(derivedTableNode, context);
+
+            return derivedTableNode;
+        }
+
+        public static QsiTableAccessNode VisitTableRef(TableRefContext context)
+        {
+            var node = new QsiTableAccessNode
+            {
+                Identifier = IdentifierVisitor.VisitTableRef(context)
+            };
+
+            MySqlTree.PutContextSpan(node, context);
+
+            return node;
+        }
+
+        public static QsiAliasNode VisitTableAlias(TableAliasContext context)
+        {
+            var node = new QsiAliasNode
+            {
+                Name = IdentifierVisitor.VisitIdentifier(context.identifier())
+            };
+
+            MySqlTree.PutContextSpan(node, context);
+
+            return node;
+        }
+
+        public static SingleTableParensContext UnwrapSingleTableParens(SingleTableParensContext context)
+        {
+            do
+            {
+                var nestedContext = context.singleTableParens();
+
+                if (nestedContext == null)
+                    break;
+
+                context = nestedContext;
+            } while (true);
+
+            return context;
+        }
+
+        public static QsiTableNode VisitSingleTableParens(SingleTableParensContext context)
+        {
+            var c = UnwrapSingleTableParens(context);
+            var node = VisitSingleTable(c.singleTable());
+
+            MySqlTree.PutContextSpan(node, context);
+
+            return node;
+        }
+
+        public static QsiTableNode VisitDerivedTable(DerivedTableContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static TableReferenceListParensContext UnwrapTableReferenceListParens(TableReferenceListParensContext context)
+        {
+            do
+            {
+                var nestedContext = context.tableReferenceListParens();
+
+                if (nestedContext == null)
+                    break;
+
+                context = nestedContext;
+            } while (true);
+
+            return context;
+        }
+
+        public static QsiTableNode VisitTableReferenceListParens(TableReferenceListParensContext context)
+        {
+            var c = UnwrapTableReferenceListParens(context);
+            var node = VisitTableReferenceList(c.tableReferenceList());
+
+            MySqlTree.PutContextSpan(node, context);
+
+            return node;
+        }
+
+        public static QsiTableNode VisitTableFunction(TableFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedFeature("Table function");
+        }
+
+        public static QsiJoinedTableNode VisitJoinedTable(JoinedTableContext context, QsiTableNode left)
+        {
+            var node = new QsiJoinedTableNode();
+            var child = context.children[0];
+
+            node.Left.SetValue(left);
+
+            switch (child)
+            {
+                case InnerJoinTypeContext innerJoinType:
+                    node.JoinType = VisitInnerJoinType(innerJoinType);
+                    node.Right.SetValue(VisitTableReference(context.tableReference()));
+                    break;
+
+                case OuterJoinTypeContext outerJoinType:
+                    node.JoinType = VisitOuterJoinType(outerJoinType);
+                    node.Right.SetValue(VisitTableReference(context.tableReference()));
+                    break;
+
+                case NaturalJoinTypeContext naturalJoinType:
+                    node.JoinType = VisitNaturalJoinType(naturalJoinType);
+                    node.Right.SetValue(VisitTableFactor(context.tableFactor()));
+                    break;
+
+                default:
+                    throw TreeHelper.NotSupportedTree(child);
+            }
+
+            var usingList = context.identifierListWithParentheses();
+
+            if (usingList != null)
+                node.PivotColumns.SetValue(VisitIdentifierListWithParentheses(usingList));
+
+            var leftSpan = MySqlTree.Span[node.Left.Value];
+            var rightSpan = MySqlTree.Span[node.Right.Value];
+
+            MySqlTree.Span[node] = new Range(leftSpan.Start, rightSpan.End);
+
+            return node;
+        }
+
+        public static QsiJoinType VisitOuterJoinType(OuterJoinTypeContext context)
+        {
+            var outer = context.HasToken(OUTER_SYMBOL);
+
+            if (context.HasToken(LEFT_SYMBOL))
+            {
+                if (outer)
+                    return QsiJoinType.LeftOuter;
+
+                return QsiJoinType.Left;
+            }
+
+            if (outer)
+                return QsiJoinType.RightOuter;
+
+            return QsiJoinType.Right;
+        }
+
+        public static QsiJoinType VisitInnerJoinType(InnerJoinTypeContext context)
+        {
+            if (context.HasToken(STRAIGHT_JOIN_SYMBOL))
+                return QsiJoinType.Straight;
+
+            if (context.HasToken(CROSS_SYMBOL))
+                return QsiJoinType.Cross;
+
+            return QsiJoinType.Inner;
+        }
+
+        public static QsiJoinType VisitNaturalJoinType(NaturalJoinTypeContext context)
+        {
+            if (context.HasToken(INNER_SYMBOL))
+                return QsiJoinType.NaturalInner;
+
+            var left = context.HasToken(LEFT_SYMBOL);
+
+            if (context.HasToken(OUTER_SYMBOL))
+                return left ? QsiJoinType.NaturalLeft : QsiJoinType.NaturalRight;
+
+            return left ? QsiJoinType.NaturalLeftOuter : QsiJoinType.NaturalRightOuter;
+        }
+
+        public static QsiColumnsDeclarationNode VisitIdentifierListWithParentheses(IdentifierListWithParenthesesContext context)
+        {
+            throw new NotImplementedException();
         }
 
         public static QsiTableNode VisitQueryExpressionBody(QueryExpressionBodyContext context)
@@ -167,7 +552,54 @@ namespace Qsi.MySql.Tree
 
         public static QsiTableNode VisitQuerySpecification(QuerySpecificationContext context)
         {
-            throw new System.NotImplementedException();
+            var node = new MySqlDerivedTableNode();
+
+            foreach (var child in context.children)
+            {
+                switch (child)
+                {
+                    case SelectOptionContext selectOption:
+                        node.SelectOptions.Add(VisitSelectOption(selectOption));
+                        break;
+
+                    case SelectItemListContext selectItemList:
+                        node.Columns.SetValue(VisitSelectItemList(selectItemList));
+                        break;
+
+                    case FromClauseContext fromClause:
+                        var source = VisitFromClause(fromClause);
+
+                        if (source != null)
+                            node.Source.SetValue(source);
+
+                        break;
+
+                    case WhereClauseContext whereClause:
+                        node.Where.SetValue(ExpressionVisitor.VisitWhereClause(whereClause));
+                        break;
+
+                    case GroupByClauseContext groupByClause:
+                        node.Grouping.SetValue(ExpressionVisitor.VisitGroupByClause(groupByClause));
+                        break;
+
+                    case HavingClauseContext havingClause when !node.Grouping.IsEmpty:
+                        node.Grouping.Value.Having.SetValue(ExpressionVisitor.VisitHavingClause(havingClause));
+                        break;
+
+                    case IntoClauseContext:
+                    case WindowClauseContext:
+                    case ITerminalNode:
+                        // Skip
+                        break;
+
+                    default:
+                        throw new QsiException(QsiError.Syntax);
+                }
+            }
+
+            MySqlTree.PutContextSpan(node, context);
+
+            return node;
         }
 
         public static QsiTableNode VisitTableValueConstructor(TableValueConstructorContext context)

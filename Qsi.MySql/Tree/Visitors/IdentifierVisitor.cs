@@ -83,5 +83,10 @@ namespace Qsi.MySql.Tree
         {
             return new(context.GetText(), false);
         }
+
+        public static QsiIdentifier VisitTextStringLiteral(TextStringLiteralContext context)
+        {
+            return new(context.value.Text, true);
+        }
     }
 }
