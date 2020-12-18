@@ -14,7 +14,7 @@ namespace Qsi.Parsing.Common
     public partial class CommonScriptParser : IQsiScriptParser
     {
         private readonly ITokenRule _whiteSpace = new LookbehindWhiteSpaceRule();
-        private readonly ITokenRule _newLine = new LookaheadEndOfLineRule();
+        private readonly ITokenRule _lineBreak = new LookaheadLineBreakRule();
         private readonly ITokenRule _keyword = new LookbehindUnknownKeywordRule();
         private readonly ITokenRule _singleQuote = new LookbehindLiteralRule('\'', true);
         private readonly ITokenRule _doubleQuote = new LookbehindLiteralRule('"', true);
@@ -112,13 +112,13 @@ namespace Qsi.Parsing.Common
 
                 case '#':
                     offset = 1;
-                    rule = _newLine;
+                    rule = _lineBreak;
                     tokenType = TokenType.SingeLineComment;
                     break;
 
                 case '-' when cursor.Next == '-':
                     offset = 2;
-                    rule = _newLine;
+                    rule = _lineBreak;
                     tokenType = TokenType.SingeLineComment;
                     break;
 

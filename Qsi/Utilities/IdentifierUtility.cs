@@ -48,7 +48,6 @@ namespace Qsi.Utilities
         {
             var buffer = new char[value.Length];
             int index = 0;
-            bool singleParent = close.Length == 1;
 
             for (int i = 0; i < buffer.Length; i++)
             {
