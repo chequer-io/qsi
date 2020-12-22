@@ -49,6 +49,11 @@ namespace Qsi.MySql.Data
                     builder.Append('B');
                     break;
 
+                case MySqlStringKind.BitString:
+                    builder.Append("0b");
+                    escape = false;
+                    break;
+
                 case MySqlStringKind.HexaString:
                     builder.Append('X');
                     break;

@@ -1,4 +1,5 @@
-﻿using Qsi.Data;
+﻿using System;
+using Qsi.Data;
 using Qsi.Shared.Extensions;
 using Qsi.Utilities;
 using static Qsi.MySql.Internal.MySqlParserInternal;
@@ -74,7 +75,7 @@ namespace Qsi.MySql.Tree
             }
         }
 
-        private static QsiIdentifier VisitPureIdentifier(PureIdentifierContext context)
+        public static QsiIdentifier VisitPureIdentifier(PureIdentifierContext context)
         {
             return new(context.GetText(), !context.HasToken(IDENTIFIER));
         }
@@ -87,6 +88,16 @@ namespace Qsi.MySql.Tree
         public static QsiIdentifier VisitTextStringLiteral(TextStringLiteralContext context)
         {
             return new(context.value.Text, true);
+        }
+
+        public static QsiQualifiedIdentifier VisitSimpleIdentifier(SimpleIdentifierContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static QsiQualifiedIdentifier VisitFieldIdentifier(FieldIdentifierContext context)
+        {
+            throw new NotImplementedException();
         }
     }
 }
