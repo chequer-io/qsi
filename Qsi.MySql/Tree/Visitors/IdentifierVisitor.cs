@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Qsi.Data;
 using Qsi.Shared.Extensions;
 using Qsi.Utilities;
@@ -92,7 +94,16 @@ namespace Qsi.MySql.Tree
 
         public static QsiQualifiedIdentifier VisitSimpleIdentifier(SimpleIdentifierContext context)
         {
-            throw new NotImplementedException();
+            IEnumerable<QsiIdentifier> identifiers = context.children
+                .Select(child =>
+                {
+                    if (child is DotIdentifierContext dotIdentifier)
+                        return VisitDotIdentifier(dotIdentifier);
+
+                    return VisitIdentifier((IdentifierContext)child);
+                });
+
+            return new QsiQualifiedIdentifier(identifiers);
         }
 
         public static QsiQualifiedIdentifier VisitFieldIdentifier(FieldIdentifierContext context)
