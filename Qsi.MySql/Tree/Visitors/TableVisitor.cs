@@ -387,7 +387,25 @@ namespace Qsi.MySql.Tree
 
         public static QsiTableNode VisitDerivedTable(DerivedTableContext context)
         {
-            throw new NotImplementedException();
+            var subqueryNode = VisitSubquery(context.subquery());
+            var tableAlias = context.tableAlias();
+
+            if (tableAlias == null)
+                return subqueryNode;
+
+            var node = new QsiDerivedTableNode();
+            var columnInternalRefList = context.columnInternalRefList();
+
+            node.Source.SetValue(subqueryNode);
+            node.Alias.SetValue(VisitTableAlias(tableAlias));
+
+            node.Columns.SetValue(columnInternalRefList == null ?
+                TreeHelper.CreateAllColumnsDeclaration() :
+                CreateSequentialColumns(columnInternalRefList));
+
+            MySqlTree.PutContextSpan(node, context);
+
+            return node;
         }
 
         public static TableReferenceListParensContext UnwrapTableReferenceListParens(TableReferenceListParensContext context)
@@ -678,7 +696,7 @@ namespace Qsi.MySql.Tree
 
         public static QsiTableNode VisitSelectStatementWithInto(SelectStatementWithIntoContext context)
         {
-            throw new System.NotImplementedException();
+            throw TreeHelper.NotSupportedFeature("select into");
         }
 
         public static QsiTableDirectivesNode VisitWithClause(WithClauseContext context)
@@ -698,15 +716,16 @@ namespace Qsi.MySql.Tree
         public static QsiDerivedTableNode VisitCommonTableExpression(CommonTableExpressionContext context)
         {
             var node = new QsiDerivedTableNode();
+            var columnInternalRefList = context.columnInternalRefList();
 
             node.Alias.SetValue(new QsiAliasNode
             {
                 Name = IdentifierVisitor.VisitIdentifier(context.identifier())
             });
 
-            node.Columns.SetValue(context.columnInternalRefList() == null ?
+            node.Columns.SetValue(columnInternalRefList == null ?
                 TreeHelper.CreateAllColumnsDeclaration() :
-                CreateSequentialColumns(context.columnInternalRefList()));
+                CreateSequentialColumns(columnInternalRefList));
 
             node.Source.SetValue(VisitSubquery(context.subquery()));
 

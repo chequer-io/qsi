@@ -429,8 +429,8 @@ namespace Qsi.MySql.Tree
                     return VisitSimpleExprSubQuery(simpleExprSubQuery);
 
                 // TODO: odbc
-                case SimpleExprOdbcContext simpleExprOdbc:
-                    throw TreeHelper.NotSupportedTree(simpleExprOdbc);
+                case SimpleExprOdbcContext:
+                    throw TreeHelper.NotSupportedFeature("odbc expression");
 
                 case SimpleExprMatchContext simpleExprMatch:
                     return VisitSimpleExprMatch(simpleExprMatch);
