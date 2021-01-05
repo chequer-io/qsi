@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Antlr4.Runtime;
 
 namespace Qsi.MySql.Internal
@@ -69,6 +70,7 @@ namespace Qsi.MySql.Internal
             init
             {
                 _serverVersion = value;
+                _mySqlVersion = MySqlSymbolInfo.numberToVersion(value);
 
                 #region modules/db.mysql.parser/src/mysql_parser_module.cpp
                 // updateServerVersion
@@ -91,7 +93,9 @@ namespace Qsi.MySql.Internal
         protected bool inVersionComment;
 
         private readonly int _serverVersion;
+        private readonly MySqlVersion _mySqlVersion;
         private readonly Queue<IToken> _pendingTokens = new();
+        private Dictionary<string, int> _symbols;
 
         protected MySqlBaseLexer(ICharStream input) : base(input)
         {
@@ -325,6 +329,31 @@ namespace Qsi.MySql.Internal
             }
 
             return text[index - 1] <= cmp[cmpIndex - 1] ? smaller : bigger;
+        }
+
+        // MySQLBaseLexer::keywordFromText
+        public int keywordFromText(string name)
+        {
+            name = name.ToLower();
+
+            if (!MySqlSymbolInfo.isKeyword(name, _mySqlVersion))
+                return -2; // INVALID_INDEX - 1
+
+            if (_symbols == null)
+            {
+                var max = ((Vocabulary)Vocabulary).getMaxTokenType();
+
+                _symbols = Enumerable.Range(0, max + 1)
+                    .ToDictionary(
+                        i => Vocabulary.GetSymbolicName(i),
+                        StringComparer.OrdinalIgnoreCase
+                    );
+            }
+
+            if (_symbols.TryGetValue(name, out var type))
+                return type;
+
+            return -2; // INVALID_INDEX - 1
         }
         #endregion
 

@@ -1,16 +1,16 @@
 ﻿using System;
-using Antlr4.Runtime;
+using System.Threading;
 using Qsi.Data;
 using Qsi.MySql.Internal;
 using Qsi.MySql.Tree;
-using Qsi.Parsing.Antlr;
+using Qsi.Parsing;
 using Qsi.Tree;
 using Qsi.Utilities;
 using static Qsi.MySql.Internal.MySqlParserInternal;
 
 namespace Qsi.MySql
 {
-    public sealed class MySqlParser : AntlrParserBase
+    public sealed class MySqlParser : IQsiTreeParser
     {
         private readonly int _version;
 
@@ -19,19 +19,10 @@ namespace Qsi.MySql
             _version = MySQLUtility.VersionToInt(version);
         }
 
-        protected override Parser CreateParser(QsiScript script)
+        public IQsiTreeNode Parse(QsiScript script, CancellationToken cancellationToken = default)
         {
-            return MySQLUtility.CreateParser(script.Script, _version);
-        }
-
-        protected override IQsiTreeNode Parse(QsiScript script, Parser parser)
-        {
-            return ParseInternal(script, parser) ?? throw new QsiException(QsiError.NotSupportedScript, script.ScriptType);
-        }
-
-        private IQsiTreeNode ParseInternal(QsiScript script, Parser parser)
-        {
-            var query = ((MySqlParserInternal)parser).query();
+            var parser = MySQLUtility.CreateParser(script.Script, _version);
+            var query = parser.query();
 
             if (query.children[0] is not SimpleStatementContext simpleStatement)
                 return null;

@@ -7,11 +7,11 @@ namespace Qsi.Parsing.Antlr
 {
     public abstract class AntlrParserBase : IQsiTreeParser
     {
-        private readonly AntlrErrorHandler _errorHandler;
+        private readonly AntlrParserErrorHandler _parserErrorHandler;
 
         protected AntlrParserBase()
         {
-            _errorHandler =  new AntlrErrorHandler();
+            _parserErrorHandler =  new AntlrParserErrorHandler();
         }
 
         protected abstract Parser CreateParser(QsiScript script);
@@ -22,7 +22,7 @@ namespace Qsi.Parsing.Antlr
         IQsiTreeNode IQsiTreeParser.Parse(QsiScript script, CancellationToken cancellationToken)
         {
             var parser = CreateParser(script);
-            parser.AddErrorListener(_errorHandler);
+            parser.AddErrorListener(_parserErrorHandler);
             return Parse(script, parser);
         }
         #endregion

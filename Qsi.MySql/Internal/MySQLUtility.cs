@@ -41,9 +41,12 @@ namespace Qsi.MySql.Internal
                 serverVersion = version
             };
 
+            lexer.RemoveErrorListeners();
+            lexer.AddErrorListener(new MySqlLexerErrorHandler());
+
             var tokens = new CommonTokenStream(lexer);
 
-            return new MySqlParserInternal(tokens)
+            var parser = new MySqlParserInternal(tokens)
             {
                 serverVersion = version,
                 Interpreter =
@@ -51,6 +54,11 @@ namespace Qsi.MySql.Internal
                     PredictionMode = PredictionMode.SLL
                 }
             };
+
+            parser.RemoveErrorListeners();
+            parser.AddErrorListener(new MySqlParserErrorHandler());
+
+            return parser;
         }
     }
 }
