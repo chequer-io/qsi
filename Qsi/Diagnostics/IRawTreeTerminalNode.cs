@@ -2,5 +2,6 @@
 {
     public interface IRawTreeTerminalNode : IRawTree
     {
+        string TypeName => "TerminalNode";
     }
 }
