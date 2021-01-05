@@ -32,16 +32,7 @@ namespace Qsi.MySql.Tree
             if (context.ChildCount == 1)
                 return new QsiQualifiedIdentifier(identifier);
 
-            switch (context.children[1])
-            {
-                case DotIdentifierContext dotIdentifier:
-                    return new QsiQualifiedIdentifier(identifier, VisitDotIdentifier(dotIdentifier));
-
-                /*case DotIdentifierAmbiguous1Context dotIdentifierAmbiguous1:
-                    return new QsiQualifiedIdentifier(identifier, VisitDotIdentifierAmbiguous1(dotIdentifierAmbiguous1));*/
-            }
-
-            throw TreeHelper.NotSupportedTree(context.children[1]);
+            return new QsiQualifiedIdentifier(identifier, VisitDotIdentifier((DotIdentifierContext)context.children[1]));
         }
 
         public static QsiQualifiedIdentifier VisitTableRefWithWildcard(TableRefWithWildcardContext context)
@@ -69,11 +60,6 @@ namespace Qsi.MySql.Tree
             var text = context.identifier().GetText();
             return new QsiIdentifier(text, IdentifierUtility.IsEscaped(text));
         }
-
-        // public static QsiIdentifier VisitDotIdentifierAmbiguous1(DotIdentifierAmbiguous1Context context)
-        // {
-        //     return new(context.GetText()[1..], false);
-        // }
 
         public static QsiIdentifier VisitIdentifier(IdentifierContext context)
         {
