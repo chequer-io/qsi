@@ -327,5 +327,37 @@ namespace Qsi.MySql.Internal
             return text[index - 1] <= cmp[cmpIndex - 1] ? smaller : bigger;
         }
         #endregion
+
+        protected bool IsDotIdentifier()
+        {
+            var ch = (char)InputStream.LA(-2);
+
+            if (IsUnquotedLetter(ch) || ch is '`' or '"')
+                return true;
+
+            return IsUnquotedNoDigitLetter((char)InputStream.LA(1));
+        }
+
+        private static bool IsDigit(char c)
+        {
+            return c is >= '0' and <= '9';
+        }
+
+        private static bool IsUnquotedLetter(char c)
+        {
+            // 0-9a-zA-Z\u0080-\uffff_$
+            return IsDigit(c) || IsUnquotedNoDigitLetter(c);
+        }
+
+        private static bool IsUnquotedNoDigitLetter(char c)
+        {
+            // a-zA-Z\u0080-\uffff_$
+            return c is
+                (>= 'a' and <= 'z') or
+                (>= 'A' and <= 'Z') or
+                (>= '\u0080' and <= '\uffff') or
+                '_' or
+                '$';
+        }
     }
 }

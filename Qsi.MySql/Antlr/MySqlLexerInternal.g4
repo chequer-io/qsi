@@ -134,7 +134,9 @@ OPEN_PAR_SYMBOL:    '(';
 CLOSE_PAR_SYMBOL:   ')';
 OPEN_CURLY_SYMBOL:  '{';
 CLOSE_CURLY_SYMBOL: '}';
-UNDERLINE_SYMBOL:   '_';
+
+// ** Patch by QSI
+//UNDERLINE_SYMBOL:   '_';
 
 JSON_SEPARATOR_SYMBOL:          '->' {serverVersion >= 50708}?;  // MYSQL
 JSON_UNQUOTED_SEPARATOR_SYMBOL: '->>' {serverVersion >= 50713}?; // MYSQL
@@ -186,18 +188,32 @@ BIN_NUMBER: ('0b' [01]+) | ('b\'' [01]+ '\'');
 
 INT_NUMBER: DIGITS { setType(determineNumericType(getText())); };
 
-// Float types must be handled first or the DOT_IDENTIIFER rule will make them to identifiers
-// (if there is no leading digit before the dot).
-DECIMAL_NUMBER: DIGITS? DOT_SYMBOL DIGITS;
-FLOAT_NUMBER:   (DIGITS? DOT_SYMBOL)? DIGITS [eE] (MINUS_OPERATOR | PLUS_OPERATOR)? DIGITS;
+/* ** Patch by QSI
+.. FROM <identifier>.123
+                    ‾‾‾‾\-> DECIMAL_NUMBER (X)
 
-// ** Patch by QSI
+.. FROM <identifier>.1e23
+                    ‾‾‾‾‾\-> FLOAT_NUMBER (X)
+
+.. FROM .123
+        ‾‾‾‾\-> DECIMAL_NUMBER (O)
+
+.. FROM .1e23
+        ‾‾‾‾‾\-> FLOAT_NUMBER (O)
+
+priority: DOT_IDENTIFIER > DECIMAL_NUMBER | FLOAT_NUMBER
+*/
 // Special rule that should also match all keywords if they are directly preceded by a dot.
 // Hence it's defined before all keywords.
 // Here we make use of the ability in our base lexer to emit multiple tokens with a single rule.
 DOT_IDENTIFIER:
-    DOT_SYMBOL LETTER_WHEN_UNQUOTED_NO_DIGIT LETTER_WHEN_UNQUOTED* { emitDot(); } -> channel(HIDDEN)
+    DOT_SYMBOL {IsDotIdentifier()}? LETTER_WHEN_UNQUOTED+ { emitDot(); } -> channel(HIDDEN)
 ;
+
+// Float types must be handled first or the DOT_IDENTIIFER rule will make them to identifiers
+// (if there is no leading digit before the dot).
+DECIMAL_NUMBER: DIGITS? DOT_SYMBOL DIGITS;
+FLOAT_NUMBER:   (DIGITS? DOT_SYMBOL)? DIGITS [eE] (MINUS_OPERATOR | PLUS_OPERATOR)? DIGITS;
 
 /*
   The following comment is from the server grammar and gives some information about the source of tokens.
@@ -1090,9 +1106,10 @@ INVALID_INPUT:
 
 // String and text types.
 
+// ** Patch by QSI
 // The underscore charset token is used to defined the repertoire of a string, though it conflicts
 // with normal identifiers, which also can start with an underscore.
-UNDERSCORE_CHARSET: UNDERLINE_SYMBOL [a-z0-9]+ { setType(checkCharset(getText())); };
+UNDERSCORE_CHARSET: '_' [a-z0-9]+ { setType(checkCharset(getText())); };
 
 // Identifiers might start with a digit, even though it is discouraged, and may not consist entirely of digits only.
 // All keywords above are automatically excluded.

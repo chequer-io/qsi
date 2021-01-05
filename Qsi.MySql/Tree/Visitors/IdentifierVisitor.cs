@@ -27,13 +27,21 @@ namespace Qsi.MySql.Tree
 
         public static QsiQualifiedIdentifier VisitQualifiedIdentifier(QualifiedIdentifierContext context)
         {
-            var identifier = VisitIdentifier(context.identifier());
-            var dotIdentifier = context.dotIdentifier() != null ? VisitDotIdentifier(context.dotIdentifier()) : null;
+            var identifier = VisitIdentifier((IdentifierContext)context.children[0]);
 
-            if (dotIdentifier == null)
+            if (context.ChildCount == 1)
                 return new QsiQualifiedIdentifier(identifier);
 
-            return new QsiQualifiedIdentifier(identifier, dotIdentifier);
+            switch (context.children[1])
+            {
+                case DotIdentifierContext dotIdentifier:
+                    return new QsiQualifiedIdentifier(identifier, VisitDotIdentifier(dotIdentifier));
+
+                /*case DotIdentifierAmbiguous1Context dotIdentifierAmbiguous1:
+                    return new QsiQualifiedIdentifier(identifier, VisitDotIdentifierAmbiguous1(dotIdentifierAmbiguous1));*/
+            }
+
+            throw TreeHelper.NotSupportedTree(context.children[1]);
         }
 
         public static QsiQualifiedIdentifier VisitTableRefWithWildcard(TableRefWithWildcardContext context)
@@ -58,9 +66,14 @@ namespace Qsi.MySql.Tree
         // Special rule that should also match all keywords if they are directly preceded by a dot.
         public static QsiIdentifier VisitDotIdentifier(DotIdentifierContext context)
         {
-            var text = context.identifier().GetText().TrimStart('.');
+            var text = context.identifier().GetText();
             return new QsiIdentifier(text, IdentifierUtility.IsEscaped(text));
         }
+
+        // public static QsiIdentifier VisitDotIdentifierAmbiguous1(DotIdentifierAmbiguous1Context context)
+        // {
+        //     return new(context.GetText()[1..], false);
+        // }
 
         public static QsiIdentifier VisitIdentifier(IdentifierContext context)
         {
