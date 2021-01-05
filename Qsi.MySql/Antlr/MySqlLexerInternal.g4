@@ -191,11 +191,12 @@ INT_NUMBER: DIGITS { setType(determineNumericType(getText())); };
 DECIMAL_NUMBER: DIGITS? DOT_SYMBOL DIGITS;
 FLOAT_NUMBER:   (DIGITS? DOT_SYMBOL)? DIGITS [eE] (MINUS_OPERATOR | PLUS_OPERATOR)? DIGITS;
 
+// ** Patch by QSI
 // Special rule that should also match all keywords if they are directly preceded by a dot.
 // Hence it's defined before all keywords.
 // Here we make use of the ability in our base lexer to emit multiple tokens with a single rule.
 DOT_IDENTIFIER:
-    DOT_SYMBOL LETTER_WHEN_UNQUOTED_NO_DIGIT LETTER_WHEN_UNQUOTED* { emitDot(); } -> type(IDENTIFIER)
+    DOT_SYMBOL LETTER_WHEN_UNQUOTED_NO_DIGIT LETTER_WHEN_UNQUOTED* { emitDot(); } -> channel(HIDDEN)
 ;
 
 /*

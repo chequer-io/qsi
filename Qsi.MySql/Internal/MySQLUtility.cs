@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Atn;
 using Qsi.Parsing.Antlr;
@@ -46,7 +46,6 @@ namespace Qsi.MySql.Internal
             return new MySqlParserInternal(tokens)
             {
                 serverVersion = version,
-                ErrorHandler = new BailErrorStrategy(),
                 Interpreter =
                 {
                     PredictionMode = PredictionMode.SLL

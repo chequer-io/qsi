@@ -170,17 +170,30 @@ namespace Qsi.MySql.Internal
         // MySQLBaseLexer::emitDot
         protected void emitDot()
         {
-            var token = TokenFactory.Create(
-                new Tuple<ITokenSource, ICharStream>(this, (ICharStream)InputStream),
+            var source = new Tuple<ITokenSource, ICharStream>(this, (ICharStream)InputStream);
+
+            var dotToken = TokenFactory.Create(
+                source,
                 MySqlLexerInternal.DOT_SYMBOL,
-                Text,
+                ".",
                 Channel,
                 TokenStartCharIndex,
                 TokenStartCharIndex,
                 TokenStartLine,
                 TokenStartColumn);
 
-            _pendingTokens.Enqueue(token);
+            var identifierToken = TokenFactory.Create(
+                source,
+                MySqlLexerInternal.IDENTIFIER,
+                Text[1..],
+                Channel,
+                TokenStartCharIndex + 1,
+                TokenStartCharIndex + Text.Length,
+                TokenStartLine,
+                TokenStartColumn);
+
+            _pendingTokens.Enqueue(dotToken);
+            _pendingTokens.Enqueue(identifierToken);
 
             // ++TokenStartCharIndex;
         }
