@@ -10,6 +10,7 @@ using Qsi.Data;
 using Qsi.Extensions;
 using Qsi.PrimarSql.Data;
 using Qsi.PrimarSql.Tree;
+using Qsi.Shared.Extensions;
 using Qsi.Tree;
 
 namespace Qsi.PrimarSql.Analyzers
@@ -38,7 +39,7 @@ namespace Qsi.PrimarSql.Analyzers
                     .Columns.Value
                     .FindAscendants<QsiDerivedColumnNode>()
                     .Any(c => c.Expression.Value is QsiInvokeExpressionNode invokeExpressionNode &&
-                              invokeExpressionNode.Member.Value.Identifier[^1].Value.Equals("COUNT", StringComparison.OrdinalIgnoreCase));
+                              invokeExpressionNode.Member.Value.Identifier[^1].Value.EqualsIgnoreCase("COUNT"));
 
                 if (hasCountFunction)
                     isCountFunction = true;

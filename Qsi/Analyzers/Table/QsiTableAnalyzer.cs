@@ -787,7 +787,7 @@ namespace Qsi.Analyzers.Table
                             e.FindDescendant<IQsiParametersExpressionNode, IQsiInvokeExpressionNode>(out _, out var i) &&
                             i.Member != null &&
                             i.Member.Identifier.Level == 1 &&
-                            i.Member.Identifier[0].Value.Equals("COUNT", StringComparison.OrdinalIgnoreCase):
+                            i.Member.Identifier[0].Value.EqualsIgnoreCase("COUNT"):
                             yield break;
 
                         case IQsiAllColumnNode allColumnNode:

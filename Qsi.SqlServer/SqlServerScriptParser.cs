@@ -6,6 +6,7 @@ using System.Threading;
 using Microsoft.SqlServer.TransactSql.ScriptDom;
 using Qsi.Data;
 using Qsi.Parsing.Common;
+using Qsi.Shared.Extensions;
 using Qsi.SqlServer.Common;
 using Qsi.SqlServer.Internal;
 
@@ -25,8 +26,7 @@ namespace Qsi.SqlServer
 
         protected override QsiScriptType GetSuitableType(CommonScriptCursor cursor, IReadOnlyList<Token> tokens, Token[] leadingTokens)
         {
-            if (leadingTokens.Length >= 1 &&
-                Exec.Equals(cursor.Value[leadingTokens[0].Span], StringComparison.OrdinalIgnoreCase))
+            if (leadingTokens.Length >= 1 && Exec.EqualsIgnoreCase(cursor.Value[leadingTokens[0].Span]))
             {
                 return QsiScriptType.Execute;
             }
@@ -161,7 +161,7 @@ namespace Qsi.SqlServer
                 if (Enum.TryParse<QsiScriptType>(fragment, out var type))
                     return type;
 
-                if (BulkInsert.Equals(fragment, StringComparison.OrdinalIgnoreCase))
+                if (BulkInsert.EqualsIgnoreCase(fragment))
                     return QsiScriptType.Insert;
             }
 
@@ -170,7 +170,7 @@ namespace Qsi.SqlServer
                 if (Enum.TryParse<QsiScriptType>(leadingTokens[0].Text, out var type))
                     return type;
 
-                if (Exec.Equals(leadingTokens[0].Text, StringComparison.OrdinalIgnoreCase))
+                if (Exec.EqualsIgnoreCase(leadingTokens[0].Text))
                     return QsiScriptType.Execute;
             }
 

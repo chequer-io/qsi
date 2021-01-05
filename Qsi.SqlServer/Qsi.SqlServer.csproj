@@ -26,4 +26,6 @@
         </_PackageFiles>
     </ItemGroup>
 
+    <Import Project="..\Qsi.Shared\Qsi.Shared.projitems" Label="Shared" />
+
 </Project>

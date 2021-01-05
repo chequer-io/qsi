@@ -4,11 +4,13 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Qsi.Data;
 using Qsi.Parsing.Common;
+using Qsi.Shared.Extensions;
 
 namespace Qsi.MySql
 {
     public class MySqlScriptParser : CommonScriptParser
     {
+        private const string table = "TABLE";
         private const string delimiter = "DELIMITER";
         private const string deallocate = "DEALLOCATE";
         private const string prepare = "PREPARE";
@@ -22,7 +24,7 @@ namespace Qsi.MySql
             if (tokens.Count > 1 &&
                 tokens[^1].Type == TokenType.WhiteSpace &&
                 tokens[^2].Type == TokenType.Keyword &&
-                delimiter.Equals(context.Cursor.Value[tokens[^2].Span], StringComparison.OrdinalIgnoreCase) &&
+                delimiter.EqualsIgnoreCase(context.Cursor.Value[tokens[^2].Span]) &&
                 tokens.SkipLast(2).All(t => TokenType.Trivia.HasFlag(t.Type)))
             {
                 var match = _delimiterPattern.Match(context.Cursor.Value, context.Cursor.Index);
@@ -42,14 +44,13 @@ namespace Qsi.MySql
 
         protected override QsiScriptType GetSuitableType(CommonScriptCursor cursor, IReadOnlyList<Token> tokens, Token[] leadingTokens)
         {
-            if (leadingTokens.Length >= 2 &&
-                deallocate.Equals(cursor.Value[leadingTokens[0].Span], StringComparison.OrdinalIgnoreCase) &&
-                prepare.Equals(cursor.Value[leadingTokens[1].Span], StringComparison.OrdinalIgnoreCase))
+            return leadingTokens.Length switch
             {
-                return QsiScriptType.DropPrepare;
-            }
-
-            return base.GetSuitableType(cursor, tokens, leadingTokens);
+                >= 1 when table.EqualsIgnoreCase(cursor.Value[leadingTokens[0].Span]) => QsiScriptType.Select,
+                >= 2 when deallocate.EqualsIgnoreCase(cursor.Value[leadingTokens[0].Span]) &&
+                          prepare.EqualsIgnoreCase(cursor.Value[leadingTokens[1].Span]) => QsiScriptType.DropPrepare,
+                _ => base.GetSuitableType(cursor, tokens, leadingTokens)
+            };
         }
     }
 }
