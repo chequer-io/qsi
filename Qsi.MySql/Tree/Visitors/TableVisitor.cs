@@ -523,7 +523,21 @@ namespace Qsi.MySql.Tree
 
         public static QsiColumnsDeclarationNode VisitIdentifierListWithParentheses(IdentifierListWithParenthesesContext context)
         {
-            throw new NotImplementedException();
+            var node = new QsiColumnsDeclarationNode();
+
+            IEnumerable<QsiIdentifier> identifiers = context
+                .identifierList().identifier()
+                .Select(IdentifierVisitor.VisitIdentifier);
+
+            node.Columns.AddRange(identifiers.Select(i =>
+                new QsiDeclaredColumnNode
+                {
+                    Name = new QsiQualifiedIdentifier(i)
+                }));
+
+            MySqlTree.PutContextSpan(node, context);
+
+            return node;
         }
 
         public static QsiTableNode VisitQueryExpressionBody(QueryExpressionBodyContext context)
