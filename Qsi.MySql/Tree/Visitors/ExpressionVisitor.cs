@@ -543,7 +543,11 @@ namespace Qsi.MySql.Tree
 
         public static MySqlParamMarkerExpressionNode VisitSimpleExprParamMarker(SimpleExprParamMarkerContext context)
         {
-            return new();
+            var node = new MySqlParamMarkerExpressionNode();
+
+            MySqlTree.PutContextSpan(node, context);
+
+            return node;
         }
 
         public static QsiInvokeExpressionNode VisitSimpleExprSum(SimpleExprSumContext context)
@@ -1221,10 +1225,14 @@ namespace Qsi.MySql.Tree
                 identifier = new QsiQualifiedIdentifier(VisitTextOrIdentifier(context.textOrIdentifier()));
             }
 
-            return new QsiVariableExpressionNode
+            var node = new QsiVariableExpressionNode
             {
                 Identifier = identifier
             };
+
+            MySqlTree.PutContextSpan(node, context);
+
+            return node;
         }
         #endregion
 
@@ -1661,10 +1669,14 @@ namespace Qsi.MySql.Tree
                 ? $"{context.Start.Text} {context.INT_SYMBOL().GetText()}"
                 : context.Start.Text;
 
-            return new QsiTypeExpressionNode
+            var node = new QsiTypeExpressionNode
             {
                 Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(typeName, false))
             };
+
+            MySqlTree.PutContextSpan(node, context);
+
+            return node;
         }
 
         public static QsiLiteralExpressionNode VisitCharsetName(CharsetNameContext context)
@@ -1839,7 +1851,7 @@ namespace Qsi.MySql.Tree
                             Value = new MySqlString(
                                 MySqlStringKind.Default,
                                 rawValue,
-                                textLiteral.UNDERSCORE_CHARSET().GetText(),
+                                textLiteral.UNDERSCORE_CHARSET()?.GetText(),
                                 string.Empty
                             ),
                             Type = QsiDataType.Custom
