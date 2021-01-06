@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
 using Qsi.Data;
 using Qsi.MySql.Data;
+using Qsi.MySql.Tree.Common;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
 using Qsi.Utilities;
@@ -428,7 +430,6 @@ namespace Qsi.MySql.Tree
                 case SimpleExprSubQueryContext simpleExprSubQuery:
                     return VisitSimpleExprSubQuery(simpleExprSubQuery);
 
-                // TODO: odbc
                 case SimpleExprOdbcContext:
                     throw TreeHelper.NotSupportedFeature("ODBC Expression");
 
@@ -541,9 +542,27 @@ namespace Qsi.MySql.Tree
             return VisitLiteral(context.literal());
         }
 
-        public static MySqlParamMarkerExpressionNode VisitSimpleExprParamMarker(SimpleExprParamMarkerContext context)
+        public static QsiColumnExpressionNode VisitSimpleExprParamMarker(SimpleExprParamMarkerContext context)
         {
-            var node = new MySqlParamMarkerExpressionNode();
+            var terminalNode = context.PARAM_MARKER();
+
+            var contextWrapper = new ParserRuleContextWrapper<ITerminalNode>(
+                terminalNode,
+                terminalNode.Symbol,
+                terminalNode.Symbol
+            );
+
+            return VisitParamMarker(contextWrapper);
+        }
+
+        private static QsiColumnExpressionNode VisitParamMarker(ParserRuleContextWrapper<ITerminalNode> context)
+        {
+            var node = new QsiColumnExpressionNode();
+
+            node.Column.SetValue(new QsiBindingColumnNode()
+            {
+                Id = context.Value.Symbol.Text
+            });
 
             MySqlTree.PutContextSpan(node, context);
 
@@ -1516,7 +1535,7 @@ namespace Qsi.MySql.Tree
 
         public static QsiLiteralExpressionNode VisitFractionalPrecision(FractionalPrecisionContext context)
         {
-            return VisitLiteral(context.INT_NUMBER());
+            return VisitLiteral(context.INT_NUMBER().Symbol);
         }
 
         #region Having Clause
@@ -1590,28 +1609,35 @@ namespace Qsi.MySql.Tree
 
         public static QsiExpressionNode VisitLimitOption(LimitOptionContext context)
         {
-            QsiExpressionNode node = null;
-
-            if (context.identifier() != null)
+            switch (context.children[0])
             {
-                node = new QsiFieldExpressionNode
-                {
-                    Identifier = new QsiQualifiedIdentifier(IdentifierVisitor.VisitIdentifier(context.identifier()))
-                };
-            }
+                case IdentifierContext identifier:
+                    var node = new QsiFieldExpressionNode
+                    {
+                        Identifier = new QsiQualifiedIdentifier(IdentifierVisitor.VisitIdentifier(identifier))
+                    };
 
-            if (context.HasToken(PARAM_MARKER))
-            {
-                node = new MySqlParamMarkerExpressionNode();
-            }
+                    MySqlTree.PutContextSpan(node, context);
 
-            if (node != null)
-            {
-                MySqlTree.PutContextSpan(node, context);
-                return node;
-            }
+                    return node;
 
-            return VisitLiteral(context.Start);
+                case ITerminalNode terminalNode:
+                    if (terminalNode is { Symbol: { Type: PARAM_MARKER } })
+                    {
+                        var contextWrapper = new ParserRuleContextWrapper<ITerminalNode>(
+                            terminalNode,
+                            terminalNode.Symbol,
+                            terminalNode.Symbol
+                        );
+
+                        return VisitParamMarker(contextWrapper);
+                    }
+
+                    return VisitLiteral(terminalNode.Symbol);
+
+                default:
+                    throw TreeHelper.NotSupportedTree(context.children[0]);
+            }
         }
         #endregion
 
@@ -1865,11 +1891,6 @@ namespace Qsi.MySql.Tree
             }
 
             throw TreeHelper.NotSupportedTree(context);
-        }
-
-        public static QsiLiteralExpressionNode VisitLiteral(ITerminalNode terminalNode)
-        {
-            return VisitLiteral(terminalNode.Symbol);
         }
 
         public static QsiLiteralExpressionNode VisitLiteral(IToken token)
