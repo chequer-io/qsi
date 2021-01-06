@@ -12,5 +12,20 @@ namespace Qsi.Shared.Extensions
                 .OfType<ITerminalNode>()
                 .Any(n => n.Symbol.Type == type);
         }
+
+        public static bool TryGetToken(this ParserRuleContext context, int type, out IToken token)
+        {
+            foreach (var terminalNode in context.children.OfType<ITerminalNode>())
+            {
+                if (terminalNode.Symbol.Type != type)
+                    continue;
+
+                token = terminalNode.Symbol;
+                return true;
+            }
+
+            token = null;
+            return false;
+        }
     }
 }

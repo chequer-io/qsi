@@ -1865,27 +1865,42 @@ namespace Qsi.MySql.Tree
                     case TextLiteralContext textLiteral:
                     {
                         QsiLiteralExpressionNode node;
-                        var rawValue = string.Join(string.Empty, textLiteral.textStringLiteral().Select(VisitLiteral));
+
+                        IEnumerable<string> textStringLiterals = textLiteral.textStringLiteral()
+                            .Select(l => IdentifierUtility.Unescape(l.value.Text));
+
+                        var rawValue = string.Join(string.Empty, textStringLiterals);
 
                         // National String
-                        if (textLiteral.HasToken(NCHAR_TEXT))
+                        if (textLiteral.TryGetToken(NCHAR_TEXT, out var ncharText))
                         {
                             // N'text'
-                            var strValue = textLiteral.NCHAR_TEXT().GetText()[2..^1] + rawValue;
+                            var strValue = $"{IdentifierUtility.Unescape(ncharText.Text[1..])}{rawValue}";
 
                             node = new QsiLiteralExpressionNode
                             {
-                                Value = new MySqlString(MySqlStringKind.National, strValue, string.Empty, string.Empty),
+                                Value = new MySqlString(MySqlStringKind.National, strValue, null, null),
+                                Type = QsiDataType.Custom
+                            };
+                        }
+                        // CharSet String
+                        else if (textLiteral.TryGetToken(UNDERSCORE_CHARSET, out var charSet))
+                        {
+                            // _utf8'text'
+                            node = new QsiLiteralExpressionNode
+                            {
+                                Value = new MySqlString(MySqlStringKind.Default, rawValue, charSet.Text, null),
                                 Type = QsiDataType.Custom
                             };
                         }
                         // Default String
                         else
                         {
+                            // 'text'
                             node = new QsiLiteralExpressionNode
                             {
-                                Value = new MySqlString(MySqlStringKind.Default, rawValue, textLiteral.UNDERSCORE_CHARSET()?.GetText(), string.Empty),
-                                Type = QsiDataType.Custom
+                                Value = rawValue,
+                                Type = QsiDataType.String
                             };
                         }
 
