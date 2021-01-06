@@ -256,7 +256,7 @@ namespace Qsi.Analyzers.Table
             switch (table.Columns)
             {
                 case null:
-                case var cd when cd.All(c => c is IQsiAllColumnNode all && all.Path == null):
+                case var cd when cd.All(c => c is IQsiAllColumnNode { Path: null } all):
                     // Skip
                     break;
 

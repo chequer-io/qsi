@@ -248,7 +248,7 @@ namespace Qsi.Debugger
                 switch (value)
                 {
                     case null:
-                    case IQsiTreeNodeProperty<QsiTreeNode> nodeProperty when nodeProperty.IsEmpty:
+                    case IQsiTreeNodeProperty<QsiTreeNode> { IsEmpty: true }:
                         continue;
 
                     case IQsiTreeNodeProperty<QsiTreeNode> nodeProperty:

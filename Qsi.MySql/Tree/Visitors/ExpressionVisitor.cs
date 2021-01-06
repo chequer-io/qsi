@@ -587,9 +587,9 @@ namespace Qsi.MySql.Tree
         public static QsiBinaryExpressionNode VisitSimpleExprConcat(SimpleExprConcatContext context)
         {
             var node = TreeHelper.CreateBinaryExpression(
-                context.CONCAT_PIPES_SYMBOL().GetText(),
-                context.simpleExpr(0),
-                context.simpleExpr(1),
+                context.children[1].GetText(),
+                (SimpleExprContext)context.children[0],
+                (SimpleExprContext)context.children[1],
                 VisitSimpleExpr
             );
 
@@ -1817,80 +1817,88 @@ namespace Qsi.MySql.Tree
 
         public static QsiLiteralExpressionNode VisitLiteral(ParserRuleContext context)
         {
-            switch (context)
+            while (true)
             {
-                case NumLiteralContext numLiteral:
-                    return VisitLiteral(numLiteral.Start);
-
-                case BoolLiteralContext boolLiteral:
-                    return VisitLiteral(boolLiteral.Start);
-
-                case NullLiteralContext nullLiteral:
-                    return VisitLiteral(nullLiteral.Start);
-
-                case Real_ulong_numberContext realUlongNumberContext:
-                    return VisitLiteral(realUlongNumberContext.Start);
-
-                case TextStringContext textString:
+                switch (context)
                 {
-                    if (textString.textStringLiteral() != null)
-                        return VisitLiteral(textString.textStringLiteral());
+                    case NumLiteralContext numLiteral:
+                        return VisitLiteral(numLiteral.Start);
 
-                    return VisitLiteral(textString.Start);
-                }
+                    case BoolLiteralContext boolLiteral:
+                        return VisitLiteral(boolLiteral.Start);
 
-                case TextStringLiteralContext textStringLiteral:
-                {
-                    var node = new QsiLiteralExpressionNode
+                    case NullLiteralContext nullLiteral:
+                        return VisitLiteral(nullLiteral.Start);
+
+                    case Real_ulong_numberContext realUlongNumberContext:
+                        return VisitLiteral(realUlongNumberContext.Start);
+
+                    case TextStringContext textString:
                     {
-                        Value = textStringLiteral.value.Text[1..^1],
-                        Type = QsiDataType.String
-                    };
-
-                    MySqlTree.PutContextSpan(node, context);
-
-                    return node;
-                }
-
-                case TextLiteralContext textLiteral:
-                {
-                    QsiLiteralExpressionNode node;
-                    var rawValue = string.Join(string.Empty, textLiteral.textStringLiteral().Select(VisitLiteral));
-
-                    // National String
-                    if (textLiteral.HasToken(NCHAR_TEXT))
-                    {
-                        // N'text'
-                        var strValue = textLiteral.NCHAR_TEXT().GetText()[2..^1] + rawValue;
-
-                        node = new QsiLiteralExpressionNode
+                        switch (textString.children[0])
                         {
-                            Value = new MySqlString(MySqlStringKind.National, strValue, string.Empty, string.Empty),
-                            Type = QsiDataType.Custom
-                        };
-                    }
-                    // Default String
-                    else
-                    {
-                        node = new QsiLiteralExpressionNode
-                        {
-                            Value = new MySqlString(
-                                MySqlStringKind.Default,
-                                rawValue,
-                                textLiteral.UNDERSCORE_CHARSET()?.GetText(),
-                                string.Empty
-                            ),
-                            Type = QsiDataType.Custom
-                        };
+                            case TextStringLiteralContext textStringLiteral:
+                                context = textStringLiteral;
+                                continue;
+
+                            case ITerminalNode terminalNode:
+                                return VisitLiteral(terminalNode.Symbol);
+
+                            default:
+                                throw TreeHelper.NotSupportedTree(textString.children[0]);
+                        }
                     }
 
-                    MySqlTree.PutContextSpan(node, context);
+                    case TextStringLiteralContext textStringLiteral:
+                    {
+                        var node = new QsiLiteralExpressionNode
+                        {
+                            Value = IdentifierUtility.Unescape(textStringLiteral.value.Text),
+                            Type = QsiDataType.String
+                        };
 
-                    return node;
+                        MySqlTree.PutContextSpan(node, context);
+
+                        return node;
+                    }
+
+                    case TextLiteralContext textLiteral:
+                    {
+                        QsiLiteralExpressionNode node;
+                        var rawValue = string.Join(string.Empty, textLiteral.textStringLiteral().Select(VisitLiteral));
+
+                        // National String
+                        if (textLiteral.HasToken(NCHAR_TEXT))
+                        {
+                            // N'text'
+                            var strValue = textLiteral.NCHAR_TEXT().GetText()[2..^1] + rawValue;
+
+                            node = new QsiLiteralExpressionNode
+                            {
+                                Value = new MySqlString(MySqlStringKind.National, strValue, string.Empty, string.Empty),
+                                Type = QsiDataType.Custom
+                            };
+                        }
+                        // Default String
+                        else
+                        {
+                            node = new QsiLiteralExpressionNode
+                            {
+                                Value = new MySqlString(MySqlStringKind.Default, rawValue, textLiteral.UNDERSCORE_CHARSET()?.GetText(), string.Empty),
+                                Type = QsiDataType.Custom
+                            };
+                        }
+
+                        MySqlTree.PutContextSpan(node, context);
+
+                        return node;
+                    }
                 }
+
+                throw TreeHelper.NotSupportedTree(context);
+
+                break;
             }
-
-            throw TreeHelper.NotSupportedTree(context);
         }
 
         public static QsiLiteralExpressionNode VisitLiteral(IToken token)

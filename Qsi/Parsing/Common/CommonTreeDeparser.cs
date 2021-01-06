@@ -37,8 +37,7 @@ namespace Qsi.Parsing.Common
                 return false;
 
             return
-                node.Columns[0] is IQsiAllColumnNode allColumnNode &&
-                allColumnNode.Path == null;
+                node.Columns[0] is IQsiAllColumnNode { Path: null } allColumnNode;
         }
 
         protected void DeparseTreeNodeWithParenthesis(ScriptWriter writer, IQsiTreeNode node, QsiScript script)
