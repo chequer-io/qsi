@@ -1911,8 +1911,6 @@ namespace Qsi.MySql.Tree
                 }
 
                 throw TreeHelper.NotSupportedTree(context);
-
-                break;
             }
         }
 
