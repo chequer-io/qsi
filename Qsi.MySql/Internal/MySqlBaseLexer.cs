@@ -234,7 +234,7 @@ namespace Qsi.MySql.Internal
             const string unsigned_longlong_str = "18446744073709551615";
             const int unsigned_longlong_len = 20;
 
-            int length = text.Length - 1;
+            int length = text.Length;
 
             if (length < long_len)
                 return MySqlLexerInternal.INT_NUMBER;
