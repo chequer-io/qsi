@@ -1999,7 +1999,7 @@ namespace Qsi.MySql.Tree
 
                 case UNKNOWN_SYMBOL:
                 {
-                    value = "UNKNOWN";
+                    value = token.Text;
                     type = QsiDataType.Constant;
 
                     break;
