@@ -13,18 +13,6 @@ namespace Qsi.MySql.Internal
         private static readonly ConcurrentDictionary<MySqlVersion, IReadOnlySet<string>> _keywords = new();
         private static readonly ConcurrentDictionary<MySqlVersion, IReadOnlySet<string>> _reservedKeywords = new();
 
-        // MySQLSymbolInfo::systemFunctionsForVersion
-        public static IReadOnlySet<string> systemFunctionsForVersion(MySqlVersion version)
-        {
-            return version switch
-            {
-                MySqlVersion.MySQL56 => _systemFuncitons56,
-                MySqlVersion.MySQL57 => _systemFuncitons57,
-                MySqlVersion.MySQL80 => _systemFuncitons80,
-                _ => null
-            };
-        }
-
         // MySQLSymbolInfo::keywordsForVersion
         public static IReadOnlySet<string> keywordsForVersion(MySqlVersion version)
         {
