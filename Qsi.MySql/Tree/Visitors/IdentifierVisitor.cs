@@ -107,7 +107,25 @@ namespace Qsi.MySql.Tree
 
         public static QsiQualifiedIdentifier VisitFieldIdentifier(FieldIdentifierContext context)
         {
-            throw new NotImplementedException();
+            switch (context.children[0])
+            {
+                case DotIdentifierContext dotIdentifier:
+                    return new QsiQualifiedIdentifier(VisitDotIdentifier(dotIdentifier));
+
+                case QualifiedIdentifierContext qualifiedIdentifier:
+                    var identifier = VisitQualifiedIdentifier(qualifiedIdentifier);
+
+                    if (context.ChildCount == 2)
+                    {
+                        var dotIdentifier = VisitDotIdentifier((DotIdentifierContext)context.children[1]);
+                        identifier = new QsiQualifiedIdentifier(identifier.Append(dotIdentifier));
+                    }
+
+                    return identifier;
+
+                default:
+                    throw TreeHelper.NotSupportedTree(context.children[0]);
+            }
         }
     }
 }

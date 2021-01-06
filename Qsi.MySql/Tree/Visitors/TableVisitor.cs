@@ -222,7 +222,17 @@ namespace Qsi.MySql.Tree
 
         public static QsiColumnNode VisitExpr(ExprContext context)
         {
-            throw new System.NotImplementedException();
+            var expressionNode = ExpressionVisitor.VisitExpr(context);
+
+            if (expressionNode is QsiColumnExpressionNode columnExpression)
+                return columnExpression.Column.Value;
+
+            var node = new QsiDerivedColumnNode();
+
+            node.Expression.SetValue(expressionNode);
+            MySqlTree.PutContextSpan(node, context);
+
+            return node;
         }
 
         public static QsiTableNode VisitFromClause(FromClauseContext context)
