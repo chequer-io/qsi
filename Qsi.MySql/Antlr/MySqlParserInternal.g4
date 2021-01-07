@@ -4149,6 +4149,9 @@ identifierKeywordsAmbiguous3Roles:
     | SUPER_SYMBOL
 ;
 
+/* ** Patch by QSI
+ignore DATE, TIME, TIMESTAMP symbol for temporalLiteral
+*/
 // These are the non-reserved keywords which may be used for unquoted
 // identifiers everywhere without introducing grammar conflicts:
 identifierKeywordsUnambiguous:
@@ -4211,7 +4214,7 @@ identifierKeywordsUnambiguous:
         | DATAFILE_SYMBOL
         | DATA_SYMBOL
         | DATETIME_SYMBOL
-        | DATE_SYMBOL
+//        | DATE_SYMBOL
         | DAY_SYMBOL
         | DEFAULT_AUTH_SYMBOL
         | DEFINER_SYMBOL
@@ -4487,8 +4490,8 @@ identifierKeywordsUnambiguous:
         | TIES_SYMBOL
         | TIMESTAMP_ADD_SYMBOL
         | TIMESTAMP_DIFF_SYMBOL
-        | TIMESTAMP_SYMBOL
-        | TIME_SYMBOL
+//        | TIMESTAMP_SYMBOL
+//        | TIME_SYMBOL
         | TRANSACTION_SYMBOL
         | TRIGGERS_SYMBOL
         | TYPES_SYMBOL
@@ -4535,8 +4538,8 @@ identifierKeywordsUnambiguous:
         | REQUIRE_ROW_FORMAT_SYMBOL
         | REQUIRE_TABLE_PRIMARY_KEY_CHECK_SYMBOL
         | STREAM_SYMBOL
-        | TIMESTAMP_SYMBOL
-        | TIME_SYMBOL
+//        | TIMESTAMP_SYMBOL
+//        | TIME_SYMBOL
     )
 ;
 
@@ -4716,7 +4719,7 @@ roleOrLabelKeyword:
         | DATA_SYMBOL
         | DATAFILE_SYMBOL
         | DATETIME_SYMBOL
-        | DATE_SYMBOL
+//        | DATE_SYMBOL
         | DAY_SYMBOL
         | DEFAULT_AUTH_SYMBOL
         | DEFINER_SYMBOL
@@ -4969,10 +4972,10 @@ roleOrLabelKeyword:
         | TIES_SYMBOL                   // Conditionally set in the lexer.
         | TRANSACTION_SYMBOL
         | TRIGGERS_SYMBOL
-        | TIMESTAMP_SYMBOL
+//        | TIMESTAMP_SYMBOL
         | TIMESTAMP_ADD_SYMBOL
         | TIMESTAMP_DIFF_SYMBOL
-        | TIME_SYMBOL
+//        | TIME_SYMBOL
         | TYPES_SYMBOL
         | TYPE_SYMBOL
         | UDF_RETURNS_SYMBOL
