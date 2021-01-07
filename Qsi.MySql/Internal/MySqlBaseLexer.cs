@@ -334,20 +334,23 @@ namespace Qsi.MySql.Internal
         // MySQLBaseLexer::keywordFromText
         public int keywordFromText(string name)
         {
-            name = name.ToLower();
-
             if (!MySqlSymbolInfo.isKeyword(name, _mySqlVersion))
                 return -2; // INVALID_INDEX - 1
 
             if (_symbols == null)
             {
                 var max = ((Vocabulary)Vocabulary).getMaxTokenType();
+                _symbols = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+                
+                for (int i = 0; i <= max; i++)
+                {
+                    var key = Vocabulary.GetSymbolicName(i);
 
-                _symbols = Enumerable.Range(0, max + 1)
-                    .ToDictionary(
-                        i => Vocabulary.GetSymbolicName(i),
-                        StringComparer.OrdinalIgnoreCase
-                    );
+                    if (string.IsNullOrEmpty(key))
+                        continue;
+
+                    _symbols[key] = i;
+                }
             }
 
             if (_symbols.TryGetValue(name, out var type))
