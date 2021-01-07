@@ -1914,10 +1914,10 @@ namespace Qsi.MySql.Tree
 
         public static QsiInvokeExpressionNode VisitTemporalLiteral(TemporalLiteralContext context)
         {
-            string functinoName = context.children[0].GetText().ToUpper();
+            string functionName = context.children[0].GetText().ToUpper();
             var singleQuotedText = (ITerminalNode)context.children[1];
 
-            switch (functinoName)
+            switch (functionName)
             {
                 case MySqlKnownFunction.Date:
                 case MySqlKnownFunction.Time:
@@ -1929,7 +1929,7 @@ namespace Qsi.MySql.Tree
             }
 
             var node = new QsiInvokeExpressionNode();
-            node.Member.SetValue(TreeHelper.CreateFunction(functinoName));
+            node.Member.SetValue(TreeHelper.CreateFunction(functionName));
             node.Parameters.Add(VisitLiteralFromToken(singleQuotedText.Symbol));
 
             MySqlTree.PutContextSpan(node, context);
