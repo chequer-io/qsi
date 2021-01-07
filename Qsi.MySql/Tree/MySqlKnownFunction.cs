@@ -25,5 +25,17 @@
         // CAST(<expr> AS <type>)
         // ▶ CAST(<expr>, <type>)
         public const string Cast = "CAST";
+
+        // DATE 'text'
+        // ▶ DATE('text')
+        public const string Date = "DATE";
+
+        // TIME 'text'
+        // ▶ TIME('text')
+        public const string Time = "TIME";
+
+        // TIMESTAMP 'text'
+        // ▶ TIMESTAMP('text')
+        public const string Timestamp = "TIMESTAMP";
     }
 }

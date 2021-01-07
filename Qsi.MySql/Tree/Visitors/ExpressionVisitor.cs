@@ -539,7 +539,7 @@ namespace Qsi.MySql.Tree
             });
         }
 
-        public static QsiLiteralExpressionNode VisitSimpleExprLiteral(SimpleExprLiteralContext context)
+        public static QsiExpressionNode VisitSimpleExprLiteral(SimpleExprLiteralContext context)
         {
             return VisitLiteral(context.literal());
         }
@@ -1737,7 +1737,7 @@ namespace Qsi.MySql.Tree
         #endregion
 
         #region Literal
-        public static QsiLiteralExpressionNode VisitLiteral(LiteralContext context)
+        public static QsiExpressionNode VisitLiteral(LiteralContext context)
         {
             switch (context.children[0])
             {
@@ -1912,9 +1912,29 @@ namespace Qsi.MySql.Tree
             return VisitLiteralFromToken(context.Start);
         }
 
-        public static QsiLiteralExpressionNode VisitTemporalLiteral(TemporalLiteralContext context)
+        public static QsiInvokeExpressionNode VisitTemporalLiteral(TemporalLiteralContext context)
         {
-            throw new NotImplementedException();
+            string functinoName = context.children[0].GetText().ToUpper();
+            var singleQuotedText = (ITerminalNode)context.children[1];
+
+            switch (functinoName)
+            {
+                case MySqlKnownFunction.Date:
+                case MySqlKnownFunction.Time:
+                case MySqlKnownFunction.Timestamp:
+                    break;
+
+                default:
+                    throw TreeHelper.NotSupportedTree(context);
+            }
+
+            var node = new QsiInvokeExpressionNode();
+            node.Member.SetValue(TreeHelper.CreateFunction(functinoName));
+            node.Parameters.Add(VisitLiteralFromToken(singleQuotedText.Symbol));
+
+            MySqlTree.PutContextSpan(node, context);
+
+            return node;
         }
 
         public static QsiLiteralExpressionNode VisitNullLiteral(NullLiteralContext context)
@@ -1938,7 +1958,6 @@ namespace Qsi.MySql.Tree
                 {
                     value = int.Parse(token.Text);
                     type = QsiDataType.Numeric;
-
                     break;
                 }
 
@@ -1958,7 +1977,6 @@ namespace Qsi.MySql.Tree
                 {
                     value = float.Parse(token.Text);
                     type = QsiDataType.Decimal;
-
                     break;
                 }
 
@@ -1966,7 +1984,6 @@ namespace Qsi.MySql.Tree
                 {
                     value = long.Parse(token.Text);
                     type = QsiDataType.Decimal;
-
                     break;
                 }
 
@@ -1974,7 +1991,6 @@ namespace Qsi.MySql.Tree
                 {
                     value = ulong.Parse(token.Text);
                     type = QsiDataType.Decimal;
-
                     break;
                 }
 
@@ -2002,7 +2018,6 @@ namespace Qsi.MySql.Tree
                 {
                     value = true;
                     type = QsiDataType.Boolean;
-
                     break;
                 }
 
@@ -2010,7 +2025,6 @@ namespace Qsi.MySql.Tree
                 {
                     value = false;
                     type = QsiDataType.Boolean;
-
                     break;
                 }
 
@@ -2018,7 +2032,6 @@ namespace Qsi.MySql.Tree
                 {
                     value = token.Text;
                     type = QsiDataType.Constant;
-
                     break;
                 }
 
@@ -2027,7 +2040,13 @@ namespace Qsi.MySql.Tree
                 {
                     value = null;
                     type = QsiDataType.Null;
+                    break;
+                }
 
+                case SINGLE_QUOTED_TEXT:
+                {
+                    value = IdentifierUtility.Unescape(token.Text);
+                    type = QsiDataType.String;
                     break;
                 }
 

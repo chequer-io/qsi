@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
 using Qsi.Data;
 using Qsi.MySql.Data;
+using Qsi.MySql.Internal;
 using Qsi.MySql.Tree.Common;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
@@ -14,6 +16,8 @@ namespace Qsi.MySql.Tree
 {
     internal static class TableVisitor
     {
+        private static readonly string[] TeporalLiteralSymbols = { "DATE", "TIME", "TIMESTAMP" };
+
         public static QsiTableNode VisitSelectStatement(SelectStatementContext context)
         {
             switch (context.children[0])
@@ -176,11 +180,50 @@ namespace Qsi.MySql.Tree
             if (child is TableWildContext tableWild)
                 return VisitTableWild(tableWild);
 
-            var node = VisitExpr((ExprContext)child);
+            var expr = (ExprContext)child;
             var alias = context.selectAlias();
+
+            var node = VisitExpr(expr);
 
             if (alias == null)
                 return node;
+
+            var aliasNode = VisitSelectAlias(alias);
+
+            // * Special Case1 - Ambiguous teporalLiteral with selectAlias
+            // DATE 'text'
+            // TIME 'text'
+            // TIMESTAMP 'text'
+            if (node is IQsiDeclaredColumnNode declaredColumnNode &&
+                declaredColumnNode.Name.Level == 1 &&
+                TeporalLiteralSymbols.Contains(declaredColumnNode.Name[0].Value, StringComparer.OrdinalIgnoreCase) &&
+                !alias.HasToken(AS_SYMBOL) &&
+                aliasNode.Name.IsEscaped &&
+                aliasNode.Name.Value.StartsWith('\''))
+            {
+                var symbolText = declaredColumnNode.Name[0].Value.ToUpper();
+
+                var symbolType = symbolText switch
+                {
+                    "DATE" => DATE_SYMBOL,
+                    "TIME" => TIME_SYMBOL,
+                    _ => TIMESTAMP_SYMBOL
+                };
+
+                var temporalLiteral = new TemporalLiteralContext(context, -1)
+                {
+                    Start = context.Start,
+                    Stop = context.Stop
+                };
+
+                var symbolToken = new CommonToken(symbolType, symbolText);
+                temporalLiteral.AddChild(new TerminalNodeImpl(symbolToken));
+
+                var textToken = new CommonToken(SINGLE_QUOTED_TEXT, aliasNode.Name.Value);
+                temporalLiteral.AddChild(new TerminalNodeImpl(textToken));
+
+                return VisitTemporalLiteral(temporalLiteral);
+            }
 
             if (node is not QsiDerivedColumnNode derivedColumnNode)
             {
@@ -188,7 +231,7 @@ namespace Qsi.MySql.Tree
                 derivedColumnNode.Column.SetValue(node);
             }
 
-            derivedColumnNode.Alias.SetValue(VisitSelectAlias(alias));
+            derivedColumnNode.Alias.SetValue(aliasNode);
             MySqlTree.PutContextSpan(derivedColumnNode, context);
 
             return derivedColumnNode;
@@ -230,6 +273,16 @@ namespace Qsi.MySql.Tree
             var node = new QsiDerivedColumnNode();
 
             node.Expression.SetValue(expressionNode);
+            MySqlTree.PutContextSpan(node, context);
+
+            return node;
+        }
+
+        private static QsiColumnNode VisitTemporalLiteral(TemporalLiteralContext context)
+        {
+            var node = new QsiDerivedColumnNode();
+
+            node.Expression.SetValue(ExpressionVisitor.VisitTemporalLiteral(context));
             MySqlTree.PutContextSpan(node, context);
 
             return node;

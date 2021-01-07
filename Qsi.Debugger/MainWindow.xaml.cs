@@ -59,6 +59,7 @@ namespace Qsi.Debugger
 
             _vendors = new Dictionary<string, Lazy<VendorDebugger>>
             {
+                ["MySQL 5.6.2"] = new(() => new MySqlDebugger(new Version(5, 6, 2))),
                 ["MySQL 5.7.13"] = new(() => new MySqlDebugger(new Version(5, 7, 13))),
                 ["MySQL 8.0.22"] = new(() => new MySqlDebugger(new Version(8, 0, 22))),
                 ["PostgreSQL"] = new(() => new PostgreSqlDebugger()),
