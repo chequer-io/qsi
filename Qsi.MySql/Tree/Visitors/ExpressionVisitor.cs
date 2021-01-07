@@ -1414,7 +1414,7 @@ namespace Qsi.MySql.Tree
                 default:
                 {
                     if (context.jsonFunction() != null)
-                        VisitJsonFunction(context.jsonFunction());
+                        return VisitJsonFunction(context.jsonFunction());
 
                     break;
                 }
