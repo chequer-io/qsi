@@ -290,9 +290,16 @@ namespace Qsi.MySql.Tree
                         n.Right.SetValue(TreeHelper.Create<QsiMultipleExpressionNode>(mn =>
                         {
                             mn.Elements.Add(VisitSimpleExpr(exprLike.simpleExpr(0)));
-                            mn.Elements.Add(VisitSimpleExpr(exprLike.simpleExpr(1)));
 
-                            MySqlTree.PutContextSpan(mn, exprLike.simpleExpr(0).Start, exprLike.simpleExpr(1).Stop);
+                            if (exprLike.HasToken(ESCAPE_SYMBOL))
+                            {
+                                mn.Elements.Add(VisitSimpleExpr(exprLike.simpleExpr(1)));
+                                MySqlTree.PutContextSpan(mn, exprLike.simpleExpr(0).Start, exprLike.simpleExpr(1).Stop);
+                            }
+                            else
+                            {
+                                MySqlTree.PutContextSpan(mn, exprLike.simpleExpr(0));
+                            }
                         }));
                     });
 
