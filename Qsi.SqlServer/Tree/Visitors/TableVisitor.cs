@@ -60,9 +60,13 @@ namespace Qsi.SqlServer.Tree
                             n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
                             n.Source.SetValue(tableNode);
                             n.Directives.SetValue(tableDirectivesNode);
+
+                            SqlServerTree.PutFragmentSpan(n, selectStatement);
                         });
                 }
             }
+
+            SqlServerTree.PutFragmentSpan(tableNode, selectStatement);
 
             return tableNode;
         }
@@ -96,8 +100,9 @@ namespace Qsi.SqlServer.Tree
                 }
 
                 n.Source.SetValue(VisitSelectStatement(createViewStatement.SelectStatement));
-
                 n.Alias.SetValue(CreateAliasNode(createViewStatement.SchemaObjectName[^1]));
+
+                SqlServerTree.PutFragmentSpan(n, createViewStatement);
             });
         }
         #endregion
@@ -109,6 +114,8 @@ namespace Qsi.SqlServer.Tree
             {
                 n.IsRecursive = true;
                 n.Tables.AddRange(selectStatementWithCtesAndXmlNamespaces.CommonTableExpressions.Select(VisitCommonTableExpression));
+
+                SqlServerTree.PutFragmentSpan(n, selectStatementWithCtesAndXmlNamespaces);
             });
         }
 
@@ -135,6 +142,8 @@ namespace Qsi.SqlServer.Tree
                 {
                     n.Alias.SetValue(CreateAliasNode(commonTableExpression.ExpressionName));
                 }
+
+                SqlServerTree.PutFragmentSpan(n, commonTableExpression);
             });
         }
 
@@ -172,6 +181,8 @@ namespace Qsi.SqlServer.Tree
             {
                 n.Sources.Add(VisitQueryExpression(binaryQueryExpression.FirstQueryExpression));
                 n.Sources.Add(VisitQueryExpression(binaryQueryExpression.SecondQueryExpression));
+
+                SqlServerTree.PutFragmentSpan(n, binaryQueryExpression);
             });
         }
 
@@ -182,6 +193,8 @@ namespace Qsi.SqlServer.Tree
                 // Ignored ForClause, OffsetClause, OrderByClause
                 n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
                 n.Source.SetValue(VisitQueryExpression(queryParenthesisExpression.QueryExpression));
+
+                SqlServerTree.PutFragmentSpan(n, queryParenthesisExpression);
             });
         }
 
@@ -189,15 +202,28 @@ namespace Qsi.SqlServer.Tree
         {
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
-                // Ignored HavingClause, WhereClause, GroupByClause, TopRowFilter, UniqueRowFilter, ForClause, OffsetClause
+                // Ignored HavingClause, GroupByClause, TopRowFilter, UniqueRowFilter, ForClause, OffsetClause
                 var columnsDeclarationNode = new QsiColumnsDeclarationNode();
                 columnsDeclarationNode.Columns.AddRange(querySpecification.SelectElements.Select(VisitSelectElement));
+
                 n.Columns.SetValue(columnsDeclarationNode);
+
+                if (querySpecification.WhereClause != null)
+                {
+                    n.Where.SetValue(VisitWhereClause(querySpecification.WhereClause));
+                }
+
+                if (querySpecification.TopRowFilter != null || querySpecification.OffsetClause != null)
+                {
+                    n.Limit.SetValue(VisitLimitOffset(querySpecification.TopRowFilter, querySpecification.OffsetClause));
+                }
 
                 if (querySpecification.FromClause != null)
                 {
                     n.Source.SetValue(VisitFromClause(querySpecification.FromClause));
                 }
+
+                SqlServerTree.PutFragmentSpan(n, querySpecification);
             });
         }
         #endregion
@@ -233,7 +259,10 @@ namespace Qsi.SqlServer.Tree
                 };
 
                 if (selectScalarExpression.ColumnName == null)
+                {
+                    SqlServerTree.PutFragmentSpan(column, selectScalarExpression);
                     return column;
+                }
             }
             else
             {
@@ -267,6 +296,8 @@ namespace Qsi.SqlServer.Tree
                         n.Alias.SetValue(CreateAliasNode(columnName.Identifier));
                     }
                 }
+
+                SqlServerTree.PutFragmentSpan(n, selectScalarExpression);
             });
         }
 
@@ -294,6 +325,8 @@ namespace Qsi.SqlServer.Tree
                     en.AssignmentKind = kind;
                     en.Value.SetValue(ExpressionVisitor.VisitScalarExpression(selectSetVariable.Expression));
                 }));
+
+                SqlServerTree.PutFragmentSpan(n, selectSetVariable);
             });
         }
 
@@ -305,6 +338,8 @@ namespace Qsi.SqlServer.Tree
                 {
                     n.Path = IdentifierVisitor.CreateQualifiedIdentifier(selectStarExpression.Qualifier);
                 }
+
+                SqlServerTree.PutFragmentSpan(n, selectStarExpression);
             });
         }
         #endregion
@@ -337,7 +372,21 @@ namespace Qsi.SqlServer.Tree
                 });
             }
 
+            SqlServerTree.PutFragmentSpan(joinedTableNode, fromClause);
+
             return joinedTableNode;
+        }
+        #endregion
+
+        #region WhereClause
+        public QsiWhereExpressionNode VisitWhereClause(WhereClause whereClause)
+        {
+            return TreeHelper.Create<QsiWhereExpressionNode>(n =>
+            {
+                n.Expression.SetValue(ExpressionVisitor.VisitBooleanExpression(whereClause.SearchCondition));
+
+                SqlServerTree.PutFragmentSpan(n, whereClause);
+            });
         }
         #endregion
 
@@ -368,6 +417,8 @@ namespace Qsi.SqlServer.Tree
             {
                 n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
                 n.Source.SetValue(VisitTableReference(joinParenthesisTableReference.Join));
+
+                SqlServerTree.PutFragmentSpan(n, joinParenthesisTableReference);
             });
         }
 
@@ -414,6 +465,8 @@ namespace Qsi.SqlServer.Tree
                 n.Left.SetValue(VisitTableReference(joinTableReference.FirstTableReference));
                 n.Right.SetValue(VisitTableReference(joinTableReference.SecondTableReference));
                 n.JoinType = qsiJoinType;
+
+                SqlServerTree.PutFragmentSpan(n, joinTableReference);
             });
         }
         #endregion
@@ -424,6 +477,8 @@ namespace Qsi.SqlServer.Tree
             {
                 n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
                 n.Source.SetValue(VisitTableReference(odbcQualifiedJoinTableReference.TableReference));
+
+                SqlServerTree.PutFragmentSpan(n, odbcQualifiedJoinTableReference);
             });
         }
 
@@ -525,6 +580,8 @@ namespace Qsi.SqlServer.Tree
                 n.Source.SetValue(tableNode);
 
                 n.Alias.SetValue(CreateAliasNode(namedTableReference.Alias));
+
+                SqlServerTree.PutFragmentSpan(n, namedTableReference);
             });
         }
 
@@ -653,6 +710,8 @@ namespace Qsi.SqlServer.Tree
                 }
 
                 n.Rows.AddRange(inlineDerivedTable.RowValues.Select(ExpressionVisitor.VisitRowValue));
+
+                SqlServerTree.PutFragmentSpan(n, inlineDerivedTable);
             });
         }
 
@@ -667,6 +726,8 @@ namespace Qsi.SqlServer.Tree
 
                 n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
                 n.Source.SetValue(VisitQueryExpression(queryDerivedTable.QueryExpression));
+
+                SqlServerTree.PutFragmentSpan(n, queryDerivedTable);
             });
         }
 
@@ -677,6 +738,28 @@ namespace Qsi.SqlServer.Tree
         #endregion
         #endregion
         #endregion
+
+        public QsiLimitExpressionNode VisitLimitOffset(TopRowFilter topRowFilter, OffsetClause offsetClause)
+        {
+            return TreeHelper.Create<QsiLimitExpressionNode>(n =>
+            {
+                if (topRowFilter != null)
+                {
+                    var topRowFilterNode = ExpressionVisitor.VisitScalarExpression(topRowFilter.Expression);
+                    SqlServerTree.PutFragmentSpan(topRowFilterNode, topRowFilter);
+
+                    n.Limit.SetValue(topRowFilterNode);
+                }
+
+                if (offsetClause != null)
+                {
+                    var offsetClauseNode = ExpressionVisitor.VisitScalarExpression(offsetClause.OffsetExpression);
+                    SqlServerTree.PutFragmentSpan(offsetClauseNode, offsetClause);
+
+                    n.Offset.SetValue(offsetClauseNode);
+                }
+            });
+        }
 
         public QsiAliasNode CreateAliasNode(Identifier identifier)
         {
