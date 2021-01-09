@@ -158,7 +158,7 @@ namespace Qsi.SqlServer
             {
                 var fragment = $"{leadingTokens[0].Text}{leadingTokens[1].Text}";
 
-                if (Enum.TryParse<QsiScriptType>(fragment, out var type))
+                if (Enum.TryParse<QsiScriptType>(fragment, true, out var type))
                     return type;
 
                 if (BulkInsert.Equals(fragment, StringComparison.OrdinalIgnoreCase))
@@ -167,7 +167,7 @@ namespace Qsi.SqlServer
 
             if (leadingTokens.Length >= 1)
             {
-                if (Enum.TryParse<QsiScriptType>(leadingTokens[0].Text, out var type))
+                if (Enum.TryParse<QsiScriptType>(leadingTokens[0].Text, true, out var type))
                     return type;
 
                 if (Exec.Equals(leadingTokens[0].Text, StringComparison.OrdinalIgnoreCase))
