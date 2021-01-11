@@ -24,7 +24,7 @@ namespace Qsi.SqlServer
 
         public override IQsiTreeDeparser CreateTreeDeparser()
         {
-            throw new NotImplementedException();
+            return new SqlServerDeparser();
         }
 
         public override IQsiScriptParser CreateScriptParser()

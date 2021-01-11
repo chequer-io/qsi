@@ -118,7 +118,7 @@ namespace Qsi.SqlServer.Tree
             return node;
         }
         #endregion
-        
+
         #region Update
         public QsiDataUpdateActionNode VisitUpdateStatement(UpdateStatement updateStatement)
         {
@@ -128,7 +128,7 @@ namespace Qsi.SqlServer.Tree
         public QsiDataUpdateActionNode VisitUpdateSpecification(UpdateSpecification updateSpecification)
         {
             QsiTableNode table = TableVisitor.VisitTableReference(updateSpecification.Target);
-            
+
             var where = updateSpecification.WhereClause;
             var topRowFilter = updateSpecification.TopRowFilter;
 
