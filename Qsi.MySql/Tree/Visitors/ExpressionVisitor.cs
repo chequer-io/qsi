@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Antlr4.Runtime;
@@ -638,7 +638,7 @@ namespace Qsi.MySql.Tree
             {
                 node = TreeHelper.Create<QsiInvokeExpressionNode>(n =>
                 {
-                    n.Member.SetValue(TreeHelper.CreateFunction("ROW"));
+                    n.Member.SetValue(TreeHelper.CreateFunction(MySqlKnownFunction.Row));
                     n.Parameters.AddRange(parameters);
                 });
             }
@@ -704,7 +704,7 @@ namespace Qsi.MySql.Tree
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(TreeHelper.CreateFunction(context.CAST_SYMBOL().GetText()));
+                n.Member.SetValue(TreeHelper.CreateFunction(MySqlKnownFunction.Cast));
 
                 n.Parameters.Add(VisitExpr(context.expr()));
                 n.Parameters.Add(VisitCastType(context.castType()));
@@ -1057,7 +1057,7 @@ namespace Qsi.MySql.Tree
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(TreeHelper.CreateFunction("TRIM"));
+                n.Member.SetValue(TreeHelper.CreateFunction(MySqlKnownFunction.Trim));
 
                 if (context.HasToken(LEADING_SYMBOL))
                 {
@@ -1082,7 +1082,7 @@ namespace Qsi.MySql.Tree
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(TreeHelper.CreateFunction("SUBSTRING"));
+                n.Member.SetValue(TreeHelper.CreateFunction(MySqlKnownFunction.Substring));
 
                 n.Parameters.AddRange(context.expr().Select(VisitExpr));
 

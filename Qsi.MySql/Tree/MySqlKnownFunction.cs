@@ -2,6 +2,12 @@
 {
     public static class MySqlKnownFunction
     {
+        public const string Row = "ROW";
+
+        public const string Substring = "SUBSTRING";
+
+        public const string Trim = "TRIM";
+
         // <identifier> IS NULL
         // ▶ IS_NULL(<identifier>)
         public const string IsNull = "IS_NULL";
