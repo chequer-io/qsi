@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using Qsi.Analyzers;
+using Qsi.Analyzers.Action;
+using Qsi.MySql.Analyzers;
 using Qsi.Parsing;
 using Qsi.Services;
 
@@ -30,6 +33,12 @@ namespace Qsi.MySql
             {
                 AllowEmptyColumnsInSelect = false
             };
+        }
+
+        public override IEnumerable<QsiAnalyzerBase> CreateAnalyzers(QsiEngine engine)
+        {
+            yield return new QsiActionAnalyzer(engine);
+            yield return new MySqlTableAnalyzer(engine);
         }
     }
 }
