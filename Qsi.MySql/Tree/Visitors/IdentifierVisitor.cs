@@ -49,7 +49,7 @@ namespace Qsi.MySql.Tree
                 buffer[1] = dotIdentifier;
 
             if (hasWildcard)
-                buffer[^1] = new QsiIdentifier("*", false);
+                buffer[^1] = QsiIdentifier.Wildcard;
 
             return new QsiQualifiedIdentifier(buffer);
         }
