@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Antlr4.Runtime;
@@ -345,7 +345,7 @@ namespace Qsi.MySql.Tree
             {
                 n.Left.SetValue(VisitBitExpr(context.bitExpr(0)));
                 n.Operator = context.SOUNDS_SYMBOL().GetText() + " " + context.LIKE_SYMBOL().GetText();
-                n.Left.SetValue(VisitBitExpr(context.bitExpr(1)));
+                n.Right.SetValue(VisitBitExpr(context.bitExpr(1)));
 
                 MySqlTree.PutContextSpan(n, context);
             });
