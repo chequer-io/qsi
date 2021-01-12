@@ -68,7 +68,7 @@ namespace Qsi.MySql.Tree
                 // DELETE FROM table
 
                 var tableRef = context.tableRef();
-                var partitionDelete = context.partitionDelete();
+                var partitionDelete = context.partitionDelete(); // TODO: implement
                 var orderClause = context.orderClause();
                 var simpleLimitClause = context.simpleLimitClause();
 
