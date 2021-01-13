@@ -36,7 +36,16 @@ namespace Qsi.SqlServer
 
         public override IEnumerable<QsiScript> Parse(string input, CancellationToken cancellationToken)
         {
-            var result = _parser.Parse(input);
+            TSqlFragment result;
+
+            try
+            {
+                result = _parser.Parse(input);
+            }
+            catch (Exception)
+            {
+                return base.Parse(input, cancellationToken);
+            }
 
             if (!(result is TSqlScript script))
                 return Enumerable.Empty<QsiScript>();
