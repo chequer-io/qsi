@@ -824,6 +824,14 @@ namespace Qsi.Analyzers.Table
                     break;
                 }
 
+                case IQsiOrderExpressionNode e:
+                {
+                    foreach (var c in ResolveColumnsInExpression(context, e.Expression))
+                        yield return c;
+
+                    break;
+                }
+
                 case IQsiVariableExpressionNode e:
                 {
                     // TODO: Analyze variable

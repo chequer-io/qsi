@@ -308,6 +308,8 @@ namespace Qsi.MySql.Tree
                     {
                         n.Operator = exprRegex.REGEXP_SYMBOL().GetText();
                         n.Right.SetValue(VisitBitExpr(exprRegex.bitExpr()));
+
+                        MySqlTree.PutContextSpan(n, exprRegex);
                     });
 
                     break;
@@ -902,7 +904,7 @@ namespace Qsi.MySql.Tree
 
                         n.Parameters.Add(VisitExpr(context.expr(0)));
 
-                        if (context.INTERVAL_SYMBOL() != null)
+                        if (context.INTERVAL_SYMBOL() == null)
                         {
                             n.Parameters.Add(VisitExpr(context.expr(1)));
                         }
@@ -927,7 +929,14 @@ namespace Qsi.MySql.Tree
                     return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
                     {
                         n.Member.SetValue(member);
-                        n.Parameters.AddRange(VisitTimeFunctionParameters(context.timeFunctionParameters()));
+
+                        if (context.timeFunctionParameters() != null)
+                        {
+                            var param = VisitTimeFunctionParameters(context.timeFunctionParameters());
+
+                            if (param != null)
+                                n.Parameters.Add(param);
+                        }
 
                         MySqlTree.PutContextSpan(n, context);
                     });
@@ -984,6 +993,18 @@ namespace Qsi.MySql.Tree
                         MySqlTree.PutContextSpan(n, context);
                     });
 
+                case TIMESTAMP_ADD_SYMBOL:
+                case TIMESTAMP_DIFF_SYMBOL:
+                    return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+                    {
+                        n.Member.SetValue(member);
+
+                        n.Parameters.Add(VisitIntervalTimestamp(context.intervalTimeStamp()));
+                        n.Parameters.AddRange(context.expr().Select(VisitExpr));
+
+                        MySqlTree.PutContextSpan(n, context);
+                    });
+
                 case COALESCE_SYMBOL:
                     return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
                     {
@@ -1011,10 +1032,13 @@ namespace Qsi.MySql.Tree
 
                         n.Parameters.Add(VisitExpr(context.expr(0)));
 
-                        // <expr> AS CHAR <wsNumCodePoints> <weightStringLevels>
-                        if (context.HasToken(CHAR_SYMBOL))
+                        // <expr> (AS CHAR <wsNumCodePoints>?) (<weightStringLevels>?)
+                        if (context.HasToken(CHAR_SYMBOL) || context.weightStringLevels() != null)
                         {
-                            n.Parameters.Add(VisitRealUlongNumber(context.wsNumCodepoints().real_ulong_number()));
+                            if (context.HasToken(CHAR_SYMBOL))
+                            {
+                                n.Parameters.Add(VisitRealUlongNumber(context.wsNumCodepoints().real_ulong_number()));
+                            }
 
                             if (context.weightStringLevels() != null)
                             {
@@ -1058,22 +1082,10 @@ namespace Qsi.MySql.Tree
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
                 n.Member.SetValue(TreeHelper.CreateFunction(MySqlKnownFunction.Trim));
-
-                if (context.HasToken(LEADING_SYMBOL))
-                {
-                    n.Parameters.Add(TreeHelper.CreateLiteral("LEADING"));
-                }
-                else if (context.HasToken(TRAILING_SYMBOL))
-                {
-                    n.Parameters.Add(TreeHelper.CreateLiteral("TRAILING"));
-                }
-                else if (context.HasToken(BOTH_SYMBOL))
-                {
-                    n.Parameters.Add(TreeHelper.CreateLiteral("BOTH"));
-                }
-
                 n.Parameters.AddRange(context.expr().Select(VisitExpr));
 
+                // leading, trailing, both ignored
+                
                 MySqlTree.PutContextSpan(n, context);
             });
         }
@@ -1276,6 +1288,18 @@ namespace Qsi.MySql.Tree
         }
 
         public static QsiTypeExpressionNode VisitInterval(IntervalContext context)
+        {
+            var node = new QsiTypeExpressionNode
+            {
+                Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(context.GetText(), false))
+            };
+
+            MySqlTree.PutContextSpan(node, context);
+
+            return node;
+        }
+
+        public static QsiTypeExpressionNode VisitIntervalTimestamp(IntervalTimeStampContext context)
         {
             var node = new QsiTypeExpressionNode
             {
@@ -1492,16 +1516,22 @@ namespace Qsi.MySql.Tree
                 case LEAD_SYMBOL:
                 case LAG_SYMBOL:
                     node.Parameters.Add(VisitExpr(context.expr()));
+                    
+                    // nullTreatment ignored
                     break;
 
                 case FIRST_VALUE_SYMBOL:
                 case LAST_VALUE_SYMBOL:
                     node.Parameters.Add(VisitExprWithParentheses(context.exprWithParentheses()));
+                    
+                    // nullTreatment ignored
                     break;
 
                 case NTH_VALUE_SYMBOL:
                     node.Parameters.Add(VisitExpr(context.expr()));
                     node.Parameters.Add(VisitSimpleExpr(context.simpleExpr()));
+                    
+                    // nullTreatment ignored
                     break;
             }
 
@@ -1519,6 +1549,8 @@ namespace Qsi.MySql.Tree
                 n.Member.SetValue(TreeHelper.CreateFunction(context.Start.Text));
 
                 n.Parameters.AddRange(VisitExprList(context.exprList()));
+
+                MySqlTree.PutContextSpan(n, context);
             });
         }
 
@@ -1534,10 +1566,12 @@ namespace Qsi.MySql.Tree
             return node;
         }
 
-        public static IEnumerable<QsiLiteralExpressionNode> VisitTimeFunctionParameters(TimeFunctionParametersContext context)
+        public static QsiLiteralExpressionNode VisitTimeFunctionParameters(TimeFunctionParametersContext context)
         {
-            if (context?.fractionalPrecision() != null)
-                yield return VisitFractionalPrecision(context.fractionalPrecision());
+            if (context.fractionalPrecision() != null)
+                return VisitFractionalPrecision(context.fractionalPrecision());
+
+            return null;
         }
 
         public static QsiLiteralExpressionNode VisitFractionalPrecision(FractionalPrecisionContext context)
