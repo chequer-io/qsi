@@ -38,7 +38,7 @@ namespace Qsi.SqlServer.Tree
         
         public QsiIdentifier CreateIdentifier(Identifier identifier)
         {
-            return new QsiIdentifier(identifier.Value, false);
+            return new QsiIdentifier(identifier.Value, identifier.QuoteType != QuoteType.NotQuoted);
         }
 
         public QsiQualifiedIdentifier VisitVariableReference(VariableReference variableReference)
