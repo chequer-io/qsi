@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using Microsoft.SqlServer.TransactSql.ScriptDom;
 using Qsi.Tree;
 using Qsi.Utilities;
@@ -13,13 +13,17 @@ namespace Qsi.SqlServer.Tree
 
         public QsiChangeSearchPathActionNode VisitUseStatement(UseStatement useStatement)
         {
-            return new QsiChangeSearchPathActionNode
+            var node = new QsiChangeSearchPathActionNode
             {
                 Identifiers = new[]
                 {
                     IdentifierVisitor.CreateIdentifier(useStatement.DatabaseName),
                 }
             };
+
+            SqlServerTree.PutFragmentSpan(node, useStatement);
+
+            return node;
         }
 
         #region Insert
