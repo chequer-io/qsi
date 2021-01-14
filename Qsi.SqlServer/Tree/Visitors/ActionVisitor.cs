@@ -26,6 +26,37 @@ namespace Qsi.SqlServer.Tree
             return node;
         }
 
+        #region Alter User
+        public SqlServerAlterUserActionNode VisitAlterUser(AlterUserStatement alterUserStatement)
+        {
+            var node = new SqlServerAlterUserActionNode
+            {
+                TargetUser = IdentifierVisitor.CreateIdentifier(alterUserStatement.Name)
+            };
+
+            foreach (var userOption in alterUserStatement.UserOptions)
+            {
+                if (userOption is IdentifierPrincipalOption identifierPrincipalOption)
+                {
+                    switch (userOption.OptionKind)
+                    {
+                        case PrincipalOptionKind.Name:
+                            node.NewUserName = IdentifierVisitor.CreateIdentifier(identifierPrincipalOption.Identifier);
+                            break;
+
+                        case PrincipalOptionKind.DefaultSchema:
+                            node.DefaultSchema = IdentifierVisitor.CreateIdentifier(identifierPrincipalOption.Identifier);
+                            break;
+                    }
+                }
+            }
+
+            SqlServerTree.PutFragmentSpan(node, alterUserStatement);
+
+            return node;
+        }
+        #endregion
+
         #region Insert
         public QsiActionNode VisitInsertStatement(InsertStatement insertStatement)
         {
