@@ -19,13 +19,13 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Avalonia" Version="0.9.11" />
-        <PackageReference Include="Avalonia.Desktop" Version="0.9.11" />
+        <PackageReference Include="Avalonia" Version="0.10.0-rc1" />
+        <PackageReference Include="Avalonia.AvaloniaEdit" Version="0.10.0-rc1" />
+        <PackageReference Include="Avalonia.Desktop" Version="0.10.0-rc1" />
         <PackageReference Include="PhoenixSql" Version="1.0.9" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Libraries\AvaloniaEdit\AvaloniaEdit.csproj" />
         <ProjectReference Include="..\Qsi.Cql\Qsi.Cql.csproj" />
         <ProjectReference Include="..\Qsi.JSql\Qsi.JSql.csproj" />
         <ProjectReference Include="..\Qsi.MongoDB\Qsi.MongoDB.csproj" />
