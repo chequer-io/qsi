@@ -12,7 +12,7 @@ namespace Qsi.Data
         Replace,
         Update,
         Delete,
-        MergeInto,
+        Merge,
 
         // ** DDL **
         Create,
