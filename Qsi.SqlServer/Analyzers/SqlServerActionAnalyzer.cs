@@ -1,9 +1,11 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using Qsi.Analyzers;
 using Qsi.Analyzers.Action;
 using Qsi.Analyzers.Context;
+using Qsi.Data;
 using Qsi.SqlServer.Data;
 using Qsi.SqlServer.Tree;
+using Qsi.Tree;
 
 namespace Qsi.SqlServer.Analyzers
 {
@@ -34,6 +36,22 @@ namespace Qsi.SqlServer.Analyzers
             };
 
             return new ValueTask<IQsiAnalysisResult>(new QsiActionAnalysisResult(action));
+        }
+
+        protected override IQsiTableNode ReassembleCommonTableNode(IQsiTableNode node)
+        {
+            switch (node)
+            {
+                case ISqlServerBinaryTableNode binaryTableNode:
+                    return new ImmutableSqlServerBinaryTableNode(
+                        binaryTableNode.Parent,
+                        binaryTableNode.Left,
+                        binaryTableNode.BinaryTableType,
+                        binaryTableNode.Right,
+                        binaryTableNode.UserData);
+            }
+
+            return base.ReassembleCommonTableNode(node);
         }
     }
 }
