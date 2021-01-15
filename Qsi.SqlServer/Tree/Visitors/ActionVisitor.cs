@@ -1,5 +1,8 @@
+﻿using System;
 using System.Linq;
 using Microsoft.SqlServer.TransactSql.ScriptDom;
+using Qsi.Data;
+using Qsi.SqlServer.Data;
 using Qsi.Tree;
 using Qsi.Utilities;
 
@@ -195,6 +198,190 @@ namespace Qsi.SqlServer.Tree
             SqlServerTree.PutFragmentSpan(node, updateSpecification);
 
             return node;
+        }
+        #endregion
+
+        #region Merge
+        public SqlServerMergeActionNode VisitMergeStatement(MergeStatement mergeStatement)
+        {
+            // TODO: With
+            return VisitMergeSpecification(mergeStatement.MergeSpecification);
+        }
+
+        public SqlServerMergeActionNode VisitMergeSpecification(MergeSpecification mergeSpecification)
+        {
+            var targetTable = TableVisitor.VisitTableReference(mergeSpecification.Target);
+
+            if (!(targetTable is QsiTableAccessNode accessNode))
+                throw new NotSupportedException("Merge target table is not Table Reference");
+
+            var leftTable = targetTable;
+            var rightTable = TableVisitor.VisitTableReference(mergeSpecification.TableReference);
+
+            var identifier = accessNode.Identifier;
+
+            if (mergeSpecification.TableAlias != null)
+            {
+                leftTable = TreeHelper.Create<QsiDerivedTableNode>(n =>
+                {
+                    var alias = IdentifierVisitor.CreateIdentifier(mergeSpecification.TableAlias);
+
+                    n.Alias.SetValue(new QsiAliasNode
+                    {
+                        Name = alias
+                    });
+
+                    identifier = new QsiQualifiedIdentifier(alias);
+                    n.Source.SetValue(targetTable);
+                });
+            }
+
+            var joinedTable = TreeHelper.Create<SqlServerJoinedTableNode>(n =>
+            {
+                n.Left.SetValue(leftTable);
+                n.Right.SetValue(rightTable);
+                n.JoinType = QsiJoinType.Inner;
+                n.Expression.SetValue(ExpressionVisitor.VisitBooleanExpression(mergeSpecification.SearchCondition));
+            });
+
+            var leftTableColumnDeclaration = TreeHelper.Create<QsiColumnsDeclarationNode>(n =>
+            {
+                n.Columns.Add(new QsiAllColumnNode
+                {
+                    Path = identifier
+                });
+            });
+
+            return TreeHelper.Create<SqlServerMergeActionNode>(n =>
+            {
+                foreach (var actionClause in mergeSpecification.ActionClauses)
+                {
+                    QsiTableNode target = null;
+
+                    switch (actionClause.Condition)
+                    {
+                        // [ WHEN MATCHED [ AND <clause_search_condition> ] THEN <merge_matched> ] [ ..n ]
+                        case MergeCondition.Matched:
+                        {
+                            target = TreeHelper.Create<QsiDerivedTableNode>(dtn =>
+                            {
+                                dtn.Source.SetValue(joinedTable);
+                                dtn.Columns.SetValue(leftTableColumnDeclaration);
+
+                                if (actionClause.SearchCondition != null)
+                                {
+                                    dtn.Where.SetValue(TreeHelper.Create<QsiWhereExpressionNode>(wn =>
+                                    {
+                                        wn.Expression.SetValue(ExpressionVisitor.VisitBooleanExpression(actionClause.SearchCondition));
+                                    }));
+                                }
+                            });
+
+                            break;
+                        }
+
+                        // InsertMergeAction: not need to handle
+                        case MergeCondition.NotMatched:
+                        case MergeCondition.NotMatchedByTarget:
+                            break;
+
+                        case MergeCondition.NotMatchedBySource:
+                        {
+                            var exceptTable = TreeHelper.Create<SqlServerBinaryTableNode>(btn =>
+                            {
+                                btn.Left.SetValue(TreeHelper.Create<QsiDerivedTableNode>(ln =>
+                                {
+                                    ln.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+                                    ln.Source.SetValue(accessNode);
+                                }));
+
+                                btn.Right.SetValue(TreeHelper.Create<QsiDerivedTableNode>(dtn =>
+                                {
+                                    dtn.Columns.SetValue(leftTableColumnDeclaration);
+                                    dtn.Source.SetValue(joinedTable);
+                                }));
+
+                                btn.BinaryTableType = SqlServerBinaryTableType.Except;
+                            });
+
+                            if (actionClause.SearchCondition != null)
+                            {
+                                target = TreeHelper.Create<QsiDerivedTableNode>(dtn =>
+                                {
+                                    dtn.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+
+                                    dtn.Source.SetValue(TreeHelper.Create<QsiDerivedTableNode>(dtn2 =>
+                                    {
+                                        dtn2.Source.SetValue(exceptTable);
+                                        dtn2.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+
+                                        dtn2.Alias.SetValue(new QsiAliasNode
+                                        {
+                                            Name = accessNode.Identifier[^1]
+                                        });
+                                    }));
+
+                                    dtn.Where.SetValue(TreeHelper.Create<QsiWhereExpressionNode>(wn =>
+                                    {
+                                        wn.Expression.SetValue(ExpressionVisitor.VisitBooleanExpression(actionClause.SearchCondition));
+                                    }));
+                                });
+                            }
+                            else
+                            {
+                                target = exceptTable;
+                            }
+
+                            break;
+                        }
+
+                        case MergeCondition.NotSpecified:
+                            throw TreeHelper.NotSupportedFeature("Merge NOT SPECIFIED");
+                    }
+
+                    switch (actionClause.Action)
+                    {
+                        case DeleteMergeAction _:
+                            n.ActionNodes.Add(TreeHelper.Create<QsiDataDeleteActionNode>(dn =>
+                            {
+                                dn.Target.SetValue(target);
+                            }));
+
+                            break;
+
+                        case InsertMergeAction insertMergeAction:
+                            n.ActionNodes.Add(TreeHelper.Create<QsiDataInsertActionNode>(dn =>
+                            {
+                                dn.Target.SetValue(accessNode);
+
+                                dn.Columns = insertMergeAction.Columns.Select(ExpressionVisitor.VisitColumnReferenceExpression)
+                                    .Select(c =>
+                                    {
+                                        return c.Column.Value switch
+                                        {
+                                            QsiDeclaredColumnNode declaredColumn => declaredColumn.Name,
+                                            QsiAllColumnNode allColumn => allColumn.Path,
+                                            _ => throw new NotSupportedException(c.Column.Value.GetType().ToString())
+                                        };
+                                    })
+                                    .ToArray();
+
+                                dn.Values.AddRange(insertMergeAction.Source.RowValues.Select(ExpressionVisitor.VisitRowValue));
+                            }));
+
+                            break;
+
+                        case UpdateMergeAction updateMergeAction:
+                            n.ActionNodes.Add(TreeHelper.Create<QsiDataUpdateActionNode>(dn =>
+                            {
+                                dn.Target.SetValue(target);
+                                dn.SetValues.AddRange(updateMergeAction.SetClauses.Select(ExpressionVisitor.VisitSetClause));
+                            }));
+
+                            break;
+                    }
+                }
+            });
         }
         #endregion
     }

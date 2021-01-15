@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading;
 using Microsoft.SqlServer.TransactSql.ScriptDom;
@@ -83,7 +83,10 @@ namespace Qsi.SqlServer
 
                     case UpdateStatement updateStatement:
                         return _actionVisitor.VisitUpdateStatement(updateStatement);
-                    
+
+                    case MergeStatement mergeStatement:
+                        return _actionVisitor.VisitMergeStatement(mergeStatement);
+
                     case AlterUserStatement alterUserStatement:
                         return _actionVisitor.VisitAlterUser(alterUserStatement);
 
