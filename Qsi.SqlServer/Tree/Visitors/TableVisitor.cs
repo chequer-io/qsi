@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.SqlServer.TransactSql.ScriptDom;
 using Qsi.Data;
+using Qsi.SqlServer.Data;
 using Qsi.Tree;
 using Qsi.Utilities;
 
@@ -446,7 +447,7 @@ namespace Qsi.SqlServer.Tree
                         _ => throw new InvalidOperationException()
                     };
 
-                    return CreateJoinedTableNode(joinType, qualifiedJoin);
+                    return CreateJoinedTableNode(joinType, qualifiedJoin, qualifiedJoin.SearchCondition);
                 }
 
                 case UnqualifiedJoin unqualifiedJoin:
@@ -466,12 +467,16 @@ namespace Qsi.SqlServer.Tree
             throw TreeHelper.NotSupportedTree(joinTableReference);
         }
 
-        public QsiJoinedTableNode CreateJoinedTableNode(QsiJoinType qsiJoinType, JoinTableReference joinTableReference)
+        public SqlServerJoinedTableNode CreateJoinedTableNode(QsiJoinType qsiJoinType, JoinTableReference joinTableReference, BooleanExpression searchCondition = null)
         {
-            return TreeHelper.Create<QsiJoinedTableNode>(n =>
+            return TreeHelper.Create<SqlServerJoinedTableNode>(n =>
             {
                 n.Left.SetValue(VisitTableReference(joinTableReference.FirstTableReference));
                 n.Right.SetValue(VisitTableReference(joinTableReference.SecondTableReference));
+
+                if (searchCondition != null)
+                    n.Expression.SetValue(ExpressionVisitor.VisitBooleanExpression(searchCondition));
+
                 n.JoinType = qsiJoinType;
 
                 SqlServerTree.PutFragmentSpan(n, joinTableReference);

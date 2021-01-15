@@ -1,6 +1,7 @@
-using System;
+﻿using System;
 using Qsi.Data;
 using Qsi.Parsing.Common;
+using Qsi.SqlServer.Data;
 using Qsi.SqlServer.Tree;
 using Qsi.Tree;
 
@@ -60,6 +61,20 @@ namespace Qsi.SqlServer
             DeparseTreeNode(writer, node.Left, script);
             writer.Write(binaryTableType);
             DeparseTreeNode(writer, node.Right, script);
+        }
+
+        protected override void DeparseJoinedTableNode(ScriptWriter writer, IQsiJoinedTableNode node, QsiScript script)
+        {
+            base.DeparseJoinedTableNode(writer, node, script);
+
+            if (node is SqlServerJoinedTableNode sqlServerJoinedTableNode)
+            {
+                if (!sqlServerJoinedTableNode.Expression.IsEmpty)
+                {
+                    writer.Write(" ON ");
+                    DeparseTreeNode(writer, sqlServerJoinedTableNode.Expression.Value, script);
+                }
+            }
         }
     }
 }
