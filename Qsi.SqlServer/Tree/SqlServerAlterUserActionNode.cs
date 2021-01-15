@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Qsi.Data;
 using Qsi.Tree;
 
@@ -10,8 +11,8 @@ namespace Qsi.SqlServer.Tree
 
         public QsiIdentifier DefaultSchema { get; set; }
 
-        public QsiIdentifier NewUserName { get; set; } 
+        public QsiIdentifier NewUserName { get; set; }
 
-        public override IEnumerable<IQsiTreeNode> Children { get; }
+        public override IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
     }
 }
