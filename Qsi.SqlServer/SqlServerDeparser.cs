@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Qsi.Data;
 using Qsi.Parsing.Common;
 using Qsi.SqlServer.Tree;
@@ -19,6 +19,47 @@ namespace Qsi.SqlServer
             }
 
             writer.Write(script.Script[range]);
+        }
+
+        protected override void DeparseTableNode(ScriptWriter writer, IQsiTableNode node, QsiScript script)
+        {
+            switch (node)
+            {
+                case ISqlServerBinaryTableNode sqlServerBinaryTableNode:
+                    DeparseBinaryTableNode(writer, sqlServerBinaryTableNode, script);
+                    break;
+
+                default:
+                    base.DeparseTableNode(writer, node, script);
+                    break;
+            }
+        }
+
+        private void DeparseBinaryTableNode(ScriptWriter writer, ISqlServerBinaryTableNode node, QsiScript script)
+        {
+            string binaryTableType;
+
+            switch (node.BinaryTableType)
+            {
+                case SqlServerBinaryTableType.Except:
+                    binaryTableType = " EXCEPT ";
+                    break;
+
+                case SqlServerBinaryTableType.Intersect:
+                    binaryTableType = " INTERSECT ";
+                    break;
+
+                case SqlServerBinaryTableType.Union:
+                    binaryTableType = " UNION ";
+                    break;
+
+                default:
+                    throw new NotSupportedException(node.BinaryTableType.ToString());
+            }
+
+            DeparseTreeNode(writer, node.Left, script);
+            writer.Write(binaryTableType);
+            DeparseTreeNode(writer, node.Right, script);
         }
     }
 }
