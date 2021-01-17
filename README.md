@@ -540,12 +540,6 @@ PS> ./Publish.ps1 <VERSION> [-Mode <PUBLISH_MODE>]
 
 It supports abstract syntax trees and semantic trees, and a debugger that can debug compilation results.
 
-|OS     |Support |
-|-------|:------:|
-|Windows|&#x2714;|
-|OSX    |&#x2714;|
-|Linux  |&#x274C;|
-
 ![Preview](https://github.com/chequer-io/qsi/blob/master/Qsi.Debugger/Screenshot.png?raw=true)
 
 ### Run
