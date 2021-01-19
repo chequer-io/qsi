@@ -27,5 +27,24 @@ namespace Qsi.Shared.Extensions
             token = null;
             return false;
         }
+
+        public static int GetTokenIndex(this ParserRuleContext context, int type)
+        {
+            for (int i = 0; i < context.ChildCount; i++)
+            {
+                if (context.children[i] is ITerminalNode t && t.Symbol.Type == type)
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        public static bool TryGetTokenIndex(this ParserRuleContext context, int type, out int index)
+        {
+            index = GetTokenIndex(context, type);
+            return index >= 0;
+        }
     }
 }

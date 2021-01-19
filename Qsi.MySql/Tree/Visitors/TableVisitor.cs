@@ -16,7 +16,7 @@ namespace Qsi.MySql.Tree
 {
     internal static class TableVisitor
     {
-        private static readonly string[] TeporalLiteralSymbols = { "DATE", "TIME", "TIMESTAMP" };
+        public static readonly string[] TeporalLiteralSymbols = { "DATE", "TIME", "TIMESTAMP" };
 
         public static QsiTableNode VisitSelectStatement(SelectStatementContext context)
         {
@@ -278,7 +278,7 @@ namespace Qsi.MySql.Tree
             return node;
         }
 
-        private static QsiColumnNode VisitTemporalLiteral(TemporalLiteralContext context)
+        public static QsiColumnNode VisitTemporalLiteral(TemporalLiteralContext context)
         {
             var node = new QsiDerivedColumnNode();
 
@@ -707,7 +707,7 @@ namespace Qsi.MySql.Tree
             return node;
         }
 
-        private static QsiRowValueExpressionNode VisitRowValueExplicit(RowValueExplicitContext context)
+        public static QsiRowValueExpressionNode VisitRowValueExplicit(RowValueExplicitContext context)
         {
             var node = new QsiRowValueExpressionNode();
 
@@ -771,6 +771,14 @@ namespace Qsi.MySql.Tree
             return node;
         }
 
+        public static QsiTableNode VisitQueryExpressionOrParens(QueryExpressionOrParensContext context)
+        {
+            if (context.children[0] is QueryExpressionContext queryExpression)
+                return VisitQueryExpression(new CommonQueryContext(queryExpression, null));
+
+            return VisitQueryExpressionParens((QueryExpressionParensContext)context.children[0]);
+        }
+
         public static QsiTableNode VisitSelectStatementWithInto(SelectStatementWithIntoContext context)
         {
             throw TreeHelper.NotSupportedFeature("select into");
@@ -811,7 +819,7 @@ namespace Qsi.MySql.Tree
             return node;
         }
 
-        private static QsiColumnsDeclarationNode CreateSequentialColumns(ColumnInternalRefListContext context)
+        public static QsiColumnsDeclarationNode CreateSequentialColumns(ColumnInternalRefListContext context)
         {
             var node = new QsiColumnsDeclarationNode();
 
@@ -821,7 +829,7 @@ namespace Qsi.MySql.Tree
             return node;
         }
 
-        private static QsiSequentialColumnNode VisitSequentialColumn(ColumnInternalRefContext context)
+        public static QsiSequentialColumnNode VisitSequentialColumn(ColumnInternalRefContext context)
         {
             var node = new QsiSequentialColumnNode();
 
@@ -886,6 +894,38 @@ namespace Qsi.MySql.Tree
             MySqlTree.PutContextSpan(node, context);
 
             return node;
+        }
+
+        public static QsiTableNode VisitCreateView(CreateViewContext context)
+        {
+            if (!context.TryGetTokenIndex(VIEW_SYMBOL, out var index))
+                throw new QsiException(QsiError.Syntax);
+
+            var viewName = (ViewNameContext)context.children[index + 1];
+            var viewTail = (ViewTailContext)context.children[index + 2];
+            var columnInternalRefList = viewTail.columnInternalRefList();
+
+            var node = new QsiDerivedTableNode();
+
+            node.Alias.SetValue(new QsiAliasNode
+            {
+                Name = IdentifierVisitor.VisitViewName(viewName)[^1]
+            });
+
+            node.Columns.SetValue(columnInternalRefList == null ?
+                TreeHelper.CreateAllColumnsDeclaration() :
+                CreateSequentialColumns(columnInternalRefList));
+
+            node.Source.SetValue(VisitViewSelect(viewTail.viewSelect()));
+
+            MySqlTree.PutContextSpan(node, context);
+
+            return node;
+        }
+
+        public static QsiTableNode VisitViewSelect(ViewSelectContext context)
+        {
+            return VisitQueryExpressionOrParens(context.queryExpressionOrParens());
         }
     }
 }

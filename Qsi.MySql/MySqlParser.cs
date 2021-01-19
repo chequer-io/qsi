@@ -32,6 +32,10 @@ namespace Qsi.MySql
                 case SelectStatementContext selectStatement:
                     return TableVisitor.VisitSelectStatement(selectStatement);
 
+                case CreateStatementContext createStatement when
+                    createStatement.children[1] is CreateViewContext createView:
+                    return TableVisitor.VisitCreateView(createView);
+
                 case DeleteStatementContext deleteStatement:
                     return ActionVisitor.VisitDeleteStatement(deleteStatement);
 
