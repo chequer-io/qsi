@@ -1,4 +1,8 @@
-﻿using Qsi.Analyzers;
+﻿using System;
+using System.Collections.Generic;
+using Qsi.Analyzers;
+using Qsi.Analyzers.Action;
+using Qsi.MySql.Analyzers;
 using Qsi.Parsing;
 using Qsi.Services;
 
@@ -6,9 +10,11 @@ namespace Qsi.MySql
 {
     public abstract class MySqlLanguageServiceBase : QsiLanguageServiceBase
     {
+        public abstract Version Version { get; }
+
         public override IQsiTreeParser CreateTreeParser()
         {
-            return new MySqlParser();
+            return new MySqlParser(Version);
         }
 
         public override IQsiTreeDeparser CreateTreeDeparser()
@@ -23,10 +29,16 @@ namespace Qsi.MySql
 
         public override QsiAnalyzerOptions CreateAnalyzerOptions()
         {
-            return new QsiAnalyzerOptions
+            return new()
             {
                 AllowEmptyColumnsInSelect = false
             };
+        }
+
+        public override IEnumerable<QsiAnalyzerBase> CreateAnalyzers(QsiEngine engine)
+        {
+            yield return new QsiActionAnalyzer(engine);
+            yield return new MySqlTableAnalyzer(engine);
         }
     }
 }

@@ -1,62 +1,55 @@
-﻿using Antlr4.Runtime;
+﻿using System;
+using System.Threading;
 using Qsi.Data;
 using Qsi.MySql.Internal;
 using Qsi.MySql.Tree;
-using Qsi.Parsing.Antlr;
+using Qsi.Parsing;
 using Qsi.Tree;
+using Qsi.Utilities;
+using static Qsi.MySql.Internal.MySqlParserInternal;
 
 namespace Qsi.MySql
 {
-    public sealed class MySqlParser : AntlrParserBase
+    public sealed class MySqlParser : IQsiTreeParser
     {
-        protected override Parser CreateParser(QsiScript script)
+        private readonly int _version;
+
+        public MySqlParser(Version version)
         {
-            var stream = new AntlrUpperInputStream(script.Script);
-            var lexer = new MySqlLexer(stream);
-            var tokens = new CommonTokenStream(lexer);
-            return new Internal.MySqlParser(tokens);
+            _version = MySQLUtility.VersionToInt(version);
         }
 
-        protected override IQsiTreeNode Parse(QsiScript script, Parser parser)
+        public IQsiTreeNode Parse(QsiScript script, CancellationToken cancellationToken = default)
         {
-            return ParseInternal(script, parser) ?? throw new QsiException(QsiError.NotSupportedScript, script.ScriptType);
-        }
+            var parser = MySQLUtility.CreateParser(script.Script, _version);
+            var query = parser.query();
 
-        private IQsiTreeNode ParseInternal(QsiScript script, Parser parser)
-        {
-            var mySqlParser = (Internal.MySqlParser)parser;
+            if (query.children[0] is not SimpleStatementContext simpleStatement)
+                return null;
 
-            switch (script.ScriptType)
+            switch (simpleStatement.children[0])
             {
-                case QsiScriptType.With:
-                case QsiScriptType.Select:
-                    return TableVisitor.VisitSelectStatement(mySqlParser.selectStatement());
+                case SelectStatementContext selectStatement:
+                    return TableVisitor.VisitSelectStatement(selectStatement);
 
-                case QsiScriptType.Create:
-                    return TableVisitor.VisitDdlStatement(mySqlParser.ddlStatement());
+                case CreateStatementContext createStatement when
+                    createStatement.children[1] is CreateViewContext createView:
+                    return TableVisitor.VisitCreateView(createView);
 
-                case QsiScriptType.Prepare:
-                case QsiScriptType.Execute:
-                case QsiScriptType.DropPrepare:
-                    return ActionVisitor.VisitPreparedStatement(mySqlParser.preparedStatement());
+                case DeleteStatementContext deleteStatement:
+                    return ActionVisitor.VisitDeleteStatement(deleteStatement);
 
-                case QsiScriptType.Insert:
-                    return ActionVisitor.VisitInsertStatement(mySqlParser.insertStatement());
+                case ReplaceStatementContext replaceStatement:
+                    return ActionVisitor.VisitReplaceStatement(replaceStatement);
 
-                case QsiScriptType.Replace:
-                    return ActionVisitor.VisitReplaceStatement(mySqlParser.replaceStatement());
+                case UpdateStatementContext updateStatement:
+                    return ActionVisitor.VisitUpdateStatement(updateStatement);
 
-                case QsiScriptType.Delete:
-                    return ActionVisitor.VisitDeleteStatement(mySqlParser.deleteStatement());
-                
-                case QsiScriptType.Update:
-                    return ActionVisitor.VisitUpdateStatement(mySqlParser.updateStatement());
+                case InsertStatementContext insertStatement:
+                    return ActionVisitor.VisitInsertStatement(insertStatement);
 
-                case QsiScriptType.Use:
-                    return ActionVisitor.VisitUseStatement(mySqlParser.useStatement());
-                
                 default:
-                    return null;
+                    throw TreeHelper.NotSupportedTree(simpleStatement.children[0]);
             }
         }
     }

@@ -57,17 +57,19 @@ namespace Qsi.Debugger
 
             _vendors = new Dictionary<string, Lazy<VendorDebugger>>
             {
-                ["MySQL"] = new Lazy<VendorDebugger>(() => new MySqlDebugger()),
-                ["PostgreSQL"] = new Lazy<VendorDebugger>(() => new PostgreSqlDebugger()),
-                ["JSqlParser"] = new Lazy<VendorDebugger>(() => new JSqlDebugger()),
-                ["Oracle"] = new Lazy<VendorDebugger>(() => new OracleDebugger()),
-                ["SQL Server 2000"] = new Lazy<VendorDebugger>(() => new SqlServerDebugger(TransactSqlVersion.Version80)),
-                ["SQL Server 2012"] = new Lazy<VendorDebugger>(() => new SqlServerDebugger(TransactSqlVersion.Version110)),
-                ["SQL Server 2017"] = new Lazy<VendorDebugger>(() => new SqlServerDebugger(TransactSqlVersion.Version140)),
-                ["SQL Server 2019"] = new Lazy<VendorDebugger>(() => new SqlServerDebugger(TransactSqlVersion.Version150)),
-                ["Phoenix 5.0.0"] = new Lazy<VendorDebugger>(() => new PhoenixSqlDebugger()),
-                ["CassandraQL 3"] = new Lazy<VendorDebugger>(() => new CqlDebugger()),
-                ["PrimarSql"] = new Lazy<VendorDebugger>(() => new PrimarSqlDebugger())
+                ["MySQL 5.6.2"] = new(() => new MySqlDebugger(new Version(5, 6, 2))),
+                ["MySQL 5.7.13"] = new(() => new MySqlDebugger(new Version(5, 7, 13))),
+                ["MySQL 8.0.22"] = new(() => new MySqlDebugger(new Version(8, 0, 22))),
+                ["PostgreSQL"] = new(() => new PostgreSqlDebugger()),
+                ["JSqlParser"] = new(() => new JSqlDebugger()),
+                ["Oracle"] = new(() => new OracleDebugger()),
+                ["SQL Server 2000"] = new(() => new SqlServerDebugger(TransactSqlVersion.Version80)),
+                ["SQL Server 2012"] = new(() => new SqlServerDebugger(TransactSqlVersion.Version110)),
+                ["SQL Server 2017"] = new(() => new SqlServerDebugger(TransactSqlVersion.Version140)),
+                ["SQL Server 2019"] = new(() => new SqlServerDebugger(TransactSqlVersion.Version150)),
+                ["Phoenix 5.0.0"] = new(() => new PhoenixSqlDebugger()),
+                ["CassandraQL 3"] = new(() => new CqlDebugger()),
+                ["PrimarSql"] = new(() => new PrimarSqlDebugger())
             };
 
             _cbLanguages = this.Find<ComboBox>("cbLanguages");
@@ -245,7 +247,7 @@ namespace Qsi.Debugger
                 switch (value)
                 {
                     case null:
-                    case IQsiTreeNodeProperty<QsiTreeNode> nodeProperty when nodeProperty.IsEmpty:
+                    case IQsiTreeNodeProperty<QsiTreeNode> { IsEmpty: true }:
                         continue;
 
                     case IQsiTreeNodeProperty<QsiTreeNode> nodeProperty:

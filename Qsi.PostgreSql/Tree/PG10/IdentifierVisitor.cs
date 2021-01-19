@@ -11,7 +11,7 @@ namespace Qsi.PostgreSql.Tree.PG10
     {
         public static QsiQualifiedIdentifier VisitStrings(IEnumerable<PgString> values)
         {
-            return new QsiQualifiedIdentifier(values.Select(v => new QsiIdentifier(v.str, false)));
+            return new(values.Select(v => new QsiIdentifier(v.str, false)));
         }
 
         public static QsiQualifiedIdentifier VisitRangeVar(RangeVar var)

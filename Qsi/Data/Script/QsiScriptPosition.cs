@@ -2,7 +2,7 @@
 {
     public sealed class QsiScriptPosition
     {
-        public static QsiScriptPosition Start { get; } = new QsiScriptPosition(0, 0);
+        public static QsiScriptPosition Start { get; } = new(0, 0);
 
         public int Line { get; }
 

@@ -12,7 +12,7 @@ namespace Qsi.SqlServer.Tree
 
         public QsiChangeSearchPathActionNode VisitUseStatement(UseStatement useStatement)
         {
-            return new QsiChangeSearchPathActionNode
+            return new()
             {
                 Identifiers = new[]
                 {

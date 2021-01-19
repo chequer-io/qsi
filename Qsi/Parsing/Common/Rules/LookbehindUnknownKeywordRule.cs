@@ -1,4 +1,4 @@
-﻿﻿namespace Qsi.Parsing.Common.Rules
+﻿namespace Qsi.Parsing.Common.Rules
 {
     public sealed class LookbehindUnknownKeywordRule : ITokenRule
     {

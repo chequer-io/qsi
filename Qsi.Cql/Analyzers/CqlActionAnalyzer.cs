@@ -46,8 +46,7 @@ namespace Qsi.Cql.Analyzers
                         break;
                     }
 
-                    case IQsiDerivedColumnNode derivedColumn when
-                        derivedColumn.IsExpression &&
+                    case IQsiDerivedColumnNode { IsExpression: true } derivedColumn when
                         derivedColumn.Expression is IQsiMemberAccessExpressionNode memberAccess:
                     {
                         var selectorList = new List<ISelector>();

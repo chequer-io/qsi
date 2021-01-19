@@ -16,7 +16,7 @@ namespace Qsi.JSql.Tree
 {
     public class JSqlExpressionVisitor : JSqlVisitorBase
     {
-        private static readonly Regex _dateTimePattern = new Regex("(?<=')[^']+(?=')");
+        private static readonly Regex _dateTimePattern = new("(?<=')[^']+(?=')");
 
         public JSqlExpressionVisitor(IJSqlVisitorContext context) : base(context)
         {

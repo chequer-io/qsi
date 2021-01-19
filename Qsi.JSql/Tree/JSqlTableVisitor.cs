@@ -280,12 +280,12 @@ namespace Qsi.JSql.Tree
 
         public virtual QsiAllColumnNode VisitAllColumns(AllColumns columns)
         {
-            return new QsiAllColumnNode();
+            return new();
         }
 
         public virtual QsiAllColumnNode VisitAllTableColumns(AllTableColumns columns)
         {
-            return new QsiAllColumnNode
+            return new()
             {
                 Path = IdentifierVisitor.VisitMultiPartName(columns.getTable())
             };
@@ -345,7 +345,7 @@ namespace Qsi.JSql.Tree
 
         public virtual QsiBindingColumnNode VisitNumericBind(NumericBind expression)
         {
-            return new QsiBindingColumnNode
+            return new()
             {
                 Id = expression.getBindId().ToString()
             };
@@ -353,7 +353,7 @@ namespace Qsi.JSql.Tree
 
         public virtual QsiBindingColumnNode VisitJdbcParameter(JdbcParameter expression)
         {
-            return new QsiBindingColumnNode
+            return new()
             {
                 Id = expression.toString()
             };
@@ -361,7 +361,7 @@ namespace Qsi.JSql.Tree
 
         public virtual QsiBindingColumnNode VisitJdbcNamedParameter(JdbcNamedParameter expression)
         {
-            return new QsiBindingColumnNode
+            return new()
             {
                 Id = expression.getName()
             };
@@ -530,7 +530,7 @@ namespace Qsi.JSql.Tree
 
         public virtual QsiAliasNode VisitAlias(Alias alias)
         {
-            return new QsiAliasNode
+            return new()
             {
                 Name = IdentifierVisitor.VisitAlias(alias)
             };

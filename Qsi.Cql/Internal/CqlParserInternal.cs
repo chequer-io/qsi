@@ -5,9 +5,9 @@ namespace Qsi.Cql.Internal
 {
     internal partial class CqlParserInternal
     {
-        private readonly List<ErrorListener> _errorListeners = new List<ErrorListener>();
+        private readonly List<ErrorListener> _errorListeners = new();
 
-        private readonly HashSet<string> _reservedTypeNames = new HashSet<string>
+        private readonly HashSet<string> _reservedTypeNames = new()
         {
             "byte",
             "complex",

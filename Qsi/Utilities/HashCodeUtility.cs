@@ -9,7 +9,7 @@ namespace Qsi.Utilities
     {
         public static int Combine<T>(IEnumerable<T> enumerable)
         {
-            if (!(enumerable is IList list))
+            if (enumerable is not IList list)
             {
                 list = enumerable.Take(9).ToArray();
             }

@@ -15,8 +15,7 @@ namespace Qsi.Oracle.Tree
             var expressionNode = base.VisitColumn(expression);
 
             if (expressionNode is QsiColumnExpressionNode columnExpression &&
-                columnExpression.Column.Value is QsiDerivedColumnNode derivedColumn &&
-                derivedColumn.Expression != null)
+                columnExpression.Column.Value is QsiDerivedColumnNode { Expression: { } } derivedColumn)
             {
                 return derivedColumn.Expression.Value;
             }

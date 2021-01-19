@@ -2,7 +2,7 @@
 
 namespace Qsi.MySql.Tree.Common
 {
-    internal interface ICommonContext
+    internal interface IParserRuleContext
     {
         IToken Start { get; }
 
