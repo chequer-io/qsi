@@ -24,17 +24,17 @@ namespace Qsi.JSql
 
         protected virtual JSqlTableVisitor CreateTableVisitor()
         {
-            return new JSqlTableVisitor(this);
+            return new(this);
         }
 
         protected virtual JSqlExpressionVisitor CreateExpressionVisitor()
         {
-            return new JSqlExpressionVisitor(this);
+            return new(this);
         }
 
         protected virtual JSqlIdentifierVisitor CreateIdentifierVisitor()
         {
-            return new JSqlIdentifierVisitor(this);
+            return new(this);
         }
 
         public IQsiTreeNode Parse(QsiScript script, CancellationToken cancellationToken = default)

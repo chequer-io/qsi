@@ -8,7 +8,7 @@ namespace Qsi.PhoenixSql.Tree
 {
     internal static class IdentifierVisitor
     {
-        private static readonly Regex _namePattern = new Regex(@"^[A-Z][A-Z\d_\u0080-\u2001\u2003-\ufffe]*$");
+        private static readonly Regex _namePattern = new(@"^[A-Z][A-Z\d_\u0080-\u2001\u2003-\ufffe]*$");
         
         public static QsiIdentifier Visit(DerivedTableNode node)
         {
@@ -82,7 +82,7 @@ namespace Qsi.PhoenixSql.Tree
         
         private static QsiIdentifier CreateIdentifier(string value, bool caseSensitive)
         {
-            return new QsiIdentifier(caseSensitive ? $"\"{value}\"" : value, caseSensitive);
+            return new(caseSensitive ? $"\"{value}\"" : value, caseSensitive);
         }
     }
 }

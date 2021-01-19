@@ -498,7 +498,7 @@ namespace Qsi.PrimarSql.Tree
 
         public static QsiOrderExpressionNode VisitOrderCluase(OrderClauseContext context)
         {
-            return new QsiOrderExpressionNode
+            return new()
             {
                 Order = context.ASC() != null ? QsiSortOrder.Ascending : QsiSortOrder.Descending
             };

@@ -239,7 +239,7 @@ namespace Qsi.Cql.Tree
 
         public static QsiDeclaredColumnNode VisitSident(SidentContext context)
         {
-            return new QsiDeclaredColumnNode
+            return new()
             {
                 Name = new QsiQualifiedIdentifier(context.id)
             };
@@ -247,7 +247,7 @@ namespace Qsi.Cql.Tree
 
         public static QsiDeclaredColumnNode VisitCident(CidentContext context)
         {
-            return new QsiDeclaredColumnNode
+            return new()
             {
                 Name = new QsiQualifiedIdentifier(context.id)
             };

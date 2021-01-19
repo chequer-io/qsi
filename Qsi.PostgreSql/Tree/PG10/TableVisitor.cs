@@ -272,7 +272,7 @@ namespace Qsi.PostgreSql.Tree.PG10
             if (string.IsNullOrEmpty(target.name))
                 return columnNode;
 
-            if (!(columnNode is QsiDerivedColumnNode derivedColumnNode))
+            if (columnNode is not QsiDerivedColumnNode derivedColumnNode)
             {
                 derivedColumnNode = new QsiDerivedColumnNode();
                 derivedColumnNode.Column.SetValue(columnNode);

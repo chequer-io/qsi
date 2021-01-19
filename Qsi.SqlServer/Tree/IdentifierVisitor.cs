@@ -28,22 +28,22 @@ namespace Qsi.SqlServer.Tree
 
         public QsiQualifiedIdentifier CreateQualifiedIdentifier(IEnumerable<Identifier> identifiers)
         {
-            return new QsiQualifiedIdentifier(identifiers.Select(CreateIdentifier));
+            return new(identifiers.Select(CreateIdentifier));
         }
         
         public QsiQualifiedIdentifier CreateQualifiedIdentifier(params Identifier[] identifiers)
         {
-            return new QsiQualifiedIdentifier(identifiers.Select(CreateIdentifier));
+            return new(identifiers.Select(CreateIdentifier));
         }
         
         public QsiIdentifier CreateIdentifier(Identifier identifier)
         {
-            return new QsiIdentifier(identifier.Value, false);
+            return new(identifier.Value, false);
         }
 
         public QsiQualifiedIdentifier VisitVariableReference(VariableReference variableReference)
         {
-            return new QsiQualifiedIdentifier(new QsiIdentifier(variableReference.Name, false));
+            return new(new QsiIdentifier(variableReference.Name, false));
         }
     }
 }

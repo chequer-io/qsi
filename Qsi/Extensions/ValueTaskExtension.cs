@@ -6,7 +6,7 @@ namespace Qsi.Extensions
     {
         public static ValueTask<T> AsValueTask<T>(this T value)
         {
-            return new ValueTask<T>(value);
+            return new(value);
         }
     }
 }

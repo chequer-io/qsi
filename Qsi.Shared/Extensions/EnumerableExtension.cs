@@ -58,7 +58,7 @@ namespace Qsi.Shared.Extensions
 
             foreach (var element in source)
             {
-                if (!(element is TOut))
+                if (element is not TOut)
                 {
                     cast = null;
                     return false;

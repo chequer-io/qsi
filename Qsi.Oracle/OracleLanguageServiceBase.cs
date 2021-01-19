@@ -20,7 +20,7 @@ namespace Qsi.Oracle
 
         public override QsiAnalyzerOptions CreateAnalyzerOptions()
         {
-            return new QsiAnalyzerOptions
+            return new()
             {
                 AllowNoAliasInDerivedTable = true,
                 UseAutoFixRecursiveQuery = true

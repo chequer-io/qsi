@@ -25,7 +25,7 @@ namespace Qsi.Cql
 
         public override QsiAnalyzerOptions CreateAnalyzerOptions()
         {
-            return new QsiAnalyzerOptions();
+            return new();
         }
 
         public override IEnumerable<QsiAnalyzerBase> CreateAnalyzers(QsiEngine engine)

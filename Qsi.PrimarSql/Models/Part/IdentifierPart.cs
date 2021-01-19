@@ -16,7 +16,7 @@
 
         public override bool Equals(object obj)
         {
-            if (!(obj is IdentifierPart identifierPart))
+            if (obj is not IdentifierPart identifierPart)
                 return false;
             
             return Identifier == identifierPart.Identifier;

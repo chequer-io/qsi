@@ -9,12 +9,12 @@ namespace Qsi.Debugger.Vendor
     {
         protected QsiQualifiedIdentifier CreateIdentifier(params string[] path)
         {
-            return new QsiQualifiedIdentifier(path.Select(p => new QsiIdentifier(p, IdentifierUtility.IsEscaped(p))));
+            return new(path.Select(p => new QsiIdentifier(p, IdentifierUtility.IsEscaped(p))));
         }
 
         protected virtual QsiTableStructure CreateTable(params string[] path)
         {
-            return new QsiTableStructure
+            return new()
             {
                 Type = QsiTableType.Table,
                 Identifier = CreateIdentifier(path)

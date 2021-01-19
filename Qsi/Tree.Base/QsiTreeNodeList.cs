@@ -10,7 +10,7 @@ namespace Qsi.Tree
         public TNode this[int index] => _list[index];
 
         private readonly QsiTreeNode _owner;
-        private readonly List<TNode> _list = new List<TNode>();
+        private readonly List<TNode> _list = new();
 
         public QsiTreeNodeList(QsiTreeNode owner)
         {

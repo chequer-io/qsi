@@ -24,7 +24,7 @@ namespace Qsi.MongoDB
 
         private QsiScriptPosition ConvertToPosition(Location location)
         {
-            return new QsiScriptPosition(location.Line, location.Column + 1);
+            return new(location.Line, location.Column + 1);
         }
     }
 }

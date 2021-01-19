@@ -67,7 +67,7 @@ namespace Qsi.Analyzers.Action
 
             switch (action.Query)
             {
-                case IQsiLiteralExpressionNode literal when literal.Type == QsiDataType.String:
+                case IQsiLiteralExpressionNode { Type: QsiDataType.String } literal:
                     query = literal.Value?.ToString();
                     break;
 

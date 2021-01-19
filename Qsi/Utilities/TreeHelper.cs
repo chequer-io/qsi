@@ -74,7 +74,7 @@ namespace Qsi.Utilities
 
         public static QsiFunctionExpressionNode CreateFunction(string identifier)
         {
-            return new QsiFunctionExpressionNode
+            return new()
             {
                 Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(identifier, false))
             };
@@ -130,7 +130,7 @@ namespace Qsi.Utilities
 
         public static QsiLiteralExpressionNode CreateLiteral(object value, QsiDataType type)
         {
-            return new QsiLiteralExpressionNode
+            return new()
             {
                 Type = type,
                 Value = value
@@ -140,12 +140,12 @@ namespace Qsi.Utilities
 
         public static QsiException NotSupportedTree(object tree)
         {
-            return new QsiException(QsiError.NotSupportedTree, tree.GetType().FullName);
+            return new(QsiError.NotSupportedTree, tree.GetType().FullName);
         }
 
         public static QsiException NotSupportedFeature(string feature)
         {
-            return new QsiException(QsiError.NotSupportedFeature, feature);
+            return new(QsiError.NotSupportedFeature, feature);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

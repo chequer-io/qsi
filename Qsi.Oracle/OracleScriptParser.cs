@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Qsi.Data;
 using Qsi.JSql;
 using Qsi.Parsing.Common;
+using Qsi.Shared.Extensions;
 
 namespace Qsi.Oracle
 {
@@ -31,8 +32,7 @@ namespace Qsi.Oracle
 
         protected override QsiScriptType GetSuitableType(CommonScriptCursor cursor, IReadOnlyList<Token> tokens, Token[] leadingTokens)
         {
-            if (leadingTokens.Length >= 1 &&
-                Exec.Equals(cursor.Value[leadingTokens[0].Span], StringComparison.OrdinalIgnoreCase))
+            if (leadingTokens.Length >= 1 && Exec.EqualsIgnoreCase(cursor.Value[leadingTokens[0].Span]))
             {
                 return QsiScriptType.Execute;
             }
@@ -95,7 +95,7 @@ namespace Qsi.Oracle
             {
                 var value = context.Cursor.Value[context.Tokens[i].Span];
 
-                if (keyword.Equals(value, StringComparison.OrdinalIgnoreCase))
+                if (keyword.EqualsIgnoreCase(value))
                     return i;
             }
 
@@ -112,7 +112,7 @@ namespace Qsi.Oracle
 
             while (!section.BodyOpened && t.MoveNext())
             {
-                if (!Begin.Equals(t.Current, StringComparison.OrdinalIgnoreCase))
+                if (!Begin.EqualsIgnoreCase(t.Current))
                     continue;
 
                 section.BodyOpened = true;
@@ -125,21 +125,21 @@ namespace Qsi.Oracle
 
             while (t.MoveNext() && section.ExpectedToken.TryPeek(out var expected))
             {
-                if (expected.Equals(t.Current, StringComparison.OrdinalIgnoreCase))
+                if (expected.EqualsIgnoreCase(t.Current))
                 {
                     section.ExpectedToken.Pop();
                 }
-                else if (If.Equals(t.Current, StringComparison.OrdinalIgnoreCase))
+                else if (If.EqualsIgnoreCase(t.Current))
                 {
                     section.ExpectedToken.Push(If);
                     section.ExpectedToken.Push(End);
                 }
-                else if (Case.Equals(t.Current, StringComparison.OrdinalIgnoreCase))
+                else if (Case.EqualsIgnoreCase(t.Current))
                 {
                     section.ExpectedToken.Push(Case);
                     section.ExpectedToken.Push(End);
                 }
-                else if (Begin.Equals(t.Current, StringComparison.OrdinalIgnoreCase))
+                else if (Begin.EqualsIgnoreCase(t.Current))
                 {
                     section.ExpectedToken.Push(End);
                 }
@@ -159,18 +159,16 @@ namespace Qsi.Oracle
             type = default;
 
             // CREATE
-            if (!k.MoveNext() || !Create.Equals(k.Current, StringComparison.OrdinalIgnoreCase))
+            if (!k.MoveNext() || !Create.EqualsIgnoreCase(k.Current))
                 return false;
 
             if (!k.MoveNext())
                 return false;
 
             // .. [OR REPLACE]
-            if (Or.Equals(k.Current, StringComparison.OrdinalIgnoreCase))
+            if (Or.EqualsIgnoreCase(k.Current))
             {
-                if (!k.MoveNext() ||
-                    !Replace.Equals(k.Current, StringComparison.OrdinalIgnoreCase) ||
-                    !k.MoveNext())
+                if (!k.MoveNext() || !Replace.EqualsIgnoreCase(k.Current) || !k.MoveNext())
                 {
                     return false;
                 }
@@ -178,31 +176,31 @@ namespace Qsi.Oracle
 
             endIndex = k.Index;
 
-            if (Procedure.Equals(k.Current, StringComparison.OrdinalIgnoreCase))
+            if (Procedure.EqualsIgnoreCase(k.Current))
             {
                 type = SectionType.CreateProcedure;
                 return true;
             }
 
-            if (Function.Equals(k.Current, StringComparison.OrdinalIgnoreCase))
+            if (Function.EqualsIgnoreCase(k.Current))
             {
                 type = SectionType.CreateFunction;
                 return true;
             }
 
-            if (Package.Equals(k.Current, StringComparison.OrdinalIgnoreCase))
+            if (Package.EqualsIgnoreCase(k.Current))
             {
                 type = SectionType.CreatePackage;
                 return true;
             }
 
-            if (Trigger.Equals(k.Current, StringComparison.OrdinalIgnoreCase))
+            if (Trigger.EqualsIgnoreCase(k.Current))
             {
                 type = SectionType.CreateTrigger;
                 return true;
             }
 
-            if (Type.Equals(k.Current, StringComparison.OrdinalIgnoreCase))
+            if (Type.EqualsIgnoreCase(k.Current))
             {
                 type = SectionType.CreateType;
                 return true;

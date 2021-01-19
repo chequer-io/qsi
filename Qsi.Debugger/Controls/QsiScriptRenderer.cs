@@ -47,7 +47,7 @@ namespace Qsi.Debugger.Controls
 
                 var singleLine = script.Start.Line == script.End.Line;
 
-                foreach (var line in textView.GetVisualLines(script.Start.Line, script.End.Line))
+                foreach (var line in GetVisualLines(textView, script.Start.Line, script.End.Line))
                 {
                     Rect bounds;
 
@@ -84,6 +84,20 @@ namespace Qsi.Debugger.Controls
                     maxBottom - minTop);
 
                 drawingContext.DrawRectangle(_pen, rect);
+            }
+        }
+
+        private IEnumerable<VisualLine> GetVisualLines(TextView textView, int startLineNumber, int endLineNumber)
+        {
+            foreach (var visualLine in textView.VisualLines)
+            {
+                var start = visualLine.FirstDocumentLine.LineNumber;
+                var end = visualLine.LastDocumentLine.LineNumber;
+
+                if (end < startLineNumber || endLineNumber < start)
+                    continue;
+
+                yield return visualLine;
             }
         }
     }

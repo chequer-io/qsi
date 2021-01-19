@@ -41,22 +41,22 @@ namespace Qsi.SqlServer
 
         private TableVisitor CreateTableVisitor()
         {
-            return new TableVisitor(this);
+            return new(this);
         }
 
         private ExpressionVisitor CreateExpressionVisitor()
         {
-            return new ExpressionVisitor(this);
+            return new(this);
         }
 
         private IdentifierVisitor CreateIdentifierVisitor()
         {
-            return new IdentifierVisitor(this);
+            return new(this);
         }
 
         private ActionVisitor CreateActionVisitor()
         {
-            return new ActionVisitor(this);
+            return new(this);
         }
 
         public IQsiTreeNode Parse(QsiScript script, CancellationToken cancellationToken = default)

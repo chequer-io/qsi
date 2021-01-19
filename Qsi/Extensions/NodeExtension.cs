@@ -152,7 +152,7 @@ namespace Qsi.Extensions
         #region ToImmutable
         public static ImmutableDataConflictActionNode ToImmutable(this IQsiDataConflictActionNode node, bool ignoreUserData = false)
         {
-            return new ImmutableDataConflictActionNode(
+            return new(
                 node.Parent,
                 node.Target,
                 node.SetValues,
@@ -162,7 +162,7 @@ namespace Qsi.Extensions
 
         public static ImmutableDataDeleteActionNode ToImmutable(this IQsiDataDeleteActionNode node, bool ignoreUserData = false)
         {
-            return new ImmutableDataDeleteActionNode(
+            return new(
                 node.Parent,
                 node.Target,
                 node.Columns,
@@ -171,7 +171,7 @@ namespace Qsi.Extensions
 
         public static ImmutableDataInsertActionNode ToImmutable(this IQsiDataInsertActionNode node, bool ignoreUserData = false)
         {
-            return new ImmutableDataInsertActionNode(
+            return new(
                 node.Parent,
                 node.Directives,
                 node.Target,
@@ -187,7 +187,7 @@ namespace Qsi.Extensions
 
         public static ImmutableDataUpdateActionNode ToImmutable(this IQsiDataUpdateActionNode node, bool ignoreUserData = false)
         {
-            return new ImmutableDataUpdateActionNode(
+            return new(
                 node.Parent,
                 node.Target,
                 node.SetValues,
@@ -196,7 +196,7 @@ namespace Qsi.Extensions
 
         public static ImmutableDropPrepareActionNode ToImmutable(this IQsiDropPrepareActionNode node, bool ignoreUserData = false)
         {
-            return new ImmutableDropPrepareActionNode(
+            return new(
                 node.Parent,
                 node.Identifier,
                 ignoreUserData ? null : node.UserData);
@@ -204,7 +204,7 @@ namespace Qsi.Extensions
 
         public static ImmutableExecutePrepareActionNode ToImmutable(this IQsiExecutePrepareActionNode node, bool ignoreUserData = false)
         {
-            return new ImmutableExecutePrepareActionNode(
+            return new(
                 node.Parent,
                 node.Identifier,
                 node.Variables,
@@ -213,7 +213,7 @@ namespace Qsi.Extensions
 
         public static ImmutablePrepareActionNode ToImmutable(this IQsiPrepareActionNode node, bool ignoreUserData = false)
         {
-            return new ImmutablePrepareActionNode(
+            return new(
                 node.Parent,
                 node.Identifier,
                 node.Query,
@@ -222,7 +222,7 @@ namespace Qsi.Extensions
 
         public static ImmutableAllColumnNode ToImmutable(this IQsiAllColumnNode node, bool ignoreUserData = false)
         {
-            return new ImmutableAllColumnNode(
+            return new(
                 node.Parent,
                 node.Path,
                 ignoreUserData ? null : node.UserData);
@@ -230,7 +230,7 @@ namespace Qsi.Extensions
 
         public static ImmutableBindingColumnNode ToImmutable(this IQsiBindingColumnNode node, bool ignoreUserData = false)
         {
-            return new ImmutableBindingColumnNode(
+            return new(
                 node.Parent,
                 node.Id,
                 ignoreUserData ? null : node.UserData);
@@ -238,7 +238,7 @@ namespace Qsi.Extensions
 
         public static ImmutableDeclaredColumnNode ToImmutable(this IQsiDeclaredColumnNode node, bool ignoreUserData = false)
         {
-            return new ImmutableDeclaredColumnNode(
+            return new(
                 node.Parent,
                 node.Name,
                 ignoreUserData ? null : node.UserData);
@@ -246,7 +246,7 @@ namespace Qsi.Extensions
 
         public static ImmutableDerivedColumnNode ToImmutable(this IQsiDerivedColumnNode node, bool ignoreUserData = false)
         {
-            return new ImmutableDerivedColumnNode(
+            return new(
                 node.Parent,
                 node.Column,
                 node.Expression,
@@ -256,7 +256,7 @@ namespace Qsi.Extensions
 
         public static ImmutableSequentialColumnNode ToImmutable(this IQsiSequentialColumnNode node, bool ignoreUserData = false)
         {
-            return new ImmutableSequentialColumnNode(
+            return new(
                 node.Parent,
                 node.Alias,
                 node.ColumnType,
@@ -265,7 +265,7 @@ namespace Qsi.Extensions
 
         public static ImmutableMemberAccessExpressionNode ToImmutable(this IQsiMemberAccessExpressionNode node, bool ignoreUserData = false)
         {
-            return new ImmutableMemberAccessExpressionNode(
+            return new(
                 node.Parent,
                 node.Target,
                 node.Member,
@@ -274,7 +274,7 @@ namespace Qsi.Extensions
 
         public static ImmutableColumnExpressionNode ToImmutable(this IQsiColumnExpressionNode node, bool ignoreUserData = false)
         {
-            return new ImmutableColumnExpressionNode(
+            return new(
                 node.Parent,
                 node.Column,
                 ignoreUserData ? null : node.UserData);
@@ -282,7 +282,7 @@ namespace Qsi.Extensions
 
         public static ImmutableInvokeExpressionNode ToImmutable(this IQsiInvokeExpressionNode node, bool ignoreUserData = false)
         {
-            return new ImmutableInvokeExpressionNode(
+            return new(
                 node.Parent,
                 node.Member,
                 node.Parameters,
@@ -291,7 +291,7 @@ namespace Qsi.Extensions
 
         public static ImmutableLimitExpressionNode ToImmutable(this IQsiLimitExpressionNode node, bool ignoreUserData = false)
         {
-            return new ImmutableLimitExpressionNode(
+            return new(
                 node.Parent,
                 node.Limit,
                 node.Offset,
@@ -300,7 +300,7 @@ namespace Qsi.Extensions
 
         public static ImmutableLiteralExpressionNode ToImmutable(this IQsiLiteralExpressionNode node, bool ignoreUserData = false)
         {
-            return new ImmutableLiteralExpressionNode(
+            return new(
                 node.Parent,
                 node.Value,
                 node.Type,
@@ -309,7 +309,7 @@ namespace Qsi.Extensions
 
         public static ImmutableBinaryExpressionNode ToImmutable(this IQsiBinaryExpressionNode node, bool ignoreUserData = false)
         {
-            return new ImmutableBinaryExpressionNode(
+            return new(
                 node.Parent,
                 node.Left,
                 node.Operator,
@@ -319,7 +319,7 @@ namespace Qsi.Extensions
 
         public static ImmutableMultipleExpressionNode ToImmutable(this IQsiMultipleExpressionNode node, bool ignoreUserData = false)
         {
-            return new ImmutableMultipleExpressionNode(
+            return new(
                 node.Parent,
                 node.Elements,
                 ignoreUserData ? null : node.UserData);
@@ -327,7 +327,7 @@ namespace Qsi.Extensions
 
         public static ImmutableMultipleOrderExpressionNode ToImmutable(this IQsiMultipleOrderExpressionNode node, bool ignoreUserData = false)
         {
-            return new ImmutableMultipleOrderExpressionNode(
+            return new(
                 node.Parent,
                 node.Orders,
                 ignoreUserData ? null : node.UserData);
@@ -335,7 +335,7 @@ namespace Qsi.Extensions
 
         public static ImmutableOrderExpressionNode ToImmutable(this IQsiOrderExpressionNode node, bool ignoreUserData = false)
         {
-            return new ImmutableOrderExpressionNode(
+            return new(
                 node.Parent,
                 node.Order,
                 node.Expression,
@@ -344,7 +344,7 @@ namespace Qsi.Extensions
 
         public static ImmutableParametersExpressionNode ToImmutable(this IQsiParametersExpressionNode node, bool ignoreUserData = false)
         {
-            return new ImmutableParametersExpressionNode(
+            return new(
                 node.Parent,
                 node.Expressions,
                 ignoreUserData ? null : node.UserData);
@@ -352,7 +352,7 @@ namespace Qsi.Extensions
 
         public static ImmutableRowValueExpressionNode ToImmutable(this IQsiRowValueExpressionNode node, bool ignoreUserData = false)
         {
-            return new ImmutableRowValueExpressionNode(
+            return new(
                 node.Parent,
                 node.ColumnValues,
                 ignoreUserData ? null : node.UserData);
@@ -360,7 +360,7 @@ namespace Qsi.Extensions
 
         public static ImmutableSetColumnExpressionNode ToImmutable(this IQsiSetColumnExpressionNode node, bool ignoreUserData = false)
         {
-            return new ImmutableSetColumnExpressionNode(
+            return new(
                 node.Parent,
                 node.Target,
                 node.Value,
@@ -369,7 +369,7 @@ namespace Qsi.Extensions
 
         public static ImmutableSetVariableExpressionNode ToImmutable(this IQsiSetVariableExpressionNode node, bool ignoreUserData = false)
         {
-            return new ImmutableSetVariableExpressionNode(
+            return new(
                 node.Parent,
                 node.Target,
                 node.AssignmentKind,
@@ -379,7 +379,7 @@ namespace Qsi.Extensions
 
         public static ImmutableSwitchCaseExpressionNode ToImmutable(this IQsiSwitchCaseExpressionNode node, bool ignoreUserData = false)
         {
-            return new ImmutableSwitchCaseExpressionNode(
+            return new(
                 node.Parent,
                 node.Condition,
                 node.Consequent,
@@ -388,7 +388,7 @@ namespace Qsi.Extensions
 
         public static ImmutableSwitchExpressionNode ToImmutable(this IQsiSwitchExpressionNode node, bool ignoreUserData = false)
         {
-            return new ImmutableSwitchExpressionNode(
+            return new(
                 node.Parent,
                 node.Value,
                 node.Cases,
@@ -397,7 +397,7 @@ namespace Qsi.Extensions
 
         public static ImmutableTableExpressionNode ToImmutable(this IQsiTableExpressionNode node, bool ignoreUserData = false)
         {
-            return new ImmutableTableExpressionNode(
+            return new(
                 node.Parent,
                 node.Table,
                 ignoreUserData ? null : node.UserData);
@@ -405,7 +405,7 @@ namespace Qsi.Extensions
 
         public static ImmutableUnaryExpressionNode ToImmutable(this IQsiUnaryExpressionNode node, bool ignoreUserData = false)
         {
-            return new ImmutableUnaryExpressionNode(
+            return new(
                 node.Parent,
                 node.Operator,
                 node.Expression,
@@ -414,7 +414,7 @@ namespace Qsi.Extensions
 
         public static ImmutableWhereExpressionNode ToImmutable(this IQsiWhereExpressionNode node, bool ignoreUserData = false)
         {
-            return new ImmutableWhereExpressionNode(
+            return new(
                 node.Parent,
                 node.Expression,
                 ignoreUserData ? null : node.UserData);
@@ -422,7 +422,7 @@ namespace Qsi.Extensions
 
         public static ImmutableFieldExpressionNode ToImmutable(this IQsiFieldExpressionNode node, bool ignoreUserData = false)
         {
-            return new ImmutableFieldExpressionNode(
+            return new(
                 node.Parent,
                 node.Identifier,
                 ignoreUserData ? null : node.UserData);
@@ -430,7 +430,7 @@ namespace Qsi.Extensions
 
         public static ImmutableFunctionExpressionNode ToImmutable(this IQsiFunctionExpressionNode node, bool ignoreUserData = false)
         {
-            return new ImmutableFunctionExpressionNode(
+            return new(
                 node.Parent,
                 node.Identifier,
                 ignoreUserData ? null : node.UserData);
@@ -438,7 +438,7 @@ namespace Qsi.Extensions
 
         public static ImmutableVariableExpressionNode ToImmutable(this IQsiVariableExpressionNode node, bool ignoreUserData = false)
         {
-            return new ImmutableVariableExpressionNode(
+            return new(
                 node.Parent,
                 node.Identifier,
                 ignoreUserData ? null : node.UserData);
@@ -446,7 +446,7 @@ namespace Qsi.Extensions
 
         public static ImmutableColumnsDeclarationNode ToImmutable(this IQsiColumnsDeclarationNode node, bool ignoreUserData = false)
         {
-            return new ImmutableColumnsDeclarationNode(
+            return new(
                 node.Parent,
                 node.Columns,
                 ignoreUserData ? null : node.UserData);
@@ -454,7 +454,7 @@ namespace Qsi.Extensions
 
         public static ImmutableCompositeTableNode ToImmutable(this IQsiCompositeTableNode node, bool ignoreUserData = false)
         {
-            return new ImmutableCompositeTableNode(
+            return new(
                 node.Parent,
                 node.Sources,
                 node.OrderExpression,
@@ -464,7 +464,7 @@ namespace Qsi.Extensions
 
         public static ImmutableDerivedTableNode ToImmutable(this IQsiDerivedTableNode node, bool ignoreUserData = false)
         {
-            return new ImmutableDerivedTableNode(
+            return new(
                 node.Parent,
                 node.Directives,
                 node.Columns,
@@ -479,7 +479,7 @@ namespace Qsi.Extensions
 
         public static ImmutableInlineDerivedTableNode ToImmutable(this IQsiInlineDerivedTableNode node, bool ignoreUserData = false)
         {
-            return new ImmutableInlineDerivedTableNode(
+            return new(
                 node.Parent,
                 node.Alias,
                 node.Columns,
@@ -489,7 +489,7 @@ namespace Qsi.Extensions
 
         public static ImmutableJoinedTableNode ToImmutable(this IQsiJoinedTableNode node, bool ignoreUserData = false)
         {
-            return new ImmutableJoinedTableNode(
+            return new(
                 node.Parent,
                 node.Left,
                 node.JoinType,
@@ -500,7 +500,7 @@ namespace Qsi.Extensions
 
         public static ImmutableTableAccessNode ToImmutable(this IQsiTableAccessNode node, bool ignoreUserData = false)
         {
-            return new ImmutableTableAccessNode(
+            return new(
                 node.Parent,
                 node.Identifier,
                 ignoreUserData ? null : node.UserData);
@@ -508,7 +508,7 @@ namespace Qsi.Extensions
 
         public static ImmutableTableDirectivesNode ToImmutable(this IQsiTableDirectivesNode node, bool ignoreUserData = false)
         {
-            return new ImmutableTableDirectivesNode(
+            return new(
                 node.Parent,
                 node.Tables,
                 node.IsRecursive,
@@ -517,7 +517,7 @@ namespace Qsi.Extensions
 
         public static ImmutableGroupingExpressionNode ToImmutable(this IQsiGroupingExpressionNode node, bool ignoreUserData = false)
         {
-            return new ImmutableGroupingExpressionNode(
+            return new(
                 node.Parent,
                 node.Items,
                 node.Having,
@@ -526,7 +526,7 @@ namespace Qsi.Extensions
 
         public static ImmutableChangeSearchPathActionNode ToImmutable(this IQsiChangeSearchPathActionNode node, bool ignoreUserData = false)
         {
-            return new ImmutableChangeSearchPathActionNode(
+            return new(
                 node.Parent,
                 node.Identifiers,
                 ignoreUserData ? null : node.UserData);

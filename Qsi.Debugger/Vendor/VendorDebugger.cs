@@ -21,7 +21,7 @@ namespace Qsi.Debugger.Vendor
 
         protected virtual QsiEngine CreateEngine()
         {
-            return new QsiEngine(CreateLanguageService());
+            return new(CreateLanguageService());
         }
 
         protected abstract IRawTreeParser CreateRawTreeParser();

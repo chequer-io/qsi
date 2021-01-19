@@ -38,7 +38,7 @@ namespace Qsi.MongoDB.Internal.Serialization
             return _reader.Read();
         }
 
-        public override async Task<bool> ReadAsync(CancellationToken cancellationToken = new CancellationToken())
+        public override async Task<bool> ReadAsync(CancellationToken cancellationToken = new())
         {
             if (!_read)
             {

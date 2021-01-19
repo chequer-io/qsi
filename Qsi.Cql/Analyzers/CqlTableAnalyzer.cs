@@ -20,7 +20,7 @@ namespace Qsi.Cql.Analyzers
 
         protected override async ValueTask<IQsiAnalysisResult> OnExecute(IAnalyzerContext context)
         {
-            if (context.Tree is CqlDerivedTableNode cqlTableNode && cqlTableNode.IsJson)
+            if (context.Tree is CqlDerivedTableNode { IsJson: true } cqlTableNode)
             {
                 using var scope = new TableCompileContext(context);
                 var table = await BuildTableStructure(scope, cqlTableNode);

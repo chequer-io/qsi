@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Text;
 using Qsi.Data;
-using Qsi.Extensions;
 using Qsi.Shared.Extensions;
 
 namespace Qsi.Utilities
@@ -41,14 +40,13 @@ namespace Qsi.Utilities
             var openParen = _openParen[index];
             var closeParen = _closeParen[index];
 
-            return Unescape(value[openParen.Length..^closeParen.Length], openParen, closeParen);
+            return Unescape(value.AsSpan()[openParen.Length..^closeParen.Length], openParen, closeParen);
         }
 
         private static string Unescape(in ReadOnlySpan<char> value, string open, string close)
         {
             var buffer = new char[value.Length];
             int index = 0;
-            bool singleParent = close.Length == 1;
 
             for (int i = 0; i < buffer.Length; i++)
             {

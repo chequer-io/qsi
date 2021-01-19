@@ -6,12 +6,13 @@ The QSI is the pure C# Query Structure Interface.
 
 |Language|Parser|Repos|
 |--|--|--|
-|MySql|Antlr4|[grammars-v4](https://github.com/antlr/grammars-v4)|
+|MySql|MySQL Workbench source code(Antlr4)|[mysql-workbench](https://github.com/mysql/mysql-workbench)|
 |PostgreSql10|PostgreSQL server source code(yacc)|[libpg_query](https://github.com/lfittl/libpg_query), [ChakraCore](https://github.com/microsoft/ChakraCore)|
 |JSql|JavaCC|[JSqlParser](https://github.com/JSQLParser/JSqlParser), [IKVM](https://github.com/ikvm-revived/ikvm)|
 |Oracle|Qsi.JSql||
 |SqlServer|Microsoft.SqlServer.TransactSql.ScriptDom|[MSDN](https://docs.microsoft.com/en-us/dotnet/api/microsoft.sqlserver.transactsql.scriptdom?view=sql-dacfx-150), [NuGet](https://www.nuget.org/packages/Microsoft.SqlServer.TransactSql.ScriptDom)|
 |PhoenixSql|Phoenix server source code(Antlr3)|[PhoenixSql](https://github.com/chequer-io/PhoenixSql)|
+|PrimarSql|PrimarSql|[PrimarSql](https://github.com/chequer-io/PrimarSql)|
 
 
 ## Structure Compiler
@@ -27,28 +28,28 @@ based on semantic tree transformed by parser's  for each language.
 &#x26A0; ⚠
 -->
 
-|Features                           |MySql   |PostgreSql|JSql    |Oracle  |SqlServer|PhoenixSql|
-|-----------------------------------|:------:|:--------:|:------:|:------:|:-------:|:--------:|
-|No table                           |&#x2714;|&#x2714;  |&#x2714;|&#x274C;|&#x2714; |&#x2714;  |
-|Table access                       |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |&#x2714;  |
-|Derived table                      |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |&#x2714;  |
-|Derived table (Non-Alias)          |&#x274C;|&#x274C;  |&#x2714;|&#x2714;|&#x274C; |&#x2714;  |
-|Specify columns to table alias     |&#x274C;|&#x2714;  |&#x2714;|&#x274C;|&#x274C; |&#x274C;  |
-|Inline derived table               |&#x274C;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |&#x274C;  |
-|Table function                     |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |&#x274C;  |
-|Table variable                     |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |&#x274C;  |
-|Common table expression            |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |&#x274C;  |
-|Common table expression (Aliases)  |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |&#x274C;  |
-|Common table expression (Recursive)|&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |&#x274C;  |
-|Join tables                        |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |&#x2714;  |
-|Join tables (Pivot columns)        |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x274C; |&#x274C;  |
-|Union many tables                  |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |&#x2714;  |
-|Table pivot                        |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |&#x274C;  |
-|Table unpivot                      |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |&#x274C;  |
-|Trace view definition              |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |&#x2714;  |
-|Trace variable definition          |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |&#x274C;  |
-|Execute prepared table query       |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |&#x274C;  |
-|Call table procedure               |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |&#x26A0;  |
+|Features                           |MySql   |PostgreSql|JSql    |Oracle  |SqlServer|PhoenixSql|PrimarSql|
+|-----------------------------------|:------:|:--------:|:------:|:------:|:-------:|:--------:|:-------:|
+|No table                           |&#x2714;|&#x2714;  |&#x2714;|&#x274C;|&#x2714; |&#x2714;  |&#x274C; |
+|Table access                       |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |&#x2714;  |&#x2714; |
+|Derived table                      |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |&#x2714;  |&#x274C; |
+|Derived table (Non-Alias)          |&#x274C;|&#x274C;  |&#x2714;|&#x2714;|&#x274C; |&#x2714;  |&#x274C; |
+|Specify columns to table alias     |&#x274C;|&#x2714;  |&#x2714;|&#x274C;|&#x274C; |&#x274C;  |&#x274C; |
+|Inline derived table               |&#x274C;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |&#x274C;  |&#x274C; |
+|Table function                     |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |&#x274C;  |&#x274C; |
+|Table variable                     |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |&#x274C;  |&#x274C; |
+|Common table expression            |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |&#x274C;  |&#x274C; |
+|Common table expression (Aliases)  |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |&#x274C;  |&#x274C; |
+|Common table expression (Recursive)|&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |&#x274C;  |&#x274C; |
+|Join tables                        |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |&#x2714;  |&#x274C; |
+|Join tables (Pivot columns)        |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x274C; |&#x274C;  |&#x274C; |
+|Union many tables                  |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |&#x2714;  |&#x274C; |
+|Table pivot                        |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |&#x274C;  |&#x274C; |
+|Table unpivot                      |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |&#x274C;  |&#x274C; |
+|Trace view definition              |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |&#x2714;  |&#x274C; |
+|Trace variable definition          |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |&#x274C;  |&#x274C; |
+|Execute prepared table query       |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |&#x274C;  |&#x274C; |
+|Call table procedure               |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |&#x26A0;  |&#x274C; |
 
 ## Table Features
 
@@ -538,12 +539,6 @@ PS> ./Publish.ps1 <VERSION> [-Mode <PUBLISH_MODE>]
 ### Debugger
 
 It supports abstract syntax trees and semantic trees, and a debugger that can debug compilation results.
-
-|OS     |Support |
-|-------|:------:|
-|Windows|&#x2714;|
-|OSX    |&#x2714;|
-|Linux  |&#x274C;|
 
 ![Preview](https://github.com/chequer-io/qsi/blob/master/Qsi.Debugger/Screenshot.png?raw=true)
 

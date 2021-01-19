@@ -8,6 +8,7 @@
         Right,
         LeftOuter,
         RightOuter,
+        NaturalInner,
         NaturalLeft,
         NaturalRight,
         NaturalLeftOuter,

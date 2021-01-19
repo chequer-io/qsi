@@ -9,7 +9,7 @@ namespace Qsi.JSql.Internal
 {
     internal static class CCJSqlParserUtility
     {
-        private static readonly Regex _positionPattern = new Regex(@"at line (?<line>\d+), column (?<column>\d+).");
+        private static readonly Regex _positionPattern = new(@"at line (?<line>\d+), column (?<column>\d+).");
 
         #region CCJSqlParserUtil
         public static Statement Parse(string sql)

@@ -23,7 +23,7 @@ namespace Qsi.PostgreSql
 
         public override QsiAnalyzerOptions CreateAnalyzerOptions()
         {
-            return new QsiAnalyzerOptions
+            return new()
             {
                 AllowEmptyColumnsInSelect = true
             };

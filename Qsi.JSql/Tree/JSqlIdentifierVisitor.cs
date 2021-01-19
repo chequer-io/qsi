@@ -13,7 +13,7 @@ namespace Qsi.JSql.Tree
 
         public virtual QsiIdentifier Create(string value)
         {
-            return new QsiIdentifier(value, IdentifierUtility.IsEscaped(value));
+            return new(value, IdentifierUtility.IsEscaped(value));
         }
 
         public virtual QsiIdentifier VisitAlias(Alias alias)
@@ -23,27 +23,27 @@ namespace Qsi.JSql.Tree
 
         public virtual QsiQualifiedIdentifier VisitMultiPartName(MultiPartName name)
         {
-            return new QsiQualifiedIdentifier(IdentifierUtility.Parse(name.getFullyQualifiedName()));
+            return new(IdentifierUtility.Parse(name.getFullyQualifiedName()));
         }
 
         public virtual QsiQualifiedIdentifier VisitFunction(Function function)
         {
-            return new QsiQualifiedIdentifier(IdentifierUtility.Parse(function.getName()));
+            return new(IdentifierUtility.Parse(function.getName()));
         }
 
         public virtual QsiQualifiedIdentifier VisitAnalyticExpression(AnalyticExpression expression)
         {
-            return new QsiQualifiedIdentifier(IdentifierUtility.Parse(expression.getName()));
+            return new(IdentifierUtility.Parse(expression.getName()));
         }
 
         public virtual QsiQualifiedIdentifier VisitNextValExpression(NextValExpression expression)
         {
-            return new QsiQualifiedIdentifier(IdentifierUtility.Parse(expression.getName()));
+            return new(IdentifierUtility.Parse(expression.getName()));
         }
 
         public virtual QsiQualifiedIdentifier VisitUserVariable(UserVariable variable)
         {
-            return new QsiQualifiedIdentifier(new QsiIdentifier(variable.toString(), false));
+            return new(new QsiIdentifier(variable.toString(), false));
         }
     }
 }

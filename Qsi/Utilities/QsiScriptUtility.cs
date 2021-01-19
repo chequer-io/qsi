@@ -27,7 +27,7 @@ namespace Qsi.Utilities
 
         public static QsiScriptPosition GetEndPosition(in string script)
         {
-            return new QsiScriptPosition(GetEndLine(script), GetEndColumn(script));
+            return new(GetEndLine(script), GetEndColumn(script));
         }
     }
 }
