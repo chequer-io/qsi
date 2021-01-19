@@ -39,7 +39,10 @@ namespace Qsi.MySql.Tree
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void PutContextSpan(IQsiTreeNode node, IToken start, IToken stop)
         {
-            Span[node] = new Range(start.StartIndex, stop.StopIndex + 1);
+            var startIndex = Math.Min(start.StartIndex, stop.TokenSource.InputStream.Size - 1);
+            var stopIndex = Math.Min(stop.StopIndex + 1, stop.TokenSource.InputStream.Size);
+
+            Span[node] = new Range(startIndex, stopIndex);
         }
     }
 }
