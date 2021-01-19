@@ -25,6 +25,7 @@ namespace Qsi.Parsing.Common
                 node.Alias != null &&
                 node.Directives == null &&
                 node.Where == null &&
+                node.Grouping == null &&
                 node.Order == null &&
                 node.Limit == null &&
                 node.Columns != null &&
@@ -33,11 +34,11 @@ namespace Qsi.Parsing.Common
 
         protected bool IsWildcard(IQsiColumnsDeclarationNode node)
         {
-            if (node.Count != 0)
+            if (node.Count != 1)
                 return false;
 
             return
-                node.Columns[0] is IQsiAllColumnNode { Path: null } allColumnNode;
+                node.Columns[0] is IQsiAllColumnNode { Path: null };
         }
 
         protected void DeparseTreeNodeWithParenthesis(ScriptWriter writer, IQsiTreeNode node, QsiScript script)
