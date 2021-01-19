@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using Qsi.Data;
+using Qsi.MySql.Tree.Common;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
 using Qsi.Utilities;
@@ -64,9 +65,6 @@ namespace Qsi.MySql.Tree
             }
             else
             {
-                // ** Single table delete.
-                // DELETE FROM table
-
                 var tableRef = context.tableRef();
                 var partitionDelete = context.partitionDelete(); // TODO: implement
                 var orderClause = context.orderClause();
@@ -85,17 +83,120 @@ namespace Qsi.MySql.Tree
             var node = new QsiDataDeleteActionNode();
             node.Target.SetValue(derivedNode);
 
+            MySqlTree.PutContextSpan(node, context);
+
             return node;
         }
 
         public static QsiActionNode VisitReplaceStatement(ReplaceStatementContext context)
         {
-            throw new System.NotImplementedException();
+            return VisitCommonInsert(new CommonInsertContext(context));
+        }
+
+        public static QsiActionNode VisitInsertStatement(InsertStatementContext context)
+        {
+            return VisitCommonInsert(new CommonInsertContext(context));
+        }
+
+        public static QsiActionNode VisitCommonInsert(CommonInsertContext context)
+        {
+            var node = new QsiDataInsertActionNode
+            {
+                ConflictBehavior = context.ConflictBehavior
+            };
+
+            node.Target.SetValue(TableVisitor.VisitTableRef(context.TableRef));
+            // TODO: implement context.UsePartition
+
+            if (context.InsertFromConstructor != null)
+            {
+                node.Columns = context.InsertFromConstructor
+                    .fields()?
+                    .insertIdentifier()?
+                    .Select(IdentifierVisitor.VisitInsertIdentifier)
+                    .ToArray();
+
+                node.Values.AddRange(ExpressionVisitor.VisitInsertValues(context.InsertFromConstructor.insertValues()));
+
+                // TODO: implement context.ValuesReference
+            }
+            else if (context.UpdateList != null)
+            {
+                node.SetValues.AddRange(ExpressionVisitor.VisitUpdateList(context.UpdateList));
+
+                // TODO: implement context.ValuesReference
+            }
+            else
+            {
+                node.Columns = context.InsertQueryExpression
+                    .fields()?
+                    .insertIdentifier()?
+                    .Select(IdentifierVisitor.VisitInsertIdentifier)
+                    .ToArray();
+
+                node.ValueTable.SetValue(
+                    TableVisitor.VisitQueryExpressionOrParens(context.InsertQueryExpression.queryExpressionOrParens()));
+            }
+
+            if (context.InsertUpdateList != null)
+                node.ConflictAction.SetValue(VisitInsertUpdateList(context.InsertUpdateList));
+
+            MySqlTree.PutContextSpan(node, context);
+
+            return node;
+        }
+
+        public static QsiDataConflictActionNode VisitInsertUpdateList(InsertUpdateListContext context)
+        {
+            var node = new QsiDataConflictActionNode();
+
+            node.SetValues.AddRange(ExpressionVisitor.VisitUpdateList(context.updateList()));
+
+            MySqlTree.PutContextSpan(node, context);
+
+            return node;
         }
 
         public static QsiActionNode VisitUpdateStatement(UpdateStatementContext context)
         {
-            throw new System.NotImplementedException();
+            var tableNode = TableVisitor.VisitTableReferenceList(context.tableReferenceList());
+            var withClause = context.withClause();
+            var whereClause = context.whereClause();
+            var orderClause = context.orderClause();
+            var simpleLimitClause = context.simpleLimitClause();
+
+            if (withClause != null || whereClause != null || orderClause != null || simpleLimitClause != null)
+            {
+                if (tableNode is not QsiDerivedTableNode derivedTableNode)
+                {
+                    derivedTableNode = new QsiDerivedTableNode();
+                    derivedTableNode.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+                    derivedTableNode.Source.SetValue(tableNode);
+                }
+
+                if (withClause != null)
+                    derivedTableNode.Directives.SetValue(TableVisitor.VisitWithClause(withClause));
+
+                if (whereClause != null)
+                    derivedTableNode.Where.SetValue(ExpressionVisitor.VisitWhereClause(whereClause));
+
+                if (orderClause != null)
+                    derivedTableNode.Order.SetValue(ExpressionVisitor.VisitOrderClause(orderClause));
+
+                if (simpleLimitClause != null)
+                    derivedTableNode.Limit.SetValue(ExpressionVisitor.VisitSimpleLimitClause(simpleLimitClause));
+
+                tableNode = derivedTableNode;
+            }
+
+            var node = new QsiDataUpdateActionNode();
+
+            node.Target.SetValue(tableNode);
+            node.SetValues.AddRange(ExpressionVisitor.VisitUpdateList(context.updateList()));
+
+            MySqlTree.PutContextSpan(node, context);
+
+            return node;
         }
     }
 }

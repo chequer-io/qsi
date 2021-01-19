@@ -41,6 +41,9 @@ namespace Qsi.MySql
                 case UpdateStatementContext updateStatement:
                     return ActionVisitor.VisitUpdateStatement(updateStatement);
 
+                case InsertStatementContext insertStatement:
+                    return ActionVisitor.VisitInsertStatement(insertStatement);
+
                 default:
                     throw TreeHelper.NotSupportedTree(simpleStatement.children[0]);
             }

@@ -519,7 +519,7 @@ namespace Qsi.MySql.Tree
         {
             return TreeHelper.Create<QsiDeclaredColumnNode>(n =>
             {
-                n.Name = IdentifierVisitor.VisitFieldIdentifier(context.fieldIdentifier());
+                n.Name = IdentifierVisitor.VisitColumnRef(context);
 
                 MySqlTree.PutContextSpan(n, context);
             });
@@ -2119,5 +2119,72 @@ namespace Qsi.MySql.Tree
             return new(context.GetText(), true);
         }
         #endregion
+
+        public static IEnumerable<QsiRowValueExpressionNode> VisitInsertValues(InsertValuesContext context)
+        {
+            return VisitValueList(context.valueList());
+        }
+
+        public static IEnumerable<QsiRowValueExpressionNode> VisitValueList(ValueListContext context)
+        {
+            return context.values().Select(VisitValues);
+        }
+
+        public static QsiRowValueExpressionNode VisitValues(ValuesContext context)
+        {
+            var node = new QsiRowValueExpressionNode();
+
+            foreach (var child in context.children)
+            {
+                switch (child)
+                {
+                    case ITerminalNode { Symbol: { Type: COMMA_SYMBOL } }:
+                        continue;
+
+                    case ITerminalNode { Symbol: { Type: DEFAULT_SYMBOL } }:
+                        node.ColumnValues.Add(TreeHelper.CreateDefaultLiteral());
+                        break;
+
+                    case ExprContext expr:
+                        node.ColumnValues.Add(VisitExpr(expr));
+                        break;
+
+                    default:
+                        throw TreeHelper.NotSupportedTree(child);
+                }
+            }
+
+            MySqlTree.PutContextSpan(node, context);
+
+            return node;
+        }
+
+        public static IEnumerable<QsiSetColumnExpressionNode> VisitUpdateList(UpdateListContext context)
+        {
+            return context.children
+                .OfType<UpdateElementContext>()
+                .Select(VisitUpdateElement);
+        }
+
+        public static QsiSetColumnExpressionNode VisitUpdateElement(UpdateElementContext context)
+        {
+            var node = new QsiSetColumnExpressionNode
+            {
+                Target = IdentifierVisitor.VisitColumnRef(context.columnRef())
+            };
+
+            if (context.children[2] is ExprContext expr)
+            {
+                node.Value.SetValue(VisitExpr(expr));
+            }
+            else
+            {
+                node.Value.SetValue(TreeHelper.CreateDefaultLiteral());
+            }
+
+            MySqlTree.PutContextSpan(node, context);
+
+            return node;
+        }
     }
 }

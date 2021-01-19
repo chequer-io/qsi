@@ -127,5 +127,27 @@ namespace Qsi.MySql.Tree
                     throw TreeHelper.NotSupportedTree(context.children[0]);
             }
         }
+
+        public static QsiQualifiedIdentifier VisitInsertIdentifier(InsertIdentifierContext context)
+        {
+            if (context.children[0] is ColumnRefContext columnRef)
+                return VisitColumnRef(columnRef);
+
+            return VisitTableWild((TableWildContext)context.children[0]);
+        }
+
+        public static QsiQualifiedIdentifier VisitColumnRef(ColumnRefContext context)
+        {
+            return VisitFieldIdentifier(context.fieldIdentifier());
+        }
+
+        private static QsiQualifiedIdentifier VisitTableWild(TableWildContext context)
+        {
+            return new(
+                context.identifier()
+                    .Select(VisitIdentifier)
+                    .Append(QsiIdentifier.Wildcard)
+            );
+        }
     }
 }

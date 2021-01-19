@@ -771,6 +771,14 @@ namespace Qsi.MySql.Tree
             return node;
         }
 
+        public static QsiTableNode VisitQueryExpressionOrParens(QueryExpressionOrParensContext context)
+        {
+            if (context.children[0] is QueryExpressionContext queryExpression)
+                return VisitQueryExpression(new CommonQueryContext(queryExpression, null));
+
+            return VisitQueryExpressionParens((QueryExpressionParensContext)context.children[0]);
+        }
+
         public static QsiTableNode VisitSelectStatementWithInto(SelectStatementWithIntoContext context)
         {
             throw TreeHelper.NotSupportedFeature("select into");
