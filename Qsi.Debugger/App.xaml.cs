@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Media;
 
 namespace Qsi.Debugger
 {
@@ -10,9 +11,11 @@ namespace Qsi.Debugger
         {
             AvaloniaXamlLoader.Load(this);
         }
-        
+
         public override void OnFrameworkInitializationCompleted()
         {
+            AvaloniaLocator.CurrentMutable.Bind<FontManager>().ToConstant(new FontManager(new NanumFontManager()));
+
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 desktop.MainWindow = new MainWindow();
@@ -20,5 +23,5 @@ namespace Qsi.Debugger
 
             base.OnFrameworkInitializationCompleted();
         }
-   }
+    }
 }

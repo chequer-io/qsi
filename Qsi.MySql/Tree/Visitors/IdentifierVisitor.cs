@@ -149,5 +149,20 @@ namespace Qsi.MySql.Tree
                     .Append(QsiIdentifier.Wildcard)
             );
         }
+
+        public static QsiQualifiedIdentifier VisitViewName(ViewNameContext context)
+        {
+            switch (context.children[0])
+            {
+                case QualifiedIdentifierContext qualifiedIdentifier:
+                    return VisitQualifiedIdentifier(qualifiedIdentifier);
+
+                case DotIdentifierContext dotIdentifier:
+                    return new QsiQualifiedIdentifier(VisitDotIdentifier(dotIdentifier));
+
+                default:
+                    throw TreeHelper.NotSupportedTree(context.children[0]);
+            }
+        }
     }
 }

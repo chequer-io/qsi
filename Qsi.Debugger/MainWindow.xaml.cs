@@ -55,8 +55,6 @@ namespace Qsi.Debugger
         {
             InitializeComponent();
 
-            this.AttachDevTools();
-
             _vendors = new Dictionary<string, Lazy<VendorDebugger>>
             {
                 ["MySQL 5.6.2"] = new(() => new MySqlDebugger(new Version(5, 6, 2))),
