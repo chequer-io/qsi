@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
+using Newtonsoft.Json.Linq;
 using Qsi.Data;
 using Qsi.Tree;
 using Qsi.Utilities;
@@ -158,7 +159,7 @@ namespace Qsi.PrimarSql.Tree
                         n.Type = QsiDataType.Json;
                         n.Value = jsonExpressionAtomContext.jsonObject().GetText();
                     });
-                
+
                 // TODO: Check
                 case BinaryExpressionAtomContext binaryExpressionAtomContext:
                     return TreeHelper.Create<QsiLiteralExpressionNode>(n =>
@@ -166,7 +167,7 @@ namespace Qsi.PrimarSql.Tree
                         n.Type = QsiDataType.Binary;
                         n.Value = Convert.FromBase64String(binaryExpressionAtomContext.stringLiteral().GetText());
                     });
-                
+
                 case FullColumnNameExpressionAtomContext fullColumnNameContext:
                     return VisitFullColumnName(fullColumnNameContext.fullColumnName());
 
@@ -555,6 +556,30 @@ namespace Qsi.PrimarSql.Tree
             return VisitExpression(context.expression());
         }
 
+        public static IEnumerable<PrimarSqlSetColumnExpressionNode> VisitUpdateItem(UpdateItemContext context)
+        {
+            if (context.updateRemoveItem() != null)
+                return context.updateRemoveItem().removedElement().Select(VisitRemovedElement);
+
+            return context.updateSetItem().updatedElement().Select(VisitUpdatedElement);
+        }
+
+        public static PrimarSqlSetColumnExpressionNode VisitRemovedElement(RemovedElementContext context)
+        {
+            var column = IdentifierVisitor.VisitFullColumnName(context.fullColumnName());
+
+            var assignNode = new PrimarSqlSetColumnExpressionNode
+            {
+                Target = column.Name,
+            };
+
+            assignNode.Accessors.AddRange(column.Accessors);
+            assignNode.Value.SetValue(TreeHelper.CreateNullLiteral());
+
+            PrimarSqlTree.PutContextSpan(assignNode, context);
+            return assignNode;
+        }
+
         public static PrimarSqlSetColumnExpressionNode VisitUpdatedElement(UpdatedElementContext context)
         {
             var column = IdentifierVisitor.VisitFullColumnName(context.fullColumnName());
@@ -580,6 +605,56 @@ namespace Qsi.PrimarSql.Tree
             });
         }
         #endregion
+
+        public static QsiRowValueExpressionNode GetRowValueFromJObject(JObject jObject, JsonObjectContext context, string[] columns)
+        {
+            var node = new QsiRowValueExpressionNode();
+
+            foreach (string column in columns)
+            {
+                if (jObject.TryGetValue(column, out var value))
+                {
+                    switch (value)
+                    {
+                        case JValue jValue:
+                        {
+                            node.ColumnValues.Add(jValue.Value switch
+                            {
+                                int i => TreeHelper.CreateLiteral(i),
+                                uint ui => TreeHelper.CreateLiteral(ui),
+                                long l => TreeHelper.CreateLiteral(l),
+                                bool b => TreeHelper.CreateLiteral(b),
+                                double d => TreeHelper.CreateLiteral(d),
+                                string s => TreeHelper.CreateLiteral(s),
+                                _ => TreeHelper.CreateNullLiteral()
+                            });
+
+                            break;
+                        }
+
+                        case JArray jArray:
+                        {
+                            node.ColumnValues.Add(TreeHelper.CreateLiteral(jArray.ToString()));
+                            break;
+                        }
+
+                        case JObject jObj:
+                        {
+                            node.ColumnValues.Add(TreeHelper.CreateLiteral(jObj.ToString()));
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    node.ColumnValues.Add(TreeHelper.CreateNullLiteral());
+                }
+            }
+
+            PrimarSqlTree.PutContextSpan(node, context);
+
+            return node;
+        }
 
         private static string JoinTokens(params IParseTree[] trees)
         {
