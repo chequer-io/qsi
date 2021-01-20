@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using PrimarSql.Data.Models.Columns;
 using Qsi.Analyzers;
 using Qsi.Analyzers.Action;
 using Qsi.Analyzers.Context;
@@ -12,7 +11,6 @@ using Qsi.Analyzers.Table;
 using Qsi.Analyzers.Table.Context;
 using Qsi.Data;
 using Qsi.PrimarSql.Tree;
-using Qsi.PrimarSql.Utilities;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
 using Qsi.Utilities;
@@ -70,13 +68,14 @@ namespace Qsi.PrimarSql.Analyzers
             var updateBeforeRows = new QsiDataRowCollection(1);
             var updateAfterRows = new QsiDataRowCollection(1);
 
-            (object[], QsiExpressionNode)[] setValues = action.SetValues
+            (object[], QsiExpressionNode, bool)[] setValues = action.SetValues
                 .OfType<PrimarSqlSetColumnExpressionNode>()
                 .Select(x =>
                 {
                     return (
                         new[] { x.Target[^1].Value }.Concat(x.Accessors.Select(AccessorToValue)).ToArray(),
-                        x.Value.Value
+                        x.Value.IsEmpty ? null : x.Value.Value,
+                        x.Value.IsEmpty
                     );
                 })
                 .ToArray();
@@ -92,13 +91,16 @@ namespace Qsi.PrimarSql.Analyzers
                 var newRow = updateAfterRows.NewRow();
 
                 var beforeValue = row.Items[0];
-                var afterValue = JObject.Parse(beforeValue.Value.ToString());
+                var afterValue = JObject.Parse(beforeValue.Value.ToString() ?? throw new InvalidOperationException());
 
-                foreach ((object[] part, var value) in setValues)
+                foreach ((object[] part, var value, bool deleteProperty) in setValues)
                 {
-                    if (!SetValueToToken(afterValue, part, ConvertToToken(value, context)))
+                    if (!SetValueToToken(afterValue, part, ConvertToToken(value, context), deleteProperty))
                     {
-                        throw new InvalidOperationException("Invalid path for update value.");
+                        if (!deleteProperty)
+                        {
+                            throw new InvalidOperationException("Invalid path for update value.");
+                        }
                     }
                 }
 
@@ -188,7 +190,7 @@ namespace Qsi.PrimarSql.Analyzers
             return base.ReassembleCommonTableNode(node);
         }
 
-        private bool SetValueToToken(JToken token, object[] parts, JToken value)
+        private bool SetValueToToken(JToken token, object[] parts, JToken value, bool deleteProperty)
         {
             var currentToken = token;
 
@@ -204,6 +206,9 @@ namespace Qsi.PrimarSql.Analyzers
 
                         if (currentToken == null && isLastPart)
                         {
+                            if (deleteProperty)
+                                return jObject.Remove(s);
+
                             jObject[s] = value;
                             return true;
                         }
@@ -212,6 +217,28 @@ namespace Qsi.PrimarSql.Analyzers
 
                     case int index when currentToken is JArray jArray:
                         currentToken = jArray[index];
+
+                        if (isLastPart)
+                        {
+                            if (deleteProperty)
+                            {
+                                try
+                                {
+                                    jArray.RemoveAt(index);
+                                }
+                                catch (Exception)
+                                {
+                                    // ignored
+                                }
+                            }
+                            else
+                            {
+                                jArray[index] = value;
+                            }
+
+                            return true;
+                        }
+
                         break;
 
                     default:
@@ -241,15 +268,18 @@ namespace Qsi.PrimarSql.Analyzers
 
         private JToken ConvertToToken(IQsiExpressionNode node, IAnalyzerContext context)
         {
+            if (node == null)
+                return null;
+
             if (node is QsiLiteralExpressionNode literalNode)
             {
                 return literalNode.Type switch
                 {
                     QsiDataType.Binary => new JValue((byte[])literalNode.Value),
                     QsiDataType.Boolean => new JValue((bool)literalNode.Value),
-                    QsiDataType.Json => JObject.Parse(literalNode.Value.ToString()),
-                    QsiDataType.Numeric => new JValue(double.Parse(literalNode.Value.ToString())),
-                    QsiDataType.Decimal => new JValue(double.Parse(literalNode.Value.ToString())),
+                    QsiDataType.Json => JObject.Parse(literalNode.Value.ToString() ?? throw new InvalidOperationException("literal value is null")),
+                    QsiDataType.Numeric => new JValue(double.Parse(literalNode.Value.ToString() ?? "0")),
+                    QsiDataType.Decimal => new JValue(double.Parse(literalNode.Value.ToString() ?? "0")),
                     QsiDataType.Null => null,
                     _ => literalNode.Value.ToString()
                 };
@@ -286,7 +316,7 @@ namespace Qsi.PrimarSql.Analyzers
                     if (!(indexerExpressionNode.Indexer.Value is QsiLiteralExpressionNode literalExpressionNode))
                         throw new ArgumentException(nameof(accessor));
 
-                    return (long)Convert.ChangeType(literalExpressionNode.Value, TypeCode.Int64)!;
+                    return (int)Convert.ChangeType(literalExpressionNode.Value, TypeCode.Int32)!;
                 }
 
                 case QsiFieldExpressionNode fieldExpressionNode:
