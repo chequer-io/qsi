@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json.Linq;
 using Qsi.Data;
 using Qsi.Tree;
 using Qsi.Utilities;
@@ -22,18 +24,53 @@ namespace Qsi.PrimarSql.Tree
 
             node.Target.SetValue(TableVisitor.VisitTableName(context.tableName()));
 
-            if (context.columns != null)
+            switch (context.insertStatementValue())
             {
-                node.Columns = context.columns.uid()
-                    .Select(i => new QsiQualifiedIdentifier(IdentifierVisitor.VisitUid(i)))
-                    .ToArray();
+                case SubqueryInsertStatementContext _:
+                {
+                    throw TreeHelper.NotSupportedFeature("subquery insert");
+                }
+
+                case ExpressionInsertStatementContext expressionContext:
+                {
+                    if (context.columns != null)
+                    {
+                        node.Columns = context.columns.uid()
+                            .Select(i => new QsiQualifiedIdentifier(IdentifierVisitor.VisitUid(i)))
+                            .ToArray();
+                    }
+
+                    IEnumerable<QsiRowValueExpressionNode> rows = expressionContext
+                        .expressionsWithDefaults()
+                        .Select(ExpressionVisitor.VisitExpressionsWithDefaults);
+
+                    node.Values.AddRange(rows);
+                    break;
+                }
+
+                case JsonInsertStatementContext jsonContext:
+                {
+                    (JObject, JsonObjectContext x)[] objects = jsonContext.jsonObject()
+                        .Select(x => (JObject.Parse(x.GetText()), x))
+                        .ToArray();
+
+                    string[] columns = objects
+                        .SelectMany(x => x.Item1.Properties().Select(y => y.Name))
+                        .Distinct()
+                        .ToArray();
+
+                    node.Columns = columns
+                        .Select(x => new QsiQualifiedIdentifier(new QsiIdentifier(x, false)))
+                        .ToArray();
+
+                    foreach (var (obj, jsonObjectContext) in objects)
+                    {
+                        node.Values.Add(ExpressionVisitor.GetRowValueFromJObject(obj, jsonObjectContext, columns));
+                    }
+
+                    break;
+                }
             }
-
-            IEnumerable<QsiRowValueExpressionNode> rows = context.insertStatementValue()
-                .expressionsWithDefaults()
-                .Select(ExpressionVisitor.VisitExpressionsWithDefaults);
-
-            node.Values.AddRange(rows);
 
             PrimarSqlTree.PutContextSpan(node, context);
 
@@ -106,7 +143,7 @@ namespace Qsi.PrimarSql.Tree
             var node = new QsiDataUpdateActionNode();
 
             node.Target.SetValue(derivedTable);
-            node.SetValues.AddRange(context.updatedElement().Select(ExpressionVisitor.VisitUpdatedElement));
+            node.SetValues.AddRange(ExpressionVisitor.VisitUpdateItem(context.updateItem()));
 
             PrimarSqlTree.PutContextSpan(derivedTable, context);
 

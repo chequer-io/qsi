@@ -117,6 +117,7 @@ namespace Qsi.PrimarSql.Analyzers
             {
                 case PrimarSqlSetColumnExpressionNode _:
                 case PrimarSqlIndexerExpressionNode _:
+                case PrimarSqlAppendArrayExpressionNode _:
                     return expression.Children
                         .Cast<IQsiExpressionNode>()
                         .SelectMany(n => ResolveColumnsInExpression(context, n));
