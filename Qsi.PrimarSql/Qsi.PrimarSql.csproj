@@ -10,7 +10,7 @@
 
     <ItemGroup>
       <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-      <PackageReference Include="PrimarSql" Version="1.1.8" />
+      <PackageReference Include="PrimarSql" Version="1.2.0" />
     </ItemGroup>
 
     <ItemGroup>
