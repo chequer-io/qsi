@@ -513,6 +513,8 @@ namespace Qsi.PrimarSql.Tree
 
                 if (context.offset != null)
                     n.Offset.SetValue(VisitLiteral(context.offset.decimalLiteral()));
+
+                PrimarSqlTree.PutContextSpan(n, context);
             });
         }
 
@@ -526,6 +528,8 @@ namespace Qsi.PrimarSql.Tree
                 {
                     n.SortKey.SetValue(VisitConstant(context.sortKey));
                 }
+
+                PrimarSqlTree.PutContextSpan(n, context);
             });
         }
 
@@ -574,7 +578,6 @@ namespace Qsi.PrimarSql.Tree
             };
 
             assignNode.Accessors.AddRange(column.Accessors);
-            assignNode.Value.SetValue(TreeHelper.CreateNullLiteral());
 
             PrimarSqlTree.PutContextSpan(assignNode, context);
             return assignNode;
