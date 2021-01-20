@@ -590,10 +590,44 @@ namespace Qsi.PrimarSql.Tree
             };
 
             assignNode.Accessors.AddRange(column.Accessors);
-            assignNode.Value.SetValue(VisitExpression(context.expression()));
+
+            QsiExpressionNode expression;
+
+            if (context.expression() != null)
+                expression = VisitExpression(context.expression());
+            else if (context.arrayExpression() != null)
+                expression = VisitArrayExpression(context.arrayExpression());
+            else if (context.arrayAddExpression() != null)
+                expression = VisitArrayAddExpression(context.arrayAddExpression());
+            else
+            {
+                expression = TreeHelper.CreateNullLiteral();
+            }
+
+            assignNode.Value.SetValue(expression);
 
             PrimarSqlTree.PutContextSpan(assignNode, context);
             return assignNode;
+        }
+
+        public static QsiMultipleExpressionNode VisitArrayExpression(ArrayExpressionContext context)
+        {
+            return TreeHelper.Create<QsiMultipleExpressionNode>(n =>
+            {
+                n.Elements.AddRange(context.constant().Select(VisitConstant));
+
+                PrimarSqlTree.PutContextSpan(n, context);
+            });
+        }
+
+        public static PrimarSqlAppendArrayExpressionNode VisitArrayAddExpression(ArrayAddExpressionContext context)
+        {
+            return TreeHelper.Create<PrimarSqlAppendArrayExpressionNode>(n =>
+            {
+                n.Elements.AddRange(context.constant().Select(VisitConstant));
+
+                PrimarSqlTree.PutContextSpan(n, context);
+            });
         }
 
         #region TableVisitor
