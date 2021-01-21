@@ -80,6 +80,12 @@ namespace Qsi.Parsing.Common
                     tokenType = TokenType.Keyword;
                     break;
 
+                case '(':
+                case ')':
+                    tokenType = TokenType.Fragment;
+                    token = new Token(tokenType, cursor.Index..(cursor.Index + 1));
+                    return true;
+
                 case '\'':
                     offset = 1;
                     rule = _singleQuote;
@@ -297,7 +303,7 @@ namespace Qsi.Parsing.Common
             var (startPosition, endPosition) = MeasurePosition(context, startIndex, endIndex);
             var script = context.Cursor.Value[startIndex..(endIndex + 1)];
 
-            Token[] leadingTokens = GetLeadingTokens(tokens, TokenType.Keyword, 2);
+            Token[] leadingTokens = GetLeadingTokens(script, tokens, TokenType.Keyword, 2);
             var scriptType = GetSuitableType(context.Cursor, tokens, leadingTokens);
 
             return new QsiScript(script, scriptType, startPosition, endPosition);
@@ -350,7 +356,7 @@ namespace Qsi.Parsing.Common
         public QsiScriptType GetSuitableType(string input)
         {
             var cursor = new CommonScriptCursor(input);
-            Token[] leadingTokens = GetLeadingTokens(ParseTokens(cursor), TokenType.Keyword, 2);
+            Token[] leadingTokens = GetLeadingTokens(input, ParseTokens(cursor), TokenType.Keyword, 2);
             return GetSuitableType(cursor, leadingTokens, leadingTokens);
         }
 
@@ -378,7 +384,7 @@ namespace Qsi.Parsing.Common
         #endregion
 
         #region Utilities
-        protected Token[] GetLeadingTokens(IEnumerable<Token> tokens, TokenType tokenType, int count)
+        protected Token[] GetLeadingTokens(string input, IEnumerable<Token> tokens, TokenType tokenType, int count)
         {
             var result = new Token[count];
             int resultIndex = 0;
@@ -387,6 +393,16 @@ namespace Qsi.Parsing.Common
             {
                 if (TokenType.Trivia.HasFlag(token.Type))
                     continue;
+
+                var (offset, length) = token.Span.GetOffsetAndLength(input.Length);
+
+                if (length == 1)
+                {
+                    var ch = input[offset];
+
+                    if (ch == '(' || ch == ')')
+                        continue;
+                }
 
                 if (token.Type != tokenType)
                     break;
