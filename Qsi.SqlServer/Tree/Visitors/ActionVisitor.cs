@@ -204,13 +204,16 @@ namespace Qsi.SqlServer.Tree
         #region Merge
         public SqlServerMergeActionNode VisitMergeStatement(MergeStatement mergeStatement)
         {
-            // TODO: With
-            return VisitMergeSpecification(mergeStatement.MergeSpecification);
+            return VisitMergeSpecification(mergeStatement.MergeSpecification, mergeStatement.WithCtesAndXmlNamespaces);
         }
 
-        public SqlServerMergeActionNode VisitMergeSpecification(MergeSpecification mergeSpecification)
+        public SqlServerMergeActionNode VisitMergeSpecification(MergeSpecification mergeSpecification, WithCtesAndXmlNamespaces withCtesAndXmlNamespaces)
         {
             var targetTable = TableVisitor.VisitTableReference(mergeSpecification.Target);
+            QsiTableDirectivesNode directiveNode = null;
+
+            if (withCtesAndXmlNamespaces != null)
+                directiveNode = TableVisitor.VisitWithCtesAndXmlNamespaces(withCtesAndXmlNamespaces);
 
             if (!(targetTable is QsiTableAccessNode accessNode))
                 throw new NotSupportedException("Merge target table is not Table Reference");
@@ -225,6 +228,8 @@ namespace Qsi.SqlServer.Tree
                 leftTable = TreeHelper.Create<QsiDerivedTableNode>(n =>
                 {
                     var alias = IdentifierVisitor.CreateIdentifier(mergeSpecification.TableAlias);
+
+                    n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
 
                     n.Alias.SetValue(new QsiAliasNode
                     {
@@ -352,6 +357,9 @@ namespace Qsi.SqlServer.Tree
                         case InsertMergeAction insertMergeAction:
                             n.ActionNodes.Add(TreeHelper.Create<QsiDataInsertActionNode>(dn =>
                             {
+                                if (directiveNode != null)
+                                    dn.Directives.SetValue(directiveNode);
+
                                 dn.Target.SetValue(accessNode);
 
                                 dn.Columns = insertMergeAction.Columns.Select(ExpressionVisitor.VisitColumnReferenceExpression)
@@ -374,6 +382,9 @@ namespace Qsi.SqlServer.Tree
                         case UpdateMergeAction updateMergeAction:
                             n.ActionNodes.Add(TreeHelper.Create<QsiDataUpdateActionNode>(dn =>
                             {
+                                if (directiveNode != null)
+                                    dn.Directives.SetValue(directiveNode);
+
                                 dn.Target.SetValue(target);
                                 dn.SetValues.AddRange(updateMergeAction.SetClauses.Select(ExpressionVisitor.VisitSetClause));
                             }));

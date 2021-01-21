@@ -4,13 +4,17 @@ using Qsi.Tree;
 
 namespace Qsi.SqlServer.Tree
 {
-    public class SqlServerBinaryTableNode : QsiTableNode, ISqlServerBinaryTableNode
+    public class SqlServerBinaryTableNode : QsiTableNode, IQsiCompositeTableNode
     {
         public QsiTreeNodeProperty<QsiTableNode> Left { get; }
 
         public SqlServerBinaryTableType BinaryTableType { get; set; }
 
         public QsiTreeNodeProperty<QsiTableNode> Right { get; }
+
+        public QsiTreeNodeProperty<QsiMultipleOrderExpressionNode> OrderExpression { get; }
+
+        public QsiTreeNodeProperty<QsiLimitExpressionNode> LimitExpression { get; }
 
         public override IEnumerable<IQsiTreeNode> Children
         {
@@ -25,17 +29,29 @@ namespace Qsi.SqlServer.Tree
         }
 
         #region Explicit
-        IQsiTableNode ISqlServerBinaryTableNode.Left => Left.Value;
+        IQsiTableNode[] IQsiCompositeTableNode.Sources
+        {
+            get
+            {
+                return new IQsiTableNode[]
+                {
+                    Left.Value,
+                    Right.Value
+                };
+            }
+        }
 
-        SqlServerBinaryTableType ISqlServerBinaryTableNode.BinaryTableType => BinaryTableType;
+        IQsiMultipleOrderExpressionNode IQsiCompositeTableNode.OrderExpression => OrderExpression.Value;
 
-        IQsiTableNode ISqlServerBinaryTableNode.Right => Right.Value;
+        IQsiLimitExpressionNode IQsiCompositeTableNode.LimitExpression => LimitExpression.Value;
         #endregion
 
         public SqlServerBinaryTableNode()
         {
             Left = new QsiTreeNodeProperty<QsiTableNode>(this);
             Right = new QsiTreeNodeProperty<QsiTableNode>(this);
+            OrderExpression = new QsiTreeNodeProperty<QsiMultipleOrderExpressionNode>(this);
+            LimitExpression = new QsiTreeNodeProperty<QsiLimitExpressionNode>(this);
         }
     }
 }
