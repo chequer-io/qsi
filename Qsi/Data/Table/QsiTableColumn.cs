@@ -12,7 +12,7 @@ namespace Qsi.Data
 
         public QsiIdentifier Name { get; set; }
 
-        public List<QsiTableColumn> References { get; } = new List<QsiTableColumn>();
+        public List<QsiTableColumn> References { get; } = new();
 
         public bool IsVisible { get; set; } = true;
 
@@ -52,7 +52,7 @@ namespace Qsi.Data
 
         protected virtual QsiTableColumn Clone()
         {
-            return new QsiTableColumn();
+            return new();
         }
     }
 }

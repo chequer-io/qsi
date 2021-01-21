@@ -23,7 +23,7 @@ namespace Qsi.JSql
 
         public override QsiAnalyzerOptions CreateAnalyzerOptions()
         {
-            return new QsiAnalyzerOptions();
+            return new();
         }
     }
 }

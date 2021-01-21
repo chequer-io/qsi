@@ -20,7 +20,7 @@ namespace Qsi.PhoenixSql
                 case SelectStatement selectStatement:
                     return TableVisitor.VisitSelectStatement(selectStatement);
 
-                case CreateTableStatement createTableStatement when createTableStatement.TableType == PTableType.View:
+                case CreateTableStatement { TableType: PTableType.View } createTableStatement:
                     return TableVisitor.VisitCreateViewStatement(createTableStatement);
 
                 case IDMLStatement dmlStatement:

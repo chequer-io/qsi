@@ -98,7 +98,7 @@
             <TreeView.DataTemplates>
                 <DataTemplate DataType="qsi:IRawTreeTerminalNode">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Foreground="#B0B0B0" Text="TerminalNode" />
+                        <TextBlock Foreground="#B0B0B0" Text="{Binding TypeName}" />
                         <TextBlock Text=": " />
                         <TextBlock Foreground="#FA8072" Text="{Binding DisplayName}" />
                     </StackPanel>

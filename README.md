@@ -6,7 +6,7 @@ The QSI is the pure C# Query Structure Interface.
 
 |Language|Parser|Repos|
 |--|--|--|
-|MySql|Antlr4|[grammars-v4](https://github.com/antlr/grammars-v4)|
+|MySql|MySQL Workbench source code(Antlr4)|[mysql-workbench](https://github.com/mysql/mysql-workbench)|
 |PostgreSql10|PostgreSQL server source code(yacc)|[libpg_query](https://github.com/lfittl/libpg_query), [ChakraCore](https://github.com/microsoft/ChakraCore)|
 |JSql|JavaCC|[JSqlParser](https://github.com/JSQLParser/JSqlParser), [IKVM](https://github.com/ikvm-revived/ikvm)|
 |Oracle|Qsi.JSql||
@@ -539,12 +539,6 @@ PS> ./Publish.ps1 <VERSION> [-Mode <PUBLISH_MODE>]
 ### Debugger
 
 It supports abstract syntax trees and semantic trees, and a debugger that can debug compilation results.
-
-|OS     |Support |
-|-------|:------:|
-|Windows|&#x2714;|
-|OSX    |&#x2714;|
-|Linux  |&#x274C;|
 
 ![Preview](https://github.com/chequer-io/qsi/blob/master/Qsi.Debugger/Screenshot.png?raw=true)
 

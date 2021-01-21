@@ -30,12 +30,12 @@ namespace Qsi.Data
 
         public QsiQualifiedIdentifier SubIdentifier(Range range)
         {
-            return new QsiQualifiedIdentifier(_identifiers[range]);
+            return new(_identifiers[range]);
         }
 
         public QsiQualifiedIdentifier SubIdentifier(Index index)
         {
-            return new QsiQualifiedIdentifier(_identifiers[index]);
+            return new(_identifiers[index]);
         }
 
         public IEnumerator<QsiIdentifier> GetEnumerator()

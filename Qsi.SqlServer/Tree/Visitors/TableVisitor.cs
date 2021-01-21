@@ -776,7 +776,7 @@ namespace Qsi.SqlServer.Tree
 
         public QsiAliasNode CreateAliasNode(Identifier identifier)
         {
-            return new QsiAliasNode
+            return new()
             {
                 Name = IdentifierVisitor.CreateIdentifier(identifier)
             };

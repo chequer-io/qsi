@@ -52,7 +52,8 @@
                 _head = new Bucket
                 {
                     Key = key,
-                    Value = value
+                    Value = value,
+                    Next = _head?.Next
                 };
             }
         }

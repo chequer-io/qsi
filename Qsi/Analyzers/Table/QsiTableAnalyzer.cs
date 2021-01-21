@@ -256,7 +256,7 @@ namespace Qsi.Analyzers.Table
             switch (table.Columns)
             {
                 case null:
-                case var cd when cd.All(c => c is IQsiAllColumnNode all && all.Path == null):
+                case var cd when cd.All(c => c is IQsiAllColumnNode { Path: null } all):
                     // Skip
                     break;
 
@@ -321,7 +321,7 @@ namespace Qsi.Analyzers.Table
             int sourceOffset = 0;
             var structures = new List<QsiTableStructure>(source.Sources.Length);
 
-            if (table.Columns.Any(c => !(c is IQsiAllColumnNode)))
+            if (table.Columns.Any(c => c is not IQsiAllColumnNode))
             {
                 foreach (var columnNode in table.Columns.Cast<IQsiSequentialColumnNode>())
                 {
@@ -787,7 +787,7 @@ namespace Qsi.Analyzers.Table
                             e.FindDescendant<IQsiParametersExpressionNode, IQsiInvokeExpressionNode>(out _, out var i) &&
                             i.Member != null &&
                             i.Member.Identifier.Level == 1 &&
-                            i.Member.Identifier[0].Value.Equals("COUNT", StringComparison.OrdinalIgnoreCase):
+                            i.Member.Identifier[0].Value.EqualsIgnoreCase("COUNT"):
                             yield break;
 
                         case IQsiAllColumnNode allColumnNode:
@@ -819,6 +819,14 @@ namespace Qsi.Analyzers.Table
                         yield return c;
 
                     foreach (var c in ResolveColumnsInExpression(context, e.Member))
+                        yield return c;
+
+                    break;
+                }
+
+                case IQsiOrderExpressionNode e:
+                {
+                    foreach (var c in ResolveColumnsInExpression(context, e.Expression))
                         yield return c;
 
                     break;

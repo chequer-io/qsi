@@ -22,7 +22,12 @@ Function Antlr-Generate {
     }
 
     # Clean grammar cache
-    Remove-Item -Path $GrammarDirectory/* -Include *.interp, *.tokens
+    Remove-Item -Path $GrammarDirectory/* -Include *.interp
+
+    Get-ChildItem -Path $GrammarDirectory/* -Include *.g4 | ForEach-Object  {
+        $FileName = [System.IO.Path]::ChangeExtension($PSItem.Name, "tokens")
+        Remove-Item -Path $GrammarDirectory/* -Include $FileName
+    }
 
     # Generate
     java `

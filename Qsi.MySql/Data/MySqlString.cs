@@ -25,7 +25,7 @@ namespace Qsi.MySql.Data
 
         internal MySqlString WithCollate(string collate)
         {
-            return new MySqlString(Kind, Value, CharacterSet, collate);
+            return new(Kind, Value, CharacterSet, collate);
         }
 
         public override string ToString()
@@ -47,6 +47,11 @@ namespace Qsi.MySql.Data
 
                 case MySqlStringKind.Bit:
                     builder.Append('B');
+                    break;
+
+                case MySqlStringKind.BitString:
+                    builder.Append("0b");
+                    escape = false;
                     break;
 
                 case MySqlStringKind.HexaString:

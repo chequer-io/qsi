@@ -9,42 +9,40 @@ namespace Qsi.MySql.Tree
 {
     internal static class MySqlTree
     {
-        public static readonly Key<Range> SpanKey = new Key<Range>("node_span");
+        public static KeyIndexer<Range> Span { get; }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void PutSpan(IQsiTreeNode node, Range range)
+        private static readonly Key<Range> SpanKey = new("node_span");
+
+        static MySqlTree()
         {
-            node.UserData?.PutData(SpanKey, range);
+            Span = new KeyIndexer<Range>(SpanKey);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Range GetSpan(IQsiTreeNode node)
-        {
-            return node.UserData?.GetData(SpanKey) ?? default;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void PutContextSpan(IQsiTreeNode node, ParserRuleContext context)
+        internal static void PutContextSpan(IQsiTreeNode node, IParserRuleContext context)
         {
             PutContextSpan(node, context.Start, context.Stop);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void PutContextSpan(IQsiTreeNode node, ICommonContext context)
+        internal static void PutContextSpan(IQsiTreeNode node, ParserRuleContext context)
         {
             PutContextSpan(node, context.Start, context.Stop);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void PutContextSpan(IQsiTreeNode node, IToken token)
+        internal static void PutContextSpan(IQsiTreeNode node, IToken token)
         {
             PutContextSpan(node, token, token);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void PutContextSpan(IQsiTreeNode node, IToken start, IToken stop)
+        internal static void PutContextSpan(IQsiTreeNode node, IToken start, IToken stop)
         {
-            node.UserData?.PutData(SpanKey, new Range(start.StartIndex, stop.StopIndex + 1));
+            var startIndex = Math.Min(start.StartIndex, stop.TokenSource.InputStream.Size - 1);
+            var stopIndex = Math.Min(stop.StopIndex + 1, stop.TokenSource.InputStream.Size);
+
+            Span[node] = new Range(startIndex, stopIndex);
         }
     }
 }
