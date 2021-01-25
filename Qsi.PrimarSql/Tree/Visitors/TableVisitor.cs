@@ -228,9 +228,11 @@ namespace Qsi.PrimarSql.Tree
 
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
-                n.Alias.SetValue(CreateAliasNode(context.alias));
-
+                n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
                 n.Source.SetValue(node);
+                n.Alias.SetValue(CreateAliasNode(context.alias));
+                
+                PrimarSqlTree.PutContextSpan(n, context);
             });
         }
 
