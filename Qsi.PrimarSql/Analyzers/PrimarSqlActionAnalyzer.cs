@@ -130,13 +130,18 @@ namespace Qsi.PrimarSql.Analyzers
 
             var insertRows = new QsiDataRowCollection(1);
 
+            QsiQualifiedIdentifier[] columns = ResolveColumnNames(table, action);
+
             foreach (var value in action.Values)
             {
+                if (columns.Length != value.ColumnValues.Length)
+                    throw new QsiException(QsiError.DifferentColumnsCount);
+
                 var obj = new JObject();
 
-                for (int i = 0; i < action.Columns.Length; i++)
+                for (int i = 0; i < columns.Length; i++)
                 {
-                    var column = action.Columns[i][^1];
+                    var column = columns[i][^1];
                     var columnValue = value.ColumnValues[i];
 
                     obj[IdentifierUtility.Unescape(column.Value)] = ConvertToToken(columnValue, context);
