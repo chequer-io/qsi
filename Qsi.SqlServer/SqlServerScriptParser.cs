@@ -36,7 +36,16 @@ namespace Qsi.SqlServer
 
         public override IEnumerable<QsiScript> Parse(string input, CancellationToken cancellationToken)
         {
-            var result = _parser.Parse(input);
+            TSqlFragment result;
+
+            try
+            {
+                result = _parser.Parse(input);
+            }
+            catch (Exception)
+            {
+                return base.Parse(input, cancellationToken);
+            }
 
             if (result is not TSqlScript script)
                 return Enumerable.Empty<QsiScript>();
@@ -158,7 +167,7 @@ namespace Qsi.SqlServer
             {
                 var fragment = $"{leadingTokens[0].Text}{leadingTokens[1].Text}";
 
-                if (Enum.TryParse<QsiScriptType>(fragment, out var type))
+                if (Enum.TryParse<QsiScriptType>(fragment, true, out var type))
                     return type;
 
                 if (BulkInsert.EqualsIgnoreCase(fragment))
@@ -167,7 +176,7 @@ namespace Qsi.SqlServer
 
             if (leadingTokens.Length >= 1)
             {
-                if (Enum.TryParse<QsiScriptType>(leadingTokens[0].Text, out var type))
+                if (Enum.TryParse<QsiScriptType>(leadingTokens[0].Text, true, out var type))
                     return type;
 
                 if (Exec.EqualsIgnoreCase(leadingTokens[0].Text))

@@ -10,7 +10,7 @@ namespace Qsi.SqlServer.Tree
         public IdentifierVisitor(IVisitorContext visitorContext) : base(visitorContext)
         {
         }
-        
+
         public QsiQualifiedIdentifier ConcatIdentifier(MultiPartIdentifier multiIdentifier, Identifier identifier)
         {
             return CreateQualifiedIdentifier(multiIdentifier.Identifiers.Concat(new[] { identifier }));
@@ -30,15 +30,15 @@ namespace Qsi.SqlServer.Tree
         {
             return new(identifiers.Select(CreateIdentifier));
         }
-        
+
         public QsiQualifiedIdentifier CreateQualifiedIdentifier(params Identifier[] identifiers)
         {
             return new(identifiers.Select(CreateIdentifier));
         }
-        
+
         public QsiIdentifier CreateIdentifier(Identifier identifier)
         {
-            return new(identifier.Value, false);
+            return new(identifier.Value, identifier.QuoteType != QuoteType.NotQuoted);
         }
 
         public QsiQualifiedIdentifier VisitVariableReference(VariableReference variableReference)
