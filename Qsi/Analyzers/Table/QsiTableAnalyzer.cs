@@ -41,7 +41,7 @@ namespace Qsi.Analyzers.Table
         #endregion
 
         #region Table
-        public async ValueTask<QsiTableStructure> BuildTableStructure(TableCompileContext context, IQsiTableNode table)
+        public virtual async ValueTask<QsiTableStructure> BuildTableStructure(TableCompileContext context, IQsiTableNode table)
         {
             context.ThrowIfCancellationRequested();
 

@@ -419,7 +419,7 @@ namespace Qsi.Parsing.Common
 
         protected virtual void DeparseWhereExpressionNode(ScriptWriter writer, IQsiWhereExpressionNode node, QsiScript script)
         {
-            writer.Write("FROM ");
+            writer.Write("WHERE ");
             DeparseTreeNode(writer, node.Expression, script);
         }
 

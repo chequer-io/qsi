@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using Qsi.Analyzers;
+using Qsi.Analyzers.Table;
 using Qsi.Data;
 using Qsi.Parsing;
 using Qsi.Services;
+using Qsi.SqlServer.Analyzers;
 using Qsi.SqlServer.Common;
 using Qsi.Utilities;
 
@@ -24,7 +27,7 @@ namespace Qsi.SqlServer
 
         public override IQsiTreeDeparser CreateTreeDeparser()
         {
-            throw new NotImplementedException();
+            return new SqlServerDeparser();
         }
 
         public override IQsiScriptParser CreateScriptParser()
@@ -38,6 +41,12 @@ namespace Qsi.SqlServer
             string nY = y.IsEscaped ? IdentifierUtility.Unescape(y.Value) : y.Value;
 
             return string.Equals(nX, nY, StringComparison.OrdinalIgnoreCase);
+        }
+
+        public override IEnumerable<QsiAnalyzerBase> CreateAnalyzers(QsiEngine engine)
+        {
+            yield return new SqlServerActionAnalyzer(engine);
+            yield return new QsiTableAnalyzer(engine);
         }
 
         public override QsiAnalyzerOptions CreateAnalyzerOptions()

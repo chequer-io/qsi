@@ -13,6 +13,8 @@ namespace Qsi.Data
         Derived = 1 << 4,
         Inline = 1 << 5,
         Join = 1 << 6,
-        Union = 1 << 7
+        Union = 1 << 7,
+        Except = 1 << 8,
+        Intersect = 1 << 9
     }
 }

@@ -66,6 +66,7 @@ namespace Qsi.SqlServer
             if (result is TSqlScript sqlScript)
             {
                 var batch = sqlScript.Batches.FirstOrDefault();
+
                 var statement = batch?.Statements?.FirstOrDefault()
                                 ?? throw new QsiException(QsiError.Syntax);
 
@@ -73,6 +74,22 @@ namespace Qsi.SqlServer
                 {
                     case UseStatement useStatement:
                         return _actionVisitor.VisitUseStatement(useStatement);
+
+                    case InsertStatement insertStatement:
+                        return _actionVisitor.VisitInsertStatement(insertStatement);
+
+                    case DeleteStatement deleteStatement:
+                        return _actionVisitor.VisitDeleteStatement(deleteStatement);
+
+                    case UpdateStatement updateStatement:
+                        return _actionVisitor.VisitUpdateStatement(updateStatement);
+
+                    case MergeStatement mergeStatement:
+                        return _actionVisitor.VisitMergeStatement(mergeStatement);
+
+                    case AlterUserStatement alterUserStatement:
+                        return _actionVisitor.VisitAlterUser(alterUserStatement);
+
                     default:
                         return _tableVisitor.Visit(statement);
                 }

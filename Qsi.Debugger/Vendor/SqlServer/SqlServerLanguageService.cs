@@ -7,11 +7,6 @@ namespace Qsi.Debugger.Vendor.SqlServer
 {
     public class SqlServerLanguageService : SqlServerLanguageServiceBase
     {
-        public override IQsiTreeDeparser CreateTreeDeparser()
-        {
-            throw new System.NotImplementedException();
-        }
-
         public SqlServerLanguageService(TransactSqlVersion transactSqlVersion) : base(transactSqlVersion)
         {
         }
