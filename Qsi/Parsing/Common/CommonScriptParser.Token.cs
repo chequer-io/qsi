@@ -5,7 +5,7 @@ namespace Qsi.Parsing.Common
     public partial class CommonScriptParser
     {
         [Flags]
-        protected enum TokenType
+        public enum TokenType
         {
             Keyword = 1 << 1,
             Literal = 1 << 2,
@@ -18,7 +18,7 @@ namespace Qsi.Parsing.Common
             Trivia = WhiteSpace | SingeLineComment | MultiLineComment
         }
 
-        protected readonly struct Token
+        public readonly struct Token
         {
             public Range Span { get; }
 

@@ -31,7 +31,7 @@ namespace Qsi.Parsing.Common
         }
 
         #region Lexing
-        private IEnumerable<Token> ParseTokens(CommonScriptCursor cursor)
+        public IEnumerable<Token> ParseTokens(CommonScriptCursor cursor)
         {
             int? fragmentStart = null;
             var fragmentEnd = -1;
@@ -303,7 +303,7 @@ namespace Qsi.Parsing.Common
             var (startPosition, endPosition) = MeasurePosition(context, startIndex, endIndex);
             var script = context.Cursor.Value[startIndex..(endIndex + 1)];
 
-            Token[] leadingTokens = GetLeadingTokens(script, tokens, TokenType.Keyword, 2);
+            Token[] leadingTokens = GetLeadingTokens(context.Cursor.Value, tokens, TokenType.Keyword, 2);
             var scriptType = GetSuitableType(context.Cursor, tokens, leadingTokens);
 
             return new QsiScript(script, scriptType, startPosition, endPosition);

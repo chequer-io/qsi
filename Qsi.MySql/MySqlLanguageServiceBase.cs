@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using Qsi.Analyzers;
 using Qsi.Analyzers.Action;
+using Qsi.Collections;
+using Qsi.Data;
 using Qsi.MySql.Analyzers;
 using Qsi.Parsing;
 using Qsi.Services;
@@ -11,6 +13,11 @@ namespace Qsi.MySql
     public abstract class MySqlLanguageServiceBase : QsiLanguageServiceBase
     {
         public abstract Version Version { get; }
+
+        protected override IEqualityComparer<QsiIdentifier> GetIdentifierComparer()
+        {
+            return new QsiIdentifierEqualityComparer(StringComparison.OrdinalIgnoreCase);
+        }
 
         public override IQsiTreeParser CreateTreeParser()
         {
