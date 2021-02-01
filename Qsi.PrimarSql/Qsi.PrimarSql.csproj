@@ -4,6 +4,12 @@
         <TargetFramework>net5.0</TargetFramework>
     </PropertyGroup>
 
+    <PropertyGroup Label="Nuspec">
+        <Title>Query Structure Interface of PrimarSql</Title>
+        <Description>$(Title)</Description>
+        <PackageTags>$(PackageTags);dynamodb;primarsql</PackageTags>
+    </PropertyGroup>
+
     <ItemGroup>
       <ProjectReference Include="..\Qsi\Qsi.csproj" />
     </ItemGroup>
