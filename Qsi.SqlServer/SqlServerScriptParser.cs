@@ -15,6 +15,7 @@ namespace Qsi.SqlServer
     public class SqlServerScriptParser : CommonScriptParser
     {
         private const string Exec = "EXEC";
+        private const string Merge = "MERGE";
         private const string BulkInsert = "BULKINSERT";
 
         private readonly TSqlParserInternal _parser;
@@ -26,9 +27,13 @@ namespace Qsi.SqlServer
 
         protected override QsiScriptType GetSuitableType(CommonScriptCursor cursor, IReadOnlyList<Token> tokens, Token[] leadingTokens)
         {
-            if (leadingTokens.Length >= 1 && Exec.EqualsIgnoreCase(cursor.Value[leadingTokens[0].Span]))
+            if (leadingTokens.Length >= 1)
             {
-                return QsiScriptType.Execute;
+                if (Exec.EqualsIgnoreCase(cursor.Value[leadingTokens[0].Span]))
+                    return QsiScriptType.Execute;
+
+                if (Merge.EqualsIgnoreCase(cursor.Value[leadingTokens[0].Span]))
+                    return QsiScriptType.MergeInto;
             }
 
             return base.GetSuitableType(cursor, tokens, leadingTokens);
