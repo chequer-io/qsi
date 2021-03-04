@@ -8,8 +8,6 @@ namespace Qsi.Parsing.Common
     {
         protected class ParseContext
         {
-            public readonly List<QsiScript> Scripts;
-
             public readonly CommonScriptCursor Cursor;
 
             public string Delimiter { get; set; }
@@ -29,7 +27,6 @@ namespace Qsi.Parsing.Common
 
             public ParseContext(string input, string delimiter, CancellationToken cancellationToken)
             {
-                Scripts = new List<QsiScript>();
                 Cursor = new CommonScriptCursor(input);
                 Delimiter = delimiter;
                 _tokens = new List<Token>();
