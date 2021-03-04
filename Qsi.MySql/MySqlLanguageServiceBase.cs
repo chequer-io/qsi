@@ -31,7 +31,7 @@ namespace Qsi.MySql
 
         public override IQsiScriptParser CreateScriptParser()
         {
-            return new MySqlScriptParser();
+            return new MySqlScriptParser(Version);
         }
 
         public override QsiAnalyzerOptions CreateAnalyzerOptions()

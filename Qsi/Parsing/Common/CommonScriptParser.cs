@@ -384,7 +384,7 @@ namespace Qsi.Parsing.Common
         #endregion
 
         #region Utilities
-        protected Token[] GetLeadingTokens(string input, IEnumerable<Token> tokens, TokenType tokenType, int count)
+        public Token[] GetLeadingTokens(string input, IEnumerable<Token> tokens, TokenType tokenType, int count)
         {
             var result = new Token[count];
             int resultIndex = 0;

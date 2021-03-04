@@ -2,7 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
+using Antlr4.Runtime;
+using Antlr4.Runtime.Tree;
 using Qsi.Data;
+using Qsi.MySql.Internal;
 using Qsi.Parsing.Common;
 using Qsi.Shared.Extensions;
 
@@ -16,6 +20,32 @@ namespace Qsi.MySql
         private const string prepare = "PREPARE";
 
         private readonly Regex _delimiterPattern = new(@"\G\S+(?=\s|$)");
+
+        public bool UseDelimiter { get; set; } = true;
+
+        private readonly int _version;
+
+        public MySqlScriptParser(Version version)
+        {
+            _version = MySQLUtility.VersionToInt(version);
+        }
+
+        public override IEnumerable<QsiScript> Parse(string input, CancellationToken cancellationToken)
+        {
+            if (!UseDelimiter)
+            {
+                var collector = new ScriptCollector(this, input);
+                var parser = MySQLUtility.CreateParser(input, _version);
+                parser.BuildParseTree = false;
+                parser.TrimParseTree = false;
+                parser.AddParseListener(collector);
+                parser.query();
+
+                return collector.Scripts;
+            }
+
+            return base.Parse(input, cancellationToken);
+        }
 
         protected override bool IsEndOfScript(ParseContext context)
         {
@@ -51,6 +81,74 @@ namespace Qsi.MySql
                           prepare.EqualsIgnoreCase(cursor.Value[leadingTokens[1].Span]) => QsiScriptType.DropPrepare,
                 _ => base.GetSuitableType(cursor, tokens, leadingTokens)
             };
+        }
+
+        private class ScriptCollector : IParseTreeListener
+        {
+            public List<QsiScript> Scripts { get; }
+
+            private readonly MySqlScriptParser _parser;
+            private readonly CommonScriptCursor _cursor;
+            private readonly string _input;
+            private int _depth;
+
+            public ScriptCollector(MySqlScriptParser parser, string input)
+            {
+                Scripts = new List<QsiScript>();
+                _parser = parser;
+                _cursor = new CommonScriptCursor(string.Empty);
+                _input = input;
+            }
+
+            public void VisitTerminal(ITerminalNode node)
+            {
+            }
+
+            public void VisitErrorNode(IErrorNode node)
+            {
+            }
+
+            public void EnterEveryRule(ParserRuleContext ctx)
+            {
+                if (ctx is not MySqlParserInternal.SimpleStatementContext &&
+                    ctx is not MySqlParserInternal.BeginWorkContext)
+                {
+                    return;
+                }
+
+                _depth++;
+            }
+
+            public void ExitEveryRule(ParserRuleContext ctx)
+            {
+                if (ctx is not MySqlParserInternal.SimpleStatementContext &&
+                    ctx is not MySqlParserInternal.BeginWorkContext)
+                {
+                    return;
+                }
+
+                if (--_depth == 0 && ctx.Start != null)
+                {
+                    var stopToken = ctx.Stop ?? ctx.Start;
+                    var startIndex = ctx.Start.StartIndex;
+                    var endIndex = stopToken.StopIndex;
+                    var script = _input[startIndex..(endIndex + 1)];
+
+                    _cursor.Reset(script);
+
+                    Token[] tokens = _parser.ParseTokens(_cursor)
+                        .Where(t => !TokenType.Trivia.HasFlag(t.Type))
+                        .TakeWhile(t => t.Type == TokenType.Keyword)
+                        .Take(2)
+                        .ToArray();
+
+                    var scriptType = _parser.GetSuitableType(_cursor, tokens, tokens);
+                    var start = new QsiScriptPosition(ctx.Start.Line, ctx.Start.Column + 1);
+                    var end = new QsiScriptPosition(stopToken.Line, stopToken.Column + 1);
+
+                    Scripts.Add(new QsiScript(script, scriptType, start, end));
+                }
+            }
         }
     }
 }
