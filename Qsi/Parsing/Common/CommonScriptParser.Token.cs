@@ -9,12 +9,13 @@ namespace Qsi.Parsing.Common
         {
             Keyword = 1 << 1,
             Literal = 1 << 2,
-            Fragment = 1 << 3,
-            WhiteSpace = 1 << 4,
-            SingeLineComment = 1 << 5,
-            MultiLineComment = 1 << 6,
+            Identifier = 1 << 3,
+            Fragment = 1 << 4,
+            WhiteSpace = 1 << 5,
+            SingeLineComment = 1 << 6,
+            MultiLineComment = 1 << 7,
 
-            Effective = Keyword | Literal | Fragment,
+            Effective = Keyword | Literal | Identifier | Fragment,
             Trivia = WhiteSpace | SingeLineComment | MultiLineComment
         }
 

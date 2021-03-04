@@ -12,11 +12,18 @@ namespace Qsi.Parsing.Common
 
         public int Index { get; set; }
 
-        public int Length { get; }
+        public int Length { get; internal set; }
 
-        public string Value { get; }
+        public string Value { get; internal set; }
 
         public CommonScriptCursor(in string value)
+        {
+            Value = value;
+            Length = Value.Length;
+            Index = 0;
+        }
+
+        public void Reset(string value)
         {
             Value = value;
             Length = Value.Length;

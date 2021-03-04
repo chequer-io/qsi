@@ -16,10 +16,10 @@ namespace Qsi.Parsing.Common
         private readonly ITokenRule _whiteSpace = new LookbehindWhiteSpaceRule();
         private readonly ITokenRule _lineBreak = new LookaheadLineBreakRule();
         private readonly ITokenRule _keyword = new LookbehindUnknownKeywordRule();
-        private readonly ITokenRule _singleQuote = new LookbehindLiteralRule('\'', true);
-        private readonly ITokenRule _doubleQuote = new LookbehindLiteralRule('"', true);
-        private readonly ITokenRule _backQuote = new LookbehindCharacterRule('`');
-        private readonly ITokenRule _squareBracketRight = new LookbehindCharacterRule(']');
+        private readonly ITokenRule _singleQuote = new LookbehindIdentifierRule('\'', true);
+        private readonly ITokenRule _doubleQuote = new LookbehindIdentifierRule('"', true);
+        private readonly ITokenRule _backQuote = new LookbehindIdentifierRule('`', true);
+        private readonly ITokenRule _squareBracketRight = new LookbehindIdentifierRule(']', true);
         private readonly ITokenRule _multilineCommentClosing = new LookbehindKeywordRule("*/");
 
         private readonly Regex _dollarQuote = new(@"\G\$(?:[\p{L}_][\p{L}\d_]*)?\$");
@@ -89,25 +89,25 @@ namespace Qsi.Parsing.Common
                 case '\'':
                     offset = 1;
                     rule = _singleQuote;
-                    tokenType = TokenType.Literal;
+                    tokenType = TokenType.Identifier;
                     break;
 
                 case '"':
                     offset = 1;
                     rule = _doubleQuote;
-                    tokenType = TokenType.Literal;
+                    tokenType = TokenType.Identifier;
                     break;
 
                 case '`':
                     offset = 1;
                     rule = _backQuote;
-                    tokenType = TokenType.Fragment;
+                    tokenType = TokenType.Identifier;
                     break;
 
                 case '[':
                     offset = 1;
                     rule = _squareBracketRight;
-                    tokenType = TokenType.Fragment;
+                    tokenType = TokenType.Identifier;
                     break;
 
                 case '/' when cursor.Next == '*':
@@ -179,40 +179,37 @@ namespace Qsi.Parsing.Common
         public virtual IEnumerable<QsiScript> Parse(string input, CancellationToken cancellationToken)
         {
             var context = new ParseContext(input, _delimiter, cancellationToken);
-
             var cursor = context.Cursor;
-            ref int? fragmentStart = ref context.FragmentStart;
-            ref var fragmentEnd = ref context.FragmentEnd;
 
             while (cursor.Index < cursor.Length)
             {
                 if (IsEndOfScript(context))
                 {
-                    FlushScript(context);
+                    foreach (var script in BuildScripts(context))
+                        yield return script;
                 }
                 else if (TryParseToken(cursor, out var token))
                 {
-                    FlushToken(context);
+                    AddToken(context);
 
                     if (context.Tokens.Count > 0 || token.Type != TokenType.WhiteSpace)
                         context.AddToken(token);
                 }
                 else
                 {
-                    fragmentStart ??= cursor.Index;
-                    fragmentEnd = cursor.Index;
+                    context.FragmentStart ??= cursor.Index;
+                    context.FragmentEnd = cursor.Index;
                 }
 
                 cursor.Index++;
             }
 
-            FlushScript(context);
-
-            return context.Scripts;
+            foreach (var script in BuildScripts(context))
+                yield return script;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void FlushToken(ParseContext context)
+        private void AddToken(ParseContext context)
         {
             if (!context.FragmentStart.HasValue)
                 return;
@@ -223,12 +220,12 @@ namespace Qsi.Parsing.Common
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void FlushScript(ParseContext context)
+        protected IEnumerable<QsiScript> BuildScripts(ParseContext context)
         {
-            FlushToken(context);
+            AddToken(context);
 
             if (context.Tokens.Count == 0)
-                return;
+                yield break;
 
             foreach (var section in SplitScriptSection(context))
             {
@@ -253,10 +250,9 @@ namespace Qsi.Parsing.Common
                     var script = CreateScript(context, new ArraySegment<Token>(tokenBuffer, 0, tokenIndex));
 
                     if (script != null)
-                    {
-                        context.Scripts.Add(script);
                         context.LastLine = script.End.Line - 1;
-                    }
+
+                    yield return script;
                 }
 
                 ArrayPool<Token>.Shared.Return(tokenBuffer);
@@ -384,7 +380,7 @@ namespace Qsi.Parsing.Common
         #endregion
 
         #region Utilities
-        protected Token[] GetLeadingTokens(string input, IEnumerable<Token> tokens, TokenType tokenType, int count)
+        public Token[] GetLeadingTokens(string input, IEnumerable<Token> tokens, TokenType tokenType, int count)
         {
             var result = new Token[count];
             int resultIndex = 0;

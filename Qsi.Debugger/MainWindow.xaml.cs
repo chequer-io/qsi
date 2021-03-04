@@ -60,6 +60,7 @@ namespace Qsi.Debugger
                 ["MySQL 5.6.2"] = new(() => new MySqlDebugger(new Version(5, 6, 2))),
                 ["MySQL 5.7.13"] = new(() => new MySqlDebugger(new Version(5, 7, 13))),
                 ["MySQL 8.0.22"] = new(() => new MySqlDebugger(new Version(8, 0, 22))),
+                ["MySQL 8.0.22 (No Delimiter)"] = new(() => new MySqlDebugger(new Version(8, 0, 22), false)),
                 ["PostgreSQL"] = new(() => new PostgreSqlDebugger()),
                 ["JSqlParser"] = new(() => new JSqlDebugger()),
                 ["Oracle"] = new(() => new OracleDebugger()),
