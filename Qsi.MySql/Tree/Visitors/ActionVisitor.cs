@@ -166,7 +166,7 @@ namespace Qsi.MySql.Tree
 
             if (withClause != null || whereClause != null || orderClause != null || simpleLimitClause != null)
             {
-                if (tableNode is not QsiDerivedTableNode derivedTableNode)
+                if (tableNode is not QsiDerivedTableNode derivedTableNode || !derivedTableNode.Alias.IsEmpty)
                 {
                     derivedTableNode = new QsiDerivedTableNode();
                     derivedTableNode.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
