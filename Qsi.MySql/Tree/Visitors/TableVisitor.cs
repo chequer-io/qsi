@@ -379,7 +379,7 @@ namespace Qsi.MySql.Tree
 
         public static QsiTableNode VisitSingleTable(SingleTableContext context)
         {
-            var tableAccess = VisitTableRef(context.tableRef());
+            var tableAccess = VisitTableRef(new CommonTableRefContext(context.tableRef(), context.usePartition()));
             var alias = context.tableAlias();
 
             // TODO: usePartition
@@ -399,11 +399,14 @@ namespace Qsi.MySql.Tree
             return derivedTableNode;
         }
 
-        public static QsiTableAccessNode VisitTableRef(TableRefContext context)
+        public static QsiTableAccessNode VisitTableRef(CommonTableRefContext context)
         {
-            var node = new QsiTableAccessNode
+            var node = new MySqlTableAccessNode
             {
-                Identifier = IdentifierVisitor.VisitTableRef(context)
+                Identifier = IdentifierVisitor.VisitTableRef(context.TableRef),
+                Partitions = context.Partitions?.identifier()?
+                    .Select(IdentifierVisitor.VisitIdentifier)
+                    .ToArray()
             };
 
             MySqlTree.PutContextSpan(node, context);
