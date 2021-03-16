@@ -66,12 +66,12 @@ namespace Qsi.MySql.Tree
             else
             {
                 var tableRef = context.tableRef();
-                var partitionDelete = context.partitionDelete(); // TODO: implement
+                var partitionDelete = context.partitionDelete();
                 var orderClause = context.orderClause();
                 var simpleLimitClause = context.simpleLimitClause();
 
                 derivedNode.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
-                derivedNode.Source.SetValue(TableVisitor.VisitTableRef(tableRef));
+                derivedNode.Source.SetValue(TableVisitor.VisitTableRef(new CommonTableRefContext(tableRef, partitionDelete)));
 
                 if (orderClause != null)
                     derivedNode.Order.SetValue(ExpressionVisitor.VisitOrderClause(orderClause));
@@ -105,8 +105,7 @@ namespace Qsi.MySql.Tree
                 ConflictBehavior = context.ConflictBehavior
             };
 
-            node.Target.SetValue(TableVisitor.VisitTableRef(context.TableRef));
-            // TODO: implement context.UsePartition
+            node.Target.SetValue(TableVisitor.VisitTableRef(new CommonTableRefContext(context.TableRef, context.UsePartition)));
 
             if (context.InsertFromConstructor != null)
             {
@@ -167,7 +166,7 @@ namespace Qsi.MySql.Tree
 
             if (withClause != null || whereClause != null || orderClause != null || simpleLimitClause != null)
             {
-                if (tableNode is not QsiDerivedTableNode derivedTableNode)
+                if (tableNode is not QsiDerivedTableNode derivedTableNode || !derivedTableNode.Alias.IsEmpty)
                 {
                     derivedTableNode = new QsiDerivedTableNode();
                     derivedTableNode.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
