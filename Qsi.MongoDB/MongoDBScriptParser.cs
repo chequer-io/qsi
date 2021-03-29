@@ -17,14 +17,14 @@ namespace Qsi.MongoDB
                 .Select(s => new QsiScript(
                     input[s.Range],
                     QsiScriptType.Unknown,
-                    ConvertToPosition(s.Start),
-                    ConvertToPosition(s.End)
+                    ConvertToPosition(s.Start, s.Range.Start.Value),
+                    ConvertToPosition(s.End, s.Range.End.Value - 1)
                 ));
         }
 
-        private QsiScriptPosition ConvertToPosition(Location location)
+        private static QsiScriptPosition ConvertToPosition(Location location, int index)
         {
-            return new(location.Line, location.Column + 1);
+            return new(location.Line, location.Column + 1, index);
         }
     }
 }
