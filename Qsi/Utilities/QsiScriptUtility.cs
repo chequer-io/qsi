@@ -2,7 +2,7 @@
 
 namespace Qsi.Utilities
 {
-    internal static class QsiScriptUtility
+    public static class QsiScriptUtility
     {
         public static int GetEndLine(in string script)
         {
@@ -27,7 +27,7 @@ namespace Qsi.Utilities
 
         public static QsiScriptPosition GetEndPosition(in string script)
         {
-            return new(GetEndLine(script), GetEndColumn(script));
+            return new(GetEndLine(script), GetEndColumn(script), script.Length - 1);
         }
     }
 }

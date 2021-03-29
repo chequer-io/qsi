@@ -333,7 +333,7 @@ namespace Qsi.Parsing.Common
             if (endLine > 1)
                 endColumn = end - lineMap[endLine - 2];
 
-            return (new QsiScriptPosition(startLine, startColumn), new QsiScriptPosition(endLine, endColumn + 1));
+            return (new QsiScriptPosition(startLine, startColumn, start), new QsiScriptPosition(endLine, endColumn + 1, end));
 
             int GetLine(int index, int startIndex)
             {

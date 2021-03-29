@@ -213,8 +213,8 @@ namespace Qsi.SqlServer
                 endColumn = endTokenText.Length - index;
             }
 
-            var start = new QsiScriptPosition(startToken.Line, startToken.Column);
-            var end = new QsiScriptPosition(endToken.Line + lineCount, endColumn);
+            var start = new QsiScriptPosition(startToken.Line, startToken.Column, startToken.Offset);
+            var end = new QsiScriptPosition(endToken.Line + lineCount, endColumn, endToken.Offset);
 
             return (start, end);
         }
