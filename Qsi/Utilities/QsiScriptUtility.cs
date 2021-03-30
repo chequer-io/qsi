@@ -2,7 +2,7 @@
 
 namespace Qsi.Utilities
 {
-    public static class QsiScriptUtility
+    internal static class QsiScriptUtility
     {
         public static int GetEndLine(in string script)
         {
