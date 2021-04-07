@@ -92,6 +92,7 @@ namespace Qsi.PrimarSql.Analyzers
 
             PrimarSqlTableColumn[] columns = source
                 .Columns
+                .Where(c => c is PrimarSqlTableColumn)
                 .Cast<PrimarSqlTableColumn>()
                 .Where(c => Match(c.Name, columnName) && c.Path.SequenceEqual(path))
                 .ToArray();
