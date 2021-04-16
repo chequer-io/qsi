@@ -84,6 +84,12 @@ K_WHEN:                                W H E N;
 K_WHERE:                               W H E R E;
 K_WHILE:                               W H I L E;
 K_WITH:                                W I T H;
+K_ROUTE_TO:                            R O U T E '_' T O; 
+K_NO_ROUTE_TO:                         N O '_' R O U T E '_' T O;
+K_ROUTE_BY:                            R O U T E '_' B Y; 
+K_ROUTE_BY_CARDINALITY:                R O U T E '_' B Y '_' C A R D I N A L I T Y;
+K_DATA_TRANSFER_COST:                  D A T A '_' T R A N S F E R '_' C O S T;
+K_WITHHINT:                            W I T H H I N T;
 
 fragment A: ('a'|'A');
 fragment B: ('b'|'B');
@@ -112,71 +118,112 @@ fragment X: ('x'|'X');
 fragment Y: ('y'|'Y');
 fragment Z: ('z'|'Z');
 
-fragment DIGIT
-    : [0-9]
-    ;
+fragment DIGIT: [0-9];
+fragment LETTER: [A-Za-z];
+fragment LETTER_OR_DIGIT: [A-Za-z0-9];
+fragment SIGN: ('+'|'-');
 
-fragment LETTER
-    : [A-Za-z]
-    ;
-
-COMMA:               ',';
-DOLLAR_SIGN:         '$';
-DOUBLE_QUOTES:       '"';
-GREATER_THAN_SIGN:   '>';
-HASH_SYMBOL:         '#';
-LEFT_BRACKET:        '[';
-LEFT_CURLY_BRACKET:  '{';
-LOWER_THAN_SIGN:     '<';
-PERIOD:              '.';
-PIPE_SIGN:           '|';
-RIGHT_BRACKET:       ']';
-RIGHT_CURLY_BRACKET: '}';
-SIGN:                [+-];
+SEMI:                 ';';
+EQUAL:                '=';
+LESS_THEN_EQUAL:     '<=';
+GREATER_THEN_EQUAL:  '>=';
+NOT_EQUAL:           '!=';
+ADDITION_ASSIGNMENT: '+=';
+SUBRACT_ASSIGNMENT:  '-=';
+MINUSMINUS:          '--';
+COMMA:                ',';
+DOLLAR_SIGN:          '$';
+DOUBLE_QUOTE:         '"';
+GREATER_THAN_SIGN:    '>';
+HASH_SYMBOL:          '#';
+LEFT_BRACKET:         '[';
+LEFT_CURLY_BRACKET:   '{';
+OPEN_PAR_SYMBOL:      '(';
+LOWER_THAN_SIGN:      '<';
+PERIOD:               '.';
+PIPE_SIGN:            '|';
+RIGHT_BRACKET:        ']';
+RIGHT_CURLY_BRACKET:  '}';
+CLOSE_PAR_SYMBOL:     ')';
 SINGLE_QUOTE:        '\'';
-UNDERSCORE:          '_';
-APOSTROPHE:          SINGLE_QUOTE;
-      
-<approximate_numeric_literal> ::= <mantissa>E<exponent>
-    
-<cesu8_restricted_characters> ::= <double_quote> | <dollar_sign> | <single_quote> | <sign> | <period> | <greater_than_sign> | <lower_than_sign> | <pipe_sign> | <left_bracket> | <right_bracket> | <left_curly_bracket> | <right_curly_bracket> | ( | ) | ! | % | * |  , |  / | : | ; |  = | ? | @ | \ | ^ |  ` 
-      
-<exact_numeric_literal> ::= <unsigned_integer>[<period>[<unsigned_integer>]]
-                          | <period><unsigned_integer>
-      
-<exponent> ::= <signed_integer>
-  
-<hostname> ::= {<letter> | <digit>}[{ <letter> | <digit> | <period> | - }...]
-    
-<identifier> ::= <simple_identifier> | <special_identifier>
-      
-<mantissa> ::= <exact_numeric_literal> 
-  
-<numeric_literal> ::= <signed_numeric_literal> | <signed_integer>
-   
-<password> ::= { 
-  <letter> [ { <letter_or_digit> | # | $ }[…] ]
-  | <digit> [ <letter_or_digit> […] ]
-  | <special_identifier> }
- 
-<port_number> ::= <unsigned_integer>
-  
-<schema_name> ::= <unicode_name>
-              
-<simple_identifier> ::= {<letter> | <underscore>} [{<letter> | <digit> | <underscore> | <hash_symbol> | <dollar_sign>}...]
-    
-<special_identifier> ::= <double_quotes><any_character>...<double_quotes>
-   
-<signed_integer> ::= [<sign>] <unsigned_integer>
-  
-<signed_numeric_literal> ::= [<sign>] <unsigned_numeric_literal>
-    
-<string_literal> ::= <single_quote>[<any_character>...]<single_quote>  
-  
-<unicode_name> ::= !! CESU-8 string excluding any characters listed in <cesu8_restricted_characters>
-  
-<unsigned_integer> ::= <digit>... 
-  
-<unsigned_numeric_literal> ::= <exact_numeric_literal> | <approximate_numeric_literal>
-  
-<user_name> ::= <unicode_name>
+UNDERSCORE:           '_';
+MULTIPLY:             '*';
+
+fragment UNICODE_NAME
+    : [\p{L}]+
+    ;
+
+APOSTROPHE: SINGLE_QUOTE;
+
+APPROXIMATE_NUMERIC_LITERAL
+    : MANTISSA 'E' EXPONENT
+    ;
+
+EXACT_NUMERIC_LITERAL
+    : UNSIGNED_INTEGER ('.' UNSIGNED_INTEGER?)? 
+    | '.' UNSIGNED_INTEGER
+    ;
+
+EXPONENT
+    : SIGNED_INTEGER
+    ;
+
+IDENTIFIER
+    : SIMPLE_IDENTIFIER
+    | SPECIAL_IDENTIFIER
+    ;
+
+MANTISSA
+    : EXACT_NUMERIC_LITERAL
+    ;
+
+NUMERIC_LITERAL
+    : SIGNED_NUMERIC_LITERAL 
+    | SIGNED_INTEGER
+    ;
+
+PORT_NUMBER
+    : UNSIGNED_INTEGER
+    ;
+
+SCHEMA_NAME
+    : UNICODE_NAME
+    ;
+
+SIMPLE_IDENTIFIER
+    : (LETTER | '_') (LETTER | DIGIT | '_' | '#' | '$')*
+    ;
+
+SPECIAL_IDENTIFIER
+    : '"' ('""' | ~'"')* '"'
+    ;
+
+STRING_LITERAL
+    : '\'' ('\'\'' | ~'\'')* '\''
+    ;
+
+SIGNED_INTEGER
+    : SIGN? UNSIGNED_INTEGER
+    ;
+
+SIGNED_NUMERIC_LITERAL
+    : SIGN? UNSIGNED_NUMERIC_LITERAL
+    ;
+
+UNSIGNED_INTEGER
+    : DIGIT+
+    ;
+
+UNSIGNED_NUMERIC_LITERAL
+    : EXACT_NUMERIC_LITERAL 
+    | APPROXIMATE_NUMERIC_LITERAL
+    ;
+
+USER_NAME
+    : UNICODE_NAME
+    ;
+
+WS: [ \t\r\n]+                                     -> channel(HIDDEN);
+COMMENT: ('--' | '//') ~[\r\n]* ('\r'? '\n' | EOF) -> channel(HIDDEN);
+POUND_COMMENT:     '#' ~([\n\r])*                  -> channel(HIDDEN);
+MULTILINE_COMMENT: '/*' .*? '*/'                   -> channel(HIDDEN);

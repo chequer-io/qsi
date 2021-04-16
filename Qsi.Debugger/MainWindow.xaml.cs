@@ -21,6 +21,7 @@ using Qsi.Debugger.Models;
 using Qsi.Debugger.Utilities;
 using Qsi.Debugger.Vendor;
 using Qsi.Debugger.Vendor.Cql;
+using Qsi.Debugger.Vendor.Hana;
 using Qsi.Debugger.Vendor.JSql;
 using Qsi.Debugger.Vendor.MySql;
 using Qsi.Debugger.Vendor.Oracle;
@@ -71,6 +72,7 @@ namespace Qsi.Debugger
                 ["Phoenix 5.0.0"] = new(() => new PhoenixSqlDebugger()),
                 ["CassandraQL 3"] = new(() => new CqlDebugger()),
                 ["PrimarSql"] = new(() => new PrimarSqlDebugger())
+                ["SAP HANA"] = new(() => new HanaDebugger())
             };
 
             _cbLanguages = this.Find<ComboBox>("cbLanguages");
