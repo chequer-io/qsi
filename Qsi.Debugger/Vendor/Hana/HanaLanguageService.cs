@@ -1,9 +1,9 @@
-﻿using Qsi.Cql;
+﻿using Qsi.Hana;
 using Qsi.Services;
 
 namespace Qsi.Debugger.Vendor.Hana
 {
-    internal class HanaLanguageService : CqlLanguageServiceBase
+    internal class HanaLanguageService : HanaLanguageServiceBase
     {
         public override IQsiRepositoryProvider CreateRepositoryProvider()
         {
