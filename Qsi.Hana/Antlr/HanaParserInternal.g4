@@ -17,7 +17,7 @@ hanaStatement
 
 selectStatement
     : withClause? subquery (forUpdate | K_FOR K_SHARE K_LOCK | timeTravel | forSystemTime)? hintClause?
-    | withClause? '(' subquery ')' (forUpdate | forJsonClause | forXmlClause | timeTravel)? hintClause?
+    | withClause? '(' subquery ')' (forUpdate | forJsonOrXmlClause | timeTravel)? hintClause?
     | (subquery | '(' subquery ')') K_INTO (tableRef | variableNameList) columnListClause? hintClause? (K_TOTAL K_ROWCOUNT)?
     ;
 
@@ -58,15 +58,15 @@ waitNowait
     | K_NOWAIT
     ;
 
-forJsonClause
-    : K_FOR K_JSON ('(' options+=STRING_LITERAL (',' options+=STRING_LITERAL)* ')')? jsonOrXmlReturnsClause?
+forJsonOrXmlClause
+    : K_FOR (K_JSON | K_XML) ('(' options+=forJsonOrXmlOption (',' options+=forJsonOrXmlOption)* ')')? forJsonOrXmlReturnsClause?
     ;
 
-forXmlClause
-    : K_FOR K_XML ('(' options+=STRING_LITERAL (',' options+=STRING_LITERAL)* ')')? jsonOrXmlReturnsClause?
+forJsonOrXmlOption
+    : key=STRING_LITERAL '=' value=STRING_LITERAL
     ;
 
-jsonOrXmlReturnsClause
+forJsonOrXmlReturnsClause
     : K_RETURNS (
         K_VARCHAR '(' NUMERIC_LITERAL ')'
         | K_NVARCHAR '(' NUMERIC_LITERAL ')'
