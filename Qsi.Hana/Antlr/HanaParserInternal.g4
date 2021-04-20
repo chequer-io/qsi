@@ -4,12 +4,6 @@ options {
     tokenVocab=HanaLexerInternal;
 }
 
-identifier
-    : UNQUOTED_IDENTIFIER
-    | QUOTED_IDENTIFIER
-    | UNICODE_IDENTIFIER
-    ;
-
 root
     : EOF
     | (hanaStatement (SEMI EOF? | EOF))+
@@ -405,4 +399,22 @@ memberOfPredicate
 
 nullPredicate
     : expression K_IS K_NOT? K_NULL
+    ;
+
+// ------ ETC ------
+
+identifier
+    : UNQUOTED_IDENTIFIER
+    | QUOTED_IDENTIFIER
+    | UNICODE_IDENTIFIER
+    | keywodIdentifier
+    ;
+
+keywodIdentifier
+    : K_AND | K_ANY | K_ASC | K_AUTOMATIC | K_AVG | K_BETWEEN | K_BY | K_CONTAINS | K_CORR | K_CORR_SPEARMAN | K_COUNT
+    | K_DATA_TRANSFER_COST | K_DESC | K_EMPTY | K_ESCAPE | K_EXACT | K_EXISTS | K_FIRST | K_FLAG | K_FORSHARELOCK
+    | K_FULLTEXT | K_FUZZY | K_HINT | K_LANGUAGE | K_LAST | K_LIKE | K_LIKE_REGEXPR | K_LINGUISTIC | K_MANY | K_MAX
+    | K_MEDIAN | K_MEMBER | K_MIN | K_NO_ROUTE_TO | K_NOT | K_NOTHING | K_NULLS | K_OF | K_OFF | K_ONE | K_OR
+    | K_ROUTE_BY | K_ROUTE_BY_CARDINALITY | K_ROUTE_TO | K_SOME | K_SPECIFIED | K_STDDEV | K_STDDEV_POP | K_STDDEV_SAMP
+    | K_STRING_AGG | K_SUM | K_THEN | K_TO | K_TOTALROWCOUNT | K_VAR | K_VAR_POP | K_VAR_SAMP | K_WEIGHT
     ;
