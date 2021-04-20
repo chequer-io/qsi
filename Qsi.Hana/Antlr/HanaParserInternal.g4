@@ -27,9 +27,10 @@ subquery
       whereClause?
       groupByClause?
       havingClause?
-      (setOperator subquery (',' subquery)*)?
-      (orderByClause limitClause)?
-    | '(' subquery ')'
+      setOperatorClause?
+      orderByClause?
+      limitClause?
+    | '(' inner=subquery ')'
     ;
 
 withClause
@@ -239,6 +240,10 @@ setOperator
     : K_UNION (K_ALL | K_DISTINCT)?
     | K_INTERSECT K_DISTINCT?
     | K_EXCEPT K_DISTINCT?
+    ;
+
+setOperatorClause
+    : setOperator subquery (',' setOperator subquery)*
     ;
 
 limitClause
