@@ -16,9 +16,9 @@ hanaStatement
 // ------ SQL Reference > SQL Statements > Alpabetical List of Statements > SELECT Statement ------
 
 selectStatement
-    : withClause? subquery /*(forUpdate | K_FORSHARELOCK | timeTravel | forSystemTime)?*/ hintClause?
-    | withClause? '(' subquery ')' /*(forUpdate | forJsonClause | forXmlClause | timeTravel)?*/ hintClause?
-    /*| (subquery | '(' subquery ')') K_INTO (tableRef | variableNameList) ('(' columnNameList ')')? hintClause? K_TOTALROWCOUNT?*/
+    : withClause? subquery (forUpdate | K_FOR K_SHARE K_LOCK | timeTravel | forSystemTime)? hintClause?
+    | withClause? '(' subquery ')' (forUpdate | forJsonClause | forXmlClause | timeTravel)? hintClause?
+    | (subquery | '(' subquery ')') K_INTO (tableRef | variableNameList) columnListClause? hintClause? (K_TOTAL K_ROWCOUNT)?
     ;
 
 subquery
@@ -47,6 +47,43 @@ columnList
 
 columnListClause
     : '(' list=columnList ')'
+    ;
+
+forUpdate
+    : K_FOR K_UPDATE (K_OF columnListClause)? waitNowait? (K_IGNORE K_LOCKED)?
+    ;
+
+waitNowait
+    : K_WAIT UNSIGNED_INTEGER
+    | K_NOWAIT
+    ;
+
+forJsonClause
+    : K_FOR K_JSON ('(' options+=STRING_LITERAL (',' options+=STRING_LITERAL)* ')')? jsonOrXmlReturnsClause?
+    ;
+
+forXmlClause
+    : K_FOR K_XML ('(' options+=STRING_LITERAL (',' options+=STRING_LITERAL)* ')')? jsonOrXmlReturnsClause?
+    ;
+
+jsonOrXmlReturnsClause
+    : K_RETURNS (
+        K_VARCHAR '(' NUMERIC_LITERAL ')'
+        | K_NVARCHAR '(' NUMERIC_LITERAL ')'
+        | K_CLOB
+        | K_NCLOB
+     )
+    ;
+
+timeTravel
+    : UNSIGNED_INTEGER                #commtId
+    | K_UTCTIMESTAMP UNSIGNED_INTEGER #timestamp
+    ;
+
+forSystemTime
+    : K_FOR K_SYSTEM_TIME K_AS K_OF '\'' UNSIGNED_INTEGER '\''                                  #asOf
+    | K_FOR K_SYSTEM_TIME K_FROM '\'' UNSIGNED_INTEGER '\'' K_TO '\'' UNSIGNED_INTEGER '\''     #fromTo
+    | K_FOR K_SYSTEM_TIME K_BETWEEN '\'' UNSIGNED_INTEGER '\'' K_AND '\'' UNSIGNED_INTEGER '\'' #between
     ;
 
 selectClause
@@ -85,43 +122,45 @@ tableExpression
     ;
 
 tableRef
-    : tableName /*(forSystemTime | forApplicationTimePeriod)? partitionRestriction?*/ alias? /*tablesampleClause?*/
+    : tableName (forSystemTime | forApplicationTimePeriod)? partitionRestriction? alias? tableSampleClause?
+    ;
+
+forApplicationTimePeriod
+    : K_FOR K_APPLICATION_TIME K_AS K_OF '\'' UNSIGNED_INTEGER '\''
+    ;
+
+partitionRestriction
+    : K_PARTITION '(' numbers+=UNSIGNED_INTEGER (',' numbers+=UNSIGNED_INTEGER)* ')'
+    ;
+
+tableSampleClause
+    : K_TABLESAMPLE (K_BERNOULLI | K_SYSTEM)? '(' size=NUMERIC_LITERAL ')'
     ;
 
 hintClause
-    : K_WITH K_HINT '(' hits+=hintElement (',' hits+=hintElement)* ')'
+    : K_WITH K_HINT '(' hints+=hintElement (',' hints+=hintElement)* ')'
     ;
 
 hintElement
-    : (hint | hintWithParameters)
-    ;
-
-hint
-    : UNQUOTED_IDENTIFIER
-    ;
-
-hintWithParameters
-    : K_ROUTE_TO '(' volumeId (',' volumeId)? ')'
-    | K_NO_ROUTE_TO '(' volumeId (',' volumeId)? ')'
-    | K_ROUTE_BY '(' tableName (',' tableName)? ')'
-    | K_ROUTE_BY_CARDINALITY '(' tableName (',' tableName)? ')'
-    | K_DATA_TRANSFER_COST '(' UNSIGNED_INTEGER ')'
+    : name=UNQUOTED_IDENTIFIER                                                          #hintName
+    | K_ROUTE_TO             '(' volumeIds+=identifier (',' volumeIds+=identifier)? ')' #routeTo
+    | K_NO_ROUTE_TO          '(' volumeIds+=identifier (',' volumeIds+=identifier)? ')' #noRouteTo
+    | K_ROUTE_BY             '(' tables+=tableName (',' tables+=tableName)? ')'         #routeBy
+    | K_ROUTE_BY_CARDINALITY '(' tables+=tableName (',' tables+=tableName)? ')'         #routeByCardinality
+    | K_DATA_TRANSFER_COST   '(' cost=UNSIGNED_INTEGER ')'                              #rdataTransferCost
     ;
 
 tableName
     : ((db=identifier '.')? schema=identifier '.')? table=identifier
     ;
 
-volumeId
-    : identifier
-    ;
-
 alias
     : K_AS? name=identifier
     ;
 
+// TODO: <association_expression> ::= <association_ref>[.<association_ref>[...] ]
 associationExpression
-    : associationRef ('.' associationRef*)?
+    : refs+=associationRef ('.' refs+=associationRef*)?
     ;
 
 associationRef
@@ -130,6 +169,14 @@ associationRef
 
 associationCardinality
     : K_USING (K_ONE | K_MANY) K_TO (K_ONE | K_MANY) K_JOIN
+    ;
+
+variableName
+    : identifier ('[' index=NUMERIC_LITERAL ']')?
+    ;
+
+variableNameList
+    : variableName (',' variableName)*
     ;
 
 // ------ SQL Reference > Operators ------
@@ -411,10 +458,12 @@ identifier
     ;
 
 keywodIdentifier
-    : K_AND | K_ANY | K_ASC | K_AUTOMATIC | K_AVG | K_BETWEEN | K_BY | K_CONTAINS | K_CORR | K_CORR_SPEARMAN | K_COUNT
-    | K_DATA_TRANSFER_COST | K_DESC | K_EMPTY | K_ESCAPE | K_EXACT | K_EXISTS | K_FIRST | K_FLAG | K_FORSHARELOCK
-    | K_FULLTEXT | K_FUZZY | K_HINT | K_LANGUAGE | K_LAST | K_LIKE | K_LIKE_REGEXPR | K_LINGUISTIC | K_MANY | K_MAX
-    | K_MEDIAN | K_MEMBER | K_MIN | K_NO_ROUTE_TO | K_NOT | K_NOTHING | K_NULLS | K_OF | K_OFF | K_ONE | K_OR
-    | K_ROUTE_BY | K_ROUTE_BY_CARDINALITY | K_ROUTE_TO | K_SOME | K_SPECIFIED | K_STDDEV | K_STDDEV_POP | K_STDDEV_SAMP
-    | K_STRING_AGG | K_SUM | K_THEN | K_TO | K_TOTALROWCOUNT | K_VAR | K_VAR_POP | K_VAR_SAMP | K_WEIGHT
+    : K_AND | K_ANY | K_APPLICATION_TIME | K_ASC | K_AUTOMATIC | K_AVG | K_BERNOULLI | K_BETWEEN | K_BY | K_CLOB
+    | K_CONTAINS | K_CORR | K_CORR_SPEARMAN | K_COUNT | K_DATA_TRANSFER_COST | K_DESC | K_EMPTY | K_ESCAPE | K_EXACT
+    | K_EXISTS | K_FIRST | K_FLAG | K_FULLTEXT | K_FUZZY | K_HINT | K_IGNORE | K_JSON | K_LANGUAGE | K_LAST | K_LIKE
+    | K_LIKE_REGEXPR | K_LINGUISTIC | K_LOCK | K_LOCKED | K_MANY | K_MAX | K_MEDIAN | K_MEMBER | K_MIN | K_NCLOB
+    | K_NO_ROUTE_TO | K_NOT | K_NOTHING | K_NOWAIT | K_NULLS | K_NVARCHAR | K_OF | K_OFF | K_ONE | K_OR | K_PARTITION
+    | K_ROUTE_BY | K_ROUTE_BY_CARDINALITY | K_ROUTE_TO | K_ROWCOUNT | K_SHARE | K_SOME | K_SPECIFIED | K_STDDEV
+    | K_STDDEV_POP | K_STDDEV_SAMP | K_STRING_AGG | K_SUM | K_SYSTEM | K_SYSTEM_TIME | K_THEN | K_TO | K_TOTAL
+    | K_UPDATE | K_VAR | K_VAR_POP | K_VAR_SAMP | K_VARCHAR | K_WAIT | K_WEIGHT | K_XML
     ;
