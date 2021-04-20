@@ -17,8 +17,8 @@ hanaStatement
 
 selectStatement
     : withClause? subquery (forUpdate | K_FOR K_SHARE K_LOCK | timeTravel | forSystemTime)? hintClause?
-    | withClause? '(' subquery ')' (forUpdate | forJsonOrXmlClause | timeTravel)? hintClause?
-    | (subquery | '(' subquery ')') K_INTO (tableRef | variableNameList) columnListClause? hintClause? (K_TOTAL K_ROWCOUNT)?
+    | withClause? subquery (forUpdate | forJsonOrXmlClause | timeTravel)? hintClause?
+    | subquery K_INTO (tableRef | variableNameList) columnListClause? hintClause? (K_TOTAL K_ROWCOUNT)?
     ;
 
 subquery
@@ -29,6 +29,7 @@ subquery
       havingClause?
       (setOperator subquery (',' subquery)*)?
       (orderByClause limitClause)?
+    | '(' subquery ')'
     ;
 
 withClause
@@ -66,22 +67,22 @@ forJsonOrXmlOption
 
 forJsonOrXmlReturnsClause
     : K_RETURNS (
-        K_VARCHAR '(' NUMERIC_LITERAL ')'
-        | K_NVARCHAR '(' NUMERIC_LITERAL ')'
+        K_VARCHAR '(' numericLiteral ')'
+        | K_NVARCHAR '(' numericLiteral ')'
         | K_CLOB
         | K_NCLOB
      )
     ;
 
 timeTravel
-    : UNSIGNED_INTEGER                #commtId
-    | K_UTCTIMESTAMP UNSIGNED_INTEGER #timestamp
+    : UNSIGNED_INTEGER              #commtId
+    | K_UTCTIMESTAMP STRING_LITERAL #timestamp
     ;
 
 forSystemTime
-    : K_FOR K_SYSTEM_TIME K_AS K_OF '\'' UNSIGNED_INTEGER '\''                                  #asOf
-    | K_FOR K_SYSTEM_TIME K_FROM '\'' UNSIGNED_INTEGER '\'' K_TO '\'' UNSIGNED_INTEGER '\''     #fromTo
-    | K_FOR K_SYSTEM_TIME K_BETWEEN '\'' UNSIGNED_INTEGER '\'' K_AND '\'' UNSIGNED_INTEGER '\'' #between
+    : K_FOR K_SYSTEM_TIME K_AS K_OF STRING_LITERAL                      #asOf
+    | K_FOR K_SYSTEM_TIME K_FROM STRING_LITERAL K_TO STRING_LITERAL     #fromTo
+    | K_FOR K_SYSTEM_TIME K_BETWEEN STRING_LITERAL K_AND STRING_LITERAL #between
     ;
 
 selectClause
@@ -132,7 +133,7 @@ partitionRestriction
     ;
 
 tableSampleClause
-    : K_TABLESAMPLE (K_BERNOULLI | K_SYSTEM)? '(' size=NUMERIC_LITERAL ')'
+    : K_TABLESAMPLE (K_BERNOULLI | K_SYSTEM)? '(' size=numericLiteral ')'
     ;
 
 hintClause
@@ -140,12 +141,12 @@ hintClause
     ;
 
 hintElement
-    : name=UNQUOTED_IDENTIFIER                                                          #hintName
-    | K_ROUTE_TO             '(' volumeIds+=identifier (',' volumeIds+=identifier)? ')' #routeTo
-    | K_NO_ROUTE_TO          '(' volumeIds+=identifier (',' volumeIds+=identifier)? ')' #noRouteTo
-    | K_ROUTE_BY             '(' tables+=tableName (',' tables+=tableName)? ')'         #routeBy
-    | K_ROUTE_BY_CARDINALITY '(' tables+=tableName (',' tables+=tableName)? ')'         #routeByCardinality
-    | K_DATA_TRANSFER_COST   '(' cost=UNSIGNED_INTEGER ')'                              #rdataTransferCost
+    : name=UNQUOTED_IDENTIFIER                                                                      #hintName
+    | K_ROUTE_TO             '(' volumeIds+=UNSIGNED_INTEGER (',' volumeIds+=UNSIGNED_INTEGER)? ')' #routeTo
+    | K_NO_ROUTE_TO          '(' volumeIds+=UNSIGNED_INTEGER (',' volumeIds+=UNSIGNED_INTEGER)? ')' #noRouteTo
+    | K_ROUTE_BY             '(' tables+=tableName (',' tables+=tableName)* ')'                     #routeBy
+    | K_ROUTE_BY_CARDINALITY '(' tables+=tableName (',' tables+=tableName)* ')'                     #routeByCardinality
+    | K_DATA_TRANSFER_COST   '(' cost=UNSIGNED_INTEGER ')'                                          #rdataTransferCost
     ;
 
 tableName
@@ -170,7 +171,7 @@ associationCardinality
     ;
 
 variableName
-    : identifier ('[' index=NUMERIC_LITERAL ']')?
+    : identifier ('[' index=numericLiteral ']')?
     ;
 
 variableNameList
@@ -191,7 +192,7 @@ groupByExpressionList
 
 groupingSet
     : (K_GROUPING K_SETS | K_ROLLUP | K_CUBE)
-      (K_BEST best=NUMERIC_LITERAL)?
+      (K_BEST best=numericLiteral)?
       (K_LIMIT limit=UNSIGNED_INTEGER (K_OFFSET offset=UNSIGNED_INTEGER)?)?
       (K_WITH K_SUBTOTAL)?
       (K_WITH K_BALANCE)?
@@ -276,7 +277,7 @@ expression
     | functionExpression                    #functionExpr
     | aggregateExpression                   #aggExpr
     | '(' expression ')'                    #parenthesisExpr
-    | '(' subquery ')'                      #parenthesisSubqueryExpr
+    | subquery                              #subqueryExpr
     | '-' expression                        #unaryExpr
     | l=expression op=operator r=expression #operationExpr
     | (t=tableName '.')? c=columnName       #fieldExpr
@@ -314,15 +315,15 @@ searchCaseExpression
     ;
 
 condition
-    : condition K_OR condition  #orCondition
+    : predicate                 #predicateCondition
+    | condition K_OR condition  #orCondition
     | condition K_AND condition #andCondition
     | K_NOT condition           #notCondition
     | '(' condition ')'         #parenthesisCondition
-    | predicate                 #predicateCondition
     ;
 
 functionExpression
-    : functionName '(' expression (',' expression)* ')'
+    : functionName '(' expressionListWithComma ')'
     ;
 
 functionName
@@ -359,8 +360,8 @@ aggregateOrderByClause
 
 constant
     : STRING_LITERAL  #string
-    | NUMERIC_LITERAL #number
-    | BOOLEAN_LITERAL #boolean
+    | numericLiteral  #number
+    | booleanLiteral  #boolean
     | K_NULL          #null
     ;
 
@@ -370,8 +371,8 @@ jsonObjectExpression
 
 jsonValueExpression
     : STRING_LITERAL
-    | NUMERIC_LITERAL
-    | BOOLEAN_LITERAL
+    | numericLiteral
+    | booleanLiteral
     | K_NULL
 //    | <path_expression>
     | jsonObjectExpression
@@ -385,8 +386,8 @@ jsonArrayExpression
 
 jsonArrayValueExpression
     : STRING_LITERAL
-    | NUMERIC_LITERAL
-    | BOOLEAN_LITERAL
+    | numericLiteral
+    | booleanLiteral
     | K_NULL
 //    | <path_expression>
     | jsonObjectExpression
@@ -408,6 +409,7 @@ predicate
 
 comparisonPredicate
     : left=expression op=comparisonOperator (K_ANY | K_SOME | K_ALL)? '(' (right1=expressionListWithComma | right2=subquery) ')'
+    | left=expression op=comparisonOperator right=expression
     ;
 
 betweenPredicate
@@ -473,8 +475,8 @@ fuzzyParamsList2
     ;
 
 fuzzyParams
-    : params+=NUMERIC_LITERAL (',' params+=STRING_LITERAL)?
-    | params+=K_NULL ',' params+=STRING_LITERAL
+    : numericLiteral (',' STRING_LITERAL)?
+    | K_NULL ',' STRING_LITERAL
     ;
 
 linguisticSearch
@@ -482,7 +484,7 @@ linguisticSearch
     ;
 
 weights
-    : K_WEIGHT '(' param=NUMERIC_LITERAL ')'
+    : K_WEIGHT '(' param=numericLiteral ')'
     ;
 
 language
@@ -514,6 +516,17 @@ nullPredicate
     ;
 
 // ------ ETC ------
+
+booleanLiteral
+    : K_TRUE
+    | K_FALSE
+    ;
+
+numericLiteral
+    : ('+' | '-')? (EXACT_NUMERIC_LITERAL | APPROXIMATE_NUMERIC_LITERAL)
+    | SIGNED_INTEGER
+    | UNSIGNED_INTEGER
+    ;
 
 identifier
     : UNQUOTED_IDENTIFIER
