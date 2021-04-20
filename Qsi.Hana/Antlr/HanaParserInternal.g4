@@ -160,17 +160,17 @@ logicalOperator
 // ------ SQL Reference > Expressions ------
 
 expression
-    : caseExpression                 #caseExpr
-    | functionExpression             #functionExpr
-    | aggregateExpression            #aggExpr
-    | '(' expression ')'             #parenthesisExpr
-    | '(' subquery ')'               #parenthesisSubqueryExpr
-    | '-' expression                 #unaryExpr
-    | expression operator expression #operationExpr
-    | (tableName '.')? columnName    #fieldExpr
-    | constant                       #constantExpr
-    | jsonObjectExpression           #jsonObjectExpr
-    | jsonArrayExpression            #jsonArrayExpr
+    : caseExpression                        #caseExpr
+    | functionExpression                    #functionExpr
+    | aggregateExpression                   #aggExpr
+    | '(' expression ')'                    #parenthesisExpr
+    | '(' subquery ')'                      #parenthesisSubqueryExpr
+    | '-' expression                        #unaryExpr
+    | l=expression op=operator r=expression #operationExpr
+    | (t=tableName '.')? c=columnName       #fieldExpr
+    | constant                              #constantExpr
+    | jsonObjectExpression                  #jsonObjectExpr
+    | jsonArrayExpression                   #jsonArrayExpr
 //    | variableName
     ;
 
@@ -299,11 +299,11 @@ comparisonPredicate
     ;
 
 betweenPredicate
-    : expression K_NOT? K_BETWEEN lower=expression K_AND upper=expression
+    : source=expression K_NOT? K_BETWEEN lower=expression K_AND upper=expression
     ;
 
 containsPredicate
-    : K_CONTAINS '(' containsColumns ',' search=STRING_LITERAL (',' specifier=searchSpecifier)? ')'
+    : K_CONTAINS '(' columns=containsColumns ',' search=STRING_LITERAL (',' specifier=searchSpecifier)? ')'
     ;
 
 containsColumns
@@ -382,7 +382,7 @@ existsPredicate
     ;
 
 inPredicate
-    : expression K_NOT? K_IN (expressionListWithComma | subquery)
+    : source=expression K_NOT? K_IN (expressionListWithComma | subquery)
     ;
 
 likePredicate
@@ -394,11 +394,11 @@ likeRegexPredicate
     ;
 
 memberOfPredicate
-    : source=expression K_NOT? K_MEMBER K_OF expression
+    : source=expression K_NOT? K_MEMBER K_OF member=expression
     ;
 
 nullPredicate
-    : expression K_IS K_NOT? K_NULL
+    : source=expression K_IS K_NOT? K_NULL
     ;
 
 // ------ ETC ------
