@@ -126,7 +126,7 @@ tableRef
     ;
 
 forApplicationTimePeriod
-    : K_FOR K_APPLICATION_TIME K_AS K_OF '\'' UNSIGNED_INTEGER '\''
+    : K_FOR K_APPLICATION_TIME K_AS K_OF { IsQuotedNumeric() }? STRING_LITERAL
     ;
 
 partitionRestriction
@@ -371,7 +371,8 @@ constant
     ;
 
 jsonObjectExpression
-    : '{' key=QUOTED_IDENTIFIER ':' value=jsonValueExpression '}'
+    : '{' '}'                                                                              #emptyJsonObject
+    | '{' properties+=jsonPropertyExpression (',' properties+=jsonPropertyExpression)* '}' #noEmptyJsonObject
     ;
 
 jsonValueExpression
@@ -385,8 +386,12 @@ jsonValueExpression
     ;
 
 jsonArrayExpression
-    : '[' ']'                                                                        #empty
-    | '[' items+=jsonArrayValueExpression (',' items+=jsonArrayValueExpression)* ']' #noEmpty
+    : '[' ']'                                                                        #emptyJsonArray
+    | '[' items+=jsonArrayValueExpression (',' items+=jsonArrayValueExpression)* ']' #noEmptyJsonArray
+    ;
+
+jsonPropertyExpression
+    : key=QUOTED_IDENTIFIER ':' value=jsonValueExpression
     ;
 
 jsonArrayValueExpression
@@ -396,6 +401,7 @@ jsonArrayValueExpression
     | K_NULL
 //    | <path_expression>
     | jsonObjectExpression
+    | jsonArrayExpression
     ;
 
 // ------ SQL Reference > Predicates ------
