@@ -23,7 +23,8 @@ selectStatement
 
 subquery
     : '(' selectStatement ')' alias?
-    | selectClause fromClause
+    | selectClause
+      fromClause
       whereClause?
       groupByClause?
       havingClause?
@@ -110,15 +111,17 @@ fromClause
 
 tableExpression
     : tableRef
-//    | systemVersionedTableRef 
+//    | systemVersionedTableRef
     | subquery
-//    | joinedTable 
-//    | lateralTableExpression 
-//    | collectionDerivedTable 
-//    | functionReference 
-//    | jSONCollectionTable 
-//    | ':' tableVariable 
-//    | associatedTableExpression
+    | tableExpression joinType? joinCardinality? K_JOIN tableExpression K_ON predicate
+    | tableRef K_CROSS K_JOIN tableRef
+    | caseJoin
+    | lateralTableExpression
+    | collectionDerivedTable
+    | functionExpression
+//    | jSONCollectionTable
+    | variableTableName 
+    | associationTableExpression
     ;
 
 tableRef
@@ -158,13 +161,16 @@ alias
     : K_AS? name=identifier
     ;
 
-// TODO: <association_expression> ::= <association_ref>[.<association_ref>[...] ]
+associationTableExpression
+    : tableName ('[' condition ']')? ':' associationExpression
+    ;
+
 associationExpression
-    : refs+=associationRef ('.' refs+=associationRef*)?
+    : refs+=associationRef ('.' refs+=associationRef)*
     ;
 
 associationRef
-    : columnName '[' (condition associationCardinality?)? ']'
+    : columnName ('[' (condition associationCardinality?)? ']')?
     ;
 
 associationCardinality
@@ -220,6 +226,10 @@ prefixTableName
     : '#' identifier
     ;
 
+variableTableName
+    : ':' identifier
+    ;
+
 orderByClause
     : K_ORDER K_BY orderByExpression (',' orderByExpression)*
     ;
@@ -248,6 +258,43 @@ setOperatorClause
 
 limitClause
     : K_LIMIT limit=UNSIGNED_INTEGER (K_OFFSET offset=UNSIGNED_INTEGER)? (K_TOTAL K_ROWCOUNT)?
+    ;
+
+joinCardinality
+    : K_MANY K_TO K_MANY               #manyToMany
+    | K_MANY K_TO K_ONE                #manyToOne
+    | K_MANY K_TO K_EXACT K_ONE        #manyToExactOne
+    | K_ONE K_TO K_MANY                #oneToMany
+    | K_EXACT K_ONE K_TO K_MANY        #exactOneToMany
+    | K_ONE K_TO K_ONE                 #oneToOne
+    | K_EXACT K_ONE K_TO K_ONE         #exactOneToOne
+    | K_ONE K_TO K_EXACT K_ONE         #oneToExactOne
+    | K_EXACT K_ONE K_TO K_EXACT K_ONE #exactOneToExactOne
+    ;
+
+joinType
+    : K_INNER
+    | (K_LEFT | K_RIGHT | K_FULL) K_OUTER?
+    ;
+
+caseJoin
+    : tableRef K_LEFT K_OUTER K_MANY K_TO K_ONE
+        K_CASE K_JOIN
+            (K_WHEN condition K_THEN K_RETURN columnListClause K_FROM tableRef K_ON predicate)+
+            (K_ELSE K_RETURN columnListClause K_FROM tableRef K_ON predicate)?
+        K_END alias?
+    ;
+
+lateralTableExpression
+    : K_LATERAL '(' (subquery | functionExpression) ')'
+    ;
+
+collectionDerivedTable
+    : K_UNNEST '(' collectionValueExpression (',' collectionValueExpression)* ')' (K_WITH K_ORDINALITY)? K_AS identifier columnListClause?
+    ;
+
+collectionValueExpression
+    : K_ARRAY '(' (tableExpression (',' tableExpression)* | columnName) ')'
     ;
 
 // ------ SQL Reference > Operators ------
@@ -332,7 +379,7 @@ functionExpression
     ;
 
 functionName
-    : (identifier '.')? identifier
+    : ((db=identifier '.')? schema=identifier '.')? function=identifier
     ;
 
 aggregateExpression
@@ -376,7 +423,7 @@ jsonObjectExpression
     ;
 
 jsonValueExpression
-    : STRING_LITERAL
+    : jsonStringLiteral
     | numericLiteral
     | booleanLiteral
     | K_NULL
@@ -391,17 +438,17 @@ jsonArrayExpression
     ;
 
 jsonPropertyExpression
-    : key=QUOTED_IDENTIFIER ':' value=jsonValueExpression
+    : key=jsonStringLiteral ':' value=jsonValueExpression
     ;
 
 jsonArrayValueExpression
-    : STRING_LITERAL
-    | numericLiteral
-    | booleanLiteral
-    | K_NULL
+    : jsonValueExpression
 //    | <path_expression>
-    | jsonObjectExpression
-    | jsonArrayExpression
+    ;
+
+jsonStringLiteral
+    : QUOTED_IDENTIFIER
+    | STRING_LITERAL
     ;
 
 // ------ SQL Reference > Predicates ------
@@ -547,14 +594,14 @@ identifier
     ;
 
 keywodIdentifier
-    : K_AND | K_ANY | K_APPLICATION_TIME | K_ASC | K_AUTOMATIC | K_AVG | K_BALANCE | K_BERNOULLI | K_BEST | K_BETWEEN
-    | K_BY | K_CLOB | K_COLLATE | K_CONTAINS | K_CORR | K_CORR_SPEARMAN | K_COUNT | K_DATA_TRANSFER_COST | K_DESC
-    | K_EMPTY | K_ESCAPE | K_EXACT | K_EXISTS | K_FILL | K_FIRST | K_FLAG | K_FULLTEXT | K_FUZZY | K_GROUPING | K_HINT
-    | K_IGNORE | K_JSON | K_LANGUAGE | K_LAST | K_LIKE | K_LIKE_REGEXPR | K_LINGUISTIC | K_LOCK | K_LOCKED | K_MANY
-    | K_MATCHES | K_MAX | K_MEDIAN | K_MEMBER | K_MIN | K_MULTIPLE | K_NCLOB | K_NO_ROUTE_TO | K_NOT | K_NOTHING
-    | K_NOWAIT | K_NULLS | K_NVARCHAR | K_OF | K_OFF | K_OFFSET | K_ONE | K_OR | K_OVERVIEW | K_PARTITION | K_PREFIX
-    | K_RESULT | K_RESULTSETS | K_ROUTE_BY | K_ROUTE_BY_CARDINALITY | K_ROUTE_TO | K_ROWCOUNT | K_SETS | K_SHARE
-    | K_SOME | K_SORT | K_SPECIFIED | K_STDDEV | K_STDDEV_POP | K_STDDEV_SAMP | K_STRING_AGG | K_STRUCTURED | K_SUBTOTAL
-    | K_SUM | K_SYSTEM | K_SYSTEM_TIME | K_TEXT_FILTER | K_THEN | K_TO | K_TOTAL | K_UP | K_UPDATE | K_VAR | K_VAR_POP
-    | K_VAR_SAMP | K_VARCHAR | K_WAIT | K_WEIGHT | K_XML
+    : K_AND | K_ANY | K_APPLICATION_TIME | K_ARRAY | K_ASC | K_AUTOMATIC | K_AVG | K_BALANCE | K_BERNOULLI | K_BEST
+    | K_BETWEEN | K_BY | K_CLOB | K_COLLATE | K_CONTAINS | K_CORR | K_CORR_SPEARMAN | K_COUNT | K_DATA_TRANSFER_COST
+    | K_DESC | K_EMPTY | K_ESCAPE | K_EXACT | K_EXISTS | K_FILL | K_FIRST | K_FLAG | K_FULLTEXT | K_FUZZY | K_GROUPING
+    | K_HINT | K_IGNORE | K_JSON | K_LANGUAGE | K_LAST | K_LIKE | K_LIKE_REGEXPR | K_LINGUISTIC | K_LOCK | K_LOCKED
+    | K_MANY | K_MATCHES | K_MAX | K_MEDIAN | K_MEMBER | K_MIN | K_MULTIPLE | K_NCLOB | K_NO_ROUTE_TO | K_NOT
+    | K_NOTHING | K_NOWAIT | K_NULLS | K_NVARCHAR | K_OF | K_OFF | K_OFFSET | K_ONE | K_OR | K_ORDINALITY | K_OUTER
+    | K_OVERVIEW | K_PARTITION | K_PREFIX | K_RESULT | K_RESULTSETS | K_ROUTE_BY | K_ROUTE_BY_CARDINALITY | K_ROUTE_TO
+    | K_ROWCOUNT | K_SETS | K_SHARE | K_SOME | K_SORT | K_SPECIFIED | K_STDDEV | K_STDDEV_POP | K_STDDEV_SAMP
+    | K_STRING_AGG | K_STRUCTURED | K_SUBTOTAL | K_SUM | K_SYSTEM | K_SYSTEM_TIME | K_TEXT_FILTER | K_THEN | K_TO
+    | K_TOTAL | K_UNNEST | K_UP | K_UPDATE | K_VAR | K_VAR_POP | K_VAR_SAMP | K_VARCHAR | K_WAIT | K_WEIGHT | K_XML
     ;
