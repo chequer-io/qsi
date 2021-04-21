@@ -153,8 +153,17 @@ hintElement
     | K_DATA_TRANSFER_COST   '(' cost=UNSIGNED_INTEGER ')'                                          #rdataTransferCost
     ;
 
+fieldName
+    : db=identifier '.' schema=identifier '.' table=identifier '.' column=identifier
+    | schema=identifier '.' table=identifier '.' column=identifier
+    | table=identifier '.' column=identifier
+    | column=identifier
+    ;
+
 tableName
-    : ((db=identifier '.')? schema=identifier '.')? table=identifier
+    : db=identifier '.' schema=identifier '.' table=identifier
+    | schema=identifier '.' table=identifier
+    | table=identifier
     ;
 
 alias
@@ -332,7 +341,7 @@ expression
     | subquery                              #subqueryExpr
     | '-' expression                        #unaryExpr
     | l=expression op=operator r=expression #operationExpr
-    | (t=tableName '.')? c=columnName       #fieldExpr
+    | fieldName                             #fieldExpr
     | constant                              #constantExpr
     | jsonObjectExpression                  #jsonObjectExpr
     | jsonArrayExpression                   #jsonArrayExpr
@@ -390,20 +399,27 @@ aggregateExpression
     ;
 
 aggName
-    : K_CORR
-    | K_CORR_SPEARMAN
-    | K_COUNT
-    | K_MIN
-    | K_MEDIAN
-    | K_MAX
-    | K_SUM
-    | K_AVG
-    | K_STDDEV
-    | K_VAR
-    | K_STDDEV_POP
+    : K_VAR
     | K_VAR_POP
-    | K_STDDEV_SAMP
     | K_VAR_SAMP
+    | K_STDDEV
+    | K_STDDEV_POP
+    | K_STDDEV_SAMP
+    | K_STRING_AGG
+    | K_NTH_VALUE
+    | K_MIN
+    | K_MAX
+    | K_MEDIAN
+    | K_LAST_VALUE
+    | K_FIRST_VALUE
+    | K_DFT
+    | K_COUNT
+    | K_CROSS_CORR
+    | K_CORR
+    | K_CORR_SPEARMAN
+    | K_AUTO_CORR
+    | K_AVG
+    | K_SUM
     ;
 
 aggregateOrderByClause
@@ -594,14 +610,15 @@ identifier
     ;
 
 keywodIdentifier
-    : K_AND | K_ANY | K_APPLICATION_TIME | K_ARRAY | K_ASC | K_AUTOMATIC | K_AVG | K_BALANCE | K_BERNOULLI | K_BEST
-    | K_BETWEEN | K_BY | K_CLOB | K_COLLATE | K_CONTAINS | K_CORR | K_CORR_SPEARMAN | K_COUNT | K_DATA_TRANSFER_COST
-    | K_DESC | K_EMPTY | K_ESCAPE | K_EXACT | K_EXISTS | K_FILL | K_FIRST | K_FLAG | K_FULLTEXT | K_FUZZY | K_GROUPING
-    | K_HINT | K_IGNORE | K_JSON | K_LANGUAGE | K_LAST | K_LIKE | K_LIKE_REGEXPR | K_LINGUISTIC | K_LOCK | K_LOCKED
-    | K_MANY | K_MATCHES | K_MAX | K_MEDIAN | K_MEMBER | K_MIN | K_MULTIPLE | K_NCLOB | K_NO_ROUTE_TO | K_NOT
-    | K_NOTHING | K_NOWAIT | K_NULLS | K_NVARCHAR | K_OF | K_OFF | K_OFFSET | K_ONE | K_OR | K_ORDINALITY | K_OUTER
-    | K_OVERVIEW | K_PARTITION | K_PREFIX | K_RESULT | K_RESULTSETS | K_ROUTE_BY | K_ROUTE_BY_CARDINALITY | K_ROUTE_TO
-    | K_ROWCOUNT | K_SETS | K_SHARE | K_SOME | K_SORT | K_SPECIFIED | K_STDDEV | K_STDDEV_POP | K_STDDEV_SAMP
-    | K_STRING_AGG | K_STRUCTURED | K_SUBTOTAL | K_SUM | K_SYSTEM | K_SYSTEM_TIME | K_TEXT_FILTER | K_THEN | K_TO
-    | K_TOTAL | K_UNNEST | K_UP | K_UPDATE | K_VAR | K_VAR_POP | K_VAR_SAMP | K_VARCHAR | K_WAIT | K_WEIGHT | K_XML
+    : K_AND | K_ANY | K_APPLICATION_TIME | K_ARRAY | K_ASC | K_AUTO_CORR | K_AUTOMATIC | K_AVG | K_BALANCE | K_BERNOULLI
+    | K_BEST | K_BETWEEN | K_BY | K_CLOB | K_COLLATE | K_CONTAINS | K_CORR | K_CORR_SPEARMAN | K_COUNT | K_CROSS_CORR
+    | K_DATA_TRANSFER_COST | K_DESC | K_DFT | K_EMPTY | K_ESCAPE | K_EXACT | K_EXISTS | K_FILL | K_FIRST | K_FIRST_VALUE
+    | K_FLAG | K_FULLTEXT | K_FUZZY | K_GROUPING | K_HINT | K_IGNORE | K_JSON | K_LANGUAGE | K_LAST | K_LAST_VALUE
+    | K_LIKE | K_LIKE_REGEXPR | K_LINGUISTIC | K_LOCK | K_LOCKED | K_MANY | K_MATCHES | K_MAX | K_MEDIAN | K_MEMBER
+    | K_MIN | K_MULTIPLE | K_NCLOB | K_NO_ROUTE_TO | K_NOT | K_NOTHING | K_NOWAIT | K_NTH_VALUE | K_NULLS | K_NVARCHAR
+    | K_OF | K_OFF | K_OFFSET | K_ONE | K_OR | K_ORDINALITY | K_OUTER | K_OVERVIEW | K_PARTITION | K_PREFIX | K_RESULT
+    | K_RESULTSETS | K_ROUTE_BY | K_ROUTE_BY_CARDINALITY | K_ROUTE_TO | K_ROWCOUNT | K_SETS | K_SHARE | K_SOME | K_SORT
+    | K_SPECIFIED | K_STDDEV | K_STDDEV_POP | K_STDDEV_SAMP | K_STRING_AGG | K_STRUCTURED | K_SUBTOTAL | K_SUM
+    | K_SYSTEM | K_SYSTEM_TIME | K_TEXT_FILTER | K_THEN | K_TO | K_TOTAL | K_UNNEST | K_UP | K_UPDATE | K_VAR
+    | K_VAR_POP | K_VAR_SAMP | K_VARCHAR | K_WAIT | K_WEIGHT | K_XML
     ;
