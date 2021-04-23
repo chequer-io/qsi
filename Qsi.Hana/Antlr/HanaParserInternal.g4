@@ -22,7 +22,7 @@ selectStatement
     ;
 
 subquery
-    : '(' selectStatement ')' alias?
+    : '(' selectStatement ')'
     | selectClause
       fromClause
       whereClause?
@@ -114,19 +114,24 @@ seriesTable
     ;
 
 tableExpression
-    : tableRef
+    : tableRef (K_CROSS K_JOIN crossJoin=tableRef)?
 //    | systemVersionedTableRef
-    | subquery
+    | subqueryTableExpression
     | tableExpression joinType? joinCardinality? K_JOIN tableExpression K_ON predicate
-    | tableRef K_CROSS K_JOIN tableRef
     | caseJoin
     | lateralTableExpression
     | collectionDerivedTable
-    | seriesExpression
-    | functionExpression
-//    | jSONCollectionTable
-    | variableTableName 
+    | tableFunctionExpression
+    | variableTable
     | associationTableExpression
+    ;
+
+subqueryTableExpression
+    : subquery alias?
+    ;
+
+tableFunctionExpression
+    : (seriesExpression | functionExpression) alias?
     ;
 
 tableRef
@@ -176,7 +181,7 @@ alias
     ;
 
 associationTableExpression
-    : tableName ('[' condition ']')? ':' associationExpression
+    : tableName ('[' condition ']')? ':' associationExpression alias?
     ;
 
 associationExpression
@@ -240,8 +245,8 @@ prefixTableName
     : '#' identifier
     ;
 
-variableTableName
-    : ':' identifier
+variableTable
+    : ':' identifier alias?
     ;
 
 tableOrderByClause
@@ -300,7 +305,7 @@ caseJoin
     ;
 
 lateralTableExpression
-    : K_LATERAL '(' (subquery | functionExpression) ')'
+    : K_LATERAL '(' (subquery | functionExpression) ')' alias?
     ;
 
 collectionDerivedTable
@@ -344,7 +349,6 @@ expression
     | aggregateExpression                   #aggExpr
     | dataTypeConversionExpression          #conversionExpr
     | datetimeExpression                    #datetimeExpr
-    | jsonExpression                        #jsonExpr
     | functionExpression                    #functionExpr
     | '(' expression ')'                    #parenthesisExpr
     | subquery                              #subqueryExpr
@@ -390,7 +394,9 @@ condition
     ;
 
 functionExpression
-    : functionName '(' expressionList ')'
+    : jsonExpression                      #jsonExpr
+    | stringExpression                    #stringExpr
+    | functionName '(' expressionList ')' #scalarExpr
     ;
 
 functionName
@@ -485,24 +491,24 @@ windowFrameBound
     ;
 
 windowExpression
-    : K_BINNING             '(' expressionList ')' windowSpecification             #windowBinningExpr
-    | K_CUBIC_SPLINE_APPROX '(' expressionList ')' windowWithSeriesSpecification?  #windowCubicSplineApproxExpr
-    | K_CUME_DIST           '(' ')' windowSpecification                                     #windowCumeDistExpr
-    | K_DENSE_RANK          '(' ')' windowSpecification                                     #windowDenseRankExpr
-    | K_LAG                 '(' expressionList ')' windowSpecification             #windowLagExpr
-    | K_LEAD                '(' expressionList ')' windowSpecification             #windowLeadExpr
-    | K_LINEAR_APPROX       '(' expressionList ')' windowWithSeriesSpecification   #windowLinearApproxExpr
-    | K_NTILE               '(' UNSIGNED_INTEGER ')' windowSpecification                    #windowNtileExpr
-    | K_PERCENT_RANK        '(' ')' windowSpecification                                     #windowPercentRankExpr
-    | K_PERCENTILE_CONT     '(' expression ')' withinGroupClause windowSpecification        #windowPercentileContExpr
-    | K_PERCENTILE_DISC     '(' expression ')' withinGroupClause windowSpecification        #windowPercentileDiscExpr
-    | K_RANDOM_PARTITION    '(' expressionList ')' windowSpecification             #windowRandomPartitionExpr
-    | K_RANK                '(' ')' windowSpecification                                     #windowRankExpr
-    | K_ROW_NUMBER          '(' ')' windowSpecification                                     #windowRowNumberExpr
-    | K_SERIES_FILTER       '(' expressionList ')' windowWithSeriesSpecification   #windowSeriesFilterExpr
-    | K_WEIGHTED_AVG        '(' expression ')' windowSpecification                          #windowWeightedAvgExpr
-    | aggregateExpression windowSpecification                                               #windowAggExpr
-    | seriesExpression windowSpecification?                                                 #windowSeriesExpr
+    : K_BINNING             '(' expressionList ')' windowSpecification               #windowBinningExpr
+    | K_CUBIC_SPLINE_APPROX '(' expressionList ')' windowWithSeriesSpecification?    #windowCubicSplineApproxExpr
+    | K_CUME_DIST           '(' ')' windowSpecification                              #windowCumeDistExpr
+    | K_DENSE_RANK          '(' ')' windowSpecification                              #windowDenseRankExpr
+    | K_LAG                 '(' expressionList ')' windowSpecification               #windowLagExpr
+    | K_LEAD                '(' expressionList ')' windowSpecification               #windowLeadExpr
+    | K_LINEAR_APPROX       '(' expressionList ')' windowWithSeriesSpecification     #windowLinearApproxExpr
+    | K_NTILE               '(' UNSIGNED_INTEGER ')' windowSpecification             #windowNtileExpr
+    | K_PERCENT_RANK        '(' ')' windowSpecification                              #windowPercentRankExpr
+    | K_PERCENTILE_CONT     '(' expression ')' withinGroupClause windowSpecification #windowPercentileContExpr
+    | K_PERCENTILE_DISC     '(' expression ')' withinGroupClause windowSpecification #windowPercentileDiscExpr
+    | K_RANDOM_PARTITION    '(' expressionList ')' windowSpecification               #windowRandomPartitionExpr
+    | K_RANK                '(' ')' windowSpecification                              #windowRankExpr
+    | K_ROW_NUMBER          '(' ')' windowSpecification                              #windowRowNumberExpr
+    | K_SERIES_FILTER       '(' expressionList ')' windowWithSeriesSpecification     #windowSeriesFilterExpr
+    | K_WEIGHTED_AVG        '(' expression ')' windowSpecification                   #windowWeightedAvgExpr
+    | aggregateExpression windowSpecification                                        #windowAggExpr
+    | seriesExpression windowSpecification?                                          #windowSeriesExpr
     ;
 
 withinGroupClause
@@ -699,6 +705,56 @@ jsonTableNestedColumns
     : K_NESTED K_PATH? jsonPathSpecification jsonTableColumnsClause
     ;
 
+stringExpression
+    : (K_LOCATE_REGEXPR | K_SUBSTR_REGEXPR | K_SUBSTRING_REGEXPR)
+     '('
+        regexprClause
+        (K_FROM start=UNSIGNED_INTEGER)?
+        (K_OCCURRENCE occurrence=UNSIGNED_INTEGER)?
+        (K_GROUP group=UNSIGNED_INTEGER)?
+     ')'                                                      #regexprExpr
+    | K_OCCURRENCES_REGEXPR '('
+        regexprClause
+        (K_FROM start=UNSIGNED_INTEGER)?
+     ')'                                                      #occurrencesRegexprExpr
+    | K_REPLACE_REGEXPR '('
+        regexprClause
+        (K_WITH replacement=STRING_LITERAL)?
+        (K_FROM start=UNSIGNED_INTEGER)?
+        (K_OCCURRENCE occurrence=(UNSIGNED_INTEGER | K_ALL))?
+     ')'                                                      #replaceRegexprExpr
+    |  K_TRIM '('
+        ((K_LEADING | K_TRAILING | K_BOTH)? char=STRING_LITERAL K_FROM)?
+        input=expression
+     ')'                                                      #trimExpr
+    | K_XMLTABLE '('
+        (xmlNamespaceClause ',')?
+        STRING_LITERAL K_PASSING expression K_COLUMNS xmlColumnDefinition (',' xmlColumnDefinition)*
+        (K_ERROR K_ON K_ERROR)?
+     ')'                                                      #xmlTableExpr 
+    ;
+
+regexprClause
+    : (K_START | K_AFTER)? pattern=STRING_LITERAL regexFlagClause? K_IN subject=expression
+    ;
+
+xmlNamespaceClause
+    : K_XMLNAMESPACE '(' xmlNamespace (',' xmlNamespace)* (K_DEFAULT url=STRING_LITERAL)? ')'
+    ;
+
+xmlNamespace
+    : url=STRING_LITERAL K_AS alas=STRING_LITERAL
+    ;
+
+xmlColumnDefinition
+    : columnName xmlColumnType
+    ;
+
+xmlColumnType
+    : K_FOR K_ORDINALITY
+    | dataType (K_FORMAT K_XML)? K_PATH STRING_LITERAL (K_DEFAULT STRING_LITERAL)?
+    ;
+
 constant
     : STRING_LITERAL       #constantString
     | numericLiteral       #constantNumber
@@ -856,7 +912,11 @@ likePredicate
     ;
 
 likeRegexPredicate
-    : source=expression K_LIKE_REGEXPR pattern=STRING_LITERAL (K_FLAG {IsRegexFlag()}? flag=.)?
+    : source=expression K_LIKE_REGEXPR pattern=STRING_LITERAL regexFlagClause?
+    ;
+
+regexFlagClause
+    : K_FLAG flag=STRING_LITERAL
     ;
 
 memberOfPredicate
@@ -921,21 +981,22 @@ identifier
     ;
 
 keywodIdentifier
-    : K_ALLOWED | K_ALPHANUM | K_ALTERNATE | K_AMPLITUDE | K_AND | K_ANY | K_APPLICATION_TIME | K_ARRAY | K_ASC
-    | K_AUTO_CORR | K_AUTOMATIC | K_AVG | K_BALANCE | K_BERNOULLI | K_BEST | K_BETWEEN | K_BIGINT | K_BINNING | K_BLOB
-    | K_BY | K_CAST | K_CLOB | K_COLLATE | K_COLUMNS | K_CONDITIONAL | K_CONTAINS | K_CORR | K_CORR_SPEARMAN | K_COUNT
-    | K_CROSS_CORR | K_CUBIC_SPLINE_APPROX | K_CUME_DIST | K_CURRENT | K_DATA_TRANSFER_COST | K_DATE | K_DAY | K_DAYDATE
-    | K_DEC | K_DECIMAL | K_DEFAULT | K_DENSE_RANK | K_DESC | K_DFT | K_DOUBLE | K_ELEMENTS | K_EMPTY | K_ENCODING
-    | K_EQUIDISTANT | K_ERROR | K_ESCAPE | K_EXACT | K_EXISTS | K_EXTRACT | K_FILL | K_FIRST | K_FIRST_VALUE | K_FLAG
-    | K_FLOAT | K_FOLLOWING | K_FORMAT | K_FULLTEXT | K_FUZZY | K_GROUPING | K_HINT | K_HOUR | K_IGNORE | K_IMAGINARY
-    | K_INCREMENT | K_INT | K_INTEGER | K_INTERVAL | K_JSON | K_JSON_QUERY | K_JSON_TABLE | K_JSON_VALUE | K_KEY | K_LAG
-    | K_LANGUAGE | K_LAST | K_LAST_VALUE | K_LAX | K_LEAD | K_LIKE | K_LIKE_REGEXPR | K_LINEAR_APPROX | K_LINGUISTIC
-    | K_LOCK | K_LOCKED | K_MANY | K_MATCHES | K_MAX | K_MAXVALUE | K_MEDIAN | K_MEMBER | K_MIN | K_MINUTE | K_MINVALUE
-    | K_MISSING | K_MONTH | K_MULTIPLE | K_NCLOB | K_NEGATIVE_LAGS | K_NESTED | K_NO | K_NO_ROUTE_TO | K_NOT | K_NOTHING
-    | K_NOWAIT | K_NTH_VALUE | K_NTILE | K_NULLS | K_NVARCHAR | K_OBJECT | K_OF | K_OFF | K_OFFSET | K_ONE | K_OR
-    | K_ORDINALITY | K_OUTER | K_OVER | K_OVERVIEW | K_PARTITION | K_PATH | K_PERCENT_RANK | K_PERCENTILE_CONT
-    | K_PERCENTILE_DISC | K_PERIOD | K_PHASE | K_POSITIVE_LAGS | K_PRECEDING | K_PREFIX | K_RANDOM_PARTITION | K_RANK
-    | K_REAL | K_RESULT | K_RESULTSETS | K_RETURNING | K_ROUND_CEILING | K_ROUND_DOWN | K_ROUND_FLOOR
+    : K_AFTER | K_ALLOWED | K_ALPHANUM | K_ALTERNATE | K_AMPLITUDE | K_AND | K_ANY | K_APPLICATION_TIME | K_ARRAY
+    | K_ASC | K_AUTO_CORR | K_AUTOMATIC | K_AVG | K_BALANCE | K_BERNOULLI | K_BEST | K_BETWEEN | K_BIGINT | K_BINNING
+    | K_BLOB | K_BY | K_CAST | K_CLOB | K_COLLATE | K_COLUMNS | K_CONDITIONAL | K_CONTAINS | K_CORR | K_CORR_SPEARMAN
+    | K_COUNT | K_CROSS_CORR | K_CUBIC_SPLINE_APPROX | K_CUME_DIST | K_CURRENT | K_DATA_TRANSFER_COST | K_DATE | K_DAY
+    | K_DAYDATE | K_DEC | K_DECIMAL | K_DEFAULT | K_DENSE_RANK | K_DESC | K_DFT | K_DOUBLE | K_ELEMENTS | K_EMPTY
+    | K_ENCODING | K_EQUIDISTANT | K_ERROR | K_ESCAPE | K_EXACT | K_EXISTS | K_EXTRACT | K_FILL | K_FIRST
+    | K_FIRST_VALUE | K_FLAG | K_FLOAT | K_FOLLOWING | K_FORMAT | K_FULLTEXT | K_FUZZY | K_GROUPING | K_HINT | K_HOUR
+    | K_IGNORE | K_IMAGINARY | K_INCREMENT | K_INT | K_INTEGER | K_INTERVAL | K_JSON | K_JSON_QUERY | K_JSON_TABLE
+    | K_JSON_VALUE | K_KEY | K_LAG | K_LANGUAGE | K_LAST | K_LAST_VALUE | K_LAX | K_LEAD | K_LIKE | K_LIKE_REGEXPR
+    | K_LINEAR_APPROX | K_LINGUISTIC | K_LOCATE_REGEXPR | K_LOCK | K_LOCKED | K_MANY | K_MATCHES | K_MAX | K_MAXVALUE
+    | K_MEDIAN | K_MEMBER | K_MIN | K_MINUTE | K_MINVALUE | K_MISSING | K_MONTH | K_MULTIPLE | K_NCLOB | K_NEGATIVE_LAGS
+    | K_NESTED | K_NO | K_NO_ROUTE_TO | K_NOT | K_NOTHING | K_NOWAIT | K_NTH_VALUE | K_NTILE | K_NULLS | K_NVARCHAR
+    | K_OBJECT | K_OCCURRENCE | K_OCCURRENCES_REGEXPR | K_OF | K_OFF | K_OFFSET | K_ONE | K_OR | K_ORDINALITY | K_OUTER
+    | K_OVER | K_OVERVIEW | K_PARTITION | K_PASSING | K_PATH | K_PERCENT_RANK | K_PERCENTILE_CONT | K_PERCENTILE_DISC
+    | K_PERIOD | K_PHASE | K_POSITIVE_LAGS | K_PRECEDING | K_PREFIX | K_RANDOM_PARTITION | K_RANK | K_REAL
+    | K_REPLACE_REGEXPR | K_RESULT | K_RESULTSETS | K_RETURNING | K_ROUND_CEILING | K_ROUND_DOWN | K_ROUND_FLOOR
     | K_ROUND_HALF_DOWN | K_ROUND_HALF_EVEN | K_ROUND_HALF_UP | K_ROUND_UP | K_ROUTE_BY | K_ROUTE_BY_CARDINALITY
     | K_ROUTE_TO | K_ROW | K_ROW_NUMBER | K_ROWCOUNT | K_ROWS | K_SECOND | K_SECONDDATE | K_SERIES
     | K_SERIES_DISAGGREGATE | K_SERIES_DISAGGREGATE_BIGINT | K_SERIES_DISAGGREGATE_DATE | K_SERIES_DISAGGREGATE_DECIMAL
@@ -946,9 +1007,10 @@ keywodIdentifier
     | K_SERIES_GENERATE_SECONDDATE | K_SERIES_GENERATE_SMALLDECIMAL | K_SERIES_GENERATE_SMALLINT
     | K_SERIES_GENERATE_TIME | K_SERIES_GENERATE_TIMESTAMP | K_SERIES_GENERATE_TINYINT | K_SERIES_PERIOD_TO_ELEMENT
     | K_SERIES_ROUND | K_SETS | K_SHARE | K_SHORTTEXT | K_SMALLDECIMAL | K_SMALLINT | K_SOME | K_SORT | K_SPECIFIED
-    | K_STDDEV | K_STDDEV_POP | K_STDDEV_SAMP | K_STRICT | K_STRING_AGG | K_STRUCTURED | K_SUBTOTAL | K_SUM | K_SYSTEM
-    | K_SYSTEM_TIME | K_TABLE | K_TEXT | K_TEXT_FILTER | K_THEN | K_TIME | K_TIMESTAMP | K_TINYINT | K_TO | K_TOTAL
-    | K_UNBOUNDED | K_UNCONDITIONAL | K_UNNEST | K_UP | K_UPDATE | K_UTF16 | K_UTF32 | K_UTF8 | K_VAR | K_VAR_POP
-    | K_VAR_SAMP | K_VARBINARY | K_VARCHAR | K_WAIT | K_WEIGHT | K_WEIGHTED_AVG | K_WITHIN | K_WITHOUT | K_WRAPPER
-    | K_XML | K_YEAR | K_ZERO_LAG
+    | K_STDDEV | K_STDDEV_POP | K_STDDEV_SAMP | K_STRICT | K_STRING_AGG | K_STRUCTURED | K_SUBSTR_REGEXPR
+    | K_SUBSTRING_REGEXPR | K_SUBTOTAL | K_SUM | K_SYSTEM | K_SYSTEM_TIME | K_TABLE | K_TEXT | K_TEXT_FILTER | K_THEN
+    | K_TIME | K_TIMESTAMP | K_TINYINT | K_TO | K_TOTAL | K_TRIM | K_UNBOUNDED | K_UNCONDITIONAL | K_UNNEST | K_UP
+    | K_UPDATE | K_UTF16 | K_UTF32 | K_UTF8 | K_VAR | K_VAR_POP | K_VAR_SAMP | K_VARBINARY | K_VARCHAR | K_WAIT
+    | K_WEIGHT | K_WEIGHTED_AVG | K_WITHIN | K_WITHOUT | K_WRAPPER | K_XML | K_XMLNAMESPACE | K_XMLTABLE | K_YEAR
+    | K_ZERO_LAG
     ;
