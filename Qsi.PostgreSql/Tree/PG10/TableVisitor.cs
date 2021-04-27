@@ -358,7 +358,7 @@ namespace Qsi.PostgreSql.Tree.PG10
                 RangeVar var => VisitRangeVar(var),
                 RangeSubselect subselect => VisitRangeSubselect(subselect),
                 RangeFunction function => VisitRangeFunction(function),
-                JoinExpr joinExpr => ViseitJoinExpression(joinExpr),
+                JoinExpr joinExpr => VisitJoinExpression(joinExpr),
                 _ => throw TreeHelper.NotSupportedTree(fromClause)
             };
         }
@@ -469,7 +469,7 @@ namespace Qsi.PostgreSql.Tree.PG10
             throw TreeHelper.NotSupportedFeature("Table function");
         }
 
-        public static QsiJoinedTableNode ViseitJoinExpression(JoinExpr joinExpr)
+        public static QsiJoinedTableNode VisitJoinExpression(JoinExpr joinExpr)
         {
             return TreeHelper.Create<QsiJoinedTableNode>(n =>
             {
@@ -479,18 +479,32 @@ namespace Qsi.PostgreSql.Tree.PG10
                 n.Left.SetValue(VisitFromClause(joinExpr.larg[0]));
                 n.Right.SetValue(VisitFromClause(joinExpr.rarg[0]));
 
-                n.JoinType = joinExpr.jointype switch
+                if (joinExpr.isNatural ?? false)
                 {
-                    JoinType.JOIN_INNER => QsiJoinType.Inner,
-                    JoinType.JOIN_LEFT => QsiJoinType.Left,
-                    JoinType.JOIN_FULL => QsiJoinType.Full,
-                    JoinType.JOIN_RIGHT => QsiJoinType.Right,
-                    JoinType.JOIN_SEMI => QsiJoinType.Semi,
-                    JoinType.JOIN_ANTI => QsiJoinType.Anti,
-                    JoinType.JOIN_UNIQUE_OUTER => QsiJoinType.UniqueOuter,
-                    JoinType.JOIN_UNIQUE_INNER => QsiJoinType.UniqueInner,
-                    _ => throw new InvalidOperationException()
-                };
+                    n.JoinType = joinExpr.jointype switch
+                    {
+                        JoinType.JOIN_INNER => QsiJoinType.NaturalInner,
+                        JoinType.JOIN_LEFT => QsiJoinType.NaturalLeft,
+                        JoinType.JOIN_RIGHT => QsiJoinType.NaturalRight,
+                        JoinType.JOIN_FULL => QsiJoinType.NaturalFull,
+                        _ => throw new QsiException(QsiError.Syntax)
+                    };
+                }
+                else
+                {
+                    n.JoinType = joinExpr.jointype switch
+                    {
+                        JoinType.JOIN_INNER => QsiJoinType.Inner,
+                        JoinType.JOIN_LEFT => QsiJoinType.Left,
+                        JoinType.JOIN_FULL => QsiJoinType.Full,
+                        JoinType.JOIN_RIGHT => QsiJoinType.Right,
+                        JoinType.JOIN_SEMI => QsiJoinType.Semi,
+                        JoinType.JOIN_ANTI => QsiJoinType.Anti,
+                        JoinType.JOIN_UNIQUE_OUTER => QsiJoinType.UniqueOuter,
+                        JoinType.JOIN_UNIQUE_INNER => QsiJoinType.UniqueInner,
+                        _ => throw new QsiException(QsiError.Syntax)
+                    };
+                }
 
                 if (!ListUtility.IsNullOrEmpty(joinExpr.usingClause))
                 {
