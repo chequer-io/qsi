@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using net.sf.jsqlparser.expression;
 using net.sf.jsqlparser.expression.operators.relational;
 using net.sf.jsqlparser.schema;
@@ -167,7 +168,9 @@ namespace Qsi.JSql.Tree
 
                 var joinNode = new QsiJoinedTableNode
                 {
-                    JoinType = GetJoinType(join)
+                    JoinType = BuildJoinType(join),
+                    IsNatural = join.isNatural(),
+                    IsComma = join.isSimple() && !join.isOuter()
                 };
 
                 joinNode.Left.SetValue(anchor);
@@ -189,24 +192,42 @@ namespace Qsi.JSql.Tree
             return anchor;
         }
 
-        protected virtual QsiJoinType GetJoinType(Join join)
+        private string BuildJoinType(Join join)
         {
+            if (join.isSimple() && join.isOuter())
+                return "OUTER";
+
+            if (join.isSimple())
+                return string.Empty;
+
+            var builder = new StringBuilder();
+
             if (join.isRight())
-                return QsiJoinType.Right;
+                builder.Append("RIGHT ");
+            else if (join.isNatural())
+                builder.Append("NATURAL ");
+            else if (join.isFull())
+                builder.Append("FULL ");
+            else if (join.isLeft())
+                builder.Append("LEFT ");
+            else if (join.isCross())
+                builder.Append("CROSS ");
 
-            if (join.isLeft())
-                return QsiJoinType.Left;
+            if (join.isOuter())
+                builder.Append("OUTER ");
+            else if (join.isInner())
+                builder.Append("INNER ");
+            else if (join.isSemi())
+                builder.Append("SEMI ");
 
-            if (join.isInner())
-                return QsiJoinType.Inner;
+            if (join.isStraight())
+                builder.Append("STRAIGHT_JOIN");
+            else if (join.isApply())
+                builder.Append("APPLY");
+            else
+                builder.Append("JOIN");
 
-            if (join.isSemi())
-                return QsiJoinType.Semi;
-
-            if (join.isCross())
-                return QsiJoinType.Cross;
-
-            return QsiJoinType.Full;
+            return builder.ToString();
         }
 
         public virtual QsiCompositeTableNode VisitSetOperationList(SetOperationList setOperationList)

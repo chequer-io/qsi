@@ -870,7 +870,7 @@ namespace Qsi.Analyzers.Table
                 Span<QsiIdentifier> identifiers = new QsiIdentifier[identifierScope.Level + 1].AsSpan();
 
                 identifierScope._identifiers[..offset].CopyTo(identifiers);
-                identifier._identifiers.AsSpan().CopyTo(identifiers.Slice(offset));
+                identifier._identifiers.AsSpan().CopyTo(identifiers[offset..]);
 
                 identifier = new QsiQualifiedIdentifier(identifiers.ToArray());
             }

@@ -245,7 +245,7 @@ namespace Qsi.SqlServer.Tree
             {
                 n.Left.SetValue(leftTable);
                 n.Right.SetValue(rightTable);
-                n.JoinType = QsiJoinType.Inner;
+                // TODO: n.JoinType = QsiJoinType.Inner;
                 n.Expression.SetValue(ExpressionVisitor.VisitBooleanExpression(mergeSpecification.SearchCondition));
             });
 

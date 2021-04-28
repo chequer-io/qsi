@@ -314,58 +314,10 @@ namespace Qsi.Parsing.Common
 
         protected virtual void DeparseJoinedTableNode(ScriptWriter writer, IQsiJoinedTableNode node, QsiScript script)
         {
-            string joinToken;
-
-            switch (node.JoinType)
-            {
-                case QsiJoinType.Comma:
-                    joinToken = ", ";
-                    break;
-
-                case QsiJoinType.Inner:
-                case QsiJoinType.Left:
-                case QsiJoinType.Right:
-                case QsiJoinType.Full:
-                case QsiJoinType.Semi:
-                case QsiJoinType.Anti:
-                case QsiJoinType.Cross:
-                    joinToken = $" {node.JoinType.ToString().ToUpper()} JOIN ";
-                    break;
-
-                case QsiJoinType.Straight:
-                    joinToken = " STRAIGHT_JOIN ";
-                    break;
-
-                case QsiJoinType.LeftOuter:
-                    joinToken = " LEFT OUTER ";
-                    break;
-
-                case QsiJoinType.RightOuter:
-                    joinToken = " RIGHT OUTER ";
-                    break;
-
-                case QsiJoinType.NaturalLeft:
-                    joinToken = " NATURAL LEFT ";
-                    break;
-
-                case QsiJoinType.NaturalRight:
-                    joinToken = " NATURAL RIGHT ";
-                    break;
-
-                case QsiJoinType.NaturalLeftOuter:
-                    joinToken = " NATURAL LEFT OUTER ";
-                    break;
-
-                case QsiJoinType.NaturalRightOuter:
-                    joinToken = " NATURAL RIGHT OUTER ";
-                    break;
-
-                default:
-                    throw new NotSupportedException(node.JoinType.ToString());
-            }
+            string joinType = node.IsComma ? ", " : $" {node.JoinType?.Trim()} ";
 
             DeparseTreeNode(writer, node.Left, script);
-            writer.Write(joinToken);
+            writer.Write(joinType);
             DeparseTreeNode(writer, node.Right, script);
 
             if (node.PivotColumns != null)

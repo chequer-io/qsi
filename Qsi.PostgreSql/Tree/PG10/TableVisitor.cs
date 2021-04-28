@@ -337,7 +337,7 @@ namespace Qsi.PostgreSql.Tree.PG10
                 {
                     var nextJoin = new QsiJoinedTableNode
                     {
-                        JoinType = QsiJoinType.Full
+                        IsComma = true
                     };
 
                     nextJoin.Left.SetValue(anchor);
@@ -479,31 +479,19 @@ namespace Qsi.PostgreSql.Tree.PG10
                 n.Left.SetValue(VisitFromClause(joinExpr.larg[0]));
                 n.Right.SetValue(VisitFromClause(joinExpr.rarg[0]));
 
+                n.JoinType = joinExpr.jointype switch
+                {
+                    JoinType.JOIN_INNER => "INNER JOIN",
+                    JoinType.JOIN_LEFT => "LEFT JOIN",
+                    JoinType.JOIN_RIGHT => "RIGHT JOIN",
+                    JoinType.JOIN_FULL => "FULL JOIN",
+                    _ => throw new QsiException(QsiError.Syntax)
+                };
+
                 if (joinExpr.isNatural ?? false)
                 {
-                    n.JoinType = joinExpr.jointype switch
-                    {
-                        JoinType.JOIN_INNER => QsiJoinType.NaturalInner,
-                        JoinType.JOIN_LEFT => QsiJoinType.NaturalLeft,
-                        JoinType.JOIN_RIGHT => QsiJoinType.NaturalRight,
-                        JoinType.JOIN_FULL => QsiJoinType.NaturalFull,
-                        _ => throw new QsiException(QsiError.Syntax)
-                    };
-                }
-                else
-                {
-                    n.JoinType = joinExpr.jointype switch
-                    {
-                        JoinType.JOIN_INNER => QsiJoinType.Inner,
-                        JoinType.JOIN_LEFT => QsiJoinType.Left,
-                        JoinType.JOIN_FULL => QsiJoinType.Full,
-                        JoinType.JOIN_RIGHT => QsiJoinType.Right,
-                        JoinType.JOIN_SEMI => QsiJoinType.Semi,
-                        JoinType.JOIN_ANTI => QsiJoinType.Anti,
-                        JoinType.JOIN_UNIQUE_OUTER => QsiJoinType.UniqueOuter,
-                        JoinType.JOIN_UNIQUE_INNER => QsiJoinType.UniqueInner,
-                        _ => throw new QsiException(QsiError.Syntax)
-                    };
+                    n.IsNatural = true;
+                    n.JoinType = $"NATURAL {n.JoinType}";
                 }
 
                 if (!ListUtility.IsNullOrEmpty(joinExpr.usingClause))

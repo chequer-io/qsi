@@ -493,6 +493,8 @@ namespace Qsi.Extensions
                 node.Parent,
                 node.Left,
                 node.JoinType,
+                node.IsNatural,
+                node.IsComma,
                 node.Right,
                 node.PivotColumns,
                 ignoreUserData ? null : node.UserData);
