@@ -251,6 +251,7 @@ namespace Qsi.Extensions
                 node.Column,
                 node.Expression,
                 node.Alias,
+                node.InferredName,
                 ignoreUserData ? null : node.UserData);
         }
 

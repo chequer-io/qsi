@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Qsi.Data;
 using Qsi.Utilities;
 
 namespace Qsi.Tree
@@ -10,6 +11,8 @@ namespace Qsi.Tree
         public QsiTreeNodeProperty<QsiExpressionNode> Expression { get; }
 
         public QsiTreeNodeProperty<QsiAliasNode> Alias { get; }
+
+        public QsiIdentifier InferredName { get; set; }
 
         public override IEnumerable<IQsiTreeNode> Children
             => TreeHelper.YieldChildren(Column, Expression, Alias);

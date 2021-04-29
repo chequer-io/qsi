@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Antlr4.Runtime;
+using Antlr4.Runtime.Misc;
 using Antlr4.Runtime.Tree;
 using Qsi.Data;
 using Qsi.MySql.Data;
@@ -186,7 +188,16 @@ namespace Qsi.MySql.Tree
             var node = VisitExpr(expr);
 
             if (alias == null)
+            {
+                if (node is QsiDerivedColumnNode columnNode && columnNode.Alias.IsEmpty)
+                {
+                    var columnName = context.GetInputText();
+                    columnName = Regex.Replace(columnName, "[\r\n\t\f\v]", " ");
+                    columnNode.InferredName = new QsiIdentifier(columnName, false);
+                }
+
                 return node;
+            }
 
             var aliasNode = VisitSelectAlias(alias);
 
