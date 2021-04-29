@@ -12,7 +12,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\IListExtension.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\IQsiActionExtension.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ParserRuleContextExtension.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Extensions\ParseRuleContextExtension.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\QsiDataRowCollectionExtension.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\EnumerableExtension.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\StringExtension.cs" />

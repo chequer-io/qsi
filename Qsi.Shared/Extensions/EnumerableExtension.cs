@@ -27,6 +27,24 @@ namespace Qsi.Shared.Extensions
             return -1;
         }
 
+        public static IEnumerable<int> AllIndexOf<T>(this IEnumerable<T> source, T find)
+        {
+            return source.AllIndexOf(value => Equals(value, find));
+        }
+
+        public static IEnumerable<int> AllIndexOf<T>(this IEnumerable<T> source, Predicate<T> predicate)
+        {
+            int index = -1;
+
+            foreach (var value in source)
+            {
+                index++;
+
+                if (predicate(value))
+                    yield return index;
+            }
+        }
+
         public static bool TryCast<TOut>(this IEnumerable source, out TOut[] cast)
         {
             if (!source.TryCast(out IEnumerable<TOut> result))

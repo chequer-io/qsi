@@ -525,18 +525,18 @@ namespace Qsi.MySql.Tree
             switch (child)
             {
                 case InnerJoinTypeContext innerJoinType:
-                    node.JoinType = innerJoinType.ToString();
+                    node.JoinType = innerJoinType.GetInputText();
                     node.Right.SetValue(VisitTableReference(context.tableReference()));
                     break;
 
                 case OuterJoinTypeContext outerJoinType:
-                    node.JoinType = outerJoinType.ToString();
+                    node.JoinType = outerJoinType.GetInputText();
                     node.Right.SetValue(VisitTableReference(context.tableReference()));
                     break;
 
                 case NaturalJoinTypeContext naturalJoinType:
                     node.IsNatural = true;
-                    node.JoinType = naturalJoinType.ToString();
+                    node.JoinType = naturalJoinType.GetInputText();
                     node.Right.SetValue(VisitTableFactor(context.tableFactor()));
                     break;
 

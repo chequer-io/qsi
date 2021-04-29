@@ -70,7 +70,7 @@ namespace Qsi
 
             if (analyzer == null)
             {
-                if (script.ScriptType == QsiScriptType.Comment || script.ScriptType == QsiScriptType.Delimiter)
+                if (script.ScriptType is QsiScriptType.Comment or QsiScriptType.Delimiter)
                     return new EmptyAnalysisResult();
 
                 throw new QsiException(QsiError.NotSupportedScript, script.ScriptType);
