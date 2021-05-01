@@ -71,7 +71,7 @@ namespace Qsi.Debugger
                 ["SQL Server 2019"] = new(() => new SqlServerDebugger(TransactSqlVersion.Version150)),
                 ["Phoenix 5.0.0"] = new(() => new PhoenixSqlDebugger()),
                 ["CassandraQL 3"] = new(() => new CqlDebugger()),
-                ["PrimarSql"] = new(() => new PrimarSqlDebugger())
+                ["PrimarSql"] = new(() => new PrimarSqlDebugger()),
                 ["SAP HANA"] = new(() => new HanaDebugger())
             };
 

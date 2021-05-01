@@ -286,6 +286,18 @@ K_XMLNAMESPACE:                     X M L N A M E S P A C E;
 K_XMLTABLE:                         X M L T A B L E;
 K_YEAR:                             Y E A R;
 K_ZERO_LAG:                         Z E R O '_' L A G;
+// TODO: check keyword can be identifer --
+K_VALUES:                           V A L U E S;
+K_OVERRIDING:                       O V E R R I D I N G;
+K_USER:                             U S E R;
+K_VALUE:                            V A L U E;
+K_PRIMARY:                          P R I M A R Y;
+K_UPSERT:                           U P S E R T;
+K_PORTION:                          P O R T I O N;
+K_SET:                              S E T;
+K_DELETE:                           D E L E T E;
+K_HISTORY:                          H I S T O R Y;
+K_INSERT:                           I N S E R T;
 
 fragment A: ('a'|'A');
 fragment B: ('b'|'B');

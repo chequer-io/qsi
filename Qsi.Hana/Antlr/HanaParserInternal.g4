@@ -10,8 +10,22 @@ root
     ;
 
 hanaStatement
-    : selectStatement
+    : dataManipulationStatement
+    ;
+
+dataManipulationStatement
+    : deleteStatement
+    // | explainPlanStatement
     | insertStatement
+    // | loadStatement
+    // | mergeDeltaStatement
+    // | mergeIntoStatement
+    // | replaceStatement
+    | selectStatement
+    // | truncateTableStatement
+    // | unloadStatement
+    | updateStatement
+    | upsertStatement
     ;
 
 // ------ SQL Reference > SQL Statements > Alpabetical List of Statements > SELECT Statement ------
@@ -89,8 +103,12 @@ forSystemTime
     ;
 
 selectClause
-   : K_SELECT (K_TOP UNSIGNED_INTEGER)? (K_ALL | K_DISTINCT)? selectList
+   : K_SELECT topClause? (K_ALL | K_DISTINCT)? selectList
    ;
+
+topClause
+    : K_TOP top=UNSIGNED_INTEGER
+    ;
 
 selectList
     : selectItem (',' selectItem)*
@@ -321,15 +339,20 @@ collectionValueExpression
     : K_ARRAY '(' (tableExpression (',' tableExpression)* | columnName) ')'
     ;
 
+// ------ SQL Reference > SQL Statements > Alpabetical List of Statements > DELETE Statement ------
+
+deleteStatement
+    : K_DELETE K_HISTORY? K_FROM tableName partitionRestriction? whereClause? hintClause?
+    ;
+
 // ------ SQL Reference > SQL Statements > Alpabetical List of Statements > INESRT Statement ------
 
 insertStatement
-    : K_INSERT K_INTO tableName (K_PARTITION partition=UNSIGNED_INTEGER)? 
-      explicitAlias?
+    : K_INSERT K_INTO tableName (K_PARTITION partition=UNSIGNED_INTEGER)? alias?
       columnListClause?
       (
         (valueListClause | overridingClause? subquery)
-        | withClauseForInsert 
+        | withClauseForInsert // TODO: check to real db 
       )
       hintClause?
     ;
@@ -347,8 +370,40 @@ withClauseForInsert
       K_SELECT selectList K_FROM identifier
     ;
 
-// <with_clause> ::=
-//     WITH <alias> AS ( <subquery> ) SELECT <expression> FROM <alias>
+// ------ SQL Reference > SQL Statements > Alpabetical List of Statements > UPDATE Statement ------
+
+updateStatement
+    : K_UPDATE topClause? tableName alias?
+      portionOfApplicationTimeClause?
+      partitionRestriction?
+      setClause
+      fromClause?
+      whereClause?
+      hintClause?
+    ;
+
+portionOfApplicationTimeClause
+    : K_FOR K_PORTION K_OF K_APPLICATION_TIME K_FROM from=STRING_LITERAL K_TO to=STRING_LITERAL
+    ;
+
+setClause
+    : K_SET elements+=setElement (',' elements+=setElement)*
+    ;
+
+setElement
+    : columnName '=' expression
+    | '(' withClause subquery ')' // TODO: check to real db
+    ;
+
+// ------ SQL Reference > SQL Statements > Alpabetical List of Statements > UPSERT Statement ------
+
+upsertStatement
+    : K_UPSERT tableName partitionRestriction? columnListClause?
+      (
+        valueListClause (whereClause | K_WITH K_PRIMARY K_KEY)?
+        | subquery
+      )
+    ;
 
 // ------ SQL Reference > Operators ------
 
@@ -425,6 +480,7 @@ condition
     | condition K_AND condition #andCondition
     | K_NOT condition           #notCondition
     | '(' condition ')'         #parenthesisCondition
+    | K_CURRENT K_OF identifier #currentOfCondition
     ;
 
 functionExpression
