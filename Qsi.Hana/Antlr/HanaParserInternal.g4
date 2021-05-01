@@ -11,6 +11,7 @@ root
 
 hanaStatement
     : selectStatement
+    | insertStatement
     ;
 
 // ------ SQL Reference > SQL Statements > Alpabetical List of Statements > SELECT Statement ------
@@ -180,6 +181,10 @@ alias
     : K_AS? name=identifier
     ;
 
+explicitAlias
+    : K_AS name=identifier
+    ;
+
 associationTableExpression
     : tableName ('[' condition ']')? ':' associationExpression alias?
     ;
@@ -309,12 +314,41 @@ lateralTableExpression
     ;
 
 collectionDerivedTable
-    : K_UNNEST '(' collectionValueExpression (',' collectionValueExpression)* ')' (K_WITH K_ORDINALITY)? K_AS identifier columnListClause?
+    : K_UNNEST '(' collectionValueExpression (',' collectionValueExpression)* ')' (K_WITH K_ORDINALITY)? explicitAlias columnListClause?
     ;
 
 collectionValueExpression
     : K_ARRAY '(' (tableExpression (',' tableExpression)* | columnName) ')'
     ;
+
+// ------ SQL Reference > SQL Statements > Alpabetical List of Statements > INESRT Statement ------
+
+insertStatement
+    : K_INSERT K_INTO tableName (K_PARTITION partition=UNSIGNED_INTEGER)? 
+      explicitAlias?
+      columnListClause?
+      (
+        (valueListClause | overridingClause? subquery)
+        | withClauseForInsert 
+      )
+      hintClause?
+    ;
+
+valueListClause
+    : K_VALUES '(' expressionList ')' explicitAlias?
+    ;
+
+overridingClause
+    : K_OVERRIDING (K_SYSTEM | K_USER) K_VALUE
+    ;
+
+withClauseForInsert
+    : K_WITH name=identifier K_AS '(' subquery ')'
+      K_SELECT selectList K_FROM identifier
+    ;
+
+// <with_clause> ::=
+//     WITH <alias> AS ( <subquery> ) SELECT <expression> FROM <alias>
 
 // ------ SQL Reference > Operators ------
 
