@@ -390,7 +390,7 @@ setClause
     ;
 
 setElement
-    : columnName '=' expression
+    : fieldName '=' expression
     | '(' withClause subquery ')' // TODO: check to real db
     ;
 
