@@ -350,8 +350,8 @@ insertStatement
     : K_INSERT K_INTO tableName partitionRestriction? alias?
       columnListClause?
       (
-        (valueListClause | overridingClause? subquery)
-        | selectStatement
+        valueListClause
+        | overridingClause? selectStatement
       )
       hintClause?
     ;
