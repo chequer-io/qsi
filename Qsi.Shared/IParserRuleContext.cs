@@ -1,6 +1,6 @@
 ﻿using Antlr4.Runtime;
 
-namespace Qsi.Cql.Tree.Common
+namespace Qsi.Shared
 {
     internal interface IParserRuleContext
     {

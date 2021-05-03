@@ -1,5 +1,6 @@
 ﻿using Antlr4.Runtime;
 using Qsi.Cql.Internal;
+using Qsi.Shared;
 
 namespace Qsi.Cql.Tree.Common
 {
