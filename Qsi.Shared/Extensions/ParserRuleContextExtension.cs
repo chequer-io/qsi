@@ -1,11 +1,20 @@
-﻿using System.Linq;
+using System.Linq;
 using Antlr4.Runtime;
+using Antlr4.Runtime.Misc;
 using Antlr4.Runtime.Tree;
 
 namespace Qsi.Shared.Extensions
 {
-    internal static class ParseRuleContextExtension
+    internal static class ParserRuleContextExtension
     {
+        public static string GetInputText(this ParserRuleContext context)
+        {
+            var startIndex = context.Start.StartIndex;
+            var stopIndex = context.Stop.StopIndex;
+            var interval = new Interval(startIndex, stopIndex);
+            return context.Start.InputStream.GetText(interval);
+        }
+
         public static bool HasToken(this ParserRuleContext context, int type)
         {
             return context.children

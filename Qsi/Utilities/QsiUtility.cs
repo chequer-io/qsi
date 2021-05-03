@@ -31,9 +31,7 @@ namespace Qsi.Utilities
         public static bool IsReferenceType(QsiTableType type)
         {
             return
-                type == QsiTableType.Table ||
-                type == QsiTableType.View ||
-                type == QsiTableType.MaterializedView;
+                type is QsiTableType.Table or QsiTableType.View or QsiTableType.MaterializedView;
         }
     }
 }

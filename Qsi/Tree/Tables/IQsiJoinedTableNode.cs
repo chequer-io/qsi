@@ -1,6 +1,4 @@
-﻿using Qsi.Data;
-
-namespace Qsi.Tree
+﻿namespace Qsi.Tree
 {
     /// <summary>
     /// Specifies a joined table.
@@ -15,7 +13,17 @@ namespace Qsi.Tree
         /// <summary>
         /// Get the join type.
         /// </summary>
-        QsiJoinType JoinType { get; }
+        string JoinType { get; }
+
+        /// <summary>
+        /// Gets whether natural join
+        /// </summary>
+        bool IsNatural { get; }
+
+        /// <summary>
+        /// Gets whether comma join
+        /// </summary>
+        bool IsComma { get; }
 
         /// <summary>
         /// Get the right table.

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Antlr4.Runtime;
+using Antlr4.Runtime.Misc;
 using Antlr4.Runtime.Tree;
 using Qsi.Data;
 using Qsi.MySql.Data;
@@ -186,7 +188,16 @@ namespace Qsi.MySql.Tree
             var node = VisitExpr(expr);
 
             if (alias == null)
+            {
+                if (node is QsiDerivedColumnNode columnNode && columnNode.Alias.IsEmpty)
+                {
+                    var columnName = context.GetInputText();
+                    columnName = Regex.Replace(columnName, "[\r\n\t\f\v]", " ");
+                    columnNode.InferredName = new QsiIdentifier(columnName, false);
+                }
+
                 return node;
+            }
 
             var aliasNode = VisitSelectAlias(alias);
 
@@ -311,7 +322,7 @@ namespace Qsi.MySql.Tree
             {
                 var join = new QsiJoinedTableNode
                 {
-                    JoinType = QsiJoinType.Inner
+                    IsComma = true
                 };
 
                 join.Left.SetValue(anchor);
@@ -514,17 +525,18 @@ namespace Qsi.MySql.Tree
             switch (child)
             {
                 case InnerJoinTypeContext innerJoinType:
-                    node.JoinType = VisitInnerJoinType(innerJoinType);
+                    node.JoinType = innerJoinType.GetInputText();
                     node.Right.SetValue(VisitTableReference(context.tableReference()));
                     break;
 
                 case OuterJoinTypeContext outerJoinType:
-                    node.JoinType = VisitOuterJoinType(outerJoinType);
+                    node.JoinType = outerJoinType.GetInputText();
                     node.Right.SetValue(VisitTableReference(context.tableReference()));
                     break;
 
                 case NaturalJoinTypeContext naturalJoinType:
-                    node.JoinType = VisitNaturalJoinType(naturalJoinType);
+                    node.IsNatural = true;
+                    node.JoinType = naturalJoinType.GetInputText();
                     node.Right.SetValue(VisitTableFactor(context.tableFactor()));
                     break;
 
@@ -543,48 +555,6 @@ namespace Qsi.MySql.Tree
             MySqlTree.Span[node] = new Range(leftSpan.Start, rightSpan.End);
 
             return node;
-        }
-
-        public static QsiJoinType VisitOuterJoinType(OuterJoinTypeContext context)
-        {
-            var outer = context.HasToken(OUTER_SYMBOL);
-
-            if (context.HasToken(LEFT_SYMBOL))
-            {
-                if (outer)
-                    return QsiJoinType.LeftOuter;
-
-                return QsiJoinType.Left;
-            }
-
-            if (outer)
-                return QsiJoinType.RightOuter;
-
-            return QsiJoinType.Right;
-        }
-
-        public static QsiJoinType VisitInnerJoinType(InnerJoinTypeContext context)
-        {
-            if (context.HasToken(STRAIGHT_JOIN_SYMBOL))
-                return QsiJoinType.Straight;
-
-            if (context.HasToken(CROSS_SYMBOL))
-                return QsiJoinType.Cross;
-
-            return QsiJoinType.Inner;
-        }
-
-        public static QsiJoinType VisitNaturalJoinType(NaturalJoinTypeContext context)
-        {
-            if (context.HasToken(INNER_SYMBOL))
-                return QsiJoinType.NaturalInner;
-
-            var left = context.HasToken(LEFT_SYMBOL);
-
-            if (context.HasToken(OUTER_SYMBOL))
-                return left ? QsiJoinType.NaturalLeft : QsiJoinType.NaturalRight;
-
-            return left ? QsiJoinType.NaturalLeftOuter : QsiJoinType.NaturalRightOuter;
         }
 
         public static QsiColumnsDeclarationNode VisitIdentifierListWithParentheses(IdentifierListWithParenthesesContext context)
@@ -609,7 +579,7 @@ namespace Qsi.MySql.Tree
         public static QsiTableNode VisitQueryExpressionBody(QueryExpressionBodyContext context)
         {
             QsiTableNode[] sources = context.children
-                .Where(c => c is QueryPrimaryContext || c is QueryExpressionParensContext)
+                .Where(c => c is QueryPrimaryContext or QueryExpressionParensContext)
                 .Select(c =>
                 {
                     if (c is QueryExpressionParensContext queryExpressionParens)
