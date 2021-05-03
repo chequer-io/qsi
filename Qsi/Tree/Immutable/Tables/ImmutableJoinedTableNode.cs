@@ -11,7 +11,11 @@ namespace Qsi.Tree.Immutable
 
         public IQsiTableNode Left { get; }
 
-        public QsiJoinType JoinType { get; }
+        public string JoinType { get; }
+
+        public bool IsNatural { get; }
+
+        public bool IsComma { get; }
 
         public IQsiTableNode Right { get; }
 
@@ -24,7 +28,9 @@ namespace Qsi.Tree.Immutable
         public ImmutableJoinedTableNode(
             IQsiTreeNode parent,
             IQsiTableNode left,
-            QsiJoinType joinType,
+            string joinType,
+            bool isNatural,
+            bool isComma,
             IQsiTableNode right,
             IQsiColumnsDeclarationNode pivotColumns,
             IUserDataHolder userData)
@@ -32,6 +38,8 @@ namespace Qsi.Tree.Immutable
             Parent = parent;
             Left = left;
             JoinType = joinType;
+            IsNatural = isNatural;
+            IsComma = isComma;
             Right = right;
             PivotColumns = pivotColumns;
             UserData = userData;

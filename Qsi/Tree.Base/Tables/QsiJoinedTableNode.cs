@@ -8,7 +8,11 @@ namespace Qsi.Tree
     {
         public QsiTreeNodeProperty<QsiTableNode> Left { get; }
 
-        public QsiJoinType JoinType { get; set; }
+        public string JoinType { get; set; }
+
+        public bool IsNatural { get; set; }
+
+        public bool IsComma { get; set; }
 
         public QsiTreeNodeProperty<QsiTableNode> Right { get; }
 
@@ -19,8 +23,6 @@ namespace Qsi.Tree
 
         #region Explicit
         IQsiTableNode IQsiJoinedTableNode.Left => Left.Value;
-
-        QsiJoinType IQsiJoinedTableNode.JoinType => JoinType;
 
         IQsiTableNode IQsiJoinedTableNode.Right => Right.Value;
 

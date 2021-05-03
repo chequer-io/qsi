@@ -365,8 +365,7 @@ namespace Qsi.SqlServer.Tree
             {
                 n.Left.SetValue(VisitTableReference(tableReferences[0]));
                 n.Right.SetValue(VisitTableReference(tableReferences[1]));
-
-                n.JoinType = QsiJoinType.Full;
+                n.IsComma = true;
             });
 
             foreach (var tableExpression in tableReferences.Skip(2))
@@ -377,7 +376,7 @@ namespace Qsi.SqlServer.Tree
                 {
                     n.Left.SetValue(node);
                     n.Right.SetValue(VisitTableReference(tableExpression));
-                    n.JoinType = QsiJoinType.Full;
+                    n.IsComma = true;
                 });
             }
 
@@ -440,10 +439,10 @@ namespace Qsi.SqlServer.Tree
                 {
                     var joinType = qualifiedJoin.QualifiedJoinType switch
                     {
-                        QualifiedJoinType.Inner => QsiJoinType.Inner,
-                        QualifiedJoinType.FullOuter => QsiJoinType.Full,
-                        QualifiedJoinType.LeftOuter => QsiJoinType.Left,
-                        QualifiedJoinType.RightOuter => QsiJoinType.Right,
+                        QualifiedJoinType.Inner => "INNER JOIN",
+                        QualifiedJoinType.FullOuter => "FULL OUTER JOIN",
+                        QualifiedJoinType.LeftOuter => "LEFT OUTER JOIN",
+                        QualifiedJoinType.RightOuter => "RIGHT OUTER JOIN",
                         _ => throw new InvalidOperationException()
                     };
 
@@ -454,9 +453,9 @@ namespace Qsi.SqlServer.Tree
                 {
                     var joinType = unqualifiedJoin.UnqualifiedJoinType switch
                     {
-                        UnqualifiedJoinType.CrossApply => QsiJoinType.Inner,
-                        UnqualifiedJoinType.CrossJoin => QsiJoinType.Cross,
-                        UnqualifiedJoinType.OuterApply => QsiJoinType.Left,
+                        UnqualifiedJoinType.CrossJoin => "CROSS JOIN",
+                        UnqualifiedJoinType.CrossApply => "CROSS APPLY",
+                        UnqualifiedJoinType.OuterApply => "OUTER APPLY",
                         _ => throw new InvalidOperationException()
                     };
 
@@ -467,7 +466,7 @@ namespace Qsi.SqlServer.Tree
             throw TreeHelper.NotSupportedTree(joinTableReference);
         }
 
-        public SqlServerJoinedTableNode CreateJoinedTableNode(QsiJoinType qsiJoinType, JoinTableReference joinTableReference, BooleanExpression searchCondition = null)
+        public SqlServerJoinedTableNode CreateJoinedTableNode(string joinType, JoinTableReference joinTableReference, BooleanExpression searchCondition = null)
         {
             return TreeHelper.Create<SqlServerJoinedTableNode>(n =>
             {
@@ -477,7 +476,7 @@ namespace Qsi.SqlServer.Tree
                 if (searchCondition != null)
                     n.Expression.SetValue(ExpressionVisitor.VisitBooleanExpression(searchCondition));
 
-                n.JoinType = qsiJoinType;
+                n.JoinType = joinType;
 
                 SqlServerTree.PutFragmentSpan(n, joinTableReference);
             });

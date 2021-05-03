@@ -227,7 +227,7 @@ namespace Qsi.Analyzers.Action
                     recursiveTracing ??= new HashSet<QsiTableColumn>();
                     recursiveTracing.Add(column);
 
-                    if (column.Parent.Type == QsiTableType.Join || column.Parent.Type == QsiTableType.Union)
+                    if (column.Parent.Type is QsiTableType.Join or QsiTableType.Union)
                     {
                         foreach (var joinedColumn in column.References)
                         {
