@@ -30,8 +30,7 @@ dataManipulationStatement
 // ------ SQL Reference > SQL Statements > Alpabetical List of Statements > SELECT Statement ------
 
 selectStatement
-    : withClause? subquery (forUpdate | K_FOR K_SHARE K_LOCK | timeTravel | forSystemTime)? hintClause?
-    | withClause? subquery (forUpdate | forJsonOrXmlClause | timeTravel)? hintClause?
+    : withClause? subquery (forClause | timeTravel)? hintClause?
     | subquery K_INTO (tableRef | variableNameList) columnListClause? hintClause? (K_TOTAL K_ROWCOUNT)?
     ;
 
@@ -64,8 +63,17 @@ columnListClause
     : '(' list=columnList ')'
     ;
 
-forUpdate
-    : K_FOR K_UPDATE (K_OF columnListClause)? waitNowait? (K_IGNORE K_LOCKED)?
+forClause
+    : K_FOR K_SHARE K_LOCK
+    | K_FOR K_UPDATE (K_OF columnListClause)? waitNowait? (K_IGNORE K_LOCKED)?
+    | K_FOR (K_JSON | K_XML) forJsonOrXmlOptionListClause? forJsonOrXmlReturnsClause?
+    | forSystemTime
+    ;
+
+forSystemTime
+    : K_FOR K_SYSTEM_TIME K_AS K_OF STRING_LITERAL                      #forSystemTimeAsOf
+    | K_FOR K_SYSTEM_TIME K_FROM STRING_LITERAL K_TO STRING_LITERAL     #forSystemTimeFrom
+    | K_FOR K_SYSTEM_TIME K_BETWEEN STRING_LITERAL K_AND STRING_LITERAL #forSystemTimeBetween
     ;
 
 waitNowait
@@ -73,18 +81,18 @@ waitNowait
     | K_NOWAIT
     ;
 
-forJsonOrXmlClause
-    : K_FOR (K_JSON | K_XML) ('(' options+=forJsonOrXmlOption (',' options+=forJsonOrXmlOption)* ')')? forJsonOrXmlReturnsClause?
-    ;
-
 forJsonOrXmlOption
     : key=STRING_LITERAL '=' value=STRING_LITERAL
     ;
 
+forJsonOrXmlOptionListClause
+    : '(' options+=forJsonOrXmlOption (',' options+=forJsonOrXmlOption)* ')'
+    ;
+
 forJsonOrXmlReturnsClause
     : K_RETURNS (
-        K_VARCHAR '(' numericLiteral ')'
-        | K_NVARCHAR '(' numericLiteral ')'
+        K_VARCHAR '(' UNSIGNED_INTEGER ')'
+        | K_NVARCHAR '(' UNSIGNED_INTEGER ')'
         | K_CLOB
         | K_NCLOB
      )
@@ -93,12 +101,6 @@ forJsonOrXmlReturnsClause
 timeTravel
     : UNSIGNED_INTEGER              #commtId
     | K_UTCTIMESTAMP STRING_LITERAL #timestamp
-    ;
-
-forSystemTime
-    : K_FOR K_SYSTEM_TIME K_AS K_OF STRING_LITERAL                      #asOf
-    | K_FOR K_SYSTEM_TIME K_FROM STRING_LITERAL K_TO STRING_LITERAL     #fromTo
-    | K_FOR K_SYSTEM_TIME K_BETWEEN STRING_LITERAL K_AND STRING_LITERAL #between
     ;
 
 selectClause
