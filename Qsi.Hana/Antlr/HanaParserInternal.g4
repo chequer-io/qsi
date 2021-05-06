@@ -21,6 +21,7 @@ dataManipulationStatement
     | mergeDeltaStatement
     | mergeIntoStatement
     | replaceStatement
+    | selectIntoStatement
     | selectStatement
     // | truncateTableStatement
     // | unloadStatement
@@ -29,22 +30,23 @@ dataManipulationStatement
 
 // ------ SQL Reference > SQL Statements > Alpabetical List of Statements > SELECT Statement ------
 
+selectIntoStatement
+    : subquery K_INTO (tableRef | variableNameList) columnListClause? hintClause? (K_TOTAL K_ROWCOUNT)?
+    ;
+
 selectStatement
     : withClause? subquery (forClause | timeTravel)? hintClause?
-    | subquery K_INTO (tableRef | variableNameList) columnListClause? hintClause? (K_TOTAL K_ROWCOUNT)?
     ;
 
 subquery
-    : '(' selectStatement ')'
-    | selectClause
-      fromClause
-      whereClause?
-      groupByClause?
-      havingClause?
-      setOperatorClause?
-      tableOrderByClause?
-      limitClause?
-    | '(' inner=subquery ')'
+    : select  = selectClause
+      from    = fromClause
+      where   = whereClause?
+      groupBy = groupByClause?
+      set     = setOperatorClause?
+      orderBy = tableOrderByClause?
+      limit   = limitClause?
+    | '(' inner=selectStatement ')'
     ;
 
 withClause
@@ -233,7 +235,7 @@ whereClause
     ;
 
 groupByClause
-    : K_GROUP K_BY groupByExpressionList
+    : K_GROUP K_BY groupByExpressionList (K_HAVING having=condition)?
     ;
 
 groupByExpressionList
@@ -283,10 +285,6 @@ tableOrderByExpression
 
 collateClause
     : K_COLLATE name=UNICODE_IDENTIFIER
-    ;
-
-havingClause
-    : K_HAVING condition
     ;
 
 setOperator
