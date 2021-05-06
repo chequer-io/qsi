@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Antlr4.Runtime;
 using Qsi.Data;
 using Qsi.Tree;
 
@@ -180,6 +181,12 @@ namespace Qsi.Utilities
                 return source;
 
             return source.Prepend(property.Value);
+        }
+
+        public static void VerifyTokenType(IToken token, int type)
+        {
+            if (token.Type != type)
+                throw new ArgumentException(null, nameof(token));
         }
     }
 }

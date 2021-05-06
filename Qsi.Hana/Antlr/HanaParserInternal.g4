@@ -50,7 +50,7 @@ subquery
     ;
 
 withClause
-    : K_WITH withListElement (',' withListElement)*
+    : K_WITH elements+=withListElement (',' elements+=withListElement)*
     ;
 
 withListElement
@@ -114,13 +114,13 @@ topClause
     ;
 
 selectList
-    : selectItem (',' selectItem)*
+    : items+=selectItem (',' items+=selectItem)*
     ;
 
 selectItem
-    : expression alias?             #expr 
-    | associationExpression alias?  #associationExpr
-    | (tableName '.')? '*'          #wildcard
+    : expression alias?             #exprItem
+    | associationExpression alias?  #associationExprItem
+    | (tableName '.')? '*'          #wildcardItem
     ;
 
 columnName
@@ -128,7 +128,7 @@ columnName
     ;
 
 fromClause
-    : K_FROM tableExpression (',' tableExpression)*
+    : K_FROM tables+=tableExpression (',' tables+=tableExpression)*
     ;
 
 seriesTable
@@ -139,7 +139,7 @@ tableExpression
     : tableRef (K_CROSS K_JOIN crossJoin=tableRef)?
 //    | systemVersionedTableRef
     | subqueryTableExpression
-    | tableExpression joinType? joinCardinality? K_JOIN tableExpression K_ON predicate
+    | left=tableExpression joinType? joinCardinality? K_JOIN right=tableExpression K_ON predicate
     | caseJoin
     | lateralTableExpression
     | collectionDerivedTable
@@ -186,16 +186,11 @@ hintElement
     ;
 
 fieldName
-    : db=identifier '.' schema=identifier '.' table=identifier '.' column=identifier
-    | schema=identifier '.' table=identifier '.' column=identifier
-    | table=identifier '.' column=identifier
-    | column=identifier
+    : identifier ('.' identifier ('.' identifier ('.' identifier)?)?)?
     ;
 
 tableName
-    : db=identifier '.' schema=identifier '.' table=identifier
-    | schema=identifier '.' table=identifier
-    | table=identifier
+    : identifier ('.' identifier ('.' identifier)?)?
     ;
 
 alias
@@ -258,13 +253,13 @@ groupingSet
     ;
 
 groupingExpressionList
-    : groupingExpression (',' groupingExpression)*
+    : items+=groupingExpression (',' items+=groupingExpression)*
     ;
 
 groupingExpression
-    : tables+=tableExpression
-    | '(' tables+=tableExpression (',' tables+=tableExpression)* ')'
-    | '(' '(' tables+=tableExpression (',' tables+=tableExpression)* ')' tableOrderByClause ')'
+    : fields+=fieldName
+    | '(' fields+=fieldName (',' fields+=fieldName)* ')'
+    | '(' '(' fields+=fieldName (',' fields+=fieldName)* ')' tableOrderByClause ')'
     ;
 
 prefixTableName
@@ -276,11 +271,11 @@ variableTable
     ;
 
 tableOrderByClause
-    : K_ORDER K_BY tableOrderByExpression (',' tableOrderByExpression)*
+    : K_ORDER K_BY orders+=tableOrderByExpression (',' orders+=tableOrderByExpression)*
     ;
 
 tableOrderByExpression
-    : (table=tableExpression | position=UNSIGNED_INTEGER) collateClause? (K_ASC | K_DESC)? (K_NULLS K_FIRST | K_NULLS K_LAST)?
+    : (field=fieldName | position=UNSIGNED_INTEGER) collateClause? (K_ASC | K_DESC)? (K_NULLS K_FIRST | K_NULLS K_LAST)?
     ;
 
 collateClause
@@ -294,7 +289,7 @@ setOperator
     ;
 
 setOperatorClause
-    : setOperator subquery (',' setOperator subquery)*
+    : ops+=setOperator queries+=subquery (',' ops+=setOperator queries+=subquery)*
     ;
 
 limitClause
@@ -321,9 +316,17 @@ joinType
 caseJoin
     : tableRef K_LEFT K_OUTER K_MANY K_TO K_ONE
         K_CASE K_JOIN
-            (K_WHEN condition K_THEN K_RETURN columnListClause K_FROM tableRef K_ON predicate)+
-            (K_ELSE K_RETURN columnListClause K_FROM tableRef K_ON predicate)?
+            caseJoinWhenClause+
+            caseJoinElseClause?
         K_END alias?
+    ;
+
+caseJoinWhenClause
+    : K_WHEN condition K_THEN K_RETURN columnListClause K_FROM tableRef K_ON predicate
+    ;
+
+caseJoinElseClause
+    : K_ELSE K_RETURN columnListClause K_FROM tableRef K_ON predicate
     ;
 
 lateralTableExpression
@@ -336,7 +339,7 @@ collectionDerivedTable
 
 collectionValueExpression
     : K_ARRAY '(' (tableExpression (',' tableExpression)* | columnName) ')'
-    ;
+    ;   
 
 // ------ SQL Reference > SQL Statements > Alpabetical List of Statements > DELETE Statement ------
 
@@ -469,7 +472,7 @@ expression
     | datetimeExpression                    #datetimeExpr
     | functionExpression                    #functionExpr
     | '(' expression ')'                    #parenthesisExpr
-    | subquery                              #subqueryExpr
+    | '(' subquery ')'                      #subqueryExpr
     | '-' expression                        #unaryExpr
     | l=expression op=operator r=expression #operationExpr
     | fieldName                             #fieldExpr
@@ -718,6 +721,8 @@ dataType
     | K_REAL
     | K_DOUBLE
     | K_FLOAT ('(' length=UNSIGNED_INTEGER ')')?
+    // Boolean type
+    | K_BOOLEAN
     // Characters string types
     | K_VARCHAR ('(' length=UNSIGNED_INTEGER ')')?
     | K_NVARCHAR ('(' length=UNSIGNED_INTEGER ')')?
@@ -1102,25 +1107,25 @@ identifier
 keywodIdentifier
     : K_AFTER | K_ALLOWED | K_ALPHANUM | K_ALTERNATE | K_AMPLITUDE | K_AND | K_ANY | K_APPLICATION_TIME | K_ARRAY
     | K_ASC | K_AUTO_CORR | K_AUTOMATIC | K_AVG | K_BALANCE | K_BERNOULLI | K_BEST | K_BETWEEN | K_BIGINT | K_BINNING
-    | K_BLOB | K_BY | K_CAST | K_CLOB | K_COLLATE | K_COLUMNS | K_COMMIT | K_CONDITIONAL | K_CONTAINS | K_CORR
-    | K_CORR_SPEARMAN | K_COUNT | K_CROSS_CORR | K_CUBIC_SPLINE_APPROX | K_CUME_DIST | K_CURRENT | K_DATA_TRANSFER_COST
-    | K_DATE | K_DAY | K_DAYDATE | K_DEC | K_DECIMAL | K_DEFAULT | K_DELETE | K_DELTA | K_DENSE_RANK | K_DESC | K_DFT
-    | K_DOUBLE | K_ELEMENTS | K_EMPTY | K_ENCODING | K_EQUIDISTANT | K_ERROR | K_ESCAPE | K_EXACT | K_EXISTS | K_EXTRACT
-    | K_FILL | K_FIRST | K_FIRST_VALUE | K_FLAG | K_FLOAT | K_FOLLOWING | K_FORCE | K_FORMAT | K_FULLTEXT | K_FUZZY
-    | K_GROUPING | K_HINT | K_HISTORY | K_HOUR | K_ID | K_IGNORE | K_IMAGINARY | K_INCREMENT | K_INSERT | K_INT
-    | K_INTEGER | K_INTERVAL | K_JSON | K_JSON_QUERY | K_JSON_TABLE | K_JSON_VALUE | K_KEY | K_LAG | K_LANGUAGE | K_LAST
-    | K_LAST_VALUE | K_LAX | K_LEAD | K_LIKE | K_LIKE_REGEXPR | K_LINEAR_APPROX | K_LINGUISTIC | K_LOCATE_REGEXPR
-    | K_LOCK | K_LOCKED | K_MANY | K_MATCHED | K_MATCHES | K_MAX | K_MAXVALUE | K_MEDIAN | K_MEMBER | K_MERGE | K_MIN
-    | K_MINUTE | K_MINVALUE | K_MISSING | K_MONTH | K_MULTIPLE | K_NCLOB | K_NEGATIVE_LAGS | K_NESTED | K_NO
-    | K_NO_ROUTE_TO | K_NOT | K_NOTHING | K_NOWAIT | K_NTH_VALUE | K_NTILE | K_NULLS | K_NVARCHAR | K_OBJECT
-    | K_OCCURRENCE | K_OCCURRENCES_REGEXPR | K_OF | K_OFF | K_OFFSET | K_ONE | K_OR | K_ORDINALITY | K_OUTER | K_OVER
-    | K_OVERRIDING | K_OVERVIEW | K_PARAMETERS | K_PART | K_PARTITION | K_PASSING | K_PATH | K_PERCENT_RANK
-    | K_PERCENTILE_CONT | K_PERCENTILE_DISC | K_PERIOD | K_PHASE | K_PORTION | K_POSITIVE_LAGS | K_PRECEDING | K_PREFIX
-    | K_PRIMARY | K_RANDOM_PARTITION | K_RANK | K_REAL | K_REBUILD | K_REPLACE | K_REPLACE_REGEXPR | K_RESULT
-    | K_RESULTSETS | K_RETURNING | K_ROUND_CEILING | K_ROUND_DOWN | K_ROUND_FLOOR | K_ROUND_HALF_DOWN
-    | K_ROUND_HALF_EVEN | K_ROUND_HALF_UP | K_ROUND_UP | K_ROUTE_BY | K_ROUTE_BY_CARDINALITY | K_ROUTE_TO | K_ROW
-    | K_ROW_NUMBER | K_ROWCOUNT | K_ROWS | K_SECOND | K_SECONDDATE | K_SERIES | K_SERIES_DISAGGREGATE
-    | K_SERIES_DISAGGREGATE_BIGINT | K_SERIES_DISAGGREGATE_DATE | K_SERIES_DISAGGREGATE_DECIMAL
+    | K_BLOB | K_BOOLEAN | K_BY | K_CAST | K_CLOB | K_COLLATE | K_COLUMNS | K_COMMIT | K_CONDITIONAL | K_CONTAINS
+    | K_CORR | K_CORR_SPEARMAN | K_COUNT | K_CROSS_CORR | K_CUBIC_SPLINE_APPROX | K_CUME_DIST | K_CURRENT
+    | K_DATA_TRANSFER_COST | K_DATE | K_DAY | K_DAYDATE | K_DEC | K_DECIMAL | K_DEFAULT | K_DELETE | K_DELTA
+    | K_DENSE_RANK | K_DESC | K_DFT | K_DOUBLE | K_ELEMENTS | K_EMPTY | K_ENCODING | K_EQUIDISTANT | K_ERROR | K_ESCAPE
+    | K_EXACT | K_EXISTS | K_EXTRACT | K_FILL | K_FIRST | K_FIRST_VALUE | K_FLAG | K_FLOAT | K_FOLLOWING | K_FORCE
+    | K_FORMAT | K_FULLTEXT | K_FUZZY | K_GROUPING | K_HINT | K_HISTORY | K_HOUR | K_ID | K_IGNORE | K_IMAGINARY
+    | K_INCREMENT | K_INSERT | K_INT | K_INTEGER | K_INTERVAL | K_JSON | K_JSON_QUERY | K_JSON_TABLE | K_JSON_VALUE
+    | K_KEY | K_LAG | K_LANGUAGE | K_LAST | K_LAST_VALUE | K_LAX | K_LEAD | K_LIKE | K_LIKE_REGEXPR | K_LINEAR_APPROX
+    | K_LINGUISTIC | K_LOCATE_REGEXPR | K_LOCK | K_LOCKED | K_MANY | K_MATCHED | K_MATCHES | K_MAX | K_MAXVALUE
+    | K_MEDIAN | K_MEMBER | K_MERGE | K_MIN | K_MINUTE | K_MINVALUE | K_MISSING | K_MONTH | K_MULTIPLE | K_NCLOB
+    | K_NEGATIVE_LAGS | K_NESTED | K_NO | K_NO_ROUTE_TO | K_NOT | K_NOTHING | K_NOWAIT | K_NTH_VALUE | K_NTILE | K_NULLS
+    | K_NVARCHAR | K_OBJECT | K_OCCURRENCE | K_OCCURRENCES_REGEXPR | K_OF | K_OFF | K_OFFSET | K_ONE | K_OR
+    | K_ORDINALITY | K_OUTER | K_OVER | K_OVERRIDING | K_OVERVIEW | K_PARAMETERS | K_PART | K_PARTITION | K_PASSING
+    | K_PATH | K_PERCENT_RANK | K_PERCENTILE_CONT | K_PERCENTILE_DISC | K_PERIOD | K_PHASE | K_PORTION | K_POSITIVE_LAGS
+    | K_PRECEDING | K_PREFIX | K_PRIMARY | K_RANDOM_PARTITION | K_RANK | K_REAL | K_REBUILD | K_REPLACE
+    | K_REPLACE_REGEXPR | K_RESULT | K_RESULTSETS | K_RETURNING | K_ROUND_CEILING | K_ROUND_DOWN | K_ROUND_FLOOR
+    | K_ROUND_HALF_DOWN | K_ROUND_HALF_EVEN | K_ROUND_HALF_UP | K_ROUND_UP | K_ROUTE_BY | K_ROUTE_BY_CARDINALITY
+    | K_ROUTE_TO | K_ROW | K_ROW_NUMBER | K_ROWCOUNT | K_ROWS | K_SECOND | K_SECONDDATE | K_SERIES
+    | K_SERIES_DISAGGREGATE | K_SERIES_DISAGGREGATE_BIGINT | K_SERIES_DISAGGREGATE_DATE | K_SERIES_DISAGGREGATE_DECIMAL
     | K_SERIES_DISAGGREGATE_INTEGER | K_SERIES_DISAGGREGATE_SECONDDATE | K_SERIES_DISAGGREGATE_SMALLDECIMAL
     | K_SERIES_DISAGGREGATE_SMALLINT | K_SERIES_DISAGGREGATE_TIME | K_SERIES_DISAGGREGATE_TIMESTAMP
     | K_SERIES_DISAGGREGATE_TINYINT | K_SERIES_ELEMENT_TO_PERIOD | K_SERIES_FILTER | K_SERIES_GENERATE

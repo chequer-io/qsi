@@ -29,6 +29,7 @@ using Qsi.Debugger.Vendor.PhoenixSql;
 using Qsi.Debugger.Vendor.PostgreSql;
 using Qsi.Debugger.Vendor.PrimarSql;
 using Qsi.Debugger.Vendor.SqlServer;
+using Qsi.Hana.Tree;
 using Qsi.SqlServer.Common;
 using Qsi.Tree;
 
@@ -172,7 +173,7 @@ namespace Qsi.Debugger
                 // Execute
 
                 var result = await _vendor.Engine.Execute(script);
-
+                
                 if (result is QsiTableAnalysisResult tableResult)
                 {
                     BuildQsiTableTree(tableResult.Table);
@@ -231,19 +232,21 @@ namespace Qsi.Debugger
 
             var nodeItemChild = new List<QsiTreeItem>();
 
-            IEnumerable<PropertyInfo> properties = nodeType.GetInterfaces()
+            Dictionary<string, PropertyInfo> properties = nodeType.GetInterfaces()
                 .Where(t => t != typeof(IQsiTreeNode) && typeof(IQsiTreeNode).IsAssignableFrom(t))
-                .SelectMany(t => t.GetProperties());
+                .SelectMany(t => t.GetProperties())
+                .ToDictionary(pi => pi.Name);
 
             if (nodeType.Assembly != _qsiAssembly)
             {
                 IEnumerable<PropertyInfo> customProperties = nodeType.GetProperties()
-                    .Where(pi => IsCustomProperty(nodeType, pi));
+                    .Where(pi => !properties.ContainsKey(pi.Name) && IsCustomProperty(nodeType, pi));
 
-                properties = properties.Concat(customProperties);
+                foreach (var customProperty in customProperties)
+                    properties[customProperty.Name] = customProperty;
             }
 
-            foreach (var property in properties)
+            foreach (var property in properties.Values)
             {
                 var value = property.GetValue(node);
 
@@ -322,17 +325,17 @@ namespace Qsi.Debugger
 
         private bool IsCustomProperty(Type type, PropertyInfo property)
         {
-            if (type != property.DeclaringType)
+            if (type != property.DeclaringType && !property.DeclaringType!.IsAbstract)
+            {
                 return false;
+            }
 
             var method = property.GetMethod;
 
             while (method != null)
             {
                 if (method.DeclaringType!.Assembly == _qsiAssembly)
-                {
                     return false;
-                }
 
                 var baseMethod = method.GetBaseDefinition();
 

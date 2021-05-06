@@ -22,6 +22,7 @@ K_BETWEEN:                          B E T W E E N;
 K_BIGINT:                           B I G I N T;
 K_BINNING:                          B I N N I N G;
 K_BLOB:                             B L O B;
+K_BOOLEAN:                          B O O L E A N;
 K_BOTH:                             B O T H;
 K_BY:                               B Y;
 K_CASE:                             C A S E;

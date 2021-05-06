@@ -1,5 +1,5 @@
-﻿using System;
-using Qsi.Analyzers;
+﻿using Qsi.Analyzers;
+using Qsi.Hana.Tree;
 using Qsi.Parsing;
 using Qsi.Parsing.Common;
 using Qsi.Services;
@@ -10,12 +10,12 @@ namespace Qsi.Hana
     {
         public override IQsiTreeParser CreateTreeParser()
         {
-            throw new NotImplementedException();
+            return new HanaParser();
         }
 
         public override IQsiTreeDeparser CreateTreeDeparser()
         {
-            throw new NotImplementedException();
+            return new HanaDeparser();
         }
 
         public override IQsiScriptParser CreateScriptParser()

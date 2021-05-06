@@ -25,6 +25,18 @@ namespace Qsi.Hana
 
             switch (statement.children[0])
             {
+                case DataManipulationStatementContext dataManipulationStatement:
+                    return ParseDataManipulationStatement(dataManipulationStatement);
+
+                default:
+                    throw TreeHelper.NotSupportedTree(statement.children[0]);
+            }
+        }
+
+        private IQsiTreeNode ParseDataManipulationStatement(DataManipulationStatementContext statement)
+        {
+            switch (statement.children[0])
+            {
                 case SelectStatementContext selectStatement:
                     return TableVisitor.VisitSelectStatement(selectStatement);
 
@@ -50,7 +62,7 @@ namespace Qsi.Hana
                     throw new NotImplementedException();
 
                 default:
-                    throw TreeHelper.NotSupportedTree(statement);
+                    throw TreeHelper.NotSupportedTree(statement.children[0]);
             }
         }
     }

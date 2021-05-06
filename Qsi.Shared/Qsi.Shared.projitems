@@ -16,5 +16,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\EnumerableExtension.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\StringExtension.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IParserRuleContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utilities\StringUtility.cs" />
   </ItemGroup>
 </Project>
