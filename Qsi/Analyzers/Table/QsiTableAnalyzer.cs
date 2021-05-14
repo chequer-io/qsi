@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -25,7 +25,7 @@ namespace Qsi.Analyzers.Table
         {
             return
                 tree is IQsiTableNode &&
-                (script.ScriptType == QsiScriptType.With || script.ScriptType == QsiScriptType.Select);
+                (script.ScriptType is QsiScriptType.With or QsiScriptType.Select);
         }
 
         protected override async ValueTask<IQsiAnalysisResult> OnExecute(IAnalyzerContext context)
@@ -75,7 +75,7 @@ namespace Qsi.Analyzers.Table
             // view
             if (context.Options.UseViewTracing &&
                 !lookup.IsSystem &&
-                (lookup.Type == QsiTableType.View || lookup.Type == QsiTableType.MaterializedView))
+                (lookup.Type is QsiTableType.View or QsiTableType.MaterializedView))
             {
                 var script = context.Engine.RepositoryProvider.LookupDefinition(lookup.Identifier, lookup.Type) ??
                              throw new QsiException(QsiError.UnableResolveDefinition, lookup.Identifier);
@@ -192,6 +192,7 @@ namespace Qsi.Analyzers.Table
                 foreach (var column in columns)
                 {
                     IEnumerable<QsiTableColumn> resolvedColumns = ResolveColumns(scopedContext, column);
+                    bool keepVisible = column is IQsiAllColumnNode;
 
                     switch (column)
                     {
@@ -199,7 +200,7 @@ namespace Qsi.Analyzers.Table
                         {
                             var declaredColumn = declaredTable.NewColumn();
 
-                            declaredColumn.Name = derivedColum.Alias?.Name;
+                            declaredColumn.Name = derivedColum.Alias?.Name ?? derivedColum.InferredName;
                             declaredColumn.IsExpression = derivedColum.IsExpression;
                             declaredColumn.References.AddRange(resolvedColumns);
                             break;
@@ -221,6 +222,9 @@ namespace Qsi.Analyzers.Table
 
                                 declaredColumn.Name = c.Name;
                                 declaredColumn.References.Add(c);
+
+                                if (keepVisible)
+                                    declaredColumn.IsVisible = c.IsVisible;
                             }
 
                             break;
@@ -481,38 +485,62 @@ namespace Qsi.Analyzers.Table
 
             HashSet<QsiTableColumn> leftColumns = left.Columns.ToHashSet();
             HashSet<QsiTableColumn> rightColumns = right.Columns.ToHashSet();
+            var pivotColumns = new List<PivotColumnPair>();
 
-            if (pivots?.Length > 0)
+            if (table.IsNatural)
             {
-                var pivotPairs = new PivotColumnPair[pivots.Length];
+                QsiIdentifier[] leftColumnNames = left.Columns
+                    .Where(c => c.Name != null)
+                    .Select(c => c.Name)
+                    .ToArray();
 
-                for (int i = 0; i < pivotPairs.Length; i++)
+                QsiIdentifier[] rightColumnNames = right.Columns
+                    .Where(c => c.Name != null)
+                    .Select(c => c.Name)
+                    .ToArray();
+
+                QsiIdentifier[] minColumnNames = leftColumnNames.Length > rightColumnNames.Length ?
+                    rightColumnNames :
+                    leftColumnNames;
+
+                pivots = minColumnNames
+                    .Select(n => (IQsiDeclaredColumnNode)new ImmutableDeclaredColumnNode(null, new QsiQualifiedIdentifier(n), null))
+                    .ToArray();
+            }
+
+            foreach (var pivot in pivots ?? Enumerable.Empty<IQsiDeclaredColumnNode>())
+            {
+                var pivotColumnName = pivot.Name[^1];
+                var leftColumnIndexes = left.Columns.AllIndexOf(c => Match(c.Name, pivotColumnName)).Take(2).ToArray();
+                var rightColumnIndexes = right.Columns.AllIndexOf(c => Match(c.Name, pivotColumnName)).Take(2).ToArray();
+
+                if (leftColumnIndexes.Length == 0 || rightColumnIndexes.Length == 0)
                 {
-                    var pivotColumnName = pivots[i].Name[^1];
-                    var leftColumnIndex = left.Columns.IndexOf(c => Match(c.Name, pivotColumnName));
-                    var rightColumnIndex = right.Columns.IndexOf(c => Match(c.Name, pivotColumnName));
+                    if (table.IsNatural)
+                        continue;
 
-                    if (leftColumnIndex == -1 || rightColumnIndex == -1)
-                    {
-                        throw new QsiException(QsiError.UnableResolveColumn, pivots[i].Name);
-                    }
-
-                    pivotPairs[i] = new PivotColumnPair(
-                        leftColumnIndex,
-                        left.Columns[leftColumnIndex],
-                        right.Columns[rightColumnIndex]);
+                    throw new QsiException(QsiError.UnableResolveColumn, pivot.Name);
                 }
 
-                foreach (var pair in pivotPairs.OrderBy(p => p.Order))
-                {
-                    var column = joinedTable.NewColumn();
-                    column.Name = pair.Left.Name;
-                    column.References.Add(pair.Left);
-                    column.References.Add(pair.Right);
+                if (leftColumnIndexes.Length == 2 || rightColumnIndexes.Length == 2)
+                    throw new QsiException(QsiError.DuplicateColumnName, pivot.Name);
 
-                    leftColumns.Remove(pair.Left);
-                    rightColumns.Remove(pair.Right);
-                }
+                pivotColumns.Add(new PivotColumnPair(
+                    leftColumnIndexes[0],
+                    left.Columns[leftColumnIndexes[0]],
+                    right.Columns[rightColumnIndexes[0]]
+                ));
+            }
+
+            foreach (var (_, leftColumn, rightColumn) in pivotColumns.OrderBy(p => p.Order))
+            {
+                var column = joinedTable.NewColumn();
+                column.Name = leftColumn.Name;
+                column.References.Add(leftColumn);
+                column.References.Add(rightColumn);
+
+                leftColumns.Remove(leftColumn);
+                rightColumns.Remove(rightColumn);
             }
 
             foreach (var leftColumn in leftColumns)
@@ -578,7 +606,7 @@ namespace Qsi.Analyzers.Table
             switch (column)
             {
                 case IQsiAllColumnNode allColumn:
-                    return ResolveAllColumns(context, allColumn);
+                    return ResolveAllColumns(context, allColumn, false);
 
                 case IQsiDeclaredColumnNode declaredColumn:
                     return new[] { ResolveDeclaredColumn(context, declaredColumn) };
@@ -596,9 +624,11 @@ namespace Qsi.Analyzers.Table
             throw new InvalidOperationException();
         }
 
-        protected virtual IEnumerable<QsiTableColumn> ResolveAllColumns(TableCompileContext context, IQsiAllColumnNode column)
+        protected virtual IEnumerable<QsiTableColumn> ResolveAllColumns(TableCompileContext context, IQsiAllColumnNode column, bool includeInvisible)
         {
             context.ThrowIfCancellationRequested();
+
+            includeInvisible |= column.IncludeInvisibleColumns;
 
             // *
             if (column.Path == null)
@@ -606,7 +636,7 @@ namespace Qsi.Analyzers.Table
                 if (context.SourceTable == null)
                     throw new QsiException(QsiError.NoTablesUsed);
 
-                return column.IncludeInvisibleColumns ?
+                return includeInvisible ?
                     context.SourceTable.Columns :
                     context.SourceTable.VisibleColumns;
             }
@@ -618,7 +648,7 @@ namespace Qsi.Analyzers.Table
             if (tables.Length == 0)
                 throw new QsiException(QsiError.UnknownTable, column.Path);
 
-            return tables.SelectMany(t => column.IncludeInvisibleColumns ? t.Columns : t.VisibleColumns);
+            return tables.SelectMany(t => includeInvisible ? t.Columns : t.VisibleColumns);
         }
 
         protected virtual QsiTableColumn ResolveDeclaredColumn(TableCompileContext context, IQsiDeclaredColumnNode column)
@@ -792,7 +822,7 @@ namespace Qsi.Analyzers.Table
 
                         case IQsiAllColumnNode allColumnNode:
                         {
-                            foreach (var column in ResolveAllColumns(context, allColumnNode))
+                            foreach (var column in ResolveAllColumns(context, allColumnNode, true))
                                 yield return column;
 
                             break;
@@ -870,7 +900,7 @@ namespace Qsi.Analyzers.Table
                 Span<QsiIdentifier> identifiers = new QsiIdentifier[identifierScope.Level + 1].AsSpan();
 
                 identifierScope._identifiers[..offset].CopyTo(identifiers);
-                identifier._identifiers.AsSpan().CopyTo(identifiers.Slice(offset));
+                identifier._identifiers.AsSpan().CopyTo(identifiers[offset..]);
 
                 identifier = new QsiQualifiedIdentifier(identifiers.ToArray());
             }
@@ -908,20 +938,6 @@ namespace Qsi.Analyzers.Table
         }
         #endregion
 
-        private class PivotColumnPair
-        {
-            public int Order { get; }
-
-            public QsiTableColumn Left { get; }
-
-            public QsiTableColumn Right { get; }
-
-            public PivotColumnPair(int order, QsiTableColumn left, QsiTableColumn right)
-            {
-                Order = order;
-                Left = left;
-                Right = right;
-            }
-        }
+        private record PivotColumnPair(int Order, QsiTableColumn Left, QsiTableColumn Right);
     }
 }

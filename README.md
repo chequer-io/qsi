@@ -43,6 +43,7 @@ based on semantic tree transformed by parser's  for each language.
 |Common table expression (Recursive)|&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |&#x274C;  |&#x274C; |
 |Join tables                        |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |&#x2714;  |&#x274C; |
 |Join tables (Pivot columns)        |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x274C; |&#x274C;  |&#x274C; |
+|Join tables (Natural)              |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x274C; |&#x274C;  |&#x274C; |
 |Union many tables                  |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |&#x2714;  |&#x274C; |
 |Table pivot                        |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |&#x274C;  |&#x274C; |
 |Table unpivot                      |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |&#x274C;  |&#x274C; |

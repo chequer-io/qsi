@@ -1,4 +1,6 @@
-﻿namespace Qsi.Tree
+﻿using Qsi.Data;
+
+namespace Qsi.Tree
 {
     /// <summary>
     /// Specifies an expression or aliased column.
@@ -19,6 +21,11 @@
         /// Get the declared alias.
         /// </summary>
         IQsiAliasNode Alias { get; }
+
+        /// <summary>
+        /// Get the inferred column name.
+        /// </summary>
+        QsiIdentifier InferredName { get; }
 
         bool IsColumn => Column != null;
 

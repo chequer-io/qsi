@@ -251,6 +251,7 @@ namespace Qsi.Extensions
                 node.Column,
                 node.Expression,
                 node.Alias,
+                node.InferredName,
                 ignoreUserData ? null : node.UserData);
         }
 
@@ -493,6 +494,8 @@ namespace Qsi.Extensions
                 node.Parent,
                 node.Left,
                 node.JoinType,
+                node.IsNatural,
+                node.IsComma,
                 node.Right,
                 node.PivotColumns,
                 ignoreUserData ? null : node.UserData);

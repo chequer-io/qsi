@@ -288,24 +288,19 @@ namespace Qsi.PhoenixSql.Tree
 
         public static QsiTableNode VisitJoinTableNode(JoinTableNode node)
         {
-            var tableNode = new QsiJoinedTableNode
-            {
-                JoinType = node.Type switch
-                {
-                    JoinType.Inner => QsiJoinType.Inner,
-                    JoinType.Left => QsiJoinType.Left,
-                    JoinType.Right => QsiJoinType.Right,
-                    JoinType.Full => QsiJoinType.Full,
-                    JoinType.Semi => QsiJoinType.Semi,
-                    JoinType.Anti => QsiJoinType.Anti,
-                    _ => throw new ArgumentOutOfRangeException()
-                }
-            };
+            var tableNode = new QsiJoinedTableNode();
 
             tableNode.Left.SetValue(VisitTableNode(node.LHS));
             tableNode.Right.SetValue(VisitTableNode(node.RHS));
 
-            // node.OnNode
+            if (node.OnNode == null)
+            {
+                tableNode.IsComma = true;
+            }
+            else
+            {
+                tableNode.JoinType = $"{node.Type.ToString().ToUpper()} JOIN";
+            }
 
             PTree.RawNode[tableNode] = node;
 
@@ -370,11 +365,11 @@ namespace Qsi.PhoenixSql.Tree
                     sourceDerivedTableNode.Where.SetValue(ExpressionVisitor.VisitWhere(node.WhereClause));
                     sourceDerivedTableNode.Source.SetValue(tableNode);
 
-                    derivedTableNode.Source.SetValue(sourceDerivedTableNode); 
+                    derivedTableNode.Source.SetValue(sourceDerivedTableNode);
                 }
                 else
                 {
-                    derivedTableNode.Source.SetValue(tableNode);   
+                    derivedTableNode.Source.SetValue(tableNode);
                 }
             }
             else

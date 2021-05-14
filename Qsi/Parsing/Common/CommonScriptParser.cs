@@ -396,7 +396,7 @@ namespace Qsi.Parsing.Common
                 {
                     var ch = input[offset];
 
-                    if (ch == '(' || ch == ')')
+                    if (ch is '(' or ')')
                         continue;
                 }
 
