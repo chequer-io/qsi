@@ -532,15 +532,15 @@ namespace Qsi.Analyzers.Table
                 ));
             }
 
-            foreach (var pair in pivotColumns.OrderBy(p => p.Order))
+            foreach (var (_, leftColumn, rightColumn) in pivotColumns.OrderBy(p => p.Order))
             {
                 var column = joinedTable.NewColumn();
-                column.Name = pair.Left.Name;
-                column.References.Add(pair.Left);
-                column.References.Add(pair.Right);
+                column.Name = leftColumn.Name;
+                column.References.Add(leftColumn);
+                column.References.Add(rightColumn);
 
-                leftColumns.Remove(pair.Left);
-                rightColumns.Remove(pair.Right);
+                leftColumns.Remove(leftColumn);
+                rightColumns.Remove(rightColumn);
             }
 
             foreach (var leftColumn in leftColumns)
@@ -648,7 +648,7 @@ namespace Qsi.Analyzers.Table
             if (tables.Length == 0)
                 throw new QsiException(QsiError.UnknownTable, column.Path);
 
-            return tables.SelectMany(t => column.IncludeInvisibleColumns ? t.Columns : t.VisibleColumns);
+            return tables.SelectMany(t => includeInvisible ? t.Columns : t.VisibleColumns);
         }
 
         protected virtual QsiTableColumn ResolveDeclaredColumn(TableCompileContext context, IQsiDeclaredColumnNode column)
@@ -938,20 +938,6 @@ namespace Qsi.Analyzers.Table
         }
         #endregion
 
-        private class PivotColumnPair
-        {
-            public int Order { get; }
-
-            public QsiTableColumn Left { get; }
-
-            public QsiTableColumn Right { get; }
-
-            public PivotColumnPair(int order, QsiTableColumn left, QsiTableColumn right)
-            {
-                Order = order;
-                Left = left;
-                Right = right;
-            }
-        }
+        private record PivotColumnPair(int Order, QsiTableColumn Left, QsiTableColumn Right);
     }
 }
