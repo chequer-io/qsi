@@ -30,10 +30,10 @@ namespace Qsi.Oracle
             }
             catch (QsiException e) when (e.Error == QsiError.UnknownColumn || e.Error == QsiError.UnknownColumnIn)
             {
-                if (OraclePseudoColumn.Contains(column.Name[0].Value))
+                if (OraclePseudoColumn.Contains(column.Name[0].Value, out var index))
                 {
                     _pseudoTable ??= CreatePseudoTable();
-                    return _pseudoTable.Columns[0];
+                    return _pseudoTable.Columns[index];
                 }
 
                 throw;

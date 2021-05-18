@@ -25,9 +25,10 @@ namespace Qsi.Oracle
             "VERSIONS_OPERATION"
         };
 
-        public static bool Contains(string name)
+        public static bool Contains(string name, out int index)
         {
-            return Array.IndexOf(Names, name) >= 0;
+            index = Array.IndexOf(Names, name);
+            return index >= 0;
         }
     }
 }

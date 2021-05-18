@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -192,6 +192,7 @@ namespace Qsi.Analyzers.Table
                 foreach (var column in columns)
                 {
                     IEnumerable<QsiTableColumn> resolvedColumns = ResolveColumns(scopedContext, column);
+                    bool keepVisible = column is IQsiAllColumnNode;
 
                     switch (column)
                     {
@@ -221,6 +222,9 @@ namespace Qsi.Analyzers.Table
 
                                 declaredColumn.Name = c.Name;
                                 declaredColumn.References.Add(c);
+
+                                if (keepVisible)
+                                    declaredColumn.IsVisible = c.IsVisible;
                             }
 
                             break;
@@ -528,15 +532,15 @@ namespace Qsi.Analyzers.Table
                 ));
             }
 
-            foreach (var pair in pivotColumns.OrderBy(p => p.Order))
+            foreach (var (_, leftColumn, rightColumn) in pivotColumns.OrderBy(p => p.Order))
             {
                 var column = joinedTable.NewColumn();
-                column.Name = pair.Left.Name;
-                column.References.Add(pair.Left);
-                column.References.Add(pair.Right);
+                column.Name = leftColumn.Name;
+                column.References.Add(leftColumn);
+                column.References.Add(rightColumn);
 
-                leftColumns.Remove(pair.Left);
-                rightColumns.Remove(pair.Right);
+                leftColumns.Remove(leftColumn);
+                rightColumns.Remove(rightColumn);
             }
 
             foreach (var leftColumn in leftColumns)
@@ -602,7 +606,7 @@ namespace Qsi.Analyzers.Table
             switch (column)
             {
                 case IQsiAllColumnNode allColumn:
-                    return ResolveAllColumns(context, allColumn);
+                    return ResolveAllColumns(context, allColumn, false);
 
                 case IQsiDeclaredColumnNode declaredColumn:
                     return new[] { ResolveDeclaredColumn(context, declaredColumn) };
@@ -620,9 +624,11 @@ namespace Qsi.Analyzers.Table
             throw new InvalidOperationException();
         }
 
-        protected virtual IEnumerable<QsiTableColumn> ResolveAllColumns(TableCompileContext context, IQsiAllColumnNode column)
+        protected virtual IEnumerable<QsiTableColumn> ResolveAllColumns(TableCompileContext context, IQsiAllColumnNode column, bool includeInvisible)
         {
             context.ThrowIfCancellationRequested();
+
+            includeInvisible |= column.IncludeInvisibleColumns;
 
             // *
             if (column.Path == null)
@@ -630,7 +636,7 @@ namespace Qsi.Analyzers.Table
                 if (context.SourceTable == null)
                     throw new QsiException(QsiError.NoTablesUsed);
 
-                return column.IncludeInvisibleColumns ?
+                return includeInvisible ?
                     context.SourceTable.Columns :
                     context.SourceTable.VisibleColumns;
             }
@@ -642,7 +648,7 @@ namespace Qsi.Analyzers.Table
             if (tables.Length == 0)
                 throw new QsiException(QsiError.UnknownTable, column.Path);
 
-            return tables.SelectMany(t => column.IncludeInvisibleColumns ? t.Columns : t.VisibleColumns);
+            return tables.SelectMany(t => includeInvisible ? t.Columns : t.VisibleColumns);
         }
 
         protected virtual QsiTableColumn ResolveDeclaredColumn(TableCompileContext context, IQsiDeclaredColumnNode column)
@@ -816,7 +822,7 @@ namespace Qsi.Analyzers.Table
 
                         case IQsiAllColumnNode allColumnNode:
                         {
-                            foreach (var column in ResolveAllColumns(context, allColumnNode))
+                            foreach (var column in ResolveAllColumns(context, allColumnNode, true))
                                 yield return column;
 
                             break;
@@ -932,20 +938,6 @@ namespace Qsi.Analyzers.Table
         }
         #endregion
 
-        private class PivotColumnPair
-        {
-            public int Order { get; }
-
-            public QsiTableColumn Left { get; }
-
-            public QsiTableColumn Right { get; }
-
-            public PivotColumnPair(int order, QsiTableColumn left, QsiTableColumn right)
-            {
-                Order = order;
-                Left = left;
-                Right = right;
-            }
-        }
+        private record PivotColumnPair(int Order, QsiTableColumn Left, QsiTableColumn Right);
     }
 }
