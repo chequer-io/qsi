@@ -1,9 +1,10 @@
 ﻿using System;
 using Qsi.Data;
+using Qsi.Hana.Tree;
 using Qsi.Parsing.Common;
 using Qsi.Tree;
 
-namespace Qsi.Hana.Tree
+namespace Qsi.Hana
 {
     public sealed class HanaDeparser : CommonTreeDeparser
     {
@@ -20,10 +21,120 @@ namespace Qsi.Hana.Tree
             writer.Write(script.Script[range]);
         }
 
+        protected override void DeparseExpressionNode(ScriptWriter writer, IQsiExpressionNode node, QsiScript script)
+        {
+            switch (node)
+            {
+                case HanaCollateExpressionNode collate:
+                    DeparseHanaCollateExpressionNode(writer, collate, script);
+                    break;
+
+                case HanaAssociationExpressionNode associationExpression:
+                    DeparseHanaAssociationExpressionNode(writer, associationExpression, script);
+                    break;
+
+                case HanaAssociationReferenceNode associationRef:
+                    DeparseHanaAssociationReferenceNode(writer, associationRef, script);
+                    break;
+
+                default:
+                    base.DeparseExpressionNode(writer, node, script);
+                    break;
+            }
+        }
+
+        private void DeparseHanaCollateExpressionNode(ScriptWriter writer, HanaCollateExpressionNode node, QsiScript script)
+        {
+            writer.Write(node.Name);
+        }
+
+        private void DeparseHanaAssociationExpressionNode(ScriptWriter writer, HanaAssociationExpressionNode node, QsiScript script)
+        {
+            writer.WriteJoin(".", node.References, (w, r) => DeparseTreeNode(w, r, script));
+        }
+
+        private void DeparseHanaAssociationReferenceNode(ScriptWriter writer, HanaAssociationReferenceNode node, QsiScript script)
+        {
+            writer.Write(node.Identifier);
+
+            if (node.Condition != null)
+            {
+                writer.Write("[");
+
+                DeparseTreeNode(writer, node.Condition.Value, script);
+
+                if (!string.IsNullOrEmpty(node.Cardinality))
+                {
+                    writer.WriteSpace();
+                    writer.Write(node.Cardinality);
+                }
+
+                writer.Write("]");
+            }
+        }
+
+        protected override void DeparseOrderExpressionNode(ScriptWriter writer, IQsiOrderExpressionNode node, QsiScript script)
+        {
+            if (node is HanaOrderByExpressionNode hanaOrderBy)
+            {
+                DeparseTreeNode(writer, node.Expression, script);
+
+                if (!hanaOrderBy.Collate.IsEmpty)
+                {
+                    writer.WriteSpace();
+                    DeparseTreeNode(writer, hanaOrderBy.Collate.Value, script);
+                }
+
+                writer.WriteSpace();
+                writer.Write(node.Order == QsiSortOrder.Ascending ? "ASC" : "DESC");
+
+                if (hanaOrderBy.NullBehavior.HasValue)
+                {
+                    var first = hanaOrderBy.NullBehavior == HanaOrderByNullBehavior.NullsFirst;
+
+                    writer.WriteSpace();
+                    writer.Write(first ? "NULLS FIRST" : "NULLS LAST");
+                }
+
+                return;
+            }
+
+            base.DeparseOrderExpressionNode(writer, node, script);
+        }
+
+        protected override void DeparseLimitExpressionNode(ScriptWriter writer, IQsiLimitExpressionNode node, QsiScript script)
+        {
+            if (node is HanaLimitExpressionNode hanaLimit)
+            {
+                writer.Write("LIMIT ");
+                DeparseTreeNode(writer, node.Limit, script);
+
+                if (node.Offset != null)
+                {
+                    writer.WriteSpace();
+                    DeparseTreeNode(writer, node.Offset, script);
+                }
+
+                if (hanaLimit.TotalRowCount)
+                {
+                    writer.WriteSpace();
+                    writer.Write("TOTAL ROWCOUNT");
+                }
+
+                return;
+            }
+
+            base.DeparseLimitExpressionNode(writer, node, script);
+        }
+
         protected override void DeparseTableNode(ScriptWriter writer, IQsiTableNode node, QsiScript script)
         {
             switch (node)
             {
+                case HanaAssociationTableNode hanaAssociationTableNode:
+                    DeparseHanaAssociationTableNode(writer, hanaAssociationTableNode, script);
+                    break;
+
                 case HanaTableAccessNode hanaTableAccessNode:
                     DeparseHanaTableAccessNode(writer, hanaTableAccessNode, script);
                     break;
@@ -52,6 +163,24 @@ namespace Qsi.Hana.Tree
                     base.DeparseTableNode(writer, node, script);
                     break;
             }
+        }
+
+        private void DeparseHanaAssociationTableNode(ScriptWriter writer, HanaAssociationTableNode node, QsiScript script)
+        {
+            // tableName
+            writer.Write(node.Identifier);
+
+            // [condition]
+            if (!node.Condition.IsEmpty)
+            {
+                writer.Write('[');
+                DeparseTreeNode(writer, node.Condition.Value, script);
+                writer.Write(']');
+            }
+
+            writer.Write(':');
+
+            DeparseTreeNode(writer, node.Expression.Value, script);
         }
 
         // tableRef
@@ -185,7 +314,7 @@ namespace Qsi.Hana.Tree
 
             writer.WriteSpace();
             writer.Write("THEN RETURN (");
-            writer.WriteJoin(", ", node.Columns.Value.Columns);
+            writer.WriteJoin(", ", node.Columns.Value.Columns, (w, c) => DeparseTreeNode(w, c, script));
             writer.Write(") FROM ");
 
             DeparseTreeNode(writer, node.Source.Value, script);
@@ -198,7 +327,7 @@ namespace Qsi.Hana.Tree
         private void DeparseHanaCaseJoinElseTableNode(ScriptWriter writer, HanaCaseJoinElseTableNode node, QsiScript script)
         {
             writer.Write("ELSE RETURN (");
-            writer.WriteJoin(", ", node.Columns.Value.Columns);
+            writer.WriteJoin(", ", node.Columns.Value.Columns, (w, c) => DeparseTreeNode(w, c, script));
             writer.Write(") FROM ");
 
             DeparseTreeNode(writer, node.Source.Value, script);
@@ -213,12 +342,6 @@ namespace Qsi.Hana.Tree
             writer.Write("LATERAL (");
             DeparseTreeNode(writer, node.Source.Value, script);
             writer.Write(")");
-
-            if (!node.Alias.IsEmpty)
-            {
-                writer.WriteSpace();
-                DeparseTreeNode(writer, node.Alias.Value, script);
-            }
         }
     }
 }

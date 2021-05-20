@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
+using System.Runtime.CompilerServices;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
 using Qsi.Data;
@@ -40,7 +39,7 @@ namespace Qsi.Hana.Tree.Visitors
             return subqueryNode;
         }
 
-        private static QsiTableDirectivesNode VisitWithClause(WithClauseContext context)
+        public static QsiTableDirectivesNode VisitWithClause(WithClauseContext context)
         {
             var node = new QsiTableDirectivesNode();
 
@@ -51,7 +50,7 @@ namespace Qsi.Hana.Tree.Visitors
             return node;
         }
 
-        private static QsiDerivedTableNode VisitWithListElement(WithListElementContext context)
+        public static QsiDerivedTableNode VisitWithListElement(WithListElementContext context)
         {
             var node = new QsiDerivedTableNode();
 
@@ -73,14 +72,14 @@ namespace Qsi.Hana.Tree.Visitors
             return node;
         }
 
-        private static QsiColumnsDeclarationNode VisitColumnListClause(ColumnListClauseContext context)
+        public static QsiColumnsDeclarationNode VisitColumnListClause(ColumnListClauseContext context)
         {
             var node = VisitColumnList(context.list);
             HanaTree.PutContextSpan(node, context);
             return node;
         }
 
-        private static QsiColumnsDeclarationNode VisitColumnList(ColumnListContext context)
+        public static QsiColumnsDeclarationNode VisitColumnList(ColumnListContext context)
         {
             var node = new QsiColumnsDeclarationNode();
 
@@ -90,7 +89,7 @@ namespace Qsi.Hana.Tree.Visitors
             return node;
         }
 
-        private static QsiColumnNode VisitColumnName(ColumnNameContext context)
+        public static QsiColumnNode VisitColumnName(ColumnNameContext context)
         {
             var node = new QsiDeclaredColumnNode
             {
@@ -102,7 +101,7 @@ namespace Qsi.Hana.Tree.Visitors
             return node;
         }
 
-        private static QsiColumnNode VisitFieldName(FieldNameContext context)
+        public static QsiColumnNode VisitFieldName(FieldNameContext context)
         {
             var node = new QsiDeclaredColumnNode
             {
@@ -114,7 +113,7 @@ namespace Qsi.Hana.Tree.Visitors
             return node;
         }
 
-        private static HanaDerivedTableNode VisitSubquery(SubqueryContext context)
+        public static HanaDerivedTableNode VisitSubquery(SubqueryContext context)
         {
             if (context.inner != null)
                 return VisitSelectStatement(context.inner);
@@ -133,17 +132,17 @@ namespace Qsi.Hana.Tree.Visitors
             // TODO: set
 
             if (context.orderBy != null)
-                node.Order.SetValue(VisitOrderByClause(context.orderBy));
+                node.Order.SetValue(ExpressionVisitor.VisitOrderByClause(context.orderBy));
 
             if (context.limit != null)
-                node.Limit.SetValue(VisitLimitClause(context.limit));
+                node.Limit.SetValue(ExpressionVisitor.VisitLimitClause(context.limit));
 
             HanaTree.PutContextSpan(node, context);
 
             return node;
         }
 
-        private static QsiColumnsDeclarationNode VisitSelectClause(HanaDerivedTableNode tableNode, SelectClauseContext context)
+        public static QsiColumnsDeclarationNode VisitSelectClause(HanaDerivedTableNode tableNode, SelectClauseContext context)
         {
             var offset = 1;
             var topClause = context.topClause();
@@ -168,7 +167,7 @@ namespace Qsi.Hana.Tree.Visitors
             return VisitSelectList(context.selectList());
         }
 
-        private static QsiColumnsDeclarationNode VisitSelectList(SelectListContext context)
+        public static QsiColumnsDeclarationNode VisitSelectList(SelectListContext context)
         {
             var node = new QsiColumnsDeclarationNode();
 
@@ -178,7 +177,7 @@ namespace Qsi.Hana.Tree.Visitors
             return node;
         }
 
-        private static QsiColumnNode VisitSelectItem(SelectItemContext context)
+        public static QsiColumnNode VisitSelectItem(SelectItemContext context)
         {
             switch (context)
             {
@@ -196,7 +195,7 @@ namespace Qsi.Hana.Tree.Visitors
             }
         }
 
-        private static QsiColumnNode VisitExprItem(ExprItemContext context)
+        public static QsiColumnNode VisitExprItem(ExprItemContext context)
         {
             var expressionNode = ExpressionVisitor.VisitExpression(context.expression());
             var aliasNode = context.alias() != null ? VisitAlias(context.alias()) : null;
@@ -207,7 +206,7 @@ namespace Qsi.Hana.Tree.Visitors
             return node;
         }
 
-        private static QsiColumnNode VisitAssociationExprItem(AssociationExprItemContext context)
+        public static QsiColumnNode VisitAssociationExprItem(AssociationExprItemContext context)
         {
             var expressionNode = ExpressionVisitor.VisitAssociationExpression(context.associationExpression());
             var aliasNode = context.alias() != null ? VisitAlias(context.alias()) : null;
@@ -218,7 +217,7 @@ namespace Qsi.Hana.Tree.Visitors
             return node;
         }
 
-        private static QsiColumnNode CreateSelectItem(ParserRuleContext context, QsiExpressionNode expressionNode, QsiAliasNode aliasNode)
+        public static QsiColumnNode CreateSelectItem(ParserRuleContext context, QsiExpressionNode expressionNode, QsiAliasNode aliasNode)
         {
             if (expressionNode is QsiColumnExpressionNode columnExpression)
             {
@@ -247,7 +246,7 @@ namespace Qsi.Hana.Tree.Visitors
             }
         }
 
-        private static QsiColumnNode VisitWildcardItem(WildcardItemContext context)
+        public static QsiColumnNode VisitWildcardItem(WildcardItemContext context)
         {
             var node = new QsiAllColumnNode();
             var tableName = context.tableName();
@@ -260,12 +259,12 @@ namespace Qsi.Hana.Tree.Visitors
             return node;
         }
 
-        private static ulong VisitTopClause(TopClauseContext context)
+        public static ulong VisitTopClause(TopClauseContext context)
         {
             return ulong.Parse(context.top.Text);
         }
 
-        private static QsiTableNode VisitFromClause(FromClauseContext context)
+        public static QsiTableNode VisitFromClause(FromClauseContext context)
         {
             QsiTableNode[] sources = context._tables
                 .Select(VisitTableExpression)
@@ -298,14 +297,32 @@ namespace Qsi.Hana.Tree.Visitors
         }
 
         #region TableExpression
-        private static QsiTableNode VisitTableExpression(TableExpressionContext context)
+        public static QsiTableNode VisitTableExpression(TableExpressionContext context)
         {
             var child = context.children[0];
 
             switch (child)
             {
                 case TableRefContext tableRef:
-                    return VisitTableRef(tableRef);
+                {
+                    var left = VisitTableRef(tableRef);
+
+                    if (context.crossJoin != null)
+                    {
+                        var node = new QsiJoinedTableNode
+                        {
+                            Left = { Value = left },
+                            Right = { Value = VisitTableRef(context.crossJoin) },
+                            JoinType = "CROSS JOIN"
+                        };
+
+                        HanaTree.PutContextSpan(node, context);
+
+                        return node;
+                    }
+
+                    return left;
+                }
 
                 case SubqueryTableExpressionContext subqueryTableExpression:
                     return VisitSubqueryTableExpression(subqueryTableExpression);
@@ -353,7 +370,7 @@ namespace Qsi.Hana.Tree.Visitors
             }
         }
 
-        private static QsiTableNode VisitTableRef(TableRefContext context)
+        public static QsiTableNode VisitTableRef(TableRefContext context)
         {
             QsiTableNode node = new HanaTableAccessNode
             {
@@ -388,7 +405,7 @@ namespace Qsi.Hana.Tree.Visitors
             return node;
         }
 
-        private static QsiAliasNode VisitAlias(AliasContext context)
+        public static QsiAliasNode VisitAlias(AliasContext context)
         {
             var node = new QsiAliasNode
             {
@@ -400,7 +417,7 @@ namespace Qsi.Hana.Tree.Visitors
             return node;
         }
 
-        private static QsiTableNode VisitSubqueryTableExpression(SubqueryTableExpressionContext context)
+        public static QsiTableNode VisitSubqueryTableExpression(SubqueryTableExpressionContext context)
         {
             var node = VisitSubquery(context.subquery());
             var alias = context.alias() != null ? VisitAlias(context.alias()) : null;
@@ -411,7 +428,7 @@ namespace Qsi.Hana.Tree.Visitors
             return node;
         }
 
-        private static HanaCaseJoinTableNode VisitCaseJoin(CaseJoinContext context)
+        public static HanaCaseJoinTableNode VisitCaseJoin(CaseJoinContext context)
         {
             var node = new HanaCaseJoinTableNode();
             var elseClause = context.caseJoinElseClause();
@@ -431,7 +448,7 @@ namespace Qsi.Hana.Tree.Visitors
             return node;
         }
 
-        private static HanaCaseJoinWhenTableNode VisitCaseJoinWhenClause(CaseJoinWhenClauseContext context)
+        public static HanaCaseJoinWhenTableNode VisitCaseJoinWhenClause(CaseJoinWhenClauseContext context)
         {
             var node = new HanaCaseJoinWhenTableNode();
 
@@ -445,7 +462,7 @@ namespace Qsi.Hana.Tree.Visitors
             return node;
         }
 
-        private static HanaCaseJoinElseTableNode VisitCaseJoinElseClause(CaseJoinElseClauseContext context)
+        public static HanaCaseJoinElseTableNode VisitCaseJoinElseClause(CaseJoinElseClauseContext context)
         {
             var node = new HanaCaseJoinElseTableNode();
 
@@ -458,7 +475,7 @@ namespace Qsi.Hana.Tree.Visitors
             return node;
         }
 
-        private static QsiTableNode VisitLateralTableExpression(LateralTableExpressionContext context)
+        public static QsiTableNode VisitLateralTableExpression(LateralTableExpressionContext context)
         {
             var subquery = context.subquery();
             var functionExpression = context.functionExpression();
@@ -466,40 +483,67 @@ namespace Qsi.Hana.Tree.Visitors
             if (functionExpression != null)
                 throw TreeHelper.NotSupportedFeature("Table function");
 
-            var node = new HanaLateralTableNode();
+            QsiTableNode node = new HanaLateralTableNode
+            {
+                Source =
+                {
+                    Value = VisitSubquery(subquery)
+                }
+            };
 
-            node.Source.SetValue(VisitSubquery(subquery));
-
-            if (context.alias() != null)
-                node.Alias.SetValue(VisitAlias(context.alias()));
+            if (context.TryGetRuleContext<AliasContext>(out var alias))
+                node = TreeHelper.CreateAliasedTableNode(node, IdentifierVisitor.VisitIdentifier(alias.name));
 
             HanaTree.PutContextSpan(node, context);
 
             return node;
         }
 
-        private static QsiTableNode VisitCollectionDerivedTable(CollectionDerivedTableContext context)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static QsiTableNode VisitTableFunctionExpression(TableFunctionExpressionContext context)
+        public static QsiTableNode VisitCollectionDerivedTable(CollectionDerivedTableContext context)
         {
             throw TreeHelper.NotSupportedFeature("Table function");
         }
 
-        private static QsiTableNode VisitVariableTable(VariableTableContext context)
+        public static QsiTableNode VisitTableFunctionExpression(TableFunctionExpressionContext context)
+        {
+            throw TreeHelper.NotSupportedFeature("Table function");
+        }
+
+        public static QsiTableNode VisitVariableTable(VariableTableContext context)
         {
             throw TreeHelper.NotSupportedFeature("Table variable");
         }
 
-        private static QsiTableNode VisitAssociationTableExpression(AssociationTableExpressionContext context)
+        public static QsiTableNode VisitAssociationTableExpression(AssociationTableExpressionContext context)
         {
-            throw new NotImplementedException();
+            var node = Visit(context);
+
+            if (context.TryGetRuleContext<AliasContext>(out var alias))
+                node = TreeHelper.CreateAliasedTableNode(node, IdentifierVisitor.VisitIdentifier(alias.name));
+
+            return node;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            static QsiTableNode Visit(AssociationTableExpressionContext context)
+            {
+                var node = new HanaAssociationTableNode
+                {
+                    Identifier = IdentifierVisitor.VisitTableName(context.tableName())
+                };
+
+                if (context.TryGetRuleContext<ConditionContext>(out var condition))
+                    node.Condition.SetValue(ExpressionVisitor.VisitCondition(condition));
+
+                node.Expression.SetValue(ExpressionVisitor.VisitAssociationExpression(context.associationExpression()));
+
+                HanaTree.PutContextSpan(node, context);
+
+                return node;
+            }
         }
         #endregion
 
-        private static QsiWhereExpressionNode VisitWhereClause(WhereClauseContext context)
+        public static QsiWhereExpressionNode VisitWhereClause(WhereClauseContext context)
         {
             var node = new QsiWhereExpressionNode();
 
@@ -509,7 +553,7 @@ namespace Qsi.Hana.Tree.Visitors
             return node;
         }
 
-        private static QsiGroupingExpressionNode VisitGroupByClause(GroupByClauseContext context)
+        public static QsiGroupingExpressionNode VisitGroupByClause(GroupByClauseContext context)
         {
             var node = new QsiGroupingExpressionNode();
             var groupByExpressionList = context.groupByExpressionList();
@@ -521,12 +565,7 @@ namespace Qsi.Hana.Tree.Visitors
                     case TableExpressionContext:
                     case GroupingSetContext:
                     {
-                        var expressionNode = new QsiLiteralExpressionNode
-                        {
-                            Type = QsiDataType.Raw,
-                            Value = child.GetInputText()
-                        };
-
+                        var expressionNode = TreeHelper.Fragment(child.GetInputText());
                         HanaTree.PutContextSpan(expressionNode, child);
                         node.Items.Add(expressionNode);
                         break;
@@ -542,70 +581,17 @@ namespace Qsi.Hana.Tree.Visitors
             return node;
         }
 
-        private static QsiMultipleOrderExpressionNode VisitOrderByClause(TableOrderByClauseContext context)
-        {
-            var node = new QsiMultipleOrderExpressionNode();
-
-            node.Orders.AddRange(context._orders.Select(VisitTableOrderByExpression));
-            HanaTree.PutContextSpan(node, context);
-
-            return node;
-        }
-
-        private static HanaOrderByExpressionNode VisitTableOrderByExpression(TableOrderByExpressionContext context)
-        {
-            var node = new HanaOrderByExpressionNode();
-            var collateClause = context.collateClause();
-
-            if (context.field != null)
-            {
-                var expressioNode = new QsiColumnExpressionNode();
-
-                expressioNode.Column.SetValue(VisitFieldName(context.field));
-                HanaTree.PutContextSpan(expressioNode, context.field);
-
-                node.Expression.SetValue(expressioNode);
-            }
-            else
-            {
-                node.Expression.SetValue(ExpressionVisitor.VisitUnsignedInteger(context.position));
-            }
-
-            if (collateClause != null)
-                node.Collate.SetValue(ExpressionVisitor.VisitCollateClause(collateClause));
-
-            node.Order = context.HasToken(K_ASC) ? QsiSortOrder.Ascending : QsiSortOrder.Descending;
-
-            if (context.children[^1] is ITerminalNode terminalNode)
-            {
-                node.NullBehavior = terminalNode switch
-                {
-                    { Symbol: { Type: K_FIRST } } => HanaOrderByNullBehavior.NullsFirst,
-                    { Symbol: { Type: K_LAST } } => HanaOrderByNullBehavior.NullsLast,
-                    _ => null
-                };
-            }
-
-            HanaTree.PutContextSpan(node, context);
-
-            return node;
-        }
-
-        private static QsiLimitExpressionNode VisitLimitClause(LimitClauseContext context)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static HanaTableBehaviorNode VisitForClause(ForClauseContext context)
+        public static HanaTableBehaviorNode VisitForClause(ForClauseContext context)
         {
             throw new NotImplementedException();
         }
 
         // TODO: case expression contains comment
-        private static QsiIdentifier GetInferredName(ParserRuleContext context)
+        public static QsiIdentifier GetInferredName(ParserRuleContext context)
         {
-            var text = Regex.Replace(context.GetInputText(), @"\s+", string.Empty);
-            return new QsiIdentifier(text.ToUpper(), false);
+            // var text = Regex.Replace(context.GetInputText(), @"\s+", string.Empty);
+            // return new QsiIdentifier(text.ToUpper(), false);
+            return null;
         }
     }
 }

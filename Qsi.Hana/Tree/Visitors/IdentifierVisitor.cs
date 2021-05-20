@@ -29,5 +29,10 @@ namespace Qsi.Hana.Tree.Visitors
         {
             return new(context.identifier().Select(VisitIdentifier));
         }
+
+        public static QsiQualifiedIdentifier VisitFunctionName(FunctionNameContext context)
+        {
+            return new(context.identifier().Select(VisitIdentifier));
+        }
     }
 }

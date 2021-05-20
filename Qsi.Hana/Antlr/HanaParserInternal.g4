@@ -469,7 +469,7 @@ expression
     | windowExpression                      #windowExpr
     | aggregateExpression                   #aggExpr
     | dataTypeConversionExpression          #conversionExpr
-    | datetimeExpression                    #datetimeExpr
+    | dateTimeExpression                    #dateTimeExpr
     | functionExpression                    #functionExpr
     | '(' expression ')'                    #parenthesisExpr
     | '(' subquery ')'                      #subqueryExpr
@@ -484,7 +484,7 @@ expression
     ;
 
 expressionList
-    : expression (',' expression)*
+    : list+=expression (',' list+=expression)*
     ;
 
 caseExpression
@@ -493,14 +493,14 @@ caseExpression
     ;
 
 simpleCaseExpression
-    : K_CASE expression
+    : K_CASE case=expression
           (K_WHEN when+=expression K_THEN then+=expression)+
           (K_ELSE else=expression)?
       K_END
     ;
 
 searchCaseExpression
-    : K_CASE 
+    : K_CASE
           (K_WHEN when+=condition K_THEN then+=expression)+
           (K_ELSE else=expression)?
       K_END
@@ -522,7 +522,7 @@ functionExpression
     ;
 
 functionName
-    : ((db=identifier '.')? schema=identifier '.')? function=identifier
+    : identifier ('.' identifier ('.' identifier ('.' identifier)?)?)?
     ;
 
 aggregateExpression
@@ -743,8 +743,17 @@ dataType
     | K_DAYDATE
     ;
 
-datetimeExpression
-    : K_EXTRACT '(' (K_YEAR | K_MONTH | K_DAY | K_HOUR | K_MINUTE | K_SECOND) K_FROM expression ')'
+dateTimeExpression
+    : K_EXTRACT '(' dateTimeKind K_FROM expression ')'
+    ;
+
+dateTimeKind
+    : K_YEAR
+    | K_MONTH
+    | K_DAY
+    | K_HOUR
+    | K_MINUTE
+    | K_SECOND
     ;
 
 jsonExpression
@@ -847,7 +856,7 @@ stringExpression
         (K_FROM start=UNSIGNED_INTEGER)?
         (K_OCCURRENCE occurrence=(UNSIGNED_INTEGER | K_ALL))?
      ')'                                                      #replaceRegexprExpr
-    |  K_TRIM '('
+    | K_TRIM '('
         ((K_LEADING | K_TRAILING | K_BOTH)? char=STRING_LITERAL K_FROM)?
         input=expression
      ')'                                                      #trimExpr
@@ -1028,7 +1037,7 @@ existsPredicate
     ;
 
 inPredicate
-    : source=expression K_NOT? K_IN (expressionList | subquery)
+    : source=expression K_NOT? K_IN (value1=expressionList | value2=subquery)
     ;
 
 likePredicate

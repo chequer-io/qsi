@@ -17,6 +17,28 @@ namespace Qsi.Utilities
             return node;
         }
 
+        public static QsiDerivedTableNode CreateAliasedTableNode(QsiTableNode node, QsiIdentifier alias)
+        {
+            return new()
+            {
+                Source =
+                {
+                    Value = node
+                },
+                Alias =
+                {
+                    Value = new QsiAliasNode
+                    {
+                        Name = alias
+                    }
+                },
+                Columns =
+                {
+                    Value = CreateAllColumnsDeclaration()
+                }
+            };
+        }
+
         public static QsiBinaryExpressionNode CreateBinaryExpression<TContext>(
             string @operator,
             TContext left,
@@ -138,6 +160,11 @@ namespace Qsi.Utilities
             };
         }
         #endregion
+
+        public static QsiExpressionFragmentNode Fragment(string value)
+        {
+            return new() { Value = value };
+        }
 
         public static QsiException NotSupportedTree(object tree)
         {
