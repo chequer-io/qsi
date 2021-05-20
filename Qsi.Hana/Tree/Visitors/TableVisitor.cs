@@ -63,38 +63,59 @@ namespace Qsi.Hana.Tree.Visitors
 
             node.Columns.SetValue(
                 columnListClause != null ?
-                    VisitColumnListClause(columnListClause) :
+                    VisitColumnListClause(columnListClause, QsiSequentialColumnType.Default) :
                     TreeHelper.CreateAllColumnsDeclaration()
             );
 
+            node.Source.SetValue(VisitSubquery(context.subquery()));
+
             HanaTree.PutContextSpan(node, context);
 
             return node;
         }
 
-        public static QsiColumnsDeclarationNode VisitColumnListClause(ColumnListClauseContext context)
+        public static QsiColumnsDeclarationNode VisitColumnListClause(ColumnListClauseContext context, QsiSequentialColumnType? sequence)
         {
-            var node = VisitColumnList(context.list);
+            var node = VisitColumnList(context.list, sequence);
             HanaTree.PutContextSpan(node, context);
             return node;
         }
 
-        public static QsiColumnsDeclarationNode VisitColumnList(ColumnListContext context)
+        public static QsiColumnsDeclarationNode VisitColumnList(ColumnListContext context, QsiSequentialColumnType? sequence)
         {
             var node = new QsiColumnsDeclarationNode();
 
-            node.Columns.AddRange(context._columns.Select(VisitColumnName));
+            node.Columns.AddRange(context._columns.Select(c => VisitColumnName(c, sequence)));
             HanaTree.PutContextSpan(node, context);
 
             return node;
         }
 
-        public static QsiColumnNode VisitColumnName(ColumnNameContext context)
+        public static QsiColumnNode VisitColumnName(ColumnNameContext context, QsiSequentialColumnType? sequence = null)
         {
-            var node = new QsiDeclaredColumnNode
+            QsiColumnNode node;
+
+            if (sequence.HasValue)
             {
-                Name = new QsiQualifiedIdentifier(IdentifierVisitor.VisitColumnName(context))
-            };
+                node = new QsiSequentialColumnNode
+                {
+                    ColumnType = sequence.Value,
+                    Alias =
+                    {
+                        Value = new QsiAliasNode
+                        {
+                            Name = IdentifierVisitor.VisitColumnName(context)
+                        }
+                    }
+                };
+            }
+            else
+            {
+                node = new QsiDeclaredColumnNode
+                {
+                    Name = new QsiQualifiedIdentifier(IdentifierVisitor.VisitColumnName(context))
+                };
+            }
 
             HanaTree.PutContextSpan(node, context);
 
@@ -453,7 +474,7 @@ namespace Qsi.Hana.Tree.Visitors
             var node = new HanaCaseJoinWhenTableNode();
 
             node.Condition.SetValue(ExpressionVisitor.VisitCondition(context.condition()));
-            node.Columns.SetValue(VisitColumnListClause(context.columnListClause()));
+            node.Columns.SetValue(VisitColumnListClause(context.columnListClause(), null));
             node.Source.SetValue(VisitTableRef(context.tableRef()));
             node.Predicate.SetValue(ExpressionVisitor.VisitPredicate(context.predicate()));
 
@@ -466,7 +487,7 @@ namespace Qsi.Hana.Tree.Visitors
         {
             var node = new HanaCaseJoinElseTableNode();
 
-            node.Columns.SetValue(VisitColumnListClause(context.columnListClause()));
+            node.Columns.SetValue(VisitColumnListClause(context.columnListClause(), null));
             node.Source.SetValue(VisitTableRef(context.tableRef()));
             node.Predicate.SetValue(ExpressionVisitor.VisitPredicate(context.predicate()));
 

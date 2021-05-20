@@ -911,11 +911,11 @@ namespace Qsi.Hana.Tree.Visitors
             switch (context.columns.children[0])
             {
                 case ColumnListClauseContext columnListClause:
-                    columnNodes = columnListClause.list._columns.Select(TableVisitor.VisitColumnName);
+                    columnNodes = columnListClause.list._columns.Select(c => TableVisitor.VisitColumnName(c));
                     break;
 
                 case ColumnListContext columnList:
-                    columnNodes = columnList._columns.Select(TableVisitor.VisitColumnName);
+                    columnNodes = columnList._columns.Select(c => TableVisitor.VisitColumnName(c));
                     break;
 
                 default:

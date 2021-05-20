@@ -1,4 +1,7 @@
-﻿using Qsi.Analyzers;
+﻿using System.Collections.Generic;
+using Qsi.Analyzers;
+using Qsi.Analyzers.Action;
+using Qsi.Hana.Analyzers;
 using Qsi.Hana.Tree;
 using Qsi.Parsing;
 using Qsi.Parsing.Common;
@@ -26,6 +29,12 @@ namespace Qsi.Hana
         public override QsiAnalyzerOptions CreateAnalyzerOptions()
         {
             return new();
+        }
+
+        public override IEnumerable<QsiAnalyzerBase> CreateAnalyzers(QsiEngine engine)
+        {
+            yield return new QsiActionAnalyzer(engine);
+            yield return new HanaTableAnalyzer(engine);
         }
     }
 }
