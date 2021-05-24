@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Text.Json;
 using Qsi.Data;
 using Qsi.Hana.Tree;
 using Qsi.Parsing.Common;
 using Qsi.Tree;
+using Qsi.Utilities;
 
 namespace Qsi.Hana
 {
@@ -14,11 +16,116 @@ namespace Qsi.Hana
 
             if (Equals(range, default(Range)))
             {
-                base.DeparseTreeNode(writer, node, script);
+                switch (node)
+                {
+                    case HanaTableShareLockBehaviorNode shareLock:
+                        DeparseHanaTableShareLockBehaviorNode(writer, shareLock, script);
+                        break;
+
+                    case HanaTableUpdateBehaviorNode update:
+                        DeparseHanaTableUpdateBehaviorNode(writer, update, script);
+                        break;
+
+                    case HanaTableSerializeBehaviorNode serialize:
+                        DeparseHanaTableSerializeBehaviorNode(writer, serialize, script);
+                        break;
+
+                    case HanaTableSystemTimeBehaviorNode systemTime:
+                        DeparseHanaTableSystemTimeBehaviorNode(writer, systemTime, script);
+                        break;
+
+                    case HanaTableApplicationTimeBehaviorNode applicationTime:
+                        DeparseHanaTableApplicationTimeBehaviorNode(writer, applicationTime, script);
+                        break;
+
+                    default:
+                        base.DeparseTreeNode(writer, node, script);
+                        break;
+                }
+
                 return;
             }
 
             writer.Write(script.Script[range]);
+        }
+
+        private void DeparseHanaTableShareLockBehaviorNode(ScriptWriter writer, HanaTableShareLockBehaviorNode node, QsiScript script)
+        {
+            writer.Write("FOR SHARE LOCK");
+        }
+
+        private void DeparseHanaTableUpdateBehaviorNode(ScriptWriter writer, HanaTableUpdateBehaviorNode node, QsiScript script)
+        {
+            writer.Write("FOR UPDATE");
+
+            if (!node.Columns.IsEmpty)
+            {
+                writer.Write(" (");
+                DeparseTreeNode(writer, node.Columns.Value, script);
+                writer.Write(')');
+            }
+
+            if (node.WaitTime.HasValue)
+            {
+                writer.WriteSpace();
+                writer.Write(node.WaitTime.Value == -1 ? "NOWAIT" : $"WAIT {node.WaitTime}");
+            }
+
+            if (node.IgnoreLocked)
+                writer.Write(" IGNORE LOCKED");
+        }
+
+        private void DeparseHanaTableSerializeBehaviorNode(ScriptWriter writer, HanaTableSerializeBehaviorNode node, QsiScript script)
+        {
+            writer.Write("FOR ").Write(node.Type == HanaTableSerializeType.Json ? "JSON" : "XML");
+
+            if (node.Options.Count > 0)
+            {
+                writer.Write(" (");
+
+                writer.WriteJoin(", ", node.Options, (w, n) =>
+                {
+                    w.Write(IdentifierUtility.Escape(n.Key, EscapeQuotes.Single, EscapeBehavior.TwoTime));
+                    w.Write('=');
+                    w.Write(IdentifierUtility.Escape(n.Value, EscapeQuotes.Single, EscapeBehavior.TwoTime));
+                });
+
+                writer.Write(')');
+            }
+
+            if (!string.IsNullOrEmpty(node.ReturnType))
+                writer.Write(" RETURNS ").Write(node.ReturnType);
+        }
+
+        private void DeparseHanaTableSystemTimeBehaviorNode(ScriptWriter writer, HanaTableSystemTimeBehaviorNode node, QsiScript script)
+        {
+            writer.Write("FOR SYSTEM_TIME ");
+
+            if (node.FromTo.HasValue)
+            {
+                writer.Write("FROM ");
+                writer.Write(IdentifierUtility.Escape(node.FromTo.Value.Item1, EscapeQuotes.Single, EscapeBehavior.TwoTime));
+                writer.Write("TO ");
+                writer.Write(IdentifierUtility.Escape(node.FromTo.Value.Item2, EscapeQuotes.Single, EscapeBehavior.TwoTime));
+            }
+            else if (node.Between.HasValue)
+            {
+                writer.Write("BETWEEN ");
+                writer.Write(IdentifierUtility.Escape(node.Between.Value.Item1, EscapeQuotes.Single, EscapeBehavior.TwoTime));
+                writer.Write("AND ");
+                writer.Write(IdentifierUtility.Escape(node.Between.Value.Item2, EscapeQuotes.Single, EscapeBehavior.TwoTime));
+            }
+            else
+            {
+                writer.Write("AS OF ");
+                writer.Write(IdentifierUtility.Escape(node.Time, EscapeQuotes.Single, EscapeBehavior.TwoTime));
+            }
+        }
+
+        private void DeparseHanaTableApplicationTimeBehaviorNode(ScriptWriter writer, HanaTableApplicationTimeBehaviorNode node, QsiScript script)
+        {
+            writer.Write("FOR APPLICATION_TIME AS OF ");
+            writer.Write(IdentifierUtility.Escape(node.Time, EscapeQuotes.Single, EscapeBehavior.TwoTime));
         }
 
         protected override void DeparseExpressionNode(ScriptWriter writer, IQsiExpressionNode node, QsiScript script)
@@ -189,16 +296,10 @@ namespace Qsi.Hana
             // tableName
             writer.Write(node.Identifier);
 
-            // (forSystemTime | forApplicationTimePeriod)?
-            if (!string.IsNullOrWhiteSpace(node.ForSystemTime))
+            if (!node.Behavior.IsEmpty)
             {
                 writer.WriteSpace();
-                writer.Write(node.ForSystemTime);
-            }
-            else if (!string.IsNullOrWhiteSpace(node.ForApplicationTime))
-            {
-                writer.WriteSpace();
-                writer.Write(node.ForApplicationTime);
+                DeparseTreeNode(writer, node.Behavior.Value, script);
             }
 
             // partitionRestriction?

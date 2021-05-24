@@ -74,9 +74,6 @@ namespace Qsi.Hana.Tree.Visitors
             if (context.offset != null)
                 node.Offset.SetValue(VisitUnsignedInteger(context.offset));
 
-            // WARN: Skip
-            //  - TOTAL ROWCOUNT
-
             HanaTree.PutContextSpan(node, context);
 
             return node;
@@ -280,7 +277,15 @@ namespace Qsi.Hana.Tree.Visitors
 
         public static QsiExpressionNode VisitWindowSeriesExpr(WindowSeriesExprContext context)
         {
-            throw new NotImplementedException();
+            // WARN: Skip
+            //  - windowSpecification
+
+            return VisitSeriesExpression(context.seriesExpression());
+        }
+
+        public static QsiExpressionNode VisitSeriesExpression(SeriesExpressionContext context)
+        {
+            throw TreeHelper.NotSupportedFeature("SERIES Expression");
         }
 
         public static QsiExpressionNode VisitAggregateExpression(AggregateExpressionContext context)

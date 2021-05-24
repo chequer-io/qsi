@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Antlr4.Runtime;
@@ -393,37 +394,45 @@ namespace Qsi.Hana.Tree.Visitors
 
         public static QsiTableNode VisitTableRef(TableRefContext context)
         {
-            QsiTableNode node = new HanaTableAccessNode
+            var node = new HanaTableAccessNode
             {
                 Identifier = IdentifierVisitor.VisitTableName(context.tableName()),
-                ForSystemTime = context.forSystemTime()?.GetInputText(),
-                ForApplicationTime = context.forApplicationTimePeriod()?.GetInputText(),
                 Partition = context.partitionRestriction()?.GetInputText()
             };
+
+            if (context.TryGetRuleContext<ForSystemTimeContext>(out var forSystemTime))
+            {
+                node.Behavior.SetValue(VisitForSystemTime(forSystemTime));
+            }
+            else if (context.TryGetRuleContext<ForApplicationTimePeriodContext>(out var forApplicationTimePeriod))
+            {
+                node.Behavior.SetValue(VisitForApplicationTimePeriod(forApplicationTimePeriod));
+            }
 
             var alias = context.alias();
             var sampling = context.tableSampleClause();
 
-            if (alias != null || sampling != null)
+            if (alias == null && sampling == null)
             {
-                HanaTree.PutContextSpan(node, context.Start, alias?.Start ?? sampling?.Start);
-
-                var derivedNode = new HanaDerivedTableNode();
-                derivedNode.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
-                derivedNode.Source.SetValue(node);
-
-                if (alias != null)
-                    derivedNode.Alias.SetValue(VisitAlias(alias));
-
-                if (sampling != null)
-                    derivedNode.Sampling = sampling.GetInputText();
-
-                node = derivedNode;
+                HanaTree.PutContextSpan(node, context);
+                return node;
             }
 
-            HanaTree.PutContextSpan(node, context);
+            HanaTree.PutContextSpan(node, context.Start, alias?.Start ?? sampling?.Start);
 
-            return node;
+            var derivedNode = new HanaDerivedTableNode();
+            derivedNode.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+            derivedNode.Source.SetValue(node);
+
+            if (alias != null)
+                derivedNode.Alias.SetValue(VisitAlias(alias));
+
+            if (sampling != null)
+                derivedNode.Sampling = sampling.GetInputText();
+
+            HanaTree.PutContextSpan(derivedNode, context);
+
+            return derivedNode;
         }
 
         public static QsiAliasNode VisitAlias(AliasContext context)
@@ -604,7 +613,135 @@ namespace Qsi.Hana.Tree.Visitors
 
         public static HanaTableBehaviorNode VisitForClause(ForClauseContext context)
         {
-            throw new NotImplementedException();
+            switch (context)
+            {
+                case ForShareLockClauseContext forShareLock:
+                    return VisitForShareLockClause(forShareLock);
+
+                case ForUpdateOfClauseContext forUpdateOf:
+                    return VisitForUpdateOfClause(forUpdateOf);
+
+                case ForJsonXmlClauseContext forJsonXml:
+                    return VisitForJsonXmlClause(forJsonXml);
+
+                case ForSystemTimeClauseContext forSystemTime:
+                    return VisitForSystemTime(forSystemTime.forSystemTime());
+
+                default:
+                    throw TreeHelper.NotSupportedTree(context);
+            }
+        }
+
+        public static HanaTableBehaviorNode VisitForShareLockClause(ForShareLockClauseContext context)
+        {
+            var node = new HanaTableShareLockBehaviorNode();
+            HanaTree.PutContextSpan(node, context);
+            return node;
+        }
+
+        public static HanaTableBehaviorNode VisitForUpdateOfClause(ForUpdateOfClauseContext context)
+        {
+            var node = new HanaTableUpdateBehaviorNode
+            {
+                IgnoreLocked = context.TokenEndsWith(K_IGNORE, K_LOCKED)
+            };
+
+            var columnListClause = context.columnListClause();
+            var waitNowait = context.waitNowait();
+
+            if (columnListClause != null)
+                node.Columns.SetValue(VisitColumnListClause(columnListClause, null));
+
+            if (waitNowait != null)
+            {
+                if (waitNowait.time == null)
+                    node.WaitTime = -1;
+                else
+                    node.WaitTime = long.Parse(waitNowait.time.Text);
+            }
+
+            HanaTree.PutContextSpan(node, context);
+
+            return node;
+        }
+
+        public static HanaTableBehaviorNode VisitForJsonXmlClause(ForJsonXmlClauseContext context)
+        {
+            var json = context.children[1] is ITerminalNode { Symbol: { Type: K_JSON } };
+
+            var node = new HanaTableSerializeBehaviorNode
+            {
+                Type = json ? HanaTableSerializeType.Json : HanaTableSerializeType.Xml
+            };
+
+            var optionList = context.forJsonOrXmlOptionListClause();
+
+            if (optionList != null)
+            {
+                foreach (var (key, value) in optionList._options.Select(VisitForJsonOrXmlOption))
+                    node.Options[key] = value;
+            }
+
+            var returns = context.forJsonOrXmlReturnsClause();
+
+            if (returns != null)
+                node.ReturnType = returns.GetText()[7..].TrimStart();
+
+            HanaTree.PutContextSpan(node, context);
+
+            return node;
+        }
+
+        public static (string Key, string Value) VisitForJsonOrXmlOption(ForJsonOrXmlOptionContext context)
+        {
+            return new(
+                IdentifierUtility.Unescape(context.key.Text),
+                IdentifierUtility.Unescape(context.value.Text)
+            );
+        }
+
+        public static HanaTableBehaviorNode VisitForSystemTime(ForSystemTimeContext context)
+        {
+            var node = new HanaTableSystemTimeBehaviorNode();
+
+            switch (context)
+            {
+                case ForSystemTimeAsOfContext forSystemTimeAsOf:
+                    node.Time = IdentifierUtility.Unescape(forSystemTimeAsOf.value.Text);
+                    break;
+
+                case ForSystemTimeFromContext forSystemTimeFrom:
+                    node.FromTo = (
+                        IdentifierUtility.Unescape(forSystemTimeFrom.from.Text),
+                        IdentifierUtility.Unescape(forSystemTimeFrom.to.Text)
+                    );
+
+                    break;
+
+                case ForSystemTimeBetweenContext forSystemTimeBetween:
+                    node.Between = (
+                        IdentifierUtility.Unescape(forSystemTimeBetween.lower.Text),
+                        IdentifierUtility.Unescape(forSystemTimeBetween.upper.Text)
+                    );
+
+                    break;
+            }
+
+            HanaTree.PutContextSpan(node, context);
+
+            return node;
+        }
+
+        public static HanaTableBehaviorNode VisitForApplicationTimePeriod(ForApplicationTimePeriodContext context)
+        {
+            var node = new HanaTableApplicationTimeBehaviorNode
+            {
+                Time = IdentifierUtility.Unescape(context.value.Text)
+            };
+
+            HanaTree.PutContextSpan(node, context);
+
+            return node;
         }
 
         // TODO: case expression contains comment

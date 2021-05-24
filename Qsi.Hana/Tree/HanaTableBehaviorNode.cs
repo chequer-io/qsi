@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Qsi.Tree;
 
@@ -15,7 +16,27 @@ namespace Qsi.Hana.Tree
 
     public sealed class HanaTableUpdateBehaviorNode : HanaTableBehaviorNode
     {
-        public override IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
+        public QsiTreeNodeProperty<QsiColumnsDeclarationNode> Columns { get; }
+
+        // not null: WAIT <UNSIGNED_INTEGER>
+        //       -1: NOWAIT
+        public long? WaitTime { get; set; }
+
+        public bool IgnoreLocked { get; set; }
+
+        public override IEnumerable<IQsiTreeNode> Children
+        {
+            get
+            {
+                if (!Columns.IsEmpty)
+                    yield return Columns.Value;
+            }
+        }
+
+        public HanaTableUpdateBehaviorNode()
+        {
+            Columns = new QsiTreeNodeProperty<QsiColumnsDeclarationNode>(this);
+        }
     }
 
     public sealed class HanaTableSerializeBehaviorNode : HanaTableBehaviorNode
@@ -31,6 +52,19 @@ namespace Qsi.Hana.Tree
 
     public sealed class HanaTableSystemTimeBehaviorNode : HanaTableBehaviorNode
     {
+        public string Time { get; set; }
+
+        public ValueTuple<string, string>? FromTo { get; set; }
+
+        public ValueTuple<string, string>? Between { get; set; }
+
+        public override IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
+    }
+
+    public sealed class HanaTableApplicationTimeBehaviorNode : HanaTableBehaviorNode
+    {
+        public string Time { get; set; }
+
         public override IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
     }
 

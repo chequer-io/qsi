@@ -1,18 +1,30 @@
-﻿using Qsi.Tree;
+﻿using System.Collections.Generic;
+using Qsi.Tree;
 
 namespace Qsi.Hana.Tree
 {
     public sealed class HanaTableAccessNode : QsiTableAccessNode
     {
-        // FOR SYSTEM_TIME AS OF '123'
-        // FOR SYSTEM_TIME AS FROM '123' TO '123'
-        // FOR SYSTEM_TIME AS BETWEEN '123' AND '123'
-        public string ForSystemTime { get; set; }
-
-        // FOR APPLICAITON_TIME AS OF '123'
-        public string ForApplicationTime { get; set; }
+        public QsiTreeNodeProperty<HanaTableBehaviorNode> Behavior { get; }
 
         // PARTITION (1, 2, ..)
         public string Partition { get; set; }
+
+        public override IEnumerable<IQsiTreeNode> Children
+        {
+            get
+            {
+                foreach (var child in base.Children)
+                    yield return child;
+
+                if (!Behavior.IsEmpty)
+                    yield return Behavior.Value;
+            }
+        }
+
+        public HanaTableAccessNode()
+        {
+            Behavior = new QsiTreeNodeProperty<HanaTableBehaviorNode>(this);
+        }
     }
 }

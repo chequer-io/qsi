@@ -66,20 +66,20 @@ columnListClause
     ;
 
 forClause
-    : K_FOR K_SHARE K_LOCK
-    | K_FOR K_UPDATE (K_OF columnListClause)? waitNowait? (K_IGNORE K_LOCKED)?
-    | K_FOR (K_JSON | K_XML) forJsonOrXmlOptionListClause? forJsonOrXmlReturnsClause?
-    | forSystemTime
+    : K_FOR K_SHARE K_LOCK                                                            #forShareLockClause
+    | K_FOR K_UPDATE (K_OF columnListClause)? waitNowait? (K_IGNORE K_LOCKED)?        #forUpdateOfClause
+    | K_FOR (K_JSON | K_XML) forJsonOrXmlOptionListClause? forJsonOrXmlReturnsClause? #forJsonXmlClause
+    | forSystemTime                                                                   #forSystemTimeClause
     ;
 
 forSystemTime
-    : K_FOR K_SYSTEM_TIME K_AS K_OF STRING_LITERAL                      #forSystemTimeAsOf
-    | K_FOR K_SYSTEM_TIME K_FROM STRING_LITERAL K_TO STRING_LITERAL     #forSystemTimeFrom
-    | K_FOR K_SYSTEM_TIME K_BETWEEN STRING_LITERAL K_AND STRING_LITERAL #forSystemTimeBetween
+    : K_FOR K_SYSTEM_TIME K_AS K_OF value=STRING_LITERAL                            #forSystemTimeAsOf
+    | K_FOR K_SYSTEM_TIME K_FROM from=STRING_LITERAL K_TO to=STRING_LITERAL         #forSystemTimeFrom
+    | K_FOR K_SYSTEM_TIME K_BETWEEN lower=STRING_LITERAL K_AND upper=STRING_LITERAL #forSystemTimeBetween
     ;
 
 waitNowait
-    : K_WAIT UNSIGNED_INTEGER
+    : K_WAIT time=UNSIGNED_INTEGER
     | K_NOWAIT
     ;
 
@@ -161,7 +161,7 @@ tableRef
     ;
 
 forApplicationTimePeriod
-    : K_FOR K_APPLICATION_TIME K_AS K_OF { IsQuotedNumeric() }? STRING_LITERAL
+    : K_FOR K_APPLICATION_TIME K_AS K_OF { IsQuotedNumeric() }? value=STRING_LITERAL
     ;
 
 partitionRestriction
