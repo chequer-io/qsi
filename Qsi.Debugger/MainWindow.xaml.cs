@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -173,7 +174,7 @@ namespace Qsi.Debugger
                 // Execute
 
                 var result = await _vendor.Engine.Execute(script);
-                
+
                 if (result is QsiTableAnalysisResult tableResult)
                 {
                     BuildQsiTableTree(tableResult.Table);
@@ -271,7 +272,30 @@ namespace Qsi.Debugger
 
                 switch (value)
                 {
+                    case IDictionary dictionary:
+                    {
+                        var childItems = new List<QsiTreeItem>();
+
+                        foreach (DictionaryEntry entry in dictionary)
+                        {
+                            childItems.Add(new QsiPropertyItem
+                            {
+                                Header = entry.Key.ToString(),
+                                Value = entry.Value?.ToString() ?? "<null>"
+                            });
+                        }
+
+                        item = new QsiChildElementItem
+                        {
+                            Header = "Dictionary",
+                            Items = childItems.ToArray()
+                        };
+
+                        break;
+                    }
+
                     case IQsiTreeNode childNode:
+                    {
                         var childItem = BuildQsiTreeImpl(childNode);
 
                         if (hideProperty)
@@ -287,8 +311,10 @@ namespace Qsi.Debugger
                         };
 
                         break;
+                    }
 
                     case IEnumerable<IQsiTreeNode> childNodes:
+                    {
                         QsiTreeItem[] childItems = childNodes.Select(BuildQsiTreeImpl).ToArray();
 
                         if (hideProperty)
@@ -304,6 +330,7 @@ namespace Qsi.Debugger
                         };
 
                         break;
+                    }
 
                     default:
                         item = new QsiPropertyItem
