@@ -448,7 +448,7 @@ namespace Qsi.SqlServer.Tree
                         SqlServerTree.PutFragmentSpan(n, compositeGroupingSpecification);
                     });
 
-                // ROLLUP ( ... )
+                // CUBE ( ... )
                 case CubeGroupingSpecification cubeGroupingSpecification:
                     return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
                     {
