@@ -311,7 +311,7 @@ namespace Qsi.Cql.Analyzers
             var sql = builder.ToString();
             var script = new QsiScript(sql, QsiScriptType.Select);
 
-            var table = await context.Engine.RepositoryProvider.GetDataTable(script);
+            var table = await context.Engine.RepositoryProvider.GetDataTable(script, context.Parameters);
             QsiDataValue[] values = table.Rows[0].Items;
 
             for (int i = 0; i < values.Length; i++)

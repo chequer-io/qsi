@@ -10,6 +10,8 @@ namespace Qsi.Analyzers.Context
 
         QsiScript Script { get; }
 
+        QsiParameter[] Parameters { get; }
+
         IQsiTreeNode Tree { get; }
 
         QsiAnalyzerOptions Options { get; }

@@ -13,6 +13,6 @@ namespace Qsi.Services
 
         QsiVariable LookupVariable(QsiQualifiedIdentifier identifier);
 
-        Task<QsiDataTable> GetDataTable(QsiScript script);
+        Task<QsiDataTable> GetDataTable(QsiScript script, QsiParameter[] parameters);
     }
 }
