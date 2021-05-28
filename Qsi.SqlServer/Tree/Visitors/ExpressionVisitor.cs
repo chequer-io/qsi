@@ -411,7 +411,7 @@ namespace Qsi.SqlServer.Tree
                     BinaryExpressionType.BitwiseXor => SqlServerKnownOperator.BitwiseXor,
                     _ => throw new InvalidOperationException()
                 };
-                
+
                 SqlServerTree.PutFragmentSpan(n, binaryExpression);
             });
         }
@@ -429,7 +429,7 @@ namespace Qsi.SqlServer.Tree
             var node = TreeHelper.CreateUnary(expressionType, VisitScalarExpression(unaryExpression.Expression));
 
             SqlServerTree.PutFragmentSpan(node, unaryExpression);
-            
+
             return node;
         }
 
@@ -505,6 +505,8 @@ namespace Qsi.SqlServer.Tree
                         null => new MultiPartIdentifier(),
                         _ => throw TreeHelper.NotSupportedTree(functionCall.CallTarget)
                     };
+
+                    // OverClause ignored
 
                     return CreateInvokeExpression(functionCall, IdentifierVisitor.ConcatIdentifier(callTarget, functionCall.FunctionName), functionCall.Parameters);
                 }
