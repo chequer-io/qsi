@@ -405,7 +405,6 @@ intValue
     ;
 
 bindParameter
-    @after { throw new QsiException(QsiError.NotSupportedFeature, "BindParameter"); }
     : ':' id=noncol_ident
     | QMARK
     ;

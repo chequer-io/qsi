@@ -60,6 +60,9 @@ namespace Qsi.PostgreSql.Tree.PG10
 
                 case CoalesceExpr coalesceExpr:
                     return VisitCoalesceExpr(coalesceExpr);
+
+                case ParamRef paramRef:
+                    return VisitParamRef(paramRef);
             }
 
             throw TreeHelper.NotSupportedTree(node);
@@ -406,6 +409,25 @@ namespace Qsi.PostgreSql.Tree.PG10
                     n.Parameters.AddRange(coalesceExpr.args.Select(Visit));
                 }
             });
+        }
+
+        private static QsiExpressionNode VisitParamRef(ParamRef paramRef)
+        {
+            var node = new QsiBindParameterExpressionNode();
+
+            if (paramRef.number.HasValue)
+            {
+                node.Type = QsiParameterType.Name;
+                node.Token = $"${paramRef.number}";
+                node.Name = paramRef.number.ToString();
+            }
+            else
+            {
+                node.Type = QsiParameterType.Sequence;
+                node.Token = "?";
+            }
+
+            return node;
         }
     }
 }

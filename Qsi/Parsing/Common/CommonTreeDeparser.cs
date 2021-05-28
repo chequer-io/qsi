@@ -137,10 +137,6 @@ namespace Qsi.Parsing.Common
                     DeparseAllColumnNode(writer, allColumnNode, script);
                     break;
 
-                case IQsiBindingColumnNode bindingColumnNode:
-                    DeparseBindingColumnNode(writer, bindingColumnNode, script);
-                    break;
-
                 case IQsiDeclaredColumnNode declaredColumnNode:
                     DeparseDeclaredColumnNode(writer, declaredColumnNode, script);
                     break;
@@ -174,11 +170,6 @@ namespace Qsi.Parsing.Common
                 writer.Write(node.Path).Write('.');
 
             writer.Write('*');
-        }
-
-        protected virtual void DeparseBindingColumnNode(ScriptWriter writer, IQsiBindingColumnNode node, QsiScript script)
-        {
-            throw new NotImplementedException();
         }
 
         protected virtual void DeparseDeclaredColumnNode(ScriptWriter writer, IQsiDeclaredColumnNode node, QsiScript script)
@@ -362,6 +353,10 @@ namespace Qsi.Parsing.Common
                     DeparseGroupingExpressionNode(writer, groupingExpressionNode, script);
                     break;
 
+                case IQsiBindParameterExpressionNode bindParameterExpressionNode:
+                    DeparseBindParameterExpressionNode(writer, bindParameterExpressionNode, script);
+                    break;
+
                 default:
                     throw new NotImplementedException();
             }
@@ -402,7 +397,7 @@ namespace Qsi.Parsing.Common
             }
         }
 
-        private void DeparseGroupingExpressionNode(ScriptWriter writer, IQsiGroupingExpressionNode node, QsiScript script)
+        protected virtual void DeparseGroupingExpressionNode(ScriptWriter writer, IQsiGroupingExpressionNode node, QsiScript script)
         {
             writer.Write("GROUP BY ");
             writer.WriteJoin(", ", node.Items, (_, item) => DeparseTreeNode(writer, item, script));
@@ -412,6 +407,11 @@ namespace Qsi.Parsing.Common
                 writer.Write("HAVING ");
                 DeparseTreeNode(writer, node.Having, script);
             }
+        }
+
+        protected virtual void DeparseBindParameterExpressionNode(ScriptWriter writer, IQsiBindParameterExpressionNode node, QsiScript script)
+        {
+            writer.Write(node.Token);
         }
 
         protected virtual void DeparseLiteralExpressionNode(ScriptWriter writer, IQsiLiteralExpressionNode node, QsiScript script)

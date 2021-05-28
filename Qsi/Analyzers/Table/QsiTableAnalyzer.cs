@@ -206,14 +206,6 @@ namespace Qsi.Analyzers.Table
                             break;
                         }
 
-                        case IQsiBindingColumnNode bindingColumn:
-                        {
-                            var declaredColumn = declaredTable.NewColumn();
-                            declaredColumn.Name = new QsiIdentifier(bindingColumn.Id, false);
-                            declaredColumn.IsBinding = true;
-                            break;
-                        }
-
                         default:
                         {
                             foreach (var c in resolvedColumns)
@@ -614,9 +606,6 @@ namespace Qsi.Analyzers.Table
                 case IQsiDerivedColumnNode derivedColumn:
                     return ResolveDerivedColumns(context, derivedColumn);
 
-                case IQsiBindingColumnNode _:
-                    return Array.Empty<QsiTableColumn>();
-
                 case IQsiSequentialColumnNode _:
                     throw new QsiException(QsiError.SyntaxError, "You cannot define sequential column in a compound column definition.");
             }
@@ -831,9 +820,6 @@ namespace Qsi.Analyzers.Table
                         case IQsiDeclaredColumnNode declaredColumnNode:
                             yield return ResolveDeclaredColumn(context, declaredColumnNode);
 
-                            break;
-
-                        case IQsiBindingColumnNode _:
                             break;
 
                         default:

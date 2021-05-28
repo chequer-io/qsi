@@ -169,7 +169,7 @@ namespace Qsi.Debugger
 
                 // Execute
 
-                var result = await _vendor.Engine.Execute(script);
+                var result = await _vendor.Engine.Execute(script, null);
 
                 if (result is QsiTableAnalysisResult tableResult)
                 {

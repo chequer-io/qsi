@@ -497,5 +497,17 @@ namespace Qsi.PhoenixSql.Tree
                 Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(value, false))
             };
         }
+
+        public static QsiBindParameterExpressionNode VisitBind(BindParseNode node)
+        {
+            return TreeHelper.Create<QsiBindParameterExpressionNode>(n =>
+            {
+                n.Type = QsiParameterType.Name;
+                n.Token = $":{node.Index + 1}";
+                n.Name = node.Name;
+
+                PTree.RawNode[n] = node;
+            });
+        }
     }
 }

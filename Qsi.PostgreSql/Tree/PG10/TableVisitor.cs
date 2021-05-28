@@ -258,6 +258,7 @@ namespace Qsi.PostgreSql.Tree.PG10
                 case NodeTag.T_NullTest:
                 case NodeTag.T_BooleanTest:
                 case NodeTag.T_CoalesceExpr:
+                case NodeTag.T_ParamRef:
                     columnNode = TreeHelper.Create<QsiDerivedColumnNode>(n =>
                     {
                         n.Expression.SetValue(ExpressionVisitor.Visit(value));

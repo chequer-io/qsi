@@ -1100,12 +1100,19 @@ namespace Qsi.Cql.Tree
 
         public static QsiExpressionNode VisitBindParameter(BindParameterContext context)
         {
-            return TreeHelper.Create<QsiColumnExpressionNode>(n =>
+            return TreeHelper.Create<QsiBindParameterExpressionNode>(n =>
             {
-                n.Column.SetValue(new QsiBindingColumnNode
+                n.Token = context.GetText();
+
+                if (context.id != null)
                 {
-                    Id = context.id?.id?.Value ?? "?"
-                });
+                    n.Name = context.id.GetText();
+                    n.Type = QsiParameterType.Name;
+                }
+                else
+                {
+                    n.Type = QsiParameterType.Sequence;
+                }
 
                 CqlTree.PutContextSpan(n, context);
             });

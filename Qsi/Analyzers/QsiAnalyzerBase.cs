@@ -29,6 +29,7 @@ namespace Qsi.Analyzers
 
         public ValueTask<IQsiAnalysisResult> Execute(
             QsiScript script,
+            QsiParameter[] parameters,
             IQsiTreeNode tree,
             QsiAnalyzerOptions options,
             CancellationToken cancellationToken = default)
@@ -36,7 +37,7 @@ namespace Qsi.Analyzers
             if (!CanExecute(script, tree))
                 throw new QsiException(QsiError.NotSupportedScript, script.ScriptType);
 
-            return OnExecute(new AnalyzerContext(_engine, script, tree, options, cancellationToken));
+            return OnExecute(new AnalyzerContext(_engine, script, parameters, tree, options, cancellationToken));
         }
 
         public abstract bool CanExecute(QsiScript script, IQsiTreeNode tree);

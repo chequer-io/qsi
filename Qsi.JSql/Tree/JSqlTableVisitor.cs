@@ -316,7 +316,8 @@ namespace Qsi.JSql.Tree
         {
             var alias = selectExpression.getAlias();
             var expression = selectExpression.getExpression();
-            QsiColumnNode columnNode;
+            QsiColumnNode columnNode = null;
+            QsiExpressionNode expressionNode = null;
 
             switch (expression)
             {
@@ -324,35 +325,24 @@ namespace Qsi.JSql.Tree
                     columnNode = VisitColumn(column);
                     break;
 
-                case NumericBind numericBind:
-                    columnNode = VisitNumericBind(numericBind);
-                    break;
-
-                case JdbcParameter jdbcParameter:
-                    columnNode = VisitJdbcParameter(jdbcParameter);
-                    break;
-
-                case JdbcNamedParameter jdbcNamedParameter:
-                    columnNode = VisitJdbcNamedParameter(jdbcNamedParameter);
-                    break;
-
                 default:
-                    return TreeHelper.Create<QsiDerivedColumnNode>(n =>
-                    {
-                        n.Expression.SetValue(ExpressionVisitor.Visit(expression));
-
-                        if (alias != null)
-                            n.Alias.SetValue(VisitAlias(alias));
-                    });
+                    expressionNode = ExpressionVisitor.Visit(expression);
+                    break;
             }
 
-            if (alias == null)
+            if (columnNode != null && alias == null)
                 return columnNode;
 
             return TreeHelper.Create<QsiDerivedColumnNode>(n =>
             {
-                n.Column.SetValue(columnNode);
-                n.Alias.SetValue(VisitAlias(alias));
+                if (columnNode != null)
+                    n.Column.SetValue(columnNode);
+
+                if (expressionNode != null)
+                    n.Expression.SetValue(expressionNode);
+
+                if (alias != null)
+                    n.Alias.SetValue(VisitAlias(alias));
             });
         }
 
@@ -362,30 +352,6 @@ namespace Qsi.JSql.Tree
             {
                 n.Name = IdentifierVisitor.VisitMultiPartName(column);
             });
-        }
-
-        public virtual QsiBindingColumnNode VisitNumericBind(NumericBind expression)
-        {
-            return new()
-            {
-                Id = expression.getBindId().ToString()
-            };
-        }
-
-        public virtual QsiBindingColumnNode VisitJdbcParameter(JdbcParameter expression)
-        {
-            return new()
-            {
-                Id = expression.toString()
-            };
-        }
-
-        public virtual QsiBindingColumnNode VisitJdbcNamedParameter(JdbcNamedParameter expression)
-        {
-            return new()
-            {
-                Id = expression.getName()
-            };
         }
         #endregion
 

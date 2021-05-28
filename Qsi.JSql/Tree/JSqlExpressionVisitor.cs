@@ -421,28 +421,47 @@ namespace Qsi.JSql.Tree
             });
         }
 
+        // :<bindId>
         public virtual QsiExpressionNode VisitNumericBind(NumericBind expression)
         {
-            return TreeHelper.Create<QsiColumnExpressionNode>(n =>
+            return new QsiBindParameterExpressionNode
             {
-                n.Column.SetValue(TableVisitor.VisitNumericBind(expression));
-            });
+                Type = QsiParameterType.Name,
+                Token = expression.toString(),
+                Name = expression.getBindId().toString()
+            };
         }
 
+        // ? | ?<index>
         public virtual QsiExpressionNode VisitJdbcParameter(JdbcParameter expression)
         {
-            return TreeHelper.Create<QsiColumnExpressionNode>(n =>
+            var node = new QsiBindParameterExpressionNode
             {
-                n.Column.SetValue(TableVisitor.VisitJdbcParameter(expression));
-            });
+                Token = expression.toString()
+            };
+
+            if (expression.isUseFixedIndex())
+            {
+                node.Name = expression.getIndex().toString();
+                node.Type = QsiParameterType.Name;
+            }
+            else
+            {
+                node.Type = QsiParameterType.Sequence;
+            }
+
+            return node;
         }
 
+        // :<name>
         public virtual QsiExpressionNode VisitJdbcNamedParameter(JdbcNamedParameter expression)
         {
-            return TreeHelper.Create<QsiColumnExpressionNode>(n =>
+            return new QsiBindParameterExpressionNode
             {
-                n.Column.SetValue(TableVisitor.VisitJdbcNamedParameter(expression));
-            });
+                Type = QsiParameterType.Name,
+                Token = expression.toString(),
+                Name = expression.getName()
+            };
         }
 
         public virtual QsiExpressionNode VisitJsonExpression(JsonExpression expression)

@@ -93,11 +93,21 @@ namespace Qsi.PhoenixSql.Tree
             bool hasAlias = !string.IsNullOrEmpty(node.Alias);
             QsiColumnNode columnNode = null;
             QsiExpressionNode expressionNode = null;
+            string expressionInfferedName = null;
 
             switch (childNode.Unwrap())
             {
                 case INamedParseNode namedNode:
-                    columnNode = VisitNamedParseNode(namedNode);
+                    if (namedNode.UnwrapAs<INamedParseNode>() is BindParseNode bindParseNode)
+                    {
+                        expressionNode = ExpressionVisitor.VisitBind(bindParseNode);
+                        expressionInfferedName = bindParseNode.Name;
+                    }
+                    else
+                    {
+                        columnNode = VisitNamedParseNode(namedNode);
+                    }
+
                     break;
 
                 case WildcardParseNode wildcardParseNode:
@@ -128,6 +138,8 @@ namespace Qsi.PhoenixSql.Tree
                 if (expressionNode != null)
                     n.Expression.SetValue(expressionNode);
 
+                n.InferredName = new QsiIdentifier(expressionInfferedName, false);
+
                 PTree.RawNode[n] = node;
             });
         }
@@ -139,8 +151,7 @@ namespace Qsi.PhoenixSql.Tree
                 case FamilyWildcardParseNode familyWildcardParseNode:
                     return VisitFamilyWildcardParseNode(familyWildcardParseNode);
 
-                case BindParseNode bindParseNode:
-                    return VisitBindParseNode(bindParseNode);
+                // case BindParseNode bindParseNode:
 
                 case ColumnParseNode columnParseNode:
                     return VisitColumnParseNode(columnParseNode);
@@ -166,18 +177,6 @@ namespace Qsi.PhoenixSql.Tree
 
             if (!string.IsNullOrEmpty(node.Name))
                 columnNode.Path = new QsiQualifiedIdentifier(IdentifierVisitor.Visit(node));
-
-            PTree.RawNode[columnNode] = node;
-
-            return columnNode;
-        }
-
-        public static QsiColumnNode VisitBindParseNode(BindParseNode node)
-        {
-            var columnNode = new QsiBindingColumnNode
-            {
-                Id = $":{node.Index}"
-            };
 
             PTree.RawNode[columnNode] = node;
 

@@ -117,7 +117,7 @@ namespace Qsi.Analyzers.Action
             var definition = context.Engine.RepositoryProvider.LookupDefinition(action.Identifier, QsiTableType.Prepared) ??
                              throw new QsiException(QsiError.UnableResolveDefinition, action.Identifier);
 
-            return context.Engine.Execute(definition);
+            return context.Engine.Execute(definition, null);
         }
         #endregion
 
