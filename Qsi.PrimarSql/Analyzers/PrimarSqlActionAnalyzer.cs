@@ -318,7 +318,7 @@ namespace Qsi.PrimarSql.Analyzers
             {
                 case PrimarSqlIndexerExpressionNode indexerExpressionNode:
                 {
-                    if (!(indexerExpressionNode.Indexer.Value is QsiLiteralExpressionNode literalExpressionNode))
+                    if (indexerExpressionNode.Indexer.Value is not QsiLiteralExpressionNode literalExpressionNode)
                         throw new ArgumentException(nameof(accessor));
 
                     return (int)Convert.ChangeType(literalExpressionNode.Value, TypeCode.Int32)!;

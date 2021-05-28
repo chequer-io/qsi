@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Avalonia.Data.Converters;
 using Avalonia.Markup.Xaml;
-using net.sf.jsqlparser.statement.@select;
 using Qsi.Data;
 
 namespace Qsi.Debugger.Converters

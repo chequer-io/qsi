@@ -40,14 +40,13 @@ namespace Qsi.Cql.Analyzers
 
                 switch (column)
                 {
-                    case IQsiDeclaredColumnNode declaredColumn:
+                    case IQsiColumnReferenceNode columnReference:
                     {
-                        identifier = declaredColumn.Name[^1];
+                        identifier = columnReference.Name[^1];
                         break;
                     }
 
-                    case IQsiDerivedColumnNode { IsExpression: true } derivedColumn when
-                        derivedColumn.Expression is IQsiMemberAccessExpressionNode memberAccess:
+                    case IQsiDerivedColumnNode { IsExpression: true, Expression: IQsiMemberAccessExpressionNode memberAccess }:
                     {
                         var selectorList = new List<ISelector>();
 
@@ -112,7 +111,7 @@ namespace Qsi.Cql.Analyzers
                                                     builder.Append(context.Engine.TreeDeparser.Deparse(endNode, context.Script));
                                                 }
 
-                                                builder.Append("}");
+                                                builder.Append('}');
 
                                                 selectorList.Add(new PendingSelector(builder.ToString(), typeof(RangeSelector)));
                                             }
@@ -149,11 +148,11 @@ namespace Qsi.Cql.Analyzers
                             memberAccess = prevMemberAccess;
 
                         var columnExpression = (IQsiColumnExpressionNode)memberAccess.Target;
-                        var declaredColumn = (IQsiDeclaredColumnNode)columnExpression.Column;
+                        var columnReference = (IQsiColumnReferenceNode)columnExpression.Column;
 
                         selectorList.Reverse();
 
-                        identifier = declaredColumn.Name[^1];
+                        identifier = columnReference.Name[^1];
                         selectors = selectorList.ToArray();
 
                         break;
@@ -179,16 +178,16 @@ namespace Qsi.Cql.Analyzers
         protected override async ValueTask<IQsiAnalysisResult> ExecuteDataDeleteAction(IAnalyzerContext context, IQsiDataDeleteActionNode action)
         {
             var tableNode = (CqlDerivedTableNode)action.Target;
-            var tableAccessNode = (QsiTableAccessNode)tableNode.Source.Value;
+            var tableReferenceNode = (QsiTableReferenceNode)tableNode.Source.Value;
 
             var tableAnalyzer = context.Engine.GetAnalyzer<QsiTableAnalyzer>();
             QsiTableStructure table;
 
             using (var tableContext = new TableCompileContext(context))
-                table = await tableAnalyzer.BuildTableStructure(tableContext, tableAccessNode);
+                table = await tableAnalyzer.BuildTableStructure(tableContext, tableReferenceNode);
 
             ColumnPlan[] columnPlans = CompileColumnPlan(context, table, tableNode.Columns.Value).ToArray();
-            await ResolveColumnPlan(context, columnPlans, tableAccessNode);
+            await ResolveColumnPlan(context, columnPlans, tableReferenceNode);
 
             var targetNode = (CqlDerivedTableNode)ReassembleCommonTableNode(tableNode);
             targetNode.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
@@ -294,7 +293,7 @@ namespace Qsi.Cql.Analyzers
                 .ToResult();
         }
 
-        private async Task ResolveColumnPlan(IAnalyzerContext context, IEnumerable<ColumnPlan> plans, IQsiTableAccessNode tableAccess)
+        private async Task ResolveColumnPlan(IAnalyzerContext context, IEnumerable<ColumnPlan> plans, IQsiTableReferenceNode tableReference)
         {
             PendingSelector[] pendingSelectors = plans
                 .SelectMany(p => p.Selectors.SelectMany(s => s).OfType<PendingSelector>())
@@ -307,7 +306,7 @@ namespace Qsi.Cql.Analyzers
 
             builder.Append("SELECT ");
             builder.AppendJoin(", ", pendingSelectors.Select((s, i) => $"{s.Sql} AS c{i}"));
-            builder.Append($" FROM {tableAccess.Identifier} LIMIT 1 ALLOW FILTERING");
+            builder.Append($" FROM {tableReference.Identifier} LIMIT 1 ALLOW FILTERING");
 
             var sql = builder.ToString();
             var script = new QsiScript(sql, QsiScriptType.Select);

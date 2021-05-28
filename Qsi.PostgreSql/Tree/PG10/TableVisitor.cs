@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Qsi.Data;
@@ -308,7 +307,7 @@ namespace Qsi.PostgreSql.Tree.PG10
 
             if (columnRef.fields.All(f => f.Type == NodeTag.T_String))
             {
-                return new QsiDeclaredColumnNode
+                return new QsiColumnReferenceNode
                 {
                     Name = IdentifierVisitor.VisitStrings(columnRef.fields.Cast<PgString>())
                 };
@@ -367,7 +366,7 @@ namespace Qsi.PostgreSql.Tree.PG10
         // TODO: alias에 정의된 컬럼 + 정의되지 않은 컬럼 컴파일
         public static QsiTableNode VisitRangeVar(RangeVar var)
         {
-            var tableNode = new QsiTableAccessNode
+            var tableNode = new QsiTableReferenceNode
             {
                 Identifier = IdentifierVisitor.VisitRangeVar(var)
             };
@@ -501,7 +500,7 @@ namespace Qsi.PostgreSql.Tree.PG10
                     {
                         foreach (var pgString in joinExpr.usingClause.Cast<PgString>())
                         {
-                            dn.Columns.Add(new QsiDeclaredColumnNode
+                            dn.Columns.Add(new QsiColumnReferenceNode
                             {
                                 Name = new QsiQualifiedIdentifier(new QsiIdentifier(pgString.str, false))
                             });

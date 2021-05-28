@@ -30,7 +30,7 @@ namespace Qsi.Analyzers.Table
 
         protected override async ValueTask<IQsiAnalysisResult> OnExecute(IAnalyzerContext context)
         {
-            if (!(context.Tree is IQsiTableNode tableNode))
+            if (context.Tree is not IQsiTableNode tableNode)
                 throw new InvalidOperationException();
 
             using var scope = new TableCompileContext(context);
@@ -47,8 +47,8 @@ namespace Qsi.Analyzers.Table
 
             switch (table)
             {
-                case IQsiTableAccessNode tableAccess:
-                    return await BuildTableAccessStructure(context, tableAccess);
+                case IQsiTableReferenceNode tableReference:
+                    return await BuildTableReferenceStructure(context, tableReference);
 
                 case IQsiDerivedTableNode derivedTable:
                     return await BuildDerivedTableStructure(context, derivedTable);
@@ -66,7 +66,7 @@ namespace Qsi.Analyzers.Table
             throw new InvalidOperationException();
         }
 
-        protected virtual async ValueTask<QsiTableStructure> BuildTableAccessStructure(TableCompileContext context, IQsiTableAccessNode table)
+        protected virtual async ValueTask<QsiTableStructure> BuildTableReferenceStructure(TableCompileContext context, IQsiTableReferenceNode table)
         {
             context.ThrowIfCancellationRequested();
 
@@ -372,7 +372,7 @@ namespace Qsi.Analyzers.Table
 
                 if (directivesNode.IsRecursive && ContainsRecursiveQuery(directiveTable.Source, cteName))
                 {
-                    if (!(directiveTable.Source is IQsiCompositeTableNode compositeTableNode))
+                    if (directiveTable.Source is not IQsiCompositeTableNode compositeTableNode)
                         throw new QsiException(QsiError.NoTopLevelUnionInRecursiveQuery, cteName);
 
                     if (ContainsRecursiveQuery(compositeTableNode.Sources[0], cteName))
@@ -417,9 +417,9 @@ namespace Qsi.Analyzers.Table
 
         protected virtual bool ContainsRecursiveQuery(IQsiTableNode table, QsiIdentifier identifier)
         {
-            foreach (var tableAccess in table.FindAscendants<IQsiTableAccessNode>())
+            foreach (var tableReference in table.FindAscendants<IQsiTableReferenceNode>())
             {
-                if (tableAccess.Identifier.Level == 1 && Match(tableAccess.Identifier[0], identifier))
+                if (tableReference.Identifier.Level == 1 && Match(tableReference.Identifier[0], identifier))
                 {
                     return true;
                 }
@@ -471,8 +471,8 @@ namespace Qsi.Analyzers.Table
             joinedTable.References.Add(left);
             joinedTable.References.Add(right);
 
-            IQsiDeclaredColumnNode[] pivots = table.PivotColumns?
-                .Cast<IQsiDeclaredColumnNode>()
+            IQsiColumnReferenceNode[] pivots = table.PivotColumns?
+                .Cast<IQsiColumnReferenceNode>()
                 .ToArray();
 
             HashSet<QsiTableColumn> leftColumns = left.Columns.ToHashSet();
@@ -496,11 +496,11 @@ namespace Qsi.Analyzers.Table
                     leftColumnNames;
 
                 pivots = minColumnNames
-                    .Select(n => (IQsiDeclaredColumnNode)new ImmutableDeclaredColumnNode(null, new QsiQualifiedIdentifier(n), null))
+                    .Select(n => (IQsiColumnReferenceNode)new ImmutableColumnReferenceNode(null, new QsiQualifiedIdentifier(n), null))
                     .ToArray();
             }
 
-            foreach (var pivot in pivots ?? Enumerable.Empty<IQsiDeclaredColumnNode>())
+            foreach (var pivot in pivots ?? Enumerable.Empty<IQsiColumnReferenceNode>())
             {
                 var pivotColumnName = pivot.Name[^1];
                 var leftColumnIndexes = left.Columns.AllIndexOf(c => Match(c.Name, pivotColumnName)).Take(2).ToArray();
@@ -600,8 +600,8 @@ namespace Qsi.Analyzers.Table
                 case IQsiAllColumnNode allColumn:
                     return ResolveAllColumns(context, allColumn, false);
 
-                case IQsiDeclaredColumnNode declaredColumn:
-                    return new[] { ResolveDeclaredColumn(context, declaredColumn) };
+                case IQsiColumnReferenceNode columnReference:
+                    return new[] { ResolveColumnReference(context, columnReference) };
 
                 case IQsiDerivedColumnNode derivedColumn:
                     return ResolveDerivedColumns(context, derivedColumn);
@@ -640,7 +640,7 @@ namespace Qsi.Analyzers.Table
             return tables.SelectMany(t => includeInvisible ? t.Columns : t.VisibleColumns);
         }
 
-        protected virtual QsiTableColumn ResolveDeclaredColumn(TableCompileContext context, IQsiDeclaredColumnNode column)
+        protected virtual QsiTableColumn ResolveColumnReference(TableCompileContext context, IQsiColumnReferenceNode column)
         {
             context.ThrowIfCancellationRequested();
 
@@ -817,8 +817,8 @@ namespace Qsi.Analyzers.Table
                             break;
                         }
 
-                        case IQsiDeclaredColumnNode declaredColumnNode:
-                            yield return ResolveDeclaredColumn(context, declaredColumnNode);
+                        case IQsiColumnReferenceNode columnReferenceNode:
+                            yield return ResolveColumnReference(context, columnReferenceNode);
 
                             break;
 

@@ -22,11 +22,11 @@ namespace Qsi.Oracle
             return base.BuildDerivedTableStructure(context, table);
         }
 
-        protected override QsiTableColumn ResolveDeclaredColumn(TableCompileContext context, IQsiDeclaredColumnNode column)
+        protected override QsiTableColumn ResolveColumnReference(TableCompileContext context, IQsiColumnReferenceNode column)
         {
             try
             {
-                return base.ResolveDeclaredColumn(context, column);
+                return base.ResolveColumnReference(context, column);
             }
             catch (QsiException e) when (e.Error == QsiError.UnknownColumn || e.Error == QsiError.UnknownColumnIn)
             {

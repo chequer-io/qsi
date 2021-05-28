@@ -515,9 +515,9 @@ namespace Qsi.MySql.Tree
             });
         }
 
-        public static QsiDeclaredColumnNode VisitColumnRef(ColumnRefContext context)
+        public static QsiColumnReferenceNode VisitColumnRef(ColumnRefContext context)
         {
-            return TreeHelper.Create<QsiDeclaredColumnNode>(n =>
+            return TreeHelper.Create<QsiColumnReferenceNode>(n =>
             {
                 n.Name = IdentifierVisitor.VisitColumnRef(context);
 
@@ -1753,7 +1753,7 @@ namespace Qsi.MySql.Tree
 
             return TreeHelper.Create<QsiColumnExpressionNode>(n =>
             {
-                n.Column.SetValue(TreeHelper.Create<QsiDeclaredColumnNode>(cn =>
+                n.Column.SetValue(TreeHelper.Create<QsiColumnReferenceNode>(cn =>
                 {
                     cn.Name = identifier;
 

@@ -181,9 +181,9 @@ namespace Qsi.PrimarSql.Tree
             return VisitTableSource(context.tableSource());
         }
 
-        public static QsiTableAccessNode VisitTableName(TableNameContext context)
+        public static QsiTableReferenceNode VisitTableName(TableNameContext context)
         {
-            return TreeHelper.Create<QsiTableAccessNode>(n =>
+            return TreeHelper.Create<QsiTableReferenceNode>(n =>
             {
                 n.Identifier = IdentifierVisitor.VisitFullId(context.fullId());
 

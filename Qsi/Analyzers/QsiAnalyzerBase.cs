@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Qsi.Analyzers.Context;
-using Qsi.Collections;
 using Qsi.Data;
 using Qsi.Tree;
 using Qsi.Utilities;

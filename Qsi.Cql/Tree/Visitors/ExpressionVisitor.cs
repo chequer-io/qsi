@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Antlr4.Runtime;
-using Qsi.Cql.Schema;
 using Qsi.Cql.Tree.Common;
 using Qsi.Data;
 using Qsi.Tree;
@@ -808,7 +807,7 @@ namespace Qsi.Cql.Tree
         {
             var node = new QsiColumnExpressionNode();
 
-            node.Column.SetValue(new QsiDeclaredColumnNode
+            node.Column.SetValue(new QsiColumnReferenceNode
             {
                 Name = new QsiQualifiedIdentifier(context.id)
             });

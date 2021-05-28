@@ -9,7 +9,6 @@ using net.sf.jsqlparser.statement;
 using net.sf.jsqlparser.statement.create.view;
 using net.sf.jsqlparser.statement.@select;
 using net.sf.jsqlparser.statement.values;
-using Qsi.Data;
 using Qsi.JSql.Extensions;
 using Qsi.Tree;
 using Qsi.Utilities;
@@ -348,7 +347,7 @@ namespace Qsi.JSql.Tree
 
         public virtual QsiColumnNode VisitColumn(Column column)
         {
-            return TreeHelper.Create<QsiDeclaredColumnNode>(n =>
+            return TreeHelper.Create<QsiColumnReferenceNode>(n =>
             {
                 n.Name = IdentifierVisitor.VisitMultiPartName(column);
             });
@@ -426,7 +425,7 @@ namespace Qsi.JSql.Tree
         {
             return WrapFromItem(
                 table,
-                TreeHelper.Create<QsiTableAccessNode>(n =>
+                TreeHelper.Create<QsiTableReferenceNode>(n =>
                 {
                     n.Identifier = IdentifierVisitor.VisitMultiPartName(table);
                 }));

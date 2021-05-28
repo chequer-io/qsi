@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using Antlr4.Runtime;
 
 namespace Qsi.MySql.Internal

@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Google.Protobuf.Collections;
 using PhoenixSql;
 using PhoenixSql.Extensions;
 using Qsi.Data;
-using Qsi.Extensions;
-using Qsi.Parsing;
-using Qsi.PhoenixSql.Internal;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
 using Qsi.Utilities;
@@ -185,7 +181,7 @@ namespace Qsi.PhoenixSql.Tree
 
         public static QsiColumnNode VisitColumnParseNode(ColumnParseNode node)
         {
-            var columnNode = new QsiDeclaredColumnNode
+            var columnNode = new QsiColumnReferenceNode
             {
                 Name = IdentifierVisitor.Visit(node)
             };
@@ -232,11 +228,11 @@ namespace Qsi.PhoenixSql.Tree
         {
             var identifier = IdentifierVisitor.Visit(node.Name);
 
-            QsiTableAccessNode tableNode;
+            QsiTableReferenceNode tableNode;
 
             if (node.DynamicColumns.Any())
             {
-                tableNode = TreeHelper.Create<PDynamicTableAccessNode>(n =>
+                tableNode = TreeHelper.Create<PDynamicTableReferenceNode>(n =>
                 {
                     n.Identifier = identifier;
                     n.DynamicColumns = new QsiColumnsDeclarationNode();
@@ -245,7 +241,7 @@ namespace Qsi.PhoenixSql.Tree
             }
             else
             {
-                tableNode = new QsiTableAccessNode
+                tableNode = new QsiTableReferenceNode
                 {
                     Identifier = identifier
                 };
@@ -271,9 +267,9 @@ namespace Qsi.PhoenixSql.Tree
             });
         }
 
-        public static PDynamicDeclaredColumnNode VisitDynamicColumn(ColumnDef node)
+        public static PDynamicColumnReferenceNode VisitDynamicColumn(ColumnDef node)
         {
-            return TreeHelper.Create<PDynamicDeclaredColumnNode>(n =>
+            return TreeHelper.Create<PDynamicColumnReferenceNode>(n =>
             {
                 n.Name = IdentifierVisitor.Visit(node.ColumnDefName);
                 PTree.RawNode[n] = node;
@@ -351,7 +347,7 @@ namespace Qsi.PhoenixSql.Tree
 
             if (node.BaseTableName != null)
             {
-                QsiTableNode tableNode = TreeHelper.Create<QsiTableAccessNode>(n =>
+                QsiTableNode tableNode = TreeHelper.Create<QsiTableReferenceNode>(n =>
                 {
                     n.Identifier = IdentifierVisitor.Visit(node.BaseTableName);
                     PTree.RawNode[n] = node.BaseTableName;

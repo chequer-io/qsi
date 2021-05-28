@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Text;
 using Qsi.Data;
 using Qsi.PostgreSql.Internal;
@@ -252,7 +250,7 @@ namespace Qsi.PostgreSql.Tree.PG10
                 }
                 else
                 {
-                    n.Column.SetValue(new QsiDeclaredColumnNode
+                    n.Column.SetValue(new QsiColumnReferenceNode
                     {
                         Name = IdentifierVisitor.VisitStrings(columnRef.fields.Cast<PgString>())
                     });
