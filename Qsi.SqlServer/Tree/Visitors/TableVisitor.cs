@@ -419,7 +419,7 @@ namespace Qsi.SqlServer.Tree
         }
         #endregion
 
-        #region HavingClause
+        #region GroupByClause
         public QsiGroupingExpressionNode VisitGroupByClause(GroupByClause groupByClause, HavingClause havingClause)
         {
             return TreeHelper.Create<QsiGroupingExpressionNode>(n =>
