@@ -17,7 +17,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Qsi\Qsi.csproj"/>
+        <ProjectReference Include="..\Qsi\Qsi.csproj" />
     </ItemGroup>
 
 </Project>

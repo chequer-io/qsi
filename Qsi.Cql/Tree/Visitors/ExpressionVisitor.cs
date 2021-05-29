@@ -1110,7 +1110,8 @@ namespace Qsi.Cql.Tree
                 }
                 else
                 {
-                    n.Type = QsiParameterType.Sequence;
+                    n.Index = context.index;
+                    n.Type = QsiParameterType.Index;
                 }
 
                 CqlTree.PutContextSpan(n, context);

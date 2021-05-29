@@ -17,7 +17,7 @@ namespace Qsi.JSql.Tree
 {
     public class JSqlTableVisitor : JSqlVisitorBase
     {
-        public JSqlTableVisitor(IJSqlVisitorContext context) : base(context)
+        public JSqlTableVisitor(IJSqlVisitorSet set) : base(set)
         {
         }
 

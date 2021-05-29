@@ -18,7 +18,9 @@ namespace Qsi.JSql.Tree
     {
         private static readonly Regex _dateTimePattern = new("(?<=')[^']+(?=')");
 
-        public JSqlExpressionVisitor(IJSqlVisitorContext context) : base(context)
+        private int _bindParamIndex;
+
+        public JSqlExpressionVisitor(IJSqlVisitorSet set) : base(set)
         {
         }
 
@@ -435,22 +437,12 @@ namespace Qsi.JSql.Tree
         // ? | ?<index>
         public virtual QsiExpressionNode VisitJdbcParameter(JdbcParameter expression)
         {
-            var node = new QsiBindParameterExpressionNode
+            return new QsiBindParameterExpressionNode
             {
-                Token = expression.toString()
+                Type = QsiParameterType.Index,
+                Token = expression.toString(),
+                Index = expression.isUseFixedIndex() ? expression.getIndex().intValue() : _bindParamIndex++
             };
-
-            if (expression.isUseFixedIndex())
-            {
-                node.Name = expression.getIndex().toString();
-                node.Type = QsiParameterType.Name;
-            }
-            else
-            {
-                node.Type = QsiParameterType.Sequence;
-            }
-
-            return node;
         }
 
         // :<name>

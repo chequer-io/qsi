@@ -1,6 +1,6 @@
 ﻿namespace Qsi.JSql.Tree
 {
-    public interface IJSqlVisitorContext
+    public interface IJSqlVisitorSet
     {
         JSqlTableVisitor TableVisitor { get; }
 

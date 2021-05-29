@@ -2,17 +2,17 @@
 {
     public abstract class JSqlVisitorBase
     {
-        protected JSqlTableVisitor TableVisitor => _context.TableVisitor;
+        protected JSqlTableVisitor TableVisitor => _set.TableVisitor;
 
-        protected JSqlExpressionVisitor ExpressionVisitor => _context.ExpressionVisitor;
+        protected JSqlExpressionVisitor ExpressionVisitor => _set.ExpressionVisitor;
 
-        protected JSqlIdentifierVisitor IdentifierVisitor => _context.IdentifierVisitor;
+        protected JSqlIdentifierVisitor IdentifierVisitor => _set.IdentifierVisitor;
 
-        private readonly IJSqlVisitorContext _context;
+        private readonly IJSqlVisitorSet _set;
 
-        protected JSqlVisitorBase(IJSqlVisitorContext context)
+        protected JSqlVisitorBase(IJSqlVisitorSet set)
         {
-            _context = context;
+            _set = set;
         }
     }
 }

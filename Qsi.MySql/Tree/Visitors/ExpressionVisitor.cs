@@ -6,6 +6,7 @@ using Antlr4.Runtime.Tree;
 using Qsi.Data;
 using Qsi.MySql.Data;
 using Qsi.MySql.Tree.Common;
+using Qsi.Parsing;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
 using Qsi.Utilities;
@@ -558,22 +559,7 @@ namespace Qsi.MySql.Tree
 
         private static QsiBindParameterExpressionNode VisitParamMarker(ITerminalNode context)
         {
-            var node = new QsiBindParameterExpressionNode
-            {
-                Type = QsiParameterType.Sequence,
-                Token = context.GetText()
-            };
-
-            MySqlTree.PutContextSpan(
-                node,
-                new ParserRuleContextWrapper<ITerminalNode>(
-                    context,
-                    context.Symbol,
-                    context.Symbol
-                )
-            );
-
-            return node;
+            throw new QsiException(QsiError.Syntax);
         }
 
         public static QsiInvokeExpressionNode VisitSimpleExprSum(SimpleExprSumContext context)

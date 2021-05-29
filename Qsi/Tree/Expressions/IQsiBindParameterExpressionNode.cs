@@ -9,5 +9,7 @@ namespace Qsi.Tree
         string Token { get; }
 
         string Name { get; }
+
+        int? Index { get; }
     }
 }

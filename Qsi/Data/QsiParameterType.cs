@@ -3,6 +3,6 @@
     public enum QsiParameterType
     {
         Name,
-        Sequence
+        Index
     }
 }

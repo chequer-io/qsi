@@ -526,6 +526,7 @@ namespace Qsi.Extensions
                 node.Type,
                 node.Token,
                 node.Name,
+                node.Index,
                 ignoreUserData ? null : node.UserData);
         }
 

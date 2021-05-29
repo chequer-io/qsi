@@ -866,6 +866,9 @@ namespace Qsi.Analyzers.Table
                     break;
                 }
 
+                case IQsiBindParameterExpressionNode:
+                    break;
+
                 default:
                     throw new InvalidOperationException();
             }

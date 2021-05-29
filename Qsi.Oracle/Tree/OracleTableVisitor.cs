@@ -8,7 +8,7 @@ namespace Qsi.Oracle.Tree
 {
     internal sealed class OracleTableVisitor : JSqlTableVisitor
     {
-        public OracleTableVisitor(IJSqlVisitorContext context) : base(context)
+        public OracleTableVisitor(IJSqlVisitorSet set) : base(set)
         {
         }
 
