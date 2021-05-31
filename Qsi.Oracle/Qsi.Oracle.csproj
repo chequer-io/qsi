@@ -11,7 +11,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Qsi.JSql\Qsi.JSql.csproj" />
         <ProjectReference Include="..\Qsi\Qsi.csproj" />
     </ItemGroup>
 

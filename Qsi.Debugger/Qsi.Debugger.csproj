@@ -27,7 +27,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Qsi.Cql\Qsi.Cql.csproj" />
-        <ProjectReference Include="..\Qsi.JSql\Qsi.JSql.csproj" />
         <ProjectReference Include="..\Qsi.MongoDB\Qsi.MongoDB.csproj" />
         <ProjectReference Include="..\Qsi.MySql\Qsi.MySql.csproj" />
         <ProjectReference Include="..\Qsi.Oracle\Qsi.Oracle.csproj" />
