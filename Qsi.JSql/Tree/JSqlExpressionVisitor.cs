@@ -429,7 +429,7 @@ namespace Qsi.JSql.Tree
             return new QsiBindParameterExpressionNode
             {
                 Type = QsiParameterType.Name,
-                Token = expression.toString(),
+                Prefix = ":",
                 Name = expression.getBindId().toString()
             };
         }
@@ -440,7 +440,7 @@ namespace Qsi.JSql.Tree
             return new QsiBindParameterExpressionNode
             {
                 Type = QsiParameterType.Index,
-                Token = expression.toString(),
+                Prefix = "?",
                 Index = expression.isUseFixedIndex() ? expression.getIndex().intValue() : _bindParamIndex++
             };
         }
@@ -451,7 +451,7 @@ namespace Qsi.JSql.Tree
             return new QsiBindParameterExpressionNode
             {
                 Type = QsiParameterType.Name,
-                Token = expression.toString(),
+                Prefix = ":",
                 Name = expression.getName()
             };
         }

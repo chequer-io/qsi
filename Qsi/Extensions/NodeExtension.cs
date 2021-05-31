@@ -524,7 +524,8 @@ namespace Qsi.Extensions
             return new(
                 node.Parent,
                 node.Type,
-                node.Token,
+                node.Prefix,
+                node.NoSuffix,
                 node.Name,
                 node.Index,
                 ignoreUserData ? null : node.UserData);

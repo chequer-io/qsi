@@ -2,6 +2,7 @@
 using Qsi.Analyzers;
 using Qsi.Data;
 using Qsi.Parsing;
+using Qsi.Tree;
 
 namespace Qsi.Services
 {
@@ -20,5 +21,7 @@ namespace Qsi.Services
         IQsiRepositoryProvider CreateRepositoryProvider();
 
         bool MatchIdentifier(QsiIdentifier x, QsiIdentifier y);
+
+        QsiParameter FindParameter(QsiParameter[] parameters, IQsiBindParameterExpressionNode node);
     }
 }

@@ -411,7 +411,10 @@ namespace Qsi.Parsing.Common
 
         protected virtual void DeparseBindParameterExpressionNode(ScriptWriter writer, IQsiBindParameterExpressionNode node, QsiScript script)
         {
-            writer.Write(node.Token);
+            writer.Write(node.Prefix);
+
+            if (!node.NoSuffix)
+                writer.Write(node.Type == QsiParameterType.Index ? node.Index : node.Name);
         }
 
         protected virtual void DeparseLiteralExpressionNode(ScriptWriter writer, IQsiLiteralExpressionNode node, QsiScript script)

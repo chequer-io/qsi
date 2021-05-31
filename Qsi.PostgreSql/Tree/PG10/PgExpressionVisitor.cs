@@ -422,13 +422,13 @@ namespace Qsi.PostgreSql.Tree.PG10
             if (paramRef.number.HasValue)
             {
                 node.Type = QsiParameterType.Name;
-                node.Token = $"${paramRef.number}";
+                node.Prefix = "$";
                 node.Name = paramRef.number.ToString();
             }
             else
             {
                 node.Type = QsiParameterType.Index;
-                node.Token = "?";
+                node.Prefix = "$";
                 node.Index = _bindParamIndex++;
             }
 

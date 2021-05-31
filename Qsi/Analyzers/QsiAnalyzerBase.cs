@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Qsi.Analyzers.Context;
 using Qsi.Data;
+using Qsi.Extensions;
 using Qsi.Tree;
 using Qsi.Utilities;
 
@@ -36,7 +39,16 @@ namespace Qsi.Analyzers
             if (!CanExecute(script, tree))
                 throw new QsiException(QsiError.NotSupportedScript, script.ScriptType);
 
-            return OnExecute(new AnalyzerContext(_engine, script, parameters, tree, options, cancellationToken));
+            return OnExecute(
+                new AnalyzerContext(
+                    _engine,
+                    script,
+                    BindParameters(tree, parameters),
+                    tree,
+                    options,
+                    cancellationToken
+                )
+            );
         }
 
         public abstract bool CanExecute(QsiScript script, IQsiTreeNode tree);
@@ -105,6 +117,22 @@ namespace Qsi.Analyzers
             var partialIdentifier = new QsiQualifiedIdentifier(partialIdentifiers);
 
             return Match(partialIdentifier, identifier);
+        }
+
+        protected IReadOnlyDictionary<IQsiBindParameterExpressionNode, QsiParameter> BindParameters(IQsiTreeNode node, QsiParameter[] parameters)
+        {
+            if (parameters == null || parameters.Length == 0)
+                return ImmutableDictionary<IQsiBindParameterExpressionNode, QsiParameter>.Empty;
+
+            IEnumerable<KeyValuePair<IQsiBindParameterExpressionNode, QsiParameter>> pairs = node
+                .FindAscendants<IQsiBindParameterExpressionNode>()
+                .Select(n =>
+                {
+                    var p = _engine.LanguageService.FindParameter(parameters, n);
+                    return new KeyValuePair<IQsiBindParameterExpressionNode, QsiParameter>(n, p);
+                });
+
+            return new Dictionary<IQsiBindParameterExpressionNode, QsiParameter>(pairs);
         }
         #endregion
 

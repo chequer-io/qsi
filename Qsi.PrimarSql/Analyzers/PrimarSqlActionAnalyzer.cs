@@ -33,7 +33,8 @@ namespace Qsi.PrimarSql.Analyzers
             var tempTable = CreateTemporaryTable(table.Identifier);
 
             var commonTableNode = ReassembleCommonTableNode(action.Target);
-            var dataTable = await GetDataTableByCommonTableNode(context, commonTableNode);
+            QsiParameter[] parameters = ArrangeBindParameters(context, commonTableNode);
+            var dataTable = await GetDataTableByCommonTableNode(context, commonTableNode, parameters);
 
             var deleteRows = new QsiDataRowCollection(1);
 
@@ -63,7 +64,8 @@ namespace Qsi.PrimarSql.Analyzers
             var tempTable = CreateTemporaryTable(table.Identifier);
 
             var commonTableNode = ReassembleCommonTableNode(action.Target);
-            var dataTable = await GetDataTableByCommonTableNode(context, commonTableNode);
+            QsiParameter[] parameters = ArrangeBindParameters(context, commonTableNode);
+            var dataTable = await GetDataTableByCommonTableNode(context, commonTableNode, parameters);
 
             var updateBeforeRows = new QsiDataRowCollection(1);
             var updateAfterRows = new QsiDataRowCollection(1);

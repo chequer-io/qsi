@@ -1101,15 +1101,16 @@ namespace Qsi.Cql.Tree
         {
             return TreeHelper.Create<QsiBindParameterExpressionNode>(n =>
             {
-                n.Token = context.GetText();
-
                 if (context.id != null)
                 {
+                    n.Prefix = ":";
                     n.Name = context.id.GetText();
                     n.Type = QsiParameterType.Name;
                 }
                 else
                 {
+                    n.Prefix = "?";
+                    n.NoSuffix = true;
                     n.Index = context.index;
                     n.Type = QsiParameterType.Index;
                 }

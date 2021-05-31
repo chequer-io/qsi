@@ -4,11 +4,13 @@ using Qsi.Data;
 
 namespace Qsi.Tree
 {
-    public class QsiBindParameterExpressionNode : QsiExpressionNode, IQsiBindParameterExpressionNode
+    public sealed class QsiBindParameterExpressionNode : QsiExpressionNode, IQsiBindParameterExpressionNode
     {
         public QsiParameterType Type { get; set; }
 
-        public string Token { get; set; }
+        public string Prefix { get; set; }
+
+        public bool NoSuffix { get; set; }
 
         public string Name { get; set; }
 

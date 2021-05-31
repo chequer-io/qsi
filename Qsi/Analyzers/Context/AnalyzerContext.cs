@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using Qsi.Data;
 using Qsi.Tree;
@@ -11,7 +12,7 @@ namespace Qsi.Analyzers.Context
 
         public QsiScript Script { get; }
 
-        public QsiParameter[] Parameters { get; }
+        public IReadOnlyDictionary<IQsiBindParameterExpressionNode, QsiParameter> Parameters { get; }
 
         public IQsiTreeNode Tree { get; }
 
@@ -22,7 +23,7 @@ namespace Qsi.Analyzers.Context
         public AnalyzerContext(
             QsiEngine engine,
             QsiScript script,
-            QsiParameter[] parameters,
+            IReadOnlyDictionary<IQsiBindParameterExpressionNode, QsiParameter> parameters,
             IQsiTreeNode tree,
             QsiAnalyzerOptions options,
             CancellationToken cancellationToken)

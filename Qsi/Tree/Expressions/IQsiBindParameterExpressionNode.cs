@@ -6,7 +6,9 @@ namespace Qsi.Tree
     {
         QsiParameterType Type { get; }
 
-        string Token { get; }
+        string Prefix { get; }
+
+        bool NoSuffix { get; }
 
         string Name { get; }
 

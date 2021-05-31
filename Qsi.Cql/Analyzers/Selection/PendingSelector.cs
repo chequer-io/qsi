@@ -32,8 +32,8 @@ namespace Qsi.Cql.Analyzers.Selection
             else if (Type == typeof(RangeSelector))
             {
                 var dictionary = (IDictionary)value;
-                var start = (Index)Convert.ChangeType(dictionary['s'], TypeCode.Int32);
-                var end = (Index)Convert.ChangeType(dictionary['e'], TypeCode.Int32);
+                var start = (Index)Convert.ChangeType(dictionary['s'], TypeCode.Int32)!;
+                var end = (Index)Convert.ChangeType(dictionary['e'], TypeCode.Int32)!;
 
                 if (start.Value == -1)
                     start = Index.Start;
