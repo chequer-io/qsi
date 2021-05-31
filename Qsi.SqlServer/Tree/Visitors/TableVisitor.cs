@@ -268,11 +268,11 @@ namespace Qsi.SqlServer.Tree
         public QsiColumnNode VisitSelectScalarExpression(SelectScalarExpression selectScalarExpression)
         {
             QsiExpressionNode expression = null;
-            QsiDeclaredColumnNode column = null;
+            QsiColumnReferenceNode column = null;
 
             if (selectScalarExpression.Expression is ColumnReferenceExpression columnReferenceExpression)
             {
-                column = new QsiDeclaredColumnNode
+                column = new QsiColumnReferenceNode
                 {
                     Name = IdentifierVisitor.CreateQualifiedIdentifier(columnReferenceExpression.MultiPartIdentifier)
                 };
@@ -694,7 +694,7 @@ namespace Qsi.SqlServer.Tree
 
         public QsiTableNode VisitNamedTableReference(NamedTableReference namedTableReference)
         {
-            var tableNode = new QsiTableAccessNode
+            var tableNode = new QsiTableReferenceNode
             {
                 Identifier = IdentifierVisitor.CreateQualifiedIdentifier(namedTableReference.SchemaObject)
             };

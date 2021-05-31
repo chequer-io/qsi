@@ -5,7 +5,7 @@ using Qsi.Tree.Data;
 
 namespace Qsi.Tree.Immutable
 {
-    public readonly struct ImmutableTableAccessNode : IQsiTableAccessNode
+    public readonly struct ImmutableTableReferenceNode : IQsiTableReferenceNode
     {
         public IQsiTreeNode Parent { get; }
 
@@ -15,7 +15,7 @@ namespace Qsi.Tree.Immutable
 
         public IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
 
-        public ImmutableTableAccessNode(
+        public ImmutableTableReferenceNode(
             IQsiTreeNode parent,
             QsiQualifiedIdentifier identifier,
             IUserDataHolder userData)

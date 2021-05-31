@@ -30,9 +30,9 @@ namespace Qsi.PhoenixSql.Tree
                 Hints = node.Hint?.Hints
             };
 
-            if (TableVisitor.VisitNamedTableNode(node.Table) is QsiTableAccessNode tableAccessNode)
+            if (TableVisitor.VisitNamedTableNode(node.Table) is QsiTableReferenceNode tableReferenceNode)
             {
-                insertAction.Target.SetValue(tableAccessNode);
+                insertAction.Target.SetValue(tableReferenceNode);
             }
             else
             {

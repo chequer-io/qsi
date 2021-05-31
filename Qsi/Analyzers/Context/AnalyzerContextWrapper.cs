@@ -10,6 +10,8 @@ namespace Qsi.Analyzers.Context
 
         public QsiScript Script => _context.Script;
 
+        public QsiParameter[] Parameters => _context.Parameters;
+
         public IQsiTreeNode Tree => _context.Tree;
 
         public QsiAnalyzerOptions Options => _context.Options;

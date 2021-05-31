@@ -6,6 +6,7 @@ using Antlr4.Runtime.Tree;
 using Qsi.Data;
 using Qsi.MySql.Data;
 using Qsi.MySql.Tree.Common;
+using Qsi.Parsing;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
 using Qsi.Utilities;
@@ -515,9 +516,9 @@ namespace Qsi.MySql.Tree
             });
         }
 
-        public static QsiDeclaredColumnNode VisitColumnRef(ColumnRefContext context)
+        public static QsiColumnReferenceNode VisitColumnRef(ColumnRefContext context)
         {
-            return TreeHelper.Create<QsiDeclaredColumnNode>(n =>
+            return TreeHelper.Create<QsiColumnReferenceNode>(n =>
             {
                 n.Name = IdentifierVisitor.VisitColumnRef(context);
 
@@ -551,31 +552,14 @@ namespace Qsi.MySql.Tree
             return VisitLiteral(context.literal());
         }
 
-        public static QsiColumnExpressionNode VisitSimpleExprParamMarker(SimpleExprParamMarkerContext context)
+        public static QsiBindParameterExpressionNode VisitSimpleExprParamMarker(SimpleExprParamMarkerContext context)
         {
-            var terminalNode = context.PARAM_MARKER();
-
-            var contextWrapper = new ParserRuleContextWrapper<ITerminalNode>(
-                terminalNode,
-                terminalNode.Symbol,
-                terminalNode.Symbol
-            );
-
-            return VisitParamMarker(contextWrapper);
+            return VisitParamMarker(context.PARAM_MARKER());
         }
 
-        private static QsiColumnExpressionNode VisitParamMarker(ParserRuleContextWrapper<ITerminalNode> context)
+        private static QsiBindParameterExpressionNode VisitParamMarker(ITerminalNode context)
         {
-            var node = new QsiColumnExpressionNode();
-
-            node.Column.SetValue(new QsiBindingColumnNode()
-            {
-                Id = context.Value.Symbol.Text
-            });
-
-            MySqlTree.PutContextSpan(node, context);
-
-            return node;
+            throw new QsiException(QsiError.Syntax);
         }
 
         public static QsiInvokeExpressionNode VisitSimpleExprSum(SimpleExprSumContext context)
@@ -1085,7 +1069,7 @@ namespace Qsi.MySql.Tree
                 n.Parameters.AddRange(context.expr().Select(VisitExpr));
 
                 // leading, trailing, both ignored
-                
+
                 MySqlTree.PutContextSpan(n, context);
             });
         }
@@ -1516,21 +1500,21 @@ namespace Qsi.MySql.Tree
                 case LEAD_SYMBOL:
                 case LAG_SYMBOL:
                     node.Parameters.Add(VisitExpr(context.expr()));
-                    
+
                     // nullTreatment ignored
                     break;
 
                 case FIRST_VALUE_SYMBOL:
                 case LAST_VALUE_SYMBOL:
                     node.Parameters.Add(VisitExprWithParentheses(context.exprWithParentheses()));
-                    
+
                     // nullTreatment ignored
                     break;
 
                 case NTH_VALUE_SYMBOL:
                     node.Parameters.Add(VisitExpr(context.expr()));
                     node.Parameters.Add(VisitSimpleExpr(context.simpleExpr()));
-                    
+
                     // nullTreatment ignored
                     break;
             }
@@ -1664,15 +1648,7 @@ namespace Qsi.MySql.Tree
 
                 case ITerminalNode terminalNode:
                     if (terminalNode is { Symbol: { Type: PARAM_MARKER } })
-                    {
-                        var contextWrapper = new ParserRuleContextWrapper<ITerminalNode>(
-                            terminalNode,
-                            terminalNode.Symbol,
-                            terminalNode.Symbol
-                        );
-
-                        return VisitParamMarker(contextWrapper);
-                    }
+                        return VisitParamMarker(terminalNode);
 
                     return VisitLiteralFromToken(terminalNode.Symbol);
 
@@ -1763,7 +1739,7 @@ namespace Qsi.MySql.Tree
 
             return TreeHelper.Create<QsiColumnExpressionNode>(n =>
             {
-                n.Column.SetValue(TreeHelper.Create<QsiDeclaredColumnNode>(cn =>
+                n.Column.SetValue(TreeHelper.Create<QsiColumnReferenceNode>(cn =>
                 {
                     cn.Name = identifier;
 

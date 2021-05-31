@@ -1,6 +1,5 @@
 ﻿using System.Linq;
 using System.Collections.Generic;
-using Qsi.Tree.Data;
 using Qsi.Utilities;
 
 namespace Qsi.Tree

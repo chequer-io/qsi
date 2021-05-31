@@ -7,7 +7,7 @@ namespace Qsi.Debugger.Vendor.PostgreSql
 {
     internal class PostgreSqlRepositoryProvider : VendorRepositoryProvider
     {
-        protected override Task<QsiDataTable> GetDataTable(QsiScript script)
+        protected override Task<QsiDataTable> GetDataTable(QsiScript script, QsiParameter[] parameters)
         {
             throw new NotImplementedException();
         }

@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using System.Text.RegularExpressions;
 using PhoenixSql;
-using PhoenixSql.Utilities;
 using Qsi.Data;
 
 namespace Qsi.PhoenixSql.Tree

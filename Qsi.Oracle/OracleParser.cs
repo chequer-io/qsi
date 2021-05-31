@@ -6,19 +6,19 @@ namespace Qsi.Oracle
 {
     public sealed class OracleParser : JSqlParser
     {
-        protected override JSqlTableVisitor CreateTableVisitor()
+        protected override JSqlTableVisitor CreateTableVisitor(IJSqlVisitorSet set)
         {
-            return new OracleTableVisitor(this);
+            return new OracleTableVisitor(set);
         }
 
-        protected override JSqlExpressionVisitor CreateExpressionVisitor()
+        protected override JSqlExpressionVisitor CreateExpressionVisitor(IJSqlVisitorSet set)
         {
-            return new OracleExpressionVisitor(this);
+            return new OracleExpressionVisitor(set);
         }
 
-        protected override JSqlIdentifierVisitor CreateIdentifierVisitor()
+        protected override JSqlIdentifierVisitor CreateIdentifierVisitor(IJSqlVisitorSet set)
         {
-            return new OracleIdentifierVisitor(this);
+            return new OracleIdentifierVisitor(set);
         }
     }
 }

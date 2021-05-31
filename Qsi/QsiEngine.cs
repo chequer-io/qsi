@@ -44,13 +44,13 @@ namespace Qsi
             return _analyzers.Value.OfType<T>().First();
         }
 
-        public async ValueTask<IQsiAnalysisResult[]> Execute(string input, CancellationToken cancellationToken = default)
+        public async ValueTask<IQsiAnalysisResult[]> Execute(string input, QsiParameter[] parameters, CancellationToken cancellationToken = default)
         {
             var results = new List<IQsiAnalysisResult>();
 
             foreach (var script in ScriptParser.Parse(input, cancellationToken))
             {
-                var result = await Execute(script, cancellationToken);
+                var result = await Execute(script, parameters, cancellationToken);
 
                 if (result is EmptyAnalysisResult)
                     continue;
@@ -61,7 +61,7 @@ namespace Qsi
             return results.ToArray();
         }
 
-        public async ValueTask<IQsiAnalysisResult> Execute(QsiScript script, CancellationToken cancellationToken = default)
+        public async ValueTask<IQsiAnalysisResult> Execute(QsiScript script, QsiParameter[] parameters, CancellationToken cancellationToken = default)
         {
             var tree = TreeParser.Parse(script, cancellationToken);
 
@@ -76,7 +76,7 @@ namespace Qsi
                 throw new QsiException(QsiError.NotSupportedScript, script.ScriptType);
             }
 
-            return await analyzer.Execute(script, tree, options, cancellationToken);
+            return await analyzer.Execute(script, parameters, tree, options, cancellationToken);
         }
     }
 }

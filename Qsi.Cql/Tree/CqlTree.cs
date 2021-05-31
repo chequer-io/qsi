@@ -2,7 +2,6 @@
 using System.Runtime.CompilerServices;
 using Antlr4.Runtime;
 using Qsi.Cql.Tree.Common;
-using Qsi.Shared;
 using Qsi.Tree;
 using Qsi.Tree.Data;
 

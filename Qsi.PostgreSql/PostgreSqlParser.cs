@@ -5,7 +5,6 @@ using Qsi.Parsing;
 using Qsi.PostgreSql.Internal;
 using Qsi.PostgreSql.Internal.PG10;
 using Qsi.PostgreSql.Internal.PG10.Types;
-using Qsi.PostgreSql.Tree.PG10;
 using Qsi.Tree;
 
 namespace Qsi.PostgreSql
@@ -19,14 +18,15 @@ namespace Qsi.PostgreSql
             _pgParser ??= new PgQuery10();
 
             var pgTree = (IPg10Node)_pgParser.Parse(script.Script) ?? throw new QsiException(QsiError.NotSupportedScript, script.ScriptType);
+            var pgVisitorSet = _pgParser.CreateVisitorSet();
 
             switch (script.ScriptType)
             {
                 case QsiScriptType.Set:
-                    return ActionVisitor.Visit(pgTree);
+                    return pgVisitorSet.ActionVisitor.Visit(pgTree);
 
                 default:
-                    return TableVisitor.Visit(pgTree);
+                    return pgVisitorSet.TableVisitor.Visit(pgTree);
             }
         }
 

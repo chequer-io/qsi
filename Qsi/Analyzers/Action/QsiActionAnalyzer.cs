@@ -117,7 +117,7 @@ namespace Qsi.Analyzers.Action
             var definition = context.Engine.RepositoryProvider.LookupDefinition(action.Identifier, QsiTableType.Prepared) ??
                              throw new QsiException(QsiError.UnableResolveDefinition, action.Identifier);
 
-            return context.Engine.Execute(definition);
+            return context.Engine.Execute(definition, null);
         }
         #endregion
 
@@ -288,7 +288,7 @@ namespace Qsi.Analyzers.Action
             var scriptType = context.Engine.ScriptParser.GetSuitableType(query);
             var script = new QsiScript(query, scriptType);
 
-            return await context.Engine.RepositoryProvider.GetDataTable(script);
+            return await context.Engine.RepositoryProvider.GetDataTable(script, context.Parameters);
         }
         #endregion
 
@@ -408,7 +408,7 @@ namespace Qsi.Analyzers.Action
                 script = $"{engine.TreeDeparser.Deparse(directives, context.Script)}\n{script}";
 
             var scriptType = engine.ScriptParser.GetSuitableType(script);
-            var dataTable = await engine.RepositoryProvider.GetDataTable(new QsiScript(script, scriptType));
+            var dataTable = await engine.RepositoryProvider.GetDataTable(new QsiScript(script, scriptType), context.Parameters);
 
             if (dataTable.Rows.ColumnCount != context.ColumnNames.Length)
                 throw new QsiException(QsiError.DifferentColumnsCount);

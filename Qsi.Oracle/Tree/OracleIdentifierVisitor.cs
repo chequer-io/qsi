@@ -8,7 +8,7 @@ namespace Qsi.Oracle.Tree
 {
     internal sealed class OracleIdentifierVisitor : JSqlIdentifierVisitor
     {
-        public OracleIdentifierVisitor(IJSqlVisitorContext context) : base(context)
+        public OracleIdentifierVisitor(IJSqlVisitorSet set) : base(set)
         {
         }
 

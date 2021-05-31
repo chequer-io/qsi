@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Antlr4.Runtime;
-using Qsi.Cql.Schema;
 using Qsi.Cql.Tree.Common;
 using Qsi.Data;
 using Qsi.Tree;
@@ -808,7 +807,7 @@ namespace Qsi.Cql.Tree
         {
             var node = new QsiColumnExpressionNode();
 
-            node.Column.SetValue(new QsiDeclaredColumnNode
+            node.Column.SetValue(new QsiColumnReferenceNode
             {
                 Name = new QsiQualifiedIdentifier(context.id)
             });
@@ -1100,12 +1099,20 @@ namespace Qsi.Cql.Tree
 
         public static QsiExpressionNode VisitBindParameter(BindParameterContext context)
         {
-            return TreeHelper.Create<QsiColumnExpressionNode>(n =>
+            return TreeHelper.Create<QsiBindParameterExpressionNode>(n =>
             {
-                n.Column.SetValue(new QsiBindingColumnNode
+                n.Token = context.GetText();
+
+                if (context.id != null)
                 {
-                    Id = context.id?.id?.Value ?? "?"
-                });
+                    n.Name = context.id.GetText();
+                    n.Type = QsiParameterType.Name;
+                }
+                else
+                {
+                    n.Index = context.index;
+                    n.Type = QsiParameterType.Index;
+                }
 
                 CqlTree.PutContextSpan(n, context);
             });

@@ -7,40 +7,42 @@ using Qsi.Tree;
 
 namespace Qsi.JSql
 {
-    public class JSqlParser : IQsiTreeParser, IJSqlVisitorContext
+    public class JSqlParser : IQsiTreeParser
     {
-        public JSqlTableVisitor TableVisitor { get; }
-
-        public JSqlExpressionVisitor ExpressionVisitor { get; }
-
-        public JSqlIdentifierVisitor IdentifierVisitor { get; }
-
-        public JSqlParser()
+        protected virtual JSqlTableVisitor CreateTableVisitor(IJSqlVisitorSet set)
         {
-            TableVisitor = CreateTableVisitor();
-            ExpressionVisitor = CreateExpressionVisitor();
-            IdentifierVisitor = CreateIdentifierVisitor();
+            return new(set);
         }
 
-        protected virtual JSqlTableVisitor CreateTableVisitor()
+        protected virtual JSqlExpressionVisitor CreateExpressionVisitor(IJSqlVisitorSet set)
         {
-            return new(this);
+            return new(set);
         }
 
-        protected virtual JSqlExpressionVisitor CreateExpressionVisitor()
+        protected virtual JSqlIdentifierVisitor CreateIdentifierVisitor(IJSqlVisitorSet set)
         {
-            return new(this);
-        }
-
-        protected virtual JSqlIdentifierVisitor CreateIdentifierVisitor()
-        {
-            return new(this);
+            return new(set);
         }
 
         public IQsiTreeNode Parse(QsiScript script, CancellationToken cancellationToken = default)
         {
             var statement = CCJSqlParserUtility.Parse(script.Script);
-            return TableVisitor.Visit(statement) ?? throw new QsiException(QsiError.NotSupportedScript, script.ScriptType);
+            var visitorSet = new VisitorSetImpl();
+
+            visitorSet.TableVisitor = CreateTableVisitor(visitorSet);
+            visitorSet.ExpressionVisitor = CreateExpressionVisitor(visitorSet);
+            visitorSet.IdentifierVisitor = CreateIdentifierVisitor(visitorSet);
+
+            return visitorSet.TableVisitor.Visit(statement) ?? throw new QsiException(QsiError.NotSupportedScript, script.ScriptType);
+        }
+
+        private sealed class VisitorSetImpl : IJSqlVisitorSet
+        {
+            public JSqlTableVisitor TableVisitor { get; set; }
+
+            public JSqlExpressionVisitor ExpressionVisitor { get; set; }
+
+            public JSqlIdentifierVisitor IdentifierVisitor { get; set; }
         }
     }
 }

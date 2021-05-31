@@ -53,7 +53,7 @@ namespace Qsi.MySql.Tree
                     }
                     else
                     {
-                        columns.Columns.Add(new QsiDeclaredColumnNode
+                        columns.Columns.Add(new QsiColumnReferenceNode
                         {
                             Name = identifier
                         });

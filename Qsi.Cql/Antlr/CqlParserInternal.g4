@@ -404,10 +404,9 @@ intValue
     | bindParameter
     ;
 
-bindParameter
-    @after { throw new QsiException(QsiError.NotSupportedFeature, "BindParameter"); }
-    : ':' id=noncol_ident
-    | QMARK
+bindParameter returns [int index]
+    : ':' id=noncol_ident { $index = -1; }
+    | QMARK               { $index = NextBindParameterIndex(); }
     ;
 
 functionName returns [QsiQualifiedIdentifier id]

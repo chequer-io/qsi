@@ -6,15 +6,19 @@ using Qsi.Utilities;
 
 namespace Qsi.PostgreSql.Tree.PG10
 {
-    internal static class ActionVisitor
+    internal class PgActionVisitor : PgVisitorBase
     {
-        public static QsiTreeNode Visit(IPg10Node node)
+        public PgActionVisitor(IPgVisitorSet set) : base(set)
+        {
+        }
+
+        public QsiTreeNode Visit(IPg10Node node)
         {
             switch (node)
             {
                 case RawStmt rawStmt:
                     return VisitRawStmt(rawStmt);
-                
+
                 case VariableSetStmt variableSetStmt:
                     return VisitVariableSetStmt(variableSetStmt);
             }
@@ -22,12 +26,12 @@ namespace Qsi.PostgreSql.Tree.PG10
             throw TreeHelper.NotSupportedTree(node);
         }
 
-        public static QsiTreeNode VisitRawStmt(RawStmt rawStmt)
+        public QsiTreeNode VisitRawStmt(RawStmt rawStmt)
         {
             return Visit(rawStmt.stmt[0]);
         }
 
-        public static QsiTreeNode VisitVariableSetStmt(VariableSetStmt variableSetStmt)
+        public QsiTreeNode VisitVariableSetStmt(VariableSetStmt variableSetStmt)
         {
             if (variableSetStmt.kind == VariableSetKind.VAR_SET_VALUE &&
                 variableSetStmt.name == "search_path")

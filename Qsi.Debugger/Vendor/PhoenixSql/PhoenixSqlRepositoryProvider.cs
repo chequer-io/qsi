@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Qsi.Data;
 using Qsi.Utilities;
 
@@ -7,7 +6,7 @@ namespace Qsi.Debugger.Vendor.PhoenixSql
 {
     internal class PhoenixSqlRepositoryProvider : VendorRepositoryProvider
     {
-        protected override Task<QsiDataTable> GetDataTable(QsiScript script)
+        protected override Task<QsiDataTable> GetDataTable(QsiScript script, QsiParameter[] parameters)
         {
             throw new System.NotImplementedException();
         }

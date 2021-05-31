@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Qsi.Data;
@@ -10,9 +9,13 @@ using Qsi.Utilities;
 
 namespace Qsi.PostgreSql.Tree.PG10
 {
-    internal static class TableVisitor
+    internal class PgTableVisitor : PgVisitorBase
     {
-        public static QsiTableNode Visit(IPg10Node node)
+        public PgTableVisitor(IPgVisitorSet set) : base(set)
+        {
+        }
+
+        public QsiTableNode Visit(IPg10Node node)
         {
             switch (node)
             {
@@ -32,12 +35,12 @@ namespace Qsi.PostgreSql.Tree.PG10
             throw TreeHelper.NotSupportedTree(node);
         }
 
-        public static QsiTableNode VisitRawStmt(RawStmt rawStmt)
+        public QsiTableNode VisitRawStmt(RawStmt rawStmt)
         {
             return Visit(rawStmt.stmt[0]);
         }
 
-        public static QsiTableNode VisitSelectStmt(SelectStmt selectStmt)
+        public QsiTableNode VisitSelectStmt(SelectStmt selectStmt)
         {
             QsiTableNode tableNode;
 
@@ -83,7 +86,7 @@ namespace Qsi.PostgreSql.Tree.PG10
             return derivedTableNode;
         }
 
-        private static QsiTableNode VisitSelectStmtNone(SelectStmt stmt)
+        private QsiTableNode VisitSelectStmtNone(SelectStmt stmt)
         {
             if (!ListUtility.IsNullOrEmpty(stmt.valuesLists))
                 return VisitValueList(stmt.valuesLists);
@@ -103,7 +106,7 @@ namespace Qsi.PostgreSql.Tree.PG10
             });
         }
 
-        private static QsiInlineDerivedTableNode VisitValueList(IPg10Node[][] valueList)
+        private QsiInlineDerivedTableNode VisitValueList(IPg10Node[][] valueList)
         {
             return TreeHelper.Create<QsiInlineDerivedTableNode>(n =>
             {
@@ -117,7 +120,7 @@ namespace Qsi.PostgreSql.Tree.PG10
             });
         }
 
-        private static QsiCompositeTableNode VisitSelectStmtComposite(SelectStmt stmt)
+        private QsiCompositeTableNode VisitSelectStmtComposite(SelectStmt stmt)
         {
             return TreeHelper.Create<QsiCompositeTableNode>(n =>
             {
@@ -126,7 +129,7 @@ namespace Qsi.PostgreSql.Tree.PG10
             });
         }
 
-        public static QsiDerivedTableNode VisitViewStmt(ViewStmt stmt)
+        public QsiDerivedTableNode VisitViewStmt(ViewStmt stmt)
         {
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
@@ -152,7 +155,7 @@ namespace Qsi.PostgreSql.Tree.PG10
             });
         }
 
-        private static QsiTableNode VisitCreateTableAsStmt(CreateTableAsStmt stmt)
+        private QsiTableNode VisitCreateTableAsStmt(CreateTableAsStmt stmt)
         {
             if (stmt.relkind != ObjectType.OBJECT_MATVIEW)
                 throw TreeHelper.NotSupportedTree(stmt);
@@ -172,7 +175,7 @@ namespace Qsi.PostgreSql.Tree.PG10
             });
         }
 
-        public static QsiTableDirectivesNode VisitWithClause(WithClause withClause)
+        public QsiTableDirectivesNode VisitWithClause(WithClause withClause)
         {
             return TreeHelper.Create<QsiTableDirectivesNode>(n =>
             {
@@ -184,7 +187,7 @@ namespace Qsi.PostgreSql.Tree.PG10
             });
         }
 
-        private static QsiDerivedTableNode VisitCommonTableExpression(CommonTableExpr cte)
+        private QsiDerivedTableNode VisitCommonTableExpression(CommonTableExpr cte)
         {
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
@@ -209,7 +212,7 @@ namespace Qsi.PostgreSql.Tree.PG10
             });
         }
 
-        public static IEnumerable<QsiSequentialColumnNode> CreateSequentialColumnNodes(IEnumerable<PgString> uids)
+        public IEnumerable<QsiSequentialColumnNode> CreateSequentialColumnNodes(IEnumerable<PgString> uids)
         {
             return IdentifierVisitor.VisitStrings(uids)
                 .Select(identifier => TreeHelper.Create<QsiSequentialColumnNode>(cn =>
@@ -223,7 +226,7 @@ namespace Qsi.PostgreSql.Tree.PG10
                 }));
         }
 
-        public static QsiColumnsDeclarationNode VisitResTargets(IEnumerable<ResTarget> targets)
+        public QsiColumnsDeclarationNode VisitResTargets(IEnumerable<ResTarget> targets)
         {
             return TreeHelper.Create<QsiColumnsDeclarationNode>(dn =>
             {
@@ -231,7 +234,7 @@ namespace Qsi.PostgreSql.Tree.PG10
             });
         }
 
-        public static QsiColumnNode VisitResTarget(ResTarget target)
+        public QsiColumnNode VisitResTarget(ResTarget target)
         {
             Debug.Assert(target.val.Length == 1);
 
@@ -258,6 +261,7 @@ namespace Qsi.PostgreSql.Tree.PG10
                 case NodeTag.T_NullTest:
                 case NodeTag.T_BooleanTest:
                 case NodeTag.T_CoalesceExpr:
+                case NodeTag.T_ParamRef:
                     columnNode = TreeHelper.Create<QsiDerivedColumnNode>(n =>
                     {
                         n.Expression.SetValue(ExpressionVisitor.Visit(value));
@@ -286,7 +290,7 @@ namespace Qsi.PostgreSql.Tree.PG10
             return derivedColumnNode;
         }
 
-        public static QsiColumnNode VisitColumnRef(ColumnRef columnRef)
+        public QsiColumnNode VisitColumnRef(ColumnRef columnRef)
         {
             var isAll = columnRef.fields[^1].Type == NodeTag.T_A_Star;
 
@@ -307,7 +311,7 @@ namespace Qsi.PostgreSql.Tree.PG10
 
             if (columnRef.fields.All(f => f.Type == NodeTag.T_String))
             {
-                return new QsiDeclaredColumnNode
+                return new QsiColumnReferenceNode
                 {
                     Name = IdentifierVisitor.VisitStrings(columnRef.fields.Cast<PgString>())
                 };
@@ -316,7 +320,7 @@ namespace Qsi.PostgreSql.Tree.PG10
             throw TreeHelper.NotSupportedTree(columnRef);
         }
 
-        public static QsiTableNode VisitFromClauses(QsiDerivedTableNode parentNode, IEnumerable<IPg10Node> fromClauses)
+        public QsiTableNode VisitFromClauses(QsiDerivedTableNode parentNode, IEnumerable<IPg10Node> fromClauses)
         {
             QsiTableNode[] sources = fromClauses
                 .Select(VisitFromClause)
@@ -351,7 +355,7 @@ namespace Qsi.PostgreSql.Tree.PG10
             return null;
         }
 
-        public static QsiTableNode VisitFromClause(IPg10Node fromClause)
+        public QsiTableNode VisitFromClause(IPg10Node fromClause)
         {
             return fromClause switch
             {
@@ -364,9 +368,9 @@ namespace Qsi.PostgreSql.Tree.PG10
         }
 
         // TODO: alias에 정의된 컬럼 + 정의되지 않은 컬럼 컴파일
-        public static QsiTableNode VisitRangeVar(RangeVar var)
+        public QsiTableNode VisitRangeVar(RangeVar var)
         {
-            var tableNode = new QsiTableAccessNode
+            var tableNode = new QsiTableReferenceNode
             {
                 Identifier = IdentifierVisitor.VisitRangeVar(var)
             };
@@ -412,7 +416,7 @@ namespace Qsi.PostgreSql.Tree.PG10
             });
         }
 
-        private static QsiTableNode VisitRangeSubselect(RangeSubselect subselect)
+        private QsiTableNode VisitRangeSubselect(RangeSubselect subselect)
         {
             if (ListUtility.IsNullOrEmpty(subselect.subquery))
                 return null;
@@ -463,13 +467,13 @@ namespace Qsi.PostgreSql.Tree.PG10
             });
         }
 
-        private static QsiTableNode VisitRangeFunction(RangeFunction function)
+        private QsiTableNode VisitRangeFunction(RangeFunction function)
         {
             // TODO: Implement table function
             throw TreeHelper.NotSupportedFeature("Table function");
         }
 
-        public static QsiJoinedTableNode VisitJoinExpression(JoinExpr joinExpr)
+        public QsiJoinedTableNode VisitJoinExpression(JoinExpr joinExpr)
         {
             return TreeHelper.Create<QsiJoinedTableNode>(n =>
             {
@@ -500,7 +504,7 @@ namespace Qsi.PostgreSql.Tree.PG10
                     {
                         foreach (var pgString in joinExpr.usingClause.Cast<PgString>())
                         {
-                            dn.Columns.Add(new QsiDeclaredColumnNode
+                            dn.Columns.Add(new QsiColumnReferenceNode
                             {
                                 Name = new QsiQualifiedIdentifier(new QsiIdentifier(pgString.str, false))
                             });
@@ -510,7 +514,7 @@ namespace Qsi.PostgreSql.Tree.PG10
             });
         }
 
-        private static string ToString(IEnumerable<PgString> pgStrings)
+        private string ToString(IEnumerable<PgString> pgStrings)
         {
             return string.Join(".", pgStrings.Select(s => s.str));
         }

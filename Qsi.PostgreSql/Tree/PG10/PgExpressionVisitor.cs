@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Text;
 using Qsi.Data;
 using Qsi.PostgreSql.Internal;
@@ -10,9 +8,15 @@ using Qsi.Utilities;
 
 namespace Qsi.PostgreSql.Tree.PG10
 {
-    internal static class ExpressionVisitor
+    internal class PgExpressionVisitor : PgVisitorBase
     {
-        public static QsiExpressionNode Visit(IPg10Node node)
+        private int _bindParamIndex;
+
+        public PgExpressionVisitor(IPgVisitorSet set) : base(set)
+        {
+        }
+
+        public QsiExpressionNode Visit(IPg10Node node)
         {
             switch (node)
             {
@@ -60,12 +64,15 @@ namespace Qsi.PostgreSql.Tree.PG10
 
                 case CoalesceExpr coalesceExpr:
                     return VisitCoalesceExpr(coalesceExpr);
+
+                case ParamRef paramRef:
+                    return VisitParamRef(paramRef);
             }
 
             throw TreeHelper.NotSupportedTree(node);
         }
 
-        private static QsiExpressionNode VisitExpressions(IPg10Node[] expressions)
+        private QsiExpressionNode VisitExpressions(IPg10Node[] expressions)
         {
             if (expressions.Length == 1)
                 return Visit(expressions[0]);
@@ -76,7 +83,7 @@ namespace Qsi.PostgreSql.Tree.PG10
             });
         }
 
-        private static QsiExpressionNode VisitAtomicExpression(A_Expr expression)
+        private QsiExpressionNode VisitAtomicExpression(A_Expr expression)
         {
             var builder = new StringBuilder();
 
@@ -117,12 +124,12 @@ namespace Qsi.PostgreSql.Tree.PG10
                 VisitExpressions);
         }
 
-        public static QsiExpressionNode VisitAtomicConstant(A_Const constant)
+        public QsiExpressionNode VisitAtomicConstant(A_Const constant)
         {
             return VisitValue(constant.val);
         }
 
-        private static QsiExpressionNode VisitAtomicArrayExpression(A_ArrayExpr arrayExpression)
+        private QsiExpressionNode VisitAtomicArrayExpression(A_ArrayExpr arrayExpression)
         {
             return TreeHelper.Create<QsiMultipleExpressionNode>(n =>
             {
@@ -130,7 +137,7 @@ namespace Qsi.PostgreSql.Tree.PG10
             });
         }
 
-        private static QsiExpressionNode VisitValue(Value value)
+        private QsiExpressionNode VisitValue(Value value)
         {
             return TreeHelper.Create<QsiLiteralExpressionNode>(n =>
             {
@@ -155,7 +162,7 @@ namespace Qsi.PostgreSql.Tree.PG10
             });
         }
 
-        public static QsiInvokeExpressionNode VisitFunctionCall(FuncCall funcCall)
+        public QsiInvokeExpressionNode VisitFunctionCall(FuncCall funcCall)
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
@@ -182,7 +189,7 @@ namespace Qsi.PostgreSql.Tree.PG10
             });
         }
 
-        private static QsiExpressionNode VisitSubLink(SubLink subLink)
+        private QsiExpressionNode VisitSubLink(SubLink subLink)
         {
             switch (subLink.subLinkType)
             {
@@ -198,7 +205,7 @@ namespace Qsi.PostgreSql.Tree.PG10
             throw TreeHelper.NotSupportedTree(subLink.subLinkType);
         }
 
-        private static QsiExpressionNode VisitTypeCast(TypeCast typeCast)
+        private QsiExpressionNode VisitTypeCast(TypeCast typeCast)
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
@@ -212,7 +219,7 @@ namespace Qsi.PostgreSql.Tree.PG10
             });
         }
 
-        private static QsiTypeExpressionNode VisitTypeName(TypeName typeName)
+        private QsiTypeExpressionNode VisitTypeName(TypeName typeName)
         {
             return TreeHelper.Create<QsiTypeExpressionNode>(n =>
             {
@@ -236,7 +243,7 @@ namespace Qsi.PostgreSql.Tree.PG10
             });
         }
 
-        private static QsiColumnExpressionNode VisitColumnRef(ColumnRef columnRef)
+        private QsiColumnExpressionNode VisitColumnRef(ColumnRef columnRef)
         {
             return TreeHelper.Create<QsiColumnExpressionNode>(n =>
             {
@@ -249,7 +256,7 @@ namespace Qsi.PostgreSql.Tree.PG10
                 }
                 else
                 {
-                    n.Column.SetValue(new QsiDeclaredColumnNode
+                    n.Column.SetValue(new QsiColumnReferenceNode
                     {
                         Name = IdentifierVisitor.VisitStrings(columnRef.fields.Cast<PgString>())
                     });
@@ -257,7 +264,7 @@ namespace Qsi.PostgreSql.Tree.PG10
             });
         }
 
-        private static QsiExpressionNode VisitCaseExpression(CaseExpr caseExpr)
+        private QsiExpressionNode VisitCaseExpression(CaseExpr caseExpr)
         {
             var switchExp = new QsiSwitchExpressionNode();
 
@@ -298,7 +305,7 @@ namespace Qsi.PostgreSql.Tree.PG10
         }
 
         // <expr> OP <expr> OP <expr> ..
-        private static QsiExpressionNode VisitBoolExpression(BoolExpr boolExpr)
+        private QsiExpressionNode VisitBoolExpression(BoolExpr boolExpr)
         {
             string op = boolExpr.boolop.ToString().Split("_", 2)[0];
 
@@ -329,7 +336,7 @@ namespace Qsi.PostgreSql.Tree.PG10
         }
 
         // ROW(..)
-        private static QsiExpressionNode VisitRowExpression(RowExpr rowExpr)
+        private QsiExpressionNode VisitRowExpression(RowExpr rowExpr)
         {
             if (!ListUtility.IsNullOrEmpty(rowExpr.colnames))
                 throw TreeHelper.NotSupportedTree(rowExpr);
@@ -345,7 +352,7 @@ namespace Qsi.PostgreSql.Tree.PG10
             });
         }
 
-        public static QsiInvokeExpressionNode VisitNullTest(NullTest nullTest)
+        public QsiInvokeExpressionNode VisitNullTest(NullTest nullTest)
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
@@ -366,7 +373,7 @@ namespace Qsi.PostgreSql.Tree.PG10
             });
         }
 
-        public static QsiInvokeExpressionNode VisitBooleanTest(BooleanTest booleanTest)
+        public QsiInvokeExpressionNode VisitBooleanTest(BooleanTest booleanTest)
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
@@ -387,7 +394,7 @@ namespace Qsi.PostgreSql.Tree.PG10
             });
         }
 
-        private static QsiExpressionNode VisitCoalesceExpr(CoalesceExpr coalesceExpr)
+        private QsiExpressionNode VisitCoalesceExpr(CoalesceExpr coalesceExpr)
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
@@ -406,6 +413,26 @@ namespace Qsi.PostgreSql.Tree.PG10
                     n.Parameters.AddRange(coalesceExpr.args.Select(Visit));
                 }
             });
+        }
+
+        private QsiExpressionNode VisitParamRef(ParamRef paramRef)
+        {
+            var node = new QsiBindParameterExpressionNode();
+
+            if (paramRef.number.HasValue)
+            {
+                node.Type = QsiParameterType.Name;
+                node.Token = $"${paramRef.number}";
+                node.Name = paramRef.number.ToString();
+            }
+            else
+            {
+                node.Type = QsiParameterType.Index;
+                node.Token = "?";
+                node.Index = _bindParamIndex++;
+            }
+
+            return node;
         }
     }
 }
