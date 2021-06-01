@@ -3,7 +3,7 @@ using Qsi.Tree;
 
 namespace Qsi.MySql.Tree
 {
-    public sealed class MySqlTableAccessNode : QsiTableAccessNode
+    public sealed class MySqlTableReferenceNode : QsiTableReferenceNode
     {
         public QsiIdentifier[] Partitions { get; set; }
     }

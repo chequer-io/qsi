@@ -18,6 +18,13 @@ namespace Qsi.Cql.Internal
             "bitstring"
         };
 
+        private int _bindParamIndex;
+
+        protected int NextBindParameterIndex()
+        {
+            return _bindParamIndex++;
+        }
+
         public override void AddErrorListener(IAntlrErrorListener<IToken> listener)
         {
             if (listener is ErrorListener errorListener)

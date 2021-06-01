@@ -23,16 +23,16 @@ namespace Qsi.MySql
             writer.Write(script.Script[range]);
         }
 
-        protected override void DeparseTableAccessNode(ScriptWriter writer, IQsiTableAccessNode node, QsiScript script)
+        protected override void DeparseTableReferenceNode(ScriptWriter writer, IQsiTableReferenceNode node, QsiScript script)
         {
-            base.DeparseTableAccessNode(writer, node, script);
+            base.DeparseTableReferenceNode(writer, node, script);
 
-            if (node is MySqlTableAccessNode tableAccessNode && tableAccessNode.Partitions?.Length > 0)
+            if (node is MySqlTableReferenceNode { Partitions: { Length: > 0 } } tableReferenceNode)
             {
                 writer.WriteSpace();
                 writer.Write("PARTITION");
                 writer.WriteSpace();
-                writer.WriteJoin(", ", tableAccessNode.Partitions);
+                writer.WriteJoin(", ", tableReferenceNode.Partitions);
             }
         }
 

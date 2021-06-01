@@ -1,23 +1,24 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Qsi.Data;
 using Qsi.Tree.Data;
 
 namespace Qsi.Tree.Immutable
 {
-    public readonly struct ImmutableBindingColumnNode : IQsiBindingColumnNode
+    public readonly struct ImmutableColumnReferenceNode : IQsiColumnReferenceNode, IQsiTerminalNode
     {
         public IQsiTreeNode Parent { get; }
 
-        public string Id { get; }
+        public QsiQualifiedIdentifier Name { get; }
 
         public IUserDataHolder UserData { get; }
 
         public IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
 
-        public ImmutableBindingColumnNode(IQsiTreeNode parent, string id, IUserDataHolder userData)
+        public ImmutableColumnReferenceNode(IQsiTreeNode parent, QsiQualifiedIdentifier name, IUserDataHolder userData)
         {
             Parent = parent;
-            Id = id;
+            Name = name;
             UserData = userData;
         }
     }

@@ -8,7 +8,7 @@ namespace Qsi.Oracle.Tree
 {
     internal sealed class OracleTableVisitor : JSqlTableVisitor
     {
-        public OracleTableVisitor(IJSqlVisitorContext context) : base(context)
+        public OracleTableVisitor(IJSqlVisitorSet set) : base(set)
         {
         }
 
@@ -16,9 +16,9 @@ namespace Qsi.Oracle.Tree
         {
             var columnNode = base.VisitColumn(column);
 
-            if (columnNode is QsiDeclaredColumnNode declaredColumn &&
-                declaredColumn.Name.Level == 1 && !declaredColumn.Name[0].IsEscaped &&
-                OracleFunction.Contains(declaredColumn.Name[0].Value))
+            if (columnNode is QsiColumnReferenceNode columnReferenceNode &&
+                columnReferenceNode.Name.Level == 1 && !columnReferenceNode.Name[0].IsEscaped &&
+                OracleFunction.Contains(columnReferenceNode.Name[0].Value))
             {
                 return TreeHelper.Create<QsiDerivedColumnNode>(cn =>
                 {
@@ -26,13 +26,13 @@ namespace Qsi.Oracle.Tree
                     {
                         n.Member.SetValue(new QsiFunctionExpressionNode
                         {
-                            Identifier = declaredColumn.Name
+                            Identifier = columnReferenceNode.Name
                         });
                     }));
 
                     cn.Alias.SetValue(new QsiAliasNode
                     {
-                        Name = declaredColumn.Name[0]
+                        Name = columnReferenceNode.Name[0]
                     });
                 });
             }

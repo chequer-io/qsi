@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using Qsi.Data;
-using Qsi.Tree;
 
 namespace Qsi.Services
 {
@@ -14,6 +13,6 @@ namespace Qsi.Services
 
         QsiVariable LookupVariable(QsiQualifiedIdentifier identifier);
 
-        Task<QsiDataTable> GetDataTable(QsiScript script);
+        Task<QsiDataTable> GetDataTable(QsiScript script, QsiParameter[] parameters);
     }
 }

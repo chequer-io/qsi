@@ -228,15 +228,7 @@ namespace Qsi.Extensions
                 ignoreUserData ? null : node.UserData);
         }
 
-        public static ImmutableBindingColumnNode ToImmutable(this IQsiBindingColumnNode node, bool ignoreUserData = false)
-        {
-            return new(
-                node.Parent,
-                node.Id,
-                ignoreUserData ? null : node.UserData);
-        }
-
-        public static ImmutableDeclaredColumnNode ToImmutable(this IQsiDeclaredColumnNode node, bool ignoreUserData = false)
+        public static ImmutableColumnReferenceNode ToImmutable(this IQsiColumnReferenceNode node, bool ignoreUserData = false)
         {
             return new(
                 node.Parent,
@@ -501,7 +493,7 @@ namespace Qsi.Extensions
                 ignoreUserData ? null : node.UserData);
         }
 
-        public static ImmutableTableAccessNode ToImmutable(this IQsiTableAccessNode node, bool ignoreUserData = false)
+        public static ImmutableTableReferenceNode ToImmutable(this IQsiTableReferenceNode node, bool ignoreUserData = false)
         {
             return new(
                 node.Parent,
@@ -524,6 +516,18 @@ namespace Qsi.Extensions
                 node.Parent,
                 node.Items,
                 node.Having,
+                ignoreUserData ? null : node.UserData);
+        }
+
+        public static ImmutableBindParameterExpressionNode ToImmutable(this IQsiBindParameterExpressionNode node, bool ignoreUserData = false)
+        {
+            return new(
+                node.Parent,
+                node.Type,
+                node.Prefix,
+                node.NoSuffix,
+                node.Name,
+                node.Index,
                 ignoreUserData ? null : node.UserData);
         }
 

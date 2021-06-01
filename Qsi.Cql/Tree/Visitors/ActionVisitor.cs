@@ -244,7 +244,7 @@ namespace Qsi.Cql.Tree
             }
         }
 
-        private static QsiDeclaredColumnNode VisitDeleteSingle(DeleteSingleContext context)
+        private static QsiColumnReferenceNode VisitDeleteSingle(DeleteSingleContext context)
         {
             return TableVisitor.VisitCident(context.c);
         }

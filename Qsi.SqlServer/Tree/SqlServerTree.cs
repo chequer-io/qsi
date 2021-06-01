@@ -8,12 +8,10 @@ namespace Qsi.SqlServer.Tree
 {
     internal static class SqlServerTree
     {
-        public static readonly Key<Range> SpanKey = new Key<Range>("node_span");
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Range GetSpan(IQsiTreeNode node)
         {
-            return node.UserData?.GetData(SpanKey) ?? default;
+            return node.UserData?.GetData(QsiNodeProperties.Span) ?? default;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -29,7 +27,7 @@ namespace Qsi.SqlServer.Tree
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void PutFragmentSpan(IQsiTreeNode node, TSqlParserToken first, TSqlParserToken last)
         {
-            node.UserData?.PutData(SpanKey, new Range(first.Offset, last.Offset + last.Text.Length));
+            node.UserData?.PutData(QsiNodeProperties.Span, new Range(first.Offset, last.Offset + last.Text.Length));
         }
     }
 }

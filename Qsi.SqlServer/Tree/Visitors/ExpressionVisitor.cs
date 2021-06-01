@@ -253,7 +253,7 @@ namespace Qsi.SqlServer.Tree
                 {
                     n.Parameters.Add(TreeHelper.Create<QsiTableExpressionNode>(tn =>
                     {
-                        tn.Table.SetValue(new QsiTableAccessNode
+                        tn.Table.SetValue(new QsiTableReferenceNode
                         {
                             Identifier = IdentifierVisitor.CreateQualifiedIdentifier(eventDeclarationCompareFunctionParameter.Name.MultiPartIdentifier)
                         });
@@ -411,7 +411,7 @@ namespace Qsi.SqlServer.Tree
                     BinaryExpressionType.BitwiseXor => SqlServerKnownOperator.BitwiseXor,
                     _ => throw new InvalidOperationException()
                 };
-                
+
                 SqlServerTree.PutFragmentSpan(n, binaryExpression);
             });
         }
@@ -429,7 +429,7 @@ namespace Qsi.SqlServer.Tree
             var node = TreeHelper.CreateUnary(expressionType, VisitScalarExpression(unaryExpression.Expression));
 
             SqlServerTree.PutFragmentSpan(node, unaryExpression);
-            
+
             return node;
         }
 
@@ -505,6 +505,8 @@ namespace Qsi.SqlServer.Tree
                         null => new MultiPartIdentifier(),
                         _ => throw TreeHelper.NotSupportedTree(functionCall.CallTarget)
                     };
+
+                    // OverClause ignored
 
                     return CreateInvokeExpression(functionCall, IdentifierVisitor.ConcatIdentifier(callTarget, functionCall.FunctionName), functionCall.Parameters);
                 }
@@ -666,7 +668,7 @@ namespace Qsi.SqlServer.Tree
 
                 QsiColumnNode node = columnReferenceExpression.ColumnType switch
                 {
-                    ColumnType.Regular => new QsiDeclaredColumnNode { Name = name },
+                    ColumnType.Regular => new QsiColumnReferenceNode { Name = name },
                     ColumnType.Wildcard => new QsiAllColumnNode { Path = name },
                     _ => throw TreeHelper.NotSupportedFeature($"{columnReferenceExpression.ColumnType} type column")
                 };
@@ -856,7 +858,7 @@ namespace Qsi.SqlServer.Tree
                             {
                                 return TreeHelper.Create<QsiColumnExpressionNode>(cn =>
                                 {
-                                    cn.Column.SetValue(new QsiDeclaredColumnNode
+                                    cn.Column.SetValue(new QsiColumnReferenceNode
                                     {
                                         Name = new QsiQualifiedIdentifier(IdentifierVisitor.CreateIdentifier(identifier))
                                     });
@@ -869,7 +871,7 @@ namespace Qsi.SqlServer.Tree
                             {
                                 var node = TreeHelper.Create<QsiTableExpressionNode>(tn =>
                                 {
-                                    tn.Table.SetValue(new QsiTableAccessNode
+                                    tn.Table.SetValue(new QsiTableReferenceNode
                                     {
                                         Identifier = IdentifierVisitor.CreateQualifiedIdentifier(multiPartIdentifier)
                                     });

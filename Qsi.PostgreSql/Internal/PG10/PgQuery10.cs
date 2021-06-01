@@ -4,6 +4,8 @@ using Qsi.Parsing;
 using Qsi.PostgreSql.Internal.PG10.Types;
 using Qsi.PostgreSql.Internal.Serialization.Converters;
 using Qsi.PostgreSql.Resources;
+using Qsi.PostgreSql.Tree;
+using Qsi.PostgreSql.Tree.PG10;
 
 namespace Qsi.PostgreSql.Internal.PG10
 {
@@ -47,6 +49,26 @@ namespace Qsi.PostgreSql.Internal.PG10
                 throw new InvalidOperationException();
 
             return parseResult.Tree[0];
+        }
+
+        protected override PgActionVisitor CreateActionVisitor(IPgVisitorSet set)
+        {
+            return new(set);
+        }
+
+        protected override PgTableVisitor CreateTableVisitor(IPgVisitorSet set)
+        {
+            return new(set);
+        }
+
+        protected override PgExpressionVisitor CreateExpressionVisitor(IPgVisitorSet set)
+        {
+            return new(set);
+        }
+
+        protected override PgIdentifierVisitor CreateIdentifierVisitor(IPgVisitorSet set)
+        {
+            return new(set);
         }
     }
 }

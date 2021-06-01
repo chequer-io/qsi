@@ -70,14 +70,11 @@ namespace Qsi.PrimarSql.Analyzers
 
             (object[], QsiExpressionNode, bool)[] setValues = action.SetValues
                 .OfType<PrimarSqlSetColumnExpressionNode>()
-                .Select(x =>
-                {
-                    return (
-                        new[] { x.Target[^1].Value }.Concat(x.Accessors.Select(AccessorToValue)).ToArray(),
-                        x.Value.IsEmpty ? null : x.Value.Value,
-                        x.Value.IsEmpty
-                    );
-                })
+                .Select(x => (
+                    x.Accessors.Select(AccessorToValue).Prepend(x.Target[^1].Value).ToArray(),
+                    x.Value.IsEmpty ? null : x.Value.Value,
+                    x.Value.IsEmpty
+                ))
                 .ToArray();
 
             if (setValues.Select(x => x.Item1).Distinct(new EnumerableComparer()).Count() != setValues.Length)
@@ -318,7 +315,7 @@ namespace Qsi.PrimarSql.Analyzers
             {
                 case PrimarSqlIndexerExpressionNode indexerExpressionNode:
                 {
-                    if (!(indexerExpressionNode.Indexer.Value is QsiLiteralExpressionNode literalExpressionNode))
+                    if (indexerExpressionNode.Indexer.Value is not QsiLiteralExpressionNode literalExpressionNode)
                         throw new ArgumentException(nameof(accessor));
 
                     return (int)Convert.ChangeType(literalExpressionNode.Value, TypeCode.Int32)!;

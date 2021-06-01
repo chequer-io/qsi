@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Qsi.Analyzers.Action.Context;
@@ -12,6 +13,7 @@ using Qsi.Data;
 using Qsi.Extensions;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
+using Qsi.Tree.Data;
 using Qsi.Tree.Immutable;
 using Qsi.Utilities;
 
@@ -117,7 +119,7 @@ namespace Qsi.Analyzers.Action
             var definition = context.Engine.RepositoryProvider.LookupDefinition(action.Identifier, QsiTableType.Prepared) ??
                              throw new QsiException(QsiError.UnableResolveDefinition, action.Identifier);
 
-            return context.Engine.Execute(definition);
+            return context.Engine.Execute(definition, null);
         }
         #endregion
 
@@ -282,13 +284,41 @@ namespace Qsi.Analyzers.Action
             }
         }
 
+        protected virtual QsiParameter[] ArrangeBindParameters(IAnalyzerContext context, IQsiTreeNode node)
+        {
+            IQsiBindParameterExpressionNode[] parameterNodes = node
+                .FindAscendants<IQsiBindParameterExpressionNode>()
+                .ToArray();
+
+            var result = new QsiParameter[parameterNodes.Length];
+            var resultSpan = new qsipara
+
+            foreach (var parameterNode in parameterNodes)
+            {
+                if (!context.Parameters.TryGetValue(parameterNode, out var parameter))
+                {
+                    var parameterName = context.Engine.TreeDeparser.Deparse(parameterNode, context.Script);
+                    throw new QsiException(QsiError.ParameterNotFound, parameterName);
+                }
+
+                // TODO: index bind parameter arrangement not implemented
+                if (parameterNode.Type == QsiParameterType.Index)
+                    return context.Parameters.Values.ToArray();
+
+                result[index++] = parameter;
+            }
+
+            return result;
+        }
+
         protected virtual async ValueTask<QsiDataTable> GetDataTableByCommonTableNode(IAnalyzerContext context, IQsiTableNode commonTableNode)
         {
             var query = context.Engine.TreeDeparser.Deparse(commonTableNode, context.Script);
             var scriptType = context.Engine.ScriptParser.GetSuitableType(query);
             var script = new QsiScript(query, scriptType);
+            QsiParameter[] parameters = ArrangeBindParameters(context, commonTableNode);
 
-            return await context.Engine.RepositoryProvider.GetDataTable(script);
+            return await context.Engine.RepositoryProvider.GetDataTable(script, parameters);
         }
         #endregion
 
@@ -404,11 +434,13 @@ namespace Qsi.Analyzers.Action
             var engine = context.Engine;
             var script = engine.TreeDeparser.Deparse(valueTable, context.Script);
 
+            // TODO: bind parameters in directives
             if (directives != null)
                 script = $"{engine.TreeDeparser.Deparse(directives, context.Script)}\n{script}";
 
             var scriptType = engine.ScriptParser.GetSuitableType(script);
-            var dataTable = await engine.RepositoryProvider.GetDataTable(new QsiScript(script, scriptType));
+            QsiParameter[] parameters = ArrangeBindParameters(context, valueTable);
+            var dataTable = await engine.RepositoryProvider.GetDataTable(new QsiScript(script, scriptType), parameters);
 
             if (dataTable.Rows.ColumnCount != context.ColumnNames.Length)
                 throw new QsiException(QsiError.DifferentColumnsCount);

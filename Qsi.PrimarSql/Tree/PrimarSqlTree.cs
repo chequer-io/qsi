@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 using Antlr4.Runtime;
-using Qsi.Shared;
 using Qsi.Tree;
 using Qsi.Tree.Data;
 
@@ -11,11 +10,9 @@ namespace Qsi.PrimarSql.Tree
     {
         public static KeyIndexer<Range> Span { get; }
 
-        private static readonly Key<Range> SpanKey = new("node_span");
-
         static PrimarSqlTree()
         {
-            Span = new KeyIndexer<Range>(SpanKey);
+            Span = new KeyIndexer<Range>(QsiNodeProperties.Span);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

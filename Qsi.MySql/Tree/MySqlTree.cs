@@ -11,11 +11,9 @@ namespace Qsi.MySql.Tree
     {
         public static KeyIndexer<Range> Span { get; }
 
-        private static readonly Key<Range> SpanKey = new("node_span");
-
         static MySqlTree()
         {
-            Span = new KeyIndexer<Range>(SpanKey);
+            Span = new KeyIndexer<Range>(QsiNodeProperties.Span);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

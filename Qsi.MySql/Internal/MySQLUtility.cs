@@ -1,7 +1,6 @@
 using System;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Atn;
-using Qsi.Parsing.Antlr;
 
 namespace Qsi.MySql.Internal
 {

@@ -32,7 +32,7 @@ namespace Qsi.PrimarSql.Analyzers
             {
                 IEnumerable<QsiQualifiedIdentifier> columns = tableNode
                     .Columns.Value
-                    .FindAscendants<QsiDeclaredColumnNode>()
+                    .FindAscendants<QsiColumnReferenceNode>()
                     .Select(c => c.Name);
 
                 var hasCountFunction = tableNode
@@ -49,8 +49,8 @@ namespace Qsi.PrimarSql.Analyzers
                     identifierSet.Add(column[^1]);
                 }
 
-                if (tableNode.Source.Value is QsiTableAccessNode tableAccessNode)
-                    tableIdentifier = tableAccessNode.Identifier;
+                if (tableNode.Source.Value is QsiTableReferenceNode tableReferenceNode)
+                    tableIdentifier = tableReferenceNode.Identifier;
 
                 node = tableNode.Source.Value;
             }
@@ -76,16 +76,16 @@ namespace Qsi.PrimarSql.Analyzers
             return await base.OnExecute(context);
         }
 
-        protected override QsiTableColumn ResolveDeclaredColumn(TableCompileContext context, IQsiDeclaredColumnNode column)
+        protected override QsiTableColumn ResolveColumnReference(TableCompileContext context, IQsiColumnReferenceNode column)
         {
             context.ThrowIfCancellationRequested();
 
-            if (column is not PrimarSqlDeclaredColumnNode declaredColumnNode)
+            if (column is not PrimarSqlColumnReferenceNode columnReferenceNode)
                 throw new ArgumentException(nameof(column));
 
             var source = context.SourceTable;
-            var columnName = declaredColumnNode.Name[^1];
-            object[] path = declaredColumnNode.Accessors.Select(AccessorToValue).ToArray();
+            var columnName = columnReferenceNode.Name[^1];
+            object[] path = columnReferenceNode.Accessors.Select(AccessorToValue).ToArray();
 
             if (source.Type != QsiTableType.Table)
                 throw new QsiException(QsiError.Internal);
@@ -133,7 +133,7 @@ namespace Qsi.PrimarSql.Analyzers
             {
                 case PrimarSqlIndexerExpressionNode indexerExpressionNode:
                 {
-                    if (!(indexerExpressionNode.Indexer.Value is QsiLiteralExpressionNode literalExpressionNode))
+                    if (indexerExpressionNode.Indexer.Value is not QsiLiteralExpressionNode literalExpressionNode)
                         throw new ArgumentException(nameof(accessor));
 
                     return (long)Convert.ChangeType(literalExpressionNode.Value, TypeCode.Int64)!;

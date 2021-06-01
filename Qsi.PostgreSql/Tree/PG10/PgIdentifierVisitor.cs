@@ -7,14 +7,18 @@ using Qsi.PostgreSql.Internal.PG10.Types;
 
 namespace Qsi.PostgreSql.Tree.PG10
 {
-    internal static class IdentifierVisitor
+    internal class PgIdentifierVisitor : PgVisitorBase
     {
-        public static QsiQualifiedIdentifier VisitStrings(IEnumerable<PgString> values)
+        public PgIdentifierVisitor(IPgVisitorSet set) : base(set)
+        {
+        }
+
+        public QsiQualifiedIdentifier VisitStrings(IEnumerable<PgString> values)
         {
             return new(values.Select(v => new QsiIdentifier(v.str, false)));
         }
 
-        public static QsiQualifiedIdentifier VisitRangeVar(RangeVar var)
+        public QsiQualifiedIdentifier VisitRangeVar(RangeVar var)
         {
             string[] names =
             {

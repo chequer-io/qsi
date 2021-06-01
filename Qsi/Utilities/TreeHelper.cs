@@ -10,6 +10,7 @@ namespace Qsi.Utilities
 {
     public static class TreeHelper
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TNode Create<TNode>(Action<TNode> action) where TNode : QsiTreeNode, new()
         {
             var node = new TNode();
@@ -39,6 +40,7 @@ namespace Qsi.Utilities
             };
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static QsiBinaryExpressionNode CreateBinaryExpression<TContext>(
             string @operator,
             TContext left,
@@ -53,6 +55,7 @@ namespace Qsi.Utilities
             });
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static QsiExpressionNode CreateChainedBinaryExpression<TContext>(
             string @operator,
             IEnumerable<TContext> contexts,
@@ -88,6 +91,7 @@ namespace Qsi.Utilities
             return node;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static QsiColumnsDeclarationNode CreateAllColumnsDeclaration()
         {
             var columns = new QsiColumnsDeclarationNode();
@@ -95,6 +99,7 @@ namespace Qsi.Utilities
             return columns;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static QsiFunctionExpressionNode CreateFunction(string identifier)
         {
             return new()
@@ -103,6 +108,7 @@ namespace Qsi.Utilities
             };
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static QsiUnaryExpressionNode CreateUnary(string @operator, QsiExpressionNode expression)
         {
             var node = new QsiUnaryExpressionNode
@@ -116,41 +122,49 @@ namespace Qsi.Utilities
         }
 
         #region Literal
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static QsiLiteralExpressionNode CreateDefaultLiteral()
         {
             return CreateLiteral(null, QsiDataType.Default);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static QsiLiteralExpressionNode CreateNullLiteral()
         {
             return CreateLiteral(null, QsiDataType.Null);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static QsiExpressionNode CreateConstantLiteral(object value)
         {
             return CreateLiteral(value, QsiDataType.Constant);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static QsiLiteralExpressionNode CreateLiteral(string value)
         {
             return CreateLiteral(value, QsiDataType.String);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static QsiLiteralExpressionNode CreateLiteral(long value)
         {
             return CreateLiteral(value, QsiDataType.Numeric);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static QsiLiteralExpressionNode CreateLiteral(double value)
         {
             return CreateLiteral(value, QsiDataType.Decimal);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static QsiLiteralExpressionNode CreateLiteral(bool value)
         {
             return CreateLiteral(value, QsiDataType.Boolean);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static QsiLiteralExpressionNode CreateLiteral(object value, QsiDataType type)
         {
             return new()
@@ -161,16 +175,12 @@ namespace Qsi.Utilities
         }
         #endregion
 
-        public static QsiExpressionFragmentNode Fragment(string value)
-        {
-            return new() { Value = value };
-        }
-
         public static QsiException NotSupportedTree(object tree)
         {
             return new(QsiError.NotSupportedTree, tree.GetType().FullName);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static QsiException NotSupportedFeature(string feature)
         {
             return new(QsiError.NotSupportedFeature, feature);

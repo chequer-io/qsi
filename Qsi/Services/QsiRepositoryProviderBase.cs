@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using Qsi.Data;
-using Qsi.Tree;
 
 namespace Qsi.Services
 {
@@ -16,7 +15,7 @@ namespace Qsi.Services
 
         protected abstract QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier);
 
-        protected abstract Task<QsiDataTable> GetDataTable(QsiScript script);
+        protected abstract Task<QsiDataTable> GetDataTable(QsiScript script, QsiParameter[] parameters);
 
         #region IQsiRepositoryProvider
         QsiTableStructure IQsiRepositoryProvider.LookupTable(QsiQualifiedIdentifier identifier)
@@ -57,9 +56,9 @@ namespace Qsi.Services
             return ResolveQualifiedIdentifier(identifier);
         }
 
-        Task<QsiDataTable> IQsiRepositoryProvider.GetDataTable(QsiScript script)
+        Task<QsiDataTable> IQsiRepositoryProvider.GetDataTable(QsiScript script, QsiParameter[] parameters)
         {
-            return GetDataTable(script);
+            return GetDataTable(script, parameters);
         }
         #endregion
     }
