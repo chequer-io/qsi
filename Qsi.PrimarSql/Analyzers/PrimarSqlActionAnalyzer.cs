@@ -33,8 +33,7 @@ namespace Qsi.PrimarSql.Analyzers
             var tempTable = CreateTemporaryTable(table.Identifier);
 
             var commonTableNode = ReassembleCommonTableNode(action.Target);
-            QsiParameter[] parameters = ArrangeBindParameters(context, commonTableNode);
-            var dataTable = await GetDataTableByCommonTableNode(context, commonTableNode, parameters);
+            var dataTable = await GetDataTableByCommonTableNode(context, commonTableNode);
 
             var deleteRows = new QsiDataRowCollection(1);
 
@@ -64,22 +63,18 @@ namespace Qsi.PrimarSql.Analyzers
             var tempTable = CreateTemporaryTable(table.Identifier);
 
             var commonTableNode = ReassembleCommonTableNode(action.Target);
-            QsiParameter[] parameters = ArrangeBindParameters(context, commonTableNode);
-            var dataTable = await GetDataTableByCommonTableNode(context, commonTableNode, parameters);
+            var dataTable = await GetDataTableByCommonTableNode(context, commonTableNode);
 
             var updateBeforeRows = new QsiDataRowCollection(1);
             var updateAfterRows = new QsiDataRowCollection(1);
 
             (object[], QsiExpressionNode, bool)[] setValues = action.SetValues
                 .OfType<PrimarSqlSetColumnExpressionNode>()
-                .Select(x =>
-                {
-                    return (
-                        new[] { x.Target[^1].Value }.Concat(x.Accessors.Select(AccessorToValue)).ToArray(),
-                        x.Value.IsEmpty ? null : x.Value.Value,
-                        x.Value.IsEmpty
-                    );
-                })
+                .Select(x => (
+                    x.Accessors.Select(AccessorToValue).Prepend(x.Target[^1].Value).ToArray(),
+                    x.Value.IsEmpty ? null : x.Value.Value,
+                    x.Value.IsEmpty
+                ))
                 .ToArray();
 
             if (setValues.Select(x => x.Item1).Distinct(new EnumerableComparer()).Count() != setValues.Length)

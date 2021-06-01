@@ -196,8 +196,7 @@ namespace Qsi.Cql.Analyzers
                 columnPlans.Any(p => p.Selectors.Count > 0) ||
                 table.Columns.Count != columnPlans.Length;
 
-            QsiParameter[] parameters = ArrangeBindParameters(context, targetNode);
-            var dataTable = await GetDataTableByCommonTableNode(context, targetNode, parameters);
+            var dataTable = await GetDataTableByCommonTableNode(context, targetNode);
 
             return ResolveDataManipulationTargets(
                     table,

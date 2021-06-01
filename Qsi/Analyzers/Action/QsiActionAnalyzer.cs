@@ -284,11 +284,6 @@ namespace Qsi.Analyzers.Action
             }
         }
 
-        // sql:    SELECT :param3 FROM actor WHERE id >= :param2 AND name = ?2
-        // params: [{param1: value1}, {param2: value2}, {param3: value3}]
-        //  ▼
-        // sql:    SELECT :param3 FROM actor WHERE id >= :param1 AND name = ?0
-        // params: [{param3: value3}, {param1: value1}]
         protected virtual QsiParameter[] ArrangeBindParameters(IAnalyzerContext context, IQsiTreeNode node)
         {
             IQsiBindParameterExpressionNode[] parameterNodes = node
@@ -296,24 +291,19 @@ namespace Qsi.Analyzers.Action
                 .ToArray();
 
             var result = new QsiParameter[parameterNodes.Length];
-            var index = 0;
+            var resultSpan = new qsipara
 
             foreach (var parameterNode in parameterNodes)
             {
-                if (parameterNode is not QsiBindParameterExpressionNode qsiParameterNode)
-                    throw new NotSupportedException(parameterNode.GetType().Name);
-
                 if (!context.Parameters.TryGetValue(parameterNode, out var parameter))
                 {
                     var parameterName = context.Engine.TreeDeparser.Deparse(parameterNode, context.Script);
                     throw new QsiException(QsiError.ParameterNotFound, parameterName);
                 }
 
-                if (qsiParameterNode.Type == QsiParameterType.Index)
-                {
-                    qsiParameterNode.Index = index;
-                    qsiParameterNode.UserData.PutData(QsiNodeProperties.Span, default);
-                }
+                // TODO: index bind parameter arrangement not implemented
+                if (parameterNode.Type == QsiParameterType.Index)
+                    return context.Parameters.Values.ToArray();
 
                 result[index++] = parameter;
             }
@@ -321,11 +311,12 @@ namespace Qsi.Analyzers.Action
             return result;
         }
 
-        protected virtual async ValueTask<QsiDataTable> GetDataTableByCommonTableNode(IAnalyzerContext context, IQsiTableNode commonTableNode, QsiParameter[] parameters)
+        protected virtual async ValueTask<QsiDataTable> GetDataTableByCommonTableNode(IAnalyzerContext context, IQsiTableNode commonTableNode)
         {
             var query = context.Engine.TreeDeparser.Deparse(commonTableNode, context.Script);
             var scriptType = context.Engine.ScriptParser.GetSuitableType(query);
             var script = new QsiScript(query, scriptType);
+            QsiParameter[] parameters = ArrangeBindParameters(context, commonTableNode);
 
             return await context.Engine.RepositoryProvider.GetDataTable(script, parameters);
         }
@@ -560,8 +551,7 @@ namespace Qsi.Analyzers.Action
             }
 
             var commonTableNode = ReassembleCommonTableNode(action.Target);
-            QsiParameter[] parameters = ArrangeBindParameters(context, commonTableNode);
-            var dataTable = await GetDataTableByCommonTableNode(context, commonTableNode, parameters);
+            var dataTable = await GetDataTableByCommonTableNode(context, commonTableNode);
 
             if (ListUtility.IsNullOrEmpty(action.Columns) && dataTable.Table.Columns.Count != tableColumnCount)
                 throw new QsiException(QsiError.Internal, "Query results do not match target table structure");
@@ -623,8 +613,7 @@ namespace Qsi.Analyzers.Action
 
             // update data (rows)
             var commonTableNode = ReassembleCommonTableNode(action.Target);
-            QsiParameter[] parameters = ArrangeBindParameters(context, commonTableNode);
-            var dataTable = await GetDataTableByCommonTableNode(context, commonTableNode, parameters);
+            var dataTable = await GetDataTableByCommonTableNode(context, commonTableNode);
 
             if (dataTable.Table.Columns.Count != sourceTable.Columns.Count)
                 throw new QsiException(QsiError.DifferentColumnsCount);
