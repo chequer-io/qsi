@@ -291,7 +291,7 @@ namespace Qsi.Analyzers.Action
                 .ToArray();
 
             var result = new QsiParameter[parameterNodes.Length];
-            var resultSpan = new qsipara
+            var index = 0;
 
             foreach (var parameterNode in parameterNodes)
             {
