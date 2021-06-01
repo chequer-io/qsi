@@ -11,6 +11,12 @@ namespace Qsi.Utilities
     public static class TreeHelper
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static QsiExpressionFragmentNode Fragment(string value)
+        {
+            return new() { Value = value };
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TNode Create<TNode>(Action<TNode> action) where TNode : QsiTreeNode, new()
         {
             var node = new TNode();
@@ -18,6 +24,7 @@ namespace Qsi.Utilities
             return node;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static QsiDerivedTableNode CreateAliasedTableNode(QsiTableNode node, QsiIdentifier alias)
         {
             return new()

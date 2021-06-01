@@ -3,7 +3,7 @@ using Qsi.Tree;
 
 namespace Qsi.Hana.Tree
 {
-    public sealed class HanaTableAccessNode : QsiTableAccessNode
+    public sealed class HanaTableReferenceNode : QsiTableReferenceNode
     {
         public QsiTreeNodeProperty<HanaTableBehaviorNode> Behavior { get; }
 
@@ -22,7 +22,7 @@ namespace Qsi.Hana.Tree
             }
         }
 
-        public HanaTableAccessNode()
+        public HanaTableReferenceNode()
         {
             Behavior = new QsiTreeNodeProperty<HanaTableBehaviorNode>(this);
         }

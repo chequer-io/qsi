@@ -112,7 +112,7 @@ namespace Qsi.Hana.Tree.Visitors
             }
             else
             {
-                node = new QsiDeclaredColumnNode
+                node = new QsiColumnReferenceNode
                 {
                     Name = new QsiQualifiedIdentifier(IdentifierVisitor.VisitColumnName(context))
                 };
@@ -125,7 +125,7 @@ namespace Qsi.Hana.Tree.Visitors
 
         public static QsiColumnNode VisitFieldName(FieldNameContext context)
         {
-            var node = new QsiDeclaredColumnNode
+            var node = new QsiColumnReferenceNode
             {
                 Name = new QsiQualifiedIdentifier(IdentifierVisitor.VisitFieldName(context))
             };
@@ -394,7 +394,7 @@ namespace Qsi.Hana.Tree.Visitors
 
         public static QsiTableNode VisitTableRef(TableRefContext context)
         {
-            var node = new HanaTableAccessNode
+            var node = new HanaTableReferenceNode
             {
                 Identifier = IdentifierVisitor.VisitTableName(context.tableName()),
                 Partition = context.partitionRestriction()?.GetInputText()

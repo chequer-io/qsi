@@ -12,7 +12,7 @@ namespace Qsi.Debugger.Vendor.Hana
             return identifier;
         }
 
-        protected override Task<QsiDataTable> GetDataTable(QsiScript script)
+        protected override Task<QsiDataTable> GetDataTable(QsiScript script, QsiParameter[] parameters)
         {
             throw new System.NotImplementedException();
         }

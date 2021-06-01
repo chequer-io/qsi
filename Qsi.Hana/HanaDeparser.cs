@@ -242,8 +242,8 @@ namespace Qsi.Hana
                     DeparseHanaAssociationTableNode(writer, hanaAssociationTableNode, script);
                     break;
 
-                case HanaTableAccessNode hanaTableAccessNode:
-                    DeparseHanaTableAccessNode(writer, hanaTableAccessNode, script);
+                case HanaTableReferenceNode hanaTableReferenceNode:
+                    DeparseHanaTableReferenceNode(writer, hanaTableReferenceNode, script);
                     break;
 
                 case HanaDerivedTableNode hanaDerivedTableNode:
@@ -291,7 +291,7 @@ namespace Qsi.Hana
         }
 
         // tableRef
-        private void DeparseHanaTableAccessNode(ScriptWriter writer, HanaTableAccessNode node, QsiScript script)
+        private void DeparseHanaTableReferenceNode(ScriptWriter writer, HanaTableReferenceNode node, QsiScript script)
         {
             // tableName
             writer.Write(node.Identifier);
@@ -312,7 +312,7 @@ namespace Qsi.Hana
 
         private void DeparseHanaDerivedTableNode(ScriptWriter writer, HanaDerivedTableNode node, QsiScript script)
         {
-            if (IsAliasedTableAccessNode(node))
+            if (IsAliasedTableReferenceNode(node))
             {
                 DeparseTreeNode(writer, node.Source.Value, script);
                 writer.WriteSpace();
@@ -348,7 +348,7 @@ namespace Qsi.Hana
             {
                 writer.WriteSpace().Write("FROM ");
 
-                if (node.Source.Value is IQsiDerivedTableNode leftSource && !IsAliasedTableAccessNode(leftSource) ||
+                if (node.Source.Value is IQsiDerivedTableNode leftSource && !IsAliasedTableReferenceNode(leftSource) ||
                     node.Source.Value is IQsiCompositeTableNode)
                 {
                     DeparseTreeNodeWithParenthesis(writer, node.Source.Value, script);
