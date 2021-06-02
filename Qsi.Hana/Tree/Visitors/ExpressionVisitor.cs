@@ -641,7 +641,7 @@ namespace Qsi.Hana.Tree.Visitors
 
             node.Member.SetValue(new QsiFunctionExpressionNode
             {
-                Identifier = IdentifierVisitor.VisitFunctionName(context.functionName())
+                Identifier = context.functionName().qqi
             });
 
             node.Parameters.AddRange(context.expressionList()._list.Select(VisitExpression));
@@ -755,23 +755,40 @@ namespace Qsi.Hana.Tree.Visitors
 
         public static QsiExpressionNode VisitBindParameterExpression(BindParameterExpressionContext context)
         {
-            var node = new QsiBindParameterExpressionNode
-            {
-                Type = QsiParameterType.Index,
-                Index = context.index
-            };
+            QsiBindParameterExpressionNode node;
 
-            if (context.n != null)
+            switch (context)
             {
-                node.Prefix = ":";
-            }
-            else
-            {
-                node.Prefix = "?";
-                node.NoSuffix = true;
+                case BindParam1Context:
+                    node = new QsiBindParameterExpressionNode
+                    {
+                        Type = QsiParameterType.Index,
+                        Index = context.index,
+                        Prefix = "?",
+                        NoSuffix = true
+                    };
+
+                    break;
+
+                case BindParam2Context:
+                    node = new QsiBindParameterExpressionNode
+                    {
+                        Type = QsiParameterType.Index,
+                        Index = context.index,
+                        Prefix = ":"
+                    };
+
+                    break;
+
+                case BindParam3Context:
+                    throw TreeHelper.NotSupportedFeature($"Named bind parameter ({context.GetText()})");
+
+                default:
+                    throw TreeHelper.NotSupportedTree(context);
             }
 
             HanaTree.PutContextSpan(node, context);
+
             return node;
         }
 
@@ -789,7 +806,7 @@ namespace Qsi.Hana.Tree.Visitors
         {
             var node = new HanaAssociationReferenceNode
             {
-                Identifier = IdentifierVisitor.VisitColumnName(context.columnName())
+                Identifier = context.columnName().qi
             };
 
             var condition = context.condition();
@@ -941,11 +958,11 @@ namespace Qsi.Hana.Tree.Visitors
             switch (context.columns.children[0])
             {
                 case ColumnListClauseContext columnListClause:
-                    columnNodes = columnListClause.list._columns.Select(c => TableVisitor.VisitColumnName(c));
+                    columnNodes = columnListClause.list.Select(c => TableVisitor.CreateColumnNode(c));
                     break;
 
                 case ColumnListContext columnList:
-                    columnNodes = columnList._columns.Select(c => TableVisitor.VisitColumnName(c));
+                    columnNodes = columnList.list.Select(c => TableVisitor.CreateColumnNode(c));
                     break;
 
                 default:
@@ -1130,7 +1147,7 @@ namespace Qsi.Hana.Tree.Visitors
             node.Parameters.Add(
                 new HanaCursorNode
                 {
-                    Identifier = new QsiQualifiedIdentifier(IdentifierVisitor.VisitIdentifier(context.identifier()))
+                    Identifier = new QsiQualifiedIdentifier(context.identifier().qi)
                 }
             );
 

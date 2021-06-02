@@ -57,7 +57,7 @@ namespace Qsi.Hana.Tree.Visitors
 
             node.Alias.SetValue(new QsiAliasNode
             {
-                Name = IdentifierVisitor.VisitIdentifier(context.name)
+                Name = context.name.qi
             });
 
             var columnListClause = context.columnListClause();
@@ -77,7 +77,7 @@ namespace Qsi.Hana.Tree.Visitors
 
         public static QsiColumnsDeclarationNode VisitColumnListClause(ColumnListClauseContext context, QsiSequentialColumnType? sequence)
         {
-            var node = VisitColumnList(context.list, sequence);
+            var node = VisitColumnList(context.cl, sequence);
             HanaTree.PutContextSpan(node, context);
             return node;
         }
@@ -86,13 +86,13 @@ namespace Qsi.Hana.Tree.Visitors
         {
             var node = new QsiColumnsDeclarationNode();
 
-            node.Columns.AddRange(context._columns.Select(c => VisitColumnName(c, sequence)));
+            node.Columns.AddRange(context.list.Select(x => CreateColumnNode(x, sequence)));
             HanaTree.PutContextSpan(node, context);
 
             return node;
         }
 
-        public static QsiColumnNode VisitColumnName(ColumnNameContext context, QsiSequentialColumnType? sequence = null)
+        public static QsiColumnNode CreateColumnNode(QsiIdentifier identifier, QsiSequentialColumnType? sequence = null)
         {
             QsiColumnNode node;
 
@@ -105,7 +105,7 @@ namespace Qsi.Hana.Tree.Visitors
                     {
                         Value = new QsiAliasNode
                         {
-                            Name = IdentifierVisitor.VisitColumnName(context)
+                            Name = identifier
                         }
                     }
                 };
@@ -114,11 +114,9 @@ namespace Qsi.Hana.Tree.Visitors
             {
                 node = new QsiColumnReferenceNode
                 {
-                    Name = new QsiQualifiedIdentifier(IdentifierVisitor.VisitColumnName(context))
+                    Name = new QsiQualifiedIdentifier(identifier)
                 };
             }
-
-            HanaTree.PutContextSpan(node, context);
 
             return node;
         }
@@ -127,7 +125,7 @@ namespace Qsi.Hana.Tree.Visitors
         {
             var node = new QsiColumnReferenceNode
             {
-                Name = new QsiQualifiedIdentifier(IdentifierVisitor.VisitFieldName(context))
+                Name = context.qqi
             };
 
             HanaTree.PutContextSpan(node, context);
@@ -220,7 +218,7 @@ namespace Qsi.Hana.Tree.Visitors
         public static QsiColumnNode VisitExprItem(ExprItemContext context)
         {
             var expressionNode = ExpressionVisitor.VisitExpression(context.expression());
-            var aliasNode = context.alias() != null ? VisitAlias(context.alias()) : null;
+            var aliasNode = context.alias()?.node;
             var node = CreateSelectItem(context.expression(), expressionNode, aliasNode);
 
             HanaTree.PutContextSpan(node, context);
@@ -231,7 +229,7 @@ namespace Qsi.Hana.Tree.Visitors
         public static QsiColumnNode VisitAssociationExprItem(AssociationExprItemContext context)
         {
             var expressionNode = ExpressionVisitor.VisitAssociationExpression(context.associationExpression());
-            var aliasNode = context.alias() != null ? VisitAlias(context.alias()) : null;
+            var aliasNode = context.alias()?.node;
             var node = CreateSelectItem(context.associationExpression(), expressionNode, aliasNode);
 
             HanaTree.PutContextSpan(node, context);
@@ -274,7 +272,7 @@ namespace Qsi.Hana.Tree.Visitors
             var tableName = context.tableName();
 
             if (tableName != null)
-                node.Path = IdentifierVisitor.VisitTableName(tableName);
+                node.Path = tableName.qqi;
 
             HanaTree.PutContextSpan(node, context);
 
@@ -396,7 +394,7 @@ namespace Qsi.Hana.Tree.Visitors
         {
             var node = new HanaTableReferenceNode
             {
-                Identifier = IdentifierVisitor.VisitTableName(context.tableName()),
+                Identifier = context.tableName().qqi,
                 Partition = context.partitionRestriction()?.GetInputText()
             };
 
@@ -425,7 +423,7 @@ namespace Qsi.Hana.Tree.Visitors
             derivedNode.Source.SetValue(node);
 
             if (alias != null)
-                derivedNode.Alias.SetValue(VisitAlias(alias));
+                derivedNode.Alias.SetValue(alias.node);
 
             if (sampling != null)
                 derivedNode.Sampling = sampling.GetInputText();
@@ -435,22 +433,10 @@ namespace Qsi.Hana.Tree.Visitors
             return derivedNode;
         }
 
-        public static QsiAliasNode VisitAlias(AliasContext context)
-        {
-            var node = new QsiAliasNode
-            {
-                Name = IdentifierVisitor.VisitIdentifier(context.name)
-            };
-
-            HanaTree.PutContextSpan(node, context);
-
-            return node;
-        }
-
         public static QsiTableNode VisitSubqueryTableExpression(SubqueryTableExpressionContext context)
         {
             var node = VisitSubquery(context.subquery());
-            var alias = context.alias() != null ? VisitAlias(context.alias()) : null;
+            var alias = context.alias()?.node;
 
             if (alias != null)
                 node.Alias.SetValue(alias);
@@ -462,7 +448,7 @@ namespace Qsi.Hana.Tree.Visitors
         {
             var node = new HanaCaseJoinTableNode();
             var elseClause = context.caseJoinElseClause();
-            var alias = context.alias();
+            var alias = context.alias()?.node;
 
             node.Source.SetValue(VisitTableRef(context.tableRef()));
             node.WhenSources.AddRange(context.caseJoinWhenClause().Select(VisitCaseJoinWhenClause));
@@ -471,7 +457,7 @@ namespace Qsi.Hana.Tree.Visitors
                 node.ElseSource.SetValue(VisitCaseJoinElseClause(elseClause));
 
             if (alias != null)
-                node.Alias.SetValue(VisitAlias(alias));
+                node.Alias.SetValue(alias);
 
             HanaTree.PutContextSpan(node, context);
 
@@ -522,7 +508,7 @@ namespace Qsi.Hana.Tree.Visitors
             };
 
             if (context.TryGetRuleContext<AliasContext>(out var alias))
-                node = TreeHelper.CreateAliasedTableNode(node, VisitAlias(alias));
+                node = TreeHelper.CreateAliasedTableNode(node, alias.node);
 
             HanaTree.PutContextSpan(node, context);
 
@@ -549,7 +535,7 @@ namespace Qsi.Hana.Tree.Visitors
             var node = Visit(context);
 
             if (context.TryGetRuleContext<AliasContext>(out var alias))
-                node = TreeHelper.CreateAliasedTableNode(node, VisitAlias(alias));
+                node = TreeHelper.CreateAliasedTableNode(node, alias.node);
 
             return node;
 
@@ -558,7 +544,7 @@ namespace Qsi.Hana.Tree.Visitors
             {
                 var node = new HanaAssociationTableNode
                 {
-                    Identifier = IdentifierVisitor.VisitTableName(context.tableName())
+                    Identifier = context.tableName().qqi
                 };
 
                 if (context.TryGetRuleContext<ConditionContext>(out var condition))

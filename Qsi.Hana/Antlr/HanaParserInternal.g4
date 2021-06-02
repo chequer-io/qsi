@@ -4,6 +4,12 @@ options {
     tokenVocab=HanaLexerInternal;
 }
 
+@header {
+    using Qsi.Data;
+    using Qsi.Tree;
+    using Qsi.Utilities;
+}
+
 root
     : EOF
     | (hanaStatement (SEMI EOF? | EOF))+
@@ -11,6 +17,7 @@ root
 
 hanaStatement
     : dataManipulationStatement
+    | dataDefinitionStatement
     ;
 
 dataManipulationStatement
@@ -26,6 +33,10 @@ dataManipulationStatement
     // | truncateTableStatement
     // | unloadStatement
     | updateStatement
+    ;
+
+dataDefinitionStatement
+    : createViewStatement
     ;
 
 // ------ SQL Reference > SQL Statements > Alpabetical List of Statements > SELECT Statement ------
@@ -54,15 +65,16 @@ withClause
     ;
 
 withListElement
-    : name=identifier columnListClause? K_AS '(' subquery ')'
+    : name=identifier[null] columnListClause? K_AS '(' subquery ')'
     ;
 
-columnList
-    : columns+=columnName (',' columns+=columnName)*
+columnList returns [IList<QsiIdentifier> list]
+    @init { $list = new List<QsiIdentifier>(); }
+    : n=columnName { $list.Add($n.qi); } (',' n=columnName { $list.Add($n.qi); })*
     ;
 
-columnListClause
-    : '(' list=columnList ')'
+columnListClause returns [IList<QsiIdentifier> list]
+    : '(' cl=columnList { $list = $cl.list; } ')'
     ;
 
 forClause
@@ -123,8 +135,8 @@ selectItem
     | (tableName '.')? '*'          #wildcardItem
     ;
 
-columnName
-    : identifier
+columnName returns [QsiIdentifier qi]
+    : i=identifier[null] { $qi = $i.qi; }
     ;
 
 fromClause
@@ -185,20 +197,26 @@ hintElement
     | K_DATA_TRANSFER_COST   '(' cost=UNSIGNED_INTEGER ')'                                          #rdataTransferCost
     ;
 
-fieldName
-    : identifier ('.' identifier ('.' identifier ('.' identifier)?)?)?
+fieldName returns [QsiQualifiedIdentifier qqi] locals [List<QsiIdentifier> buffer]
+    @init { $buffer = new List<QsiIdentifier>(); }
+    @after { $qqi = new QsiQualifiedIdentifier($buffer); }
+    : identifier[$buffer] ('.' identifier[$buffer] ('.' identifier[$buffer] ('.' identifier[$buffer])?)?)?
     ;
 
-tableName
-    : identifier ('.' identifier ('.' identifier)?)?
+tableName returns [QsiQualifiedIdentifier qqi] locals [List<QsiIdentifier> buffer]
+    @init { $buffer = new List<QsiIdentifier>(); }
+    @after { $qqi = new QsiQualifiedIdentifier($buffer); }
+    : identifier[$buffer] ('.' identifier[$buffer] ('.' identifier[$buffer])?)?
     ;
 
-alias
-    : K_AS? name=identifier
+alias returns [QsiAliasNode node]
+    @after { $node = new QsiAliasNode { Name = $name.qi }; }
+    : K_AS? name=identifier[null]
     ;
 
-explicitAlias
-    : K_AS name=identifier
+explicitAlias returns [QsiAliasNode node]
+    @after { $node = new QsiAliasNode { Name = $name.qi }; }
+    : K_AS name=identifier[null]
     ;
 
 associationTableExpression
@@ -218,7 +236,7 @@ associationCardinality
     ;
 
 variableName
-    : identifier ('[' index=numericLiteral ']')?
+    : identifier[null] ('[' index=numericLiteral ']')?
     ;
 
 variableNameList
@@ -263,11 +281,11 @@ groupingExpression
     ;
 
 prefixTableName
-    : '#' identifier
+    : '#' identifier[null]
     ;
 
 variableTable
-    : ':' identifier alias?
+    : ':' identifier[null] alias?
     ;
 
 tableOrderByClause
@@ -477,11 +495,10 @@ expression
     | l=expression op=operator r=expression #operationExpr
     | fieldName                             #fieldExpr
     | constant                              #constantExpr
-    | identifier '=>' expression            #lambdaExpr
+    | identifier[null] '=>' expression      #lambdaExpr
     | jsonObjectExpression                  #jsonObjectExpr
     | jsonArrayExpression                   #jsonArrayExpr
     | bindParameterExpression               #bindParamExpr
-//    | variableName
     ;
 
 expressionList
@@ -508,12 +525,12 @@ searchCaseExpression
     ;
 
 condition
-    : predicate                 #predicateCondition
-    | condition K_OR condition  #orCondition
-    | condition K_AND condition #andCondition
-    | K_NOT condition           #notCondition
-    | '(' condition ')'         #parenthesisCondition
-    | K_CURRENT K_OF identifier #currentOfCondition
+    : predicate                       #predicateCondition
+    | condition K_OR condition        #orCondition
+    | condition K_AND condition       #andCondition
+    | K_NOT condition                 #notCondition
+    | '(' condition ')'               #parenthesisCondition
+    | K_CURRENT K_OF identifier[null] #currentOfCondition
     ;
 
 functionExpression
@@ -522,8 +539,10 @@ functionExpression
     | functionName '(' expressionList ')' #scalarExpr
     ;
 
-functionName
-    : identifier ('.' identifier ('.' identifier ('.' identifier)?)?)?
+functionName returns [QsiQualifiedIdentifier qqi] locals [List<QsiIdentifier> buffer]
+    @init { $buffer = new List<QsiIdentifier>(); }
+    @after { $qqi = new QsiQualifiedIdentifier($buffer); }
+    : identifier[$buffer] ('.' identifier[$buffer] ('.' identifier[$buffer] ('.' identifier[$buffer])?)?)?
     ;
 
 aggregateExpression
@@ -936,8 +955,9 @@ jsonStringLiteral
     ;
 
 bindParameterExpression returns [int index]
-    : '?'                    { $index = NextBindParameterIndex(); }
-    | ':' n=UNSIGNED_INTEGER { $index = int.Parse($n.text); }
+    : '?'                    { $index = NextBindParameterIndex(); } #bindParam1
+    | ':' n=UNSIGNED_INTEGER { $index = int.Parse($n.text); }       #bindParam2
+    | ':' identifier[null]                                          #bindParam3
     ;
 
 // ------ SQL Reference > Predicates ------
@@ -1099,6 +1119,144 @@ alternateSeries
     : K_ALTERNATE K_PERIOD K_FOR K_SERIES columnListClause
     ;
 
+// ------ SQL Reference > SQL Statements > Alpabetical List of Statements > CREATE VIEW Statement ------
+
+createViewStatement returns [
+    QsiQualifiedIdentifier name,
+    string comment,
+    bool structuredPrivilegeCheck,
+    bool force,
+    bool checkOption,
+    bool ddlOnly,
+    bool readOnly
+]
+    : K_CREATE K_VIEW n=viewName               { $name = $n.qqi; }
+      (K_COMMENT cmt=STRING_LITERAL            { $comment = IdentifierUtility.Unescape($cmt.text); })?
+      columnListClause?
+      parameterizedViewClause?
+      K_AS subquery
+      withAssociationClause?
+      withMaskClause?
+      withExpressionMacroClause?
+      withAnnotationClause?
+      (K_WITH K_STRUCTURED K_PRIVILEGE K_CHECK { $structuredPrivilegeCheck = true; })?
+      withCacheClause?
+      (K_FORCE                                 { $force = true; })?
+      (K_WITH K_CHECK K_OPTION                 { $checkOption = true; })?
+      (K_WITH K_DDL K_ONLY                     { $ddlOnly = true; })?
+      (K_WITH K_READ K_ONLY                    { $readOnly = true; })?
+      withAnonymizationClause?
+    ;
+
+viewName returns [QsiQualifiedIdentifier qqi] locals [List<QsiIdentifier> buffer]
+    @init { $buffer = new List<QsiIdentifier>(); }
+    @after { $qqi = new QsiQualifiedIdentifier($buffer); }
+    : identifier[$buffer] ('.' identifier[$buffer] )?
+    ;
+
+withAssociationClause
+    : K_WITH K_ASSOCIATIONS '(' defs+=associationDef (',' defs+=associationDef)* ')'
+    ;
+
+associationDef
+    : forwardJoinDef
+    | propagationDef
+    ;
+
+forwardJoinDef
+    : joinCardinalityClass
+    ;
+
+joinCardinalityClass
+    : joinCardinality? K_JOIN tableName explicitAlias? K_ON condition
+    | propagationDef
+    ;
+
+propagationDef
+    : tableName explicitAlias?
+    ;
+
+parameterizedViewClause
+    : '(' defs+=parameterDef (',' defs+=parameterDef)* ')'
+    ;
+
+parameterDef
+    : K_IN identifier[null] dataType expression?
+    ;
+
+withMaskClause
+    : K_WITH K_MASK '(' defs+=maskDef (',' defs+=maskDef)* ')'
+    ;
+
+maskDef
+    : columnName K_USING expression
+    ;
+
+withExpressionMacroClause
+    : K_WITH K_EXPRESSION K_MACROS '(' defs+=expressionMacroDef (',' defs+=expressionMacroDef)* ')'
+    ;
+
+expressionMacroDef
+    : expression explicitAlias
+    ;
+
+withAnnotationClause
+    : K_WITH K_ANNOTATIONS '(' (setViewAnnotations? columnAnnotation* parameterAnnotation*) ')'
+    ;
+
+setViewAnnotations
+    : keySetOperation
+    ;
+
+columnAnnotation
+    : K_COLUMN columnName keySetOperation
+    ;
+
+parameterAnnotation
+    : K_PARAMETER columnName keySetOperation
+    ;
+
+keySetOperation
+    : K_SET keyValuePair (',' keyValuePair)*
+    ;
+
+keyValuePair
+    : STRING_LITERAL '=' STRING_LITERAL
+    ;
+
+withCacheClause
+    : K_WITH (K_STATIC | K_DYNAMIC)? K_CACHE (K_NAME identifier[null])
+      (K_RETENTION UNSIGNED_INTEGER)?
+      (K_OF projectionClause)?
+      (K_FILTER condition)?
+      locationClause?
+    ;
+
+projectionClause
+    : defs+=projectionDef (',' defs+=projectionDef)*
+    ;
+
+projectionDef
+    : (K_SUM | K_MIN | K_MAX | K_COUNT) '(' columnName ')' #projectionAggrDef
+    | columnName                                           #projectionColumnDef
+    ;
+
+locationClause
+    : K_AT K_LOCATION? locs+=STRING_LITERAL (',' locs+=STRING_LITERAL)*
+    ;
+
+withAnonymizationClause
+    : K_WITH K_ANONYMIZATION '(' K_ALGORITHM STRING_LITERAL (viewLevelParameter? columnLevelParameter*) ')'
+    ;
+
+viewLevelParameter
+    : K_PARAMETERS STRING_LITERAL
+    ;
+
+columnLevelParameter
+    : K_COLUMN columnName K_PARAMETERS STRING_LITERAL
+    ;
+
 // ------ ETC ------
 
 booleanLiteral
@@ -1112,46 +1270,49 @@ numericLiteral
     | UNSIGNED_INTEGER
     ;
 
-identifier
-    : UNQUOTED_IDENTIFIER
-    | QUOTED_IDENTIFIER
-    | UNICODE_IDENTIFIER
-    | keywodIdentifier
+identifier [List<QsiIdentifier> buffer] returns [QsiIdentifier qi]
+    @after { $buffer?.Add($qi); }
+    : i=UNQUOTED_IDENTIFIER { $qi = new QsiIdentifier($i.text.ToUpper(), false); }
+    | i=QUOTED_IDENTIFIER   { $qi = new QsiIdentifier($i.text, true); }
+    | i=UNICODE_IDENTIFIER  { $qi = new QsiIdentifier($i.text.ToUpper(), false); }
+    | ki=keywodIdentifier   { $qi = new QsiIdentifier($ki.text.ToUpper(), false); }
     ;
 
 keywodIdentifier
-    : K_AFTER | K_ALLOWED | K_ALPHANUM | K_ALTERNATE | K_AMPLITUDE | K_AND | K_ANY | K_APPLICATION_TIME | K_ARRAY
-    | K_ASC | K_AUTO_CORR | K_AUTOMATIC | K_AVG | K_BALANCE | K_BERNOULLI | K_BEST | K_BETWEEN | K_BIGINT | K_BINNING
-    | K_BLOB | K_BOOLEAN | K_BY | K_CAST | K_CLOB | K_COLLATE | K_COLUMNS | K_COMMIT | K_CONDITIONAL | K_CONTAINS
-    | K_CORR | K_CORR_SPEARMAN | K_COUNT | K_CROSS_CORR | K_CUBIC_SPLINE_APPROX | K_CUME_DIST | K_CURRENT
-    | K_DATA_TRANSFER_COST | K_DATE | K_DAY | K_DAYDATE | K_DEC | K_DECIMAL | K_DEFAULT | K_DELETE | K_DELTA
-    | K_DENSE_RANK | K_DESC | K_DFT | K_DOUBLE | K_ELEMENTS | K_EMPTY | K_ENCODING | K_EQUIDISTANT | K_ERROR | K_ESCAPE
-    | K_EXACT | K_EXISTS | K_EXTRACT | K_FILL | K_FIRST | K_FIRST_VALUE | K_FLAG | K_FLOAT | K_FOLLOWING | K_FORCE
-    | K_FORMAT | K_FULLTEXT | K_FUZZY | K_GROUPING | K_HINT | K_HISTORY | K_HOUR | K_ID | K_IGNORE | K_IMAGINARY
-    | K_INCREMENT | K_INSERT | K_INT | K_INTEGER | K_INTERVAL | K_JSON | K_JSON_QUERY | K_JSON_TABLE | K_JSON_VALUE
-    | K_KEY | K_LAG | K_LANGUAGE | K_LAST | K_LAST_VALUE | K_LAX | K_LEAD | K_LIKE | K_LIKE_REGEXPR | K_LINEAR_APPROX
-    | K_LINGUISTIC | K_LOCATE_REGEXPR | K_LOCK | K_LOCKED | K_MANY | K_MATCHED | K_MATCHES | K_MAX | K_MAXVALUE
-    | K_MEDIAN | K_MEMBER | K_MERGE | K_MIN | K_MINUTE | K_MINVALUE | K_MISSING | K_MONTH | K_MULTIPLE | K_NCLOB
-    | K_NEGATIVE_LAGS | K_NESTED | K_NO | K_NO_ROUTE_TO | K_NOT | K_NOTHING | K_NOWAIT | K_NTH_VALUE | K_NTILE | K_NULLS
-    | K_NVARCHAR | K_OBJECT | K_OCCURRENCE | K_OCCURRENCES_REGEXPR | K_OF | K_OFF | K_OFFSET | K_ONE | K_OR
-    | K_ORDINALITY | K_OUTER | K_OVER | K_OVERRIDING | K_OVERVIEW | K_PARAMETERS | K_PART | K_PARTITION | K_PASSING
-    | K_PATH | K_PERCENT_RANK | K_PERCENTILE_CONT | K_PERCENTILE_DISC | K_PERIOD | K_PHASE | K_PORTION | K_POSITIVE_LAGS
-    | K_PRECEDING | K_PREFIX | K_PRIMARY | K_RANDOM_PARTITION | K_RANK | K_REAL | K_REBUILD | K_REPLACE
-    | K_REPLACE_REGEXPR | K_RESULT | K_RESULTSETS | K_RETURNING | K_ROUND_CEILING | K_ROUND_DOWN | K_ROUND_FLOOR
-    | K_ROUND_HALF_DOWN | K_ROUND_HALF_EVEN | K_ROUND_HALF_UP | K_ROUND_UP | K_ROUTE_BY | K_ROUTE_BY_CARDINALITY
-    | K_ROUTE_TO | K_ROW | K_ROW_NUMBER | K_ROWCOUNT | K_ROWS | K_SECOND | K_SECONDDATE | K_SERIES
-    | K_SERIES_DISAGGREGATE | K_SERIES_DISAGGREGATE_BIGINT | K_SERIES_DISAGGREGATE_DATE | K_SERIES_DISAGGREGATE_DECIMAL
-    | K_SERIES_DISAGGREGATE_INTEGER | K_SERIES_DISAGGREGATE_SECONDDATE | K_SERIES_DISAGGREGATE_SMALLDECIMAL
-    | K_SERIES_DISAGGREGATE_SMALLINT | K_SERIES_DISAGGREGATE_TIME | K_SERIES_DISAGGREGATE_TIMESTAMP
-    | K_SERIES_DISAGGREGATE_TINYINT | K_SERIES_ELEMENT_TO_PERIOD | K_SERIES_FILTER | K_SERIES_GENERATE
-    | K_SERIES_GENERATE_BIGINT | K_SERIES_GENERATE_DATE | K_SERIES_GENERATE_DECIMAL | K_SERIES_GENERATE_INTEGER
-    | K_SERIES_GENERATE_SECONDDATE | K_SERIES_GENERATE_SMALLDECIMAL | K_SERIES_GENERATE_SMALLINT
-    | K_SERIES_GENERATE_TIME | K_SERIES_GENERATE_TIMESTAMP | K_SERIES_GENERATE_TINYINT | K_SERIES_PERIOD_TO_ELEMENT
-    | K_SERIES_ROUND | K_SETS | K_SHARE | K_SHORTTEXT | K_SMALLDECIMAL | K_SMALLINT | K_SOME | K_SORT | K_SPECIFIED
-    | K_STDDEV | K_STDDEV_POP | K_STDDEV_SAMP | K_STRICT | K_STRING_AGG | K_STRUCTURED | K_SUBSTR_REGEXPR
-    | K_SUBSTRING_REGEXPR | K_SUBTOTAL | K_SUM | K_SYSTEM | K_SYSTEM_TIME | K_TABLE | K_TEXT | K_TEXT_FILTER | K_THEN
-    | K_TIME | K_TIMESTAMP | K_TINYINT | K_TO | K_TOTAL | K_TRIM | K_UNBOUNDED | K_UNCONDITIONAL | K_UNNEST | K_UP
-    | K_UPDATE | K_UPSERT | K_USER | K_UTF16 | K_UTF32 | K_UTF8 | K_VALUE | K_VAR | K_VAR_POP | K_VAR_SAMP | K_VARBINARY
-    | K_VARCHAR | K_WAIT | K_WEIGHT | K_WEIGHTED_AVG | K_WITHIN | K_WITHOUT | K_WRAPPER | K_XML | K_XMLNAMESPACE
-    | K_XMLTABLE | K_YEAR | K_ZERO_LAG
+    : K_AFTER | K_ALGORITHM | K_ALLOWED | K_ALPHANUM | K_ALTERNATE | K_AMPLITUDE | K_AND | K_ANONYMIZATION | K_ANY
+    | K_APPLICATION_TIME | K_ARRAY | K_ASC | K_ASSOCIATIONS | K_AT | K_AUTO_CORR | K_AUTOMATIC | K_AVG | K_BALANCE
+    | K_BERNOULLI | K_BEST | K_BETWEEN | K_BIGINT | K_BINNING | K_BLOB | K_BOOLEAN | K_BY | K_CACHE | K_CAST | K_CHECK
+    | K_CLOB | K_COLLATE | K_COLUMNS | K_COMMENT | K_COMMIT | K_CONDITIONAL | K_CONTAINS | K_CORR | K_CORR_SPEARMAN
+    | K_COUNT | K_CREATE | K_CROSS_CORR | K_CUBIC_SPLINE_APPROX | K_CUME_DIST | K_CURRENT | K_DATA_TRANSFER_COST
+    | K_DATE | K_DAY | K_DAYDATE | K_DDL | K_DEC | K_DECIMAL | K_DEFAULT | K_DELETE | K_DELTA | K_DENSE_RANK | K_DESC
+    | K_DFT | K_DOUBLE | K_DYNAMIC | K_ELEMENTS | K_EMPTY | K_ENCODING | K_EQUIDISTANT | K_ERROR | K_ESCAPE | K_EXACT
+    | K_EXISTS | K_EXPRESSION | K_EXTRACT | K_FILL | K_FILTER | K_FIRST | K_FIRST_VALUE | K_FLAG | K_FLOAT | K_FOLLOWING
+    | K_FORCE | K_FORMAT | K_FULLTEXT | K_FUZZY | K_GROUPING | K_HINT | K_HISTORY | K_HOUR | K_ID | K_IGNORE
+    | K_IMAGINARY | K_INCREMENT | K_INSERT | K_INT | K_INTEGER | K_INTERVAL | K_JSON | K_JSON_QUERY | K_JSON_TABLE
+    | K_JSON_VALUE | K_KEY | K_LAG | K_LANGUAGE | K_LAST | K_LAST_VALUE | K_LAX | K_LEAD | K_LIKE | K_LIKE_REGEXPR
+    | K_LINEAR_APPROX | K_LINGUISTIC | K_LOCATE_REGEXPR | K_LOCATION | K_LOCK | K_LOCKED | K_MACROS | K_MANY | K_MASK
+    | K_MATCHED | K_MATCHES | K_MAX | K_MAXVALUE | K_MEDIAN | K_MEMBER | K_MERGE | K_MIN | K_MINUTE | K_MINVALUE
+    | K_MISSING | K_MONTH | K_MULTIPLE | K_NAME | K_NCLOB | K_NEGATIVE_LAGS | K_NESTED | K_NO | K_NO_ROUTE_TO | K_NOT
+    | K_NOTHING | K_NOWAIT | K_NTH_VALUE | K_NTILE | K_NULLS | K_NVARCHAR | K_OBJECT | K_OCCURRENCE
+    | K_OCCURRENCES_REGEXPR | K_OF | K_OFF | K_OFFSET | K_ONE | K_ONLY | K_OPTION | K_OR | K_ORDINALITY | K_OUTER
+    | K_OVER | K_OVERRIDING | K_OVERVIEW | K_PARAMETER | K_PARAMETERS | K_PART | K_PARTITION | K_PASSING | K_PATH
+    | K_PERCENT_RANK | K_PERCENTILE_CONT | K_PERCENTILE_DISC | K_PERIOD | K_PHASE | K_PORTION | K_POSITIVE_LAGS
+    | K_PRECEDING | K_PREFIX | K_PRIMARY | K_PRIVILEGE | K_RANDOM_PARTITION | K_RANK | K_READ | K_REAL | K_REBUILD
+    | K_REPLACE | K_REPLACE_REGEXPR | K_RESULT | K_RESULTSETS | K_RETENTION | K_RETURNING | K_ROUND_CEILING
+    | K_ROUND_DOWN | K_ROUND_FLOOR | K_ROUND_HALF_DOWN | K_ROUND_HALF_EVEN | K_ROUND_HALF_UP | K_ROUND_UP | K_ROUTE_BY
+    | K_ROUTE_BY_CARDINALITY | K_ROUTE_TO | K_ROW | K_ROW_NUMBER | K_ROWCOUNT | K_ROWS | K_SECOND | K_SECONDDATE
+    | K_SERIES | K_SERIES_DISAGGREGATE | K_SERIES_DISAGGREGATE_BIGINT | K_SERIES_DISAGGREGATE_DATE
+    | K_SERIES_DISAGGREGATE_DECIMAL | K_SERIES_DISAGGREGATE_INTEGER | K_SERIES_DISAGGREGATE_SECONDDATE
+    | K_SERIES_DISAGGREGATE_SMALLDECIMAL | K_SERIES_DISAGGREGATE_SMALLINT | K_SERIES_DISAGGREGATE_TIME
+    | K_SERIES_DISAGGREGATE_TIMESTAMP | K_SERIES_DISAGGREGATE_TINYINT | K_SERIES_ELEMENT_TO_PERIOD | K_SERIES_FILTER
+    | K_SERIES_GENERATE | K_SERIES_GENERATE_BIGINT | K_SERIES_GENERATE_DATE | K_SERIES_GENERATE_DECIMAL
+    | K_SERIES_GENERATE_INTEGER | K_SERIES_GENERATE_SECONDDATE | K_SERIES_GENERATE_SMALLDECIMAL
+    | K_SERIES_GENERATE_SMALLINT | K_SERIES_GENERATE_TIME | K_SERIES_GENERATE_TIMESTAMP | K_SERIES_GENERATE_TINYINT
+    | K_SERIES_PERIOD_TO_ELEMENT | K_SERIES_ROUND | K_SETS | K_SHARE | K_SHORTTEXT | K_SMALLDECIMAL | K_SMALLINT
+    | K_SOME | K_SORT | K_SPECIFIED | K_STATIC | K_STDDEV | K_STDDEV_POP | K_STDDEV_SAMP | K_STRICT | K_STRING_AGG
+    | K_STRUCTURED | K_SUBSTR_REGEXPR | K_SUBSTRING_REGEXPR | K_SUBTOTAL | K_SUM | K_SYSTEM | K_SYSTEM_TIME | K_TABLE
+    | K_TEXT | K_TEXT_FILTER | K_THEN | K_TIME | K_TIMESTAMP | K_TINYINT | K_TO | K_TOTAL | K_TRIM | K_UNBOUNDED
+    | K_UNCONDITIONAL | K_UNNEST | K_UP | K_UPDATE | K_UPSERT | K_USER | K_UTF16 | K_UTF32 | K_UTF8 | K_VALUE | K_VAR
+    | K_VAR_POP | K_VAR_SAMP | K_VARBINARY | K_VARCHAR | K_VIEW | K_WAIT | K_WEIGHT | K_WEIGHTED_AVG | K_WITHIN
+    | K_WITHOUT | K_WRAPPER | K_XML | K_XMLNAMESPACE | K_XMLTABLE | K_YEAR | K_ZERO_LAG
     ;

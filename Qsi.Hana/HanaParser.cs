@@ -28,12 +28,15 @@ namespace Qsi.Hana
                 case DataManipulationStatementContext dataManipulationStatement:
                     return ParseDataManipulationStatement(dataManipulationStatement);
 
+                case DataDefinitionStatementContext dataDefinitionStatement:
+                    return DataDefinitionStatementStatement(dataDefinitionStatement);
+
                 default:
                     throw TreeHelper.NotSupportedTree(statement.children[0]);
             }
         }
 
-        private IQsiTreeNode ParseDataManipulationStatement(DataManipulationStatementContext statement)
+        private IQsiTableNode ParseDataManipulationStatement(DataManipulationStatementContext statement)
         {
             switch (statement.children[0])
             {
@@ -60,6 +63,18 @@ namespace Qsi.Hana
 
                 case MergeIntoStatementContext mergeIntoStatement:
                     throw new NotImplementedException();
+
+                default:
+                    throw TreeHelper.NotSupportedTree(statement.children[0]);
+            }
+        }
+
+        private IQsiDefinitionNode DataDefinitionStatementStatement(DataDefinitionStatementContext statement)
+        {
+            switch (statement.children[0])
+            {
+                case CreateViewStatementContext createViewStatement:
+                    return DefinitionVisitor.VisitCreateViewStatement(createViewStatement);
 
                 default:
                     throw TreeHelper.NotSupportedTree(statement.children[0]);
