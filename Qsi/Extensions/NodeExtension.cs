@@ -149,6 +149,16 @@ namespace Qsi.Extensions
         }
         #endregion
 
+        #region IQsi
+        public static bool IsAllColumnNode(this IQsiColumnsDeclarationNode node)
+        {
+            if (node == null || node.Columns.Length != 1)
+                return false;
+
+            return node.Columns[0] is IQsiAllColumnNode { Path: null };
+        }
+        #endregion
+
         #region ToImmutable
         public static ImmutableDataConflictActionNode ToImmutable(this IQsiDataConflictActionNode node, bool ignoreUserData = false)
         {

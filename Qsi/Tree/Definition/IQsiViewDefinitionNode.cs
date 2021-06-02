@@ -8,6 +8,11 @@ namespace Qsi.Tree
     public interface IQsiViewDefinitionNode : IQsiDefinitionNode
     {
         /// <summary>
+        /// Get the table directives.
+        /// </summary>
+        IQsiTableDirectivesNode Directives { get; }
+
+        /// <summary>
         /// Get declared view name.
         /// </summary>
         QsiQualifiedIdentifier Identifier { get; }
