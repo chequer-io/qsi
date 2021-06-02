@@ -9,6 +9,7 @@ using Qsi.Data;
 using Qsi.Extensions;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
+using Qsi.Utilities;
 
 namespace Qsi.Analyzers.Table
 {
@@ -75,14 +76,12 @@ namespace Qsi.Analyzers.Table
             // view
             if (context.Options.UseViewTracing &&
                 !lookup.IsSystem &&
-                (lookup.Type is QsiTableType.View or QsiTableType.MaterializedView))
+                lookup.Type is QsiTableType.View or QsiTableType.MaterializedView)
             {
                 var script = context.Engine.RepositoryProvider.LookupDefinition(lookup.Identifier, lookup.Type) ??
                              throw new QsiException(QsiError.UnableResolveDefinition, lookup.Identifier);
 
-                var viewTable = (IQsiTableNode)context.Engine.TreeParser.Parse(script) ??
-                                throw new QsiException(QsiError.Internal, "Invalid view node");
-
+                var viewNode = context.Engine.TreeParser.Parse(script);
                 var typeBackup = lookup.Type;
 
                 using var viewCompileContext = new TableCompileContext(context);
@@ -90,11 +89,33 @@ namespace Qsi.Analyzers.Table
                 if (lookup.Identifier.Level > 1)
                     viewCompileContext.PushIdentifierScope(lookup.Identifier.SubIdentifier(..^1));
 
-                var viewTableStructure = await BuildTableStructure(viewCompileContext, viewTable);
+                switch (viewNode)
+                {
+                    /* TODO: Remove old view node
+                       [ ] Cql
+                       [ ] JSql
+                       [ ] MySql
+                       [ ] PhoenixSql
+                       [ ] SqlServer
+                     */
+                    case IQsiTableNode viewTableNode:
+                    {
+                        var viewTableStructure = await BuildTableStructure(viewCompileContext, viewTableNode);
+                        viewTableStructure.Identifier = ResolveQualifiedIdentifier(context, viewTableStructure.Identifier);
+                        lookup = viewTableStructure;
+                        lookup.Type = typeBackup;
+                        break;
+                    }
 
-                viewTableStructure.Identifier = ResolveQualifiedIdentifier(context, viewTableStructure.Identifier);
-                lookup = viewTableStructure;
-                lookup.Type = typeBackup;
+                    case IQsiDefinitionNode definitionNode:
+                    {
+                        lookup = await BuildDefinitionStructure(viewCompileContext, definitionNode);
+                        break;
+                    }
+
+                    default:
+                        throw TreeHelper.NotSupportedTree(viewNode);
+                }
             }
 
             return lookup;
@@ -252,7 +273,7 @@ namespace Qsi.Analyzers.Table
             switch (table.Columns)
             {
                 case null:
-                case var cd when cd.All(c => c is IQsiAllColumnNode { Path: null } all):
+                case var cd when cd.All(c => c is IQsiAllColumnNode { Path: null }):
                     // Skip
                     break;
 
@@ -587,6 +608,55 @@ namespace Qsi.Analyzers.Table
             }
 
             return compositeSource;
+        }
+        #endregion
+
+        #region Definition
+        protected virtual async ValueTask<QsiTableStructure> BuildDefinitionStructure(TableCompileContext context, IQsiDefinitionNode definition)
+        {
+            context.ThrowIfCancellationRequested();
+
+            switch (definition)
+            {
+                case IQsiViewDefinitionNode viewDefinition:
+                    return await BuildViewDefinitionStructure(context, viewDefinition);
+
+                default:
+                    throw TreeHelper.NotSupportedTree(definition);
+            }
+        }
+
+        protected virtual async ValueTask<QsiTableStructure> BuildViewDefinitionStructure(TableCompileContext context, IQsiViewDefinitionNode viewDefinition)
+        {
+            context.ThrowIfCancellationRequested();
+
+            using var scopedContext = new TableCompileContext(context);
+
+            // Directives
+
+            if (viewDefinition.Directives?.Tables?.Length > 0)
+                await BuildDirectives(scopedContext, viewDefinition.Directives);
+
+            // Source
+
+            var sourceNode = viewDefinition.Source;
+
+            if (viewDefinition.Columns != null && !viewDefinition.Columns.IsAllColumnNode())
+            {
+                sourceNode = new ImmutableDerivedTableNode(
+                    null, null,
+                    viewDefinition.Columns.ToImmutable(),
+                    viewDefinition.Source,
+                    null, null, null, null, null, null
+                );
+            }
+
+            // Inject identifier
+
+            var structure = await BuildTableStructure(scopedContext, sourceNode);
+            structure.Identifier = ResolveQualifiedIdentifier(scopedContext, viewDefinition.Identifier);
+
+            return structure;
         }
         #endregion
 
