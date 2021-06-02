@@ -27,6 +27,12 @@ namespace Qsi.Utilities
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static QsiDerivedTableNode CreateAliasedTableNode(QsiTableNode node, QsiIdentifier alias)
         {
+            return CreateAliasedTableNode(node, new QsiAliasNode { Name = alias });
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static QsiDerivedTableNode CreateAliasedTableNode(QsiTableNode node, QsiAliasNode alias)
+        {
             return new()
             {
                 Source =
@@ -35,10 +41,7 @@ namespace Qsi.Utilities
                 },
                 Alias =
                 {
-                    Value = new QsiAliasNode
-                    {
-                        Name = alias
-                    }
+                    Value = alias
                 },
                 Columns =
                 {

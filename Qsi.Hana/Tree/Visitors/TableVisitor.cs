@@ -522,7 +522,7 @@ namespace Qsi.Hana.Tree.Visitors
             };
 
             if (context.TryGetRuleContext<AliasContext>(out var alias))
-                node = TreeHelper.CreateAliasedTableNode(node, IdentifierVisitor.VisitIdentifier(alias.name));
+                node = TreeHelper.CreateAliasedTableNode(node, VisitAlias(alias));
 
             HanaTree.PutContextSpan(node, context);
 
@@ -549,7 +549,7 @@ namespace Qsi.Hana.Tree.Visitors
             var node = Visit(context);
 
             if (context.TryGetRuleContext<AliasContext>(out var alias))
-                node = TreeHelper.CreateAliasedTableNode(node, IdentifierVisitor.VisitIdentifier(alias.name));
+                node = TreeHelper.CreateAliasedTableNode(node, VisitAlias(alias));
 
             return node;
 

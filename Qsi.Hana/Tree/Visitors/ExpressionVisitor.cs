@@ -146,6 +146,9 @@ namespace Qsi.Hana.Tree.Visitors
                 case JsonArrayExprContext jsonArrayExpr:
                     return VisitJsonArrayExpression(jsonArrayExpr.jsonArrayExpression());
 
+                case BindParamExprContext bindParamExpr:
+                    return VisitBindParameterExpression(bindParamExpr.bindParameterExpression());
+
                 default:
                     throw TreeHelper.NotSupportedTree(context);
             }
@@ -746,6 +749,28 @@ namespace Qsi.Hana.Tree.Visitors
         public static QsiExpressionNode VisitJsonArrayExpression(JsonArrayExpressionContext context)
         {
             var node = TreeHelper.CreateLiteral(context.GetText(), QsiDataType.Json);
+            HanaTree.PutContextSpan(node, context);
+            return node;
+        }
+
+        public static QsiExpressionNode VisitBindParameterExpression(BindParameterExpressionContext context)
+        {
+            var node = new QsiBindParameterExpressionNode
+            {
+                Type = QsiParameterType.Index,
+                Index = context.index
+            };
+
+            if (context.n != null)
+            {
+                node.Prefix = ":";
+            }
+            else
+            {
+                node.Prefix = "?";
+                node.NoSuffix = true;
+            }
+
             HanaTree.PutContextSpan(node, context);
             return node;
         }

@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
 using Qsi.Analyzers;
 using Qsi.Analyzers.Action;
+using Qsi.Data;
 using Qsi.Hana.Analyzers;
-using Qsi.Hana.Tree;
 using Qsi.Parsing;
 using Qsi.Parsing.Common;
 using Qsi.Services;
+using Qsi.Tree;
 
 namespace Qsi.Hana
 {
@@ -35,6 +36,14 @@ namespace Qsi.Hana
         {
             yield return new QsiActionAnalyzer(engine);
             yield return new HanaTableAnalyzer(engine);
+        }
+
+        public override QsiParameter FindParameter(QsiParameter[] parameters, IQsiBindParameterExpressionNode node)
+        {
+            if (node.Type == QsiParameterType.Index && node.Index.HasValue)
+                return parameters[node.Index.Value - 1];
+
+            return base.FindParameter(parameters, node);
         }
     }
 }

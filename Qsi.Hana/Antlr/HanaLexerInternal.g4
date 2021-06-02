@@ -375,6 +375,7 @@ DIVIDE:               '/';
 MODULUS:              '%';
 COLON:                ':';
 LABMDA_ARROW:        '=>';
+QMARK:                '?';
 
 UNSIGNED_INTEGER
     : DIGIT+

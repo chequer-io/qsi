@@ -5,6 +5,13 @@ namespace Qsi.Hana.Internal
 {
     internal partial class HanaParserInternal
     {
+        private int _bindParamIndex = 1;
+
+        protected int NextBindParameterIndex()
+        {
+            return _bindParamIndex++;
+        }
+
         public bool IsQuotedNumeric()
         {
             var text = CurrentToken.Text;

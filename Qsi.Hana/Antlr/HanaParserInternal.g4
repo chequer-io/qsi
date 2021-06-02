@@ -480,6 +480,7 @@ expression
     | identifier '=>' expression            #lambdaExpr
     | jsonObjectExpression                  #jsonObjectExpr
     | jsonArrayExpression                   #jsonArrayExpr
+    | bindParameterExpression               #bindParamExpr
 //    | variableName
     ;
 
@@ -932,6 +933,11 @@ jsonArrayValueExpression
 jsonStringLiteral
     : QUOTED_IDENTIFIER
     | STRING_LITERAL
+    ;
+
+bindParameterExpression returns [int index]
+    : '?'                    { $index = NextBindParameterIndex(); }
+    | ':' n=UNSIGNED_INTEGER { $index = int.Parse($n.text); }
     ;
 
 // ------ SQL Reference > Predicates ------
