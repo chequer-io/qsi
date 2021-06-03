@@ -21,9 +21,6 @@ namespace Qsi.SqlServer.Tree
             {
                 case StatementWithCtesAndXmlNamespaces statementWithCtesAndXmlNamespaces:
                     return VisitStatementWithCtesAndXmlNamespaces(statementWithCtesAndXmlNamespaces);
-
-                case ViewStatementBody viewStatementBody:
-                    return VisitStatementBody(viewStatementBody);
             }
 
             throw TreeHelper.NotSupportedTree(statement);
@@ -70,41 +67,6 @@ namespace Qsi.SqlServer.Tree
             SqlServerTree.PutFragmentSpan(tableNode, selectStatement);
 
             return tableNode;
-        }
-        #endregion
-
-        #region StatementBody
-        public QsiTableNode VisitStatementBody(ViewStatementBody viewStatementBody)
-        {
-            switch (viewStatementBody)
-            {
-                case CreateViewStatement createViewStatement:
-                    return VisitCreateViewStatement(createViewStatement);
-            }
-
-            throw TreeHelper.NotSupportedTree(viewStatementBody);
-        }
-
-        public QsiTableNode VisitCreateViewStatement(CreateViewStatement createViewStatement)
-        {
-            return TreeHelper.Create<QsiDerivedTableNode>(n =>
-            {
-                if (createViewStatement.Columns == null || createViewStatement.Columns.Count == 0)
-                {
-                    n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
-                }
-                else
-                {
-                    var columnsDeclaration = new QsiColumnsDeclarationNode();
-                    columnsDeclaration.Columns.AddRange(CreateSequentialColumnNodes(createViewStatement.Columns));
-                    n.Columns.SetValue(columnsDeclaration);
-                }
-
-                n.Source.SetValue(VisitSelectStatement(createViewStatement.SelectStatement));
-                n.Alias.SetValue(CreateAliasNode(createViewStatement.SchemaObjectName[^1]));
-
-                SqlServerTree.PutFragmentSpan(n, createViewStatement);
-            });
         }
         #endregion
 
