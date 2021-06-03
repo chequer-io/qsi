@@ -92,8 +92,8 @@ namespace Qsi.Analyzers.Table
                 switch (viewNode)
                 {
                     /* TODO: Remove old view node
-                       [ ] Cql
-                       [ ] JSql
+                       [V] Cql
+                       [-] JSql (Deprecated)
                        [ ] MySql
                        [ ] PhoenixSql
                        [ ] SqlServer

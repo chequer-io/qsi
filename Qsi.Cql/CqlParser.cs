@@ -36,7 +36,7 @@ namespace Qsi.Cql
                     return TableVisitor.VisitSelectStatement(selectStatement);
 
                 case CreateMaterializedViewStatementContext createMaterializedViewStatement:
-                    return TableVisitor.VisitCreateMaterializedViewStatement(createMaterializedViewStatement);
+                    return DefinitionVisitor.VisitCreateMaterializedViewStatement(createMaterializedViewStatement);
 
                 case UseStatementContext useStatement:
                     return ActionVisitor.VisitUseStatement(useStatement);

@@ -253,22 +253,5 @@ namespace Qsi.Cql.Tree
             };
         }
         #endregion
-
-        #region CreateMaterializedViewStatement
-        public static QsiTableNode VisitCreateMaterializedViewStatement(CreateMaterializedViewStatementContext context)
-        {
-            var node = new QsiDerivedTableNode();
-
-            node.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
-            node.Source.SetValue(VisitCommonSelectStatement(new CommonSelectStatementContext(context)));
-
-            node.Alias.SetValue(new QsiAliasNode
-            {
-                Name = context.cf.id[^1]
-            });
-
-            return node;
-        }
-        #endregion
     }
 }
