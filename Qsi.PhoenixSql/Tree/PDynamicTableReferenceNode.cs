@@ -2,7 +2,7 @@
 
 namespace Qsi.PhoenixSql.Tree
 {
-    internal sealed class PDynamicTableReferenceNode : QsiTableReferenceNode, IDynamicTableNode
+    internal sealed class PDynamicTableReferenceNode : QsiTableReferenceNode, IDynamicColumnsNode
     {
         public QsiColumnsDeclarationNode DynamicColumns { get; set; }
     }

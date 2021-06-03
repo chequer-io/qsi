@@ -95,7 +95,7 @@ namespace Qsi.Analyzers.Table
                        [V] Cql
                        [-] JSql (Deprecated)
                        [ ] MySql
-                       [ ] PhoenixSql
+                       [V] PhoenixSql
                        [ ] SqlServer
                      */
                     case IQsiTableNode viewTableNode:

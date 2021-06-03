@@ -17,12 +17,28 @@ namespace Qsi.PhoenixSql.Analyzers
         {
         }
 
+        protected override async ValueTask<QsiTableStructure> BuildViewDefinitionStructure(TableCompileContext context, IQsiViewDefinitionNode viewDefinition)
+        {
+            var structure = await base.BuildViewDefinitionStructure(context, viewDefinition);
+
+            if (viewDefinition is IDynamicColumnsNode dynamicColumnsNode)
+            {
+                structure = structure.Clone();
+                PatchDynamicColumns(structure, dynamicColumnsNode);
+            }
+
+            return structure;
+        }
+
         protected override async ValueTask<QsiTableStructure> BuildDerivedTableStructure(TableCompileContext context, IQsiDerivedTableNode table)
         {
             var structure = await base.BuildDerivedTableStructure(context, table);
 
-            if (table is IDynamicTableNode dynamicTableNode)
-                PatchDynamicTable(structure, dynamicTableNode);
+            if (table is IDynamicColumnsNode dynamicColumnsNode)
+            {
+                structure = structure.Clone();
+                PatchDynamicColumns(structure, dynamicColumnsNode);
+            }
 
             return structure;
         }
@@ -31,18 +47,18 @@ namespace Qsi.PhoenixSql.Analyzers
         {
             var structure = await base.BuildTableReferenceStructure(context, table);
 
-            if (table is IDynamicTableNode dynamicTableNode)
+            if (table is IDynamicColumnsNode dynamicColumnsNode)
             {
                 structure = structure.Clone();
-                PatchDynamicTable(structure, dynamicTableNode);
+                PatchDynamicColumns(structure, dynamicColumnsNode);
             }
 
             return structure;
         }
 
-        private void PatchDynamicTable(QsiTableStructure structure, IDynamicTableNode dynamicTableNode)
+        private void PatchDynamicColumns(QsiTableStructure structure, IDynamicColumnsNode dynamicColumnsNode)
         {
-            foreach (var dynamicColumn in dynamicTableNode.DynamicColumns.Columns.Cast<PDynamicColumnReferenceNode>())
+            foreach (var dynamicColumn in dynamicColumnsNode.DynamicColumns.Columns.Cast<PDynamicColumnReferenceNode>())
             {
                 var column = structure.NewColumn();
                 column.Name = dynamicColumn.Name[^1];
@@ -74,13 +90,12 @@ namespace Qsi.PhoenixSql.Analyzers
                             .Take(2)
                             .ToArray();
 
-                        if (columns.Length == 0)
-                            throw new QsiException(QsiError.UnknownColumnIn, name.Value, scopeFieldList);
-
-                        if (columns.Length > 1)
-                            throw new QsiException(QsiError.AmbiguousColumnIn, column.Name, scopeFieldList);
-
-                        return columns[0];
+                        return columns.Length switch
+                        {
+                            0 => throw new QsiException(QsiError.UnknownColumnIn, name.Value, scopeFieldList),
+                            > 1 => throw new QsiException(QsiError.AmbiguousColumnIn, column.Name, scopeFieldList),
+                            _ => columns[0]
+                        };
                     }
 
                     foreach (var refTable in table.References)
