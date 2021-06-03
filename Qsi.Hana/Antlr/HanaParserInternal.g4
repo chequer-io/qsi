@@ -29,7 +29,7 @@ dataManipulationStatement
     | mergeIntoStatement
     | replaceStatement
     | selectIntoStatement
-    | selectStatement
+    | selectStatement[true]
     // | truncateTableStatement
     // | unloadStatement
     | updateStatement
@@ -42,14 +42,14 @@ dataDefinitionStatement
 // ------ SQL Reference > SQL Statements > Alpabetical List of Statements > SELECT Statement ------
 
 selectIntoStatement
-    : subquery K_INTO (tableRef | variableNameList) columnListClause? hintClause? (K_TOTAL K_ROWCOUNT)?
+    : selectStatement[false] K_INTO (tableRef | variableNameList) columnListClause? hintClause? (K_TOTAL K_ROWCOUNT)?
     ;
 
-selectStatement
-    : withClause? subquery (forClause | timeTravel)? hintClause?
+selectStatement[bool allowParens]
+    : withClause? subquery[$allowParens] (forClause | timeTravel)? hintClause?
     ;
 
-subquery
+subquery[bool allowParens]
     : select  = selectClause
       from    = fromClause
       where   = whereClause?
@@ -57,7 +57,7 @@ subquery
       set     = setOperatorClause?
       orderBy = tableOrderByClause?
       limit   = limitClause?
-    | '(' inner=selectStatement ')'
+    | {$allowParens}? '(' inner=selectStatement[true] ')'
     ;
 
 withClause
@@ -65,7 +65,7 @@ withClause
     ;
 
 withListElement
-    : name=identifier[null] columnListClause? K_AS '(' subquery ')'
+    : name=identifier[null] columnListClause? K_AS '(' subquery[true] ')'
     ;
 
 columnList returns [IList<QsiIdentifier> list]
@@ -161,7 +161,7 @@ tableExpression
     ;
 
 subqueryTableExpression
-    : subquery alias?
+    : subquery[true] alias?
     ;
 
 tableFunctionExpression
@@ -307,7 +307,7 @@ setOperator
     ;
 
 setOperatorClause
-    : ops+=setOperator queries+=subquery (',' ops+=setOperator queries+=subquery)*
+    : ops+=setOperator queries+=subquery[true] (',' ops+=setOperator queries+=subquery[true])*
     ;
 
 limitClause
@@ -348,7 +348,7 @@ caseJoinElseClause
     ;
 
 lateralTableExpression
-    : K_LATERAL '(' (subquery | functionExpression) ')' alias?
+    : K_LATERAL '(' (subquery[true] | functionExpression) ')' alias?
     ;
 
 collectionDerivedTable
@@ -372,7 +372,7 @@ insertStatement
       columnListClause?
       (
         valueListClause
-        | overridingClause? selectStatement
+        | overridingClause? selectStatement[true]
       )
       hintClause?
     ;
@@ -407,7 +407,7 @@ setClause
 
 setElement
     : fieldName '=' expression
-    | '(' withClause subquery ')' // TODO: check to real db
+    | '(' withClause subquery[true] ')' // TODO: check to real db
     ;
 
 // ------ SQL Reference > SQL Statements > Alpabetical List of Statements > REPLACE | UPSERT Statement ------
@@ -416,7 +416,7 @@ replaceStatement
     : (K_UPSERT | K_REPLACE) tableName partitionRestriction? columnListClause?
       (
         valueListClause (whereClause | K_WITH K_PRIMARY K_KEY)?
-        | subquery
+        | subquery[true]
       )
     ;
 
@@ -490,7 +490,7 @@ expression
     | dateTimeExpression                    #dateTimeExpr
     | functionExpression                    #functionExpr
     | '(' expression ')'                    #parenthesisExpr
-    | '(' subquery ')'                      #subqueryExpr
+    | '(' subquery[true] ')'                #subqueryExpr
     | '-' expression                        #unaryExpr
     | l=expression op=operator r=expression #operationExpr
     | fieldName                             #fieldExpr
@@ -975,7 +975,7 @@ predicate
     ;
 
 comparisonPredicate
-    : left=expression op=comparisonOperator (K_ANY | K_SOME | K_ALL)? '(' (right1=expressionList | right2=subquery) ')'
+    : left=expression op=comparisonOperator (K_ANY | K_SOME | K_ALL)? '(' (right1=expressionList | right2=subquery[true]) ')'
     | left=expression op=comparisonOperator right=expression
     ;
 
@@ -1059,11 +1059,11 @@ language
     ;
 
 existsPredicate
-    : K_NOT? K_EXISTS '(' subquery ')'
+    : K_NOT? K_EXISTS '(' subquery[true] ')'
     ;
 
 inPredicate
-    : source=expression K_NOT? K_IN (value1=expressionList | value2=subquery)
+    : source=expression K_NOT? K_IN (value1=expressionList | value2=subquery[true])
     ;
 
 likePredicate
@@ -1134,7 +1134,7 @@ createViewStatement returns [
       (K_COMMENT cmt=STRING_LITERAL            { $comment = IdentifierUtility.Unescape($cmt.text); })?
       columnListClause?
       parameterizedViewClause?
-      K_AS subquery
+      K_AS subquery[true]
       withAssociationClause?
       withMaskClause?
       withExpressionMacroClause?
@@ -1270,7 +1270,7 @@ numericLiteral
     | UNSIGNED_INTEGER
     ;
 
-identifier [List<QsiIdentifier> buffer] returns [QsiIdentifier qi]
+identifier[List<QsiIdentifier> buffer] returns [QsiIdentifier qi]
     @after { $buffer?.Add($qi); }
     : i=UNQUOTED_IDENTIFIER { $qi = new QsiIdentifier($i.text.ToUpper(), false); }
     | i=QUOTED_IDENTIFIER   { $qi = new QsiIdentifier($i.text, true); }
