@@ -602,9 +602,6 @@ namespace Qsi.Analyzers.Action
         #region Update
         protected virtual async ValueTask<IQsiAnalysisResult> ExecuteDataUpdateAction(IAnalyzerContext context, IQsiDataUpdateActionNode action)
         {
-            // columns pivot
-            var setColumnsPivot = ResolveSetColumnsPivot(action.SetValues, false);
-
             // table structure
             var tableAnalyzer = context.Engine.GetAnalyzer<QsiTableAnalyzer>();
             using var tableContext = new TableCompileContext(context);
@@ -618,15 +615,33 @@ namespace Qsi.Analyzers.Action
             if (dataTable.Table.Columns.Count != sourceTable.Columns.Count)
                 throw new QsiException(QsiError.DifferentColumnsCount);
 
-            // set values
-            var setValues = new QsiDataValue[sourceTable.Columns.Count];
+            // values
+            var values = new QsiDataValue[sourceTable.Columns.Count];
 
-            for (int i = 0; i < setColumnsPivot.Columns.Length; i++)
+            if (!ListUtility.IsNullOrEmpty(action.SetValues))
             {
-                int sourceIndex = FindColumnIndex(context, sourceTable, setColumnsPivot.Columns[i]);
-                var affectedIndex = setColumnsPivot.AffectedIndices[i];
+                // columns pivot
+                var setColumnsPivot = ResolveSetColumnsPivot(action.SetValues, false);
 
-                setValues[sourceIndex] = ResolveColumnValue(context, action.SetValues[affectedIndex].Value);
+                for (int i = 0; i < setColumnsPivot.Columns.Length; i++)
+                {
+                    int sourceIndex = FindColumnIndex(context, sourceTable, setColumnsPivot.Columns[i]);
+                    var affectedIndex = setColumnsPivot.AffectedIndices[i];
+
+                    values[sourceIndex] = ResolveColumnValue(context, action.SetValues[affectedIndex].Value);
+                }
+            }
+            else if (action.Value != null)
+            {
+                if (action.Value.ColumnValues.Length != values.Length)
+                    throw new QsiException(QsiError.DifferentColumnValueCount, 0);
+
+                for (int i = 0; i < values.Length; i++)
+                    values[i] = ResolveColumnValue(context, action.Value.ColumnValues[i]);
+            }
+            else
+            {
+                throw new QsiException(QsiError.Syntax);
             }
 
             return ResolveDataManipulationTargets(sourceTable)
@@ -644,7 +659,7 @@ namespace Qsi.Analyzers.Action
                                 var value = row.Items[pivot.DeclaredOrder];
 
                                 oldRow.Items[pivot.TargetOrder] = value;
-                                newRow.Items[pivot.TargetOrder] = setValues[pivot.DeclaredOrder] ?? value;
+                                newRow.Items[pivot.TargetOrder] = values[pivot.DeclaredOrder] ?? value;
                             }
                             else
                             {
