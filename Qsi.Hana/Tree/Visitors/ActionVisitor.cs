@@ -194,7 +194,63 @@ namespace Qsi.Hana.Tree.Visitors
 
         public static QsiDataUpdateActionNode VisitUpdateStatement(UpdateStatementContext context)
         {
-            throw new NotImplementedException();
+            var topClause = context.topClause();
+            var alias = context.alias();
+            var partitionRestriction = context.partitionRestriction();
+            var fromClause = context.fromClause();
+            var whereClause = context.whereClause();
+            var hintClause = context.hintClause();
+
+            QsiTableNode tableNode;
+
+            if (fromClause != null)
+            {
+                tableNode = TableVisitor.VisitFromClause(fromClause);
+            }
+            else
+            {
+                tableNode = new HanaTableReferenceNode
+                {
+                    Identifier = context.tableName().qqi
+                };
+
+                if (partitionRestriction != null)
+                    ((HanaTableReferenceNode)tableNode).Partition.SetValue(TreeHelper.Fragment(partitionRestriction.GetInputText()));
+            }
+
+            if (topClause != null || alias != null || whereClause != null || hintClause != null)
+            {
+                var derivedTableNode = new HanaDerivedTableNode
+                {
+                    Columns = { Value = TreeHelper.CreateAllColumnsDeclaration() },
+                    Source = { Value = tableNode }
+                };
+
+                if (topClause != null)
+                    derivedTableNode.Top = TableVisitor.VisitTopClause(topClause);
+
+                if (alias != null)
+                    derivedTableNode.Alias.SetValue(alias.node);
+
+                if (whereClause != null)
+                    derivedTableNode.Where.SetValue(ExpressionVisitor.VisitWhereClause(whereClause));
+
+                if (hintClause != null)
+                    derivedTableNode.Hint.SetValue(TreeHelper.Fragment(hintClause.GetInputText()));
+
+                tableNode = derivedTableNode;
+            }
+
+            var node = new HanaDataUpdateActionNode
+            {
+                Target = { Value = tableNode }
+            };
+
+            node.SetValues.AddRange(context.setClause()._elements.Select(ExpressionVisitor.VisitSetElement));
+
+            HanaTree.PutContextSpan(node, context);
+
+            return node;
         }
 
         private static QsiRowValueExpressionNode VisitValueListClause(ValueListClauseContext context)

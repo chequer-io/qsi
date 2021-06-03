@@ -357,7 +357,7 @@ collectionDerivedTable
 
 collectionValueExpression
     : K_ARRAY '(' (tableExpression (',' tableExpression)* | columnName) ')'
-    ;   
+    ;
 
 // ------ SQL Reference > SQL Statements > Alpabetical List of Statements > DELETE Statement ------
 
@@ -505,6 +505,15 @@ expressionList
     : list+=expression (',' list+=expression)*
     ;
 
+expressionOrSubqueryList
+    : list+=expressionOrSubquery (',' list+=expressionOrSubquery)*
+    ;
+
+expressionOrSubquery
+    : subquery[true]
+    | expression
+    ;
+
 caseExpression
     : simpleCaseExpression
     | searchCaseExpression
@@ -534,9 +543,9 @@ condition
     ;
 
 functionExpression
-    : jsonExpression                      #jsonExpr
-    | stringExpression                    #stringExpr
-    | functionName '(' expressionList ')' #scalarExpr
+    : jsonExpression                                #jsonExpr
+    | stringExpression                              #stringExpr
+    | functionName '(' expressionOrSubqueryList ')' #scalarExpr
     ;
 
 functionName returns [QsiQualifiedIdentifier qqi] locals [List<QsiIdentifier> buffer]

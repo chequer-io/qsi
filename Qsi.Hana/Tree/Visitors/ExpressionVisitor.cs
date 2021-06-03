@@ -682,11 +682,31 @@ namespace Qsi.Hana.Tree.Visitors
                 Identifier = context.functionName().qqi
             });
 
-            node.Parameters.AddRange(context.expressionList()._list.Select(VisitExpression));
+            node.Parameters.AddRange(VisitExpressionOrSubqueryList(context.expressionOrSubqueryList()));
 
             HanaTree.PutContextSpan(node, context);
 
             return node;
+        }
+
+        public static IEnumerable<QsiExpressionNode> VisitExpressionOrSubqueryList(ExpressionOrSubqueryListContext context)
+        {
+            return context._list.Select(VisitExpressionOrSubquery);
+        }
+
+        public static QsiExpressionNode VisitExpressionOrSubquery(ExpressionOrSubqueryContext context)
+        {
+            switch (context.children[0])
+            {
+                case ExpressionContext expression:
+                    return VisitExpression(expression);
+
+                case SubqueryContext subquery:
+                    return VisitSubquery(subquery);
+
+                default:
+                    throw TreeHelper.NotSupportedTree(context.children[0]);
+            }
         }
 
         public static QsiTableExpressionNode VisitSubquery(SubqueryContext context)
@@ -1210,22 +1230,48 @@ namespace Qsi.Hana.Tree.Visitors
         {
             TreeHelper.VerifyTokenType(token, STRING_LITERAL);
 
-            return new QsiLiteralExpressionNode
+            var node = new QsiLiteralExpressionNode
             {
                 Type = QsiDataType.String,
                 Value = IdentifierUtility.Unescape(token.Text)
             };
+
+            HanaTree.PutContextSpan(node, token);
+
+            return node;
         }
 
         public static QsiExpressionNode VisitUnsignedInteger(IToken token)
         {
             TreeHelper.VerifyTokenType(token, UNSIGNED_INTEGER);
 
-            return new QsiLiteralExpressionNode
+            var node = new QsiLiteralExpressionNode
             {
                 Type = QsiDataType.Numeric,
                 Value = ulong.Parse(token.Text)
             };
+
+            HanaTree.PutContextSpan(node, token);
+
+            return node;
+        }
+
+        public static QsiSetColumnExpressionNode VisitSetElement(SetElementContext context)
+        {
+            var fieldName = context.fieldName();
+
+            if (fieldName == null)
+                throw TreeHelper.NotSupportedFeature("SET Subquery in UPDATE Statement");
+
+            var node = new QsiSetColumnExpressionNode
+            {
+                Target = fieldName.qqi,
+                Value = { Value = VisitExpression(context.expression()) }
+            };
+
+            HanaTree.PutContextSpan(node, context);
+
+            return node;
         }
     }
 }

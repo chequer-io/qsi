@@ -317,6 +317,25 @@ namespace Qsi.Hana
             }
         }
 
+        private bool IsAliasedTableReferenceNode(HanaDerivedTableNode node)
+        {
+            return
+                node.Source.Value is IQsiTableReferenceNode &&
+                node.Alias.IsEmpty &&
+                node.Directives.IsEmpty &&
+                node.Where.IsEmpty &&
+                node.Grouping.IsEmpty &&
+                node.Order.IsEmpty &&
+                node.Limit.IsEmpty &&
+                node.Columns.IsEmpty || IsWildcard(node.Columns.Value) &&
+                !node.Top.HasValue &&
+                !node.Operation.HasValue &&
+                !node.Sampling.IsEmpty &&
+                !node.Behavior.IsEmpty &&
+                !node.TimeTravel.IsEmpty &&
+                !node.Hint.IsEmpty;
+        }
+
         private void DeparseHanaDerivedTableNode(ScriptWriter writer, HanaDerivedTableNode node, QsiScript script)
         {
             if (IsAliasedTableReferenceNode(node))
