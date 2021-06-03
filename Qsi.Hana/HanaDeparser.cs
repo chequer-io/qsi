@@ -308,6 +308,13 @@ namespace Qsi.Hana
                 writer.WriteSpace();
                 writer.Write(node.Partition.Value.Value);
             }
+
+            // tableSampleClause?
+            if (!node.Sampling.IsEmpty)
+            {
+                writer.WriteSpace();
+                writer.Write(node.Sampling.Value.Value);
+            }
         }
 
         private void DeparseHanaDerivedTableNode(ScriptWriter writer, HanaDerivedTableNode node, QsiScript script)

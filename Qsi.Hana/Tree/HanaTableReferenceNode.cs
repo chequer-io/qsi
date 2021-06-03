@@ -9,6 +9,8 @@ namespace Qsi.Hana.Tree
 
         public QsiTreeNodeProperty<QsiExpressionFragmentNode> Partition { get; }
 
+        public QsiTreeNodeProperty<QsiExpressionFragmentNode> Sampling { get; }
+
         public override IEnumerable<IQsiTreeNode> Children
         {
             get
@@ -28,6 +30,7 @@ namespace Qsi.Hana.Tree
         {
             Behavior = new QsiTreeNodeProperty<HanaTableBehaviorNode>(this);
             Partition = new QsiTreeNodeProperty<QsiExpressionFragmentNode>(this);
+            Sampling = new QsiTreeNodeProperty<QsiExpressionFragmentNode>(this);
         }
     }
 }

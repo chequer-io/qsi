@@ -44,19 +44,19 @@ namespace Qsi.Hana
                     return TableVisitor.VisitSelectStatement(selectStatement);
 
                 case SelectIntoStatementContext selectIntoStatement:
-                    throw new NotImplementedException();
+                    return ActionVisitor.VisitSelectIntoStatement(selectIntoStatement);
 
                 case DeleteStatementContext deleteStatement:
-                    throw new NotImplementedException();
+                    return ActionVisitor.VisitDeleteStatement(deleteStatement);
 
                 case InsertStatementContext insertStatement:
                     return ActionVisitor.VisitInsertStatement(insertStatement);
 
                 case ReplaceStatementContext replaceStatement:
-                    throw new NotImplementedException();
+                    return ActionVisitor.VisitReplaceStatement(replaceStatement);
 
                 case UpdateStatementContext updateStatement:
-                    throw new NotImplementedException();
+                    return ActionVisitor.VisitUpdateStatement(updateStatement);
 
                 case MergeDeltaParameterContext mergeDeltaParameter:
                     throw new NotImplementedException();

@@ -414,20 +414,22 @@ namespace Qsi.Hana.Tree.Visitors
             var alias = context.alias();
             var sampling = context.tableSampleClause();
 
-            if (alias == null && sampling == null)
+            if (alias == null)
             {
+                if (sampling != null)
+                    node.Sampling.SetValue(TreeHelper.Fragment(sampling.GetInputText()));
+
                 HanaTree.PutContextSpan(node, context);
                 return node;
             }
 
-            HanaTree.PutContextSpan(node, context.Start, alias?.Start ?? sampling?.Start);
+            HanaTree.PutContextSpan(node, context.Start, alias.Start);
 
             var derivedNode = new HanaDerivedTableNode();
+
             derivedNode.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
             derivedNode.Source.SetValue(node);
-
-            if (alias != null)
-                derivedNode.Alias.SetValue(alias.node);
+            derivedNode.Alias.SetValue(alias.node);
 
             if (sampling != null)
                 derivedNode.Sampling.SetValue(TreeHelper.Fragment(sampling.GetInputText()));

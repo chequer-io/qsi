@@ -42,7 +42,7 @@ dataDefinitionStatement
 // ------ SQL Reference > SQL Statements > Alpabetical List of Statements > SELECT Statement ------
 
 selectIntoStatement
-    : selectStatement[false] K_INTO (tableRef | variableNameList) columnListClause? hintClause? (K_TOTAL K_ROWCOUNT)?
+    : selectStatement[false] K_INTO (tableRef | variableNameList) columnListClause? hintClause?
     ;
 
 selectStatement[bool allowParens]
@@ -416,7 +416,7 @@ replaceStatement
     : (K_UPSERT | K_REPLACE) tableName partitionRestriction? columnListClause?
       (
         valueListClause (whereClause | K_WITH K_PRIMARY K_KEY)?
-        | subquery[true]
+        | selectStatement[true]
       )
     ;
 
