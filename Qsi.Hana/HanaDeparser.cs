@@ -303,10 +303,10 @@ namespace Qsi.Hana
             }
 
             // partitionRestriction?
-            if (!string.IsNullOrWhiteSpace(node.Partition))
+            if (!node.Partition.IsEmpty)
             {
                 writer.WriteSpace();
-                writer.Write(node.Partition);
+                writer.Write(node.Partition.Value.Value);
             }
         }
 
@@ -318,10 +318,10 @@ namespace Qsi.Hana
                 writer.WriteSpace();
                 DeparseTreeNode(writer, node.Alias.Value, script);
 
-                if (!string.IsNullOrWhiteSpace(node.Sampling))
+                if (!node.Sampling.IsEmpty)
                 {
                     writer.WriteSpace();
-                    writer.Write(node.Sampling);
+                    writer.Write(node.Sampling.Value.Value);
                 }
 
                 return;
@@ -381,6 +381,29 @@ namespace Qsi.Hana
             {
                 writer.WriteSpace();
                 DeparseTreeNode(writer, node.Limit.Value, script);
+            }
+
+            if (!node.Behavior.IsEmpty)
+            {
+                writer.WriteSpace();
+                DeparseTreeNode(writer, node.Behavior.Value, script);
+            }
+
+            if (!node.Behavior.IsEmpty)
+            {
+                writer.WriteSpace();
+                DeparseTreeNode(writer, node.Behavior.Value, script);
+            }
+            else if (!node.TimeTravel.IsEmpty)
+            {
+                writer.WriteSpace();
+                writer.Write(node.TimeTravel.Value.Value);
+            }
+
+            if (!node.Hint.IsEmpty)
+            {
+                writer.WriteSpace();
+                writer.Write(node.Hint.Value.Value);
             }
         }
 

@@ -7,8 +7,7 @@ namespace Qsi.Hana.Tree
     {
         public QsiTreeNodeProperty<HanaTableBehaviorNode> Behavior { get; }
 
-        // PARTITION (1, 2, ..)
-        public string Partition { get; set; }
+        public QsiTreeNodeProperty<QsiExpressionFragmentNode> Partition { get; }
 
         public override IEnumerable<IQsiTreeNode> Children
         {
@@ -19,12 +18,16 @@ namespace Qsi.Hana.Tree
 
                 if (!Behavior.IsEmpty)
                     yield return Behavior.Value;
+
+                if (!Partition.IsEmpty)
+                    yield return Partition.Value;
             }
         }
 
         public HanaTableReferenceNode()
         {
             Behavior = new QsiTreeNodeProperty<HanaTableBehaviorNode>(this);
+            Partition = new QsiTreeNodeProperty<QsiExpressionFragmentNode>(this);
         }
     }
 }

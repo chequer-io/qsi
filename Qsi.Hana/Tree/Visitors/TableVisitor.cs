@@ -32,10 +32,10 @@ namespace Qsi.Hana.Tree.Visitors
                 subqueryNode.Behavior.SetValue(VisitForClause(forClause));
 
             if (timeTravel is not null)
-                subqueryNode.TimeTravel = timeTravel.GetInputText();
+                subqueryNode.TimeTravel.SetValue(TreeHelper.Fragment(timeTravel.GetInputText()));
 
             if (hintClause is not null)
-                subqueryNode.Hint = hintClause.GetInputText();
+                subqueryNode.Hint.SetValue(TreeHelper.Fragment(hintClause.GetInputText()));
 
             return subqueryNode;
         }
@@ -92,7 +92,7 @@ namespace Qsi.Hana.Tree.Visitors
             return node;
         }
 
-        public static QsiColumnNode CreateColumnNode(QsiIdentifier identifier, QsiSequentialColumnType? sequence = null)
+        public static QsiColumnNode CreateColumnNode(QsiQualifiedIdentifier identifier, QsiSequentialColumnType? sequence = null)
         {
             QsiColumnNode node;
 
@@ -105,7 +105,7 @@ namespace Qsi.Hana.Tree.Visitors
                     {
                         Value = new QsiAliasNode
                         {
-                            Name = identifier
+                            Name = identifier[^1]
                         }
                     }
                 };
@@ -114,7 +114,7 @@ namespace Qsi.Hana.Tree.Visitors
             {
                 node = new QsiColumnReferenceNode
                 {
-                    Name = new QsiQualifiedIdentifier(identifier)
+                    Name = identifier
                 };
             }
 
@@ -392,11 +392,15 @@ namespace Qsi.Hana.Tree.Visitors
 
         public static QsiTableNode VisitTableRef(TableRefContext context)
         {
+            var partitionRestriction = context.partitionRestriction();
+
             var node = new HanaTableReferenceNode
             {
-                Identifier = context.tableName().qqi,
-                Partition = context.partitionRestriction()?.GetInputText()
+                Identifier = context.tableName().qqi
             };
+
+            if (partitionRestriction != null)
+                node.Partition.SetValue(TreeHelper.Fragment(partitionRestriction.GetInputText()));
 
             if (context.TryGetRuleContext<ForSystemTimeContext>(out var forSystemTime))
             {
@@ -426,7 +430,7 @@ namespace Qsi.Hana.Tree.Visitors
                 derivedNode.Alias.SetValue(alias.node);
 
             if (sampling != null)
-                derivedNode.Sampling = sampling.GetInputText();
+                derivedNode.Sampling.SetValue(TreeHelper.Fragment(sampling.GetInputText()));
 
             HanaTree.PutContextSpan(derivedNode, context);
 

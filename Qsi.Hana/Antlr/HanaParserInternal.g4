@@ -68,12 +68,12 @@ withListElement
     : name=identifier[null] columnListClause? K_AS '(' subquery[true] ')'
     ;
 
-columnList returns [IList<QsiIdentifier> list]
-    @init { $list = new List<QsiIdentifier>(); }
-    : n=columnName { $list.Add($n.qi); } (',' n=columnName { $list.Add($n.qi); })*
+columnList returns [IList<QsiQualifiedIdentifier> list]
+    @init { $list = new List<QsiQualifiedIdentifier>(); }
+    : n=fieldName { $list.Add($n.qqi); } (',' n=fieldName { $list.Add($n.qqi); })*
     ;
 
-columnListClause returns [IList<QsiIdentifier> list]
+columnListClause returns [IList<QsiQualifiedIdentifier> list]
     : '(' cl=columnList { $list = $cl.list; } ')'
     ;
 

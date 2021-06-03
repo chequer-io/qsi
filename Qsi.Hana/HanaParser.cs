@@ -36,7 +36,7 @@ namespace Qsi.Hana
             }
         }
 
-        private IQsiTableNode ParseDataManipulationStatement(DataManipulationStatementContext statement)
+        private IQsiTreeNode ParseDataManipulationStatement(DataManipulationStatementContext statement)
         {
             switch (statement.children[0])
             {
@@ -50,7 +50,7 @@ namespace Qsi.Hana
                     throw new NotImplementedException();
 
                 case InsertStatementContext insertStatement:
-                    throw new NotImplementedException();
+                    return ActionVisitor.VisitInsertStatement(insertStatement);
 
                 case ReplaceStatementContext replaceStatement:
                     throw new NotImplementedException();
