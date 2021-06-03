@@ -200,6 +200,7 @@ namespace Qsi.Extensions
             return new(
                 node.Parent,
                 node.Target,
+                node.Value,
                 node.SetValues,
                 ignoreUserData ? null : node.UserData);
         }
