@@ -13,6 +13,44 @@ namespace Qsi.Hana.Tree.Visitors
 {
     internal static class ExpressionVisitor
     {
+        public static QsiWhereExpressionNode VisitWhereClause(WhereClauseContext context)
+        {
+            var node = new QsiWhereExpressionNode();
+
+            node.Expression.SetValue(ExpressionVisitor.VisitCondition(context.condition()));
+            HanaTree.PutContextSpan(node, context);
+
+            return node;
+        }
+
+        public static QsiGroupingExpressionNode VisitGroupByClause(GroupByClauseContext context)
+        {
+            var node = new QsiGroupingExpressionNode();
+            var groupByExpressionList = context.groupByExpressionList();
+
+            foreach (var child in groupByExpressionList.children.OfType<ParserRuleContext>())
+            {
+                switch (child)
+                {
+                    case TableExpressionContext:
+                    case GroupingSetContext:
+                    {
+                        var expressionNode = TreeHelper.Fragment(child.GetInputText());
+                        HanaTree.PutContextSpan(expressionNode, child);
+                        node.Items.Add(expressionNode);
+                        break;
+                    }
+                }
+            }
+
+            if (context.having != null)
+                node.Having.SetValue(ExpressionVisitor.VisitCondition(context.having));
+
+            HanaTree.PutContextSpan(node, context);
+
+            return node;
+        }
+
         public static QsiMultipleOrderExpressionNode VisitOrderByClause(TableOrderByClauseContext context)
         {
             var node = new QsiMultipleOrderExpressionNode();

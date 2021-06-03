@@ -45,13 +45,7 @@ namespace Qsi.Hana.Tree.Visitors
 
             if (valueListClause != null)
             {
-                IList<ExpressionContext> values = valueListClause.expressionList()._list;
-
-                var rowValue = new QsiRowValueExpressionNode();
-                rowValue.ColumnValues.AddRange(values.Select(ExpressionVisitor.VisitExpression));
-                HanaTree.PutContextSpan(rowValue, valueListClause);
-
-                node.Values.Add(rowValue);
+                node.Values.Add(VisitValueListClause(valueListClause));
             }
             else
             {
@@ -71,9 +65,77 @@ namespace Qsi.Hana.Tree.Visitors
             return node;
         }
 
-        public static QsiDataInsertActionNode VisitReplaceStatement(ReplaceStatementContext context)
+        public static QsiActionNode VisitReplaceStatement(ReplaceStatementContext context)
         {
-            throw new NotImplementedException();
+            var partitionRestriction = context.partitionRestriction();
+            var columnListClause = context.columnListClause();
+            var valueListClause = context.valueListClause();
+            var whereClause = valueListClause != null ? context.whereClause() : null;
+
+            var tableNode = new HanaTableReferenceNode
+            {
+                Identifier = context.tableName().qqi
+            };
+
+            if (partitionRestriction != null)
+                tableNode.Partition.SetValue(TreeHelper.Fragment(partitionRestriction.GetInputText()));
+
+            if (whereClause != null)
+            {
+                // UPDATE
+
+                var derivedTableNode = new HanaDerivedTableNode
+                {
+                    Source = { Value = tableNode },
+                    Where = { Value = ExpressionVisitor.VisitWhereClause(whereClause) }
+                };
+
+                derivedTableNode.Columns.SetValue(
+                    columnListClause != null ?
+                        TableVisitor.VisitColumnListClause(columnListClause, null) :
+                        TreeHelper.CreateAllColumnsDeclaration()
+                );
+
+                var node = new HanaDataUpdateActionNode
+                {
+                    Target = { Value = derivedTableNode }
+                };
+
+                node.Value.SetValue(VisitValueListClause(valueListClause));
+
+                HanaTree.PutContextSpan(node, context);
+
+                return node;
+            }
+            else
+            {
+                // INSERT
+
+                var node = new HanaDataInsertActionNode
+                {
+                    Target = { Value = tableNode }
+                };
+
+                if (columnListClause != null)
+                {
+                    node.Columns = columnListClause.list
+                        .Select(x => new QsiQualifiedIdentifier(x[^1]))
+                        .ToArray();
+                }
+
+                if (valueListClause != null)
+                {
+                    node.Values.Add(VisitValueListClause(valueListClause));
+                }
+                else
+                {
+                    node.ValueTable.SetValue(TableVisitor.VisitSelectStatement(context.selectStatement()));
+                }
+
+                HanaTree.PutContextSpan(node, context);
+
+                return node;
+            }
         }
 
         public static QsiDataInsertActionNode VisitSelectIntoStatement(SelectIntoStatementContext context)
@@ -133,6 +195,14 @@ namespace Qsi.Hana.Tree.Visitors
         public static QsiDataUpdateActionNode VisitUpdateStatement(UpdateStatementContext context)
         {
             throw new NotImplementedException();
+        }
+
+        private static QsiRowValueExpressionNode VisitValueListClause(ValueListClauseContext context)
+        {
+            var node = new QsiRowValueExpressionNode();
+            node.ColumnValues.AddRange(context.expressionList()._list.Select(ExpressionVisitor.VisitExpression));
+            HanaTree.PutContextSpan(node, context);
+            return node;
         }
     }
 }
