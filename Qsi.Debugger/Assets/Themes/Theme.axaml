@@ -1,0 +1,8 @@
+﻿<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StyleInclude Source="avares://Qsi.Debugger/Assets/Themes/Controls/CheckBox.axaml" />
+    <StyleInclude Source="avares://Qsi.Debugger/Assets/Themes/Controls/ComboBox.axaml" />
+    <StyleInclude Source="avares://Qsi.Debugger/Assets/Themes/Controls/ComboBoxItem.axaml" />
+    <StyleInclude Source="avares://Qsi.Debugger/Assets/Themes/Controls/Switch.axaml" />
+    <StyleInclude Source="avares://Qsi.Debugger/Assets/Themes/Controls/TreeViewItem.axaml" />
+    <StyleInclude Source="avares://Qsi.Debugger/Assets/Themes/Controls/TextBox.axaml" />
+</Styles>

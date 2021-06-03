@@ -3,6 +3,12 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:c="clr-namespace:Qsi.Debugger.Controls">
 
+    <Design.PreviewWith>
+        <Border Padding="20">
+            <c:Switch />
+        </Border>
+    </Design.PreviewWith>
+
     <Style Selector="c|Switch">
         <Setter Property="Background" Value="{DynamicResource Ink.10.Brush}" />
         <Setter Property="MinWidth" Value="32" />

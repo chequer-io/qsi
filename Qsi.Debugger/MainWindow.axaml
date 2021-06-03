@@ -29,22 +29,7 @@
         </Style>
     </Window.Styles>
 
-    <Grid Margin="16">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition />
-            <ColumnDefinition Width="6" />
-            <ColumnDefinition />
-            <ColumnDefinition Width="6" />
-            <ColumnDefinition />
-            <ColumnDefinition Width="6" />
-            <ColumnDefinition />
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="8" />
-            <RowDefinition />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
+    <Grid Margin="16" ColumnDefinitions="*,6,*,6,*,6,*" RowDefinitions="Auto,8,*,Auto">
 
         <!--  Splitter  -->
 
@@ -68,7 +53,7 @@
         <TextBlock
             x:Name="tbError"
             Grid.Row="3"
-            Grid.ColumnSpan="7"
+            Grid.ColumnSpan="7" Grid.Column="0"
             Margin="8,8,8,0"
             FontSize="12"
             Foreground="#E36387"
@@ -78,11 +63,16 @@
 
         <!--  Editor  -->
 
-        <ComboBox x:Name="cbLanguages" HorizontalAlignment="Left" />
+        <ComboBox
+            x:Name="cbLanguages"
+            Grid.Row="0"
+            Grid.Column="0"
+            HorizontalAlignment="Left" />
 
         <ae:TextEditor
             x:Name="codeEditor"
             Grid.Row="2"
+            Grid.Column="0"
             Background="#16191F"
             FontSize="14"
             FontWeight="Medium"
@@ -94,7 +84,7 @@
             x:Name="tvRaw"
             Grid.Row="2"
             Grid.Column="2">
-            
+
             <TreeView.DataTemplates>
                 <DataTemplate DataType="qsi:IRawTreeTerminalNode">
                     <StackPanel Orientation="Horizontal">
@@ -103,7 +93,7 @@
                         <TextBlock Foreground="#FA8072" Text="{Binding DisplayName}" />
                     </StackPanel>
                 </DataTemplate>
-                
+
                 <TreeDataTemplate DataType="qsi:IRawTree" ItemsSource="{Binding Children}">
                     <TextBlock Text="{Binding DisplayName}" />
                 </TreeDataTemplate>
@@ -112,7 +102,7 @@
 
         <!--  QSI Tree  -->
 
-        <Panel Grid.Column="4" VerticalAlignment="Bottom">
+        <Panel Grid.Row="0" Grid.Column="4" VerticalAlignment="Bottom">
             <CheckBox
                 x:Name="chkQsiProperty"
                 VerticalAlignment="Center"
@@ -148,22 +138,26 @@
             </TreeView.DataTemplates>
         </TreeView>
 
-        <!--  Compile  -->
+        <!--  Result  -->
 
-        <TreeView
-            x:Name="tvResult"
-            Grid.Row="2"
-            Grid.Column="6">
-            <TreeView.DataTemplates>
-                <TreeDataTemplate DataType="md:QsiColumnTreeItem" ItemsSource="{Binding Items}">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Foreground="{Binding Converter={cvt:ColumnBrushConverter}}" Text="{Binding Converter={cvt:ColumnDisplayConverter}}" />
-                        <TextBlock Text=" " />
-                        <TextBlock Foreground="{DynamicResource Ink.5.Brush}" Text="{Binding Converter={cvt:ColumnParentTypeConverter}, StringFormat='({0})'}" />
-                        <TextBlock Foreground="{DynamicResource Red.10.Brush}" Text=" - Recursive" IsVisible="{Binding IsRecursive}" />
-                    </StackPanel>
-                </TreeDataTemplate>
-            </TreeView.DataTemplates>
-        </TreeView>
+        <Grid Grid.Row="2" Grid.Column="6" RowDefinitions="2*,6,1*">
+            <TreeView x:Name="tvResult">
+                <TreeView.DataTemplates>
+                    <TreeDataTemplate DataType="md:QsiColumnTreeItem" ItemsSource="{Binding Items}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Foreground="{Binding Converter={cvt:ColumnBrushConverter}}"
+                                       Text="{Binding Converter={cvt:ColumnDisplayConverter}}" />
+                            <TextBlock Text=" " />
+                            <TextBlock Foreground="{DynamicResource Ink.5.Brush}"
+                                       Text="{Binding Converter={cvt:ColumnParentTypeConverter}, StringFormat='({0})'}" />
+                            <TextBlock Foreground="{DynamicResource Red.10.Brush}" Text=" - Recursive"
+                                       IsVisible="{Binding IsRecursive}" />
+                        </StackPanel>
+                    </TreeDataTemplate>
+                </TreeView.DataTemplates>
+            </TreeView>
+            <TextBox Grid.Row="2" x:Name="tbResult" IsReadOnly="True" FontSize="14" />
+        </Grid>
+
     </Grid>
 </Window>
