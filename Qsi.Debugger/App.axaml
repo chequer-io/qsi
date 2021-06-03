@@ -7,7 +7,7 @@
     <Application.Styles>
         <StyleInclude Source="avares://Avalonia.Themes.Default/DefaultTheme.xaml" />
         <StyleInclude Source="avares://Avalonia.Themes.Default/Accents/BaseLight.xaml" />
-        <StyleInclude Source="avares://Qsi.Debugger/Assets/Themes/Theme.Dark.xaml" />
+        <StyleInclude Source="avares://Qsi.Debugger/Assets/Themes/Theme.Dark.axaml" />
 
         <Style Selector="ae|TextEditor">
             <Setter Property="Template">

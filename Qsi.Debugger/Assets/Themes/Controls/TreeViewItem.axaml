@@ -2,6 +2,23 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:converters="clr-namespace:Avalonia.Controls.Converters;assembly=Avalonia.Controls">
+
+    <Design.PreviewWith>
+        <Border Padding="20">
+            <TreeView>
+                <TreeViewItem Header="Root" IsExpanded="true">
+                    <TreeViewItem Header="Child1" />
+                    <TreeViewItem Header="Child2" />
+                    <TreeViewItem Header="Child3" IsExpanded="True">
+                        <TreeViewItem Header="Child4" />
+                        <TreeViewItem Header="Child5" />
+                        <TreeViewItem Header="Child6" />
+                    </TreeViewItem>
+                </TreeViewItem>
+            </TreeView>
+        </Border>
+    </Design.PreviewWith>
+
     <Style Selector="TreeViewItem">
         <Style.Resources>
             <converters:MarginMultiplierConverter

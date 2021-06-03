@@ -1,4 +1,15 @@
 ﻿<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Design.PreviewWith>
+        <Border Padding="20" Height="168">
+            <ComboBox SelectedIndex="0" VerticalAlignment="Top">
+                <ComboBoxItem Content="MySQL" />
+                <ComboBoxItem Content="PostgreSql" />
+                <ComboBoxItem Content="SAP Hana" />
+            </ComboBox>
+        </Border>
+    </Design.PreviewWith>
+
     <Style Selector="ComboBox">
         <Setter Property="Background" Value="{DynamicResource Ink.80.Brush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource Ink.A10.Brush}" />
