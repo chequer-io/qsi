@@ -329,6 +329,10 @@ namespace Qsi.Parsing.Common
         {
             switch (node)
             {
+                case QsiExpressionFragmentNode fragmentNode:
+                    writer.Write(fragmentNode.Value);
+                    break;
+
                 case IQsiLiteralExpressionNode literalExpressionNode:
                     DeparseLiteralExpressionNode(writer, literalExpressionNode, script);
                     break;

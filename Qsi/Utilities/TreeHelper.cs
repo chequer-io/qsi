@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Antlr4.Runtime;
 using Qsi.Data;
 using Qsi.Tree;
 
@@ -10,11 +11,43 @@ namespace Qsi.Utilities
     public static class TreeHelper
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static QsiExpressionFragmentNode Fragment(string value)
+        {
+            return new() { Value = value };
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TNode Create<TNode>(Action<TNode> action) where TNode : QsiTreeNode, new()
         {
             var node = new TNode();
             action(node);
             return node;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static QsiDerivedTableNode CreateAliasedTableNode(QsiTableNode node, QsiIdentifier alias)
+        {
+            return CreateAliasedTableNode(node, new QsiAliasNode { Name = alias });
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static QsiDerivedTableNode CreateAliasedTableNode(QsiTableNode node, QsiAliasNode alias)
+        {
+            return new()
+            {
+                Source =
+                {
+                    Value = node
+                },
+                Alias =
+                {
+                    Value = alias
+                },
+                Columns =
+                {
+                    Value = CreateAllColumnsDeclaration()
+                }
+            };
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -152,7 +185,6 @@ namespace Qsi.Utilities
         }
         #endregion
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static QsiException NotSupportedTree(object tree)
         {
             return new(QsiError.NotSupportedTree, tree.GetType().FullName);
@@ -196,6 +228,12 @@ namespace Qsi.Utilities
                 return source;
 
             return source.Prepend(property.Value);
+        }
+
+        public static void VerifyTokenType(IToken token, int type)
+        {
+            if (token.Type != type)
+                throw new ArgumentException(null, nameof(token));
         }
     }
 }
