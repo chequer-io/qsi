@@ -1,5 +1,7 @@
-﻿using Qsi.Hana;
+﻿using Qsi.Data;
+using Qsi.Hana;
 using Qsi.Services;
+using Qsi.Tree;
 
 namespace Qsi.Debugger.Vendor.Hana
 {
@@ -8,6 +10,11 @@ namespace Qsi.Debugger.Vendor.Hana
         public override IQsiRepositoryProvider CreateRepositoryProvider()
         {
             return new HanaRepositoryProvider();
+        }
+
+        public override QsiParameter FindParameter(QsiParameter[] parameters, IQsiBindParameterExpressionNode node)
+        {
+            return VendorDebugger.HookFindParameter(parameters, node);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+﻿using System;
 using Qsi.Data;
 using Qsi.Utilities;
 
@@ -10,11 +10,6 @@ namespace Qsi.Debugger.Vendor.Hana
         {
             // TODO: has search path ?
             return identifier;
-        }
-
-        protected override Task<QsiDataTable> GetDataTable(QsiScript script, QsiParameter[] parameters)
-        {
-            throw new System.NotImplementedException();
         }
 
         protected override QsiTableStructure LookupTable(QsiQualifiedIdentifier identifier)
@@ -76,7 +71,7 @@ namespace Qsi.Debugger.Vendor.Hana
 
         protected override QsiVariable LookupVariable(QsiQualifiedIdentifier identifier)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
     }
 }
