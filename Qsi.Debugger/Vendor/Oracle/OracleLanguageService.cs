@@ -1,5 +1,7 @@
-﻿using Qsi.Oracle;
+﻿using Qsi.Data;
+using Qsi.Oracle;
 using Qsi.Services;
+using Qsi.Tree;
 
 namespace Qsi.Debugger.Vendor.Oracle
 {
@@ -8,6 +10,11 @@ namespace Qsi.Debugger.Vendor.Oracle
         public override IQsiRepositoryProvider CreateRepositoryProvider()
         {
             return new OracleRepositoryProvider();
+        }
+
+        public override QsiParameter FindParameter(QsiParameter[] parameters, IQsiBindParameterExpressionNode node)
+        {
+            return VendorDebugger.HookFindParameter(parameters, node);
         }
     }
 }

@@ -92,10 +92,10 @@ namespace Qsi.Analyzers.Table
                 switch (viewNode)
                 {
                     /* TODO: Remove old view node
-                       [ ] Cql
-                       [ ] JSql
+                       [V] Cql
+                       [-] JSql (Deprecated)
                        [ ] MySql
-                       [ ] PhoenixSql
+                       [V] PhoenixSql
                        [ ] SqlServer
                      */
                     case IQsiTableNode viewTableNode:

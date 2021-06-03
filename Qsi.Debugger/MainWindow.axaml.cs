@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
+using System.Text;
 using System.Xml;
 using Avalonia;
 using Avalonia.Controls;
@@ -47,6 +48,7 @@ namespace Qsi.Debugger
         private readonly TreeView _tvRaw;
         private readonly TreeView _tvQsi;
         private readonly TreeView _tvResult;
+        private readonly TextBox _tbResult;
 
         private readonly Dictionary<string, Lazy<VendorDebugger>> _vendors;
 
@@ -84,6 +86,7 @@ namespace Qsi.Debugger
             _tvRaw = this.Find<TreeView>("tvRaw");
             _tvQsi = this.Find<TreeView>("tvQsi");
             _tvResult = this.Find<TreeView>("tvResult");
+            _tbResult = this.Find<TextBox>("tbResult");
 
             InitializeEditor();
 
@@ -122,9 +125,19 @@ namespace Qsi.Debugger
 
         private void CbLanguagesOnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (_vendors.TryGetValue((string)_cbLanguages.SelectedItem, out Lazy<VendorDebugger> vendor))
+            if (_vendor != null)
+            {
+                var vendorRepositoryProvider = (VendorRepositoryProvider)_vendor.Engine.RepositoryProvider;
+                vendorRepositoryProvider.DataTableRequested -= VendorRepositoryProviderOnDataTableRequested;
+            }
+
+            if (_vendors.TryGetValue(((string)_cbLanguages.SelectedItem)!, out Lazy<VendorDebugger> vendor))
             {
                 _vendor = vendor.Value;
+
+                var vendorRepositoryProvider = (VendorRepositoryProvider)_vendor.Engine.RepositoryProvider;
+                vendorRepositoryProvider.DataTableRequested += VendorRepositoryProviderOnDataTableRequested;
+
                 Update();
             }
             else
@@ -132,6 +145,30 @@ namespace Qsi.Debugger
                 _vendor = null;
                 _scriptRenderer.Update(null);
             }
+        }
+
+        private void VendorRepositoryProviderOnDataTableRequested(object sender, DataTableRequestEventArgs e)
+        {
+            var builder = new StringBuilder();
+
+            if (!string.IsNullOrEmpty(_tbResult.Text))
+            {
+                builder.AppendLine(_tbResult.Text);
+                builder.AppendLine();
+            }
+
+            builder.AppendLine($"Type: {e.Script.ScriptType}");
+            builder.AppendLine($"Script: {e.Script.Script}");
+
+            if (e.Parameters?.Length > 0)
+            {
+                builder.AppendLine("Parameters:");
+
+                foreach (var parameter in e.Parameters)
+                    builder.AppendLine($" - {parameter.Name}({parameter.Type}): {parameter.Value ?? "<null>"}");
+            }
+
+            _tbResult.Text = builder.ToString();
         }
 
         private void CodeEditorOnTextInput(object sender, EventArgs e)
@@ -145,6 +182,7 @@ namespace Qsi.Debugger
             ClearRawTree();
             ClearQsiTree();
             ClearResultTree();
+            ClearResultLog();
 
             try
             {
@@ -172,7 +210,8 @@ namespace Qsi.Debugger
 
                 // Execute
 
-                var result = await _vendor.Engine.Execute(script, null);
+                var fakeParameters = new QsiParameter[] { new(default, default, default) };
+                var result = await _vendor.Engine.Execute(script, fakeParameters);
 
                 if (result is QsiTableAnalysisResult tableResult)
                 {
@@ -191,6 +230,11 @@ namespace Qsi.Debugger
                 if (System.Diagnostics.Debugger.IsAttached)
                     ExceptionDispatchInfo.Throw(e);
             }
+        }
+
+        private void ClearResultLog()
+        {
+            _tbResult.Clear();
         }
 
         private void ClearError()

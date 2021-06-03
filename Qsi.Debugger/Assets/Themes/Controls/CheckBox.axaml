@@ -1,4 +1,11 @@
 ﻿<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Design.PreviewWith>
+        <Border Padding="20">
+            <CheckBox />
+        </Border>
+    </Design.PreviewWith>
+
     <Style Selector="CheckBox">
         <Setter Property="Background" Value="{DynamicResource Ink.80.Brush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource Ink.A10.Brush}" />

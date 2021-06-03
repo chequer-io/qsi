@@ -2,7 +2,7 @@
 
 namespace Qsi.PhoenixSql.Tree
 {
-    internal interface IDynamicTableNode
+    internal interface IDynamicColumnsNode
     {
         QsiColumnsDeclarationNode DynamicColumns { get; }
     }

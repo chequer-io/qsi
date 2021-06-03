@@ -16,6 +16,14 @@
         </AvaloniaResource>
 
         <AvaloniaResource Include="Assets\**" Exclude="Assets\Themes\**" />
+
+        <Compile Update="MainWindow.axaml.cs">
+          <DependentUpon>MainWindow.axaml</DependentUpon>
+        </Compile>
+
+        <Compile Update="App.axaml.cs">
+          <DependentUpon>App.axaml</DependentUpon>
+        </Compile>
     </ItemGroup>
 
     <ItemGroup>
