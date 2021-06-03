@@ -664,7 +664,7 @@ namespace Qsi.Hana.Tree.Visitors
 
             if (optionList != null)
             {
-                foreach (var (key, value) in optionList._options.Select(VisitForJsonOrXmlOption))
+                foreach (var (key, value) in optionList._options.Select(VisitKeyValuePair))
                     node.Options[key] = value;
             }
 
@@ -678,7 +678,7 @@ namespace Qsi.Hana.Tree.Visitors
             return node;
         }
 
-        public static (string Key, string Value) VisitForJsonOrXmlOption(ForJsonOrXmlOptionContext context)
+        public static (string Key, string Value) VisitKeyValuePair(KeyValuePairContext context)
         {
             return new(
                 IdentifierUtility.Unescape(context.key.Text),

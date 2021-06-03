@@ -95,12 +95,12 @@ waitNowait
     | K_NOWAIT
     ;
 
-forJsonOrXmlOption
+keyValuePair
     : key=STRING_LITERAL '=' value=STRING_LITERAL
     ;
 
 forJsonOrXmlOptionListClause
-    : '(' options+=forJsonOrXmlOption (',' options+=forJsonOrXmlOption)* ')'
+    : '(' options+=keyValuePair (',' options+=keyValuePair)* ')'
     ;
 
 forJsonOrXmlReturnsClause
@@ -1218,10 +1218,6 @@ parameterAnnotation
 
 keySetOperation
     : K_SET keyValuePair (',' keyValuePair)*
-    ;
-
-keyValuePair
-    : STRING_LITERAL '=' STRING_LITERAL
     ;
 
 withCacheClause
