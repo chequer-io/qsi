@@ -615,21 +615,29 @@ namespace Qsi.Hana.Tree.Visitors
 
             if (alias != null)
             {
-                if (node is HanaXmlTableNode xmlTableNode)
+                switch (node)
                 {
-                    xmlTableNode.Identifier = alias.Name;
-                }
-                else
-                {
-                    var derivedNode = new HanaDerivedTableNode
-                    {
-                        Columns = { Value = TreeHelper.CreateAllColumnsDeclaration() },
-                        Source = { Value = node },
-                        Alias = { Value = alias }
-                    };
+                    case HanaXmlTableNode xmlTableNode:
+                        xmlTableNode.Identifier = alias.Name;
+                        break;
 
-                    HanaTree.PutContextSpan(derivedNode, context);
-                    node = derivedNode;
+                    case HanaJsonTableNode jsonTableNode:
+                        jsonTableNode.Identifier = alias.Name;
+                        break;
+
+                    default:
+                    {
+                        var derivedNode = new HanaDerivedTableNode
+                        {
+                            Columns = { Value = TreeHelper.CreateAllColumnsDeclaration() },
+                            Source = { Value = node },
+                            Alias = { Value = alias }
+                        };
+
+                        HanaTree.PutContextSpan(derivedNode, context);
+                        node = derivedNode;
+                        break;
+                    }
                 }
             }
 

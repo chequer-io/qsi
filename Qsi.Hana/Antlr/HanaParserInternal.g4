@@ -852,7 +852,7 @@ jsonValueBehavior
     ;
 
 jsonApiCommonSyntax
-    : expression ',' jsonPathSpecification
+    : (data=STRING_LITERAL | dataColumn=fieldName) ',' jsonPathSpecification
     ;
 
 jsonPathSpecification
@@ -860,7 +860,7 @@ jsonPathSpecification
     ;
 
 jsonTableColumnsClause
-    : K_COLUMNS '(' jsonTableColumnDefinition (',' jsonTableColumnDefinition)* ')'
+    : K_COLUMNS '(' defs+=jsonTableColumnDefinition (',' defs+=jsonTableColumnDefinition)* ')'
     ;
 
 jsonTableColumnDefinition
@@ -877,17 +877,17 @@ jsonTableOrdinalityColumnDefinition
 jsonTableRegularColumnDefinition
     : columnName dataType
       K_PATH jsonPathSpecification
-      (jsonValueBehavior K_ON K_EMPTY)?
-      (jsonValueBehavior K_ON K_ERROR)?
+      (empty=jsonValueBehavior K_ON K_EMPTY)?
+      (error=jsonValueBehavior K_ON K_ERROR)?
     ;
 
 jsonTableFormattedColumnDefinition
     : columnName dataType
-      K_FORMAT K_JSON (K_ENCODING (K_UTF8 | K_UTF16 | K_UTF32))?
+      K_FORMAT K_JSON (K_ENCODING (enc=K_UTF8 | enc=K_UTF16 | enc=K_UTF32))?
       K_PATH jsonPathSpecification
-      jsonWrapperBehavior?
-      (jsonBehavior K_ON K_EMPTY)?
-      (jsonBehavior K_ON K_ERROR)?
+      wrapper=jsonWrapperBehavior?
+      (empty=jsonBehavior K_ON K_EMPTY)?
+      (error=jsonBehavior K_ON K_ERROR)?
     ;
 
 jsonTableNestedColumns

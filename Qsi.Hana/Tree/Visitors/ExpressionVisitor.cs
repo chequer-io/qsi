@@ -511,8 +511,129 @@ namespace Qsi.Hana.Tree.Visitors
 
         public static QsiExpressionNode VisitJsonTableExpr(JsonTableExprContext context)
         {
-            // table function
-            throw new NotImplementedException();
+            var data = context.jsonApiCommonSyntax();
+
+            var node = new HanaJsonTableNode
+            {
+                Columns = VisitJsonTableColumnsClause(context.jsonTableColumnsClause())
+            };
+
+            if (data.dataColumn != null)
+            {
+                node.ArgumentColumnReference = data.dataColumn.qqi;
+            }
+            else
+            {
+                node.Argument = IdentifierUtility.Unescape(data.data.Text);
+            }
+
+            var exprNode = new QsiTableExpressionNode
+            {
+                Table = { Value = node }
+            };
+
+            HanaTree.PutContextSpan(node, context);
+            HanaTree.PutContextSpan(exprNode, context);
+
+            return exprNode;
+        }
+
+        private static IHanaJsonColumnDefinitionNode[] VisitJsonTableColumnsClause(JsonTableColumnsClauseContext context)
+        {
+            return context._defs
+                .Select(VisitJsonTableColumnDefinition)
+                .ToArray();
+        }
+
+        private static IHanaJsonColumnDefinitionNode VisitJsonTableColumnDefinition(JsonTableColumnDefinitionContext context)
+        {
+            switch (context.children[0])
+            {
+                case JsonTableOrdinalityColumnDefinitionContext jsonTableOrdinalityColumnDefinition:
+                    return VisitJsonTableOrdinalityColumnDefinition(jsonTableOrdinalityColumnDefinition);
+
+                case JsonTableRegularColumnDefinitionContext jsonTableRegularColumnDefinition:
+                    return VisitJsonTableRegularColumnDefinition(jsonTableRegularColumnDefinition);
+
+                case JsonTableFormattedColumnDefinitionContext jsonTableFormattedColumnDefinition:
+                    return VisitJsonTableFormattedColumnDefinition(jsonTableFormattedColumnDefinition);
+
+                case JsonTableNestedColumnsContext jsonTableNestedColumns:
+                    return VisitJsonTableNestedColumns(jsonTableNestedColumns);
+
+                default:
+                    throw TreeHelper.NotSupportedTree(context.children[0]);
+            }
+        }
+
+        private static HanaOrdinalityJsonColumnDefinitionNode VisitJsonTableOrdinalityColumnDefinition(JsonTableOrdinalityColumnDefinitionContext context)
+        {
+            var node = new HanaOrdinalityJsonColumnDefinitionNode
+            {
+                Identifier = context.columnName().qi
+            };
+
+            HanaTree.PutContextSpan(node, context);
+
+            return node;
+        }
+
+        private static HanaJsonColumnDefinitionNode VisitJsonTableRegularColumnDefinition(JsonTableRegularColumnDefinitionContext context)
+        {
+            var node = new HanaJsonColumnDefinitionNode
+            {
+                Identifier = context.columnName().qi,
+                Type = context.dataType().GetInputText(),
+                Path = IdentifierUtility.Unescape(context.jsonPathSpecification().path.Text)
+            };
+
+            if (context.empty != null)
+                node.EmptyBehavior = context.empty.GetInputText();
+
+            if (context.error != null)
+                node.ErrorBehavior = context.error.GetInputText();
+
+            HanaTree.PutContextSpan(node, context);
+
+            return node;
+        }
+
+        private static HanaJsonColumnDefinitionNode VisitJsonTableFormattedColumnDefinition(JsonTableFormattedColumnDefinitionContext context)
+        {
+            var node = new HanaJsonColumnDefinitionNode
+            {
+                Identifier = context.columnName().qi,
+                Type = context.dataType().GetInputText(),
+                FormatJson = true,
+                Encoding = context.enc?.Text,
+                Path = IdentifierUtility.Unescape(context.jsonPathSpecification().path.Text)
+            };
+
+            if (context.wrapper != null)
+                node.WrapperBehavior = context.wrapper.GetInputText();
+
+            if (context.empty != null)
+                node.EmptyBehavior = context.empty.GetInputText();
+
+            if (context.error != null)
+                node.ErrorBehavior = context.error.GetInputText();
+
+            HanaTree.PutContextSpan(node, context);
+
+            return node;
+        }
+
+        private static HanaNestedJsonColumnDefinitionNode VisitJsonTableNestedColumns(JsonTableNestedColumnsContext context)
+        {
+            var node = new HanaNestedJsonColumnDefinitionNode
+            {
+                Path = IdentifierUtility.Unescape(context.jsonPathSpecification().path.Text),
+                Columns = VisitJsonTableColumnsClause(context.jsonTableColumnsClause())
+            };
+
+            HanaTree.PutContextSpan(node, context);
+
+            return node;
         }
 
         public static QsiExpressionNode VisitJsonValueExpr(JsonValueExprContext context)
@@ -711,6 +832,7 @@ namespace Qsi.Hana.Tree.Visitors
                 Table = { Value = node }
             };
 
+            HanaTree.PutContextSpan(node, context);
             HanaTree.PutContextSpan(exprNode, context);
 
             return exprNode;

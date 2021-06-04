@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Qsi.Analyzers.Table;
 using Qsi.Analyzers.Table.Context;
 using Qsi.Data;
+using Qsi.Extensions;
 using Qsi.Hana.Tree;
 using Qsi.Tree;
 using Qsi.Tree.Immutable;
@@ -29,6 +30,9 @@ namespace Qsi.Hana.Analyzers
 
                 case HanaXmlTableNode xmlTableNode:
                     return BuildHanaXmlTableStructure(context, xmlTableNode);
+
+                case HanaJsonTableNode jsonTableNode:
+                    return BuildHanaJsonTableNode(context, jsonTableNode);
 
                 default:
                     return base.BuildTableStructure(context, table);
@@ -105,41 +109,77 @@ namespace Qsi.Hana.Analyzers
 
             if (argColumnRef != null)
             {
-                if (argColumnRef.Level < 2)
-                    throw new QsiException(QsiError.NoTablesUsed);
-
-                var refTableNode = new HanaDerivedTableNode
-                {
-                    Columns =
-                    {
-                        Value = new QsiColumnsDeclarationNode
-                        {
-                            Columns =
-                            {
-                                new QsiColumnReferenceNode
-                                {
-                                    Name = argColumnRef.SubIdentifier(^1)
-                                }
-                            }
-                        }
-                    },
-                    Source =
-                    {
-                        Value = new HanaTableReferenceNode
-                        {
-                            Identifier = argColumnRef.SubIdentifier(..^1)
-                        }
-                    }
-                };
-
-                using var refContext = new TableCompileContext(context);
-                var refStructure = await BuildTableStructure(refContext, refTableNode);
+                var refStructure = await LookupTableColumnReference(context, argColumnRef);
 
                 foreach (var column in structure.Columns)
                     column.References.AddRange(refStructure.Columns);
             }
 
             return structure;
+        }
+
+        private async ValueTask<QsiTableStructure> BuildHanaJsonTableNode(TableCompileContext context, HanaJsonTableNode table)
+        {
+            var structure = new QsiTableStructure
+            {
+                Type = QsiTableType.Inline
+            };
+
+            if (table.Identifier != null)
+                structure.Identifier = new QsiQualifiedIdentifier(table.Identifier);
+
+            foreach (var namedColumnDef in table.FindAscendants<IHanaJsonNamedColumnDefinitionNode>())
+            {
+                structure.Columns.Add(new QsiTableColumn
+                {
+                    Name = namedColumnDef.Identifier
+                });
+            }
+
+            var argColumnRef = table.ArgumentColumnReference;
+
+            if (argColumnRef != null)
+            {
+                var refStructure = await LookupTableColumnReference(context, argColumnRef);
+
+                foreach (var column in structure.Columns)
+                    column.References.AddRange(refStructure.Columns);
+            }
+
+            return structure;
+        }
+
+        private async ValueTask<QsiTableStructure> LookupTableColumnReference(TableCompileContext context, QsiQualifiedIdentifier columnRef)
+        {
+            if (columnRef.Level < 2)
+                throw new QsiException(QsiError.NoTablesUsed);
+
+            var refTableNode = new HanaDerivedTableNode
+            {
+                Columns =
+                {
+                    Value = new QsiColumnsDeclarationNode
+                    {
+                        Columns =
+                        {
+                            new QsiColumnReferenceNode
+                            {
+                                Name = columnRef.SubIdentifier(^1)
+                            }
+                        }
+                    }
+                },
+                Source =
+                {
+                    Value = new HanaTableReferenceNode
+                    {
+                        Identifier = columnRef.SubIdentifier(..^1)
+                    }
+                }
+            };
+
+            using var refContext = new TableCompileContext(context);
+            return await BuildTableStructure(refContext, refTableNode);
         }
 
         protected override IEnumerable<QsiTableColumn> ResolveColumnsInExpression(TableCompileContext context, IQsiExpressionNode expression)
