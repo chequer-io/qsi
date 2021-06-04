@@ -7,11 +7,6 @@ namespace Qsi.Debugger.Vendor.PostgreSql
 {
     internal class PostgreSqlRepositoryProvider : VendorRepositoryProvider
     {
-        protected override Task<QsiDataTable> GetDataTable(QsiScript script)
-        {
-            throw new NotImplementedException();
-        }
-
         protected override QsiTableStructure LookupTable(QsiQualifiedIdentifier identifier)
         {
             var tableName = IdentifierUtility.Unescape(identifier[^1].Value);

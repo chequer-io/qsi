@@ -2,8 +2,6 @@
 using System.Globalization;
 using Avalonia.Data.Converters;
 using Avalonia.Markup.Xaml;
-using Avalonia.Media;
-using Qsi.Data;
 using Qsi.Debugger.Models;
 
 namespace Qsi.Debugger.Converters

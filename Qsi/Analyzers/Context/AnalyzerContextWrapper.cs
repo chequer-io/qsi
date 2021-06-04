@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading;
 using Qsi.Data;
 using Qsi.Tree;
 
@@ -9,6 +10,8 @@ namespace Qsi.Analyzers.Context
         public QsiEngine Engine => _context.Engine;
 
         public QsiScript Script => _context.Script;
+
+        public IReadOnlyDictionary<IQsiBindParameterExpressionNode, QsiParameter> Parameters => _context.Parameters;
 
         public IQsiTreeNode Tree => _context.Tree;
 

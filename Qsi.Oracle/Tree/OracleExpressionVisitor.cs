@@ -6,7 +6,7 @@ namespace Qsi.Oracle.Tree
 {
     internal sealed class OracleExpressionVisitor : JSqlExpressionVisitor
     {
-        public OracleExpressionVisitor(IJSqlVisitorContext context) : base(context)
+        public OracleExpressionVisitor(IJSqlVisitorSet set) : base(set)
         {
         }
 

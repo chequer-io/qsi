@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using Qsi.Analyzers;
 using Qsi.Analyzers.Action;
-using Qsi.Analyzers.Table;
 using Qsi.Parsing;
 using Qsi.PhoenixSql.Analyzers;
 using Qsi.Services;

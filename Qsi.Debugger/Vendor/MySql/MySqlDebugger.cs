@@ -7,6 +7,7 @@ using Qsi.MySql;
 using Qsi.MySql.Diagnostics;
 using Qsi.Parsing;
 using Qsi.Services;
+using Qsi.Tree;
 
 namespace Qsi.Debugger.Vendor.MySql
 {
@@ -80,6 +81,11 @@ namespace Qsi.Debugger.Vendor.MySql
             public bool MatchIdentifier(QsiIdentifier x, QsiIdentifier y)
             {
                 return _service.MatchIdentifier(x, y);
+            }
+
+            public QsiParameter FindParameter(QsiParameter[] parameters, IQsiBindParameterExpressionNode node)
+            {
+                return _service.FindParameter(parameters, node);
             }
         }
     }

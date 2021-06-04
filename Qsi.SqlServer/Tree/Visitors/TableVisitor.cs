@@ -21,9 +21,6 @@ namespace Qsi.SqlServer.Tree
             {
                 case StatementWithCtesAndXmlNamespaces statementWithCtesAndXmlNamespaces:
                     return VisitStatementWithCtesAndXmlNamespaces(statementWithCtesAndXmlNamespaces);
-
-                case ViewStatementBody viewStatementBody:
-                    return VisitStatementBody(viewStatementBody);
             }
 
             throw TreeHelper.NotSupportedTree(statement);
@@ -70,41 +67,6 @@ namespace Qsi.SqlServer.Tree
             SqlServerTree.PutFragmentSpan(tableNode, selectStatement);
 
             return tableNode;
-        }
-        #endregion
-
-        #region StatementBody
-        public QsiTableNode VisitStatementBody(ViewStatementBody viewStatementBody)
-        {
-            switch (viewStatementBody)
-            {
-                case CreateViewStatement createViewStatement:
-                    return VisitCreateViewStatement(createViewStatement);
-            }
-
-            throw TreeHelper.NotSupportedTree(viewStatementBody);
-        }
-
-        public QsiTableNode VisitCreateViewStatement(CreateViewStatement createViewStatement)
-        {
-            return TreeHelper.Create<QsiDerivedTableNode>(n =>
-            {
-                if (createViewStatement.Columns == null || createViewStatement.Columns.Count == 0)
-                {
-                    n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
-                }
-                else
-                {
-                    var columnsDeclaration = new QsiColumnsDeclarationNode();
-                    columnsDeclaration.Columns.AddRange(CreateSequentialColumnNodes(createViewStatement.Columns));
-                    n.Columns.SetValue(columnsDeclaration);
-                }
-
-                n.Source.SetValue(VisitSelectStatement(createViewStatement.SelectStatement));
-                n.Alias.SetValue(CreateAliasNode(createViewStatement.SchemaObjectName[^1]));
-
-                SqlServerTree.PutFragmentSpan(n, createViewStatement);
-            });
         }
         #endregion
 
@@ -232,6 +194,16 @@ namespace Qsi.SqlServer.Tree
                     n.Source.SetValue(VisitFromClause(querySpecification.FromClause));
                 }
 
+                if (querySpecification.OrderByClause != null)
+                {
+                    n.Order.SetValue(VisitOrderByClause(querySpecification.OrderByClause));
+                }
+
+                if (querySpecification.GroupByClause != null)
+                {
+                    n.Grouping.SetValue(VisitGroupByClause(querySpecification.GroupByClause, querySpecification.HavingClause));
+                }
+
                 SqlServerTree.PutFragmentSpan(n, querySpecification);
             });
         }
@@ -258,11 +230,11 @@ namespace Qsi.SqlServer.Tree
         public QsiColumnNode VisitSelectScalarExpression(SelectScalarExpression selectScalarExpression)
         {
             QsiExpressionNode expression = null;
-            QsiDeclaredColumnNode column = null;
+            QsiColumnReferenceNode column = null;
 
             if (selectScalarExpression.Expression is ColumnReferenceExpression columnReferenceExpression)
             {
-                column = new QsiDeclaredColumnNode
+                column = new QsiColumnReferenceNode
                 {
                     Name = IdentifierVisitor.CreateQualifiedIdentifier(columnReferenceExpression.MultiPartIdentifier)
                 };
@@ -383,6 +355,112 @@ namespace Qsi.SqlServer.Tree
             SqlServerTree.PutFragmentSpan(joinedTableNode, fromClause);
 
             return joinedTableNode;
+        }
+        #endregion
+
+        #region OrderByClause
+        public QsiMultipleOrderExpressionNode VisitOrderByClause(OrderByClause orderByClause)
+        {
+            var node = new QsiMultipleOrderExpressionNode();
+
+            node.Orders.AddRange(orderByClause.OrderByElements.Select(VisitExpressionWithSortOrder));
+            SqlServerTree.PutFragmentSpan(node, orderByClause);
+
+            return node;
+        }
+
+        public QsiOrderExpressionNode VisitExpressionWithSortOrder(ExpressionWithSortOrder expressionWithSortOrder)
+        {
+            return TreeHelper.Create<QsiOrderExpressionNode>(n =>
+            {
+                n.Expression.SetValue(ExpressionVisitor.VisitScalarExpression(expressionWithSortOrder.Expression));
+                n.Order = expressionWithSortOrder.SortOrder == SortOrder.Descending ? QsiSortOrder.Descending : QsiSortOrder.Ascending;
+
+                SqlServerTree.PutFragmentSpan(n, expressionWithSortOrder);
+            });
+        }
+        #endregion
+
+        #region GroupByClause
+        public QsiGroupingExpressionNode VisitGroupByClause(GroupByClause groupByClause, HavingClause havingClause)
+        {
+            return TreeHelper.Create<QsiGroupingExpressionNode>(n =>
+            {
+                n.Items.AddRange(groupByClause.GroupingSpecifications.Select(VisitGroupSpecifcation));
+
+                if (havingClause != null)
+                {
+                    n.Having.SetValue(VisitHavingClause(havingClause));
+                }
+
+                SqlServerTree.PutFragmentSpan(n, groupByClause);
+            });
+        }
+
+        public QsiExpressionNode VisitGroupSpecifcation(GroupingSpecification groupingSpecification)
+        {
+            switch (groupingSpecification)
+            {
+                case CompositeGroupingSpecification compositeGroupingSpecification:
+                    return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+                    {
+                        n.Member.SetValue(TreeHelper.CreateFunction("COMPOSITE"));
+                        n.Parameters.AddRange(compositeGroupingSpecification.Items.Select(VisitGroupSpecifcation));
+
+                        SqlServerTree.PutFragmentSpan(n, compositeGroupingSpecification);
+                    });
+
+                // CUBE ( ... )
+                case CubeGroupingSpecification cubeGroupingSpecification:
+                    return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+                    {
+                        n.Member.SetValue(TreeHelper.CreateFunction("CUBE"));
+                        n.Parameters.AddRange(cubeGroupingSpecification.Arguments.Select(VisitGroupSpecifcation));
+
+                        SqlServerTree.PutFragmentSpan(n, cubeGroupingSpecification);
+                    });
+
+                case ExpressionGroupingSpecification expressionGroupingSpecification:
+                    return ExpressionVisitor.VisitScalarExpression(expressionGroupingSpecification.Expression);
+
+                // ROLLUP ( ... )
+                case RollupGroupingSpecification rollupGroupingSpecification:
+                    return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+                    {
+                        n.Member.SetValue(TreeHelper.CreateFunction("ROLLUP"));
+                        n.Parameters.AddRange(rollupGroupingSpecification.Arguments.Select(VisitGroupSpecifcation));
+
+                        SqlServerTree.PutFragmentSpan(n, rollupGroupingSpecification);
+                    });
+
+                // ()
+                case GrandTotalGroupingSpecification grandTotalGroupingSpecification:
+                    return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+                    {
+                        n.Member.SetValue(TreeHelper.CreateFunction("GRAND_TOTAL"));
+                        SqlServerTree.PutFragmentSpan(n, grandTotalGroupingSpecification);
+                    });
+
+                // GROUPING SETS ( ... )
+                case GroupingSetsGroupingSpecification groupingSetsGroupingSpecification:
+                    return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+                    {
+                        n.Member.SetValue(TreeHelper.CreateFunction("GROUPING_SETS"));
+                        n.Parameters.AddRange(groupingSetsGroupingSpecification.Sets.Select(VisitGroupSpecifcation));
+
+                        SqlServerTree.PutFragmentSpan(n, groupingSetsGroupingSpecification);
+                    });
+
+                default:
+                    throw TreeHelper.NotSupportedTree(groupingSpecification);
+            }
+        }
+        #endregion
+
+        #region HavingClause
+        public QsiExpressionNode VisitHavingClause(HavingClause havingClause)
+        {
+            return ExpressionVisitor.VisitBooleanExpression(havingClause.SearchCondition);
         }
         #endregion
 
@@ -578,7 +656,7 @@ namespace Qsi.SqlServer.Tree
 
         public QsiTableNode VisitNamedTableReference(NamedTableReference namedTableReference)
         {
-            var tableNode = new QsiTableAccessNode
+            var tableNode = new QsiTableReferenceNode
             {
                 Identifier = IdentifierVisitor.CreateQualifiedIdentifier(namedTableReference.SchemaObject)
             };

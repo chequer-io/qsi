@@ -5,7 +5,7 @@ using Qsi.Utilities;
 
 namespace Qsi.Tree.Immutable
 {
-    public class ImmutableGroupingExpressionNode : IQsiGroupingExpressionNode
+    public readonly struct ImmutableGroupingExpressionNode : IQsiGroupingExpressionNode
     {
         public IQsiTreeNode Parent { get; }
 

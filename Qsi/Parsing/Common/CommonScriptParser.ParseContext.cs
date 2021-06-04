@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
-using Qsi.Data;
 
 namespace Qsi.Parsing.Common
 {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Qsi.Analyzers.Action.Context;
@@ -12,6 +13,7 @@ using Qsi.Data;
 using Qsi.Extensions;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
+using Qsi.Tree.Data;
 using Qsi.Tree.Immutable;
 using Qsi.Utilities;
 
@@ -117,7 +119,7 @@ namespace Qsi.Analyzers.Action
             var definition = context.Engine.RepositoryProvider.LookupDefinition(action.Identifier, QsiTableType.Prepared) ??
                              throw new QsiException(QsiError.UnableResolveDefinition, action.Identifier);
 
-            return context.Engine.Execute(definition);
+            return context.Engine.Execute(definition, null);
         }
         #endregion
 
@@ -282,13 +284,41 @@ namespace Qsi.Analyzers.Action
             }
         }
 
+        protected virtual QsiParameter[] ArrangeBindParameters(IAnalyzerContext context, IQsiTreeNode node)
+        {
+            IQsiBindParameterExpressionNode[] parameterNodes = node
+                .FindAscendants<IQsiBindParameterExpressionNode>()
+                .ToArray();
+
+            var result = new QsiParameter[parameterNodes.Length];
+            var index = 0;
+
+            foreach (var parameterNode in parameterNodes)
+            {
+                if (!context.Parameters.TryGetValue(parameterNode, out var parameter))
+                {
+                    var parameterName = context.Engine.TreeDeparser.Deparse(parameterNode, context.Script);
+                    throw new QsiException(QsiError.ParameterNotFound, parameterName);
+                }
+
+                // TODO: index bind parameter arrangement not implemented
+                if (parameterNode.Type == QsiParameterType.Index)
+                    return context.Parameters.Values.ToArray();
+
+                result[index++] = parameter;
+            }
+
+            return result;
+        }
+
         protected virtual async ValueTask<QsiDataTable> GetDataTableByCommonTableNode(IAnalyzerContext context, IQsiTableNode commonTableNode)
         {
             var query = context.Engine.TreeDeparser.Deparse(commonTableNode, context.Script);
             var scriptType = context.Engine.ScriptParser.GetSuitableType(query);
             var script = new QsiScript(query, scriptType);
+            QsiParameter[] parameters = ArrangeBindParameters(context, commonTableNode);
 
-            return await context.Engine.RepositoryProvider.GetDataTable(script);
+            return await context.Engine.RepositoryProvider.GetDataTable(script, parameters);
         }
         #endregion
 
@@ -404,11 +434,13 @@ namespace Qsi.Analyzers.Action
             var engine = context.Engine;
             var script = engine.TreeDeparser.Deparse(valueTable, context.Script);
 
+            // TODO: bind parameters in directives
             if (directives != null)
                 script = $"{engine.TreeDeparser.Deparse(directives, context.Script)}\n{script}";
 
             var scriptType = engine.ScriptParser.GetSuitableType(script);
-            var dataTable = await engine.RepositoryProvider.GetDataTable(new QsiScript(script, scriptType));
+            QsiParameter[] parameters = ArrangeBindParameters(context, valueTable);
+            var dataTable = await engine.RepositoryProvider.GetDataTable(new QsiScript(script, scriptType), parameters);
 
             if (dataTable.Rows.ColumnCount != context.ColumnNames.Length)
                 throw new QsiException(QsiError.DifferentColumnsCount);
@@ -570,9 +602,6 @@ namespace Qsi.Analyzers.Action
         #region Update
         protected virtual async ValueTask<IQsiAnalysisResult> ExecuteDataUpdateAction(IAnalyzerContext context, IQsiDataUpdateActionNode action)
         {
-            // columns pivot
-            var setColumnsPivot = ResolveSetColumnsPivot(action.SetValues, false);
-
             // table structure
             var tableAnalyzer = context.Engine.GetAnalyzer<QsiTableAnalyzer>();
             using var tableContext = new TableCompileContext(context);
@@ -586,15 +615,33 @@ namespace Qsi.Analyzers.Action
             if (dataTable.Table.Columns.Count != sourceTable.Columns.Count)
                 throw new QsiException(QsiError.DifferentColumnsCount);
 
-            // set values
-            var setValues = new QsiDataValue[sourceTable.Columns.Count];
+            // values
+            var values = new QsiDataValue[sourceTable.Columns.Count];
 
-            for (int i = 0; i < setColumnsPivot.Columns.Length; i++)
+            if (!ListUtility.IsNullOrEmpty(action.SetValues))
             {
-                int sourceIndex = FindColumnIndex(context, sourceTable, setColumnsPivot.Columns[i]);
-                var affectedIndex = setColumnsPivot.AffectedIndices[i];
+                // columns pivot
+                var setColumnsPivot = ResolveSetColumnsPivot(action.SetValues, false);
 
-                setValues[sourceIndex] = ResolveColumnValue(context, action.SetValues[affectedIndex].Value);
+                for (int i = 0; i < setColumnsPivot.Columns.Length; i++)
+                {
+                    int sourceIndex = FindColumnIndex(context, sourceTable, setColumnsPivot.Columns[i]);
+                    var affectedIndex = setColumnsPivot.AffectedIndices[i];
+
+                    values[sourceIndex] = ResolveColumnValue(context, action.SetValues[affectedIndex].Value);
+                }
+            }
+            else if (action.Value != null)
+            {
+                if (action.Value.ColumnValues.Length != values.Length)
+                    throw new QsiException(QsiError.DifferentColumnValueCount, 0);
+
+                for (int i = 0; i < values.Length; i++)
+                    values[i] = ResolveColumnValue(context, action.Value.ColumnValues[i]);
+            }
+            else
+            {
+                throw new QsiException(QsiError.Syntax);
             }
 
             return ResolveDataManipulationTargets(sourceTable)
@@ -612,7 +659,7 @@ namespace Qsi.Analyzers.Action
                                 var value = row.Items[pivot.DeclaredOrder];
 
                                 oldRow.Items[pivot.TargetOrder] = value;
-                                newRow.Items[pivot.TargetOrder] = setValues[pivot.DeclaredOrder] ?? value;
+                                newRow.Items[pivot.TargetOrder] = values[pivot.DeclaredOrder] ?? value;
                             }
                             else
                             {

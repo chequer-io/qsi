@@ -1,6 +1,8 @@
 ﻿using System;
+using Qsi.Data;
 using Qsi.MySql;
 using Qsi.Services;
+using Qsi.Tree;
 
 namespace Qsi.Debugger.Vendor.MySql
 {
@@ -16,6 +18,11 @@ namespace Qsi.Debugger.Vendor.MySql
         public override IQsiRepositoryProvider CreateRepositoryProvider()
         {
             return new MySqlRepositoryProvider();
+        }
+
+        public override QsiParameter FindParameter(QsiParameter[] parameters, IQsiBindParameterExpressionNode node)
+        {
+            return VendorDebugger.HookFindParameter(parameters, node);
         }
     }
 }

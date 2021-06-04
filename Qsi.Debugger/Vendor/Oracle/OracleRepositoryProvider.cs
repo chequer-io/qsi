@@ -7,11 +7,6 @@ namespace Qsi.Debugger.Vendor.Oracle
 {
     internal sealed class OracleRepositoryProvider : VendorRepositoryProvider
     {
-        protected override Task<QsiDataTable> GetDataTable(QsiScript script)
-        {
-            throw new NotImplementedException();
-        }
-
         protected override QsiTableStructure LookupTable(QsiQualifiedIdentifier identifier)
         {
             var tableName = GetName(identifier[^1]);

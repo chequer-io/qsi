@@ -1,5 +1,7 @@
 ﻿using System;
 using JavaScriptEngineSwitcher.ChakraCore;
+using Qsi.PostgreSql.Tree;
+using Qsi.PostgreSql.Tree.PG10;
 
 namespace Qsi.PostgreSql.Internal
 {
@@ -34,6 +36,14 @@ namespace Qsi.PostgreSql.Internal
 
         protected abstract T Parse(string input);
 
+        protected abstract PgActionVisitor CreateActionVisitor(IPgVisitorSet set);
+
+        protected abstract PgTableVisitor CreateTableVisitor(IPgVisitorSet set);
+
+        protected abstract PgExpressionVisitor CreateExpressionVisitor(IPgVisitorSet set);
+
+        protected abstract PgIdentifierVisitor CreateIdentifierVisitor(IPgVisitorSet set);
+
         protected string Evaluate(string expression)
         {
             return _jsEngine.Evaluate<string>(expression);
@@ -50,10 +60,33 @@ namespace Qsi.PostgreSql.Internal
             return Parse(input);
         }
 
+        IPgVisitorSet IPgParser.CreateVisitorSet()
+        {
+            var set = new PgVisitorSetImpl();
+
+            set.ActionVisitor = CreateActionVisitor(set);
+            set.TableVisitor = CreateTableVisitor(set);
+            set.ExpressionVisitor = CreateExpressionVisitor(set);
+            set.IdentifierVisitor = CreateIdentifierVisitor(set);
+
+            return set;
+        }
+
         void IDisposable.Dispose()
         {
             _jsEngine?.Dispose();
             _jsEngine = null;
+        }
+
+        private sealed class PgVisitorSetImpl : IPgVisitorSet
+        {
+            public PgActionVisitor ActionVisitor { get; set; }
+
+            public PgTableVisitor TableVisitor { get; set; }
+
+            public PgExpressionVisitor ExpressionVisitor { get; set; }
+
+            public PgIdentifierVisitor IdentifierVisitor { get; set; }
         }
     }
 }

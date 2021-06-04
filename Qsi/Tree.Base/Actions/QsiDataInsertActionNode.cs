@@ -9,7 +9,7 @@ namespace Qsi.Tree
     {
         public QsiTreeNodeProperty<QsiTableDirectivesNode> Directives { get; }
 
-        public QsiTreeNodeProperty<QsiTableAccessNode> Target { get; }
+        public QsiTreeNodeProperty<QsiTableReferenceNode> Target { get; }
 
         public QsiQualifiedIdentifier[] Partitions { get; set; }
 
@@ -34,7 +34,7 @@ namespace Qsi.Tree
         #region Explicit
         IQsiTableDirectivesNode IQsiDataInsertActionNode.Directives => Directives.Value;
 
-        IQsiTableAccessNode IQsiDataInsertActionNode.Target => Target.Value;
+        IQsiTableReferenceNode IQsiDataInsertActionNode.Target => Target.Value;
 
         IQsiRowValueExpressionNode[] IQsiDataInsertActionNode.Values => Values.Cast<IQsiRowValueExpressionNode>().ToArray();
 
@@ -48,7 +48,7 @@ namespace Qsi.Tree
         public QsiDataInsertActionNode()
         {
             Directives = new QsiTreeNodeProperty<QsiTableDirectivesNode>(this);
-            Target = new QsiTreeNodeProperty<QsiTableAccessNode>(this);
+            Target = new QsiTreeNodeProperty<QsiTableReferenceNode>(this);
             Values = new QsiTreeNodeList<QsiRowValueExpressionNode>(this);
             SetValues = new QsiTreeNodeList<QsiSetColumnExpressionNode>(this);
             ValueTable = new QsiTreeNodeProperty<QsiTableNode>(this);

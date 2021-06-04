@@ -7,6 +7,7 @@ namespace Qsi.Tree
     {
         IQsiTreeNode Parent { get; }
 
+        // TODO: Change to visitor pattern
         IEnumerable<IQsiTreeNode> Children { get; }
 
         IUserDataHolder UserData { get; }

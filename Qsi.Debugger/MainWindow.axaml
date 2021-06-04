@@ -1,0 +1,163 @@
+<Window
+    x:Class="Qsi.Debugger.MainWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ae="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
+    xmlns:c="clr-namespace:Qsi.Debugger.Controls"
+    xmlns:cvt="clr-namespace:Qsi.Debugger.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:md="clr-namespace:Qsi.Debugger.Models"
+    xmlns:qsi="clr-namespace:Qsi.Diagnostics;assembly=Qsi"
+    Title="Qsi Debugger"
+    Width="1200"
+    Height="800"
+    MinWidth="1200"
+    MinHeight="800"
+    d:DesignHeight="600"
+    d:DesignWidth="900"
+    WindowStartupLocation="CenterScreen"
+    mc:Ignorable="d">
+    <Window.Styles>
+        <Style Selector="TreeView">
+            <Setter Property="Background" Value="{DynamicResource Ink.90.Brush}" />
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+
+        <Style Selector="TreeViewItem">
+            <Setter Property="IsExpanded" Value="true" />
+        </Style>
+    </Window.Styles>
+
+    <Grid Margin="16" ColumnDefinitions="*,6,*,6,*,6,*" RowDefinitions="Auto,8,*,Auto">
+
+        <!--  Splitter  -->
+
+        <GridSplitter
+            Grid.Row="2"
+            Grid.Column="1"
+            Opacity="0" />
+
+        <GridSplitter
+            Grid.Row="2"
+            Grid.Column="3"
+            Opacity="0" />
+
+        <GridSplitter
+            Grid.Row="2"
+            Grid.Column="5"
+            Opacity="0" />
+
+        <!--  Error  -->
+
+        <TextBlock
+            x:Name="tbError"
+            Grid.Row="3"
+            Grid.ColumnSpan="7" Grid.Column="0"
+            Margin="8,8,8,0"
+            FontSize="12"
+            Foreground="#E36387"
+            Text="Error message"
+            TextAlignment="Left"
+            TextWrapping="Wrap" />
+
+        <!--  Editor  -->
+
+        <ComboBox
+            x:Name="cbLanguages"
+            Grid.Row="0"
+            Grid.Column="0"
+            HorizontalAlignment="Left" />
+
+        <ae:TextEditor
+            x:Name="codeEditor"
+            Grid.Row="2"
+            Grid.Column="0"
+            Background="#16191F"
+            FontSize="14"
+            FontWeight="Medium"
+            LineNumbersForeground="#7E7E7E" />
+
+        <!--  Raw Tree  -->
+
+        <TreeView
+            x:Name="tvRaw"
+            Grid.Row="2"
+            Grid.Column="2">
+
+            <TreeView.DataTemplates>
+                <DataTemplate DataType="qsi:IRawTreeTerminalNode">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Foreground="#B0B0B0" Text="{Binding TypeName}" />
+                        <TextBlock Text=": " />
+                        <TextBlock Foreground="#FA8072" Text="{Binding DisplayName}" />
+                    </StackPanel>
+                </DataTemplate>
+
+                <TreeDataTemplate DataType="qsi:IRawTree" ItemsSource="{Binding Children}">
+                    <TextBlock Text="{Binding DisplayName}" />
+                </TreeDataTemplate>
+            </TreeView.DataTemplates>
+        </TreeView>
+
+        <!--  QSI Tree  -->
+
+        <Panel Grid.Row="0" Grid.Column="4" VerticalAlignment="Bottom">
+            <CheckBox
+                x:Name="chkQsiProperty"
+                VerticalAlignment="Center"
+                Content="Hide Property" />
+
+            <TextBlock
+                x:Name="tbQsiStatus"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                Text="parsed in 0 ms" />
+        </Panel>
+
+        <TreeView
+            x:Name="tvQsi"
+            Grid.Row="2"
+            Grid.Column="4">
+            <TreeView.DataTemplates>
+                <TreeDataTemplate DataType="md:QsiElementItem" ItemsSource="{Binding Items}">
+                    <TextBlock Foreground="#87CEEB" Text="{Binding Header}" />
+                </TreeDataTemplate>
+
+                <TreeDataTemplate DataType="md:QsiChildElementItem" ItemsSource="{Binding Items}">
+                    <TextBlock Foreground="#B0B0B0" Text="{Binding Header}" />
+                </TreeDataTemplate>
+
+                <DataTemplate DataType="md:QsiPropertyItem">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Foreground="#B0B0B0" Text="{Binding Header}" />
+                        <TextBlock Text=": " />
+                        <TextBlock Foreground="#FA8072" Text="{Binding Value, Converter={cvt:PropertyValueConverter}}" />
+                    </StackPanel>
+                </DataTemplate>
+            </TreeView.DataTemplates>
+        </TreeView>
+
+        <!--  Result  -->
+
+        <Grid Grid.Row="2" Grid.Column="6" RowDefinitions="2*,6,1*">
+            <TreeView x:Name="tvResult">
+                <TreeView.DataTemplates>
+                    <TreeDataTemplate DataType="md:QsiColumnTreeItem" ItemsSource="{Binding Items}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Foreground="{Binding Converter={cvt:ColumnBrushConverter}}"
+                                       Text="{Binding Converter={cvt:ColumnDisplayConverter}}" />
+                            <TextBlock Text=" " />
+                            <TextBlock Foreground="{DynamicResource Ink.5.Brush}"
+                                       Text="{Binding Converter={cvt:ColumnParentTypeConverter}, StringFormat='({0})'}" />
+                            <TextBlock Foreground="{DynamicResource Red.10.Brush}" Text=" - Recursive"
+                                       IsVisible="{Binding IsRecursive}" />
+                        </StackPanel>
+                    </TreeDataTemplate>
+                </TreeView.DataTemplates>
+            </TreeView>
+            <TextBox Grid.Row="2" x:Name="tbResult" IsReadOnly="True" FontSize="14" />
+        </Grid>
+
+    </Grid>
+</Window>

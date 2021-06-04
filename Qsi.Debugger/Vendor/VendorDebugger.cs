@@ -1,6 +1,8 @@
 ﻿using System;
+using Qsi.Data;
 using Qsi.Diagnostics;
 using Qsi.Services;
+using Qsi.Tree;
 
 namespace Qsi.Debugger.Vendor
 {
@@ -27,5 +29,10 @@ namespace Qsi.Debugger.Vendor
         protected abstract IRawTreeParser CreateRawTreeParser();
 
         protected abstract IQsiLanguageService CreateLanguageService();
+
+        internal static QsiParameter HookFindParameter(QsiParameter[] parameters, IQsiBindParameterExpressionNode node)
+        {
+            return new(node.Type, node.Name ?? node.Index?.ToString() ?? "DBG", "Hooked");
+        }
     }
 }

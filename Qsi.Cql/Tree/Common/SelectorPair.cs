@@ -4,11 +4,11 @@ namespace Qsi.Cql.Tree.Common
 {
     internal readonly ref struct SelectorPair
     {
-        public QsiDeclaredColumnNode Column { get; }
+        public QsiColumnReferenceNode Column { get; }
 
         public QsiExpressionNode Expression { get; }
 
-        public SelectorPair(QsiDeclaredColumnNode column)
+        public SelectorPair(QsiColumnReferenceNode column)
         {
             Column = column;
             Expression = null;

@@ -6,7 +6,7 @@ namespace Qsi.Tree
     {
         IQsiTableDirectivesNode Directives { get; }
 
-        IQsiTableAccessNode Target { get; }
+        IQsiTableReferenceNode Target { get; }
 
         QsiQualifiedIdentifier[] Partitions { get; }
 

@@ -17,32 +17,48 @@ namespace Qsi.PhoenixSql.Analyzers
         {
         }
 
-        protected override async ValueTask<QsiTableStructure> BuildDerivedTableStructure(TableCompileContext context, IQsiDerivedTableNode table)
+        protected override async ValueTask<QsiTableStructure> BuildViewDefinitionStructure(TableCompileContext context, IQsiViewDefinitionNode viewDefinition)
         {
-            var structure = await base.BuildDerivedTableStructure(context, table);
+            var structure = await base.BuildViewDefinitionStructure(context, viewDefinition);
 
-            if (table is IDynamicTableNode dynamicTableNode)
-                PatchDynamicTable(structure, dynamicTableNode);
-
-            return structure;
-        }
-
-        protected override async ValueTask<QsiTableStructure> BuildTableAccessStructure(TableCompileContext context, IQsiTableAccessNode table)
-        {
-            var structure = await base.BuildTableAccessStructure(context, table);
-
-            if (table is IDynamicTableNode dynamicTableNode)
+            if (viewDefinition is IDynamicColumnsNode dynamicColumnsNode)
             {
                 structure = structure.Clone();
-                PatchDynamicTable(structure, dynamicTableNode);
+                PatchDynamicColumns(structure, dynamicColumnsNode);
             }
 
             return structure;
         }
 
-        private void PatchDynamicTable(QsiTableStructure structure, IDynamicTableNode dynamicTableNode)
+        protected override async ValueTask<QsiTableStructure> BuildDerivedTableStructure(TableCompileContext context, IQsiDerivedTableNode table)
         {
-            foreach (var dynamicColumn in dynamicTableNode.DynamicColumns.Columns.Cast<PDynamicDeclaredColumnNode>())
+            var structure = await base.BuildDerivedTableStructure(context, table);
+
+            if (table is IDynamicColumnsNode dynamicColumnsNode)
+            {
+                structure = structure.Clone();
+                PatchDynamicColumns(structure, dynamicColumnsNode);
+            }
+
+            return structure;
+        }
+
+        protected override async ValueTask<QsiTableStructure> BuildTableReferenceStructure(TableCompileContext context, IQsiTableReferenceNode table)
+        {
+            var structure = await base.BuildTableReferenceStructure(context, table);
+
+            if (table is IDynamicColumnsNode dynamicColumnsNode)
+            {
+                structure = structure.Clone();
+                PatchDynamicColumns(structure, dynamicColumnsNode);
+            }
+
+            return structure;
+        }
+
+        private void PatchDynamicColumns(QsiTableStructure structure, IDynamicColumnsNode dynamicColumnsNode)
+        {
+            foreach (var dynamicColumn in dynamicColumnsNode.DynamicColumns.Columns.Cast<PDynamicColumnReferenceNode>())
             {
                 var column = structure.NewColumn();
                 column.Name = dynamicColumn.Name[^1];
@@ -50,7 +66,7 @@ namespace Qsi.PhoenixSql.Analyzers
             }
         }
 
-        protected override QsiTableColumn ResolveDeclaredColumn(TableCompileContext context, IQsiDeclaredColumnNode column)
+        protected override QsiTableColumn ResolveColumnReference(TableCompileContext context, IQsiColumnReferenceNode column)
         {
             context.ThrowIfCancellationRequested();
 
@@ -74,13 +90,12 @@ namespace Qsi.PhoenixSql.Analyzers
                             .Take(2)
                             .ToArray();
 
-                        if (columns.Length == 0)
-                            throw new QsiException(QsiError.UnknownColumnIn, name.Value, scopeFieldList);
-
-                        if (columns.Length > 1)
-                            throw new QsiException(QsiError.AmbiguousColumnIn, column.Name, scopeFieldList);
-
-                        return columns[0];
+                        return columns.Length switch
+                        {
+                            0 => throw new QsiException(QsiError.UnknownColumnIn, name.Value, scopeFieldList),
+                            > 1 => throw new QsiException(QsiError.AmbiguousColumnIn, column.Name, scopeFieldList),
+                            _ => columns[0]
+                        };
                     }
 
                     foreach (var refTable in table.References)
@@ -90,7 +105,7 @@ namespace Qsi.PhoenixSql.Analyzers
                 }
             }
 
-            return base.ResolveDeclaredColumn(context, column);
+            return base.ResolveColumnReference(context, column);
         }
     }
 }

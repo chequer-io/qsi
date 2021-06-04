@@ -71,10 +71,10 @@ namespace Qsi.SqlServer.Tree
             var node = new QsiDataInsertActionNode();
             var tableNode = TableVisitor.VisitTableReference(insertSpecification.Target);
 
-            if (!(tableNode is QsiTableAccessNode tableAccessNode))
+            if (tableNode is not QsiTableReferenceNode tableReferenceNode)
                 throw new QsiException(QsiError.Syntax);
 
-            node.Target.SetValue(tableAccessNode);
+            node.Target.SetValue(tableReferenceNode);
 
             if (!ListUtility.IsNullOrEmpty(insertSpecification.Columns))
             {
@@ -82,7 +82,7 @@ namespace Qsi.SqlServer.Tree
                     .Select(ExpressionVisitor.VisitColumnReferenceExpression)
                     .Select(c => c.Column.Value switch
                     {
-                        QsiDeclaredColumnNode declaredColumnNode => declaredColumnNode.Name,
+                        QsiColumnReferenceNode columnReferenceNode => columnReferenceNode.Name,
                         QsiAllColumnNode allColumnNode => allColumnNode.Path,
                         _ => throw new QsiException(QsiError.Syntax)
                     })
@@ -215,7 +215,7 @@ namespace Qsi.SqlServer.Tree
             if (withCtesAndXmlNamespaces != null)
                 directiveNode = TableVisitor.VisitWithCtesAndXmlNamespaces(withCtesAndXmlNamespaces);
 
-            if (!(targetTable is QsiTableAccessNode accessNode))
+            if (targetTable is not QsiTableReferenceNode accessNode)
                 throw new NotSupportedException("Merge target table is not Table Reference");
 
             var leftTable = targetTable;
@@ -367,7 +367,7 @@ namespace Qsi.SqlServer.Tree
                                     {
                                         return c.Column.Value switch
                                         {
-                                            QsiDeclaredColumnNode declaredColumn => declaredColumn.Name,
+                                            QsiColumnReferenceNode columnReference => columnReference.Name,
                                             QsiAllColumnNode allColumn => allColumn.Path,
                                             _ => throw new NotSupportedException(c.Column.Value.GetType().ToString())
                                         };

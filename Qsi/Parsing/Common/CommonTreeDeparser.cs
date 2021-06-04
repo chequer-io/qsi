@@ -16,10 +16,10 @@ namespace Qsi.Parsing.Common
         }
 
         #region Template
-        protected bool IsAliasedTableAccessNode(IQsiDerivedTableNode node)
+        protected bool IsAliasedTableReferenceNode(IQsiDerivedTableNode node)
         {
             return
-                node.Source is IQsiTableAccessNode &&
+                node.Source is IQsiTableReferenceNode &&
                 node.Alias != null &&
                 node.Directives == null &&
                 node.Where == null &&
@@ -137,12 +137,8 @@ namespace Qsi.Parsing.Common
                     DeparseAllColumnNode(writer, allColumnNode, script);
                     break;
 
-                case IQsiBindingColumnNode bindingColumnNode:
-                    DeparseBindingColumnNode(writer, bindingColumnNode, script);
-                    break;
-
-                case IQsiDeclaredColumnNode declaredColumnNode:
-                    DeparseDeclaredColumnNode(writer, declaredColumnNode, script);
+                case IQsiColumnReferenceNode columnReferenceNode:
+                    DeparseColumnReferenceNode(writer, columnReferenceNode, script);
                     break;
 
                 case IQsiSequentialColumnNode sequentialColumnNode:
@@ -176,12 +172,7 @@ namespace Qsi.Parsing.Common
             writer.Write('*');
         }
 
-        protected virtual void DeparseBindingColumnNode(ScriptWriter writer, IQsiBindingColumnNode node, QsiScript script)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected virtual void DeparseDeclaredColumnNode(ScriptWriter writer, IQsiDeclaredColumnNode node, QsiScript script)
+        protected virtual void DeparseColumnReferenceNode(ScriptWriter writer, IQsiColumnReferenceNode node, QsiScript script)
         {
             writer.Write(node.Name);
         }
@@ -213,8 +204,8 @@ namespace Qsi.Parsing.Common
                     DeparseJoinedTableNode(writer, joinedTableNode, script);
                     break;
 
-                case IQsiTableAccessNode tableAccessNode:
-                    DeparseTableAccessNode(writer, tableAccessNode, script);
+                case IQsiTableReferenceNode tableReferenceNode:
+                    DeparseTableReferenceNode(writer, tableReferenceNode, script);
                     break;
 
                 default:
@@ -224,7 +215,7 @@ namespace Qsi.Parsing.Common
 
         protected virtual void DeparseCompositeTableNode(ScriptWriter writer, IQsiCompositeTableNode node, QsiScript script)
         {
-            bool parenthesis = node.OrderExpression != null || node.LimitExpression != null;
+            bool parenthesis = node.Order != null || node.Limit != null;
 
             if (parenthesis)
                 writer.Write('(');
@@ -234,24 +225,24 @@ namespace Qsi.Parsing.Common
             if (parenthesis)
                 writer.Write(')');
 
-            if (node.OrderExpression != null)
+            if (node.Order != null)
             {
                 writer.WriteSpace();
-                DeparseTreeNode(writer, node.OrderExpression, script);
+                DeparseTreeNode(writer, node.Order, script);
             }
 
-            if (node.LimitExpression != null)
+            if (node.Limit != null)
             {
                 writer.WriteSpace();
-                DeparseTreeNode(writer, node.LimitExpression, script);
+                DeparseTreeNode(writer, node.Limit, script);
             }
         }
 
         protected virtual void DeparseDerivedTableNode(ScriptWriter writer, IQsiDerivedTableNode node, QsiScript script)
         {
-            if (IsAliasedTableAccessNode(node))
+            if (IsAliasedTableReferenceNode(node))
             {
-                // IQsiTableAccessNode
+                // IQsiTableReferenceNode
                 DeparseTreeNode(writer, node.Source, script);
                 writer.WriteSpace();
                 DeparseTreeNode(writer, node.Alias, script);
@@ -271,7 +262,7 @@ namespace Qsi.Parsing.Common
                 writer.WriteSpace();
                 writer.Write("FROM ");
 
-                if (node.Source is IQsiDerivedTableNode leftSource && !IsAliasedTableAccessNode(leftSource) ||
+                if (node.Source is IQsiDerivedTableNode leftSource && !IsAliasedTableReferenceNode(leftSource) ||
                     node.Source is IQsiCompositeTableNode)
                 {
                     DeparseTreeNodeWithParenthesis(writer, node.Source, script);
@@ -327,7 +318,7 @@ namespace Qsi.Parsing.Common
             }
         }
 
-        protected virtual void DeparseTableAccessNode(ScriptWriter writer, IQsiTableAccessNode node, QsiScript script)
+        protected virtual void DeparseTableReferenceNode(ScriptWriter writer, IQsiTableReferenceNode node, QsiScript script)
         {
             writer.Write(node.Identifier);
         }
@@ -338,6 +329,10 @@ namespace Qsi.Parsing.Common
         {
             switch (node)
             {
+                case QsiExpressionFragmentNode fragmentNode:
+                    writer.Write(fragmentNode.Text);
+                    break;
+
                 case IQsiLiteralExpressionNode literalExpressionNode:
                     DeparseLiteralExpressionNode(writer, literalExpressionNode, script);
                     break;
@@ -360,6 +355,10 @@ namespace Qsi.Parsing.Common
 
                 case IQsiGroupingExpressionNode groupingExpressionNode:
                     DeparseGroupingExpressionNode(writer, groupingExpressionNode, script);
+                    break;
+
+                case IQsiBindParameterExpressionNode bindParameterExpressionNode:
+                    DeparseBindParameterExpressionNode(writer, bindParameterExpressionNode, script);
                     break;
 
                 default:
@@ -402,7 +401,7 @@ namespace Qsi.Parsing.Common
             }
         }
 
-        private void DeparseGroupingExpressionNode(ScriptWriter writer, IQsiGroupingExpressionNode node, QsiScript script)
+        protected virtual void DeparseGroupingExpressionNode(ScriptWriter writer, IQsiGroupingExpressionNode node, QsiScript script)
         {
             writer.Write("GROUP BY ");
             writer.WriteJoin(", ", node.Items, (_, item) => DeparseTreeNode(writer, item, script));
@@ -412,6 +411,14 @@ namespace Qsi.Parsing.Common
                 writer.Write("HAVING ");
                 DeparseTreeNode(writer, node.Having, script);
             }
+        }
+
+        protected virtual void DeparseBindParameterExpressionNode(ScriptWriter writer, IQsiBindParameterExpressionNode node, QsiScript script)
+        {
+            writer.Write(node.Prefix);
+
+            if (!node.NoSuffix)
+                writer.Write(node.Type == QsiParameterType.Index ? node.Index : node.Name);
         }
 
         protected virtual void DeparseLiteralExpressionNode(ScriptWriter writer, IQsiLiteralExpressionNode node, QsiScript script)

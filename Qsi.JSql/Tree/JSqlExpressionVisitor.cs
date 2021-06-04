@@ -18,7 +18,9 @@ namespace Qsi.JSql.Tree
     {
         private static readonly Regex _dateTimePattern = new("(?<=')[^']+(?=')");
 
-        public JSqlExpressionVisitor(IJSqlVisitorContext context) : base(context)
+        private int _bindParamIndex;
+
+        public JSqlExpressionVisitor(IJSqlVisitorSet set) : base(set)
         {
         }
 
@@ -421,28 +423,37 @@ namespace Qsi.JSql.Tree
             });
         }
 
+        // :<bindId>
         public virtual QsiExpressionNode VisitNumericBind(NumericBind expression)
         {
-            return TreeHelper.Create<QsiColumnExpressionNode>(n =>
+            return new QsiBindParameterExpressionNode
             {
-                n.Column.SetValue(TableVisitor.VisitNumericBind(expression));
-            });
+                Type = QsiParameterType.Name,
+                Prefix = ":",
+                Name = expression.getBindId().toString()
+            };
         }
 
+        // ? | ?<index>
         public virtual QsiExpressionNode VisitJdbcParameter(JdbcParameter expression)
         {
-            return TreeHelper.Create<QsiColumnExpressionNode>(n =>
+            return new QsiBindParameterExpressionNode
             {
-                n.Column.SetValue(TableVisitor.VisitJdbcParameter(expression));
-            });
+                Type = QsiParameterType.Index,
+                Prefix = "?",
+                Index = expression.isUseFixedIndex() ? expression.getIndex().intValue() : _bindParamIndex++
+            };
         }
 
+        // :<name>
         public virtual QsiExpressionNode VisitJdbcNamedParameter(JdbcNamedParameter expression)
         {
-            return TreeHelper.Create<QsiColumnExpressionNode>(n =>
+            return new QsiBindParameterExpressionNode
             {
-                n.Column.SetValue(TableVisitor.VisitJdbcNamedParameter(expression));
-            });
+                Type = QsiParameterType.Name,
+                Prefix = ":",
+                Name = expression.getName()
+            };
         }
 
         public virtual QsiExpressionNode VisitJsonExpression(JsonExpression expression)

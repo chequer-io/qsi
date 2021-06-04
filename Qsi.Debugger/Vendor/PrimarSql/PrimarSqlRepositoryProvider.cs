@@ -11,11 +11,6 @@ namespace Qsi.Debugger.Vendor.PrimarSql
             return identifier;
         }
 
-        protected override Task<QsiDataTable> GetDataTable(QsiScript script)
-        {
-            throw new System.NotImplementedException();
-        }
-
         protected override QsiTableStructure LookupTable(QsiQualifiedIdentifier identifier)
         {
             var tableName = IdentifierUtility.Unescape(identifier[^1].Value);

@@ -7,11 +7,6 @@ namespace Qsi.Debugger.Vendor.JSql
 {
     internal class JSqlRepositoryProvider : VendorRepositoryProvider
     {
-        protected override Task<QsiDataTable> GetDataTable(QsiScript script)
-        {
-            throw new NotImplementedException();
-        }
-
         protected override QsiTableStructure LookupTable(QsiQualifiedIdentifier identifier)
         {
             var tableName = IdentifierUtility.Unescape(identifier[^1].Value);

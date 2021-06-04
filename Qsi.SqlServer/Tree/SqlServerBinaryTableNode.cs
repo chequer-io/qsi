@@ -41,9 +41,9 @@ namespace Qsi.SqlServer.Tree
             }
         }
 
-        IQsiMultipleOrderExpressionNode IQsiCompositeTableNode.OrderExpression => OrderExpression.Value;
+        IQsiMultipleOrderExpressionNode IQsiCompositeTableNode.Order => OrderExpression.Value;
 
-        IQsiLimitExpressionNode IQsiCompositeTableNode.LimitExpression => LimitExpression.Value;
+        IQsiLimitExpressionNode IQsiCompositeTableNode.Limit => LimitExpression.Value;
         #endregion
 
         public SqlServerBinaryTableNode()

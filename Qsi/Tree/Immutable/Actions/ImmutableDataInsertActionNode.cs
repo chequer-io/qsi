@@ -12,7 +12,7 @@ namespace Qsi.Tree.Immutable
 
         public IQsiTableDirectivesNode Directives { get; }
 
-        public IQsiTableAccessNode Target { get; }
+        public IQsiTableReferenceNode Target { get; }
 
         public QsiQualifiedIdentifier[] Partitions { get; }
 
@@ -39,7 +39,7 @@ namespace Qsi.Tree.Immutable
         public ImmutableDataInsertActionNode(
             IQsiTreeNode parent,
             IQsiTableDirectivesNode directives,
-            IQsiTableAccessNode target,
+            IQsiTableReferenceNode target,
             QsiQualifiedIdentifier[] partitions,
             QsiQualifiedIdentifier[] columns,
             IQsiRowValueExpressionNode[] values,

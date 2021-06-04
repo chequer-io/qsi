@@ -59,9 +59,9 @@ namespace Qsi.PrimarSql.Tree
             return new QsiQualifiedIdentifier(identifiers);
         }
 
-        public static PrimarSqlDeclaredColumnNode VisitFullColumnName(FullColumnNameContext context)
+        public static PrimarSqlColumnReferenceNode VisitFullColumnName(FullColumnNameContext context)
         {
-            return TreeHelper.Create<PrimarSqlDeclaredColumnNode>(n =>
+            return TreeHelper.Create<PrimarSqlColumnReferenceNode>(n =>
             {
                 n.Name = new QsiQualifiedIdentifier(VisitUid(context.uid()));
                 n.Accessors.AddRange(context.columnDottedId().Select(VisitColumnDottedId));

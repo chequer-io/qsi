@@ -83,9 +83,9 @@ namespace Qsi.Cql.Tree
             return node;
         }
         
-        public static QsiTableAccessNode VisitColumnFamilyName(ColumnFamilyNameContext context)
+        public static QsiTableReferenceNode VisitColumnFamilyName(ColumnFamilyNameContext context)
         {
-            var node = new QsiTableAccessNode
+            var node = new QsiTableReferenceNode
             {
                 Identifier = context.id
             };
@@ -237,7 +237,7 @@ namespace Qsi.Cql.Tree
             }
         }
 
-        public static QsiDeclaredColumnNode VisitSident(SidentContext context)
+        public static QsiColumnReferenceNode VisitSident(SidentContext context)
         {
             return new()
             {
@@ -245,29 +245,12 @@ namespace Qsi.Cql.Tree
             };
         }
 
-        public static QsiDeclaredColumnNode VisitCident(CidentContext context)
+        public static QsiColumnReferenceNode VisitCident(CidentContext context)
         {
             return new()
             {
                 Name = new QsiQualifiedIdentifier(context.id)
             };
-        }
-        #endregion
-
-        #region CreateMaterializedViewStatement
-        public static QsiTableNode VisitCreateMaterializedViewStatement(CreateMaterializedViewStatementContext context)
-        {
-            var node = new QsiDerivedTableNode();
-
-            node.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
-            node.Source.SetValue(VisitCommonSelectStatement(new CommonSelectStatementContext(context)));
-
-            node.Alias.SetValue(new QsiAliasNode
-            {
-                Name = context.cf.id[^1]
-            });
-
-            return node;
         }
         #endregion
     }

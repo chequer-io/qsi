@@ -3,11 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Antlr4.Runtime;
-using Antlr4.Runtime.Misc;
 using Antlr4.Runtime.Tree;
 using Qsi.Data;
 using Qsi.MySql.Data;
-using Qsi.MySql.Internal;
 using Qsi.MySql.Tree.Common;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
@@ -205,14 +203,14 @@ namespace Qsi.MySql.Tree
             // DATE 'text'
             // TIME 'text'
             // TIMESTAMP 'text'
-            if (node is IQsiDeclaredColumnNode declaredColumnNode &&
-                declaredColumnNode.Name.Level == 1 &&
-                TeporalLiteralSymbols.Contains(declaredColumnNode.Name[0].Value, StringComparer.OrdinalIgnoreCase) &&
+            if (node is IQsiColumnReferenceNode columnReferenceNode &&
+                columnReferenceNode.Name.Level == 1 &&
+                TeporalLiteralSymbols.Contains(columnReferenceNode.Name[0].Value, StringComparer.OrdinalIgnoreCase) &&
                 !alias.HasToken(AS_SYMBOL) &&
                 aliasNode.Name.IsEscaped &&
                 aliasNode.Name.Value.StartsWith('\''))
             {
-                var symbolText = declaredColumnNode.Name[0].Value.ToUpper();
+                var symbolText = columnReferenceNode.Name[0].Value.ToUpper();
 
                 var symbolType = symbolText switch
                 {
@@ -390,19 +388,19 @@ namespace Qsi.MySql.Tree
 
         public static QsiTableNode VisitSingleTable(SingleTableContext context)
         {
-            var tableAccess = VisitTableRef(new CommonTableRefContext(context.tableRef(), context.usePartition()));
+            var tableReferenceNode = VisitTableRef(new CommonTableRefContext(context.tableRef(), context.usePartition()));
             var alias = context.tableAlias();
 
             // TODO: usePartition
             // TODO: indexHintList
 
             if (alias == null)
-                return tableAccess;
+                return tableReferenceNode;
 
             var derivedTableNode = new QsiDerivedTableNode();
 
             derivedTableNode.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
-            derivedTableNode.Source.SetValue(tableAccess);
+            derivedTableNode.Source.SetValue(tableReferenceNode);
             derivedTableNode.Alias.SetValue(VisitTableAlias(alias));
 
             MySqlTree.PutContextSpan(derivedTableNode, context);
@@ -410,9 +408,9 @@ namespace Qsi.MySql.Tree
             return derivedTableNode;
         }
 
-        public static QsiTableAccessNode VisitTableRef(CommonTableRefContext context)
+        public static QsiTableReferenceNode VisitTableRef(CommonTableRefContext context)
         {
-            var node = new MySqlTableAccessNode
+            var node = new MySqlTableReferenceNode
             {
                 Identifier = IdentifierVisitor.VisitTableRef(context.TableRef),
                 Partitions = context.Partitions?.identifier()?
@@ -566,7 +564,7 @@ namespace Qsi.MySql.Tree
                 .Select(IdentifierVisitor.VisitIdentifier);
 
             node.Columns.AddRange(identifiers.Select(i =>
-                new QsiDeclaredColumnNode
+                new QsiColumnReferenceNode
                 {
                     Name = new QsiQualifiedIdentifier(i)
                 }));
@@ -708,7 +706,7 @@ namespace Qsi.MySql.Tree
 
         public static QsiTableNode VisitExplicitTable(ExplicitTableContext context)
         {
-            var node = new MySqlExplicitTableAccessNode
+            var node = new MySqlExplicitTableReferenceNode
             {
                 Identifier = IdentifierVisitor.VisitTableRef(context.tableRef())
             };
@@ -863,33 +861,6 @@ namespace Qsi.MySql.Tree
             {
                 node.TableLockType = MySqlTableLockType.ShareMode;
             }
-
-            MySqlTree.PutContextSpan(node, context);
-
-            return node;
-        }
-
-        public static QsiTableNode VisitCreateView(CreateViewContext context)
-        {
-            if (!context.TryGetTokenIndex(VIEW_SYMBOL, out var index))
-                throw new QsiException(QsiError.Syntax);
-
-            var viewName = (ViewNameContext)context.children[index + 1];
-            var viewTail = (ViewTailContext)context.children[index + 2];
-            var columnInternalRefList = viewTail.columnInternalRefList();
-
-            var node = new QsiDerivedTableNode();
-
-            node.Alias.SetValue(new QsiAliasNode
-            {
-                Name = IdentifierVisitor.VisitViewName(viewName)[^1]
-            });
-
-            node.Columns.SetValue(columnInternalRefList == null ?
-                TreeHelper.CreateAllColumnsDeclaration() :
-                CreateSequentialColumns(columnInternalRefList));
-
-            node.Source.SetValue(VisitViewSelect(viewTail.viewSelect()));
 
             MySqlTree.PutContextSpan(node, context);
 
