@@ -418,8 +418,8 @@ namespace Qsi.Analyzers.Table
                             fixedSources
                                 .Select(s => s.Source)
                                 .ToArray(),
-                            compositeTableNode.OrderExpression,
-                            compositeTableNode.LimitExpression,
+                            compositeTableNode.Order,
+                            compositeTableNode.Limit,
                             compositeTableNode.UserData);
                     }
 

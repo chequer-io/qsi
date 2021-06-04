@@ -9,9 +9,9 @@ namespace Qsi.Tree.Immutable
 
         public IQsiTableNode[] Sources { get; }
 
-        public IQsiMultipleOrderExpressionNode OrderExpression { get; }
+        public IQsiMultipleOrderExpressionNode Order { get; }
 
-        public IQsiLimitExpressionNode LimitExpression { get; }
+        public IQsiLimitExpressionNode Limit { get; }
 
         public IUserDataHolder UserData { get; }
 
@@ -26,8 +26,8 @@ namespace Qsi.Tree.Immutable
         {
             Parent = parent;
             Sources = sources;
-            OrderExpression = orderExpression;
-            LimitExpression = limitExpression;
+            Order = orderExpression;
+            Limit = limitExpression;
             UserData = userData;
         }
     }

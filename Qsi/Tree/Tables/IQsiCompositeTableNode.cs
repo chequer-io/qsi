@@ -10,8 +10,8 @@
         /// </summary>
         IQsiTableNode[] Sources { get; }
 
-        IQsiMultipleOrderExpressionNode OrderExpression { get; }
+        IQsiMultipleOrderExpressionNode Order { get; }
 
-        IQsiLimitExpressionNode LimitExpression { get; }
+        IQsiLimitExpressionNode Limit { get; }
     }
 }
