@@ -318,5 +318,20 @@ namespace Qsi.Hana.Tree.Visitors
             HanaTree.PutContextSpan(node, context);
             return node;
         }
+
+        public static QsiChangeSearchPathActionNode VisitSetSchemaStatement(SetSchemaStatementContext context)
+        {
+            var node = new QsiChangeSearchPathActionNode
+            {
+                Identifiers = new[]
+                {
+                    context.identifier().qi
+                }
+            };
+
+            HanaTree.PutContextSpan(node, context);
+
+            return node;
+        }
     }
 }

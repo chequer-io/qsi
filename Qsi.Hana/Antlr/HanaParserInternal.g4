@@ -18,6 +18,7 @@ root
 hanaStatement
     : dataManipulationStatement
     | dataDefinitionStatement
+    | sessionManagementStatement
     ;
 
 dataManipulationStatement
@@ -37,6 +38,10 @@ dataManipulationStatement
 
 dataDefinitionStatement
     : createViewStatement
+    ;
+
+sessionManagementStatement
+    : setSchemaStatement
     ;
 
 // ------ SQL Reference > SQL Statements > Alpabetical List of Statements > SELECT Statement ------
@@ -1296,6 +1301,12 @@ columnLevelParameter
     : K_COLUMN columnName K_PARAMETERS STRING_LITERAL
     ;
 
+// ------ SQL Reference > SQL Statements > Alpabetical List of Statements > SET SCHEMA Statement ------
+
+setSchemaStatement
+    : K_SET K_SCHEMA identifier[null]
+    ;
+
 // ------ ETC ------
 
 booleanLiteral
@@ -1339,8 +1350,8 @@ keywodIdentifier
     | K_PRECEDING | K_PREFIX | K_PRIMARY | K_PRIVILEGE | K_RANDOM_PARTITION | K_RANK | K_READ | K_REAL | K_REBUILD
     | K_REPLACE | K_REPLACE_REGEXPR | K_RESULT | K_RESULTSETS | K_RETENTION | K_RETURNING | K_ROUND_CEILING
     | K_ROUND_DOWN | K_ROUND_FLOOR | K_ROUND_HALF_DOWN | K_ROUND_HALF_EVEN | K_ROUND_HALF_UP | K_ROUND_UP | K_ROUTE_BY
-    | K_ROUTE_BY_CARDINALITY | K_ROUTE_TO | K_ROW | K_ROW_NUMBER | K_ROWCOUNT | K_ROWS | K_SECOND | K_SECONDDATE
-    | K_SERIES | K_SERIES_DISAGGREGATE | K_SERIES_DISAGGREGATE_BIGINT | K_SERIES_DISAGGREGATE_DATE
+    | K_ROUTE_BY_CARDINALITY | K_ROUTE_TO | K_ROW | K_ROW_NUMBER | K_ROWCOUNT | K_ROWS | K_SCHEMA | K_SECOND
+    | K_SECONDDATE | K_SERIES | K_SERIES_DISAGGREGATE | K_SERIES_DISAGGREGATE_BIGINT | K_SERIES_DISAGGREGATE_DATE
     | K_SERIES_DISAGGREGATE_DECIMAL | K_SERIES_DISAGGREGATE_INTEGER | K_SERIES_DISAGGREGATE_SECONDDATE
     | K_SERIES_DISAGGREGATE_SMALLDECIMAL | K_SERIES_DISAGGREGATE_SMALLINT | K_SERIES_DISAGGREGATE_TIME
     | K_SERIES_DISAGGREGATE_TIMESTAMP | K_SERIES_DISAGGREGATE_TINYINT | K_SERIES_ELEMENT_TO_PERIOD | K_SERIES_FILTER

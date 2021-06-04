@@ -242,6 +242,7 @@ K_ROW:                                 R O W;
 K_ROW_NUMBER:                          R O W '_' N U M B E R;
 K_ROWCOUNT:                            R O W C O U N T;
 K_ROWS:                                R O W S;
+K_SCHEMA:                              S C H E M A;
 K_SECOND:                              S E C O N D;
 K_SECONDDATE:                          S E C O N D D A T E;
 K_SELECT:                              S E L E C T;

@@ -29,7 +29,10 @@ namespace Qsi.Hana
                     return ParseDataManipulationStatement(dataManipulationStatement);
 
                 case DataDefinitionStatementContext dataDefinitionStatement:
-                    return DataDefinitionStatementStatement(dataDefinitionStatement);
+                    return ParseDataDefinitionStatementStatement(dataDefinitionStatement);
+
+                case SessionManagementStatementContext sessionManagementStatement:
+                    return ParseSessionManagementStatement(sessionManagementStatement);
 
                 default:
                     throw TreeHelper.NotSupportedTree(statement.children[0]);
@@ -69,12 +72,24 @@ namespace Qsi.Hana
             }
         }
 
-        private IQsiDefinitionNode DataDefinitionStatementStatement(DataDefinitionStatementContext statement)
+        private IQsiDefinitionNode ParseDataDefinitionStatementStatement(DataDefinitionStatementContext statement)
         {
             switch (statement.children[0])
             {
                 case CreateViewStatementContext createViewStatement:
                     return DefinitionVisitor.VisitCreateViewStatement(createViewStatement);
+
+                default:
+                    throw TreeHelper.NotSupportedTree(statement.children[0]);
+            }
+        }
+
+        private IQsiActionNode ParseSessionManagementStatement(SessionManagementStatementContext statement)
+        {
+            switch (statement.children[0])
+            {
+                case SetSchemaStatementContext setSchemaStatement:
+                    return ActionVisitor.VisitSetSchemaStatement(setSchemaStatement);
 
                 default:
                     throw TreeHelper.NotSupportedTree(statement.children[0]);
