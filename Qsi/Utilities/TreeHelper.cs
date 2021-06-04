@@ -13,7 +13,7 @@ namespace Qsi.Utilities
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static QsiExpressionFragmentNode Fragment(string value)
         {
-            return new() { Value = value };
+            return new() { Text = value };
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

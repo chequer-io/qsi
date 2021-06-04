@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text.Json;
 using Qsi.Data;
 using Qsi.Hana.Tree;
@@ -306,14 +306,14 @@ namespace Qsi.Hana
             if (!node.Partition.IsEmpty)
             {
                 writer.WriteSpace();
-                writer.Write(node.Partition.Value.Value);
+                writer.Write(node.Partition.Value.Text);
             }
 
             // tableSampleClause?
             if (!node.Sampling.IsEmpty)
             {
                 writer.WriteSpace();
-                writer.Write(node.Sampling.Value.Value);
+                writer.Write(node.Sampling.Value.Text);
             }
         }
 
@@ -347,7 +347,7 @@ namespace Qsi.Hana
                 if (node.Sampling != null)
                 {
                     writer.WriteSpace();
-                    writer.Write(node.Sampling.Value);
+                    writer.Write(node.Sampling.Text);
                 }
 
                 return;
@@ -423,13 +423,13 @@ namespace Qsi.Hana
             else if (node.TimeTravel != null)
             {
                 writer.WriteSpace();
-                writer.Write(node.TimeTravel.Value);
+                writer.Write(node.TimeTravel.Text);
             }
 
             if (node.Hint != null)
             {
                 writer.WriteSpace();
-                writer.Write(node.Hint.Value);
+                writer.Write(node.Hint.Text);
             }
         }
 

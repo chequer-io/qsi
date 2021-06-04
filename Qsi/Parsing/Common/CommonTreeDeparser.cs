@@ -330,7 +330,7 @@ namespace Qsi.Parsing.Common
             switch (node)
             {
                 case QsiExpressionFragmentNode fragmentNode:
-                    writer.Write(fragmentNode.Value);
+                    writer.Write(fragmentNode.Text);
                     break;
 
                 case IQsiLiteralExpressionNode literalExpressionNode:
