@@ -44,8 +44,7 @@ namespace Qsi.MySql.Tree
             {
                 var replaceOrAlgorithm = context.viewReplaceOrAlgorithm();
 
-                if (replaceOrAlgorithm.HasToken(REPLACE_SYMBOL))
-                    node.Replace = true;
+                node.Replace = replaceOrAlgorithm.HasToken(REPLACE_SYMBOL);
 
                 if (replaceOrAlgorithm.viewAlgorithm() != null)
                     node.ViewAlgorithm.SetValue(TreeHelper.Fragment(replaceOrAlgorithm.viewAlgorithm().GetInputText()));
