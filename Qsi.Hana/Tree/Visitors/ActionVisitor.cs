@@ -14,7 +14,43 @@ namespace Qsi.Hana.Tree.Visitors
     {
         public static QsiDataDeleteActionNode VisitDeleteStatement(DeleteStatementContext context)
         {
-            throw new NotImplementedException();
+            var partitionRestriction = context.partitionRestriction();
+            var whereClause = context.whereClause();
+            var hintClause = context.hintClause();
+
+            QsiTableNode tableNode = new HanaTableReferenceNode
+            {
+                Identifier = context.tableName().qqi
+            };
+
+            if (partitionRestriction != null)
+                ((HanaTableReferenceNode)tableNode).Partition.Value = TreeHelper.Fragment(partitionRestriction.GetInputText());
+
+            if (whereClause != null || hintClause != null)
+            {
+                var derivedTableNode = new HanaDerivedTableNode
+                {
+                    Columns = { Value = TreeHelper.CreateAllColumnsDeclaration() },
+                    Source = { Value = tableNode }
+                };
+
+                if (whereClause != null)
+                    derivedTableNode.Where.Value = ExpressionVisitor.VisitWhereClause(whereClause);
+
+                if (hintClause != null)
+                    derivedTableNode.Hint.Value = TreeHelper.Fragment(hintClause.GetInputText());
+
+                tableNode = derivedTableNode;
+            }
+
+            var node = new QsiDataDeleteActionNode
+            {
+                Target = { Value = tableNode }
+            };
+
+            HanaTree.PutContextSpan(node, context);
+
+            return node;
         }
 
         public static QsiDataInsertActionNode VisitInsertStatement(InsertStatementContext context)
