@@ -672,16 +672,21 @@ namespace Qsi.Hana.Tree.Visitors
 
         public static QsiExpressionNode VisitXmlTableExpr(XmlTableExprContext context)
         {
-            if (context.dataColumn != null)
-                throw TreeHelper.NotSupportedFeature($"columnRef({context.dataColumn.qqi}) based XMLTABLE");
-
             var xmlNamespaceClause = context.xmlNamespaceClause();
 
             var node = new HanaXmlTableNode
             {
-                RowPattern = IdentifierUtility.Unescape(context.pattern.Text),
-                Argument = IdentifierUtility.Unescape(context.data.Text),
+                RowPattern = IdentifierUtility.Unescape(context.pattern.Text)
             };
+
+            if (context.dataColumn != null)
+            {
+                node.ArgumentColumnReference = context.dataColumn.qqi;
+            }
+            else
+            {
+                node.Argument = IdentifierUtility.Unescape(context.data.Text);
+            }
 
             if (xmlNamespaceClause != null)
             {

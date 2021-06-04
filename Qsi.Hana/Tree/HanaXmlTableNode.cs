@@ -17,6 +17,8 @@ namespace Qsi.Hana.Tree
 
         public string Argument { get; set; }
 
+        public QsiQualifiedIdentifier ArgumentColumnReference { get; set; }
+
         public HanaXmlColumnDefinitionNode[] Columns { get; set; }
 
         public override IEnumerable<IQsiTreeNode> Children
