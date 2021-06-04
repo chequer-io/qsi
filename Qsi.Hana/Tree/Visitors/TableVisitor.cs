@@ -15,7 +15,7 @@ namespace Qsi.Hana.Tree.Visitors
 {
     internal static class TableVisitor
     {
-        public static HanaDerivedTableNode VisitSelectStatement(SelectStatementContext context)
+        public static QsiTableNode VisitSelectStatement(SelectStatementContext context)
         {
             var withClause = context.withClause();
             var subquery = context.subquery();
@@ -25,19 +25,31 @@ namespace Qsi.Hana.Tree.Visitors
 
             var subqueryNode = VisitSubquery(subquery);
 
+            if (withClause is null && forClause is null && timeTravel is null && hintClause is null)
+                return subqueryNode;
+
+            if (subqueryNode is not HanaDerivedTableNode derivedTableNode)
+            {
+                derivedTableNode = new HanaDerivedTableNode
+                {
+                    Columns = { Value = TreeHelper.CreateAllColumnsDeclaration() },
+                    Source = { Value = subqueryNode }
+                };
+            }
+
             if (withClause is not null)
-                subqueryNode.Directives.SetValue(VisitWithClause(withClause));
+                derivedTableNode.Directives.SetValue(VisitWithClause(withClause));
 
             if (forClause is not null)
-                subqueryNode.Behavior.SetValue(VisitForClause(forClause));
+                derivedTableNode.Behavior.SetValue(VisitForClause(forClause));
 
             if (timeTravel is not null)
-                subqueryNode.TimeTravel.SetValue(TreeHelper.Fragment(timeTravel.GetInputText()));
+                derivedTableNode.TimeTravel.SetValue(TreeHelper.Fragment(timeTravel.GetInputText()));
 
             if (hintClause is not null)
-                subqueryNode.Hint.SetValue(TreeHelper.Fragment(hintClause.GetInputText()));
+                derivedTableNode.Hint.SetValue(TreeHelper.Fragment(hintClause.GetInputText()));
 
-            return subqueryNode;
+            return derivedTableNode;
         }
 
         public static QsiTableDirectivesNode VisitWithClause(WithClauseContext context)
@@ -133,7 +145,7 @@ namespace Qsi.Hana.Tree.Visitors
             return node;
         }
 
-        public static HanaDerivedTableNode VisitSubquery(SubqueryContext context)
+        public static QsiTableNode VisitSubquery(SubqueryContext context)
         {
             if (context.inner != null)
                 return VisitSelectStatement(context.inner);
@@ -149,13 +161,54 @@ namespace Qsi.Hana.Tree.Visitors
             if (context.groupBy != null)
                 node.Grouping.SetValue(ExpressionVisitor.VisitGroupByClause(context.groupBy));
 
-            // TODO: set
+            if (context.set != null)
+            {
+                // node + subquries
+                IEnumerable<QsiTableNode> sources = context.set.setSubquery()
+                    .Select(VisitSetSubquery)
+                    .Prepend(node);
+
+                var compositeNode = new QsiCompositeTableNode();
+
+                compositeNode.Sources.AddRange(sources);
+
+                if (context.orderBy != null)
+                    compositeNode.Order.SetValue(ExpressionVisitor.VisitOrderByClause(context.orderBy));
+
+                if (context.limit != null)
+                    compositeNode.Limit.SetValue(ExpressionVisitor.VisitLimitClause(context.limit));
+
+                HanaTree.PutContextSpan(compositeNode, context);
+
+                return compositeNode;
+            }
 
             if (context.orderBy != null)
                 node.Order.SetValue(ExpressionVisitor.VisitOrderByClause(context.orderBy));
 
             if (context.limit != null)
                 node.Limit.SetValue(ExpressionVisitor.VisitLimitClause(context.limit));
+
+            HanaTree.PutContextSpan(node, context);
+
+            return node;
+        }
+
+        private static QsiTableNode VisitSetSubquery(SetSubqueryContext context)
+        {
+            if (context.inner != null)
+                return VisitSelectStatement(context.inner);
+
+            var node = new HanaDerivedTableNode();
+
+            node.Columns.SetValue(VisitSelectClause(node, context.select));
+            node.Source.SetValue(VisitFromClause(context.from));
+
+            if (context.where != null)
+                node.Where.SetValue(ExpressionVisitor.VisitWhereClause(context.where));
+
+            if (context.groupBy != null)
+                node.Grouping.SetValue(ExpressionVisitor.VisitGroupByClause(context.groupBy));
 
             HanaTree.PutContextSpan(node, context);
 
@@ -442,12 +495,22 @@ namespace Qsi.Hana.Tree.Visitors
         public static QsiTableNode VisitSubqueryTableExpression(SubqueryTableExpressionContext context)
         {
             var node = VisitSubquery(context.subquery());
+
+            if (node is not QsiDerivedTableNode derivedTableNode || !derivedTableNode.Alias.IsEmpty)
+            {
+                derivedTableNode = new HanaDerivedTableNode
+                {
+                    Columns = { Value = TreeHelper.CreateAllColumnsDeclaration() },
+                    Source = { Value = node }
+                };
+            }
+
             var alias = context.alias()?.node;
 
             if (alias != null)
-                node.Alias.SetValue(alias);
+                derivedTableNode.Alias.SetValue(alias);
 
-            return node;
+            return derivedTableNode;
         }
 
         public static HanaCaseJoinTableNode VisitCaseJoin(CaseJoinContext context)

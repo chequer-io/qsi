@@ -60,6 +60,14 @@ subquery[bool allowParens]
     | {$allowParens}? '(' inner=selectStatement[true] ')'
     ;
 
+setSubquery
+    : select  = selectClause
+      from    = fromClause
+      where   = whereClause?
+      groupBy = groupByClause?
+    | '(' inner=selectStatement[true] ')'
+    ;
+
 withClause
     : K_WITH elements+=withListElement (',' elements+=withListElement)*
     ;
@@ -307,7 +315,7 @@ setOperator
     ;
 
 setOperatorClause
-    : ops+=setOperator queries+=subquery[true] (',' ops+=setOperator queries+=subquery[true])*
+    : (setOperator setSubquery)+ 
     ;
 
 limitClause
@@ -543,15 +551,31 @@ condition
     ;
 
 functionExpression
-    : jsonExpression                                #jsonExpr
-    | stringExpression                              #stringExpr
-    | functionName '(' expressionOrSubqueryList ')' #scalarExpr
+    : jsonExpression                                 #jsonExpr
+    | stringExpression                               #stringExpr
+    | inlineFunctionName                             #inlineExpr
+    | functionName '(' expressionOrSubqueryList? ')' #scalarExpr
     ;
 
 functionName returns [QsiQualifiedIdentifier qqi] locals [List<QsiIdentifier> buffer]
     @init { $buffer = new List<QsiIdentifier>(); }
     @after { $qqi = new QsiQualifiedIdentifier($buffer); }
     : identifier[$buffer] ('.' identifier[$buffer] ('.' identifier[$buffer] ('.' identifier[$buffer])?)?)?
+    ;
+
+inlineFunctionName
+    : K_CURRENT_CONNECTION
+    | K_CURRENT_SCHEMA
+    | K_CURRENT_DATE
+    | K_CURRENT_TIME
+    | K_CURRENT_TRANSACTION_ISOLATION_LEVEL
+    | K_CURRENT_UTCTIME
+    | K_CURRENT_TIMESTAMP
+    | K_CURRENT_UTCDATE
+    | K_CURRENT_USER
+    | K_CURRENT_UTCTIMESTAMP
+    | K_SYSUUID
+    | K_SESSION_USER
     ;
 
 aggregateExpression
