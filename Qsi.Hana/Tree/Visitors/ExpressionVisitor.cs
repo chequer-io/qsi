@@ -475,6 +475,9 @@ namespace Qsi.Hana.Tree.Visitors
                 case StringExprContext stringExpr:
                     return VisitStringExpression(stringExpr.stringExpression());
 
+                case InlineExprContext inlineExpr:
+                    return VisitInlineFunctionName(inlineExpr.inlineFunctionName());
+
                 case ScalarExprContext scalarExpr:
                     return VisitScalarExpr(scalarExpr);
 
@@ -669,8 +672,71 @@ namespace Qsi.Hana.Tree.Visitors
 
         public static QsiExpressionNode VisitXmlTableExpr(XmlTableExprContext context)
         {
-            // table function
-            throw new NotImplementedException();
+            if (context.dataColumn != null)
+                throw TreeHelper.NotSupportedFeature($"columnRef({context.dataColumn.qqi}) based XMLTABLE");
+
+            var xmlNamespaceClause = context.xmlNamespaceClause();
+
+            var node = new HanaXmlTableNode
+            {
+                RowPattern = IdentifierUtility.Unescape(context.pattern.Text),
+                Argument = IdentifierUtility.Unescape(context.data.Text),
+            };
+
+            if (xmlNamespaceClause != null)
+            {
+                if (xmlNamespaceClause.url != null)
+                {
+                    node.DefaultNamespace = new HanaXmlNamespaceNode(
+                        IdentifierUtility.Unescape(xmlNamespaceClause.url.Text)
+                    );
+                }
+
+                node.Namespaces = xmlNamespaceClause.xmlNamespace()
+                    .Select(VisitXmlNamespace)
+                    .ToArray();
+            }
+
+            node.Columns = context._columns
+                .Select(VisitXmlColumnDefinition)
+                .ToArray();
+
+            var exprNode = new QsiTableExpressionNode
+            {
+                Table = { Value = node }
+            };
+
+            HanaTree.PutContextSpan(exprNode, context);
+
+            return exprNode;
+
+            static HanaXmlNamespaceNode VisitXmlNamespace(XmlNamespaceContext context)
+            {
+                return new(
+                    IdentifierUtility.Unescape(context.url.Text),
+                    IdentifierUtility.Unescape(context.alas.Text)
+                );
+            }
+
+            static HanaXmlColumnDefinitionNode VisitXmlColumnDefinition(XmlColumnDefinitionContext context)
+            {
+                return new(
+                    context.columnName().qi,
+                    context.xmlColumnType().GetInputText()
+                );
+            }
+        }
+
+        public static QsiExpressionNode VisitInlineFunctionName(InlineFunctionNameContext context)
+        {
+            var node = new QsiFunctionExpressionNode
+            {
+                Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(context.GetText(), false))
+            };
+
+            HanaTree.PutContextSpan(node, context);
+
+            return node;
         }
 
         public static QsiExpressionNode VisitScalarExpr(ScalarExprContext context)

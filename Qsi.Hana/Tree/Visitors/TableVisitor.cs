@@ -591,7 +591,49 @@ namespace Qsi.Hana.Tree.Visitors
 
         public static QsiTableNode VisitTableFunctionExpression(TableFunctionExpressionContext context)
         {
-            throw TreeHelper.NotSupportedFeature("Table function");
+            QsiTableNode node;
+
+            switch (context.children[0])
+            {
+                case SeriesExpressionContext:
+                    throw TreeHelper.NotSupportedFeature("Series table");
+
+                case FunctionExpressionContext functionExpression:
+                    var expr = ExpressionVisitor.VisitFunctionExpression(functionExpression);
+
+                    if (expr is not QsiTableExpressionNode tableExpr)
+                        throw new QsiException(QsiError.Syntax);
+
+                    node = tableExpr.Table.Value;
+                    break;
+
+                default:
+                    throw TreeHelper.NotSupportedTree(context.children[0]);
+            }
+
+            var alias = context.alias()?.node;
+
+            if (alias != null)
+            {
+                if (node is HanaXmlTableNode xmlTableNode)
+                {
+                    xmlTableNode.Identifier = alias.Name;
+                }
+                else
+                {
+                    var derivedNode = new HanaDerivedTableNode
+                    {
+                        Columns = { Value = TreeHelper.CreateAllColumnsDeclaration() },
+                        Source = { Value = node },
+                        Alias = { Value = alias }
+                    };
+
+                    HanaTree.PutContextSpan(derivedNode, context);
+                    node = derivedNode;
+                }
+            }
+
+            return node;
         }
 
         public static QsiTableNode VisitVariableTable(VariableTableContext context)

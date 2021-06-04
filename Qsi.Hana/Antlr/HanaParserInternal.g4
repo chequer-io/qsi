@@ -173,7 +173,7 @@ subqueryTableExpression
     ;
 
 tableFunctionExpression
-    : (seriesExpression | functionExpression) alias?
+    : (seriesExpression | functionExpression[true]) alias?
     ;
 
 tableRef
@@ -356,7 +356,7 @@ caseJoinElseClause
     ;
 
 lateralTableExpression
-    : K_LATERAL '(' (subquery[true] | functionExpression) ')' alias?
+    : K_LATERAL '(' (subquery[true] | functionExpression[true]) ')' alias?
     ;
 
 collectionDerivedTable
@@ -496,7 +496,7 @@ expression
     | aggregateExpression                   #aggExpr
     | dataTypeConversionExpression          #conversionExpr
     | dateTimeExpression                    #dateTimeExpr
-    | functionExpression                    #functionExpr
+    | functionExpression[false]             #functionExpr
     | '(' expression ')'                    #parenthesisExpr
     | '(' subquery[true] ')'                #subqueryExpr
     | '-' expression                        #unaryExpr
@@ -550,10 +550,10 @@ condition
     | K_CURRENT K_OF identifier[null] #currentOfCondition
     ;
 
-functionExpression
-    : jsonExpression                                 #jsonExpr
-    | stringExpression                               #stringExpr
-    | inlineFunctionName                             #inlineExpr
+functionExpression[bool table]
+    : jsonExpression[$table]                         #jsonExpr
+    | stringExpression[$table]                       #stringExpr
+    | { $table == false }? inlineFunctionName        #inlineExpr
     | functionName '(' expressionOrSubqueryList? ')' #scalarExpr
     ;
 
@@ -809,20 +809,23 @@ dateTimeKind
     | K_SECOND
     ;
 
-jsonExpression
-    : K_JSON_QUERY '('
+jsonExpression[bool table]
+    : { $table == false }?
+      K_JSON_QUERY '('
         jsonApiCommonSyntax
         (K_RETURNING dataType)?
         jsonWrapperBehavior?
         (jsonBehavior K_ON K_EMPTY)?
         (jsonBehavior K_ON K_ERROR)?
      ')'                                        #jsonQueryExpr
-    | K_JSON_TABLE '('
+    | { $table }?
+      K_JSON_TABLE '('
         jsonApiCommonSyntax
         jsonTableColumnsClause
         ((K_ERROR | K_EMPTY) K_ON K_ERROR)?
      ')'                                        #jsonTableExpr
-    | K_JSON_VALUE '('
+    | { $table == false }?
+      K_JSON_VALUE '('
         jsonApiCommonSyntax
         (K_RETURNING dataType)?
         (jsonValueBehavior K_ON K_EMPTY)?
@@ -891,31 +894,38 @@ jsonTableNestedColumns
     : K_NESTED K_PATH? jsonPathSpecification jsonTableColumnsClause
     ;
 
-stringExpression
-    : (K_LOCATE_REGEXPR | K_SUBSTR_REGEXPR | K_SUBSTRING_REGEXPR)
+stringExpression[bool table]
+    : { $table == false }?
+     (K_LOCATE_REGEXPR | K_SUBSTR_REGEXPR | K_SUBSTRING_REGEXPR)
      '('
         regexprClause
         (K_FROM start=UNSIGNED_INTEGER)?
         (K_OCCURRENCE occurrence=UNSIGNED_INTEGER)?
         (K_GROUP group=UNSIGNED_INTEGER)?
      ')'                                                      #regexprExpr
-    | K_OCCURRENCES_REGEXPR '('
+    | { $table == false }?
+      K_OCCURRENCES_REGEXPR '('
         regexprClause
         (K_FROM start=UNSIGNED_INTEGER)?
      ')'                                                      #occurrencesRegexprExpr
-    | K_REPLACE_REGEXPR '('
+    | { $table == false }?
+      K_REPLACE_REGEXPR '('
         regexprClause
         (K_WITH replacement=STRING_LITERAL)?
         (K_FROM start=UNSIGNED_INTEGER)?
         (K_OCCURRENCE occurrence=(UNSIGNED_INTEGER | K_ALL))?
      ')'                                                      #replaceRegexprExpr
-    | K_TRIM '('
+    | { $table == false }?
+      K_TRIM '('
         ((K_LEADING | K_TRAILING | K_BOTH)? char=STRING_LITERAL K_FROM)?
         input=expression
      ')'                                                      #trimExpr
-    | K_XMLTABLE '('
+    | { $table }?
+      K_XMLTABLE '('
         (xmlNamespaceClause ',')?
-        STRING_LITERAL K_PASSING expression K_COLUMNS xmlColumnDefinition (',' xmlColumnDefinition)*
+        pattern=STRING_LITERAL
+        K_PASSING (data=STRING_LITERAL | dataColumn=fieldName)
+        K_COLUMNS columns+=xmlColumnDefinition (',' columns+=xmlColumnDefinition)*
         (K_ERROR K_ON K_ERROR)?
      ')'                                                      #xmlTableExpr 
     ;

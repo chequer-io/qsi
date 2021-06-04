@@ -26,6 +26,9 @@ namespace Qsi.Hana.Analyzers
                 case HanaCaseJoinItemTableNode caseJoinItemTableNode:
                     return BuildHanaCaseJoinItemTableStructure(context, caseJoinItemTableNode);
 
+                case HanaXmlTableNode xmlTableNode:
+                    return BuildHanaXmlTableStructure(xmlTableNode);
+
                 default:
                     return base.BuildTableStructure(context, table);
             }
@@ -77,6 +80,27 @@ namespace Qsi.Hana.Analyzers
             );
 
             return BuildDerivedTableStructure(context, derivedNode);
+        }
+
+        private ValueTask<QsiTableStructure> BuildHanaXmlTableStructure(HanaXmlTableNode table)
+        {
+            var structure = new QsiTableStructure
+            {
+                Type = QsiTableType.Inline
+            };
+
+            if (table.Identifier != null)
+                structure.Identifier = new QsiQualifiedIdentifier(table.Identifier);
+
+            foreach (var xmlColumn in table.Columns)
+            {
+                structure.Columns.Add(new QsiTableColumn
+                {
+                    Name = xmlColumn.Identifier
+                });
+            }
+
+            return new ValueTask<QsiTableStructure>(structure);
         }
 
         protected override IEnumerable<QsiTableColumn> ResolveColumnsInExpression(TableCompileContext context, IQsiExpressionNode expression)
