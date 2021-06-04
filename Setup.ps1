@@ -8,3 +8,4 @@ Import-Module ".\Build\Antlr.ps1"
 
 Antlr-Generate Qsi.MySql
 Antlr-Generate Qsi.Cql
+Antlr-Generate Qsi.Oracle
