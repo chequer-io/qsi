@@ -1111,7 +1111,7 @@ existsPredicate
     ;
 
 inPredicate
-    : source=expression K_NOT? K_IN (value1=expressionList | value2=subquery[true])
+    : source=expression K_NOT? K_IN '(' (value1=expressionList | value2=subquery[true]) ')'
     ;
 
 likePredicate
