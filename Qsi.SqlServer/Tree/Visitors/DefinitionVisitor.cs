@@ -25,7 +25,7 @@ namespace Qsi.SqlServer.Tree
                 Identifier = IdentifierVisitor.CreateQualifiedIdentifier(viewStatementBody.SchemaObjectName)
             };
 
-            if (viewStatementBody.Columns == null || viewStatementBody.Columns.Count == 0)
+            if (ListUtility.IsNullOrEmpty(viewStatementBody.Columns))
             {
                 node.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
             }
