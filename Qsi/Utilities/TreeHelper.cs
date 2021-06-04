@@ -197,7 +197,7 @@ namespace Qsi.Utilities
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static IEnumerable<IQsiTreeNode> YieldChildren(params IQsiTreeNodeProperty<QsiTreeNode>[] properties)
+        public static IEnumerable<IQsiTreeNode> YieldChildren(params IQsiTreeNodeProperty<QsiTreeNode>[] properties)
         {
             return properties
                 .Where(p => !p.IsEmpty)
@@ -205,7 +205,7 @@ namespace Qsi.Utilities
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static IEnumerable<IQsiTreeNode> YieldChildren(params IQsiTreeNode[] ndoes)
+        public static IEnumerable<IQsiTreeNode> YieldChildren(params IQsiTreeNode[] ndoes)
         {
             return ndoes
                 .Where(n => n != null)
@@ -213,7 +213,7 @@ namespace Qsi.Utilities
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static IEnumerable<IQsiTreeNode> YieldChildren(IEnumerable<IQsiTreeNode> source, IQsiTreeNodeProperty<QsiTreeNode> property)
+        public static IEnumerable<IQsiTreeNode> YieldChildren(IEnumerable<IQsiTreeNode> source, IQsiTreeNodeProperty<QsiTreeNode> property)
         {
             if (property.IsEmpty)
                 return source;
@@ -222,7 +222,7 @@ namespace Qsi.Utilities
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static IEnumerable<IQsiTreeNode> YieldChildren(IQsiTreeNodeProperty<QsiTreeNode> property, IEnumerable<IQsiTreeNode> source)
+        public static IEnumerable<IQsiTreeNode> YieldChildren(IQsiTreeNodeProperty<QsiTreeNode> property, IEnumerable<IQsiTreeNode> source)
         {
             if (property.IsEmpty)
                 return source;

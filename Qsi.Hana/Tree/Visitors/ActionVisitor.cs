@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Qsi.Data;
+using Qsi.Extensions;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
 using Qsi.Utilities;
@@ -202,10 +203,31 @@ namespace Qsi.Hana.Tree.Visitors
             var hintClause = context.hintClause();
 
             QsiTableNode tableNode;
+            QsiColumnsDeclarationNode columns = null;
 
             if (fromClause != null)
             {
                 tableNode = TableVisitor.VisitFromClause(fromClause);
+
+                columns = new QsiColumnsDeclarationNode
+                {
+                    Columns =
+                    {
+                        new QsiAllColumnNode
+                        {
+                            Path = alias != null ?
+                                new QsiQualifiedIdentifier(alias.node.Name) :
+                                context.tableName().qqi
+                        }
+                    }
+                };
+
+                if (tableNode is HanaDerivedTableNode derivedTableNode &&
+                    (derivedTableNode.Columns.IsEmpty || derivedTableNode.Columns.Value.IsAllColumnNode()))
+                {
+                    derivedTableNode.Columns.SetValue(columns);
+                    columns = null;
+                }
             }
             else
             {
@@ -216,21 +238,21 @@ namespace Qsi.Hana.Tree.Visitors
 
                 if (partitionRestriction != null)
                     ((HanaTableReferenceNode)tableNode).Partition.SetValue(TreeHelper.Fragment(partitionRestriction.GetInputText()));
+
+                if (alias != null)
+                    tableNode = TreeHelper.CreateAliasedTableNode(tableNode, alias.node);
             }
 
-            if (topClause != null || alias != null || whereClause != null || hintClause != null)
+            if (topClause != null || whereClause != null || hintClause != null || columns != null)
             {
                 var derivedTableNode = new HanaDerivedTableNode
                 {
-                    Columns = { Value = TreeHelper.CreateAllColumnsDeclaration() },
+                    Columns = { Value = columns ?? TreeHelper.CreateAllColumnsDeclaration() },
                     Source = { Value = tableNode }
                 };
 
                 if (topClause != null)
                     derivedTableNode.Top = TableVisitor.VisitTopClause(topClause);
-
-                if (alias != null)
-                    derivedTableNode.Alias.SetValue(alias.node);
 
                 if (whereClause != null)
                     derivedTableNode.Where.SetValue(ExpressionVisitor.VisitWhereClause(whereClause));

@@ -246,7 +246,7 @@ namespace Qsi.Hana
                     DeparseHanaTableReferenceNode(writer, hanaTableReferenceNode, script);
                     break;
 
-                case HanaDerivedTableNode hanaDerivedTableNode:
+                case IHanaDerivedTableNode hanaDerivedTableNode:
                     DeparseHanaDerivedTableNode(writer, hanaDerivedTableNode, script);
                     break;
 
@@ -317,45 +317,45 @@ namespace Qsi.Hana
             }
         }
 
-        private bool IsAliasedTableReferenceNode(HanaDerivedTableNode node)
+        private bool IsAliasedTableReferenceNode(IHanaDerivedTableNode node)
         {
             return
-                node.Source.Value is IQsiTableReferenceNode &&
-                node.Alias.IsEmpty &&
-                node.Directives.IsEmpty &&
-                node.Where.IsEmpty &&
-                node.Grouping.IsEmpty &&
-                node.Order.IsEmpty &&
-                node.Limit.IsEmpty &&
-                node.Columns.IsEmpty || IsWildcard(node.Columns.Value) &&
+                node.Source is IQsiTableReferenceNode &&
+                node.Alias is null &&
+                node.Directives is null &&
+                node.Where is null &&
+                node.Grouping is null &&
+                node.Order is null &&
+                node.Limit is null &&
+                (node.Columns == null || IsWildcard(node.Columns)) &&
                 !node.Top.HasValue &&
                 !node.Operation.HasValue &&
-                !node.Sampling.IsEmpty &&
-                !node.Behavior.IsEmpty &&
-                !node.TimeTravel.IsEmpty &&
-                !node.Hint.IsEmpty;
+                node.Sampling is not null &&
+                node.Behavior is not null &&
+                node.TimeTravel is not null &&
+                node.Hint is not null;
         }
 
-        private void DeparseHanaDerivedTableNode(ScriptWriter writer, HanaDerivedTableNode node, QsiScript script)
+        private void DeparseHanaDerivedTableNode(ScriptWriter writer, IHanaDerivedTableNode node, QsiScript script)
         {
             if (IsAliasedTableReferenceNode(node))
             {
-                DeparseTreeNode(writer, node.Source.Value, script);
+                DeparseTreeNode(writer, node.Source, script);
                 writer.WriteSpace();
-                DeparseTreeNode(writer, node.Alias.Value, script);
+                DeparseTreeNode(writer, node.Alias, script);
 
-                if (!node.Sampling.IsEmpty)
+                if (node.Sampling != null)
                 {
                     writer.WriteSpace();
-                    writer.Write(node.Sampling.Value.Value);
+                    writer.Write(node.Sampling.Value);
                 }
 
                 return;
             }
 
-            if (!node.Directives.IsEmpty)
+            if (node.Directives != null)
             {
-                DeparseTreeNode(writer, node.Directives.Value, script);
+                DeparseTreeNode(writer, node.Directives, script);
                 writer.WriteSpace();
             }
 
@@ -367,69 +367,69 @@ namespace Qsi.Hana
             if (node.Operation.HasValue)
                 writer.Write(node.Operation == HanaResultSetOperation.All ? "ALL " : "DISTINCT ");
 
-            if (!node.Columns.IsEmpty)
-                DeparseTreeNode(writer, node.Columns.Value, script);
+            if (node.Columns != null)
+                DeparseTreeNode(writer, node.Columns, script);
 
-            if (!node.Source.IsEmpty)
+            if (node.Source != null)
             {
                 writer.WriteSpace().Write("FROM ");
 
-                if (node.Source.Value is IQsiDerivedTableNode leftSource && !IsAliasedTableReferenceNode(leftSource) ||
-                    node.Source.Value is IQsiCompositeTableNode)
+                if (node.Source is IQsiDerivedTableNode leftSource && !IsAliasedTableReferenceNode(leftSource) ||
+                    node.Source is IQsiCompositeTableNode)
                 {
-                    DeparseTreeNodeWithParenthesis(writer, node.Source.Value, script);
+                    DeparseTreeNodeWithParenthesis(writer, node.Source, script);
                 }
                 else
                 {
-                    DeparseTreeNode(writer, node.Source.Value, script);
+                    DeparseTreeNode(writer, node.Source, script);
                 }
             }
 
-            if (!node.Where.IsEmpty)
+            if (node.Where != null)
             {
                 writer.WriteSpace();
-                DeparseTreeNode(writer, node.Where.Value, script);
+                DeparseTreeNode(writer, node.Where, script);
             }
 
-            if (!node.Grouping.IsEmpty)
+            if (node.Grouping != null)
             {
                 writer.WriteSpace();
-                DeparseTreeNode(writer, node.Grouping.Value, script);
+                DeparseTreeNode(writer, node.Grouping, script);
             }
 
-            if (!node.Order.IsEmpty)
+            if (node.Order != null)
             {
                 writer.WriteSpace();
-                DeparseTreeNode(writer, node.Order.Value, script);
+                DeparseTreeNode(writer, node.Order, script);
             }
 
-            if (!node.Limit.IsEmpty)
+            if (node.Limit != null)
             {
                 writer.WriteSpace();
-                DeparseTreeNode(writer, node.Limit.Value, script);
+                DeparseTreeNode(writer, node.Limit, script);
             }
 
-            if (!node.Behavior.IsEmpty)
+            if (node.Behavior != null)
             {
                 writer.WriteSpace();
-                DeparseTreeNode(writer, node.Behavior.Value, script);
+                DeparseTreeNode(writer, node.Behavior, script);
             }
 
-            if (!node.Behavior.IsEmpty)
+            if (node.Behavior != null)
             {
                 writer.WriteSpace();
-                DeparseTreeNode(writer, node.Behavior.Value, script);
+                DeparseTreeNode(writer, node.Behavior, script);
             }
-            else if (!node.TimeTravel.IsEmpty)
+            else if (node.TimeTravel != null)
             {
                 writer.WriteSpace();
-                writer.Write(node.TimeTravel.Value.Value);
+                writer.Write(node.TimeTravel.Value);
             }
 
-            if (!node.Hint.IsEmpty)
+            if (node.Hint != null)
             {
                 writer.WriteSpace();
-                writer.Write(node.Hint.Value.Value);
+                writer.Write(node.Hint.Value);
             }
         }
 

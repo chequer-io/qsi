@@ -34,7 +34,7 @@ namespace Qsi.Hana
 
         public override IEnumerable<QsiAnalyzerBase> CreateAnalyzers(QsiEngine engine)
         {
-            yield return new QsiActionAnalyzer(engine);
+            yield return new HanaActionAnalyzer(engine);
             yield return new HanaTableAnalyzer(engine);
         }
 
