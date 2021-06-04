@@ -461,8 +461,8 @@ namespace Qsi.Extensions
             return new(
                 node.Parent,
                 node.Sources,
-                node.OrderExpression,
-                node.LimitExpression,
+                node.Order,
+                node.Limit,
                 ignoreUserData ? null : node.UserData);
         }
 

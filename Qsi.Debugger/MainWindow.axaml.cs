@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -21,6 +22,7 @@ using Qsi.Debugger.Models;
 using Qsi.Debugger.Utilities;
 using Qsi.Debugger.Vendor;
 using Qsi.Debugger.Vendor.Cql;
+using Qsi.Debugger.Vendor.Hana;
 using Qsi.Debugger.Vendor.JSql;
 using Qsi.Debugger.Vendor.MySql;
 using Qsi.Debugger.Vendor.Oracle;
@@ -28,6 +30,7 @@ using Qsi.Debugger.Vendor.PhoenixSql;
 using Qsi.Debugger.Vendor.PostgreSql;
 using Qsi.Debugger.Vendor.PrimarSql;
 using Qsi.Debugger.Vendor.SqlServer;
+using Qsi.Hana.Tree;
 using Qsi.SqlServer.Common;
 using Qsi.Tree;
 
@@ -71,7 +74,8 @@ namespace Qsi.Debugger
                 ["SQL Server 2019"] = new(() => new SqlServerDebugger(TransactSqlVersion.Version150)),
                 ["Phoenix 5.0.0"] = new(() => new PhoenixSqlDebugger()),
                 ["CassandraQL 3"] = new(() => new CqlDebugger()),
-                ["PrimarSql"] = new(() => new PrimarSqlDebugger())
+                ["PrimarSql"] = new(() => new PrimarSqlDebugger()),
+                ["SAP HANA"] = new(() => new HanaDebugger())
             };
 
             _cbLanguages = this.Find<ComboBox>("cbLanguages");
@@ -272,19 +276,21 @@ namespace Qsi.Debugger
 
             var nodeItemChild = new List<QsiTreeItem>();
 
-            IEnumerable<PropertyInfo> properties = nodeType.GetInterfaces()
+            Dictionary<string, PropertyInfo> properties = nodeType.GetInterfaces()
                 .Where(t => t != typeof(IQsiTreeNode) && typeof(IQsiTreeNode).IsAssignableFrom(t))
-                .SelectMany(t => t.GetProperties());
+                .SelectMany(t => t.GetProperties())
+                .ToDictionary(pi => pi.Name);
 
             if (nodeType.Assembly != _qsiAssembly)
             {
                 IEnumerable<PropertyInfo> customProperties = nodeType.GetProperties()
-                    .Where(pi => IsCustomProperty(nodeType, pi));
+                    .Where(pi => !properties.ContainsKey(pi.Name) && IsCustomProperty(nodeType, pi));
 
-                properties = properties.Concat(customProperties);
+                foreach (var customProperty in customProperties)
+                    properties[customProperty.Name] = customProperty;
             }
 
-            foreach (var property in properties)
+            foreach (var property in properties.Values)
             {
                 var value = property.GetValue(node);
 
@@ -309,7 +315,30 @@ namespace Qsi.Debugger
 
                 switch (value)
                 {
+                    case IDictionary dictionary:
+                    {
+                        var childItems = new List<QsiTreeItem>();
+
+                        foreach (DictionaryEntry entry in dictionary)
+                        {
+                            childItems.Add(new QsiPropertyItem
+                            {
+                                Header = entry.Key.ToString(),
+                                Value = entry.Value?.ToString() ?? "<null>"
+                            });
+                        }
+
+                        item = new QsiChildElementItem
+                        {
+                            Header = "Dictionary",
+                            Items = childItems.ToArray()
+                        };
+
+                        break;
+                    }
+
                     case IQsiTreeNode childNode:
+                    {
                         var childItem = BuildQsiTreeImpl(childNode);
 
                         if (hideProperty)
@@ -325,8 +354,10 @@ namespace Qsi.Debugger
                         };
 
                         break;
+                    }
 
                     case IEnumerable<IQsiTreeNode> childNodes:
+                    {
                         QsiTreeItem[] childItems = childNodes.Select(BuildQsiTreeImpl).ToArray();
 
                         if (hideProperty)
@@ -342,6 +373,7 @@ namespace Qsi.Debugger
                         };
 
                         break;
+                    }
 
                     default:
                         item = new QsiPropertyItem
@@ -363,17 +395,17 @@ namespace Qsi.Debugger
 
         private bool IsCustomProperty(Type type, PropertyInfo property)
         {
-            if (type != property.DeclaringType)
+            if (type != property.DeclaringType && !property.DeclaringType!.IsAbstract)
+            {
                 return false;
+            }
 
             var method = property.GetMethod;
 
             while (method != null)
             {
                 if (method.DeclaringType!.Assembly == _qsiAssembly)
-                {
                     return false;
-                }
 
                 var baseMethod = method.GetBaseDefinition();
 

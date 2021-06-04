@@ -1,5 +1,6 @@
 ﻿using Antlr4.Runtime;
 using Qsi.Data;
+using Qsi.Shared;
 using Qsi.Shared.Extensions;
 using static Qsi.MySql.Internal.MySqlParserInternal;
 

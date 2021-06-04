@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+    </PropertyGroup>
+
+    <PropertyGroup Label="Nuspec">
+        <Title>Query Structure Interface of SAP HANA SQL</Title>
+        <Description>$(Title)</Description>
+        <PackageTags>$(PackageTags);hana;sap;hdb;antlr4</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Qsi\Qsi.csproj" />
+    </ItemGroup>
+
+    <Import Project="..\Qsi.Shared\Qsi.Shared.projitems" Label="Shared" />
+
+</Project>

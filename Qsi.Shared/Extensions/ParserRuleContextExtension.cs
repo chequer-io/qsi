@@ -15,6 +15,40 @@ namespace Qsi.Shared.Extensions
             return context.Start.InputStream.GetText(interval);
         }
 
+        public static bool TokenEndsWith(this ParserRuleContext context, params int[] types)
+        {
+            if (context.children.Count < types.Length)
+                return false;
+
+            for (int i = 0; i < types.Length; i++)
+            {
+                var child = context.children[^(types.Length - i)];
+
+                if (child is not ITerminalNode terminalNode || terminalNode.Symbol.Type != types[i])
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public static bool TokenStartsWith(this ParserRuleContext context, params int[] types)
+        {
+            if (context.children.Count < types.Length)
+                return false;
+
+            for (int i = 0; i < types.Length; i++)
+            {
+                if (context.children[i] is not ITerminalNode terminalNode || terminalNode.Symbol.Type != types[i])
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         public static bool HasToken(this ParserRuleContext context, int type)
         {
             return context.children
@@ -54,6 +88,12 @@ namespace Qsi.Shared.Extensions
         {
             index = GetTokenIndex(context, type);
             return index >= 0;
+        }
+
+        public static bool TryGetRuleContext<T>(this ParserRuleContext context, out T result) where T : ParserRuleContext
+        {
+            result = context.GetRuleContext<T>(0);
+            return result != null;
         }
     }
 }

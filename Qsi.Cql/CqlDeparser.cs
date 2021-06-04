@@ -13,7 +13,10 @@ namespace Qsi.Cql
             var range = CqlTree.Span[node];
 
             if (Equals(range, default(Range)))
+            {
                 base.DeparseTreeNode(writer, node, script);
+                return;
+            }
 
             writer.Write(script.Script[range]);
         }
