@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Text.Json;
 using Qsi.Data;
 using Qsi.Hana.Tree;
@@ -36,6 +36,10 @@ namespace Qsi.Hana
 
                     case HanaTableApplicationTimeBehaviorNode applicationTime:
                         DeparseHanaTableApplicationTimeBehaviorNode(writer, applicationTime, script);
+                        break;
+
+                    case HanaViewDefinitionNode viewDefinition:
+                        DeparseHanaViewDefinitionNode(writer, viewDefinition, script);
                         break;
 
                     default:
@@ -126,6 +130,64 @@ namespace Qsi.Hana
         {
             writer.Write("FOR APPLICATION_TIME AS OF ");
             writer.Write(IdentifierUtility.Escape(node.Time, EscapeQuotes.Single, EscapeBehavior.TwoTime));
+        }
+
+        private void DeparseHanaViewDefinitionNode(ScriptWriter writer, HanaViewDefinitionNode node, QsiScript script)
+        {
+            writer.Write("CREATE VIEW ").Write(node.Identifier);
+
+            if (!string.IsNullOrEmpty(node.Comment))
+            {
+                writer.Write(" COMMENT ");
+                writer.Write(IdentifierUtility.Escape(node.Comment, EscapeQuotes.Single, EscapeBehavior.TwoTime));
+            }
+
+            if (!node.Columns.IsEmpty)
+            {
+                writer.WriteSpace();
+                writer.Write('(');
+                DeparseTreeNode(writer, node.Columns.Value, script);
+                writer.Write(')');
+            }
+
+            if (!node.Parameters.IsEmpty)
+                writer.WriteSpace().Write(node.Parameters.Value.Text);
+
+            writer.Write(" AS ");
+            DeparseTreeNode(writer, node.Source.Value, script);
+
+            if (!node.Associations.IsEmpty)
+                writer.WriteSpace().Write(node.Associations.Value.Text);
+
+            if (!node.Masks.IsEmpty)
+                writer.WriteSpace().Write(node.Masks.Value.Text);
+
+            if (!node.ExpressionMacros.IsEmpty)
+                writer.WriteSpace().Write(node.ExpressionMacros.Value.Text);
+
+            if (!node.Annotation.IsEmpty)
+                writer.WriteSpace().Write(node.Annotation.Value.Text);
+
+            if (node.StructuredPrivilegeCheck)
+                writer.WriteSpace().Write("WITH STRUCTURED PRIVILEGE CHECK");
+
+            if (!node.Cache.IsEmpty)
+                writer.WriteSpace().Write(node.Cache.Value.Text);
+
+            if (!node.Force)
+                writer.WriteSpace().Write("FORCE");
+
+            if (!node.CheckOption)
+                writer.WriteSpace().Write("WITH CHECK OPTION");
+
+            if (!node.DdlOnly)
+                writer.WriteSpace().Write("WITH DDL ONLY");
+
+            if (!node.ReadOnly)
+                writer.WriteSpace().Write("WITH READ ONLY");
+
+            if (!node.Anonymization.IsEmpty)
+                writer.WriteSpace().Write(node.Anonymization.Value.Text);
         }
 
         protected override void DeparseExpressionNode(ScriptWriter writer, IQsiExpressionNode node, QsiScript script)
