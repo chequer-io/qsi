@@ -515,6 +515,7 @@ namespace Qsi.Hana.Tree.Visitors
 
             var node = new HanaJsonTableNode
             {
+                Path = IdentifierUtility.Unescape(data.jsonPathSpecification().path.Text),
                 Columns = VisitJsonTableColumnsClause(context.jsonTableColumnsClause())
             };
 

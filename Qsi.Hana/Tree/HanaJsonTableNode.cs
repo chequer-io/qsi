@@ -13,6 +13,8 @@ namespace Qsi.Hana.Tree
 
         public QsiQualifiedIdentifier ArgumentColumnReference { get; set; }
 
+        public string Path { get; set; }
+
         public IHanaJsonColumnDefinitionNode[] Columns { get; set; }
 
         public override IEnumerable<IQsiTreeNode> Children => Columns ?? Enumerable.Empty<IQsiTreeNode>();
