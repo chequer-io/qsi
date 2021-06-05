@@ -10,6 +10,8 @@ namespace Qsi.PostgreSql.Tree
 
         protected PgExpressionVisitor ExpressionVisitor => _set.ExpressionVisitor;
 
+        protected PgDefinitionVisitor DefinitionVisitor => _set.DefinitionVisitor;
+
         protected PgIdentifierVisitor IdentifierVisitor => _set.IdentifierVisitor;
 
         private readonly IPgVisitorSet _set;

@@ -13,6 +13,11 @@ namespace Qsi.Tree
         IQsiTableDirectivesNode Directives { get; }
 
         /// <summary>
+        /// Get the definition conflict behavior
+        /// </summary>
+        QsiDefinitionConflictBehavior ConflictBehavior { get; }
+
+        /// <summary>
         /// Get declared view name.
         /// </summary>
         QsiQualifiedIdentifier Identifier { get; }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using Qsi.PostgreSql.Internal.PG10.Types;
@@ -12,10 +13,9 @@ namespace Qsi.PostgreSql.Internal.Serialization.Converters
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            if (objectType.IsSZArray)
-                return ReadNodeArray(reader, objectType, serializer);
-
-            return ReadNode(reader, serializer);
+            return objectType.IsSZArray ? 
+                ReadNodeArray(reader, objectType, serializer) : 
+                ReadNode(reader, serializer);
         }
 
         private object ReadNodeArray(JsonReader reader, Type objectType, JsonSerializer serializer)
@@ -84,7 +84,8 @@ namespace Qsi.PostgreSql.Internal.Serialization.Converters
             return node;
         }
 
-        private void VerifyNext(JsonReader reader, JsonToken current)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void VerifyNext(JsonReader reader, JsonToken current)
         {
             if (reader.TokenType != current)
                 throw new SerializationException($"'{current}' token expected.");
@@ -92,7 +93,8 @@ namespace Qsi.PostgreSql.Internal.Serialization.Converters
             reader.Read();
         }
 
-        private void VerifyNextExpected(JsonReader reader, JsonToken expected)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void VerifyNextExpected(JsonReader reader, JsonToken expected)
         {
             if (!reader.Read() || reader.TokenType != expected)
                 throw new SerializationException($"'{expected}' token expected.");
@@ -113,11 +115,8 @@ namespace Qsi.PostgreSql.Internal.Serialization.Converters
 
             var result =
                 typeof(IPgNode).IsAssignableFrom(objectType) ||
-                objectType.IsSZArray && typeof(IPgNode).IsAssignableFrom(objectType.GetElementType());
-
-            if (objectType == typeof(IPg10Node[][]))
-            {
-            }
+                objectType!.IsSZArray && 
+                typeof(IPgNode).IsAssignableFrom(objectType.GetElementType());
 
             return result;
         }

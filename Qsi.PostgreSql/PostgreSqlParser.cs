@@ -5,7 +5,9 @@ using Qsi.Parsing;
 using Qsi.PostgreSql.Internal;
 using Qsi.PostgreSql.Internal.PG10;
 using Qsi.PostgreSql.Internal.PG10.Types;
+using Qsi.PostgreSql.Tree;
 using Qsi.Tree;
+using Qsi.Utilities;
 
 namespace Qsi.PostgreSql
 {
@@ -20,6 +22,15 @@ namespace Qsi.PostgreSql
             var pgTree = (IPg10Node)_pgParser.Parse(script.Script) ?? throw new QsiException(QsiError.NotSupportedScript, script.ScriptType);
             var pgVisitorSet = _pgParser.CreateVisitorSet();
 
+            switch (pgTree)
+            {
+                case RawStmt rawStmt:
+                    return ParseRawStmt(pgVisitorSet, rawStmt);
+
+                default:
+                    throw TreeHelper.NotSupportedTree(pgTree);
+            }
+
             switch (script.ScriptType)
             {
                 case QsiScriptType.Set:
@@ -28,6 +39,26 @@ namespace Qsi.PostgreSql
                 default:
                     return pgVisitorSet.TableVisitor.Visit(pgTree);
             }
+        }
+
+        private IQsiTreeNode ParseRawStmt(IPgVisitorSet visitorSet, RawStmt rawStmt)
+        {
+            switch (rawStmt.stmt[0])
+            {
+                case VariableSetStmt variableSetStmt:
+                    return visitorSet.ActionVisitor.VisitVariableSetStmt(variableSetStmt);
+
+                case SelectStmt selectStmt:
+                    return visitorSet.TableVisitor.VisitSelectStmt(selectStmt);
+
+                case ViewStmt viewStmt:
+                    return visitorSet.DefinitionVisitor.VisitViewStmt(viewStmt);
+
+                case CreateTableAsStmt createTableAsStmt:
+                    return visitorSet.DefinitionVisitor.VisitCreateTableAsStmt(createTableAsStmt);
+            }
+
+            throw TreeHelper.NotSupportedTree(rawStmt.stmt[0]);
         }
 
         void IDisposable.Dispose()

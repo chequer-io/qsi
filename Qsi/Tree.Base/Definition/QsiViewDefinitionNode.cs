@@ -8,6 +8,8 @@ namespace Qsi.Tree.Definition
     {
         public QsiTreeNodeProperty<QsiTableDirectivesNode> Directives { get; }
 
+        public QsiDefinitionConflictBehavior ConflictBehavior { get; set; }
+
         public QsiQualifiedIdentifier Identifier { get; set; }
 
         public QsiTreeNodeProperty<QsiColumnsDeclarationNode> Columns { get; }

@@ -42,6 +42,8 @@ namespace Qsi.PostgreSql.Internal
 
         protected abstract PgExpressionVisitor CreateExpressionVisitor(IPgVisitorSet set);
 
+        protected abstract PgDefinitionVisitor CreateDefinitionVisitor(IPgVisitorSet set);
+
         protected abstract PgIdentifierVisitor CreateIdentifierVisitor(IPgVisitorSet set);
 
         protected string Evaluate(string expression)
@@ -67,6 +69,7 @@ namespace Qsi.PostgreSql.Internal
             set.ActionVisitor = CreateActionVisitor(set);
             set.TableVisitor = CreateTableVisitor(set);
             set.ExpressionVisitor = CreateExpressionVisitor(set);
+            set.DefinitionVisitor = CreateDefinitionVisitor(set);
             set.IdentifierVisitor = CreateIdentifierVisitor(set);
 
             return set;
@@ -85,6 +88,8 @@ namespace Qsi.PostgreSql.Internal
             public PgTableVisitor TableVisitor { get; set; }
 
             public PgExpressionVisitor ExpressionVisitor { get; set; }
+
+            public PgDefinitionVisitor DefinitionVisitor { get; set; }
 
             public PgIdentifierVisitor IdentifierVisitor { get; set; }
         }
