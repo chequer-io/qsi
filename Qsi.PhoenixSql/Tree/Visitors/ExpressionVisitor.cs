@@ -501,7 +501,7 @@ namespace Qsi.PhoenixSql.Tree
             return TreeHelper.Create<QsiBindParameterExpressionNode>(n =>
             {
                 n.Type = QsiParameterType.Name;
-                n.Token = $":{node.Index + 1}";
+                n.Prefix = ":";
                 n.Name = node.Name;
 
                 PTree.RawNode[n] = node;

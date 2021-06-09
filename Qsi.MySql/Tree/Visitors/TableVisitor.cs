@@ -867,33 +867,6 @@ namespace Qsi.MySql.Tree
             return node;
         }
 
-        public static QsiTableNode VisitCreateView(CreateViewContext context)
-        {
-            if (!context.TryGetTokenIndex(VIEW_SYMBOL, out var index))
-                throw new QsiException(QsiError.Syntax);
-
-            var viewName = (ViewNameContext)context.children[index + 1];
-            var viewTail = (ViewTailContext)context.children[index + 2];
-            var columnInternalRefList = viewTail.columnInternalRefList();
-
-            var node = new QsiDerivedTableNode();
-
-            node.Alias.SetValue(new QsiAliasNode
-            {
-                Name = IdentifierVisitor.VisitViewName(viewName)[^1]
-            });
-
-            node.Columns.SetValue(columnInternalRefList == null ?
-                TreeHelper.CreateAllColumnsDeclaration() :
-                CreateSequentialColumns(columnInternalRefList));
-
-            node.Source.SetValue(VisitViewSelect(viewTail.viewSelect()));
-
-            MySqlTree.PutContextSpan(node, context);
-
-            return node;
-        }
-
         public static QsiTableNode VisitViewSelect(ViewSelectContext context)
         {
             return VisitQueryExpressionOrParens(context.queryExpressionOrParens());

@@ -11,7 +11,9 @@ namespace Qsi.Tree.Immutable
 
         public QsiParameterType Type { get; }
 
-        public string Token { get; }
+        public string Prefix { get; }
+
+        public bool NoSuffix { get; }
 
         public string Name { get; }
 
@@ -24,14 +26,16 @@ namespace Qsi.Tree.Immutable
         public ImmutableBindParameterExpressionNode(
             IQsiTreeNode parent,
             QsiParameterType type,
-            string token,
+            string prefix,
+            bool noSuffix,
             string name,
             int? index,
             IUserDataHolder userData)
         {
             Parent = parent;
             Type = type;
-            Token = token;
+            Prefix = prefix;
+            NoSuffix = noSuffix;
             Name = name;
             Index = index;
             UserData = userData;

@@ -72,7 +72,8 @@ $Tasks =
 [Task]::new("Qsi.MongoDB", $false),
 [Task]::new("Qsi.PhoenixSql", $false),
 [Task]::new("Qsi.Cql", $true),
-[Task]::new("Qsi.PrimarSql", $false)
+[Task]::new("Qsi.PrimarSql", $false),
+[Task]::new("Qsi.Hana", $true)
 
 Function DotNet-Pack {
     Param (
@@ -126,7 +127,8 @@ if ($_Mode -ne [PublishMode]::Archive) {
         if ($_Mode -eq [PublishMode]::Publish) {
             NuGet-Push $PSItem "github"
             NuGet-Push $PSItem "nuget.org"
-        } else {
+        }
+        else {
             NuGet-Push $PSItem "local"
         }
     }

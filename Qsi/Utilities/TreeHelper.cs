@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Antlr4.Runtime;
 using Qsi.Data;
 using Qsi.Tree;
 
@@ -10,11 +11,43 @@ namespace Qsi.Utilities
     public static class TreeHelper
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static QsiExpressionFragmentNode Fragment(string value)
+        {
+            return new() { Text = value };
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TNode Create<TNode>(Action<TNode> action) where TNode : QsiTreeNode, new()
         {
             var node = new TNode();
             action(node);
             return node;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static QsiDerivedTableNode CreateAliasedTableNode(QsiTableNode node, QsiIdentifier alias)
+        {
+            return CreateAliasedTableNode(node, new QsiAliasNode { Name = alias });
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static QsiDerivedTableNode CreateAliasedTableNode(QsiTableNode node, QsiAliasNode alias)
+        {
+            return new()
+            {
+                Source =
+                {
+                    Value = node
+                },
+                Alias =
+                {
+                    Value = alias
+                },
+                Columns =
+                {
+                    Value = CreateAllColumnsDeclaration()
+                }
+            };
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -152,10 +185,12 @@ namespace Qsi.Utilities
         }
         #endregion
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static QsiException NotSupportedTree(object tree)
         {
-            return new(QsiError.NotSupportedTree, tree.GetType().FullName);
+            var type = tree.GetType();
+            var treeName = type.IsEnum ? $"{type.Name}: {tree}" : type.FullName;
+
+            return new QsiException(QsiError.NotSupportedTree, treeName);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -165,7 +200,7 @@ namespace Qsi.Utilities
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static IEnumerable<IQsiTreeNode> YieldChildren(params IQsiTreeNodeProperty<QsiTreeNode>[] properties)
+        public static IEnumerable<IQsiTreeNode> YieldChildren(params IQsiTreeNodeProperty<QsiTreeNode>[] properties)
         {
             return properties
                 .Where(p => !p.IsEmpty)
@@ -173,7 +208,7 @@ namespace Qsi.Utilities
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static IEnumerable<IQsiTreeNode> YieldChildren(params IQsiTreeNode[] ndoes)
+        public static IEnumerable<IQsiTreeNode> YieldChildren(params IQsiTreeNode[] ndoes)
         {
             return ndoes
                 .Where(n => n != null)
@@ -181,7 +216,7 @@ namespace Qsi.Utilities
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static IEnumerable<IQsiTreeNode> YieldChildren(IEnumerable<IQsiTreeNode> source, IQsiTreeNodeProperty<QsiTreeNode> property)
+        public static IEnumerable<IQsiTreeNode> YieldChildren(IEnumerable<IQsiTreeNode> source, IQsiTreeNodeProperty<QsiTreeNode> property)
         {
             if (property.IsEmpty)
                 return source;
@@ -190,12 +225,18 @@ namespace Qsi.Utilities
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static IEnumerable<IQsiTreeNode> YieldChildren(IQsiTreeNodeProperty<QsiTreeNode> property, IEnumerable<IQsiTreeNode> source)
+        public static IEnumerable<IQsiTreeNode> YieldChildren(IQsiTreeNodeProperty<QsiTreeNode> property, IEnumerable<IQsiTreeNode> source)
         {
             if (property.IsEmpty)
                 return source;
 
             return source.Prepend(property.Value);
+        }
+
+        public static void VerifyTokenType(IToken token, int type)
+        {
+            if (token.Type != type)
+                throw new ArgumentException(null, nameof(token));
         }
     }
 }

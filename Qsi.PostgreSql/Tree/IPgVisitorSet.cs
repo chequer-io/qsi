@@ -10,6 +10,8 @@ namespace Qsi.PostgreSql.Tree
 
         PgExpressionVisitor ExpressionVisitor { get; }
 
+        PgDefinitionVisitor DefinitionVisitor { get; }
+
         PgIdentifierVisitor IdentifierVisitor { get; }
     }
 }

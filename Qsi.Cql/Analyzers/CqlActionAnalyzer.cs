@@ -68,7 +68,7 @@ namespace Qsi.Cql.Analyzers
                                     {
                                         case IQsiLiteralExpressionNode literalExpression:
                                         {
-                                            var index = (int)Convert.ChangeType(literalExpression.Value, TypeCode.Int32);
+                                            var index = (int)Convert.ChangeType(literalExpression.Value, TypeCode.Int32)!;
                                             selectorList.Add(new ElementSelector(index));
                                             break;
                                         }
@@ -78,8 +78,8 @@ namespace Qsi.Cql.Analyzers
                                             var startNode = rangeExpression.Start.Value;
                                             var endNode = rangeExpression.End.Value;
 
-                                            if ((startNode == null || startNode is IQsiLiteralExpressionNode) &&
-                                                (endNode == null || endNode is IQsiLiteralExpressionNode))
+                                            if (startNode is null or IQsiLiteralExpressionNode &&
+                                                endNode is null or IQsiLiteralExpressionNode)
                                             {
                                                 var start = startNode == null ?
                                                     Index.Start :
@@ -311,7 +311,8 @@ namespace Qsi.Cql.Analyzers
             var sql = builder.ToString();
             var script = new QsiScript(sql, QsiScriptType.Select);
 
-            var table = await context.Engine.RepositoryProvider.GetDataTable(script, context.Parameters);
+            // TODO: Bind parameter in selector
+            var table = await context.Engine.RepositoryProvider.GetDataTable(script, null);
             QsiDataValue[] values = table.Rows[0].Items;
 
             for (int i = 0; i < values.Length; i++)

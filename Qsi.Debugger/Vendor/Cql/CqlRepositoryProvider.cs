@@ -12,11 +12,6 @@ namespace Qsi.Debugger.Vendor.Cql
             return identifier;
         }
 
-        protected override Task<QsiDataTable> GetDataTable(QsiScript script, QsiParameter[] parameters)
-        {
-            throw new System.NotImplementedException();
-        }
-
         protected override QsiTableStructure LookupTable(QsiQualifiedIdentifier identifier)
         {
             var name = identifier[^1];

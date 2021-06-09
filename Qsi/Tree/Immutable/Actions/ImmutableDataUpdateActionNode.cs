@@ -13,6 +13,8 @@ namespace Qsi.Tree.Immutable
 
         public IQsiTableNode Target { get; }
 
+        public IQsiRowValueExpressionNode Value { get; }
+
         public IQsiSetColumnExpressionNode[] SetValues { get; }
 
         public IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Target).Concat(SetValues);
@@ -20,11 +22,13 @@ namespace Qsi.Tree.Immutable
         public ImmutableDataUpdateActionNode(
             IQsiTreeNode parent,
             IQsiTableNode target,
+            IQsiRowValueExpressionNode value,
             IQsiSetColumnExpressionNode[] setValues,
             IUserDataHolder userData)
         {
             Parent = parent;
             Target = target;
+            Value = value;
             SetValues = setValues;
             UserData = userData;
         }

@@ -45,7 +45,7 @@ namespace Qsi.Utilities
 
         private static string Unescape(in ReadOnlySpan<char> value, string open, string close)
         {
-            var buffer = new char[value.Length];
+            Span<char> buffer = stackalloc char[value.Length];
             int index = 0;
 
             for (int i = 0; i < buffer.Length; i++)
@@ -64,9 +64,9 @@ namespace Qsi.Utilities
                     i++;
                     c = _escapeChars[escapeIndex];
                 }
-                else if (value.Slice(i).StartsWith(close))
+                else if (value[i..].StartsWith(close))
                 {
-                    if (end || !value.Slice(i + close.Length).StartsWith(close))
+                    if (end || !value[(i + close.Length)..].StartsWith(close))
                     {
 #if DEBUG
                         throw new Exception($"Invalid identifier format: {open}{value.ToString()}{close}");
@@ -81,7 +81,42 @@ namespace Qsi.Utilities
                 buffer[index++] = c;
             }
 
-            return new string(buffer, 0, index);
+            return new string(buffer[..index]);
+        }
+
+        public static string Escape(in ReadOnlySpan<char> value, EscapeQuotes quotes, EscapeBehavior behavior)
+        {
+            var buffer = new StringBuilder(value.Length * 2);
+            var open = _openParen[(int)quotes];
+            var close = _closeParen[(int)quotes];
+
+            buffer.Append(open);
+
+            for (int i = 0; i < value.Length; i++)
+            {
+                var c = value[i];
+                var escapeIndex = _escapeChars.IndexOf(c);
+
+                if (escapeIndex >= 5)
+                {
+                    buffer.Append('\\');
+                    buffer.Append(_escapedChars[escapeIndex]);
+                }
+                else if (close[0] == c && close.Length == 1 || value[i..].StartsWith(close))
+                {
+                    buffer.Append(behavior == EscapeBehavior.Backslash ? '\\' : c);
+                    buffer.Append(c);
+                    i += close.Length - 1;
+                }
+                else
+                {
+                    buffer.Append(c);
+                }
+            }
+
+            buffer.Append(close);
+
+            return buffer.ToString();
         }
 
         public static QsiIdentifier[] Parse(string value)
@@ -118,7 +153,7 @@ namespace Qsi.Utilities
 
                     case var _ when closeParen != null &&
                                     (closeParen.Length == 1 && closeParen[0] == c ||
-                                     span.Slice(i).StartsWith(closeParen)):
+                                     span[i..].StartsWith(closeParen)):
                         buffer.Append(c);
                         i += closeParen.Length - 1;
                         closeParen = null;
@@ -139,7 +174,7 @@ namespace Qsi.Utilities
                             {
                                 var paren = _openParen[j];
 
-                                if (paren.Length == 1 && paren[0] == c || span.Slice(i).StartsWith(paren))
+                                if (paren.Length == 1 && paren[0] == c || span[i..].StartsWith(paren))
                                 {
                                     index = j;
                                     break;
@@ -162,5 +197,20 @@ namespace Qsi.Utilities
 
             return result.ToArray();
         }
+    }
+
+    public enum EscapeQuotes
+    {
+        Single = 0,
+        Double = 1,
+        Back = 2,
+        SquareBracket = 3,
+        DoubleDollar = 4
+    }
+
+    public enum EscapeBehavior
+    {
+        Backslash,
+        TwoTime
     }
 }

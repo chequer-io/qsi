@@ -149,6 +149,16 @@ namespace Qsi.Extensions
         }
         #endregion
 
+        #region IQsi
+        public static bool IsAllColumnNode(this IQsiColumnsDeclarationNode node)
+        {
+            if (node == null || node.Columns.Length != 1)
+                return false;
+
+            return node.Columns[0] is IQsiAllColumnNode { Path: null };
+        }
+        #endregion
+
         #region ToImmutable
         public static ImmutableDataConflictActionNode ToImmutable(this IQsiDataConflictActionNode node, bool ignoreUserData = false)
         {
@@ -190,6 +200,7 @@ namespace Qsi.Extensions
             return new(
                 node.Parent,
                 node.Target,
+                node.Value,
                 node.SetValues,
                 ignoreUserData ? null : node.UserData);
         }
@@ -450,8 +461,8 @@ namespace Qsi.Extensions
             return new(
                 node.Parent,
                 node.Sources,
-                node.OrderExpression,
-                node.LimitExpression,
+                node.Order,
+                node.Limit,
                 ignoreUserData ? null : node.UserData);
         }
 
@@ -524,7 +535,8 @@ namespace Qsi.Extensions
             return new(
                 node.Parent,
                 node.Type,
-                node.Token,
+                node.Prefix,
+                node.NoSuffix,
                 node.Name,
                 node.Index,
                 ignoreUserData ? null : node.UserData);

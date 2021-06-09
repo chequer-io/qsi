@@ -22,10 +22,13 @@ namespace Qsi.SqlServer
 
         ActionVisitor IVisitorContext.ActionVisitor => _actionVisitor;
 
+        DefinitionVisitor IVisitorContext.DefinitionVisitor => _definitionVisitor;
+
         private readonly TableVisitor _tableVisitor;
         private readonly ExpressionVisitor _expressionVisitor;
         private readonly IdentifierVisitor _identifierVisitor;
         private readonly ActionVisitor _actionVisitor;
+        private readonly DefinitionVisitor _definitionVisitor;
         #endregion
 
         private readonly TSqlParserInternal _parser;
@@ -37,6 +40,7 @@ namespace Qsi.SqlServer
             _expressionVisitor = CreateExpressionVisitor();
             _identifierVisitor = CreateIdentifierVisitor();
             _actionVisitor = CreateActionVisitor();
+            _definitionVisitor = CreateDefinitionVisitor();
         }
 
         private TableVisitor CreateTableVisitor()
@@ -55,6 +59,11 @@ namespace Qsi.SqlServer
         }
 
         private ActionVisitor CreateActionVisitor()
+        {
+            return new(this);
+        }
+
+        private DefinitionVisitor CreateDefinitionVisitor()
         {
             return new(this);
         }
@@ -89,6 +98,9 @@ namespace Qsi.SqlServer
 
                     case AlterUserStatement alterUserStatement:
                         return _actionVisitor.VisitAlterUser(alterUserStatement);
+
+                    case ViewStatementBody viewStatementBody:
+                        return _definitionVisitor.VisitViewStatementBody(viewStatementBody);
 
                     default:
                         return _tableVisitor.Visit(statement);

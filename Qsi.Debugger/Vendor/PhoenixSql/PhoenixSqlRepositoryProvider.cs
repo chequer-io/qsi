@@ -6,11 +6,6 @@ namespace Qsi.Debugger.Vendor.PhoenixSql
 {
     internal class PhoenixSqlRepositoryProvider : VendorRepositoryProvider
     {
-        protected override Task<QsiDataTable> GetDataTable(QsiScript script, QsiParameter[] parameters)
-        {
-            throw new System.NotImplementedException();
-        }
-
         protected override QsiTableStructure LookupTable(QsiQualifiedIdentifier identifier)
         {
             var tableName = IdentifierUtility.Unescape(identifier[^1].Value);

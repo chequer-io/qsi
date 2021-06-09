@@ -215,7 +215,7 @@ namespace Qsi.Parsing.Common
 
         protected virtual void DeparseCompositeTableNode(ScriptWriter writer, IQsiCompositeTableNode node, QsiScript script)
         {
-            bool parenthesis = node.OrderExpression != null || node.LimitExpression != null;
+            bool parenthesis = node.Order != null || node.Limit != null;
 
             if (parenthesis)
                 writer.Write('(');
@@ -225,16 +225,16 @@ namespace Qsi.Parsing.Common
             if (parenthesis)
                 writer.Write(')');
 
-            if (node.OrderExpression != null)
+            if (node.Order != null)
             {
                 writer.WriteSpace();
-                DeparseTreeNode(writer, node.OrderExpression, script);
+                DeparseTreeNode(writer, node.Order, script);
             }
 
-            if (node.LimitExpression != null)
+            if (node.Limit != null)
             {
                 writer.WriteSpace();
-                DeparseTreeNode(writer, node.LimitExpression, script);
+                DeparseTreeNode(writer, node.Limit, script);
             }
         }
 
@@ -329,6 +329,10 @@ namespace Qsi.Parsing.Common
         {
             switch (node)
             {
+                case QsiExpressionFragmentNode fragmentNode:
+                    writer.Write(fragmentNode.Text);
+                    break;
+
                 case IQsiLiteralExpressionNode literalExpressionNode:
                     DeparseLiteralExpressionNode(writer, literalExpressionNode, script);
                     break;
@@ -411,7 +415,10 @@ namespace Qsi.Parsing.Common
 
         protected virtual void DeparseBindParameterExpressionNode(ScriptWriter writer, IQsiBindParameterExpressionNode node, QsiScript script)
         {
-            writer.Write(node.Token);
+            writer.Write(node.Prefix);
+
+            if (!node.NoSuffix)
+                writer.Write(node.Type == QsiParameterType.Index ? node.Index : node.Name);
         }
 
         protected virtual void DeparseLiteralExpressionNode(ScriptWriter writer, IQsiLiteralExpressionNode node, QsiScript script)

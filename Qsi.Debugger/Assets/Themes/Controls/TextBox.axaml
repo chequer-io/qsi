@@ -1,0 +1,15 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Design.PreviewWith>
+        <Border Padding="20" Width="120">
+            <TextBox Text="Test Value" />
+        </Border>
+    </Design.PreviewWith>
+
+    <Style Selector="TextBox">
+        <Setter Property="Background" Value="{DynamicResource Ink.90.Brush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="8" />
+        <Setter Property="FontSize" Value="12" />
+    </Style>
+</Styles>

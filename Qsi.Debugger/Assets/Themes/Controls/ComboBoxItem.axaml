@@ -1,0 +1,83 @@
+﻿<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Design.PreviewWith>
+        <StackPanel>
+            <ComboBoxItem Content="MySQL" IsSelected="True"/>
+            <ComboBoxItem Content="PostgreSql" />
+            <ComboBoxItem Content="SAP Hana" />
+        </StackPanel>
+    </Design.PreviewWith>
+
+    <Style Selector="ComboBoxItem">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid>
+                    <ContentPresenter
+                        x:Name="PART_ContentPresenter"
+                        Padding="9,8,27,8"
+                        HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                        VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        Content="{TemplateBinding Content}"
+                        ContentTemplate="{TemplateBinding ContentTemplate}" />
+
+                    <Path
+                        x:Name="checkMark"
+                        Width="15"
+                        Height="15"
+                        Margin="0,0,9,0"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Data="F1 M320,320z M0,0z M107.5,265.8C105.1,265.8,102.6,264.9,100.8,263L13.3,175.5C9.6,171.8 9.6,165.8 13.3,162.1 17,158.4 23,158.4 26.7,162.1L107.5,242.9 293.3,57C297,53.3 303,53.3 306.7,57 310.4,60.7 310.4,66.7 306.7,70.4L114.2,263C112.4,264.8,109.9,265.8,107.5,265.8z"
+                        Fill="{DynamicResource Ink.5.Brush}"
+                        Stretch="Uniform" />
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+
+    <Style Selector="ComboBoxItem TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource Ink.5.Brush}" />
+    </Style>
+
+    <Style Selector="ComboBoxItem:pointerover TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource Ink.1.Brush}" />
+    </Style>
+
+    <Style Selector="ComboBoxItem:selected TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource Ink.1.Brush}" />
+    </Style>
+
+	<Style Selector="ComboBoxItem /template/ Path#checkMark">
+		<Setter Property="IsVisible" Value="False" />
+	</Style>
+	
+    <Style Selector="ComboBoxItem:selected /template/ Path#checkMark">
+        <Setter Property="IsVisible" Value="True" />
+    </Style>
+
+    <Style Selector="ComboBoxItem:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Blue.80.Brush.40}" />
+    </Style>
+
+    <Style Selector="ComboBoxItem:selected /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Blue.80.Brush}" />
+    </Style>
+
+    <Style Selector="ComboBoxItem:selected:focus /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Blue.80.Brush}" />
+    </Style>
+
+    <Style Selector="ComboBoxItem:selected:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Blue.80.Brush}" />
+    </Style>
+
+    <Style Selector="ComboBoxItem:selected:focus:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Blue.80.Brush}" />
+    </Style>
+</Styles>

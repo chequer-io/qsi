@@ -16,6 +16,14 @@
         </AvaloniaResource>
 
         <AvaloniaResource Include="Assets\**" Exclude="Assets\Themes\**" />
+
+        <Compile Update="MainWindow.axaml.cs">
+          <DependentUpon>MainWindow.axaml</DependentUpon>
+        </Compile>
+
+        <Compile Update="App.axaml.cs">
+          <DependentUpon>App.axaml</DependentUpon>
+        </Compile>
     </ItemGroup>
 
     <ItemGroup>
@@ -27,6 +35,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Qsi.Cql\Qsi.Cql.csproj" />
+        <ProjectReference Include="..\Qsi.Hana\Qsi.Hana.csproj" />
         <ProjectReference Include="..\Qsi.MongoDB\Qsi.MongoDB.csproj" />
         <ProjectReference Include="..\Qsi.MySql\Qsi.MySql.csproj" />
         <ProjectReference Include="..\Qsi.Oracle\Qsi.Oracle.csproj" />
