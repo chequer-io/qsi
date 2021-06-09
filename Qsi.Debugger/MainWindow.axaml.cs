@@ -23,9 +23,7 @@ using Qsi.Debugger.Utilities;
 using Qsi.Debugger.Vendor;
 using Qsi.Debugger.Vendor.Cql;
 using Qsi.Debugger.Vendor.Hana;
-using Qsi.Debugger.Vendor.JSql;
 using Qsi.Debugger.Vendor.MySql;
-using Qsi.Debugger.Vendor.Oracle;
 using Qsi.Debugger.Vendor.PhoenixSql;
 using Qsi.Debugger.Vendor.PostgreSql;
 using Qsi.Debugger.Vendor.PrimarSql;
@@ -66,8 +64,6 @@ namespace Qsi.Debugger
                 ["MySQL 8.0.22"] = new(() => new MySqlDebugger(new Version(8, 0, 22))),
                 ["MySQL 8.0.22 (No Delimiter)"] = new(() => new MySqlDebugger(new Version(8, 0, 22), false)),
                 ["PostgreSQL"] = new(() => new PostgreSqlDebugger()),
-                ["JSqlParser"] = new(() => new JSqlDebugger()),
-                ["Oracle"] = new(() => new OracleDebugger()),
                 ["SQL Server 2000"] = new(() => new SqlServerDebugger(TransactSqlVersion.Version80)),
                 ["SQL Server 2012"] = new(() => new SqlServerDebugger(TransactSqlVersion.Version110)),
                 ["SQL Server 2017"] = new(() => new SqlServerDebugger(TransactSqlVersion.Version140)),
