@@ -274,10 +274,8 @@ sharingClause
 //
 queryBlock
 //    : withClause?
-    : SELECT 
-//    hint?
-     queryBehavior? selectList
-//      FROM tables+=tableSource (',' tables+=tableSource)*
+    : SELECT hint? queryBehavior? selectList FROM
+      tables+=tableSource (',' tables+=tableSource)*
 //      whereClause?
 //      hierarchicalQueryClause?
 //      groupByClause?
@@ -497,26 +495,26 @@ selectListItem
     | '*' (AS? alias=identifier)?                           #exprSelectListItem
     ;
 
-//tableSource
-//    : tableReference
+tableSource
+    : tableReference
 //    | joinClause
 //    | '(' joinClause ')'
 //    | inlineAnalyticView 
-//    ;
-//
-//tableReference
-//    : (
-//          (
-//              ( ONLY '(' queryTableExpression ')' | queryTableExpression ) 
+    ;
+
+tableReference
+    : (
+          (
+              ( ONLY '(' queryTableExpression ')' | queryTableExpression ) 
 //              flashbackQueryClause?
 //              (pivotClause | unpivotClause | rowPatternClause)?
-//          )
+          )
 //        | containersClause
 //        | shardsClause
-//      ) 
-//      tAlias=identifier?
-//    ;
-//
+      ) 
+      tAlias=identifier?
+    ;
+
 //joinClause
 //    : tableReference 
 //        (
@@ -559,8 +557,8 @@ selectListItem
 //    : ANALYTIC VIEW subAvClause (AS? inlineAvAlias)?
 //    ;
 //
-//queryTableExpression
-//    : queryName=fullObjectPath
+queryTableExpression
+    : queryName=fullObjectPath
 //    | identifier? 
 //        ( identifier (partitionExtensionClause | '@' dblink)?
 //          analyticView=identifier hierarchiesClause?
@@ -568,7 +566,7 @@ selectListItem
 //        ) sampleClause?
 //    | LATERAL '(' subquery subqueryRestrictionClause? ')'
 //    | tableCollectionExpression
-//    ;
+    ;
 //
 //flashbackQueryClause
 //    : VERSIONS 
@@ -1016,10 +1014,9 @@ selectListItem
 //    : identifier ('.' identifier ('.' identifier)?)?
 //    ;
 //
-//fullObjectPath
-//    : identifier ('.' identifier)?
-//    ;
-
+fullObjectPath
+    : identifier ('.' identifier)?
+    ;
 
 table
     : identifier
