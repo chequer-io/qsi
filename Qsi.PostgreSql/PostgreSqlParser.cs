@@ -30,15 +30,6 @@ namespace Qsi.PostgreSql
                 default:
                     throw TreeHelper.NotSupportedTree(pgTree);
             }
-
-            switch (script.ScriptType)
-            {
-                case QsiScriptType.Set:
-                    return pgVisitorSet.ActionVisitor.Visit(pgTree);
-
-                default:
-                    return pgVisitorSet.TableVisitor.Visit(pgTree);
-            }
         }
 
         private IQsiTreeNode ParseRawStmt(IPgVisitorSet visitorSet, RawStmt rawStmt)
