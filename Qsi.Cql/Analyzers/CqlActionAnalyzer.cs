@@ -30,7 +30,7 @@ namespace Qsi.Cql.Analyzers
         {
             if (columns.Columns.All(c => c is IQsiAllColumnNode))
                 return table.Columns.Select(c => new ColumnPlan(c.Name));
-            
+
             var plans = new Dictionary<QsiIdentifier, ColumnPlan>(IdentifierComparer);
 
             foreach (var column in columns)
@@ -282,9 +282,15 @@ namespace Qsi.Cql.Analyzers
                         }
                     }
 
+                    QsiTableColumn[] affectedColumns = target.ColumnPivots
+                        .Select(p => p.DeclaredColumn)
+                        .Where(c => c != null)
+                        .ToArray();
+
                     return new QsiDataAction
                     {
                         Table = target.Table,
+                        AffectedColumns = affectedColumns,
                         DeleteRows = target.DeleteRows.ToNullIfEmpty(),
                         UpdateBeforeRows = target.UpdateBeforeRows.ToNullIfEmpty(),
                         UpdateAfterRows = target.UpdateAfterRows.ToNullIfEmpty()

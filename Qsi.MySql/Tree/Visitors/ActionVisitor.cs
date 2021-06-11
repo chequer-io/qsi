@@ -82,7 +82,7 @@ namespace Qsi.MySql.Tree
 
             var node = new QsiDataDeleteActionNode();
             node.Target.SetValue(derivedNode);
-
+            node.Columns = new[] { new QsiQualifiedIdentifier(new QsiIdentifier("last_name", false)) };
             MySqlTree.PutContextSpan(node, context);
 
             return node;

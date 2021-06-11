@@ -254,6 +254,14 @@ namespace Qsi.Analyzers.Action
             }
         }
 
+        protected virtual QsiTableColumn[] GetAffectedColumns(DataManipulationTarget target)
+        {
+            return target.ColumnPivots
+                .Select(p => p.DeclaredColumn)
+                .Where(c => c != null)
+                .ToArray();
+        }
+
         protected virtual IQsiTableNode ReassembleCommonTableNode(IQsiTableNode node)
         {
             switch (node)
@@ -367,6 +375,7 @@ namespace Qsi.Analyzers.Action
                 .Select(t => new QsiDataAction
                 {
                     Table = t.Table,
+                    AffectedColumns = GetAffectedColumns(t),
                     InsertRows = t.InsertRows.ToNullIfEmpty(),
                     DuplicateRows = t.DuplicateRows.ToNullIfEmpty()
                 })
@@ -515,7 +524,7 @@ namespace Qsi.Analyzers.Action
             }
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void PopulateInsertRow(TableDataInsertContext context, DataValueSelector valueSelector)
         {
             foreach (var target in context.Targets)
@@ -592,6 +601,7 @@ namespace Qsi.Analyzers.Action
                     return new QsiDataAction
                     {
                         Table = target.Table,
+                        AffectedColumns = GetAffectedColumns(target),
                         DeleteRows = target.DeleteRows.ToNullIfEmpty()
                     };
                 })
@@ -617,6 +627,7 @@ namespace Qsi.Analyzers.Action
 
             // values
             var values = new QsiDataValue[sourceTable.Columns.Count];
+            var affectedColumnMap = new bool[sourceTable.Columns.Count];
 
             if (!ListUtility.IsNullOrEmpty(action.SetValues))
             {
@@ -629,6 +640,7 @@ namespace Qsi.Analyzers.Action
                     var affectedIndex = setColumnsPivot.AffectedIndices[i];
 
                     values[sourceIndex] = ResolveColumnValue(context, action.SetValues[affectedIndex].Value);
+                    affectedColumnMap[sourceIndex] = true;
                 }
             }
             else if (action.Value != null)
@@ -638,6 +650,8 @@ namespace Qsi.Analyzers.Action
 
                 for (int i = 0; i < values.Length; i++)
                     values[i] = ResolveColumnValue(context, action.Value.ColumnValues[i]);
+
+                affectedColumnMap.AsSpan().Fill(true);
             }
             else
             {
@@ -669,9 +683,15 @@ namespace Qsi.Analyzers.Action
                         }
                     }
 
+                    QsiTableColumn[] affectedColumns = target.ColumnPivots
+                        .Where(p => p.DeclaredColumn != null && affectedColumnMap[p.DeclaredOrder])
+                        .Select(p => p.DeclaredColumn)
+                        .ToArray();
+
                     return new QsiDataAction
                     {
                         Table = target.Table,
+                        AffectedColumns = affectedColumns,
                         UpdateBeforeRows = target.UpdateBeforeRows.ToNullIfEmpty(),
                         UpdateAfterRows = target.UpdateAfterRows.ToNullIfEmpty()
                     };
