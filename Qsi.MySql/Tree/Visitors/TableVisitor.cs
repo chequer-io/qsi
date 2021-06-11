@@ -187,10 +187,9 @@ namespace Qsi.MySql.Tree
 
             if (alias == null)
             {
-                if (node is QsiDerivedColumnNode columnNode && columnNode.Alias.IsEmpty)
+                if (node is QsiDerivedColumnNode { Alias: { IsEmpty: true } } columnNode)
                 {
-                    var columnName = context.GetInputText();
-                    columnName = Regex.Replace(columnName, "[\r\n\t\f\v]", " ");
+                    var columnName = DeduceColumnName(context, columnNode.Expression.Value);
                     columnNode.InferredName = new QsiIdentifier(columnName, false);
                 }
 
@@ -244,6 +243,23 @@ namespace Qsi.MySql.Tree
             MySqlTree.PutContextSpan(derivedColumnNode, context);
 
             return derivedColumnNode;
+        }
+
+        private static string DeduceColumnName(SelectItemContext context, QsiExpressionNode node)
+        {
+            if (node is IQsiLiteralExpressionNode literal)
+            {
+                switch (literal.Value)
+                {
+                    case string name:
+                        return name;
+
+                    case MySqlString mySqlString:
+                        return mySqlString.Value;
+                }
+            }
+
+            return context.GetInputText();
         }
 
         public static QsiAliasNode VisitSelectAlias(SelectAliasContext context)
