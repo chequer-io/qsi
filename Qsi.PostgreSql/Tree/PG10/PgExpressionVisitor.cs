@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Qsi.Data;
 using Qsi.PostgreSql.Internal;
@@ -191,18 +193,82 @@ namespace Qsi.PostgreSql.Tree.PG10
 
         private QsiExpressionNode VisitSubLink(SubLink subLink)
         {
+            var tableNode = new QsiTableExpressionNode
+            {
+                Table = { Value = TableVisitor.VisitSelectStmt((SelectStmt)subLink.subselect[0]) }
+            };
+
+            string functionName;
+
             switch (subLink.subLinkType)
             {
+                // ANY(<subquery>)
+                case SubLinkType.ANY_SUBLINK:
+                    functionName = "ANY";
+                    break;
+
+                // ARRAY(<subquery>)
+                case SubLinkType.ARRAY_SUBLINK:
+                    functionName = "ARRAY";
+                    break;
+
+                // ALL(<subquery>)
+                case SubLinkType.ALL_SUBLINK:
+                    functionName = "ALL";
+                    break;
+
+                // EXISTS(<subquery>)
+                case SubLinkType.EXISTS_SUBLINK:
+                    functionName = "EXISTS";
+                    break;
+
+                case SubLinkType.CTE_SUBLINK:
+                    throw new NotImplementedException();
+
+                case SubLinkType.MULTIEXPR_SUBLINK:
+                    throw new NotImplementedException();
+
+                case SubLinkType.ROWCOMPARE_SUBLINK:
+                    throw new NotImplementedException();
+
+                // (<subquery>)
                 case SubLinkType.EXPR_SUBLINK:
-                {
-                    return TreeHelper.Create<QsiTableExpressionNode>(n =>
-                    {
-                        n.Table.SetValue(TableVisitor.VisitSelectStmt((SelectStmt)subLink.subselect[0]));
-                    });
-                }
+                    functionName = null;
+                    break;
+
+                default:
+                    throw TreeHelper.NotSupportedTree(subLink.subLinkType);
             }
 
-            throw TreeHelper.NotSupportedTree(subLink.subLinkType);
+            QsiExpressionNode node;
+
+            if (functionName != null)
+            {
+                node = new QsiInvokeExpressionNode
+                {
+                    Member = { Value = TreeHelper.CreateFunction("ARRAY") },
+                    Parameters = { tableNode }
+                };
+            }
+            else
+            {
+                node = tableNode;
+            }
+
+            if (subLink.testexpr?.Length > 0)
+            {
+                var op = (PgString)subLink.operName[0];
+                var opName = op.ival?.ToString() ?? op.str;
+
+                node = new QsiBinaryExpressionNode
+                {
+                    Operator = opName,
+                    Left = { Value = ExpressionVisitor.Visit(subLink.testexpr[0]) },
+                    Right = { Value = node }
+                };
+            }
+
+            return node;
         }
 
         private QsiExpressionNode VisitTypeCast(TypeCast typeCast)

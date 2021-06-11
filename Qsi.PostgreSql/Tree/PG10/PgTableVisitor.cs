@@ -24,12 +24,6 @@ namespace Qsi.PostgreSql.Tree.PG10
 
                 case SelectStmt selectStmt:
                     return VisitSelectStmt(selectStmt);
-
-                case ViewStmt viewStmt:
-                    return VisitViewStmt(viewStmt);
-
-                case CreateTableAsStmt createTableAsStmt:
-                    return VisitCreateTableAsStmt(createTableAsStmt);
             }
 
             throw TreeHelper.NotSupportedTree(node);
@@ -126,52 +120,6 @@ namespace Qsi.PostgreSql.Tree.PG10
             {
                 n.Sources.Add(VisitSelectStmt(stmt.larg[0]));
                 n.Sources.Add(VisitSelectStmt(stmt.rarg[0]));
-            });
-        }
-
-        public QsiDerivedTableNode VisitViewStmt(ViewStmt stmt)
-        {
-            return TreeHelper.Create<QsiDerivedTableNode>(n =>
-            {
-                var viewAccessNode = IdentifierVisitor.VisitRangeVar(stmt.view[0]);
-                var columnsDeclaration = new QsiColumnsDeclarationNode();
-
-                if (ListUtility.IsNullOrEmpty(stmt.aliases))
-                {
-                    columnsDeclaration.Columns.Add(new QsiAllColumnNode());
-                }
-                else
-                {
-                    columnsDeclaration.Columns.AddRange(CreateSequentialColumnNodes(stmt.aliases.Cast<PgString>()));
-                }
-
-                n.Columns.SetValue(columnsDeclaration);
-                n.Source.SetValue(Visit(stmt.query[0]));
-
-                n.Alias.SetValue(new QsiAliasNode
-                {
-                    Name = viewAccessNode[^1]
-                });
-            });
-        }
-
-        private QsiTableNode VisitCreateTableAsStmt(CreateTableAsStmt stmt)
-        {
-            if (stmt.relkind != ObjectType.OBJECT_MATVIEW)
-                throw TreeHelper.NotSupportedTree(stmt);
-
-            return TreeHelper.Create<QsiDerivedTableNode>(n =>
-            {
-                // CreateTableAsStmt / IntoClause / RangeVar
-                var viewAccessNode = IdentifierVisitor.VisitRangeVar(stmt.into[0].rel[0]);
-
-                n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
-                n.Source.SetValue(Visit(stmt.query[0]));
-
-                n.Alias.SetValue(new QsiAliasNode
-                {
-                    Name = viewAccessNode[^1]
-                });
             });
         }
 

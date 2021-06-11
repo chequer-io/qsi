@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -43,17 +44,18 @@ namespace Qsi.PrimarSql.Analyzers
                 targetRow.Items[0] = row.Items[0];
             }
 
-            var dataAction = new QsiDataAction
+            return new QsiDataAction
             {
                 Table = tempTable,
+                AffectedColumns = tempTable.Columns.ToArray(),
                 DeleteRows = deleteRows.ToNullIfEmpty()
-            };
-
-            return (new[] { dataAction }).ToResult();
+            }.ToResult();
         }
         #endregion
 
         #region Update
+        #endregion
+
         protected override async ValueTask<IQsiAnalysisResult> ExecuteDataUpdateAction(IAnalyzerContext context, IQsiDataUpdateActionNode action)
         {
             var tableAnalyzer = context.Engine.GetAnalyzer<QsiTableAnalyzer>();
@@ -105,16 +107,25 @@ namespace Qsi.PrimarSql.Analyzers
                 newRow.Items[0] = new QsiDataValue(afterValue.ToString(Formatting.None), QsiDataType.Object);
             }
 
-            var dataAction = new QsiDataAction
+            var tempTable2 = new QsiTableStructure
             {
-                Table = tempTable,
-                UpdateBeforeRows = updateBeforeRows.ToNullIfEmpty(),
-                UpdateAfterRows = updateAfterRows.ToNullIfEmpty()
+                Identifier = table.Identifier
             };
 
-            return (new[] { dataAction }).ToResult();
+            foreach (var parts in setValues.Select(v => v.Item1))
+            {
+                var column = tempTable2.NewColumn();
+                column.Name = new QsiIdentifier(FormatParts(parts), false);
+            }
+
+            return new QsiDataAction
+            {
+                Table = tempTable,
+                AffectedColumns = tempTable2.Columns.ToArray(),
+                UpdateBeforeRows = updateBeforeRows.ToNullIfEmpty(),
+                UpdateAfterRows = updateAfterRows.ToNullIfEmpty()
+            }.ToResult();
         }
-        #endregion
 
         #region Insert
         protected override async ValueTask<IQsiAnalysisResult> ExecuteDataInsertAction(IAnalyzerContext context, IQsiDataInsertActionNode action)
@@ -148,13 +159,20 @@ namespace Qsi.PrimarSql.Analyzers
                 row.Items[0] = new QsiDataValue(obj.ToString(Formatting.None), QsiDataType.Object);
             }
 
-            var dataAction = new QsiDataAction
+            var tempTable2 = new QsiTableStructure
             {
-                Table = tempTable,
-                InsertRows = insertRows.ToNullIfEmpty(),
+                Identifier = table.Identifier
             };
 
-            return (new[] { dataAction }).ToResult();
+            foreach (var column in columns)
+                tempTable2.NewColumn().Name = column[^1];
+
+            return new QsiDataAction
+            {
+                Table = tempTable,
+                AffectedColumns = tempTable2.Columns.ToArray(),
+                InsertRows = insertRows.ToNullIfEmpty(),
+            }.ToResult();
         }
         #endregion
 
@@ -190,6 +208,33 @@ namespace Qsi.PrimarSql.Analyzers
             }
 
             return base.ReassembleCommonTableNode(node);
+        }
+
+        private string FormatParts(IEnumerable<object> parts)
+        {
+            var builder = new StringBuilder();
+
+            foreach (var part in parts)
+            {
+                switch (part)
+                {
+                    case string fieldName:
+                        if (builder.Length > 0)
+                            builder.Append('.');
+
+                        builder.Append(fieldName);
+                        break;
+
+                    case int indexer:
+                        builder.Append('[').Append(indexer).Append(']');
+                        break;
+
+                    default:
+                        throw new InvalidOperationException();
+                }
+            }
+
+            return builder.ToString();
         }
 
         private bool SetValueToToken(JToken token, object[] parts, JToken value, bool deleteProperty)

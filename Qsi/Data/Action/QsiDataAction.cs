@@ -4,6 +4,8 @@
     {
         public QsiTableStructure Table { get; set; }
 
+        public QsiTableColumn[] AffectedColumns { get; set; }
+
         public QsiDataRowCollection InsertRows { get; set; }
 
         public QsiDataRowCollection DuplicateRows { get; set; }

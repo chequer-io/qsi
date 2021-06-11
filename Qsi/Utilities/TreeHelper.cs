@@ -187,7 +187,10 @@ namespace Qsi.Utilities
 
         public static QsiException NotSupportedTree(object tree)
         {
-            return new(QsiError.NotSupportedTree, tree.GetType().FullName);
+            var type = tree.GetType();
+            var treeName = type.IsEnum ? $"{type.Name}: {tree}" : type.FullName;
+
+            return new QsiException(QsiError.NotSupportedTree, treeName);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

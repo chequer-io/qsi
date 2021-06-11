@@ -66,6 +66,11 @@ namespace Qsi.PostgreSql.Internal.PG10
             return new(set);
         }
 
+        protected override PgDefinitionVisitor CreateDefinitionVisitor(IPgVisitorSet set)
+        {
+            return new(set);
+        }
+
         protected override PgIdentifierVisitor CreateIdentifierVisitor(IPgVisitorSet set)
         {
             return new(set);
