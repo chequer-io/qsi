@@ -1,6 +1,8 @@
-﻿namespace Qsi.Data
+﻿using Qsi.Analyzers;
+
+namespace Qsi.Data
 {
-    public sealed class QsiReferenceAction : IQsiAction
+    public sealed class QsiReferenceAction : IQsiAnalysisResult
     {
         public QsiReferenceType Type { get; set; }
 

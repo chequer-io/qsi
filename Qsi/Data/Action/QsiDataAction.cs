@@ -1,6 +1,8 @@
-﻿namespace Qsi.Data
+﻿using Qsi.Analyzers;
+
+namespace Qsi.Data
 {
-    public class QsiDataAction : IQsiAction
+    public class QsiDataAction : IQsiAnalysisResult
     {
         public QsiTableStructure Table { get; set; }
 

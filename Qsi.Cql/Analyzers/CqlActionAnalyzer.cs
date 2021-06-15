@@ -175,7 +175,7 @@ namespace Qsi.Cql.Analyzers
             return plans.Values.ToArray();
         }
 
-        protected override async ValueTask<IQsiAnalysisResult> ExecuteDataDeleteAction(IAnalyzerContext context, IQsiDataDeleteActionNode action)
+        protected override async ValueTask<IQsiAnalysisResult[]> ExecuteDataDeleteAction(IAnalyzerContext context, IQsiDataDeleteActionNode action)
         {
             var tableNode = (CqlDerivedTableNode)action.Target;
             var tableReferenceNode = (QsiTableReferenceNode)tableNode.Source.Value;
@@ -296,7 +296,7 @@ namespace Qsi.Cql.Analyzers
                         UpdateAfterRows = target.UpdateAfterRows.ToNullIfEmpty()
                     };
                 })
-                .ToResult();
+                .ToArray<IQsiAnalysisResult>();
         }
 
         private async Task ResolveColumnPlan(IAnalyzerContext context, IEnumerable<ColumnPlan> plans, IQsiTableReferenceNode tableReference)

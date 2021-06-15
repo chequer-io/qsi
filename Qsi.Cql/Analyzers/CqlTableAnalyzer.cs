@@ -18,7 +18,7 @@ namespace Qsi.Cql.Analyzers
         {
         }
 
-        protected override async ValueTask<IQsiAnalysisResult> OnExecute(IAnalyzerContext context)
+        protected override async ValueTask<IQsiAnalysisResult[]> OnExecute(IAnalyzerContext context)
         {
             if (context.Tree is CqlDerivedTableNode { IsJson: true } cqlTableNode)
             {
@@ -39,7 +39,7 @@ namespace Qsi.Cql.Analyzers
                 jsonColumn.Name = new QsiIdentifier("[json]", false);
                 jsonColumn.References.AddRange(table.Columns);
 
-                return new CqlJsonTableAnalysisResult(jsonTable);
+                return new CqlJsonTableAnalysisResult(jsonTable).ToSingleArray();
             }
 
             return await base.OnExecute(context);

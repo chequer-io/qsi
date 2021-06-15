@@ -25,7 +25,7 @@ namespace Qsi.PrimarSql.Analyzers
         }
 
         #region Delete
-        protected override async ValueTask<IQsiAnalysisResult> ExecuteDataDeleteAction(IAnalyzerContext context, IQsiDataDeleteActionNode action)
+        protected override async ValueTask<IQsiAnalysisResult[]> ExecuteDataDeleteAction(IAnalyzerContext context, IQsiDataDeleteActionNode action)
         {
             var tableAnalyzer = context.Engine.GetAnalyzer<QsiTableAnalyzer>();
             using var tableContext = new TableCompileContext(context);
@@ -49,14 +49,14 @@ namespace Qsi.PrimarSql.Analyzers
                 Table = tempTable,
                 AffectedColumns = tempTable.Columns.ToArray(),
                 DeleteRows = deleteRows.ToNullIfEmpty()
-            }.ToResult();
+            }.ToSingleArray();
         }
         #endregion
 
         #region Update
         #endregion
 
-        protected override async ValueTask<IQsiAnalysisResult> ExecuteDataUpdateAction(IAnalyzerContext context, IQsiDataUpdateActionNode action)
+        protected override async ValueTask<IQsiAnalysisResult[]> ExecuteDataUpdateAction(IAnalyzerContext context, IQsiDataUpdateActionNode action)
         {
             var tableAnalyzer = context.Engine.GetAnalyzer<QsiTableAnalyzer>();
             using var tableContext = new TableCompileContext(context);
@@ -124,11 +124,11 @@ namespace Qsi.PrimarSql.Analyzers
                 AffectedColumns = tempTable2.Columns.ToArray(),
                 UpdateBeforeRows = updateBeforeRows.ToNullIfEmpty(),
                 UpdateAfterRows = updateAfterRows.ToNullIfEmpty()
-            }.ToResult();
+            }.ToSingleArray();
         }
 
         #region Insert
-        protected override async ValueTask<IQsiAnalysisResult> ExecuteDataInsertAction(IAnalyzerContext context, IQsiDataInsertActionNode action)
+        protected override async ValueTask<IQsiAnalysisResult[]> ExecuteDataInsertAction(IAnalyzerContext context, IQsiDataInsertActionNode action)
         {
             var tableAnalyzer = context.Engine.GetAnalyzer<QsiTableAnalyzer>();
             using var tableContext = new TableCompileContext(context);
@@ -172,7 +172,7 @@ namespace Qsi.PrimarSql.Analyzers
                 Table = tempTable,
                 AffectedColumns = tempTable2.Columns.ToArray(),
                 InsertRows = insertRows.ToNullIfEmpty(),
-            }.ToResult();
+            }.ToSingleArray();
         }
         #endregion
 

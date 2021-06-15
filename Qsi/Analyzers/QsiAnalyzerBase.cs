@@ -29,7 +29,7 @@ namespace Qsi.Analyzers
             _qualifiedIdentifierComparer = new Lazy<IEqualityComparer<QsiQualifiedIdentifier>>(() => new DelegateEqualityComparer<QsiQualifiedIdentifier>(Match));
         }
 
-        public ValueTask<IQsiAnalysisResult> Execute(
+        public ValueTask<IQsiAnalysisResult[]> Execute(
             QsiScript script,
             QsiParameter[] parameters,
             IQsiTreeNode tree,
@@ -53,7 +53,7 @@ namespace Qsi.Analyzers
 
         public abstract bool CanExecute(QsiScript script, IQsiTreeNode tree);
 
-        protected abstract ValueTask<IQsiAnalysisResult> OnExecute(IAnalyzerContext context);
+        protected abstract ValueTask<IQsiAnalysisResult[]> OnExecute(IAnalyzerContext context);
 
         #region Utilities
         protected bool Match(QsiIdentifier a, QsiIdentifier b)

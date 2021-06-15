@@ -21,7 +21,7 @@ namespace Qsi.PrimarSql.Analyzers
         {
         }
 
-        protected override async ValueTask<IQsiAnalysisResult> OnExecute(IAnalyzerContext context)
+        protected override async ValueTask<IQsiAnalysisResult[]> OnExecute(IAnalyzerContext context)
         {
             var identifierSet = new HashSet<QsiIdentifier>(IdentifierComparer);
             QsiQualifiedIdentifier tableIdentifier = null;
@@ -70,7 +70,7 @@ namespace Qsi.PrimarSql.Analyzers
                     documentColumn.Name = new QsiIdentifier("Document", false);
                 }
 
-                return new PrimarSqlJsonTableAnalysisResult(jsonTable);
+                return new PrimarSqlJsonTableAnalysisResult(jsonTable).ToSingleArray();
             }
 
             return await base.OnExecute(context);

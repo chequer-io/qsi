@@ -29,7 +29,7 @@ namespace Qsi.Analyzers.Table
                 (script.ScriptType is QsiScriptType.With or QsiScriptType.Select);
         }
 
-        protected override async ValueTask<IQsiAnalysisResult> OnExecute(IAnalyzerContext context)
+        protected override async ValueTask<IQsiAnalysisResult[]> OnExecute(IAnalyzerContext context)
         {
             if (context.Tree is not IQsiTableNode tableNode)
                 throw new InvalidOperationException();
@@ -37,7 +37,7 @@ namespace Qsi.Analyzers.Table
             using var scope = new TableCompileContext(context);
             var table = await BuildTableStructure(scope, tableNode);
 
-            return new QsiTableAnalysisResult(table);
+            return new QsiTableAnalysisResult(table).ToSingleArray();
         }
         #endregion
 

@@ -1,6 +1,8 @@
-﻿namespace Qsi.Data
+﻿using Qsi.Analyzers;
+
+namespace Qsi.Data
 {
-    public class QsiChangeSearchPathAction : IQsiAction
+    public class QsiChangeSearchPathAction : IQsiAnalysisResult
     {
         public QsiQualifiedIdentifier[] Identifiers { get; }
 

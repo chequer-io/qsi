@@ -7,6 +7,7 @@ using Qsi.Analyzers;
 using Qsi.Data;
 using Qsi.Parsing;
 using Qsi.Services;
+using Qsi.Shared.Extensions;
 
 namespace Qsi
 {
@@ -50,18 +51,19 @@ namespace Qsi
 
             foreach (var script in ScriptParser.Parse(input, cancellationToken))
             {
-                var result = await Execute(script, parameters, cancellationToken);
+                foreach (var result in await Execute(script, parameters, cancellationToken))
+                {
+                    if (result is EmptyAnalysisResult)
+                        continue;
 
-                if (result is EmptyAnalysisResult)
-                    continue;
-
-                results.Add(result);
+                    results.Add(result);
+                }
             }
 
             return results.ToArray();
         }
 
-        public async ValueTask<IQsiAnalysisResult> Execute(QsiScript script, QsiParameter[] parameters, CancellationToken cancellationToken = default)
+        public async ValueTask<IQsiAnalysisResult[]> Execute(QsiScript script, QsiParameter[] parameters, CancellationToken cancellationToken = default)
         {
             var tree = TreeParser.Parse(script, cancellationToken);
 
@@ -71,7 +73,7 @@ namespace Qsi
             if (analyzer == null)
             {
                 if (script.ScriptType is QsiScriptType.Comment or QsiScriptType.Delimiter)
-                    return new EmptyAnalysisResult();
+                    return Array.Empty<IQsiAnalysisResult>();
 
                 throw new QsiException(QsiError.NotSupportedScript, script.ScriptType);
             }
