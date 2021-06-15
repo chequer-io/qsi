@@ -197,5 +197,20 @@ namespace Qsi.MySql.Tree
 
             return node;
         }
+
+        public static IQsiTreeNode VisitUseCommand(UseCommandContext context)
+        {
+            var node = new QsiChangeSearchPathActionNode
+            {
+                Identifiers = new[]
+                {
+                    IdentifierVisitor.VisitIdentifier(context.identifier())
+                }
+            };
+
+            MySqlTree.PutContextSpan(node, context);
+
+            return node;
+        }
     }
 }
