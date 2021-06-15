@@ -1,15 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Qsi.Analyzers;
 using Qsi.Data;
+using Qsi.Engines.Explain;
 using Qsi.Parsing;
 using Qsi.Services;
-using Qsi.Shared.Extensions;
 
-namespace Qsi
+namespace Qsi.Engines
 {
     public class QsiEngine
     {
@@ -23,11 +22,13 @@ namespace Qsi
 
         public IQsiLanguageService LanguageService { get; }
 
+        internal bool IsExplainEngine => LanguageService is ExplainLanguageService;
+
         private readonly Lazy<IQsiTreeParser> _treeParser;
         private readonly Lazy<IQsiTreeDeparser> _treeDeparser;
         private readonly Lazy<IQsiScriptParser> _scriptParser;
         private readonly Lazy<IQsiRepositoryProvider> _repositoryProvider;
-        private readonly Lazy<QsiAnalyzerBase[]> _analyzers;
+        private readonly Lazy<IQsiAnalyzer[]> _analyzers;
 
         public QsiEngine(IQsiLanguageService languageService)
         {
@@ -37,30 +38,12 @@ namespace Qsi
             _treeDeparser = new Lazy<IQsiTreeDeparser>(LanguageService.CreateTreeDeparser);
             _scriptParser = new Lazy<IQsiScriptParser>(LanguageService.CreateScriptParser);
             _repositoryProvider = new Lazy<IQsiRepositoryProvider>(LanguageService.CreateRepositoryProvider);
-            _analyzers = new Lazy<QsiAnalyzerBase[]>(() => LanguageService.CreateAnalyzers(this).ToArray());
+            _analyzers = new Lazy<IQsiAnalyzer[]>(() => LanguageService.CreateAnalyzers(this).ToArray());
         }
 
         public T GetAnalyzer<T>() where T : QsiAnalyzerBase
         {
             return _analyzers.Value.OfType<T>().First();
-        }
-
-        public async ValueTask<IQsiAnalysisResult[]> Execute(string input, QsiParameter[] parameters, CancellationToken cancellationToken = default)
-        {
-            var results = new List<IQsiAnalysisResult>();
-
-            foreach (var script in ScriptParser.Parse(input, cancellationToken))
-            {
-                foreach (var result in await Execute(script, parameters, cancellationToken))
-                {
-                    if (result is EmptyAnalysisResult)
-                        continue;
-
-                    results.Add(result);
-                }
-            }
-
-            return results.ToArray();
         }
 
         public async ValueTask<IQsiAnalysisResult[]> Execute(QsiScript script, QsiParameter[] parameters, CancellationToken cancellationToken = default)
@@ -79,6 +62,19 @@ namespace Qsi
             }
 
             return await analyzer.Execute(script, parameters, tree, options, cancellationToken);
+        }
+
+        public ValueTask<IQsiAnalysisResult[]> Explain(QsiScript script, QsiParameter[] parameters, CancellationToken cancellationToken = default)
+        {
+            if (IsExplainEngine)
+                return Execute(script, parameters, cancellationToken);
+
+            var explainLanguageService = new ExplainLanguageService(LanguageService);
+            var explainEngine = new QsiEngine(explainLanguageService);
+
+            explainLanguageService.ExplainEngine = explainEngine;
+
+            return explainEngine.Execute(script, parameters, cancellationToken);
         }
     }
 }

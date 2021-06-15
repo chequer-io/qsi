@@ -3,9 +3,9 @@ using Qsi.Data;
 
 namespace Qsi.Cql.Analyzers
 {
-    public sealed class CqlJsonTableAnalysisResult : QsiTableAnalysisResult
+    public sealed class CqlJsonTableResult : QsiTableResult
     {
-        public CqlJsonTableAnalysisResult(QsiTableStructure table) : base(table)
+        public CqlJsonTableResult(QsiTableStructure table) : base(table)
         {
         }
     }

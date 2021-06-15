@@ -11,6 +11,7 @@ using Qsi.Analyzers.Context;
 using Qsi.Analyzers.Table;
 using Qsi.Analyzers.Table.Context;
 using Qsi.Data;
+using Qsi.Engines;
 using Qsi.PrimarSql.Tree;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
@@ -44,7 +45,7 @@ namespace Qsi.PrimarSql.Analyzers
                 targetRow.Items[0] = row.Items[0];
             }
 
-            return new QsiDataAction
+            return new QsiDataManipulationResult
             {
                 Table = tempTable,
                 AffectedColumns = tempTable.Columns.ToArray(),
@@ -109,18 +110,20 @@ namespace Qsi.PrimarSql.Analyzers
 
             var tempTable2 = new QsiTableStructure
             {
-                Identifier = table.Identifier
+                Type = QsiTableType.Derived,
+                References = { tempTable }
             };
 
             foreach (var parts in setValues.Select(v => v.Item1))
             {
                 var column = tempTable2.NewColumn();
                 column.Name = new QsiIdentifier(FormatParts(parts), false);
+                column.References.AddRange(tempTable.Columns);
             }
 
-            return new QsiDataAction
+            return new QsiDataManipulationResult
             {
-                Table = tempTable,
+                Table = tempTable2,
                 AffectedColumns = tempTable2.Columns.ToArray(),
                 UpdateBeforeRows = updateBeforeRows.ToNullIfEmpty(),
                 UpdateAfterRows = updateAfterRows.ToNullIfEmpty()
@@ -161,15 +164,20 @@ namespace Qsi.PrimarSql.Analyzers
 
             var tempTable2 = new QsiTableStructure
             {
-                Identifier = table.Identifier
+                Type = QsiTableType.Derived,
+                References = { tempTable }
             };
 
             foreach (var column in columns)
-                tempTable2.NewColumn().Name = column[^1];
-
-            return new QsiDataAction
             {
-                Table = tempTable,
+                var newColumn = tempTable2.NewColumn();
+                newColumn.Name = column[^1];
+                newColumn.References.AddRange(tempTable.Columns);
+            }
+
+            return new QsiDataManipulationResult
+            {
+                Table = tempTable2,
                 AffectedColumns = tempTable2.Columns.ToArray(),
                 InsertRows = insertRows.ToNullIfEmpty(),
             }.ToSingleArray();

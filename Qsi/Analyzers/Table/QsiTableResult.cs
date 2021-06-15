@@ -2,11 +2,11 @@
 
 namespace Qsi.Analyzers.Table
 {
-    public class QsiTableAnalysisResult : IQsiAnalysisResult
+    public class QsiTableResult : IQsiAnalysisResult
     {
         public QsiTableStructure Table { get; }
 
-        public QsiTableAnalysisResult(QsiTableStructure table)
+        public QsiTableResult(QsiTableStructure table)
         {
             Table = table;
         }

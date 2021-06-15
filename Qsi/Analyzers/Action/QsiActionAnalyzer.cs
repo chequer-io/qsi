@@ -9,6 +9,7 @@ using Qsi.Analyzers.Context;
 using Qsi.Analyzers.Table;
 using Qsi.Analyzers.Table.Context;
 using Qsi.Data;
+using Qsi.Engines;
 using Qsi.Extensions;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
@@ -255,8 +256,8 @@ namespace Qsi.Analyzers.Action
         protected virtual QsiTableColumn[] GetAffectedColumns(DataManipulationTarget target)
         {
             return target.ColumnPivots
-                .Select(p => p.DeclaredColumn)
-                .Where(c => c != null)
+                .Where(p => p.DeclaredColumn != null)
+                .Select(p => p.TargetColumn)
                 .ToArray();
         }
 
@@ -324,7 +325,7 @@ namespace Qsi.Analyzers.Action
             var script = new QsiScript(query, scriptType);
             QsiParameter[] parameters = ArrangeBindParameters(context, commonTableNode);
 
-            return await context.Engine.RepositoryProvider.GetDataTable(script, parameters);
+            return await context.Engine.RepositoryProvider.GetDataTable(script, parameters, context.CancellationToken);
         }
         #endregion
 
@@ -370,7 +371,7 @@ namespace Qsi.Analyzers.Action
             }
 
             return dataContext.Targets
-                .Select(t => new QsiDataAction
+                .Select(t => new QsiDataManipulationResult
                 {
                     Table = t.Table,
                     AffectedColumns = GetAffectedColumns(t),
@@ -447,7 +448,7 @@ namespace Qsi.Analyzers.Action
 
             var scriptType = engine.ScriptParser.GetSuitableType(script);
             QsiParameter[] parameters = ArrangeBindParameters(context, valueTable);
-            var dataTable = await engine.RepositoryProvider.GetDataTable(new QsiScript(script, scriptType), parameters);
+            var dataTable = await engine.RepositoryProvider.GetDataTable(new QsiScript(script, scriptType), parameters, context.CancellationToken);
 
             if (dataTable.Rows.ColumnCount != context.ColumnNames.Length)
                 throw new QsiException(QsiError.DifferentColumnsCount);
@@ -596,7 +597,7 @@ namespace Qsi.Analyzers.Action
                         }
                     }
 
-                    return new QsiDataAction
+                    return new QsiDataManipulationResult
                     {
                         Table = target.Table,
                         AffectedColumns = GetAffectedColumns(target),
@@ -686,7 +687,7 @@ namespace Qsi.Analyzers.Action
                         .Select(p => p.DeclaredColumn)
                         .ToArray();
 
-                    return new QsiDataAction
+                    return new QsiDataManipulationResult
                     {
                         Table = target.Table,
                         AffectedColumns = affectedColumns,

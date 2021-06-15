@@ -31,7 +31,8 @@
         NotUpdatableColumn,
         DifferentColumnValueCount,
         ParameterIndexOutOfRange,
-        ParameterNotFound
+        ParameterNotFound,
+        InvalidNestedExplain
     }
 
     internal static class SR
@@ -66,6 +67,7 @@
         public const string DifferentColumnValueCount = "Column count doesn't match value count at row {0}";
         public const string ParameterIndexOutOfRange = "Parameter index {0} was out of range";
         public const string ParameterNotFound = "Parameter '{0}' not found";
+        public const string InvalidNestedExplain = "Invalid nested explain for '{0}'";
 
         public static string GetResource(QsiError error)
         {
@@ -101,6 +103,7 @@
                 QsiError.DifferentColumnValueCount => DifferentColumnValueCount,
                 QsiError.ParameterIndexOutOfRange => ParameterIndexOutOfRange,
                 QsiError.ParameterNotFound => ParameterNotFound,
+                QsiError.InvalidNestedExplain => InvalidNestedExplain,
                 _ => null
             };
         }

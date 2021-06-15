@@ -4,6 +4,7 @@ using Qsi.Analyzers;
 using Qsi.Analyzers.Action;
 using Qsi.Collections;
 using Qsi.Data;
+using Qsi.Engines;
 using Qsi.MySql.Analyzers;
 using Qsi.Parsing;
 using Qsi.Services;

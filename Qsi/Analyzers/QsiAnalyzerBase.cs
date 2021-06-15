@@ -6,13 +6,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using Qsi.Analyzers.Context;
 using Qsi.Data;
+using Qsi.Engines;
 using Qsi.Extensions;
 using Qsi.Tree;
 using Qsi.Utilities;
 
 namespace Qsi.Analyzers
 {
-    public abstract class QsiAnalyzerBase
+    public abstract class QsiAnalyzerBase : IQsiAnalyzer
     {
         protected IEqualityComparer<QsiIdentifier> IdentifierComparer => _identifierComparer.Value;
 

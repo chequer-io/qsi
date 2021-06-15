@@ -2,6 +2,7 @@
 using Qsi.Analyzers.Table;
 using Qsi.Analyzers.Table.Context;
 using Qsi.Data;
+using Qsi.Engines;
 using Qsi.MySql.Tree;
 using Qsi.Tree;
 

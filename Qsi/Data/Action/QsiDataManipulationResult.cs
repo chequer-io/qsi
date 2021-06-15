@@ -2,7 +2,7 @@
 
 namespace Qsi.Data
 {
-    public class QsiDataAction : IQsiAnalysisResult
+    public class QsiDataManipulationResult : IQsiAnalysisResult
     {
         public QsiTableStructure Table { get; set; }
 

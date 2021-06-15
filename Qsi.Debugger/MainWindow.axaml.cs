@@ -224,8 +224,8 @@ namespace Qsi.Debugger
 
                 foreach (var script in scripts)
                 {
-                    IQsiAnalysisResult[] results = await _vendor.Engine.Execute(script, fakeParameters);
-                    tables.AddRange(results.OfType<QsiTableAnalysisResult>().Select(r => r.Table));
+                    IQsiAnalysisResult[] results = await _vendor.Engine.Explain(script, fakeParameters);
+                    tables.AddRange(results.OfType<QsiTableResult>().Select(r => r.Table));
                 }
 
                 BuildQsiTableTree(tables);

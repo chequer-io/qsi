@@ -6,6 +6,7 @@ using Qsi.Analyzers.Context;
 using Qsi.Analyzers.Table.Context;
 using Qsi.Tree.Immutable;
 using Qsi.Data;
+using Qsi.Engines;
 using Qsi.Extensions;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
@@ -37,7 +38,7 @@ namespace Qsi.Analyzers.Table
             using var scope = new TableCompileContext(context);
             var table = await BuildTableStructure(scope, tableNode);
 
-            return new QsiTableAnalysisResult(table).ToSingleArray();
+            return new QsiTableResult(table).ToSingleArray();
         }
         #endregion
 

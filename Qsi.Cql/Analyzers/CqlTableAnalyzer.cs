@@ -7,6 +7,7 @@ using Qsi.Analyzers.Table;
 using Qsi.Analyzers.Table.Context;
 using Qsi.Cql.Tree;
 using Qsi.Data;
+using Qsi.Engines;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
 
@@ -39,7 +40,7 @@ namespace Qsi.Cql.Analyzers
                 jsonColumn.Name = new QsiIdentifier("[json]", false);
                 jsonColumn.References.AddRange(table.Columns);
 
-                return new CqlJsonTableAnalysisResult(jsonTable).ToSingleArray();
+                return new CqlJsonTableResult(jsonTable).ToSingleArray();
             }
 
             return await base.OnExecute(context);

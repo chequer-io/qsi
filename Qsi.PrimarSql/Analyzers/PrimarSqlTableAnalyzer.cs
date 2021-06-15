@@ -7,6 +7,7 @@ using Qsi.Analyzers.Context;
 using Qsi.Analyzers.Table;
 using Qsi.Analyzers.Table.Context;
 using Qsi.Data;
+using Qsi.Engines;
 using Qsi.Extensions;
 using Qsi.PrimarSql.Data;
 using Qsi.PrimarSql.Tree;
@@ -70,7 +71,7 @@ namespace Qsi.PrimarSql.Analyzers
                     documentColumn.Name = new QsiIdentifier("Document", false);
                 }
 
-                return new PrimarSqlJsonTableAnalysisResult(jsonTable).ToSingleArray();
+                return new PrimarSqlJsonTableResult(jsonTable).ToSingleArray();
             }
 
             return await base.OnExecute(context);
