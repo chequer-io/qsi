@@ -249,14 +249,23 @@ namespace Qsi.MySql.Tree
         {
             if (node is IQsiLiteralExpressionNode literal)
             {
+                string stringValue = null;
+
                 switch (literal.Value)
                 {
                     case string name:
-                        return name;
+                        stringValue = name;
+                        break;
 
-                    case MySqlString mySqlString:
-                        return mySqlString.Value;
+                    case MySqlString { CollateName: null, Kind: MySqlStringKind.National } mySqlString:
+                    {
+                        stringValue = mySqlString.Value;
+                        break;
+                    }
                 }
+
+                if (stringValue != null)
+                    return stringValue.TrimStart('\r', '\n', '\t', '\f', '\v', ' ');
             }
 
             return context.GetInputText();
