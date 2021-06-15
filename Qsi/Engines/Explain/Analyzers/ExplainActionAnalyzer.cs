@@ -55,28 +55,19 @@ namespace Qsi.Engines.Explain
 
             for (int i = 0; i < ordinalMap.Length; i++)
             {
-                ProcessDataRows(i, result.InsertRows, QsiDataValueOperation.Insert, v => v != QsiDataValue.Explain);
-                ProcessDataRows(i, result.DuplicateRows, QsiDataValueOperation.Duplicate, v => v != QsiDataValue.Explain);
-                ProcessDataRows(i, result.UpdateAfterRows, QsiDataValueOperation.Update, v => v != QsiDataValue.Explain);
-                ProcessDataRows(i, result.DeleteRows, QsiDataValueOperation.Delete, v => v == QsiDataValue.Explain);
-            }
+                ref var operation = ref operations[i];
 
-            void ProcessDataRows(
-                int index,
-                QsiDataRowCollection collection,
-                QsiDataValueOperation operation,
-                Predicate<QsiDataValue> predicate)
-            {
-                if (collection == null)
-                    return;
+                if (result.InsertRows?.Count > 0)
+                    operation |= QsiDataValueOperation.Insert;
 
-                var ordinal = ordinalMap[index];
+                if (result.DeleteRows?.Count > 0)
+                    operation |= QsiDataValueOperation.Delete;
 
-                foreach (var row in collection)
-                {
-                    if (predicate(row.Items[ordinal]))
-                        operations[ordinal] |= operation;
-                }
+                if (result.UpdateAfterRows?.Count > 0)
+                    operation |= QsiDataValueOperation.Update;
+
+                if (result.DeleteRows?.Count > 0)
+                    operation |= QsiDataValueOperation.Delete;
             }
 
             return new QsiExplainDataManipulationResult(
