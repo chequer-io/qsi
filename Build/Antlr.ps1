@@ -2,19 +2,23 @@ $AntlrJar = Resolve-Path ".\Build\antlr-4.8-complete.jar"
 
 Function Antlr-Generate {
     Param (
-        [Parameter(Mandatory = $true)][string] $ProjectName
+        [Parameter(Mandatory = $true)][string] $ProjectName,
+        [Parameter(Mandatory = $true)][int] $Progress,
+        [Parameter(Mandatory = $true)][int] $Total
     )
     
     $ProjectDirectory = $(Resolve-Path $ProjectName)
+    $ProjectName = $(Get-Childitem $ProjectDirectory -Filter *.csproj | Select-Object -First 1).Basename
     $Namespace = "$($ProjectName).Internal"
     $GrammarDirectory = [System.IO.Path]::Combine($ProjectDirectory, "Antlr")
     $OutputDirectory = [System.IO.Path]::Combine($GrammarDirectory, "generated")
+    $Header = "[ANTLR4] ($Progress/$Total)"
 
     if (!(Test-Path $GrammarDirectory)) {
         throw (New-Object System.IO.DirectoryNotFoundException("Grammar directory not found"))
     }
     
-    Write-Host "[Antlr4] $($ProjectName) Generate" -ForegroundColor Green
+    Write-Host "$Header $($ProjectName) Generate" -ForegroundColor Green
 
     # Clean output
     if (Test-Path $OutputDirectory) {
@@ -41,7 +45,7 @@ Function Antlr-Generate {
         -no-visitor
 
     if ($LASTEXITCODE -ne 0) {
-        throw "[Antlr4] $($ProjectName) Failed generate"
+        throw "$Header $($ProjectName) Failed generate"
     }
 
     # Move grammar cache (interp, tokens)
