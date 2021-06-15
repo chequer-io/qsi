@@ -31,7 +31,6 @@ using Qsi.Debugger.Vendor.PhoenixSql;
 using Qsi.Debugger.Vendor.PostgreSql;
 using Qsi.Debugger.Vendor.PrimarSql;
 using Qsi.Debugger.Vendor.SqlServer;
-using Qsi.Hana.Tree;
 using Qsi.SqlServer.Common;
 using Qsi.Tree;
 

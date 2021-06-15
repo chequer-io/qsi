@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Qsi.Analyzers;
 using Qsi.Analyzers.Action;
 using Qsi.Analyzers.Context;
-using Qsi.Data;
 using Qsi.Engines;
 using Qsi.SqlServer.Data;
 using Qsi.SqlServer.Tree;

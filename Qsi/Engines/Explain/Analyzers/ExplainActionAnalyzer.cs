@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Qsi.Analyzers;
 using Qsi.Analyzers.Action;
 using Qsi.Data;
-using Qsi.Shared.Extensions;
 using Qsi.Tree;
 
 namespace Qsi.Engines.Explain

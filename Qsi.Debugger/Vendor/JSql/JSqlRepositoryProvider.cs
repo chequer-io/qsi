@@ -1,6 +1,5 @@
 ﻿using Qsi.Data;
 using System;
-using System.Threading.Tasks;
 using Qsi.Utilities;
 
 namespace Qsi.Debugger.Vendor.JSql

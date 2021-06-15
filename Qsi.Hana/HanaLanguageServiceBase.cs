@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using Qsi.Analyzers;
-using Qsi.Analyzers.Action;
 using Qsi.Data;
 using Qsi.Engines;
 using Qsi.Hana.Analyzers;
