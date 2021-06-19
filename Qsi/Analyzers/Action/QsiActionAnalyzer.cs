@@ -638,6 +638,9 @@ namespace Qsi.Analyzers.Action
                     int sourceIndex = FindColumnIndex(context, sourceTable, setColumnsPivot.Columns[i]);
                     var affectedIndex = setColumnsPivot.AffectedIndices[i];
 
+                    if (sourceIndex == -1)
+                        throw new QsiException(QsiError.UnknownColumn, setColumnsPivot.Columns[i]);
+
                     values[sourceIndex] = ResolveColumnValue(context, action.SetValues[affectedIndex].Value);
                     affectedColumnMap[sourceIndex] = true;
                 }
