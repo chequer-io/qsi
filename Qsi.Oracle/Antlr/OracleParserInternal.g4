@@ -227,20 +227,20 @@ sharingClause
 //    : ROLLBACK WORK? (TO SAVEPOINT savepointName | FORCE string)?
 //    ;
 //
-//subquery
-//    : (queryBlock | subquery ((UNION ALL? | INTERSECT | MINUS) subquery)+ | '(' subquery ')') 
-//      orderByClause?
-//      rowLimitingClause?
-//    ;
-//
-//orderByClause
-//    : ORDER SIBLINGS? BY items+=orderByItem? (',' items+=orderByItem)*
-//    ;
-//
-//orderByItem
-//    : (expr | position=S_INTEGER | cAlias=identifier) (ASC | DESC)? (NULLS FIRST | NULLS LAST)?
-//    ;
-//
+subquery
+    : queryBlock orderByClause? rowLimitingClause?
+    | subquery ((UNION ALL? | INTERSECT | MINUS) subquery)+ orderByClause? rowLimitingClause?
+    | '(' subquery ')' orderByClause? rowLimitingClause?
+    ;
+
+orderByClause
+    : ORDER SIBLINGS? BY items+=orderByItem? (',' items+=orderByItem)*
+    ;
+
+orderByItem
+    : (expr | position=integer | cAlias=identifier) (ASC | DESC)? (NULLS FIRST | NULLS LAST)?
+    ;
+
 //// TODO: table, schema is temporary. should be fixed.
 //dmlTableExpressionClause
 //    : (table ('.' schema)? (partitionExtensionClause | '@' dblink)? 
@@ -260,14 +260,14 @@ sharingClause
 //      (REJECT LIMIT (integer | UNLIMITED))?
 //    ;
 //
-//rowLimitingClause
-//    : (OFFSET offset=numberOrExpr (ROW | ROWS))?
-//      (FETCH (FIRST | NEXT)
-//      (rowcount=numberOrExpr | percent=numberOrExpr PERCENT)?
-//      (ROW | ROWS)
-//      (ONLY | WITH TIES))?
-//    ;
-//
+rowLimitingClause
+    : (OFFSET offset=expr (ROW | ROWS))?
+      (FETCH (FIRST | NEXT)
+      (rowcount=expr | percent=expr PERCENT)?
+      (ROW | ROWS)
+      (ONLY | WITH TIES))?
+    ;
+
 //forUpdateClause
 //    : FOR UPDATE (OF fullColumnPath (',' fullColumnPath)*)? (NOWAIT | WAIT S_INTEGER | K_SKIP LOCKED)?
 //    ;
@@ -278,43 +278,43 @@ queryBlock
       tables+=tableSource (',' tables+=tableSource)*
 //      whereClause?
 //      hierarchicalQueryClause?
-//      groupByClause?
+      groupByClause?
 //      modelClause?
 //      windowClause?
     ;
-//
-//withClause
-//    : WITH
-////      plsqlDeclarations?
-//      clauses+=factoringClause (',' clauses+=factoringClause)?
-//    ;
-//
-//factoringClause
-//    : subqueryFactoringClause 
+
+withClause
+    : WITH
+//      plsqlDeclarations?
+      clauses+=factoringClause (',' clauses+=factoringClause)?
+    ;
+
+factoringClause
+    : subqueryFactoringClause 
 //    | subavFactoringClause
-//    ;
-//
-//subqueryFactoringClause
-//    : identifier columnList AS '(' subquery ')' searchClause? cycleClause?
-//    ;
-//
-//columnList
-//    : '(' (columns+=identifier (',' columns+=identifier)*)? ')'
-//    ;
-//
-//searchClause
-//    : SEARCH (DEPTH | BREADTH)
-//      FIRST BY identifier (',' identifier)* (ASC | DESC)? (NULLS FIRST | NULLS LAST)?
-//      SET orderingColumn=identifier
-//    ;
-//
-//cycleClause
-//    : CYCLE cAlias (',' cAlias)*
-//      SET cycleMarkCAlias
-//      TO cycleValue
-//      DEFAULT noCycleValue
-//    ;
-//
+    ;
+
+subqueryFactoringClause
+    : identifier columnList? AS '(' subquery ')' searchClause? cycleClause?
+    ;
+
+columnList
+    : '(' (columns+=identifier (',' columns+=identifier)*)? ')'
+    ;
+
+searchClause
+    : SEARCH (DEPTH | BREADTH)
+      FIRST BY identifier (',' identifier)* (ASC | DESC)? (NULLS FIRST | NULLS LAST)?
+      SET orderingColumn=identifier
+    ;
+
+cycleClause
+    : CYCLE cAlias=identifier (',' cAlias=identifier)*
+      SET cycleMarkCAlias=identifier
+      TO cycleValue=SINGLE_QUOTED_STRING {isCycleValue()}?
+      DEFAULT noCycleValue=SINGLE_QUOTED_STRING {isCycleValue()}?
+    ;
+
 //subavFactoringClause
 //    : subavName=fullObjectPath ANALYTIC VIEW AS '(' subAvClause ')'
 //    ;
@@ -360,7 +360,7 @@ queryBlock
 // /*+ APPEND */
 
 hint
-    : '/*+' (hintItem stringLiteral?)+ '*/'
+    : '/*+' (hintItem stringLiteral?|.+?)+ '*/'
     | '--+' (hintItem stringLiteral?)+
     ;
 
@@ -491,8 +491,8 @@ selectList
     ;
 
 selectListItem
-    : identifier '.' (identifier '.')? '*'                  #objectSelectListItem
-    | '*' (AS? alias=identifier)?                           #exprSelectListItem
+    : identifier ('.' identifier)? '.' '*'                  #objectSelectListItem
+    | expr (AS? alias=identifier)?                           #exprSelectListItem
     ;
 
 tableSource
@@ -564,7 +564,9 @@ queryTableExpression
 //          analyticView=identifier hierarchiesClause?
 //          hierarchy=identifier
 //        ) sampleClause?
-//    | LATERAL '(' subquery subqueryRestrictionClause? ')'
+    | LATERAL? '(' subquery 
+//    subqueryRestrictionClause? 
+    ')'
 //    | tableCollectionExpression
     ;
 //
@@ -798,31 +800,31 @@ queryTableExpression
 //hierarchicalQueryClause
 //    : (CONNECT BY NOCYCLE? condition (START WITH condition)? | START WITH condition CONNECT BY NOCYCLE? condition)
 //    ;
-//
-//groupByClause
-//    : GROUP BY groupByItem (',' groupByItem)* (HAVING condition)?
-//    ;
-//    
-//groupByItem
-//    : (expr | rollupCubeClause | groupingSetsClause)
-//    ;
-//
-//rollupCubeClause
-//    : (ROLLUP | CUBE) '(' groupingExpressionList ')'
-//    ;
-//
-//groupingSetsClause
-//    : GROUPING SETS '(' (rollupCubeClause | groupingExpressionList) ')'
-//    ;
-//
-//groupingExpressionList
-//    : expressionList (',' expressionList)*
-//    ;
-//
-//expressionList
-//    : (expr (',' expr)* | '(' (expr (',' expr)?)* ')')
-//    ;
-//
+
+groupByClause
+    : GROUP BY groupByItem (',' groupByItem)* (HAVING condition)?
+    ;
+
+groupByItem
+    : (expr | rollupCubeClause | groupingSetsClause)
+    ;
+
+rollupCubeClause
+    : (ROLLUP | CUBE) '(' groupingExpressionList ')'
+    ;
+
+groupingSetsClause
+    : GROUPING SETS '(' (rollupCubeClause | groupingExpressionList) ')'
+    ;
+
+groupingExpressionList
+    : expressionList (',' expressionList)*
+    ;
+
+expressionList
+    : (expr (',' expr)* | '(' (expr (',' expr)?)* ')')
+    ;
+
 //modelClause
 //    : MODEL cellReferenceOptions? returnRowsClause? referenceModel* mainModel
 //    ;
@@ -903,17 +905,27 @@ queryTableExpression
 //windowSpecification
 //    : existingWindowName? queryPartitionClause? orderByClause? windowingClause?
 //    ;
-//
-//numberOrExpr
-//    : S_NUMBER
-//    | expr
-//    ;
-//
-//expr
-//    : simpleExpression
-//    | compoundExpression 
+
+condition
+    : comparisonCondition
+    ;
+
+comparisonCondition
+    : simpleComparisonCondition
+    ;
+
+simpleComparisonCondition
+    : expr ( '=' | '!=' | '^=' | '<>' | '>' | '<' | '>=' | '<=' ) expr
+    ;
+
+expr
+    : simpleExpression                          #simpleExpr
+    | '(' expr ')'                              #parenthesisExpr
+    | ('+' | '-'| PRIOR) expr                   #signExpr
+    | expr ( '*' | '/' | '+' | '-' | '||') expr #binaryExpr
+    | expr COLLATE collationName=identifier     #collateExpr
 //    | calcMeasExpression 
-//    | caseExpression 
+    | caseExpression                            #caseExpr
 //    | cursorExpression 
 //    | datetimeExpression 
 //    | functionExpression 
@@ -924,32 +936,25 @@ queryTableExpression
 //    | scalarSubqueryExpression 
 //    | typeConstructorExpression 
 //    | variableExpression
-//    ;
-//
-//simpleExpression
-//    : (queryName '.' | (schema '.')? (table '.' | view '.' | materializedView '.') | tAlias '.')? (column | ROWID)
-//    | ROWNUM
-//    | string 
-//    | number 
-//    | sequence '.' (CURRVAL | NEXTVAL) 
-//    | NULL
-//    ;
-//
-//compoundExpression
-//    : expr
-//    | ('+' | '-'| PRIOR) expr
-//    | expr ( '*' | '/' | '+' | '-' | '||') expr
-//    | expr COLLATE collationName
-//    ;
-//
+    ;
+
+simpleExpression
+    : ((identifier '.')? identifier '.')? (column | ROWID)
+    | ROWNUM
+    | stringLiteral 
+    | numberLiteral 
+    | sequence '.' (CURRVAL | NEXTVAL) 
+    | NULL
+    ;
+
 //cursorExpression
 //    : CURSOR '(' subquery ')'
 //    ;
-//
-//caseExpression
-//    : CASE (simpleCaseExpression | searchedCaseExpression) elseClause? END
-//    ;
-//
+
+caseExpression
+    : CASE (simpleCaseExpression | searchedCaseExpression) elseClause? END
+    ;
+
 //datetimeExpression
 //    : expr AT ( LOCAL | TIME ZONE
 //        ( SINGLE_QUOTE ('+'|'-') hh ':' mi SINGLE_QUOTE
@@ -998,18 +1003,18 @@ queryTableExpression
 //    : 
 //    ;
 //
-//simpleCaseExpression
-//    : expr (WHEN comparisonExpr THEN returnExpr)+
-//    ;
-//
-//searchedCaseExpression
-//    : (WHEN condition THEN returnExpr)+
-//    ;
-//
-//elseClause
-//    : ELSE elseExpr
-//    ;
-//
+simpleCaseExpression
+    : expr (WHEN comparisonExpr=expr THEN returnExpr=expr)+
+    ;
+
+searchedCaseExpression
+    : (WHEN condition THEN returnExpr=expr)+
+    ;
+
+elseClause
+    : ELSE elseExpr=expr
+    ;
+
 //fullColumnPath
 //    : identifier ('.' identifier ('.' identifier)?)?
 //    ;
@@ -1018,7 +1023,19 @@ fullObjectPath
     : identifier ('.' identifier)?
     ;
 
+sequence
+    : identifier
+    ;
+
 table
+    : identifier
+    ;
+
+schema
+    : identifier
+    ;
+
+materializedView
     : identifier
     ;
 
@@ -1055,10 +1072,10 @@ numberLiteral
     | S_NUMBER_WITHOUT_SIGN
     ;
 
-// NQ'...'
 // '...'
 // Q'...'
 // N'...'
+// NQ'...'
 stringLiteral
     : SINGLE_QUOTED_STRING
     | v=QUOTED_STRING     { ValidateStringLiteral($v.text) }?

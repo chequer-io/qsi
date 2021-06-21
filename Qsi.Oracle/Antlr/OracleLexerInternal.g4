@@ -2,20 +2,28 @@ lexer grammar OracleLexerInternal;
 
 channels { ERRORCHANNEL }
 
-DOT_SYMBOL:         '.';
-COMMA_SYMBOL:       ',';
-SEMICOLON_SYMBOL:   ';';
-EQUAL_OPERATOR:     '=';
-PLUS_OPERATOR:      '+';
-MINUS_OPERATOR:     '-';
-MULT_OPERATOR:      '*';
-DIV_OPERATOR:       '/';
-HINT_OPEN_OPERATOR: '/*+';
-HINT_CLOSE_OPERATOR:'*/';
-HINT_OPEN2_OPERATOR:'--+';
-OPEN_BRACKET:       '(';
-CLOSE_BRACKET:      ')';
-AT_SIGN_BRACKET:    '@';
+DOT_SYMBOL:                 '.';
+COMMA_SYMBOL:               ',';
+SEMICOLON_SYMBOL:           ';';
+EQUAL_OPERATOR:             '=';
+NOT_EQUAL_OPERATOR:         '!=';
+NOT_EQUAL2_OPERATOR:        '<>';
+LESS_THEN_EQUAL_OPERATOR:   '<=';
+GREATER_THEN_EQUAL_OPERATOR:'>=';
+LESS_THEN_OPERATOR:         '<';
+GREATER_THEN_OPERATOR:      '>';
+BIT_XOR_OPERATOR:           '^=';
+PLUS_OPERATOR:              '+';
+MINUS_OPERATOR:             '-';
+MULT_OPERATOR:              '*';
+DIV_OPERATOR:               '/';
+HINT_OPEN_OPERATOR:         '/*+';
+HINT_CLOSE_OPERATOR:        '*/';
+HINT_OPEN2_OPERATOR:        '--+';
+CONCAT_OPERATOR:            '||';
+OPEN_BRACKET:               '(';
+CLOSE_BRACKET:              ')';
+AT_SIGN_BRACKET:            '@';
 S_SINGLE_QUOTE: SINGLE_QUOTE;
 
 fragment A: [aA];
@@ -383,6 +391,5 @@ NATIONAL_STRING
         | QUOTED_STRING
     );
 
-S_DELEIMITER: ALPHABET | ~[ \r\n\t];
-
-WHITESPACE: [ \t\f\r\n] -> channel(HIDDEN); // Ignore whitespaces.
+WHITESPACE:    [ \t\f\r\n] -> channel(HIDDEN); // Ignore whitespaces.
+BLOCK_COMMENT: ( '/**/' | '/*' ~[+] .*? '*/') -> channel(HIDDEN);
