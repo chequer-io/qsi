@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -10,6 +11,7 @@ using Qsi.Analyzers.Context;
 using Qsi.Analyzers.Table;
 using Qsi.Analyzers.Table.Context;
 using Qsi.Data;
+using Qsi.Engines;
 using Qsi.PrimarSql.Tree;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
@@ -24,7 +26,7 @@ namespace Qsi.PrimarSql.Analyzers
         }
 
         #region Delete
-        protected override async ValueTask<IQsiAnalysisResult> ExecuteDataDeleteAction(IAnalyzerContext context, IQsiDataDeleteActionNode action)
+        protected override async ValueTask<IQsiAnalysisResult[]> ExecuteDataDeleteAction(IAnalyzerContext context, IQsiDataDeleteActionNode action)
         {
             var tableAnalyzer = context.Engine.GetAnalyzer<QsiTableAnalyzer>();
             using var tableContext = new TableCompileContext(context);
@@ -43,18 +45,19 @@ namespace Qsi.PrimarSql.Analyzers
                 targetRow.Items[0] = row.Items[0];
             }
 
-            var dataAction = new QsiDataAction
+            return new QsiDataManipulationResult
             {
                 Table = tempTable,
+                AffectedColumns = tempTable.Columns.ToArray(),
                 DeleteRows = deleteRows.ToNullIfEmpty()
-            };
-
-            return (new[] { dataAction }).ToResult();
+            }.ToSingleArray();
         }
         #endregion
 
         #region Update
-        protected override async ValueTask<IQsiAnalysisResult> ExecuteDataUpdateAction(IAnalyzerContext context, IQsiDataUpdateActionNode action)
+        #endregion
+
+        protected override async ValueTask<IQsiAnalysisResult[]> ExecuteDataUpdateAction(IAnalyzerContext context, IQsiDataUpdateActionNode action)
         {
             var tableAnalyzer = context.Engine.GetAnalyzer<QsiTableAnalyzer>();
             using var tableContext = new TableCompileContext(context);
@@ -105,19 +108,30 @@ namespace Qsi.PrimarSql.Analyzers
                 newRow.Items[0] = new QsiDataValue(afterValue.ToString(Formatting.None), QsiDataType.Object);
             }
 
-            var dataAction = new QsiDataAction
+            var tempTable2 = new QsiTableStructure
             {
-                Table = tempTable,
-                UpdateBeforeRows = updateBeforeRows.ToNullIfEmpty(),
-                UpdateAfterRows = updateAfterRows.ToNullIfEmpty()
+                Type = QsiTableType.Derived,
+                References = { tempTable }
             };
 
-            return (new[] { dataAction }).ToResult();
+            foreach (var parts in setValues.Select(v => v.Item1))
+            {
+                var column = tempTable2.NewColumn();
+                column.Name = new QsiIdentifier(FormatParts(parts), false);
+                column.References.AddRange(tempTable.Columns);
+            }
+
+            return new QsiDataManipulationResult
+            {
+                Table = tempTable2,
+                AffectedColumns = tempTable2.Columns.ToArray(),
+                UpdateBeforeRows = updateBeforeRows.ToNullIfEmpty(),
+                UpdateAfterRows = updateAfterRows.ToNullIfEmpty()
+            }.ToSingleArray();
         }
-        #endregion
 
         #region Insert
-        protected override async ValueTask<IQsiAnalysisResult> ExecuteDataInsertAction(IAnalyzerContext context, IQsiDataInsertActionNode action)
+        protected override async ValueTask<IQsiAnalysisResult[]> ExecuteDataInsertAction(IAnalyzerContext context, IQsiDataInsertActionNode action)
         {
             var tableAnalyzer = context.Engine.GetAnalyzer<QsiTableAnalyzer>();
             using var tableContext = new TableCompileContext(context);
@@ -148,13 +162,25 @@ namespace Qsi.PrimarSql.Analyzers
                 row.Items[0] = new QsiDataValue(obj.ToString(Formatting.None), QsiDataType.Object);
             }
 
-            var dataAction = new QsiDataAction
+            var tempTable2 = new QsiTableStructure
             {
-                Table = tempTable,
-                InsertRows = insertRows.ToNullIfEmpty(),
+                Type = QsiTableType.Derived,
+                References = { tempTable }
             };
 
-            return (new[] { dataAction }).ToResult();
+            foreach (var column in columns)
+            {
+                var newColumn = tempTable2.NewColumn();
+                newColumn.Name = column[^1];
+                newColumn.References.AddRange(tempTable.Columns);
+            }
+
+            return new QsiDataManipulationResult
+            {
+                Table = tempTable2,
+                AffectedColumns = tempTable2.Columns.ToArray(),
+                InsertRows = insertRows.ToNullIfEmpty(),
+            }.ToSingleArray();
         }
         #endregion
 
@@ -190,6 +216,33 @@ namespace Qsi.PrimarSql.Analyzers
             }
 
             return base.ReassembleCommonTableNode(node);
+        }
+
+        private string FormatParts(IEnumerable<object> parts)
+        {
+            var builder = new StringBuilder();
+
+            foreach (var part in parts)
+            {
+                switch (part)
+                {
+                    case string fieldName:
+                        if (builder.Length > 0)
+                            builder.Append('.');
+
+                        builder.Append(fieldName);
+                        break;
+
+                    case int indexer:
+                        builder.Append('[').Append(indexer).Append(']');
+                        break;
+
+                    default:
+                        throw new InvalidOperationException();
+                }
+            }
+
+            return builder.ToString();
         }
 
         private bool SetValueToToken(JToken token, object[] parts, JToken value, bool deleteProperty)

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
 using Qsi.Data;
@@ -187,10 +186,9 @@ namespace Qsi.MySql.Tree
 
             if (alias == null)
             {
-                if (node is QsiDerivedColumnNode columnNode && columnNode.Alias.IsEmpty)
+                if (node is QsiDerivedColumnNode { Alias: { IsEmpty: true } } columnNode)
                 {
-                    var columnName = context.GetInputText();
-                    columnName = Regex.Replace(columnName, "[\r\n\t\f\v]", " ");
+                    var columnName = DeduceColumnName(context, columnNode.Expression.Value);
                     columnNode.InferredName = new QsiIdentifier(columnName, false);
                 }
 
@@ -244,6 +242,32 @@ namespace Qsi.MySql.Tree
             MySqlTree.PutContextSpan(derivedColumnNode, context);
 
             return derivedColumnNode;
+        }
+
+        private static string DeduceColumnName(SelectItemContext context, QsiExpressionNode node)
+        {
+            if (node is IQsiLiteralExpressionNode literal)
+            {
+                string stringValue = null;
+
+                switch (literal.Value)
+                {
+                    case string name:
+                        stringValue = name;
+                        break;
+
+                    case MySqlString { CollateName: null, Kind: MySqlStringKind.National } mySqlString:
+                    {
+                        stringValue = mySqlString.Value;
+                        break;
+                    }
+                }
+
+                if (stringValue != null)
+                    return stringValue.TrimStart('\r', '\n', '\t', '\f', '\v', ' ');
+            }
+
+            return context.GetInputText();
         }
 
         public static QsiAliasNode VisitSelectAlias(SelectAliasContext context)

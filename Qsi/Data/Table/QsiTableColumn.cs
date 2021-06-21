@@ -25,7 +25,7 @@ namespace Qsi.Data
 
         public bool IsExpression
         {
-            get => _isExpression || QsiUtility.FlattenReferenceColumns(this).Any(r => r._isExpression);
+            get => _isExpression || QsiUtility.FlattenColumns(this).Any(r => r._isExpression);
             set => _isExpression = value;
         }
 

@@ -80,8 +80,10 @@ namespace Qsi.MySql.Tree
                     derivedNode.Limit.SetValue(ExpressionVisitor.VisitSimpleLimitClause(simpleLimitClause));
             }
 
-            var node = new QsiDataDeleteActionNode();
-            node.Target.SetValue(derivedNode);
+            var node = new QsiDataDeleteActionNode
+            {
+                Target = { Value = derivedNode }
+            };
 
             MySqlTree.PutContextSpan(node, context);
 
@@ -192,6 +194,21 @@ namespace Qsi.MySql.Tree
 
             node.Target.SetValue(tableNode);
             node.SetValues.AddRange(ExpressionVisitor.VisitUpdateList(context.updateList()));
+
+            MySqlTree.PutContextSpan(node, context);
+
+            return node;
+        }
+
+        public static IQsiTreeNode VisitUseCommand(UseCommandContext context)
+        {
+            var node = new QsiChangeSearchPathActionNode
+            {
+                Identifiers = new[]
+                {
+                    IdentifierVisitor.VisitIdentifier(context.identifier())
+                }
+            };
 
             MySqlTree.PutContextSpan(node, context);
 

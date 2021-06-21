@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using Qsi.Data;
 
 namespace Qsi.Services
@@ -13,6 +14,6 @@ namespace Qsi.Services
 
         QsiVariable LookupVariable(QsiQualifiedIdentifier identifier);
 
-        Task<QsiDataTable> GetDataTable(QsiScript script, QsiParameter[] parameters);
+        Task<QsiDataTable> GetDataTable(QsiScript script, QsiParameter[] parameters, CancellationToken cancellationToken);
     }
 }

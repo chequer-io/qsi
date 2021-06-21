@@ -1,3 +1,23 @@
+Param (
+    [ValidateNotNullOrEmpty()]
+    [string] $Target = 'All'
+)
+
+$Tasks = @(
+    "Qsi.MySql",
+    "Qsi.Cql",
+    "Qsi.Hana",
+    "Qsi.Oracle"
+)
+
+if ($Target -eq 'All') {
+    # nothing
+} elseif ($Tasks -contains $Target) {
+    $Tasks = @($Target)
+} else {
+    throw "'$Target' is an invalid setup target."
+}
+
 Set-Location $(Get-Item "$PSScriptRoot").FullName
 
 if (Get-Module Antlr) {
@@ -6,7 +26,6 @@ if (Get-Module Antlr) {
 
 Import-Module ".\Build\Antlr.ps1"
 
-Antlr-Generate Qsi.MySql
-Antlr-Generate Qsi.Cql
-Antlr-Generate Qsi.Hana
-Antlr-Generate Qsi.Oracle
+for ($i = 0; $i -lt $Tasks.Count; $i++) {
+    Antlr-Generate $Tasks[$i] ($i + 1) $Tasks.Count
+}

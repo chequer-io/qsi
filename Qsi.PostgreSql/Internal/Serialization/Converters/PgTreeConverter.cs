@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
-using Qsi.PostgreSql.Internal.PG10.Types;
 
 namespace Qsi.PostgreSql.Internal.Serialization.Converters
 {

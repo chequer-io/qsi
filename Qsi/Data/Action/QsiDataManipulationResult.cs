@@ -1,8 +1,12 @@
-﻿namespace Qsi.Data
+﻿using Qsi.Analyzers;
+
+namespace Qsi.Data
 {
-    public class QsiDataAction : IQsiAction
+    public class QsiDataManipulationResult : IQsiAnalysisResult
     {
         public QsiTableStructure Table { get; set; }
+
+        public QsiTableColumn[] AffectedColumns { get; set; }
 
         public QsiDataRowCollection InsertRows { get; set; }
 

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Qsi.Analyzers.Action.Context;
@@ -10,10 +9,10 @@ using Qsi.Analyzers.Context;
 using Qsi.Analyzers.Table;
 using Qsi.Analyzers.Table.Context;
 using Qsi.Data;
+using Qsi.Engines;
 using Qsi.Extensions;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
-using Qsi.Tree.Data;
 using Qsi.Tree.Immutable;
 using Qsi.Utilities;
 
@@ -32,7 +31,7 @@ namespace Qsi.Analyzers.Action
             return tree is IQsiActionNode;
         }
 
-        protected override async ValueTask<IQsiAnalysisResult> OnExecute(IAnalyzerContext context)
+        protected override async ValueTask<IQsiAnalysisResult[]> OnExecute(IAnalyzerContext context)
         {
             switch (context.Tree)
             {
@@ -63,7 +62,7 @@ namespace Qsi.Analyzers.Action
         }
 
         #region Prepared
-        protected virtual ValueTask<IQsiAnalysisResult> ExecutePrepareAction(IAnalyzerContext context, IQsiPrepareActionNode action)
+        protected virtual ValueTask<IQsiAnalysisResult[]> ExecutePrepareAction(IAnalyzerContext context, IQsiPrepareActionNode action)
         {
             string query;
 
@@ -98,10 +97,10 @@ namespace Qsi.Analyzers.Action
                 Definition = new QsiScript(query, scriptType)
             };
 
-            return refAction.ToResult().AsValueTask();
+            return refAction.ToSingleArray().AsValueTask();
         }
 
-        protected virtual ValueTask<IQsiAnalysisResult> ExecuteDropPrepareAction(IAnalyzerContext context, IQsiDropPrepareActionNode action)
+        protected virtual ValueTask<IQsiAnalysisResult[]> ExecuteDropPrepareAction(IAnalyzerContext context, IQsiDropPrepareActionNode action)
         {
             var refAction = new QsiReferenceAction
             {
@@ -111,10 +110,10 @@ namespace Qsi.Analyzers.Action
                 Target = action.Identifier
             };
 
-            return refAction.ToResult().AsValueTask();
+            return refAction.ToSingleArray().AsValueTask();
         }
 
-        protected virtual ValueTask<IQsiAnalysisResult> ExecuteExecutePrepareAction(IAnalyzerContext context, IQsiExecutePrepareActionNode action)
+        protected virtual ValueTask<IQsiAnalysisResult[]> ExecuteExecutePrepareAction(IAnalyzerContext context, IQsiExecutePrepareActionNode action)
         {
             var definition = context.Engine.RepositoryProvider.LookupDefinition(action.Identifier, QsiTableType.Prepared) ??
                              throw new QsiException(QsiError.UnableResolveDefinition, action.Identifier);
@@ -254,6 +253,14 @@ namespace Qsi.Analyzers.Action
             }
         }
 
+        protected virtual QsiTableColumn[] GetAffectedColumns(DataManipulationTarget target)
+        {
+            return target.ColumnPivots
+                .Where(p => p.DeclaredColumn != null)
+                .Select(p => p.TargetColumn)
+                .ToArray();
+        }
+
         protected virtual IQsiTableNode ReassembleCommonTableNode(IQsiTableNode node)
         {
             switch (node)
@@ -318,12 +325,12 @@ namespace Qsi.Analyzers.Action
             var script = new QsiScript(query, scriptType);
             QsiParameter[] parameters = ArrangeBindParameters(context, commonTableNode);
 
-            return await context.Engine.RepositoryProvider.GetDataTable(script, parameters);
+            return await context.Engine.RepositoryProvider.GetDataTable(script, parameters, context.CancellationToken);
         }
         #endregion
 
         #region Insert, Replace
-        protected virtual async ValueTask<IQsiAnalysisResult> ExecuteDataInsertAction(IAnalyzerContext context, IQsiDataInsertActionNode action)
+        protected virtual async ValueTask<IQsiAnalysisResult[]> ExecuteDataInsertAction(IAnalyzerContext context, IQsiDataInsertActionNode action)
         {
             var tableAnalyzer = context.Engine.GetAnalyzer<QsiTableAnalyzer>();
             QsiTableStructure table;
@@ -364,13 +371,14 @@ namespace Qsi.Analyzers.Action
             }
 
             return dataContext.Targets
-                .Select(t => new QsiDataAction
+                .Select(t => new QsiDataManipulationResult
                 {
                     Table = t.Table,
+                    AffectedColumns = GetAffectedColumns(t),
                     InsertRows = t.InsertRows.ToNullIfEmpty(),
                     DuplicateRows = t.DuplicateRows.ToNullIfEmpty()
                 })
-                .ToResult();
+                .ToArray<IQsiAnalysisResult>();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -440,7 +448,7 @@ namespace Qsi.Analyzers.Action
 
             var scriptType = engine.ScriptParser.GetSuitableType(script);
             QsiParameter[] parameters = ArrangeBindParameters(context, valueTable);
-            var dataTable = await engine.RepositoryProvider.GetDataTable(new QsiScript(script, scriptType), parameters);
+            var dataTable = await engine.RepositoryProvider.GetDataTable(new QsiScript(script, scriptType), parameters, context.CancellationToken);
 
             if (dataTable.Rows.ColumnCount != context.ColumnNames.Length)
                 throw new QsiException(QsiError.DifferentColumnsCount);
@@ -515,7 +523,7 @@ namespace Qsi.Analyzers.Action
             }
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void PopulateInsertRow(TableDataInsertContext context, DataValueSelector valueSelector)
         {
             foreach (var target in context.Targets)
@@ -538,7 +546,7 @@ namespace Qsi.Analyzers.Action
         #endregion
 
         #region Delete
-        protected virtual async ValueTask<IQsiAnalysisResult> ExecuteDataDeleteAction(IAnalyzerContext context, IQsiDataDeleteActionNode action)
+        protected virtual async ValueTask<IQsiAnalysisResult[]> ExecuteDataDeleteAction(IAnalyzerContext context, IQsiDataDeleteActionNode action)
         {
             var tableAnalyzer = context.Engine.GetAnalyzer<QsiTableAnalyzer>();
             QsiTableStructure table;
@@ -589,18 +597,19 @@ namespace Qsi.Analyzers.Action
                         }
                     }
 
-                    return new QsiDataAction
+                    return new QsiDataManipulationResult
                     {
                         Table = target.Table,
+                        AffectedColumns = GetAffectedColumns(target),
                         DeleteRows = target.DeleteRows.ToNullIfEmpty()
                     };
                 })
-                .ToResult();
+                .ToArray<IQsiAnalysisResult>();
         }
         #endregion
 
         #region Update
-        protected virtual async ValueTask<IQsiAnalysisResult> ExecuteDataUpdateAction(IAnalyzerContext context, IQsiDataUpdateActionNode action)
+        protected virtual async ValueTask<IQsiAnalysisResult[]> ExecuteDataUpdateAction(IAnalyzerContext context, IQsiDataUpdateActionNode action)
         {
             // table structure
             var tableAnalyzer = context.Engine.GetAnalyzer<QsiTableAnalyzer>();
@@ -617,6 +626,7 @@ namespace Qsi.Analyzers.Action
 
             // values
             var values = new QsiDataValue[sourceTable.Columns.Count];
+            var affectedColumnMap = new bool[sourceTable.Columns.Count];
 
             if (!ListUtility.IsNullOrEmpty(action.SetValues))
             {
@@ -628,7 +638,11 @@ namespace Qsi.Analyzers.Action
                     int sourceIndex = FindColumnIndex(context, sourceTable, setColumnsPivot.Columns[i]);
                     var affectedIndex = setColumnsPivot.AffectedIndices[i];
 
+                    if (sourceIndex == -1)
+                        throw new QsiException(QsiError.UnknownColumn, setColumnsPivot.Columns[i]);
+
                     values[sourceIndex] = ResolveColumnValue(context, action.SetValues[affectedIndex].Value);
+                    affectedColumnMap[sourceIndex] = true;
                 }
             }
             else if (action.Value != null)
@@ -638,6 +652,8 @@ namespace Qsi.Analyzers.Action
 
                 for (int i = 0; i < values.Length; i++)
                     values[i] = ResolveColumnValue(context, action.Value.ColumnValues[i]);
+
+                affectedColumnMap.AsSpan().Fill(true);
             }
             else
             {
@@ -669,14 +685,20 @@ namespace Qsi.Analyzers.Action
                         }
                     }
 
-                    return new QsiDataAction
+                    QsiTableColumn[] affectedColumns = target.ColumnPivots
+                        .Where(p => p.DeclaredColumn != null && affectedColumnMap[p.DeclaredOrder])
+                        .Select(p => p.DeclaredColumn)
+                        .ToArray();
+
+                    return new QsiDataManipulationResult
                     {
                         Table = target.Table,
+                        AffectedColumns = affectedColumns,
                         UpdateBeforeRows = target.UpdateBeforeRows.ToNullIfEmpty(),
                         UpdateAfterRows = target.UpdateAfterRows.ToNullIfEmpty()
                     };
                 })
-                .ToResult();
+                .ToArray<IQsiAnalysisResult>();
         }
 
         private int FindColumnIndex(IAnalyzerContext context, QsiTableStructure table, QsiQualifiedIdentifier identifier)
@@ -741,7 +763,7 @@ namespace Qsi.Analyzers.Action
         #endregion
 
         #region SearchPath
-        protected virtual Task<IQsiAnalysisResult> ExecuteSearchPathAction(IAnalyzerContext context, IQsiChangeSearchPathActionNode action)
+        protected virtual ValueTask<IQsiAnalysisResult[]> ExecuteSearchPathAction(IAnalyzerContext context, IQsiChangeSearchPathActionNode action)
         {
             var fakeRefIdentifier = new QsiIdentifier(string.Empty, false);
 
@@ -754,9 +776,7 @@ namespace Qsi.Analyzers.Action
                 })
                 .ToArray();
 
-            IQsiAnalysisResult result = new QsiActionAnalysisResult(new QsiChangeSearchPathAction(identifiers));
-
-            return Task.FromResult(result);
+            return new QsiChangeSearchPathAction(identifiers).ToSingleArray().AsValueTask();
         }
         #endregion
     }
