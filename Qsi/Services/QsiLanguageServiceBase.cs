@@ -5,6 +5,7 @@ using Qsi.Analyzers.Action;
 using Qsi.Analyzers.Table;
 using Qsi.Collections;
 using Qsi.Data;
+using Qsi.Engines;
 using Qsi.Parsing;
 using Qsi.Tree;
 
@@ -14,7 +15,7 @@ namespace Qsi.Services
     {
         public abstract QsiAnalyzerOptions CreateAnalyzerOptions();
 
-        public virtual IEnumerable<QsiAnalyzerBase> CreateAnalyzers(QsiEngine engine)
+        public virtual IEnumerable<IQsiAnalyzer> CreateAnalyzers(QsiEngine engine)
         {
             yield return new QsiActionAnalyzer(engine);
             yield return new QsiTableAnalyzer(engine);

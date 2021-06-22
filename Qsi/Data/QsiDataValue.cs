@@ -11,10 +11,13 @@
 
         public static QsiDataValue Null => _null ??= new QsiDataValue(null, QsiDataType.Null);
 
+        internal static QsiDataValue Explain => _explain ??= new QsiDataValue(null, (QsiDataType)(-1));
+
         private static QsiDataValue _unknown;
         private static QsiDataValue _unset;
         private static QsiDataValue _default;
         private static QsiDataValue _null;
+        private static QsiDataValue _explain;
         #endregion
 
         public object Value { get; }

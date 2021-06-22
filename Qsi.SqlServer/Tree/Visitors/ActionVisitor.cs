@@ -148,9 +148,11 @@ namespace Qsi.SqlServer.Tree
                 table = derivedTable;
             }
 
-            var node = new QsiDataDeleteActionNode();
+            var node = new QsiDataDeleteActionNode
+            {
+                Target = { Value = table }
+            };
 
-            node.Target.SetValue(table);
             SqlServerTree.PutFragmentSpan(node, deleteSpecification);
 
             return node;

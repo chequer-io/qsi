@@ -14,6 +14,7 @@ using Qsi.Analyzers.Table.Context;
 using Qsi.Cql.Analyzers.Selection;
 using Qsi.Cql.Tree;
 using Qsi.Data;
+using Qsi.Engines;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
 using Qsi.Utilities;
@@ -175,7 +176,7 @@ namespace Qsi.Cql.Analyzers
             return plans.Values.ToArray();
         }
 
-        protected override async ValueTask<IQsiAnalysisResult> ExecuteDataDeleteAction(IAnalyzerContext context, IQsiDataDeleteActionNode action)
+        protected override async ValueTask<IQsiAnalysisResult[]> ExecuteDataDeleteAction(IAnalyzerContext context, IQsiDataDeleteActionNode action)
         {
             var tableNode = (CqlDerivedTableNode)action.Target;
             var tableReferenceNode = (QsiTableReferenceNode)tableNode.Source.Value;
@@ -282,21 +283,16 @@ namespace Qsi.Cql.Analyzers
                         }
                     }
 
-                    QsiTableColumn[] affectedColumns = target.ColumnPivots
-                        .Select(p => p.DeclaredColumn)
-                        .Where(c => c != null)
-                        .ToArray();
-
-                    return new QsiDataAction
+                    return new QsiDataManipulationResult
                     {
                         Table = target.Table,
-                        AffectedColumns = affectedColumns,
+                        AffectedColumns = GetAffectedColumns(target),
                         DeleteRows = target.DeleteRows.ToNullIfEmpty(),
                         UpdateBeforeRows = target.UpdateBeforeRows.ToNullIfEmpty(),
                         UpdateAfterRows = target.UpdateAfterRows.ToNullIfEmpty()
                     };
                 })
-                .ToResult();
+                .ToArray<IQsiAnalysisResult>();
         }
 
         private async Task ResolveColumnPlan(IAnalyzerContext context, IEnumerable<ColumnPlan> plans, IQsiTableReferenceNode tableReference)
@@ -318,7 +314,7 @@ namespace Qsi.Cql.Analyzers
             var script = new QsiScript(sql, QsiScriptType.Select);
 
             // TODO: Bind parameter in selector
-            var table = await context.Engine.RepositoryProvider.GetDataTable(script, null);
+            var table = await context.Engine.RepositoryProvider.GetDataTable(script, null, context.CancellationToken);
             QsiDataValue[] values = table.Rows[0].Items;
 
             for (int i = 0; i < values.Length; i++)

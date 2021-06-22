@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using Qsi.Data;
+﻿using Qsi.Data;
 using Qsi.Utilities;
 
 namespace Qsi.Debugger.Vendor.PhoenixSql

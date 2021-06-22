@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Qsi.Analyzers;
 using Qsi.Analyzers.Table;
 using Qsi.Data;
+using Qsi.Engines;
 using Qsi.Parsing;
 using Qsi.Services;
 using Qsi.SqlServer.Analyzers;

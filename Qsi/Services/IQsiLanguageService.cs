@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Qsi.Analyzers;
 using Qsi.Data;
+using Qsi.Engines;
 using Qsi.Parsing;
 using Qsi.Tree;
 
@@ -10,7 +11,7 @@ namespace Qsi.Services
     {
         QsiAnalyzerOptions CreateAnalyzerOptions();
 
-        IEnumerable<QsiAnalyzerBase> CreateAnalyzers(QsiEngine engine);
+        IEnumerable<IQsiAnalyzer> CreateAnalyzers(QsiEngine engine);
 
         IQsiTreeParser CreateTreeParser();
 

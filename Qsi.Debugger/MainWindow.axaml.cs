@@ -15,6 +15,7 @@ using Avalonia.Media;
 using AvaloniaEdit;
 using AvaloniaEdit.Highlighting;
 using AvaloniaEdit.Highlighting.Xshd;
+using Qsi.Analyzers;
 using Qsi.Analyzers.Table;
 using Qsi.Data;
 using Qsi.Debugger.Controls;
@@ -30,7 +31,6 @@ using Qsi.Debugger.Vendor.PhoenixSql;
 using Qsi.Debugger.Vendor.PostgreSql;
 using Qsi.Debugger.Vendor.PrimarSql;
 using Qsi.Debugger.Vendor.SqlServer;
-using Qsi.Hana.Tree;
 using Qsi.SqlServer.Common;
 using Qsi.Tree;
 
@@ -191,17 +191,25 @@ namespace Qsi.Debugger
 
                 var input = _codeEditor.Text;
 
-                QsiScript[] scripts = _vendor.Engine.ScriptParser.Parse(input, default).ToArray();
+                QsiScript[] scripts = _vendor.Engine.ScriptParser.Parse(input).ToArray();
                 _scriptRenderer.Update(scripts);
 
-                var script = scripts.First(s => s.ScriptType != QsiScriptType.Comment && s.ScriptType != QsiScriptType.Delimiter);
+                scripts = scripts
+                    .Where(s => s.ScriptType != QsiScriptType.Comment && s.ScriptType != QsiScriptType.Delimiter)
+                    .ToArray();
 
                 // Raw Tree
 
-                _tvRaw.Items = new[] { _vendor.RawTreeParser.Parse(script.Script) };
+                _tvRaw.Items = scripts
+                    .Select(s => _vendor.RawTreeParser.Parse(s.Script))
+                    .ToArray();
 
                 var sw = Stopwatch.StartNew();
-                var tree = _vendor.Engine.TreeParser.Parse(script);
+
+                IQsiTreeNode[] tree = scripts
+                    .Select(s => _vendor.Engine.TreeParser.Parse(s))
+                    .ToArray();
+
                 sw.Stop();
 
                 _tbQsiStatus.Text = $"parsed in {sw.Elapsed.TotalMilliseconds:0.0000} ms";
@@ -211,16 +219,15 @@ namespace Qsi.Debugger
                 // Execute
 
                 var fakeParameters = new QsiParameter[] { new(default, default, default) };
-                var result = await _vendor.Engine.Execute(script, fakeParameters);
+                var tables = new List<QsiTableStructure>();
 
-                if (result is QsiTableAnalysisResult tableResult)
+                foreach (var script in scripts)
                 {
-                    BuildQsiTableTree(tableResult.Table);
+                    IQsiAnalysisResult[] results = await _vendor.Engine.Explain(script, fakeParameters);
+                    tables.AddRange(results.OfType<QsiTableResult>().Select(r => r.Table));
                 }
-                else
-                {
-                    // throw new NotSupportedException(result.GetType().Name);
-                }
+
+                BuildQsiTableTree(tables);
             }
             catch (Exception e)
             {
@@ -259,9 +266,11 @@ namespace Qsi.Debugger
         }
 
         #region Qsi TreeView
-        private void BuildQsiTree(IQsiTreeNode node)
+        private void BuildQsiTree(IEnumerable<IQsiTreeNode> nodes)
         {
-            _tvQsi.Items = new[] { BuildQsiTreeImpl(node) };
+            _tvQsi.Items = nodes
+                .Select(BuildQsiTreeImpl)
+                .ToArray();
         }
 
         private QsiTreeItem BuildQsiTreeImpl(IQsiTreeNode node)
@@ -431,11 +440,19 @@ namespace Qsi.Debugger
         #endregion
 
         #region Qsi Table TreeView
-        private void BuildQsiTableTree(QsiTableStructure table)
+        private void BuildQsiTableTree(IList<QsiTableStructure> tables)
         {
-            _tvResult.Items = table.Columns
-                .Select(c => new QsiColumnTreeItem(c))
-                .ToArray();
+            var items = new List<object>();
+
+            for (int i = 0; i < tables.Count; i++)
+            {
+                if (i > 0)
+                    items.Add(new QsiSplitTreeItem());
+
+                items.AddRange(tables[i].Columns.Select(c => new QsiColumnTreeItem(c)));
+            }
+
+            _tvResult.Items = items;
         }
         #endregion
     }

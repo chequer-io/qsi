@@ -103,8 +103,10 @@ namespace Qsi.PrimarSql.Tree
                 derivedTable.Limit.SetValue(ExpressionVisitor.VisitLimitClause(limitClause));
             }
 
-            var node = new QsiDataDeleteActionNode();
-            node.Target.SetValue(derivedTable);
+            var node = new QsiDataDeleteActionNode
+            {
+                Target = { Value = derivedTable }
+            };
 
             PrimarSqlTree.PutContextSpan(derivedTable, context);
 

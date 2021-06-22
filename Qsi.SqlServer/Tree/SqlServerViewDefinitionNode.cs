@@ -1,4 +1,3 @@
-using Qsi.Tree;
 using Qsi.Tree.Definition;
 
 namespace Qsi.SqlServer.Tree

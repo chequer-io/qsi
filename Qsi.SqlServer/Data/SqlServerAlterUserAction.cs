@@ -1,8 +1,9 @@
-﻿using Qsi.Data;
+﻿using Qsi.Analyzers;
+using Qsi.Data;
 
 namespace Qsi.SqlServer.Data
 {
-    public class SqlServerAlterUserAction : IQsiAction
+    public class SqlServerAlterUserAction : IQsiAnalysisResult
     {
         public QsiIdentifier TargetUser { get; set; }
 

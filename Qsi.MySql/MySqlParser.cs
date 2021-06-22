@@ -47,8 +47,23 @@ namespace Qsi.MySql
                 case InsertStatementContext insertStatement:
                     return ActionVisitor.VisitInsertStatement(insertStatement);
 
+                case UtilityStatementContext utilityStatement:
+                    return ParseUtilityStatement(utilityStatement);
+
                 default:
                     throw TreeHelper.NotSupportedTree(simpleStatement.children[0]);
+            }
+        }
+
+        private IQsiTreeNode ParseUtilityStatement(UtilityStatementContext context)
+        {
+            switch (context.children[0])
+            {
+                case UseCommandContext useCommand:
+                    return ActionVisitor.VisitUseCommand(useCommand);
+
+                default:
+                    throw TreeHelper.NotSupportedTree(context.children[0]);
             }
         }
     }

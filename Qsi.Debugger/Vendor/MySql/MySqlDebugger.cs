@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Qsi.Analyzers;
 using Qsi.Data;
 using Qsi.Diagnostics;
+using Qsi.Engines;
 using Qsi.MySql;
 using Qsi.MySql.Diagnostics;
 using Qsi.Parsing;
@@ -51,7 +52,7 @@ namespace Qsi.Debugger.Vendor.MySql
                 return _service.CreateAnalyzerOptions();
             }
 
-            public IEnumerable<QsiAnalyzerBase> CreateAnalyzers(QsiEngine engine)
+            public IEnumerable<IQsiAnalyzer> CreateAnalyzers(QsiEngine engine)
             {
                 return _service.CreateAnalyzers(engine);
             }

@@ -1,11 +1,13 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Qsi.Analyzers;
 using Qsi.Analyzers.Action;
 using Qsi.Analyzers.Context;
-using Qsi.Data;
+using Qsi.Engines;
 using Qsi.SqlServer.Data;
 using Qsi.SqlServer.Tree;
 using Qsi.Tree;
+using Qsi.Utilities;
 
 namespace Qsi.SqlServer.Analyzers
 {
@@ -15,7 +17,7 @@ namespace Qsi.SqlServer.Analyzers
         {
         }
 
-        protected override async ValueTask<IQsiAnalysisResult> OnExecute(IAnalyzerContext context)
+        protected override async ValueTask<IQsiAnalysisResult[]> OnExecute(IAnalyzerContext context)
         {
             switch (context.Tree)
             {
@@ -23,53 +25,48 @@ namespace Qsi.SqlServer.Analyzers
                     return await ExecuteMergeAction(context, mergeActionNode);
 
                 case SqlServerAlterUserActionNode alterUserActionNode:
-                    return await ExecuteAlterUserAction(context, alterUserActionNode);
+                    return new[] { await ExecuteAlterUserAction(context, alterUserActionNode) };
             }
 
             return await base.OnExecute(context);
         }
 
-        protected ValueTask<IQsiAnalysisResult> ExecuteMergeAction(IAnalyzerContext context, SqlServerMergeActionNode mergeActionNode)
+        protected async ValueTask<IQsiAnalysisResult[]> ExecuteMergeAction(IAnalyzerContext context, SqlServerMergeActionNode mergeActionNode)
         {
-            var actionSet = new QsiActionSet<QsiDataAction>();
+            var results = new List<IQsiAnalysisResult>();
 
             foreach (var actionNode in mergeActionNode.ActionNodes)
             {
-                IQsiAnalysisResult result;
+                IQsiAnalysisResult[] result;
 
                 switch (actionNode)
                 {
                     case QsiDataInsertActionNode insertActionNode:
                     {
-                        result = ExecuteDataInsertAction(context, insertActionNode).Result;
+                        result = await ExecuteDataInsertAction(context, insertActionNode);
                         break;
                     }
 
                     case QsiDataDeleteActionNode deleteActionNode:
                     {
-                        result = ExecuteDataDeleteAction(context, deleteActionNode).Result;
+                        result = await ExecuteDataDeleteAction(context, deleteActionNode);
                         break;
                     }
 
                     case QsiDataUpdateActionNode updateActionNode:
                     {
-                        result = ExecuteDataUpdateAction(context, updateActionNode).Result;
+                        result = await ExecuteDataUpdateAction(context, updateActionNode);
                         break;
                     }
 
                     default:
-                    {
-                        continue;
-                    }
+                        throw TreeHelper.NotSupportedTree(actionNode);
                 }
 
-                if (result is QsiActionAnalysisResult { Action: IQsiActionSet<QsiDataAction> dataActions })
-                {
-                    actionSet.AddRange(dataActions);
-                }
+                results.AddRange(result);
             }
 
-            return new ValueTask<IQsiAnalysisResult>(new QsiActionAnalysisResult(actionSet));
+            return results.ToArray();
         }
 
         protected ValueTask<IQsiAnalysisResult> ExecuteAlterUserAction(IAnalyzerContext context, SqlServerAlterUserActionNode alterUserActionNode)
@@ -81,7 +78,7 @@ namespace Qsi.SqlServer.Analyzers
                 DefaultSchema = alterUserActionNode.DefaultSchema
             };
 
-            return new ValueTask<IQsiAnalysisResult>(new QsiActionAnalysisResult(action));
+            return new ValueTask<IQsiAnalysisResult>(action);
         }
 
         protected override IQsiTableNode ReassembleCommonTableNode(IQsiTableNode node)

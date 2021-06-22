@@ -11,6 +11,7 @@ using Qsi.Analyzers.Context;
 using Qsi.Analyzers.Table;
 using Qsi.Analyzers.Table.Context;
 using Qsi.Data;
+using Qsi.Engines;
 using Qsi.PrimarSql.Tree;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
@@ -25,7 +26,7 @@ namespace Qsi.PrimarSql.Analyzers
         }
 
         #region Delete
-        protected override async ValueTask<IQsiAnalysisResult> ExecuteDataDeleteAction(IAnalyzerContext context, IQsiDataDeleteActionNode action)
+        protected override async ValueTask<IQsiAnalysisResult[]> ExecuteDataDeleteAction(IAnalyzerContext context, IQsiDataDeleteActionNode action)
         {
             var tableAnalyzer = context.Engine.GetAnalyzer<QsiTableAnalyzer>();
             using var tableContext = new TableCompileContext(context);
@@ -44,19 +45,19 @@ namespace Qsi.PrimarSql.Analyzers
                 targetRow.Items[0] = row.Items[0];
             }
 
-            return new QsiDataAction
+            return new QsiDataManipulationResult
             {
                 Table = tempTable,
                 AffectedColumns = tempTable.Columns.ToArray(),
                 DeleteRows = deleteRows.ToNullIfEmpty()
-            }.ToResult();
+            }.ToSingleArray();
         }
         #endregion
 
         #region Update
         #endregion
 
-        protected override async ValueTask<IQsiAnalysisResult> ExecuteDataUpdateAction(IAnalyzerContext context, IQsiDataUpdateActionNode action)
+        protected override async ValueTask<IQsiAnalysisResult[]> ExecuteDataUpdateAction(IAnalyzerContext context, IQsiDataUpdateActionNode action)
         {
             var tableAnalyzer = context.Engine.GetAnalyzer<QsiTableAnalyzer>();
             using var tableContext = new TableCompileContext(context);
@@ -109,26 +110,28 @@ namespace Qsi.PrimarSql.Analyzers
 
             var tempTable2 = new QsiTableStructure
             {
-                Identifier = table.Identifier
+                Type = QsiTableType.Derived,
+                References = { tempTable }
             };
 
             foreach (var parts in setValues.Select(v => v.Item1))
             {
                 var column = tempTable2.NewColumn();
                 column.Name = new QsiIdentifier(FormatParts(parts), false);
+                column.References.AddRange(tempTable.Columns);
             }
 
-            return new QsiDataAction
+            return new QsiDataManipulationResult
             {
-                Table = tempTable,
+                Table = tempTable2,
                 AffectedColumns = tempTable2.Columns.ToArray(),
                 UpdateBeforeRows = updateBeforeRows.ToNullIfEmpty(),
                 UpdateAfterRows = updateAfterRows.ToNullIfEmpty()
-            }.ToResult();
+            }.ToSingleArray();
         }
 
         #region Insert
-        protected override async ValueTask<IQsiAnalysisResult> ExecuteDataInsertAction(IAnalyzerContext context, IQsiDataInsertActionNode action)
+        protected override async ValueTask<IQsiAnalysisResult[]> ExecuteDataInsertAction(IAnalyzerContext context, IQsiDataInsertActionNode action)
         {
             var tableAnalyzer = context.Engine.GetAnalyzer<QsiTableAnalyzer>();
             using var tableContext = new TableCompileContext(context);
@@ -161,18 +164,23 @@ namespace Qsi.PrimarSql.Analyzers
 
             var tempTable2 = new QsiTableStructure
             {
-                Identifier = table.Identifier
+                Type = QsiTableType.Derived,
+                References = { tempTable }
             };
 
             foreach (var column in columns)
-                tempTable2.NewColumn().Name = column[^1];
-
-            return new QsiDataAction
             {
-                Table = tempTable,
+                var newColumn = tempTable2.NewColumn();
+                newColumn.Name = column[^1];
+                newColumn.References.AddRange(tempTable.Columns);
+            }
+
+            return new QsiDataManipulationResult
+            {
+                Table = tempTable2,
                 AffectedColumns = tempTable2.Columns.ToArray(),
                 InsertRows = insertRows.ToNullIfEmpty(),
-            }.ToResult();
+            }.ToSingleArray();
         }
         #endregion
 
