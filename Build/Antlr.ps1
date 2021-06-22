@@ -3,8 +3,8 @@ $AntlrJar = Resolve-Path ".\Build\antlr-4.8-complete.jar"
 Function Antlr-Generate {
     Param (
         [Parameter(Mandatory = $true)][string] $ProjectName,
-        [Parameter(Mandatory = $true)][int] $Progress,
-        [Parameter(Mandatory = $true)][int] $Total
+        [Parameter(Mandatory = $false)][int] $Progress,
+        [Parameter(Mandatory = $false)][int] $Total
     )
     
     $ProjectDirectory = $(Resolve-Path $ProjectName)
@@ -12,7 +12,7 @@ Function Antlr-Generate {
     $Namespace = "$($ProjectName).Internal"
     $GrammarDirectory = [System.IO.Path]::Combine($ProjectDirectory, "Antlr")
     $OutputDirectory = [System.IO.Path]::Combine($GrammarDirectory, "generated")
-    $Header = "[ANTLR4] ($Progress/$Total)"
+    $Header = If ($Total -gt 0) { "[ANTLR4] ($Progress/$Total)" } Else { "[ANTLR4]" }
 
     if (!(Test-Path $GrammarDirectory)) {
         throw (New-Object System.IO.DirectoryNotFoundException("Grammar directory not found"))
