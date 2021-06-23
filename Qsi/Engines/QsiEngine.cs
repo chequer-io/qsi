@@ -55,7 +55,7 @@ namespace Qsi.Engines
 
             if (analyzer == null)
             {
-                if (script.ScriptType is QsiScriptType.Comment or QsiScriptType.Delimiter)
+                if (script.ScriptType is QsiScriptType.Trivia or QsiScriptType.Delimiter)
                     return Array.Empty<IQsiAnalysisResult>();
 
                 throw new QsiException(QsiError.NotSupportedScript, script.ScriptType);
