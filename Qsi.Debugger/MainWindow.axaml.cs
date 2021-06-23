@@ -195,7 +195,7 @@ namespace Qsi.Debugger
                 _scriptRenderer.Update(scripts);
 
                 scripts = scripts
-                    .Where(s => s.ScriptType != QsiScriptType.Comment && s.ScriptType != QsiScriptType.Delimiter)
+                    .Where(s => s.ScriptType != QsiScriptType.Trivia && s.ScriptType != QsiScriptType.Delimiter)
                     .ToArray();
 
                 // Raw Tree

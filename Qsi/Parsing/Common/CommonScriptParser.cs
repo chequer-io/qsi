@@ -358,22 +358,21 @@ namespace Qsi.Parsing.Common
 
         protected virtual QsiScriptType GetSuitableType(CommonScriptCursor cursor, IReadOnlyList<Token> tokens, Token[] leadingTokens)
         {
-            if (leadingTokens.Length >= 2)
+            switch (leadingTokens.Length)
             {
-                if (Enum.TryParse<QsiScriptType>(JoinTokens(cursor, string.Empty, leadingTokens, 0, 2), true, out var type))
+                case >= 2
+                    when Enum.TryParse<QsiScriptType>(JoinTokens(cursor, string.Empty, leadingTokens, 0, 2), true, out var type) &&
+                         type is not QsiScriptType.Trivia:
                     return type;
-            }
 
-            if (leadingTokens.Length >= 1)
-            {
-                if (Enum.TryParse<QsiScriptType>(cursor.Value[leadingTokens[0].Span], true, out var type))
+                case >= 1
+                    when Enum.TryParse<QsiScriptType>(cursor.Value[leadingTokens[0].Span], true, out var type) &&
+                         type is not QsiScriptType.Trivia:
                     return type;
             }
 
             if (tokens.All(t => TokenType.Trivia.HasFlag(t.Type)))
-            {
-                return QsiScriptType.Comment;
-            }
+                return QsiScriptType.Trivia;
 
             return QsiScriptType.Unknown;
         }

@@ -156,15 +156,16 @@ namespace Qsi.SqlServer
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool IsTrivia(TSqlTokenType tokenType)
         {
-            return tokenType == TSqlTokenType.WhiteSpace ||
-                   tokenType == TSqlTokenType.Semicolon ||
-                   tokenType == TSqlTokenType.EndOfFile;
+            return tokenType
+                is TSqlTokenType.WhiteSpace
+                or TSqlTokenType.Semicolon
+                or TSqlTokenType.EndOfFile;
         }
 
         private QsiScriptType GetScriptType(ref ListSegment<TSqlParserToken> tokens)
         {
             TSqlParserToken[] leadingTokens = tokens.AsEnumerable()
-                .Where(t => t.TokenType > TSqlTokenType.EndOfFile && t.TokenType < TSqlTokenType.Bang)
+                .Where(t => t.TokenType is > TSqlTokenType.EndOfFile and < TSqlTokenType.Bang)
                 .Take(2)
                 .ToArray();
 
@@ -172,8 +173,11 @@ namespace Qsi.SqlServer
             {
                 var fragment = $"{leadingTokens[0].Text}{leadingTokens[1].Text}";
 
-                if (Enum.TryParse<QsiScriptType>(fragment, true, out var type))
+                if (Enum.TryParse<QsiScriptType>(fragment, true, out var type) &&
+                    type is not QsiScriptType.Trivia)
+                {
                     return type;
+                }
 
                 if (BulkInsert.EqualsIgnoreCase(fragment))
                     return QsiScriptType.Insert;
@@ -181,19 +185,22 @@ namespace Qsi.SqlServer
 
             if (leadingTokens.Length >= 1)
             {
-                if (Enum.TryParse<QsiScriptType>(leadingTokens[0].Text, true, out var type))
+                if (Enum.TryParse<QsiScriptType>(leadingTokens[0].Text, true, out var type) &&
+                    type is not QsiScriptType.Trivia)
+                {
                     return type;
+                }
 
                 if (Exec.EqualsIgnoreCase(leadingTokens[0].Text))
                     return QsiScriptType.Execute;
             }
 
-            if (tokens.All(t =>
-                t.TokenType == TSqlTokenType.MultilineComment ||
-                t.TokenType == TSqlTokenType.SingleLineComment ||
-                t.TokenType == TSqlTokenType.WhiteSpace))
+            if (tokens.All(t => t.TokenType 
+                is TSqlTokenType.MultilineComment 
+                or TSqlTokenType.SingleLineComment
+                or TSqlTokenType.WhiteSpace))
             {
-                return QsiScriptType.Comment;
+                return QsiScriptType.Trivia;
             }
 
             return QsiScriptType.Unknown;
