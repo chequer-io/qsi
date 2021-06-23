@@ -27,10 +27,6 @@
         // ▶ COUNT_DISTINCT(<expressions>)
         public const string CountDistinct = "COUNT_DISTINCT";
 
-        public const string StringAgg = "STRING_AGG";
-        public const string CrossCorr = "CROSS_CORR";
-        public const string Dft = "DFT";
-
         // Etc
 
         // CAST(<expression> AS <dataType>)
@@ -96,5 +92,9 @@
         // NOT EXISTS (<subquery>)
         // ▶ NOT_EXISTS(<subquery>)
         public const string NotExists = "NOT_EXISTS";
+
+        public const string CrossCorr = "CROSS_CORR";
+        public const string StringAgg = "STRING_AGG";
+        public const string Dft = "DFT";
     }
 }

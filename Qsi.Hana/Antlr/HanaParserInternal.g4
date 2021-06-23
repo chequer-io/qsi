@@ -62,7 +62,8 @@ subquery[bool allowParens]
       set     = setOperatorClause?
       orderBy = tableOrderByClause?
       limit   = limitClause?
-    | {$allowParens}? '(' inner=selectStatement[true] ')'
+    | {$allowParens}? '(' inner=selectStatement[true] ')' 
+      set = setOperatorClause?
     ;
 
 setSubquery
@@ -320,7 +321,9 @@ setOperator
     ;
 
 setOperatorClause
-    : (setOperator setSubquery)+ 
+    : (setOperator setSubquery)+
+      orderBy = tableOrderByClause?
+      limit   = limitClause? 
     ;
 
 limitClause

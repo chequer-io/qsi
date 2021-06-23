@@ -407,17 +407,71 @@ namespace Qsi.Hana.Tree.Visitors
 
         public static QsiExpressionNode VisitAggCrossCorrExpr(AggCrossCorrExprContext context)
         {
-            throw new NotImplementedException();
+            var node = new QsiInvokeExpressionNode();
+
+            node.Member.Value = TreeHelper.CreateFunction(HanaKnownFunction.CrossCorr);
+            node.Parameters.AddRange(context.expression().Select(VisitExpression));
+            node.Parameters.Add(VisitUnsignedInteger(context.UNSIGNED_INTEGER().Symbol));
+
+            // TODO: seriesOrderBy | aggregateOrderByClause
+
+            if (context.children[^1] is ITerminalNode terminalNode)
+            {
+                var lags = terminalNode.Symbol.Type switch
+                {
+                    K_POSITIVE_LAGS => "POSITIVE_LAGS",
+                    K_NEGATIVE_LAGS => "NEGATIVE_LAGS",
+                    K_ZERO_LAG => "ZERO_LAG",
+                    _ => throw new QsiException(QsiError.Syntax)
+                };
+
+                node.Parameters.Add(TreeHelper.CreateLiteral(lags));
+            }
+
+            HanaTree.PutContextSpan(node, context);
+
+            return node;
         }
 
         public static QsiExpressionNode VisitAggDftExpr(AggDftExprContext context)
         {
-            throw new NotImplementedException();
+            var node = new QsiInvokeExpressionNode();
+
+            node.Member.Value = TreeHelper.CreateFunction(HanaKnownFunction.Dft);
+            node.Parameters.Add(VisitExpression(context.expression()));
+            node.Parameters.Add(VisitUnsignedInteger(context.UNSIGNED_INTEGER().Symbol));
+
+            // TODO: seriesOrderBy | aggregateOrderByClause
+
+            if (context.children[^1] is ITerminalNode terminalNode)
+            {
+                var lags = terminalNode.Symbol.Type switch
+                {
+                    K_REAL => "REAL",
+                    K_IMAGINARY => "IMAGINARY",
+                    K_AMPLITUDE => "AMPLITUDE",
+                    K_PHASE => "PHASE",
+                    _ => throw new QsiException(QsiError.Syntax)
+                };
+
+                node.Parameters.Add(TreeHelper.CreateLiteral(lags));
+            }
+
+            HanaTree.PutContextSpan(node, context);
+
+            return node;
         }
 
         public static QsiExpressionNode VisitAggFuncExpr(AggFuncExprContext context)
         {
-            throw new NotImplementedException();
+            var node = new QsiInvokeExpressionNode();
+
+            node.Member.Value = TreeHelper.CreateFunction(context.aggName().GetText());
+            node.Parameters.Add(VisitExpression(context.expression()));
+
+            HanaTree.PutContextSpan(node, context);
+
+            return node;
         }
 
         public static QsiExpressionNode VisitDataTypeConversionExpression(DataTypeConversionExpressionContext context)
@@ -506,7 +560,7 @@ namespace Qsi.Hana.Tree.Visitors
 
         public static QsiExpressionNode VisitJsonQueryExpr(JsonQueryExprContext context)
         {
-            throw new NotImplementedException();
+            throw TreeHelper.NotSupportedFeature("JSON_QUERY Function");
         }
 
         public static QsiExpressionNode VisitJsonTableExpr(JsonTableExprContext context)
@@ -639,7 +693,7 @@ namespace Qsi.Hana.Tree.Visitors
 
         public static QsiExpressionNode VisitJsonValueExpr(JsonValueExprContext context)
         {
-            throw new NotImplementedException();
+            throw TreeHelper.NotSupportedFeature("JSON_VALUE Function");
         }
 
         public static QsiExpressionNode VisitStringExpression(StringExpressionContext context)
