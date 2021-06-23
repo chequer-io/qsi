@@ -876,7 +876,10 @@ namespace Qsi.Hana.Tree.Visitors
                 Identifier = context.functionName().qqi
             });
 
-            node.Parameters.AddRange(VisitExpressionOrSubqueryList(context.expressionOrSubqueryList()));
+            var paramContext = context.expressionOrSubqueryList();
+
+            if (paramContext != null)
+                node.Parameters.AddRange(VisitExpressionOrSubqueryList(paramContext));
 
             HanaTree.PutContextSpan(node, context);
 
