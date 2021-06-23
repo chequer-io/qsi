@@ -19,6 +19,7 @@ namespace Qsi.Oracle
         private const string Trigger = "TRIGGER";
         private const string Type = "TYPE";
 
+        private const string Declare = "DECLARE";
         private const string Begin = "BEGIN";
         private const string End = "END";
 
@@ -27,7 +28,7 @@ namespace Qsi.Oracle
 
         private const string Exec = "EXEC";
 
-        private const string SectionKey = "Oracle::Type";
+        private const string BlockKey = "Oracle::Type";
 
         protected override QsiScriptType GetSuitableType(CommonScriptCursor cursor, IReadOnlyList<Token> tokens, Token[] leadingTokens)
         {
@@ -41,49 +42,57 @@ namespace Qsi.Oracle
 
         protected override bool IsEndOfScript(ParseContext context)
         {
-            var section = context.GetUserData<Section>(SectionKey);
+            var block = context.GetUserData<Block>(BlockKey);
 
-            if (section != null && !section.EndOfSection)
+            if (block is { EndOfBlock: false })
             {
-                section.EndOfSection = IsEndOfCreateSection(context, section);
+                block.EndOfBlock = IsEndOfBlock(context, block);
 
-                if (!section.EndOfSection)
+                if (!block.EndOfBlock)
                     return false;
+
+                if (block.Type == BlockType.Begin)
+                {
+                    context.SetUserData<Block>(BlockKey, null);
+                    return true;
+                }
             }
 
             if (!base.IsEndOfScript(context))
                 return false;
 
-            if (section == null && IsCreateStatement(context, out var type, out var index))
+            if (block == null && IsBlockStatement(context, out var type, out var index))
             {
-                section = new Section(type)
+                block = new Block(type)
                 {
                     LastTokenCount = context.Tokens.Count
                 };
 
-                int transition = type == SectionType.CreatePackage ? index : IndexOfToken(context, index + 1, Begin);
+                int transition = type is BlockType.CreatePackage or BlockType.Begin ?
+                    index :
+                    IndexOfToken(context, index + 1, Begin);
 
                 if (transition >= 0)
                 {
-                    section.LastTokenCount = transition + 1;
-                    section.ExpectedToken.Push(End);
-                    section.BodyOpened = true;
+                    block.LastTokenCount = transition + 1;
+                    block.ExpectedToken.Push(End);
+                    block.BodyOpened = true;
 
-                    if (IsEndOfCreateSection(context, section))
+                    if (IsEndOfBlock(context, block))
                     {
                         return true;
                     }
                 }
-                else if (type == SectionType.CreateType)
+                else if (type == BlockType.CreateType)
                 {
                     return true;
                 }
 
-                context.SetUserData(SectionKey, section);
+                context.SetUserData(BlockKey, block);
                 return false;
             }
 
-            context.SetUserData<Section>(SectionKey, null);
+            context.SetUserData<Block>(BlockKey, null);
 
             return true;
         }
@@ -101,67 +110,83 @@ namespace Qsi.Oracle
             return -1;
         }
 
-        private bool IsEndOfCreateSection(ParseContext context, Section section)
+        private bool IsEndOfBlock(ParseContext context, Block block)
         {
-            if (context.Tokens.Count == section.LastTokenCount)
+            if (context.Tokens.Count == block.LastTokenCount)
                 return false;
 
-            using var t = new TokenEnumerator(context, TokenType.Keyword, section.LastTokenCount);
-            section.LastTokenCount = context.Tokens.Count;
+            using var t = new TokenEnumerator(context, TokenType.Keyword, block.LastTokenCount);
+            block.LastTokenCount = context.Tokens.Count;
 
-            while (!section.BodyOpened && t.MoveNext())
+            while (!block.BodyOpened && t.MoveNext())
             {
                 if (!Begin.EqualsIgnoreCase(t.Current))
                     continue;
 
-                section.BodyOpened = true;
-                section.ExpectedToken.Push(End);
+                block.BodyOpened = true;
+                block.ExpectedToken.Push(End);
                 break;
             }
 
-            if (!section.BodyOpened)
+            if (!block.BodyOpened)
                 return false;
 
-            while (t.MoveNext() && section.ExpectedToken.TryPeek(out var expected))
+            while (t.MoveNext() && block.ExpectedToken.TryPeek(out var expected))
             {
                 if (expected.EqualsIgnoreCase(t.Current))
                 {
-                    section.ExpectedToken.Pop();
+                    block.ExpectedToken.Pop();
                 }
                 else if (If.EqualsIgnoreCase(t.Current))
                 {
-                    section.ExpectedToken.Push(If);
-                    section.ExpectedToken.Push(End);
+                    block.ExpectedToken.Push(If);
+                    block.ExpectedToken.Push(End);
                 }
                 else if (Case.EqualsIgnoreCase(t.Current))
                 {
-                    section.ExpectedToken.Push(Case);
-                    section.ExpectedToken.Push(End);
+                    block.ExpectedToken.Push(Case);
+                    block.ExpectedToken.Push(End);
                 }
                 else if (Begin.EqualsIgnoreCase(t.Current))
                 {
-                    section.ExpectedToken.Push(End);
+                    block.ExpectedToken.Push(End);
                 }
 
-                if (section.ExpectedToken.Count == 0)
+                if (block.ExpectedToken.Count == 0)
                     return true;
             }
 
             return false;
         }
 
-        private bool IsCreateStatement(ParseContext context, out SectionType type, out int endIndex)
+        private bool IsBlockStatement(ParseContext context, out BlockType type, out int endIndex)
         {
             using var k = new TokenEnumerator(context, TokenType.Keyword);
 
             endIndex = -1;
             type = default;
 
-            // CREATE
-            if (!k.MoveNext() || !Create.EqualsIgnoreCase(k.Current))
+            if (!k.MoveNext())
                 return false;
 
-            if (!k.MoveNext())
+            // BEGIN
+            if (Begin.EqualsIgnoreCase(k.Current))
+            {
+                endIndex = k.Index;
+                type = BlockType.Begin;
+                return true;
+            }
+
+            // DECLARE
+            if (Declare.EqualsIgnoreCase(k.Current))
+            {
+                endIndex = k.Index;
+                type = BlockType.Declare;
+                return true;
+            }
+
+            // CREATE
+            if (!Create.EqualsIgnoreCase(k.Current) || !k.MoveNext())
                 return false;
 
             // .. [OR REPLACE]
@@ -177,59 +202,61 @@ namespace Qsi.Oracle
 
             if (Procedure.EqualsIgnoreCase(k.Current))
             {
-                type = SectionType.CreateProcedure;
+                type = BlockType.CreateProcedure;
                 return true;
             }
 
             if (Function.EqualsIgnoreCase(k.Current))
             {
-                type = SectionType.CreateFunction;
+                type = BlockType.CreateFunction;
                 return true;
             }
 
             if (Package.EqualsIgnoreCase(k.Current))
             {
-                type = SectionType.CreatePackage;
+                type = BlockType.CreatePackage;
                 return true;
             }
 
             if (Trigger.EqualsIgnoreCase(k.Current))
             {
-                type = SectionType.CreateTrigger;
+                type = BlockType.CreateTrigger;
                 return true;
             }
 
             if (Type.EqualsIgnoreCase(k.Current))
             {
-                type = SectionType.CreateType;
+                type = BlockType.CreateType;
                 return true;
             }
 
             return false;
         }
 
-        private enum SectionType
+        private enum BlockType
         {
             CreateProcedure,
             CreateFunction,
             CreatePackage,
             CreateTrigger,
-            CreateType
+            CreateType,
+            Begin,
+            Declare
         }
 
-        private sealed class Section
+        private sealed class Block
         {
-            public SectionType Type { get; }
+            public BlockType Type { get; }
 
             public int LastTokenCount { get; set; }
 
             public Stack<string> ExpectedToken { get; }
 
-            public bool EndOfSection { get; set; }
+            public bool EndOfBlock { get; set; }
 
             public bool BodyOpened { get; set; }
 
-            public Section(SectionType type)
+            public Block(BlockType type)
             {
                 Type = type;
                 ExpectedToken = new Stack<string>();
