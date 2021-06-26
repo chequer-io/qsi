@@ -278,6 +278,7 @@ namespace Qsi.SqlServer.Tree
         {
             QsiExpressionNode node = TreeHelper.Create<QsiBinaryExpressionNode>(n =>
             {
+                n.Operator = "IN";
                 n.Left.SetValue(VisitScalarExpression(inPredicate.Expression));
 
                 if (inPredicate.Subquery != null)
