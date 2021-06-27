@@ -661,6 +661,8 @@ namespace Qsi.SqlServer.Tree
                 Identifier = IdentifierVisitor.CreateQualifiedIdentifier(namedTableReference.SchemaObject)
             };
 
+            SqlServerTree.PutFragmentSpan(tableNode, namedTableReference.SchemaObject);
+
             if (namedTableReference.Alias == null)
                 return tableNode;
 
