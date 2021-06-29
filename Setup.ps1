@@ -6,7 +6,8 @@ Param (
 $Tasks = @(
     "Qsi.MySql",
     "Qsi.Cql",
-    "Qsi.Hana"
+    "Qsi.Hana",
+    "Qsi.Impala"
 )
 
 if ($Target -eq 'All') {
