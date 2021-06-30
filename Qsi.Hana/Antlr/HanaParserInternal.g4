@@ -165,7 +165,7 @@ tableExpression
     : tableRef (K_CROSS K_JOIN crossJoin=tableRef)?
 //    | systemVersionedTableRef
     | subqueryTableExpression
-    | left=tableExpression joinType? joinCardinality? K_JOIN right=tableExpression K_ON '(' predicate ')'
+    | left=tableExpression joinType? joinCardinality? K_JOIN right=tableExpression K_ON predicate
     | caseJoin
     | lateralTableExpression
     | collectionDerivedTable
@@ -1024,6 +1024,7 @@ predicate
     | likeRegexPredicate
     | memberOfPredicate
     | nullPredicate
+    | '(' inner=predicate ')'
     ;
 
 comparisonPredicate

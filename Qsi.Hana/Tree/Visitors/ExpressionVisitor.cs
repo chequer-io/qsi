@@ -1170,6 +1170,9 @@ namespace Qsi.Hana.Tree.Visitors
 
         public static QsiExpressionNode VisitPredicate(PredicateContext context)
         {
+            while (context.inner != null)
+                context = context.inner;
+
             switch (context.children[0])
             {
                 case ComparisonPredicateContext comparisonPredicate:
