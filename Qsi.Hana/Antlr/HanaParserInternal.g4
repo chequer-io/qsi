@@ -165,7 +165,7 @@ tableExpression
     : tableRef (K_CROSS K_JOIN crossJoin=tableRef)?
 //    | systemVersionedTableRef
     | subqueryTableExpression
-    | left=tableExpression joinType? joinCardinality? K_JOIN right=tableExpression K_ON predicate
+    | left=tableExpression joinType? joinCardinality? K_JOIN right=tableExpression K_ON '(' predicate ')'
     | caseJoin
     | lateralTableExpression
     | collectionDerivedTable
@@ -961,6 +961,7 @@ xmlColumnType
 
 constant
     : STRING_LITERAL       #constantString
+    | binaryLiteral        #constantBinary
     | numericLiteral       #constantNumber
     | booleanLiteral       #constantBoolean
     | intervalLiteral      #constantInterval
@@ -1114,7 +1115,7 @@ existsPredicate
     ;
 
 inPredicate
-    : source=expression K_NOT? K_IN '(' (value1=expressionList | value2=subquery[true]) ')'
+    : ('(' left1=expressionList ')' | left2=expression) K_NOT? K_IN '(' (right1=expressionList | right2=subquery[true]) ')'
     ;
 
 likePredicate
@@ -1311,6 +1312,10 @@ setSchemaStatement
     ;
 
 // ------ ETC ------
+
+binaryLiteral
+    : HEX_NUMBER
+    ;
 
 booleanLiteral
     : K_TRUE

@@ -986,6 +986,14 @@ namespace Qsi.Hana.Tree.Visitors
 
             switch (context)
             {
+                case ConstantBinaryContext cBinary:
+                {
+                    var text = cBinary.binaryLiteral().GetText();
+                    node = TreeHelper.CreateLiteral(text, QsiDataType.Binary);
+
+                    break;
+                }
+
                 case ConstantStringContext cString:
                 {
                     node = VisitStringLiteral(cString.STRING_LITERAL().Symbol);
@@ -1301,21 +1309,28 @@ namespace Qsi.Hana.Tree.Visitors
                 Member = { Value = TreeHelper.CreateFunction(functionName) }
             };
 
-            node.Parameters.Add(VisitExpression(context.source));
+            node.Parameters.Add(
+                context.left1 != null ?
+                    VisitExpressionList(context.left1) :
+                    VisitExpression(context.left2)
+            );
 
-            if (context.value1 != null)
-            {
-                var array = new QsiMultipleExpressionNode();
-                array.Elements.AddRange(context.value1._list.Select(VisitExpression));
-                HanaTree.PutContextSpan(array, context.value1);
+            node.Parameters.Add(
+                context.right1 != null ?
+                    VisitExpressionList(context.right1) :
+                    VisitSubquery(context.right2)
+            );
 
-                node.Parameters.Add(array);
-            }
-            else
-            {
-                node.Parameters.Add(VisitSubquery(context.value2));
-            }
+            HanaTree.PutContextSpan(node, context);
 
+            return node;
+        }
+
+        public static QsiExpressionNode VisitExpressionList(ExpressionListContext context)
+        {
+            var node = new QsiMultipleExpressionNode();
+
+            node.Elements.AddRange(context._list.Select(VisitExpression));
             HanaTree.PutContextSpan(node, context);
 
             return node;
