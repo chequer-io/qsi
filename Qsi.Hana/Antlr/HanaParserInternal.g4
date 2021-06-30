@@ -105,7 +105,7 @@ forSystemTime
     ;
 
 waitNowait
-    : K_WAIT time=UNSIGNED_INTEGER
+    : K_WAIT time=unsignedIntegerOrBindParameter
     | K_NOWAIT
     ;
 
@@ -119,15 +119,15 @@ forJsonOrXmlOptionListClause
 
 forJsonOrXmlReturnsClause
     : K_RETURNS (
-        K_VARCHAR '(' UNSIGNED_INTEGER ')'
-        | K_NVARCHAR '(' UNSIGNED_INTEGER ')'
+        K_VARCHAR '(' unsignedIntegerOrBindParameter ')'
+        | K_NVARCHAR '(' unsignedIntegerOrBindParameter ')'
         | K_CLOB
         | K_NCLOB
      )
     ;
 
 timeTravel
-    : K_AS K_OF K_COMMIT K_ID UNSIGNED_INTEGER #commitId
+    : K_AS K_OF K_COMMIT K_ID unsignedIntegerOrBindParameter #commitId
     | K_AS K_OF K_UTCTIMESTAMP STRING_LITERAL  #timestamp
     ;
 
@@ -136,7 +136,7 @@ selectClause
    ;
 
 topClause
-    : K_TOP top=UNSIGNED_INTEGER
+    : K_TOP top=unsignedIntegerOrBindParameter
     ;
 
 selectList
@@ -191,7 +191,7 @@ forApplicationTimePeriod
     ;
 
 partitionRestriction
-    : K_PARTITION '(' numbers+=UNSIGNED_INTEGER (',' numbers+=UNSIGNED_INTEGER)* ')'
+    : K_PARTITION '(' numbers+=unsignedIntegerOrBindParameter (',' numbers+=unsignedIntegerOrBindParameter)* ')'
     ;
 
 tableSampleClause
@@ -203,12 +203,12 @@ hintClause
     ;
 
 hintElement
-    : name=UNQUOTED_IDENTIFIER                                                                      #hintName
-    | K_ROUTE_TO             '(' volumeIds+=UNSIGNED_INTEGER (',' volumeIds+=UNSIGNED_INTEGER)? ')' #routeTo
-    | K_NO_ROUTE_TO          '(' volumeIds+=UNSIGNED_INTEGER (',' volumeIds+=UNSIGNED_INTEGER)? ')' #noRouteTo
-    | K_ROUTE_BY             '(' tables+=tableName (',' tables+=tableName)* ')'                     #routeBy
-    | K_ROUTE_BY_CARDINALITY '(' tables+=tableName (',' tables+=tableName)* ')'                     #routeByCardinality
-    | K_DATA_TRANSFER_COST   '(' cost=UNSIGNED_INTEGER ')'                                          #rdataTransferCost
+    : name=UNQUOTED_IDENTIFIER                                                                                                  #hintName
+    | K_ROUTE_TO             '(' volumeIds+=unsignedIntegerOrBindParameter (',' volumeIds+=unsignedIntegerOrBindParameter)? ')' #routeTo
+    | K_NO_ROUTE_TO          '(' volumeIds+=unsignedIntegerOrBindParameter (',' volumeIds+=unsignedIntegerOrBindParameter)? ')' #noRouteTo
+    | K_ROUTE_BY             '(' tables+=tableName (',' tables+=tableName)* ')'                                                 #routeBy
+    | K_ROUTE_BY_CARDINALITY '(' tables+=tableName (',' tables+=tableName)* ')'                                                 #routeByCardinality
+    | K_DATA_TRANSFER_COST   '(' cost=unsignedIntegerOrBindParameter ')'                                                        #rdataTransferCost
     ;
 
 fieldName returns [QsiQualifiedIdentifier qqi] locals [List<QsiIdentifier> buffer]
@@ -272,7 +272,7 @@ groupByExpressionList
 groupingSet
     : (K_GROUPING K_SETS | K_ROLLUP | K_CUBE)
       (K_BEST best=numericLiteral)?
-      (K_LIMIT limit=UNSIGNED_INTEGER (K_OFFSET offset=UNSIGNED_INTEGER)?)?
+      (K_LIMIT limit=unsignedIntegerOrBindParameter (K_OFFSET offset=unsignedIntegerOrBindParameter)?)?
       (K_WITH K_SUBTOTAL)?
       (K_WITH K_BALANCE)?
       (K_WITH K_TOTAL)?
@@ -307,7 +307,7 @@ tableOrderByClause
     ;
 
 tableOrderByExpression
-    : (field=fieldName | position=UNSIGNED_INTEGER) collateClause? (K_ASC | K_DESC)? (K_NULLS K_FIRST | K_NULLS K_LAST)?
+    : (field=fieldName | position=unsignedIntegerOrBindParameter) collateClause? (K_ASC | K_DESC)? (K_NULLS K_FIRST | K_NULLS K_LAST)?
     ;
 
 collateClause
@@ -327,7 +327,7 @@ setOperatorClause
     ;
 
 limitClause
-    : K_LIMIT limit=UNSIGNED_INTEGER (K_OFFSET offset=UNSIGNED_INTEGER)? (K_TOTAL K_ROWCOUNT)?
+    : K_LIMIT limit=unsignedIntegerOrBindParameter (K_OFFSET offset=unsignedIntegerOrBindParameter)? (K_TOTAL K_ROWCOUNT)?
     ;
 
 joinCardinality
@@ -439,7 +439,7 @@ replaceStatement
 // ------ SQL Reference > SQL Statements > Alpabetical List of Statements > MERGE DELTA Statement ------
 
 mergeDeltaStatement
-    : K_MERGE K_HISTORY? K_DELTA K_OF tableName (K_PART part=UNSIGNED_INTEGER)?
+    : K_MERGE K_HISTORY? K_DELTA K_OF tableName (K_PART part=unsignedIntegerOrBindParameter)?
       (K_WITH K_PARAMETERS '(' params+=mergeDeltaParameter (',' params+=mergeDeltaParameter)* ')')?
       (K_FORCE K_REBUILD)?
     ;
@@ -593,11 +593,11 @@ aggregateExpression
     | K_CROSS_CORR '('
         expression ',' 
         expression ','
-        UNSIGNED_INTEGER (seriesOrderBy | aggregateOrderByClause) 
+        unsignedIntegerOrBindParameter (seriesOrderBy | aggregateOrderByClause) 
       ')' ('.' (K_POSITIVE_LAGS | K_NEGATIVE_LAGS | K_ZERO_LAG))?                              #aggCrossCorrExpr
     | K_DFT '('
         expression ','
-        UNSIGNED_INTEGER (seriesOrderBy | aggregateOrderByClause)
+        unsignedIntegerOrBindParameter (seriesOrderBy | aggregateOrderByClause)
       ')' '.' (K_REAL | K_IMAGINARY | K_AMPLITUDE | K_PHASE)                                   #aggDftExpr
     | aggName '(' (K_ALL | K_DISTINCT)? expression ')'                                         #aggFuncExpr
     ;
@@ -659,7 +659,7 @@ windowFrameClause
 
 windowFrameStart
     : K_UNBOUNDED K_PRECEDING
-    | UNSIGNED_INTEGER K_PRECEDING
+    | unsignedIntegerOrBindParameter K_PRECEDING
     | K_CURRENT K_ROW
     ;
 
@@ -670,28 +670,28 @@ windowFrameBetween
 windowFrameBound
     : windowFrameStart
     | K_UNBOUNDED K_FOLLOWING
-    | UNSIGNED_INTEGER K_FOLLOWING
+    | unsignedIntegerOrBindParameter K_FOLLOWING
     ;
 
 windowExpression
-    : K_BINNING             '(' expressionList ')' windowSpecification               #windowBinningExpr
-    | K_CUBIC_SPLINE_APPROX '(' expressionList ')' windowWithSeriesSpecification?    #windowCubicSplineApproxExpr
-    | K_CUME_DIST           '(' ')' windowSpecification                              #windowCumeDistExpr
-    | K_DENSE_RANK          '(' ')' windowSpecification                              #windowDenseRankExpr
-    | K_LAG                 '(' expressionList ')' windowSpecification               #windowLagExpr
-    | K_LEAD                '(' expressionList ')' windowSpecification               #windowLeadExpr
-    | K_LINEAR_APPROX       '(' expressionList ')' windowWithSeriesSpecification     #windowLinearApproxExpr
-    | K_NTILE               '(' UNSIGNED_INTEGER ')' windowSpecification             #windowNtileExpr
-    | K_PERCENT_RANK        '(' ')' windowSpecification                              #windowPercentRankExpr
-    | K_PERCENTILE_CONT     '(' expression ')' withinGroupClause windowSpecification #windowPercentileContExpr
-    | K_PERCENTILE_DISC     '(' expression ')' withinGroupClause windowSpecification #windowPercentileDiscExpr
-    | K_RANDOM_PARTITION    '(' expressionList ')' windowSpecification               #windowRandomPartitionExpr
-    | K_RANK                '(' ')' windowSpecification                              #windowRankExpr
-    | K_ROW_NUMBER          '(' ')' windowSpecification                              #windowRowNumberExpr
-    | K_SERIES_FILTER       '(' expressionList ')' windowWithSeriesSpecification     #windowSeriesFilterExpr
-    | K_WEIGHTED_AVG        '(' expression ')' windowSpecification                   #windowWeightedAvgExpr
-    | aggregateExpression windowSpecification                                        #windowAggExpr
-    | seriesExpression windowSpecification?                                          #windowSeriesExpr
+    : K_BINNING             '(' expressionList ')' windowSpecification                 #windowBinningExpr
+    | K_CUBIC_SPLINE_APPROX '(' expressionList ')' windowWithSeriesSpecification?      #windowCubicSplineApproxExpr
+    | K_CUME_DIST           '(' ')' windowSpecification                                #windowCumeDistExpr
+    | K_DENSE_RANK          '(' ')' windowSpecification                                #windowDenseRankExpr
+    | K_LAG                 '(' expressionList ')' windowSpecification                 #windowLagExpr
+    | K_LEAD                '(' expressionList ')' windowSpecification                 #windowLeadExpr
+    | K_LINEAR_APPROX       '(' expressionList ')' windowWithSeriesSpecification       #windowLinearApproxExpr
+    | K_NTILE               '(' unsignedIntegerOrBindParameter ')' windowSpecification #windowNtileExpr
+    | K_PERCENT_RANK        '(' ')' windowSpecification                                #windowPercentRankExpr
+    | K_PERCENTILE_CONT     '(' expression ')' withinGroupClause windowSpecification   #windowPercentileContExpr
+    | K_PERCENTILE_DISC     '(' expression ')' withinGroupClause windowSpecification   #windowPercentileDiscExpr
+    | K_RANDOM_PARTITION    '(' expressionList ')' windowSpecification                 #windowRandomPartitionExpr
+    | K_RANK                '(' ')' windowSpecification                                #windowRankExpr
+    | K_ROW_NUMBER          '(' ')' windowSpecification                                #windowRowNumberExpr
+    | K_SERIES_FILTER       '(' expressionList ')' windowWithSeriesSpecification       #windowSeriesFilterExpr
+    | K_WEIGHTED_AVG        '(' expression ')' windowSpecification                     #windowWeightedAvgExpr
+    | aggregateExpression windowSpecification                                          #windowAggExpr
+    | seriesExpression windowSpecification?                                            #windowSeriesExpr
     ;
 
 withinGroupClause
@@ -727,7 +727,7 @@ seriesDisaggregate
     ;
 
 seriesElementToPeriod
-    : K_SERIES_ELEMENT_TO_PERIOD '(' UNSIGNED_INTEGER ',' (expression ',' expression ',' expression | seriesTable) ')'
+    : K_SERIES_ELEMENT_TO_PERIOD '(' unsignedIntegerOrBindParameter ',' (expression ',' expression ',' expression | seriesTable) ')'
     ;
 
 seriesGenerate
@@ -777,20 +777,20 @@ dataType
     | K_SMALLINT
     | K_INTEGER | K_INT
     | K_BIGINT
-    | (K_DECIMAL | K_DEC) ('(' precision=UNSIGNED_INTEGER (',' scale=UNSIGNED_INTEGER)? ')')?
+    | (K_DECIMAL | K_DEC) ('(' precision=unsignedIntegerOrBindParameter (',' scale=unsignedIntegerOrBindParameter)? ')')?
     | K_SMALLDECIMAL
     | K_REAL
     | K_DOUBLE
-    | K_FLOAT ('(' length=UNSIGNED_INTEGER ')')?
+    | K_FLOAT ('(' length=unsignedIntegerOrBindParameter ')')?
     // Boolean type
     | K_BOOLEAN
     // Characters string types
-    | K_VARCHAR ('(' length=UNSIGNED_INTEGER ')')?
-    | K_NVARCHAR ('(' length=UNSIGNED_INTEGER ')')?
-    | K_ALPHANUM ('(' length=UNSIGNED_INTEGER ')')?
-    | K_SHORTTEXT ('(' length=UNSIGNED_INTEGER ')')?
+    | K_VARCHAR ('(' length=unsignedIntegerOrBindParameter ')')?
+    | K_NVARCHAR ('(' length=unsignedIntegerOrBindParameter ')')?
+    | K_ALPHANUM ('(' length=unsignedIntegerOrBindParameter ')')?
+    | K_SHORTTEXT ('(' length=unsignedIntegerOrBindParameter ')')?
     // Binary types
-    | K_VARBINARY ('(' length=UNSIGNED_INTEGER ')')?
+    | K_VARBINARY ('(' length=unsignedIntegerOrBindParameter ')')?
     // Large Object types
     | K_BLOB
     | K_CLOB
@@ -907,21 +907,21 @@ stringExpression[bool table]
      (K_LOCATE_REGEXPR | K_SUBSTR_REGEXPR | K_SUBSTRING_REGEXPR)
      '('
         regexprClause
-        (K_FROM start=UNSIGNED_INTEGER)?
-        (K_OCCURRENCE occurrence=UNSIGNED_INTEGER)?
-        (K_GROUP group=UNSIGNED_INTEGER)?
+        (K_FROM start=unsignedIntegerOrBindParameter)?
+        (K_OCCURRENCE occurrence=unsignedIntegerOrBindParameter)?
+        (K_GROUP group=unsignedIntegerOrBindParameter)?
      ')'                                                      #regexprExpr
     | { $table == false }?
       K_OCCURRENCES_REGEXPR '('
         regexprClause
-        (K_FROM start=UNSIGNED_INTEGER)?
+        (K_FROM start=unsignedIntegerOrBindParameter)?
      ')'                                                      #occurrencesRegexprExpr
     | { $table == false }?
       K_REPLACE_REGEXPR '('
         regexprClause
         (K_WITH replacement=STRING_LITERAL)?
-        (K_FROM start=UNSIGNED_INTEGER)?
-        (K_OCCURRENCE occurrence=(UNSIGNED_INTEGER | K_ALL))?
+        (K_FROM start=unsignedIntegerOrBindParameter)?
+        (K_OCCURRENCE (occurrence1=unsignedIntegerOrBindParameter | occurrence2=K_ALL))?
      ')'                                                      #replaceRegexprExpr
     | { $table == false }?
       K_TRIM '('
@@ -961,6 +961,7 @@ xmlColumnType
 
 constant
     : STRING_LITERAL       #constantString
+    | binaryLiteral        #constantBinary
     | numericLiteral       #constantNumber
     | booleanLiteral       #constantBoolean
     | intervalLiteral      #constantInterval
@@ -968,7 +969,12 @@ constant
     ;
 
 intervalLiteral
-    : K_INTERVAL UNSIGNED_INTEGER (K_YEAR | K_MONTH | K_DAY | K_HOUR | K_MINUTE | K_SECOND)
+    : K_INTERVAL unsignedIntegerOrBindParameter (K_YEAR | K_MONTH | K_DAY | K_HOUR | K_MINUTE | K_SECOND)
+    ;
+
+unsignedIntegerOrBindParameter
+    : v=UNSIGNED_INTEGER
+    | b=bindParameterExpression
     ;
 
 jsonObjectExpression
@@ -1023,6 +1029,7 @@ predicate
     | likeRegexPredicate
     | memberOfPredicate
     | nullPredicate
+    | '(' inner=predicate ')'
     ;
 
 comparisonPredicate
@@ -1114,7 +1121,7 @@ existsPredicate
     ;
 
 inPredicate
-    : source=expression K_NOT? K_IN '(' (value1=expressionList | value2=subquery[true]) ')'
+    : ('(' left1=expressionList ')' | left2=expression) K_NOT? K_IN '(' (right1=expressionList | right2=subquery[true]) ')'
     ;
 
 likePredicate
@@ -1185,7 +1192,7 @@ createViewStatement returns [
       (K_COMMENT cmt=STRING_LITERAL            { $comment = IdentifierUtility.Unescape($cmt.text); })?
       columnListClause?
       parameterizedViewClause?
-      K_AS subquery[true]
+      K_AS selectStatement[true]
       withAssociationClause?
       withMaskClause?
       withExpressionMacroClause?
@@ -1273,7 +1280,7 @@ keySetOperation
 
 withCacheClause
     : K_WITH (K_STATIC | K_DYNAMIC)? K_CACHE (K_NAME identifier[null])
-      (K_RETENTION UNSIGNED_INTEGER)?
+      (K_RETENTION unsignedIntegerOrBindParameter)?
       (K_OF projectionClause)?
       (K_FILTER condition)?
       locationClause?
@@ -1312,6 +1319,10 @@ setSchemaStatement
 
 // ------ ETC ------
 
+binaryLiteral
+    : HEX_NUMBER
+    ;
+
 booleanLiteral
     : K_TRUE
     | K_FALSE
@@ -1320,7 +1331,7 @@ booleanLiteral
 numericLiteral
     : ('+' | '-')? (EXACT_NUMERIC_LITERAL | APPROXIMATE_NUMERIC_LITERAL)
     | SIGNED_INTEGER
-    | UNSIGNED_INTEGER
+    | unsignedIntegerOrBindParameter
     ;
 
 identifier[List<QsiIdentifier> buffer] returns [QsiIdentifier qi]

@@ -232,7 +232,7 @@ namespace Qsi.Hana.Tree.Visitors
 
             if (topClause != null)
             {
-                tableNode.Top = VisitTopClause(topClause);
+                tableNode.Top.Value = ExpressionVisitor.VisitUnsignedIntegerOrBindParameter(topClause.top);
                 offset++;
             }
 
@@ -340,11 +340,6 @@ namespace Qsi.Hana.Tree.Visitors
             HanaTree.PutContextSpan(node, context);
 
             return node;
-        }
-
-        public static ulong VisitTopClause(TopClauseContext context)
-        {
-            return ulong.Parse(context.top.Text);
         }
 
         public static QsiTableNode VisitFromClause(FromClauseContext context)
@@ -729,13 +724,8 @@ namespace Qsi.Hana.Tree.Visitors
             if (columnListClause != null)
                 node.Columns.SetValue(VisitColumnListClause(columnListClause, null));
 
-            if (waitNowait != null)
-            {
-                if (waitNowait.time == null)
-                    node.WaitTime = -1;
-                else
-                    node.WaitTime = long.Parse(waitNowait.time.Text);
-            }
+            if (waitNowait?.time != null)
+                node.WaitTime.Value = ExpressionVisitor.VisitUnsignedIntegerOrBindParameter(waitNowait.time);
 
             HanaTree.PutContextSpan(node, context);
 

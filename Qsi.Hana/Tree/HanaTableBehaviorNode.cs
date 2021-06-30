@@ -18,9 +18,9 @@ namespace Qsi.Hana.Tree
     {
         public QsiTreeNodeProperty<QsiColumnsDeclarationNode> Columns { get; }
 
-        // not null: WAIT <UNSIGNED_INTEGER>
-        //       -1: NOWAIT
-        public long? WaitTime { get; set; }
+        // not null: WAIT <UNSIGNED_INTEGER | ?>
+        //     null: NOWAIT
+        public QsiTreeNodeProperty<QsiExpressionNode> WaitTime { get; }
 
         public bool IgnoreLocked { get; set; }
 
@@ -36,6 +36,7 @@ namespace Qsi.Hana.Tree
         public HanaTableUpdateBehaviorNode()
         {
             Columns = new QsiTreeNodeProperty<QsiColumnsDeclarationNode>(this);
+            WaitTime = new QsiTreeNodeProperty<QsiExpressionNode>(this);
         }
     }
 
