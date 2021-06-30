@@ -1185,7 +1185,7 @@ createViewStatement returns [
       (K_COMMENT cmt=STRING_LITERAL            { $comment = IdentifierUtility.Unescape($cmt.text); })?
       columnListClause?
       parameterizedViewClause?
-      K_AS subquery[true]
+      K_AS selectStatement[true]
       withAssociationClause?
       withMaskClause?
       withExpressionMacroClause?

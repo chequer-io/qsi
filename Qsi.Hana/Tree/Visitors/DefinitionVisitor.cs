@@ -26,7 +26,7 @@ namespace Qsi.Hana.Tree.Visitors
             if (context.TryGetRuleContext<ParameterizedViewClauseContext>(out var parameterizedViewClause))
                 node.Parameters.SetValue(TreeHelper.Fragment(parameterizedViewClause.GetInputText()));
 
-            node.Source.SetValue(TableVisitor.VisitSubquery(context.subquery()));
+            node.Source.SetValue(TableVisitor.VisitSelectStatement(context.selectStatement()));
 
             if (context.TryGetRuleContext<WithAssociationClauseContext>(out var withAssociationClause))
                 node.Associations.SetValue(TreeHelper.Fragment(withAssociationClause.GetInputText()));
