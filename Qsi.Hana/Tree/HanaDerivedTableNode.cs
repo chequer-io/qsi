@@ -7,7 +7,7 @@ namespace Qsi.Hana.Tree
 {
     public interface IHanaDerivedTableNode : IQsiDerivedTableNode
     {
-        ulong? Top { get; }
+        QsiExpressionNode Top { get; }
 
         HanaResultSetOperation? Operation { get; }
 
@@ -23,7 +23,7 @@ namespace Qsi.Hana.Tree
     public sealed class HanaDerivedTableNode : QsiDerivedTableNode, IHanaDerivedTableNode
     {
         // TOP 123
-        public ulong? Top { get; set; }
+        public QsiTreeNodeProperty<QsiExpressionNode> Top { get; }
 
         // DISTINCT | ALL
         public HanaResultSetOperation? Operation { get; set; }
@@ -54,6 +54,8 @@ namespace Qsi.Hana.Tree
         }
 
         #region Explicit
+        QsiExpressionNode IHanaDerivedTableNode.Top => Top.Value;
+
         QsiExpressionFragmentNode IHanaDerivedTableNode.Sampling => Sampling.Value;
 
         HanaTableBehaviorNode IHanaDerivedTableNode.Behavior => Behavior.Value;
@@ -65,6 +67,7 @@ namespace Qsi.Hana.Tree
 
         public HanaDerivedTableNode()
         {
+            Top = new QsiTreeNodeProperty<QsiExpressionNode>(this);
             Sampling = new QsiTreeNodeProperty<QsiExpressionFragmentNode>(this);
             Behavior = new QsiTreeNodeProperty<HanaTableBehaviorNode>(this);
             TimeTravel = new QsiTreeNodeProperty<QsiExpressionFragmentNode>(this);
@@ -92,7 +95,7 @@ namespace Qsi.Hana.Tree
 
         public IQsiLimitExpressionNode Limit { get; }
 
-        public ulong? Top { get; }
+        public QsiExpressionNode Top { get; }
 
         public HanaResultSetOperation? Operation { get; }
 
@@ -119,7 +122,7 @@ namespace Qsi.Hana.Tree
             IQsiGroupingExpressionNode grouping,
             IQsiMultipleOrderExpressionNode order,
             IQsiLimitExpressionNode limit,
-            ulong? top,
+            QsiExpressionNode top,
             HanaResultSetOperation? operation,
             QsiExpressionFragmentNode sampling,
             HanaTableBehaviorNode behavior,

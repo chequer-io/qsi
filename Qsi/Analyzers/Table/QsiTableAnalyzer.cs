@@ -87,7 +87,7 @@ namespace Qsi.Analyzers.Table
                 using var viewCompileContext = new TableCompileContext(context);
 
                 if (lookup.Identifier.Level > 1)
-                    viewCompileContext.PushIdentifierScope(lookup.Identifier.SubIdentifier(..^1));  
+                    viewCompileContext.PushIdentifierScope(lookup.Identifier.SubIdentifier(..^1));
 
                 QsiTableStructure viewStructure;
 
@@ -777,6 +777,9 @@ namespace Qsi.Analyzers.Table
 
             switch (expression)
             {
+                case QsiExpressionFragmentNode:
+                    break;
+
                 case IQsiSetColumnExpressionNode e:
                 {
                     foreach (var c in ResolveColumnsInExpression(context, e.Value))
