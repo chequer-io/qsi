@@ -381,6 +381,10 @@ fragment LETTER_OR_DIGIT: [a-zA-Z0-9];
 fragment SIGN: ('+'|'-');
 fragment UNICODE_LETTER: [\p{L}];
 
+fragment HEXDIGIT: [0-9a-fA-F];
+
+HEX_NUMBER: ('0' X HEXDIGIT+) | (X '\'' HEXDIGIT+ '\'');
+
 SEMI:                 ';';
 EQUAL:                '=';
 LESS_THEN_EQUAL:     '<=';
@@ -426,7 +430,7 @@ EXACT_NUMERIC_LITERAL
     ;
 
 APPROXIMATE_NUMERIC_LITERAL
-    : (EXACT_NUMERIC_LITERAL | UNSIGNED_INTEGER) 'E' SIGN? UNSIGNED_INTEGER
+    : (EXACT_NUMERIC_LITERAL | UNSIGNED_INTEGER) E SIGN? UNSIGNED_INTEGER
     ;
 
 SIGNED_INTEGER

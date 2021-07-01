@@ -68,10 +68,19 @@ namespace Qsi.Hana
                 writer.Write(')');
             }
 
-            if (node.WaitTime.HasValue)
+            if (node.WaitTime.IsEmpty)
             {
                 writer.WriteSpace();
-                writer.Write(node.WaitTime.Value == -1 ? "NOWAIT" : $"WAIT {node.WaitTime}");
+
+                if (node.WaitTime.IsEmpty)
+                {
+                    writer.Write("NOWAIT");
+                }
+                else
+                {
+                    writer.Write("WAIT ");
+                    DeparseTreeNode(writer, node.WaitTime.Value, script);
+                }
             }
 
             if (node.IgnoreLocked)
@@ -389,7 +398,7 @@ namespace Qsi.Hana
                 node.Order is null &&
                 node.Limit is null &&
                 (node.Columns == null || IsWildcard(node.Columns)) &&
-                !node.Top.HasValue &&
+                node.Top is null &&
                 !node.Operation.HasValue &&
                 node.Sampling is not null &&
                 node.Behavior is not null &&
@@ -422,8 +431,11 @@ namespace Qsi.Hana
 
             writer.Write("SELECT ");
 
-            if (node.Top.HasValue)
-                writer.Write($"TOP {node.Top.Value} ");
+            if (node.Top != null)
+            {
+                writer.Write("TOP ");
+                DeparseTreeNode(writer, node.Top, script);
+            }
 
             if (node.Operation.HasValue)
                 writer.Write(node.Operation == HanaResultSetOperation.All ? "ALL " : "DISTINCT ");

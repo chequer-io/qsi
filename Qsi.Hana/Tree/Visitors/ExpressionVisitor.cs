@@ -77,7 +77,7 @@ namespace Qsi.Hana.Tree.Visitors
             }
             else
             {
-                node.Expression.SetValue(VisitUnsignedInteger(context.position));
+                node.Expression.SetValue(VisitUnsignedIntegerOrBindParameter(context.position));
             }
 
             if (collateClause != null)
@@ -107,10 +107,10 @@ namespace Qsi.Hana.Tree.Visitors
                 TotalRowCount = context.TokenEndsWith(K_TOTAL, K_ROWCOUNT)
             };
 
-            node.Limit.SetValue(VisitUnsignedInteger(context.limit));
+            node.Limit.SetValue(VisitUnsignedIntegerOrBindParameter(context.limit));
 
             if (context.offset != null)
-                node.Offset.SetValue(VisitUnsignedInteger(context.offset));
+                node.Offset.SetValue(VisitUnsignedIntegerOrBindParameter(context.offset));
 
             HanaTree.PutContextSpan(node, context);
 
@@ -274,7 +274,7 @@ namespace Qsi.Hana.Tree.Visitors
                     break;
 
                 case WindowNtileExprContext windowNtileExpr:
-                    parameters = new[] { VisitUnsignedInteger(windowNtileExpr.UNSIGNED_INTEGER().Symbol) };
+                    parameters = new[] { VisitUnsignedIntegerOrBindParameter(windowNtileExpr.unsignedIntegerOrBindParameter()) };
                     break;
 
                 case WindowPercentileContExprContext:
@@ -398,7 +398,7 @@ namespace Qsi.Hana.Tree.Visitors
                 node.Parameters.Add(VisitStringLiteral(context.delimiter));
 
             if (context.aggregateOrderByClause() != null)
-                node.Parameters.Add(TreeHelper.Fragment(context.aggregateOrderByClause().GetText()));
+                node.Parameters.Add(TreeHelper.Fragment(context.aggregateOrderByClause().GetInputText()));
 
             HanaTree.PutContextSpan(node, context);
 
@@ -411,7 +411,7 @@ namespace Qsi.Hana.Tree.Visitors
 
             node.Member.Value = TreeHelper.CreateFunction(HanaKnownFunction.CrossCorr);
             node.Parameters.AddRange(context.expression().Select(VisitExpression));
-            node.Parameters.Add(VisitUnsignedInteger(context.UNSIGNED_INTEGER().Symbol));
+            node.Parameters.Add(VisitUnsignedIntegerOrBindParameter(context.unsignedIntegerOrBindParameter()));
 
             // TODO: seriesOrderBy | aggregateOrderByClause
 
@@ -439,7 +439,7 @@ namespace Qsi.Hana.Tree.Visitors
 
             node.Member.Value = TreeHelper.CreateFunction(HanaKnownFunction.Dft);
             node.Parameters.Add(VisitExpression(context.expression()));
-            node.Parameters.Add(VisitUnsignedInteger(context.UNSIGNED_INTEGER().Symbol));
+            node.Parameters.Add(VisitUnsignedIntegerOrBindParameter(context.unsignedIntegerOrBindParameter()));
 
             // TODO: seriesOrderBy | aggregateOrderByClause
 
@@ -764,13 +764,13 @@ namespace Qsi.Hana.Tree.Visitors
             node.Parameters.AddRange(VisitRegexprClause(context.regexprClause()));
 
             if (context.start != null)
-                node.Parameters.Add(VisitUnsignedInteger(context.start));
+                node.Parameters.Add(VisitUnsignedIntegerOrBindParameter(context.start));
 
             if (context.occurrence != null)
-                node.Parameters.Add(VisitUnsignedInteger(context.occurrence));
+                node.Parameters.Add(VisitUnsignedIntegerOrBindParameter(context.occurrence));
 
             if (context.group != null)
-                node.Parameters.Add(VisitUnsignedInteger(context.group));
+                node.Parameters.Add(VisitUnsignedIntegerOrBindParameter(context.group));
 
             HanaTree.PutContextSpan(node, context);
 
@@ -786,7 +786,7 @@ namespace Qsi.Hana.Tree.Visitors
             node.Parameters.AddRange(VisitRegexprClause(context.regexprClause()));
 
             if (context.start != null)
-                node.Parameters.Add(VisitUnsignedInteger(context.start));
+                node.Parameters.Add(VisitUnsignedIntegerOrBindParameter(context.start));
 
             HanaTree.PutContextSpan(node, context);
 
@@ -805,15 +805,15 @@ namespace Qsi.Hana.Tree.Visitors
                 node.Parameters.Add(VisitStringLiteral(context.replacement));
 
             if (context.start != null)
-                node.Parameters.Add(VisitUnsignedInteger(context.start));
+                node.Parameters.Add(VisitUnsignedIntegerOrBindParameter(context.start));
 
-            if (context.occurrence != null)
+            if (context.occurrence1 != null)
             {
-                node.Parameters.Add(
-                    context.occurrence.Type == K_ALL ?
-                        TreeHelper.CreateConstantLiteral(context.occurrence.Text) :
-                        VisitUnsignedInteger(context.occurrence)
-                );
+                node.Parameters.Add(VisitUnsignedIntegerOrBindParameter(context.occurrence1));
+            }
+            else if (context.occurrence2 != null)
+            {
+                node.Parameters.Add(TreeHelper.CreateConstantLiteral(context.occurrence2.Text));
             }
 
             HanaTree.PutContextSpan(node, context);
@@ -986,6 +986,14 @@ namespace Qsi.Hana.Tree.Visitors
 
             switch (context)
             {
+                case ConstantBinaryContext cBinary:
+                {
+                    var text = cBinary.binaryLiteral().GetText();
+                    node = TreeHelper.CreateLiteral(text, QsiDataType.Binary);
+
+                    break;
+                }
+
                 case ConstantStringContext cString:
                 {
                     node = VisitStringLiteral(cString.STRING_LITERAL().Symbol);
@@ -1162,6 +1170,9 @@ namespace Qsi.Hana.Tree.Visitors
 
         public static QsiExpressionNode VisitPredicate(PredicateContext context)
         {
+            while (context.inner != null)
+                context = context.inner;
+
             switch (context.children[0])
             {
                 case ComparisonPredicateContext comparisonPredicate:
@@ -1285,7 +1296,7 @@ namespace Qsi.Hana.Tree.Visitors
                 node.Parameters.Add(VisitStringLiteral(context.search));
 
             if (context.specifier != null)
-                node.Parameters.Add(TreeHelper.Fragment(context.specifier.GetText()));
+                node.Parameters.Add(TreeHelper.Fragment(context.specifier.GetInputText()));
 
             HanaTree.PutContextSpan(node, context);
 
@@ -1301,21 +1312,28 @@ namespace Qsi.Hana.Tree.Visitors
                 Member = { Value = TreeHelper.CreateFunction(functionName) }
             };
 
-            node.Parameters.Add(VisitExpression(context.source));
+            node.Parameters.Add(
+                context.left1 != null ?
+                    VisitExpressionList(context.left1) :
+                    VisitExpression(context.left2)
+            );
 
-            if (context.value1 != null)
-            {
-                var array = new QsiMultipleExpressionNode();
-                array.Elements.AddRange(context.value1._list.Select(VisitExpression));
-                HanaTree.PutContextSpan(array, context.value1);
+            node.Parameters.Add(
+                context.right1 != null ?
+                    VisitExpressionList(context.right1) :
+                    VisitSubquery(context.right2)
+            );
 
-                node.Parameters.Add(array);
-            }
-            else
-            {
-                node.Parameters.Add(VisitSubquery(context.value2));
-            }
+            HanaTree.PutContextSpan(node, context);
 
+            return node;
+        }
+
+        public static QsiExpressionNode VisitExpressionList(ExpressionListContext context)
+        {
+            var node = new QsiMultipleExpressionNode();
+
+            node.Elements.AddRange(context._list.Select(VisitExpression));
             HanaTree.PutContextSpan(node, context);
 
             return node;
@@ -1505,6 +1523,14 @@ namespace Qsi.Hana.Tree.Visitors
             HanaTree.PutContextSpan(node, token);
 
             return node;
+        }
+
+        public static QsiExpressionNode VisitUnsignedIntegerOrBindParameter(UnsignedIntegerOrBindParameterContext context)
+        {
+            if (context.v != null)
+                return VisitUnsignedInteger(context.v);
+
+            return VisitBindParameterExpression(context.b);
         }
 
         public static QsiSetColumnExpressionNode VisitSetElement(SetElementContext context)
