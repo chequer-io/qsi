@@ -139,12 +139,8 @@ namespace Qsi.Hana.Tree.Visitors
                 case FunctionExprContext functionExpr:
                     return VisitFunctionExpression(functionExpr.functionExpression());
 
-                case ParenthesisExprContext parenthesisExpr:
-                {
-                    var node = VisitExpression(parenthesisExpr.expression());
-                    HanaTree.PutContextSpan(node, parenthesisExpr);
-                    return node;
-                }
+                case SetExprContext setExpr:
+                    return VisitSetExpr(setExpr);
 
                 case SubqueryExprContext subqueryExpr:
                     return VisitSubquery(subqueryExpr.subquery());
@@ -190,6 +186,16 @@ namespace Qsi.Hana.Tree.Visitors
                 default:
                     throw TreeHelper.NotSupportedTree(context);
             }
+        }
+
+        private static QsiExpressionNode VisitSetExpr(SetExprContext context)
+        {
+            var node = new QsiMultipleExpressionNode();
+
+            node.Elements.AddRange(context.expression().Select(VisitExpression));
+            HanaTree.PutContextSpan(node, context);
+
+            return node;
         }
 
         public static QsiExpressionNode VisitCaseExpression(CaseExpressionContext context)
@@ -1210,45 +1216,33 @@ namespace Qsi.Hana.Tree.Visitors
         public static QsiExpressionNode VisitComparisonPredicate(ComparisonPredicateContext context)
         {
             var left = VisitExpression(context.left);
+            var right = VisitExpression(context.right);
             var op = context.op.GetText();
 
-            if (context.right != null)
+            QsiExpressionNode node;
+
+            if (left is IQsiMultipleExpressionNode || right is IQsiMultipleExpressionNode)
             {
-                var node = new QsiBinaryExpressionNode
+                node = new HanaArrayComparisonNode
                 {
                     Operator = op,
                     Left = { Value = left },
-                    Right = { Value = VisitExpression(context.right) }
+                    Right = { Value = right }
                 };
-
-                HanaTree.PutContextSpan(node, context);
-
-                return node;
             }
             else
             {
-                var node = new HanaArrayComparisonNode
+                node = new QsiBinaryExpressionNode
                 {
                     Operator = op,
-                    Left = { Value = left }
+                    Left = { Value = left },
+                    Right = { Value = right }
                 };
-
-                if (context.right1 != null)
-                {
-                    var array = new QsiMultipleExpressionNode();
-                    array.Elements.AddRange(context.right1._list.Select(VisitExpression));
-
-                    node.Right.SetValue(array);
-                }
-                else
-                {
-                    node.Right.SetValue(VisitSubquery(context.right2));
-                }
-
-                HanaTree.PutContextSpan(node, context);
-
-                return node;
             }
+
+            HanaTree.PutContextSpan(node, context);
+
+            return node;
         }
 
         public static QsiExpressionNode VisitBetweenPredicate(BetweenPredicateContext context)
