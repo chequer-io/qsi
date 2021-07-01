@@ -162,10 +162,11 @@ seriesTable
     ;
 
 tableExpression
-    : tableRef (K_CROSS K_JOIN crossJoin=tableRef)?
+    : '(' inner=tableExpression ')'
+    | tableRef (K_CROSS K_JOIN crossJoin=tableRef)?
 //    | systemVersionedTableRef
     | subqueryTableExpression
-    | left=tableExpression joinType? joinCardinality? K_JOIN right=tableExpression K_ON predicate
+    | left=tableExpression joinType? joinCardinality? K_JOIN right=tableExpression K_ON condition
     | caseJoin
     | lateralTableExpression
     | collectionDerivedTable
@@ -505,7 +506,7 @@ expression
     | dataTypeConversionExpression          #conversionExpr
     | dateTimeExpression                    #dateTimeExpr
     | functionExpression[false]             #functionExpr
-    | '(' expression ')'                    #parenthesisExpr
+    | '(' expression (',' expression)* ')'  #setExpr
     | '(' subquery[true] ')'                #subqueryExpr
     | '-' expression                        #unaryExpr
     | l=expression op=operator r=expression #operationExpr
@@ -1020,7 +1021,8 @@ bindParameterExpression returns [int index]
 // ------ SQL Reference > Predicates ------
 
 predicate
-    : comparisonPredicate
+    : '(' inner=predicate ')'
+    | comparisonPredicate
     | betweenPredicate
     | containsPredicate
     | inPredicate
@@ -1029,12 +1031,10 @@ predicate
     | likeRegexPredicate
     | memberOfPredicate
     | nullPredicate
-    | '(' inner=predicate ')'
     ;
 
 comparisonPredicate
-    : left=expression op=comparisonOperator (K_ANY | K_SOME | K_ALL)? '(' (right1=expressionList | right2=subquery[true]) ')'
-    | left=expression op=comparisonOperator right=expression
+    : left=expression op=comparisonOperator (K_ANY | K_SOME | K_ALL)? right=expression
     ;
 
 betweenPredicate

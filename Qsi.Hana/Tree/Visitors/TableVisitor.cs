@@ -377,6 +377,9 @@ namespace Qsi.Hana.Tree.Visitors
         #region TableExpression
         public static QsiTableNode VisitTableExpression(TableExpressionContext context)
         {
+            while (context.inner != null)
+                context = context.inner;
+
             var child = context.children[0];
 
             switch (child)
