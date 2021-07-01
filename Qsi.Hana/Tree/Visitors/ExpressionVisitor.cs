@@ -17,7 +17,7 @@ namespace Qsi.Hana.Tree.Visitors
         {
             var node = new QsiWhereExpressionNode();
 
-            node.Expression.SetValue(ExpressionVisitor.VisitCondition(context.condition()));
+            node.Expression.SetValue(VisitCondition(context.condition()));
             HanaTree.PutContextSpan(node, context);
 
             return node;
@@ -30,21 +30,14 @@ namespace Qsi.Hana.Tree.Visitors
 
             foreach (var child in groupByExpressionList.children.OfType<ParserRuleContext>())
             {
-                switch (child)
-                {
-                    case TableExpressionContext:
-                    case GroupingSetContext:
-                    {
-                        var expressionNode = TreeHelper.Fragment(child.GetInputText());
-                        HanaTree.PutContextSpan(expressionNode, child);
-                        node.Items.Add(expressionNode);
-                        break;
-                    }
-                }
+                var expressionNode = TreeHelper.Fragment(child.GetInputText());
+                HanaTree.PutContextSpan(expressionNode, child);
+                node.Items.Add(expressionNode);
+                break;
             }
 
             if (context.having != null)
-                node.Having.SetValue(ExpressionVisitor.VisitCondition(context.having));
+                node.Having.SetValue(VisitCondition(context.having));
 
             HanaTree.PutContextSpan(node, context);
 
