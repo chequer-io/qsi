@@ -267,7 +267,7 @@ groupByClause
     ;
 
 groupByExpressionList
-    : (tableExpression | groupingSet) (',' tableExpression | groupingSet)*
+    : (expression | groupingSet) (',' (expression | groupingSet))*
     ;
 
 groupingSet
@@ -373,7 +373,7 @@ collectionDerivedTable
     ;
 
 collectionValueExpression
-    : K_ARRAY '(' (tableExpression (',' tableExpression)* | columnName) ')'
+    : K_ARRAY '(' (expression (',' expression)* | columnName) ')'
     ;
 
 // ------ SQL Reference > SQL Statements > Alpabetical List of Statements > DELETE Statement ------
