@@ -169,6 +169,12 @@ namespace Qsi.Utilities
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static QsiLiteralExpressionNode CreateLiteral(decimal value)
+        {
+            return CreateLiteral(value, QsiDataType.Decimal);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static QsiLiteralExpressionNode CreateLiteral(bool value)
         {
             return CreateLiteral(value, QsiDataType.Boolean);
