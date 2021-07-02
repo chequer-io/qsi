@@ -500,22 +500,22 @@ logicalOperator
 // ------ SQL Reference > Expressions ------
 
 expression
-    : caseExpression                        #caseExpr
-    | windowExpression                      #windowExpr
-    | aggregateExpression                   #aggExpr
-    | dataTypeConversionExpression          #conversionExpr
-    | dateTimeExpression                    #dateTimeExpr
-    | functionExpression[false]             #functionExpr
-    | '(' expression (',' expression)* ')'  #setExpr
-    | '(' subquery[true] ')'                #subqueryExpr
-    | '-' expression                        #unaryExpr
-    | l=expression op=operator r=expression #operationExpr
-    | fieldName                             #fieldExpr
-    | constant                              #constantExpr
-    | identifier[null] '=>' expression      #lambdaExpr
-    | jsonObjectExpression                  #jsonObjectExpr
-    | jsonArrayExpression                   #jsonArrayExpr
-    | bindParameterExpression               #bindParamExpr
+    : caseExpression                         #caseExpr
+    | windowExpression                       #windowExpr
+    | aggregateExpression                    #aggExpr
+    | dataTypeConversionExpression           #conversionExpr
+    | dateTimeExpression                     #dateTimeExpr
+    | functionExpression[false]              #functionExpr
+    | '(' expression (',' expression)* ')'   #setExpr
+    | '(' subquery[true] ')'                 #subqueryExpr
+    | '-' expression                         #unaryExpr
+    | l=expression op=operator r=expression  #operationExpr
+    | fieldName                              #fieldExpr
+    | constant                               #constantExpr
+    | identifier[null] '=>' expression       #lambdaExpr
+    | jsonObjectExpression                   #jsonObjectExpr
+    | jsonArrayExpression                    #jsonArrayExpr
+    | bindParameterExpression                #bindParamExpr
     ;
 
 expressionList
@@ -590,7 +590,7 @@ inlineFunctionName
 aggregateExpression
     : K_COUNT '(' '*' ')'                                                                      #aggCountExpr
     | K_COUNT '(' K_DISTINCT expressionList ')'                                                #aggCountDistinctExpr
-    | K_STRING_AGG '(' expression (',' delimiter=STRING_LITERAL)? aggregateOrderByClause? ')'  #aggStringExpr
+    | K_STRING_AGG '(' expression (',' delimiter=expression)? aggregateOrderByClause? ')'      #aggStringExpr
     | K_CROSS_CORR '('
         expression ',' 
         expression ','
@@ -651,7 +651,7 @@ windowOrderByClause
     ;
 
 windowOrderByExpression
-    : columnName (K_ASC | K_DESC)? (K_NULLS (K_FIRST | K_LAST))? collateClause?
+    : fieldName (K_ASC | K_DESC)? (K_NULLS (K_FIRST | K_LAST))? collateClause?
     ;
 
 windowFrameClause
@@ -1328,10 +1328,11 @@ booleanLiteral
     | K_FALSE
     ;
 
-numericLiteral
-    : ('+' | '-')? (EXACT_NUMERIC_LITERAL | APPROXIMATE_NUMERIC_LITERAL)
-    | SIGNED_INTEGER
-    | unsignedIntegerOrBindParameter
+numericLiteral returns [bool negative]
+    : ('+' | '-' { $negative = !$negative; })+ numericLiteral #signedNumericLiteral
+    | EXACT_NUMERIC_LITERAL             #exactNumericLiteral
+    | APPROXIMATE_NUMERIC_LITERAL       #approximateNumericLiteral
+    | unsignedIntegerOrBindParameter    #unsignedIntegerOrBindParameter_
     ;
 
 identifier[List<QsiIdentifier> buffer] returns [QsiIdentifier qi]

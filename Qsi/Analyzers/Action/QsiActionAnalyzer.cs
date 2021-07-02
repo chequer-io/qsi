@@ -281,6 +281,9 @@ namespace Qsi.Analyzers.Action
                 case IQsiCompositeTableNode compositeTable:
                     return compositeTable.ToImmutable(true);
 
+                case IQsiTableFunctionNode tableFunction:
+                    return tableFunction.ToImmutable(true);
+
                 default:
                     return new ImmutableDerivedTableNode(
                         node.Parent,

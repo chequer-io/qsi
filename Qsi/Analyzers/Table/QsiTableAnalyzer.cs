@@ -52,6 +52,9 @@ namespace Qsi.Analyzers.Table
                 case IQsiTableReferenceNode tableReference:
                     return await BuildTableReferenceStructure(context, tableReference);
 
+                case IQsiTableFunctionNode tableFunction:
+                    return await BuildTableFunctionStructure(context, tableFunction);
+
                 case IQsiDerivedTableNode derivedTable:
                     return await BuildDerivedTableStructure(context, derivedTable);
 
@@ -128,6 +131,11 @@ namespace Qsi.Analyzers.Table
             }
 
             return lookup;
+        }
+
+        protected virtual Task<QsiTableStructure> BuildTableFunctionStructure(TableCompileContext context, IQsiTableFunctionNode table)
+        {
+            throw TreeHelper.NotSupportedFeature("Table Function");
         }
 
         protected virtual async ValueTask<QsiTableStructure> BuildDerivedTableStructure(TableCompileContext context, IQsiDerivedTableNode table)

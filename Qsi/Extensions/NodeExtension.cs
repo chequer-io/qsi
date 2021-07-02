@@ -549,6 +549,15 @@ namespace Qsi.Extensions
                 node.Identifiers,
                 ignoreUserData ? null : node.UserData);
         }
+
+        public static ImmutableTableFunctionNode ToImmutable(this IQsiTableFunctionNode node, bool ignoreUserData = false)
+        {
+            return new(
+                node.Parent,
+                node.Member,
+                node.Parameters,
+                ignoreUserData ? null : node.UserData);
+        }
         #endregion
     }
 }

@@ -609,10 +609,26 @@ namespace Qsi.Hana.Tree.Visitors
                 case FunctionExpressionContext functionExpression:
                     var expr = ExpressionVisitor.VisitFunctionExpression(functionExpression);
 
-                    if (expr is not QsiTableExpressionNode tableExpr)
-                        throw new QsiException(QsiError.Syntax);
+                    switch (expr)
+                    {
+                        case QsiTableExpressionNode tableExpr:
+                            node = tableExpr.Table.Value;
+                            break;
 
-                    node = tableExpr.Table.Value;
+                        case QsiInvokeExpressionNode invokeExpr:
+                            var tableFunctionNode = new QsiTableFunctionNode
+                            {
+                                Member = { Value = invokeExpr.Member.Value }
+                            };
+
+                            tableFunctionNode.Parameters.AddRange(invokeExpr.Parameters);
+                            node = tableFunctionNode;
+                            break;
+
+                        default:
+                            throw TreeHelper.NotSupportedFeature("Table Function");
+                    }
+
                     break;
 
                 default:

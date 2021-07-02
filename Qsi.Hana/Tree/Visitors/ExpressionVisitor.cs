@@ -391,10 +391,7 @@ namespace Qsi.Hana.Tree.Visitors
             var node = new QsiInvokeExpressionNode();
 
             node.Member.SetValue(TreeHelper.CreateFunction(HanaKnownFunction.StringAgg));
-            node.Parameters.Add(VisitExpression(context.expression()));
-
-            if (context.delimiter != null)
-                node.Parameters.Add(VisitStringLiteral(context.delimiter));
+            node.Parameters.AddRange(context.expression().Select(VisitExpression));
 
             if (context.aggregateOrderByClause() != null)
                 node.Parameters.Add(TreeHelper.Fragment(context.aggregateOrderByClause().GetInputText()));
@@ -1001,12 +998,7 @@ namespace Qsi.Hana.Tree.Visitors
 
                 case ConstantNumberContext cNumber:
                 {
-                    var text = cNumber.numericLiteral().GetText();
-
-                    node = double.TryParse(text, out var number) ?
-                        TreeHelper.CreateLiteral(number) :
-                        TreeHelper.CreateLiteral(text, QsiDataType.Raw);
-
+                    node = VisitNumericLiteral(cNumber.numericLiteral());
                     break;
                 }
 
@@ -1037,6 +1029,64 @@ namespace Qsi.Hana.Tree.Visitors
             }
 
             HanaTree.PutContextSpan(node, context);
+
+            return node;
+        }
+
+        private static QsiExpressionNode VisitNumericLiteral(NumericLiteralContext context)
+        {
+            var orgContext = context;
+            bool negative = false;
+
+            if (context is SignedNumericLiteralContext signedNumericLiteral)
+            {
+                negative = signedNumericLiteral.negative;
+                context = signedNumericLiteral.numericLiteral();
+            }
+
+            QsiExpressionNode node;
+
+            switch (context)
+            {
+                case ExactNumericLiteralContext:
+                case ApproximateNumericLiteralContext:
+                {
+                    var text = context.GetText();
+
+                    if (negative)
+                        text = $"-{text}";
+
+                    if (decimal.TryParse(text, out var value))
+                    {
+                        var numericNode = TreeHelper.CreateLiteral(value);
+                        HanaTree.PutContextSpan(numericNode, orgContext);
+                        return numericNode;
+                    }
+
+                    node = TreeHelper.CreateLiteral(context.GetInputText(), QsiDataType.Raw);
+                    HanaTree.PutContextSpan(node, context);
+                    break;
+                }
+
+                case UnsignedIntegerOrBindParameter_Context uibp:
+                    node = VisitUnsignedIntegerOrBindParameter(uibp.unsignedIntegerOrBindParameter());
+                    HanaTree.PutContextSpan(node, context);
+                    break;
+
+                default:
+                    throw TreeHelper.NotSupportedTree(context);
+            }
+
+            if (negative)
+            {
+                node = new QsiUnaryExpressionNode
+                {
+                    Operator = "-",
+                    Expression = { Value = node }
+                };
+
+                HanaTree.PutContextSpan(node, orgContext);
+            }
 
             return node;
         }
