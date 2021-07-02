@@ -1,6 +1,7 @@
 parser grammar ImpalaParserInternal;
 
 options { 
+    superClass = ImpalaBaseParser;
     tokenVocab=ImpalaLexerInternal;
 }
 
@@ -15,8 +16,9 @@ root
     ;
 
 lex
-    : IntegerLiteral
-    | DecimalLiteral
+    : IDENT
+    | INTEGER_LITERAL
+    | DECIMAL_LITERAL
     | STRING_LITERAL
     | DOTDOTDOT
     | COLON
@@ -42,4 +44,6 @@ lex
     | GREATERTHAN
     | UNMATCHED_STRING_LITERAL
     | NOTEQUAL
+    | UNEXPECTED_CHAR
+    | UNUSED_RESERVED_WORD
     ;

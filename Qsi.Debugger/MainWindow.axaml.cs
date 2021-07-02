@@ -77,7 +77,8 @@ namespace Qsi.Debugger
                 ["CassandraQL 3"] = new(() => new CqlDebugger()),
                 ["PrimarSql"] = new(() => new PrimarSqlDebugger()),
                 ["SAP HANA"] = new(() => new HanaDebugger()),
-                ["Impala"] = new(() => new ImpalaDebugger())
+                ["Impala 2.11.x"] = new(() => new ImpalaDebugger(new Version(2, 11, 0))),
+                ["Impala 3.x"] = new(() => new ImpalaDebugger(new Version(3, 0, 0)))
             };
 
             _cbLanguages = this.Find<ComboBox>("cbLanguages");

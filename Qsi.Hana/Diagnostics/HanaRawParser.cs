@@ -1,4 +1,5 @@
-﻿using Antlr4.Runtime;
+﻿using System;
+using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
 using Qsi.Diagnostics.Antlr;
 using Qsi.Hana.Internal;
