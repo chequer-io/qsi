@@ -192,6 +192,10 @@ namespace Qsi.Parsing.Common
                     DeparseCompositeTableNode(writer, compositeTableNode, script);
                     break;
 
+                case IQsiTableFunctionNode tableFunctionNode:
+                    DeparseTableFunctionNode(writer, tableFunctionNode, script);
+                    break;
+
                 case IQsiDerivedTableNode derivedTableNode:
                     DeparseDerivedTableNode(writer, derivedTableNode, script);
                     break;
@@ -236,6 +240,14 @@ namespace Qsi.Parsing.Common
                 writer.WriteSpace();
                 DeparseTreeNode(writer, node.Limit, script);
             }
+        }
+
+        protected virtual void DeparseTableFunctionNode(ScriptWriter writer, IQsiTableFunctionNode node, QsiScript script)
+        {
+            writer.Write(node.Member.Identifier);
+            writer.Write('(');
+            DeparseExpressionNode(writer, node.Parameters, script);
+            writer.Write(')');
         }
 
         protected virtual void DeparseDerivedTableNode(ScriptWriter writer, IQsiDerivedTableNode node, QsiScript script)

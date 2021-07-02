@@ -162,10 +162,11 @@ seriesTable
     ;
 
 tableExpression
-    : tableRef (K_CROSS K_JOIN crossJoin=tableRef)?
+    : '(' inner=tableExpression ')'
+    | tableRef (K_CROSS K_JOIN crossJoin=tableRef)?
 //    | systemVersionedTableRef
     | subqueryTableExpression
-    | left=tableExpression joinType? joinCardinality? K_JOIN right=tableExpression K_ON predicate
+    | left=tableExpression joinType? joinCardinality? K_JOIN right=tableExpression K_ON condition
     | caseJoin
     | lateralTableExpression
     | collectionDerivedTable
@@ -266,7 +267,7 @@ groupByClause
     ;
 
 groupByExpressionList
-    : (tableExpression | groupingSet) (',' tableExpression | groupingSet)*
+    : (expression | groupingSet) (',' (expression | groupingSet))*
     ;
 
 groupingSet
@@ -372,7 +373,7 @@ collectionDerivedTable
     ;
 
 collectionValueExpression
-    : K_ARRAY '(' (tableExpression (',' tableExpression)* | columnName) ')'
+    : K_ARRAY '(' (expression (',' expression)* | columnName) ')'
     ;
 
 // ------ SQL Reference > SQL Statements > Alpabetical List of Statements > DELETE Statement ------
@@ -499,22 +500,22 @@ logicalOperator
 // ------ SQL Reference > Expressions ------
 
 expression
-    : caseExpression                        #caseExpr
-    | windowExpression                      #windowExpr
-    | aggregateExpression                   #aggExpr
-    | dataTypeConversionExpression          #conversionExpr
-    | dateTimeExpression                    #dateTimeExpr
-    | functionExpression[false]             #functionExpr
-    | '(' expression ')'                    #parenthesisExpr
-    | '(' subquery[true] ')'                #subqueryExpr
-    | '-' expression                        #unaryExpr
-    | l=expression op=operator r=expression #operationExpr
-    | fieldName                             #fieldExpr
-    | constant                              #constantExpr
-    | identifier[null] '=>' expression      #lambdaExpr
-    | jsonObjectExpression                  #jsonObjectExpr
-    | jsonArrayExpression                   #jsonArrayExpr
-    | bindParameterExpression               #bindParamExpr
+    : caseExpression                         #caseExpr
+    | windowExpression                       #windowExpr
+    | aggregateExpression                    #aggExpr
+    | dataTypeConversionExpression           #conversionExpr
+    | dateTimeExpression                     #dateTimeExpr
+    | functionExpression[false]              #functionExpr
+    | '(' expression (',' expression)* ')'   #setExpr
+    | '(' subquery[true] ')'                 #subqueryExpr
+    | '-' expression                         #unaryExpr
+    | l=expression op=operator r=expression  #operationExpr
+    | fieldName                              #fieldExpr
+    | constant                               #constantExpr
+    | identifier[null] '=>' expression       #lambdaExpr
+    | jsonObjectExpression                   #jsonObjectExpr
+    | jsonArrayExpression                    #jsonArrayExpr
+    | bindParameterExpression                #bindParamExpr
     ;
 
 expressionList
@@ -589,7 +590,7 @@ inlineFunctionName
 aggregateExpression
     : K_COUNT '(' '*' ')'                                                                      #aggCountExpr
     | K_COUNT '(' K_DISTINCT expressionList ')'                                                #aggCountDistinctExpr
-    | K_STRING_AGG '(' expression (',' delimiter=STRING_LITERAL)? aggregateOrderByClause? ')'  #aggStringExpr
+    | K_STRING_AGG '(' expression (',' delimiter=expression)? aggregateOrderByClause? ')'      #aggStringExpr
     | K_CROSS_CORR '('
         expression ',' 
         expression ','
@@ -650,7 +651,7 @@ windowOrderByClause
     ;
 
 windowOrderByExpression
-    : columnName (K_ASC | K_DESC)? (K_NULLS (K_FIRST | K_LAST))? collateClause?
+    : fieldName (K_ASC | K_DESC)? (K_NULLS (K_FIRST | K_LAST))? collateClause?
     ;
 
 windowFrameClause
@@ -1020,7 +1021,8 @@ bindParameterExpression returns [int index]
 // ------ SQL Reference > Predicates ------
 
 predicate
-    : comparisonPredicate
+    : '(' inner=predicate ')'
+    | comparisonPredicate
     | betweenPredicate
     | containsPredicate
     | inPredicate
@@ -1029,12 +1031,10 @@ predicate
     | likeRegexPredicate
     | memberOfPredicate
     | nullPredicate
-    | '(' inner=predicate ')'
     ;
 
 comparisonPredicate
-    : left=expression op=comparisonOperator (K_ANY | K_SOME | K_ALL)? '(' (right1=expressionList | right2=subquery[true]) ')'
-    | left=expression op=comparisonOperator right=expression
+    : left=expression op=comparisonOperator (K_ANY | K_SOME | K_ALL)? right=expression
     ;
 
 betweenPredicate
@@ -1328,10 +1328,11 @@ booleanLiteral
     | K_FALSE
     ;
 
-numericLiteral
-    : ('+' | '-')? (EXACT_NUMERIC_LITERAL | APPROXIMATE_NUMERIC_LITERAL)
-    | SIGNED_INTEGER
-    | unsignedIntegerOrBindParameter
+numericLiteral returns [bool negative]
+    : ('+' | '-' { $negative = !$negative; })+ numericLiteral #signedNumericLiteral
+    | EXACT_NUMERIC_LITERAL             #exactNumericLiteral
+    | APPROXIMATE_NUMERIC_LITERAL       #approximateNumericLiteral
+    | unsignedIntegerOrBindParameter    #unsignedIntegerOrBindParameter_
     ;
 
 identifier[List<QsiIdentifier> buffer] returns [QsiIdentifier qi]
