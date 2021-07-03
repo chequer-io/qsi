@@ -269,9 +269,11 @@ fragment Identifier: DIGIT* LETTER LETTER_OR_DIGIT*;
 
 IdentifierOrKw: (Identifier | KW_AND1 | KW_LOGICAL_OR) { CategorizeIdentifier(); };
 
+EMPTY_IDENT: '``';
+IDENT: '`' ('\\' . | ~[\\`])+? '`';
+
 STRING_LITERAL
-    : '`' ('\\' . | ~[\\`])*? '`'
-    | '\'' ('\\' . | ~[\\'])*? '\''
+    : '\'' ('\\' . | ~[\\'])*? '\''
     | '"' ('\\' . | ~[\\"])*? '"'
     ;
 
