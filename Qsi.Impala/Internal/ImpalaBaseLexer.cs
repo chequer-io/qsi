@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using Antlr4.Runtime;
+using Qsi.Impala.Common.Thrift;
 
 namespace Qsi.Impala.Internal
 {
@@ -13,14 +14,14 @@ namespace Qsi.Impala.Internal
         // uses "and" as a display name and not "&&".
         // Please keep the puts sorted alphabetically by keyword (where the order
         // does not affect the desired error reporting)
-        private Dictionary<string, int> _keywordMap;
+        internal Dictionary<string, int> KeywordMap { get; private set; }
 
         // Reserved words are words that cannot be used as identifiers. It is a superset of
         // keywords.
-        private HashSet<string> _reservedWords;
+        internal HashSet<string> ReservedWords { get; private set; }
 
         // map from token id to token description
-        private Dictionary<int, string> _tokenIdMap;
+        internal Dictionary<int, string> TokenIdMap { get; private set; }
 
         protected ImpalaBaseLexer(ICharStream input) : base(input)
         {
@@ -33,7 +34,7 @@ namespace Qsi.Impala.Internal
         public void Setup(TReservedWordsVersion reservedWordsVersion, IEnumerable<string> builtInFunctions)
         {
             // initilize keywords
-            _keywordMap = new Dictionary<string, int>
+            KeywordMap = new Dictionary<string, int>
             {
                 ["&&"] = ImpalaLexerInternal.KW_AND,
                 ["add"] = ImpalaLexerInternal.KW_ADD,
@@ -254,49 +255,49 @@ namespace Qsi.Impala.Internal
             };
 
             // Initilize tokenIdMap for error reporting
-            _tokenIdMap = new Dictionary<int, string>();
+            TokenIdMap = new Dictionary<int, string>();
 
-            foreach (var (key, value) in _keywordMap)
-                _tokenIdMap[value] = key;
+            foreach (var (key, value) in KeywordMap)
+                TokenIdMap[value] = key;
 
             // add non-keyword tokens. Please keep this in the same order as they are used in this
             // file.
-            _tokenIdMap[Eof] = "EOF";
-            _tokenIdMap[ImpalaLexerInternal.DOTDOTDOT] = "...";
-            _tokenIdMap[ImpalaLexerInternal.COLON] = ":";
-            _tokenIdMap[ImpalaLexerInternal.SEMICOLON] = ";";
-            _tokenIdMap[ImpalaLexerInternal.COMMA] = "COMMA";
-            _tokenIdMap[ImpalaLexerInternal.DOT] = ".";
-            _tokenIdMap[ImpalaLexerInternal.STAR] = "*";
-            _tokenIdMap[ImpalaLexerInternal.LPAREN] = "(";
-            _tokenIdMap[ImpalaLexerInternal.RPAREN] = ")";
-            _tokenIdMap[ImpalaLexerInternal.LBRACKET] = "[";
-            _tokenIdMap[ImpalaLexerInternal.RBRACKET] = "]";
-            _tokenIdMap[ImpalaLexerInternal.DIVIDE] = "/";
-            _tokenIdMap[ImpalaLexerInternal.MOD] = "%";
-            _tokenIdMap[ImpalaLexerInternal.ADD] = "+";
-            _tokenIdMap[ImpalaLexerInternal.SUBTRACT] = "-";
-            _tokenIdMap[ImpalaLexerInternal.BITAND] = "&";
-            _tokenIdMap[ImpalaLexerInternal.BITOR] = "|";
-            _tokenIdMap[ImpalaLexerInternal.BITXOR] = "^";
-            _tokenIdMap[ImpalaLexerInternal.BITNOT] = "~";
-            _tokenIdMap[ImpalaLexerInternal.EQUAL] = "=";
-            _tokenIdMap[ImpalaLexerInternal.NOT] = "!";
-            _tokenIdMap[ImpalaLexerInternal.LESSTHAN] = "<";
-            _tokenIdMap[ImpalaLexerInternal.GREATERTHAN] = ">";
-            _tokenIdMap[ImpalaLexerInternal.UNMATCHED_STRING_LITERAL] = "UNMATCHED STRING LITERAL";
-            _tokenIdMap[ImpalaLexerInternal.NOTEQUAL] = "!=";
-            _tokenIdMap[ImpalaLexerInternal.INTEGER_LITERAL] = "INTEGER LITERAL";
-            _tokenIdMap[ImpalaLexerInternal.NUMERIC_OVERFLOW] = "NUMERIC OVERFLOW";
-            _tokenIdMap[ImpalaLexerInternal.DECIMAL_LITERAL] = "DECIMAL LITERAL";
-            _tokenIdMap[ImpalaLexerInternal.EMPTY_IDENT] = "EMPTY IDENTIFIER";
-            _tokenIdMap[ImpalaLexerInternal.IDENT] = "IDENTIFIER";
-            _tokenIdMap[ImpalaLexerInternal.STRING_LITERAL] = "STRING LITERAL";
-            _tokenIdMap[ImpalaLexerInternal.COMMENTED_PLAN_HINT_START] = "COMMENTED_PLAN_HINT_START";
-            _tokenIdMap[ImpalaLexerInternal.COMMENTED_PLAN_HINT_END] = "COMMENTED_PLAN_HINT_END";
-            _tokenIdMap[ImpalaLexerInternal.UNEXPECTED_CHAR] = "Unexpected character";
+            TokenIdMap[Eof] = "EOF";
+            TokenIdMap[ImpalaLexerInternal.DOTDOTDOT] = "...";
+            TokenIdMap[ImpalaLexerInternal.COLON] = ":";
+            TokenIdMap[ImpalaLexerInternal.SEMICOLON] = ";";
+            TokenIdMap[ImpalaLexerInternal.COMMA] = "COMMA";
+            TokenIdMap[ImpalaLexerInternal.DOT] = ".";
+            TokenIdMap[ImpalaLexerInternal.STAR] = "*";
+            TokenIdMap[ImpalaLexerInternal.LPAREN] = "(";
+            TokenIdMap[ImpalaLexerInternal.RPAREN] = ")";
+            TokenIdMap[ImpalaLexerInternal.LBRACKET] = "[";
+            TokenIdMap[ImpalaLexerInternal.RBRACKET] = "]";
+            TokenIdMap[ImpalaLexerInternal.DIVIDE] = "/";
+            TokenIdMap[ImpalaLexerInternal.MOD] = "%";
+            TokenIdMap[ImpalaLexerInternal.ADD] = "+";
+            TokenIdMap[ImpalaLexerInternal.SUBTRACT] = "-";
+            TokenIdMap[ImpalaLexerInternal.BITAND] = "&";
+            TokenIdMap[ImpalaLexerInternal.BITOR] = "|";
+            TokenIdMap[ImpalaLexerInternal.BITXOR] = "^";
+            TokenIdMap[ImpalaLexerInternal.BITNOT] = "~";
+            TokenIdMap[ImpalaLexerInternal.EQUAL] = "=";
+            TokenIdMap[ImpalaLexerInternal.NOT] = "!";
+            TokenIdMap[ImpalaLexerInternal.LESSTHAN] = "<";
+            TokenIdMap[ImpalaLexerInternal.GREATERTHAN] = ">";
+            TokenIdMap[ImpalaLexerInternal.UNMATCHED_STRING_LITERAL] = "UNMATCHED STRING LITERAL";
+            TokenIdMap[ImpalaLexerInternal.NOTEQUAL] = "!=";
+            TokenIdMap[ImpalaLexerInternal.INTEGER_LITERAL] = "INTEGER LITERAL";
+            TokenIdMap[ImpalaLexerInternal.NUMERIC_OVERFLOW] = "NUMERIC OVERFLOW";
+            TokenIdMap[ImpalaLexerInternal.DECIMAL_LITERAL] = "DECIMAL LITERAL";
+            TokenIdMap[ImpalaLexerInternal.EMPTY_IDENT] = "EMPTY IDENTIFIER";
+            TokenIdMap[ImpalaLexerInternal.IDENT] = "IDENTIFIER";
+            TokenIdMap[ImpalaLexerInternal.STRING_LITERAL] = "STRING LITERAL";
+            TokenIdMap[ImpalaLexerInternal.COMMENTED_PLAN_HINT_START] = "COMMENTED_PLAN_HINT_START";
+            TokenIdMap[ImpalaLexerInternal.COMMENTED_PLAN_HINT_END] = "COMMENTED_PLAN_HINT_END";
+            TokenIdMap[ImpalaLexerInternal.UNEXPECTED_CHAR] = "Unexpected character";
 
-            _reservedWords = new HashSet<string>(_keywordMap.Select(kv => kv.Key));
+            ReservedWords = new HashSet<string>(KeywordMap.Select(kv => kv.Key));
 
             // Initilize reservedWords. For impala 2.11, reserved words = keywords.
             if (reservedWordsVersion == TReservedWordsVersion.IMPALA_2_11)
@@ -351,12 +352,12 @@ namespace Qsi.Impala.Internal
                 "without", "year"
             })
             {
-                _reservedWords.Add(reservedWord);
+                ReservedWords.Add(reservedWord);
             }
 
             // Remove impala builtin function names
             foreach (var builtInFunction in builtInFunctions)
-                _reservedWords.Remove(builtInFunction);
+                ReservedWords.Remove(builtInFunction);
 
             // Remove whitelist words. These words might be heavily used in production, and
             // impala is unlikely to implement SQL features around these words in the near future.
@@ -369,13 +370,13 @@ namespace Qsi.Impala.Internal
                 "period", "result", "return", "sql", "start", "system", "time", "user", "value"
             })
             {
-                _reservedWords.Remove(reservedWord);
+                ReservedWords.Remove(reservedWord);
             }
         }
 
         protected void CategorizeIdentifier()
         {
-            if (_keywordMap.TryGetValue(Text.ToLower(), out var keywordId))
+            if (KeywordMap.TryGetValue(Text.ToLower(), out var keywordId))
             {
                 Type = keywordId;
             }
@@ -391,15 +392,15 @@ namespace Qsi.Impala.Internal
 
         public bool IsReserved(string token)
         {
-            return _reservedWords.Contains(token);
+            return ReservedWords.Contains(token);
         }
 
         public bool IsKeyword(int tokenId)
         {
-            if (!_tokenIdMap.TryGetValue(tokenId, out var token))
+            if (!TokenIdMap.TryGetValue(tokenId, out var token))
                 return false;
 
-            return _keywordMap.ContainsKey(token.ToLower());
+            return KeywordMap.ContainsKey(token.ToLower());
         }
     }
 }

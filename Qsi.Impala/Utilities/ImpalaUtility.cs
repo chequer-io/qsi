@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using Antlr4.Runtime;
+using Qsi.Impala.Common.Thrift;
 using Qsi.Impala.Internal;
+using Qsi.Shared;
 
 namespace Qsi.Impala.Utilities
 {
@@ -17,14 +19,12 @@ namespace Qsi.Impala.Utilities
 
         internal static ImpalaParserInternal CreateParserInternal(string input, Version version, IEnumerable<string> builtInFunctions)
         {
-            var stream = new AntlrInputStream(input);
+            var stream = new StringInputStream(input);
             var lexer = new ImpalaLexerInternal(stream);
             var tokens = new CommonTokenStream(lexer);
             var parser = new ImpalaParserInternal(tokens);
-            parser.AddErrorListener(new ErrorListener());
 
             lexer.Setup(GetReservedWordsVersion(version), builtInFunctions);
-            parser.Setup(lexer);
 
             return parser;
         }

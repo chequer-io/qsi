@@ -12,7 +12,7 @@ options {
 }
 
 root
-    : lex+
+    : KW_SELECT (IDENT | STAR) (KW_FROM | KW_FOR) IDENT
     ;
 
 lex

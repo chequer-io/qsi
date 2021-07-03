@@ -12,12 +12,6 @@ namespace Qsi.Impala
     {
         public IQsiTreeNode Parse(QsiScript script, CancellationToken cancellationToken = default)
         {
-            var stream = new AntlrInputStream(script.Script);
-            var lexer = new ImpalaLexerInternal(stream);
-            var tokens = new CommonTokenStream(lexer);
-            var parser = new ImpalaParserInternal(tokens);
-            parser.AddErrorListener(new ErrorListener());
-
             throw new NotImplementedException();
         }
     }

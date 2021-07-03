@@ -9,6 +9,7 @@
     <Import_RootNamespace>Qsi.Shared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)StringInputStream.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\IListExtension.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\IQsiAnalysisResultExtension.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ParserRuleContextExtension.cs" />
