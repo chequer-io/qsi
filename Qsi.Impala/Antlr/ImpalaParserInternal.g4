@@ -997,42 +997,74 @@ case_else_clause
     : KW_ELSE expr
     ;
 
-sign_chain_expr
-    : SUBTRACT expr
-    | ADD expr
+//sign_chain_expr
+//    : SUBTRACT expr
+//    | ADD expr
+//    ;
+
+expr returns [bool p]
+    : LPAREN expr RPAREN                                                                        {$p=true;} #expr_parens
+
+    // predicate
+    | <assoc=right> expr KW_LOGICAL_OR expr                                                     {$p=true;} #predicate1
+    | <assoc=right> expr KW_IS KW_NOT? KW_NULL                                                  {$p=true;} #predicate2
+
+    // predicate > like_predicate
+    | <assoc=right> expr KW_NOT? (KW_RLIKE | KW_REGEXP | KW_LIKE | KW_IREGEXP | KW_ILIKE) expr  {$p=true;} #like_predicate
+
+    // predicate > in_predicate
+    | <assoc=right> expr KW_NOT? KW_IN subquery                                                 {$p=true;} #in_predicate_subquery
+    | <assoc=right> expr KW_NOT? KW_IN LPAREN expr_list RPAREN                                  {$p=true;} #in_predicate
+
+    // predicate > exists_predicate
+    | KW_EXISTS subquery                                                                        {$p=true;} #exists_predicate
+
+    // predicate > compound_predicate
+    | (NOT | KW_NOT) expr                                                                       {$p=true;} #compound_predicate1
+    | <assoc=right> expr (KW_OR | KW_AND) expr                                                  {$p=true;} #compound_predicate2
+
+    // predicate > comparison_predicate
+    | <assoc=right> expr (NOTEQUAL | LESSTHAN | EQUAL) expr                                     {$p=true;} #comparison_predicate1
+    | <assoc=right> expr (NOT | LESSTHAN) EQUAL expr                                            {$p=true;} #comparison_predicate2
+    | <assoc=right> expr LESSTHAN EQUAL? GREATERTHAN expr                                       {$p=true;} #comparison_predicate3
+    | <assoc=right> expr KW_IS KW_NOT? KW_DISTINCT KW_FROM expr                                 {$p=true;} #comparison_predicate4
+    | <assoc=right> expr GREATERTHAN EQUAL? expr                                                {$p=true;} #comparison_predicate5
+
+    // predicate > bool_test_expr
+    | <assoc=right> expr KW_IS KW_NOT? (KW_UNKNOWN | KW_TRUE | KW_FALSE)                        {$p=true;} #bool_test_expr
+
+    // predicate > between_predicate
+    | <assoc=right> expr KW_NOT? KW_BETWEEN expr KW_AND expr                                    {$p=true;} #between_predicate
+
+    // non_pred_expr
+    | slot_ref                                                                                             #slot_ref_
+    | (SUBTRACT | ADD) expr                                                                                #sign_chain_expr
+    | literal                                                                                              #literal_
+    | function_call_expr                                                                                   #function_call_expr_
+    | cast_expr                                                                                            #cast_expr_
+    | case_expr                                                                                            #case_expr_ 
+    | analytic_expr                                                                                        #analytic_expr_
+
+    // non_pred_expr > timestamp_arithmetic_expr
+    | KW_INTERVAL expr IDENT ADD expr                                                                      #timestamp_arithmetic_expr1
+    | function_name LPAREN expr_list COMMA KW_INTERVAL expr IDENT RPAREN                                   #timestamp_arithmetic_expr2
+    | expr (SUBTRACT | ADD) KW_INTERVAL expr IDENT                                                         #timestamp_arithmetic_expr3
+
+    // non_pred_expr > arithmetic_expr
+    | expr (SUBTRACT | STAR | MOD | KW_DIV | DIVIDE | BITXOR | BITOR | BITAND | ADD) expr                  #arithmetic_expr
+    | expr NOT                                                                                             #arithmetic_expr_factorial
+    | BITNOT expr                                                                                          #arithmetic_expr_bitnot
+
+    | subquery                                                                                             #subquery_
     ;
 
-expr
-    : literal
-//    : predicate
-//    | non_pred_expr
-    ;
-
-exists_predicate
-    : KW_EXISTS subquery
-    ;
-
-non_pred_expr
-    : timestamp_arithmetic_expr
-    | subquery
-    | slot_ref
-    | sign_chain_expr
-    | LPAREN non_pred_expr RPAREN
-    | literal
-    | KW_TRUNCATE LPAREN expr_list RPAREN
-    | KW_RIGHT LPAREN expr_list RPAREN
-    | KW_REPLACE LPAREN expr_list RPAREN
-    | KW_LEFT LPAREN expr_list RPAREN
-    | KW_IF LPAREN expr_list RPAREN
-    | function_call_expr
-    | cast_expr
-    | case_expr
-    | arithmetic_expr
-    | analytic_expr
-    ;
+//exists_predicate
+//    : KW_EXISTS subquery
+//    ;
 
 function_call_expr
-    : function_name LPAREN (ident_or_default KW_FROM expr | function_params)? RPAREN
+    : (KW_TRUNCATE | KW_RIGHT | KW_REPLACE | KW_LEFT | KW_IF) LPAREN expr_list RPAREN
+    | function_name LPAREN (ident_or_default KW_FROM expr | function_params)? RPAREN
     ;
 
 analytic_expr
@@ -1060,17 +1092,17 @@ window_boundary
     | expr KW_FOLLOWING
     ;
 
-arithmetic_expr
-    : expr (SUBTRACT | STAR | MOD | KW_DIV | DIVIDE | BITXOR | BITOR | BITAND | ADD) expr
-    | expr NOT
-    | BITNOT expr
-    ;
+//arithmetic_expr
+//    : expr (SUBTRACT | STAR | MOD | KW_DIV | DIVIDE | BITXOR | BITOR | BITAND | ADD) expr
+//    | expr NOT
+//    | BITNOT expr
+//    ;
 
-timestamp_arithmetic_expr
-    : KW_INTERVAL expr IDENT ADD expr
-    | function_name LPAREN expr_list COMMA KW_INTERVAL expr IDENT RPAREN
-    | expr (SUBTRACT | ADD) KW_INTERVAL expr IDENT
-    ;
+//timestamp_arithmetic_expr
+//    : KW_INTERVAL expr IDENT ADD expr
+//    | function_name LPAREN expr_list COMMA KW_INTERVAL expr IDENT RPAREN
+//    | expr (SUBTRACT | ADD) KW_INTERVAL expr IDENT
+//    ;
 
 numeric_literal
     : INTEGER_LITERAL
@@ -1094,55 +1126,42 @@ function_params
     | expr_list KW_IGNORE KW_NULLS
     ;
 
-predicate
-    : LPAREN predicate RPAREN
-    | like_predicate
-    | in_predicate
-    | expr KW_LOGICAL_OR expr
-    | expr KW_IS KW_NOT? KW_NULL
-    | exists_predicate
-    | compound_predicate
-    | comparison_predicate
-    | bool_test_expr
-    | between_predicate
-    ;
+//comparison_predicate
+//    : expr (NOTEQUAL | LESSTHAN | EQUAL) expr
+//    | expr (NOT | LESSTHAN) EQUAL expr
+//    | expr LESSTHAN EQUAL? GREATERTHAN expr
+//    | expr KW_IS KW_NOT? KW_DISTINCT KW_FROM expr
+//    | expr GREATERTHAN EQUAL? expr
+//    ;
 
-comparison_predicate
-    : expr (NOTEQUAL | LESSTHAN | EQUAL) expr
-    | expr (NOT | LESSTHAN) EQUAL expr
-    | expr LESSTHAN EQUAL? GREATERTHAN expr
-    | expr KW_IS KW_NOT? KW_DISTINCT KW_FROM expr
-    | expr GREATERTHAN EQUAL? expr
-    ;
+//like_predicate
+//    : expr KW_NOT? (KW_RLIKE | KW_REGEXP | KW_LIKE | KW_IREGEXP | KW_ILIKE) expr
+//    ;
 
-like_predicate
-    : expr KW_NOT? (KW_RLIKE | KW_REGEXP | KW_LIKE | KW_IREGEXP | KW_ILIKE) expr
-    ;
+//between_predicate
+//    : expr KW_NOT? KW_BETWEEN (predicate | non_pred_expr) KW_AND expr
+//    ;
 
-between_predicate
-    : expr KW_NOT? KW_BETWEEN (predicate | non_pred_expr) KW_AND expr
-    ;
+//in_predicate
+//    : expr KW_NOT? KW_IN subquery
+//    | expr KW_NOT? KW_IN LPAREN expr_list RPAREN
+//    ;
 
-in_predicate
-    : expr KW_NOT? KW_IN subquery
-    | expr KW_NOT? KW_IN LPAREN expr_list RPAREN
-    ;
-
-bool_test_expr
-    : expr KW_IS KW_NOT? KW_UNKNOWN
-    | expr KW_IS KW_NOT? KW_TRUE
-    | expr KW_IS KW_NOT? KW_FALSE
-    ;
+//bool_test_expr
+//    : expr KW_IS KW_NOT? KW_UNKNOWN
+//    | expr KW_IS KW_NOT? KW_TRUE
+//    | expr KW_IS KW_NOT? KW_FALSE
+//    ;
 
 subquery
     : LPAREN (subquery | query_stmt) RPAREN
     ;
 
-compound_predicate
-    : NOT expr
-    | KW_NOT expr
-    | expr (KW_OR | KW_AND) expr
-    ;
+//compound_predicate
+//    : NOT expr
+//    | KW_NOT expr
+//    | expr (KW_OR | KW_AND) expr
+//    ;
 
 slot_ref
     : dotted_path
