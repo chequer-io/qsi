@@ -147,11 +147,11 @@ revoke_role_stmt
     ;
 
 grant_privilege_stmt
-    : KW_GRANT privilege_spec KW_TO (KW_ROLE | KW_GROUP | IDENT?) ident_or_default opt_with_grantopt?
+    : KW_GRANT privilege_spec KW_TO (KW_ROLE | KW_GROUP | IDENT)? ident_or_default opt_with_grantopt?
     ;
 
 revoke_privilege_stmt
-    : KW_REVOKE opt_grantopt_for? privilege_spec KW_FROM (KW_ROLE | KW_GROUP | IDENT?) ident_or_default
+    : KW_REVOKE opt_grantopt_for? privilege_spec KW_FROM (KW_ROLE | KW_GROUP | IDENT)? ident_or_default
     ;
 
 privilege_spec
@@ -212,7 +212,7 @@ alter_tbl_stmt
     | KW_ALTER KW_TABLE table_name partition_set? KW_SET cache_op_val
     | KW_ALTER KW_TABLE table_name partition_set? KW_SET row_format_val
     | KW_ALTER KW_TABLE table_name partition_set? KW_SET KW_COLUMN KW_STATS ident_or_default LPAREN properties_map RPAREN
-    | KW_ALTER KW_TABLE table_name KW_SORT KW_BY (KW_ZORDER? | KW_LEXICAL) LPAREN ident_list? RPAREN
+    | KW_ALTER KW_TABLE table_name KW_SORT KW_BY (KW_ZORDER | KW_LEXICAL)? LPAREN ident_list? RPAREN
     | KW_ALTER KW_TABLE table_name KW_REPLACE KW_COLUMNS LPAREN column_def_list RPAREN
     | KW_ALTER KW_TABLE table_name KW_RENAME KW_TO table_name
     | KW_ALTER KW_TABLE table_name KW_RECOVER KW_PARTITIONS
@@ -242,7 +242,7 @@ create_tbl_as_select_stmt
     ;
 
 create_tbl_as_select_params
-    : tbl_def_without_col_defs (primary_keys partitioned_data_layout?? | iceberg_partition_spec_list) tbl_options KW_AS query_stmt
+    : tbl_def_without_col_defs (primary_keys partitioned_data_layout? | iceberg_partition_spec_list)? tbl_options KW_AS query_stmt
     | tbl_def_without_col_defs KW_PARTITIONED KW_BY LPAREN ident_list RPAREN tbl_options KW_AS query_stmt
     ;
 
@@ -295,7 +295,7 @@ tbl_options
     ;
 
 opt_sort_cols
-    : KW_SORT KW_BY (KW_ZORDER? | KW_LEXICAL) LPAREN ident_list? RPAREN
+    : KW_SORT KW_BY (KW_ZORDER | KW_LEXICAL)? LPAREN ident_list? RPAREN
     ;
 
 opt_tbl_data_layout
@@ -819,7 +819,7 @@ select_stmt
     ;
 
 select_clause
-    : KW_SELECT (KW_DISTINCT? | KW_ALL) plan_hints? select_list
+    : KW_SELECT (KW_DISTINCT | KW_ALL)? plan_hints? select_list
     ;
 
 set_stmt
@@ -1004,7 +1004,7 @@ sign_chain_expr
 
 expr
     : literal
-//    | predicate
+//    : predicate
 //    | non_pred_expr
     ;
 
@@ -1032,7 +1032,7 @@ non_pred_expr
     ;
 
 function_call_expr
-    : function_name LPAREN (ident_or_default KW_FROM expr? | function_params) RPAREN
+    : function_name LPAREN (ident_or_default KW_FROM expr | function_params)? RPAREN
     ;
 
 analytic_expr
