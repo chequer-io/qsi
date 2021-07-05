@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
 using Antlr4.Runtime;
+using Antlr4.Runtime.Atn;
+using Antlr4.Runtime.Misc;
 using Qsi.Parsing;
 using Qsi.Shared;
 using SqlParserSymbols = Qsi.Impala.Internal.ImpalaLexerInternal;
@@ -60,12 +63,44 @@ namespace Qsi.Impala.Internal
         private void SyntaxError(IToken token, string expectedTokenName)
         {
             var stmt = ((StringInputStream)Lexer.InputStream).Input;
+            var tokens = GetNextTokens(CurrentToken).ToArray();
 
             throw new QsiSyntaxErrorException(
                 token.Line,
                 token.Column,
-                GetErrorMessage(token, stmt, expectedTokenName, GetExpectedTokens().ToArray())
+                GetErrorMessage(token, stmt, expectedTokenName, tokens)
             );
+        }
+
+        private IEnumerable<int> GetNextTokens(IToken token)
+        {
+            var seen = new HashSet<ATNState>();
+            return NextTokens(Atn, token, Atn.states[State], seen);
+
+            static IEnumerable<int> NextTokens(ATN atn, IToken token, ATNState state, ISet<ATNState> seen)
+            {
+                if (!seen.Add(state))
+                    yield break;
+
+                foreach (var transition in state.TransitionsArray)
+                {
+                    if (transition is RuleTransition ruleTransition)
+                    {
+                        foreach (var t in NextTokens(atn, token, atn.ruleToStartState[ruleTransition.ruleIndex], seen))
+                            yield return t;
+                    }
+                    else if (transition.IsEpsilon)
+                    {
+                        foreach (var t in NextTokens(atn, token, transition.target, seen))
+                            yield return t;
+                    }
+                    else if (transition.Label != null)
+                    {
+                        foreach (var t in transition.Label.ToArray())
+                            yield return t;
+                    }
+                }
+            }
         }
 
         protected string GetErrorMessage(IToken errorToken, string stmt, string expectedTokenName, int[] expectedTokenIds)

@@ -147,11 +147,11 @@ revoke_role_stmt
     ;
 
 grant_privilege_stmt
-    : KW_GRANT privilege_spec KW_TO (KW_ROLE | KW_GROUP | IDENT)? ident_or_default opt_with_grantopt?
+    : KW_GRANT privilege_spec KW_TO (KW_ROLE | KW_GROUP | IDENT?) ident_or_default opt_with_grantopt?
     ;
 
 revoke_privilege_stmt
-    : KW_REVOKE opt_grantopt_for? privilege_spec KW_FROM (KW_ROLE | KW_GROUP | IDENT)? ident_or_default
+    : KW_REVOKE opt_grantopt_for? privilege_spec KW_FROM (KW_ROLE | KW_GROUP | IDENT?) ident_or_default
     ;
 
 privilege_spec
@@ -242,7 +242,7 @@ create_tbl_as_select_stmt
     ;
 
 create_tbl_as_select_params
-    : tbl_def_without_col_defs ((primary_keys partitioned_data_layout?)? | iceberg_partition_spec_list) tbl_options KW_AS query_stmt
+    : tbl_def_without_col_defs (primary_keys partitioned_data_layout?? | iceberg_partition_spec_list) tbl_options KW_AS query_stmt
     | tbl_def_without_col_defs KW_PARTITIONED KW_BY LPAREN ident_list RPAREN tbl_options KW_AS query_stmt
     ;
 
@@ -593,8 +593,7 @@ cascade_val
 
 compute_stats_stmt
     : KW_COMPUTE KW_STATS table_name (LPAREN ident_list? RPAREN)? opt_tablesample?
-    | KW_COMPUTE KW_INCREMENTAL KW_STATS table_name (partition_set (LPAREN ident_list? RPAREN)?)?
-    | KW_COMPUTE KW_INCREMENTAL KW_STATS table_name LPAREN ident_list? RPAREN
+    | KW_COMPUTE KW_INCREMENTAL KW_STATS table_name partition_set? (LPAREN ident_list? RPAREN)?
     ;
 
 drop_stats_stmt
@@ -721,7 +720,8 @@ set_operand
 
 set_operand_list
     : set_operand
-    | set_operand_list set_op KW_DISTINCT? set_operand
+    | set_operand_list set_op set_operand
+    | set_operand_list set_op KW_DISTINCT set_operand
     | set_operand_list KW_UNION opt_set_op_qualifier set_operand
     ;
 
@@ -750,8 +750,7 @@ use_stmt
     ;
 
 show_tables_stmt
-    : KW_SHOW KW_TABLES ((KW_IN ident_or_default)? show_pattern)?
-    | KW_SHOW KW_TABLES KW_IN ident_or_default
+    : KW_SHOW KW_TABLES (KW_IN ident_or_default)? show_pattern?
     ;
 
 show_dbs_stmt
@@ -771,8 +770,7 @@ show_range_partitions_stmt
     ;
 
 show_functions_stmt
-    : KW_SHOW opt_function_category? KW_FUNCTIONS ((KW_IN ident_or_default)? show_pattern)?
-    | KW_SHOW opt_function_category? KW_FUNCTIONS KW_IN ident_or_default
+    : KW_SHOW opt_function_category? KW_FUNCTIONS (KW_IN ident_or_default)? show_pattern?
     ;
 
 opt_function_category
@@ -854,11 +852,11 @@ star_expr
     ;
 
 table_name
-    : ident_or_default? DOT ident_or_default
+    : (ident_or_default DOT)? ident_or_default
     ;
 
 column_name
-    : (ident_or_default DOT ident_or_default)? DOT ident_or_default
+    : (ident_or_default DOT)? ident_or_default DOT ident_or_default
     ;
 
 function_name
@@ -1034,7 +1032,7 @@ non_pred_expr
     ;
 
 function_call_expr
-    : function_name LPAREN ((ident_or_default KW_FROM expr)? | function_params) RPAREN
+    : function_name LPAREN (ident_or_default KW_FROM expr? | function_params) RPAREN
     ;
 
 analytic_expr
@@ -1090,9 +1088,9 @@ literal
     ;
 
 function_params
-    : KW_DISTINCT? expr_list
+    : KW_DISTINCT expr_list
     | KW_ALL? STAR
-    | KW_ALL expr_list
+    | KW_ALL? expr_list
     | expr_list KW_IGNORE KW_NULLS
     ;
 
@@ -1110,20 +1108,19 @@ predicate
     ;
 
 comparison_predicate
-    : expr (NOTEQUAL | LESSTHAN | GREATERTHAN | EQUAL) expr
-    | expr (NOT | LESSTHAN | GREATERTHAN) EQUAL expr
+    : expr (NOTEQUAL | LESSTHAN | EQUAL) expr
+    | expr (NOT | LESSTHAN) EQUAL expr
     | expr LESSTHAN EQUAL? GREATERTHAN expr
     | expr KW_IS KW_NOT? KW_DISTINCT KW_FROM expr
+    | expr GREATERTHAN EQUAL? expr
     ;
 
 like_predicate
-    : expr (KW_RLIKE | KW_REGEXP | KW_LIKE | KW_IREGEXP | KW_ILIKE) expr
-    | expr KW_NOT (KW_RLIKE | KW_REGEXP | KW_LIKE | KW_IREGEXP | KW_ILIKE) expr
+    : expr KW_NOT? (KW_RLIKE | KW_REGEXP | KW_LIKE | KW_IREGEXP | KW_ILIKE) expr
     ;
 
 between_predicate
-    : expr KW_NOT KW_BETWEEN (predicate | non_pred_expr) KW_AND expr
-    | expr KW_BETWEEN (predicate | non_pred_expr) KW_AND expr
+    : expr KW_NOT? KW_BETWEEN (predicate | non_pred_expr) KW_AND expr
     ;
 
 in_predicate
