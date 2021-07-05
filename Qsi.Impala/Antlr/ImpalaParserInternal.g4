@@ -94,19 +94,14 @@ copy_testcase_stmt
     ;
 
 insert_stmt
-    : opt_with_clause? KW_INSERT plan_hints? KW_OVERWRITE KW_TABLE? table_name partition_clause? query_stmt
-    | opt_with_clause? KW_INSERT plan_hints? KW_OVERWRITE KW_TABLE? table_name LPAREN ident_list? RPAREN partition_clause? query_stmt?
-    | opt_with_clause? KW_INSERT plan_hints? KW_INTO KW_TABLE? table_name partition_clause? query_stmt
-    | opt_with_clause? KW_INSERT plan_hints? KW_INTO KW_TABLE? table_name LPAREN ident_list? RPAREN partition_clause? query_stmt?
-    | opt_with_clause? KW_INSERT KW_OVERWRITE KW_TABLE? table_name partition_clause? plan_hints? query_stmt
-    | opt_with_clause? KW_INSERT KW_OVERWRITE KW_TABLE? table_name LPAREN ident_list? RPAREN partition_clause? plan_hints? query_stmt?
-    | opt_with_clause? KW_INSERT KW_INTO KW_TABLE? table_name partition_clause? plan_hints? query_stmt
-    | opt_with_clause? KW_INSERT KW_INTO KW_TABLE? table_name LPAREN ident_list? RPAREN partition_clause? plan_hints? query_stmt?
+    : opt_with_clause? KW_INSERT plan_hints? (KW_OVERWRITE | KW_INTO) KW_TABLE? table_name partition_clause? query_stmt
+    | opt_with_clause? KW_INSERT plan_hints? (KW_OVERWRITE | KW_INTO) KW_TABLE? table_name LPAREN ident_list? RPAREN partition_clause? query_stmt?
+    | opt_with_clause? KW_INSERT (KW_OVERWRITE | KW_INTO) KW_TABLE? table_name partition_clause? plan_hints? query_stmt
+    | opt_with_clause? KW_INSERT (KW_OVERWRITE | KW_INTO) KW_TABLE? table_name LPAREN ident_list? RPAREN partition_clause? plan_hints? query_stmt?
     ;
 
 update_stmt
-    : KW_UPDATE dotted_path KW_SET update_set_expr_list where_clause?
-    | KW_UPDATE dotted_path KW_SET update_set_expr_list from_clause where_clause?
+    : KW_UPDATE dotted_path KW_SET update_set_expr_list from_clause? where_clause?
     ;
 
 update_set_expr_list
@@ -126,17 +121,16 @@ delete_stmt
     ;
 
 show_roles_stmt
-    : KW_SHOW KW_ROLES
-    | KW_SHOW KW_ROLE KW_GRANT KW_GROUP ident_or_default
-    | KW_SHOW KW_CURRENT KW_ROLES
+    : KW_SHOW KW_ROLE KW_GRANT KW_GROUP ident_or_default
+    | KW_SHOW KW_CURRENT? KW_ROLES
     ;
 
 show_grant_principal_stmt
-    : KW_SHOW KW_GRANT principal_type ident_or_default KW_ON uri_ident STRING_LITERAL
+    : KW_SHOW KW_GRANT principal_type ident_or_default (KW_ON uri_ident STRING_LITERAL)?
     | KW_SHOW KW_GRANT principal_type ident_or_default KW_ON server_ident
     | KW_SHOW KW_GRANT principal_type ident_or_default KW_ON KW_TABLE table_name
     | KW_SHOW KW_GRANT principal_type ident_or_default KW_ON KW_DATABASE ident_or_default
-    | KW_SHOW KW_GRANT principal_type ident_or_default (KW_ON KW_COLUMN column_name)?
+    | KW_SHOW KW_GRANT principal_type ident_or_default KW_ON KW_COLUMN column_name
     ;
 
 create_drop_role_stmt
@@ -153,22 +147,17 @@ revoke_role_stmt
     ;
 
 grant_privilege_stmt
-    : KW_GRANT privilege_spec KW_TO KW_ROLE ident_or_default opt_with_grantopt?
-    | KW_GRANT privilege_spec KW_TO KW_GROUP ident_or_default opt_with_grantopt?
-    | KW_GRANT privilege_spec KW_TO IDENT? ident_or_default opt_with_grantopt?
+    : KW_GRANT privilege_spec KW_TO (KW_ROLE | KW_GROUP | IDENT)? ident_or_default opt_with_grantopt?
     ;
 
 revoke_privilege_stmt
-    : KW_REVOKE opt_grantopt_for? privilege_spec KW_FROM KW_ROLE ident_or_default
-    | KW_REVOKE opt_grantopt_for? privilege_spec KW_FROM KW_GROUP ident_or_default
-    | KW_REVOKE opt_grantopt_for? privilege_spec KW_FROM IDENT? ident_or_default
+    : KW_REVOKE opt_grantopt_for? privilege_spec KW_FROM (KW_ROLE | KW_GROUP | IDENT)? ident_or_default
     ;
 
 privilege_spec
-    : privilege LPAREN ident_list? RPAREN KW_ON KW_TABLE table_name
+    : privilege (LPAREN ident_list? RPAREN)? KW_ON KW_TABLE table_name
     | privilege KW_ON uri_ident STRING_LITERAL
     | privilege KW_ON server_ident ident_or_default?
-    | privilege KW_ON KW_TABLE table_name
     | privilege KW_ON KW_DATABASE ident_or_default
     ;
 
@@ -205,15 +194,13 @@ partition_def_list
     ;
 
 comment_on_stmt
-    : KW_COMMENT KW_ON KW_VIEW table_name KW_IS nullable_comment_val
-    | KW_COMMENT KW_ON KW_TABLE table_name KW_IS nullable_comment_val
+    : KW_COMMENT KW_ON (KW_VIEW | KW_TABLE) table_name KW_IS nullable_comment_val
     | KW_COMMENT KW_ON KW_DATABASE ident_or_default KW_IS nullable_comment_val
     | KW_COMMENT KW_ON KW_COLUMN column_name KW_IS nullable_comment_val
     ;
 
 alter_db_stmt
-    : KW_ALTER KW_DATABASE ident_or_default KW_SET IDENT KW_ROLE ident_or_default
-    | KW_ALTER KW_DATABASE ident_or_default KW_SET IDENT IDENT ident_or_default
+    : KW_ALTER KW_DATABASE ident_or_default KW_SET IDENT (KW_ROLE | IDENT) ident_or_default
     ;
 
 alter_tbl_stmt
@@ -221,14 +208,11 @@ alter_tbl_stmt
     | KW_ALTER KW_TABLE table_name partition_set? KW_SET table_property_type LPAREN properties_map RPAREN
     | KW_ALTER KW_TABLE table_name partition_set? KW_SET KW_LOCATION STRING_LITERAL
     | KW_ALTER KW_TABLE table_name partition_set? KW_SET KW_FILEFORMAT file_format_val
-    | KW_ALTER KW_TABLE table_name partition_set? KW_SET IDENT KW_ROLE ident_or_default
-    | KW_ALTER KW_TABLE table_name partition_set? KW_SET IDENT IDENT ident_or_default
+    | KW_ALTER KW_TABLE table_name partition_set? KW_SET IDENT (KW_ROLE | IDENT) ident_or_default
     | KW_ALTER KW_TABLE table_name partition_set? KW_SET cache_op_val
     | KW_ALTER KW_TABLE table_name partition_set? KW_SET row_format_val
     | KW_ALTER KW_TABLE table_name partition_set? KW_SET KW_COLUMN KW_STATS ident_or_default LPAREN properties_map RPAREN
-    | KW_ALTER KW_TABLE table_name KW_SORT KW_BY LPAREN ident_list? RPAREN
-    | KW_ALTER KW_TABLE table_name KW_SORT KW_BY KW_ZORDER LPAREN ident_list? RPAREN
-    | KW_ALTER KW_TABLE table_name KW_SORT KW_BY KW_LEXICAL LPAREN ident_list? RPAREN
+    | KW_ALTER KW_TABLE table_name KW_SORT KW_BY (KW_ZORDER? | KW_LEXICAL) LPAREN ident_list? RPAREN
     | KW_ALTER KW_TABLE table_name KW_REPLACE KW_COLUMNS LPAREN column_def_list RPAREN
     | KW_ALTER KW_TABLE table_name KW_RENAME KW_TO table_name
     | KW_ALTER KW_TABLE table_name KW_RECOVER KW_PARTITIONS
@@ -258,15 +242,12 @@ create_tbl_as_select_stmt
     ;
 
 create_tbl_as_select_params
-    : tbl_def_without_col_defs tbl_options KW_AS query_stmt
-    | tbl_def_without_col_defs primary_keys partitioned_data_layout? tbl_options KW_AS query_stmt
+    : tbl_def_without_col_defs ((primary_keys partitioned_data_layout?)? | iceberg_partition_spec_list) tbl_options KW_AS query_stmt
     | tbl_def_without_col_defs KW_PARTITIONED KW_BY LPAREN ident_list RPAREN tbl_options KW_AS query_stmt
-    | tbl_def_without_col_defs iceberg_partition_spec_list tbl_options KW_AS query_stmt
     ;
 
 create_tbl_stmt
-    : KW_CREATE tbl_def_without_col_defs tbl_options
-    | KW_CREATE tbl_def_without_col_defs partition_column_defs tbl_options
+    : KW_CREATE tbl_def_without_col_defs partition_column_defs? tbl_options
     | KW_CREATE tbl_def_without_col_defs KW_LIKE file_format_val STRING_LITERAL opt_tbl_data_layout tbl_options
     | KW_CREATE tbl_def_with_col_defs opt_tbl_data_layout tbl_options
     | KW_CREATE tbl_def_with_col_defs KW_PRODUCED KW_BY KW_DATA source_ident ident_or_default opt_init_string_val? opt_comment_val?
@@ -281,11 +262,9 @@ tbl_def_without_col_defs
     ;
 
 tbl_def_with_col_defs
-    : tbl_def_without_col_defs LPAREN column_def_list RPAREN
-    | tbl_def_without_col_defs LPAREN column_def_list COMMA primary_keys RPAREN
-    | tbl_def_without_col_defs LPAREN column_def_list COMMA primary_keys enable_spec? validate_spec? rely_spec? RPAREN
-    | tbl_def_without_col_defs LPAREN column_def_list COMMA (primary_keys enable_spec? validate_spec? rely_spec? COMMA)? foreign_keys_list RPAREN
-    | tbl_def_without_col_defs LPAREN column_def_list COMMA foreign_keys_list COMMA primary_keys enable_spec? validate_spec? rely_spec? RPAREN
+    : tbl_def_without_col_defs LPAREN column_def_list (COMMA primary_keys)? RPAREN
+    | tbl_def_without_col_defs LPAREN column_def_list COMMA primary_keys enable_spec? validate_spec? rely_spec? (COMMA foreign_keys_list)? RPAREN
+    | tbl_def_without_col_defs LPAREN column_def_list COMMA foreign_keys_list (COMMA primary_keys enable_spec? validate_spec? rely_spec?)? RPAREN
     ;
 
 foreign_keys_list
@@ -316,9 +295,7 @@ tbl_options
     ;
 
 opt_sort_cols
-    : KW_SORT KW_BY LPAREN ident_list? RPAREN
-    | KW_SORT KW_BY KW_ZORDER LPAREN ident_list? RPAREN
-    | KW_SORT KW_BY KW_LEXICAL LPAREN ident_list? RPAREN
+    : KW_SORT KW_BY (KW_ZORDER? | KW_LEXICAL) LPAREN ident_list? RPAREN
     ;
 
 opt_tbl_data_layout
@@ -337,8 +314,7 @@ partition_column_defs
 
 partition_param_list
     : KW_PARTITION KW_BY range_partition_param (COMMA hash_partition_param_list)?
-    | KW_PARTITION KW_BY hash_partition_param_list COMMA range_partition_param
-    | KW_PARTITION KW_BY hash_partition_param_list
+    | KW_PARTITION KW_BY hash_partition_param_list (COMMA range_partition_param)?
     ;
 
 hash_partition_param_list
@@ -350,8 +326,7 @@ hash_partition_param
     ;
 
 range_partition_param
-    : KW_RANGE LPAREN range_params_list RPAREN
-    | KW_RANGE LPAREN ident_list RPAREN LPAREN range_params_list RPAREN
+    : KW_RANGE LPAREN (ident_list RPAREN LPAREN)? range_params_list RPAREN
     ;
 
 range_params_list
@@ -366,15 +341,12 @@ range_param
 
 opt_lower_range_val
     : LPAREN expr_list RPAREN LESSTHAN EQUAL?
-    | expr LESSTHAN EQUAL
-    | expr LESSTHAN
+    | expr LESSTHAN EQUAL?
     ;
 
 opt_upper_range_val
-    : LESSTHAN LPAREN expr_list RPAREN
-    | LESSTHAN expr
-    | LESSTHAN EQUAL LPAREN expr_list RPAREN
-    | LESSTHAN EQUAL expr
+    : LESSTHAN EQUAL? LPAREN expr_list RPAREN
+    | LESSTHAN EQUAL? expr
     ;
 
 iceberg_partition_spec_list
@@ -412,8 +384,7 @@ iceberg_partition_transform_type
     ;
 
 create_udf_stmt
-    : KW_CREATE KW_FUNCTION if_not_exists_val? function_name KW_LOCATION STRING_LITERAL function_def_args_map?
-    | KW_CREATE KW_FUNCTION if_not_exists_val? function_name function_def_args KW_RETURNS type_def KW_LOCATION STRING_LITERAL function_def_args_map?
+    : KW_CREATE KW_FUNCTION if_not_exists_val? function_name (function_def_args KW_RETURNS type_def)? KW_LOCATION STRING_LITERAL function_def_args_map?
     ;
 
 create_uda_stmt
@@ -520,8 +491,7 @@ column_def
     ;
 
 column_options_map
-    : column_option
-    | column_options_map column_option
+    : column_option+
     ;
 
 column_option
@@ -539,8 +509,7 @@ is_primary_key_val
     ;
 
 nullability_val
-    : KW_NULL
-    | KW_NOT KW_NULL
+    : KW_NOT? KW_NULL
     ;
 
 encoding_val
@@ -613,8 +582,7 @@ view_column_def
 
 alter_view_stmt
     : KW_ALTER KW_VIEW table_name view_column_defs? KW_AS query_stmt
-    | KW_ALTER KW_VIEW table_name KW_SET IDENT KW_ROLE ident_or_default
-    | KW_ALTER KW_VIEW table_name KW_SET IDENT IDENT ident_or_default
+    | KW_ALTER KW_VIEW table_name KW_SET IDENT (KW_ROLE | IDENT) ident_or_default
     | KW_ALTER KW_VIEW table_name KW_RENAME KW_TO table_name
     ;
 
@@ -624,11 +592,9 @@ cascade_val
     ;
 
 compute_stats_stmt
-    : KW_COMPUTE KW_STATS table_name opt_tablesample?
-    | KW_COMPUTE KW_STATS table_name LPAREN ident_list? RPAREN opt_tablesample?
-    | KW_COMPUTE KW_INCREMENTAL KW_STATS table_name partition_set (LPAREN ident_list? RPAREN)?
+    : KW_COMPUTE KW_STATS table_name (LPAREN ident_list? RPAREN)? opt_tablesample?
+    | KW_COMPUTE KW_INCREMENTAL KW_STATS table_name (partition_set (LPAREN ident_list? RPAREN)?)?
     | KW_COMPUTE KW_INCREMENTAL KW_STATS table_name LPAREN ident_list? RPAREN
-    | KW_COMPUTE KW_INCREMENTAL KW_STATS table_name
     ;
 
 drop_stats_stmt
@@ -697,8 +663,7 @@ static_partition_key_value
     ;
 
 function_def_args
-    : LPAREN RPAREN
-    | LPAREN function_def_arg_list DOTDOTDOT? RPAREN
+    : LPAREN (function_def_arg_list DOTDOTDOT?)? RPAREN
     ;
 
 function_def_arg_list
@@ -736,8 +701,7 @@ opt_with_clause
 
 with_view_def
     : STRING_LITERAL (LPAREN ident_list RPAREN)? KW_AS LPAREN query_stmt RPAREN
-    | ident_or_default LPAREN ident_list RPAREN KW_AS LPAREN query_stmt RPAREN
-    | ident_or_default KW_AS LPAREN query_stmt RPAREN
+    | ident_or_default (LPAREN ident_list RPAREN)? KW_AS LPAREN query_stmt RPAREN
     ;
 
 with_view_def_list
@@ -745,8 +709,7 @@ with_view_def_list
     ;
 
 set_operation_with_order_by_or_limit
-    : set_operand_list KW_ORDER KW_BY order_by_elements opt_offset_param?
-    | set_operand_list KW_ORDER KW_BY order_by_elements KW_LIMIT expr opt_offset_param?
+    : set_operand_list KW_ORDER KW_BY order_by_elements (KW_LIMIT expr)? opt_offset_param?
     | set_operand_list KW_LIMIT expr
     ;
 
@@ -758,8 +721,7 @@ set_operand
 
 set_operand_list
     : set_operand
-    | set_operand_list set_op set_operand
-    | set_operand_list set_op KW_DISTINCT set_operand
+    | set_operand_list set_op KW_DISTINCT? set_operand
     | set_operand_list KW_UNION opt_set_op_qualifier set_operand
     ;
 
@@ -788,9 +750,8 @@ use_stmt
     ;
 
 show_tables_stmt
-    : KW_SHOW KW_TABLES show_pattern
-    | KW_SHOW KW_TABLES KW_IN ident_or_default show_pattern?
-    | KW_SHOW KW_TABLES
+    : KW_SHOW KW_TABLES ((KW_IN ident_or_default)? show_pattern)?
+    | KW_SHOW KW_TABLES KW_IN ident_or_default
     ;
 
 show_dbs_stmt
@@ -798,8 +759,7 @@ show_dbs_stmt
     ;
 
 show_stats_stmt
-    : KW_SHOW KW_TABLE KW_STATS table_name
-    | KW_SHOW KW_COLUMN KW_STATS table_name
+    : KW_SHOW (KW_TABLE | KW_COLUMN) KW_STATS table_name
     ;
 
 show_partitions_stmt
@@ -811,9 +771,8 @@ show_range_partitions_stmt
     ;
 
 show_functions_stmt
-    : KW_SHOW opt_function_category? KW_FUNCTIONS show_pattern
-    | KW_SHOW opt_function_category? KW_FUNCTIONS KW_IN ident_or_default show_pattern?
-    | KW_SHOW opt_function_category? KW_FUNCTIONS
+    : KW_SHOW opt_function_category? KW_FUNCTIONS ((KW_IN ident_or_default)? show_pattern)?
+    | KW_SHOW opt_function_category? KW_FUNCTIONS KW_IN ident_or_default
     ;
 
 opt_function_category
@@ -826,8 +785,7 @@ show_data_srcs_stmt
     ;
 
 show_pattern
-    : STRING_LITERAL
-    | KW_LIKE STRING_LITERAL
+    : KW_LIKE? STRING_LITERAL
     ;
 
 show_create_tbl_stmt
@@ -840,8 +798,7 @@ show_create_tbl_object_type
     ;
 
 show_create_function_stmt
-    : KW_SHOW KW_CREATE KW_FUNCTION function_name
-    | KW_SHOW KW_CREATE KW_AGGREGATE KW_FUNCTION function_name
+    : KW_SHOW KW_CREATE KW_AGGREGATE? KW_FUNCTION function_name
     ;
 
 show_files_stmt
@@ -849,10 +806,8 @@ show_files_stmt
     ;
 
 describe_stmt
-    : KW_DESCRIBE KW_FORMATTED dotted_path
-    | KW_DESCRIBE KW_EXTENDED dotted_path
+    : KW_DESCRIBE (KW_FORMATTED | KW_EXTENDED)? dotted_path
     | KW_DESCRIBE IDENT table_name
-    | KW_DESCRIBE dotted_path
     | KW_DESCRIBE db_or_schema_kw describe_output_style? ident_or_default
     ;
 
@@ -866,22 +821,18 @@ select_stmt
     ;
 
 select_clause
-    : KW_SELECT plan_hints? select_list
-    | KW_SELECT KW_DISTINCT plan_hints? select_list
-    | KW_SELECT KW_ALL plan_hints? select_list
+    : KW_SELECT (KW_DISTINCT? | KW_ALL) plan_hints? select_list
     ;
 
 set_stmt
-    : KW_SET KW_ALL
+    : KW_SET KW_ALL?
     | KW_SET ident_or_default EQUAL word
-    | KW_SET ident_or_default EQUAL SUBTRACT numeric_literal
+    | KW_SET ident_or_default EQUAL SUBTRACT? numeric_literal
     | KW_SET ident_or_default EQUAL STRING_LITERAL
-    | KW_SET (ident_or_default EQUAL numeric_literal)?
     ;
 
 admin_fn_stmt
-    : COLON ident_or_default LPAREN RPAREN
-    | COLON ident_or_default LPAREN expr_list RPAREN
+    : COLON ident_or_default LPAREN expr_list? RPAREN
     ;
 
 select_list
@@ -894,24 +845,20 @@ select_list_item
     ;
 
 alias_clause
-    : STRING_LITERAL
-    | KW_AS STRING_LITERAL
+    : KW_AS? STRING_LITERAL
     | KW_AS? ident_or_default
     ;
 
 star_expr
-    : STAR
-    | dotted_path DOT STAR
+    : (dotted_path DOT)? STAR
     ;
 
 table_name
-    : ident_or_default
-    | ident_or_default DOT ident_or_default
+    : ident_or_default? DOT ident_or_default
     ;
 
 column_name
-    : ident_or_default DOT ident_or_default
-    | ident_or_default DOT ident_or_default DOT ident_or_default
+    : (ident_or_default DOT ident_or_default)? DOT ident_or_default
     ;
 
 function_name
@@ -926,25 +873,20 @@ from_clause
 table_ref_list
     : table_ref plan_hints?
     | table_ref_list KW_CROSS KW_JOIN plan_hints? table_ref plan_hints?
-    | table_ref_list join_operator plan_hints? table_ref plan_hints? KW_USING LPAREN ident_list RPAREN
-    | table_ref_list join_operator plan_hints? table_ref plan_hints? (KW_ON expr)?
+    | table_ref_list join_operator plan_hints? table_ref plan_hints? (KW_USING LPAREN ident_list RPAREN)?
+    | table_ref_list join_operator plan_hints? table_ref plan_hints? KW_ON expr
     | table_ref_list COMMA table_ref plan_hints?
     ;
 
 table_ref
     : LPAREN query_stmt RPAREN alias_clause opt_tablesample?
-    | dotted_path opt_tablesample?
-    | dotted_path alias_clause opt_tablesample?
+    | dotted_path alias_clause? opt_tablesample?
     ;
 
 join_operator
     : KW_INNER? KW_JOIN
-    | KW_RIGHT KW_OUTER? KW_JOIN
-    | KW_RIGHT KW_SEMI KW_JOIN
-    | KW_RIGHT KW_ANTI KW_JOIN
-    | KW_LEFT KW_OUTER? KW_JOIN
-    | KW_LEFT KW_SEMI KW_JOIN
-    | KW_LEFT KW_ANTI KW_JOIN
+    | KW_RIGHT (KW_OUTER? | KW_SEMI | KW_ANTI) KW_JOIN
+    | KW_LEFT (KW_OUTER? | KW_SEMI | KW_ANTI) KW_JOIN
     | KW_FULL KW_OUTER? KW_JOIN
     ;
 
@@ -956,8 +898,7 @@ plan_hints
 
 plan_hint
     : KW_STRAIGHT_JOIN
-    | IDENT LPAREN INTEGER_LITERAL RPAREN
-    | IDENT (LPAREN ident_list RPAREN)?
+    | IDENT (LPAREN (INTEGER_LITERAL | ident_list) RPAREN)?
     ;
 
 plan_hint_list
@@ -981,16 +922,14 @@ where_clause
     ;
 
 group_by_clause
-    : KW_GROUP KW_BY KW_ROLLUP LPAREN expr_list RPAREN
+    : KW_GROUP KW_BY (KW_ROLLUP | KW_CUBE) LPAREN expr_list RPAREN
     | KW_GROUP KW_BY KW_GROUPING KW_SETS LPAREN grouping_sets RPAREN
-    | KW_GROUP KW_BY KW_CUBE LPAREN expr_list RPAREN
-    | KW_GROUP KW_BY expr_list KW_WITH KW_ROLLUP
-    | KW_GROUP KW_BY expr_list (KW_WITH KW_CUBE)?
+    | KW_GROUP KW_BY expr_list (KW_WITH KW_ROLLUP)?
+    | KW_GROUP KW_BY expr_list KW_WITH KW_CUBE
     ;
 
 grouping_set
-    : LPAREN RPAREN
-    | LPAREN expr_list RPAREN
+    : LPAREN expr_list? RPAREN
     | expr
     ;
 
@@ -1066,8 +1005,9 @@ sign_chain_expr
     ;
 
 expr
-    : literal/*predicate
-    | non_pred_expr*/
+    : literal
+//    | predicate
+//    | non_pred_expr
     ;
 
 exists_predicate
@@ -1094,9 +1034,7 @@ non_pred_expr
     ;
 
 function_call_expr
-    : function_name LPAREN RPAREN
-    | function_name LPAREN ident_or_default KW_FROM expr RPAREN
-    | function_name LPAREN function_params RPAREN
+    : function_name LPAREN ((ident_or_default KW_FROM expr)? | function_params) RPAREN
     ;
 
 analytic_expr
@@ -1108,8 +1046,7 @@ opt_partition_by_clause
     ;
 
 opt_window_clause
-    : window_type window_boundary
-    | window_type KW_BETWEEN window_boundary KW_AND window_boundary
+    : window_type (KW_BETWEEN window_boundary KW_AND)? window_boundary
     ;
 
 window_type
@@ -1126,15 +1063,7 @@ window_boundary
     ;
 
 arithmetic_expr
-    : expr SUBTRACT expr
-    | expr STAR expr
-    | expr MOD expr
-    | expr KW_DIV expr
-    | expr DIVIDE expr
-    | expr BITXOR expr
-    | expr BITOR expr
-    | expr BITAND expr
-    | expr ADD expr
+    : expr (SUBTRACT | STAR | MOD | KW_DIV | DIVIDE | BITXOR | BITOR | BITAND | ADD) expr
     | expr NOT
     | BITNOT expr
     ;
@@ -1142,8 +1071,7 @@ arithmetic_expr
 timestamp_arithmetic_expr
     : KW_INTERVAL expr IDENT ADD expr
     | function_name LPAREN expr_list COMMA KW_INTERVAL expr IDENT RPAREN
-    | expr SUBTRACT KW_INTERVAL expr IDENT
-    | expr ADD KW_INTERVAL expr IDENT
+    | expr (SUBTRACT | ADD) KW_INTERVAL expr IDENT
     ;
 
 numeric_literal
@@ -1153,21 +1081,19 @@ numeric_literal
 
 literal
     : UNMATCHED_STRING_LITERAL expr
-    | STRING_LITERAL
     | NUMERIC_OVERFLOW
     | numeric_literal
     | KW_TRUE
     | KW_NULL
     | KW_FALSE
-    | KW_DATE STRING_LITERAL
+    | KW_DATE? STRING_LITERAL
     ;
 
 function_params
-    : STAR
-    | KW_DISTINCT expr_list
-    | KW_ALL STAR
+    : KW_DISTINCT? expr_list
+    | KW_ALL? STAR
     | KW_ALL expr_list
-    | expr_list (KW_IGNORE KW_NULLS)?
+    | expr_list KW_IGNORE KW_NULLS
     ;
 
 predicate
@@ -1175,8 +1101,7 @@ predicate
     | like_predicate
     | in_predicate
     | expr KW_LOGICAL_OR expr
-    | expr KW_IS KW_NULL
-    | expr KW_IS KW_NOT KW_NULL
+    | expr KW_IS KW_NOT? KW_NULL
     | exists_predicate
     | compound_predicate
     | comparison_predicate
@@ -1185,61 +1110,41 @@ predicate
     ;
 
 comparison_predicate
-    : expr NOTEQUAL expr
-    | expr NOT EQUAL expr
-    | expr LESSTHAN GREATERTHAN? expr
-    | expr LESSTHAN EQUAL GREATERTHAN expr
-    | expr LESSTHAN EQUAL expr
+    : expr (NOTEQUAL | LESSTHAN | GREATERTHAN | EQUAL) expr
+    | expr (NOT | LESSTHAN | GREATERTHAN) EQUAL expr
+    | expr LESSTHAN EQUAL? GREATERTHAN expr
     | expr KW_IS KW_NOT? KW_DISTINCT KW_FROM expr
-    | expr GREATERTHAN expr
-    | expr GREATERTHAN? EQUAL expr
     ;
 
 like_predicate
-    : expr KW_RLIKE expr
-    | expr KW_REGEXP expr
-    | expr KW_NOT KW_RLIKE expr
-    | expr KW_NOT KW_REGEXP expr
-    | expr KW_NOT KW_LIKE expr
-    | expr KW_NOT KW_IREGEXP expr
-    | expr KW_NOT KW_ILIKE expr
-    | expr KW_LIKE expr
-    | expr KW_IREGEXP expr
-    | expr KW_ILIKE expr
+    : expr (KW_RLIKE | KW_REGEXP | KW_LIKE | KW_IREGEXP | KW_ILIKE) expr
+    | expr KW_NOT (KW_RLIKE | KW_REGEXP | KW_LIKE | KW_IREGEXP | KW_ILIKE) expr
     ;
 
 between_predicate
-    : expr KW_NOT KW_BETWEEN predicate KW_AND expr
-    | expr KW_NOT KW_BETWEEN non_pred_expr KW_AND expr
-    | expr KW_BETWEEN predicate KW_AND expr
-    | expr KW_BETWEEN non_pred_expr KW_AND expr
+    : expr KW_NOT KW_BETWEEN (predicate | non_pred_expr) KW_AND expr
+    | expr KW_BETWEEN (predicate | non_pred_expr) KW_AND expr
     ;
 
 in_predicate
-    : expr KW_NOT KW_IN subquery
-    | expr KW_NOT KW_IN LPAREN expr_list RPAREN
-    | expr KW_IN subquery
-    | expr KW_IN LPAREN expr_list RPAREN
+    : expr KW_NOT? KW_IN subquery
+    | expr KW_NOT? KW_IN LPAREN expr_list RPAREN
     ;
 
 bool_test_expr
-    : expr KW_IS KW_UNKNOWN
-    | expr KW_IS KW_TRUE
-    | expr KW_IS KW_NOT KW_UNKNOWN
-    | expr KW_IS KW_NOT KW_TRUE
+    : expr KW_IS KW_NOT? KW_UNKNOWN
+    | expr KW_IS KW_NOT? KW_TRUE
     | expr KW_IS KW_NOT? KW_FALSE
     ;
 
 subquery
-    : LPAREN subquery RPAREN
-    | LPAREN query_stmt RPAREN
+    : LPAREN (subquery | query_stmt) RPAREN
     ;
 
 compound_predicate
     : NOT expr
     | KW_NOT expr
-    | expr KW_OR expr
-    | expr KW_AND expr
+    | expr (KW_OR | KW_AND) expr
     ;
 
 slot_ref
@@ -1265,8 +1170,7 @@ type
     | KW_INT
     | KW_FLOAT
     | KW_DOUBLE
-    | KW_DECIMAL LPAREN INTEGER_LITERAL RPAREN
-    | KW_DECIMAL (LPAREN INTEGER_LITERAL COMMA INTEGER_LITERAL RPAREN)?
+    | KW_DECIMAL (LPAREN INTEGER_LITERAL (COMMA INTEGER_LITERAL)? RPAREN)?
     | KW_DATETIME
     | KW_DATE
     | KW_CHAR LPAREN INTEGER_LITERAL RPAREN
