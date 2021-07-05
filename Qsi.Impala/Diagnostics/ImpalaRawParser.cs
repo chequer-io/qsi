@@ -20,7 +20,7 @@ namespace Qsi.Impala.Diagnostics
         protected override (ITree Tree, string[] RuleNames) ParseAntlrTree(string input)
         {
             var parser = ImpalaUtility.CreateParserInternal(input, _verseion, Enumerable.Empty<string>());
-            return (parser.root(), parser.RuleNames);
+            return (parser.stmt(), parser.RuleNames);
         }
     }
 }
