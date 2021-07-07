@@ -41,7 +41,7 @@ namespace Qsi.Engines.Explain
 
         public async Task<QsiDataTable> GetDataTable(QsiScript script, QsiParameter[] parameters, CancellationToken cancellationToken)
         {
-            IQsiAnalysisResult[] results = await _engine.Explain(script, parameters, cancellationToken);
+            IQsiAnalysisResult[] results = await _engine.Explain(script, cancellationToken);
 
             if (results.Length != 1 || results[0] is not QsiTableResult tableResult)
                 throw new QsiException(QsiError.InvalidNestedExplain, script.Script);

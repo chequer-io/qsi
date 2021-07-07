@@ -63,7 +63,7 @@ namespace Qsi.Engines.Explain
 
         public QsiParameter FindParameter(QsiParameter[] parameters, IQsiBindParameterExpressionNode node)
         {
-            return _languageService.FindParameter(parameters, node);
+            return parameters[0];
         }
     }
 }
