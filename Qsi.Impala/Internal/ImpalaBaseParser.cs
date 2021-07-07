@@ -63,7 +63,9 @@ namespace Qsi.Impala.Internal
         private void SyntaxError(IToken token, string expectedTokenName)
         {
             var stmt = ((StringInputStream)Lexer.InputStream).Input;
-            var tokens = GetNextTokens(CurrentToken).ToArray();
+            var tokens = GetNextTokens(CurrentToken)
+                .Distinct()
+                .ToArray();
 
             throw new QsiSyntaxErrorException(
                 token.Line,
@@ -161,7 +163,7 @@ namespace Qsi.Impala.Internal
             }
 
             // print error indicator
-            for (int i = 0; i < errorLoc - 1; i++)
+            for (int i = 0; i < errorLoc - tokenLength; i++)
                 result.Append(' ');
 
             result.Append("^\n");

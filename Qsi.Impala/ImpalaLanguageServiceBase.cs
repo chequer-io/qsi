@@ -19,10 +19,7 @@ namespace Qsi.Impala
 
         public override IQsiScriptParser CreateScriptParser()
         {
-            return new CommonScriptParser
-            {
-                EnablePoundComment = false
-            };
+            return new ImpalaScriptParser();
         }
 
         public override QsiAnalyzerOptions CreateAnalyzerOptions()

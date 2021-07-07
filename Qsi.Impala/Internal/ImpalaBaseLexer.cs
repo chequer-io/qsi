@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Antlr4.Runtime;
 using Qsi.Impala.Common.Thrift;
+using Qsi.Impala.Utilities;
 
 namespace Qsi.Impala.Internal
 {
@@ -22,6 +24,8 @@ namespace Qsi.Impala.Internal
 
         // map from token id to token description
         internal Dictionary<int, string> TokenIdMap { get; private set; }
+
+        protected LexHint Hint { get; set; }
 
         protected ImpalaBaseLexer(ICharStream input) : base(input)
         {
@@ -390,6 +394,11 @@ namespace Qsi.Impala.Internal
             }
         }
 
+        protected bool IsCommentPlanHint()
+        {
+            return ImpalaUtility.IsCommentPlanHint(Text);
+        }
+
         public bool IsReserved(string token)
         {
             return ReservedWords.Contains(token);
@@ -401,6 +410,13 @@ namespace Qsi.Impala.Internal
                 return false;
 
             return KeywordMap.ContainsKey(token.ToLower());
+        }
+
+        protected enum LexHint
+        {
+            Default,
+            SingleLineComment,
+            MultiLineComment
         }
     }
 }

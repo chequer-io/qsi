@@ -19,6 +19,8 @@ namespace Qsi.Parsing.Common
 
         public bool EnableSingleLineComment { get; set; } = true;
 
+        public bool TrimDelimiter { get; set; } = true;
+
         private readonly ITokenRule _whiteSpace = new LookbehindWhiteSpaceRule();
         private readonly ITokenRule _lineBreak = new LookaheadLineBreakRule();
         private readonly ITokenRule _keyword = new LookbehindUnknownKeywordRule();
@@ -286,8 +288,13 @@ namespace Qsi.Parsing.Common
         {
             if (context.Cursor.StartsWith(context.Delimiter))
             {
-                context.Cursor.Index += context.Delimiter.Length - 1;
+                if (!TrimDelimiter)
+                {
+                    context.FragmentStart = context.Cursor.Index;
+                    context.FragmentEnd = context.Cursor.Index + context.Delimiter.Length - 1;
+                }
 
+                context.Cursor.Index += context.Delimiter.Length - 1;
                 return true;
             }
 

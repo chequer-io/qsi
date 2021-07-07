@@ -2,7 +2,23 @@ lexer grammar ImpalaLexerInternal;
 
 options {
     superClass = ImpalaBaseLexer;
-    tokenVocab = predefined;
+}
+
+tokens {
+    UNMATCHED_STRING_LITERAL,
+    INTEGER_LITERAL,
+    NUMERIC_OVERFLOW,
+    DECIMAL_LITERAL,
+    EMPTY_IDENT,
+    IDENT,
+    STRING_LITERAL,
+    COMMENTED_PLAN_HINT_START,
+    COMMENTED_PLAN_HINT_END,
+    UNEXPECTED_CHAR,
+    KW_AND,
+    KW_DOUBLE,
+    KW_INT,
+    UNUSED_RESERVED_WORD
 }
 
 KW_AND1: '&&'  -> type(KW_AND);
@@ -249,6 +265,48 @@ fragment X: ('x'|'X');
 fragment Y: ('y'|'Y');
 fragment Z: ('z'|'Z');
 
+COMMENT
+    : { Hint == default }?
+      ('--' ~[\r\n]* ('\r'? '\n' | { InputStream.LA(1) == Eof }?))
+      { !IsCommentPlanHint() }?
+      -> skip
+    ;
+
+MULTILINE_COMMENT
+    : { Hint == default }?
+      ('/*' .*? '*/')
+      { !IsCommentPlanHint() }?
+      -> skip
+    ;
+
+CommentedHintBegin
+    : { Hint == default }?
+      ('/*' ' '* '+')
+      { Hint = LexHint.MultiLineComment; }
+      -> type(COMMENTED_PLAN_HINT_START)
+    ;
+
+EolHintBegin
+    : { Hint == default }?
+      ('--' ' '* '+')
+      { Hint = LexHint.SingleLineComment; }
+      -> type(COMMENTED_PLAN_HINT_START)
+    ;
+
+CommentedHintEnd
+    : { Hint == LexHint.MultiLineComment }?
+      '*/'
+      { Hint = default; }
+      -> type(COMMENTED_PLAN_HINT_END)
+    ;
+
+LineTerminator
+    : { Hint == LexHint.SingleLineComment }?
+      ('\r'? '\n' | EOF)
+      { Hint = default; }
+      -> type(COMMENTED_PLAN_HINT_END)
+    ;
+
 // Order of rules to resolve ambiguity:
 // The rule for recognizing integer literals must come before the rule for
 // double literals to, e.g., recognize "1234" as an integer literal.
@@ -314,15 +372,6 @@ NOTEQUAL: '!=';
 //COMMENTED_PLAN_HINT_END: "COMMENTED_PLAN_HINT_END";
 //UNEXPECTED_CHAR: "Unexpected character";
 
-
-WS: [ \t\f\r\n] -> channel(HIDDEN);
-
-COMMENT
-    : ('--' | '//') ~[\r\n]* ('\r'? '\n' | EOF) -> channel(HIDDEN)
-    ;
-
-MULTILINE_COMMENT
-    : '/*' .*? '*/' -> channel(HIDDEN)
-    ;
+WS: [ \t\f\r\n] -> skip;
 
 UNEXPECTED_CHAR: .;

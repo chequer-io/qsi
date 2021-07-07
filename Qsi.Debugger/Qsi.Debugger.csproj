@@ -1,9 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <OutputType>WinExe</OutputType>
+        <OutputType>Exe</OutputType>
         <TargetFramework>net5.0</TargetFramework>
         <RootNamespace>Qsi.Debugger</RootNamespace>
+        <DisableWinExeOutputInference>true</DisableWinExeOutputInference>
     </PropertyGroup>
 
     <ItemGroup>

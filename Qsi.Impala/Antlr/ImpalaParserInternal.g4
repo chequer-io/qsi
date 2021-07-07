@@ -11,6 +11,10 @@ options {
     using Qsi.Utilities;
 }
 
+root
+    : stmt (SEMICOLON+ | EOF)
+    ;
+
 stmt
     : use_stmt
     | upsert_stmt
@@ -61,7 +65,6 @@ stmt
     | alter_tbl_stmt
     | alter_db_stmt
     | admin_fn_stmt
-    | stmt SEMICOLON
     ;
 
 load_stmt
@@ -860,11 +863,14 @@ from_clause
     ;
 
 table_ref_list
-    : table_ref plan_hints?
-    | table_ref_list KW_CROSS KW_JOIN plan_hints? table_ref plan_hints?
-    | table_ref_list join_operator plan_hints? table_ref plan_hints? (KW_USING LPAREN ident_list RPAREN)?
-    | table_ref_list join_operator plan_hints? table_ref plan_hints? KW_ON expr
-    | table_ref_list COMMA table_ref plan_hints?
+    : table_ref hint=plan_hints?                                                            #singleTableRef
+    | <assoc=right> table_ref_list KW_CROSS KW_JOIN plan_hints? table_ref hint=plan_hints?  #crossJoin
+    | <assoc=right> table_ref_list join_operator plan_hints? table_ref hint=plan_hints?
+      (
+        KW_ON onClause=expr
+        | KW_USING LPAREN usingClause=ident_list RPAREN
+      )?                                                                                    #join
+    | <assoc=right> table_ref_list COMMA table_ref hint=plan_hints?                         #commaJoin
     ;
 
 table_ref
@@ -874,8 +880,12 @@ table_ref
 
 join_operator
     : KW_INNER? KW_JOIN
-    | KW_RIGHT (KW_OUTER? | KW_SEMI | KW_ANTI) KW_JOIN
-    | KW_LEFT (KW_OUTER? | KW_SEMI | KW_ANTI) KW_JOIN
+    | KW_LEFT KW_OUTER? KW_JOIN
+    | KW_LEFT KW_SEMI KW_JOIN
+    | KW_LEFT KW_ANTI KW_JOIN
+    | KW_RIGHT KW_OUTER? KW_JOIN
+    | KW_RIGHT KW_SEMI KW_JOIN
+    | KW_RIGHT KW_ANTI KW_JOIN
     | KW_FULL KW_OUTER? KW_JOIN
     ;
 
