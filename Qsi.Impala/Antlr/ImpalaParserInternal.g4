@@ -719,21 +719,12 @@ set_operand
     ;
 
 set_operand_list
-    : set_operand
-    | set_operand_list set_op set_operand
-    | set_operand_list set_op KW_DISTINCT set_operand
-    | set_operand_list KW_UNION opt_set_op_qualifier set_operand
+    : set_operand (set_op set_operand)*
     ;
 
 set_op
-    : KW_MINUS
-    | KW_INTERSECT
-    | KW_EXCEPT
-    ;
-
-opt_set_op_qualifier
-    : KW_DISTINCT
-    | KW_ALL
+    : (KW_MINUS | KW_INTERSECT | KW_EXCEPT) KW_DISTINCT?
+    | KW_UNION (KW_DISTINCT | KW_ALL)
     ;
 
 values_stmt
