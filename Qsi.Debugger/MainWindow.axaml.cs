@@ -218,12 +218,11 @@ namespace Qsi.Debugger
 
                 // Execute
 
-                var fakeParameters = new QsiParameter[] { new(default, default, default) };
                 var tables = new List<QsiTableStructure>();
 
                 foreach (var script in scripts)
                 {
-                    IQsiAnalysisResult[] results = await _vendor.Engine.Explain(script, fakeParameters);
+                    IQsiAnalysisResult[] results = await _vendor.Engine.Explain(script);
                     tables.AddRange(results.OfType<QsiTableResult>().Select(r => r.Table));
                 }
 
