@@ -2,7 +2,7 @@
 
 namespace Qsi.Impala.Tree
 {
-    public class ImpalaDerivedTableNode : QsiDerivedTableNode, IImpalaTableNode
+    public class ImpalaDerivedTableNode : QsiDerivedTableNode
     {
         public string PlanHints { get; set; }
 

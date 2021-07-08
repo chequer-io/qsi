@@ -22,6 +22,73 @@ namespace Qsi.Impala
             writer.Write(script.Script[range]);
         }
 
+        protected override void DeparseWhereExpressionNode(ScriptWriter writer, IQsiWhereExpressionNode node, QsiScript script)
+        {
+            if (node is ImpalaWhereExpressionNode impalaWhereExpressionNode)
+            {
+                DeparseImpalaWhereExpressionNode(writer, impalaWhereExpressionNode, script);
+            }
+            else
+            {
+                base.DeparseWhereExpressionNode(writer, node, script);
+            }
+        }
+
+        private void DeparseImpalaWhereExpressionNode(ScriptWriter writer, ImpalaWhereExpressionNode node, QsiScript script)
+        {
+            writer.Write("WHERE ");
+
+            if (!string.IsNullOrWhiteSpace(node.PlanHints))
+            {
+                writer.Write(node.PlanHints);
+                writer.WriteSpace();
+            }
+
+            DeparseTreeNode(writer, node.Expression.Value, script);
+        }
+
+        protected override void DeparseGroupingExpressionNode(ScriptWriter writer, IQsiGroupingExpressionNode node, QsiScript script)
+        {
+            if (node is ImpalaGroupingExpressionNode groupingExpressionNode)
+            {
+                DeparseImpalaGroupingExpressionNode(writer, groupingExpressionNode, script);
+            }
+            else
+            {
+                base.DeparseGroupingExpressionNode(writer, node, script);
+            }
+        }
+
+        private void DeparseImpalaGroupingExpressionNode(ScriptWriter writer, ImpalaGroupingExpressionNode node, QsiScript script)
+        {
+            writer.Write("GROUP BY ");
+
+            bool parens = false;
+
+            switch (node.GroupingSetsType)
+            {
+                case ImpalaGroupingSetsType.Sets:
+                    writer.Write("GROUPING SETS(");
+                    parens = true;
+                    break;
+
+                case ImpalaGroupingSetsType.Cube:
+                    writer.Write("CUBE(");
+                    parens = true;
+                    break;
+
+                case ImpalaGroupingSetsType.Rollup:
+                    writer.Write("ROLLUP(");
+                    parens = true;
+                    break;
+            }
+
+            writer.WriteJoin(", ", node.Items, (_, item) => DeparseTreeNode(writer, item, script));
+
+            if (parens)
+                writer.Write(')');
+        }
+
         protected override void DeparseOrderExpressionNode(ScriptWriter writer, IQsiOrderExpressionNode node, QsiScript script)
         {
             if (node is ImpalaOrderExpressionNode impalaOrderExpressionNode)

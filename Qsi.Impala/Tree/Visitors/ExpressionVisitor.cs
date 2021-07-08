@@ -7,6 +7,7 @@ using Antlr4.Runtime.Tree;
 using Qsi.Data;
 using Qsi.Impala.Common;
 using Qsi.Impala.Internal;
+using Qsi.Shared.Extensions;
 using Qsi.Tree;
 using Qsi.Utilities;
 
@@ -311,6 +312,11 @@ namespace Qsi.Impala.Tree.Visitors
         }
         #endregion
 
+        public static IEnumerable<QsiExpressionNode> VisitExprList(Expr_listContext context)
+        {
+            return context.expr().Select(VisitExpr);
+        }
+
         public static QsiMultipleOrderExpressionNode VisitOrderByClause(Opt_order_by_clauseContext context)
         {
             var node = ImpalaTree.CreateWithSpan<QsiMultipleOrderExpressionNode>(context);
@@ -415,14 +421,74 @@ namespace Qsi.Impala.Tree.Visitors
             return expr;
         }
 
-        public static QsiWhereExpressionNode VisitWhereClause(Where_clauseContext context)
+        public static ImpalaWhereExpressionNode VisitWhereClause(Where_clauseContext context)
         {
-            throw new NotImplementedException();
+            var node = ImpalaTree.CreateWithSpan<ImpalaWhereExpressionNode>(context);
+
+            if (context.hint is not null)
+                node.PlanHints = TableVisitor.VisitPlanHints(context.hint);
+
+            node.Expression.Value = VisitExpr(context.expr());
+
+            return node;
         }
 
-        public static QsiGroupingExpressionNode VisitGroupByClause(Group_by_clauseContext context)
+        public static ImpalaGroupingExpressionNode VisitGroupByClause(Group_by_clauseContext context)
         {
-            throw new NotImplementedException();
+            var node = ImpalaTree.CreateWithSpan<ImpalaGroupingExpressionNode>(context);
+
+            switch (context)
+            {
+                case GroupBy1Context groupBy:
+                    // ROLLUP | CUBE
+                    node.GroupingSetsType = groupBy.HasToken(KW_ROLLUP) ?
+                        ImpalaGroupingSetsType.Rollup :
+                        ImpalaGroupingSetsType.Cube;
+
+                    node.Items.AddRange(VisitExprList(groupBy.expr_list()));
+                    break;
+
+                case GroupBy2Context groupBy:
+                    node.GroupingSetsType = ImpalaGroupingSetsType.Sets;
+                    node.Items.AddRange(VisitGroupingSets(groupBy.grouping_sets()));
+                    break;
+
+                case GroupBy3Context groupBy:
+                    // NONE | ROLLUP | CUBE
+                    if (groupBy.HasToken(KW_ROLLUP))
+                        node.GroupingSetsType = ImpalaGroupingSetsType.Rollup;
+                    else if (groupBy.HasToken(KW_CUBE))
+                        node.GroupingSetsType = ImpalaGroupingSetsType.Cube;
+
+                    node.Items.AddRange(VisitExprList(groupBy.expr_list()));
+                    break;
+
+                default:
+                    throw TreeHelper.NotSupportedTree(context);
+            }
+
+            return node;
+        }
+
+        public static IEnumerable<QsiExpressionNode> VisitGroupingSets(Grouping_setsContext context)
+        {
+            return context.grouping_set().Select(VisitGroupingSet);
+        }
+
+        public static QsiExpressionNode VisitGroupingSet(Grouping_setContext context)
+        {
+            if (context.children[0] is ITerminalNode)
+            {
+                var node = ImpalaTree.CreateWithSpan<QsiMultipleExpressionNode>(context);
+                var exprList = context.expr_list();
+
+                if (exprList is not null)
+                    node.Elements.AddRange(VisitExprList(exprList));
+
+                return node;
+            }
+
+            return VisitExpr(context.expr());
         }
 
         // TODO: Impl after adding QsiHavingExpressionNode

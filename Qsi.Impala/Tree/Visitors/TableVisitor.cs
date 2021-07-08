@@ -220,6 +220,7 @@ namespace Qsi.Impala.Tree.Visitors
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static QsiTableNode VisitTableRef(Table_refContext context)
         {
+            // ImpalaTableReferenceNode | ImpalaDerivedTableNode
             QsiTableNode node;
 
             if (context.reference is not null)
@@ -249,11 +250,28 @@ namespace Qsi.Impala.Tree.Visitors
                 derivedTableNode.Alias.Value = VisitAliasClause(context.alias);
             }
 
-            if (context.sample != null)
-                ((IImpalaTableNode)node).TableSample = VisitTableSample(context.sample);
+            switch (node)
+            {
+                case ImpalaTableReferenceNode tableRef:
 
-            if (context.hint != null)
-                ((IImpalaTableNode)node).PlanHints = VisitPlanHints(context.hint);
+                    if (context.sample != null)
+                        tableRef.TableSample = VisitTableSample(context.sample);
+
+                    if (context.hint != null)
+                        tableRef.PlanHints = VisitPlanHints(context.hint);
+
+                    break;
+
+                case ImpalaDerivedTableNode derivedTable:
+
+                    if (context.sample != null)
+                        derivedTable.TableSample = VisitTableSample(context.sample);
+
+                    if (context.hint != null)
+                        derivedTable.PlanHints = VisitPlanHints(context.hint);
+
+                    break;
+            }
 
             return node;
         }

@@ -2,7 +2,7 @@
 
 namespace Qsi.Impala.Tree
 {
-    public class ImpalaJoinedTableNode : QsiJoinedTableNode
+    public class ImpalaWhereExpressionNode : QsiWhereExpressionNode
     {
         public string PlanHints { get; set; }
     }

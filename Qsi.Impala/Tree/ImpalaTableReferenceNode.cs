@@ -2,10 +2,10 @@
 
 namespace Qsi.Impala.Tree
 {
-    public class ImpalaTableReferenceNode : QsiTableReferenceNode, IImpalaTableNode
+    public class ImpalaTableReferenceNode : QsiTableReferenceNode
     {
-        public string TableSample { get; set; }
-
         public string PlanHints { get; set; }
+
+        public string TableSample { get; set; }
     }
 }

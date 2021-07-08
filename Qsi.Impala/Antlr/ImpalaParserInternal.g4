@@ -926,14 +926,13 @@ expr_list
     ;
 
 where_clause
-    : KW_WHERE plan_hints? expr
+    : KW_WHERE hint=plan_hints? expr
     ;
 
 group_by_clause
-    : KW_GROUP KW_BY (KW_ROLLUP | KW_CUBE) LPAREN expr_list RPAREN
-    | KW_GROUP KW_BY KW_GROUPING KW_SETS LPAREN grouping_sets RPAREN
-    | KW_GROUP KW_BY expr_list (KW_WITH KW_ROLLUP)?
-    | KW_GROUP KW_BY expr_list KW_WITH KW_CUBE
+    : KW_GROUP KW_BY (KW_ROLLUP | KW_CUBE) LPAREN expr_list RPAREN   #groupBy1
+    | KW_GROUP KW_BY KW_GROUPING KW_SETS LPAREN grouping_sets RPAREN #groupBy2
+    | KW_GROUP KW_BY expr_list (KW_WITH (KW_ROLLUP | KW_CUBE))?      #groupBy3
     ;
 
 grouping_set
