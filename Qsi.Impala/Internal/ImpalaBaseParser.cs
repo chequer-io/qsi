@@ -9,6 +9,7 @@ using Antlr4.Runtime.Atn;
 using Antlr4.Runtime.Misc;
 using Qsi.Parsing;
 using Qsi.Shared;
+using Qsi.Shared.Extensions;
 using SqlParserSymbols = Qsi.Impala.Internal.ImpalaLexerInternal;
 
 namespace Qsi.Impala.Internal
@@ -47,22 +48,18 @@ namespace Qsi.Impala.Internal
 
         public override void NotifyErrorListeners(IToken offendingToken, string msg, RecognitionException e)
         {
-            SyntaxError(offendingToken, null);
+            ParseError(offendingToken, null);
         }
 
-        protected void ParseError(string symbolName, int symbolId)
+        protected void ParseError(string expectedTokenName)
         {
-            ParseError(symbolName, symbolId, null);
+            ParseError(CurrentToken, expectedTokenName);
         }
 
-        protected void ParseError(string symbolName, int symbolId, string expectedTokenName)
-        {
-            SyntaxError(CurrentToken, expectedTokenName);
-        }
-
-        private void SyntaxError(IToken token, string expectedTokenName)
+        protected void ParseError(IToken token, string expectedTokenName)
         {
             var stmt = ((StringInputStream)Lexer.InputStream).Input;
+
             var tokens = GetNextTokens(CurrentToken)
                 .Distinct()
                 .ToArray();
@@ -96,7 +93,7 @@ namespace Qsi.Impala.Internal
                         foreach (var t in NextTokens(atn, token, transition.target, seen))
                             yield return t;
                     }
-                    else if (transition.Label != null)
+                    else if (transition.Label is not null)
                     {
                         foreach (var t in transition.Label.ToArray())
                             yield return t;
@@ -107,14 +104,16 @@ namespace Qsi.Impala.Internal
 
         protected string GetErrorMessage(IToken errorToken, string stmt, string expectedTokenName, int[] expectedTokenIds)
         {
-            if (errorToken == null || stmt == null)
+            if (errorToken is null || stmt is null)
                 return null;
 
             var result = new StringBuilder();
             result.Append(GetErrorTypeMessage(errorToken.Type) + " in line ");
             result.Append($"{errorToken.Column}:{errorToken.Line}\n");
 
-            var errorLine = stmt.Split('\n')[errorToken.Line - 1];
+            var lineStart = errorToken.StartIndex - errorToken.Column;
+            var lineEnd = stmt.IndexOf('\n', lineStart);
+            var errorLine = lineEnd == -1 ? stmt[lineStart..] : stmt[lineStart..lineEnd];
 
             // If the error is that additional tokens are expected past the end,
             // errorToken_.right will be past the end of the string.
@@ -198,7 +197,7 @@ namespace Qsi.Impala.Internal
             result.Append('\n');
             result.Append("Expected: ");
 
-            if (expectedTokenName == null)
+            if (expectedTokenName is null)
             {
                 IEnumerable<string> tokenNames = expectedTokenIds
                     .Where(x => ReportExpectedToken(x, expectedTokenIds.Length))
@@ -214,6 +213,12 @@ namespace Qsi.Impala.Internal
             result.Append('\n');
 
             return result.ToString();
+        }
+
+        public void VerifyTokenIgnoreCase(IToken token, string value)
+        {
+            if (!value.EqualsIgnoreCase(token.Text))
+                ParseError(token, value);
         }
     }
 }

@@ -16,7 +16,8 @@ root
     ;
 
 stmt
-    : use_stmt
+    : query_stmt
+    | use_stmt
     | upsert_stmt
     | update_stmt
     | truncate_stmt
@@ -36,7 +37,6 @@ stmt
     | revoke_role_stmt
     | revoke_privilege_stmt
     | reset_metadata_stmt
-    | query_stmt
     | load_stmt
     | insert_stmt
     | grant_role_stmt
@@ -540,35 +540,35 @@ create_data_src_stmt
     ;
 
 key_ident
-    : IDENT
+    : i=IDENT { VerifyTokenIgnoreCase($i, "KEY"); }
     ;
 
 system_ident
-    : IDENT
+    : i=IDENT { VerifyTokenIgnoreCase($i, "SYSTEM"); }
     ;
 
 source_ident
-    : IDENT
+    : i=IDENT { VerifyTokenIgnoreCase($i, "SOURCE"); }
     ;
 
 sources_ident
-    : IDENT
+    : i=IDENT { VerifyTokenIgnoreCase($i, "SOURCES"); }
     ;
 
 uri_ident
-    : IDENT
+    : i=IDENT { VerifyTokenIgnoreCase($i, "URI"); }
     ;
 
 server_ident
-    : IDENT
+    : i=IDENT { VerifyTokenIgnoreCase($i, "SERVER"); }
     ;
 
 testcase_ident
-    : IDENT
+    : i=IDENT { VerifyTokenIgnoreCase($i, "TESTCASE"); }
     ;
 
 option_ident
-    : IDENT
+    : i=IDENT { VerifyTokenIgnoreCase($i, "OPTION"); }
     ;
 
 view_column_defs
@@ -693,8 +693,7 @@ function_def_arg_key
     ;
 
 query_stmt
-    : opt_with_clause? set_operation_with_order_by_or_limit
-    | opt_with_clause? set_operand_list
+    : opt_with_clause? set_operand_list
     ;
 
 opt_with_clause
@@ -710,11 +709,6 @@ with_view_def_list
     : with_view_def (COMMA with_view_def)*
     ;
 
-set_operation_with_order_by_or_limit
-    : set_operand_list KW_ORDER KW_BY order_by_elements (KW_LIMIT expr)? opt_offset_param?
-    | set_operand_list KW_LIMIT expr
-    ;
-
 set_operand
     : values_stmt
     | select_stmt
@@ -722,7 +716,9 @@ set_operand
     ;
 
 set_operand_list
-    : set_operand (set_op set_operand)*
+    : sets+=set_operand (ops+=set_op sets+=set_operand)*
+      opt_order_by_clause?
+      opt_limit_offset_clause
     ;
 
 set_op
@@ -736,7 +732,11 @@ values_stmt
     ;
 
 values_operand_list
-    : LPAREN select_list RPAREN (COMMA LPAREN select_list RPAREN)*
+    : values_operand+
+    ;
+
+values_operand
+    : LPAREN select_list RPAREN
     ;
 
 use_stmt
@@ -809,7 +809,15 @@ describe_output_style
     ;
 
 select_stmt
-    : select_clause (from_clause where_clause? group_by_clause? having_clause? opt_order_by_clause? opt_limit_offset_clause)?
+    : select      = select_clause
+      (
+      from        = from_clause
+      where       = where_clause?
+      groupBy     = group_by_clause?
+      having      = having_clause?
+      orderBy     = opt_order_by_clause?
+      limitOffset = opt_limit_offset_clause
+      )?
     ;
 
 select_clause
@@ -828,7 +836,7 @@ admin_fn_stmt
     ;
 
 select_list
-    : select_list_item (COMMA select_list_item)*
+    : items+=select_list_item (COMMA items+=select_list_item)*
     ;
 
 select_list_item
@@ -863,19 +871,19 @@ from_clause
     ;
 
 table_ref_list
-    : table_ref hint=plan_hints?                                                            #singleTableRef
-    | <assoc=right> table_ref_list KW_CROSS KW_JOIN plan_hints? table_ref hint=plan_hints?  #crossJoin
-    | <assoc=right> table_ref_list join_operator plan_hints? table_ref hint=plan_hints?
+    : table_ref                                                                            #singleTableRef
+    | <assoc=right> left=table_ref_list KW_CROSS KW_JOIN hint=plan_hints? right=table_ref  #crossJoin
+    | <assoc=right> left=table_ref_list join_operator hint=plan_hints? right=table_ref
       (
         KW_ON onClause=expr
         | KW_USING LPAREN usingClause=ident_list RPAREN
-      )?                                                                                    #join
-    | <assoc=right> table_ref_list COMMA table_ref hint=plan_hints?                         #commaJoin
+      )?                                                                                   #join
+    | <assoc=right> left=table_ref_list COMMA right=table_ref                              #commaJoin
     ;
 
 table_ref
-    : LPAREN query_stmt RPAREN alias_clause opt_tablesample?
-    | dotted_path alias_clause? opt_tablesample?
+    : LPAREN query=query_stmt RPAREN alias=alias_clause  sample=opt_tablesample? hint=plan_hints?
+    | reference=dotted_path          alias=alias_clause? sample=opt_tablesample? hint=plan_hints? 
     ;
 
 join_operator
@@ -905,7 +913,8 @@ plan_hint_list
     ;
 
 opt_tablesample
-    : KW_TABLESAMPLE system_ident LPAREN INTEGER_LITERAL RPAREN (KW_REPEATABLE LPAREN INTEGER_LITERAL RPAREN)?
+    : KW_TABLESAMPLE system_ident LPAREN INTEGER_LITERAL RPAREN
+      (KW_REPEATABLE LPAREN INTEGER_LITERAL RPAREN)?
     ;
 
 ident_list
@@ -962,12 +971,8 @@ opt_nulls_order_param
     | KW_NULLS KW_FIRST
     ;
 
-opt_offset_param
-    : KW_OFFSET expr
-    ;
-
 opt_limit_offset_clause
-    : opt_limit_clause? opt_offset_clause?
+    : limit=opt_limit_clause? offset=opt_offset_clause?
     ;
 
 opt_limit_clause
@@ -1111,13 +1116,29 @@ numeric_literal
     ;
 
 literal
-    : UNMATCHED_STRING_LITERAL expr
-    | NUMERIC_OVERFLOW
+    : l=UNMATCHED_STRING_LITERAL //expr
+      {
+        // we have an unmatched string literal.
+        // to correctly report the root cause of this syntax error
+        // we must force parsing to fail at this point,
+        // and generate an unmatched string literal symbol
+        // to be passed as the last seen token in the
+        // error handling routine (otherwise some other token could be reported)
+        ParseError($l, null);
+      }
+    | l=NUMERIC_OVERFLOW
+      {
+        // similar to the unmatched string literal case
+        // we must terminate parsing at this point
+        // and generate a corresponding symbol to be reported
+        ParseError($l, null);
+      }
     | numeric_literal
-    | KW_TRUE
     | KW_NULL
+    | KW_TRUE
     | KW_FALSE
-    | KW_DATE? STRING_LITERAL
+    | STRING_LITERAL
+    | KW_DATE STRING_LITERAL
     ;
 
 function_params
@@ -1155,7 +1176,7 @@ function_params
 //    ;
 
 subquery
-    : LPAREN (subquery | query_stmt) RPAREN
+    : LPAREN (nest=subquery | query_stmt) RPAREN
     ;
 
 //compound_predicate

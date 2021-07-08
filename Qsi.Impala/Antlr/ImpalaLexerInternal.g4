@@ -266,43 +266,47 @@ fragment Y: ('y'|'Y');
 fragment Z: ('z'|'Z');
 
 COMMENT
-    : { Hint == default }?
-      ('--' ~[\r\n]* ('\r'? '\n' | { InputStream.LA(1) == Eof }?))
+    : '--'
+      { Hint == default }?
+      (~[\r\n]* ('\r'? '\n' | { InputStream.LA(1) == Eof }?))
       { !IsCommentPlanHint() }?
       -> skip
     ;
 
 MULTILINE_COMMENT
-    : { Hint == default }?
-      ('/*' .*? '*/')
+    : '/*'
+      { Hint == default }?
+      (.*? '*/')
       { !IsCommentPlanHint() }?
       -> skip
     ;
 
 CommentedHintBegin
-    : { Hint == default }?
-      ('/*' ' '* '+')
+    : '/*'
+      { Hint == default }?
+      (' '* '+')
       { Hint = LexHint.MultiLineComment; }
       -> type(COMMENTED_PLAN_HINT_START)
     ;
 
 EolHintBegin
-    : { Hint == default }?
-      ('--' ' '* '+')
+    : '--'
+      { Hint == default }?
+      (' '* '+')
       { Hint = LexHint.SingleLineComment; }
       -> type(COMMENTED_PLAN_HINT_START)
     ;
 
 CommentedHintEnd
-    : { Hint == LexHint.MultiLineComment }?
-      '*/'
+    : '*/'
+      { Hint == LexHint.MultiLineComment }?
       { Hint = default; }
       -> type(COMMENTED_PLAN_HINT_END)
     ;
 
 LineTerminator
-    : { Hint == LexHint.SingleLineComment }?
-      ('\r'? '\n' | EOF)
+    : ('\r'? '\n' | EOF)
+      { Hint == LexHint.SingleLineComment }?
       { Hint = default; }
       -> type(COMMENTED_PLAN_HINT_END)
     ;

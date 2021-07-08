@@ -21,7 +21,7 @@ namespace Qsi.Debugger.Vendor.Impala
 
         protected override IQsiLanguageService CreateLanguageService()
         {
-            return new ImpalaLanguageService();
+            return new ImpalaLanguageService(_verseion);
         }
     }
 }

@@ -5,27 +5,43 @@ using Qsi.Shared;
 using Qsi.Tree;
 using Qsi.Tree.Data;
 
-namespace Qsi.Hana.Tree
+namespace Qsi.Impala.Tree
 {
-    internal static class HanaTree
+    internal static class ImpalaTree
     {
         public static KeyIndexer<Range> Span { get; }
 
-        static HanaTree()
+        static ImpalaTree()
         {
             Span = new KeyIndexer<Range>(QsiNodeProperties.Span);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void PutContextSpan(IQsiTreeNode node, IParserRuleContext context)
+        internal static T CreateWithSpan<T>(IParserRuleContext ruleContext) where T : IQsiTreeNode, new()
         {
-            PutContextSpan(node, context.Start, context.Stop);
+            var node = new T();
+            PutContextSpan(node, ruleContext);
+            return node;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void PutContextSpan(IQsiTreeNode node, ParserRuleContext context)
+        internal static T CreateWithSpan<T>(ParserRuleContext ruleContext) where T : IQsiTreeNode, new()
         {
-            PutContextSpan(node, context.Start, context.Stop);
+            var node = new T();
+            PutContextSpan(node, ruleContext);
+            return node;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static void PutContextSpan(IQsiTreeNode node, IParserRuleContext ruleContext)
+        {
+            PutContextSpan(node, ruleContext.Start, ruleContext.Stop);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static void PutContextSpan(IQsiTreeNode node, ParserRuleContext ruleContext)
+        {
+            PutContextSpan(node, ruleContext.Start, ruleContext.Stop);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

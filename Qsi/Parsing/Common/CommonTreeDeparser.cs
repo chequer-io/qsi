@@ -100,8 +100,9 @@ namespace Qsi.Parsing.Common
             {
                 w.Write(table.Alias.Name);
 
-                if (table.Columns != null && IsWildcard(table.Columns))
+                if (table.Columns != null && !IsWildcard(table.Columns))
                 {
+                    w.WriteSpace();
                     DeparseTreeNodeWithParenthesis(w, table.Columns, script);
                 }
 
@@ -212,6 +213,10 @@ namespace Qsi.Parsing.Common
                     DeparseTableReferenceNode(writer, tableReferenceNode, script);
                     break;
 
+                case IQsiTableDirectivesNode tableDirectivesNode:
+                    DeparseTableDirectivesNode(writer, tableDirectivesNode, script);
+                    break;
+
                 default:
                     throw new NotSupportedException();
             }
@@ -263,6 +268,12 @@ namespace Qsi.Parsing.Common
 
             if (node.Alias != null)
                 throw new NotSupportedException();
+
+            if (node.Directives is not null)
+            {
+                DeparseTreeNode(writer, node.Directives, script);
+                writer.WriteSpace();
+            }
 
             writer.Write("SELECT ");
 
