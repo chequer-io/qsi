@@ -55,7 +55,7 @@ namespace Qsi.Engines
 
             if (analyzer == null)
             {
-                if (script.ScriptType is QsiScriptType.Comment or QsiScriptType.Delimiter)
+                if (script.ScriptType is QsiScriptType.Trivia or QsiScriptType.Delimiter)
                     return Array.Empty<IQsiAnalysisResult>();
 
                 throw new QsiException(QsiError.NotSupportedScript, script.ScriptType);
@@ -64,8 +64,10 @@ namespace Qsi.Engines
             return await analyzer.Execute(script, parameters, tree, options, cancellationToken);
         }
 
-        public ValueTask<IQsiAnalysisResult[]> Explain(QsiScript script, QsiParameter[] parameters, CancellationToken cancellationToken = default)
+        public ValueTask<IQsiAnalysisResult[]> Explain(QsiScript script, CancellationToken cancellationToken = default)
         {
+            var parameters = new[] { new QsiParameter(QsiParameterType.Name, string.Empty, QsiDataValue.Explain) };
+
             if (IsExplainEngine)
                 return Execute(script, parameters, cancellationToken);
 

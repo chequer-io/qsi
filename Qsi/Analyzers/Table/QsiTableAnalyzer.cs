@@ -52,6 +52,9 @@ namespace Qsi.Analyzers.Table
                 case IQsiTableReferenceNode tableReference:
                     return await BuildTableReferenceStructure(context, tableReference);
 
+                case IQsiTableFunctionNode tableFunction:
+                    return await BuildTableFunctionStructure(context, tableFunction);
+
                 case IQsiDerivedTableNode derivedTable:
                     return await BuildDerivedTableStructure(context, derivedTable);
 
@@ -83,12 +86,13 @@ namespace Qsi.Analyzers.Table
                              throw new QsiException(QsiError.UnableResolveDefinition, lookup.Identifier);
 
                 var viewNode = context.Engine.TreeParser.Parse(script);
-                var typeBackup = lookup.Type;
 
                 using var viewCompileContext = new TableCompileContext(context);
 
                 if (lookup.Identifier.Level > 1)
                     viewCompileContext.PushIdentifierScope(lookup.Identifier.SubIdentifier(..^1));
+
+                QsiTableStructure viewStructure;
 
                 switch (viewNode)
                 {
@@ -103,23 +107,35 @@ namespace Qsi.Analyzers.Table
                     {
                         var viewTableStructure = await BuildTableStructure(viewCompileContext, viewTableNode);
                         viewTableStructure.Identifier = ResolveQualifiedIdentifier(context, viewTableStructure.Identifier);
-                        lookup = viewTableStructure;
-                        lookup.Type = typeBackup;
+                        viewStructure = viewTableStructure;
                         break;
                     }
 
                     case IQsiDefinitionNode definitionNode:
                     {
-                        lookup = await BuildDefinitionStructure(viewCompileContext, definitionNode);
+                        viewStructure = await BuildDefinitionStructure(viewCompileContext, definitionNode);
                         break;
                     }
 
                     default:
                         throw TreeHelper.NotSupportedTree(viewNode);
                 }
+
+                if (viewStructure.Columns.Count != lookup.Columns.Count)
+                    throw new QsiException(QsiError.DifferentColumnsCount, "View definition");
+
+                lookup.References.Add(viewStructure);
+
+                for (int i = 0; i < viewStructure.Columns.Count; i++)
+                    lookup.Columns[i].References.Add(viewStructure.Columns[i]);
             }
 
             return lookup;
+        }
+
+        protected virtual Task<QsiTableStructure> BuildTableFunctionStructure(TableCompileContext context, IQsiTableFunctionNode table)
+        {
+            throw TreeHelper.NotSupportedFeature("Table Function");
         }
 
         protected virtual async ValueTask<QsiTableStructure> BuildDerivedTableStructure(TableCompileContext context, IQsiDerivedTableNode table)
@@ -769,6 +785,9 @@ namespace Qsi.Analyzers.Table
 
             switch (expression)
             {
+                case QsiExpressionFragmentNode:
+                    break;
+
                 case IQsiSetColumnExpressionNode e:
                 {
                     foreach (var c in ResolveColumnsInExpression(context, e.Value))

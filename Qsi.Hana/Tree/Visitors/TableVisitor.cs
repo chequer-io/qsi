@@ -148,40 +148,50 @@ namespace Qsi.Hana.Tree.Visitors
         public static QsiTableNode VisitSubquery(SubqueryContext context)
         {
             if (context.inner != null)
-                return VisitSelectStatement(context.inner);
+            {
+                var innerNode = VisitSelectStatement(context.inner);
+
+                if (context.set != null)
+                    return VisitSetOperatorClause(context.set, innerNode);
+
+                return innerNode;
+            }
 
             var node = new HanaDerivedTableNode();
 
-            node.Columns.SetValue(VisitSelectClause(node, context.select));
-            node.Source.SetValue(VisitFromClause(context.from));
+            node.Columns.SetValue(VisitSelectClause(node, context.@select));
+            node.Source.SetValue(VisitFromClause(context.@from));
 
-            if (context.where != null)
-                node.Where.SetValue(ExpressionVisitor.VisitWhereClause(context.where));
+            if (context.@where != null)
+                node.Where.SetValue(ExpressionVisitor.VisitWhereClause(context.@where));
 
             if (context.groupBy != null)
                 node.Grouping.SetValue(ExpressionVisitor.VisitGroupByClause(context.groupBy));
 
             if (context.set != null)
-            {
-                // node + subquries
-                IEnumerable<QsiTableNode> sources = context.set.setSubquery()
-                    .Select(VisitSetSubquery)
-                    .Prepend(node);
+                return VisitSetOperatorClause(context.set, node);
 
-                var compositeNode = new QsiCompositeTableNode();
+            if (context.orderBy != null)
+                node.Order.SetValue(ExpressionVisitor.VisitOrderByClause(context.orderBy));
 
-                compositeNode.Sources.AddRange(sources);
+            if (context.limit != null)
+                node.Limit.SetValue(ExpressionVisitor.VisitLimitClause(context.limit));
 
-                if (context.orderBy != null)
-                    compositeNode.Order.SetValue(ExpressionVisitor.VisitOrderByClause(context.orderBy));
+            HanaTree.PutContextSpan(node, context);
 
-                if (context.limit != null)
-                    compositeNode.Limit.SetValue(ExpressionVisitor.VisitLimitClause(context.limit));
+            return node;
+        }
 
-                HanaTree.PutContextSpan(compositeNode, context);
+        private static QsiTableNode VisitSetOperatorClause(SetOperatorClauseContext context, QsiTableNode topTableNode)
+        {
+            // node + subquries
+            IEnumerable<QsiTableNode> sources = context.setSubquery()
+                .Select(VisitSetSubquery)
+                .Prepend(topTableNode);
 
-                return compositeNode;
-            }
+            var node = new QsiCompositeTableNode();
+
+            node.Sources.AddRange(sources);
 
             if (context.orderBy != null)
                 node.Order.SetValue(ExpressionVisitor.VisitOrderByClause(context.orderBy));
@@ -222,7 +232,7 @@ namespace Qsi.Hana.Tree.Visitors
 
             if (topClause != null)
             {
-                tableNode.Top = VisitTopClause(topClause);
+                tableNode.Top.Value = ExpressionVisitor.VisitUnsignedIntegerOrBindParameter(topClause.top);
                 offset++;
             }
 
@@ -332,11 +342,6 @@ namespace Qsi.Hana.Tree.Visitors
             return node;
         }
 
-        public static ulong VisitTopClause(TopClauseContext context)
-        {
-            return ulong.Parse(context.top.Text);
-        }
-
         public static QsiTableNode VisitFromClause(FromClauseContext context)
         {
             QsiTableNode[] sources = context._tables
@@ -372,6 +377,9 @@ namespace Qsi.Hana.Tree.Visitors
         #region TableExpression
         public static QsiTableNode VisitTableExpression(TableExpressionContext context)
         {
+            while (context.inner != null)
+                context = context.inner;
+
             var child = context.children[0];
 
             switch (child)
@@ -601,10 +609,26 @@ namespace Qsi.Hana.Tree.Visitors
                 case FunctionExpressionContext functionExpression:
                     var expr = ExpressionVisitor.VisitFunctionExpression(functionExpression);
 
-                    if (expr is not QsiTableExpressionNode tableExpr)
-                        throw new QsiException(QsiError.Syntax);
+                    switch (expr)
+                    {
+                        case QsiTableExpressionNode tableExpr:
+                            node = tableExpr.Table.Value;
+                            break;
 
-                    node = tableExpr.Table.Value;
+                        case QsiInvokeExpressionNode invokeExpr:
+                            var tableFunctionNode = new QsiTableFunctionNode
+                            {
+                                Member = { Value = invokeExpr.Member.Value }
+                            };
+
+                            tableFunctionNode.Parameters.AddRange(invokeExpr.Parameters);
+                            node = tableFunctionNode;
+                            break;
+
+                        default:
+                            throw TreeHelper.NotSupportedFeature("Table Function");
+                    }
+
                     break;
 
                 default:
@@ -719,13 +743,8 @@ namespace Qsi.Hana.Tree.Visitors
             if (columnListClause != null)
                 node.Columns.SetValue(VisitColumnListClause(columnListClause, null));
 
-            if (waitNowait != null)
-            {
-                if (waitNowait.time == null)
-                    node.WaitTime = -1;
-                else
-                    node.WaitTime = long.Parse(waitNowait.time.Text);
-            }
+            if (waitNowait?.time != null)
+                node.WaitTime.Value = ExpressionVisitor.VisitUnsignedIntegerOrBindParameter(waitNowait.time);
 
             HanaTree.PutContextSpan(node, context);
 

@@ -44,7 +44,8 @@ namespace Qsi.Data
         Describe,
         Set,
         Begin,
+        Comment,
 
-        Comment
+        Trivia
     }
 }

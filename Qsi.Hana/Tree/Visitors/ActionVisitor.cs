@@ -287,7 +287,7 @@ namespace Qsi.Hana.Tree.Visitors
                 };
 
                 if (topClause != null)
-                    derivedTableNode.Top = TableVisitor.VisitTopClause(topClause);
+                    derivedTableNode.Top.Value = ExpressionVisitor.VisitUnsignedIntegerOrBindParameter(topClause.top);
 
                 if (whereClause != null)
                     derivedTableNode.Where.SetValue(ExpressionVisitor.VisitWhereClause(whereClause));

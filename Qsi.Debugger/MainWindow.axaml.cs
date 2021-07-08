@@ -191,7 +191,7 @@ namespace Qsi.Debugger
                 _scriptRenderer.Update(scripts);
 
                 scripts = scripts
-                    .Where(s => s.ScriptType != QsiScriptType.Comment && s.ScriptType != QsiScriptType.Delimiter)
+                    .Where(s => s.ScriptType != QsiScriptType.Trivia && s.ScriptType != QsiScriptType.Delimiter)
                     .ToArray();
 
                 // Raw Tree
@@ -214,12 +214,11 @@ namespace Qsi.Debugger
 
                 // Execute
 
-                var fakeParameters = new QsiParameter[] { new(default, default, default) };
                 var tables = new List<QsiTableStructure>();
 
                 foreach (var script in scripts)
                 {
-                    IQsiAnalysisResult[] results = await _vendor.Engine.Explain(script, fakeParameters);
+                    IQsiAnalysisResult[] results = await _vendor.Engine.Explain(script);
                     tables.AddRange(results.OfType<QsiTableResult>().Select(r => r.Table));
                 }
 
