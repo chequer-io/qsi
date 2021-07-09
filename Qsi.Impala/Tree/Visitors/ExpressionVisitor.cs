@@ -61,91 +61,244 @@ namespace Qsi.Impala.Tree.Visitors
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static QsiExpressionNode VisitPredicate1(Predicate1Context context)
         {
-            throw new NotImplementedException();
+            return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
+            {
+                n.Left.SetValue(VisitExpr(context.expr(0)));
+                n.Operator = context.KW_LOGICAL_OR().GetText();
+                n.Right.SetValue(VisitExpr(context.expr(1)));
+
+                ImpalaTree.PutContextSpan(n, context);
+            });
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static QsiExpressionNode VisitPredicate2(Predicate2Context context)
         {
-            throw new NotImplementedException();
+            return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            {
+                string func = context.KW_NOT() != null ?
+                    ImpalaKnownFunction.IsNotNull :
+                    ImpalaKnownFunction.IsNull;
+
+                n.Member.SetValue(TreeHelper.CreateFunction(func));
+                n.Parameters.Add(VisitExpr(context.expr()));
+
+                ImpalaTree.PutContextSpan(n, context);
+            });
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static QsiExpressionNode VisitLikePredicate(Like_predicateContext context)
         {
-            throw new NotImplementedException();
+            return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
+            {
+                n.Left.SetValue(VisitExpr(context.expr(0)));
+                n.Right.SetValue(VisitExpr(context.expr(1)));
+
+                n.Operator = CreateOperator(context.KW_NOT(), context.children[^2]);
+
+                ImpalaTree.PutContextSpan(n, context);
+            });
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static QsiExpressionNode VisitInPredicateSubquery(In_predicate_subqueryContext context)
         {
-            throw new NotImplementedException();
+            return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
+            {
+                n.Left.SetValue(VisitExpr(context.expr()));
+                n.Right.SetValue(VisitSubquery(context.subquery()));
+
+                n.Operator = CreateOperator(context.KW_NOT(), context.KW_IN());
+
+                ImpalaTree.PutContextSpan(n, context);
+            });
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static QsiExpressionNode VisitInPredicate(In_predicateContext context)
         {
-            throw new NotImplementedException();
+            return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
+            {
+                n.Left.SetValue(VisitExpr(context.expr()));
+
+                n.Right.SetValue(TreeHelper.Create<QsiMultipleExpressionNode>(mn =>
+                {
+                    mn.Elements.AddRange(VisitExprList(context.expr_list()));
+
+                    ImpalaTree.PutContextSpan(mn, context.expr_list());
+                }));
+
+                n.Operator = CreateOperator(context.KW_NOT(), context.KW_IN());
+
+                ImpalaTree.PutContextSpan(n, context);
+            });
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static QsiExpressionNode VisitExistsPredicate(Exists_predicateContext context)
         {
-            throw new NotImplementedException();
+            return TreeHelper.Create<QsiUnaryExpressionNode>(n =>
+            {
+                n.Operator = context.KW_EXISTS().GetText();
+                n.Expression.SetValue(VisitSubquery(context.subquery()));
+
+                ImpalaTree.PutContextSpan(n, context);
+            });
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static QsiExpressionNode VisitCompoundPredicate1(Compound_predicate1Context context)
         {
-            throw new NotImplementedException();
+            return TreeHelper.Create<QsiUnaryExpressionNode>(n =>
+            {
+                n.Operator = context.children[0].GetText();
+                n.Expression.SetValue(VisitExpr(context.expr()));
+
+                ImpalaTree.PutContextSpan(n, context);
+            });
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static QsiExpressionNode VisitCompoundPredicate2(Compound_predicate2Context context)
         {
-            throw new NotImplementedException();
+            return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
+            {
+                n.Left.SetValue(VisitExpr(context.expr(0)));
+                n.Right.SetValue(VisitExpr(context.expr(1)));
+
+                n.Operator = context.children[1].GetText();
+
+                ImpalaTree.PutContextSpan(n, context);
+            });
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static QsiExpressionNode VisitComparisonPredicate1(Comparison_predicate1Context context)
         {
-            throw new NotImplementedException();
+            return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
+            {
+                n.Left.SetValue(VisitExpr(context.expr(0)));
+                n.Right.SetValue(VisitExpr(context.expr(1)));
+
+                n.Operator = context.children[1].GetText();
+
+                ImpalaTree.PutContextSpan(n, context);
+            });
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static QsiExpressionNode VisitComparisonPredicate2(Comparison_predicate2Context context)
         {
-            throw new NotImplementedException();
+            return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
+            {
+                n.Left.SetValue(VisitExpr(context.expr(0)));
+                n.Right.SetValue(VisitExpr(context.expr(1)));
+
+                n.Operator = CreateOperator(context.children[1], context.EQUAL());
+
+                ImpalaTree.PutContextSpan(n, context);
+            });
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static QsiExpressionNode VisitComparisonPredicate3(Comparison_predicate3Context context)
         {
-            throw new NotImplementedException();
+            return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
+            {
+                n.Left.SetValue(VisitExpr(context.expr(0)));
+                n.Right.SetValue(VisitExpr(context.expr(1)));
+
+                n.Operator = CreateOperator(context.LESSTHAN(), context.EQUAL(), context.GREATERTHAN());
+
+                ImpalaTree.PutContextSpan(n, context);
+            });
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static QsiExpressionNode VisitComparisonPredicate4(Comparison_predicate4Context context)
         {
-            throw new NotImplementedException();
+            return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
+            {
+                n.Left.SetValue(VisitExpr(context.expr(0)));
+                n.Right.SetValue(VisitExpr(context.expr(1)));
+
+                n.Operator = CreateOperator(context.KW_IS(), context.KW_NOT(), context.KW_DISTINCT(), context.KW_FROM());
+
+                ImpalaTree.PutContextSpan(n, context);
+            });
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static QsiExpressionNode VisitComparisonPredicate5(Comparison_predicate5Context context)
         {
-            throw new NotImplementedException();
+            return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
+            {
+                n.Left.SetValue(VisitExpr(context.expr(0)));
+                n.Right.SetValue(VisitExpr(context.expr(1)));
+
+                n.Operator = CreateOperator(context.GREATERTHAN(), context.EQUAL());
+
+                ImpalaTree.PutContextSpan(n, context);
+            });
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static QsiExpressionNode VisitBoolTestExpr(Bool_test_exprContext context)
         {
-            throw new NotImplementedException();
+            QsiExpressionNode literalNode;
+
+            switch (context.children[^1])
+            {
+                case ITerminalNode { Symbol: { Type: KW_UNKNOWN } }:
+                    literalNode = TreeHelper.CreateConstantLiteral("UNKNOWN");
+                    ImpalaTree.PutContextSpan(literalNode, context.KW_UNKNOWN().Symbol);
+                    break;
+
+                case ITerminalNode { Symbol: { Type: KW_TRUE } }:
+                    literalNode = TreeHelper.CreateLiteral(true);
+                    ImpalaTree.PutContextSpan(literalNode, context.KW_TRUE().Symbol);
+                    break;
+
+                case ITerminalNode { Symbol: { Type: KW_FALSE } }:
+                    literalNode = TreeHelper.CreateLiteral(false);
+                    ImpalaTree.PutContextSpan(literalNode, context.KW_FALSE().Symbol);
+                    break;
+
+                default:
+                    throw TreeHelper.NotSupportedTree(context.children[^1]);
+            }
+
+            return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
+            {
+                n.Left.SetValue(VisitExpr(context.expr()));
+                n.Right.SetValue(literalNode);
+
+                n.Operator = CreateOperator(context.KW_IS(), context.KW_NOT());
+
+                ImpalaTree.PutContextSpan(n, context);
+            });
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static QsiExpressionNode VisitBetweenPredicate(Between_predicateContext context)
         {
-            throw new NotImplementedException();
+            return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
+            {
+                n.Left.SetValue(VisitExpr(context.expr(0)));
+
+                n.Right.SetValue(TreeHelper.Create<QsiMultipleExpressionNode>(mn =>
+                {
+                    mn.Elements.Add(VisitExpr(context.expr(1)));
+                    mn.Elements.Add(VisitExpr(context.expr(2)));
+
+                    ImpalaTree.PutContextSpan(mn, context.expr(1).Start, context.expr(2).Stop);
+                }));
+
+                n.Operator = CreateOperator(context.KW_NOT(), context.KW_BETWEEN());
+
+                ImpalaTree.PutContextSpan(n, context);
+            });
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -163,7 +316,13 @@ namespace Qsi.Impala.Tree.Visitors
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static QsiExpressionNode VisitSignChainExpr(Sign_chain_exprContext context)
         {
-            throw new NotImplementedException();
+            return TreeHelper.Create<QsiUnaryExpressionNode>(n =>
+            {
+                n.Operator = context.children[0].GetText();
+                n.Expression.SetValue(VisitExpr(context.expr()));
+
+                ImpalaTree.PutContextSpan(n, context);
+            });
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -246,13 +405,78 @@ namespace Qsi.Impala.Tree.Visitors
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static QsiExpressionNode VisitFunctionCallExpr(Function_call_exprContext context)
         {
-            throw new NotImplementedException();
+            return TreeHelper.Create<ImpalaInvokeExpressionNode>(n =>
+            {
+                n.Member.SetValue(TreeHelper.CreateFunction(context.children[0].GetText()));
+
+                if (context.expr_list() != null)
+                {
+                    n.Parameters.AddRange(context.expr_list().expr().Select(VisitExpr));
+                }
+                else
+                {
+                    var functionParams = context.function_params();
+
+                    if (functionParams != null)
+                    {
+                        if (functionParams.HasToken(KW_DISTINCT))
+                        {
+                            n.Parameters.Option = functionParams.KW_DISTINCT().GetText();
+                            n.Parameters.AddRange(functionParams.expr_list().expr().Select(VisitExpr));
+                        }
+                        else if (functionParams.HasToken(STAR))
+                        {
+                            var columnExpression = new QsiColumnExpressionNode();
+                            columnExpression.Column.SetValue(new QsiAllColumnNode());
+
+                            ImpalaTree.PutContextSpan(columnExpression, functionParams.STAR().Symbol);
+
+                            n.Parameters.Add(columnExpression);
+                        }
+                        else if (functionParams.HasToken(KW_IGNORE))
+                        {
+                            n.Parameters.Option = CreateOperator(functionParams.KW_IGNORE(), functionParams.KW_NULLS());
+                        }
+
+                        if (functionParams.HasToken(KW_ALL))
+                            n.Parameters.Option = functionParams.KW_ALL().GetText();
+
+                        // TODO: test
+                        if (functionParams.TryGetRuleContext<Expr_listContext>(out var exprList))
+                            n.Parameters.AddRange(exprList.expr().Select(VisitExpr));
+                    }
+                }
+
+                ImpalaTree.PutContextSpan(n, context);
+            });
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static QsiExpressionNode VisitCastExpr(Cast_exprContext context)
         {
-            throw new NotImplementedException();
+            return TreeHelper.Create<ImpalaInvokeExpressionNode>(n =>
+            {
+                n.Member.SetValue(TreeHelper.CreateFunction(ImpalaKnownFunction.Cast));
+
+                n.Parameters.Add(VisitExpr(context.expr()));
+                n.Parameters.Add(VisitTypeDef(context.type_def()));
+
+                // cast_format_val ignored
+
+                ImpalaTree.PutContextSpan(n, context);
+            });
+        }
+
+        private static QsiTypeExpressionNode VisitTypeDef(Type_defContext context)
+        {
+            var node = new QsiTypeExpressionNode
+            {
+                Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(context.GetText(), false))
+            };
+
+            ImpalaTree.PutContextSpan(node, context);
+
+            return node;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -496,5 +720,14 @@ namespace Qsi.Impala.Tree.Visitors
         // {
         //     throw new NotImplementedException();
         // }
+
+        private static string CreateOperator(params IParseTree[] nodes)
+        {
+            IEnumerable<string> nodeTexts = nodes
+                .Where(node => node != null)
+                .Select(node => node.GetText());
+
+            return string.Join(" ", nodeTexts);
+        }
     }
 }
