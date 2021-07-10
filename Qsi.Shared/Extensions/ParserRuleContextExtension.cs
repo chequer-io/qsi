@@ -95,5 +95,12 @@ namespace Qsi.Shared.Extensions
             result = context.GetRuleContext<T>(0);
             return result != null;
         }
+        
+        public static bool HasRule<T>(this ParserRuleContext context) where T : ParserRuleContext
+        {
+            return context.children
+                .OfType<T>()
+                .Any();
+        }
     }
 }

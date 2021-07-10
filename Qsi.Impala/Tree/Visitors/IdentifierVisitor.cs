@@ -47,5 +47,23 @@ namespace Qsi.Impala.Tree.Visitors
         {
             return VisitDottedPath(context.dotted_path());
         }
+
+        public static QsiQualifiedIdentifier VisitTableName(Table_nameContext context)
+        {
+            return new(context.ident_or_default().Select(VisitIdentOrDefault));
+        }
+
+        public static QsiQualifiedIdentifier VisitColumnName(Column_nameContext context)
+        {
+            return new(context.ident_or_default().Select(VisitIdentOrDefault));
+        }
+        
+        public static QsiQualifiedIdentifier VisitFunctionName(Column_nameContext context)
+        {
+            if (context.children[0] is Dotted_pathContext dottedPath)
+                return VisitDottedPath(dottedPath);
+
+            return new QsiQualifiedIdentifier(new QsiIdentifier(context.children[0].GetText(), false));
+        }
     }
 }
