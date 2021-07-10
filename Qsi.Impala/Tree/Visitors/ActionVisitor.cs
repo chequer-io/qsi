@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Qsi.Data;
 using Qsi.Impala.Internal;
 using Qsi.Shared.Extensions;
@@ -62,7 +63,49 @@ namespace Qsi.Impala.Tree.Visitors
 
         public static IQsiTreeNode VisitCreateTblAsSelectStmt(Create_tbl_as_select_stmtContext context)
         {
-            throw new NotImplementedException();
+            var node = ImpalaTree.CreateWithSpan<ImpalaTableDefinitionNode>(context);
+            node.PlanHints = context.plan_hints()?.GetInputText();
+            VisitCreateTblAsSelectParams(node, context.create_tbl_as_select_params());
+            return node;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void VisitCreateTblAsSelectParams(ImpalaTableDefinitionNode node, Create_tbl_as_select_paramsContext context)
+        {
+            node.IsExternal = context.tblDef.external;
+            node.ConflictBehavior = context.tblDef.ifNotExists ? QsiDefinitionConflictBehavior.Ignore : QsiDefinitionConflictBehavior.None;
+            node.Identifier = IdentifierVisitor.VisitTableName(context.tblDef.table_name());
+            node.DataSource.Value = TableVisitor.VisitQueryStmt(context.query);
+
+            if (context.options.children?.Count > 0)
+            {
+                var fragment = ImpalaTree.CreateWithSpan<QsiExpressionFragmentNode>(context.options);
+                fragment.Text = context.options.GetInputText();
+
+                node.Options.Value = fragment;
+            }
+
+            if (context.TryGetRuleContext<Primary_keysContext>(out var primaryKeys))
+                node.PrimaryKeyColumnNames = IdentifierVisitor.VisitIdentList(primaryKeys.ident_list()).ToArray();
+
+            if (context.TryGetRuleContext<Partitioned_data_layoutContext>(out var partitionedDataLayout))
+            {
+                var fragment = ImpalaTree.CreateWithSpan<QsiExpressionFragmentNode>(context.options);
+                fragment.Text = partitionedDataLayout.GetInputText();
+
+                node.KuduPartitionParams.Value = fragment;
+            }
+
+            if (context.TryGetRuleContext<Iceberg_partition_spec_listContext>(out var icebergPartitionSpecList))
+            {
+                var fragment = ImpalaTree.CreateWithSpan<QsiExpressionFragmentNode>(context.options);
+                fragment.Text = icebergPartitionSpecList.GetInputText();
+
+                node.IcebergPartitionSpecs.Value = fragment;
+            }
+
+            if (context.TryGetRuleContext<Ident_listContext>(out var identList))
+                node.PartitionColumnNames = IdentifierVisitor.VisitIdentList(identList).ToArray();
         }
 
         public static IQsiTreeNode VisitUpsertStmt(Upsert_stmtContext context)

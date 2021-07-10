@@ -357,7 +357,7 @@ namespace Qsi.Impala.Tree.Visitors
                 node.Columns.Value = new QsiColumnsDeclarationNode();
 
                 node.Columns.Value.Columns.AddRange(
-                    VisitIdentList(identList).Select(i =>
+                    IdentifierVisitor.VisitIdentList(identList).Select(i =>
                         new QsiSequentialColumnNode
                         {
                             Alias =
@@ -379,11 +379,6 @@ namespace Qsi.Impala.Tree.Visitors
             node.Source.SetValue(VisitQueryStmt(context.query_stmt()));
 
             return node;
-        }
-
-        public static IEnumerable<QsiIdentifier> VisitIdentList(Ident_listContext context)
-        {
-            return context.ident_or_default().Select(IdentifierVisitor.VisitIdentOrDefault);
         }
 
         public static QsiColumnNode VisitStarExpr(Star_exprContext context)

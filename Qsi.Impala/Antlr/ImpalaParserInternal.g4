@@ -245,8 +245,22 @@ create_tbl_as_select_stmt
     ;
 
 create_tbl_as_select_params
-    : tbl_def_without_col_defs (primary_keys partitioned_data_layout? | iceberg_partition_spec_list)? tbl_options KW_AS query_stmt
-    | tbl_def_without_col_defs KW_PARTITIONED KW_BY LPAREN ident_list RPAREN tbl_options KW_AS query_stmt
+    : tblDef=tbl_def_without_col_defs
+      options=tbl_options
+      KW_AS query=query_stmt
+    | tblDef=tbl_def_without_col_defs
+      primary_keys
+      partitioned_data_layout
+      options=tbl_options
+      KW_AS query=query_stmt
+    | tblDef=tbl_def_without_col_defs
+      iceberg_partition_spec_list
+      options=tbl_options
+      KW_AS query=query_stmt
+    | tblDef=tbl_def_without_col_defs
+      KW_PARTITIONED KW_BY LPAREN ident_list RPAREN
+      options=tbl_options
+      KW_AS query=query_stmt
     ;
 
 create_tbl_stmt
@@ -260,8 +274,11 @@ create_tbl_like_stmt
     : KW_CREATE tbl_def_without_col_defs opt_sort_cols?? KW_LIKE table_name opt_comment_val? file_format_create_table_val? location_val?
     ;
 
-tbl_def_without_col_defs
-    : KW_EXTERNAL? KW_TABLE if_not_exists_val? table_name
+tbl_def_without_col_defs returns [bool external, bool ifNotExists]
+    : (KW_EXTERNAL { $external = true; })?
+      KW_TABLE
+      (if_not_exists_val { $ifNotExists = true; })?
+      table_name
     ;
 
 tbl_def_with_col_defs

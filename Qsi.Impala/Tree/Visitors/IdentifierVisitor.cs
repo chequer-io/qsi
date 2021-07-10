@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Antlr4.Runtime.Tree;
 using Qsi.Data;
 using Qsi.Impala.Internal;
@@ -10,6 +11,11 @@ namespace Qsi.Impala.Tree.Visitors
 
     internal static class IdentifierVisitor
     {
+        public static IEnumerable<QsiIdentifier> VisitIdentList(Ident_listContext context)
+        {
+            return context.ident_or_default().Select(IdentifierVisitor.VisitIdentOrDefault);
+        }
+
         public static QsiIdentifier VisitStringLiteral(ITerminalNode node)
         {
             TreeHelper.VerifyTokenType(node.Symbol, STRING_LITERAL);
@@ -57,7 +63,7 @@ namespace Qsi.Impala.Tree.Visitors
         {
             return new(context.ident_or_default().Select(VisitIdentOrDefault));
         }
-        
+
         public static QsiQualifiedIdentifier VisitFunctionName(Column_nameContext context)
         {
             if (context.children[0] is Dotted_pathContext dottedPath)
