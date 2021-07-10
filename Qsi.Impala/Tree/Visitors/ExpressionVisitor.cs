@@ -63,9 +63,9 @@ namespace Qsi.Impala.Tree.Visitors
         {
             return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
             {
-                n.Left.SetValue(VisitExpr(context.expr(0)));
+                n.Left.Value = VisitExpr(context.expr(0));
                 n.Operator = context.KW_LOGICAL_OR().GetText();
-                n.Right.SetValue(VisitExpr(context.expr(1)));
+                n.Right.Value = VisitExpr(context.expr(1));
 
                 ImpalaTree.PutContextSpan(n, context);
             });
@@ -80,7 +80,7 @@ namespace Qsi.Impala.Tree.Visitors
                     ImpalaKnownFunction.IsNotNull :
                     ImpalaKnownFunction.IsNull;
 
-                n.Member.SetValue(TreeHelper.CreateFunction(func));
+                n.Member.Value = TreeHelper.CreateFunction(func);
                 n.Parameters.Add(VisitExpr(context.expr()));
 
                 ImpalaTree.PutContextSpan(n, context);
@@ -92,8 +92,8 @@ namespace Qsi.Impala.Tree.Visitors
         {
             return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
             {
-                n.Left.SetValue(VisitExpr(context.expr(0)));
-                n.Right.SetValue(VisitExpr(context.expr(1)));
+                n.Left.Value = VisitExpr(context.expr(0));
+                n.Right.Value = VisitExpr(context.expr(1));
 
                 n.Operator = CreateOperator(context.KW_NOT(), context.children[^2]);
 
@@ -106,8 +106,8 @@ namespace Qsi.Impala.Tree.Visitors
         {
             return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
             {
-                n.Left.SetValue(VisitExpr(context.expr()));
-                n.Right.SetValue(VisitSubquery(context.subquery()));
+                n.Left.Value = VisitExpr(context.expr());
+                n.Right.Value = VisitSubquery(context.subquery());
 
                 n.Operator = CreateOperator(context.KW_NOT(), context.KW_IN());
 
@@ -120,14 +120,14 @@ namespace Qsi.Impala.Tree.Visitors
         {
             return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
             {
-                n.Left.SetValue(VisitExpr(context.expr()));
+                n.Left.Value = VisitExpr(context.expr());
 
-                n.Right.SetValue(TreeHelper.Create<QsiMultipleExpressionNode>(mn =>
+                n.Right.Value = TreeHelper.Create<QsiMultipleExpressionNode>(mn =>
                 {
                     mn.Elements.AddRange(VisitExprList(context.expr_list()));
 
                     ImpalaTree.PutContextSpan(mn, context.expr_list());
-                }));
+                });
 
                 n.Operator = CreateOperator(context.KW_NOT(), context.KW_IN());
 
@@ -141,7 +141,7 @@ namespace Qsi.Impala.Tree.Visitors
             return TreeHelper.Create<QsiUnaryExpressionNode>(n =>
             {
                 n.Operator = context.KW_EXISTS().GetText();
-                n.Expression.SetValue(VisitSubquery(context.subquery()));
+                n.Expression.Value = VisitSubquery(context.subquery());
 
                 ImpalaTree.PutContextSpan(n, context);
             });
@@ -153,7 +153,7 @@ namespace Qsi.Impala.Tree.Visitors
             return TreeHelper.Create<QsiUnaryExpressionNode>(n =>
             {
                 n.Operator = context.children[0].GetText();
-                n.Expression.SetValue(VisitExpr(context.expr()));
+                n.Expression.Value = VisitExpr(context.expr());
 
                 ImpalaTree.PutContextSpan(n, context);
             });
@@ -164,8 +164,8 @@ namespace Qsi.Impala.Tree.Visitors
         {
             return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
             {
-                n.Left.SetValue(VisitExpr(context.expr(0)));
-                n.Right.SetValue(VisitExpr(context.expr(1)));
+                n.Left.Value = VisitExpr(context.expr(0));
+                n.Right.Value = VisitExpr(context.expr(1));
 
                 n.Operator = context.children[1].GetText();
 
@@ -178,8 +178,8 @@ namespace Qsi.Impala.Tree.Visitors
         {
             return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
             {
-                n.Left.SetValue(VisitExpr(context.expr(0)));
-                n.Right.SetValue(VisitExpr(context.expr(1)));
+                n.Left.Value = VisitExpr(context.expr(0));
+                n.Right.Value = VisitExpr(context.expr(1));
 
                 n.Operator = context.children[1].GetText();
 
@@ -192,8 +192,8 @@ namespace Qsi.Impala.Tree.Visitors
         {
             return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
             {
-                n.Left.SetValue(VisitExpr(context.expr(0)));
-                n.Right.SetValue(VisitExpr(context.expr(1)));
+                n.Left.Value = VisitExpr(context.expr(0));
+                n.Right.Value = VisitExpr(context.expr(1));
 
                 n.Operator = CreateOperator(context.children[1], context.EQUAL());
 
@@ -206,8 +206,8 @@ namespace Qsi.Impala.Tree.Visitors
         {
             return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
             {
-                n.Left.SetValue(VisitExpr(context.expr(0)));
-                n.Right.SetValue(VisitExpr(context.expr(1)));
+                n.Left.Value = VisitExpr(context.expr(0));
+                n.Right.Value = VisitExpr(context.expr(1));
 
                 n.Operator = CreateOperator(context.LESSTHAN(), context.EQUAL(), context.GREATERTHAN());
 
@@ -220,8 +220,8 @@ namespace Qsi.Impala.Tree.Visitors
         {
             return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
             {
-                n.Left.SetValue(VisitExpr(context.expr(0)));
-                n.Right.SetValue(VisitExpr(context.expr(1)));
+                n.Left.Value = VisitExpr(context.expr(0));
+                n.Right.Value = VisitExpr(context.expr(1));
 
                 n.Operator = CreateOperator(context.KW_IS(), context.KW_NOT(), context.KW_DISTINCT(), context.KW_FROM());
 
@@ -234,8 +234,8 @@ namespace Qsi.Impala.Tree.Visitors
         {
             return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
             {
-                n.Left.SetValue(VisitExpr(context.expr(0)));
-                n.Right.SetValue(VisitExpr(context.expr(1)));
+                n.Left.Value = VisitExpr(context.expr(0));
+                n.Right.Value = VisitExpr(context.expr(1));
 
                 n.Operator = CreateOperator(context.GREATERTHAN(), context.EQUAL());
 
@@ -253,16 +253,19 @@ namespace Qsi.Impala.Tree.Visitors
                 case ITerminalNode { Symbol: { Type: KW_UNKNOWN } }:
                     literalNode = TreeHelper.CreateConstantLiteral("UNKNOWN");
                     ImpalaTree.PutContextSpan(literalNode, context.KW_UNKNOWN().Symbol);
+
                     break;
 
                 case ITerminalNode { Symbol: { Type: KW_TRUE } }:
                     literalNode = TreeHelper.CreateLiteral(true);
                     ImpalaTree.PutContextSpan(literalNode, context.KW_TRUE().Symbol);
+
                     break;
 
                 case ITerminalNode { Symbol: { Type: KW_FALSE } }:
                     literalNode = TreeHelper.CreateLiteral(false);
                     ImpalaTree.PutContextSpan(literalNode, context.KW_FALSE().Symbol);
+
                     break;
 
                 default:
@@ -271,8 +274,8 @@ namespace Qsi.Impala.Tree.Visitors
 
             return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
             {
-                n.Left.SetValue(VisitExpr(context.expr()));
-                n.Right.SetValue(literalNode);
+                n.Left.Value = VisitExpr(context.expr());
+                n.Right.Value = literalNode;
 
                 n.Operator = CreateOperator(context.KW_IS(), context.KW_NOT());
 
@@ -285,15 +288,15 @@ namespace Qsi.Impala.Tree.Visitors
         {
             return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
             {
-                n.Left.SetValue(VisitExpr(context.expr(0)));
+                n.Left.Value = VisitExpr(context.expr(0));
 
-                n.Right.SetValue(TreeHelper.Create<QsiMultipleExpressionNode>(mn =>
+                n.Right.Value = TreeHelper.Create<QsiMultipleExpressionNode>(mn =>
                 {
                     mn.Elements.Add(VisitExpr(context.expr(1)));
                     mn.Elements.Add(VisitExpr(context.expr(2)));
 
                     ImpalaTree.PutContextSpan(mn, context.expr(1).Start, context.expr(2).Stop);
-                }));
+                });
 
                 n.Operator = CreateOperator(context.KW_NOT(), context.KW_BETWEEN());
 
@@ -319,7 +322,7 @@ namespace Qsi.Impala.Tree.Visitors
             return TreeHelper.Create<QsiUnaryExpressionNode>(n =>
             {
                 n.Operator = context.children[0].GetText();
-                n.Expression.SetValue(VisitExpr(context.expr()));
+                n.Expression.Value = VisitExpr(context.expr());
 
                 ImpalaTree.PutContextSpan(n, context);
             });
@@ -368,21 +371,25 @@ namespace Qsi.Impala.Tree.Visitors
 
                 case ITerminalNode { Symbol: { Type: KW_NULL } }:
                     node.Type = QsiDataType.Null;
+
                     break;
 
                 case ITerminalNode { Symbol: { Type: KW_TRUE } }:
                     node.Type = QsiDataType.Boolean;
                     node.Value = true;
+
                     break;
 
                 case ITerminalNode { Symbol: { Type: KW_FALSE } }:
                     node.Type = QsiDataType.Boolean;
                     node.Value = false;
+
                     break;
 
                 case ITerminalNode { Symbol: { Type: STRING_LITERAL } } terminalNode:
                     node.Type = QsiDataType.String;
                     node.Value = terminalNode.GetText()[1..^1];
+
                     break;
 
                 case ITerminalNode { Symbol: { Type: KW_DATE } }:
@@ -395,6 +402,7 @@ namespace Qsi.Impala.Tree.Visitors
 
                     node.Type = QsiDataType.Date;
                     node.Value = value;
+
                     break;
                 }
             }
@@ -407,7 +415,7 @@ namespace Qsi.Impala.Tree.Visitors
         {
             return TreeHelper.Create<ImpalaInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(TreeHelper.CreateFunction(context.children[0].GetText()));
+                n.Member.Value = TreeHelper.CreateFunction(context.children[0].GetText());
 
                 if (context.expr_list() != null)
                 {
@@ -427,7 +435,7 @@ namespace Qsi.Impala.Tree.Visitors
                         else if (functionParams.HasToken(STAR))
                         {
                             var columnExpression = new QsiColumnExpressionNode();
-                            columnExpression.Column.SetValue(new QsiAllColumnNode());
+                            columnExpression.Column.Value = new QsiAllColumnNode();
 
                             ImpalaTree.PutContextSpan(columnExpression, functionParams.STAR().Symbol);
 
@@ -456,7 +464,7 @@ namespace Qsi.Impala.Tree.Visitors
         {
             return TreeHelper.Create<ImpalaInvokeExpressionNode>(n =>
             {
-                n.Member.SetValue(TreeHelper.CreateFunction(ImpalaKnownFunction.Cast));
+                n.Member.Value = TreeHelper.CreateFunction(ImpalaKnownFunction.Cast);
 
                 n.Parameters.Add(VisitExpr(context.expr()));
                 n.Parameters.Add(VisitTypeDef(context.type_def()));
@@ -532,6 +540,7 @@ namespace Qsi.Impala.Tree.Visitors
         {
             var node = ImpalaTree.CreateWithSpan<QsiTableExpressionNode>(context);
             node.Table.Value = TableVisitor.VisitSubquery(context);
+
             return node;
         }
         #endregion
@@ -545,6 +554,7 @@ namespace Qsi.Impala.Tree.Visitors
         {
             var node = ImpalaTree.CreateWithSpan<QsiMultipleOrderExpressionNode>(context);
             node.Orders.AddRange(VisitOrderByElements(context.order_by_elements()));
+
             return node;
         }
 
@@ -603,6 +613,7 @@ namespace Qsi.Impala.Tree.Visitors
         {
             var node = ImpalaTree.CreateWithSpan<QsiRowValueExpressionNode>(context);
             node.ColumnValues.AddRange(VisitSelectList(context.select_list()));
+
             return node;
         }
 
@@ -617,6 +628,7 @@ namespace Qsi.Impala.Tree.Visitors
             {
                 var node = ImpalaTree.CreateWithSpan<QsiColumnExpressionNode>(context);
                 node.Column.Value = TableVisitor.VisitStarExpr(starExpr);
+
                 return node;
             }
 
@@ -670,11 +682,13 @@ namespace Qsi.Impala.Tree.Visitors
                         ImpalaGroupingSetsType.Cube;
 
                     node.Items.AddRange(VisitExprList(groupBy.expr_list()));
+
                     break;
 
                 case GroupBy2Context groupBy:
                     node.GroupingSetsType = ImpalaGroupingSetsType.Sets;
                     node.Items.AddRange(VisitGroupingSets(groupBy.grouping_sets()));
+
                     break;
 
                 case GroupBy3Context groupBy:
@@ -685,6 +699,7 @@ namespace Qsi.Impala.Tree.Visitors
                         node.GroupingSetsType = ImpalaGroupingSetsType.Cube;
 
                     node.Items.AddRange(VisitExprList(groupBy.expr_list()));
+
                     break;
 
                 default:
