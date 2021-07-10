@@ -46,6 +46,12 @@ namespace Qsi.Impala
                 case Query_stmtContext queryStmt:
                     return TableVisitor.VisitQueryStmt(queryStmt);
 
+                case Create_view_stmtContext createViewStmt:
+                    return ActionVisitor.VisitCreateViewStmt(createViewStmt);
+
+                case Create_tbl_as_select_stmtContext createTblAsSelectStmt:
+                    return ActionVisitor.VisitCreateTblAsSelectStmt(createTblAsSelectStmt);
+
                 case Use_stmtContext useStmt:
                     return ActionVisitor.VisitUseStmt(useStmt);
 

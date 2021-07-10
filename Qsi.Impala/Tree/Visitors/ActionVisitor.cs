@@ -10,6 +10,19 @@ namespace Qsi.Impala.Tree.Visitors
     {
         public static IQsiTreeNode VisitUseStmt(Use_stmtContext context)
         {
+            var node = ImpalaTree.CreateWithSpan<QsiChangeSearchPathActionNode>(context);
+            node.Identifiers = new[] { IdentifierVisitor.VisitIdentOrDefault(context.ident_or_default()) };
+
+            return node;
+        }
+
+        public static IQsiTreeNode VisitCreateViewStmt(Create_view_stmtContext createViewStmt)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static IQsiTreeNode VisitCreateTblAsSelectStmt(Create_tbl_as_select_stmtContext createTblAsSelectStmt)
+        {
             throw new NotImplementedException();
         }
 
