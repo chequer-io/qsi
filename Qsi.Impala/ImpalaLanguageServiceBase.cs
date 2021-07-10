@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using Qsi.Analyzers;
+using Qsi.Analyzers.Action;
+using Qsi.Engines;
+using Qsi.Impala.Analyzers;
 using Qsi.Parsing;
 using Qsi.Services;
 
@@ -27,6 +31,12 @@ namespace Qsi.Impala
         public override QsiAnalyzerOptions CreateAnalyzerOptions()
         {
             return new();
+        }
+
+        public override IEnumerable<IQsiAnalyzer> CreateAnalyzers(QsiEngine engine)
+        {
+            yield return new QsiActionAnalyzer(engine);
+            yield return new ImpalaTableAnalyzer(engine);
         }
     }
 }

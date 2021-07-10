@@ -142,14 +142,20 @@ namespace Qsi.Impala.Tree.Visitors
                 Columns =
                 {
                     Value = TreeHelper.CreateAllColumnsDeclaration()
-                },
-                Source =
-                {
-                    Value = context.from is not null ?
-                        TableVisitor.VisitFromClause(context.from) :
-                        TableVisitor.VisitDottedPath(context.target)
                 }
             };
+
+            if (context.from is not null)
+            {
+                if (context.target.children.Count != 1)
+                    throw new QsiException(QsiError.SyntaxError, $"'{context.target.GetInputText()}' is not a valid table alias or reference.");
+
+                targetTable.Source.Value = TableVisitor.VisitFromClause(context.from);
+            }
+            else
+            {
+                targetTable.Source.Value = TableVisitor.VisitDottedPath(context.target);
+            }
 
             if (context.where is not null)
                 targetTable.Where.Value = ExpressionVisitor.VisitWhereClause(context.where);

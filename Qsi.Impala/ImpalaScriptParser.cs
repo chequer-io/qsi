@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using Qsi.Data;
 using Qsi.Impala.Utilities;
 using Qsi.Parsing.Common;
+using Qsi.Shared.Extensions;
 
 namespace Qsi.Impala
 {
@@ -10,6 +13,14 @@ namespace Qsi.Impala
         {
             EnablePoundComment = false;
             TrimDelimiter = false;
+        }
+
+        protected override QsiScriptType GetSuitableType(CommonScriptCursor cursor, IReadOnlyList<Token> tokens, Token[] leadingTokens)
+        {
+            if (leadingTokens.Length >= 1 && cursor.Value[leadingTokens[0].Span].EqualsIgnoreCase("VALUES"))
+                return QsiScriptType.Select;
+
+            return base.GetSuitableType(cursor, tokens, leadingTokens);
         }
 
         protected override bool TryParseToken(CommonScriptCursor cursor, out Token token)
