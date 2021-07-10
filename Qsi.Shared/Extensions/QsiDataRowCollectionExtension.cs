@@ -6,7 +6,7 @@ namespace Qsi.Shared.Extensions
     {
         public static QsiDataRowCollection ToNullIfEmpty(this QsiDataRowCollection collection)
         {
-            if (collection == null || collection.Count == 0)
+            if (collection is null || collection.Count == 0)
                 return null;
 
             return collection;

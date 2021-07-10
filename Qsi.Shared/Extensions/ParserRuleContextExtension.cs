@@ -93,7 +93,7 @@ namespace Qsi.Shared.Extensions
         public static bool TryGetRuleContext<T>(this ParserRuleContext context, out T result) where T : ParserRuleContext
         {
             result = context.GetRuleContext<T>(0);
-            return result != null;
+            return result is not null;
         }
         
         public static bool HasRule<T>(this ParserRuleContext context) where T : ParserRuleContext

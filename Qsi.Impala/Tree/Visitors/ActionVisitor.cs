@@ -110,7 +110,26 @@ namespace Qsi.Impala.Tree.Visitors
 
         public static IQsiTreeNode VisitUpsertStmt(Upsert_stmtContext context)
         {
-            throw new NotImplementedException();
+            var node = ImpalaTree.CreateWithSpan<ImpalaDataInsertActionNode>(context);
+
+            if (context.with is not null)
+                node.Directives.Value = TableVisitor.VisitWithClause(context.with);
+
+            if (context.hint is not null)
+                node.PlanHints = context.hint.GetInputText();
+
+            node.Target.Value = TableVisitor.VisitTableName(context.name);
+
+            if (context.columns is not null)
+            {
+                node.Columns = IdentifierVisitor.VisitIdentList(context.columns)
+                    .Select(i => new QsiQualifiedIdentifier(i))
+                    .ToArray();
+            }
+
+            node.ValueTable.Value = TableVisitor.VisitQueryStmt(context.query);
+
+            return node;
         }
 
         public static IQsiTreeNode VisitUpdateStmt(Update_stmtContext context)

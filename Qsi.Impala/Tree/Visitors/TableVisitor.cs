@@ -165,7 +165,7 @@ namespace Qsi.Impala.Tree.Visitors
 
             // -- from_clause --
 
-            if (context.from == null)
+            if (context.from is null)
                 return node;
 
             node.Source.Value = VisitFromClause(context.from);
@@ -236,7 +236,7 @@ namespace Qsi.Impala.Tree.Visitors
                 node = derivedTableNode;
             }
 
-            if (context.alias != null)
+            if (context.alias is not null)
             {
                 if (node is not ImpalaDerivedTableNode derivedTableNode)
                 {
@@ -254,20 +254,20 @@ namespace Qsi.Impala.Tree.Visitors
             {
                 case ImpalaTableReferenceNode tableRef:
 
-                    if (context.sample != null)
+                    if (context.sample is not null)
                         tableRef.TableSample = VisitTableSample(context.sample);
 
-                    if (context.hint != null)
+                    if (context.hint is not null)
                         tableRef.PlanHints = VisitPlanHints(context.hint);
 
                     break;
 
                 case ImpalaDerivedTableNode derivedTable:
 
-                    if (context.sample != null)
+                    if (context.sample is not null)
                         derivedTable.TableSample = VisitTableSample(context.sample);
 
-                    if (context.hint != null)
+                    if (context.hint is not null)
                         derivedTable.PlanHints = VisitPlanHints(context.hint);
 
                     break;
@@ -415,10 +415,17 @@ namespace Qsi.Impala.Tree.Visitors
 
         public static QsiTableNode VisitSubquery(SubqueryContext context)
         {
-            while (context.nest != null)
+            while (context.nest is not null)
                 context = context.nest;
 
             return VisitQueryStmt(context.query_stmt());
+        }
+
+        public static ImpalaTableReferenceNode VisitTableName(Table_nameContext context)
+        {
+            var node = ImpalaTree.CreateWithSpan<ImpalaTableReferenceNode>(context);
+            node.Identifier = IdentifierVisitor.VisitTableName(context);
+            return node;
         }
     }
 }

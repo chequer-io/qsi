@@ -80,7 +80,7 @@ namespace Qsi.Impala.Tree.Visitors
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                string func = context.KW_NOT() != null ?
+                string func = context.KW_NOT() is not null ?
                     ImpalaKnownFunction.IsNotNull :
                     ImpalaKnownFunction.IsNull;
 
@@ -422,7 +422,7 @@ namespace Qsi.Impala.Tree.Visitors
             {
                 n.Member.Value = TreeHelper.CreateFunction(context.children[0].GetText());
 
-                if (context.expr_list() != null)
+                if (context.expr_list() is not null)
                 {
                     n.Parameters.AddRange(context.expr_list().expr().Select(VisitExpr));
                 }
@@ -430,7 +430,7 @@ namespace Qsi.Impala.Tree.Visitors
                 {
                     var functionParams = context.function_params();
 
-                    if (functionParams != null)
+                    if (functionParams is not null)
                     {
                         if (functionParams.HasToken(KW_DISTINCT))
                         {
@@ -576,14 +576,14 @@ namespace Qsi.Impala.Tree.Visitors
 
             node.Expression.Value = VisitExpr(context.expr());
 
-            if (orderParam != null)
+            if (orderParam is not null)
             {
                 node.Order = orderParam.children[0] is ITerminalNode { Symbol: { Type: KW_DESC } } ?
                     QsiSortOrder.Descending :
                     QsiSortOrder.Ascending;
             }
 
-            if (nullsOrderParam != null)
+            if (nullsOrderParam is not null)
             {
                 node.NullsOrder = nullsOrderParam.children[1] is ITerminalNode { Symbol: { Type: KW_LAST } } ?
                     ImpalaNullsOrder.Last :
@@ -640,7 +640,7 @@ namespace Qsi.Impala.Tree.Visitors
             var aliasClause = context.alias_clause();
             var expr = VisitExpr(context.expr());
 
-            if (aliasClause != null)
+            if (aliasClause is not null)
             {
                 var node = ImpalaTree.CreateWithSpan<QsiColumnExpressionNode>(context);
 
@@ -744,7 +744,7 @@ namespace Qsi.Impala.Tree.Visitors
         private static string CreateOperator(params IParseTree[] nodes)
         {
             IEnumerable<string> nodeTexts = nodes
-                .Where(node => node != null)
+                .Where(node => node is not null)
                 .Select(node => node.GetText());
 
             return string.Join(" ", nodeTexts);

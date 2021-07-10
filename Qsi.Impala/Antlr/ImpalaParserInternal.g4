@@ -112,10 +112,10 @@ update_set_expr_list
     ;
 
 upsert_stmt
-    : opt_with_clause? KW_UPSERT plan_hints? KW_INTO KW_TABLE? table_name query_stmt
-    | opt_with_clause? KW_UPSERT plan_hints? KW_INTO KW_TABLE? table_name LPAREN ident_list? RPAREN query_stmt?
-    | opt_with_clause? KW_UPSERT KW_INTO KW_TABLE? table_name plan_hints? query_stmt
-    | opt_with_clause? KW_UPSERT KW_INTO KW_TABLE? table_name LPAREN ident_list? RPAREN plan_hints? query_stmt?
+    : with=opt_with_clause? 
+      KW_UPSERT hint=plan_hints? KW_INTO KW_TABLE? name=table_name
+      (LPAREN columns=ident_list? RPAREN)?
+      ({ _localctx.hint is not null }? hint=plan_hints)? query=query_stmt
     ;
 
 delete_stmt

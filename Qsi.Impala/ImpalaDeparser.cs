@@ -299,7 +299,7 @@ namespace Qsi.Impala
 
             DeparseTreeNode(writer, node.Right.Value, script);
 
-            if (node.PivotColumns != null)
+            if (node.PivotColumns is not null)
             {
                 writer.Write(" USING ");
                 DeparseTreeNodeWithParenthesis(writer, node.PivotColumns.Value, script);
