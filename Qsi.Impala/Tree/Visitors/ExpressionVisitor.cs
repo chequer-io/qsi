@@ -402,7 +402,7 @@ namespace Qsi.Impala.Tree.Visitors
                     var valueSymbol = ((ITerminalNode)context.children[1]).Symbol;
                     var valueText = valueSymbol.Text[1..^1].Trim();
 
-                    if (!DateTime.TryParseExact(valueText, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var value))
+                    if (!DateTime.TryParseExact(valueText, "yyyy-M-d", CultureInfo.InvariantCulture, DateTimeStyles.None, out var value))
                         throw new QsiException(QsiError.SyntaxError, $"Invalid date literal: {valueSymbol.Text}");
 
                     node.Type = QsiDataType.Date;
