@@ -136,12 +136,19 @@ namespace Qsi.Impala.Tree.Visitors
         public static IQsiTreeNode VisitUpdateStmt(Update_stmtContext context)
         {
             var node = ImpalaTree.CreateWithSpan<QsiDataUpdateActionNode>(context);
+            var wildcard = new QsiAllColumnNode();
 
             var targetTable = new QsiDerivedTableNode
             {
                 Columns =
                 {
-                    Value = TreeHelper.CreateAllColumnsDeclaration()
+                    Value = new QsiColumnsDeclarationNode
+                    {
+                        Columns =
+                        {
+                            wildcard
+                        }
+                    }
                 }
             };
 
@@ -150,6 +157,7 @@ namespace Qsi.Impala.Tree.Visitors
                 if (context.target.children.Count != 1)
                     throw new QsiException(QsiError.SyntaxError, $"'{context.target.GetInputText()}' is not a valid table alias or reference.");
 
+                wildcard.Path = IdentifierVisitor.VisitDottedPath(context.target);
                 targetTable.Source.Value = TableVisitor.VisitFromClause(context.from);
             }
             else
@@ -199,7 +207,42 @@ namespace Qsi.Impala.Tree.Visitors
 
         public static IQsiTreeNode VisitDeleteStmt(Delete_stmtContext context)
         {
-            throw new NotImplementedException();
+            var node = ImpalaTree.CreateWithSpan<QsiDataDeleteActionNode>(context);
+            var wildcard = new QsiAllColumnNode();
+
+            var targetTable = new QsiDerivedTableNode
+            {
+                Columns =
+                {
+                    Value = new QsiColumnsDeclarationNode
+                    {
+                        Columns =
+                        {
+                            wildcard
+                        }
+                    }
+                }
+            };
+
+            if (context.from is not null)
+            {
+                if (context.target.children.Count != 1)
+                    throw new QsiException(QsiError.SyntaxError, $"'{context.target.GetInputText()}' is not a valid table alias or reference.");
+
+                wildcard.Path = IdentifierVisitor.VisitDottedPath(context.target);
+                targetTable.Source.Value = TableVisitor.VisitFromClause(context.from);
+            }
+            else
+            {
+                targetTable.Source.Value = TableVisitor.VisitDottedPath(context.target);
+            }
+
+            if (context.where is not null)
+                targetTable.Where.Value = ExpressionVisitor.VisitWhereClause(context.where);
+
+            node.Target.Value = targetTable;
+
+            return node;
         }
     }
 }

@@ -125,8 +125,7 @@ upsert_stmt
     ;
 
 delete_stmt
-    : KW_DELETE KW_FROM? dotted_path where_clause?
-    | KW_DELETE dotted_path from_clause where_clause?
+    : KW_DELETE KW_FROM? target=dotted_path from=from_clause? where=where_clause?
     ;
 
 show_roles_stmt

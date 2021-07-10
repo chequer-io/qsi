@@ -13,7 +13,7 @@ namespace Qsi.Impala
         {
             var range = ImpalaTree.Span[node];
 
-            if (node is IQsiTableNode || Equals(range, default(Range)))
+            if (Equals(range, default(Range)))
             {
                 base.DeparseTreeNode(writer, node, script);
                 return;
