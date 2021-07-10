@@ -21,6 +21,7 @@ namespace Qsi.Impala.Tree
         {
             var node = new T();
             PutContextSpan(node, ruleContext);
+
             return node;
         }
 
@@ -29,6 +30,25 @@ namespace Qsi.Impala.Tree
         {
             var node = new T();
             PutContextSpan(node, ruleContext);
+
+            return node;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static T CreateWithSpan<T>(IToken token) where T : IQsiTreeNode, new()
+        {
+            var node = new T();
+            PutContextSpan(node, token);
+
+            return node;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static T CreateWithSpan<T>(IToken start, IToken stop) where T : IQsiTreeNode, new()
+        {
+            var node = new T();
+            PutContextSpan(node, start, stop);
+
             return node;
         }
 

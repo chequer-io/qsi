@@ -1029,11 +1029,15 @@ expr returns [bool p]
     | <assoc=right> expr (KW_OR | KW_AND) expr                                                  {$p=true;} #compound_predicate2
 
     // predicate > comparison_predicate
-    | <assoc=right> expr (NOTEQUAL | LESSTHAN | EQUAL) expr                                     {$p=true;} #comparison_predicate1
-    | <assoc=right> expr (NOT | LESSTHAN) EQUAL expr                                            {$p=true;} #comparison_predicate2
-    | <assoc=right> expr LESSTHAN EQUAL? GREATERTHAN expr                                       {$p=true;} #comparison_predicate3
-    | <assoc=right> expr KW_IS KW_NOT? KW_DISTINCT KW_FROM expr                                 {$p=true;} #comparison_predicate4
-    | <assoc=right> expr GREATERTHAN EQUAL? expr                                                {$p=true;} #comparison_predicate5
+    | <assoc=right> l=expr NOT? EQUAL r=expr                                                    {$p=true;} #comparison_predicate1
+    | <assoc=right> l=expr NOTEQUAL r=expr                                                      {$p=true;} #comparison_predicate2
+    | <assoc=right> l=expr LESSTHAN GREATERTHAN r=expr                                          {$p=true;} #comparison_predicate3
+    | <assoc=right> l=expr LESSTHAN EQUAL r=expr                                                {$p=true;} #comparison_predicate4
+    | <assoc=right> l=expr GREATERTHAN EQUAL r=expr                                             {$p=true;} #comparison_predicate5
+    | <assoc=right> l=expr LESSTHAN r=expr                                                      {$p=true;} #comparison_predicate6
+    | <assoc=right> l=expr GREATERTHAN r=expr                                                   {$p=true;} #comparison_predicate7
+    | <assoc=right> l=expr LESSTHAN EQUAL GREATERTHAN r=expr                                    {$p=true;} #comparison_predicate8
+    | <assoc=right> l=expr KW_IS KW_NOT? KW_DISTINCT KW_FROM r=expr                             {$p=true;} #comparison_predicate9
 
     // predicate > bool_test_expr
     | <assoc=right> expr KW_IS KW_NOT? (KW_UNKNOWN | KW_TRUE | KW_FALSE)                        {$p=true;} #bool_test_expr

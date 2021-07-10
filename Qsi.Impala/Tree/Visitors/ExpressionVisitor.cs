@@ -38,6 +38,10 @@ namespace Qsi.Impala.Tree.Visitors
                 Comparison_predicate3Context context => VisitComparisonPredicate3(context),
                 Comparison_predicate4Context context => VisitComparisonPredicate4(context),
                 Comparison_predicate5Context context => VisitComparisonPredicate5(context),
+                Comparison_predicate6Context context => VisitComparisonPredicate6(context),
+                Comparison_predicate7Context context => VisitComparisonPredicate7(context),
+                Comparison_predicate8Context context => VisitComparisonPredicate8(context),
+                Comparison_predicate9Context context => VisitComparisonPredicate9(context),
                 Bool_test_exprContext context => VisitBoolTestExpr(context),
                 Between_predicateContext context => VisitBetweenPredicate(context),
                 Slot_ref_Context context => VisitSlotRef(context.slot_ref()),
@@ -174,73 +178,74 @@ namespace Qsi.Impala.Tree.Visitors
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static QsiExpressionNode CreateComparisonPredicate(ExprContext left, string op, ExprContext right)
+        {
+            var node = ImpalaTree.CreateWithSpan<QsiBinaryExpressionNode>(left.Start, right.Stop);
+
+            node.Left.Value = VisitExpr(left);
+            node.Operator = op;
+            node.Right.Value = VisitExpr(right);
+
+            return node;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static QsiExpressionNode VisitComparisonPredicate1(Comparison_predicate1Context context)
         {
-            return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
-            {
-                n.Left.Value = VisitExpr(context.expr(0));
-                n.Right.Value = VisitExpr(context.expr(1));
-
-                n.Operator = context.children[1].GetText();
-
-                ImpalaTree.PutContextSpan(n, context);
-            });
+            var op = context.HasToken(NOT) ? "!=" : "=";
+            return CreateComparisonPredicate(context.l, op, context.r);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static QsiExpressionNode VisitComparisonPredicate2(Comparison_predicate2Context context)
         {
-            return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
-            {
-                n.Left.Value = VisitExpr(context.expr(0));
-                n.Right.Value = VisitExpr(context.expr(1));
-
-                n.Operator = CreateOperator(context.children[1], context.EQUAL());
-
-                ImpalaTree.PutContextSpan(n, context);
-            });
+            return CreateComparisonPredicate(context.l, "!=", context.r);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static QsiExpressionNode VisitComparisonPredicate3(Comparison_predicate3Context context)
         {
-            return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
-            {
-                n.Left.Value = VisitExpr(context.expr(0));
-                n.Right.Value = VisitExpr(context.expr(1));
-
-                n.Operator = CreateOperator(context.LESSTHAN(), context.EQUAL(), context.GREATERTHAN());
-
-                ImpalaTree.PutContextSpan(n, context);
-            });
+            return CreateComparisonPredicate(context.l, "<>", context.r);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static QsiExpressionNode VisitComparisonPredicate4(Comparison_predicate4Context context)
         {
-            return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
-            {
-                n.Left.Value = VisitExpr(context.expr(0));
-                n.Right.Value = VisitExpr(context.expr(1));
-
-                n.Operator = CreateOperator(context.KW_IS(), context.KW_NOT(), context.KW_DISTINCT(), context.KW_FROM());
-
-                ImpalaTree.PutContextSpan(n, context);
-            });
+            return CreateComparisonPredicate(context.l, "<=", context.r);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static QsiExpressionNode VisitComparisonPredicate5(Comparison_predicate5Context context)
         {
-            return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
-            {
-                n.Left.Value = VisitExpr(context.expr(0));
-                n.Right.Value = VisitExpr(context.expr(1));
+            return CreateComparisonPredicate(context.l, ">=", context.r);
+        }
 
-                n.Operator = CreateOperator(context.GREATERTHAN(), context.EQUAL());
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static QsiExpressionNode VisitComparisonPredicate6(Comparison_predicate6Context context)
+        {
+            return CreateComparisonPredicate(context.l, "<", context.r);
+        }
 
-                ImpalaTree.PutContextSpan(n, context);
-            });
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static QsiExpressionNode VisitComparisonPredicate7(Comparison_predicate7Context context)
+        {
+            return CreateComparisonPredicate(context.l, ">", context.r);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static QsiExpressionNode VisitComparisonPredicate8(Comparison_predicate8Context context)
+        {
+            return CreateComparisonPredicate(context.l, "<=>", context.r);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static QsiExpressionNode VisitComparisonPredicate9(Comparison_predicate9Context context)
+        {
+            var op = context.HasToken(NOT) ? 
+                "IS NOT DISTINCT FROM" : 
+                "IS DISTINCT FROM";
+
+            return CreateComparisonPredicate(context.l, op, context.r);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
