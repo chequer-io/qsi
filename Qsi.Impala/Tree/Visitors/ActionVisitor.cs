@@ -161,6 +161,9 @@ namespace Qsi.Impala.Tree.Visitors
                     .ToArray();
             }
 
+            if (context.partition is not null)
+                node.Partition.Value = ExpressionVisitor.VisitPartitionClause(context.partition);
+
             node.ValueTable.Value = TableVisitor.VisitQueryStmt(context.query);
 
             return node;

@@ -654,11 +654,11 @@ if_exists_val
     ;
 
 partition_clause
-    : KW_PARTITION LPAREN partition_key_value_list RPAREN
+    : KW_PARTITION LPAREN list=partition_key_value_list RPAREN
     ;
 
 partition_key_value_list
-    : partition_key_value (COMMA partition_key_value)*
+    : items+=partition_key_value (COMMA items+=partition_key_value)*
     ;
 
 partition_set
@@ -679,7 +679,7 @@ partition_key_value
     ;
 
 static_partition_key_value
-    : ident_or_default EQUAL expr
+    : key=ident_or_default EQUAL value=expr
     ;
 
 function_def_args
@@ -750,7 +750,7 @@ values_stmt
     ;
 
 values_operand_list
-    : values_operand+
+    : values_operand (COMMA values_operand)*
     ;
 
 values_operand

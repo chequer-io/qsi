@@ -241,8 +241,8 @@ namespace Qsi.Impala.Tree.Visitors
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static QsiExpressionNode VisitComparisonPredicate9(Comparison_predicate9Context context)
         {
-            var op = context.HasToken(NOT) ? 
-                "IS NOT DISTINCT FROM" : 
+            var op = context.HasToken(NOT) ?
+                "IS NOT DISTINCT FROM" :
                 "IS DISTINCT FROM";
 
             return CreateComparisonPredicate(context.l, op, context.r);
@@ -748,6 +748,48 @@ namespace Qsi.Impala.Tree.Visitors
                 .Select(node => node.GetText());
 
             return string.Join(" ", nodeTexts);
+        }
+
+        public static ImpalaPartitionExpressionNode VisitPartitionClause(Partition_clauseContext context)
+        {
+            var node = ImpalaTree.CreateWithSpan<ImpalaPartitionExpressionNode>(context);
+            node.Elements.AddRange(VisitPartitionKeyValueList(context.list));
+            return node;
+        }
+
+        public static IEnumerable<QsiExpressionNode> VisitPartitionKeyValueList(Partition_key_value_listContext context)
+        {
+            return context._items.Select(VisitPartitionKeyValue);
+        }
+
+        public static QsiExpressionNode VisitPartitionKeyValue(Partition_key_valueContext context)
+        {
+            if (context.children[0] is Static_partition_key_valueContext staticPartitionKeyValue)
+                return VisitStaticPartitionKeyValue(staticPartitionKeyValue);
+
+            return CreateColumnExpression((Ident_or_defaultContext)context.children[0]);
+        }
+
+        private static QsiBinaryExpressionNode VisitStaticPartitionKeyValue(Static_partition_key_valueContext context)
+        {
+            var node = ImpalaTree.CreateWithSpan<QsiBinaryExpressionNode>(context);
+
+            node.Left.Value = CreateColumnExpression(context.key);
+            node.Operator = "=";
+            node.Right.Value = VisitExpr(context.value);
+
+            return node;
+        }
+
+        private static QsiColumnExpressionNode CreateColumnExpression(Ident_or_defaultContext context)
+        {
+            var node = ImpalaTree.CreateWithSpan<QsiColumnExpressionNode>(context);
+            var columnNode = ImpalaTree.CreateWithSpan<QsiColumnReferenceNode>(context);
+
+            columnNode.Name = new QsiQualifiedIdentifier(IdentifierVisitor.VisitIdentOrDefault(context));
+            node.Column.Value = columnNode;
+
+            return node;
         }
     }
 }
