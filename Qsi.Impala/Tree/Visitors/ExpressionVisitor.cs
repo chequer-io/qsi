@@ -791,5 +791,18 @@ namespace Qsi.Impala.Tree.Visitors
 
             return node;
         }
+
+        public static IEnumerable<QsiSetColumnExpressionNode> VisitUpdateSetExprList(Update_set_expr_listContext context)
+        {
+            return context._items.Select(VisitUpdateSetExpr);
+        }
+
+        private static QsiSetColumnExpressionNode VisitUpdateSetExpr(Update_set_exprContext context)
+        {
+            var node = ImpalaTree.CreateWithSpan<QsiSetColumnExpressionNode>(context);
+            node.Target = IdentifierVisitor.VisitDottedPath(context.slot.dotted_path());
+            node.Value.Value = VisitExpr(context.e);
+            return node;
+        }
     }
 }

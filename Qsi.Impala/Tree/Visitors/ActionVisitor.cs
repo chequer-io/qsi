@@ -135,7 +135,29 @@ namespace Qsi.Impala.Tree.Visitors
 
         public static IQsiTreeNode VisitUpdateStmt(Update_stmtContext context)
         {
-            throw new NotImplementedException();
+            var node = ImpalaTree.CreateWithSpan<QsiDataUpdateActionNode>(context);
+
+            var targetTable = new QsiDerivedTableNode
+            {
+                Columns =
+                {
+                    Value = TreeHelper.CreateAllColumnsDeclaration()
+                },
+                Source =
+                {
+                    Value = context.from is not null ?
+                        TableVisitor.VisitFromClause(context.from) :
+                        TableVisitor.VisitDottedPath(context.target)
+                }
+            };
+
+            if (context.where is not null)
+                targetTable.Where.Value = ExpressionVisitor.VisitWhereClause(context.where);
+
+            node.Target.Value = targetTable;
+            node.SetValues.AddRange(ExpressionVisitor.VisitUpdateSetExprList(context.values));
+
+            return node;
         }
 
         public static IQsiTreeNode VisitInsertStmt(Insert_stmtContext context)

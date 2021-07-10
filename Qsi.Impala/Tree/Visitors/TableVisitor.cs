@@ -276,7 +276,7 @@ namespace Qsi.Impala.Tree.Visitors
             return node;
         }
 
-        private static ImpalaTableReferenceNode VisitDottedPath(Dotted_pathContext context)
+        public static ImpalaTableReferenceNode VisitDottedPath(Dotted_pathContext context)
         {
             var node = ImpalaTree.CreateWithSpan<ImpalaTableReferenceNode>(context);
             node.Identifier = IdentifierVisitor.VisitDottedPath(context);

@@ -105,11 +105,16 @@ insert_stmt
     ;
 
 update_stmt
-    : KW_UPDATE dotted_path KW_SET update_set_expr_list from_clause? where_clause?
+    : KW_UPDATE target=dotted_path KW_SET values=update_set_expr_list
+      from=from_clause? where=where_clause?
     ;
 
 update_set_expr_list
-    : slot_ref EQUAL expr (COMMA slot_ref EQUAL expr)*
+    : items+=update_set_expr (COMMA items+=update_set_expr)*
+    ;
+
+update_set_expr
+    : slot=slot_ref EQUAL e=expr
     ;
 
 upsert_stmt
