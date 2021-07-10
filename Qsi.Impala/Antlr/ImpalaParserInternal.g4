@@ -97,10 +97,11 @@ copy_testcase_stmt
     ;
 
 insert_stmt
-    : opt_with_clause? KW_INSERT plan_hints? (KW_OVERWRITE | KW_INTO) KW_TABLE? table_name partition_clause? query_stmt
-    | opt_with_clause? KW_INSERT plan_hints? (KW_OVERWRITE | KW_INTO) KW_TABLE? table_name LPAREN ident_list? RPAREN partition_clause? query_stmt?
-    | opt_with_clause? KW_INSERT (KW_OVERWRITE | KW_INTO) KW_TABLE? table_name partition_clause? plan_hints? query_stmt
-    | opt_with_clause? KW_INSERT (KW_OVERWRITE | KW_INTO) KW_TABLE? table_name LPAREN ident_list? RPAREN partition_clause? plan_hints? query_stmt?
+    : with=opt_with_clause?
+      KW_INSERT hint=plan_hints? (KW_OVERWRITE | KW_INTO) KW_TABLE? name=table_name
+      (LPAREN columns=ident_list? RPAREN)?
+      partition=partition_clause?
+      query=query_stmt
     ;
 
 update_stmt

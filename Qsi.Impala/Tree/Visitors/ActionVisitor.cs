@@ -118,6 +118,7 @@ namespace Qsi.Impala.Tree.Visitors
             if (context.hint is not null)
                 node.PlanHints = context.hint.GetInputText();
 
+            node.ConflictBehavior = QsiDataConflictBehavior.Update;
             node.Target.Value = TableVisitor.VisitTableName(context.name);
 
             if (context.columns is not null)
@@ -139,7 +140,30 @@ namespace Qsi.Impala.Tree.Visitors
 
         public static IQsiTreeNode VisitInsertStmt(Insert_stmtContext context)
         {
-            throw new NotImplementedException();
+            var node = ImpalaTree.CreateWithSpan<ImpalaDataInsertActionNode>(context);
+
+            if (context.with is not null)
+                node.Directives.Value = TableVisitor.VisitWithClause(context.with);
+
+            if (context.hint is not null)
+                node.PlanHints = context.hint.GetInputText();
+
+            node.ConflictBehavior = context.HasToken(KW_OVERWRITE) ?
+                QsiDataConflictBehavior.Update :
+                QsiDataConflictBehavior.None;
+
+            node.Target.Value = TableVisitor.VisitTableName(context.name);
+
+            if (context.columns is not null)
+            {
+                node.Columns = IdentifierVisitor.VisitIdentList(context.columns)
+                    .Select(i => new QsiQualifiedIdentifier(i))
+                    .ToArray();
+            }
+
+            node.ValueTable.Value = TableVisitor.VisitQueryStmt(context.query);
+
+            return node;
         }
 
         public static IQsiTreeNode VisitDeleteStmt(Delete_stmtContext context)
