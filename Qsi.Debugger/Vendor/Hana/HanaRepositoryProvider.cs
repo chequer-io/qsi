@@ -18,6 +18,11 @@ namespace Qsi.Debugger.Vendor.Hana
 
             switch (name)
             {
+                case "DUMMY":
+                    var dummy = CreateTable("SYS", "DUMMY");
+                    AddColumns(dummy, "DUMMY");
+                    return dummy;
+
                 case "ACTOR":
                     var actor = CreateTable("SAKILA", "ACTOR");
                     AddColumns(actor, "ACTOR_ID", "FIRST_NAME", "LAST_NAME", "LAST_UPDATE");
