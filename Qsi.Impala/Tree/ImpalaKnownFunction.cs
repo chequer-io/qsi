@@ -19,6 +19,19 @@
         public const string Analytic = "ANALYTIC";
 
         // INTERVAL <expression> <identifier> + <expression>
+        // ▶ INTERAL(<expression>, <expression>)
         public const string Interval = "INTERVAL";
+
+        // <expression>!
+        // ▶ FACTORIAL(<expression>)
+        public const string Factorial = "FACTORIAL";
+
+        // <expression> BETWEEN <expression> AND <expression>
+        // ▶ BETWEEN(<expression>, <expression>, <expression>)
+        public const string Between = "BETWEEN";
+
+        // <expression> NOT BETWEEN <expression> AND <expression>
+        // ▶ NOT_BETWEEN(<expression>, <expression>, <expression>)
+        public const string NotBetween = "NOT_BETWEEN";
     }
 }

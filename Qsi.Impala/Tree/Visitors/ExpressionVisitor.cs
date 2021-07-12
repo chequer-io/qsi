@@ -67,9 +67,9 @@ namespace Qsi.Impala.Tree.Visitors
         {
             var node = ImpalaTree.CreateWithSpan<QsiBinaryExpressionNode>(context);
 
-            node.Left.Value = VisitExpr(context.expr(0));
+            node.Left.Value = VisitExpr(context.l);
             node.Operator = context.KW_LOGICAL_OR().GetText();
-            node.Right.Value = VisitExpr(context.expr(1));
+            node.Right.Value = VisitExpr(context.r);
 
             return node;
         }
@@ -94,8 +94,8 @@ namespace Qsi.Impala.Tree.Visitors
         {
             var node = ImpalaTree.CreateWithSpan<QsiBinaryExpressionNode>(context);
 
-            node.Left.Value = VisitExpr(context.expr(0));
-            node.Right.Value = VisitExpr(context.expr(1));
+            node.Left.Value = VisitExpr(context.l);
+            node.Right.Value = VisitExpr(context.r);
 
             node.Operator = CreateOperator(context.KW_NOT(), context.children[^2]);
 
@@ -159,8 +159,8 @@ namespace Qsi.Impala.Tree.Visitors
         {
             var node = ImpalaTree.CreateWithSpan<QsiBinaryExpressionNode>(context);
 
-            node.Left.Value = VisitExpr(context.expr(0));
-            node.Right.Value = VisitExpr(context.expr(1));
+            node.Left.Value = VisitExpr(context.l);
+            node.Right.Value = VisitExpr(context.r);
 
             node.Operator = context.children[1].GetText();
 
@@ -245,22 +245,16 @@ namespace Qsi.Impala.Tree.Visitors
 
             switch (context.children[^1])
             {
-                case ITerminalNode { Symbol: { Type: KW_UNKNOWN } }:
-                    literalNode = TreeHelper.CreateConstantLiteral("UNKNOWN");
-                    ImpalaTree.PutContextSpan(literalNode, context.KW_UNKNOWN().Symbol);
-
+                case ITerminalNode { Symbol: { Type: KW_UNKNOWN } } terminalNode:
+                    literalNode = VisitUnknown(terminalNode);
                     break;
 
-                case ITerminalNode { Symbol: { Type: KW_TRUE } }:
-                    literalNode = TreeHelper.CreateLiteral(true);
-                    ImpalaTree.PutContextSpan(literalNode, context.KW_TRUE().Symbol);
-
+                case ITerminalNode { Symbol: { Type: KW_TRUE } } terminalNode:
+                    literalNode = VisitTrue(terminalNode);
                     break;
 
-                case ITerminalNode { Symbol: { Type: KW_FALSE } }:
-                    literalNode = TreeHelper.CreateLiteral(false);
-                    ImpalaTree.PutContextSpan(literalNode, context.KW_FALSE().Symbol);
-
+                case ITerminalNode { Symbol: { Type: KW_FALSE } } terminalNode:
+                    literalNode = VisitFalse(terminalNode);
                     break;
 
                 default:
@@ -280,18 +274,15 @@ namespace Qsi.Impala.Tree.Visitors
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static QsiExpressionNode VisitBetweenPredicate(Between_predicateContext context)
         {
-            var node = ImpalaTree.CreateWithSpan<QsiBinaryExpressionNode>(context);
+            var node = ImpalaTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
 
-            node.Left.Value = VisitExpr(context.expr(0));
+            node.Member.Value = TreeHelper.CreateFunction(
+                context.HasToken(KW_NOT) ?
+                    ImpalaKnownFunction.NotBetween :
+                    ImpalaKnownFunction.Between
+            );
 
-            var multipleNode = ImpalaTree.CreateWithSpan<QsiMultipleExpressionNode>(context.expr(1).Start, context.expr(2).Stop);
-
-            multipleNode.Elements.Add(VisitExpr(context.expr(1)));
-            multipleNode.Elements.Add(VisitExpr(context.expr(2)));
-
-            node.Right.Value = multipleNode;
-
-            node.Operator = CreateOperator(context.KW_NOT(), context.KW_BETWEEN());
+            node.Parameters.AddRange(context.expr().Select(VisitExpr));
 
             return node;
         }
@@ -322,79 +313,141 @@ namespace Qsi.Impala.Tree.Visitors
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static QsiExpressionNode VisitLiteral(LiteralContext context)
         {
-            var node = ImpalaTree.CreateWithSpan<QsiLiteralExpressionNode>(context);
-
             switch (context.children[0])
             {
-                case Numeric_literalContext numericLiteral:
-                {
-                    var literalSymbol = ((ITerminalNode)numericLiteral.children[0]).Symbol;
+                case Numeric_literalContext numericLiteralContext:
+                    return VisitNumericLiteral(numericLiteralContext);
 
-                    if (literalSymbol is { Type: INTEGER_LITERAL })
-                    {
-                        if (ulong.TryParse(literalSymbol.Text, out var value))
-                        {
-                            node.Type = QsiDataType.Numeric;
-                            node.Value = value;
-                        }
-                        else
-                        {
-                            node.Type = QsiDataType.Raw;
-                            node.Value = literalSymbol.Text;
-                        }
-                    }
-                    else
-                    {
-                        if (decimal.TryParse(literalSymbol.Text, out var value))
-                        {
-                            node.Type = QsiDataType.Decimal;
-                            node.Value = value;
-                        }
-                        else
-                        {
-                            node.Type = QsiDataType.Raw;
-                            node.Value = literalSymbol.Text;
-                        }
-                    }
+                case ITerminalNode { Symbol: { Type: KW_NULL } } terminalNode:
+                    return VisitNull(terminalNode);
 
-                    break;
-                }
+                case ITerminalNode { Symbol: { Type: KW_TRUE } } terminalNode:
+                    return VisitTrue(terminalNode);
 
-                case ITerminalNode { Symbol: { Type: KW_NULL } }:
-                    node.Type = QsiDataType.Null;
-
-                    break;
-
-                case ITerminalNode { Symbol: { Type: KW_TRUE } }:
-                    node.Type = QsiDataType.Boolean;
-                    node.Value = true;
-
-                    break;
-
-                case ITerminalNode { Symbol: { Type: KW_FALSE } }:
-                    node.Type = QsiDataType.Boolean;
-                    node.Value = false;
-
-                    break;
+                case ITerminalNode { Symbol: { Type: KW_FALSE } } terminalNode:
+                    return VisitFalse(terminalNode);
 
                 case ITerminalNode { Symbol: { Type: STRING_LITERAL } } terminalNode:
-                    node.Type = QsiDataType.String;
-                    node.Value = terminalNode.GetText()[1..^1];
+                    return VisitStringLiteral(terminalNode);
 
-                    break;
+                case Date_literalContext dateLiteralContext:
+                    return VisitDateLiteral(dateLiteralContext);
+            }
 
-                case ITerminalNode { Symbol: { Type: KW_DATE } }:
+            throw TreeHelper.NotSupportedTree(context.children[0]);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static QsiExpressionNode VisitUnknown(ITerminalNode terminalNode)
+        {
+            TreeHelper.VerifyTokenType(terminalNode.Symbol, KW_UNKNOWN);
+
+            var node = ImpalaTree.CreateWithSpan<QsiLiteralExpressionNode>(terminalNode.Symbol);
+
+            node.Type = QsiDataType.Constant;
+            node.Value = "UNKNOWN";
+
+            return node;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static QsiExpressionNode VisitNull(ITerminalNode terminalNode)
+        {
+            TreeHelper.VerifyTokenType(terminalNode.Symbol, KW_NULL);
+
+            var node = ImpalaTree.CreateWithSpan<QsiLiteralExpressionNode>(terminalNode.Symbol);
+
+            node.Type = QsiDataType.Null;
+
+            return node;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static QsiExpressionNode VisitTrue(ITerminalNode terminalNode)
+        {
+            TreeHelper.VerifyTokenType(terminalNode.Symbol, KW_TRUE);
+
+            var node = ImpalaTree.CreateWithSpan<QsiLiteralExpressionNode>(terminalNode.Symbol);
+
+            node.Type = QsiDataType.Boolean;
+            node.Value = true;
+
+            return node;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static QsiExpressionNode VisitFalse(ITerminalNode terminalNode)
+        {
+            TreeHelper.VerifyTokenType(terminalNode.Symbol, KW_FALSE);
+
+            var node = ImpalaTree.CreateWithSpan<QsiLiteralExpressionNode>(terminalNode.Symbol);
+
+            node.Type = QsiDataType.Boolean;
+            node.Value = false;
+
+            return node;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static QsiExpressionNode VisitStringLiteral(ITerminalNode terminalNode)
+        {
+            TreeHelper.VerifyTokenType(terminalNode.Symbol, STRING_LITERAL);
+
+            var node = ImpalaTree.CreateWithSpan<QsiLiteralExpressionNode>(terminalNode.Symbol);
+
+            node.Type = QsiDataType.String;
+            node.Value = terminalNode.GetText()[1..^1];
+
+            return node;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static QsiExpressionNode VisitDateLiteral(Date_literalContext context)
+        {
+            var node = ImpalaTree.CreateWithSpan<QsiLiteralExpressionNode>(context);
+
+            var valueSymbol = ((ITerminalNode)context.children[1]).Symbol;
+            var valueText = valueSymbol.Text[1..^1].Trim();
+
+            if (!DateTime.TryParseExact(valueText, "yyyy-M-d", CultureInfo.InvariantCulture, DateTimeStyles.None, out var value))
+                throw new QsiException(QsiError.SyntaxError, $"Invalid date literal: {valueSymbol.Text}");
+
+            node.Type = QsiDataType.Date;
+            node.Value = value;
+
+            return node;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static QsiExpressionNode VisitNumericLiteral(Numeric_literalContext context)
+        {
+            var node = ImpalaTree.CreateWithSpan<QsiLiteralExpressionNode>(context);
+            var literalSymbol = ((ITerminalNode)context.children[0]).Symbol;
+
+            if (literalSymbol is { Type: INTEGER_LITERAL })
+            {
+                if (ulong.TryParse(literalSymbol.Text, out var value))
                 {
-                    var valueSymbol = ((ITerminalNode)context.children[1]).Symbol;
-                    var valueText = valueSymbol.Text[1..^1].Trim();
-
-                    if (!DateTime.TryParseExact(valueText, "yyyy-M-d", CultureInfo.InvariantCulture, DateTimeStyles.None, out var value))
-                        throw new QsiException(QsiError.SyntaxError, $"Invalid date literal: {valueSymbol.Text}");
-
-                    node.Type = QsiDataType.Date;
+                    node.Type = QsiDataType.Numeric;
                     node.Value = value;
-
-                    break;
+                }
+                else
+                {
+                    node.Type = QsiDataType.Raw;
+                    node.Value = literalSymbol.Text;
+                }
+            }
+            else
+            {
+                if (decimal.TryParse(literalSymbol.Text, out var value))
+                {
+                    node.Type = QsiDataType.Decimal;
+                    node.Value = value;
+                }
+                else
+                {
+                    node.Type = QsiDataType.Raw;
+                    node.Value = literalSymbol.Text;
                 }
             }
 
@@ -500,15 +553,17 @@ namespace Qsi.Impala.Tree.Visitors
 
         private static IEnumerable<QsiSwitchCaseExpressionNode> VisitCaseWhenClauseList(Case_when_clause_listContext context)
         {
-            for (int i = 0; i < context.KW_THEN().Length; i++)
-            {
-                var node = ImpalaTree.CreateWithSpan<QsiSwitchCaseExpressionNode>(context.KW_WHEN(i).Symbol);
+            return context.case_when_clause().Select(VisitCaseWhenClause);
+        }
 
-                node.Condition.Value = VisitExpr(context.expr(i * 2));
-                node.Consequent.Value = VisitExpr(context.expr(i * 2 + 1));
+        private static QsiSwitchCaseExpressionNode VisitCaseWhenClause(Case_when_clauseContext context)
+        {
+            var node = ImpalaTree.CreateWithSpan<QsiSwitchCaseExpressionNode>(context);
 
-                yield return node;
-            }
+            node.Condition.Value = VisitExpr(context.w);
+            node.Consequent.Value = VisitExpr(context.t);
+
+            return node;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -532,8 +587,8 @@ namespace Qsi.Impala.Tree.Visitors
             var node = ImpalaTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
 
             node.Member.Value = TreeHelper.CreateFunction(ImpalaKnownFunction.Interval);
-            node.Parameters.Add(VisitExpr(context.expr(0)));
-            node.Parameters.Add(VisitExpr(context.expr(1)));
+            node.Parameters.Add(VisitExpr(context.l));
+            node.Parameters.Add(VisitExpr(context.r));
 
             // ident ignored
 
@@ -557,11 +612,10 @@ namespace Qsi.Impala.Tree.Visitors
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static QsiExpressionNode VisitTimestampArithmeticExpr3(Timestamp_arithmetic_expr3Context context)
         {
-            // TODO: check
             var node = ImpalaTree.CreateWithSpan<QsiBinaryExpressionNode>(context);
 
-            node.Left.Value = VisitExpr(context.expr(0));
-            node.Right.Value = VisitExpr(context.expr(1));
+            node.Left.Value = VisitExpr(context.l);
+            node.Right.Value = VisitExpr(context.r);
 
             node.Operator = context.children[1].GetText();
 
@@ -575,8 +629,8 @@ namespace Qsi.Impala.Tree.Visitors
         {
             var node = ImpalaTree.CreateWithSpan<QsiBinaryExpressionNode>(context);
 
-            node.Left.Value = VisitExpr(context.expr(0));
-            node.Right.Value = VisitExpr(context.expr(1));
+            node.Left.Value = VisitExpr(context.l);
+            node.Right.Value = VisitExpr(context.r);
 
             node.Operator = context.children[1].GetText();
 
@@ -586,10 +640,10 @@ namespace Qsi.Impala.Tree.Visitors
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static QsiExpressionNode VisitArithmeticExprFactorial(Arithmetic_expr_factorialContext context)
         {
-            // TODO: Check
-            var node = TreeHelper.CreateUnary(context.NOT().GetText(), VisitExpr(context.expr()));
+            var node = ImpalaTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
 
-            ImpalaTree.PutContextSpan(node, context);
+            node.Member.Value = TreeHelper.CreateFunction(ImpalaKnownFunction.Factorial);
+            node.Parameters.Add(VisitExpr(context.expr()));
 
             return node;
         }
