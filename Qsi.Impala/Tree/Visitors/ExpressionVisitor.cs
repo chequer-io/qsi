@@ -7,6 +7,7 @@ using Antlr4.Runtime.Tree;
 using Qsi.Data;
 using Qsi.Impala.Common;
 using Qsi.Impala.Internal;
+using Qsi.Impala.Utilities;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
 using Qsi.Utilities;
@@ -584,13 +585,11 @@ namespace Qsi.Impala.Tree.Visitors
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static QsiExpressionNode VisitTimestampArithmeticExpr1(Timestamp_arithmetic_expr1Context context)
         {
-            var node = ImpalaTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            var node = ImpalaTree.CreateWithSpan<QsiBinaryExpressionNode>(context);
 
-            node.Member.Value = TreeHelper.CreateFunction(ImpalaKnownFunction.Interval);
-            node.Parameters.Add(VisitExpr(context.l));
-            node.Parameters.Add(VisitExpr(context.r));
-
-            // ident ignored
+            node.Left.Value = VisitInterval(context.l);
+            node.Operator = context.op.Text;
+            node.Right.Value = VisitExpr(context.r);
 
             return node;
         }
@@ -598,13 +597,11 @@ namespace Qsi.Impala.Tree.Visitors
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static QsiExpressionNode VisitTimestampArithmeticExpr2(Timestamp_arithmetic_expr2Context context)
         {
-            var node = ImpalaTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            var node = ImpalaTree.CreateWithSpan<QsiBinaryExpressionNode>(context);
 
-            node.Member.Value = TreeHelper.CreateFunction(context.function_name().GetText());
-            node.Parameters.AddRange(VisitExprList(context.expr_list()));
-            node.Parameters.Add(VisitExpr(context.expr()));
-
-            // ident ignored
+            node.Left.Value = VisitExpr(context.l.expr(0));
+            node.Operator = context.op.GetInputText();
+            node.Right.Value = VisitInterval(context.r);
 
             return node;
         }
@@ -615,11 +612,32 @@ namespace Qsi.Impala.Tree.Visitors
             var node = ImpalaTree.CreateWithSpan<QsiBinaryExpressionNode>(context);
 
             node.Left.Value = VisitExpr(context.l);
-            node.Right.Value = VisitExpr(context.r);
+            node.Operator = context.op.Text;
+            node.Right.Value = VisitInterval(context.r);
 
-            node.Operator = context.children[1].GetText();
+            return node;
+        }
 
-            // ident ignored
+        private static QsiExpressionNode VisitInterval(IntervalContext context)
+        {
+            var timeUnitText = context.u.Text;
+
+            if (timeUnitText.EndsWith("S", StringComparison.OrdinalIgnoreCase))
+                timeUnitText = timeUnitText[..^1];
+
+            if (!Enum.TryParse<ImpalaTimeUnit>(timeUnitText, true, out _))
+            {
+                throw new QsiException(
+                    QsiError.SyntaxError,
+                    $"Invalid time unit '{context.u.Text}' in timestamp/date arithmetic expression '{context.GetInputText()}'."
+                );
+            }
+
+            var node = ImpalaTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+
+            node.Member.Value = TreeHelper.CreateFunction(ImpalaKnownFunction.Interval);
+            node.Parameters.Add(VisitExpr(context.v));
+            node.Parameters.Add(TreeHelper.CreateConstantLiteral(context.u.Text));
 
             return node;
         }

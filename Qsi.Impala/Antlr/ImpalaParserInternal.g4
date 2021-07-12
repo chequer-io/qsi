@@ -1081,9 +1081,13 @@ expr returns [bool p]
     | analytic_expr                                                                                           #analytic_expr_
 
     // non_pred_expr > timestamp_arithmetic_expr
-    | KW_INTERVAL l=expr IDENT ADD r=expr                                                                     #timestamp_arithmetic_expr1
-    | function_name LPAREN expr_list COMMA KW_INTERVAL expr IDENT RPAREN                                      #timestamp_arithmetic_expr2
-    | l=expr (SUBTRACT | ADD) KW_INTERVAL r=expr IDENT                                                        #timestamp_arithmetic_expr3
+    | l=interval op=ADD r=expr                                                                                #timestamp_arithmetic_expr1
+    | op=function_name LPAREN
+        l=expr_list
+        { if (((Timestamp_arithmetic_expr2Context)_localctx).l.ChildCount > 1) ParseError("interval"); }
+        COMMA r=interval
+      RPAREN                                                                                                  #timestamp_arithmetic_expr2
+    | l=expr op=(SUBTRACT | ADD) r=interval                                                                   #timestamp_arithmetic_expr3
 
     // non_pred_expr > arithmetic_expr
     | l=expr (SUBTRACT | STAR | MOD | KW_DIV | DIVIDE | BITXOR | BITOR | BITAND | ADD) r=expr                 #arithmetic_expr
@@ -1093,6 +1097,9 @@ expr returns [bool p]
     | subquery                                                                                                #subquery_
     ;
 
+interval
+    : KW_INTERVAL v=expr u=IDENT
+    ;
 //exists_predicate
 //    : KW_EXISTS subquery
 //    ;
