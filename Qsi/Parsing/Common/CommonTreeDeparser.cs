@@ -20,13 +20,27 @@ namespace Qsi.Parsing.Common
         {
             return
                 node.Source is IQsiTableReferenceNode &&
-                node.Alias != null &&
-                node.Directives == null &&
-                node.Where == null &&
-                node.Grouping == null &&
-                node.Order == null &&
-                node.Limit == null &&
-                node.Columns != null &&
+                node.Alias is not null &&
+                node.Directives is null &&
+                node.Where is null &&
+                node.Grouping is null &&
+                node.Order is null &&
+                node.Limit is null &&
+                node.Columns is not null &&
+                IsWildcard(node.Columns);
+        }
+
+        protected bool IsAliasedDerivedTableNode(IQsiDerivedTableNode node)
+        {
+            return
+                node.Source is IQsiDerivedTableNode &&
+                node.Alias is not null &&
+                node.Directives is null &&
+                node.Where is null &&
+                node.Grouping is null &&
+                node.Order is null &&
+                node.Limit is null &&
+                node.Columns is not null &&
                 IsWildcard(node.Columns);
         }
 
@@ -100,8 +114,9 @@ namespace Qsi.Parsing.Common
             {
                 w.Write(table.Alias.Name);
 
-                if (table.Columns != null && IsWildcard(table.Columns))
+                if (table.Columns is not null && !IsWildcard(table.Columns))
                 {
+                    w.WriteSpace();
                     DeparseTreeNodeWithParenthesis(w, table.Columns, script);
                 }
 
@@ -157,7 +172,7 @@ namespace Qsi.Parsing.Common
             else if (node.IsExpression)
                 DeparseTreeNode(writer, node.Expression, script);
 
-            if (node.Alias == null)
+            if (node.Alias is null)
                 return;
 
             writer.WriteSpace();
@@ -166,7 +181,7 @@ namespace Qsi.Parsing.Common
 
         protected virtual void DeparseAllColumnNode(ScriptWriter writer, IQsiAllColumnNode node, QsiScript script)
         {
-            if (node.Path != null)
+            if (node.Path is not null)
                 writer.Write(node.Path).Write('.');
 
             writer.Write('*');
@@ -212,6 +227,10 @@ namespace Qsi.Parsing.Common
                     DeparseTableReferenceNode(writer, tableReferenceNode, script);
                     break;
 
+                case IQsiTableDirectivesNode tableDirectivesNode:
+                    DeparseTableDirectivesNode(writer, tableDirectivesNode, script);
+                    break;
+
                 default:
                     throw new NotSupportedException();
             }
@@ -219,7 +238,7 @@ namespace Qsi.Parsing.Common
 
         protected virtual void DeparseCompositeTableNode(ScriptWriter writer, IQsiCompositeTableNode node, QsiScript script)
         {
-            bool parenthesis = node.Order != null || node.Limit != null;
+            bool parenthesis = node.Order is not null || node.Limit is not null;
 
             if (parenthesis)
                 writer.Write('(');
@@ -229,13 +248,13 @@ namespace Qsi.Parsing.Common
             if (parenthesis)
                 writer.Write(')');
 
-            if (node.Order != null)
+            if (node.Order is not null)
             {
                 writer.WriteSpace();
                 DeparseTreeNode(writer, node.Order, script);
             }
 
-            if (node.Limit != null)
+            if (node.Limit is not null)
             {
                 writer.WriteSpace();
                 DeparseTreeNode(writer, node.Limit, script);
@@ -261,49 +280,51 @@ namespace Qsi.Parsing.Common
                 return;
             }
 
-            if (node.Alias != null)
-                throw new NotSupportedException();
+            if (IsAliasedDerivedTableNode(node))
+            {
+                DeparseTreeNodeWithParenthesis(writer, node.Source, script);
+                writer.WriteSpace();
+                DeparseTreeNode(writer, node.Alias, script);
+                return;
+            }
+
+            if (node.Directives is not null)
+            {
+                DeparseTreeNode(writer, node.Directives, script);
+                writer.WriteSpace();
+            }
 
             writer.Write("SELECT ");
 
-            if (node.Columns != null)
+            if (node.Columns is not null)
                 DeparseTreeNode(writer, node.Columns, script);
 
-            if (node.Source != null)
+            if (node.Source is not null)
             {
                 writer.WriteSpace();
                 writer.Write("FROM ");
-
-                if (node.Source is IQsiDerivedTableNode leftSource && !IsAliasedTableReferenceNode(leftSource) ||
-                    node.Source is IQsiCompositeTableNode)
-                {
-                    DeparseTreeNodeWithParenthesis(writer, node.Source, script);
-                }
-                else
-                {
-                    DeparseTreeNode(writer, node.Source, script);
-                }
+                DeparseTreeNode(writer, node.Source, script);
             }
 
-            if (node.Where != null)
+            if (node.Where is not null)
             {
                 writer.WriteSpace();
                 DeparseTreeNode(writer, node.Where, script);
             }
 
-            if (node.Grouping != null)
+            if (node.Grouping is not null)
             {
                 writer.WriteSpace();
                 DeparseTreeNode(writer, node.Grouping, script);
             }
 
-            if (node.Order != null)
+            if (node.Order is not null)
             {
                 writer.WriteSpace();
                 DeparseTreeNode(writer, node.Order, script);
             }
 
-            if (node.Limit != null)
+            if (node.Limit is not null)
             {
                 writer.WriteSpace();
                 DeparseTreeNode(writer, node.Limit, script);
@@ -323,7 +344,7 @@ namespace Qsi.Parsing.Common
             writer.Write(joinType);
             DeparseTreeNode(writer, node.Right, script);
 
-            if (node.PivotColumns != null)
+            if (node.PivotColumns is not null)
             {
                 writer.Write(" USING ");
                 DeparseTreeNodeWithParenthesis(writer, node.PivotColumns, script);
@@ -401,12 +422,12 @@ namespace Qsi.Parsing.Common
         {
             writer.Write("LIMIT ");
 
-            if (node.Offset != null)
+            if (node.Offset is not null)
                 DeparseTreeNode(writer, node.Offset, script);
 
-            if (node.Limit != null)
+            if (node.Limit is not null)
             {
-                if (node.Offset != null)
+                if (node.Offset is not null)
                     writer.Write(", ");
 
                 DeparseTreeNode(writer, node.Limit, script);
@@ -418,7 +439,7 @@ namespace Qsi.Parsing.Common
             writer.Write("GROUP BY ");
             writer.WriteJoin(", ", node.Items, (_, item) => DeparseTreeNode(writer, item, script));
 
-            if (node.Having != null)
+            if (node.Having is not null)
             {
                 writer.Write("HAVING ");
                 DeparseTreeNode(writer, node.Having, script);
@@ -435,7 +456,7 @@ namespace Qsi.Parsing.Common
 
         protected virtual void DeparseLiteralExpressionNode(ScriptWriter writer, IQsiLiteralExpressionNode node, QsiScript script)
         {
-            if (node.Value == null)
+            if (node.Value is null)
                 writer.Write("NULL");
             else
                 writer.Write(node.Value);

@@ -13,6 +13,14 @@ namespace Qsi.Parsing.Common
 {
     public partial class CommonScriptParser : IQsiScriptParser
     {
+        public bool EnablePoundComment { get; set; } = true;
+
+        public bool EnableMultiLineComment { get; set; } = true;
+
+        public bool EnableSingleLineComment { get; set; } = true;
+
+        public bool TrimDelimiter { get; set; } = true;
+
         private readonly ITokenRule _whiteSpace = new LookbehindWhiteSpaceRule();
         private readonly ITokenRule _lineBreak = new LookaheadLineBreakRule();
         private readonly ITokenRule _keyword = new LookbehindUnknownKeywordRule();
@@ -78,54 +86,63 @@ namespace Qsi.Parsing.Common
                     offset = 1;
                     rule = _keyword;
                     tokenType = TokenType.Keyword;
+
                     break;
 
                 case '(':
                 case ')':
                     tokenType = TokenType.Fragment;
                     token = new Token(tokenType, cursor.Index..(cursor.Index + 1));
+
                     return true;
 
                 case '\'':
                     offset = 1;
                     rule = _singleQuote;
                     tokenType = TokenType.Identifier;
+
                     break;
 
                 case '"':
                     offset = 1;
                     rule = _doubleQuote;
                     tokenType = TokenType.Identifier;
+
                     break;
 
                 case '`':
                     offset = 1;
                     rule = _backQuote;
                     tokenType = TokenType.Identifier;
+
                     break;
 
                 case '[':
                     offset = 1;
                     rule = _squareBracketRight;
                     tokenType = TokenType.Identifier;
+
                     break;
 
-                case '/' when cursor.Next == '*':
+                case '/' when EnableMultiLineComment && cursor.Next == '*':
                     offset = 2;
                     rule = _multilineCommentClosing;
                     tokenType = TokenType.MultiLineComment;
+
                     break;
 
-                case '#':
+                case '#' when EnablePoundComment:
                     offset = 1;
                     rule = _lineBreak;
                     tokenType = TokenType.SingeLineComment;
+
                     break;
 
-                case '-' when cursor.Next == '-':
+                case '-' when EnableSingleLineComment && cursor.Next == '-':
                     offset = 2;
                     rule = _lineBreak;
                     tokenType = TokenType.SingeLineComment;
+
                     break;
 
                 case '$':
@@ -136,6 +153,7 @@ namespace Qsi.Parsing.Common
                         offset = match.Length;
                         rule = new LookbehindKeywordRule(match.Value);
                         tokenType = TokenType.Fragment;
+
                         break;
                     }
 
@@ -145,10 +163,12 @@ namespace Qsi.Parsing.Common
                     offset = 1;
                     rule = _whiteSpace;
                     tokenType = TokenType.WhiteSpace;
+
                     break;
 
                 default:
                     token = default;
+
                     return false;
             }
 
@@ -158,6 +178,7 @@ namespace Qsi.Parsing.Common
             if (rule.Run(cursor))
             {
                 token = new Token(tokenType, start..(cursor.Index + 1));
+
                 return true;
             }
 
@@ -165,6 +186,7 @@ namespace Qsi.Parsing.Common
             {
                 cursor.Index = cursor.Length - 1;
                 token = new Token(tokenType, start..(cursor.Index + 1));
+
                 return true;
             }
 
@@ -266,6 +288,12 @@ namespace Qsi.Parsing.Common
         {
             if (context.Cursor.StartsWith(context.Delimiter))
             {
+                if (!TrimDelimiter)
+                {
+                    context.FragmentStart = context.Cursor.Index;
+                    context.FragmentEnd = context.Cursor.Index + context.Delimiter.Length - 1;
+                }
+
                 context.Cursor.Index += context.Delimiter.Length - 1;
                 return true;
             }
@@ -353,6 +381,7 @@ namespace Qsi.Parsing.Common
         {
             var cursor = new CommonScriptCursor(input);
             Token[] leadingTokens = GetLeadingTokens(input, ParseTokens(cursor), TokenType.Keyword, 2);
+
             return GetSuitableType(cursor, leadingTokens, leadingTokens);
         }
 

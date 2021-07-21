@@ -13,7 +13,7 @@
             }
         }
 
-        public bool IsEmpty => _value == null;
+        public bool IsEmpty => _value is null;
 
         private readonly QsiTreeNode _owner;
         private TNode _value;
