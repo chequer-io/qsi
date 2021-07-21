@@ -207,48 +207,7 @@ namespace Qsi.PrimarSql.Tree
 
         public static QsiTableNode VisitTableSourceItem(TableSourceItemContext context)
         {
-            switch (context)
-            {
-                case AtomTableItemContext atomTableItemContext:
-                    return VisitAtomTableItem(atomTableItemContext);
-
-                case SubqueryTableItemContext subqueryTableItemContext:
-                    return VisitSubqueryTableItem(subqueryTableItemContext);
-            }
-
-            throw TreeHelper.NotSupportedTree(context);
-        }
-
-        public static QsiTableNode VisitAtomTableItem(AtomTableItemContext context)
-        {
-            QsiTableNode node = VisitTableName(context.tableName());
-
-            if (context.alias == null)
-                return node;
-
-            return TreeHelper.Create<QsiDerivedTableNode>(n =>
-            {
-                n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
-                n.Source.SetValue(node);
-                n.Alias.SetValue(CreateAliasNode(context.alias));
-                
-                PrimarSqlTree.PutContextSpan(n, context);
-            });
-        }
-
-        public static QsiTableNode VisitSubqueryTableItem(SubqueryTableItemContext context)
-        {
-            if (context.alias == null)
-                throw new QsiException(QsiError.NoAlias);
-
-            return TreeHelper.Create<QsiDerivedTableNode>(n =>
-            {
-                n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
-                n.Source.SetValue(VisitSelectStatement(context.selectStatement()));
-                n.Alias.SetValue(CreateAliasNode(context.alias));
-
-                PrimarSqlTree.PutContextSpan(n, context);
-            });
+            return VisitTableName(context.tableName());
         }
 
         public static QsiWhereExpressionNode VisitWhereExpression(FromClauseContext context)
