@@ -29,7 +29,7 @@ Import-Module ".\Build\Antlr.ps1"
 
 if ($_Mode -eq [PublishMode]::Publish) {
     # git rev-parse HEAD
-    $GitTagVersion = [Version]$(git describe --tags --abbrev=0).trimstart('v')
+    $GitTagVersion = [Version]$(git describe --tags $(git rev-list --tags --max-count=1)).trimstart('v')
 
     if ($(git rev-parse --abbrev-ref HEAD) -ne "master") {
         throw "Publish is only allow in 'master' branch."
