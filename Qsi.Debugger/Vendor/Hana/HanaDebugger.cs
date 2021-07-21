@@ -1,4 +1,5 @@
-﻿using Qsi.Diagnostics;
+﻿using System;
+using Qsi.Diagnostics;
 using Qsi.Hana.Diagnostics;
 using Qsi.Services;
 

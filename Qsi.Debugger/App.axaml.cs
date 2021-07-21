@@ -14,7 +14,7 @@ namespace Qsi.Debugger
 
         public override void OnFrameworkInitializationCompleted()
         {
-            AvaloniaLocator.CurrentMutable.Bind<FontManager>().ToConstant(new FontManager(new NanumFontManager()));
+            AvaloniaLocator.CurrentMutable.Bind<FontManager>().ToConstant(new FontManager(new D2CodingFontManager()));
 
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
