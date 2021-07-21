@@ -225,7 +225,7 @@ namespace Qsi.Analyzers.Table
             }
             else
             {
-                // Compund columns definition
+                // Compound columns definition
 
                 foreach (var column in columns)
                 {
@@ -238,7 +238,7 @@ namespace Qsi.Analyzers.Table
                         {
                             var declaredColumn = declaredTable.NewColumn();
 
-                            declaredColumn.Name = derivedColum.Alias?.Name ?? derivedColum.InferredName;
+                            declaredColumn.Name = ResolveDerivedColumnName(context, table, derivedColum);
                             declaredColumn.IsExpression = derivedColum.IsExpression;
                             declaredColumn.References.AddRange(resolvedColumns);
                             break;
@@ -250,7 +250,7 @@ namespace Qsi.Analyzers.Table
                             {
                                 var declaredColumn = declaredTable.NewColumn();
 
-                                declaredColumn.Name = c.Name;
+                                declaredColumn.Name = ResolveCompoundColumnName(context, table, column, c);
                                 declaredColumn.References.Add(c);
 
                                 if (keepVisible)
@@ -264,6 +264,16 @@ namespace Qsi.Analyzers.Table
             }
 
             return declaredTable;
+        }
+
+        protected virtual QsiIdentifier ResolveCompoundColumnName(TableCompileContext context, IQsiDerivedTableNode table, IQsiColumnNode column, QsiTableColumn refColumn)
+        {
+            return refColumn.Name;
+        }
+
+        protected virtual QsiIdentifier ResolveDerivedColumnName(TableCompileContext context, IQsiDerivedTableNode table, IQsiDerivedColumnNode column)
+        {
+            return column.Alias?.Name ?? column.InferredName;
         }
 
         protected virtual ValueTask<QsiTableStructure> BuildInlineDerivedTableStructure(TableCompileContext context, IQsiInlineDerivedTableNode table)

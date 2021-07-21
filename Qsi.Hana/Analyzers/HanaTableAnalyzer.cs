@@ -9,6 +9,7 @@ using Qsi.Extensions;
 using Qsi.Hana.Tree;
 using Qsi.Tree;
 using Qsi.Tree.Immutable;
+using Qsi.Utilities;
 
 namespace Qsi.Hana.Analyzers
 {
@@ -16,6 +17,49 @@ namespace Qsi.Hana.Analyzers
     {
         public HanaTableAnalyzer(QsiEngine engine) : base(engine)
         {
+        }
+
+        protected override QsiIdentifier ResolveDerivedColumnName(TableCompileContext context, IQsiDerivedTableNode table, IQsiDerivedColumnNode column)
+        {
+            if (column.IsExpression && column.Alias is null)
+            {
+                var expr = column.Expression;
+                var parensCount = 0;
+
+                while (expr is IQsiMultipleExpressionNode multipleExpr && multipleExpr.Elements.Length == 1)
+                {
+                    expr = multipleExpr.Elements[0];
+                    parensCount++;
+                }
+
+                bool withParens = true;
+                var parent = table.Parent;
+
+                while (parent is not null)
+                {
+                    if (parent is IQsiDerivedTableNode)
+                    {
+                        withParens = false;
+                        break;
+                    }
+
+                    parent = parent.Parent;
+                }
+
+                if (expr is IQsiColumnExpressionNode { Column: IQsiColumnReferenceNode columnReferenceNode })
+                {
+                    var identifier = columnReferenceNode.Name[^1];
+
+                    if (!withParens)
+                        return identifier;
+
+                    var value = identifier.IsEscaped ? IdentifierUtility.Unescape(identifier.Value) : identifier.Value;
+
+                    return new QsiIdentifier($"{new string('(', parensCount)}{value}{new string(')', parensCount)}", false);
+                }
+            }
+
+            return base.ResolveDerivedColumnName(context, table, column);
         }
 
         public override ValueTask<QsiTableStructure> BuildTableStructure(TableCompileContext context, IQsiTableNode table)

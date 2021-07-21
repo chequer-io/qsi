@@ -6,6 +6,7 @@ using Qsi.Parsing;
 using Qsi.Parsing.Antlr;
 using Qsi.PrimarSql.Tree;
 using Qsi.Tree;
+using static PrimarSql.Internal.PrimarSqlParser;
 
 namespace Qsi.PrimarSql
 {
@@ -40,20 +41,27 @@ namespace Qsi.PrimarSql
         private IQsiTreeNode ParseInternal(QsiScript script, Parser parser)
         {
             var primarSqlParser = (global::PrimarSql.Internal.PrimarSqlParser)parser;
+            var rootContext = primarSqlParser.root();
 
-            switch (script.ScriptType)
+            if (rootContext.children[0] is not SqlStatementContext sqlStatement)
+                return null;
+
+            if (sqlStatement.children[0] is not DmlStatementContext dmlStatement)
+                return null;
+
+            switch (dmlStatement.children[0])
             {
-                case QsiScriptType.Select:
-                    return TableVisitor.VisitSelectStatement(primarSqlParser.selectStatement());
+                case SelectStatementContext selectStatement:
+                    return TableVisitor.VisitSelectStatement(selectStatement);
 
-                case QsiScriptType.Insert:
-                    return ActionVisitor.VisitInsertStatement(primarSqlParser.insertStatement());
+                case InsertStatementContext insertStatement:
+                    return ActionVisitor.VisitInsertStatement(insertStatement);
 
-                case QsiScriptType.Delete:
-                    return ActionVisitor.VisitDeleteStatement(primarSqlParser.deleteStatement());
+                case DeleteStatementContext deleteStatement:
+                    return ActionVisitor.VisitDeleteStatement(deleteStatement);
 
-                case QsiScriptType.Update:
-                    return ActionVisitor.VisitUpdateStatement(primarSqlParser.updateStatement());
+                case UpdateStatementContext updateStatement:
+                    return ActionVisitor.VisitUpdateStatement(updateStatement);
 
                 default:
                     return null;
