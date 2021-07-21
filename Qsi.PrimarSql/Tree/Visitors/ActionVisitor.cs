@@ -25,11 +25,6 @@ namespace Qsi.PrimarSql.Tree
 
             switch (context.insertStatementValue())
             {
-                case SubqueryInsertStatementContext _:
-                {
-                    throw TreeHelper.NotSupportedFeature("subquery insert");
-                }
-
                 case ExpressionInsertStatementContext expressionContext:
                 {
                     if (context.columns != null)
