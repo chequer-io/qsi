@@ -88,8 +88,8 @@ namespace Qsi.PrimarSql.Analyzers
             var columnName = columnReferenceNode.Name[^1];
             object[] path = columnReferenceNode.Accessors.Select(AccessorToValue).ToArray();
 
-            if (source.Type != QsiTableType.Table)
-                throw new QsiException(QsiError.Internal);
+            if (source?.Type != QsiTableType.Table)
+                throw new QsiException(QsiError.UnknownColumn, columnName);
 
             PrimarSqlTableColumn[] columns = source
                 .Columns

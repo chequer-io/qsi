@@ -91,16 +91,9 @@ namespace Qsi.PrimarSql.Tree
             return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
             {
                 n.Operator = JoinTokens(context.NOT(), context.IN());
-                n.Left.SetValue(VisitPredicate(context.predicate()));
 
-                if (context.selectStatement() != null)
-                {
-                    n.Right.SetValue(VisitSelectStatement(context.selectStatement()));
-                }
-                else
-                {
-                    n.Right.SetValue(VisitExpressions(context.expressions()));
-                }
+                n.Left.SetValue(VisitPredicate(context.predicate()));
+                n.Right.SetValue(VisitExpressions(context.expressions()));
 
                 PrimarSqlTree.PutContextSpan(n, context);
             });
@@ -181,12 +174,6 @@ namespace Qsi.PrimarSql.Tree
                     PrimarSqlTree.PutContextSpan(node, context);
                     return node;
                 }
-
-                case ExistsExpressionAtomContext _:
-                    throw TreeHelper.NotSupportedFeature("Exists expression");
-
-                case SubqueryExpressionAtomContext subqueryExpressionAtomContext:
-                    return VisitSelectStatement(subqueryExpressionAtomContext.selectStatement());
 
                 case BitExpressionAtomContext bitExpressionAtomContext:
                 {
