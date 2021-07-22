@@ -1,9 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <OutputType>WinExe</OutputType>
+        <OutputType>Exe</OutputType>
         <TargetFramework>net5.0</TargetFramework>
         <RootNamespace>Qsi.Debugger</RootNamespace>
+        <DisableWinExeOutputInference>true</DisableWinExeOutputInference>
     </PropertyGroup>
 
     <ItemGroup>
@@ -36,6 +37,7 @@
     <ItemGroup>
         <ProjectReference Include="..\Qsi.Cql\Qsi.Cql.csproj" />
         <ProjectReference Include="..\Qsi.Hana\Qsi.Hana.csproj" />
+        <ProjectReference Include="..\Qsi.Impala\Qsi.Impala.csproj" />
         <ProjectReference Include="..\Qsi.MongoDB\Qsi.MongoDB.csproj" />
         <ProjectReference Include="..\Qsi.MySql\Qsi.MySql.csproj" />
         <ProjectReference Include="..\Qsi.Oracle\Qsi.Oracle.csproj" />

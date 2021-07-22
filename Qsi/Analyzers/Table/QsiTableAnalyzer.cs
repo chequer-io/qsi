@@ -688,7 +688,7 @@ namespace Qsi.Analyzers.Table
         #endregion
 
         #region Column
-        private IEnumerable<QsiTableColumn> ResolveColumns(TableCompileContext context, IQsiColumnNode column)
+        protected IEnumerable<QsiTableColumn> ResolveColumns(TableCompileContext context, IQsiColumnNode column)
         {
             context.ThrowIfCancellationRequested();
 

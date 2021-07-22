@@ -7,6 +7,7 @@ $Tasks = @(
     "Qsi.MySql",
     "Qsi.Cql",
     "Qsi.Hana",
+    "Qsi.Impala",
     "Qsi.Oracle"
 )
 
