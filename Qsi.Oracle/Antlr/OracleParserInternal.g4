@@ -1,3 +1,4 @@
+
 parser grammar OracleParserInternal;
 
 options { 
@@ -266,10 +267,7 @@ rowOffset
     ;
 
 rowFetchOption
-    : FETCH (FIRST | NEXT)
-      (rowcount=expr | percent=expr PERCENT)?
-      (ROW | ROWS)
-      (ONLY | WITH TIES)
+    : FETCH (FIRST | NEXT) (rowcount=expr | percent=expr PERCENT)? (ROW | ROWS) (ONLY | WITH TIES)
     ;
 
 forUpdateClause
@@ -826,7 +824,8 @@ groupingExpressionList
     ;
 
 expressionList
-    : (expr (',' expr)* | '(' (expr (',' expr)?)* ')')
+    : expr (',' expr )* 
+    | '(' (expr (',' expr )*)? ')'
     ;
 
 //modelClause
@@ -941,11 +940,11 @@ expr
     | ('+' | '-'| PRIOR) expr                   #signExpr
     | expr ( '*' | '/' | '+' | '-' | '||') expr #binaryExpr
     | expr COLLATE collationName=identifier     #collateExpr
-//    | calcMeasExpression 
+    | calcMeasExpression                        #calcMeasExpr 
     | caseExpression                            #caseExpr
-//    | cursorExpression 
+    | CURSOR '('subquery')'                     #cursorExpr 
 //    | datetimeExpression 
-//    | functionExpression 
+    | functionExpression                        #functionExpr
 //    | intervalExpression 
 //    | jsonObjectAccessExpr 
 //    | modelExpression 
@@ -958,8 +957,8 @@ expr
 simpleExpression
     : ((schema '.')? table '.')? (column | ROWID)
     | ROWNUM
-    | stringLiteral 
-    | numberLiteral 
+    | stringLiteral
+    | numberLiteral
     | sequence '.' (CURRVAL | NEXTVAL) 
     | NULL
     ;
@@ -968,23 +967,172 @@ simpleExpression
 //    : CURSOR '(' subquery ')'
 //    ;
 
+calcMeasExpression
+    : avMeasExpression
+    | avSimpleExpression
+    | caseExpression
+//    | compoundExpression
+//    | datetimeExpression
+//    | intervalExpression
+    ;
+
+functionExpression
+    : functionName '(' expressionList? ')'
+    ;
+
+avMeasExpression
+    : leadLagExpression
+    | windowExpression 
+    | shareOfExpression
+    | qdrExpression
+    ;
+
+leadLagExpression
+    : leadLagFunctionName '(' calcMeasExpression ')' OVER '(' leadLagClause ')'
+    ;
+
+leadLagFunctionName
+    : LAG 
+    | LAG_DIFF 
+    | LAG_DIFF_PERCENT 
+    | LEAD
+    | LEAD_DIFF
+    | LEAD_DIFF_PERCENT
+    ;
+
+leadLagClause
+    : HIERARCHY hierarchyRef OFFSET offsetExpr=expr ( WITHIN ( LEVEL | PARENT ) | ACROSS ANCESTOR AT LEVEL levelRef=identifier POSITION FROM ( BEGINNING | END ))
+    ;
+
+hierarchyRef
+    : ( attrDimAlias=identifier '.' )? hierAlias=identifier
+    ;
+
+windowExpression
+    : functionExpression OVER ( windowClause )
+    ;
+
+windowClause
+    : HIERARCHY hierarchyRef BETWEEN ( precedingBoundary | followingBoundary ) ( WITHIN ( LEVEL | PARENT | ANCESTOR AT LEVEL levelName=identifier ) )?
+    ;
+
+precedingBoundary
+    : ( UNBOUNDED PRECEDING | offsetExpr=expr PRECEDING ) AND ( CURRENT MEMBER | offsetExpr=expr  ( PRECEDING | FOLLOWING ) | UNBOUNDED FOLLOWING )
+    ;
+    
+followingBoundary
+    : ( CURRENT MEMBER | offsetExpr=expr FOLLOWING ) AND ( offsetExpr=expr FOLLOWING | UNBOUNDED FOLLOWING )
+    ;
+
+calcMeasOrderByClause
+    : calcMeasExpression ( ASC | DESC )?  ( NULLS ( FIRST | LAST ) )?
+    ;
+
+shareOfExpression
+    : SHARE_OF ( calcMeasExpression  shareClause )
+    ;
+
+shareClause
+    : HIERARCHY hierarchyRef ( PARENT | LEVEL levelRef=identifier | MEMBER memberExpression )
+    ;
+
+levelMemberLiteral
+    : levelRef=identifier ( posMemberKeys | namedMemberKeys )
+    ;
+
+posMemberKeys
+    : OPEN_SQUARE_BRACKET memberKeyExpr+=expr (',' memberKeyExpr+=expr)* CLOSE_SQUARE_BRACKET
+    ;
+
+namedMemberKeys
+    : OPEN_SQUARE_BRACKET attrName+=identifier '=' memberKeyExpr+=expr (',' attrName+=identifier '=' memberKeyExpr+=expr )* CLOSE_SQUARE_BRACKET
+    ;
+    
+hierNavigationExpression
+    : ( hierAncestorExpression | hierParentExpression | hierLeadLagExpression )
+    ;
+    
+hierAncestorExpression
+    : HIER_ANCESTOR '(' memberExpression AT ( LEVEL levelRef=identifier | DEPTH depthExpression=expr ) ')'
+    ;
+    
+memberExpression
+    : levelMemberLiteral
+    | hierNavigationExpression
+    | CURRENT MEMBER
+    | NULL
+    | ALL
+    ;
+    
+hierParentExpression
+    : HIER_PARENT '(' memberExpression ')'
+    ;
+    
+hierLeadLagExpression
+    : ( HIER_LEAD | HIER_LAG ) '(' hierLeadLagClause ')'
+    ;
+    
+hierLeadLagClause
+    : memberExpression  OFFSET offsetExpr=expr ( WITHIN ( ( LEVEL | PARENT ) | ACROSS ANCESTOR AT LEVEL levelRef=identifier ( POSITION FROM ( BEGINNING | END ) )? ) )?
+    ;
+
+qdrExpression
+    : QUALIFY '(' calcMeasExpression',' qualifier ')'
+    ;
+    
+qualifier
+    : hierarchyRef '=' memberExpression
+    ;
+
+avSimpleExpression
+    : stringLiteral 
+    | numberLiteral
+    | NULL
+    | measureRef
+    ;
+
+avHierExpression
+    : hierFunctionName '(' memberExpression WITHIN HIERARCHY hierarchyRef ')'
+    ;
+
+hierFunctionName
+    : HIER_CAPTION 
+    | HIER_DEPTH 
+    | HIER_DESCRIPTION 
+    | HIER_LEVEL 
+    | HIER_MEMBER_NAME 
+    | HIER_MEMBER_UNIQUE_NAME
+    ;
+
+measureRef
+    : ( MEASURES '.' )? measName=identifier
+    ;
+
+//compoundExpression
+//    :
+//    ;
+
+//datetimeExpression
+//    :
+//    ;
+
+//intervalExpression
+//    :
+//    ;
+
 caseExpression
     : CASE (simpleCaseExpression | searchedCaseExpression) elseClause? END
     ;
 
 //datetimeExpression
 //    : expr AT ( LOCAL | TIME ZONE
-//        ( SINGLE_QUOTE ('+'|'-') hh ':' mi SINGLE_QUOTE
+//        ( S_SINGLE_QUOTE('+'|'-') hh ':' mi SINGLE_QUOTE
 //        | DBTIMEZONE
 //        | SESSIONTIMEZONE
-//        | SINGLE_QUOTE timeZoneName SINGLE_QUOTE
+//        | S_SINGLE_QUOTEtimeZoneName SINGLE_QUOTE
 //        | expr
 //        )
 //      )
-//    ;
-//
-//functionExpression
-//    : function
 //    ;
 //
 //intervalExpression
@@ -1016,10 +1164,7 @@ caseExpression
 //    | dataCartridgeFunction
 //    ;
 //
-//aggregateFunction
-//    : 
-//    ;
-//
+
 simpleCaseExpression
     : expr (WHEN comparisonExpr=expr THEN returnExpr=expr)+
     ;
@@ -1071,7 +1216,7 @@ column
 tablespec
     : identifier ('.' identifier)*
     ;
-    
+
 indexspec
     : identifier
     | '(' ((identifier '.')* identifier)+ ')'
@@ -1097,6 +1242,10 @@ stringLiteral
     : SINGLE_QUOTED_STRING
     | v=QUOTED_STRING     { validateStringLiteral($v.text) }?
     | v=NATIONAL_STRING   { validateStringLiteral($v.text) }?
+    ;
+
+functionName
+    : identifier
     ;
 
 identifier
