@@ -52,7 +52,7 @@ fragment W: [wW];
 fragment X: [xX];
 fragment Y: [yY];
 fragment Z: [zZ];
-fragment DIGIT:    [0-9];
+fragment DIGIT: [0-9];
 fragment SINGLE_QUOTE: '\'';
 fragment DOUBLE_QUOTE: '"';
 fragment ALPHABET: [A-Za-z];

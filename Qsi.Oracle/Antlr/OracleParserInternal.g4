@@ -11,11 +11,11 @@ options {
 //    | savepoint
 //    | rollback
 //    ;
-//
-//select
-//    : subquery forUpdateClause? ';'
-//    ;
-//
+
+select
+    : subquery forUpdateClause? ';'
+    ;
+
 //delete
 //    : DELETE hint? FROM? (dmlTableExpressionClause | ONLY '(' dmlTableExpressionClause ')')
 //      tAlias? whereClause? returningClause? errorLoggingClause?
@@ -226,15 +226,15 @@ sharingClause
 //rollback
 //    : ROLLBACK WORK? (TO SAVEPOINT savepointName | FORCE string)?
 //    ;
-//
+
 subquery
-    : queryBlock orderByClause? rowLimitingClause?
-    | subquery ((UNION ALL? | INTERSECT | MINUS) subquery)+ orderByClause? rowLimitingClause?
-    | '(' subquery ')' orderByClause? rowLimitingClause?
+    : queryBlock orderByClause? rowOffset? rowFetchOption?
+    | subquery ((UNION ALL? | INTERSECT | MINUS) subquery)+ orderByClause? rowOffset? rowFetchOption?
+    | '(' subquery ')' orderByClause? rowOffset? rowFetchOption?
     ;
 
 orderByClause
-    : ORDER SIBLINGS? BY items+=orderByItem? (',' items+=orderByItem)*
+    : ORDER SIBLINGS? BY items+=orderByItem (',' items+=orderByItem)*
     ;
 
 orderByItem
@@ -260,23 +260,27 @@ orderByItem
 //      (REJECT LIMIT (integer | UNLIMITED))?
 //    ;
 //
-rowLimitingClause
-    : (OFFSET offset=expr (ROW | ROWS))?
-      (FETCH (FIRST | NEXT)
-      (rowcount=expr | percent=expr PERCENT)?
-      (ROW | ROWS)
-      (ONLY | WITH TIES))?
+
+rowOffset
+    : OFFSET offset=expr (ROW | ROWS)
     ;
 
-//forUpdateClause
-//    : FOR UPDATE (OF fullColumnPath (',' fullColumnPath)*)? (NOWAIT | WAIT S_INTEGER | K_SKIP LOCKED)?
-//    ;
-//
+rowFetchOption
+    : FETCH (FIRST | NEXT)
+      (rowcount=expr | percent=expr PERCENT)?
+      (ROW | ROWS)
+      (ONLY | WITH TIES)
+    ;
+
+forUpdateClause
+    : FOR UPDATE (OF fullColumnPath (',' fullColumnPath)*)? (NOWAIT | WAIT S_INTEGER_WITHOUT_SIGN | K_SKIP LOCKED)?
+    ;
+
 queryBlock
 //    : withClause?
     : SELECT hint? queryBehavior? selectList FROM
       tables+=tableSource (',' tables+=tableSource)*
-//      whereClause?
+      whereClause?
 //      hierarchicalQueryClause?
       groupByClause?
 //      modelClause?
@@ -792,11 +796,11 @@ queryTableExpression
 //    : MEASURES
 //    | identifier ('.' identifier)?
 //    ;
-//
-//whereClause
-//    : WHERE condition
-//    ;
-//
+
+whereClause
+    : WHERE condition
+    ;
+
 //hierarchicalQueryClause
 //    : (CONNECT BY NOCYCLE? condition (START WITH condition)? | START WITH condition CONNECT BY NOCYCLE? condition)
 //    ;
@@ -908,6 +912,19 @@ expressionList
 
 condition
     : comparisonCondition
+//    | floatingPointCondition
+//    | logicalCondition
+//    | modelCondition
+//    | multisetCondition
+//    | patternMatchingCondition
+//    | rangeCondition
+//    | nullCondition
+//    | xmlCondition
+//    | jsonCondition
+//    | compoundCondition
+//    | existsCondition
+//    | inCondition
+//    | isOfTypeCondition
     ;
 
 comparisonCondition
@@ -939,7 +956,7 @@ expr
     ;
 
 simpleExpression
-    : ((identifier '.')? identifier '.')? (column | ROWID)
+    : ((schema '.')? table '.')? (column | ROWID)
     | ROWNUM
     | stringLiteral 
     | numberLiteral 
@@ -1015,10 +1032,10 @@ elseClause
     : ELSE elseExpr=expr
     ;
 
-//fullColumnPath
-//    : identifier ('.' identifier ('.' identifier)?)?
-//    ;
-//
+fullColumnPath
+    : identifier ('.' identifier ('.' identifier)?)?
+    ;
+
 fullObjectPath
     : identifier ('.' identifier)?
     ;
@@ -1078,8 +1095,8 @@ numberLiteral
 // NQ'...'
 stringLiteral
     : SINGLE_QUOTED_STRING
-    | v=QUOTED_STRING     { ValidateStringLiteral($v.text) }?
-    | v=NATIONAL_STRING   { ValidateStringLiteral($v.text) }?
+    | v=QUOTED_STRING     { validateStringLiteral($v.text) }?
+    | v=NATIONAL_STRING   { validateStringLiteral($v.text) }?
     ;
 
 identifier
