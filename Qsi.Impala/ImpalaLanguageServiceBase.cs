@@ -11,11 +11,11 @@ namespace Qsi.Impala
 {
     public abstract class ImpalaLanguageServiceBase : QsiLanguageServiceBase
     {
-        public abstract Version Version { get; }
+        public abstract ImpalaDialect Dialect { get; }
 
         public override IQsiTreeParser CreateTreeParser()
         {
-            return new ImpalaParser(Version);
+            return new ImpalaParser(Dialect);
         }
 
         public override IQsiTreeDeparser CreateTreeDeparser()

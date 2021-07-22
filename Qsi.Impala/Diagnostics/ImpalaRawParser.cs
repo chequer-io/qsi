@@ -1,25 +1,21 @@
-﻿using System;
-using System.Linq;
-using Antlr4.Runtime;
-using Antlr4.Runtime.Tree;
+﻿using Antlr4.Runtime.Tree;
 using Qsi.Diagnostics.Antlr;
-using Qsi.Impala.Internal;
 using Qsi.Impala.Utilities;
 
 namespace Qsi.Impala.Diagnostics
 {
     public class ImpalaRawParser : AntlrRawParserBase
     {
-        private readonly Version _verseion;
+        private readonly ImpalaDialect _dialect;
 
-        public ImpalaRawParser(Version version)
+        public ImpalaRawParser(ImpalaDialect dialect)
         {
-            _verseion = version;
+            _dialect = dialect;
         }
 
         protected override (ITree Tree, string[] RuleNames) ParseAntlrTree(string input)
         {
-            var parser = ImpalaUtility.CreateParserInternal(input, _verseion, Enumerable.Empty<string>());
+            var parser = ImpalaUtility.CreateParserInternal(input, _dialect);
             return (parser.root(), parser.RuleNames);
         }
     }
