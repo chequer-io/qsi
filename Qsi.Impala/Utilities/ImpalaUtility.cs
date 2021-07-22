@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Antlr4.Runtime;
 using Qsi.Impala.Common.Thrift;
+using Qsi.Impala.Dialect;
 using Qsi.Impala.Internal;
 using Qsi.Shared;
 
@@ -9,6 +10,13 @@ namespace Qsi.Impala.Utilities
 {
     public static class ImpalaUtility
     {
+        public static ImpalaDialect CreateDialect(Version version)
+        {
+            return GetReservedWordsVersion(version) == TReservedWordsVersion.IMPALA_2_11 ?
+                new ImpalaDialect2() :
+                new ImpalaDialect3();
+        }
+
         internal static TReservedWordsVersion GetReservedWordsVersion(Version version)
         {
             if (version.Major >= 3)
@@ -17,14 +25,14 @@ namespace Qsi.Impala.Utilities
             return TReservedWordsVersion.IMPALA_2_11;
         }
 
-        internal static ImpalaParserInternal CreateParserInternal(string input, Version version, IEnumerable<string> builtInFunctions)
+        internal static ImpalaParserInternal CreateParserInternal(string input, ImpalaDialect dialect)
         {
             var stream = new StringInputStream(input);
             var lexer = new ImpalaLexerInternal(stream);
             var tokens = new CommonTokenStream(lexer);
             var parser = new ImpalaParserInternal(tokens);
 
-            lexer.Setup(GetReservedWordsVersion(version), builtInFunctions);
+            lexer.Dialect = dialect;
 
             return parser;
         }

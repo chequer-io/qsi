@@ -1,6 +1,8 @@
 ﻿using System;
 using Qsi.Diagnostics;
+using Qsi.Impala;
 using Qsi.Impala.Diagnostics;
+using Qsi.Impala.Utilities;
 using Qsi.Services;
 
 namespace Qsi.Debugger.Vendor.Impala
@@ -16,7 +18,7 @@ namespace Qsi.Debugger.Vendor.Impala
 
         protected override IRawTreeParser CreateRawTreeParser()
         {
-            return new ImpalaRawParser(_verseion);
+            return new ImpalaRawParser(ImpalaUtility.CreateDialect(_verseion));
         }
 
         protected override IQsiLanguageService CreateLanguageService()

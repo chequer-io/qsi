@@ -17,26 +17,18 @@ namespace Qsi.Impala
 
     public sealed class ImpalaParser : IQsiTreeParser
     {
-        public Version Version { get; }
+        public ImpalaDialect Dialect { get; }
 
-        private ISet<string> _builtInFunctions;
-
-        public ImpalaParser(Version version)
+        public ImpalaParser(ImpalaDialect dialect)
         {
-            Version = version;
-        }
-
-        public void SetupBuiltInFunctions(IEnumerable<string> functions)
-        {
-            _builtInFunctions = new HashSet<string>(functions);
+            Dialect = dialect ?? throw new ArgumentNullException(nameof(dialect));
         }
 
         public IQsiTreeNode Parse(QsiScript script, CancellationToken cancellationToken = default)
         {
             var parser = ImpalaUtility.CreateParserInternal(
                 script.Script,
-                Version,
-                _builtInFunctions ?? Enumerable.Empty<string>()
+                Dialect
             );
 
             var stmt = parser.root().stmt();

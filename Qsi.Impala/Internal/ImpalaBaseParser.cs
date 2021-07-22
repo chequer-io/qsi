@@ -29,7 +29,7 @@ namespace Qsi.Impala.Internal
         // to avoid reporting trivial tokens as expected tokens in error messages
         protected bool ReportExpectedToken(int tokenId, int numExpectedTokens)
         {
-            if (Lexer.IsKeyword(tokenId) || tokenId is ImpalaLexerInternal.COMMA or ImpalaLexerInternal.IDENT)
+            if (Lexer.Dialect.IsKeyword(tokenId) || tokenId is ImpalaLexerInternal.COMMA or ImpalaLexerInternal.IDENT)
                 return true;
 
             // if this is the only valid token, always report it
@@ -178,11 +178,11 @@ namespace Qsi.Impala.Internal
             // append last encountered token
             result.Append("Encountered: ");
 
-            if (Lexer.TokenIdMap.TryGetValue(errorToken.Type, out var lastToken))
+            if (Lexer.Dialect.TokenIdMap.TryGetValue(errorToken.Type, out var lastToken))
             {
                 result.Append(lastToken);
             }
-            else if (Lexer.IsReserved(errorToken.Text))
+            else if (Lexer.Dialect.IsReserved(errorToken.Text))
             {
                 result
                     .Append("A reserved word cannot be used as an identifier: ")
@@ -201,7 +201,7 @@ namespace Qsi.Impala.Internal
             {
                 IEnumerable<string> tokenNames = expectedTokenIds
                     .Where(x => ReportExpectedToken(x, expectedTokenIds.Length))
-                    .Select(x => Lexer.TokenIdMap[x]);
+                    .Select(x => Lexer.Dialect.TokenIdMap[x]);
 
                 result.AppendJoin(", ", tokenNames);
             }
