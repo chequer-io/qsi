@@ -26,6 +26,7 @@ namespace Qsi.Impala.Internal
                 // If we see an identifier that starts with a dot, we push back the identifier
                 // minus the dot back into the input stream.
                 var source = new Tuple<ITokenSource, ICharStream>(this, (ICharStream)InputStream);
+                var length = Text.Length;
 
                 Token = TokenFactory.Create(
                     source,
@@ -38,6 +39,7 @@ namespace Qsi.Impala.Internal
                     TokenStartColumn);
 
                 InputStream.Seek(TokenStartCharIndex + 1);
+                Interpreter.Column -= length - 1;
                 return;
             }
 
