@@ -34,6 +34,7 @@ DOLLAR_SIGN:                '$';
 QMARK:                      '?';
 LEFT_CURLY_BRACKET2:        '{-';
 RIGHT_CURLY_BRACKET2:       '-}';
+COLON:                      ':';
 S_SINGLE_QUOTE: SINGLE_QUOTE;
 
 fragment A: [aA];

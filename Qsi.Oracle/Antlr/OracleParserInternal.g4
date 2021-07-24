@@ -6,7 +6,7 @@ options {
 
 root
     : select
-//    | delete
+    | delete
 //    | create
 //    | savepoint
 //    | rollback
@@ -16,11 +16,11 @@ select
     : subquery forUpdateClause?
     ;
 
-//delete
-//    : DELETE hint? FROM? (dmlTableExpressionClause | ONLY '(' dmlTableExpressionClause ')')
-//      tAlias? whereClause? returningClause? errorLoggingClause?
-//    ;
-//
+delete
+    : DELETE hint? FROM? (dmlTableExpressionClause | ONLY '(' dmlTableExpressionClause ')')
+      tAlias? whereClause? returningClause? errorLoggingClause?
+    ;
+
 //create
 //    : createAnalyticView
 //    | createAttributeDimension
@@ -241,25 +241,29 @@ orderByItem
     : (expr | position=integer | cAlias) (ASC | DESC)? (NULLS FIRST | NULLS LAST)?
     ;
 
-//// TODO: table, schema is temporary. should be fixed.
-//dmlTableExpressionClause
-//    : (table ('.' schema)? (partitionExtensionClause | '@' dblink)? 
-//    | (view | materializedView) ('@' dblink)?) 
-//    | '(' subquery subqueryRestrictionClause? ')' 
-//    | tableCollectionExpression
-//    ;
-//
-//returningClause
-//    : (RETURN | RETURNING) expr (',' expr)* INTO dataItem (',' dataItem)*
-//    ;
-//
-//errorLoggingClause
-//    : LOG ERRORS 
-//      (INTO (schema '.')? table)?
-//      ('(' simpleExpression ')')?
-//      (REJECT LIMIT (integer | UNLIMITED))?
-//    ;
-//
+dmlTableExpressionClause
+    : (table ('.' schema)? (partitionExtensionClause | '@' dblink)? 
+    | (view | materializedView) ('@' dblink)?) 
+    | '(' subquery subqueryRestrictionClause? ')' 
+    | tableCollectionExpression
+    ;
+
+returningClause
+    : (RETURN | RETURNING) expr (',' expr)* INTO dataItem (',' dataItem)*
+    ;
+
+dataItem
+    : variableName
+    | ':' variableName
+    ;
+
+errorLoggingClause
+    : LOG ERRORS 
+      (INTO (schema '.')? table)?
+      ('(' simpleExpression ')')?
+      (REJECT LIMIT (integer | UNLIMITED))?
+    ;
+
 
 rowOffset
     : OFFSET offset=expr (ROW | ROWS)
