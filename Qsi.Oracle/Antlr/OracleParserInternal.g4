@@ -4,16 +4,16 @@ options {
     tokenVocab=OracleLexerInternal;
 }
 
-//root
-//    : select
+root
+    : select
 //    | delete
 //    | create
 //    | savepoint
 //    | rollback
-//    ;
+    ;
 
 select
-    : subquery forUpdateClause? ';'
+    : subquery forUpdateClause?
     ;
 
 //delete
@@ -1128,10 +1128,10 @@ integer
     ;
 
 literal
-    : numberLiteral
+    : intervalLiteral
+    | numberLiteral
     | stringLiteral
-//    | dateTimeLiteral
-//    | intervalLiteral
+    | dateTimeLiteral
     ;
 
 numberLiteral
@@ -1149,6 +1149,15 @@ stringLiteral
     : SINGLE_QUOTED_STRING
     | v=QUOTED_STRING     { validateStringLiteral($v.text) }?
     | v=NATIONAL_STRING   { validateStringLiteral($v.text) }?
+    ;
+
+dateTimeLiteral
+    : DATE SINGLE_QUOTED_STRING         #dateLiteral
+    | TIMESTAMP SINGLE_QUOTED_STRING    #timestampLiteral
+    ;
+
+intervalLiteral
+    : INTERVAL SINGLE_QUOTED_STRING (YEAR|MONTH) ('(' precision=expr ')')? (TO (YEAR|MONTH))?
     ;
 
 identifier
