@@ -4,16 +4,16 @@ options {
     tokenVocab=OracleLexerInternal;
 }
 
-//root
-//    : select
+root
+    : select
 //    | delete
 //    | create
 //    | savepoint
 //    | rollback
-//    ;
+    ;
 
 select
-    : subquery forUpdateClause? ';'
+    : subquery forUpdateClause?
     ;
 
 //delete
@@ -238,7 +238,7 @@ orderByClause
     ;
 
 orderByItem
-    : (expr | position=integer | cAlias=identifier) (ASC | DESC)? (NULLS FIRST | NULLS LAST)?
+    : (expr | position=integer | cAlias) (ASC | DESC)? (NULLS FIRST | NULLS LAST)?
     ;
 
 //// TODO: table, schema is temporary. should be fixed.
@@ -277,14 +277,14 @@ forUpdateClause
     ;
 
 queryBlock
-//    : withClause?
-    : SELECT hint? queryBehavior? selectList FROM
+    : withClause?
+      SELECT hint? queryBehavior? selectList FROM
       tables+=tableSource (',' tables+=tableSource)*
       whereClause?
-//      hierarchicalQueryClause?
+      hierarchicalQueryClause?
       groupByClause?
-//      modelClause?
-//      windowClause?
+      modelClause?
+      windowClause?
     ;
 
 withClause
@@ -295,7 +295,7 @@ withClause
 
 factoringClause
     : subqueryFactoringClause 
-//    | subavFactoringClause
+    | subavFactoringClause
     ;
 
 subqueryFactoringClause
@@ -313,50 +313,52 @@ searchClause
     ;
 
 cycleClause
-    : CYCLE cAlias=identifier (',' cAlias=identifier)*
+    : CYCLE cAlias (',' cAlias)*
       SET cycleMarkCAlias=identifier
       TO cycleValue=SINGLE_QUOTED_STRING {isCycleValue()}?
       DEFAULT noCycleValue=SINGLE_QUOTED_STRING {isCycleValue()}?
     ;
 
-//subavFactoringClause
-//    : subavName=fullObjectPath ANALYTIC VIEW AS '(' subAvClause ')'
-//    ;
-//
-//subAvClause
-//    : USING identifier ('.' identifier)? hierarchiesClause? filterClauses? addMeasClause?
-//    ;
-//
-//filterClauses
-//    : FILTER FACT '(' filterClause (',' filterClause)* ')'
-//    ;
-//
-//filterClause
-//    : hierIds TO predicate
-//    ;
-//
-//addMeasClause
-//    : ADD MEASURES '(' cubeMeas (',' cubeMeas)*  ')'
-//    ;
-//
-//// TODO: Check
-//cubeMeas
-//    : measName=identifier ( baseMeasClause | calcMeasClause )
-//    ;
-//
-//// TODO: Check
-//baseMeasClause
-//    : FACT FOR MEASURE baseMeas=identifier measAggregateClause
-//    ;
-//
-//measAggregateClause
-//    : AGGREGATE BY aggrFunction
-//    ;
-//
-//// TODO: Check
-//calcMeasClause
-//    : measName=identifier AS '(' expr ')'
-//    ;
+subavFactoringClause
+    : subavName=fullObjectPath ANALYTIC VIEW AS '(' subAvClause ')'
+    ;
+
+subAvClause
+    : USING identifier ('.' identifier)? hierarchiesClause? filterClauses? addMeasClause?
+    ;
+
+filterClauses
+    : FILTER FACT '(' filterClause (',' filterClause)* ')'
+    ;
+
+// TODO: predicate is expr?
+filterClause
+    : hierIds TO predicate=expr
+    ;
+
+addMeasClause
+    : ADD MEASURES '(' cubeMeas (',' cubeMeas)*  ')'
+    ;
+
+// TODO: Check
+cubeMeas
+    : measName=identifier ( baseMeasClause | calcMeasClause )
+    ;
+
+// TODO: Check
+baseMeasClause
+    : FACT FOR MEASURE baseMeas=identifier measAggregateClause
+    ;
+
+measAggregateClause
+    : AGGREGATE BY 
+//    aggrFunction
+    ;
+
+// TODO: Check
+calcMeasClause
+    : measName=identifier AS '(' expr ')'
+    ;
 
 
 // ** HINT **
@@ -495,315 +497,319 @@ selectList
     ;
 
 selectListItem
-    : identifier ('.' identifier)? '.' '*'                  #objectSelectListItem
+    : identifier ('.' identifier)? '.' '*'                   #objectSelectListItem
     | expr (AS? alias=identifier)?                           #exprSelectListItem
     ;
 
 tableSource
     : tableReference
-//    | joinClause
-//    | '(' joinClause ')'
-//    | inlineAnalyticView 
+    | joinClause
+    | '(' joinClause ')'
+    | inlineAnalyticView 
     ;
 
 tableReference
     : (
           (
               ( ONLY '(' queryTableExpression ')' | queryTableExpression ) 
-//              flashbackQueryClause?
-//              (pivotClause | unpivotClause | rowPatternClause)?
+              flashbackQueryClause?
+              (pivotClause | unpivotClause | rowPatternClause)?
           )
-//        | containersClause
-//        | shardsClause
+        | containersClause
+        | shardsClause
       ) 
-      tAlias=identifier?
+      tAlias?
     ;
 
-//joinClause
-//    : tableReference 
-//        (
-//            innerCrossJoinClause
-//          | outerJoinClause
-//          | crossOuterApplyClause
-//        )*
-//    ;
-//
-//innerCrossJoinClause
-//    : INNER? JOIN tableReference (ON condition | USING '(' column (',' column)* ')') 
-//    | (CROSS | NATURAL INNER?) JOIN tableReference
-//    ;
-//
-//outerJoinClause
-//    : queryPartitionClause? 
-//      NATURAL? 
-//      outerJoinType JOIN tableReference queryPartitionClause? 
-//      (ON condition | USING '(' column (',' column)* ')')?
-//    ;
-//
-//queryPartitionClause
-//    : PARTITION BY queryPartitionExpressions
-//    ;
-//
-//queryPartitionExpressions
-//    : expr (',' expr)* 
-//    | '(' expr (',' expr)* ')'
-//    ;
-//
-//outerJoinType
-//    : (FULL | LEFT | RIGHT) OUTER?
-//    ;
-//
-//crossOuterApplyClause
-//    : (CROSS | OUTER) APPLY (tableReference | collectionExpression)
-//    ;
-//
-//inlineAnalyticView
-//    : ANALYTIC VIEW subAvClause (AS? inlineAvAlias)?
-//    ;
-//
+joinClause
+    : tableReference 
+        (
+            innerCrossJoinClause
+          | outerJoinClause
+          | crossOuterApplyClause
+        )*
+    ;
+
+innerCrossJoinClause
+    : INNER? JOIN tableReference (ON condition | USING '(' column (',' column)* ')') 
+    | (CROSS | NATURAL INNER?) JOIN tableReference
+    ;
+
+outerJoinClause
+    : queryPartitionClause? 
+      NATURAL? 
+      outerJoinType JOIN tableReference queryPartitionClause? 
+      (ON condition | USING '(' column (',' column)* ')')?
+    ;
+
+queryPartitionClause
+    : PARTITION BY queryPartitionExpressions
+    ;
+
+queryPartitionExpressions
+    : expr (',' expr)* 
+    | '(' expr (',' expr)* ')'
+    ;
+
+outerJoinType
+    : (FULL | LEFT | RIGHT) OUTER?
+    ;
+
+crossOuterApplyClause
+    : (CROSS | OUTER) APPLY (tableReference | collectionExpression)
+    ;
+
+inlineAnalyticView
+    : ANALYTIC VIEW subAvClause (AS? inlineAvAlias=identifier)?
+    ;
+
 queryTableExpression
     : queryName=fullObjectPath
-//    | identifier? 
-//        ( identifier (partitionExtensionClause | '@' dblink)?
-//          analyticView=identifier hierarchiesClause?
-//          hierarchy=identifier
-//        ) sampleClause?
+    | identifier? 
+        ( identifier (partitionExtensionClause | '@' dblink)?
+          analyticView=identifier hierarchiesClause?
+          hierarchy=identifier
+        ) sampleClause?
     | LATERAL? '(' subquery 
-//    subqueryRestrictionClause? 
+    subqueryRestrictionClause? 
     ')'
-//    | tableCollectionExpression
+    | tableCollectionExpression
     ;
-//
-//flashbackQueryClause
-//    : VERSIONS 
-//        (BETWEEN (SCN | TIMESTAMP) (expr | MINVALUE) AND (expr | MAXVALUE) 
-//        | PERIOD FOR validTimeColumn BETWEEN (expr | MINVALUE) AND (expr | MAXVALUE)) 
-//    | AS OF 
-//        ((SCN | TIMESTAMP) expr 
-//        | AS OF PERIOD FOR validTimeColumn expr)
-//    ;
-//
-//pivotClause
-//    : PIVOT XML? 
-//      '(' pivotItem (',' pivotItem)* pivotForClause pivotInClause ')'
-//    ;
-//
-//pivotItem
-//    : aggregateFunction '(' expr ')' (AS? alias=identifier)?
-//    ;
-//
-//unpivotClause
-//    : UNPIVOT ((INCLUDE | EXCLUDE) NULLS)?
-//      '(' (column | '(' column (',' column)* ')') pivotForClause unpivotInClause ')'
-//    ;
-//
-//unpivotInClause
-//    : IN '(' unpivotInItem (',' unpivotInItem)* ')'
-//    ;
-//
-//unpivotInItem
-//    : (column | '(' column (',' column)* ')') 
-//      (AS (literal | '(' literal (',' literal)* ')'))?
-//    ;
-//
-//rowPatternClause
-//    : MATCH_RECOGNIZE '(' 
-//      rowPatternPartitionBy? 
-//      rowPatternOrderBy? 
-//      rowPatternMeasures? 
-//      rowPatternRowsPerMatch? 
-//      rowPatternSkipTo? 
-//      PATTERN '(' rowPattern ')' 
-//      rowPatternSubsetClause? DEFINE rowPatternDefinitionList ')'
-//    ;
-//
-//rowPatternPartitionBy
-//    : PARTITION BY column (',' column)*
-//    ;
-//
-//rowPatternOrderBy
-//    : ORDER BY column (',' column)*
-//    ;
-//
-//rowPatternMeasures
-//    : MEASURES rowPatternMeasureColumn (',' rowPatternMeasureColumn)*
-//    ;
-//
-//rowPatternMeasureColumn
-//    : expr AS cAlias
-//    ;
-//
-//rowPatternRowsPerMatch
-//    : ONE ROW PER MATCH | ALL ROWS PER MATCH
-//    ;
-//
-//rowPatternSkipTo
-//    : AFTER MATCH 
-//       ( 
-//           K_SKIP TO NEXT ROW
-//         | K_SKIP PAST LAST ROW 
-//         | K_SKIP TO FIRST variableName 
-//         | K_SKIP TO LAST variableName 
-//         | K_SKIP TO variableName
-//       )
-//    ;
-//
-//rowPattern
-//    : (rowPattern '|')? rowPatternTerm
-//    ;
-//
-//rowPatternTerm
-//    : rowPatternTerm? rowPatternFactor
-//    ;
-//
-//rowPatternFactor
-//    : rowPatternPrimary rowPatternQuantifier?
-//    ;
-//
-//rowPatternPrimary
-//    : variableName 
-//    | '$' 
-//    | '^' 
-//    | '(' rowPattern? ')' 
-//    | '{-' rowPattern '-}' 
-//    | rowPatternPermute
-//    ;
-//
-//rowPatternPermute
-//    : PERMUTE '(' rowPattern (',' rowPattern)* ')'
-//    ;
-//
-//rowPatternQuantifier
-//    : '*' '?'? 
-//    | '+' '?'? 
-//    | '?' '?'? 
-//    | '{' unsignedInteger? ',' unsignedInteger? '}' '?'? 
-//    | '{' unsignedInteger '}'
-//    ;
-//
-//rowPatternSubsetClause
-//    : SUBSET rowPatternSubsetItem (',' rowPatternSubsetItem)*
-//    ;
-//
-//rowPatternSubsetItem
-//    : variableName '=' '(' variableName (',' variableName)? ')'
-//    ;
-//
-//rowPatternDefinitionList
-//    : rowPatternDefinition (',' rowPatternDefinition)*
-//    ;
-//
-//rowPatternDefinition
-//    : variableName AS condition
-//    ;
-//
-//rowPatternRecFunc
-//    : rowPatternClassifierFunc 
-//    | rowPatternMatchNumFunc 
-//    | rowPatternNavigationFunc 
-//    | rowPatternAggregateFunc
-//    ;
-//
-//rowPatternClassifierFunc
-//    : CLASSIFIER '(' ')'
-//    ;
-//
-//rowPatternMatchNumFunc
-//    : MATCH_NUMBER '(' ')'
-//    ;
-//
-//rowPatternNavigationFunc
-//    : rowPatternNavLogical 
-//    | rowPatternNavPhysical 
-//    | rowPatternNavCompound
-//    ;
-//
-//rowPatternNavLogical
-//    : (RUNNING | FINAL)? (FIRST | LAST) '(' expr (',' offset)? ')'
-//    ;
-//
-//rowPatternNavPhysical
-//    : (PREV | NEXT) '(' expr (',' offset)? ')'
-//    ;
-//
-//rowPatternNavCompound
-//    : (PREV | NEXT) '(' (RUNNING | FINAL)? (FIRST | LAST) '(' expr (',' offset)? ')' (',' offset)? ')'
-//    ;
-//
-//rowPatternAggregateFunc
-//    : (RUNNING | FINAL)? aggregateFunction
-//    ;
-//
-//containersClause
-//    : CONTAINERS '(' (schema '.')? (table | view) ')'
-//    ;
-//
-//shardsClause
-//    : SHARDS '(' (schema '.')? (table | view) ')'
-//    ;
-//
-//pivotForClause
-//    : FOR (column | '(' column (',' column)* ')')
-//    ;
-//
-//pivotInClause
-//    : IN '(' 
-//          (
-//            ((expr | '(' expr (',' expr)* ')') (AS? alias=identifier)?)* 
-//          | subquery 
-//          | ANY (',' ANY)*
-//          )
-//      ')'
-//    ;
-//
-//partitionExtensionClause
-//    : PARTITION 
-//          ( '(' partition ')' 
-//          | FOR '(' partitionKeyValue (',' partitionKeyValue)* ')') 
-//    | SUBPARTITION
-//          ('(' subpartition ')' 
-//          | FOR '(' subpartitionKeyValue (',' subpartitionKeyValue)* ')')
-//    ;
-//
-//sampleClause
-//    : SAMPLE BLOCK? '(' samplePercent ')' (SEED '(' seedValue ')')?
-//    ;
-//
-//subqueryRestrictionClause
-//    : WITH (READ ONLY | CHECK OPTION) (CONSTRAINT constraint)?
-//    ;
-//
-//tableCollectionExpression
-//    : TABLE '(' collectionExpression ')' ('(' '+' ')')?
-//    ;
-//
-//collectionExpression
-//    : subquery
-//    | column=identifier
-////    | function
-////    | collectionConstructor
-//    ;
-//
-//hierarchiesClause
-//    : HIERARCHIES '(' (hierIds)? ')'
-//    ;
-//
-//hierIds
-//    : hierId (',' hierId)*
-//    ;
-//
-//hierId
-//    : MEASURES
-//    | identifier ('.' identifier)?
-//    ;
+
+flashbackQueryClause
+    : VERSIONS 
+        (BETWEEN (SCN | TIMESTAMP) (expr | MINVALUE) AND (expr | MAXVALUE) 
+        | PERIOD FOR validTimeColumn=column BETWEEN (expr | MINVALUE) AND (expr | MAXVALUE)) 
+    | AS OF 
+        ((SCN | TIMESTAMP) expr 
+        | AS OF PERIOD FOR validTimeColumn=column expr)
+    ;
+
+pivotClause
+    : PIVOT XML? 
+      '(' pivotItem (',' pivotItem)* pivotForClause pivotInClause ')'
+    ;
+
+pivotItem
+    : 
+//    aggregateFunction
+     '(' expr ')' (AS? alias=identifier)?
+    ;
+
+unpivotClause
+    : UNPIVOT ((INCLUDE | EXCLUDE) NULLS)?
+      '(' (column | '(' column (',' column)* ')') pivotForClause unpivotInClause ')'
+    ;
+
+unpivotInClause
+    : IN '(' unpivotInItem (',' unpivotInItem)* ')'
+    ;
+
+unpivotInItem
+    : (column | '(' column (',' column)* ')') 
+      (AS (literal | '(' literal (',' literal)* ')'))?
+    ;
+
+rowPatternClause
+    : MATCH_RECOGNIZE '(' 
+      rowPatternPartitionBy? 
+      rowPatternOrderBy? 
+      rowPatternMeasures? 
+      rowPatternRowsPerMatch? 
+      rowPatternSkipTo? 
+      PATTERN '(' rowPattern ')' 
+      rowPatternSubsetClause? DEFINE rowPatternDefinitionList ')'
+    ;
+
+rowPatternPartitionBy
+    : PARTITION BY column (',' column)*
+    ;
+
+rowPatternOrderBy
+    : ORDER BY column (',' column)*
+    ;
+
+rowPatternMeasures
+    : MEASURES rowPatternMeasureColumn (',' rowPatternMeasureColumn)*
+    ;
+
+rowPatternMeasureColumn
+    : expr AS cAlias
+    ;
+
+rowPatternRowsPerMatch
+    : ONE ROW PER MATCH | ALL ROWS PER MATCH
+    ;
+
+rowPatternSkipTo
+    : AFTER MATCH 
+       ( 
+           K_SKIP TO NEXT ROW
+         | K_SKIP PAST LAST ROW 
+         | K_SKIP TO FIRST variableName 
+         | K_SKIP TO LAST variableName 
+         | K_SKIP TO variableName
+       )
+    ;
+
+rowPattern
+    : rowPatternTerm ('|' rowPatternTerm)*
+    ;
+
+rowPatternTerm
+    : rowPatternFactor+
+    ;
+
+rowPatternFactor
+    : rowPatternPrimary rowPatternQuantifier?
+    ;
+
+rowPatternPrimary
+    : variableName 
+    | '$' 
+    | '^' 
+    | '(' rowPattern? ')' 
+    | '{-' rowPattern '-}' 
+    | rowPatternPermute
+    ;
+
+rowPatternPermute
+    : PERMUTE '(' rowPattern (',' rowPattern)* ')'
+    ;
+
+rowPatternQuantifier
+    : '*' '?'? 
+    | '+' '?'? 
+    | '?' '?'? 
+    | '{' S_INTEGER_WITHOUT_SIGN? ',' S_INTEGER_WITHOUT_SIGN? '}' '?'? 
+    | '{' S_INTEGER_WITHOUT_SIGN '}'
+    ;
+
+rowPatternSubsetClause
+    : SUBSET rowPatternSubsetItem (',' rowPatternSubsetItem)*
+    ;
+
+rowPatternSubsetItem
+    : variableName '=' '(' variableName (',' variableName)? ')'
+    ;
+
+rowPatternDefinitionList
+    : rowPatternDefinition (',' rowPatternDefinition)*
+    ;
+
+rowPatternDefinition
+    : variableName AS condition
+    ;
+
+rowPatternRecFunc
+    : rowPatternClassifierFunc 
+    | rowPatternMatchNumFunc 
+    | rowPatternNavigationFunc 
+    | rowPatternAggregateFunc
+    ;
+
+rowPatternClassifierFunc
+    : CLASSIFIER '(' ')'
+    ;
+
+rowPatternMatchNumFunc
+    : MATCH_NUMBER '(' ')'
+    ;
+
+rowPatternNavigationFunc
+    : rowPatternNavLogical 
+    | rowPatternNavPhysical 
+    | rowPatternNavCompound
+    ;
+
+rowPatternNavLogical
+    : (RUNNING | FINAL)? (FIRST | LAST) '(' expr (',' offset=expr)? ')'
+    ;
+
+rowPatternNavPhysical
+    : (PREV | NEXT) '(' expr (',' offset=expr)? ')'
+    ;
+
+rowPatternNavCompound
+    : (PREV | NEXT) '(' (RUNNING | FINAL)? (FIRST | LAST) '(' expr (',' offset=expr)? ')' (',' offset=expr)? ')'
+    ;
+
+rowPatternAggregateFunc
+    : (RUNNING | FINAL)? 
+//    aggregateFunction
+    ;
+
+containersClause
+    : CONTAINERS '(' (schema '.')? (table | view) ')'
+    ;
+
+shardsClause
+    : SHARDS '(' (schema '.')? (table | view) ')'
+    ;
+
+pivotForClause
+    : FOR (column | '(' column (',' column)* ')')
+    ;
+
+pivotInClause
+    : IN '(' 
+          (
+            ((expr | '(' expr (',' expr)* ')') (AS? alias=identifier)?)* 
+          | subquery 
+          | ANY (',' ANY)*
+          )
+      ')'
+    ;
+
+partitionExtensionClause
+    : PARTITION 
+          ( '(' partition=identifier ')' 
+          | FOR '(' partitionKeyValue=expr (',' partitionKeyValue=expr)* ')') 
+    | SUBPARTITION
+          ('(' subpartition=identifier ')' 
+          | FOR '(' subpartitionKeyValue=expr (',' subpartitionKeyValue=expr)* ')')
+    ;
+
+sampleClause
+    : SAMPLE BLOCK? '(' samplePercent=integer ')' (SEED '(' seedValue=integer ')')?
+    ;
+
+subqueryRestrictionClause
+    : WITH (READ ONLY | CHECK OPTION) (CONSTRAINT constraint)?
+    ;
+
+tableCollectionExpression
+    : TABLE '(' collectionExpression ')' ('(' '+' ')')?
+    ;
+
+collectionExpression
+    : subquery
+    | column
+//    | function
+//    | collectionConstructor
+    ;
+
+hierarchiesClause
+    : HIERARCHIES '(' (hierIds)? ')'
+    ;
+
+hierIds
+    : hierId (',' hierId)*
+    ;
+
+hierId
+    : MEASURES
+    | identifier ('.' identifier)?
+    ;
 
 whereClause
     : WHERE condition
     ;
 
-//hierarchicalQueryClause
-//    : (CONNECT BY NOCYCLE? condition (START WITH condition)? | START WITH condition CONNECT BY NOCYCLE? condition)
-//    ;
+hierarchicalQueryClause
+    : CONNECT BY NOCYCLE? condition (START WITH condition)? #connectByHierarchicalQueryClause
+    | START WITH condition CONNECT BY NOCYCLE? condition    #startWithHierarchicalQueryClause
+    ;
 
 groupByClause
     : GROUP BY groupByItem (',' groupByItem)* (HAVING condition)?
@@ -829,86 +835,109 @@ expressionList
     : (expr (',' expr)* | '(' (expr (',' expr)?)* ')')
     ;
 
-//modelClause
-//    : MODEL cellReferenceOptions? returnRowsClause? referenceModel* mainModel
-//    ;
-//
-//cellReferenceOptions
-//    : ((IGNORE | KEEP) NAV)? (UNIQUE (DIMENSION | SINGLE REFERENCE))?
-//    ;
-//
-//returnRowsClause
-//    : RETURN (UPDATED | ALL) ROWS
-//    ;
-//
-//referenceModel
-//    : REFERENCE referenceModelName ON '(' subquery ')' modelColumnClauses cellReferenceOptions?
-//    ;
-//
-//modelColumnClauses
-//    : (PARTITION BY '(' modelColumnItems ')')? 
-//      DIMENSION BY '(' modelColumnItems ')' 
-//      MEASURES '(' modelColumnItems ')'
-//    ;
-//
-//modelColumnItem
-//    : expr cAlias?
-//    ;
-//
-//modelColumnItems
-//    : modelColumnItem (',' modelColumnItem)*
-//    ;
-//
-//mainModel
-//    : (MAIN mainModelName)? modelColumnClauses cellReferenceOptions? modelRulesClause
-//    ;
-//
-//modelRulesClause
-//    : (RULES 
-//          (UPDATE | UPSERT ALL?)? 
-//          ((AUTOMATIC | SEQUENTIAL) ORDER)? 
-//          modelIterateClause?
-//      )? 
-//      '(' modelRulesItem (',' modelRulesItem)* ')'
-//    ;
-//
-//modelRulesItem
-//    : (UPDATE | UPSERT ALL?)? cellAssignment orderByClause? '=' expr
-//    ;
-//
-//modelIterateClause
-//    : ITERATE '(' number ')' (UNTIL '(' condition ')')?
-//    ;
-//
-//cellAssignment
-//    : measureColumn '[' (cellAssignmentItem (',' cellAssignmentItem)* | multiColumnForLoop) ']'
-//    ;
-//
-//cellAssignmentItem
-//    : condition
-//    | expr 
-//    | singleColumnForLoop
-//    ;
-//
-//singleColumnForLoop
-//    : FOR dimensionColumn (IN '(' (literal (',' literal)* | subquery) ')' | (LIKE pattern)? FROM literal TO literal (INCREMENT | DECREMENT) literal)
-//    ;
-//
-//multiColumnForLoop
-//    : FOR '(' dimensionColumn (',' dimensionColumn)* ')' IN '(' ('(' literal (',' literal)* ')' ('(' literal (',' literal)* ')')* | subquery) ')'
-//    ;
-//
-//windowClause
-//    : WINDOW windowClauseItem (',' windowClauseItem)*
-//    ;
-//
-//windowClauseItem
-//    : windowName AS windowSpecification
-//    ;
-//
-//windowSpecification
-//    : existingWindowName? queryPartitionClause? orderByClause? windowingClause?
-//    ;
+modelClause
+    : MODEL cellReferenceOptions returnRowsClause? referenceModel* mainModel
+    ;
+
+cellReferenceOptions
+    : ((IGNORE | KEEP) NAV)? (UNIQUE (DIMENSION | SINGLE REFERENCE))?
+    ;
+
+returnRowsClause
+    : RETURN (UPDATED | ALL) ROWS
+    ;
+
+referenceModel
+    : REFERENCE referenceModelName=identifier ON '(' subquery ')' modelColumnClauses cellReferenceOptions
+    ;
+
+modelColumnClauses
+    : (PARTITION BY '(' modelColumnItems ')')? 
+      DIMENSION BY '(' modelColumnItems ')' 
+      MEASURES '(' modelColumnItems ')'
+    ;
+
+modelColumnItem
+    : expr cAlias?
+    ;
+
+modelColumnItems
+    : modelColumnItem (',' modelColumnItem)*
+    ;
+
+mainModel
+    : (MAIN mainModelName=identifier)? modelColumnClauses cellReferenceOptions modelRulesClause
+    ;
+
+modelRulesClause
+    : (RULES 
+          (UPDATE | UPSERT ALL?)? 
+          ((AUTOMATIC | SEQUENTIAL) ORDER)? 
+          modelIterateClause?
+      )? 
+      '(' modelRulesItem (',' modelRulesItem)* ')'
+    ;
+
+modelRulesItem
+    : (UPDATE | UPSERT ALL?)? cellAssignment orderByClause? '=' expr
+    ;
+
+modelIterateClause
+    : ITERATE '(' numberLiteral ')' (UNTIL '(' condition ')')?
+    ;
+
+cellAssignment
+    : measureColumn=cAlias '[' (cellAssignmentItem (',' cellAssignmentItem)* | multiColumnForLoop) ']'
+    ;
+
+cellAssignmentItem
+    : condition
+    | expr 
+    | singleColumnForLoop
+    ;
+
+singleColumnForLoop
+    : FOR dimensionColumn=cAlias (IN '(' (literal (',' literal)* | subquery) ')' | (LIKE pattern=stringLiteral)? FROM literal TO literal (INCREMENT | DECREMENT) literal)
+    ;
+
+multiColumnForLoop
+    : FOR '(' dimensionColumn=cAlias (',' dimensionColumn=cAlias)* ')' IN '(' ('(' literal (',' literal)* ')' ('(' literal (',' literal)* ')')* | subquery) ')'
+    ;
+
+windowClause
+    : WINDOW windowClauseItem (',' windowClauseItem)*
+    ;
+
+windowClauseItem
+    : windowName=identifier AS existingWindowName=identifier? queryPartitionClause? orderByClause? windowingClause?
+    ;
+
+windowingClause
+    : ( ROWS | RANGE )
+      ( BETWEEN
+        ( UNBOUNDED PRECEDING
+        | CURRENT ROW
+        | value_expr=expr ( PRECEDING | FOLLOWING )
+        ) 
+        AND
+        ( UNBOUNDED FOLLOWING
+        | CURRENT ROW
+        | value_expr=expr ( PRECEDING | FOLLOWING )
+        )
+      | ( UNBOUNDED PRECEDING
+        | CURRENT ROW
+        | value_expr=expr PRECEDING
+        )
+      )
+    ;
+
+constraint
+    :
+//    : inlineConstraint
+//    | outOfLineConstraint
+//    | inlineRefConstraint
+//    | outOfLineRefConstraint
+    ;
 
 condition
     : comparisonCondition
@@ -1040,6 +1069,22 @@ fullObjectPath
     : identifier ('.' identifier)?
     ;
 
+variableName
+    : identifier
+    ;
+
+dblink
+    : identifier
+    ;
+
+tAlias // table alias
+    : identifier
+    ;
+
+cAlias // column alias
+    : identifier
+    ;
+
 sequence
     : identifier
     ;
@@ -1082,6 +1127,13 @@ integer
     | S_INTEGER_WITHOUT_SIGN
     ;
 
+literal
+    : intervalLiteral
+    | numberLiteral
+    | stringLiteral
+    | dateTimeLiteral
+    ;
+
 numberLiteral
     : S_NUMBER_WITH_SIGN
     | S_INTEGER_WITH_SIGN
@@ -1089,14 +1141,23 @@ numberLiteral
     | S_NUMBER_WITHOUT_SIGN
     ;
 
-// '...'
-// Q'...'
-// N'...'
-// NQ'...'
+// '…'
+// Q'…'
+// N'…'
+// NQ'…'
 stringLiteral
     : SINGLE_QUOTED_STRING
     | v=QUOTED_STRING     { validateStringLiteral($v.text) }?
     | v=NATIONAL_STRING   { validateStringLiteral($v.text) }?
+    ;
+
+dateTimeLiteral
+    : DATE SINGLE_QUOTED_STRING         #dateLiteral
+    | TIMESTAMP SINGLE_QUOTED_STRING    #timestampLiteral
+    ;
+
+intervalLiteral
+    : INTERVAL SINGLE_QUOTED_STRING (YEAR|MONTH) ('(' precision=expr ')')? (TO (YEAR|MONTH))?
     ;
 
 identifier
