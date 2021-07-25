@@ -24,6 +24,7 @@ delete
 create
     : createAnalyticView
     | createAttributeDimension
+    | createAuditPolicy
     ;
 
 createAnalyticView
@@ -51,6 +52,1109 @@ createAttributeDimension
       attributesClause
       attrDimLevelClause*
       allClause?
+    ;
+
+createAuditPolicy
+    : CREATE AUDIT POLICY policy=identifier
+      privilegeAuditClause?
+      actionAuditClause?
+      roleAuditClause?
+      (WHEN 
+       S_SINGLE_QUOTE auditCondition S_SINGLE_QUOTE
+       EVALUATE PER (STATEMENT|SESSION|INSTANCE)
+      )?
+      (ONLY TOPLEVEL)?
+      (CONTAINER '=' (ALL|CURRENT))?
+    ;
+
+privilegeAuditClause
+    : PRIVILEGES systemPrivilege (',' systemPrivilege)*
+    ;
+
+actionAuditClause
+    : (standardActions|componentActions)+
+    ;
+
+standardActions
+    : ACTIONS standardAction (',' standardAction)*
+    ;
+
+standardAction
+    : (objectAction|ALL) ON 
+       (
+         DIRECTORY directoryName=identifier
+       | MINING MODEL (schema '.')? identifier
+       | (schema '.')? identifier
+       )                                        #objectStandardAction
+    | (systemAction|ALL)                        #systemStandardAction
+    ;
+
+componentActions
+    : ACTIONS COMPONENT '=' 
+      (
+        (DATAPUMP|DIRECT_LOAD|OLS|XS) componentAction (',' componentAction)*
+      | DV componentAction ON identifier (',' componentAction ON identifier)*
+      | PROTOCOL (FTP|HTTP|AUTHENTICATION)
+      )
+    ;
+
+roleAuditClause
+    : ROLES role (',' role)*
+    ;
+
+systemPrivilege
+    : systemAdministerPrivilege
+    | systemAdvancedQueuingPrivilege
+    | systemAdvisorFrameworkPrivilege
+    | systemAlterAnyPrivilegesPrivilege
+    | systemAlterPrivilegesPrivilege
+    | systemAnalyticViewsPrivilege
+    | systemAnalyzePrivilegesPrivilege
+    | systemAssemblyPrivilegesPrivilege
+    | systemAttributeDimensionsPrivilege
+    | systemAuditPrivilegesPrivilege
+    | systemBackupPrivilegesPrivilege
+    | systemClustersPrivilege
+    | systemCommentPrivilegesPrivilege
+    | systemContainerDatabasePrivilege
+    | systemContextsPrivilege
+    | systemCreateAnyPrivilegesPrivilege
+    | systemCreatePrivilegesPrivilege
+    | systemDatabaseSystemPrivilege
+    | systemDatabaseLinksPrivilege
+    | systemDatastorePrivilege
+    | systemDebugPrivilege
+    | systemDeletePrivilege
+    | systemDiagnosticsPrivilege
+    | systemDimensionsPrivilege
+    | systemDirectoriesPrivilege
+    | systemDropAnyPrivilegesPrivilege
+    | systemDropPrivilegesPrivilege
+    | systemEditionsPrivilege
+    | systemEnterpriseManagerPrivilege
+    | systemEvaluationContextPrivilege
+    | systemExecutePrivilegesPrivilege
+    | systemExemptPrivilegesPrivilege
+    | systemExportImportPrivilege
+    | systemFineGrainedAccessControlPrivilege
+    | systemFileGroupPrivilege
+    | systemFlashbackPrivilege
+    | systemForcePrivilege
+    | systemGrantPrivilege
+    | systemHierarchiesPrivilege
+    | systemIndexesPrivilege
+    | systemIndextypePrivilege
+    | systemInheritPrivilege
+    | systemInsertPrivilege
+    | systemJobSchedulerPrivilege
+    | systemLibrariesPrivilege
+    | systemLocksPrivilege
+    | systemLockdownProfilePrivilege
+    | systemLogMiningPrivilege
+    | systemLogicalPartitionTrackingPrivilege
+    | systemMaterializedViewsPrivilege
+    | systemMeasureFoldersPrivilege
+    | systemMiningModelsPrivilege
+    | systemMultiLingualEnginePrivilege
+    | systemNotificationPrivilegePrivilege
+    | systemOlapCubesPrivilege
+    | systemOlapCubeBuildPrivilege
+    | systemOlapCubeDimensionsPrivilege
+    | systemOlapCubeMeasureFoldersPrivilege
+    | systemOperatorPrivilege
+    | systemOutlinesPrivilege
+    | systemPlanManagementPrivilege
+    | systemPoliciesPrivilege
+    | systemProceduresPrivilege
+    | systemProfilesPrivilege
+    | systemQueryRewritePrivilege
+    | systemReadAnyPrivilege
+    | systemRealApplicationTestingPrivilege
+    | systemRedactionPrivilege
+    | systemResumablePrivilege
+    | systemRolesPrivilege
+    | systemRollbackSegmentPrivilege
+    | systemSchedulerPrivilege
+    | systemSelectPrivilege
+    | systemSequencePrivilege
+    | systemSessionPrivilege
+    | systemSynonymPrivilege
+    | systemSqlTranslationPrivilege
+    | systemSystemPrivilegesPrivilege
+    | systemTablesPrivilege
+    | systemTablespacesPrivilege
+    | systemTransactionsPrivilege
+    | systemTriggersPrivilege
+    | systemTypesPrivilege
+    | systemUnderPrivilege
+    | systemUpdatePrivilege
+    | systemUserPrivilege
+    | systemViewPrivilege
+    | systemWritePrivilege
+    ;
+
+systemAdministerPrivilege
+    : ADMINISTER ANY SQL TUNING SET
+    | ADMINISTER DATABASE TRIGGER
+    | ADMINISTER KEY MANAGEMENT
+    | ADMINISTER RESOURCE MANAGER
+    | ADMINISTER SQL MANAGEMENT OBJECT
+    | ADMINISTER SQL TUNING SET
+    | FLASHBACK ARCHIVE ADMINISTER
+    | GRANT ANY OBJECT PRIVILEGE
+    | GRANT ANY PRIVILEGE
+    | GRANT ANY ROLE
+    | MANAGE ANY FILE GROUP
+    | MANAGE ANY QUEUE
+    | MANAGE FILE GROUP
+    | MANAGE SCHEDULER
+    | MANAGE TABLESPACE
+    ;
+
+systemAdvancedQueuingPrivilege
+    : DEQUEUE ANY QUEUE
+    | ENQUEUE ANY QUEUE
+    | MANAGE ANY QUEUE
+    ;
+
+systemAdvisorFrameworkPrivilege
+    : ADMINISTER ANY SQL TUNING SET
+    | ADMINISTER SQL MANAGEMENT OBJECT
+    | ADMINISTER SQL TUNING SET
+    | ADVISOR
+    | ALTER ANY SQL PROFILE
+    | CREATE ANY SQL PROFILE
+    | DROP ANY SQL PROFILE
+    ;
+
+systemAlterAnyPrivilegesPrivilege
+    : ALTER ANY ANALYTIC VIEW
+    | ALTER ANY ASSEMBLY
+    | ALTER ANY ATTRIBUTE DIMENSION 
+    | ALTER ANY CLUSTER
+    | ALTER ANY CUBE
+    | ALTER ANY CUBE BUILD PROCESS
+    | ALTER ANY CUBE DIMENSION
+    | ALTER ANY DIMENSION
+    | ALTER ANY EDITION
+    | ALTER ANY EVALUATION CONTEXT
+    | ALTER ANY HIERARCHY
+    | ALTER ANY INDEX
+    | ALTER ANY INDEXTYPE
+    | ALTER ANY LIBRARY
+    | ALTER ANY MATERIALIZED VIEW
+    | ALTER ANY MEASURE FOLDER
+    | ALTER ANY MINING MODEL
+    | ALTER ANY OPERATOR
+    | ALTER ANY OUTLINE
+    | ALTER ANY PROCEDURE
+    | ALTER ANY ROLE
+    | ALTER ANY RULE
+    | ALTER ANY RULE SET
+    | ALTER ANY SEQUENCE
+    | ALTER ANY SQL PROFILE
+    | ALTER ANY SQL TRANSLATION PROFILE
+    | ALTER ANY TABLE
+    | ALTER ANY TRIGGER
+    | ALTER ANY TYPE
+    ;
+
+systemAlterPrivilegesPrivilege
+    : ALTER DATABASE
+    | ALTER DATABASE LINK
+    | ALTER LOCKDOWN PROFILE
+    | ALTER PROFILE
+    | ALTER PUBLIC DATABASE LINK
+    | ALTER RESOURCE COST
+    | ALTER ROLLBACK SEGMENT
+    | ALTER SESSION
+    | ALTER SYSTEM
+    | ALTER TABLESPACE
+    | ALTER USER
+    ;
+
+systemAnalyticViewsPrivilege
+    : ALTER ANY ANALYTIC VIEW
+    | CREATE ANY ANALYTIC VIEW
+    | CREATE ANALYTIC VIEW
+    | DROP ANY ANALYTIC VIEW
+    | READ ANY ANALYTIC VIEW CACHE
+    | WRITE ANY ANALYTIC VIEW CACHE
+    ;
+
+systemAnalyzePrivilegesPrivilege
+    : ANALYZE ANY
+    | ANALYZE ANY DICTIONARY
+    ;
+
+systemAssemblyPrivilegesPrivilege
+    : ALTER ANY ASSEMBLY
+    | CREATE ANY ASSEMBLY
+    | CREATE ASSEMBLY
+    | DROP ANY ASSEMBLY
+    | EXECUTE ANY ASSEMBLY
+    | EXECUTE ASSEMBLY
+    ;
+
+systemAttributeDimensionsPrivilege
+    : ALTER ANY ATTRIBUTE DIMENSION
+    | CREATE ANY ATTRIBUTE DIMENSION
+    | CREATE ATTRIBUTE DIMENSION
+    | DROP ANY ATTRIBUTE DIMENSION
+    ;
+
+systemAuditPrivilegesPrivilege
+    : AUDIT ANY
+    | AUDIT SYSTEM
+    ;
+
+systemBackupPrivilegesPrivilege
+    : BACKUP ANY TABLE
+    ;
+
+systemClustersPrivilege
+    : ALTER ANY CLUSTER
+    | CREATE ANY CLUSTER
+    | CREATE CLUSTER
+    | DROP ANY CLUSTER
+    ;
+
+systemCommentPrivilegesPrivilege
+    : COMMENT ANY MINING MODEL
+    | COMMENT ANY TABLE
+    ;
+
+systemContainerDatabasePrivilege
+    : CREATE PLUGGABLE DATABASE
+    | SET CONTAINER
+    ;
+
+systemContextsPrivilege
+    : CREATE ANY CONTEXT
+    | DROP ANY CONTEXT
+    ;
+
+systemCreateAnyPrivilegesPrivilege
+    : CREATE ANY ANALYTIC VIEW
+    | CREATE ANY ASSEMBLY
+    | CREATE ANY ATTRIBUTE DIMENSION
+    | CREATE ANY CLUSTER
+    | CREATE ANY CONTEXT
+    | CREATE ANY CREDENTIAL
+    | CREATE ANY CUBE
+    | CREATE ANY CUBE BUILD PROCESS
+    | CREATE ANY CUBE DIMENSION
+    | CREATE ANY DIMENSION
+    | CREATE ANY DIRECTORY
+    | CREATE ANY EDITION
+    | CREATE ANY EVALUATION CONTEXT
+    | CREATE ANY HIERARCHY
+    | CREATE ANY INDEX
+    | CREATE ANY INDEXTYPE
+    | CREATE ANY JOB
+    | CREATE ANY LIBRARY
+    | CREATE ANY MATERIALIZED VIEW
+    | CREATE ANY MEASURE FOLDER
+    | CREATE ANY MINING MODEL
+    | CREATE ANY OPERATOR
+    | CREATE ANY OUTLINE
+    | CREATE ANY PROCEDURE
+    | CREATE ANY RULE
+    | CREATE ANY RULE SET
+    | CREATE ANY SEQUENCE
+    | CREATE ANY SQL PROFILE
+    | CREATE ANY SQL TRANSLATION PROFILE
+    | CREATE ANY SYNONYM
+    | CREATE ANY TABLE
+    | CREATE ANY TRIGGER
+    | CREATE ANY TYPE
+    | CREATE ANY VIEW
+    ;
+
+systemCreatePrivilegesPrivilege
+    : CREATE ANALYTIC VIEW
+    | CREATE ASSEMBLY
+    | CREATE ATTRIBUTE DIMENSION
+    | CREATE CLUSTER
+    | CREATE CREDENTIAL
+    | CREATE CUBE
+    | CREATE CUBE BUILD PROCESS
+    | CREATE CUBE DIMENSION
+    | CREATE DATABASE LINK
+    | CREATE DIMENSION
+    | CREATE EVALUATION CONTEXT
+    | CREATE EXTERNAL JOB
+    | CREATE HIERARCHY
+    | CREATE INDEXTYPE
+    | CREATE JOB
+    | CREATE LIBRARY
+    | CREATE LOCKDOWN PROFILE 
+    | CREATE LOGICAL PARTITION TRACKING
+    | CREATE MATERIALIZED VIEW
+    | CREATE MEASURE FOLDER
+    | CREATE MINING MODEL
+    | CREATE OPERATOR
+    | CREATE PLUGGABLE DATABASE
+    | CREATE PROCEDURE
+    | CREATE PROFILE
+    | CREATE PUBLIC DATABASE LINK
+    | CREATE PUBLIC SYNONYM
+    | CREATE ROLE
+    | CREATE ROLLBACK SEGMENT
+    | CREATE RULE
+    | CREATE RULE SET
+    | CREATE SEQUENCE
+    | CREATE SESSION
+    | CREATE SQL TRANSLATION PROFILE
+    | CREATE SYNONYM
+    | CREATE TABLE
+    | CREATE TABLESPACE
+    | CREATE TRIGGER
+    | CREATE TYPE
+    | CREATE USER
+    | CREATE VIEW
+    ;
+
+systemDatabaseSystemPrivilege
+    : ALTER DATABASE
+    | ALTER SYSTEM
+    | AUDIT SYSTEM
+    | CREATE PLUGGABLE DATABASE
+    ;
+
+systemDatabaseLinksPrivilege
+    : ALTER DATABASE LINK
+    | ALTER PUBLIC DATABASE LINK
+    | CREATE DATABASE LINK
+    | CREATE PUBLIC DATABASE LINK
+    | DROP PUBLIC DATABASE LINK
+    ;
+
+systemDatastorePrivilege
+    : TEXT DATASTORE ACCESS
+    ;
+
+systemDebugPrivilege
+    : DEBUG ANY PROCEDURE
+    | DEBUG CONNECT ANY
+    | DEBUG CONNECT SESSION
+    ;
+
+systemDeletePrivilege
+    : DELETE ANY CUBE DIMENSION
+    | DELETE ANY MEASURE FOLDER
+    | DELETE ANY TABLE
+    ;
+
+systemDiagnosticsPrivilege
+    : ENABLE DIAGNOSTICS
+    ;
+
+systemDimensionsPrivilege
+    : ALTER ANY DIMENSION
+    | CREATE ANY DIMENSION
+    | CREATE DIMENSION
+    | DROP ANY DIMENSION
+    ;
+
+systemDirectoriesPrivilege
+    : CREATE ANY DIRECTORY
+    | DROP ANY DIRECTORY
+    ;
+
+systemDropAnyPrivilegesPrivilege
+    : DROP ANY ANALYTIC VIEW
+    | DROP ANY ASSEMBLY
+    | DROP ANY ATTRIBUTE DIMENSION
+    | DROP ANY CLUSTER
+    | DROP ANY CONTEXT
+    | DROP ANY CUBE
+    | DROP ANY CUBE BUILD PROCESS
+    | DROP ANY CUBE DIMENSION
+    | DROP ANY DIMENSION
+    | DROP ANY DIRECTORY
+    | DROP ANY EDITION
+    | DROP ANY EVALUATION CONTEXT
+    | DROP ANY HIERARCHY
+    | DROP ANY INDEX
+    | DROP ANY INDEXTYPE
+    | DROP ANY LIBRARY
+    | DROP ANY MATERIALIZED VIEW
+    | DROP ANY MEASURE FOLDER
+    | DROP ANY MINING MODEL
+    | DROP ANY OPERATOR
+    | DROP ANY OUTLINE
+    | DROP ANY PROCEDURE
+    | DROP ANY ROLE
+    | DROP ANY RULE
+    | DROP ANY RULE SET
+    | DROP ANY SEQUENCE
+    | DROP ANY SQL PROFILE
+    | DROP ANY SQL TRANSLATION PROFILE
+    | DROP ANY SYNONYM
+    | DROP ANY TABLE
+    | DROP ANY TRIGGER
+    | DROP ANY TYPE
+    | DROP ANY VIEW
+    ;
+
+systemDropPrivilegesPrivilege
+    : DROP LOCKDOWN PROFILE
+    | DROP LOGICAL PARTITION TRACKING 
+    | DROP PROFILE
+    | DROP PUBLIC DATABASE LINK
+    | DROP PUBLIC SYNONYM
+    | DROP ROLLBACK SEGMENT
+    | DROP TABLESPACE
+    | DROP USER
+    ;
+
+systemEditionsPrivilege
+    : ALTER ANY EDITION
+    | CREATE ANY EDITION
+    | DROP ANY EDITION
+    ;
+
+systemEnterpriseManagerPrivilege
+    : EM EXPRESS CONNECT
+    ;
+
+systemEvaluationContextPrivilege
+    : ALTER ANY EVALUATION CONTEXT
+    | CREATE ANY EVALUATION CONTEXT
+    | DROP ANY EVALUATION CONTEXT
+    | EXECUTE ANY EVALUATION CONTEXT
+    | CREATE EVALUATION CONTEXT
+    ;
+
+systemExecutePrivilegesPrivilege
+    : EXECUTE ANY ASSEMBLY
+    | EXECUTE ANY CLASS
+    | EXECUTE ANY EVALUATION CONTEXT
+    | EXECUTE ANY INDEXTYPE
+    | EXECUTE ANY LIBRARY
+    | EXECUTE ANY OPERATOR
+    | EXECUTE ANY PROCEDURE
+    | EXECUTE ANY PROGRAM
+    | EXECUTE ANY RULE
+    | EXECUTE ANY RULE SET
+    | EXECUTE ANY TYPE
+    | EXECUTE ASSEMBLY
+    | EXECUTE DYNAMIC MLE 
+    ;
+
+systemExemptPrivilegesPrivilege
+    : EXEMPT ACCESS POLICY
+    | EXEMPT IDENTITY POLICY
+    | EXEMPT REDACTION POLICY
+    ;
+
+systemExportImportPrivilege
+    : EXPORT FULL DATABASE
+    | IMPORT FULL DATABASE
+    ;
+
+systemFineGrainedAccessControlPrivilege
+    : EXEMPT ACCESS POLICY
+    ;
+
+systemFileGroupPrivilege
+    : MANAGE ANY FILE GROUP
+    | MANAGE FILE GROUP
+    | READ ANY FILE GROUP
+    ;
+
+systemFlashbackPrivilege
+    : FLASHBACK ANY TABLE
+    | FLASHBACK ARCHIVE ADMINISTER
+    | PURGE DBA_RECYCLEBIN
+    ;
+
+systemForcePrivilege
+    : FORCE ANY TRANSACTION
+    | FORCE TRANSACTION
+    ;
+
+systemGrantPrivilege
+    : GRANT ANY OBJECT PRIVILEGE
+    | GRANT ANY PRIVILEGE
+    | GRANT ANY ROLE
+    ;
+
+systemHierarchiesPrivilege
+    : ALTER ANY HIERARCHY
+    | CREATE ANY HIERARCHY
+    | CREATE HIERARCHY
+    | DROP ANY HIERARCHY
+    ;
+
+systemIndexesPrivilege
+    : ALTER ANY INDEX
+    | CREATE ANY INDEX
+    | DROP ANY INDEX
+    ;
+
+systemIndextypePrivilege
+    : ALTER ANY INDEXTYPE
+    | CREATE ANY INDEXTYPE
+    | CREATE INDEXTYPE
+    | DROP ANY INDEXTYPE
+    | EXECUTE ANY INDEXTYPE
+    ;
+
+systemInheritPrivilege
+    : INHERIT ANY PRIVILEGES
+    | INHERIT ANY REMOTE PRIVILEGES
+    ;
+
+systemInsertPrivilege
+    : INSERT ANY CUBE DIMENSION
+    | INSERT ANY MEASURE FOLDER
+    | INSERT ANY TABLE
+    ;
+
+systemJobSchedulerPrivilege
+    : CREATE ANY JOB
+    | CREATE EXTERNAL JOB
+    | CREATE JOB
+    | EXECUTE ANY CLASS
+    | EXECUTE ANY PROGRAM
+    | MANAGE SCHEDULER
+    | USE ANY JOB RESOURCE
+    ;
+
+systemLibrariesPrivilege
+    : ALTER ANY LIBRARY
+    | CREATE ANY LIBRARY
+    | CREATE LIBRARY
+    | DROP ANY LIBRARY
+    | EXECUTE ANY LIBRARY
+    ;
+
+systemLocksPrivilege
+    : LOCK ANY TABLE
+    ;
+
+systemLockdownProfilePrivilege
+    : ALTER LOCKDOWN PROFILE
+    | CREATE LOCKDOWN PROFILE
+    | DROP LOCKDOWN PROFILE
+    ;
+
+systemLogMiningPrivilege
+    : LOGMINING
+    ;
+
+systemLogicalPartitionTrackingPrivilege
+    : CREATE LOGICAL PARTITION TRACKING 
+    | DROP LOGICAL PARTITION TRACKING 
+    ;
+
+systemMaterializedViewsPrivilege
+    : ALTER ANY MATERIALIZED VIEW
+    | CREATE ANY MATERIALIZED VIEW
+    | CREATE MATERIALIZED VIEW
+    | DROP ANY MATERIALIZED VIEW
+    | FLASHBACK ANY TABLE
+    | GLOBAL QUERY REWRITE
+    | ON COMMIT REFRESH
+    | QUERY REWRITE
+    ;
+
+systemMeasureFoldersPrivilege
+    : ALTER ANY MEASURE FOLDER
+    | CREATE ANY MEASURE FOLDER
+    | CREATE MEASURE FOLDER
+    | DELETE ANY MEASURE FOLDER
+    | DROP ANY MEASURE FOLDER
+    | INSERT ANY MEASURE FOLDER
+    ;
+
+systemMiningModelsPrivilege
+    : ALTER ANY MINING MODEL
+    | COMMENT ANY MINING MODEL
+    | CREATE ANY MINING MODEL
+    | CREATE MINING MODEL
+    | DROP ANY MINING MODEL
+    | SELECT ANY MINING MODEL
+    ;
+
+systemMultiLingualEnginePrivilege
+    : EXECUTE DYNAMIC MLE
+    ;
+
+systemNotificationPrivilegePrivilege
+    : CHANGE NOTIFICATION
+    ;
+
+systemOlapCubesPrivilege
+    : ALTER ANY CUBE
+    | CREATE ANY CUBE
+    | CREATE CUBE
+    | DROP ANY CUBE
+    | SELECT ANY CUBE
+    | UPDATE ANY CUBE
+    ;
+
+systemOlapCubeBuildPrivilege
+    : ALTER ANY CUBE BUILD PROCESS
+    | CREATE ANY CUBE BUILD PROCESS
+    | CREATE CUBE BUILD PROCESS
+    | DROP ANY CUBE BUILD PROCESS
+    | UPDATE ANY CUBE BUILD PROCESS
+    ;
+
+systemOlapCubeDimensionsPrivilege
+    : ALTER ANY CUBE DIMENSION
+    | CREATE ANY CUBE DIMENSION
+    | CREATE CUBE DIMENSION
+    | DELETE ANY CUBE DIMENSION
+    | DROP ANY CUBE DIMENSION
+    | INSERT ANY CUBE DIMENSION
+    | SELECT ANY CUBE DIMENSION
+    | UPDATE ANY CUBE DIMENSION
+    ;
+
+systemOlapCubeMeasureFoldersPrivilege
+    : CREATE ANY MEASURE FOLDER
+    | CREATE MEASURE FOLDER
+    | DELETE ANY MEASURE FOLDER
+    | DROP ANY MEASURE FOLDER
+    | INSERT ANY MEASURE FOLDER
+    ;
+
+systemOperatorPrivilege
+    : ALTER ANY OPERATOR
+    | CREATE ANY OPERATOR
+    | CREATE OPERATOR
+    | DROP ANY OPERATOR
+    | EXECUTE ANY OPERATOR
+    ;
+
+systemOutlinesPrivilege
+    : ALTER ANY OUTLINE
+    | CREATE ANY OUTLINE
+    | DROP ANY OUTLINE
+    ;
+
+systemPlanManagementPrivilege
+    : ADMINISTER SQL MANAGEMENT OBJECT
+    ;
+
+systemPoliciesPrivilege
+    : EXEMPT ACCESS POLICY
+    | EXEMPT IDENTITY POLICY
+    | EXEMPT REDACTION POLICY
+    ;
+
+systemProceduresPrivilege
+    : ALTER ANY PROCEDURE
+    | CREATE ANY PROCEDURE
+    | CREATE PROCEDURE
+    | DROP ANY PROCEDURE
+    | EXECUTE ANY PROCEDURE
+    | INHERIT ANY REMOTE PRIVILEGES
+    ;
+
+systemProfilesPrivilege
+    : ALTER PROFILE
+    | CREATE PROFILE
+    | DROP PROFILE
+    ;
+
+systemQueryRewritePrivilege
+    : GLOBAL QUERY REWRITE
+    | QUERY REWRITE
+    ;
+
+systemReadAnyPrivilege
+    : READ ANY ANALYTIC VIEW CACHE
+    | READ ANY FILE GROUP
+    | READ ANY TABLE
+    ;
+
+systemRealApplicationTestingPrivilege
+    : KEEP DATE TIME
+    | KEEP SYSGUID
+    ;
+
+systemRedactionPrivilege
+    : EXEMPT REDACTION POLICY
+    ;
+
+systemResumablePrivilege
+    : RESUMABLE
+    ;
+
+systemRolesPrivilege
+    : ALTER ANY ROLE
+    | CREATE ROLE
+    | DROP ANY ROLE
+    | GRANT ANY ROLE
+    ;
+
+systemRollbackSegmentPrivilege
+    : ALTER ROLLBACK SEGMENT
+    | CREATE ROLLBACK SEGMENT
+    | DROP ROLLBACK SEGMENT
+    ;
+
+systemSchedulerPrivilege
+    : MANAGE SCHEDULER
+    ;
+
+systemSelectPrivilege
+    : SELECT ANY CUBE
+    | SELECT ANY CUBE BUILD PROCESS
+    | SELECT ANY CUBE DIMENSION
+    | SELECT ANY DICTIONARY
+    | SELECT ANY MEASURE FOLDER
+    | SELECT ANY MINING MODEL
+    | SELECT ANY SEQUENCE
+    | SELECT ANY TABLE
+    | SELECT ANY TRANSACTION
+    ;
+
+systemSequencePrivilege
+    : ALTER ANY SEQUENCE
+    | CREATE ANY SEQUENCE
+    | CREATE SEQUENCE
+    | DROP ANY SEQUENCE
+    | SELECT ANY SEQUENCE
+    ;
+
+systemSessionPrivilege
+    : ALTER RESOURCE COST
+    | ALTER SESSION
+    | CREATE SESSION
+    | RESTRICTED SESSION
+    ;
+
+systemSynonymPrivilege
+    : CREATE ANY SYNONYM
+    | CREATE PUBLIC SYNONYM
+    | CREATE SYNONYM
+    | DROP ANY SYNONYM
+    | DROP PUBLIC SYNONYM
+    ;
+
+systemSqlTranslationPrivilege
+    : ALTER ANY SQL TRANSLATION PROFILE
+    | CREATE ANY SQL TRANSLATION PROFILE
+    | DROP ANY SQL TRANSLATION PROFILE
+    | TRANSLATE ANY SQL
+    | USE ANY SQL TRANSLATION PROFILE
+    | CREATE SQL TRANSLATION PROFILE
+    ;
+
+systemSystemPrivilegesPrivilege
+    : SYSBACKUP
+    | SYSDBA
+    | SYSDG
+    | SYSKM
+    | SYSOPER
+    | SYSRAC
+    ;
+
+systemTablesPrivilege
+    : ALTER ANY TABLE
+    | BACKUP ANY TABLE
+    | COMMENT ANY TABLE
+    | CREATE ANY TABLE
+    | CREATE TABLE
+    | DELETE ANY TABLE
+    | DROP ANY TABLE
+    | FLASHBACK ANY TABLE
+    | INSERT ANY TABLE
+    | LOCK ANY TABLE
+    | READ ANY TABLE
+    | REDEFINE ANY TABLE
+    | SELECT ANY TABLE
+    | UNDER ANY TABLE
+    | UPDATE ANY TABLE
+    ;
+
+systemTablespacesPrivilege
+    : ALTER TABLESPACE
+    | CREATE TABLESPACE
+    | DROP TABLESPACE
+    | MANAGE TABLESPACE
+    | UNLIMITED TABLESPACE
+    ;
+
+systemTransactionsPrivilege
+    : FORCE ANY TRANSACTION
+    | FORCE TRANSACTION
+    ;
+
+systemTriggersPrivilege
+    : ADMINISTER DATABASE TRIGGER
+    | ALTER ANY TRIGGER
+    | CREATE ANY TRIGGER
+    | CREATE TRIGGER
+    | DROP ANY TRIGGER
+    ;
+
+systemTypesPrivilege
+    : ALTER ANY TYPE
+    | CREATE ANY TYPE
+    | CREATE TYPE
+    | DROP ANY TYPE
+    | EXECUTE ANY TYPE
+    | UNDER ANY TYPE
+    ;
+
+systemUnderPrivilege
+    : UNDER ANY TABLE
+    | UNDER ANY TYPE
+    | UNDER ANY VIEW
+    ;
+
+systemUpdatePrivilege
+    : UPDATE ANY CUBE
+    | UPDATE ANY CUBE BUILD PROCESS
+    | UPDATE ANY CUBE DIMENSION
+    | UPDATE ANY TABLE
+    ;
+
+systemUserPrivilege
+    : ALTER USER
+    | BECOME USER
+    | CREATE USER
+    | DROP USER
+    ;
+
+systemViewPrivilege
+    : CREATE ANY VIEW
+    | CREATE VIEW
+    | DROP ANY VIEW
+    | FLASHBACK ANY TABLE
+    | MERGE ANY VIEW
+    | UNDER ANY VIEW
+    ;
+
+systemWritePrivilege
+    : WRITE ANY ANALYTIC VIEW CACHE
+    ;
+
+// TODO: impl
+role
+    : ACCHK_READ
+    ;
+
+objectAction
+    : AUDIT
+    | GRANT
+    | READ
+    | EXECUTE
+    | ALTER
+    | COMMENT
+    | DELETE
+    | INDEX
+    | INSERT
+    | LOCK
+    | SELECT
+    | UPDATE
+    | RENAME
+    | FLASHBACK
+    | RENAME
+    ;
+
+// TODO: impl
+systemAction
+    : CREATE TABLE
+    | INSERT
+    | SELECT
+    | CREATE CLUSTER
+    | ALTER CLUSTER
+    | UPDATE
+    | DELETE
+    | DROP CLUSTER
+    | CREATE INDEX
+    | DROP INDEX
+    | ALTER INDEX
+    | DROP TABLE
+    | CREATE SEQUENCE
+    | ALTER SEQUENCE
+    | ALTER TABLE
+    | DROP SEQUENCE
+    | CREATE SYNONYM
+    | DROP SYNONYM
+    | CREATE VIEW
+    | DROP VIEW
+    | CREATE PROCEDURE
+    | ALTER PROCEDURE
+    | LOCK TABLE
+    | RENAME
+    | COMMENT
+    | CREATE DATABASE LINK
+    | DROP DATABASE LINK
+    | ALTER DATABASE
+    | CREATE ROLLBACK SEGMENT
+    | ALTER ROLLBACK SEGMENT
+    | DROP ROLLBACK SEGMENT
+    | CREATE TABLESPACE
+    | ALTER TABLESPACE
+    | DROP TABLESPACE
+    | ALTER SESSION
+    | ALTER USER
+    | COMMIT
+    | ROLLBACK
+    | SET TRANSACTION
+    | ALTER SYSTEM
+    | CREATE USER
+    | CREATE ROLE
+    | DROP USER
+    | DROP ROLE
+    | SET ROLE
+    | CREATE SCHEMA
+    | ALTER TRACING
+    | CREATE TRIGGER
+    | ALTER TRIGGER
+    | DROP TRIGGER
+    | ANALYZE TABLE
+    | ANALYZE INDEX
+    | ANALYZE CLUSTER
+    | CREATE PROFILE
+    | DROP PROFILE
+    | ALTER PROFILE
+    | DROP PROCEDURE
+    | ALTER RESOURCE COST
+    | CREATE MATERIALIZED VIEW LOG
+    | ALTER MATERIALIZED VIEW LOG
+    | DROP MATERIALIZED VIEW  LOG
+    | CREATE MATERIALIZED VIEW 
+    | ALTER MATERIALIZED VIEW 
+    | DROP MATERIALIZED VIEW 
+    | CREATE TYPE
+    | DROP TYPE
+    | ALTER ROLE
+    | ALTER TYPE
+    | CREATE TYPE BODY
+    | ALTER TYPE BODY
+    | DROP TYPE BODY
+    | DROP LIBRARY
+    | TRUNCATE TABLE
+    | TRUNCATE CLUSTER
+    | ALTER VIEW
+    | CREATE FUNCTION
+    | ALTER FUNCTION
+    | DROP FUNCTION
+    | CREATE PACKAGE
+    | ALTER PACKAGE
+    | DROP PACKAGE
+    | CREATE PACKAGE BODY
+    | ALTER PACKAGE BODY
+    | DROP PACKAGE BODY
+    | ALTER MINING MODEL
+    | CREATE MINING MODEL
+    | CREATE DIRECTORY
+    | DROP DIRECTORY
+    | CREATE LIBRARY
+    | CREATE JAVA
+    | ALTER JAVA
+    | DROP JAVA
+    | CREATE OPERATOR
+    | CREATE INDEXTYPE
+    | DROP INDEXTYPE
+    | ALTER INDEXTYPE
+    | DROP OPERATOR
+    | ASSOCIATE STATISTICS
+    | DISASSOCIATE STATISTICS
+    | CREATE DIMENSION
+    | ALTER DIMENSION
+    | DROP DIMENSION
+    | CREATE CONTEXT
+    | DROP CONTEXT
+    | ALTER OUTLINE
+    | CREATE OUTLINE
+    | DROP OUTLINE
+    | ALTER OPERATOR
+    | CREATE SPFILE
+    | CREATE PFILE
+    | CHANGE PASSWORD
+    | ALTER SYNONYM
+    | ALTER DISK GROUP
+    | CREATE DISK GROUP
+    | DROP DISK GROUP
+    | ALTER LIBRARY
+    | PURGE RECYCLEBIN
+    | PURGE TABLESPACE
+    | PURGE TABLE
+    | PURGE INDEX
+    | FLASHBACK TABLE
+    | CREATE RESTORE POINT
+    | DROP RESTORE POINT
+    | CREATE EDITION
+    | DROP EDITION
+    | DROP ASSEMBLY
+    | CREATE ASSEMBLY
+    | ALTER ASSEMBLY
+    | CREATE FLASHBACK ARCHIVE
+    | ALTER FLASHBACK ARCHIVE
+    | DROP FLASHBACK ARCHIVE
+    | CREATE SCHEMA SYNONYM
+    | DROP SCHEMA SYNONYM
+    | ALTER DATABASE LINK
+    | CREATE PLUGGABLE DATABASE
+    | ALTER PLUGGABLE DATABASE
+    | DROP PLUGGABLE DATABASE
+    | CREATE AUDIT POLICY
+    | ALTER AUDIT POLICY
+    | DROP AUDIT POLICY
+    | CREATE LOCKDOWN PROFILE
+    | DROP LOCKDOWN PROFILE
+    | ALTER LOCKDOWN PROFILE
+    | ADMINISTER KEY MANAGEMENT
+    | CREATE MATERIALIZED ZONEMAP
+    | ALTER MATERIALIZED ZONEMAP
+    | DROP MATERIALIZED ZONEMAP
+    | DROP MINING MODEL
+    | CREATE ATTRIBUTE DIMENSION
+    | ALTER ATTRIBUTE DIMENSION
+    | DROP ATTRIBUTE DIMENSION
+    | CREATE HIERARCHY
+    | ALTER HIERARCHY
+    | DROP HIERARCHY
+    | CREATE ANALYTIC VIEW
+    | ALTER ANALYTIC VIEW
+    | DROP ANALYTIC VIEW
+    | ALTER DATABASE DICTIONARY
+    | CREATE INMEMORY JOIN GROUP
+    | ALTER INMEMORY JOIN GROUP
+    | DROP INMEMORY JOIN GROUP
+    | GRANT
+    | REVOKE
+    | AUDIT
+    | NOAUDIT
+    | LOGON
+    | LOGOFF
+    | EXECUTE
+    | EXPLAIN PLAN
+    | CALL
+    | PURGE DBA_RECYCLEBIN
+    | ALL
+    ;
+
+componentAction
+    : EXPORT
+    | IMPORT
+    | ALL
+    ;
+
+// TODO: The audit_condition can have a maximum length of 4000 characters. It can contain expressions, as well as the following functions and conditions:
+// Numeric functions: BITAND, CEIL, FLOOR, POWER
+// Character functions returning character values: CONCAT, LOWER, UPPER
+// Character functions returning number values: INSTR, LENGTH
+// Environment and identifier functions: SYS_CONTEXT, UID
+// Comparison conditions: =, !=, <>, <, >, <=, >=
+// Logical conditions: AND, OR
+// Null conditions: IS [NOT] NULL
+// [NOT] BETWEEN condition
+// [NOT] IN condition
+
+auditCondition
+    : expr
     ;
 
 sharingClause
@@ -107,11 +1211,8 @@ baseMeasureClause
     : (FACT (alias '.')?)? column measAggregateClause?
     ;
 
-// TODO: Impl avExpression
 calcMeasureClause
-    : AS '(' 
-//      calcMeasExpression=avExpression
-     ')'
+    : AS '(' calcMeasExpression=avExpression ')'
     ;
 
 defaultMeasureClause
@@ -935,6 +2036,12 @@ windowingClause
         | value_expr=expr PRECEDING
         )
       )
+    ;
+
+avExpression
+    :
+//    : avMeasExpression
+//    | avHierExpression
     ;
 
 constraint
