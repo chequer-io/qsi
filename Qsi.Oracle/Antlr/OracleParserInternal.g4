@@ -7,7 +7,7 @@ options {
 root
     : select
     | delete
-//    | create
+    | create
 //    | savepoint
 //    | rollback
     ;
@@ -21,204 +21,205 @@ delete
       tAlias? whereClause? returningClause? errorLoggingClause?
     ;
 
-//create
-//    : createAnalyticView
-//    | createAttributeDimension
-//    ;
+create
+    : createAnalyticView
+    | createAttributeDimension
+    ;
 
 createAnalyticView
     : CREATE (OR REPLACE)? (FORCE | NOFORCE)? ANALYTIC VIEW 
-      UNQUOTED_OBJECT_NAME
-//      analyticViewName 
+      analyticViewName=identifier
       sharingClause? 
-//      classificationClause* 
-//      usingClause? 
-//      dimByClause? 
-//      measuresClause? 
-//      defaultMeasureClause? 
-//      defaultAggregateClause? 
-//      cacheClause? 
-//      factColumnsClause? 
-//      qryTransformClause? ';'
+      classificationClause* 
+      usingClause? 
+      dimByClause? 
+      measuresClause? 
+      defaultMeasureClause? 
+      defaultAggregateClause? 
+      cacheClause? 
+      factColumnsClause? 
+      qryTransformClause?
     ;
 
-//createAttributeDimension
-//    : CREATE (OR REPLACE)? (FORCE | NOFORCE) ATTRIBUTE DIMENSION
-//      (schema '.')? attrDimension
-//      sharingClause?
-//      classificationClause*
-//      (DIMENSION TYPE (STANDARD | TIME))
-//      attrDimUsingClause
-//      attributesClause
-//      attrDimLevelClause*
-//      allClause? ';'
-//    ;
+createAttributeDimension
+    : CREATE (OR REPLACE)? (FORCE | NOFORCE) ATTRIBUTE DIMENSION
+      (schema '.')? attrDimension=identifier
+      sharingClause?
+      classificationClause*
+      (DIMENSION TYPE (STANDARD | TIME))
+      attrDimUsingClause
+      attributesClause
+      attrDimLevelClause*
+      allClause?
+    ;
 
 sharingClause
     : SHARING '=' (METADATA | DATA | NONE)
     ;
 
-//classificationClause
-//    : (CAPTION caption)?
-//      (DESCRIPTION description)?
-//      (CLASSIFICATION classificationName (VALUE classificationValue)? (LANGUAGE language)?)*
-//    ;
+classificationClause
+    : CAPTION caption=stringLiteral
+    | DESCRIPTION description=stringLiteral
+    | CLASSIFICATION classificationName=identifier 
+      (VALUE classificationValue=stringLiteral)? 
+      (LANGUAGE language=stringLiteral)?
+    ;
 
-//usingClause
-//    : USING sourceClause
-//    ;
-//
-//sourceClause
-//    : (schema '.')? factTableOrView REMOTE? '(' (AS? alias)? ')'
-//    ;
-//
-//dimByClause
-//    : DIMENSION BY '(' dimKey (',' dimKey)* ')'
-//    ;
-//
-//dimKey
-//    : dimRef classificationClause* KEY
-//      (
-//          '('? (alias '.')? factColumn ')'? 
-//        | '(' (alias '.')? factColumn (',' (alias '.')? factColumn)* ')'
-//      ) 
-//      REFERENCES (DISTINCT? '('? attribute ')'? | '(' attribute (',' attribute)* ')') HIERARCHIES '(' hierRef (',' hierRef)* ')'
-//    ;
-//
-//dimRef
-//    : (schema '.')? attrDimName (AS? dimAlias)?
-//    ;
-//
-//hierRef
-//    : (schema '.')? hierName (AS? hierAlias)? DEFAULT?
-//    ;
-//
-//measuresClause
-//    : MEASURES '(' avMeasure (',' avMeasure)* ')'
-//    ;
-//
-//avMeasure
-//    : measName (baseMeasureClause | calcMeasureClause)? classificationClause*
-//    ;
-//
-//baseMeasureClause
-//    : (FACT (alias '.')?)? column measAggregateClause?
-//    ;
-//
-//calcMeasureClause
-//    : AS '(' calcMeasExpression ')'
-//    ;
-//
-//measAggregateClause
-//    : AGGREGATE BY aggrFunction
-//    ;
-//
-//defaultMeasureClause
-//    : DEFAULT MEASURE measure
-//    ;
-//
-//defaultAggregateClause
-//    : DEFAULT AGGREGATE BY aggrFunction
-//    ;
-//
-//cacheClause
-//    : CACHE cacheSpecification (',' cacheSpecification)*
-//    ;
-//
-//cacheSpecification
-//    : MEASURE GROUP (ALL | '(' measureName (',' measureName)* ')' (levelsClause MATERIALIZED)*)
-//    ;
-//
-//levelsClause
-//    : LEVELS '(' levelSpecification (',' levelSpecification)* ')'
-//    ;
-//
-//levelSpecification
-//    : '(' ((dimName '.')? hierName '.')? levelName ')'
-//    ;
-//
-//factColumnsClause
-//    : FACT COLUMNS factColumn (AS factAlias)? (',' AS factAlias)*
-//    ;
-//
-//qryTransformClause
-//    : ENABLE QUERY TRANSFORM (RELY | NORELY)?
-//    ;
-//
-//attrDimUsingClause
-//    : USING sourceClause (',' sourceClause)* joinPathClause*
-//    ;
-//
-//joinPathClause
-//    : JOIN PATH joinPathName ON joinCondition
-//    ;
-//
-//joinCondition
-//    : joinConditionElem (AND joinConditionElem)*
-//    ;
-//
-//joinConditionElem
-//    : CODE (alias '.')? column '=' (alias '.')? column
-//    ;
-//
-//attributesClause
-//    : ATTRIBUTES '(' attrDimAttributeClause (',' attrDimAttributeClause)* ')'
-//    ;
-//
-//attrDimAttributeClause
-//    : (alias '.')? column (AS? attributeName)? classificationClause*
-//    ;
-//
-//attrDimLevelClause
-//    : LEVEL level
-//      (NOT NULL | K_SKIP WHEN NULL)?
-//      (classificationClause* 
-//          (
-//              LEVEL TYPE 
-//              (
-//                  STANDARD 
-//                | YEARS 
-//                | HALF_YEARS 
-//                | QUARTERS 
-//                | MONTHS 
-//                | WEEKS 
-//                | DAYS 
-//                | HOURS 
-//                | MINUTES 
-//                | SECONDS
-//              )
-//          )?
-//       keyClause
-//       alternateKeyClause? 
-//       (MEMBER NAME expression)? 
-//       (MEMBER CAPTION expression)?
-//       (MEMBER DESCRIPTION expression)?
-//       (ORDER BY (MIN | MAX)? dimOrderClause (',' (MIN | MAX)? dimOrderClause)*)?
-//      )?
-//      (DETERMINES '(' attribute (',' attribute)* ')')?
-//    ;
-//
-//keyClause
-//    : KEY ('('? attribute ')'? | '(' attribute (',' attribute)* ')')
-//    ;
-//
-//alternateKeyClause
-//    : ALTERNATE KEY ('('? attribute ')'? | '(' attribute (',' attribute)* ')')
-//    ;
-//
-//dimOrderClause
-//    : attribute (ASC | DESC)? (NULLS (FIRST | LAST))?
-//    ;
-//
-//allClause
-//    : ALL MEMBER
-//      ( 
-//        NAME expression (MEMBER CAPTION expression)? 
-//      | CAPTION expression (MEMBER DESCRIPTION expression)? 
-//      | DESCRIPTION expression
-//      )
-//    ;
-//
+usingClause
+    : USING sourceClause
+    ;
+
+sourceClause
+    : (schema '.')? factTableOrView=table REMOTE? '(' (AS? alias)? ')'
+    ;
+
+dimByClause
+    : DIMENSION BY '(' dimKey (',' dimKey)* ')'
+    ;
+
+dimKey
+    : dimRef classificationClause* KEY
+      (
+          '('? (alias '.')? factColumn=column ')'? 
+        | '(' (alias '.')? factColumn=column (',' (alias '.')? factColumn=column)* ')'
+      ) 
+      REFERENCES (DISTINCT? '('? attribute ')'? | '(' attribute (',' attribute)* ')')
+      HIERARCHIES '(' hierRef (',' hierRef)* ')'
+    ;
+
+dimRef
+    : (schema '.')? attrDimName=identifier (AS? dimAlias=alias)?
+    ;
+
+hierRef
+    : (schema '.')? hierName=identifier (AS? hierAlias=alias)? DEFAULT?
+    ;
+
+measuresClause
+    : MEASURES '(' avMeasure (',' avMeasure)* ')'
+    ;
+
+avMeasure
+    : measName=identifier (baseMeasureClause | calcMeasureClause)? classificationClause*
+    ;
+
+baseMeasureClause
+    : (FACT (alias '.')?)? column measAggregateClause?
+    ;
+
+calcMeasureClause
+    : AS '(' 
+//      calcMeasExpression=avExpression
+     ')'
+    ;
+
+defaultMeasureClause
+    : DEFAULT MEASURE measure=identifier
+    ;
+
+defaultAggregateClause
+    : DEFAULT AGGREGATE BY 
+//    aggrFunction
+    ;
+
+cacheClause
+    : CACHE cacheSpecification (',' cacheSpecification)*
+    ;
+
+cacheSpecification
+    : MEASURE GROUP (ALL | '(' measureName=identifier (',' measureName=identifier)* ')' (levelsClause MATERIALIZED)+)
+    ;
+
+levelsClause
+    : LEVELS '(' levelSpecification (',' levelSpecification)* ')'
+    ;
+
+levelSpecification
+    : '(' ((dimName=identifier '.')? hierName=identifier '.')? levelName=identifier ')'
+    ;
+
+factColumnsClause
+    : FACT COLUMNS factColumn=column (AS factAlias=alias)? (',' AS factAlias=alias)*
+    ;
+
+qryTransformClause
+    : ENABLE QUERY TRANSFORM (RELY | NORELY)?
+    ;
+
+attrDimUsingClause
+    : USING sourceClause (',' sourceClause)* joinPathClause*
+    ;
+
+joinPathClause
+    : JOIN PATH joinPathName=identifier ON joinCondition
+    ;
+
+joinCondition
+    : joinConditionElem (AND joinConditionElem)*
+    ;
+
+joinConditionElem
+    : CODE (alias '.')? column '=' (alias '.')? column
+    ;
+
+attributesClause
+    : ATTRIBUTES '(' attrDimAttributeClause (',' attrDimAttributeClause)* ')'
+    ;
+
+attrDimAttributeClause
+    : (alias '.')? column (AS? attributeName=identifier)? classificationClause*
+    ;
+
+attrDimLevelClause
+    : LEVEL level=identifier
+      (NOT NULL | K_SKIP WHEN NULL)?
+      (classificationClause* 
+          (
+              LEVEL TYPE 
+              (
+                  STANDARD 
+                | YEARS 
+                | HALF_YEARS 
+                | QUARTERS 
+                | MONTHS 
+                | WEEKS 
+                | DAYS 
+                | HOURS 
+                | MINUTES 
+                | SECONDS
+              )
+          )?
+       keyClause
+       alternateKeyClause? 
+       (MEMBER NAME expr)? 
+       (MEMBER CAPTION expr)?
+       (MEMBER DESCRIPTION expr)?
+       (ORDER BY (MIN | MAX)? dimOrderClause (',' (MIN | MAX)? dimOrderClause)*)?
+      )?
+      (DETERMINES '(' attribute (',' attribute)* ')')?
+    ;
+
+keyClause
+    : KEY ('('? attribute ')'? | '(' attribute (',' attribute)* ')')
+    ;
+
+alternateKeyClause
+    : ALTERNATE KEY ('('? attribute ')'? | '(' attribute (',' attribute)* ')')
+    ;
+
+dimOrderClause
+    : attribute (ASC | DESC)? (NULLS (FIRST | LAST))?
+    ;
+
+allClause
+    : ALL MEMBER
+      ( 
+        NAME expr (MEMBER CAPTION expr)? 
+      | CAPTION expr (MEMBER DESCRIPTION expr)? 
+      | DESCRIPTION expr
+      )
+    ;
+
 //savepoint
 //    : SAVEPOINT savepointName
 //    ;
@@ -502,7 +503,7 @@ selectList
 
 selectListItem
     : identifier ('.' identifier)? '.' '*'                   #objectSelectListItem
-    | expr (AS? alias=identifier)?                           #exprSelectListItem
+    | expr (AS? alias)?                                      #exprSelectListItem
     ;
 
 tableSource
@@ -597,7 +598,7 @@ pivotClause
 pivotItem
     : 
 //    aggregateFunction
-     '(' expr ')' (AS? alias=identifier)?
+     '(' expr ')' (AS? alias)?
     ;
 
 unpivotClause
@@ -758,7 +759,7 @@ pivotForClause
 pivotInClause
     : IN '(' 
           (
-            ((expr | '(' expr (',' expr)* ')') (AS? alias=identifier)?)* 
+            ((expr | '(' expr (',' expr)* ')') (AS? alias)?)* 
           | subquery 
           | ANY (',' ANY)*
           )
@@ -1078,6 +1079,14 @@ variableName
     ;
 
 dblink
+    : identifier
+    ;
+
+attribute
+    : identifier
+    ;
+
+alias
     : identifier
     ;
 
