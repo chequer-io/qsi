@@ -9,6 +9,12 @@
     <Import_RootNamespace>Qsi.Shared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Antlr4\CaseInsensitiveStream.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Reflection\Accessors\FieldAccessor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Reflection\Accessors\MemberAccessor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Reflection\Accessors\PropertyAccessor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Reflection\IMemberAccessor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Reflection\ReflectionHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)StringInputStream.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\IListExtension.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\IQsiAnalysisResultExtension.cs" />
