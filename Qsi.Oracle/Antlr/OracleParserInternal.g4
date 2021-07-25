@@ -29,6 +29,47 @@ create
 //    | createContext
 //    | createControlfile
     | createDatabase
+//    | createDatabaseLink
+//    | createDimension
+//    | createDirectory
+//    | createDiskgroup
+//    | createEdition
+//    | createFlashbackArchive
+//    | createFunction
+//    | createHierarchy
+//    | createIndex
+//    | createIndextype
+//    | createInmemoryJoinGroup
+//    | createJava
+//    | createLibrary
+//    | createLockdownProfile
+//    | createMaterializedView
+//    | createMaterializedViewLog
+//    | createMaterializedZonemap
+//    | createOperator
+//    | createOutLine
+//    | createPackage
+//    | createPackageBody
+//    | createPfile
+//    | createPluggableDatabase
+//    | createPmemFileStore
+//    | createProcedure
+//    | createProfile
+//    | createRestorePoint
+//    | createRole
+//    | createRollbackSegment
+    | createSchema
+//    | createSequence
+//    | createSpfile
+//    | createSynonym
+    | createTable
+//    | createTablespace
+//    | createTablespaceSet
+//    | createTrigger
+//    | createType
+//    | createTypeBody
+//    | createUser
+//    | createView
     ;
 
 createAnalyticView
@@ -69,6 +110,1111 @@ createAuditPolicy
       )?
       (ONLY TOPLEVEL)?
       (CONTAINER '=' (ALL|CURRENT))?
+    ;
+
+createSchema
+    : CREATE SCHEMA AUTHORIZATION schema 
+      (createTable
+//      |createViewStatement
+//      |grantStatement
+      )+
+    ;
+
+createTable
+    : CREATE 
+      ( (GLOBAL|PRIVATE) TEMPORARY
+      | SHARDED
+      | DUPLICATED
+      | BLOCKCHAIN
+      )?
+      TABLE (schema '.')? table
+      (SHARING '=' (METADATA | DATA | EXTENDED DATA | NONE))?
+      (relationalTable | objectTable | xmlTypeTable)
+      (MEMOPTIMIZE FOR READ)?
+      (MEMOPTIMIZE FOR WRITE)?
+      (PARENT (schema '.')? table)?
+    ;
+
+relationalTable
+    : ('(' relationalProperties ')')? blockchainTableClauses?
+      (DEFAULT COLLATION identifier)? (ON COMMIT (DROP|PRESERVE) DEFINITION)?
+      (ON COMMIT (DELETE|PRESERVE)? ROWS)? physicalProperties? tableProperties
+    ;
+
+objectTable
+    : OF (schema '.')? objectType=identifier objectTableSubstitution?
+      ('(' objectProperties ')') (ON COMMIT (DELETE | PRESERVE) ROWS)?
+      oidClause? oidIndexClause? physicalProperties? tableProperties
+    ;
+
+xmlTypeTable
+    : OF XMLTYPE ('(' objectProperties ')')? (XMLTYPE xmlTypeStorage)? xmlSchemaSpec? 
+      xmlTypeVirtualColumns? (ON COMMIT (DELETE | PRESERVE) ROWS)? oidClause?
+      oidIndexClause? physicalProperties? tableProperties
+    ;
+
+relationalProperties
+    : relationalProperty (',' relationalProperty)*
+    ;
+
+relationalProperty
+    : columnDefinition
+    | virtualColumnDefinition
+    | periodDefinition
+    | outOfLineConstraint
+    | outOfLineRefConstraint
+    | supplementalLoggingProps
+    ;
+
+columnDefinition
+    : column (datatype (COLLATE columnCollateName=identifier)?) SORT? (VISIBLE|INVISIBLE)?
+      (DEFAULT (ON NULL)? expr | identityClause)?
+      (ENCRYPT encryptionSpec)?
+      (inlineConstraint+|inlineRefConstraint)?
+    ;
+
+virtualColumnDefinition
+    : column (datatype (COLLATE columnCollactionName=identifier)) (VISIBLE | INVISIBLE)?
+      (GENERATED | ALWAYS)? AS '(' columnExpression=expr ')' VIRTUAL? evaluationEditionClause?
+      unusableEditionsClause inlineConstraint*
+    ;
+
+evaluationEditionClause
+    : EVALUATE USING ( CURRENT EDITION
+                     | EDITION edition=identifier
+                     | NULL EDITION
+                     )
+    ;
+
+unusableEditionsClause
+    : (UNUSABLE BEFORE (CURRENT EDITION | EDITION edition=identifier))?
+      (UNUSABLE BEGINNING WITH (CURRENT EDITION | EDITION edition=identifier | NULL EDITION))?
+    ;
+
+periodDefinition
+    : PERIOD FOR validTimeColumn=identifier ('(' startTimeColumn=identifier ',' endTimeColumn=identifier ')')?
+    ;
+
+supplementalLoggingProps
+    : SUPPLEMENTAL LOG ( supplementalLogGrpClause
+                       | supplementalIdKeyClause
+                       )
+    ;
+
+supplementalLogGrpClause
+    : GROUP logGroup=identifier '(' supplementalLogGrpClauseItem (',' supplementalLogGrpClauseItem)* ')' ALWAYS?
+    ;
+
+supplementalLogGrpClauseItem
+    : column (NO LOG)?
+    ;
+
+supplementalIdKeyClause
+    : DATA '(' supplementalIdKeyClauseOption (',' supplementalIdKeyClauseOption)* ')' COLUMNS
+    ;
+
+supplementalIdKeyClauseOption
+    : ALL
+    | PRIMARY KEY
+    | UNIQUE
+    | FOREIGN KEY
+    ;
+
+referencesClause
+    : REFERENCES (schema '.')? identifier ('(' column (',' column)* ')')?
+      (ON DELETE (CASCADE | SET NULL))?
+    ;
+
+constraintState
+    : ( NOT? DEFERRABLE (INITIALLY (IMMEDIATE | DEFERRED))?
+      | INITIALLY (IMMEDIATE | DEFERRED) NOT? DEFERRABLE? 
+      )?
+      (RELY | NORELY)?
+      usingIndexClause?
+      (ENABLE | DISABLE)?
+      (VALIDATE | NOVALIDATE)?
+      exceptionsClause?
+    ;
+
+usingIndexClause
+    : USING INDEX ((schema '.')? index
+//                  | '(' createIndex ')'
+                  | indexProperties
+                  )
+    ;
+
+indexProperties
+    : ( (globalPartitionedIndex | localPartitionedIndex | indexAttributes)+
+      | INDEXTYPE IS (domainIndexClause | xmlIndexClause)
+      )?
+    ;
+
+domainIndexClause
+    : indextype=fullObjectPath localDomainIndexClause? parallelClause? (PARAMETERS '(' stringLiteral ')')?
+    ;
+
+xmlIndexClause
+    : (XDB '.')? XMLINDEX localXmlIndexClause? parallelClause? xmlIndexParametersClause
+    ;
+
+localXmlIndexClause
+    : LOCAL ('(' localXmlIndexClauseItem (',' localXmlIndexClauseItem) ')')?
+    ;
+
+localXmlIndexClauseItem
+    : PARTITION partition=identifier xmlIndexParametersClause
+    ;
+
+// cannot find definition copy from domainIndexClause
+xmlIndexParametersClause
+    : (PARAMETERS '(' stringLiteral ')')?
+    ;
+
+localDomainIndexClause
+    : LOCAL ('(' localDomainIndexClauseItem (',' localDomainIndexClauseItem)* ')')?
+    ;
+
+localDomainIndexClauseItem
+    : PARTITION partition=identifier (PARAMETERS '(' stringLiteral ')')?
+    ;
+
+globalPartitionedIndex
+    : GLOBAL PARTITION BY ( RANGE '(' columnList ')' '(' indexPartitioningClause ')'
+                          | HASH '(' columnList ')' (individualHashPartitions | hashPartitionsByQuantity)
+                          )
+    ;
+
+localPartitionedIndex
+    : LOCAL ( onRangePartitionedTable
+            | onListPartitionedTable
+            | onHashPartitionedTable
+            | onCompPartitionedTable
+            )?
+    ;
+
+onRangePartitionedTable
+    : '(' onRangePartitionedTableItem (',' onRangePartitionedTableItem)* ')'
+    ;
+
+onRangePartitionedTableItem
+    : PARTITION partition=identifier? (segmentAttributesClause|indexCompression)* (USABLE|UNUSABLE)?
+    ;
+
+onListPartitionedTable
+    : '(' onListPartitionedTableItem (',' onListPartitionedTableItem)* ')'
+    ;
+
+onListPartitionedTableItem
+    : PARTITION partition=identifier? (segmentAttributesClause|indexCompression)* (USABLE|UNUSABLE)?
+    ;
+
+onHashPartitionedTable
+    : STORE IN '(' tablespace (',' tablespace)* ')'
+    | '(' onHashPartitionedTableItem (',' onHashPartitionedTableItem)* ')'
+    ;
+
+onHashPartitionedTableItem
+    : PARTITION partition=identifier? (TABLESPACE tablespace)? indexCompression? (USABLE|UNUSABLE)?
+    ;
+
+onCompPartitionedTable
+    : (STORE IN '(' tablespace (',' tablespace) ')')
+    | '(' onCompPartitionedTableItem (',' onCompPartitionedTableItem)* ')'
+    ;
+
+onCompPartitionedTableItem
+    : PARTITION partition=identifier? (segmentAttributesClause|indexCompression)* (USABLE|UNUSABLE)? indexSubpartitionClause?
+    ;
+
+indexAttributes
+    : indexAttributesItem+
+    ;
+
+indexAttributesItem
+    : physicalAttributesClause
+    | loggingClause
+    | ONLINE
+    | TABLESAPCE (tablespace | DEFAULT)
+    | indexCompression
+    | SORT
+    | NOSORT
+    | REVERSE
+    | VISIBLE
+    | INVISIBLE
+    | partitionIndexClause
+    | parallelClause
+    ;
+
+partitionIndexClause
+    : INDEXING (PARTIAL | FULL)
+    ;
+
+parallelClause
+    : NOPARALLEL
+    | PARALLEL integer
+    ;
+
+indexSubpartitionClause
+    : STORE IN '(' tablespace (',' tablespace) ')'
+    | '(' indexSubpartitionClauseItem (',' indexSubpartitionClauseItem)* ')'
+    ;
+
+indexSubpartitionClauseItem
+    : SUBPARTITION subpartition=identifier? (TABLESPACE tablespace)? indexCompression? (USABLE|UNUSABLE)?
+    ;
+
+indexCompression
+    : prefixCompression
+    | advancedIndexCompression
+    ;
+
+prefixCompression
+    : COMPRESS integer?
+    | NOCOMPRESS
+    ;
+
+advancedIndexCompression
+    : COMPRESS ADVANCED (LOW | HIGH)?
+    | NOCOMPRESS
+    ;
+
+indexPartitioningClause
+    : PARTITION partition=identifier? VALUES LESS THAN '(' literal (',' literal)* ')' segmentAttributesClause?
+    ;
+
+exceptionsClause
+    : EXCEPTIONS INTO (schema '.')? table
+    ;
+
+identityClause
+    : GENERATED (ALWAYS|BY DEFAULT (ON NULL)?)? AS IDENTITY ('(' identityOptions ')')?
+    ;
+
+identityOptions
+    : identityOption+
+    ;
+
+identityOption
+    : START WITH (integer|LIMIT VALUE)
+    | INCREMENT BY integer
+    | MAXVALUE integer
+    | NOMAXVALUE
+    | MINALUE integer
+    | NOMINVALUE
+    | CYCLE
+    | NOCYCLE
+    | CACHE integer
+    | NOCACHE
+    | ORDER
+    | NOORDER
+    ;
+
+encryptionSpec
+    : (USING encryptAlgorithm=stringLiteral)? (IDENTIFIED BY password=identifier) (integrityAlgorithm=stringLiteral) (NO? SALT)?
+    ;
+
+blockchainTableClauses
+    : blockchainDropTableClause blockchainRowRetentionClause blockchainHashAndDataFormatClause
+    ;
+
+blockchainDropTableClause
+    : NO DROP (UNTIL numberLiteral DAYS IDLE)
+    ;
+
+blockchainRowRetentionClause
+    : NO DELETE (UNTIL numberLiteral DAYS AFTER INSERT)? (LOCKED)?
+    ;
+
+blockchainHashAndDataFormatClause
+    : HASHING USING SHA2_512 VERSION V1
+    ;
+
+physicalProperties
+    : deferredSegmentCreation? segmentAttributesClause tableCompression? inmemoryTableClause ilmClause?
+    | deferredSegmentCreation? ( ORGANIZATION ( HEAP segmentAttributesClause? heapOrgTableClause
+                                              | INDEX segmentAttributesClause? indexOrgTableClause
+                                              | EXTERNAL externalTableClause
+                                              )
+                               | EXTERNAL PARTITION ATTRIBUTES externalTableClause (REJECT LIMIT)?
+                               )
+    | CLUSTER cluster=identifier '(' column (',' column)* ')'
+    ;
+
+objectTableSubstitution
+    : NOT? SUBSTITUTABLE AT ALL LEVELS
+    ;
+
+objectProperties
+    : objectProperty (',' objectProperty)*
+    ;
+
+objectProperty
+    : identifier (DEFAULT expr)? (inlineConstraint+|inlineRefConstraint)?
+    | outOfLineConstraint
+    | outOfLineRefConstraint
+    | supplementalLoggingProps
+    ;
+
+oidClause
+    : OBJECT IDENTIFIER IS (SYSTEM GENERATED | PRIMARY KEY)
+    ;
+
+oidIndexClause
+    : OIDINDEX index? '(' (physicalAttributesClause | TABLESPACE tablespace)* ')'
+    ;
+
+deferredSegmentCreation
+    : SEGMENT CREATION (IMMEDIATE | DEFERRED)
+    ;
+
+segmentAttributesClause
+    : ( physicalAttributesClause
+      | TABLESPACE tablespace
+      | TABLESPACE SET tablespaceSet
+      | loggingClause
+      )+
+    ;
+
+heapOrgTableClause
+    : tableCompression? inmemoryTableClause ilmClause?
+    ;
+
+indexOrgTableClause
+    : indexOrgTableClauseItem* indexOrgOverflowClause?
+    ;
+
+indexOrgTableClauseItem
+    : mappingTableClause
+    | PCTTHRESHOLD integer
+    | prefixCompression
+    ;
+
+externalTableClause
+    : '(' (TYPE accessDriverType=identifier)? externalTableDataProps ')' (REJECT LIMIT (integer | UNLIMITED))?
+    ;
+
+externalTableDataProps
+    : (DEFAULT DIRECTORY directory=identifier)?
+      (ACCESS PARAMETERS ( '(' opaqueFormatSpec=etRecordSpec ')'
+                         | USING CLOB subquery
+                         )
+      )?
+      (LOCATION '(' externalTableDataPropsLocation (',' externalTableDataPropsLocation)* ')')?
+    ;
+
+etRecordSpec
+    : RECORDS ( (FIXED | VARIABLE) integer
+              | DELIMITED BY (DETECTED? NEWLINE | etString)
+              | XMLTAG etString
+              )
+      etRecordSepcOptions
+    ;
+
+etRecordSepcOptions
+    : etRecordSepcOptionsItem+
+    ;
+
+etRecordSepcOptionsItem
+    : CHARACTERSET etString
+    | PREPROCESSOR (directory=identifier ':')? etString
+    | PREPROCESSOR_TIMEOUT integer
+    | EXTERNAL VARIABLE DATA (LOGFILE | NOLOGFILE | READSIZE | PREPROCESSOR)?
+    | (LANGUAGE | TERRITORY) etString
+    | DATA IS (LITTLE | BIG) ENDIAN
+    | BYTEORDERMARK (CHECK | NOCHECK)
+    | STRING SIZES ARE IN (BYTES | CHARACTERS)
+    | LOAD WHEN etConditionSpec
+    | etOutputFiles
+    | READSIZE integer
+    | DISABLE_DIRECTORY_LINK_CHECK
+    | (DATE_CACHE | K_SKIP) integer
+    | FIELD_NAMES ( FIEST FILE IGNORE?
+                  | ALL FILES IGNORE?
+                  | NONE
+                  )
+    | IO_OPTIONS '(' (DIRECTIO | NODIRECTIO) ')'
+    | DNFS_ENABLE
+    | DNFS_DISABLE
+    | DNFS_READBUFFERS integer
+    | etFieldsClause
+    ;
+
+etConditionSpec
+    : condition
+    | etConditionSpec (AND | OR ) etConditionSpec
+    | '(' condition ')'
+    | '(' etConditionSpec (AND | OR ) etConditionSpec ')'
+    ;
+
+etOutputFiles
+    : etOutputFilesItem+
+    ;
+
+etOutputFilesItem
+    : NOBADFILE
+    | BADFILE (directory=identifier ':')? etString?
+    | NODISCARDFILE
+    | DISCARDFILE (directory=identifier ':')? etString?
+    | NOLOGFILE
+    | LOGFILE (directory=identifier ':')? etString?
+    ;
+
+externalTableDataPropsLocation
+    : (directory=identifier ':')? etString
+    ;
+
+etFieldsClause
+    : FIELDS ( IGNORE_CHARS_AFTER_EOR
+             | CSV ((WITH | WITHOUT) EMBEDDED)?
+             | etDelimSpec
+             | etTrimSpec
+             | ALL FIELDS OVERRIDE THESE FIELDS
+             | MISSING FIELD VALUES ARE NULL
+             | REJECT ROWS WITH ALL NULL FIELDS
+             | (DATE_FORMAT (DATE | TIMESTAMP)* MASK stringLiteral)+
+             | NULLIF
+             | NONULLIF
+             )?
+      etFieldList?
+    ;
+
+etDelimSpec
+    : ENCLOSED BY etString (AND etString)*
+    | TERMINATED BY (etString | WHITESPACE) (OPTIONALLY? ENCLOSED BY etString (AND etString)?)?
+    ;
+
+etTrimSpec
+    : LRTRIM
+    | NOTRIM
+    | LTRIM
+    | RTRIM
+    | LDRTRIM
+    ;
+
+etFieldList
+    : '(' etFieldListItem (',' etFieldListItem)* ')'
+    ;
+
+etFieldListItem
+    : fieldName=identifier etPositionSpec? etDataTypeSpec? etInitSpec? etLlsSpec?
+    ;
+
+etPositionSpec
+    : POSITION? '(' (start=numberLiteral | '*' | ('+' | '-') increment=numberLiteral) (':' | '-') end=numberLiteral ')'
+    ;
+
+etDataTypeSpec
+    : UNSIGNED? INTEGER EXTERNAL? ('(' len=numberLiteral ')')? etDelimSpec?
+    | (DECIMAL | ZONED) (EXTERNAL ('(' len=numberLiteral ')')? etDelimSpec? | '(' precision ('.' scale)? ')')?
+    | ORACLE_DATE
+    | ORACLE_NUMBER COUNTED?
+    | FLOAT EXTERNAL? ('(' len=numberLiteral ')')? etDelimSpec?
+    | DOUBLE
+    | BINARY_FLOAT EXTERNAL? ('(' len=numberLiteral ')')? etDelimSpec?
+    | BINARY_DOUBLE
+    | RAW ('(' len=numberLiteral ')')?
+    | CHAR ('(' len=numberLiteral ')')? etDelimSpec? etTrimSpec? etDateFormatSpec?
+    | (VARCHAR | VARRAW | VARCHARC | VARRAWC) '(' (lengthOfLength=numberLiteral '.')? maxLen=numberLiteral ')'
+    ;
+
+etDateFormatSpec
+    : DATE_FORMAT?
+    ( (DATE | TIMESTAMP (WITH LOCAL? TIME ZONE)?)+ MASK QUOTED_OBJECT_NAME
+    | INTERVAL (YEAR_TO_MONTH | DAY_TO_SECOND)
+    )
+    ;
+
+etInitSpec
+    : (DEFAULTIF | NULLIF) etConditionSpec
+    ;
+
+etLlsSpec
+    : LLS identifier?
+    ;
+
+etString
+    : (HEXA1 | HEXA2)? (SINGLE_QUOTED_STRING | QUOTED_OBJECT_NAME)
+    ;
+
+mappingTableClause
+    : MAPPING TABLE
+    | NOMAPPING
+    ;
+
+indexOrgOverflowClause
+    : prefixCompression
+    | advancedIndexCompression
+    ;
+
+tableCompression
+    : COMPRESS
+    | ROW STORE COMPRESS (BASIC | ADVANCED)?
+    | COLUMN STORE COMPRESS (FOR (QUERY | ARCHIVE) (LOW | HIGH)? )? (NO? ROW LEVEL LOCKING)?
+    | NOCOMPRESS
+    ;
+
+inmemoryTableClause
+    : (INMEMORY inmemoryAttributes | NO INMEMORY)? inmemoryColumnClause?
+    ;
+
+inmemoryAttributes
+    : inmemoryMemcompress? inmemoryPriority? inmemoryDistribute? inmemoryDuplicate? inmemorySpatial?
+    ;
+
+inmemoryMemcompress
+    : MEMCOMPRESS FOR (DML | (QUERY | CAPACITY) (LOW | HIGH)? )
+    | NO MEMCOMPRESS
+    | MEMCOMPRESS AUTO
+    ;
+
+inmemoryPriority
+    : PRIORITY (NONE | LOW | MEDIUM | HIGH | CRITICAL)
+    ;
+
+inmemoryDistribute
+    : DISTRIBUTE (AUTO | BY (ROWID RANGE | PARTITION | SUBPARTITION))? (FOR SERVICE (DEFAULT | ALL | serviceName=identifier | NONE))?
+    ;
+
+inmemoryDuplicate
+    : DUPLICATE ALL?
+    | NO DUPLICATE
+    ;
+
+inmemorySpatial
+    : SPATIAL column
+    ;
+
+inmemoryColumnClause
+    : inmemoryColumnClauseItem+
+    ;
+
+inmemoryColumnClauseItem
+    : ( INMEMORY inmemoryMemcompress?
+      | NO INMEMORY
+      ) '(' column (',' column)* ')'
+    ;
+
+ilmClause
+    : ILM ( ADD POLICY ilmPolicyClause
+          | (DELETE | ENABLE | DISABLE) POLICY ilmPolicyName=identifier
+          | (DELETE_ALL | ENABLE_ALL | DISABLE_ALL)
+          )
+    ;
+
+ilmPolicyClause
+    : ilmCompressionPolicy
+    | ilmTieringPolicy
+    | ilmInmemoryPolicy
+    ;
+
+ilmCompressionPolicy
+    : tableCompression (SEGMENT | GROUP) (AFTER ilmTimePeriod OF (NO ACCESS | NO MODIFICATION | CREATION) | ON functionName=identifier)
+    | (ROW STORE COMPRESS ADVANCED | COLUMN STORE COMPRESS FOR QUERY) ROW AFTER ilmTimePeriod OF NO MODIFICATION
+    ;
+
+ilmTieringPolicy
+    : TIER TO tablespace (SEGMENT | GROUP)? (ON functionName=identifier)?
+    | TIER TO tablespace READ ONLY (SEGMENT | GROUP)? (AFTER ilmTimePeriod OF (NO ACCESS | NO MODIFICATION | CREATION) | ON functionName=identifier)
+    ;
+
+ilmInmemoryPolicy
+    : ( SET INMEMORY inmemoryAttributes
+      | MODIFY INMEMORY inmemoryMemcompress
+      | NO INMEMORY
+      ) SEGMENT?
+      ( AFTER ilmTimePeriod OF (NO ACCESS | NO MODIFICATION | CREATION)
+      | ON functionName=identifier
+      )
+    ;
+
+ilmTimePeriod
+    : integer (DAY | DAYS | MONTH | MONTHS | YEAR | YEARS)
+    ;
+
+physicalAttributesClause
+    : ( PCTFREE integer
+      | PCTUSED integer
+      | INITRANS integer
+      | storageClause
+      )+
+    ;
+
+loggingClause
+    : LOGGING
+    | NOLOGGING
+    | FILESYSTEM_LIKE_LOGGING
+    ;
+
+storageClause
+    : STORAGE '(' storageClauseOption+ ')'
+    ;
+
+storageClauseOption
+    : INITIAL sizeClause
+    | NEXT sizeClause
+    | MINEXTENTS integer
+    | MAXEXTENTS (integer | UNLIMITED)
+    | maxsizeClause
+    | PCTINCREASE integer
+    | FREELISTS integer
+    | FREELIST GROUPS integer
+    | OPTIMAL (sizeClause|NULL)?
+    | BUFFER_POOL (KEEP | RECYCLE | DEFAULT)
+    | FLASH_CACHE (KEEP | NONE | DEFAULT)
+    | CELL_FLASH_CACHE (KEEP | NONE | DEFAULT)
+    | ENCRYPT
+    ;
+
+tableProperties
+    : columnProperties? readOnlyClause?
+      indexingClause? tablePartitioningClauses?
+      attributeClusteringClause? (CACHE | NOCACHE)?
+      resultCacheClause? parallelClause?
+      (ROWDEPENDENCIES | NOROWDEPENDENCIES)?
+      enableDisableClause*
+      rowMovementClause?
+      logicalReplicationClause?
+      flashbackArchiveClause?
+      (ROW ARCHIVAL)?
+      (AS subquery | (FOR EXCHANGE WITH TABLE (schema '.')? table))?
+    ;
+
+columnProperties
+    : columnProperty+
+    ;
+
+columnProperty
+    : objectTypeColProperties
+    | nestedTableColProperties
+    | (varrayColProperties|lobStorageClause) ('(' lobPartitionStorage (',' lobPartitionStorage)* ')')?
+    | xmlTypeColumnProperties
+    | jsonStorageClause
+    ;
+
+readOnlyClause
+    : READ ONLY
+    | READ WRITE
+    ;
+
+indexingClause
+    : INDEXING (ON | OFF)
+    ;
+
+tablePartitioningClauses
+    : rangePartitions
+    | listPartitions
+    | hashPartitions
+    | compositeRangePartitions
+    | compositeListPartitions
+    | compositeHashPartitions
+    | referencePartitioning
+    | systemPartitioning
+    | consistentHashPartitions
+    | consistentHashWithSubpartitions
+    | partitionsetClauses
+    ;
+
+rangePartitions
+    : PARTITION BY RANGE '(' column (',' column)* ')'
+      (INTERVAL '(' expr ')' (STORE IN '(' tablespace (',' tablespace)* ')')? )?
+      '(' rangePartitionsItem (',' rangePartitionsItem)* ')'
+    ;
+
+rangePartitionsItem
+    : (PARTITION partition=identifier rangeValuesClause tablePartitionDescription externalPartSubpartDataProps?)
+    ;
+
+externalPartSubpartDataProps
+    : (DEFAULT DIRECTORY directory=identifier)? (LOCATION '(' externalPartSubpartDataPropsItem (',' externalPartSubpartDataPropsItem)* ')')
+    ;
+
+externalPartSubpartDataPropsItem
+    : (directory=identifier ':')? stringLiteral
+    ;
+
+hashPartitions
+    : PARTITION BY HASH '(' column (',' column)* ')' (individualHashPartitions | hashPartitionsByQuantity)
+    ;
+
+individualHashPartitions
+    : '(' individualHashPartitionsItem (',' individualHashPartitionsItem)* ')'
+    ;
+
+individualHashPartitionsItem
+    : PARTITION partition=identifier? readOnlyClause? indexingClause? partitioningStorageClause?
+    ;
+
+hashPartitionsByQuantity
+    : PARTITIONS hashPartitionsQuantity=integer
+      (STORE IN '(' tablespace (',' tablespace)* ')')?
+      (tableCompression | indexCompression)?
+      (OVERFLOW STORE IN '(' tablespace (',' tablespace)* ')')?
+    ;
+
+listPartitions
+    : PARTITION BY LIST '(' column (',' column)* ')'
+      (AUTOMATIC (STORE IN '(' tablespace (',' tablespace)* ')')?)?
+      '(' listPartitionsItem (',' listPartitionsItem) ')'
+    ;
+
+listPartitionsItem
+    : PARTITION partition=identifier? listValuesClause tablePartitionDescription externalPartSubpartDataProps?
+    ;
+
+compositeRangePartitions
+    : PARTITION BY RANGE '(' column (',' column)* ')'
+      (INTERVAL '(' expr ')' (STORE IN '(' tablespace (',' tablespace)* ')')?)?
+      (subpartitionByRange | subpartitionByList | subpartitionByHash)
+      '(' rangePartitionDesc (',' rangePartitionDesc)* ')'
+    ;
+
+compositeHashPartitions
+    : PARTITION BY HASH '(' column (',' column)* ')' 
+      (subpartitionByRange | subpartitionByList | subpartitionByHash)
+      (individualHashPartitions | hashPartitionsByQuantity)
+    ;
+
+compositeListPartitions
+    : PARTITION BY LIST '(' column (',' column)* ')'
+      (AUTOMATIC (STORE IN '(' tablespace (',' tablespace)* ')')?)?
+      (subpartitionByRange | subpartitionByList | subpartitionByHash)
+      '(' listPartitionDesc (',' listPartitionDesc)* ')'
+    ;
+
+referencePartitioning
+    : PARTITION BY REFERENCE '(' constraint ')' ('(' referencePartitionDesc* ')')?
+    ;
+
+referencePartitionDesc
+    : PARTITION partition=identifier? tablePartitionDescription ')'
+    ;
+
+systemPartitioning
+    : PARTITION BY SYSTEM (PARTITIONS integer | referencePartitionDesc (',' referencePartitionDesc*)?)?
+    ;
+
+consistentHashPartitions
+    : PARTITION BY CONSISTENT HASH '(' column (',' column)* ')' (PARTITIONS AUTO)? TABLESPACE SET tablespaceSet
+    ;
+
+consistentHashWithSubpartitions
+    : PARTITION BY CONSISTENT HASH '(' column (',' column)* ')' 
+      (subpartitionByRange | subpartitionByList | subpartitionByHash)
+      (PARTITIONS AUTO)?
+    ;
+
+partitionsetClauses
+    : (rangePartitionsetClause | listPartitionsetClause)
+    ;
+
+rangePartitionsetClause
+    : PARTITIONSET BY RANGE '(' column (',' column)* ')'
+      PARTITION BY CONSISTENT HASH '(' column (',' column)* ')'
+      (SUBPARTITION BY ((RANGE | HASH) '(' column (',' column)* ')' | LIST '(' column ')') subpartitionTemplate?)?
+      PARTITIONS AUTO '(' rangePartitionsetDesc (',' rangePartitionsetDesc)* ')'
+    ;
+
+rangePartitionsetDesc
+    : PARTITIONSET partitionSet=identifier rangeValuesClause (TABLESPACE SET tablespaceSet)?
+      lobStorageClause?
+      (SUBPARTITIONS STORE IN '(' tablespaceSet (',' tablespaceSet) ')')?
+    ;
+
+listPartitionsetClause
+    : PARTITIONSET BY LIST '(' column ')'
+      PARTITION BY CONSISTENT HASH '(' column (',' column)* ')'
+      (SUBPARTITION BY ((RANGE | HASH) '(' column (',' column)* ')' | LIST '(' column ')') subpartitionTemplate?)?
+      PARTITIONS AUTO '(' listPartitionsetDesc (',' listPartitionsetDesc)* ')'
+    ;
+
+listPartitionsetDesc
+    : PARTITIONSET partitionSet=identifier listValuesClause (TABLESPACE SET tablespaceSet)? lobStorageClause?
+      (SUBPARTITIONS STORE IN '(' tablespaceSet (',' tablespaceSet) ')')?
+    ;
+
+rangePartitionDesc
+    : PARTITION partition=identifier? rangeValuesClause tablePartitionDescription
+      ( '(' ( rangeSubpartitionDesc (',' rangeSubpartitionDesc)* 
+            | listSubpartitionDesc (',' listSubpartitionDesc)* 
+            | individualHashSubparts (',' individualHashSubparts)*
+            )
+        ')'
+      | hashSubpartsByQuantity
+      )?
+    ;
+
+listPartitionDesc
+    : PARTITION partition=identifier? listValuesClause tablePartitionDescription
+      ( '(' ( rangeSubpartitionDesc (',' rangeSubpartitionDesc)* 
+            | listSubpartitionDesc (',' listSubpartitionDesc)* 
+            | individualHashSubparts (',' individualHashSubparts)*
+            )
+        ')'
+      | hashSubpartsByQuantity
+      )?
+    ;
+
+subpartitionTemplate
+    : SUBPARTITION TEMPLATE
+      ( '(' ( rangeSubpartitionDesc (',' rangeSubpartitionDesc)* 
+            | listSubpartitionDesc (',' listSubpartitionDesc)* 
+            | individualHashSubparts (',' individualHashSubparts)*
+            )
+        ')'
+      | hashSubpartsByQuantity
+      )
+    ;
+
+subpartitionByRange
+    : SUBPARTITION BY RANGE '(' column (',' column)* ')' subpartitionTemplate?
+    ;
+
+subpartitionByList
+    : SUBPARTITION BY LIST '(' column (',' column)* ')' subpartitionTemplate?
+    ;
+
+subpartitionByHash
+    : SUBPARTITION BY HASH '(' column (',' column)* ')'
+      (SUBPARTITIONS integer (STORE IN '(' tablespace (',' tablespace)* ')')? | subpartitionTemplate)?
+    ;
+
+rangeSubpartitionDesc
+    : SUBPARTITION subpartition=identifier? rangeValuesClause readOnlyClause? indexingClause? partitioningStorageClause? externalPartSubpartDataProps?
+    ;
+
+listSubpartitionDesc
+    : SUBPARTITION subpartition=identifier? listValuesClause readOnlyClause? indexingClause? partitioningStorageClause? externalPartSubpartDataProps?
+    ;
+
+individualHashSubparts
+    : SUBPARTITION subpartition=identifier? readOnlyClause? indexingClause? partitioningStorageClause?
+    ;
+
+hashSubpartsByQuantity
+    : SUBPARTITIONS integer (STORE IN '(' tablespace (',' tablespace)* ')')?
+    ;
+
+rangeValuesClause
+    : VALUES LESS THAN '(' (literal | MAXVALUE) (',' (literal | MAXVALUE))* ')'
+    ;
+
+listValuesClause
+    : VALUES '(' listValues | DEFAULT ')'
+    ;
+
+listValues
+    : ((literal | NULL) (',' (literal | NULL))*) 
+    | '(' (literal | NULL) (',' (literal | NULL))* ')' (',' '(' (literal | NULL) (',' (literal | NULL))* ')')?
+    ;
+
+tablePartitionDescription
+    : (INTERNAL | EXTERNAL)? deferredSegmentCreation? readOnlyClause? indexingClause? segmentAttributesClause?
+      (tableCompression | prefixCompression)? inmemoryClause? ilmClause? (OVERFLOW segmentAttributesClause?)?
+      (lobStorageClause | varrayColProperties | nestedTableColProperties)*
+    ;
+
+partitioningStorageClause
+    : partitioningStorageClauseItem+
+    ;
+
+partitioningStorageClauseItem
+    : TABLESPACE tablespace
+    | TABLESPACE SET tablespaceSet
+    | OVERFLOW ( TABLESPACE tablespace
+               | TABLESPACE SET tablespaceSet)?
+    | tableCompression
+    | indexCompression
+    | inmemoryClause
+    | ilmClause
+    | lobPartitionStorage
+    | VARRAY varrayItem STORE AS (SECUREFILE | BASICFILE)? LOB lobSegName
+    | jsonStorageClause
+    ;
+
+inmemoryClause
+    : INMEMORY inmemoryAttributes (TEXT ( identifier (',' identifier)* 
+                                         | identifier USING identifier (',' identifier USING identifier)*))? 
+    | NO INMEMORY
+    ;
+
+attributeClusteringClause
+    : CLUSTERING clusteringJoin? clusterClause clusteringWhen zonemapClause?
+    ;
+
+resultCacheClause
+    : RESULT_CACHE ( '(' ((MODE '(' DEFAULT | FORCE ')')? (',' STANDBY '(' ENABLE | DISABLE ')')?) 
+                   | '(' (STANDBY '(' ENABLE | DISABLE ')')? (',' MODE (DEFAULT | FORCE))? ')' ')')
+    ;
+
+clusteringJoin
+    : (schema '.')? table clusteringJoinItem (',' clusteringJoinItem)*
+    ;
+
+clusteringJoinItem
+    : JOIN (schema '.')? table ON '(' joinCondition ')'
+    ;
+
+clusterClause
+    : BY (LINEAR | INTERLEAVED)? ORDER clusteringColumns
+    ;
+
+clusteringColumns
+    : clusteringColumnGroup | '(' clusteringColumnGroup (',' clusteringColumnGroup)* ')'
+    ;
+
+clusteringColumnGroup
+    : '(' column (',' column)* ')'
+    ;
+
+clusteringWhen
+    : ((YES | NO) ON LOAD)?
+      ((YES | NO) ON DATA MOVEMENT)?
+    ;
+
+zonemapClause
+    : WITH MATERIALIZED ZONEMAP ('(' zonemapName=identifier ')')? 
+    | WITHOUT MATERIALIZED ZONEMAP
+    ;
+
+enableDisableClause
+    : (ENABLE | DISABLE) (VALIDATE | NOVALIDATE)?
+      (UNIQUE '(' column (',' column)* ')' | PRIMARY KEY | CONSTRAINT constraintName=identifier)
+      usingIndexClause? exceptionsClause? CASCADE? ((KEEP | DROP) INDEX)?
+    ;
+
+objectTypeColProperties
+    : COLUMN column substitutableColumnClause
+    ;
+
+substitutableColumnClause
+    : ELEMENT? IS OF TYPE? '(' ONLY type=identifier ')'
+    | NOT? SUBSTITUTABLE AT ALL LEVELS
+    ;
+
+nestedTableColProperties
+    : NESTED TABLE (nestedItem=identifier | COLUMN_VALUE) substitutableColumnClause? (LOCAL | GLOBAL)?
+      STORE AS storageTable=identifier ('(' ('(' objectProperties ')' | physicalProperties | columnProperties)+ ')')?
+      (RETURN AS? (LOCATOR | VALUE))?
+    ;
+
+varrayColProperties
+    : VARRAY varrayItem (substitutableColumnClause? varrayStorageClause | substitutableColumnClause)
+    ;
+
+xmlTypeColumnProperties
+    : XMLTYPE COLUMN? column xmlTypeStorage? xmlSchemaSpec?
+    ;
+
+xmlTypeStorage
+    : STORE 
+      (AS ( OBJECT RELATIONAL 
+          | (SECUREFILE | BASICFILE)? (CLOB | BINARY XML) (lobSegName ('(' lobStorageParameters ')')? | '(' lobStorageParameters ')')?) 
+      | (ALL VARRAYS AS (LOBS | TABLES))
+      )
+    ;
+
+xmlSchemaSpec
+    : (XMLSCHEMA xmlSchemaUrl=identifier)? ELEMENT (element=identifier | xmlSchemaUrl=identifier '#' element=identifier)
+      (STORE ALL VARRAYS AS (LOBS|TABLES))?
+      ((ALLOW | DISALLOW) NONSCHEMA)?
+      ((ALLOW | DISALLOW) ANYSCHEMA)?
+    ;
+
+varrayStorageClause
+    : STORE AS (SECUREFILE | BASICFILE)? LOB (lobSegName? '(' lobStorageParameters ')'| lobSegName)
+    ;
+
+lobStorageClause
+    : LOB ( '(' lobItem=identifier (',' lobItem=identifier)* ')' STORE AS (SECUREFILE | BASICFILE | '(' lobStorageParameters ')')+
+          | '(' lobItem=identifier ')' STORE AS (SECUREFILE | BASICFILE | lobSegName | '(' lobStorageParameters ')')+
+          )
+    ;
+
+lobPartitionStorage
+    : PARTITION partition=identifier (lobStorageClause | varrayColProperties)+
+      ('(' SUBPARTITION subpartition=identifier (lobStorageClause | varrayColProperties)+ ')')?
+    ;
+
+lobStorageParameters
+    : lobStorageParameter+
+    ;
+
+lobStorageParameter
+    : ( TABLESPACE tablespace
+      | TABLESPACE SET tablespaceSet
+      ) storageClause
+    | lobParameters storageClause?
+    ;
+
+lobParameters
+    : (ENABLE | DISABLE) STORAGE IN ROW
+    | CHUNK integer
+    | PCTVERSION integer
+    | FREEPOOLS integer
+    | lobRetentionClause
+    | lobDeduplicateClause
+    | lobCompressionClause
+    | ENCRYPT encryptionSpec
+    | DECRYPT
+    | ( CACHE
+      | NOCACHE
+      | CACHE READS
+      ) loggingClause?
+    ;
+
+lobRetentionClause
+    : RETENTION ( MAX
+                | MIN integer
+                | AUTO
+                | NONE
+                )?
+    ;
+
+lobDeduplicateClause
+    : DEDUPLICATE
+    | KEEP_DUPLICATES
+    ;
+
+lobCompressionClause
+    : COMPRESS (HIGH | MEDIUM | LOW)?
+    | NOCOMPRESS
+    ;
+
+xmlTypeVirtualColumns
+    : VIRTUAL COLUMNS '(' xmlTypeVirtualColumnsItem (',' xmlTypeVirtualColumnsItem)* ')'
+    ;
+
+xmlTypeVirtualColumnsItem
+    : column AS '(' expr ')'
+    ;
+
+jsonStorageClause
+    : JSON '(' jsonColumn=identifier ')'* STORE AS ('(' jsonParameters ')' | lobSegName? ('(' jsonParameters ')')?)
+    ;
+
+jsonParameters
+    : jsonParametersItem (',' jsonParametersItem)*
+    ;
+
+jsonParametersItem
+    : TABLESPACE tablespace
+    | storageClause
+    | (CHUNK | PCTVERSION | FREEPOOLS) integer 
+    | RETENTION
+    ;
+
+rowMovementClause
+    : (ENABLE | DISABLE) ROW MOVEMENT
+    ;
+
+logicalReplicationClause
+    : DISABLE LOGICAL REPLICATION
+    | ENABLE LOGICAL REPLICATION (ALL KEYS | ALLOW NOVALIDATE KEYS)?
+    ;
+
+flashbackArchiveClause
+    : FLASHBACK ARCHIVE flashbackArchive=identifier? 
+    | NO FLASHBACK ARCHIVE
     ;
 
 privilegeAuditClause
@@ -1189,7 +2335,7 @@ tablespaceClauses
     ;
 
 defaultTablespace
-    : DEFAULT TABLESPACE tablespace=identifier (DATAFILE datafileTempfileSpec)? extentManagementClause?
+    : DEFAULT TABLESPACE tablespace (DATAFILE datafileTempfileSpec)? extentManagementClause?
     ;
 
 extentManagementClause
@@ -1204,16 +2350,16 @@ defaultTempTablespace
       DEFAULT
       (TEMPORARY TABLESPACE
       |LOCAL TEMPORARY TABLESPACE FOR (ALL|LEAF)
-      ) tablespace=identifier
+      ) tablespace
     ;
 
 undoTablespace
     : (BIGFILE|SMALLFILE)?
-      UNDO TABLESPACE tablespace=identifier (DATAFILE fileSpecification (',' fileSpecification)*)?
+      UNDO TABLESPACE tablespace (DATAFILE fileSpecification (',' fileSpecification)*)?
     ;
 
 sizeClause
-    : integer unit=(U_KILOBYTE|U_MEGABYTE|U_GIGABYTE|U_TERABYTE|U_PETABYTE|U_EXABYTE)
+    : integer unit=(U_KILOBYTE|U_MEGABYTE|U_GIGABYTE|U_TERABYTE|U_PETABYTE|U_EXABYTE)?
     ;
 
 databaseLoggingLogFileClause
@@ -1383,7 +2529,7 @@ joinCondition
     ;
 
 joinConditionElem
-    : CODE (alias '.')? column '=' (alias '.')? column
+    : (alias '.')? column '=' (alias '.')? column
     ;
 
 attributesClause
@@ -2160,6 +3306,114 @@ windowingClause
       )
     ;
 
+precision
+    : S_INTEGER_WITHOUT_SIGN
+    ;
+
+scale
+    : S_INTEGER_WITHOUT_SIGN
+    ;
+
+size
+    : S_INTEGER_WITHOUT_SIGN
+    ;
+
+datatype
+    : oracleBuiltInDatatypes
+    | ansiSupportedDatatypes
+    | userDefinedTypes
+    | oracleSuppliedTypes
+    ;
+
+oracleBuiltInDatatypes
+    : characterDatatypes
+    | numberDatatypes
+    | longAndRawDatatypes
+    | datetimeDatatypes
+    | largeObjectDatatypes
+    | rowidDatatypes
+    ;
+
+characterDatatypes
+    : CHAR ('(' size (BYTE | CHAR)? ')')?
+    | VARCHAR2 '(' size (BYTE | CHAR)? ')'
+    | NCHAR ('(' size ')')?
+    | NVARCHAR2 '(' size ')'
+    ;
+
+numberDatatypes
+    : NUMBER ('(' precision (',' scale)* ')')?
+    | FLOAT ('(' precision ')')?
+    | BINARY_FLOAT
+    | BINARY_DOUBLE
+    ;
+
+longAndRawDatatypes
+    : LONG
+    | LONG RAW
+    | RAW '(' size ')'
+    ;
+
+datetimeDatatypes
+    : DATE
+    | TIMESTAMP ('(' fractionalSecondsPrecision=precision ')')? (WITH LOCAL? TIME ZONE)?
+    | INTERVAL YEAR ('(' yearPrecision=precision ')')? TO MONTH
+    | INTERVAL DAY ('(' dayPrecision=precision ')')? TO SECOND ('(' factionalSecondsPrecision=precision ')')?
+    ;
+
+largeObjectDatatypes
+    : BLOB
+    | CLOB
+    | NCLOB
+    | BFILE
+    ;
+
+rowidDatatypes
+    : ROWID
+    | UROWID ('(' size ')')?
+    ;
+
+ansiSupportedDatatypes
+    : CHARACTER VARYING? '(' size ')'
+    | (CHAR | NCHAR) VARYING '(' size ')'
+    | VARCHAR '(' size ')'
+    | NATIONAL (CHARACTER | CHAR) VARYING? '(' size ')'
+    | (NUMERIC | DECIMAL | DEC) ('(' precision ('.' scale)? ')')?
+    | INTEGER
+    | INT 
+    | SMALLINT
+    | FLOAT ('(' size ')')?
+    | DOUBLE PRECISION
+    | REAL
+    ;
+
+userDefinedTypes
+    : identifier
+    ;
+
+oracleSuppliedTypes
+    : anyTypes
+    | xmlTypes
+    | spatialTypes
+    ;
+
+anyTypes
+    : SYS '.' ANYDATA
+    | SYS '.' ANYTYPE
+    | SYS '.' ANYDATASET
+    ;
+
+xmlTypes
+    : XMLTYPE
+    | URITYPE
+    ;
+
+spatialTypes
+    : SDO_GEOMERTY
+    | SDO_TOPO_GEOMETRY
+    | SDO_GEORASTER
+    ;
+
 avExpression
     :
 //    : avMeasExpression
@@ -2167,11 +3421,45 @@ avExpression
     ;
 
 constraint
-    :
-//    : inlineConstraint
-//    | outOfLineConstraint
-//    | inlineRefConstraint
-//    | outOfLineRefConstraint
+    : inlineConstraint
+    | outOfLineConstraint
+    | inlineRefConstraint
+    | outOfLineRefConstraint
+    ;
+
+inlineConstraint
+    : (CONSTRAINT constraintName=identifier)?
+      ( NOT? NULL
+      | UNIQUE
+      | PRIMARY KEY
+      | referencesClause
+      | CHECK '(' condition ')'
+      )
+      constraintState
+    ;
+
+outOfLineConstraint 
+    : (CONSTRAINT constraintName=identifier)?
+      ( UNIQUE '(' fullObjectPath (',' fullObjectPath)* ')'
+      | PRIMARY KEY '(' fullObjectPath (',' fullObjectPath)* ')'
+      | FOREIGN KEY '(' fullObjectPath (',' fullObjectPath)* ')' referencesClause
+      | CHECK '(' condition ')'
+      )
+      constraintState
+    ;
+
+inlineRefConstraint
+    : SCOPE IS (schema '.')? scopeTable=identifier
+    | WITH ROWID
+    | (CONSTRAINT constraintName=identifier)? referencesClause constraintState
+    ;
+
+outOfLineRefConstraint
+    :  SCOPE FOR '(' (refCol+=identifier | refAttr+=identifier) ')' IS (schema '.')? scopeTable=identifier
+    | REF '(' (refCol+=identifier | refAttr+=identifier) ')' WITH ROWID 
+    | (CONSTRAINT constraintName=identifier)? 
+      FOREIGN KEY '(' (refCol+=identifier (',' refCol+=identifier)? | refAttr+=identifier (',' refAttr+=identifier)?) ')' 
+      referencesClause constraintState
     ;
 
 condition
@@ -2304,7 +3592,23 @@ fullObjectPath
     : identifier ('.' identifier)?
     ;
 
+varrayItem
+    : identifier
+    ;
+
+lobSegName
+    : identifier
+    ;
+
 variableName
+    : identifier
+    ;
+
+tablespace
+    : identifier
+    ;
+
+tablespaceSet
     : identifier
     ;
 
@@ -2356,6 +3660,7 @@ column
     : identifier
     ;
 
+
 tablespec
     : identifier ('.' identifier)*
     ;
@@ -2400,7 +3705,7 @@ dateTimeLiteral
     ;
 
 intervalLiteral
-    : INTERVAL SINGLE_QUOTED_STRING (YEAR|MONTH) ('(' precision=expr ')')? (TO (YEAR|MONTH))?
+    : INTERVAL SINGLE_QUOTED_STRING (YEAR|MONTH) ('(' precision ')')? (TO (YEAR|MONTH))?
     ;
 
 identifier
