@@ -25,6 +25,10 @@ create
     : createAnalyticView
     | createAttributeDimension
     | createAuditPolicy
+//    | createCluster
+//    | createContext
+//    | createControlfile
+    | createDatabase
     ;
 
 createAnalyticView
@@ -1140,6 +1144,124 @@ componentAction
     : EXPORT
     | IMPORT
     | ALL
+    ;
+
+createDatabase
+    : CREATE DATABASE database=identifier?
+      createDatabaseOption+
+    ;
+
+createDatabaseOption
+    : USER SYS IDENTIFIED BY password=identifier                #createDatabaseSysPasswordOption
+    | USER SYSTEM IDENTIFIED BY password=identifier             #createDatabaseSystemPasswordOption
+    | CONTROLFILE REUSE                                         #createDatabaseControlFileReuseOption
+    | MAXDATAFILES integer                                      #createDatabaseMaxDataFilesOption
+    | MAXINSTANCES integer                                      #createDatabaseMaxInstantcesOption
+    | CHARACTER SET charset=identifier                          #createDatabaseCharacterSetOption
+    | NATIONAL CHARACTER SET charset=identifier                 #createDatabaseNationalCharacterSetOption
+    | SET DEFAULT (BIGFILE | SMALLFILE) TABLESPACE              #createDatabaseSetDefaultTablespaceOption
+    | databaseLoggingClauses                                    #createDatabaseDatabaseLoggingClausesOption
+    | tablespaceClauses                                         #createDatabaseTablespaceClausesOption
+    | setTimeZoneClause                                         #createDatabaseSetTimeZoneClauseOption
+    | (BIGFILE | SMALLFILE)? USER_DATA TABLESPACE 
+      tablespaceName=identifier
+      DATAFILE datafileTempfileSpec (',' datafileTempfileSpec)* #createDatabaseDataFileOption
+    | enablePluggableDatabase                                   #createDatabaseEnablePluggableDatabaseOption
+    ;
+
+databaseLoggingClauses
+    : LOGFILE databaseLoggingLogFileClause (',' databaseLoggingLogFileClause)*
+    | MAXLOGFILES integer
+    | MAXLOGMEMBERS integer
+    | MAXLOGHISTORY integer
+    | (ARCHIVELOG|NOARCHIVELOG)
+    | FORCE LOGGING
+    | SET STANDBY NOLOGGING FOR (DATA AVAILABILITY | LOAD PERFORMANCE)
+    ;
+
+tablespaceClauses
+    : EXTENT MANAGEMENT LOCAL
+    | DATAFILE fileSpecification (',' fileSpecification)*
+    | SYSAUX DATAFILE fileSpecification (',' fileSpecification)*
+    | defaultTablespace
+    | defaultTempTablespace
+    | undoTablespace
+    ;
+
+defaultTablespace
+    : DEFAULT TABLESPACE tablespace=identifier (DATAFILE datafileTempfileSpec)? extentManagementClause?
+    ;
+
+extentManagementClause
+    : EXTENT MANAGEMENT LOCAL 
+      (AUTOALLOCATE
+      |UNIFORM (SIZE sizeClause)
+      )?
+    ;
+
+defaultTempTablespace
+    : (BIGFILE|SMALLFILE)?
+      DEFAULT
+      (TEMPORARY TABLESPACE
+      |LOCAL TEMPORARY TABLESPACE FOR (ALL|LEAF)
+      ) tablespace=identifier
+    ;
+
+undoTablespace
+    : (BIGFILE|SMALLFILE)?
+      UNDO TABLESPACE tablespace=identifier (DATAFILE fileSpecification (',' fileSpecification)*)?
+    ;
+
+sizeClause
+    : integer unit=(U_KILOBYTE|U_MEGABYTE|U_GIGABYTE|U_TERABYTE|U_PETABYTE|U_EXABYTE)
+    ;
+
+databaseLoggingLogFileClause
+    : (GROUP integer)? fileSpecification
+    ;
+
+setTimeZoneClause
+    : SET TIMEZONE '=' stringLiteral
+    ;
+
+enablePluggableDatabase
+    : ENABLE PLUGGABLE DATABASE (SEED fileNameConvert? (SYSTEM tablespaceDatafileClauses)? (SYSAUX tablespaceDatafileClauses)?)
+    ;
+
+fileNameConvert
+    : FILE_NAME_CONVERT '=' 
+      ( '(' (fileNameConvertItem) (',' fileNameConvertItem)* ')'
+      | NONE
+      )
+    ;
+
+fileNameConvertItem
+    : filenamePattern=stringLiteral ',' replacementFilenamePattern=stringLiteral
+    ;
+
+tablespaceDatafileClauses
+    : DATAFILES (SIZE sizeClause|autoextendClause)+
+    ;
+
+autoextendClause
+    : AUTOEXTEND (OFF|ON (NEXT sizeClause)? maxsizeClause?)
+    ;
+
+maxsizeClause
+    : MAXSIZE (UNLIMITED|sizeClause)
+    ;
+
+fileSpecification
+    : datafileTempfileSpec
+    | redoLogFileSpec
+    ;
+
+datafileTempfileSpec
+    : stringLiteral? (SIZE sizeClause)? REUSE? autoextendClause?
+    ;
+
+redoLogFileSpec
+    : (stringLiteral|'(' stringLiteral ')')? (SIZE sizeClause)? (BLOCKSIZE sizeClause)? REUSE?
     ;
 
 // TODO: The audit_condition can have a maximum length of 4000 characters. It can contain expressions, as well as the following functions and conditions:
