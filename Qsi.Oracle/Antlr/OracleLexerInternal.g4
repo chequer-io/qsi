@@ -411,3 +411,4 @@ NATIONAL_STRING
 
 WHITESPACE:    [ \t\f\r\n] -> channel(HIDDEN); // Ignore whitespaces.
 BLOCK_COMMENT: ( '/**/' | '/*' ~[+] .*? '*/') -> channel(HIDDEN);
+COMMENT:       '--' ~[\r\n]* ('\r'? '\n' | EOF) -> channel(HIDDEN);
