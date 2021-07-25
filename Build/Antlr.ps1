@@ -3,6 +3,9 @@ $AntlrJar = Resolve-Path ".\Build\antlr-4.8-complete.jar"
 Function Antlr-Generate {
     Param (
         [Parameter(Mandatory = $true)][string] $ProjectName,
+        [Parameter(Mandatory = $false)][bool] $NoListener = $true,
+        [Parameter(Mandatory = $false)][bool] $NoVisitor  = $true,
+        [Parameter(Mandatory = $false)][string[]] $Ignores,
         [Parameter(Mandatory = $false)][int] $Progress,
         [Parameter(Mandatory = $false)][int] $Total
     )
@@ -28,21 +31,34 @@ Function Antlr-Generate {
     # Clean grammar cache
     Remove-Item -Path $GrammarDirectory/* -Include *.interp
 
-    Get-ChildItem -Path $GrammarDirectory/* -Include *.g4 | ForEach-Object  {
-        $FileName = [System.IO.Path]::ChangeExtension($PSItem.Name, "tokens")
-        Remove-Item -Path $GrammarDirectory/* -Include $FileName
+    Get-ChildItem -Path $GrammarDirectory/* -Include *.tokens | ForEach-Object  {
+        $FileName = [System.IO.Path]::GetFileName($PSItem.Name)
+
+        if ($Ignores -notcontains $FileName) {
+            Remove-Item $PSItem
+        }
     }
 
     # Generate
-    java `
-        -jar $AntlrJar `
-        -Dlanguage=CSharp `
-        -package $Namespace `
-        -Xexact-output-dir `
-        -o $OutputDirectory `
-        $GrammarDirectory/*.g4 `
-        -no-listener `
-        -no-visitor
+    $GenArgs = @(
+        "-jar $AntlrJar",
+        "-Dlanguage=CSharp",
+        "-package $Namespace",
+        "-Xexact-output-dir",
+        "-o $OutputDirectory",
+        "$GrammarDirectory/*.g4"
+    )
+
+    if ($NoListener) {
+        $GenArgs += "-no-listener";
+    }
+
+    if ($NoVisitor) {
+        $GenArgs += "-no-visitor";
+    }
+
+    $proc = Start-Process "java" -ArgumentList $GenArgs -NoNewWindow -PassThru
+    $proc.WaitForExit()
 
     if ($LASTEXITCODE -ne 0) {
         throw "$Header $($ProjectName) Failed generate"
