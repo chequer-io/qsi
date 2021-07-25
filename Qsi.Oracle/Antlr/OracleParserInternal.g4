@@ -1041,11 +1041,11 @@ levelMemberLiteral
     ;
 
 posMemberKeys
-    : OPEN_SQUARE_BRACKET memberKeyExpr+=expr (',' memberKeyExpr+=expr)* CLOSE_SQUARE_BRACKET
+    : '[' memberKeyExpr+=expr (',' memberKeyExpr+=expr)* ']'
     ;
 
 namedMemberKeys
-    : OPEN_SQUARE_BRACKET attrName+=identifier '=' memberKeyExpr+=expr (',' attrName+=identifier '=' memberKeyExpr+=expr )* CLOSE_SQUARE_BRACKET
+    : '[' attrName+=identifier '=' memberKeyExpr+=expr (',' attrName+=identifier '=' memberKeyExpr+=expr )* ']'
     ;
     
 hierNavigationExpression
