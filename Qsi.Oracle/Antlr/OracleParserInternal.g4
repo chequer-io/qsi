@@ -104,8 +104,7 @@ createAuditPolicy
       privilegeAuditClause?
       actionAuditClause?
       roleAuditClause?
-      (WHEN 
-       S_SINGLE_QUOTE auditCondition S_SINGLE_QUOTE
+      (WHEN S_SINGLE_QUOTE auditCondition S_SINGLE_QUOTE
        EVALUATE PER (STATEMENT|SESSION|INSTANCE)
       )?
       (ONLY TOPLEVEL)?
@@ -115,8 +114,8 @@ createAuditPolicy
 createSchema
     : CREATE SCHEMA AUTHORIZATION schema 
       (createTable
-//      |createViewStatement
-//      |grantStatement
+//      | createViewStatement
+//      | grantStatement
       )+
     ;
 
@@ -3463,28 +3462,77 @@ outOfLineRefConstraint
     ;
 
 condition
-    : comparisonCondition
-//    | floatingPointCondition
-//    | logicalCondition
-//    | modelCondition
-//    | multisetCondition
-//    | patternMatchingCondition
+    : simpleComparisonCondition                                                         #comparisonCondition1
+    | groupComparisonCondition                                                          #comparisonCondition2
+    | expr IS NOT? (NAN | INFINITE)                                                     #floatingPointCondition
+    | NOT '(' condition ')'                                                             #logicalNotCondition
+    | condition AND condition                                                           #logicalAndCondition
+    | condition OR condition                                                            #logicalOrCondition
+    | (dimensionColumn=identifier IS)? ANY                                              #modelIsAnyCondition
+    | cellReference=cellAssignment IS PRESENT                                           #modelIsPresentCondition
+    | nestedTable=identifier IS NOT? K_A SET                                            #multisetIsASetCondition
+    | nestedTable=identifier IS NOT? EMPTY                                              #multisetIsEmptyCondition
+    | expr NOT? MEMBER OF? nestedTable=identifier                                       #multisetMemberCondition
+    | nestedTable1=identifier NOT? SUBMULTISET OF? nestedTable2=identifier              #multisetSubmultisetCondition
+    | (column|stringLiteral) NOT? (LIKE | LIKEC | LIKE2 | LIKE4) 
+      (column|stringLiteral) (ESCAPE stringLiteral)?                                    #patternMatchingLikeCondition
+    | REGEXP_LIKE '(' (column|stringLiteral) ',' 
+                      (column|stringLiteral) 
+                      (',' (column|stringLiteral))? ')'                                 #patternMatchingRegexpLikeCondition
 //    | rangeCondition
-//    | nullCondition
-//    | xmlCondition
-//    | jsonCondition
-//    | compoundCondition
-//    | existsCondition
-//    | inCondition
-//    | isOfTypeCondition
+    | expr IS NOT? NULL                                                                 #isNullCondition
+    | EQUALS_PATH '(' expr ',' expr (',' expr)? ')'                                     #xmlEqualsPathCondition
+    | UNDER_PATH '(' expr (',' expr) ',' expr (',' expr)? ')'                           #xmlUnderPathCondition
+    | expr IS NOT? JSON (FORMAT JSON)? (STRICT | LAX)?
+      ((ALLOW | DISALLOW) SCALARS)? ((WITH | WITHOUT) UNIQUE KEYS)?                     #jsonIsJsonCondition
+    | JSON_EQUAL '(' expr ',' expr ')'                                                  #jsonEqualCondition
+//    | JSON_EXISTS '(' expr (FORMAT JSON)? ',' jsonBasicPathExpression
+//      jsonPassingClause=expr? jsonExistsOnErrorClause? jsonExistsOnEmptyClause?  #jsonExistsCondition
+//    | JSON_TEXTCONTAINS '(' 
+//        column ',' 
+//        jsonBasicPathExpression ','
+//        stringLiteral ')'                                                   #jsonTextContainsCondition
+    | '(' condition ')'                                                                 #compoundParenthesisCondition
+    | NOT condition                                                                     #compoundNotCondition
+    | condition (AND | OR) condition                                                    #compoundAndOrCondition
+    | expr NOT? BETWEEN expr AND expr                                                   #betweenCondition
+    | EXISTS '(' subquery ')'                                                           #existsCondition
+    | expr NOT? IN '(' (expressionList|subquery) ')'                                    #inCondition1
+    | '(' expr (',' expr)* ')' NOT? 
+      IN '(' (expressionList (',' expressionList)* | subquery) ')' #inCondition2
+    | expr IS NOT? OF TYPE? '(' isOfTypeConditionItem (',' isOfTypeConditionItem) ')'   #isOfTypeCondition
     ;
 
-comparisonCondition
-    : simpleComparisonCondition
+isOfTypeConditionItem
+    : (ONLY? (SCHEMA '.')? type=identifier)
+    ;
+
+operator1
+    : '=' 
+    | '!=' 
+    | '^=' 
+    | '<>' 
+    | '>' 
+    | '<' 
+    | '>=' 
+    | '<='
+    ;
+
+operator2
+    : '='
+    | '!='
+    | '^='
+    | '<>'
     ;
 
 simpleComparisonCondition
-    : expr ( '=' | '!=' | '^=' | '<>' | '>' | '<' | '>=' | '<=' ) expr
+    : expr operator1 expr
+    | '(' expr (',' expr)* ')' operator2 '(' (expressionList | subquery) ')'
+    ;
+
+groupComparisonCondition
+    : expr operator1 (ANY | SOME | ALL) '(' (expressionList | subquery) ')'
+    | '(' expr (',' expr)* ')' operator2 (ANY | SOME | ALL) '(' (expressionList (',' expressionList)* | subquery) ')'
     ;
 
 expr
@@ -3582,6 +3630,140 @@ searchedCaseExpression
 
 elseClause
     : ELSE elseExpr=expr
+    ;
+
+
+jsonExistsOnErrorClause
+    : ERROR ON ERROR
+    | TRUE ON ERROR
+    | FALSE ON ERROR
+    ;
+
+jsonExistsOnEmptyClause
+    : NULL ON EMPTY
+    | ERROR ON EMPTY
+    | DEFAULT literal ON EMPTY
+    ;
+
+jsonBasicPathExpression 
+    : jsonAbsolutePathExpr
+    | jsonRelativePathExpr
+    ;
+
+jsonAbsolutePathExpr
+    : '$' jsonNonfunctionSteps? jsonFunctionStep?
+    ;
+
+jsonNonfunctionSteps
+    : (( jsonObjectStep 
+       | jsonArrayStep 
+//       | jsonDescendentStep
+       ) jsonFilterExpr?)+
+    ;
+
+jsonObjectStep
+    : '.' ('*' | jsonFieldName)
+    ;
+
+// TODO: Check
+jsonFieldName
+    : identifier
+    ;
+
+jsonArrayStep
+    : '[' ('*'| jsonArrayStepItem (',' jsonArrayStepItem)*) ']'
+    ;
+
+jsonArrayStepItem
+    : (jsonArrayIndex (TO jsonArrayIndex)?)
+    ;
+
+jsonArrayIndex
+    : LAST (('-' | '+') integer)?
+    | integer
+    ;
+
+jsonFunctionStep
+    : '.' jsonItemMethod '(' ')'
+    ;
+
+jsonItemMethod
+    : ABS 
+    | AVG 
+    | BINARY 
+    | BOOLEAN 
+    | BOOLEANONLY 
+    | CEILING 
+    | COUNT 
+    | DATE 
+    | DOUBLE 
+    | DSINTERVAL 
+    | FLOAT 
+    | FLOOR 
+    | LENGTH 
+    | LOWER 
+    | MAXNUMBER 
+    | MAXSTRING 
+    | MINNUMBER 
+    | MINSTRING 
+    | NUMBER 
+    | NUMBERONLY 
+    | SIZE 
+    | STRING 
+    | STRINGONLY 
+    | SUM 
+    | TIMESTAMP 
+    | TYPE 
+    | UPPER 
+    | YMINTERVAL
+    ;
+
+jsonFilterExpr
+    : '?' '(' jsonCond ')'
+    ;
+
+jsonCond
+    : jsonCond '&&' jsonCond                                        #jsonConjunction
+    | '(' jsonCond ')'                                              #parenthesisJsonCond
+    | jsonRelativePathExpr jsonComparePred (jsonVar | jsonScalar)   #jsonComparison1
+    | (jsonVar | jsonScalar) jsonComparePred jsonRelativePathExpr   #jsonComparison2
+    | jsonScalar jsonComparePred jsonScalar                         #jsonComparison3
+//    : jsonDisjunction
+//    | jsonNegation
+//    | jsonExistsCond
+//    | jsonInCond
+//    | jsonLikeCond
+//    | jsonLikeRegexCond
+//    | jsonEqRegexCond
+//    | jsonHasSubstringCond
+//    | jsonStartsWithCond
+    ;
+
+
+jsonRelativePathExpr
+    : '@' jsonNonfunctionSteps jsonFunctionStep
+    ;
+
+jsonComparePred
+    : '=='
+    | '!='
+    | '<'
+    | '<='
+    | '>='
+    | '>'
+    ;
+
+jsonVar
+    : '$' identifier
+    ;
+
+jsonScalar
+    : S_INTEGER_WITH_SIGN
+    | S_INTEGER_WITHOUT_SIGN
+    | TRUE
+    | FALSE
+    | NULL
+    | QUOTED_OBJECT_NAME
     ;
 
 fullColumnPath
