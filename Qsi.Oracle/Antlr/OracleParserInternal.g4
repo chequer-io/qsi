@@ -42,11 +42,11 @@ createAnalyticView
     ;
 
 createAttributeDimension
-    : CREATE (OR REPLACE)? (FORCE | NOFORCE) ATTRIBUTE DIMENSION
+    : CREATE (OR REPLACE)? (FORCE | NOFORCE)? ATTRIBUTE DIMENSION
       (schema '.')? attrDimension=identifier
       sharingClause?
       classificationClause*
-      (DIMENSION TYPE (STANDARD | TIME))
+      (DIMENSION TYPE (STANDARD | TIME))?
       attrDimUsingClause
       attributesClause
       attrDimLevelClause*
@@ -70,7 +70,7 @@ usingClause
     ;
 
 sourceClause
-    : (schema '.')? factTableOrView=table REMOTE? '(' (AS? alias)? ')'
+    : (schema '.')? factTableOrView=table REMOTE? (AS? alias)?
     ;
 
 dimByClause
@@ -107,6 +107,7 @@ baseMeasureClause
     : (FACT (alias '.')?)? column measAggregateClause?
     ;
 
+// TODO: Impl avExpression
 calcMeasureClause
     : AS '(' 
 //      calcMeasExpression=avExpression
