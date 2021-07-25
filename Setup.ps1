@@ -29,6 +29,7 @@ $Tasks = @(
     [Task]::new("Qsi.Cql",    $true,  $true),
     [Task]::new("Qsi.Hana",   $true,  $true),
     [Task]::new("Qsi.Impala", $true,  $true),
+    [Task]::new("Qsi.Trino",  $false, $true)
 )
 
 if ($Target -eq 'All') {
