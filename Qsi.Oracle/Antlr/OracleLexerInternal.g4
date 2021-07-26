@@ -301,7 +301,7 @@ MATCH_NUMBER:                     M A T C H '_' N U M B E R;
 MATCH_RECOGNIZE:                  M A T C H '_' R E C O G N I Z E;
 MATERIALIZED:                     M A T E R I A L I Z E D;
 MAX:                              M A X;
-MAX_ERROR:                        '\'' M A X '_' E R R O R '\'';
+MAX_ERROR:                        M A X '_' E R R O R;
 MAXVALUE:                         M A X V A L U E;
 MEASURE:                          M E A S U R E;
 MEASURES:                         M E A S U R E S;
