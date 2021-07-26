@@ -3924,7 +3924,6 @@ nonReservedKeywordIdentifier
     | ARCHIVE
     | ARCHIVELOG
     | ARE
-    | AS
     | ASSEMBLY
     | ASSOCIATE
     | AT
