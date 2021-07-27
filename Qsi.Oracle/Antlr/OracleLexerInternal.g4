@@ -594,7 +594,7 @@ MONTH:                            M O N T H;
 MONTHS:                           M O N T H S;
 MONTHS_BETWEEN:                   M O N T H S '_' B E T W E E N;
 MOVEMENT:                         M O V E M E N T;
-MULTISET:                        M U L T I S E T;
+MULTISET:                         M U L T I S E T;
 MULTIVALUE:                       M U L T I V A L U E;
 NAME:                             N A M E;
 NAN:                              N A N;
