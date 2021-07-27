@@ -3853,12 +3853,17 @@ functionExpression
     : functionName '(' expressionList? ')'
     | analyticFunction
     | castFunction
+    | treatFunction
     ;
 
 castFunction
     : CAST'('(expr | MULTISET '('subquery')' ) AS (identifier | TIMESTAMP WITH LOCAL? TIME ZONE)
         ( DEFAULT returnValue=expr ON CONVERSION ERROR )?
         (',' fmt=expr (',' nlsparam=expr )? )?')'
+    ;
+
+treatFunction
+    : TREAT '(' expr AS (REF? ( schema '.' )? type=identifier | JSON) ')' jsonNonfunctionSteps? jsonFunctionStep?
     ;
 
 avMeasExpression
