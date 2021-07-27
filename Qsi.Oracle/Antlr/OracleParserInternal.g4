@@ -33,61 +33,6 @@ grant
             )
     ;
 
-grantSystemPrivileges
-    : grantSystemPrivilegesRoleItem (',' grantSystemPrivilegesRoleItem)* TO (granteeClause | granteeIdentifiedBy) 
-      (WITH (ADMIN | DELEGATE) OPTION)?
-    ;
-
-grantObjectPrivileges
-    : grantObjectPrivilegesItem (',' grantObjectPrivilegesItem)* onObjectClause
-      TO granteeClause (WITH HIERARCHY OPTION)? (WITH GRANT OPTION)?
-    ;
-
-grantObjectPrivilegesItem
-    : ( objectPrivilege | ALL PRIVILEGES?) ('(' column (',' column)* ')')?
-    ;
-
-onObjectClause
-    : ON ( (schema '.')? object=identifier
-         | USER user (',' user)*
-         | DIRECTORY directoryName=identifier
-         | EDITION editionName=identifier
-         | MINING MODEL (schema '.')? miningModelName=identifier
-         | JAVA (SOURCE | RESOURCE) (schema '.')? object=identifier
-         | SQL TRANSLATION PROFILE (schema '.')? profile=identifier
-         )
-    ;
-
-grantRolesToPrograms
-    : role (',' role)* TO programUnit (',' programUnit)*
-    ;
-
-programUnit
-    : FUNCTION (schema '.')? functionName=identifier
-    | PROCEDURE (schema '.')? procedureName=identifier
-    | PACKAGE (schema '.')? packageName=identifier
-    ;
-
-grantSystemPrivilegesRoleItem
-    : systemPrivilege
-    | role
-    | ALL PRIVILEGES
-    ;
-
-granteeClause
-    : granteeClauseItem (',' granteeClauseItem)*
-    ;
-
-granteeIdentifiedBy
-    : user (',' user)* IDENTIFIED BY (password=identifier) (',' password=identifier)*
-    ;
-
-granteeClauseItem
-    : user
-    | role
-    | PUBLIC
-    ;
-
 create
     : createAnalyticView
     | createAttributeDimension
@@ -2783,6 +2728,61 @@ allClause
 //rollback
 //    : ROLLBACK WORK? (TO SAVEPOINT savepointName | FORCE string)?
 //    ;
+
+grantSystemPrivileges
+    : grantSystemPrivilegesRoleItem (',' grantSystemPrivilegesRoleItem)* TO (granteeClause | granteeIdentifiedBy) 
+      (WITH (ADMIN | DELEGATE) OPTION)?
+    ;
+
+grantObjectPrivileges
+    : grantObjectPrivilegesItem (',' grantObjectPrivilegesItem)* onObjectClause
+      TO granteeClause (WITH HIERARCHY OPTION)? (WITH GRANT OPTION)?
+    ;
+
+grantObjectPrivilegesItem
+    : ( objectPrivilege | ALL PRIVILEGES?) ('(' column (',' column)* ')')?
+    ;
+
+onObjectClause
+    : ON ( (schema '.')? object=identifier
+         | USER user (',' user)*
+         | DIRECTORY directoryName=identifier
+         | EDITION editionName=identifier
+         | MINING MODEL (schema '.')? miningModelName=identifier
+         | JAVA (SOURCE | RESOURCE) (schema '.')? object=identifier
+         | SQL TRANSLATION PROFILE (schema '.')? profile=identifier
+         )
+    ;
+
+grantRolesToPrograms
+    : role (',' role)* TO programUnit (',' programUnit)*
+    ;
+
+programUnit
+    : FUNCTION (schema '.')? functionName=identifier
+    | PROCEDURE (schema '.')? procedureName=identifier
+    | PACKAGE (schema '.')? packageName=identifier
+    ;
+
+grantSystemPrivilegesRoleItem
+    : systemPrivilege
+    | role
+    | ALL PRIVILEGES
+    ;
+
+granteeClause
+    : granteeClauseItem (',' granteeClauseItem)*
+    ;
+
+granteeIdentifiedBy
+    : user (',' user)* IDENTIFIED BY (password=identifier) (',' password=identifier)*
+    ;
+
+granteeClauseItem
+    : user
+    | role
+    | PUBLIC
+    ;
 
 subquery
     : queryBlock orderByClause? rowOffset? rowFetchOption?
