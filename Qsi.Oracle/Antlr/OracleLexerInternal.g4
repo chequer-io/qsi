@@ -188,6 +188,7 @@ COMPRESS:                         C O M P R E S S;
 CONNECT:                          C O N N E C T;
 CONSISTENT:                       C O N S I S T E N T;
 CONSTRAINT:                       C O N S T R A I N T;
+CONSTRAINTS:                      C O N S T R A I N T S;
 CONTAINER:                        C O N T A I N E R;
 CONTAINER_MAP:                    C O N T A I N E R '_' M A P;
 CONTAINERS:                       C O N T A I N E R S;

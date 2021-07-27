@@ -13,6 +13,7 @@ oracleStatement
     : select
     | delete
     | create
+    | drop
     | grant
 //    | savepoint
 //    | rollback
@@ -84,6 +85,52 @@ create
     | createView
     ;
 
+drop
+    : dropAnalyticView
+    | dropAttributeDimension
+    | dropAuditPolicy
+//    | dropCluster
+//    | dropContext
+    | dropDatabase
+//    | dropDatabaseLink
+//    | dropDimension
+//    | dropDirectory
+//    | dropDiskgroup
+//    | dropEdition
+//    | dropFlashbackArchive
+//    | dropFunction
+//    | dropHierarchy
+    | dropIndex
+//    | dropIndextype
+//    | dropInmemoryJoinGroup
+//    | dropJava
+//    | dropLibrary
+//    | dropLockdownProfile
+//    | dropMaterializedView
+//    | dropMaterializedViewLog
+//    | dropMaterializedZonemap
+//    | dropOperator
+//    | dropOutline
+//    | dropPackage
+//    | dropPluggableDatabase
+//    | dropPmemFilestore
+//    | dropProcedure
+//    | dropProfile
+//    | dropRestorePoint
+//    | dropRole
+//    | dropRollbackSegment
+//    | dropSequence
+    | dropSynonym
+    | dropTable
+//    | dropTablespace
+//    | dropTablespaceSet
+//    | dropTrigger
+//    | dropType
+//    | dropTypeBody
+//    | dropUser
+    | dropView
+    ;
+
 createAnalyticView
     : CREATE (OR REPLACE)? (FORCE | NOFORCE)? ANALYTIC VIEW 
       analyticViewName=identifier
@@ -99,6 +146,10 @@ createAnalyticView
       qryTransformClause?
     ;
 
+dropAnalyticView
+    : DROP ANALYTIC VIEW (schema '.')? analyticViewName=identifier
+    ;
+
 createAttributeDimension
     : CREATE (OR REPLACE)? (FORCE | NOFORCE)? ATTRIBUTE DIMENSION
       (schema '.')? attrDimension=identifier
@@ -111,6 +162,10 @@ createAttributeDimension
       allClause?
     ;
 
+dropAttributeDimension
+    : DROP ATTRIBUTE DIMENSION (schema '.')? attrDimension=identifier
+    ;
+
 createAuditPolicy
     : CREATE AUDIT POLICY policy=identifier
       privilegeAuditClause?
@@ -121,6 +176,19 @@ createAuditPolicy
       )?
       (ONLY TOPLEVEL)?
       (CONTAINER '=' (ALL|CURRENT))?
+    ;
+
+dropAuditPolicy
+    : DROP AUDIT POLICY policy=identifier
+    ;
+
+createDatabase
+    : CREATE DATABASE database=identifier?
+      createDatabaseOption+
+    ;
+
+dropDatabase
+    : DROP DATABASE
     ;
 
 createSchema
@@ -143,10 +211,18 @@ createTable
       (PARENT (schema '.')? table)?
     ;
 
+dropTable
+    : DROP TABLE (schema '.')? table (CASCADE CONSTRAINTS)? PURGE?
+    ;
+
 createIndex
     : CREATE (UNIQUE | BITMAP | MULTIVALUE)? INDEX (schema '.')? indexName=identifier
       indexIlmClause? ON (clusterIndexClause | tableIndexClause | bitmapJoinIndexClause)
       (USABLE | UNUSABLE)? ((DEFERRED | IMMEDIATE) INVALIDATION)?
+    ;
+
+dropIndex
+    : DROP INDEX (schema '.')? index ONLINE? FORCE? ((DEFERRED | IMMEDIATE) INVALIDATION)?
     ;
 
 createView
@@ -161,9 +237,17 @@ createView
       AS subquery subqueryRestrictionClause? (CONTAINER_MAP | CONTAINERS_DEFAULT)?
     ;
 
+dropView
+    : DROP VIEW (schema '.')? view (CASCADE CONSTRAINTS)?
+    ;
+
 createSynonym
     : CREATE (OR REPLACE)? (EDITIONABLE | NONEDITIONABLE)? (PUBLIC)? SYNONYM (schema '.')? synonym=identifier
       (SHARING '=' (METADATA | NONE))? FOR (schema '.')? object=identifier ('@' dblink)?
+    ;
+
+dropSynonym
+    : DROP PUBLIC? SYNONYM (schema '.')? synonym=identifier FORCE?
     ;
 
 createViewConstraintItem
@@ -1011,7 +1095,8 @@ consistentHashWithSubpartitions
     ;
 
 partitionsetClauses
-    : (rangePartitionsetClause | listPartitionsetClause)
+    : rangePartitionsetClause
+    | listPartitionsetClause
     ;
 
 rangePartitionsetClause
@@ -2421,11 +2506,6 @@ componentAction
     : EXPORT
     | IMPORT
     | ALL
-    ;
-
-createDatabase
-    : CREATE DATABASE database=identifier?
-      createDatabaseOption+
     ;
 
 createDatabaseOption
