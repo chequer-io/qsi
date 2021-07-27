@@ -1,4 +1,3 @@
-
 parser grammar OracleParserInternal;
 
 options { 
