@@ -1,3 +1,4 @@
+
 parser grammar OracleParserInternal;
 
 options { 
@@ -899,13 +900,13 @@ ilmPolicyClause
     ;
 
 ilmCompressionPolicy
-    : tableCompression (SEGMENT | GROUP) (AFTER ilmTimePeriod OF (NO ACCESS | NO MODIFICATION | CREATION) | ON functionName=identifier)
+    : tableCompression (SEGMENT | GROUP) (AFTER ilmTimePeriod OF (NO ACCESS | NO MODIFICATION | CREATION) | ON functionName)
     | (ROW STORE COMPRESS ADVANCED | COLUMN STORE COMPRESS FOR QUERY) ROW AFTER ilmTimePeriod OF NO MODIFICATION
     ;
 
 ilmTieringPolicy
-    : TIER TO tablespace (SEGMENT | GROUP)? (ON functionName=identifier)?
-    | TIER TO tablespace READ ONLY (SEGMENT | GROUP)? (AFTER ilmTimePeriod OF (NO ACCESS | NO MODIFICATION | CREATION) | ON functionName=identifier)
+    : TIER TO tablespace (SEGMENT | GROUP)? (ON functionName)?
+    | TIER TO tablespace READ ONLY (SEGMENT | GROUP)? (AFTER ilmTimePeriod OF (NO ACCESS | NO MODIFICATION | CREATION) | ON functionName)
     ;
 
 ilmInmemoryPolicy
@@ -914,7 +915,7 @@ ilmInmemoryPolicy
       | NO INMEMORY
       ) SEGMENT?
       ( AFTER ilmTimePeriod OF (NO ACCESS | NO MODIFICATION | CREATION)
-      | ON functionName=identifier
+      | ON functionName
       )
     ;
 
@@ -2691,7 +2692,7 @@ baseMeasureClause
     ;
 
 calcMeasureClause
-    : AS '(' calcMeasExpression=avExpression ')'
+    : AS '(' calcMeasExpression ')'
     ;
 
 defaultMeasureClause
@@ -2907,10 +2908,7 @@ rowOffset
     ;
 
 rowFetchOption
-    : FETCH (FIRST | NEXT)
-      (rowcount=expr | percent=expr PERCENT)?
-      (ROW | ROWS)
-      (ONLY | WITH TIES)
+    : FETCH (FIRST | NEXT) (rowcount=expr | percent=expr PERCENT)? (ROW | ROWS) (ONLY | WITH TIES)
     ;
 
 forUpdateClause
@@ -3473,7 +3471,8 @@ groupingExpressionList
     ;
 
 expressionList
-    : (expr (',' expr)* | '(' (expr (',' expr)?)* ')')
+    : expr (',' expr )* 
+    | '(' (expr (',' expr )*)? ')'
     ;
 
 modelClause
@@ -3681,9 +3680,8 @@ spatialTypes
     ;
 
 avExpression
-    :
-//    : avMeasExpression
-//    | avHierExpression
+    : avMeasExpression
+    | avHierExpression
     ;
 
 constraint
@@ -3808,25 +3806,33 @@ expr
     | ('+' | '-'| PRIOR) expr                   #signExpr
     | expr ( '*' | '/' | '+' | '-' | '||') expr #binaryExpr
     | expr COLLATE collationName=identifier     #collateExpr
-//    | calcMeasExpression 
+    | calcMeasExpression                        #calcMeasExpr 
     | caseExpression                            #caseExpr
-//    | cursorExpression 
-//    | datetimeExpression 
-//    | functionExpression 
-//    | intervalExpression 
-//    | jsonObjectAccessExpr 
-//    | modelExpression 
-//    | objectAccessExpression 
-//    | scalarSubqueryExpression 
-//    | typeConstructorExpression 
+    | CURSOR '('subquery')'                     #cursorExpr 
+    | expr AT ( LOCAL | TIME ZONE
+        ( S_SINGLE_QUOTE ('+'|'-')? hh=expr ':' mi=expr S_SINGLE_QUOTE
+        | DBTIMEZONE
+        | SESSIONTIMEZONE
+        | S_SINGLE_QUOTE timeZoneName=expr S_SINGLE_QUOTE
+        | expr
+        )
+     )                                          #datetimeExpr
+    | functionExpression                        #functionExpr
+    | intervalExpression                        #intervalExpr
+    | jsonObjectAccessExpression                #jsonObjectAccessExpr
+    | modelExpression                           #modelExpr
+    | objectAccessExpression                    #objectAccessExpr
+    | placeholderExpression                     #placeholderExpr
+//    | scalarSubqueryExpression                  #scalarSubqueryExpr
+    | typeConstructorExpression                 #typeConstructorExpr
 //    | variableExpression
     ;
 
 simpleExpression
     : ((schema '.')? table '.')? (column | ROWID)
     | ROWNUM
-    | stringLiteral 
-    | numberLiteral 
+    | stringLiteral
+    | numberLiteral
     | sequence '.' (CURRVAL | NEXTVAL) 
     | NULL
     ;
@@ -3835,40 +3841,218 @@ simpleExpression
 //    : CURSOR '(' subquery ')'
 //    ;
 
+calcMeasExpression
+    : avMeasExpression
+    | avSimpleExpression
+    | caseExpression
+//    | compoundExpression
+//    | intervalExpression
+    ;
+
+functionExpression
+    : functionName '(' expressionList? ')'
+    ;
+
+avMeasExpression
+    : leadLagExpression
+    | avWindowExpression 
+    | shareOfExpression
+    | qdrExpression
+    ;
+
+leadLagExpression
+    : leadLagFunctionName '(' calcMeasExpression ')' OVER '(' leadLagClause ')'
+    ;
+
+leadLagFunctionName
+    : LAG 
+    | LAG_DIFF 
+    | LAG_DIFF_PERCENT 
+    | LEAD
+    | LEAD_DIFF
+    | LEAD_DIFF_PERCENT
+    ;
+
+leadLagClause
+    : HIERARCHY hierarchyRef OFFSET offsetExpr=expr ( WITHIN ( LEVEL | PARENT ) | ACROSS ANCESTOR AT LEVEL levelRef=identifier POSITION FROM ( BEGINNING | END ))
+    ;
+
+hierarchyRef
+    : ( attrDimAlias=identifier '.' )? hierAlias=identifier
+    ;
+
+avWindowExpression
+    : functionExpression OVER ( avWindowClause )
+    ;
+
+avWindowClause
+    : HIERARCHY hierarchyRef BETWEEN ( precedingBoundary | followingBoundary ) ( WITHIN ( LEVEL | PARENT | ANCESTOR AT LEVEL levelName=identifier ) )?
+    ;
+
+precedingBoundary
+    : ( UNBOUNDED PRECEDING | offsetExpr=expr PRECEDING ) AND ( CURRENT MEMBER | offsetExpr=expr  ( PRECEDING | FOLLOWING ) | UNBOUNDED FOLLOWING )
+    ;
+    
+followingBoundary
+    : ( CURRENT MEMBER | offsetExpr=expr FOLLOWING ) AND ( offsetExpr=expr FOLLOWING | UNBOUNDED FOLLOWING )
+    ;
+
+calcMeasOrderByClause
+    : calcMeasExpression ( ASC | DESC )?  ( NULLS ( FIRST | LAST ) )?
+    ;
+
+shareOfExpression
+    : SHARE_OF ( calcMeasExpression  shareClause )
+    ;
+
+shareClause
+    : HIERARCHY hierarchyRef ( PARENT | LEVEL levelRef=identifier | MEMBER memberExpression )
+    ;
+
+levelMemberLiteral
+    : levelRef=identifier ( posMemberKeys | namedMemberKeys )
+    ;
+
+posMemberKeys
+    : '[' memberKeyExpr+=expr (',' memberKeyExpr+=expr)* ']'
+    ;
+
+namedMemberKeys
+    : '[' attrName+=identifier '=' memberKeyExpr+=expr (',' attrName+=identifier '=' memberKeyExpr+=expr )* ']'
+    ;
+    
+hierNavigationExpression
+    : ( hierAncestorExpression | hierParentExpression | hierLeadLagExpression )
+    ;
+    
+hierAncestorExpression
+    : HIER_ANCESTOR '(' memberExpression AT ( LEVEL levelRef=identifier | DEPTH depthExpression=expr ) ')'
+    ;
+    
+memberExpression
+    : levelMemberLiteral
+    | hierNavigationExpression
+    | CURRENT MEMBER
+    | NULL
+    | ALL
+    ;
+    
+hierParentExpression
+    : HIER_PARENT '(' memberExpression ')'
+    ;
+    
+hierLeadLagExpression
+    : ( HIER_LEAD | HIER_LAG ) '(' hierLeadLagClause ')'
+    ;
+    
+hierLeadLagClause
+    : memberExpression  OFFSET offsetExpr=expr ( WITHIN ( ( LEVEL | PARENT ) | ACROSS ANCESTOR AT LEVEL levelRef=identifier ( POSITION FROM ( BEGINNING | END ) )? ) )?
+    ;
+
+qdrExpression
+    : QUALIFY '(' calcMeasExpression',' qualifier ')'
+    ;
+    
+qualifier
+    : hierarchyRef '=' memberExpression
+    ;
+
+avSimpleExpression
+    : stringLiteral 
+    | numberLiteral
+    | NULL
+    | measureRef
+    ;
+
+avHierExpression
+    : hierFunctionName '(' memberExpression WITHIN HIERARCHY hierarchyRef ')'
+    ;
+
+hierFunctionName
+    : HIER_CAPTION 
+    | HIER_DEPTH 
+    | HIER_DESCRIPTION 
+    | HIER_LEVEL 
+    | HIER_MEMBER_NAME 
+    | HIER_MEMBER_UNIQUE_NAME
+    ;
+
+measureRef
+    : ( MEASURES '.' )? measName=identifier
+    ;
+
+//compoundExpression
+//    :
+//    ;
+
+//datetimeExpression
+//    :
+//    ;
+
+//intervalExpression
+//    :
+//    ;
+
 caseExpression
     : CASE (simpleCaseExpression | searchedCaseExpression) elseClause? END
     ;
 
-//datetimeExpression
-//    : expr AT ( LOCAL | TIME ZONE
-//        ( SINGLE_QUOTE ('+'|'-') hh ':' mi SINGLE_QUOTE
-//        | DBTIMEZONE
-//        | SESSIONTIMEZONE
-//        | SINGLE_QUOTE timeZoneName SINGLE_QUOTE
-//        | expr
-//        )
-//      )
-//    ;
-//
-//functionExpression
-//    : function
-//    ;
-//
-//intervalExpression
-//    : '(' expr '-' expr ')' 
-//      ( DAY ('(' leadingFieldPrecision ')')? TO SECOND ('(' fractionalSecondPrecision ')')? 
-//      | YEAR ('(' leadingFieldPrecision ')')? TO MONTH
-//      )
-//    ;
-//
-//jsonObjectAccessExpr
-//    : tableAlias '.' jsonColumn ('.' jsonObjectKey arrayStep*)+? 
-//    ;
-//
-//arrayStep
-//    : '[' (arrayStepItem (',' arrayStepItem)* | '*') ']'
-//    ;
-//
+intervalExpression
+    : '(' expr '-' expr ')' 
+      ( DAY ('(' leadingFieldPrecision=expr ')')? TO SECOND ('(' fractionalSecondPrecision=expr ')')? 
+      | YEAR ('(' leadingFieldPrecision=expr ')')? TO MONTH
+      )
+    ;
+
+jsonObjectAccessExpression
+    : tableAlias=identifier '.' jsonColumn=identifier ('.' jsonObjectKey=identifier arrayStep*)+? 
+    ;
+
+arrayStep
+    : '[' (( integer | integer TO integer (',' (integer | integer TO integer) )* ) | '*') ']'
+    ;
+
+modelExpression
+    : measureColumn=identifier '[' ( condition | expr ) (',' ( condition | expr ) )* ']'
+    | aggregateFunction '['
+              (
+                ( condition | expr ) (',' ( condition | expr ) )*
+                | singleColumnForLoop (',' singleColumnForLoop )*
+                | multiColumnForLoop
+              ) ']'
+    | analyticFunction
+    ;
+    
+analyticFunction
+    : analyticFunctionName '(' expr? ( ',' expr )? ( ',' expr )? ')' OVER ( windowName=identifier | '(' analyticClause ')' )
+    ;
+    
+analyticClause
+    : ( windowName=identifier | queryPartitionClause )? ( orderByClause windowingClause? )?
+    ;
+
+aggregateFunction
+    : aggregateFunctionName '(' expressionList? ')'
+    ;
+
+objectAccessExpression
+    : ( tableAlias=identifier '.' column '.'
+      | objectTableAlias=identifier '.'
+      | '(' expr ')' '.'
+      )
+      ( attribute ('.'attribute )* ('.' method=identifier '(' ( argument=expr (',' argument=expr )* ) ')' )?
+      | method=identifier '(' ( argument=expr (',' argument=expr )* ) ')'
+      )
+    ;
+
+placeholderExpression
+    : ':' hostVariable=identifier ( INDICATOR? ':' indicatorVariable=identifier )?
+    ;
+
+typeConstructorExpression
+    : NEW? ( schema '.' )? typeName=identifier '(' ( expr (',' expr )* )? ')'
+    ;
+
 //arrayStepItem
 //    : ( integer (TO integer)? )
 //    ;
@@ -3883,10 +4067,7 @@ caseExpression
 //    | dataCartridgeFunction
 //    ;
 //
-//aggregateFunction
-//    : 
-//    ;
-//
+
 simpleCaseExpression
     : expr (WHEN comparisonExpr=expr THEN returnExpr=expr)+
     ;
@@ -4116,7 +4297,7 @@ user
 tablespec
     : identifier ('.' identifier)*
     ;
-    
+
 indexspec
     : identifier
     | '(' ((identifier '.')* identifier)+ ')'
@@ -4160,9 +4341,161 @@ intervalLiteral
     : INTERVAL SINGLE_QUOTED_STRING (YEAR|MONTH) ('(' precision ')')? (TO (YEAR|MONTH))?
     ;
 
+aggregateFunctionName
+    : ANY_VALUE
+    | APPROX_COUNT
+    | APPROX_COUNT_DISTINCT
+    | APPROX_COUNT_DISTINCT_AGG
+    | APPROX_COUNT_DISTINCT_DETAIL
+    | APPROX_MEDIAN
+    | APPROX_PERCENTILE
+    | APPROX_PERCENTILE_AGG
+    | APPROX_PERCENTILE_DETAIL
+    | APPROX_RANK
+    | APPROX_SUM
+    | AVG
+    | BIT_AND_AGG
+    | BIT_OR_AGG
+    | BIT_XOR_AGG
+    | CHECKSUM
+    | COLLECT
+    | CORR
+    | CORR_S
+    | CORR_K
+    | COUNT
+    | COVAR_POP
+    | COVAR_SAMP
+    | CUME_DIST
+    | DENSE_RANK
+    | FIRST
+    | GROUP_ID
+    | GROUPING
+    | GROUPING_ID
+    | JSON_ARRAYAGG
+    | JSON_OBJECTAGG
+    | KURTOSIS_POP
+    | KURTOSIS_SAMP
+    | LAST
+    | LISTAGG
+    | MAX
+    | MEDIAN
+    | MIN
+    | PERCENT_RANK
+    | PERCENTILE_CONT
+    | PERCENTILE_DISC
+    | RANK
+    | REGR_SLOPE
+    | REGR_INTERCEPT
+    | REGR_COUNT
+    | REGR_R2
+    | REGR_AVGX
+    | REGR_AVGY
+    | REGR_SXX
+    | REGR_SYY
+    | REGR_SXY
+    | SKEWNESS_POP
+    | SKEWNESS_SAMP
+    | STATS_BINOMIAL_TEST
+    | STATS_CROSSTAB
+    | STATS_F_TEST
+    | STATS_KS_TEST
+    | STATS_MODE
+    | STATS_MW_TEST
+    | STATS_ONE_WAY_ANOVA
+    | STATS_T_TEST_ONE
+    | STATS_T_TEST_PAIRED
+    | STATS_T_TEST_INDEP
+    | STATS_T_TEST_INDEPU
+    | STATS_WSR_TEST
+    | STDDEV
+    | STDDEV_POP
+    | STDDEV_SAMP
+    | SUM
+    | SYS_OP_ZONE_ID
+    | SYS_XMLAGG
+    | TO_APPROX_COUNT_DISTINCT
+    | TO_APPROX_PERCENTILE
+    | VAR_POP
+    | VAR_SAMP
+    | VARIANCE
+    | XMLAGG
+    ;
+
+analyticFunctionName
+    : ANY_VALUE
+    | AVG
+    | BIT_AND_AGG
+    | BIT_OR_AGG
+    | BIT_XOR_AGG
+    | CHECKSUM
+    | CLUSTER_DETAILS
+    | CLUSTER_DISTANCE
+    | CLUSTER_ID
+    | CLUSTER_PROBABILITY
+    | CLUSTER_SET
+    | CORR
+    | COUNT
+    | COVAR_POP
+    | COVAR_SAMP
+    | CUME_DIST
+    | DENSE_RANK
+    | FEATURE_DETAILS
+    | FEATURE_ID
+    | FEATURE_SET
+    | FEATURE_VALUE
+    | FIRST
+    | FIRST_VALUE
+    | KURTOSIS_POP
+    | KURTOSIS_SAMP
+    | LAG
+    | LAST
+    | LAST_VALUE
+    | LEAD
+    | LISTAGG
+    | MAX
+    | MIN
+    | NTH_VALUE
+    | NTILE
+    | PERCENT_RANK
+    | PERCENTILE_CONT
+    | PERCENTILE_DISC
+    | PREDICTION
+    | PREDICTION_COST
+    | PREDICTION_DETAILS
+    | PREDICTION_PROBABILITY
+    | PREDICTION_SET
+    | RANK
+    | RATIO_TO_REPORT
+    | REGR_SLOPE
+    | REGR_INTERCEPT
+    | REGR_COUNT
+    | REGR_R2
+    | REGR_AVGX
+    | REGR_AVGY
+    | REGR_SXX
+    | REGR_SYY
+    | REGR_SXY
+    | ROW_NUMBER
+    | STDDEV
+    | STDDEV_POP
+    | SKEWNESS_POP
+    | SKEWNESS_SAMP
+    | STDDEV_SAMP
+    | SUM
+    | VAR_POP
+    | VAR_SAMP
+    | VARIANCE
+    ;
+
+functionName
+    : identifier
+    ;
+
 identifier
     : UNQUOTED_OBJECT_NAME
     | QUOTED_OBJECT_NAME
+    | aggregateFunctionName
+    | analyticFunctionName
     | nonReservedKeywordIdentifier
     ;
 
