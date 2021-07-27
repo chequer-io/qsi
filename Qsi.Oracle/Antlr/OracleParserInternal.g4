@@ -3856,7 +3856,7 @@ functionExpression
     ;
 
 castFunction
-    : CAST'('(expr | MULTISET '('subquery')' ) AS typeName=identifier
+    : CAST'('(expr | MULTISET '('subquery')' ) AS (identifier | TIMESTAMP WITH LOCAL? TIME ZONE)
         ( DEFAULT returnValue=expr ON CONVERSION ERROR )?
         (',' fmt=expr (',' nlsparam=expr )? )?')'
     ;
