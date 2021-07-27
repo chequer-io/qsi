@@ -66,7 +66,7 @@ create
     | createSchema
 //    | createSequence
 //    | createSpfile
-//    | createSynonym
+    | createSynonym
     | createTable
 //    | createTablespace
 //    | createTablespaceSet
@@ -154,6 +154,11 @@ createView
       (DEFAULT COLLATION collationName=identifier)?
       (BEQUEATH (CURRENT_USER | DEFINER))?
       AS subquery subqueryRestrictionClause? (CONTAINER_MAP | CONTAINERS_DEFAULT)?
+    ;
+
+createSynonym
+    : CREATE (OR REPLACE)? (EDITIONABLE | NONEDITIONABLE)? (PUBLIC)? SYNONYM (schema '.')? synonym=identifier
+      (SHARING '=' (METADATA | NONE))? FOR (schema '.')? object=identifier ('@' dblink)?
     ;
 
 createViewConstraintItem
