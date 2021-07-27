@@ -4214,7 +4214,7 @@ jsonVar
     ;
 
 jsonScalar
-    : S_INTEGER_WITH_SIGN
+    : ('+' | '-') S_INTEGER_WITHOUT_SIGN
     | S_INTEGER_WITHOUT_SIGN
     | TRUE
     | FALSE
@@ -4312,8 +4312,8 @@ indexspec
     ;
 
 integer
-    : S_INTEGER_WITH_SIGN
-    | S_INTEGER_WITHOUT_SIGN
+    : S_INTEGER_WITHOUT_SIGN
+    | ('+' | '-') S_INTEGER_WITHOUT_SIGN
     ;
 
 literal
@@ -4324,8 +4324,8 @@ literal
     ;
 
 numberLiteral
-    : S_NUMBER_WITH_SIGN
-    | S_INTEGER_WITH_SIGN
+    : ('+' | '-') S_INTEGER_WITHOUT_SIGN
+    | ('+' | '-') S_NUMBER_WITHOUT_SIGN
     | S_INTEGER_WITHOUT_SIGN
     | S_NUMBER_WITHOUT_SIGN
     ;
@@ -4563,6 +4563,23 @@ identifier
     | singleRowFunctionName
     | aggregateFunctionName
     | analyticFunctionName
+    | pseudoColumn
+    ;
+
+pseudoColumn
+    : ROWNUM
+    | ROWID
+    | ORA_ROWSCN
+    | COLUMN_VALUE
+    | LEVEL
+    | CONNECT_BY_ISLEAF
+    | CONNECT_BY_ISCYCLE
+    | VERSIONS_STARTTIME
+    | VERSIONS_STARTSCN
+    | VERSIONS_ENDTIME
+    | VERSIONS_ENDSCN
+    | VERSIONS_XID
+    | VERSIONS_OPERATION
     ;
 
 nonReservedKeywordIdentifier
@@ -4570,6 +4587,7 @@ nonReservedKeywordIdentifier
     | ACCHK_READ
     | ACROSS
     | ACTIONS
+    | ADMIN
     | ADMINISTER
     | ADVANCED
     | ADVISOR
@@ -4582,6 +4600,7 @@ nonReservedKeywordIdentifier
     | ANALYTIC
     | ANALYZE
     | ANCESTOR
+    | ANY_VALUE
     | ANYDATA
     | ANYDATASET
     | ANYSCHEMA
@@ -4589,6 +4608,16 @@ nonReservedKeywordIdentifier
     | APPEND
     | APPEND_VALUES
     | APPLY
+    | APPROX_COUNT
+    | APPROX_COUNT_DISTINCT
+    | APPROX_COUNT_DISTINCT_AGG
+    | APPROX_COUNT_DISTINCT_DETAIL
+    | APPROX_MEDIAN
+    | APPROX_PERCENTILE
+    | APPROX_PERCENTILE_AGG
+    | APPROX_PERCENTILE_DETAIL
+    | APPROX_RANK
+    | APPROX_SUM
     | ARCHIVAL
     | ARCHIVE
     | ARCHIVELOG
@@ -4613,12 +4642,17 @@ nonReservedKeywordIdentifier
     | BECOME
     | BEFORE
     | BEGINNING
+    | BEQUEATH
     | BFILE
     | BIG
     | BIGFILE
     | BINARY
     | BINARY_DOUBLE
     | BINARY_FLOAT
+    | BIT_AND_AGG
+    | BIT_OR_AGG
+    | BIT_XOR_AGG
+    | BITMAP
     | BLOB
     | BLOCK
     | BLOCKCHAIN
@@ -4645,33 +4679,50 @@ nonReservedKeywordIdentifier
     | CHARACTER
     | CHARACTERS
     | CHARACTERSET
+    | CHECKSUM
     | CHUNK
     | CLASS
     | CLASSIFICATION
     | CLASSIFIER
     | CLOB
+    | CLUSTER_DETAILS
+    | CLUSTER_DISTANCE
+    | CLUSTER_ID
+    | CLUSTER_PROBABILITY
+    | CLUSTER_SET
     | CLUSTERING
     | CODE
     | COLLATION
+    | COLLECT
     | COLUMN_VALUE
     | COLUMNS
     | COMMIT
     | COMPONENT
     | CONSISTENT
     | CONSTRAINT
+    | CONSTRAINTS
     | CONTAINER
+    | CONTAINER_MAP
     | CONTAINERS
+    | CONTAINERS_DEFAULT
     | CONTEXT
     | CONTROLFILE
+    | CORR
+    | CORR_K
+    | CORR_S
     | COST
     | COUNT
     | COUNTED
+    | COVAR_POP
+    | COVAR_SAMP
     | CREATION
     | CREDENTIAL
     | CRITICAL
     | CROSS
     | CSV
     | CUBE
+    | CUME_DIST
+    | CURRENT_USER
     | CURRVAL
     | CURSOR
     | CURSOR_SHARING_EXACT
@@ -4700,9 +4751,12 @@ nonReservedKeywordIdentifier
     | DEFERRABLE
     | DEFERRED
     | DEFINE
+    | DEFINER
     | DEFINITION
+    | DELEGATE
     | DELETE_ALL
     | DELIMITED
+    | DENSE_RANK
     | DEPTH
     | DEQUEUE
     | DESCRIPTION
@@ -4736,6 +4790,8 @@ nonReservedKeywordIdentifier
     | DYNAMIC
     | DYNAMIC_SAMPLING
     | EDITION
+    | EDITIONABLE
+    | EDITIONING
     | ELEMENT
     | EM
     | EMBEDDED
@@ -4767,6 +4823,10 @@ nonReservedKeywordIdentifier
     | EXTERNAL
     | FACT
     | FALSE
+    | FEATURE_DETAILS
+    | FEATURE_ID
+    | FEATURE_SET
+    | FEATURE_VALUE
     | FETCH
     | FIELD
     | FIELD_NAMES
@@ -4779,6 +4839,7 @@ nonReservedKeywordIdentifier
     | FINAL
     | FIRST
     | FIRST_ROWS
+    | FIRST_VALUE
     | FIXED
     | FLASH_CACHE
     | FLASHBACK
@@ -4798,7 +4859,9 @@ nonReservedKeywordIdentifier
     | GATHER_OPTIMIZER_STATISTICS
     | GENERATED
     | GLOBAL
+    | GROUP_ID
     | GROUPING
+    | GROUPING_ID
     | GROUPS
     | HALF_YEARS
     | HASH
@@ -4814,11 +4877,11 @@ nonReservedKeywordIdentifier
     | HIER_MEMBER_NAME
     | HIER_MEMBER_UNIQUE_NAME
     | HIER_PARENT
-    | HIERARCHIES
     | HIERARCHY
     | HIGH
     | HOURS
     | HTTP
+    | ID
     | IDENTIFIER
     | IDENTITY
     | IDLE
@@ -4838,6 +4901,7 @@ nonReservedKeywordIdentifier
     | INDEX_SS_DESC
     | INDEXING
     | INDEXTYPE
+    | INDICATOR
     | INFINITE
     | INHERIT
     | INITIALLY
@@ -4850,6 +4914,7 @@ nonReservedKeywordIdentifier
     | INTERLEAVED
     | INTERNAL
     | INTERVAL
+    | INVALIDATION
     | INVISIBLE
     | IO_OPTIONS
     | ITERATE
@@ -4857,17 +4922,22 @@ nonReservedKeywordIdentifier
     | JOB
     | JOIN
     | JSON
+    | JSON_ARRAYAGG
     | JSON_EQUAL
+    | JSON_OBJECTAGG
     | K_SKIP
     | KEEP
     | KEEP_DUPLICATES
     | KEY
     | KEYS
+    | KURTOSIS_POP
+    | KURTOSIS_SAMP
     | LAG
     | LAG_DIFF
     | LAG_DIFF_PERCENT
     | LANGUAGE
     | LAST
+    | LAST_VALUE
     | LATERAL
     | LAX
     | LDRTRIM
@@ -4888,6 +4958,7 @@ nonReservedKeywordIdentifier
     | LINEAR
     | LINK
     | LIST
+    | LISTAGG
     | LITTLE
     | LLS
     | LOAD
@@ -4907,6 +4978,7 @@ nonReservedKeywordIdentifier
     | LOGOFF
     | LOGON
     | LOW
+    | LOW_COST_TBS
     | LOWER
     | LRTRIM
     | LTRIM
@@ -4921,6 +4993,7 @@ nonReservedKeywordIdentifier
     | MATCH_RECOGNIZE
     | MATERIALIZED
     | MAX
+    | MAX_ERROR
     | MAXDATAFILES
     | MAXINSTANCES
     | MAXLOGFILES
@@ -4932,6 +5005,7 @@ nonReservedKeywordIdentifier
     | MAXVALUE
     | MEASURE
     | MEASURES
+    | MEDIAN
     | MEDIUM
     | MEMBER
     | MEMCOMPRESS
@@ -4955,6 +5029,7 @@ nonReservedKeywordIdentifier
     | MONTH
     | MONTHS
     | MOVEMENT
+    | MULTIVALUE
     | NAME
     | NAN
     | NATIONAL
@@ -4964,6 +5039,7 @@ nonReservedKeywordIdentifier
     | NCHAR
     | NCLOB
     | NESTED
+    | NEW
     | NEWLINE
     | NEXT
     | NEXTVAL
@@ -5016,6 +5092,7 @@ nonReservedKeywordIdentifier
     | NOMAXVALUE
     | NOMINVALUE
     | NONE
+    | NONEDITIONABLE
     | NONSCHEMA
     | NONULLIF
     | NOORDER
@@ -5026,6 +5103,8 @@ nonReservedKeywordIdentifier
     | NOTIFICATION
     | NOTRIM
     | NOVALIDATE
+    | NTH_VALUE
+    | NTILE
     | NULLIF
     | NULLS
     | NUMBERONLY
@@ -5041,6 +5120,7 @@ nonReservedKeywordIdentifier
     | OPERATOR
     | OPT_PARAM
     | OPTIMAL
+    | OPTIMIZE
     | OPTIONALLY
     | ORACLE_DATE
     | ORACLE_NUMBER
@@ -5070,6 +5150,9 @@ nonReservedKeywordIdentifier
     | PCTVERSION
     | PER
     | PERCENT
+    | PERCENT_RANK
+    | PERCENTILE_CONT
+    | PERCENTILE_DISC
     | PERFORMANCE
     | PERIOD
     | PERMUTE
@@ -5085,6 +5168,11 @@ nonReservedKeywordIdentifier
     | PQ_SKEW
     | PRECEDING
     | PRECISION
+    | PREDICTION
+    | PREDICTION_COST
+    | PREDICTION_DETAILS
+    | PREDICTION_PROBABILITY
+    | PREDICTION_SET
     | PREPROCESSOR
     | PREPROCESSOR_TIMEOUT
     | PRESENT
@@ -5111,6 +5199,8 @@ nonReservedKeywordIdentifier
     | QUEUE
     | RANDOM
     | RANGE
+    | RANK
+    | RATIO_TO_REPORT
     | READ
     | READS
     | READSIZE
@@ -5125,6 +5215,15 @@ nonReservedKeywordIdentifier
     | REFERENCES
     | REFRESH
     | REGEXP_LIKE
+    | REGR_AVGX
+    | REGR_AVGY
+    | REGR_COUNT
+    | REGR_INTERCEPT
+    | REGR_R2
+    | REGR_SLOPE
+    | REGR_SXX
+    | REGR_SXY
+    | REGR_SYY
     | REJECT
     | RELATIONAL
     | RELY
@@ -5147,6 +5246,7 @@ nonReservedKeywordIdentifier
     | ROLES
     | ROLLBACK
     | ROLLUP
+    | ROW_NUMBER
     | ROWDEPENDENCIES
     | RTRIM
     | RULE
@@ -5184,9 +5284,12 @@ nonReservedKeywordIdentifier
     | SIBLINGS
     | SINGLE
     | SIZES
+    | SKEWNESS_POP
+    | SKEWNESS_SAMP
     | SMALLFILE
     | SOME
     | SORT
+    | SOURCE
     | SPATIAL
     | SPFILE
     | SQL
@@ -5196,6 +5299,21 @@ nonReservedKeywordIdentifier
     | STATEMENT
     | STATEMENT_QUEUING
     | STATISTICS
+    | STATS_BINOMIAL_TEST
+    | STATS_CROSSTAB
+    | STATS_F_TEST
+    | STATS_KS_TEST
+    | STATS_MODE
+    | STATS_MW_TEST
+    | STATS_ONE_WAY_ANOVA
+    | STATS_T_TEST_INDEP
+    | STATS_T_TEST_INDEPU
+    | STATS_T_TEST_ONE
+    | STATS_T_TEST_PAIRED
+    | STATS_WSR_TEST
+    | STDDEV
+    | STDDEV_POP
+    | STDDEV_SAMP
     | STORAGE
     | STORE
     | STRICT
@@ -5209,6 +5327,8 @@ nonReservedKeywordIdentifier
     | SUM
     | SUPPLEMENTAL
     | SYS
+    | SYS_OP_ZONE_ID
+    | SYS_XMLAGG
     | SYSAUX
     | SYSBACKUP
     | SYSDBA
@@ -5234,6 +5354,8 @@ nonReservedKeywordIdentifier
     | TIME
     | TIMESTAMP
     | TIMEZONE
+    | TO_APPROX_COUNT_DISTINCT
+    | TO_APPROX_PERCENTILE
     | TOPLEVEL
     | TRACING
     | TRACKING
@@ -5274,8 +5396,11 @@ nonReservedKeywordIdentifier
     | USING
     | V1
     | VALUE
+    | VAR_POP
+    | VAR_SAMP
     | VARCHARC
     | VARIABLE
+    | VARIANCE
     | VARRAW
     | VARRAWC
     | VARRAY
@@ -5296,6 +5421,7 @@ nonReservedKeywordIdentifier
     | WRITE
     | XDB
     | XML
+    | XMLAGG
     | XMLINDEX
     | XMLSCHEMA
     | XMLTAG
@@ -5309,6 +5435,7 @@ nonReservedKeywordIdentifier
     | ZONE
     | ZONED
     | ZONEMAP
+
     | K_A
     | U_KILOBYTE
     | U_MEGABYTE
