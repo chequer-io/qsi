@@ -13,6 +13,7 @@ oracleStatement
     : select
     | delete
     | create
+    | alter
     | drop
     | grant
 //    | savepoint
@@ -85,6 +86,54 @@ create
     | createView
     ;
 
+alter
+    : alterAnalyticView
+    | alterAttributeDimension
+    | alterAuditPolicy
+//    | alterCluster
+    | alterDatabase
+//    | alterDatabaseDictionary
+//    | alterDatabaseLink
+//    | alterDimension
+//    | alterDiskgroup
+//    | alterFlashbackArchive
+//    | alterFunction
+//    | alterHierarchy
+    | alterIndex
+//    | alterIndextype
+//    | alterInmemoryJoinGroup
+//    | alterJava
+//    | alterLibrary
+//    | alterLockdownProfile
+//    | alterMaterializedView
+//    | alterMaterializedViewLog
+//    | alterMaterializedZonemap
+//    | alterOperator
+//    | alterOutline
+//    | alterPackage
+//    | alterPluggableDatabase
+//    | alterPmemFilestore
+//    | alterProcedure
+//    | alterProfile
+//    | alterResourceCost
+//    | alterRole
+//    | alterRollbackSegment
+//    | alterSequence
+//    | alterSession
+    | alterSynonym
+//    | alterSystem
+
+// TODO: Impl
+
+//    | alterTable
+//    | alterTablespace
+//    | alterTablespaceSet
+//    | alterTrigger
+//    | alterType
+//    | alterUser
+    | alterView
+    ;
+
 drop
     : dropAnalyticView
     | dropAttributeDimension
@@ -146,6 +195,14 @@ createAnalyticView
       qryTransformClause?
     ;
 
+alterAnalyticView
+    : ALTER ANALYTIC VIEW (schema '.')? analyticViewName=identifier ( RENAME TO newAvName=identifier
+                                                                    | COMPILE
+                                                                    | alterAddCacheClause
+                                                                    | alterDropCacheClause
+                                                                    )
+    ;
+
 dropAnalyticView
     : DROP ANALYTIC VIEW (schema '.')? analyticViewName=identifier
     ;
@@ -162,6 +219,13 @@ createAttributeDimension
       allClause?
     ;
 
+alterAttributeDimension
+    : ALTER ATTRIBUTE DIMENSION (schema '.')? attrDimension=identifier
+      ( RENAME TO newAttrDimension=identifier
+      | COMPILE
+      )
+    ;
+
 dropAttributeDimension
     : DROP ATTRIBUTE DIMENSION (schema '.')? attrDimension=identifier
     ;
@@ -172,10 +236,26 @@ createAuditPolicy
       actionAuditClause?
       roleAuditClause?
       (WHEN S_SINGLE_QUOTE auditCondition S_SINGLE_QUOTE
-       EVALUATE PER (STATEMENT|SESSION|INSTANCE)
+       EVALUATE PER (STATEMENT | SESSION | INSTANCE)
       )?
       (ONLY TOPLEVEL)?
-      (CONTAINER '=' (ALL|CURRENT))?
+      (CONTAINER '=' (ALL | CURRENT))?
+    ;
+
+alterAuditPolicy
+    : ALTER AUDIT POLICY policy=identifier 
+      ADD?
+      ( (privilegeAuditClause? actionAuditClause? roleAuditClause?)
+      | (ONLY TOPLEVEL)?
+      )
+      DROP?
+      ( (privilegeAuditClause? actionAuditClause? roleAuditClause?)
+      | (ONLY TOPLEVEL)?
+      )
+      (CONDITION ( DROP
+                 | S_SINGLE_QUOTE auditCondition S_SINGLE_QUOTE EVALUATE PER (STATEMENT | SESSION | INSTANCE)
+                 )
+      )?
     ;
 
 dropAuditPolicy
@@ -185,6 +265,26 @@ dropAuditPolicy
 createDatabase
     : CREATE DATABASE database=identifier?
       createDatabaseOption+
+    ;
+
+alterDatabase
+    : ALTER databaseClause
+      ( startupClauses
+      | recoveryClauses
+      | databaseFileClauses
+      | logfileClauses
+      | controlfileClauses
+      | standbyDatabaseClauses
+      | defaultSettingsClauses
+      | instanceClauses
+      | securityClause
+      | prepareClause
+      | dropMirrorCopy
+      | lostWriteProtection
+      | cdbFleetClauses
+      | propertyClause
+      | replayUpgradeClause
+      )
     ;
 
 dropDatabase
@@ -221,6 +321,31 @@ createIndex
       (USABLE | UNUSABLE)? ((DEFERRED | IMMEDIATE) INVALIDATION)?
     ;
 
+alterIndex
+    : ALTER INDEX (schema '.')? indexName=identifier indexIlmClause? 
+      ( ( deallocateUnusedClause
+        | allocateExtentClause 
+        | shrinkClause 
+        | parallelClause 
+        | physicalAttributesClause 
+        | loggingClause 
+        | partialIndexClause
+        )* 
+     | rebuildClause
+     | PARAMETERS '(' stringLiteral ')'
+     | COMPILE 
+     | ENABLE 
+     | DISABLE
+     | UNUSABLE ONLINE? ((DEFERRED | IMMEDIATE) INVALIDATION)?
+     | VISIBLE 
+     | INVISIBLE 
+     | RENAME TO newName=identifier 
+     | COALESCE CLEANUP? ONLY? parallelClause? 
+     | (MONITORING | NOMONITORING) USAGE
+     | UPDATE BLOCK REFERENCES 
+     | alterIndexPartitioning) ';'
+    ;
+
 dropIndex
     : DROP INDEX (schema '.')? index ONLINE? FORCE? ((DEFERRED | IMMEDIATE) INVALIDATION)?
     ;
@@ -237,6 +362,21 @@ createView
       AS subquery subqueryRestrictionClause? (CONTAINER_MAP | CONTAINERS_DEFAULT)?
     ;
 
+alterView
+    : ALTER VIEW (schema '.')? view 
+      ( ADD outOfLineConstraint 
+      | MODIFY CONSTRAINT constraint (RELY | NORELY) 
+      | DROP (CONSTRAINT constraint 
+             | PRIMARY KEY 
+             | UNIQUE '(' column (',' column)* ')'
+             )
+      | COMPILE 
+      | READ (ONLY | WRITE) 
+      | EDITIONABLE
+      | NONEDITIONABLE
+      )
+    ;
+
 dropView
     : DROP VIEW (schema '.')? view (CASCADE CONSTRAINTS)?
     ;
@@ -246,8 +386,398 @@ createSynonym
       (SHARING '=' (METADATA | NONE))? FOR (schema '.')? object=identifier ('@' dblink)?
     ;
 
+alterSynonym
+    : ALTER PUBLIC? SYNONYM (schema '.')? synonym=identifier (EDITIONABLE | NONEDITIONABLE | COMPILE)
+    ;
+
 dropSynonym
     : DROP PUBLIC? SYNONYM (schema '.')? synonym=identifier FORCE?
+    ;
+
+deallocateUnusedClause
+    : DEALLOCATE UNUSED (KEEP sizeClause)?
+    ;
+
+allocateExtentClause
+    : ALLOCATE EXTENT ('(' (SIZE sizeClause | DATAFILE stringLiteral | INSTANCE integer)* ')')?
+    ;
+
+shrinkClause
+    : SHRINK SPACE COMPACT? CASCADE?
+    ;
+
+partialIndexClause
+    : INDEXING (PARTIAL | FULL)
+    ;
+
+rebuildClause
+    : REBUILD ( PARTITION partition=identifier 
+              | SUBPARTITION subpartition=identifier 
+              | REVERSE 
+              | NOREVERSE)?
+      ( parallelClause
+      | TABLESPACE tablespace 
+      | PARAMETERS '(' stringLiteral ')' 
+      | xmlIndexParametersClause 
+      | ONLINE 
+      | physicalAttributesClause 
+      | indexCompression 
+      | loggingClause 
+      | partialIndexClause
+      )*
+    ;
+
+alterIndexPartitioning
+    : modifyIndexDefaultAttrs 
+    | addHashIndexPartition 
+    | modifyIndexPartition 
+    | renameIndexPartition 
+    | dropIndexPartition 
+    | splitIndexPartition 
+    | coalesceIndexPartition 
+    | modifyIndexSubpartition
+    ;
+
+modifyIndexDefaultAttrs
+    : MODIFY DEFAULT ATTRIBUTES (FOR PARTITION partition=identifier)? (physicalAttributesClause | TABLESPACE (tablespace | DEFAULT) | loggingClause)*
+    ;
+
+addHashIndexPartition
+    : ADD PARTITION partitionName=identifier? (TABLESPACE tablespaceName=identifier)? indexCompression? parallelClause?
+    ;
+
+modifyIndexPartition
+    : MODIFY PARTITION partition=identifier 
+      ( (deallocateUnusedClause | allocateExtentClause | physicalAttributesClause | loggingClause | indexCompression)* 
+      | PARAMETERS '(' stringLiteral ')' 
+      | COALESCE CLEANUP? parallelClause? 
+      | UPDATE BLOCK REFERENCES 
+      | UNUSABLE
+      )
+    ;
+
+renameIndexPartition
+    : RENAME (PARTITION partition=identifier | SUBPARTITION subpartition=identifier) TO newName=identifier
+    ;
+
+dropIndexPartition
+    : DROP PARTITION partitionName=identifier
+    ;
+
+splitIndexPartition
+    : SPLIT PARTITION partitionNameOld=identifier AT '(' literal (',' literal)* ')' 
+      (INTO '(' indexPartitionDescription ',' indexPartitionDescription ')')? 
+      parallelClause?
+    ;
+
+indexPartitionDescription
+    : PARTITION ( partition=identifier ( (segmentAttributesClause | indexCompression)+ 
+                                       | PARAMETERS '(' stringLiteral ')'
+                                       )? 
+                                       (USABLE | UNUSABLE)?
+                )?
+    ;
+
+coalesceIndexPartition
+    : COALESCE PARTITION parallelClause?
+    ;
+
+modifyIndexSubpartition
+    : MODIFY SUBPARTITION subpartition=identifier (UNUSABLE | allocateExtentClause | deallocateUnusedClause)
+    ;
+
+databaseClause
+    : DATEBASE dbName=identifier
+    | PLUGGABLE DATABASE pdbName=identifier
+    ;
+
+startupClauses
+    : MOUNT ((STANDBY | CLONE) DATABASE)?
+    | OPEN ( (READ WRITE)? (RESETLOGS | NORESETLOGS)? (UPGRADE | DOWNGRADE)?
+           | READ ONLY
+           )
+    ;
+recoveryClauses
+    : generalRecovery
+    | managedStandbyRecovery
+    | (BEGIN | END) BACKUP
+    ;
+
+generalRecovery
+    : RECOVER AUTOMATIC? (FROM SINGLE_QUOTED_STRING)?
+      ( ( fullDatabaseRecovery
+        | partialDatabaseRecovery
+        | LOGFILE SINGLE_QUOTED_STRING
+        )
+      | )
+    ;
+
+fullDatabaseRecovery
+    :  STANDBY? DATABASE 
+       ( UNTIL ( CANCEL 
+               | TIME date=stringLiteral
+               | CHANGE integer
+               | CONSISTENT
+               )
+       | USING BACKUP CONTROLFILE
+       | SNAPSHOT TIME date=stringLiteral
+       )*
+    ;
+
+partialDatabaseRecovery
+    : TABLESPACE tablespace (',' tablespace)*
+    | DATAFILE (filename=SINGLE_QUOTED_STRING | filenumber=integer)
+    ;
+
+managedStandbyRecovery
+    : RECOVER ( MANAGED STANDBY DATABASE ( managedStandbyRecoveryItem+
+                                         | FINISH
+                                         | CANCEL
+                                         )? 
+              | TO LOGICAL STANDBY (dbName=identifier | KEEP IDENTITY)
+              )
+    ;
+
+managedStandbyRecoveryItem
+    : USING ARCHIVED LOGFILE
+    | DISCONNECT (FROM SESSION)?
+    | NODELAY
+    | UNTIL CHANGE integer
+    | UNTIL CONSISTENT
+    | USING INSTANCES (ALL | integer)
+    | parallelClause
+    ;
+
+databaseFileClauses
+    : (RENAME FILE stringLiteral (',' stringLiteral)* TO stringLiteral 
+      | createDatafileClause
+      | alterDatafileClause
+      | alterTempfileClause
+      | moveDatafileClause
+      )
+    ;
+
+createDatafileClause
+    : CREATE DATAFILE (stringLiteral | filenumber=integer) (',' (stringLiteral | filenumber=integer)*)
+      (AS (fileSpecification (',' fileSpecification)* | NEW))?
+    ;
+
+alterDatafileClause
+    : DATAFILE (stringLiteral | filenumber=integer) (',' (stringLiteral | filenumber=integer))*
+      ( ONLINE
+      | OFFLINE (FOR DROP)?
+      | RESIZE sizeClause 
+      | autoextendClause 
+      | END BACKUP 
+      | ENCRYPT 
+      | DECRYPT
+      )
+    ;
+
+alterTempfileClause
+    : TEMPFILE (stringLiteral | filenumber=integer) (',' (stringLiteral | filenumber=integer))*
+      (RESIZE sizeClause 
+      | autoextendClause 
+      | DROP (INCLUDING DATAFILES)? 
+      | ONLINE 
+      | OFFLINE
+      )
+    ;
+
+moveDatafileClause
+    : MOVE DATAFILE (stringLiteral | filenumber=integer) (TO stringLiteral)? REUSE? KEEP?
+    ;
+
+logfileClauses
+    : ((ARCHIVELOG MANUAL? | NOARCHIVELOG) 
+      | NO? FORCE LOGGING 
+      | SET STANDBY NOLOGGING FOR (DATA AVAILABILITY | LOAD PERFORMANCE)
+      | RENAME FILE stringLiteral (',' stringLiteral)* TO stringLiteral
+      | CLEAR UNARCHIVED? LOGFILE logfileDescriptor (',' logfileDescriptor)* (UNRECOVERABLE DATAFILE)?
+      | addLogfileClauses
+      | dropLogfileClauses
+      | switchLogfileClause
+      | supplementalDbLogging
+      )
+    ;
+
+addLogfileClauses
+    : ADD STANDBY? LOGFILE ( (INSTANCE stringLiteral | THREAD integer)? (GROUP integer)? redoLogFileSpec (',' (GROUP integer)? redoLogFileSpec)* 
+                           | MEMBER stringLiteral REUSE? (',' stringLiteral REUSE?)* TO logfileDescriptor (',' logfileDescriptor)*)
+    ;
+
+dropLogfileClauses
+    : DROP STANDBY? LOGFILE ( logfileDescriptor (',' logfileDescriptor)* 
+                            | MEMBER stringLiteral (',' stringLiteral)*
+                            )
+    ;
+
+logfileDescriptor
+    : GROUP integer
+    | '(' stringLiteral (',' stringLiteral) ')'
+    | stringLiteral
+    ;
+
+switchLogfileClause
+    : SWITCH ALL LOGFILES TO BLOCKSIZE integer
+    ;
+
+supplementalDbLogging
+    : (ADD | DROP) SUPPLEMENTAL LOG ( DATA 
+                                    | supplementalIdKeyClause
+                                    | supplementalPlsqlClause
+                                    | supplementalSubsetReplicationClause
+                                    )
+    ;
+
+supplementalPlsqlClause
+    : DATA FOR PROCEDURAL REPLICATION
+    ;
+
+supplementalSubsetReplicationClause
+    : DATA SUBSET DATABASE REPLICATION
+    ;
+
+controlfileClauses
+    : CREATE ((LOGICAL | PHYSICAL)? STANDBY | FAR SYNC INSTANCE) CONTROLFILE AS stringLiteral REUSE? 
+    | BACKUP CONTROLFILE TO (stringLiteral REUSE? | traceFileClause)
+    ;
+
+traceFileClause
+    : TRACE (AS stringLiteral REUSE?)? (RESETLOGS | NORESETLOGS)?
+    ;
+
+standbyDatabaseClauses
+    : (( activateStandbyDbClause
+       | maximizeStandbyDbClause 
+       | registerLogfileClause 
+       | commitSwitchoverClause 
+       | startStandbyClause 
+       | stopStandbyClause 
+       | convertDatabaseClause
+       ) parallelClause?
+      )
+    | switchoverClause
+    | failoverClause
+    ;
+
+activateStandbyDbClause
+    : ACTIVATE (PHYSICAL | LOGICAL)? STANDBY DATABASE (FINISH APPLY)?
+    ;
+
+maximizeStandbyDbClause
+    : SET STANDBY DATABASE TO MAXIMIZE (PROTECTION | AVAILABILITY | PERFORMANCE)
+    ;
+
+registerLogfileClause
+    : REGISTER (OR REPLACE)? (PHYSICAL | LOGICAL)?
+      LOGFILE (fileSpecification (',' fileSpecification)*)?
+      (FOR logminerSessionName=identifier)?
+    ;
+
+switchoverClause
+    : SWITCHOVER TO targetDbName=identifier (VERIFY | FORCE)?
+    ;
+
+failoverClause
+    : FAILOVER TO targetDbName=identifier FORCE?
+    ;
+
+commitSwitchoverClause
+    : (PREPARE | COMMIT) TO SWITCHOVER 
+      ( TO (((PHYSICAL | LOGICAL)? PRIMARY | PHYSICAL? STANDBY) ((WITH | WITHOUT) SESSION SHUTDOWN (WAIT | NOWAIT))? | LOGICAL STANDBY) 
+      | CANCEL)?
+    ;
+
+// TODO: scnValue
+startStandbyClause
+    : START LOGICAL STANDBY APPLY IMMEDIATE? NODELAY? (NEW PRIMARY dblink | INITIAL scnValue=literal? | (K_SKIP FAILED TRANSACTION | FINISH))?
+    ;
+
+stopStandbyClause
+    : (STOP | ABORT) LOGICAL STANDBY APPLY
+    ;
+
+convertDatabaseClause
+    : CONVERT TO (PHYSICAL | SNAPSHOT) STANDBY
+    ;
+
+defaultSettingsClauses
+    : DEFAULT EDITION '=' editionName=identifier
+    | SET DEFAULT (BIGFILE | SMALLFILE) TABLESPACE 
+    | DEFAULT TABLESPACE tablespace 
+    | DEFAULT LOCAL? TEMPORARY TABLESPACE (tablespace | tablespaceGroupName=identifier) 
+    | RENAME GLOBAL_NAME TO database=identifier '.' domain=identifier ('.' domain=identifier)* 
+    | ENABLE BLOCK CHANGE TRACKING (USING FILE stringLiteral REUSE?)? 
+    | DISABLE BLOCK CHANGE TRACKING 
+    | NO? FORCE FULL DATABASE CACHING 
+    | CONTAINERS DEFAULT TARGET '=' ('(' containerName=identifier ')' | NONE) 
+    | flashbackModeClause 
+    | undoModeClause 
+    | setTimeZoneClause
+    ;
+
+flashbackModeClause
+    : FLASHBACK (ON | OFF)
+    ;
+
+undoModeClause
+    : LOCAL UNDO (ON | OFF)
+    ;
+
+instanceClauses
+    : (ENABLE | DISABLE) INSTANCE stringLiteral
+    ;
+
+securityClause
+    : GUARD (ALL | STANDBY | NONE)
+    ;
+
+prepareClause
+    : PREPARE MIRROR COPY copyName=identifier (WITH (UNPROTECTED | MIRROR | HIGH) REDUNDANCY)? (FOR DATABASE targetCdbName=identifier)?
+    ;
+
+dropMirrorCopy
+    : DROP MIRROR COPY mirrorName=identifier
+    ;
+
+lostWriteProtection
+    : (ENABLE | DISABLE | REMOVE | SUSPEND)? LOST WRITE PROTECTION
+    ;
+
+cdbFleetClauses
+    : leadCdbClause 
+    | leadCdbUriClause
+    ;
+
+leadCdbClause
+    : SET LEAD_CDB '=' (TRUE | FALSE)
+    ;
+
+leadCdbUriClause
+    : SET LEAD_CDB_URI '=' uriString=stringLiteral
+    ;
+
+propertyClause
+    : PROPERTY (SET | REMOVE) DEFAULT_CREDENTIAL '=' qualifiedCredentialName=identifier
+    ;
+
+replayUpgradeClause
+    : UPGRADE SYNC (ON | OFF)
+    ;
+
+alterAddCacheClause
+    : ADD CACHE MEASURE GROUP (ALL | measName=identifier (',' measName=identifier)*)?
+      LEVELS alterCacheClauseItem (',' alterCacheClauseItem)*
+    ;
+
+alterDropCacheClause
+    : DROP CACHE MEASURE GROUP (ALL | measName=identifier (',' measName=identifier)*)?
+      LEVELS alterCacheClauseItem (',' alterCacheClauseItem)*
+    ;
+
+alterCacheClauseItem
+    : ((dimName=identifier '.')? hierName=identifier '.')? levelName=identifier
     ;
 
 createViewConstraintItem
@@ -445,7 +975,7 @@ domainIndexClause
     ;
 
 xmlIndexClause
-    : (XDB '.')? XMLINDEX localXmlIndexClause? parallelClause? xmlIndexParametersClause
+    : (XDB '.')? XMLINDEX localXmlIndexClause? parallelClause? xmlIndexParametersClause?
     ;
 
 localXmlIndexClause
@@ -453,12 +983,12 @@ localXmlIndexClause
     ;
 
 localXmlIndexClauseItem
-    : PARTITION partition=identifier xmlIndexParametersClause
+    : PARTITION partition=identifier xmlIndexParametersClause?
     ;
 
 // cannot find definition copy from domainIndexClause
 xmlIndexParametersClause
-    : (PARAMETERS '(' stringLiteral ')')?
+    : PARAMETERS '(' stringLiteral ')'
     ;
 
 localDomainIndexClause
@@ -2614,11 +3144,18 @@ fileSpecification
     ;
 
 datafileTempfileSpec
-    : stringLiteral? (SIZE sizeClause)? REUSE? autoextendClause?
+    : stringLiteral
+    | (SIZE sizeClause)
+    | REUSE
+    | autoextendClause
     ;
 
 redoLogFileSpec
-    : (stringLiteral|'(' stringLiteral ')')? (SIZE sizeClause)? (BLOCKSIZE sizeClause)? REUSE?
+    : stringLiteral
+    |'(' stringLiteral ')'
+    | SIZE sizeClause
+    | BLOCKSIZE sizeClause
+    | REUSE
     ;
 
 // TODO: The audit_condition can have a maximum length of 4000 characters. It can contain expressions, as well as the following functions and conditions:
