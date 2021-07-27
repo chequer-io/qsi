@@ -5,6 +5,11 @@ options {
 }
 
 root
+    : EOF
+    | (oracleStatement (SEMICOLON_SYMBOL EOF? | EOF))+
+    ;
+
+oracleStatement
     : select
     | delete
     | create
@@ -37,7 +42,7 @@ create
 //    | createFlashbackArchive
 //    | createFunction
 //    | createHierarchy
-//    | createIndex
+    | createIndex
 //    | createIndextype
 //    | createInmemoryJoinGroup
 //    | createJava
@@ -132,6 +137,67 @@ createTable
       (MEMOPTIMIZE FOR READ)?
       (MEMOPTIMIZE FOR WRITE)?
       (PARENT (schema '.')? table)?
+    ;
+
+createIndex
+    : CREATE (UNIQUE | BITMAP | MULTIVALUE)? INDEX (schema '.')? indexName=identifier
+      indexIlmClause? ON (clusterIndexClause | tableIndexClause | bitmapJoinIndexClause)
+      (USABLE | UNUSABLE)? ((DEFERRED | IMMEDIATE) INVALIDATION)?
+    ;
+
+indexIlmClause
+    : ILM ( (ADD POLICY)? policyClause
+          | DELETE POLICY policyName=identifier)
+    ;
+
+policyClause
+    : OPTIMIZE conditionClause
+    | tieringClause plSqlFunctionName=identifier?
+    | // empty rule
+    ;
+
+tieringClause
+    : TIER TO LOW_COST_TBS
+    ;
+
+conditionClause
+    : trackingStatisticsClause
+    | ON plSqlFunctionName=identifier
+    ;
+
+trackingStatisticsClause
+    : AFTER timeInterval=integer (DAYS | MONTHS | YEARS) OF NO? (ACCESS | MODIFICATION | CREATION)
+    ;
+
+clusterIndexClause
+    : CLUSTER (schema '.')? cluster=identifier indexAttributes
+    ;
+
+tableIndexClause
+    : (schema '.')? table tAlias? tableIndexClauseItem (',' tableIndexClauseItem)* indexProperties
+    ;
+
+tableIndexClauseItem
+    : indexExpr (ASC | DESC)?
+    ;
+
+bitmapJoinIndexClause
+    : (schema '.')? table '(' bitmapJoinIndexClauseColumnItem (',' bitmapJoinIndexClauseColumnItem)* ')'
+      FROM bitmapJoinIndexClauseTableItem (',' bitmapJoinIndexClauseTableItem)*
+      WHERE condition localPartitionedIndex? indexAttributes
+    ;
+
+bitmapJoinIndexClauseColumnItem
+    : ((schema '.')? table '.' | tAlias '.')? column (ASC | DESC)?
+    ;
+
+bitmapJoinIndexClauseTableItem
+    : (schema '.')? table tAlias?
+    ;
+
+indexExpr
+    : column
+    | columnExpression=expr
     ;
 
 relationalTable
@@ -237,7 +303,7 @@ constraintState
 
 usingIndexClause
     : USING INDEX ((schema '.')? index
-//                  | '(' createIndex ')'
+                  | '(' createIndex ')'
                   | indexProperties
                   )
     ;
