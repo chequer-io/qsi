@@ -3852,6 +3852,13 @@ calcMeasExpression
 functionExpression
     : functionName '(' expressionList? ')'
     | analyticFunction
+    | castFunction
+    ;
+
+castFunction
+    : CAST'('(expr | MULTISET '('subquery')' ) AS typeName=identifier
+        ( DEFAULT returnValue=expr ON CONVERSION ERROR )?
+        (',' fmt=expr (',' nlsparam=expr )? )?')'
     ;
 
 avMeasExpression
@@ -4675,6 +4682,7 @@ nonReservedKeywordIdentifier
     | DATAFILES
     | DATAPUMP
     | DATASTORE
+    | DATE
     | DATE_CACHE
     | DATE_FORMAT
     | DAY
