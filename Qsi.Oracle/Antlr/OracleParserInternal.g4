@@ -74,7 +74,7 @@ create
 //    | createType
 //    | createTypeBody
 //    | createUser
-//    | createView
+    | createView
     ;
 
 createAnalyticView
@@ -118,8 +118,7 @@ createAuditPolicy
 
 createSchema
     : CREATE SCHEMA AUTHORIZATION schema 
-      (createTable
-//      | createViewStatement
+      (createTable | createView
 //      | grantStatement
       )+
     ;
@@ -143,6 +142,39 @@ createIndex
     : CREATE (UNIQUE | BITMAP | MULTIVALUE)? INDEX (schema '.')? indexName=identifier
       indexIlmClause? ON (clusterIndexClause | tableIndexClause | bitmapJoinIndexClause)
       (USABLE | UNUSABLE)? ((DEFERRED | IMMEDIATE) INVALIDATION)?
+    ;
+
+createView
+    : CREATE (OR REPLACE)? (NO? FORCE)? (EDITIONING | EDITIONABLE EDITIONING? | NONEDITIONABLE)? VIEW
+    | (schema '.')? view (SHARING '=' (METADATA | DATA | EXTENDED DATA | NONE))?
+      ( '(' createViewConstraintItem (',' createViewConstraintItem)* ')'
+      | objectViewClause
+      | xmlTypeViewClause
+      )?
+      (DEFAULT COLLATION collationName=identifier)?
+      (BEQUEATH (CURRENT_USER | DEFINER))?
+      AS subquery subqueryRestrictionClause? (CONTAINER_MAP | CONTAINERS_DEFAULT)?
+    ;
+
+createViewConstraintItem
+    : alias (VISIBLE | INVISIBLE)? inlineConstraint*
+    | outOfLineConstraint
+    ;
+
+objectViewClause
+    : OF (schema '.')? typeName=identifier ( WITH OBJECT (IDENTIFIER | ID) (DEFAULT | '(' attribute (',' attribute)* ')')
+                                           | UNDER (schema '.')? superview=identifier
+                                           )
+      ('(' objectViewClauseConstraintItem (',' objectViewClauseConstraintItem)* ')')?
+    ;
+
+objectViewClauseConstraintItem
+    : outOfLineConstraint
+    | attribute inlineConstraint+
+    ;
+
+xmlTypeViewClause
+    : OF XMLTYPE xmlSchemaSpec? WITH OBJECT (IDENTIFIER | ID) (DEFAULT | '(' expr (',' expr)* ')')
     ;
 
 indexIlmClause
