@@ -13,6 +13,7 @@ oracleStatement
     : select
     | delete
     | create
+    | grant
 //    | savepoint
 //    | rollback
     ;
@@ -24,6 +25,67 @@ select
 delete
     : DELETE hint? FROM? (dmlTableExpressionClause | ONLY '(' dmlTableExpressionClause ')')
       tAlias? whereClause? returningClause? errorLoggingClause?
+    ;
+
+grant
+    : GRANT ( (grantSystemPrivileges | grantObjectPrivileges) (CONTAINER '=' (CURRENT | ALL))?
+            | grantRolesToPrograms
+            )
+    ;
+
+grantSystemPrivileges
+    : grantSystemPrivilegesRoleItem (',' grantSystemPrivilegesRoleItem)* TO (granteeClause | granteeIdentifiedBy) 
+      (WITH (ADMIN | DELEGATE) OPTION)?
+    ;
+
+grantObjectPrivileges
+    : grantObjectPrivilegesItem (',' grantObjectPrivilegesItem)* onObjectClause
+      TO granteeClause (WITH HIERARCHY OPTION)? (WITH GRANT OPTION)?
+    ;
+
+grantObjectPrivilegesItem
+    : ( objectPrivilege | ALL PRIVILEGES?) ('(' column (',' column)* ')')?
+    ;
+
+onObjectClause
+    : ON ( (schema '.')? object=identifier
+         | USER user (',' user)*
+         | DIRECTORY directoryName=identifier
+         | EDITION editionName=identifier
+         | MINING MODEL (schema '.')? miningModelName=identifier
+         | JAVA (SOURCE | RESOURCE) (schema '.')? object=identifier
+         | SQL TRANSLATION PROFILE (schema '.')? profile=identifier
+         )
+    ;
+
+grantRolesToPrograms
+    : role (',' role)* TO programUnit (',' programUnit)*
+    ;
+
+programUnit
+    : FUNCTION (schema '.')? functionName=identifier
+    | PROCEDURE (schema '.')? procedureName=identifier
+    | PACKAGE (schema '.')? packageName=identifier
+    ;
+
+grantSystemPrivilegesRoleItem
+    : systemPrivilege
+    | role
+    | ALL PRIVILEGES
+    ;
+
+granteeClause
+    : granteeClauseItem (',' granteeClauseItem)*
+    ;
+
+granteeIdentifiedBy
+    : user (',' user)* IDENTIFIED BY (password=identifier) (',' password=identifier)*
+    ;
+
+granteeClauseItem
+    : user
+    | role
+    | PUBLIC
     ;
 
 create
@@ -118,9 +180,7 @@ createAuditPolicy
 
 createSchema
     : CREATE SCHEMA AUTHORIZATION schema 
-      (createTable | createView
-//      | grantStatement
-      )+
+      (createTable | createView | grant)+
     ;
 
 createTable
@@ -1332,26 +1392,50 @@ standardActions
     ;
 
 standardAction
-    : (objectAction|ALL) ON 
+    : (objectAction | ALL) ON 
        (
          DIRECTORY directoryName=identifier
        | MINING MODEL (schema '.')? identifier
        | (schema '.')? identifier
        )                                        #objectStandardAction
-    | (systemAction|ALL)                        #systemStandardAction
+    | (systemAction | ALL)                        #systemStandardAction
     ;
 
 componentActions
     : ACTIONS COMPONENT '=' 
       (
-        (DATAPUMP|DIRECT_LOAD|OLS|XS) componentAction (',' componentAction)*
+        (DATAPUMP | DIRECT_LOAD | OLS | XS) componentAction (',' componentAction)*
       | DV componentAction ON identifier (',' componentAction ON identifier)*
-      | PROTOCOL (FTP|HTTP|AUTHENTICATION)
+      | PROTOCOL (FTP | HTTP | AUTHENTICATION)
       )
     ;
 
 roleAuditClause
     : ROLES role (',' role)*
+    ;
+
+objectPrivilege
+    : ALTER
+    | READ
+    | SELECT
+    | WRITE
+    | EXECUTE
+    | USE
+    | FLASHBACK ARCHIVE
+    | ON COMMIT REFRESH
+    | QUERY REWRITE
+    | DEBUG
+    | UNDER
+    | INSERT
+    | DELETE
+    | UPDATE
+    | KEEP SEQUENCE
+    | INDEX
+    | REFERENCES
+    | INHERIT PRIVILEGES
+    | INHERIT REMOTE PRIVILEGES
+    | TRANSLATE SQL
+    | MERGE VIEW
     ;
 
 systemPrivilege
@@ -3945,6 +4029,9 @@ column
     : identifier
     ;
 
+user
+    : identifier
+    ;
 
 tablespec
     : identifier ('.' identifier)*
