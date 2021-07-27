@@ -3800,14 +3800,9 @@ groupComparisonCondition
     ;
 
 expr
-    : simpleExpression                          #simpleExpr
-    | '(' expr ')'                              #parenthesisExpr
+    : '(' expr ')'                              #parenthesisExpr
     | ('+' | '-'| PRIOR) expr                   #signExpr
     | expr ( '*' | '/' | '+' | '-' | '||') expr #binaryExpr
-    | expr COLLATE collationName=identifier     #collateExpr
-    | calcMeasExpression                        #calcMeasExpr 
-    | caseExpression                            #caseExpr
-    | CURSOR '('subquery')'                     #cursorExpr 
     | expr AT ( LOCAL | TIME ZONE
         ( S_SINGLE_QUOTE ('+'|'-')? hh=expr ':' mi=expr S_SINGLE_QUOTE
         | DBTIMEZONE
@@ -3816,7 +3811,11 @@ expr
         | expr
         )
      )                                          #datetimeExpr
+    | expr COLLATE collationName=identifier     #collateExpr
     | functionExpression                        #functionExpr
+    | calcMeasExpression                        #calcMeasExpr 
+    | caseExpression                            #caseExpr
+    | CURSOR '('subquery')'                     #cursorExpr 
     | intervalExpression                        #intervalExpr
     | jsonObjectAccessExpression                #jsonObjectAccessExpr
     | modelExpression                           #modelExpr
@@ -3824,6 +3823,7 @@ expr
     | placeholderExpression                     #placeholderExpr
 //    | scalarSubqueryExpression                  #scalarSubqueryExpr
     | typeConstructorExpression                 #typeConstructorExpr
+    | simpleExpression                          #simpleExpr
 //    | variableExpression
     ;
 
@@ -4485,6 +4485,63 @@ analyticFunctionName
     | VAR_SAMP
     | VARIANCE
     ;
+    
+singleRowFunctionName
+    : ADD_MONTHS
+    | CURRENT_DATE
+    | CURRENT_TIMESTAMP
+    | EXTRACT
+    | FROM_TZ
+    | LAST_DAY
+    | LOCALTIMESTAMP
+    | MONTHS_BETWEEN
+    | NEW_TIME
+    | NEXT_DAY
+    | NUMTODSINTERVAL
+    | NUMTOYMINTERVAL
+    | ORA_DST_AFFECTED
+    | ORA_DST_CONVERT
+    | ORA_DST_ERROR
+    | ROUND
+    | SYS_EXTRACT_UTC
+    | SYSDATE
+    | SYSTIMESTAMP
+    | TO_CHAR
+    | TO_DSINTERVAL
+    | TO_TIMESTAMP
+    | TO_TIMESTAMP_TZ
+    | TO_YMINTERVAL
+    | TRUNC
+    | TZ_OFFSET
+    | ASCIISTR
+    | BIN_TO_NUM
+    | CAST
+    | CHARTOROWID
+    | COMPOSE
+    | CONVERT
+    | DECOMPOSE
+    | HEXTORAW
+    | RAWTOHEX
+    | RAWTONHEX
+    | ROWIDTOCHAR
+    | ROWIDTONCHAR
+    | SCN_TO_TIMESTAMP
+    | TIMESTAMP_TO_SCN
+    | TO_BINARY_DOUBLE
+    | TO_BINARY_FLOAT
+    | TO_BLOB
+    | TO_CLOB
+    | TO_DATE
+    | TO_LOB
+    | TO_MULTI_BYTE
+    | TO_NCHAR
+    | TO_NCLOB
+    | TO_NUMBER
+    | TO_SINGLE_BYTE
+    | TREAT
+    | UNISTR
+    | VALIDATE_CONVERSION
+    ;
 
 functionName
     : identifier
@@ -4493,9 +4550,10 @@ functionName
 identifier
     : UNQUOTED_OBJECT_NAME
     | QUOTED_OBJECT_NAME
+    | nonReservedKeywordIdentifier
+    | singleRowFunctionName
     | aggregateFunctionName
     | analyticFunctionName
-    | nonReservedKeywordIdentifier
     ;
 
 nonReservedKeywordIdentifier
