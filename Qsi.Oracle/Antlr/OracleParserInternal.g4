@@ -3802,15 +3802,8 @@ groupComparisonCondition
 expr
     : '(' expr ')'                              #parenthesisExpr
     | ('+' | '-'| PRIOR) expr                   #signExpr
+    | TIMESTAMP expr                            #timestampExpr
     | expr ( '*' | '/' | '+' | '-' | '||') expr #binaryExpr
-    | expr AT ( LOCAL | TIME ZONE
-        ( S_SINGLE_QUOTE ('+'|'-')? hh=expr ':' mi=expr S_SINGLE_QUOTE
-        | DBTIMEZONE
-        | SESSIONTIMEZONE
-        | S_SINGLE_QUOTE timeZoneName=expr S_SINGLE_QUOTE
-        | expr
-        )
-     )                                          #datetimeExpr
     | expr COLLATE collationName=identifier     #collateExpr
     | functionExpression                        #functionExpr
     | calcMeasExpression                        #calcMeasExpr 
@@ -3823,6 +3816,14 @@ expr
     | placeholderExpression                     #placeholderExpr
 //    | scalarSubqueryExpression                  #scalarSubqueryExpr
     | typeConstructorExpression                 #typeConstructorExpr
+    | expr AT ( LOCAL | TIME ZONE
+        ( S_SINGLE_QUOTE ('+'|'-')? hh=expr ':' mi=expr S_SINGLE_QUOTE
+        | DBTIMEZONE
+        | SESSIONTIMEZONE
+        | timeZoneName=SINGLE_QUOTED_STRING
+        | expr
+        )
+     )                                          #datetimeExpr
     | simpleExpression                          #simpleExpr
 //    | variableExpression
     ;
@@ -3850,6 +3851,7 @@ calcMeasExpression
 
 functionExpression
     : functionName '(' expressionList? ')'
+    | analyticFunction
     ;
 
 avMeasExpression
@@ -4021,11 +4023,11 @@ modelExpression
               ) ']'
     | analyticFunction
     ;
-    
+
 analyticFunction
     : analyticFunctionName '(' expr? ( ',' expr )? ( ',' expr )? ')' OVER ( windowName=identifier | '(' analyticClause ')' )
     ;
-    
+
 analyticClause
     : ( windowName=identifier | queryPartitionClause )? ( orderByClause windowingClause? )?
     ;
