@@ -2839,7 +2839,7 @@ grantRolesToPrograms
     ;
 
 programUnit
-    : FUNCTION (schema '.')? functionName=identifier
+    : FUNCTION (schema '.')? functionName
     | PROCEDURE (schema '.')? procedureName=identifier
     | PACKAGE (schema '.')? packageName=identifier
     ;
