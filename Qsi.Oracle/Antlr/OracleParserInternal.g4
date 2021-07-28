@@ -4400,7 +4400,7 @@ expr
         )
      )                                          #datetimeExpr
     | simpleExpression                          #simpleExpr
-//    | variableExpression
+    | ':' (S_INTEGER_WITHOUT_SIGN | identifier) #bindVariableExpr
     ;
 
 simpleExpression
