@@ -3462,7 +3462,7 @@ orderByClause
     ;
 
 orderByItem
-    : (expr | position=integer | cAlias) (ASC | DESC)? (NULLS FIRST | NULLS LAST)?
+    : (expr | position=integer) (ASC | DESC)? (NULLS FIRST | NULLS LAST)?
     ;
 
 dmlTableExpressionClause
@@ -4306,7 +4306,7 @@ condition
     : simpleComparisonCondition                                                         #comparisonCondition1
     | groupComparisonCondition                                                          #comparisonCondition2
     | expr IS NOT? (NAN | INFINITE)                                                     #floatingPointCondition
-    | NOT '(' condition ')'                                                             #logicalNotCondition
+    | NOT condition                                                                     #logicalNotCondition
     | condition AND condition                                                           #logicalAndCondition
     | condition OR condition                                                            #logicalOrCondition
     | (dimensionColumn=identifier IS)? ANY                                              #modelIsAnyCondition
@@ -4334,8 +4334,6 @@ condition
 //        jsonBasicPathExpression ','
 //        stringLiteral ')'                                                   #jsonTextContainsCondition
     | '(' condition ')'                                                                 #compoundParenthesisCondition
-    | NOT condition                                                                     #compoundNotCondition
-    | condition (AND | OR) condition                                                    #compoundAndOrCondition
     | expr NOT? BETWEEN expr AND expr                                                   #betweenCondition
     | EXISTS '(' subquery ')'                                                           #existsCondition
     | expr NOT? IN '(' (expressionList|subquery) ')'                                    #inCondition1
