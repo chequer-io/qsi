@@ -1111,7 +1111,6 @@ USE_HASH:                         U S E '_' H A S H;
 USE_MERGE:                        U S E '_' M E R G E;
 USE_NL:                           U S E '_' N L;
 USE_NL_WITH_INDEX:                U S E '_' N L '_' W I T H '_' I N D E X;
-USER:                             U S E R;
 USER_DATA:                        U S E R '_' D A T A;
 USING:                            U S I N G;
 V1:                               V '1';
