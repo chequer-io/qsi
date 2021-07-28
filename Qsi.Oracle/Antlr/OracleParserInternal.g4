@@ -16,6 +16,7 @@ oracleStatement
     | alter
     | drop
     | grant
+    | insert
 //    | savepoint
 //    | rollback
     ;
@@ -178,6 +179,33 @@ drop
 //    | dropTypeBody
 //    | dropUser
     | dropView
+    ;
+    
+insert
+    : INSERT hint? ( singleTableInsert | multiTableInsert ) 
+    ;
+
+singleTableInsert
+    : insertIntoClause ( valuesClause returningClause? | subquery ) errorLoggingClause?
+    ;
+    
+insertIntoClause
+    : INTO dmlTableExpressionClause tAlias? ( '('column (',' column )* ')' )?
+    ;
+    
+valuesClause
+    : VALUES '(' ( expr | DEFAULT ) (',' ( expr | DEFAULT ) )* ')'
+    ;
+
+multiTableInsert
+    : ( ALL ( insertIntoClause valuesClause? errorLoggingClause? )* | conditionalInsertClause ) subquery
+    ;
+
+conditionalInsertClause
+    : ( ALL | FIRST )?
+      WHEN condition THEN ( insertIntoClause valuesClause? errorLoggingClause? )+
+      ( WHEN condition THEN ( insertIntoClause valuesClause? errorLoggingClause? )+ )*
+      ( ELSE ( insertIntoClause valuesClause? errorLoggingClause? )+ )?
     ;
 
 createAnalyticView
@@ -4781,6 +4809,10 @@ lobSegName
     ;
 
 variableName
+    : identifier
+    ;
+
+hostVariableName
     : identifier
     ;
 

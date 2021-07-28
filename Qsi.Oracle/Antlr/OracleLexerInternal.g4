@@ -1031,6 +1031,7 @@ TERMINATED:                       T E R M I N A T E D;
 TERRITORY:                        T E R R I T O R Y;
 TEXT:                             T E X T;
 THAN:                             T H A N;
+THE:                              T H E;
 THEN:                             T H E N;
 THESE:                            T H E S E;
 THREAD:                           T H R E A D;
