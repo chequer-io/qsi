@@ -17,6 +17,7 @@ oracleStatement
     | drop
     | grant
     | insert
+    | update
 //    | savepoint
 //    | rollback
     ;
@@ -206,6 +207,27 @@ conditionalInsertClause
       WHEN condition THEN ( insertIntoClause valuesClause? errorLoggingClause? )+
       ( WHEN condition THEN ( insertIntoClause valuesClause? errorLoggingClause? )+ )*
       ( ELSE ( insertIntoClause valuesClause? errorLoggingClause? )+ )?
+    ;
+
+update
+    : UPDATE hint?
+      ( dmlTableExpressionClause | ONLY '(' dmlTableExpressionClause ')' ) tAlias?
+      updateSetClause
+      whereClause?
+      returningClause?
+      errorLoggingClause?
+    ;
+
+updateSetClause
+    : SET
+      (
+        updateSetSubstituteClause ( ',' updateSetSubstituteClause )*
+      | VALUE '(' tAlias ')' '=' ( expr | '(' subquery ')' )
+      )
+    ;
+
+updateSetSubstituteClause
+    : '(' column ( ',' column )* ')' '=' '(' subquery ')' | column '=' ( expr | '(' subquery ')' | DEFAULT )
     ;
 
 createAnalyticView
@@ -4869,7 +4891,7 @@ index
     ;
 
 column
-    : identifier
+    : (identifier '.')? identifier
     ;
 
 user
@@ -6009,7 +6031,6 @@ nonReservedKeywordIdentifier
     | ZONE
     | ZONED
     | ZONEMAP
-
     | K_A
     | U_KILOBYTE
     | U_MEGABYTE
