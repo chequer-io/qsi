@@ -4400,6 +4400,7 @@ expr
      )                                          #datetimeExpr
     | simpleExpression                          #simpleExpr
     | bindVariable                              #bindVariableExpr
+    | identifier '(' '+' ')'                    #columnOuterJoinExpr
     ;
 
 bindVariable
