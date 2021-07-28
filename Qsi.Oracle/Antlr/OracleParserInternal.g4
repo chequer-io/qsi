@@ -3484,7 +3484,7 @@ dataItem
 errorLoggingClause
     : LOG ERRORS
       (INTO (schema '.')? table)?
-      ('(' simpleExpression ')')?
+      ('(' errorLoggingSimpleExpression ')')?
       (REJECT LIMIT (integer | UNLIMITED))?
     ;
 
@@ -4048,7 +4048,7 @@ groupingExpressionList
 
 expressionList
     : expr (',' expr )*
-    | '(' (expr (',' expr )*)? ')'
+    | '(' expressionList ')'
     ;
 
 modelClause
@@ -4343,7 +4343,7 @@ condition
     ;
 
 isOfTypeConditionItem
-    : (ONLY? (SCHEMA '.')? type=identifier)
+    : ONLY? (SCHEMA '.')? type=identifier
     ;
 
 operator1
@@ -4381,11 +4381,10 @@ expr
     | expr ( '*' | '/' | '+' | '-' | '||') expr #binaryExpr
     | expr COLLATE collationName=identifier     #collateExpr
     | functionExpression                        #functionExpr
-    | calcMeasExpression                        #calcMeasExpr
+    | avMeasExpression                          #calcMeasExpr
     | caseExpression                            #caseExpr
     | CURSOR '('subquery')'                     #cursorExpr
     | intervalExpression                        #intervalExpr
-    | jsonObjectAccessExpression                #jsonObjectAccessExpr
     | modelExpression                           #modelExpr
     | objectAccessExpression                    #objectAccessExpr
     | placeholderExpression                     #placeholderExpr
@@ -4400,11 +4399,29 @@ expr
         )
      )                                          #datetimeExpr
     | simpleExpression                          #simpleExpr
-    | ':' (S_INTEGER_WITHOUT_SIGN | identifier) #bindVariableExpr
+    | bindVariable                              #bindVariableExpr
+    ;
+
+bindVariable
+    : indexBindVariable
+    | namedBindVariable
+    ;
+
+indexBindVariable
+    : ':' S_INTEGER_WITHOUT_SIGN
+    ;
+
+namedBindVariable
+    : ':' identifier
+    ;
+
+errorLoggingSimpleExpression
+    : simpleExpression
+    | ((schema '.')? table '.')? identifier
     ;
 
 simpleExpression
-    : ((schema '.')? table '.')? (column | ROWID)
+    : ((schema '.')? table '.')? ROWID
     | ROWNUM
     | stringLiteral
     | numberLiteral
@@ -4483,10 +4500,6 @@ precedingBoundary
 
 followingBoundary
     : ( CURRENT MEMBER | offsetExpr=expr FOLLOWING ) AND ( offsetExpr=expr FOLLOWING | UNBOUNDED FOLLOWING )
-    ;
-
-calcMeasOrderByClause
-    : calcMeasExpression ( ASC | DESC )?  ( NULLS ( FIRST | LAST ) )?
     ;
 
 shareOfExpression
@@ -4592,10 +4605,6 @@ intervalExpression
       )
     ;
 
-jsonObjectAccessExpression
-    : tableAlias=identifier '.' jsonColumn=identifier ('.' jsonObjectKey=identifier arrayStep*)+?
-    ;
-
 arrayStep
     : '[' (( integer | integer TO integer (',' (integer | integer TO integer) )* ) | '*') ']'
     ;
@@ -4624,21 +4633,15 @@ aggregateFunction
     ;
 
 objectAccessExpression
-    : ( tableAlias=identifier '.' column '.'
-      | objectTableAlias=identifier '.'
-      | '(' expr ')' '.'
-      )
-      ( attribute ('.'attribute )* ('.' method=identifier '(' ( argument=expr (',' argument=expr )* ) ')' )?
-      | method=identifier '(' ( argument=expr (',' argument=expr )* ) ')'
-      )
+    : ('(' expr ')' '.')? identifier ('.' identifier arrayStep* )* ('(' ( argument=expr (',' argument=expr )* ) ')')?
     ;
 
 placeholderExpression
-    : ':' hostVariable=identifier ( INDICATOR? ':' indicatorVariable=identifier )?
+    : namedBindVariable ( INDICATOR? ':' indicatorVariable=identifier )?
     ;
 
 typeConstructorExpression
-    : NEW? ( schema '.' )? typeName=identifier '(' ( expr (',' expr )* )? ')'
+    : NEW ( schema '.' )? typeName=identifier '(' ( expr (',' expr )* )? ')'
     ;
 
 //arrayStepItem
@@ -4879,7 +4882,7 @@ index
     ;
 
 column
-    : (identifier '.')? identifier
+    : identifier ('.' identifier)?
     ;
 
 user
