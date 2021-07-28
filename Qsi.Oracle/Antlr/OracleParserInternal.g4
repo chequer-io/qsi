@@ -3727,9 +3727,8 @@ selectListItem
     ;
 
 tableSource
-    : tableReference
-    | joinClause
-    | '(' joinClause ')'
+    : tableReference ( innerCrossJoinClause | outerJoinClause | crossOuterApplyClause)*
+    | '(' tableSource ')'
     | inlineAnalyticView
     ;
 
@@ -3744,15 +3743,6 @@ tableReference
         | shardsClause
       )
       tAlias?
-    ;
-
-joinClause
-    : tableReference
-        (
-            innerCrossJoinClause
-          | outerJoinClause
-          | crossOuterApplyClause
-        )*
     ;
 
 innerCrossJoinClause
