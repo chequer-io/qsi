@@ -24,7 +24,7 @@ namespace Qsi.JSql
             return new(set);
         }
 
-        public IQsiTreeNode Parse(QsiScript script, CancellationToken cancellationToken = default)
+        public virtual IQsiTreeNode Parse(QsiScript script, CancellationToken cancellationToken = default)
         {
             var statement = CCJSqlParserUtility.Parse(script.Script);
             var visitorSet = new VisitorSetImpl();

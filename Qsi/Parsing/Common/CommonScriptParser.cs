@@ -82,7 +82,7 @@ namespace Qsi.Parsing.Common
             switch (cursor.Current)
             {
                 case '_':
-                case var c when 'A' <= c && c <= 'Z' || 'a' <= c && c <= 'z':
+                case var c when c is >= 'A' and <= 'Z' || c is >= 'a' and <= 'z':
                     offset = 1;
                     rule = _keyword;
                     tokenType = TokenType.Keyword;
