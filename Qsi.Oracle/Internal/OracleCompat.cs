@@ -1,25 +1,11 @@
 using System;
+using System.Text;
 using Qsi.Parsing.Common;
+using Qsi.Parsing.Common.Rules;
+using Qsi.Utilities;
 
 namespace Qsi.Oracle
 {
-    /*
-SINGLE_QUOTED_STRING: '\'' ( '\'\'' | ~['] )* '\'';
-
-QUOTED_STRING
-    : Q '\'!' ~[\u0000]*? '!\''
-    | Q '\'[' ~[\u0000]*? ']\''
-    | Q '\'{' ~[\u0000]*? '}\''
-    | Q '\'<' ~[\u0000]*? '>\''
-    | Q '\'(' ~[\u0000]*? ')\''
-    ;
-
-NATIONAL_STRING
-    : N (
-          SINGLE_QUOTED_STRING
-        | QUOTED_STRING
-    );
-     */
     public sealed class OracleCompat : CommonScriptParser
     {
         private const TokenType TokenTypeNationalString = (TokenType)(1 << 8);
@@ -29,6 +15,8 @@ NATIONAL_STRING
         private const string delClose = "!]}>)";
 
         private static readonly OracleCompat _compat = new();
+
+        private readonly ITokenRule _singleQuote = new LookbehindIdentifierRule('\'', true);
 
         protected override bool TryParseToken(CommonScriptCursor cursor, out Token token)
         {
@@ -52,27 +40,34 @@ NATIONAL_STRING
 
         private bool TryParseQuoted(CommonScriptCursor cursor, out Token token)
         {
+            var index = cursor.Index;
+
             token = default;
 
-            if (cursor.Length - cursor.Index - 1 < 4)
+            // Q'<>'
+            if (cursor.Length - cursor.Index < 5)
                 return false;
 
-            ReadOnlySpan<char> span = cursor.Value.AsSpan(cursor.Index + 1);
+            cursor.Index++;
 
-            if (span[0] != '\'')
+            if (cursor.Current != '\'')
                 return false;
 
-            var delimiterIndex = delOpen.IndexOf(span[1]);
+            cursor.Index++;
+
+            var delimiterIndex = delOpen.IndexOf(cursor.Current);
 
             if (delimiterIndex == -1)
                 return false;
 
-            var closeIndex = cursor.Value.IndexOf($"{delClose[delimiterIndex]}'", cursor.Index + 1, StringComparison.OrdinalIgnoreCase);
+            cursor.Index++;
+
+            var closeIndex = cursor.Value.IndexOf($"{delClose[delimiterIndex]}'", cursor.Index, StringComparison.OrdinalIgnoreCase);
 
             if (closeIndex == -1)
                 return false;
 
-            token = new Token(TokenTypeQuotedString, new Range(cursor.Index, closeIndex + 2));
+            token = new Token(TokenTypeQuotedString, new Range(index, closeIndex + 2));
             cursor.Index = closeIndex + 2;
 
             return true;
@@ -80,32 +75,71 @@ NATIONAL_STRING
 
         private bool TryParseNational(CommonScriptCursor cursor, out Token token)
         {
-            throw new NotImplementedException();
+            var index = cursor.Index;
+
+            token = default;
+
+            if (cursor.Length - index < 3)
+                return false;
+
+            cursor.Index++;
+
+            if (cursor.Current is 'Q' or 'q' && TryParseQuoted(cursor, out token))
+            {
+                token = new Token(
+                    TokenTypeNationalString | TokenTypeQuotedString,
+                    new Range(index, token.Span.End)
+                );
+
+                return true;
+            }
+
+            if (cursor.Current is not '\'')
+                return false;
+
+            cursor.Index++;
+
+            if (!_singleQuote.Run(cursor))
+                return false;
+
+            token = new Token(TokenTypeNationalString, new Range(index, cursor.Index + 1));
+            return true;
         }
 
         public static string Normalize(string script)
         {
-            return null;
+            if (string.IsNullOrWhiteSpace(script))
+                return script;
+
+            var builder = new StringBuilder(script.Length);
+            var cursor = new CommonScriptCursor(script);
+
+            foreach (var token in _compat.ParseTokens(cursor))
+                builder.Append(GetNormalizedTokenValue(script, token));
+
+            return builder.ToString();
         }
 
-        public static bool GetLiteralValue(ReadOnlySpan<char> value)
+        public static string GetNormalizedTokenValue(string script, Token token)
         {
-            // '...'
-            if (value[0] == '\'')
-                return true;
+            var value = script[token.Span];
 
-            // NQ'...' -> Q'...'
-            if (value.StartsWith("N", StringComparison.OrdinalIgnoreCase))
-                value = value[1..];
+            switch (token.Type)
+            {
+                // N'..'
+                case TokenTypeNationalString:
+                    return value[1..];
 
-            if (!value.StartsWith("Q'", StringComparison.OrdinalIgnoreCase))
-                return true;
+                // Q'<1'2'3>'
+                case TokenTypeQuotedString:
+                    return IdentifierUtility.Escape(value.AsSpan()[3..^2], EscapeQuotes.Single, EscapeBehavior.TwoTime);
 
-            // Q'...'
-            var delimiterIndex = delOpen.IndexOf(value[2]);
-            char delimiterClose = delimiterIndex == -1 ? value[2] : delClose[delimiterIndex];
+                // NQ'<1'2'3>'
+                case TokenTypeNationalString | TokenTypeQuotedString:
+                    return IdentifierUtility.Escape(value.AsSpan()[4..^2], EscapeQuotes.Single, EscapeBehavior.TwoTime);
+            }
 
-            return value[^2] == delimiterClose;
+            return value;
         }
     }
 }
