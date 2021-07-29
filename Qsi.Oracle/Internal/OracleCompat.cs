@@ -20,7 +20,7 @@ NATIONAL_STRING
         | QUOTED_STRING
     );
      */
-    internal sealed class OracleCompat : CommonScriptParser
+    public sealed class OracleCompat : CommonScriptParser
     {
         private const TokenType TokenTypeNationalString = (TokenType)(1 << 8);
         private const TokenType TokenTypeQuotedString = (TokenType)(1 << 9);
@@ -32,17 +32,60 @@ NATIONAL_STRING
 
         protected override bool TryParseToken(CommonScriptCursor cursor, out Token token)
         {
-            var current = char.ToUpperInvariant(cursor.Current);
+            var index = cursor.Index;
 
-            if (current is 'Q' or 'N')
+            switch (cursor.Current)
             {
+                case 'Q' when TryParseQuoted(cursor, out token):
+                    return true;
+
+                case 'N' when TryParseNational(cursor, out token):
+                    return true;
+
+                default:
+                    cursor.Index = index;
+                    break;
             }
 
             return base.TryParseToken(cursor, out token);
         }
 
+        private bool TryParseQuoted(CommonScriptCursor cursor, out Token token)
+        {
+            token = default;
+
+            if (cursor.Length - cursor.Index - 1 < 4)
+                return false;
+
+            ReadOnlySpan<char> span = cursor.Value.AsSpan(cursor.Index + 1);
+
+            if (span[0] != '\'')
+                return false;
+
+            var delimiterIndex = delOpen.IndexOf(span[1]);
+
+            if (delimiterIndex == -1)
+                return false;
+
+            var closeIndex = cursor.Value.IndexOf($"{delClose[delimiterIndex]}'", cursor.Index + 1, StringComparison.OrdinalIgnoreCase);
+
+            if (closeIndex == -1)
+                return false;
+
+            token = new Token(TokenTypeQuotedString, new Range(cursor.Index, closeIndex + 2));
+            cursor.Index = closeIndex + 2;
+
+            return true;
+        }
+
+        private bool TryParseNational(CommonScriptCursor cursor, out Token token)
+        {
+            throw new NotImplementedException();
+        }
+
         public static string Normalize(string script)
         {
+            return null;
         }
 
         public static bool GetLiteralValue(ReadOnlySpan<char> value)
