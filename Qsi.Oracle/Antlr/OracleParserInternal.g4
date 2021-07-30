@@ -374,8 +374,8 @@ setTransaction
            | ISOLATION LEVEL
              ( SERIALIZABLE | READ COMMITTED )
            | USE ROLLBACK SEGMENT rollbackSegment
-           ) ( NAME string )?
-         | NAME string
+           ) ( NAME stringLiteral )?
+         | NAME stringLiteral
          )
     ;
 
@@ -402,7 +402,7 @@ revokeRolesFromPrograms
     ;
 
 rollback
-    : ROLLBACK WORK? ( TO SAVEPOINT? savepointName | FORCE string )?
+    : ROLLBACK WORK? ( TO SAVEPOINT? savepointName | FORCE stringLiteral )?
     ;
 
 savepoint
@@ -5315,10 +5315,6 @@ username
     ;
 
 savepointName
-    : identifier
-    ;
-
-string
     : identifier
     ;
 
