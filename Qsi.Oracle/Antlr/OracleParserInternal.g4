@@ -28,6 +28,7 @@ oracleStatement
     | set
     | truncate
     | lock
+    | flashback
     ;
 
 select
@@ -435,6 +436,35 @@ lockTable
          ( NOWAIT | WAIT integer )?
     ;
 
+flashback
+    : flashbackTable
+    | flashbackDatabase
+    ;
+
+flashbackTable
+    : FLASHBACK TABLE
+         ( schema '.' )? table
+         ( ',' ( schema '.' )? table )*
+         TO 
+         (
+           ( 
+             ( SCN | TIMESTAMP ) expr 
+           | RESTORE POINT restorePointName 
+           ) 
+           ( ( ENABLE | DISABLE ) TRIGGERS )?
+         | BEFORE DROP ( RENAME TO table )?
+         )
+    ;
+
+flashbackDatabase
+    : FLASHBACK STANDBY? PLUGGABLE? DATABASE database? TO
+        (
+          ( SCN | TIMESTAMP ) expr
+        | RESTORE POINT restorePointName
+        | BEFORE ( ( SCN | TIMESTAMP ) expr | RESETLOGS )
+        )
+    ;
+
 createAnalyticView
     : CREATE (OR REPLACE)? (FORCE | NOFORCE)? ANALYTIC VIEW
       analyticViewName=identifier
@@ -518,7 +548,7 @@ dropAuditPolicy
     ;
 
 createDatabase
-    : CREATE DATABASE database=identifier?
+    : CREATE DATABASE database?
       createDatabaseOption+
     ;
 
@@ -962,7 +992,7 @@ defaultSettingsClauses
     | SET DEFAULT (BIGFILE | SMALLFILE) TABLESPACE
     | DEFAULT TABLESPACE tablespace
     | DEFAULT LOCAL? TEMPORARY TABLESPACE (tablespace | tablespaceGroupName=identifier)
-    | RENAME GLOBAL_NAME TO database=identifier '.' domain=identifier ('.' domain=identifier)*
+    | RENAME GLOBAL_NAME TO database '.' domain=identifier ('.' domain=identifier)*
     | ENABLE BLOCK CHANGE TRACKING (USING FILE stringLiteral REUSE?)?
     | DISABLE BLOCK CHANGE TRACKING
     | NO? FORCE FULL DATABASE CACHING
@@ -5139,6 +5169,14 @@ rollbackSegment
     ;
 
 cluster
+    : identifier
+    ;
+
+restorePointName
+    : identifier
+    ;
+
+database
     : identifier
     ;
 

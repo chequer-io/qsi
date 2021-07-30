@@ -1083,6 +1083,7 @@ TRANSLATE:                        T R A N S L A T E;
 TRANSLATION:                      T R A N S L A T I O N;
 TREAT:                            T R E A T;
 TRIGGER:                          T R I G G E R;
+TRIGGERS:                         T R I G G E R S;
 TRUE:                             T R U E;
 TRUNC:                            T R U N C;
 TRUNCATE:                         T R U N C A T E;
