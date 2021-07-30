@@ -1119,6 +1119,7 @@ USE_MERGE:                        U S E '_' M E R G E;
 USE_NL:                           U S E '_' N L;
 USE_NL_WITH_INDEX:                U S E '_' N L '_' W I T H '_' I N D E X;
 USER_DATA:                        U S E R '_' D A T A;
+USER:                             U S E R;
 USERS:                            U S E R S;
 USING:                            U S I N G;
 V1:                               V '1';

@@ -21,6 +21,7 @@ oracleStatement
     | merge
     | noaudit
     | unifiedNoaudit
+    | purge
 //    | savepoint
 //    | rollback
     ;
@@ -311,6 +312,17 @@ unifiedNoaudit
 
 byUsersWithRoles
     : BY USERS WITH GRANTED ROLES role ( ',' role )*
+    ;
+
+purge
+    : PURGE
+        ( TABLE table
+        | INDEX index
+        | TABLESPACE tablespace ( USER username )?
+        | TABLESPACE SET tablespaceSet ( USER username )?
+        | RECYCLEBIN
+        | DBA_RECYCLEBIN
+        )
     ;
 
 createAnalyticView
@@ -4994,6 +5006,10 @@ policy
     ;
 
 namespace
+    : identifier
+    ;
+
+username
     : identifier
     ;
 
