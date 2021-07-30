@@ -16,7 +16,7 @@ namespace Qsi.MongoDB
                 .Statements
                 .Select(s => new QsiScript(
                     input[s.Range],
-                    QsiScriptType.Unknown,
+                    s.ScriptType,
                     ConvertToPosition(s.Start, s.Range.Start.Value),
                     ConvertToPosition(s.End, s.Range.End.Value - 1)
                 ));

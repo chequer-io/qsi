@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Qsi.Data;
 using Qsi.MongoDB.Internal.Nodes.Location;
 
 namespace Qsi.MongoDB.Acorn
@@ -41,6 +42,7 @@ namespace Qsi.MongoDB.Acorn
             bool singlelineRemark = false;
             bool isLineStart = true;
 
+            var scriptType = QsiScriptType.Unknown;
             int line = 1, column = 0;
             int capturedIndex = 0;
             int capturedLine = -1, capturedColumn = -1;
@@ -106,6 +108,7 @@ namespace Qsi.MongoDB.Acorn
                     case 's':
                         if (isLineStart && remainLength >= 4 && Script[i..].StartsWith("show"))
                         {
+                            scriptType = QsiScriptType.Show;
                             isKeywordMatched = true;
                             Capture(i);
                             i += 3;
@@ -118,6 +121,7 @@ namespace Qsi.MongoDB.Acorn
                     case 'u':
                         if (isLineStart && remainLength >= 3 && Script[i..].StartsWith("use"))
                         {
+                            scriptType = QsiScriptType.Use;
                             isKeywordMatched = true;
                             Capture(i);
                             i += 2;
@@ -182,6 +186,7 @@ namespace Qsi.MongoDB.Acorn
 
             void Reset()
             {
+                scriptType = QsiScriptType.Unknown;
                 capturedLine = -1;
                 capturedColumn = -1;
                 capturedIndex = -1;
@@ -198,6 +203,7 @@ namespace Qsi.MongoDB.Acorn
 
                 statements.Add(new MongoDBStatement
                 {
+                    ScriptType = scriptType,
                     Range = range,
                     Start = new Location(capturedLine, capturedColumn - 1),
                     End = new Location(line, column),
