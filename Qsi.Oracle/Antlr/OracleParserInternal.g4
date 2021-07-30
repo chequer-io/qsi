@@ -150,45 +150,45 @@ drop
     : dropAnalyticView
     | dropAttributeDimension
     | dropAuditPolicy
-//    | dropCluster
-//    | dropContext
+    | dropCluster
+    | dropContext
     | dropDatabase
-//    | dropDatabaseLink
-//    | dropDimension
-//    | dropDirectory
-//    | dropDiskgroup
-//    | dropEdition
-//    | dropFlashbackArchive
-//    | dropFunction
-//    | dropHierarchy
+    | dropDatabaseLink
+    | dropDimension
+    | dropDirectory
+    | dropDiskgroup
+    | dropEdition
+    | dropFlashbackArchive
+    | dropFunction
+    | dropHierarchy
     | dropIndex
-//    | dropIndextype
-//    | dropInmemoryJoinGroup
-//    | dropJava
-//    | dropLibrary
-//    | dropLockdownProfile
-//    | dropMaterializedView
-//    | dropMaterializedViewLog
-//    | dropMaterializedZonemap
-//    | dropOperator
-//    | dropOutline
-//    | dropPackage
-//    | dropPluggableDatabase
-//    | dropPmemFilestore
-//    | dropProcedure
-//    | dropProfile
-//    | dropRestorePoint
-//    | dropRole
-//    | dropRollbackSegment
-//    | dropSequence
+    | dropIndextype
+    | dropInmemoryJoinGroup
+    | dropJava
+    | dropLibrary
+    | dropLockdownProfile
+    | dropMaterializedView
+    | dropMaterializedViewLog
+    | dropMaterializedZonemap
+    | dropOperator
+    | dropOutline
+    | dropPackage
+    | dropPluggableDatabase
+    | dropPmemFilestore
+    | dropProcedure
+    | dropProfile
+    | dropRestorePoint
+    | dropRole
+    | dropRollbackSegment
+    | dropSequence
     | dropSynonym
     | dropTable
-//    | dropTablespace
-//    | dropTablespaceSet
-//    | dropTrigger
-//    | dropType
-//    | dropTypeBody
-//    | dropUser
+    | dropTablespace
+    | dropTablespaceSet
+    | dropTrigger
+    | dropType
+    | dropTypeBody
+    | dropUser
     | dropView
     ;
 
@@ -670,6 +670,160 @@ alterView
       )
     ;
 
+dropCluster
+    : DROP CLUSTER ( schema '.' )? cluster
+        ( INCLUDING TABLES ( CASCADE CONSTRAINTS )? )?
+    ;
+
+dropContext
+    : DROP CONTEXT namespace
+    ;
+
+dropDatabaseLink
+    : DROP PUBLIC? DATABASE LINK dblink
+    ;
+
+dropDimension
+    : DROP DIMENSION ( schema '.' )? dimensionName
+    ;
+
+dropDirectory
+    : DROP DIRECTORY directoryName
+    ;
+
+dropDiskgroup
+    : DROP DISKGROUP diskgroupName
+         (  FORCE INCLUDING CONTENTS
+         | ( INCLUDING | EXCLUDING ) CONTENTS
+         )
+    ;
+
+dropEdition
+    : DROP EDITION editionName CASCADE?
+    ;
+
+dropFlashbackArchive
+    : DROP FLASHBACK ARCHIVE flashbackArchiveName
+    ;
+
+dropFunction
+    : DROP FUNCTION ( schema '.' )? functionName
+    ;
+
+dropHierarchy
+    : DROP HIERARCHY ( schema '.' )? hierarchyName
+    ;
+
+dropIndextype
+    : DROP INDEXTYPE ( schema '.' )? indextype FORCE?
+    ;
+
+dropInmemoryJoinGroup
+    : DROP INMEMORY JOIN GROUP ( schema '.' )? joinGroup
+    ;
+
+dropJava
+    : DROP JAVA ( SOURCE | CLASS | RESOURCE )
+        ( schema '.' )? objectName
+    ;
+
+dropLibrary
+    : DROP LIBRARY libraryName
+    ;
+
+dropLockdownProfile
+    : DROP LOCKDOWN PROFILE profileName
+    ;
+
+dropMaterializedView
+    : DROP MATERIALIZED VIEW ( schema '.' )? materializedView
+         ( PRESERVE TABLE )?
+    ;
+
+dropMaterializedViewLog
+    : DROP MATERIALIZED VIEW LOG ON ( schema '.' )? table
+    ;
+
+dropMaterializedZonemap
+    : DROP MATERIALIZED ZONEMAP ( schema '.' )? zonemapMame
+    ;
+
+dropOperator
+    : DROP OPERATOR ( schema '.' )? operatorName FORCE?
+    ;
+
+dropOutline
+    : DROP OUTLINE outlineName
+    ;
+
+dropPackage
+    : DROP PACKAGE BODY? ( schema '.' )? packageName
+    ;
+
+dropPluggableDatabase
+    : DROP PLUGGABLE DATABASE pdbName
+        ( ( KEEP | INCLUDING ) DATAFILES )?
+    ;
+
+dropPmemFilestore
+    : DROP PMEM FILESTORE filestoreName
+        ( FORCE INCLUDING CONTENTS
+        | ( INCLUDING | EXCLUDING ) CONTENTS
+        )?
+    ;
+
+dropProcedure
+    : DROP PROCEDURE ( schema '.' )? procedureName
+    ;
+
+dropProfile
+    : DROP PROFILE profile CASCADE?
+    ;
+
+dropRestorePoint
+    : DROP RESTORE POINT restorePointName ( FOR PLUGGABLE DATABASE pdbName )?
+    ;
+
+dropRole
+    : DROP ROLE role
+    ;
+
+dropRollbackSegment
+    : DROP ROLLBACK SEGMENT rollbackSegment
+    ;
+
+dropSequence
+    : DROP SEQUENCE ( schema '.' )? sequenceName
+    ;
+
+dropTablespace
+    : DROP TABLESPACE tablespace
+         ( ( DROP | KEEP ) QUOTA )?
+         ( INCLUDING CONTENTS ( ( AND | KEEP ) DATAFILES )? ( CASCADE CONSTRAINTS )? )
+    ;
+
+dropTablespaceSet
+    : DROP TABLESPACE SET tablespaceSet
+         ( ( DROP | KEEP ) QUOTA )?
+         ( INCLUDING CONTENTS ( ( AND | KEEP ) DATAFILES )? ( CASCADE CONSTRAINTS )? )
+    ;
+
+dropTrigger
+    : DROP TRIGGER ( schema '.' )? trigger
+    ;
+
+dropType
+    : DROP TYPE ( schema '.' )? typeName ( FORCE | VALIDATE )?
+    ;
+
+dropTypeBody
+    : DROP TYPE BODY ( schema '.' )? typeName
+    ;
+
+dropUser
+    : DROP USER user CASCADE?
+    ;
+
 dropView
     : DROP VIEW (schema '.')? view (CASCADE CONSTRAINTS)?
     ;
@@ -781,7 +935,7 @@ modifyIndexSubpartition
 
 databaseClause
     : DATEBASE dbName=identifier
-    | PLUGGABLE DATABASE pdbName=identifier
+    | PLUGGABLE DATABASE pdbName
     ;
 
 startupClauses
@@ -996,7 +1150,7 @@ convertDatabaseClause
     ;
 
 defaultSettingsClauses
-    : DEFAULT EDITION '=' editionName=identifier
+    : DEFAULT EDITION '=' editionName
     | SET DEFAULT (BIGFILE | SMALLFILE) TABLESPACE
     | DEFAULT TABLESPACE tablespace
     | DEFAULT LOCAL? TEMPORARY TABLESPACE (tablespace | tablespaceGroupName=identifier)
@@ -1079,7 +1233,7 @@ createViewConstraintItem
     ;
 
 objectViewClause
-    : OF (schema '.')? typeName=identifier ( WITH OBJECT (IDENTIFIER | ID) (DEFAULT | '(' attribute (',' attribute)* ')')
+    : OF (schema '.')? typeName ( WITH OBJECT (IDENTIFIER | ID) (DEFAULT | '(' attribute (',' attribute)* ')')
                                            | UNDER (schema '.')? superview=identifier
                                            )
       ('(' objectViewClauseConstraintItem (',' objectViewClauseConstraintItem)* ')')?
@@ -1264,7 +1418,7 @@ indexProperties
     ;
 
 domainIndexClause
-    : indextype=fullObjectPath localDomainIndexClause? parallelClause? (PARAMETERS '(' stringLiteral ')')?
+    : indextype localDomainIndexClause? parallelClause? (PARAMETERS '(' stringLiteral ')')?
     ;
 
 xmlIndexClause
@@ -3656,7 +3810,7 @@ onObjectClause
     : ON ( (schema '.')? object
          | USER user (',' user)*
          | DIRECTORY directoryName
-         | EDITION editionName=identifier
+         | EDITION editionName
          | MINING MODEL (schema '.')? miningModelName=identifier
          | JAVA (SOURCE | RESOURCE) (schema '.')? object
          | SQL TRANSLATION PROFILE (schema '.')? profile
@@ -3669,8 +3823,8 @@ grantRolesToPrograms
 
 programUnit
     : FUNCTION (schema '.')? functionName
-    | PROCEDURE (schema '.')? procedureName=identifier
-    | PACKAGE (schema '.')? packageName=identifier
+    | PROCEDURE (schema '.')? procedureName
+    | PACKAGE (schema '.')? packageName
     ;
 
 grantSystemPrivilegesRoleItem
@@ -4884,7 +5038,7 @@ placeholderExpression
     ;
 
 typeConstructorExpression
-    : NEW ( schema '.' )? typeName=identifier '(' ( expr (',' expr )* )? ')'
+    : NEW ( schema '.' )? typeName '(' ( expr (',' expr )* )? ')'
     ;
 
 //arrayStepItem
@@ -5125,7 +5279,7 @@ index
     ;
 
 column
-    : identifier ('.' identifier)?
+    : ( tAlias '.' )? identifier
     ;
 
 user
@@ -5185,6 +5339,86 @@ restorePointName
     ;
 
 database
+    : identifier
+    ;
+
+typeName
+    : identifier
+    ;
+
+trigger
+    : identifier
+    ;
+
+sequenceName
+    : identifier
+    ;
+
+dimensionName
+    : identifier
+    ;
+
+diskgroupName
+    : identifier
+    ;
+
+editionName
+    : identifier
+    ;
+
+flashbackArchiveName
+    : identifier
+    ;
+
+hierarchyName
+    : identifier
+    ;
+
+indextype
+    : fullObjectPath
+    ;
+
+joinGroup
+    : identifier
+    ;
+
+objectName
+    : identifier
+    ;
+
+libraryName
+    : identifier
+    ;
+
+profileName
+    : identifier
+    ;
+
+zonemapMame
+    : identifier
+    ;
+
+operatorName
+    : identifier
+    ;
+
+outlineName
+    : identifier
+    ;
+
+packageName
+    : identifier
+    ;
+
+pdbName
+    : identifier
+    ;
+
+filestoreName
+    : identifier
+    ;
+
+procedureName
     : identifier
     ;
 
