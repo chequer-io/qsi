@@ -22,6 +22,8 @@ oracleStatement
     | noaudit
     | unifiedNoaudit
     | purge
+    | rename
+    | revoke
 //    | savepoint
 //    | rollback
     ;
@@ -323,6 +325,38 @@ purge
         | RECYCLEBIN
         | DBA_RECYCLEBIN
         )
+    ;
+
+rename
+    : RENAME oldName=identifier TO newName=identifier
+    ;
+
+revoke
+    : REVOKE( ( revokeSystemPrivileges | revokeObjectPrivileges )
+          ( CONTAINER '=' ( CURRENT | ALL ) )? )
+    | revokeRolesFromPrograms
+    ;
+
+revokeSystemPrivileges
+    : ( systemPrivilege | role | ALL PRIVILEGES )
+        ( ',' ( systemPrivilege | role | ALL PRIVILEGES ) )*
+      FROM revokeeClause
+    ;
+
+revokeObjectPrivileges
+    : ( objectPrivilege | ALL PRIVILEGES? )
+        ( ',' ( objectPrivilege | ALL PRIVILEGES? ) )*
+      onObjectClause
+      FROM revokeeClause
+      ( CASCADE CONSTRAINTS | FORCE )?
+    ;
+
+revokeeClause
+    : ( user | role | PUBLIC ) ( ',' ( user | role | PUBLIC ) )*
+    ;
+
+revokeRolesFromPrograms
+    : ( role ( ',' role )* | ALL ) FROM programUnit ( ',' programUnit )*
     ;
 
 createAnalyticView
@@ -2998,26 +3032,27 @@ objectAction
     | UPDATE
     | RENAME
     | FLASHBACK
-    | RENAME
     ;
 
 // TODO: impl
 systemAction
     : CREATE TABLE
+    | DROP TABLE
+    | ALTER TABLE
+    | LOCK TABLE
     | INSERT
     | SELECT
-    | CREATE CLUSTER
-    | ALTER CLUSTER
     | UPDATE
     | DELETE
+    | COMMIT
+    | CREATE CLUSTER
+    | ALTER CLUSTER
     | DROP CLUSTER
     | CREATE INDEX
     | DROP INDEX
     | ALTER INDEX
-    | DROP TABLE
     | CREATE SEQUENCE
     | ALTER SEQUENCE
-    | ALTER TABLE
     | DROP SEQUENCE
     | CREATE SYNONYM
     | DROP SYNONYM
@@ -3025,7 +3060,6 @@ systemAction
     | DROP VIEW
     | CREATE PROCEDURE
     | ALTER PROCEDURE
-    | LOCK TABLE
     | RENAME
     | COMMENT
     | CREATE DATABASE LINK
@@ -3039,7 +3073,6 @@ systemAction
     | DROP TABLESPACE
     | ALTER SESSION
     | ALTER USER
-    | COMMIT
     | ROLLBACK
     | SET TRANSACTION
     | ALTER SYSTEM
