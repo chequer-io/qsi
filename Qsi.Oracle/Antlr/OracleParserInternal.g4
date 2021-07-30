@@ -26,6 +26,7 @@ oracleStatement
     | revoke
     | rollback
     | savepoint
+    | set
     ;
 
 select
@@ -335,6 +336,39 @@ revoke
     : REVOKE( ( revokeSystemPrivileges | revokeObjectPrivileges )
           ( CONTAINER '=' ( CURRENT | ALL ) )? )
     | revokeRolesFromPrograms
+    ;
+
+set
+    : setConstraints
+    | setRole
+    | setTransaction
+    ;
+
+setConstraints
+    : SET 
+      ( CONSTRAINT | CONSTRAINTS )
+      ( constraint ( ',' constraint )* | ALL )
+      ( IMMEDIATE | DEFERRED )
+    ;
+
+setRole
+    : SET ROLE
+      ( role ( IDENTIFIED BY password )?
+        ( ',' role ( IDENTIFIED BY password )? )*
+      | ALL ( EXCEPT role ( ',' role )* )
+      | NONE
+      )
+    ;
+
+setTransaction
+    : SET TRANSACTION
+         ( ( READ ( ONLY | WRITE )
+           | ISOLATION LEVEL
+             ( SERIALIZABLE | READ COMMITTED )
+           | USE ROLLBACK SEGMENT rollbackSegment
+           ) ( NAME string )?
+         | NAME string
+         )
     ;
 
 revokeSystemPrivileges
@@ -1318,7 +1352,7 @@ identityOption
     ;
 
 encryptionSpec
-    : (USING encryptAlgorithm=stringLiteral)? (IDENTIFIED BY password=identifier) (integrityAlgorithm=stringLiteral) (NO? SALT)?
+    : (USING encryptAlgorithm=stringLiteral)? (IDENTIFIED BY password) (integrityAlgorithm=stringLiteral) (NO? SALT)?
     ;
 
 blockchainTableClauses
@@ -3225,8 +3259,8 @@ componentAction
     ;
 
 createDatabaseOption
-    : USER SYS IDENTIFIED BY password=identifier                #createDatabaseSysPasswordOption
-    | USER SYSTEM IDENTIFIED BY password=identifier             #createDatabaseSystemPasswordOption
+    : USER SYS IDENTIFIED BY password                           #createDatabaseSysPasswordOption
+    | USER SYSTEM IDENTIFIED BY password                        #createDatabaseSystemPasswordOption
     | CONTROLFILE REUSE                                         #createDatabaseControlFileReuseOption
     | MAXDATAFILES integer                                      #createDatabaseMaxDataFilesOption
     | MAXINSTANCES integer                                      #createDatabaseMaxInstantcesOption
@@ -3578,7 +3612,7 @@ granteeClause
     ;
 
 granteeIdentifiedBy
-    : user (',' user)* IDENTIFIED BY (password=identifier) (',' password=identifier)*
+    : user (',' user)* IDENTIFIED BY password (',' password)*
     ;
 
 granteeClauseItem
@@ -5059,6 +5093,14 @@ savepointName
     ;
 
 string
+    : identifier
+    ;
+
+password
+    : identifier
+    ;
+
+rollbackSegment
     : identifier
     ;
 
