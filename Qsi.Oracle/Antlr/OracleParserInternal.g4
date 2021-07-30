@@ -20,7 +20,6 @@ oracleStatement
     | update
     | merge
     | noaudit
-    | unifiedNoaudit
     | purge
     | rename
     | revoke
@@ -28,6 +27,7 @@ oracleStatement
     | savepoint
     | set
     | truncate
+    | lock
     ;
 
 select
@@ -267,6 +267,11 @@ mergeInsertClause
     ;
 
 noaudit
+    : traditionalNoAudit
+    | unifiedNoaudit
+    ;
+
+traditionalNoAudit
     : NOAUDIT 
          ( auditOperationClause auditingByClause?
          | auditSchemaObjectClause
@@ -416,6 +421,18 @@ truncateTable
     : TRUNCATE TABLE ( schema '.' )? table
         ( ( PRESERVE | PURGE ) MATERIALIZED VIEW LOG )?
         ( ( DROP ALL? | REUSE ) STORAGE )? CASCADE?
+    ;
+
+lock
+    : lockTable
+    ;
+
+lockTable
+    : LOCK TABLE ( schema '.' )? ( table | view )
+         ( partitionExtensionClause | '@' dblink )? 
+         ( ',' ( schema '.' )? ( table | view ) ( partitionExtensionClause | '@' dblink )? )*
+         IN lockmode MODE
+         ( NOWAIT | WAIT integer )?
     ;
 
 createAnalyticView
@@ -1064,7 +1081,7 @@ trackingStatisticsClause
     ;
 
 clusterIndexClause
-    : CLUSTER (schema '.')? cluster=identifier indexAttributes
+    : CLUSTER (schema '.')? cluster indexAttributes
     ;
 
 tableIndexClause
@@ -1396,7 +1413,7 @@ physicalProperties
                                               )
                                | EXTERNAL PARTITION ATTRIBUTES externalTableClause (REJECT LIMIT)?
                                )
-    | CLUSTER cluster=identifier '(' column (',' column)* ')'
+    | CLUSTER cluster '(' column (',' column)* ')'
     ;
 
 objectTableSubstitution
@@ -5170,6 +5187,17 @@ dateTimeLiteral
 
 intervalLiteral
     : INTERVAL SINGLE_QUOTED_STRING (YEAR|MONTH) ('(' precision ')')? (TO (YEAR|MONTH))?
+    ;
+
+lockmode
+    : ROW SHARE
+    | ROW EXCLUSIVE
+    | SHARE
+    | SHARE UPDATE
+    | SHARE ROW EXCLUSIVE
+    | EXCLUSIVE
+    | WAIT
+    | NOWAIT
     ;
 
 aggregateFunctionName
