@@ -29,6 +29,7 @@ oracleStatement
     | truncate
     | lock
     | flashback
+    | explain
     ;
 
 select
@@ -463,6 +464,13 @@ flashbackDatabase
         | RESTORE POINT restorePointName
         | BEFORE ( ( SCN | TIMESTAMP ) expr | RESETLOGS )
         )
+    ;
+
+explain
+    : EXPLAIN PLAN
+         ( SET STATEMENT_ID '=' string )?
+         ( INTO ( schema '.' )? table ( '@' dblink )? )?
+      FOR oracleStatement
     ;
 
 createAnalyticView

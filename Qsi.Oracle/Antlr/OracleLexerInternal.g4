@@ -981,6 +981,7 @@ START:                            S T A R T;
 STATEMENT:                        S T A T E M E N T;
 STATEMENTS:                       S T A T E M E N T S;
 STATEMENT_QUEUING:                S T A T E M E N T '_' Q U E U I N G;
+STATEMENT_ID:                     S T A T E M E N T '_' I D;
 STATISTICS:                       S T A T I S T I C S;
 STATS_BINOMIAL_TEST:              S T A T S '_' B I N O M I A L '_' T E S T;
 STATS_CROSSTAB:                   S T A T S '_' C R O S S T A B;
