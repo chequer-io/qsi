@@ -27,6 +27,7 @@ oracleStatement
     | rollback
     | savepoint
     | set
+    | truncate
     ;
 
 select
@@ -399,6 +400,22 @@ rollback
 
 savepoint
     : SAVEPOINT savepointName
+    ;
+
+truncate
+    : truncateCluster
+    | truncateTable
+    ;
+
+truncateCluster
+    : TRUNCATE CLUSTER ( schema '.' )? cluster
+        ( ( DROP | REUSE ) STORAGE )?
+    ;
+
+truncateTable
+    : TRUNCATE TABLE ( schema '.' )? table
+        ( ( PRESERVE | PURGE ) MATERIALIZED VIEW LOG )?
+        ( ( DROP ALL? | REUSE ) STORAGE )? CASCADE?
     ;
 
 createAnalyticView
@@ -5101,6 +5118,10 @@ password
     ;
 
 rollbackSegment
+    : identifier
+    ;
+
+cluster
     : identifier
     ;
 
