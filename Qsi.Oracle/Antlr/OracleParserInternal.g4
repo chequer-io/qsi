@@ -24,8 +24,8 @@ oracleStatement
     | purge
     | rename
     | revoke
-//    | savepoint
-//    | rollback
+    | rollback
+    | savepoint
     ;
 
 select
@@ -357,6 +357,14 @@ revokeeClause
 
 revokeRolesFromPrograms
     : ( role ( ',' role )* | ALL ) FROM programUnit ( ',' programUnit )*
+    ;
+
+rollback
+    : ROLLBACK WORK? ( TO SAVEPOINT? savepointName | FORCE string )?
+    ;
+
+savepoint
+    : SAVEPOINT savepointName
     ;
 
 createAnalyticView
@@ -5043,6 +5051,14 @@ namespace
     ;
 
 username
+    : identifier
+    ;
+
+savepointName
+    : identifier
+    ;
+
+string
     : identifier
     ;
 
