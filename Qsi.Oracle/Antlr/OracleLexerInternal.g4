@@ -583,6 +583,7 @@ MANUAL:                           M A N U A L;
 MAPPING:                          M A P P I N G;
 MASK:                             M A S K;
 MATCH:                            M A T C H;
+MATCHED:                          M A T C H E D;
 MATCH_NUMBER:                     M A T C H '_' N U M B E R;
 MATCH_RECOGNIZE:                  M A T C H '_' R E C O G N I Z E;
 MATERIALIZED:                     M A T E R I A L I Z E D;

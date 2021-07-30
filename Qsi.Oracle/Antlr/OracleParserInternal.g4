@@ -18,6 +18,7 @@ oracleStatement
     | grant
     | insert
     | update
+    | merge
 //    | savepoint
 //    | rollback
     ;
@@ -228,6 +229,34 @@ updateSetClause
 
 updateSetSubstituteClause
     : '(' column ( ',' column )* ')' '=' '(' subquery ')' | column '=' ( expr | '(' subquery ')' | DEFAULT )
+    ;
+
+merge
+    : MERGE hint?
+      INTO ( schema '.' )? ( table | view ) tAlias?
+      USING ( 
+              ( schema '.' )? ( table | view )
+            | subquery 
+            ) tAlias?
+      ON ( condition )
+      mergeUpdateClause?
+      mergeInsertClause?
+      errorLoggingClause?
+    ;
+
+mergeUpdateClause
+    : WHEN MATCHED THEN
+      UPDATE SET column '=' ( expr | DEFAULT )
+                 (',' column '=' ( expr | DEFAULT ) )*
+      whereClause?
+      ( DELETE whereClause )?
+    ;
+
+mergeInsertClause
+    : WHEN NOT MATCHED THEN
+      INSERT ( '(' column ( ',' column )* ')' )?
+      VALUES '(' ( expr | DEFAULT ) ( ',' ( expr | DEFAULT ) )* ')'
+      whereClause?
     ;
 
 createAnalyticView
