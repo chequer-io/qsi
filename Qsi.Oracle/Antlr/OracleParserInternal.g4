@@ -468,7 +468,7 @@ flashbackDatabase
 
 explain
     : EXPLAIN PLAN
-         ( SET STATEMENT_ID '=' string )?
+         ( SET STATEMENT_ID '=' stringLiteral )?
          ( INTO ( schema '.' )? table ( '@' dblink )? )?
       FOR oracleStatement
     ;
