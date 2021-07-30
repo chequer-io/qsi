@@ -1,5 +1,6 @@
 ﻿using Qsi.Diagnostics;
 using Qsi.JSql.Diagnostics;
+using Qsi.Oracle.Diagnostics;
 using Qsi.Services;
 
 namespace Qsi.Debugger.Vendor.Oracle
@@ -13,7 +14,7 @@ namespace Qsi.Debugger.Vendor.Oracle
 
         protected override IRawTreeParser CreateRawTreeParser()
         {
-            return new JSqlRawParser();
+            return new OracleRawParser();
         }
     }
 }

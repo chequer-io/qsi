@@ -3,9 +3,9 @@ using Qsi.JSql.Internal;
 
 namespace Qsi.JSql.Diagnostics
 {
-    public sealed class JSqlRawParser : IRawTreeParser
+    public class JSqlRawParser : IRawTreeParser
     {
-        public IRawTree Parse(string input)
+        public virtual IRawTree Parse(string input)
         {
             return new JSqlRawTree(CCJSqlParserUtility.Parse(input));
         }
