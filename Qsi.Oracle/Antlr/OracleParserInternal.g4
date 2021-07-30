@@ -19,6 +19,8 @@ oracleStatement
     | insert
     | update
     | merge
+    | noaudit
+    | unifiedNoaudit
 //    | savepoint
 //    | rollback
     ;
@@ -259,6 +261,58 @@ mergeInsertClause
       whereClause?
     ;
 
+noaudit
+    : NOAUDIT 
+         ( auditOperationClause auditingByClause?
+         | auditSchemaObjectClause
+         | NETWORK
+         | DIRECT_PATH LOAD auditingByClause?
+         )
+         ( WHENEVER NOT? SUCCESSFUL )?
+         ( CONTAINER '=' ( CURRENT | ALL ) )?
+    ;
+
+auditOperationClause
+    : ( sqlStatementShortcut | ALL STATEMENTS? )
+      ( ',' ( sqlStatementShortcut | ALL ) )?
+    | ( systemPrivilege | ALL PRIVILEGES) 
+      (',' ( systemPrivilege | ALL PRIVILEGES ) )
+    ;
+
+sqlStatementShortcut
+    :
+    ;
+
+auditingByClause
+    : BY user ( ',' user )*
+    ;
+
+auditSchemaObjectClause
+    : ( sqlOperation ( ',' sqlOperation )? | ALL ) auditingOnClause
+    ;
+
+auditingOnClause
+    : ON ( ( schema '.' )? object
+         | DIRECTORY directoryName
+         | MINING MODEL ( schema '.' )? model
+         | SQL TRANSLATION PROFILE ( schema '.' )? profile
+         | DEFAULT
+         )
+    ;
+
+unifiedNoaudit
+    : NOAUDIT
+      ( POLICY policy ( ( BY user ( ',' user )* ) | byUsersWithRoles )? )
+      | ( CONTEXT NAMESPACE namespace ATTRIBUTES attribute ( ',' attribute )*
+          ( ',' CONTEXT NAMESPACE namespace ATTRIBUTES attribute ( ',' attribute )* )*
+        ( BY user ( ',' user )* )? ( WHENEVER NOT? SUCCESSFUL )?
+      )
+    ;
+
+byUsersWithRoles
+    : BY USERS WITH GRANTED ROLES role ( ',' role )*
+    ;
+
 createAnalyticView
     : CREATE (OR REPLACE)? (FORCE | NOFORCE)? ANALYTIC VIEW
       analyticViewName=identifier
@@ -310,7 +364,7 @@ dropAttributeDimension
     ;
 
 createAuditPolicy
-    : CREATE AUDIT POLICY policy=identifier
+    : CREATE AUDIT POLICY policy
       privilegeAuditClause?
       actionAuditClause?
       roleAuditClause?
@@ -322,7 +376,7 @@ createAuditPolicy
     ;
 
 alterAuditPolicy
-    : ALTER AUDIT POLICY policy=identifier
+    : ALTER AUDIT POLICY policy
       ADD?
       ( (privilegeAuditClause? actionAuditClause? roleAuditClause?)
       | (ONLY TOPLEVEL)?
@@ -338,7 +392,7 @@ alterAuditPolicy
     ;
 
 dropAuditPolicy
-    : DROP AUDIT POLICY policy=identifier
+    : DROP AUDIT POLICY policy
     ;
 
 createDatabase
@@ -462,7 +516,7 @@ dropView
 
 createSynonym
     : CREATE (OR REPLACE)? (EDITIONABLE | NONEDITIONABLE)? (PUBLIC)? SYNONYM (schema '.')? synonym=identifier
-      (SHARING '=' (METADATA | NONE))? FOR (schema '.')? object=identifier ('@' dblink)?
+      (SHARING '=' (METADATA | NONE))? FOR (schema '.')? object ('@' dblink)?
     ;
 
 alterSynonym
@@ -2033,7 +2087,7 @@ standardActions
 standardAction
     : (objectAction | ALL) ON
        (
-         DIRECTORY directoryName=identifier
+         DIRECTORY directoryName
        | MINING MODEL (schema '.')? identifier
        | (schema '.')? identifier
        )                                        #objectStandardAction
@@ -3237,7 +3291,7 @@ redoLogFileSpec
     | REUSE
     ;
 
-// TODO: The audit_condition can have a maximum length of 4000 characters. It can contain expressions, as well as the following functions and conditions:
+// TODO: The auditCondition can have a maximum length of 4000 characters. It can contain expressions, as well as the following functions and conditions:
 // Numeric functions: BITAND, CEIL, FLOOR, POWER
 // Character functions returning character values: CONCAT, LOWER, UPPER
 // Character functions returning number values: INSTR, LENGTH
@@ -3440,13 +3494,13 @@ grantObjectPrivilegesItem
     ;
 
 onObjectClause
-    : ON ( (schema '.')? object=identifier
+    : ON ( (schema '.')? object
          | USER user (',' user)*
-         | DIRECTORY directoryName=identifier
+         | DIRECTORY directoryName
          | EDITION editionName=identifier
          | MINING MODEL (schema '.')? miningModelName=identifier
-         | JAVA (SOURCE | RESOURCE) (schema '.')? object=identifier
-         | SQL TRANSLATION PROFILE (schema '.')? profile=identifier
+         | JAVA (SOURCE | RESOURCE) (schema '.')? object
+         | SQL TRANSLATION PROFILE (schema '.')? profile
          )
     ;
 
@@ -4162,16 +4216,16 @@ windowingClause
       ( BETWEEN
         ( UNBOUNDED PRECEDING
         | CURRENT ROW
-        | value_expr=expr ( PRECEDING | FOLLOWING )
+        | valueExpr=expr ( PRECEDING | FOLLOWING )
         )
         AND
         ( UNBOUNDED FOLLOWING
         | CURRENT ROW
-        | value_expr=expr ( PRECEDING | FOLLOWING )
+        | valueExpr=expr ( PRECEDING | FOLLOWING )
         )
       | ( UNBOUNDED PRECEDING
         | CURRENT ROW
-        | value_expr=expr PRECEDING
+        | valueExpr=expr PRECEDING
         )
       )
     ;
@@ -4919,6 +4973,30 @@ user
     : identifier
     ;
 
+object
+    : identifier
+    ;
+
+directoryName
+    : identifier
+    ;
+
+model
+    : identifier
+    ;
+
+profile
+    : identifier
+    ;
+
+policy
+    : identifier
+    ;
+
+namespace
+    : identifier
+    ;
+
 tablespec
     : identifier ('.' identifier)*
     ;
@@ -5197,6 +5275,23 @@ pseudoColumn
     | VERSIONS_ENDSCN
     | VERSIONS_XID
     | VERSIONS_OPERATION
+    ;
+
+sqlOperation
+    : ALTER
+    | AUDIT
+    | COMMENT
+    | DELETE
+    | FLASHBACK
+    | GRANT
+    | INDEX
+    | INSERT
+    | LOCK
+    | RENAME
+    | SELECT
+    | UPDATE
+    | ALTER
+    | EXECUTE
     ;
 
 nonReservedKeywordIdentifier
