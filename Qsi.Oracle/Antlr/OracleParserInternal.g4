@@ -30,6 +30,7 @@ oracleStatement
     | lock
     | flashback
     | explain
+    | administerKeyManagement
     ;
 
 select
@@ -102,12 +103,12 @@ alter
     : alterAnalyticView
     | alterAttributeDimension
     | alterAuditPolicy
-//    | alterCluster
+    | alterCluster
     | alterDatabase
-//    | alterDatabaseDictionary
-//    | alterDatabaseLink
-//    | alterDimension
-//    | alterDiskgroup
+    | alterDatabaseDictionary
+    | alterDatabaseLink
+    | alterDimension
+    | alterDiskgroup
 //    | alterFlashbackArchive
 //    | alterFunction
 //    | alterHierarchy
@@ -473,6 +474,14 @@ explain
       FOR oracleStatement
     ;
 
+administerKeyManagement
+    : ADMINISTER KEY MANAGEMENT ( keystoreManagementClauses
+                                | keyManagementClauses
+                                | secretManagementClauses
+                                | zeroDowntimeSoftwarePatchingClauses
+                                )
+    ;
+
 createAnalyticView
     : CREATE (OR REPLACE)? (FORCE | NOFORCE)? ANALYTIC VIEW
       analyticViewName=identifier
@@ -555,6 +564,16 @@ dropAuditPolicy
     : DROP AUDIT POLICY policy
     ;
 
+alterCluster
+    : ALTER CLUSTER (schema '.')? cluster
+      ( physicalAttributesClause 
+      | SIZE sizeClause 
+      | (MODIFY PARTITION partition)? allocateExtentClause 
+      | deallocateUnusedClause 
+      | (CACHE | NOCACHE)
+      )* parallelClause?
+    ;
+
 createDatabase
     : CREATE DATABASE database?
       createDatabaseOption+
@@ -582,6 +601,51 @@ alterDatabase
 
 dropDatabase
     : DROP DATABASE
+    ;
+
+alterDatabaseDictionary
+    : ALTER DATABASE DICTIONARY ( ENCRYPT CREDENTIALS 
+                                | REKEY CREDENTIALS 
+                                | DELETE CREDENTIALS KEY
+                                )
+    ;
+
+alterDatabaseLink
+    : ALTER SHARED? PUBLIC? DATABASE LINK dblink
+      (CONNECT TO user IDENTIFIED BY password dblinkAuthentication? | dblinkAuthentication)
+    ;
+
+alterDimension
+    : ALTER DIMENSION (schema '.')? dimension=identifier
+      ( ADD (levelClause | hierarchyClause | attributeClause | extendedAttributeClause))* 
+    | (DROP (LEVEL level=identifier (RESTRICT | CASCADE)? | HIERARCHY hierarchy=identifier | ATTRIBUTE attribute (LEVEL level=identifier (COLUMN column)?)*))* 
+    | COMPILE
+    ;
+
+alterDiskgroup
+    : ALTER DISKGROUP (diskgroupName ( ((addDiskClause | dropDiskClause) (',' (addDiskClause | dropDiskClause))* | resizeDiskClause) rebalanceDiskgroupClause
+                                     | replaceDiskClause
+                                     | renameDiskClause 
+                                     | diskOnlineClause 
+                                     | diskOfflineClause 
+                                     | rebalanceDiskgroupClause 
+                                     | checkDiskgroupClause 
+                                     | diskgroupTemplateClauses 
+                                     | diskgroupDirectoryClauses 
+                                     | diskgroupAliasClauses 
+                                     | diskgroupVolumeClauses 
+                                     | diskgroupAttributes 
+                                     | dropDiskgroupFileClause 
+                                     | convertRedundancyClause 
+                                     | usergroupClauses 
+                                     | userClauses 
+                                     | filePermissionsClause 
+                                     | fileOwnerClause 
+                                     | scrubClause 
+                                     | quotagroupClauses 
+                                     | filegroupClauses
+                                     ) 
+                      | (diskgroupName (',' diskgroupName)* | ALL) (undropDiskClause | diskgroupAvailability | enableDisableVolume))
     ;
 
 createSchema
@@ -841,6 +905,45 @@ dropSynonym
     : DROP PUBLIC? SYNONYM (schema '.')? synonym=identifier FORCE?
     ;
 
+// clauses
+
+levelClause
+    : LEVEL level=identifier IS (levelClauseItem | '(' levelClauseItem (',' levelClauseItem)* ')') (K_SKIP WHEN NULL)?
+    ;
+
+hierarchyClause
+    : HIERARCHY hierarchy=identifier '(' childLevel=identifier (CHILD OF parentLevel=identifier)* dimensionJoinClause ')'
+    ;
+
+dimensionJoinClause
+    : (dimensionJoinClauseItem)*
+    ;
+
+dimensionJoinClauseItem
+    : JOIN KEY ( childKeyColumn=identifier 
+               | '(' childKeyColumn=identifier (',' childKeyColumn=identifier)* ')'
+               )
+      REFERENCES parentLevel=identifier
+    ;
+
+attributeClause
+    : ATTRIBUTE level=identifier DETERMINES ( dependentColumn=identifier 
+                                            | '(' dependentColumn=identifier (',' dependentColumn=identifier)* ')'
+                                            )
+    ;
+
+extendedAttributeClause
+    : ATTRIBUTE attribute (LEVEL level=identifier DETERMINES (dependentColumn=identifier | '(' dependentColumn=identifier (',' dependentColumn=identifier)* ')'))*
+    ;
+
+levelClauseItem
+    : levelTable=identifier '.' levelColumn=identifier
+    ;
+
+dblinkAuthentication
+    : AUTHENTICATED BY user IDENTIFIED BY password
+    ;
+
 deallocateUnusedClause
     : DEALLOCATE UNUSED (KEEP sizeClause)?
     ;
@@ -858,8 +961,8 @@ partialIndexClause
     ;
 
 rebuildClause
-    : REBUILD ( PARTITION partition=identifier
-              | SUBPARTITION subpartition=identifier
+    : REBUILD ( PARTITION partition
+              | SUBPARTITION subpartition
               | REVERSE
               | NOREVERSE)?
       ( parallelClause
@@ -886,7 +989,7 @@ alterIndexPartitioning
     ;
 
 modifyIndexDefaultAttrs
-    : MODIFY DEFAULT ATTRIBUTES (FOR PARTITION partition=identifier)? (physicalAttributesClause | TABLESPACE (tablespace | DEFAULT) | loggingClause)*
+    : MODIFY DEFAULT ATTRIBUTES (FOR PARTITION partition)? (physicalAttributesClause | TABLESPACE (tablespace | DEFAULT) | loggingClause)*
     ;
 
 addHashIndexPartition
@@ -894,7 +997,7 @@ addHashIndexPartition
     ;
 
 modifyIndexPartition
-    : MODIFY PARTITION partition=identifier
+    : MODIFY PARTITION partition
       ( (deallocateUnusedClause | allocateExtentClause | physicalAttributesClause | loggingClause | indexCompression)*
       | PARAMETERS '(' stringLiteral ')'
       | COALESCE CLEANUP? parallelClause?
@@ -904,7 +1007,7 @@ modifyIndexPartition
     ;
 
 renameIndexPartition
-    : RENAME (PARTITION partition=identifier | SUBPARTITION subpartition=identifier) TO newName=identifier
+    : RENAME (PARTITION partition | SUBPARTITION subpartition) TO newName=identifier
     ;
 
 dropIndexPartition
@@ -918,7 +1021,7 @@ splitIndexPartition
     ;
 
 indexPartitionDescription
-    : PARTITION ( partition=identifier ( (segmentAttributesClause | indexCompression)+
+    : PARTITION ( partition ( (segmentAttributesClause | indexCompression)+
                                        | PARAMETERS '(' stringLiteral ')'
                                        )?
                                        (USABLE | UNUSABLE)?
@@ -930,7 +1033,7 @@ coalesceIndexPartition
     ;
 
 modifyIndexSubpartition
-    : MODIFY SUBPARTITION subpartition=identifier (UNUSABLE | allocateExtentClause | deallocateUnusedClause)
+    : MODIFY SUBPARTITION subpartition (UNUSABLE | allocateExtentClause | deallocateUnusedClause)
     ;
 
 databaseClause
@@ -1430,7 +1533,7 @@ localXmlIndexClause
     ;
 
 localXmlIndexClauseItem
-    : PARTITION partition=identifier xmlIndexParametersClause?
+    : PARTITION partition xmlIndexParametersClause?
     ;
 
 // cannot find definition copy from domainIndexClause
@@ -1443,7 +1546,7 @@ localDomainIndexClause
     ;
 
 localDomainIndexClauseItem
-    : PARTITION partition=identifier (PARAMETERS '(' stringLiteral ')')?
+    : PARTITION partition (PARAMETERS '(' stringLiteral ')')?
     ;
 
 globalPartitionedIndex
@@ -1465,7 +1568,7 @@ onRangePartitionedTable
     ;
 
 onRangePartitionedTableItem
-    : PARTITION partition=identifier? (segmentAttributesClause|indexCompression)* (USABLE|UNUSABLE)?
+    : PARTITION partition? (segmentAttributesClause|indexCompression)* (USABLE|UNUSABLE)?
     ;
 
 onListPartitionedTable
@@ -1473,7 +1576,7 @@ onListPartitionedTable
     ;
 
 onListPartitionedTableItem
-    : PARTITION partition=identifier? (segmentAttributesClause|indexCompression)* (USABLE|UNUSABLE)?
+    : PARTITION partition? (segmentAttributesClause|indexCompression)* (USABLE|UNUSABLE)?
     ;
 
 onHashPartitionedTable
@@ -1482,7 +1585,7 @@ onHashPartitionedTable
     ;
 
 onHashPartitionedTableItem
-    : PARTITION partition=identifier? (TABLESPACE tablespace)? indexCompression? (USABLE|UNUSABLE)?
+    : PARTITION partition? (TABLESPACE tablespace)? indexCompression? (USABLE|UNUSABLE)?
     ;
 
 onCompPartitionedTable
@@ -1491,7 +1594,7 @@ onCompPartitionedTable
     ;
 
 onCompPartitionedTableItem
-    : PARTITION partition=identifier? (segmentAttributesClause|indexCompression)* (USABLE|UNUSABLE)? indexSubpartitionClause?
+    : PARTITION partition? (segmentAttributesClause|indexCompression)* (USABLE|UNUSABLE)? indexSubpartitionClause?
     ;
 
 indexAttributes
@@ -1528,7 +1631,7 @@ indexSubpartitionClause
     ;
 
 indexSubpartitionClauseItem
-    : SUBPARTITION subpartition=identifier? (TABLESPACE tablespace)? indexCompression? (USABLE|UNUSABLE)?
+    : SUBPARTITION subpartition? (TABLESPACE tablespace)? indexCompression? (USABLE|UNUSABLE)?
     ;
 
 indexCompression
@@ -1547,7 +1650,7 @@ advancedIndexCompression
     ;
 
 indexPartitioningClause
-    : PARTITION partition=identifier? VALUES LESS THAN '(' literal (',' literal)* ')' segmentAttributesClause?
+    : PARTITION partition? VALUES LESS THAN '(' literal (',' literal)* ')' segmentAttributesClause?
     ;
 
 exceptionsClause
@@ -1989,7 +2092,7 @@ rangePartitions
     ;
 
 rangePartitionsItem
-    : (PARTITION partition=identifier rangeValuesClause tablePartitionDescription externalPartSubpartDataProps?)
+    : (PARTITION partition rangeValuesClause tablePartitionDescription externalPartSubpartDataProps?)
     ;
 
 externalPartSubpartDataProps
@@ -2009,7 +2112,7 @@ individualHashPartitions
     ;
 
 individualHashPartitionsItem
-    : PARTITION partition=identifier? readOnlyClause? indexingClause? partitioningStorageClause?
+    : PARTITION partition? readOnlyClause? indexingClause? partitioningStorageClause?
     ;
 
 hashPartitionsByQuantity
@@ -2026,7 +2129,7 @@ listPartitions
     ;
 
 listPartitionsItem
-    : PARTITION partition=identifier? listValuesClause tablePartitionDescription externalPartSubpartDataProps?
+    : PARTITION partition? listValuesClause tablePartitionDescription externalPartSubpartDataProps?
     ;
 
 compositeRangePartitions
@@ -2054,7 +2157,7 @@ referencePartitioning
     ;
 
 referencePartitionDesc
-    : PARTITION partition=identifier? tablePartitionDescription ')'
+    : PARTITION partition? tablePartitionDescription ')'
     ;
 
 systemPartitioning
@@ -2102,7 +2205,7 @@ listPartitionsetDesc
     ;
 
 rangePartitionDesc
-    : PARTITION partition=identifier? rangeValuesClause tablePartitionDescription
+    : PARTITION partition? rangeValuesClause tablePartitionDescription
       ( '(' ( rangeSubpartitionDesc (',' rangeSubpartitionDesc)*
             | listSubpartitionDesc (',' listSubpartitionDesc)*
             | individualHashSubparts (',' individualHashSubparts)*
@@ -2113,7 +2216,7 @@ rangePartitionDesc
     ;
 
 listPartitionDesc
-    : PARTITION partition=identifier? listValuesClause tablePartitionDescription
+    : PARTITION partition? listValuesClause tablePartitionDescription
       ( '(' ( rangeSubpartitionDesc (',' rangeSubpartitionDesc)*
             | listSubpartitionDesc (',' listSubpartitionDesc)*
             | individualHashSubparts (',' individualHashSubparts)*
@@ -2148,15 +2251,15 @@ subpartitionByHash
     ;
 
 rangeSubpartitionDesc
-    : SUBPARTITION subpartition=identifier? rangeValuesClause readOnlyClause? indexingClause? partitioningStorageClause? externalPartSubpartDataProps?
+    : SUBPARTITION subpartition? rangeValuesClause readOnlyClause? indexingClause? partitioningStorageClause? externalPartSubpartDataProps?
     ;
 
 listSubpartitionDesc
-    : SUBPARTITION subpartition=identifier? listValuesClause readOnlyClause? indexingClause? partitioningStorageClause? externalPartSubpartDataProps?
+    : SUBPARTITION subpartition? listValuesClause readOnlyClause? indexingClause? partitioningStorageClause? externalPartSubpartDataProps?
     ;
 
 individualHashSubparts
-    : SUBPARTITION subpartition=identifier? readOnlyClause? indexingClause? partitioningStorageClause?
+    : SUBPARTITION subpartition? readOnlyClause? indexingClause? partitioningStorageClause?
     ;
 
 hashSubpartsByQuantity
@@ -2300,8 +2403,8 @@ lobStorageClause
     ;
 
 lobPartitionStorage
-    : PARTITION partition=identifier (lobStorageClause | varrayColProperties)+
-      ('(' SUBPARTITION subpartition=identifier (lobStorageClause | varrayColProperties)+ ')')?
+    : PARTITION partition (lobStorageClause | varrayColProperties)+
+      ('(' SUBPARTITION subpartition (lobStorageClause | varrayColProperties)+ ')')?
     ;
 
 lobStorageParameters
@@ -3546,7 +3649,7 @@ undoTablespace
     ;
 
 sizeClause
-    : integer unit=(U_KILOBYTE|U_MEGABYTE|U_GIGABYTE|U_TERABYTE|U_PETABYTE|U_EXABYTE)?
+    : integer unit=(K_K | K_M | K_G | K_T | K_P | K_E)?
     ;
 
 databaseLoggingLogFileClause
@@ -4196,6 +4299,377 @@ flashbackQueryClause
         | AS OF PERIOD FOR validTimeColumn=column expr)
     ;
 
+addDiskClause
+    : ADD (SITE sitename=identifier (QUORUM | REGULAR)? (FAILGROUP failgroupName=identifier)? DISK qualifiedDiskClause (',' qualifiedDiskClause)*)*
+    ;
+
+qualifiedDiskClause
+    : searchString=stringLiteral (NAME diskName=identifier)? (SIZE sizeClause)? (FORCE | NOFORCE)?
+    ;
+
+dropDiskClause
+    : DROP ((QUORUM | REGULAR)? DISK diskName=identifier (FORCE | NOFORCE)? (',' diskName=identifier (FORCE | NOFORCE)?)* 
+           | DISKS IN (QUORUM | REGULAR)? FAILGROUP failgroupName=identifier (FORCE | NOFORCE)? (',' failgroupName=identifier (FORCE | NOFORCE)?)*)
+    ;
+
+resizeDiskClause
+    : RESIZE ALL (SIZE sizeClause)?
+    ;
+
+replaceDiskClause
+    : REPLACE DISK diskName=identifier WITH stringLiteral (FORCE | NOFORCE)? (',' diskName=identifier WITH stringLiteral (FORCE | NOFORCE)?)* (POWER integer)? (WAIT | NOWAIT)?
+    ;
+
+renameDiskClause
+    : RENAME ( DISK oldDiskName=identifier TO newDiskName=identifier (',' oldDiskName=identifier TO newDiskName=identifier)* 
+             | DISKS ALL)
+    ;
+
+diskOnlineClause
+    : ONLINE ( ( (QUORUM | REGULAR)? DISK diskName=identifier (',' diskName=identifier)* 
+               | DISKS IN (QUORUM | REGULAR)? FAILGROUP failgroupName=identifier (',' failgroupName=identifier)*
+               )*
+             | ALL)
+      (POWER integer)? (WAIT | NOWAIT)?
+    ;
+
+diskOfflineClause
+    : OFFLINE ( (QUORUM | REGULAR)? DISK diskName=identifier (',' diskName=identifier)* 
+              | DISKS IN (QUORUM | REGULAR)? FAILGROUP failgroupName=identifier (',' failgroupName=identifier)*)*
+      timeoutClause?
+    ;
+
+timeoutClause
+    : DROP AFTER integer (K_M | K_H)
+    ;
+
+rebalanceDiskgroupClause
+    : REBALANCE ( ((WITH | WITHOUT) phase=identifier (',' phase=identifier)*)? (POWER integer)? (WAIT | NOWAIT)?
+                | MODIFY POWER integer?
+                )
+    ;
+
+checkDiskgroupClause
+    : CHECK (REPAIR | NOREPAIR)?
+    ;
+
+diskgroupTemplateClauses
+    : ((ADD | MODIFY) TEMPLATE templateName=identifier qualifiedTemplateClause (',' templateName=identifier qualifiedTemplateClause)* | DROP TEMPLATE templateName=identifier (',' templateName=identifier)*)
+    ;
+
+qualifiedTemplateClause
+    : ATTRIBUTE '(' redundancyClause? stripingClause? ')'
+    ;
+
+redundancyClause
+    : MIRROR 
+    | HIGH 
+    | UNPROTECTED 
+    | PARITY 
+    | DOUBLE
+    ;
+
+stripingClause
+    : FINE 
+    | COARSE
+    ;
+
+diskgroupDirectoryClauses
+    : ADD DIRECTORY stringLiteral (',' stringLiteral)* 
+    | DROP DIRECTORY stringLiteral (FORCE | NOFORCE)? (',' stringLiteral (FORCE | NOFORCE)?)*
+    | RENAME DIRECTORY stringLiteral TO stringLiteral (',' stringLiteral TO stringLiteral)*
+    ;
+
+diskgroupAliasClauses
+    : ADD ALIAS stringLiteral FOR stringLiteral (',' stringLiteral FOR stringLiteral)* 
+    | DROP ALIAS stringLiteral (',' stringLiteral)* 
+    | RENAME ALIAS stringLiteral TO stringLiteral (',' stringLiteral TO stringLiteral)*
+    ;
+
+diskgroupVolumeClauses
+    : addVolumeClause
+    | modifyVolumeClause 
+    | RESIZE VOLUME asmVolume=identifier SIZE sizeClause 
+    | DROP VOLUME asmVolume=identifier
+    ;
+
+addVolumeClause
+    : ADD VOLUME asmVolume=identifier SIZE sizeClause redundancyClause?
+      (STRIPE_WIDTH integer (K_K  | K_M))?
+      (STRIPE_COLUMNS integer)?
+    ;
+
+modifyVolumeClause
+    : MODIFY VOLUME asmVolume=identifier
+      (MOUNTPATH stringLiteral)?
+      (USAGE stringLiteral)?
+    ;
+
+diskgroupAttributes
+    : SET ATTRIBUTE stringLiteral '=' stringLiteral
+    ;
+
+dropDiskgroupFileClause
+    : DROP FILE stringLiteral (',' stringLiteral)*
+    ;
+
+convertRedundancyClause
+    : CONVERT REDUNDANCY TO FLEX
+    ;
+
+usergroupClauses
+    : ADD USERGROUP stringLiteral WITH MEMBER stringLiteral (',' stringLiteral)* 
+    | MODIFY USERGROUP stringLiteral (ADD | DROP) MEMBER stringLiteral (',' stringLiteral)* 
+    | DROP USERGROUP stringLiteral
+    ;
+
+userClauses
+    : ADD USER stringLiteral (',' stringLiteral)* 
+    | DROP USER stringLiteral (',' stringLiteral)* CASCADE? 
+    | REPLACE USER stringLiteral WITH stringLiteral (',' stringLiteral WITH stringLiteral)*
+    ;
+
+filePermissionsClause
+    : SET PERMISSION (OWNER | GROUP | OTHER) '=' (NONE | READ ONLY | READ WRITE)
+                     (',' (OWNER | GROUP | OTHER | ALL) '=' (NONE | READ ONLY | READ WRITE))*
+      FOR FILE stringLiteral (',' stringLiteral)*
+    ;
+
+fileOwnerClause
+    : SET OWNERSHIP ( OWNER '=' stringLiteral 
+                    | GROUP '=' stringLiteral
+                    )
+                    (',' ( OWNER '=' stringLiteral
+                         | GROUP '=' stringLiteral)
+                    )*
+      FOR FILE stringLiteral (',' stringLiteral)*
+    ;
+
+scrubClause
+    : SCRUB (FILE stringLiteral | DISK diskName=identifier)? (REPAIR | NOREPAIR)? (POWER (AUTO | LOW | HIGH | MAX))? (WAIT | NOWAIT)? (FORCE | NOFORCE)? STOP?
+    ;
+
+quotagroupClauses
+    : ADD QUOTAGROUP quotagroupName=identifier (SET propertyName=identifier '=' propertyValue=identifier)? 
+    | MODIFY QUOTAGROUP quotagroupName=identifier SET propertyName=identifier '=' propertyValue=identifier
+    | MOVE FILEGROUP filegroupName=identifier TO quotagroupName=identifier
+    | DROP QUOTAGROUP quotagroupName=identifier
+    ;
+
+filegroupClauses
+    : addFilegroupClause 
+    | modifyFilegroupClause 
+    | moveToFilegroupClause 
+    | dropFilegroupClause
+    ;
+
+addFilegroupClause
+    : ADD FILEGROUP filegroupName=identifier ( DATABASE databaseName=identifier 
+                                             | CLUSTER clusterName=identifier 
+                                             | VOLUME asmVolume=identifier 
+                                             | TEMPLATE (FROM TEMPLATE templateName=identifier)?)
+      (SET stringLiteral '=' stringLiteral)?
+    ;
+
+modifyFilegroupClause
+    : MODIFY FILEGROUP filegroupName=identifier SET stringLiteral '=' stringLiteral
+    ;
+
+moveToFilegroupClause
+    : MOVE FILE stringLiteral TO FILEGROUP filegroupName=identifier
+    ;
+
+dropFilegroupClause
+    : DROP FILEGROUP filegroupName=identifier CASCADE?
+    ;
+
+undropDiskClause
+    : UNDROP DISKS
+    ;
+
+diskgroupAvailability
+    : (MOUNT (RESTRICTED | NORMAL)? (FORCE | NOFORCE)? | DISMOUNT (FORCE | NOFORCE)?)
+    ;
+
+enableDisableVolume
+    : (ENABLE | DISABLE) VOLUME (asmVolume=identifier (',' asmVolume=identifier)* | ALL)
+    ;
+
+keystoreManagementClauses
+    : createKeystore
+    | openKeystore
+    | closeKeystore
+    | backupKeystore
+    | alterKeystorePassword
+    | mergeIntoNewKeystore
+    | mergeIntoExistingKeystore
+    | isolateKeystore
+    | uniteKeystore
+    ;
+
+createKeystore
+    : CREATE ( KEYSTORE stringLiteral
+             | LOCAL? AUTO_LOGIN KEYSTORE FROM KEYSTORE stringLiteral
+             )
+      IDENTIFIED BY keystorePassword=identifier
+    ;
+
+openKeystore
+    : SET KEYSTORE OPEN (FORCE KEYSTORE)?
+      IDENTIFIED BY (EXTERNAL STORE | keystorePassword=identifier)
+      (CONTAINER '=' (ALL | CURRENT))?
+    ;
+
+closeKeystore
+    : SET KEYSTORE CLOSE (IDENTIFIED BY (EXTERNAL STORE | keystorePassword=identifier))? (CONTAINER '=' (ALL | CURRENT))?
+    ;
+
+backupKeystore
+    : BACKUP KEYSTORE (USING stringLiteral)? (FORCE KEYSTORE)? IDENTIFIED BY 
+      (EXTERNAL STORE | keystorePassword=identifier)
+      (TO stringLiteral)?
+    ;
+
+alterKeystorePassword
+    : ALTER KEYSTORE PASSWORD (FORCE KEYSTORE)?
+      IDENTIFIED BY oldKeystorePassword=identifier SET newKeystorePassword=identifier
+      (WITH BACKUP (USING stringLiteral)?)?
+    ;
+
+mergeIntoNewKeystore
+    : MERGE KEYSTORE stringLiteral (IDENTIFIED BY keystore1Password=identifier)?
+      AND KEYSTORE stringLiteral (IDENTIFIED BY keystore2Password=identifier)?
+      INTO NEW KEYSTORE stringLiteral IDENTIFIED BY keystore3Password=identifier
+    ;
+
+mergeIntoExistingKeystore
+    : MERGE KEYSTORE stringLiteral (IDENTIFIED BY keystore1Password=identifier)?
+      INTO EXISTING KEYSTORE stringLiteral IDENTIFIED BY keystore2Password=identifier
+      (WITH BACKUP (USING stringLiteral)?)?
+    ;
+
+isolateKeystore
+    : FORCE? ISOLATE KEYSTORE IDENTIFIED BY isolatedKeystorePassword=identifier FROM ROOT KEYSTORE
+      (FORCE KEYSTORE)? IDENTIFIED BY (EXTERNAL STORE | unitedKeystorePassword=identifier)
+      (WITH BACKUP (USING stringLiteral)?)?
+    ;
+
+uniteKeystore
+    : UNITE KEYSTORE IDENTIFIED BY isolatedKeystorePassword=identifier WITH ROOT KEYSTORE
+      (FORCE KEYSTORE)? IDENTIFIED BY (EXTERNAL STORE | unitedKeystorePassword=identifier)
+      (WITH BACKUP (USING stringLiteral)?)? 
+    ;
+
+keyManagementClauses
+    : setKey
+    | createKey
+    | useKey
+    | setKeyTag
+    | exportKeys
+    | importKeys
+    | migrateKey
+    | reverseMigrateKey
+    | moveKeys
+    ;
+
+setKey
+    : SET ENCRYPTION? KEY stringLiteral? (USING TAG stringLiteral)?
+      (USING ALGORITHM stringLiteral)? (FORCE KEYSTORE)?
+      IDENTIFIED BY (EXTERNAL STORE | keyStorePassword=identifier)
+      (WITH BACKUP (USING stringLiteral)?)?
+      (CONTAINER '=' (ALL | CURRENT))?
+    ;
+
+createKey
+    : CREATE ENCRYPTION? KEY (USING TAG stringLiteral)?
+      (USING ALGORITHM stringLiteral)?
+      (FORCE KEYSTORE)?
+      IDENTIFIED BY (EXTERNAL STORE | keystorePassword=identifier)
+      (WITH BACKUP (USING stringLiteral)?)?
+      (CONTAINER '=' (ALL | CURRENT))?
+    ;
+
+useKey
+    : USE ENCRYPTION? KEY stringLiteral (USING TAG stringLiteral)?
+      (FORCE KEYSTORE)?
+      IDENTIFIED BY (EXTERNAL STORE | keystorePassword=identifier)
+      (WITH BACKUP (USING stringLiteral)?)?
+    ;
+
+setKeyTag
+    : SET TAG stringLiteral FOR stringLiteral
+      (FORCE KEYSTORE)?
+      IDENTIFIED BY (EXTERNAL STORE | keystorePassword=identifier)
+      (WITH BACKUP (USING stringLiteral)?)?
+    ;
+
+exportKeys
+    : EXPORT ENCRYPTION? KEYS WITH SECRET secret=identifier TO stringLiteral
+      (FORCE KEYSTORE)? IDENTIFIED BY keystorePassword=identifier
+      (WITH IDENTIFIER IN (stringLiteral (',' stringLiteral)* | '(' subquery ')'))?
+    ;
+
+importKeys
+    : IMPORT ENCRYPTION? KEYS WITH SECRET secret=identifier FROM stringLiteral
+      (FORCE KEYSTORE)? IDENTIFIED BY keystorePassword=identifier
+      (WITH BACKUP (USING stringLiteral)?)?
+    ;
+
+migrateKey
+    : SET ENCRYPTION? KEY IDENTIFIED BY hSMAuthString=stringLiteral
+      (FORCE KEYSTORE)? MIGRATE USING softwareKeystorePassword=identifier
+      (WITH BACKUP (USING stringLiteral)?)?
+    ;
+
+reverseMigrateKey
+    : SET ENCRYPTION? KEY IDENTIFIED BY softwareKeystorePassword=identifier
+      (FORCE KEYSTORE)? REVERSE MIGRATE USING hSMAuthString=stringLiteral
+    ;
+
+
+moveKeys
+    : MOVE ENCRYPTION? KEYS TO NEW KEYSTORE keyStoreLocation1=identifier
+      IDENTIFIED BY keystore1Password=identifier FROM FORCE? KEYSTORE IDENTIFIED BY keystorePassword=identifier
+      (WITH IDENTIFIER IN (stringLiteral (',' stringLiteral)* | '(' subquery ')'))?
+      (WITH BACKUP (USING stringLiteral)?)?
+    ;
+
+secretManagementClauses
+    : addUpdateSecret 
+    | deleteSecret 
+    | addUpdateSecretSeps 
+    | deleteSecretSeps
+    ;
+
+addUpdateSecret
+    : (ADD | UPDATE) SECRET stringLiteral FOR CLIENT stringLiteral 
+      (USING TAG stringLiteral)?
+      (FORCE KEYSTORE)?
+      IDENTIFIED BY (EXTERNAL STORE | keystorePassword=identifier)
+      (WITH BACKUP (USING stringLiteral)?)?
+    ;
+
+deleteSecret
+    : DELETE SECRET FOR CLIENT stringLiteral
+      (FORCE KEYSTORE)? IDENTIFIED BY (EXTERNAL STORE | keystorePassword=identifier)
+      (WITH BACKUP (USING stringLiteral)?)?
+    ;
+
+addUpdateSecretSeps
+    : (ADD | UPDATE) SECRET identifier FOR CLIENT stringLiteral
+      (USING TAG stringLiteral)? TO LOCAL?
+      AUTOLOGIN KEYSTORE directory=identifier
+    ;
+
+deleteSecretSeps
+    : DELETE SECRET stringLiteral FOR CLIENT stringLiteral
+      FROM LOCAL? AUTO_LOGIN KEYSTORE directory=identifier
+    ;
+
+zeroDowntimeSoftwarePatchingClauses
+    : SWITCHOVER LIBRARY path=identifier FOR ALL CONTAINERS
+    ;
+
 pivotClause
     : PIVOT XML?
       '(' pivotItem (',' pivotItem)* pivotForClause pivotInClause ')'
@@ -4374,10 +4848,10 @@ pivotInClause
 
 partitionExtensionClause
     : PARTITION
-          ( '(' partition=identifier ')'
+          ( '(' partition ')'
           | FOR '(' partitionKeyValue=expr (',' partitionKeyValue=expr)* ')')
     | SUBPARTITION
-          ('(' subpartition=identifier ')'
+          ('(' subpartition ')'
           | FOR '(' subpartitionKeyValue=expr (',' subpartitionKeyValue=expr)* ')')
     ;
 
@@ -5415,6 +5889,14 @@ filestoreName
     ;
 
 procedureName
+    : identifier
+    ;
+
+partition
+    : identifier
+    ;
+
+subpartition
     : identifier
     ;
 
@@ -6580,11 +7062,11 @@ nonReservedKeywordIdentifier
     | ZONED
     | ZONEMAP
     | K_A
-    | U_KILOBYTE
-    | U_MEGABYTE
-    | U_GIGABYTE
-    | U_TERABYTE
-    | U_PETABYTE
-    | U_EXABYTE
+    | K_K
+    | K_M
+    | K_G
+    | K_T
+    | K_P
+    | K_E
     | HEXA1
     ;
