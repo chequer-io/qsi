@@ -109,41 +109,38 @@ alter
     | alterDatabaseLink
     | alterDimension
     | alterDiskgroup
-//    | alterFlashbackArchive
-//    | alterFunction
-//    | alterHierarchy
+    | alterFlashbackArchive
+    | alterFunction
+    | alterHierarchy
     | alterIndex
-//    | alterIndextype
-//    | alterInmemoryJoinGroup
-//    | alterJava
-//    | alterLibrary
-//    | alterLockdownProfile
-//    | alterMaterializedView
-//    | alterMaterializedViewLog
-//    | alterMaterializedZonemap
-//    | alterOperator
-//    | alterOutline
-//    | alterPackage
-//    | alterPluggableDatabase
-//    | alterPmemFilestore
-//    | alterProcedure
-//    | alterProfile
-//    | alterResourceCost
-//    | alterRole
-//    | alterRollbackSegment
-//    | alterSequence
-//    | alterSession
+    | alterIndextype
+    | alterInmemoryJoinGroup
+    | alterJava
+    | alterLibrary
+    | alterLockdownProfile
+    | alterMaterializedView
+    | alterMaterializedViewLog
+    | alterMaterializedZonemap
+    | alterOperator
+    | alterOutline
+    | alterPackage
+    | alterPluggableDatabase
+    | alterPmemFilestore
+    | alterProcedure
+    | alterProfile
+    | alterResourceCost
+    | alterRole
+    | alterRollbackSegment
+    | alterSequence
+    | alterSession
     | alterSynonym
-//    | alterSystem
-
-// TODO: Impl
-
-//    | alterTable
-//    | alterTablespace
-//    | alterTablespaceSet
-//    | alterTrigger
-//    | alterType
-//    | alterUser
+    | alterSystem
+    | alterTable
+    | alterTablespace
+    | alterTablespaceSet
+    | alterTrigger
+    | alterType
+    | alterUser
     | alterView
     ;
 
@@ -338,7 +335,7 @@ purge
     ;
 
 rename
-    : RENAME oldName=identifier TO newName=identifier
+    : RENAME oldName TO containerName
     ;
 
 revoke
@@ -503,6 +500,1844 @@ alterAnalyticView
                                                                     | alterAddCacheClause
                                                                     | alterDropCacheClause
                                                                     )
+    ;
+
+alterFlashbackArchive
+    : ALTER FLASHBACK ARCHIVE flashbackArchiveName
+        ( SET DEFAULT
+        | ( ADD | MODIFY ) TABLESPACE tablespace flashbackArchiveQuota?
+        | REMOVE TABLESPACE tablespace
+        | MODIFY RETENTION flashbackArchiveRetention
+        | PURGE ( ALL | BEFORE ( SCN | TIMESTAMP ) expr )
+        | NO? OPTIMIZE DATA
+        )
+    ;
+
+flashbackArchiveQuota
+    : QUOTA sizeClause
+    ;
+
+flashbackArchiveRetention
+    : RETENTION integer ( YEAR | MONTH | DAY )
+    ;
+
+alterFunction
+    : ALTER FUNCTION ( schema '.' )? functionName
+      ( functionCompileClause | ( EDITIONABLE | NONEDITIONABLE ) )
+    ;
+
+functionCompileClause
+    : COMPILE DEBUG? compilerParametersClause* ( REUSE SETTINGS )?
+    ;
+
+compilerParametersClause
+    : parameterName '=' parameterValue
+    ;
+
+alterHierarchy
+    : ALTER HIERARCHY ( schema '.' )? hierarchyName 
+        ( RENAME TO newHierName | COMPILE )
+    ;
+
+alterIndextype
+    : ALTER INDEXTYPE ( schema '.' ) indextype
+        ( ( ADD | DROP ) ( schema '.' )? operator=operator1 '(' parameterTypes ')' 
+            ( ',' ( ADD | DROP ) ( schema '.' )? operator=operator1 '(' parameterTypes ')' )* usingTypeClause?
+        | COMPILE
+        )
+        ( WITH LOCAL RANGE? PARTITION )? storageTableClause?
+    ;
+
+usingTypeClause
+    : USING ( schema '.' )? implementationType arrayDMLClause?
+    ;
+
+arrayDMLClause
+    : ( WITH | WITHOUT )?
+      ARRAY DML
+      ( 
+        '(' ( schema '.' )? type
+        ( ',' ( schema '.' )? varrayType )? ')'
+        ( ',' '(' ( schema '.' )? type
+          ( ',' ( schema '.' )? varrayType )? ')'
+        )
+      )*
+    ;
+
+storageTableClause
+    : WITH ( SYSTEM | USER ) MANAGED STORAGE TABLES
+    ;
+
+alterInmemoryJoinGroup
+    : ALTER INMEMORY JOIN GROUP ( schema '.' )? joinGroup
+      ( ADD | REMOVE ) '(' ( schema '.' )? table '(' column ')' ')'
+    ;
+
+alterJava
+    : ALTER JAVA
+      ( SOURCE | CLASS ) ( schema '.' )? objectName 
+      RESOLVER 
+      '(' 
+        ( 
+          '(' matchString=stringLiteral ','? ( schema | '-' ) ')' 
+        )* 
+      ')'
+      ( COMPILE | RESOLVE | invokerRightsClause )
+    ;
+
+invokerRightsClause
+    : AUTHID ( CURRENT_USER | DEFINER )
+    ;
+
+alterLibrary
+    : ALTER LIBRARY ( schema '.' )? libraryName
+      ( libraryCompileClause | EDITIONABLE | NONEDITIONABLE )
+    ;
+
+libraryCompileClause
+    : COMPILE DEBUG? compilerParametersClause* ( REUSE SETTINGS )?
+    ;
+
+alterLockdownProfile
+    : ALTER LOCKDOWN PROFILE profileName
+      ( lockdownFeatures
+      | lockdownOptions
+      | lockdownStatements
+      )
+    ;
+
+lockdownFeatures
+    : ( DISABLE | ENABLE ) FEATURE
+      ( '=' '(' stringLiteral ( ',' stringLiteral )* ')'
+      | ALL ( EXCEPT  '=' '(' stringLiteral ( ',' stringLiteral )* ')' )? 
+      )
+    ;
+
+lockdownOptions
+    : ( DISABLE | ENABLE ) OPTION
+      ( '=' '(' stringLiteral ( ',' stringLiteral )* ')'
+      | ALL ( EXCEPT  '=' '(' stringLiteral ( ',' stringLiteral )* ')' )? 
+      )
+    ;
+
+lockdownStatements
+    : ( DISABLE | ENABLE ) STATEMENT
+      ( '=' '(' stringLiteral ( ',' stringLiteral )* ')'
+      | ALL ( EXCEPT  '=' '(' stringLiteral ( ',' stringLiteral )* ')' )? 
+      | '=' '(' stringLiteral statementClauses ')'
+      )
+    ;
+
+statementClauses
+    : CLAUSE
+      ( '=' '(' stringLiteral ( ',' stringLiteral )* ')'
+      | ALL ( EXCEPT  '=' '(' stringLiteral ( ',' stringLiteral )* ')' )? 
+      | '=' '(' stringLiteral clauseOptions ')'
+      )
+    ;
+
+clauseOptions
+    : OPTION
+      ( '=' '(' stringLiteral ( ',' stringLiteral )* ')'
+      | ALL ( EXCEPT  '=' '(' stringLiteral ( ',' stringLiteral )* ')' )? 
+      | '=' '(' stringLiteral optionValues ')'
+      )
+    ;
+
+optionValues
+    : ( 
+        VALUE '=' '(' stringLiteral ( ',' stringLiteral )* ')'
+      | MINVALUE '=' stringLiteral
+      | MAXVALUE '=' stringLiteral
+      )+
+    ;
+
+alterMaterializedView
+    : ALTER MATERIALIZED VIEW
+      ( schema'.' )? materializedView
+      ( physicalAttributesClause
+      | modifyMvColumnClause
+      | tableCompression
+      | inmemoryTableClause
+      | lobStorageClause ( ',' lobStorageClause )*
+      | modifyLOBStorageClause ( ',' modifyLOBStorageClause )*
+      | alterTablePartitioning
+      | parallelClause
+      | loggingClause
+      | allocateExtentClause
+      | deallocateUnusedClause
+      | shrinkClause
+      | ( CACHE | NOCACHE )
+      )?
+      alterIotClauses?
+      ( USING INDEX physicalAttributesClause )?
+      ( MODIFY scopedTableRefConstraint | alterMvRefresh )?
+      evaluationEditionClause?
+      ( ( ENABLE | DISABLE ) ON QUERY COMPUTATION )?
+      ( alterQueryRewriteClause
+      | COMPILE
+      | CONSIDER FRESH
+      )?
+    ;
+
+modifyMvColumnClause
+    : MODIFY '(' column ( ENCRYPT encryptionSpec | DECRYPT )? ')'
+    ;
+
+modifyLOBStorageClause
+    : MODIFY LOB '(' lobItem ')' '(' modifyLOBParameters ')'
+    ;
+
+modifyLOBParameters
+    : ( storageClause
+      | PCTVERSION integer
+      | FREEPOOLS integer
+      | REBUILD FREEPOOLS
+      | lobRetentionClause
+      | lobDeduplicateClause
+      | lobCompressionClause
+      | ( ENCRYPT encryptionSpec | DECRYPT )
+      | ( CACHE | ( NOCACHE | CACHE READS ) loggingClause? )
+      | allocateExtentClause
+      | shrinkClause
+      | deallocateUnusedClause
+      )+
+    ;
+
+scopedTableRefConstraint
+    : SCOPE FOR '(' ( refColumn | refAttribute ) ')' IS ( schema '.' )? ( scopeTableName | cAlias)
+    ;
+
+alterMvRefresh
+    : REFRESH
+      ( ( FAST | COMPLETE | FORCE )
+      | ON ( DEMAND | COMMIT )
+      | ( START WITH | NEXT ) dateTimeLiteral
+      | WITH PRIMARY KEY
+      | USING
+           ( DEFAULT MASTER ROLLBACK SEGMENT| MASTER ROLLBACK SEGMENT rollbackSegment )
+      | USING ( ENFORCED | TRUSTED ) CONSTRAINTS
+      )
+    ;
+
+alterIotClauses
+    : indexOrgTableClause
+    | alterOverflowClause
+    | alterMappingTableClauses
+    | COALESCE
+    ;
+
+alterOverflowClause
+    : addOverflowClause
+    | OVERFLOW
+      ( segmentAttributesClause
+      | allocateExtentClause
+      | shrinkClause
+      | deallocateUnusedClause
+      )+
+    ;
+
+alterMappingTableClauses
+    : MAPPING TABLE ( allocateExtentClause | deallocateUnusedClause )
+    ;
+
+addOverflowClause
+    : ADD OVERFLOW 
+      segmentAttributesClause?
+      (
+          '('
+            PARTITION segmentAttributesClause?
+            ( ',' PARTITION segmentAttributesClause? )*
+          ')'
+      )?
+    ;
+
+alterQueryRewriteClause
+    : ( ENABLE | DISABLE )? QUERY REWRITE unusableEditionsClause?
+    ;
+
+alterMaterializedViewLog
+    : ALTER MATERIALIZED VIEW LOG FORCE?
+      ON ( schema '.' )? table
+      ( physicalAttributesClause
+      | addMvLogColumnClause
+      | alterTablePartitioning
+      | parallelClause
+      | loggingClause
+      | allocateExtentClause
+      | shrinkClause
+      | moveMvLogClause
+      | CACHE
+      | NOCACHE
+      )? 
+      mvLogAugmentation?
+      mvLogPurgeClause?
+      forRefreshClause?
+    ;
+
+addMvLogColumnClause
+    : ADD '(' column ')'
+    ;
+
+moveMvLogClause
+    : MOVE segmentAttributesClause parallelClause?
+    ;
+
+mvLogAugmentation
+    : ADD 
+      ( 
+        ( OBJECT ID
+        | PRIMARY KEY
+        | ROWID
+        | SEQUENCE
+        ) ( '(' column ( ',' column )* ')' )?
+        | '(' column ( ',' column )* ')'
+      ) 
+      (','
+        ( 
+          ( OBJECT ID
+          | PRIMARY KEY
+          | ROWID
+          | SEQUENCE
+          ) ( '(' column ( ',' column )* ')' )?
+        | '(' column ( ',' column )* ')'
+        )
+      )*
+      newValuesClause?
+    ;
+
+newValuesClause
+    : ( INCLUDING | EXCLUDING ) NEW VALUES
+    ;
+
+mvLogPurgeClause
+    : PURGE 
+      ( IMMEDIATE ( SYNCHRONOUS | ASYNCHRONOUS )?
+      | START WITH datetimeExpression 
+        ( NEXT datetimeExpression 
+        | REPEAT INTERVAL intervalExpression 
+        )?
+      | ( START WITH datetimeExpression )?
+        ( NEXT datetimeExpression 
+        | REPEAT INTERVAL intervalExpression 
+        )
+      )
+    ;
+
+forRefreshClause
+    : FOR 
+      (
+        SYNCHRONOUS REFRESH USING stagingLogName
+      | FAST REFRESH
+      )
+    ;
+
+alterMaterializedZonemap
+    : ALTER MATERIALIZED ZONEMAP ( schema '.' )? zonemapName
+      ( alterZonemapAttributes
+      | zonemapRefreshClause
+      | ( ENABLE | DISABLE ) PRUNING
+      | COMPILE
+      | REBUILD
+      | UNUSABLE
+      )
+    ;
+
+alterZonemapAttributes
+    : ( PCTFREE integer
+      | PCTUSED integer
+      | CACHE
+      | NOCACHE
+      )+
+    ;
+
+zonemapRefreshClause
+    : REFRESH
+      ( FAST | COMPLETE | FORCE )?
+      ( ON ( DEMAND | COMMIT | LOAD | DATA MOVEMENT | LOAD DATA MOVEMENT ) )?
+    ;
+
+alterOperator
+    : ALTER OPERATOR ( schema '.' )? operator=operator1
+      ( addBindingClause
+      | dropBindingClause
+      | COMPILE
+      )
+    ;
+
+addBindingClause
+    : ADD BINDING
+      '(' parameterTypes ')'
+      RETURN '(' returnType ')'
+      implementationClause?
+      usingFunctionClause
+    ;
+
+implementationClause
+    : ANCILLARY TO primaryOperator
+        '(' parameterTypes ')'
+          (',' primaryOperator
+             '(' parameterTypes ')'
+          )*
+    | contextClause
+    ;
+
+contextClause
+    : ( WITH INDEX CONTEXT ',' SCAN CONTEXT implementationType ( COMPUTE ANCILLARY DATA )? )?
+      ( WITH COLUMN CONTEXT )?
+    ;
+
+usingFunctionClause
+    : USING ( schema '.' )? ( ( type | packageName ) '.' )? functionName
+    ;
+
+dropBindingClause
+    : DROP BINDING '(' parameterTypes ')' FORCE?
+    ;
+
+alterOutline
+    : ALTER OUTLINE ( PUBLIC | PRIVATE )? outline
+      ( REBUILD
+      | RENAME TO newOutlineName
+      | CHANGE CATEGORY TO newCategoryName
+      | ENABLE
+      | DISABLE
+      )+
+    ;
+
+alterPackage
+    : ALTER PACKAGE ( schema '.' )? packageName 
+      ( packageCompileClause |  EDITIONABLE | NONEDITIONABLE )
+    ;
+
+packageCompileClause
+    : COMPILE DEBUG? compilerParametersClause* ( REUSE SETTINGS )?
+    ;
+
+alterPluggableDatabase
+    : ALTER PLUGGABLE DATABASE
+      ( pdbUnplugClause
+      | pdbSettingsClauses
+      | pdbDatafileClause
+      | pdbRecoveryClauses
+      | pdbChangeState
+      | pdbChangeStateFromRoot
+      | applicationClauses
+      | snapshotClauses
+      | prepareClause
+      | dropMirrorCopy
+      | lostWriteProtection
+      | pdbManagedRecovery
+      )
+    ;
+
+pdbUnplugClause
+    : pdbName UNPLUG INTO stringLiteral pdbUnplugEncrypt?
+    ;
+
+pdbUnplugEncrypt
+    : ENCRYPT USING transportSecret
+    ;
+
+pdbSettingsClauses
+    : pdbName?
+      ( DEFAULT EDITION '=' editionName
+      | SET DEFAULT '(' BIGFILE | SMALLFILE ')' TABLESPACE
+      | DEFAULT TABLESPACE tablespace
+      | DEFAULT TEMPORARY TABLESPACE ( tablespace | tablespaceGroupName )
+      | RENAME GLOBAL_NAME TO database '.' domain ( '.' domain )*
+      | setTimeZoneClause
+      | databaseFileClauses
+      | supplementalDbLogging
+      | pdbStorageClause
+      | pdbLoggingClauses
+      | pdbRefreshModeClause
+      | REFRESH pdbRefreshSwitchoverClause?
+        | SET CONTAINER_MAP '=' stringLiteral
+      )
+    | CONTAINERS ( DEFAULT TARGET '=' ( '(' containerName ')' | NONE )
+                 | HOST '=' stringLiteral
+                 | PORT '=' integer
+                 )
+    ;
+
+pdbStorageClause
+    : STORAGE ( '(' ( ( MAXSIZE | MAX_AUDIT_SIZE | MAX_DIAG_SIZE ) ( UNLIMITED | sizeClause ) )+ ')' 
+              | UNLIMITED
+              )
+    ;
+
+pdbLoggingClauses
+    : loggingClause
+    | pdbForceLoggingClause
+    ;
+
+pdbForceLoggingClause
+    : ( ENABLE | DISABLE ) FORCE ( LOGGING | NOLOGGING )
+    | SET STANDBY NOLOGGING FOR ( DATA AVAILABILITY | LOAD PERFORMANCE )
+    ;
+
+pdbRefreshModeClause
+    : REFRESH MODE ( MANUAL
+                   | EVERY numberLiteral ( HOURS | MINUTES )
+                   | NONE
+                   )
+    ;
+
+pdbRefreshSwitchoverClause
+    : FROM pdbName '@' dblink SWITCHOVER
+    ;
+
+pdbDatafileClause
+    : pdbName? DATAFILE 
+      (
+        ( integer | stringLiteral ) ( ',' ( integer | stringLiteral ) )*
+      | ALL
+      )
+      ( ONLINE | OFFLINE )
+    ;
+
+pdbRecoveryClauses
+    : pdbName? ( pdbGeneralRecovery
+               | ( BEGIN | END ) BACKUP
+               | ( ENABLE | DISABLE) RECOVERY
+               )
+    ;
+
+pdbGeneralRecovery
+    : RECOVER AUTOMATIC? ( FROM stringLiteral )
+      ( DATABASE
+      | TABLESPACE tablespace ( ',' tablespace )*
+      | DATAFILE ( integer | stringLiteral ) ( ',' ( integer | stringLiteral ) )*
+      | LOGFILE stringLiteral
+      | CONTINUE DEFAULT?
+      )
+    ;
+
+pdbChangeState
+    : pdbName? ( pdbOpen | pdbClose | pdbSaveOrDiscardState )
+    ;
+
+pdbOpen
+    : OPEN
+      ( ( READ WRITE | READ ONLY )? RESTRICTED? FORCE?
+      | ( READ WRITE ) UPGRADE RESTRICTED?
+      | RESETLOGS
+      )
+      instancesClause?
+    ;
+
+instancesClause
+    : INSTANCES
+      ( '=' '(' stringLiteral ( ',' stringLiteral )* ')'
+      | ALL ( EXCEPT  '=' '(' stringLiteral ( ',' stringLiteral )* ')' )? 
+      )
+    ;
+
+pdbClose
+    : '(' CLOSE IMMEDIATE? ( instancesClause | relocateClause )?
+    | ABORT? instancesClause? ')'
+    ;
+
+relocateClause
+    : RELOCATE ( TO stringLiteral )?
+    | NORELOCATE
+    ;
+
+pdbSaveOrDiscardState
+    : ( SAVE | DISCARD ) STATE instancesClause
+    ;
+
+pdbChangeStateFromRoot
+    : ( pdbName ( ',' pdbName )* | ALL ( EXCEPT pdbName ( ',' pdbName )* )? )
+      ( pdbOpen | pdbClose | pdbSaveOrDiscardState )
+    ;
+
+applicationClauses
+    : APPLICATION
+      (
+        ( appName
+          ( BEGIN INSTALL stringLiteral ( COMMENT stringLiteral )
+          | END INSTALL stringLiteral?
+          | BEGIN PATCH numberLiteral ( MINIMUM VERSION stringLiteral )? ( COMMENT stringLiteral )?
+          | END PATCH numberLiteral?
+          | BEGIN UPGRADE stringLiteral? TO stringLiteral ( COMMENT stringLiteral )?
+          | END UPGRADE ( TO stringLiteral )?
+          | BEGIN UNINSTALL
+          | END UNINSTALL
+          | SET PATCH numberLiteral
+          | SET VERSION stringLiteral
+          | SET COMPATIBILITY VERSION ( stringLiteral | CURRENT )
+          | SYNC TO  ( stringLiteral | PATCH numberLiteral )
+          | ( appName ( ',' appName )* )? SYNC
+          )
+        )
+        | ALL ( EXCEPT appName ( ',' appName )* )? SYNC
+      )
+    ;
+
+snapshotClauses
+    : pdbSnapshotClause
+    | materializeClause
+    | createSnapshotClause
+    | dropSnapshotClause
+    | setMaxPdbSnapshotsClause
+    ;
+
+pdbSnapshotClause
+    : SNAPSHOT
+      ( MANUAL
+      | EVERY numberLiteral ( HOURS | MINUTES )
+      | NONE
+      )
+    ;
+
+materializeClause
+    : MATERIALIZE
+    ;
+
+createSnapshotClause
+    : SNAPSHOT snapshotName
+    ;
+
+dropSnapshotClause
+    : DROP SNAPSHOT snapshotName
+    ;
+
+setMaxPdbSnapshotsClause
+    : SET maxPdbSnapshots '=' numberLiteral
+    ;
+
+pdbManagedRecovery
+    : RECOVER MANAGED STANDBY DATABASE CANCEL?
+    ;
+
+alterTablePartitioning
+    : modifyTableDefaultAttrs
+    | alterAutomaticPartitioning
+    | alterIntervalPartitioning
+    | setSubpartitionTemplate
+    | modifyTablePartition
+    | modifyTableSubpartition
+    | moveTablePartition
+    | moveTableSubpartition
+    | addExternalPartitionAttrs
+    | addTablePartition
+    | coalesceTablePartition
+    | dropExternalPartitionAttrs
+    | dropTablePartition
+    | dropTableSubpartition
+    | renamePartitionSubpart
+    | truncatePartitionSubpart
+    | splitTablePartition
+    | splitTableSubpartition
+    | mergeTablePartitions
+    | mergeTableSubpartitions
+    | exchangePartitionSubpart
+    ;
+
+
+modifyTableDefaultAttrs
+    : MODIFY DEFAULT ATTRIBUTES
+      ( FOR partitionExtendedName )?
+      ( DEFAULT DIRECTORY directoryName )?
+      deferredSegmentCreation?
+      readOnlyClause?
+      indexingClause?
+      segmentAttributesClause?
+      tableCompression?
+      inmemoryClause?
+      ( PCTTHRESHOLD integer )?
+      prefixCompression?
+      alterOverflowClause?
+      ( ( LOB '(' lobItem ')' | VARRAY varrayItem ) '(' lobParameters ')' )*
+    ;
+
+alterAutomaticPartitioning
+    : SET PARTITIONING ( AUTOMATIC | MANUAL )
+    | SET STORE IN ( tablespace ( ',' tablespace )* )
+    ;
+
+alterIntervalPartitioning
+    : SET INTERVAL '(' expr? ')'
+    | SET STORE IN '(' tablespace ( ',' tablespace )* ')'
+    ;
+
+setSubpartitionTemplate
+    : SET SUBPARTITION TEMPLATE
+        ( '(' rangeSubpartitionDesc ( ',' rangeSubpartitionDesc )* ')'
+        | '(' listSubpartitionDesc ( ',' listSubpartitionDesc )* ')'
+        | '(' individualHashSubparts ( ',' individualHashSubparts )* ')'
+        | '(' ')'
+        | numberLiteral
+        )
+    ;
+
+modifyTablePartition
+    : modifyRangePartition
+    | modifyHashPartition
+    | modifyListPartition
+    ;
+
+modifyRangePartition
+    : MODIFY partitionExtendedName
+       ( partitionAttributes
+       | addRangeSubpartition
+       | addHashSubpartition
+       | addListSubpartition
+       | coalesceTableSubpartition
+       | alterMappingTableClause
+       | REBUILD? UNUSABLE LOCAL INDEXES
+       | readOnlyClause
+       | indexingClause
+       )
+    ;
+
+partitionAttributes
+    : ( ( physicalAttributesClause
+        | loggingClause
+        | allocateExtentClause
+        | deallocateUnusedClause
+        | shrinkClause
+        )+
+      )?
+      ( OVERFLOW
+        ( physicalAttributesClause
+        | loggingClause
+        | allocateExtentClause
+        | deallocateUnusedClause
+        )+
+      )?
+      tableCompression?
+      inmemoryClause?
+      ( ( ( LOB lobItem | VARRAY varrayItem ) '(' modifyLOBParameters ')' )+ )?
+    ;
+
+addRangeSubpartition
+    : ADD rangeSubpartitionDesc 
+      ( ',' rangeSubpartitionDesc )*
+      dependentTablesClause? 
+      updateIndexClauses?
+    ;
+
+dependentTablesClause
+    : DEPENDENT TABLES
+          '(' 
+            table '(' partitionSpec ( ',' partitionSpec)* ')'
+            ( ',' table '(' partitionSpec ( ',' partitionSpec)* ')' )*
+          ')'
+    ;
+
+partitionSpec
+    : PARTITION partition? tablePartitionDescription?
+    ;
+
+updateIndexClauses
+    : updateGlobalIndexClause
+    | updateAllIndexesClause
+    ;
+
+updateGlobalIndexClause
+    : ( UPDATE | INVALIDATE ) GLOBAL INDEXES
+    ;
+
+updateAllIndexesClause
+    : UPDATE INDEXES ( '(' 
+                         index '(' ( updateIndexPartition | updateIndexSubpartition ) ')' 
+                         ( ',' index '(' ( updateIndexPartition | updateIndexSubpartition ) ')' )* 
+                       ')' )?
+    ;
+
+updateIndexPartition
+    : indexPartitionDescription indexSubpartitionClause? ( ',' indexPartitionDescription indexSubpartitionClause? )*
+    ;
+
+updateIndexSubpartition
+    : SUBPARTITION subpartition? ( TABLESPACE tablespace )? ( ',' SUBPARTITION subpartition? ( TABLESPACE tablespace )? )*
+    ;
+
+addHashSubpartition
+    : ADD individualHashSubparts dependentTablesClause? updateIndexClauses? parallelClause?
+    ;
+
+addListSubpartition
+    : ADD listSubpartitionDesc ( ',' listSubpartitionDesc )* dependentTablesClause? updateIndexClauses?
+    ;
+
+coalesceTableSubpartition
+    : COALESCE PARTITION updateIndexClauses? parallelClause? allowDisallowClustering?
+    ;
+
+allowDisallowClustering
+    : ( ALLOW | DISALLOW ) CLUSTERING
+    ;
+
+alterMappingTableClause
+    : MAPPING TABLE ( allocateExtentClause | deallocateUnusedClause )
+    ;
+
+modifyHashPartition
+    : MODIFY partitionExtendedName
+      ( partitionAttributes
+      | coalesceTableSubpartition
+      | alterMappingTableClause
+      | REBUILD? UNUSABLE LOCAL INDEXES
+      | readOnlyClause
+      | indexingClause
+      )
+    ;
+
+modifyListPartition
+    : MODIFY partitionExtendedName
+      ( partitionAttributes
+      | ( ADD | DROP ) VALUES '(' listValues ')'
+      | addRangeSubpartition
+      | addListSubpartition
+      | addHashSubpartition   
+      | coalesceTableSubpartition
+      | REBUILD? UNUSABLE LOCAL INDEXES
+      | readOnlyClause
+      | indexingClause
+      )
+    ;
+
+modifyTableSubpartition
+    : MODIFY subpartitionExtendedName
+      ( allocateExtentClause
+      | deallocateUnusedCluse
+      | shrinkClause
+      | ( ( LOB lobItem | VARRAY varrayItem ) '(' modifyLOBParameters ')' )+
+      | REBUILD? UNUSABLE LOCAL INDEXES
+      | ( ADD | DROP ) VALUES ( listValues )
+      | readOnlyClause
+      | indexingClause
+      )
+    ;
+
+deallocateUnusedCluse
+    : DEALLOCATE UNUSED ( KEEP sizeClause )?
+    ;
+
+moveTablePartition
+    : MOVE partitionExtendedName
+        MAPPING TABLE?
+        tablePartitionDescription?
+        filterCondition?
+        updateIndexClauses?
+        parallelClause?
+        allowDisallowClustering?
+        ONLINE?
+    ;
+
+filterCondition
+    : INCLUDING ROWS whereClause
+    ;
+
+moveTableSubpartition
+    : MOVE subpartitionExtendedName 
+        indexingClause?
+        partitioningStorageClause?
+        updateIndexClauses?
+        filterCondition?
+        parallelClause?
+        allowDisallowClustering?
+        ONLINE?
+    ;
+
+addExternalPartitionAttrs
+    : ADD EXTERNAL PARTITION ATTRIBUTES externalTableClause ( REJECT LIMIT )?
+    ;
+
+addTablePartition
+    : ADD 
+        (
+          PARTITION partition? addRangePartitionClause
+          ( ',' PARTITION partition? addRangePartitionClause )*
+        | PARTITION partition? addListPartitionClause
+          ( ',' PARTITION partition? addListPartitionClause )*
+        | PARTITION partition? addSystemPartitionClause
+          ( ',' PARTITION partition? addSystemPartitionClause )*
+          ( BEFORE ( partitionName | partitionNumber ) )?
+        | PARTITION partition? addHashPartitionClause
+        ) 
+        dependentTablesClause?
+    ;
+
+addRangePartitionClause
+    : rangeValuesClause
+        tablePartitionDescription?
+        externalPartSubpartDataProps?
+        ( '(' ( rangeSubpartitionDesc ( ',' rangeSubpartitionDesc )*
+              | listSubpartitionDesc ( ',' listSubpartitionDesc )*
+              | individualHashSubparts ( ',' individualHashSubparts )*
+              )
+          ')' | hashSubpartsByQuantity )?
+        updateIndexClauses?
+    ;
+
+addListPartitionClause
+    : listValuesClause
+        tablePartitionDescription?
+        externalPartSubpartDataProps?
+        ( '(' ( rangeSubpartitionDesc ( ',' rangeSubpartitionDesc )*
+              | listSubpartitionDesc ( ',' listSubpartitionDesc )*
+              | individualHashSubparts ( ',' individualHashSubparts )*
+              )
+          ')' | hashSubpartsByQuantity )?
+        updateIndexClauses?
+    ;
+
+addSystemPartitionClause
+    : tablePartitionDescription? updateIndexClauses?
+    ;
+
+addHashPartitionClause
+    : partitioningStorageClause
+        updateIndexClauses?
+        parallelClause?
+        readOnlyClause?
+        indexingClause?
+    ;
+
+coalesceTablePartition
+    : COALESCE PARTITION updateIndexClauses? parallelClause? allowDisallowClustering?
+    ;
+
+dropExternalPartitionAttrs
+    : DROP EXTERNAL PARTITION ATTRIBUTES
+    ;
+
+dropTablePartition
+    : DROP partitionExtendedName ( updateIndexClauses parallelClause? )?
+    ;
+
+dropTableSubpartition
+    : DROP subpartitionExtendedName ( updateIndexClauses parallelClause? )?
+    ;
+
+renamePartitionSubpart
+    : RENAME ( partitionExtendedName | subpartitionExtendedName ) TO newName
+    ;
+
+truncatePartitionSubpart
+    : TRUNCATE ( partitionExtendedNames | subpartitionExtendedNames )
+        ( ( DROP ALL? | REUSE ) STORAGE )?
+        ( updateIndexClauses parallelClause? )? CASCADE?
+    ;
+
+splitTablePartition
+    : SPLIT partitionExtendedName
+        ( AT '(' literal ( ',' literal )* ')'
+          ( INTO '(' rangePartitionDesc ',' rangePartitionDesc ')' )?
+        | VALUES '(' listValues ')'
+          ( INTO '(' listPartitionDesc ',' listPartitionDesc ')' )?
+        | INTO '(' ( rangePartitionDesc ( ',' rangePartitionDesc )*
+                   | listPartitionDesc ( ',' listPartitionDesc )* 
+                   )
+               ',' partitionSpec ')'
+        ) splitNestedTablePart?
+          filterCondition?
+          dependentTablesClause?
+          updateIndexClauses?
+          parallelClause?
+          allowDisallowClustering?
+          ONLINE?
+    ;
+
+splitNestedTablePart
+    : NESTED TABLE column INTO
+       '(' nestedTablePartitionSpec ',' nestedTablePartitionSpec
+         splitNestedTablePart?
+       ')' splitNestedTablePart?
+    ;
+
+nestedTablePartitionSpec
+    : PARTITION partition segmentAttributesClause?
+    ;
+
+splitTableSubpartition
+    : SPLIT subpartitionExtendedName
+       ( AT '(' literal ( ',' literal )* ')'
+         ( INTO '(' rangeSubpartitionDesc',' rangeSubpartitionDesc ')' )?
+       | VALUES '(' listValues ')'
+         ( INTO '(' listSubpartitionDesc',' listSubpartitionDesc ')' )?
+       | INTO '(' ( rangeSubpartitionDesc (',' rangeSubpartitionDesc )*
+                  | listSubpartitionDesc (',' listSubpartitionDesc )* 
+                  )
+              ',' subpartitionSpec ')'
+        ) filterCondition?
+         dependentTablesClause?
+         updateIndexClauses?
+         parallelClause?
+         allowDisallowClustering?
+         ONLINE?
+    ;
+
+subpartitionSpec
+    : SUBPARTITION subpartition? partitioningStorageClause?
+    ;
+
+mergeTablePartitions
+    : MERGE PARTITIONS partitionOrKeyValue
+       ( ',' partitionOrKeyValue ( ',' partitionOrKeyValue )*
+       | TO partitionOrKeyValue )
+       INTO partitionSpec?
+       filterCondition?
+       dependentTablesClause?
+       updateIndexClauses?
+       parallelClause?
+       allowDisallowClustering?
+    ;
+
+mergeTableSubpartitions
+    : MERGE SUBPARTITIONS subpartitionOrKeyValue
+        ( ',' subpartitionOrKeyValue ( ',' subpartitionOrKeyValue )*
+        | TO subpartitionOrKeyValue 
+        )
+        ( INTO ( rangeSubpartitionDesc 
+               | listSubpartitionDesc
+               )
+        )?
+        filterCondition?
+        dependentTablesClause?
+        updateIndexClauses?
+        parallelClause?
+        allowDisallowClustering?
+    ;
+
+exchangePartitionSubpart
+    : EXCHANGE ( partitionExtendedName | subpartitionExtendedName )
+        WITH TABLE ( schema '.' )? table
+        ( ( INCLUDING | EXCLUDING ) INDEXES )?
+        ( ( WITH | WITHOUT ) VALIDATION )?
+        exceptionsClause?
+        ( updateIndexClauses parallelClause? )?
+        CASCADE?
+    ;
+
+alterPmemFilestore
+    : ALTER PMEM FILESTORE filestoreName
+        (
+          ( RESIZE sizeClause )?
+        | autoextendClause 
+        | MOUNT ( { MOUNTPOINT filePath | BACKINGFILE fileName } )? FORCE?
+        | DISMOUNT
+        ) 
+    ;
+
+alterProcedure
+    : ALTER PROCEDURE ( schema '.' )? procedureName
+        ( procedureCompileClause |  EDITIONABLE | NONEDITIONABLE )
+    ;
+
+procedureCompileClause
+    : COMPILE DEBUG? compilerParametersClause* ( REUSE SETTINGS )?
+    ;
+
+alterProfile
+    : ALTER PROFILE profile LIMIT
+        ( resourceParameters | passwordParameters )+
+        ( CONTAINER '=' ( CURRENT | ALL ) )?
+    ;
+
+resourceParameters
+    : ( SESSIONS_PER_USER
+      | CPU_PER_SESSION
+      | CPU_PER_CALL
+      | CONNECT_TIME
+      | IDLE_TIME
+      | LOGICAL_READS_PER_SESSION
+      | LOGICAL_READS_PER_CALL
+      | COMPOSITE_LIMIT
+      )
+      ( integer | UNLIMITED | DEFAULT )
+    | PRIVATE_SGA ( sizeClause | UNLIMITED | DEFAULT )
+    ;
+
+passwordParameters
+    : ( FAILED_LOGIN_ATTEMPTS
+      | PASSWORD_LIFE_TIME
+      | PASSWORD_REUSE_TIME
+      | PASSWORD_REUSE_MAX
+      | PASSWORD_LOCK_TIME
+      | PASSWORD_GRACE_TIME
+      | INACTIVE_ACCOUNT_TIME
+      )
+      ( expr | UNLIMITED | DEFAULT )
+    | PASSWORD_VERIFY_FUNCTION
+      ( functionName | NULL | DEFAULT )
+    | PASSWORD_ROLLOVER_TIME ( expr | DEFAULT )
+    ;
+
+alterResourceCost
+    : ALTER RESOURCE COST
+        ( ( CPU_PER_SESSION
+          | CONNECT_TIME
+          | LOGICAL_READS_PER_SESSION
+          | PRIVATE_SGA
+          ) integer
+        )+
+    ;
+
+alterRole
+    : ALTER ROLE role
+        ( NOT IDENTIFIED
+        | IDENTIFIED
+            ( BY password
+            | USING ( schema '.' ) packageName
+            | EXTERNALLY
+            | GLOBALLY AS domainNameOfDirectoryGroup    
+            )
+        )
+        ( CONTAINER '=' ( CURRENT | ALL ) )?
+    ;
+
+alterRollbackSegment
+    : ALTER ROLLBACK SEGMENT rollbackSegment
+        ( ONLINE
+        | OFFLINE
+        | storageClause
+        | SHRINK ( TO sizeClause )?
+        )
+    ;
+
+alterSequence
+    : ALTER SEQUENCE ( schema '.' )? sequence
+        ( INCREMENT BY integer
+        | ( MAXVALUE integer | NOMAXVALUE )
+        | ( MINVALUE integer | NOMINVALUE )
+        | RESTART 
+        | ( CYCLE | NOCYCLE )
+        | ( CACHE integer | NOCACHE )
+        | ( ORDER | NOORDER )
+        | ( KEEP | NOKEEP )
+        | ( SCALE ( EXTEND | NOEXTEND ) | NOSCALE )
+        | ( SHARD ( EXTEND | NOEXTEND ) | NOSHARD )
+        | ( SESSION | GLOBAL )
+        )+
+    ;
+
+alterSession
+    : ALTER SESSION
+        ( ADVISE ( COMMIT | ROLLBACK | NOTHING )
+        | CLOSE DATABASE LINK dblink
+        | ( ENABLE | DISABLE ) COMMIT IN PROCEDURE
+        | ( ENABLE | DISABLE ) GUARD
+        | ( ENABLE | DISABLE | FORCE ) PARALLEL
+          ( DML | DDL | QUERY ) ( PARALLEL integer )?
+        | ( ENABLE RESUMABLE ( TIMEOUT integer )? ( NAME stringLiteral )?
+          | DISABLE RESUMABLE
+          )
+        | ( ENABLE | DISABLE ) SHARD DDL
+        | SYNC WITH PRIMARY  
+        | alterSessionSetClause
+        )
+    ;
+
+alterSessionSetClause
+    : SET ( ( parameterName '=' parameterValue )+
+          | EDITION '=' editionName
+          | CONTAINER '=' containerName ( SERVICE '=' serviceName )
+          | ROW ARCHIVAL VISIBILITY '=' ( ACTIVE | ALL )
+          | DEFAULT COLLATION '=' ( collationName | NONE )
+          )
+    ;
+
+alterSystem
+    : ALTER SYSTEM
+        ( archiveLogClause
+        | checkpointClause
+        | checkDatafilesClause
+        | distributedRecovClauses
+        | FLUSH ( SHARED_POOL | GLOBAL CONTEXT | BUFFER_CACHE | FLASH_CACHE          
+                      | REDO TO targetDbName ( NO? CONFIRM APPLY )? )
+        | endSessionClauses
+        | SWITCH LOGFILE
+        | { SUSPEND | RESUME }
+        | quiesceClauses
+        | rollingMigrationClauses
+        | rollingPatchClauses
+        | securityClauses
+        | affinityClauses
+        | shutdownDispatcherClause
+        | REGISTER
+        | SET alterSystemSetClause
+              ( alterSystemSetClause )*
+        | RESET alterSystemResetClause
+                ( alterSystemResetClause )*
+        | RELOCATE CLIENT clientId
+        | ALTER SYSTEM CANCEL SQL stringLiteral
+        | FLUSH PASSWORDFILE_METADATA_CACHE
+        )
+    ;
+
+archiveLogClause
+    : ARCHIVE LOG
+        ( INSTANCE stringLiteral )?
+        ( ( SEQUENCE integer
+          | CHANGE integer
+          | CURRENT NOSWITCH?
+          | GROUP integer
+          | LOGFILE stringLiteral
+               ( USING BACKUP CONTROLFILE )?
+          | NEXT
+          | ALL
+        )
+          ( TO stringLiteral )?
+        )
+    ;
+
+checkpointClause
+    : CHECKPOINT ( GLOBAL | LOCAL )
+    ;
+
+checkDatafilesClause
+    : CHECK DATAFILES ( GLOBAL | LOCAL )
+    ;
+
+distributedRecovClauses
+    : ( ENABLE | DISABLE ) DISTRIBUTED RECOVERY
+    ;
+
+endSessionClauses
+    : ( DISCONNECT SESSION stringLiteral
+           POST_TRANSACTION?
+      | KILL SESSION stringLiteral
+      )
+      ( IMMEDIATE | NOREPLAY )?
+    ;
+
+quiesceClauses
+    : QUIESCE RESTRICTED
+    | UNQUIESCE
+    ;
+
+rollingMigrationClauses
+    : START ROLLING MIGRATION TO stringLiteral
+    | STOP ROLLING MIGRATION
+    ;
+
+rollingPatchClauses
+    : START ROLLING PATCH
+    | STOP ROLLING PATCH
+    ;
+
+securityClauses
+    : ( ENABLE | DISABLE ) RESTRICTED SESSION
+    | SET ENCRYPTION WALLET OPEN IDENTIFIED BY password
+    | SET ENCRYPTION WALLET CLOSE ( IDENTIFIED BY password )?
+    | setEncryptionKey
+    ;
+
+affinityClauses
+    : ENABLE AFFINITY ( schema '.' )? table ( SERVICE serviceName )?
+    | DISABLE AFFINITY ( schema '.' )? table
+    ;
+
+setEncryptionKey
+    : SET ENCRYPTION KEY
+        (
+          stringLiteral? IDENTIFIED BY password
+          | IDENTIFIED BY password ( MIGRATE USING password )?
+        )
+    ;
+
+shutdownDispatcherClause
+    : SHUTDOWN IMMEDIATE? dispatcherName?
+    ;
+
+alterSystemSetClause
+    : setParameterClause
+    | USE_STORED_OUTLINES '=' (TRUE | FALSE | categoryName)
+    | GLOBAL_TOPIC_ENABLED '=' (TRUE | FALSE)
+    ;
+
+setParameterClause
+    : parameterName '='
+        parameterValue ( ',' parameterValue )*
+        ( COMMENT '=' stringLiteral )?
+        DEFERRED?
+        ( CONTAINER '=' ( CURRENT | ALL ) )?
+        ( SCOPE '=' ( MEMORY | SPFILE | BOTH )
+        | SID '=' stringLiteral
+        )*
+    ;
+
+alterSystemResetClause
+    : parameterName ( SCOPE '=' ( MEMORY | SPFILE | BOTH )
+                    | SID '=' stringLiteral
+                    )*
+    ;
+
+alterTable
+    : ALTER TABLE ( schema '.' )? table
+        memoptimizeReadClause?
+        ( alterTableProperties
+        | columnClauses
+        | constraintClauses
+        | alterTablePartitioning
+        | alterExternalTable
+        | moveTableClause
+        | modifyToPartitioned
+        | modifyOpaqueType
+        | blockchainTableClauses
+        )?
+        ( enableDisableClause
+        | ( ENABLE | DISABLE )
+          ( TABLE LOCK | ALL TRIGGERS | CONTAINER_MAP | CONTAINERS_DEFAULT )
+        )*
+    ;
+
+constraintClauses
+    :  ADD ( outOfLineConstraint+
+           | outOfLineRefConstraint
+           )
+    | MODIFY ( CONSTRAINT constraintName
+             | PRIMARY KEY
+             | UNIQUE '(' column ( ',' column )* ')'
+             ) constraintState CASCADE?
+    | RENAME CONSTRAINT oldName TO newName
+    | dropConstraintClause+
+    ;
+
+dropConstraintClause
+    : DROP 
+        ( 
+          ( PRIMARY KEY
+          | UNIQUE '(' column ( ',' column )* ')'
+          | CONSTRAINT constraintName 
+          ) 
+		  CASCADE? ( ( KEEP | DROP ) INDEX )?
+	    ) 
+	    ONLINE?
+    ;
+
+alterExternalTable
+    : ( addColumnClause
+      | modifyColumnClauses
+      | dropColumnClause
+      | parallelClause
+      | externalTableDataProps
+      | REJECT LIMIT ( integer | UNLIMITED )
+      | PROJECT COLUMN ( ALL | REFERENCED )
+      )+
+    ;
+
+dropColumnClause
+    : SET UNUSED ( COLUMN column
+                 | '('column ( ',' column )*')'
+                 )
+      ( CASCADE CONSTRAINTS | INVALIDATE )*
+      ONLINE?
+    | DROP ( COLUMN column
+           | '('column ( ',' column )*')'
+           )
+      ( CASCADE CONSTRAINTS | INVALIDATE )*
+      ( CHECKPOINT integer )?
+    | DROP ( UNUSED COLUMNS
+           | COLUMNS CONTINUE
+           )
+      ( CHECKPOINT integer )
+    ;
+
+moveTableClause
+    : MOVE
+        filterCondition?
+        ONLINE?
+        segmentAttributesClause?
+        tableCompression?
+        indexOrgTableClause?
+        ( lobStorageClause | varrayColProperties )*
+        parallelClause?
+        allowDisallowClustering?
+        ( UPDATE INDEXES
+          ( '(' index ( segmentAttributesClause
+                      | updateIndexPartition
+                      | GLOBAL 
+                      )
+              ( ',' index ( segmentAttributesClause
+                          | updateIndexPartition
+                          | GLOBAL  
+                          ) 
+              )*
+            ')'
+          )?
+        )?
+    ;
+
+modifyToPartitioned
+    : MODIFY tablePartitioningClauses
+        filterCondition?
+        ONLINE?
+        ( UPDATE INDEXES ( '(' index ( localPartitionedIndex | globalPartitionedIndex | GLOBAL )
+                           ( ',' index ( localPartitionedIndex | globalPartitionedIndex | GLOBAL ) )* ')'
+                         )?
+        )
+    ;
+
+modifyOpaqueType
+    : MODIFY OPAQUE TYPE anydataColumn STORE '(' typeName ( ',' typeName )* ')' UNPACKED
+    ;
+
+columnClauses
+    : ( addColumnClause
+      | modifyColumnClauses
+      | dropColumnClause
+      | addPeriodClause
+      | dropPeriodClause
+      )+
+    | renameColumnClause
+    | modifyCollectionRetrieval+
+    | modifyLobStorageClause+
+    | alterVarrayColProperties+
+    ;
+
+addPeriodClause
+    : ADD '(' periodDefinition ')'
+    ;
+
+dropPeriodClause
+    : DROP '(' PERIOD FOR validTimeColumn ')'
+    ;
+
+renameColumnClause
+    : RENAME COLUMN oldName TO newName
+    ;
+
+modifyCollectionRetrieval
+    : MODIFY NESTED TABLE collectionItem RETURN AS ( LOCATOR | VALUE )
+    ;
+
+modifyLobStorageClause
+    : MODIFY LOB '(' lobItem ')' '(' modifyLOBParameters ')'
+    ;
+
+alterVarrayColProperties
+    : MODIFY VARRAY varrayItem '(' modifyLOBParameters ')'
+    ;
+
+addColumnClause
+    : ADD '(' (columnDefinition | virtualColumnDefinition) ( ',' (columnDefinition | virtualColumnDefinition))* ')'
+        columnProperties?
+        ( '(' outOfLinePartStorage ( ',' outOfLinePartStorage )* ')' )?
+    ;
+
+outOfLinePartStorage
+    : PARTITION partition
+        ( nestedTableColProperties | lobStorageClause | varrayColProperties )
+          ( nestedTableColProperties | lobStorageClause | varrayColProperties )*
+      ( ( SUBPARTITION subpartition
+         ( nestedTableColProperties | lobStorageClause | varrayColProperties )
+           ( nestedTableColProperties | lobStorageClause | varrayColProperties )*
+          ( ',' SUBPARTITION subpartition
+           ( nestedTableColProperties | lobStorageClause | varrayColProperties )
+             ( nestedTableColProperties | lobStorageClause | varrayColProperties )*
+          )*
+        )
+      )?
+    ;
+
+modifyColumnClauses
+    : MODIFY
+        ( '(' modifyColProperties | modifyVirtcolProperties
+            ( ',' modifyColProperties | modifyVirtcolProperties )* ')'
+        | '(' modifyColVisibility ( ',' modifyColVisibility )* ')'
+        | modifyColSubstitutable
+        )
+    ;
+
+modifyColProperties
+    : column datatype?
+       ( COLLATE columnCollationName )?
+       ( DEFAULT ( ON NULL )? expr | identityClause | DROP IDENTITY )?
+       ( ( ENCRYPT encryptionSpec ) | DECRYPT )?
+       inlineConstraint*
+       lobStorageClause?
+       alterXMLSchemaClause?
+    ;
+
+modifyVirtcolProperties
+    : column datatype?
+        ( COLLATE columnCollationName )?
+        ( GENERATED ALWAYS )? AS '(' expr ')' VIRTUAL?
+        evaluationEditionClause unusableEditionsClause?
+    ;
+
+modifyColVisibility
+    : column ( VISIBLE | INVISIBLE )
+    ;
+
+modifyColSubstitutable
+    : COLUMN column NOT? SUBSTITUTABLE AT ALL LEVELS FORCE?
+    ;
+
+alterXMLSchemaClause
+    : ALLOW ANYSCHEMA
+    | ALLOW NONSCHEMA
+    | DISALLOW NONSCHEMA
+    ;
+
+memoptimizeReadClause
+    : ( ( MEMOPTIMIZE FOR READ ) | ( NO MEMOPTIMIZE FOR READ ) )?
+    ;
+
+alterTableProperties
+    : ( ( physicalAttributesClause
+        | loggingClause
+        | tableCompression
+        | inmemoryTableClause
+        | ilmClause
+        | supplementalTableLogging
+        | allocateExtentClause
+        | deallocateUnusedClause
+        | ( CACHE | NOCACHE )
+        | resultCacheClause
+        | upgradeTableClause
+        | recordsPerBlockClause
+        | parallelClause
+        | rowMovementClause
+        | logicalReplicationClause 
+        | flashbackArchiveClause
+        )+
+      | RENAME TO newTableName
+     ) alterIotClauses? alterXMLSchemaClause?
+    | shrinkClause 
+    | READ ONLY
+    | READ WRITE 
+    | REKEY encryptionSpec 
+    | DEFAULT COLLATION collationName
+    | NO? ROW ARCHIVAL
+    | ADD attributeClusteringClause
+    | MODIFY CLUSTERING clusteringWhen? zonemapClause?
+    | DROP CLUSTERING
+    ;
+
+supplementalTableLogging
+    : ADD SUPPLEMENTAL LOG
+        ( supplementalLogGrpClause | supplementalIdKeyClause )
+          (',' SUPPLEMENTAL LOG
+           ( supplementalLogGrpClause | supplementalIdKeyClause )
+        )*
+    | DROP SUPPLEMENTAL LOG
+      ( supplementalIdKeyClause | GROUP logGroup )
+        ( ',' SUPPLEMENTAL LOG
+           ( supplementalIdKeyClause | GROUP logGroup )
+        )*
+    ;
+
+upgradeTableClause
+    : UPDATE ( NOT? INCLUDING DATA ) columnProperties?
+    ;
+
+recordsPerBlockClause
+    : ( MINIMIZE | NOMINIMIZE ) RECORDS_PER_BLOCK
+    ;
+
+alterTablespace
+    : ALTER TABLESPACE tablespace alterTablespaceAttrs
+    ;
+
+alterTablespaceAttrs
+    : defaultTablespaceParams
+    | MINIMUM EXTENT sizeClause
+    | RESIZE sizeClause
+    | COALESCE
+    | SHRINK SPACE ( KEEP sizeClause )?
+    | RENAME TO newTablespaceName
+    | { BEGIN | END } BACKUP
+    | datafileTempfileClauses
+    | tablespaceLoggingClauses
+    | tablespaceGroupClause
+    | tablespaceStateClauses
+    | autoextendClause
+    | flashbackModeClause
+    | tablespaceRetentionClause
+    | alterTablespaceEncryption
+    ;
+
+defaultTablespaceParams
+    : DEFAULT defaultTableCompression? defaultIndexCompression? inmemoryClause? ilmClause? storageClause?
+    ;
+
+defaultTableCompression
+    : TABLE ( COMPRESS FOR OLTP      
+            | COMPRESS FOR QUERY ( LOW | HIGH )
+            | COMPRESS FOR ARCHIVE ( LOW | HIGH )
+            | NOCOMPRESS
+            )
+    ;
+
+defaultIndexCompression
+    : INDEX ( COMPRESS ADVANCED ( LOW | HIGH )
+            | NOCOMPRESS
+            )
+    ;
+
+datafileTempfileClauses
+    : ADD ( DATAFILE | TEMPFILE )
+       ( fileSpecification ( ',' fileSpecification )* )?
+    | DROP ( DATAFILE | TEMPFILE ) ( stringLiteral | numberLiteral )
+    | SHRINK TEMPFILE ( stringLiteral | numberLiteral ) ( KEEP sizeClause )?
+    | RENAME DATAFILE stringLiteral ( ',' stringLiteral )*
+        TO stringLiteral ( ',' stringLiteral )*
+    | ( DATAFILE | TEMPFILE ) ( ONLINE | OFFLINE )
+    ;
+
+tablespaceLoggingClauses
+    : loggingClause
+    | NO? FORCE LOGGING
+    ;
+
+tablespaceGroupClause
+    : TABLESPACE GROUP tablespaceGroupName
+    ;
+
+tablespaceStateClauses
+    : ( ONLINE
+      | OFFLINE ( NORMAL | TEMPORARY | IMMEDIATE )?
+      )
+    | READ ( ONLY | WRITE )
+    | ( PERMANENT | TEMPORARY )
+    ;
+
+tablespaceRetentionClause
+    : RETENTION ( GUARANTEE | NOGUARANTEE )
+    ;
+
+alterTablespaceEncryption
+    : ENCRYPTION
+        ( ( OFFLINE ( ENCRYPT | DECRYPT ) )
+        | ( ONLINE ( ( tablespaceEncryptionSpec? ( ENCRYPT | REKEY ) )
+                     | DECRYPT )
+                   tsFileNameConvert? )
+        | { FINISH { ENCRYPT | REKEY | DECRYPT } [ tsFileNameConvert ] }
+        )
+    ;
+
+tablespaceEncryptionSpec
+    : USING stringLiteral
+    ;
+
+tsFileNameConvert
+    : FILE_NAME_CONVERT '=' '(' stringLiteral ',' stringLiteral (',' stringLiteral ',' stringLiteral )* ')' KEEP?
+    ;
+
+alterTablespaceSet
+    : ALTER TABLESPACE SET tablespaceSet alterTablespaceAttrs
+    ;
+
+alterTrigger
+    : ALTER TRIGGER ( schema '.' )? triggerName
+        ( triggerCompileClause
+        | ( ENABLE | DISABLE )
+        | RENAME TO newName
+        | ( EDITIONABLE | NONEDITIONABLE )
+        )
+    ;
+
+triggerCompileClause
+    : COMPILE DEBUG? compilerParametersClause* ( REUSE SETTINGS )?
+    ;
+
+alterType
+    : ALTER TYPE ( schema '.' )? typeName
+        ( alterTypeClause | ( EDITIONABLE | NONEDITIONABLE ) )
+    ;
+
+alterTypeClause
+    : typeCompileClause
+    | typeReplaceClause
+    | RESET
+    | NOT? ( INSTANTIABLE | FINAL )
+    | ( alterMethodSpec
+      | alterAttributeDefinition
+      | alterCollectionsClauses
+      ) dependentHandlingClause?
+    ;
+
+typeCompileClause
+    : COMPILE DEBUG? compilerParametersClause* ( REUSE SETTINGS )?
+    ;
+
+typeReplaceClause
+    : REPLACE
+        ( invokerRightsClause accessibleByClause? 
+        | accessibleByClause invokerRightsClause? 
+        )?
+        AS OBJECT  
+        '(' attribute datatype ( ',' attribute datatype )*
+           ( ',' elementSpec )*
+        ')'
+    ;
+
+elementSpec
+    : inheritanceClauses?
+        ( subprogramSpec
+        | constructorSpec
+        | mapOrderFunctionSpec
+        )+ 
+        ( ',' restrictReferencesPragma )?
+    ;
+
+inheritanceClauses
+    :  ( NOT? ( OVERRIDING | FINAL | INSTANTIABLE ) )+
+    ;
+
+constructorSpec
+    : FINAL? INSTANTIABLE?
+        CONSTRUCTOR FUNCTION datatype
+        ( '('( SELF IN OUT datatype',' )?
+           parameter datatype ( ',' parameter datatype )*
+          ')'
+        )?
+        RETURN SELF AS RESULT
+        ( ( IS | AS ) callSpec )?
+    ;
+
+restrictReferencesPragma
+    : PRAGMA RESTRICT_REFERENCES
+        '(' ( subprogram | method | DEFAULT )
+          ( ',' ( RNDS | WNDS | RNPS | WNPS | TRUST ) )+ ')'
+    ;
+
+accessibleByClause
+    : ACCESSIBLE BY '(' accessor ( ',' accessor )* ')'
+    ;
+
+accessor
+    : unitKind? ( schema '.' )? unitName
+    ;
+
+unitKind
+    : FUNCTION 
+    | PROCEDURE 
+    | PACKAGE 
+    | TRIGGER 
+    | TYPE
+    ;
+
+alterMethodSpec
+    : ( ADD | DROP ) ( mapOrderFunctionSpec | subprogramSpec )
+        ( ',' ( ADD | DROP ) ( mapOrderFunctionSpec | subprogramSpec ) )*
+    ;
+
+mapOrderFunctionSpec
+    : ( MAP | ORDER ) MEMBER functionSpec
+    ;
+
+subprogramSpec
+    : ( MEMBER | STATIC ) ( procedureSpec | functionSpec )
+    ;
+
+procedureSpec
+    : PROCEDURE procedureName '(' parameter datatype ( ',' parameter datatype )* ')' ( ( IS | AS ) callSpec )?
+    ;
+
+functionSpec
+    : FUNCTION functionName
+        '(' parameter datatype ( ',' parameter datatype )*')'
+        returnClause
+    ;
+
+returnClause
+    : RETURN datatype ( ( IS | AS ) callSpec )?
+    ;
+
+callSpec
+    : javaDeclaration 
+    | cDeclaration
+    ;
+
+javaDeclaration
+    : LANGUAGE JAVA NAME stringLiteral
+    ;
+
+cDeclaration
+    : (LANGUAGE K_C | EXTERNAL ) ( ( NAME name )? LIBRARY libName | LIBRARY libName ( NAME name )? )
+        ( AGENT IN '(' argument ( ',' argument )* ')' )?
+        ( WITH CONTEXT )?
+        ( PARAMETERS '(' externalParameter ( ',' externalParameter )* ')' )?
+    ;
+
+alterAttributeDefinition
+    : ( ADD | MODIFY ) ATTRIBUTE
+         ( attribute datatype?
+         | '(' attribute datatype ( ',' attribute datatype )* ')'
+         )
+    | DROP ATTRIBUTE
+         ( attribute
+         | '(' attribute ( ',' attribute )* ')'
+         )
+    ;
+
+alterCollectionsClauses
+    : MODIFY ( LIMIT integer
+             | ELEMENT TYPE datatype
+             )
+    ;
+
+dependentHandlingClause
+    : INVALIDATE
+    | CASCADE ( NOT? INCLUDING TABLE DATA
+              | CONVERT TO SUBSTITUTABLE
+              )?
+         ( FORCE? exceptionsClause )?
+    ;
+
+alterUser
+    : ALTER USER
+        ( user
+          ( IDENTIFIED
+            ( BY password ( REPLACE oldPassword )?
+            | EXTERNALLY ( AS stringLiteral )?
+            | GLOBALLY ( AS stringLiteral )?
+            )
+          | NO AUTHENTICATION 
+          | DEFAULT COLLATION collationName
+          | DEFAULT TABLESPACE tablespace
+          | LOCAL? TEMPORARY TABLESPACE ( tablespace | tablespaceGroupName )
+          | ( QUOTA ( sizeClause
+                    | UNLIMITED
+                    ) ON tablespace
+            )+
+          | PROFILE profile
+          | DEFAULT ROLE ( role ( ',' role )*
+                         | ALL ( EXCEPT role ( ',' role )* )?
+                         | NONE
+                         )
+          | PASSWORD EXPIRE
+          | ACCOUNT ( LOCK | UNLOCK )
+          | ENABLE EDITIONS ( FOR objectType ( ',' objectType )* )? FORCE?
+          | HTTP? DIGEST ( ENABLE | DISABLE )
+          | CONTAINER '=' ( CURRENT | ALL )
+          | containerDataClause
+          )+
+        | user ( ',' user )* proxyClause
+        )
+    ;
+
+containerDataClause
+    : ( SET CONTAINER_DATA '=' ( ALL | DEFAULT | '(' containerName ( ',' containerName )* ')' )
+      | ADD CONTAINER_DATA '=' '(' containerName ( ',' containerName )* ')'
+      | REMOVE CONTAINER_DATA '=' '(' containerName ( ',' containerName )* ')'
+      )
+      ( FOR ( schema '.' )? containerDataObject )?
+    ;
+
+proxyClause
+    : GRANT CONNECT THROUGH ( ENTERPRISE USERS | dbUserProxy dbUserProxyClauses )
+    | REVOKE CONNECT THROUGH ( ENTERPRISE USERS | dbUserProxy )
+    ;
+
+dbUserProxyClauses
+    :  ( WITH
+         ( ROLE ( roleName ( ',' roleName )*
+                | ALL EXCEPT roleName ( ',' roleName )*
+                )
+         | NO ROLES
+         )
+       )?
+       ( AUTHENTICATION REQUIRED )?
     ;
 
 dropAnalyticView
@@ -696,7 +2531,7 @@ alterIndex
      | UNUSABLE ONLINE? ((DEFERRED | IMMEDIATE) INVALIDATION)?
      | VISIBLE
      | INVISIBLE
-     | RENAME TO newName=identifier
+     | RENAME TO containerName
      | COALESCE CLEANUP? ONLY? parallelClause?
      | (MONITORING | NOMONITORING) USAGE
      | UPDATE BLOCK REFERENCES
@@ -714,7 +2549,7 @@ createView
       | objectViewClause
       | xmlTypeViewClause
       )?
-      (DEFAULT COLLATION collationName=identifier)?
+      (DEFAULT COLLATION collationName)?
       (BEQUEATH (CURRENT_USER | DEFINER))?
       AS subquery subqueryRestrictionClause? (CONTAINER_MAP | CONTAINERS_DEFAULT)?
     ;
@@ -993,7 +2828,7 @@ modifyIndexDefaultAttrs
     ;
 
 addHashIndexPartition
-    : ADD PARTITION partitionName=identifier? (TABLESPACE tablespaceName=identifier)? indexCompression? parallelClause?
+    : ADD PARTITION partitionName? (TABLESPACE tablespaceName=identifier)? indexCompression? parallelClause?
     ;
 
 modifyIndexPartition
@@ -1007,11 +2842,11 @@ modifyIndexPartition
     ;
 
 renameIndexPartition
-    : RENAME (PARTITION partition | SUBPARTITION subpartition) TO newName=identifier
+    : RENAME (PARTITION partition | SUBPARTITION subpartition) TO containerName
     ;
 
 dropIndexPartition
-    : DROP PARTITION partitionName=identifier
+    : DROP PARTITION partitionName
     ;
 
 splitIndexPartition
@@ -1226,11 +3061,11 @@ registerLogfileClause
     ;
 
 switchoverClause
-    : SWITCHOVER TO targetDbName=identifier (VERIFY | FORCE)?
+    : SWITCHOVER TO targetDbName (VERIFY | FORCE)?
     ;
 
 failoverClause
-    : FAILOVER TO targetDbName=identifier FORCE?
+    : FAILOVER TO targetDbName FORCE?
     ;
 
 commitSwitchoverClause
@@ -1256,12 +3091,12 @@ defaultSettingsClauses
     : DEFAULT EDITION '=' editionName
     | SET DEFAULT (BIGFILE | SMALLFILE) TABLESPACE
     | DEFAULT TABLESPACE tablespace
-    | DEFAULT LOCAL? TEMPORARY TABLESPACE (tablespace | tablespaceGroupName=identifier)
-    | RENAME GLOBAL_NAME TO database '.' domain=identifier ('.' domain=identifier)*
+    | DEFAULT LOCAL? TEMPORARY TABLESPACE (tablespace | tablespaceGroupName)
+    | RENAME GLOBAL_NAME TO database '.' domain ('.' domain)*
     | ENABLE BLOCK CHANGE TRACKING (USING FILE stringLiteral REUSE?)?
     | DISABLE BLOCK CHANGE TRACKING
     | NO? FORCE FULL DATABASE CACHING
-    | CONTAINERS DEFAULT TARGET '=' ('(' containerName=identifier ')' | NONE)
+    | CONTAINERS DEFAULT TARGET '=' ('(' containerName ')' | NONE)
     | flashbackModeClause
     | undoModeClause
     | setTimeZoneClause
@@ -1413,7 +3248,7 @@ relationalTable
     ;
 
 objectTable
-    : OF (schema '.')? objectType=identifier objectTableSubstitution?
+    : OF (schema '.')? objectType objectTableSubstitution?
       ('(' objectProperties ')') (ON COMMIT (DELETE | PRESERVE) ROWS)?
       oidClause? oidIndexClause? physicalProperties? tableProperties
     ;
@@ -1463,7 +3298,7 @@ unusableEditionsClause
     ;
 
 periodDefinition
-    : PERIOD FOR validTimeColumn=identifier ('(' startTimeColumn=identifier ',' endTimeColumn=identifier ')')?
+    : PERIOD FOR validTimeColumn ('(' startTimeColumn ',' endTimeColumn ')')?
     ;
 
 supplementalLoggingProps
@@ -1473,7 +3308,7 @@ supplementalLoggingProps
     ;
 
 supplementalLogGrpClause
-    : GROUP logGroup=identifier '(' supplementalLogGrpClauseItem (',' supplementalLogGrpClauseItem)* ')' ALWAYS?
+    : GROUP logGroup '(' supplementalLogGrpClauseItem (',' supplementalLogGrpClauseItem)* ')' ALWAYS?
     ;
 
 supplementalLogGrpClauseItem
@@ -1943,7 +3778,7 @@ inmemoryPriority
     ;
 
 inmemoryDistribute
-    : DISTRIBUTE (AUTO | BY (ROWID RANGE | PARTITION | SUBPARTITION))? (FOR SERVICE (DEFAULT | ALL | serviceName=identifier | NONE))?
+    : DISTRIBUTE (AUTO | BY (ROWID RANGE | PARTITION | SUBPARTITION))? (FOR SERVICE (DEFAULT | ALL | serviceName | NONE))?
     ;
 
 inmemoryDuplicate
@@ -2344,13 +4179,13 @@ clusteringWhen
     ;
 
 zonemapClause
-    : WITH MATERIALIZED ZONEMAP ('(' zonemapName=identifier ')')?
+    : WITH MATERIALIZED ZONEMAP ('(' zonemapName ')')?
     | WITHOUT MATERIALIZED ZONEMAP
     ;
 
 enableDisableClause
     : (ENABLE | DISABLE) (VALIDATE | NOVALIDATE)?
-      (UNIQUE '(' column (',' column)* ')' | PRIMARY KEY | CONSTRAINT constraintName=identifier)
+      (UNIQUE '(' column (',' column)* ')' | PRIMARY KEY | CONSTRAINT constraintName)
       usingIndexClause? exceptionsClause? CASCADE? ((KEEP | DROP) INDEX)?
     ;
 
@@ -2359,7 +4194,7 @@ objectTypeColProperties
     ;
 
 substitutableColumnClause
-    : ELEMENT? IS OF TYPE? '(' ONLY type=identifier ')'
+    : ELEMENT? IS OF TYPE? '(' ONLY type ')'
     | NOT? SUBSTITUTABLE AT ALL LEVELS
     ;
 
@@ -2397,8 +4232,8 @@ varrayStorageClause
     ;
 
 lobStorageClause
-    : LOB ( '(' lobItem=identifier (',' lobItem=identifier)* ')' STORE AS (SECUREFILE | BASICFILE | '(' lobStorageParameters ')')+
-          | '(' lobItem=identifier ')' STORE AS (SECUREFILE | BASICFILE | lobSegName | '(' lobStorageParameters ')')+
+    : LOB ( '(' lobItem (',' lobItem)* ')' STORE AS (SECUREFILE | BASICFILE | '(' lobStorageParameters ')')+
+          | '(' lobItem ')' STORE AS (SECUREFILE | BASICFILE | lobSegName | '(' lobStorageParameters ')')+
           )
     ;
 
@@ -4293,10 +6128,10 @@ queryTableExpression
 flashbackQueryClause
     : VERSIONS
         (BETWEEN (SCN | TIMESTAMP) (expr | MINVALUE) AND (expr | MAXVALUE)
-        | PERIOD FOR validTimeColumn=column BETWEEN (expr | MINVALUE) AND (expr | MAXVALUE))
+        | PERIOD FOR validTimeColumn BETWEEN (expr | MINVALUE) AND (expr | MAXVALUE))
     | AS OF
         ((SCN | TIMESTAMP) expr
-        | AS OF PERIOD FOR validTimeColumn=column expr)
+        | AS OF PERIOD FOR validTimeColumn expr)
     ;
 
 addDiskClause
@@ -4849,10 +6684,10 @@ pivotInClause
 partitionExtensionClause
     : PARTITION
           ( '(' partition ')'
-          | FOR '(' partitionKeyValue=expr (',' partitionKeyValue=expr)* ')')
+          | FOR '(' partitionKeyValue (',' partitionKeyValue)* ')')
     | SUBPARTITION
           ('(' subpartition ')'
-          | FOR '(' subpartitionKeyValue=expr (',' subpartitionKeyValue=expr)* ')')
+          | FOR '(' subpartitionKeyValue (',' subpartitionKeyValue)* ')')
     ;
 
 sampleClause
@@ -5138,7 +6973,7 @@ constraint
     ;
 
 inlineConstraint
-    : (CONSTRAINT constraintName=identifier)?
+    : (CONSTRAINT constraintName)?
       ( NOT? NULL
       | UNIQUE
       | PRIMARY KEY
@@ -5149,7 +6984,7 @@ inlineConstraint
     ;
 
 outOfLineConstraint
-    : (CONSTRAINT constraintName=identifier)?
+    : (CONSTRAINT constraintName)?
       ( UNIQUE '(' fullObjectPath (',' fullObjectPath)* ')'
       | PRIMARY KEY '(' fullObjectPath (',' fullObjectPath)* ')'
       | FOREIGN KEY '(' fullObjectPath (',' fullObjectPath)* ')' referencesClause
@@ -5161,13 +6996,13 @@ outOfLineConstraint
 inlineRefConstraint
     : SCOPE IS (schema '.')? scopeTable=identifier
     | WITH ROWID
-    | (CONSTRAINT constraintName=identifier)? referencesClause constraintState
+    | (CONSTRAINT constraintName)? referencesClause constraintState
     ;
 
 outOfLineRefConstraint
     :  SCOPE FOR '(' (refCol+=identifier | refAttr+=identifier) ')' IS (schema '.')? scopeTable=identifier
     | REF '(' (refCol+=identifier | refAttr+=identifier) ')' WITH ROWID
-    | (CONSTRAINT constraintName=identifier)?
+    | (CONSTRAINT constraintName)?
       FOREIGN KEY '(' (refCol+=identifier (',' refCol+=identifier)? | refAttr+=identifier (',' refAttr+=identifier)?) ')'
       referencesClause constraintState
     ;
@@ -5213,7 +7048,7 @@ condition
     ;
 
 isOfTypeConditionItem
-    : ONLY? (SCHEMA '.')? type=identifier
+    : ONLY? (SCHEMA '.')? type
     ;
 
 operator1
@@ -5249,7 +7084,7 @@ expr
     | ('+' | '-'| PRIOR) expr                   #signExpr
     | TIMESTAMP expr                            #timestampExpr
     | expr ( '*' | '/' | '+' | '-' | '||') expr #binaryExpr
-    | expr COLLATE collationName=identifier     #collateExpr
+    | expr COLLATE collationName                #collateExpr
     | functionExpression                        #functionExpr
     | avMeasExpression                          #calcMeasExpr
     | caseExpression                            #caseExpr
@@ -5271,6 +7106,17 @@ expr
     | simpleExpression                          #simpleExpr
     | bindVariable                              #bindVariableExpr
     | identifier ('.' identifier)* '(' '+' ')'  #columnOuterJoinExpr
+    ;
+
+datetimeExpression
+    : expr AT ( LOCAL | TIME ZONE
+        ( S_SINGLE_QUOTE ('+'|'-')? hh=expr ':' mi=expr S_SINGLE_QUOTE
+        | DBTIMEZONE
+        | SESSIONTIMEZONE
+        | timeZoneName=SINGLE_QUOTED_STRING
+        | expr
+        )
+     )
     ;
 
 bindVariable
@@ -5326,7 +7172,7 @@ castFunction
     ;
 
 treatFunction
-    : TREAT '(' expr AS (REF? ( schema '.' )? type=identifier | JSON) ')' jsonNonfunctionSteps? jsonFunctionStep?
+    : TREAT '(' expr AS (REF? ( schema '.' )? type | JSON) ')' jsonNonfunctionSteps? jsonFunctionStep?
     ;
 
 avMeasExpression
@@ -5457,7 +7303,7 @@ measureRef
 //    :
 //    ;
 
-//datetimeExpression
+//datetimeExpressionession
 //    :
 //    ;
 
@@ -5504,7 +7350,7 @@ aggregateFunction
     ;
 
 objectAccessExpression
-    : ('(' expr ')' '.')? identifier ('.' identifier arrayStep* )* ('(' ( argument=expr (',' argument=expr )* ) ')')?
+    : ('(' expr ')' '.')? identifier ('.' identifier arrayStep* )* ('(' ( argument (',' argument )* ) ')')?
     ;
 
 placeholderExpression
@@ -5796,6 +7642,10 @@ password
     : identifier
     ;
 
+oldPassword
+    : identifier
+    ;
+
 rollbackSegment
     : identifier
     ;
@@ -5897,6 +7747,287 @@ partition
     ;
 
 subpartition
+    : identifier
+    ;
+
+parameterName
+    : identifier
+    ;
+
+parameterValue
+    : identifier
+    ;
+
+newHierName
+    : identifier
+    ;
+
+implementationType
+    : identifier
+    ;
+
+parameterType
+    : type
+    ;
+
+parameterTypes
+    : parameterType ( ',' parameterType )*
+    ;
+
+type
+    : identifier
+    ;
+
+varrayType
+    : identifier
+    ;
+
+lobItem
+    : identifier
+    ;
+
+stagingLogName
+    : identifier
+    ;
+
+zonemapName
+    : identifier
+    ;
+
+returnType
+    : identifier
+    ;
+
+primaryOperator
+    : identifier
+    ;
+
+outline
+    : identifier
+    ;
+
+newOutlineName
+    : identifier
+    ;
+
+newCategoryName
+    : identifier
+    ;
+
+transportSecret
+    : identifier
+    ;
+
+refColumn
+    : identifier
+    ;
+
+refAttribute
+    : identifier
+    ;
+
+scopeTableName
+    : identifier
+    ;
+
+containerName
+    : identifier
+    ;
+
+tablespaceGroupName
+    : identifier
+    ;
+
+domain
+    : identifier
+    ;
+
+appName
+    : identifier
+    ;
+
+snapshotName
+    : identifier
+    ;
+
+maxPdbSnapshots
+    : identifier
+    ;
+
+partitionKeyValue
+    : expr
+    ;
+
+subpartitionKeyValue
+    : expr
+    ;
+
+partitionExtendedName
+    : PARTITION partition
+    | PARTITION FOR '(' partitionKeyValue ( ',' partitionKeyValue )* ')'
+    ;
+
+subpartitionExtendedName
+    : SUBPARTITION subpartition
+    | SUBPARTITION FOR '(' subpartitionKeyValue ( ',' subpartitionKeyValue )* ')'
+    ;
+
+partitionExtendedNames
+    : ( PARTITION | PARTITIONS )
+        partition | ( FOR '(' partitionKeyValue ( ',' partitionKeyValue )* ')' )
+        ( ',' partition | ( FOR '(' partitionKeyValue ( ',' partitionKeyValue )* ')' ) )*
+    ;
+
+
+subpartitionExtendedNames
+    : ( SUBPARTITION | SUBPARTITIONS )
+        subpartition | ( FOR '(' subpartitionKeyValue ( ',' subpartitionKeyValue )* ')' )
+        ( ',' subpartition | ( FOR '(' subpartitionKeyValue ( ',' subpartitionKeyValue )* ')' ) )*
+    ;
+
+partitionName
+    : identifier
+    ;
+
+partitionNumber
+    : numberLiteral
+    ;
+
+partitionOrKeyValue
+    : partition
+    | FOR '(' partitionKeyValue ( ',' partitionKeyValue )* ')'
+    ;
+
+subpartitionOrKeyValue
+    : subpartition
+    | FOR '(' subpartitionKeyValue ( ',' subpartitionKeyValue )* ')'
+    ;
+
+newName
+    : identifier
+    ;
+
+domainNameOfDirectoryGroup
+    : identifier
+    ;
+
+serviceName
+    : identifier
+    ;
+
+collationName
+    : identifier
+    ;
+
+targetDbName
+    : identifier
+    ;
+
+dispatcherName
+    : identifier
+    ;
+
+categoryName
+    : identifier
+    ;
+
+logGroup
+    : identifier
+    ;
+
+newTableName
+    : identifier
+    ;
+
+columnCollationName
+    : identifier
+    ;
+
+constraintName
+    : identifier
+    ;
+
+oldName
+    : identifier
+    ;
+
+anydataColumn
+    : column
+    ;
+
+validTimeColumn
+    : column
+    ;
+
+startTimeColumn
+    : column
+    ;
+
+endTimeColumn
+    : column
+    ;
+
+collectionItem
+    : identifier
+    ;
+
+clientId
+    : identifier
+    ;
+
+newTablespaceName
+    : identifier
+    ;
+
+triggerName
+    : identifier
+    ;
+
+unitName
+    : identifier
+    ;
+
+parameter
+    : identifier
+    ;
+
+name
+    : identifier
+    ;
+
+libName
+    : identifier
+    ;
+
+argument
+    : expr
+    ;
+
+externalParameter
+    : identifier
+    ;
+
+subprogram
+    : identifier
+    ;
+
+method
+    : identifier
+    ;
+
+objectType
+    : identifier
+    ;
+
+dbUserProxy
+    : identifier
+    ;
+
+containerDataObject
+    : identifier
+    ;
+
+roleName
     : identifier
     ;
 
