@@ -658,7 +658,8 @@ alterMaterializedView
       ( physicalAttributesClause
       | modifyMvColumnClause
       | tableCompression
-      | inmemoryTableClause
+      // TODO
+//      | inmemoryTableClause
       | lobStorageClause ( ',' lobStorageClause )*
       | modifyLOBStorageClause ( ',' modifyLOBStorageClause )*
       | alterTablePartitioning
@@ -669,7 +670,8 @@ alterMaterializedView
       | shrinkClause
       | ( CACHE | NOCACHE )
       )?
-      alterIotClauses?
+      // TODO
+//      alterIotClauses?
       ( USING INDEX physicalAttributesClause )?
       ( MODIFY scopedTableRefConstraint | alterMvRefresh )?
       evaluationEditionClause?
@@ -753,7 +755,9 @@ addOverflowClause
     ;
 
 alterQueryRewriteClause
-    : ( ENABLE | DISABLE )? QUERY REWRITE unusableEditionsClause?
+    : ( ENABLE | DISABLE )? QUERY REWRITE
+    // TODO 
+//    unusableEditionsClause?
     ;
 
 alterMaterializedViewLog
@@ -869,18 +873,19 @@ addBindingClause
     : ADD BINDING
       '(' parameterTypes ')'
       RETURN '(' returnType ')'
-      implementationClause?
+      // TODO
+//      implementationClause?
       usingFunctionClause
     ;
 
-implementationClause
-    : ANCILLARY TO primaryOperator
-        '(' parameterTypes ')'
-          (',' primaryOperator
-             '(' parameterTypes ')'
-          )*
-    | contextClause
-    ;
+//implementationClause
+//    : ANCILLARY TO primaryOperator
+//        '(' parameterTypes ')'
+//          (',' primaryOperator
+//             '(' parameterTypes ')'
+//          )*
+//    | contextClause
+//    ;
 
 contextClause
     : ( WITH INDEX CONTEXT ',' SCAN CONTEXT implementationType ( COMPUTE ANCILLARY DATA )? )?
@@ -1229,7 +1234,9 @@ dependentTablesClause
     ;
 
 partitionSpec
-    : PARTITION partition? tablePartitionDescription?
+    : PARTITION partition?
+    // TODO
+//    tablePartitionDescription?
     ;
 
 updateIndexClauses
@@ -1321,7 +1328,8 @@ deallocateUnusedCluse
 moveTablePartition
     : MOVE partitionExtendedName
         MAPPING TABLE?
-        tablePartitionDescription?
+        // TODO
+//        tablePartitionDescription?
         filterCondition?
         updateIndexClauses?
         parallelClause?
@@ -1365,7 +1373,8 @@ addTablePartition
 
 addRangePartitionClause
     : rangeValuesClause
-        tablePartitionDescription?
+    // TODO
+//        tablePartitionDescription?
         externalPartSubpartDataProps?
         ( '(' ( rangeSubpartitionDesc ( ',' rangeSubpartitionDesc )*
               | listSubpartitionDesc ( ',' listSubpartitionDesc )*
@@ -1377,7 +1386,8 @@ addRangePartitionClause
 
 addListPartitionClause
     : listValuesClause
-        tablePartitionDescription?
+    // TODO
+//        tablePartitionDescription?
         externalPartSubpartDataProps?
         ( '(' ( rangeSubpartitionDesc ( ',' rangeSubpartitionDesc )*
               | listSubpartitionDesc ( ',' listSubpartitionDesc )*
@@ -1388,7 +1398,10 @@ addListPartitionClause
     ;
 
 addSystemPartitionClause
-    : tablePartitionDescription? updateIndexClauses?
+    : 
+    // TODO
+//    tablePartitionDescription? 
+    updateIndexClauses?
     ;
 
 addHashPartitionClause
@@ -1771,8 +1784,10 @@ alterSystemResetClause
 
 alterTable
     : ALTER TABLE ( schema '.' )? table
-        memoptimizeReadClause?
-        ( alterTableProperties
+        // TODO
+//        memoptimizeReadClause?
+        ( 
+          alterTableProperties
         | columnClauses
         | constraintClauses
         | alterTablePartitioning
@@ -1818,7 +1833,8 @@ alterExternalTable
       | modifyColumnClauses
       | dropColumnClause
       | parallelClause
-      | externalTableDataProps
+      // TODO
+//      | externalTableDataProps
       | REJECT LIMIT ( integer | UNLIMITED )
       | PROJECT COLUMN ( ALL | REFERENCED )
       )+
@@ -1847,7 +1863,8 @@ moveTableClause
         ONLINE?
         segmentAttributesClause?
         tableCompression?
-        indexOrgTableClause?
+        // TODO
+//        indexOrgTableClause?
         ( lobStorageClause | varrayColProperties )*
         parallelClause?
         allowDisallowClustering?
@@ -1961,7 +1978,9 @@ modifyVirtcolProperties
     : column datatype?
         ( COLLATE columnCollationName )?
         ( GENERATED ALWAYS )? AS '(' expr ')' VIRTUAL?
-        evaluationEditionClause unusableEditionsClause?
+        evaluationEditionClause
+        // TODO
+//         unusableEditionsClause?
     ;
 
 modifyColVisibility
@@ -1988,7 +2007,8 @@ alterTableProperties
           physicalAttributesClause
         | loggingClause
         | tableCompression
-        | inmemoryTableClause
+        // TODO
+//        | inmemoryTableClause
         | ilmClause
         | supplementalTableLogging
         | allocateExtentClause
@@ -2004,7 +2024,8 @@ alterTableProperties
         )+
       | RENAME TO newTableName
      )
-     alterIotClauses? 
+        // TODO
+//     alterIotClauses? 
      alterXMLSchemaClause?
     | shrinkClause 
     | READ ONLY
@@ -2013,7 +2034,8 @@ alterTableProperties
     | DEFAULT COLLATION collationName
     | NO? ROW ARCHIVAL
     | ADD attributeClusteringClause
-    | MODIFY CLUSTERING clusteringWhen? zonemapClause?
+        // TODO
+//    | MODIFY CLUSTERING clusteringWhen? zonemapClause?
     | DROP CLUSTERING
     ;
 
