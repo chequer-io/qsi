@@ -1520,7 +1520,7 @@ alterPmemFilestore
         (
           ( RESIZE sizeClause )?
         | autoextendClause 
-        | MOUNT ( { MOUNTPOINT filePath | BACKINGFILE fileName } )? FORCE?
+        | MOUNT ( ( MOUNTPOINT filePath | BACKINGFILE fileName ) )? FORCE?
         | DISMOUNT
         ) 
     ;
@@ -1653,7 +1653,7 @@ alterSystem
                       | REDO TO targetDbName ( NO? CONFIRM APPLY )? )
         | endSessionClauses
         | SWITCH LOGFILE
-        | { SUSPEND | RESUME }
+        | ( SUSPEND | RESUME )
         | quiesceClauses
         | rollingMigrationClauses
         | rollingPatchClauses
@@ -1813,7 +1813,8 @@ dropConstraintClause
     ;
 
 alterExternalTable
-    : ( addColumnClause
+    : ( 
+        addColumnClause
       | modifyColumnClauses
       | dropColumnClause
       | parallelClause
@@ -1982,7 +1983,9 @@ memoptimizeReadClause
     ;
 
 alterTableProperties
-    : ( ( physicalAttributesClause
+    : (
+        ( 
+          physicalAttributesClause
         | loggingClause
         | tableCompression
         | inmemoryTableClause
@@ -1996,11 +1999,13 @@ alterTableProperties
         | recordsPerBlockClause
         | parallelClause
         | rowMovementClause
-        | logicalReplicationClause 
+        | logicalReplicationClause
         | flashbackArchiveClause
         )+
       | RENAME TO newTableName
-     ) alterIotClauses? alterXMLSchemaClause?
+     )
+     alterIotClauses? 
+     alterXMLSchemaClause?
     | shrinkClause 
     | READ ONLY
     | READ WRITE 
@@ -2044,7 +2049,7 @@ alterTablespaceAttrs
     | COALESCE
     | SHRINK SPACE ( KEEP sizeClause )?
     | RENAME TO newTablespaceName
-    | { BEGIN | END } BACKUP
+    | ( BEGIN | END ) BACKUP
     | datafileTempfileClauses
     | tablespaceLoggingClauses
     | tablespaceGroupClause
@@ -2110,7 +2115,7 @@ alterTablespaceEncryption
         | ( ONLINE ( ( tablespaceEncryptionSpec? ( ENCRYPT | REKEY ) )
                      | DECRYPT )
                    tsFileNameConvert? )
-        | { FINISH { ENCRYPT | REKEY | DECRYPT } [ tsFileNameConvert ] }
+        | ( FINISH ( ENCRYPT | REKEY | DECRYPT ) tsFileNameConvert? )
         )
     ;
 
@@ -3293,8 +3298,8 @@ evaluationEditionClause
     ;
 
 unusableEditionsClause
-    : (UNUSABLE BEFORE (CURRENT EDITION | EDITION edition=identifier))?
-      (UNUSABLE BEGINNING WITH (CURRENT EDITION | EDITION edition=identifier | NULL EDITION))?
+    : ( UNUSABLE BEFORE ( CURRENT EDITION | EDITION edition=identifier) )?
+      ( UNUSABLE BEGINNING WITH ( CURRENT EDITION | EDITION edition=identifier | NULL EDITION ) )?
     ;
 
 periodDefinition
@@ -8028,6 +8033,14 @@ containerDataObject
     ;
 
 roleName
+    : identifier
+    ;
+
+fileName
+    : identifier
+    ;
+
+filePath
     : identifier
     ;
 
