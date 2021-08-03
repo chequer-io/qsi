@@ -595,7 +595,7 @@ JSON:                             J S O N;
 JSON_ARRAYAGG:                    J S O N '_' A R R A Y A G G;
 JSON_EQUAL:                       J S O N '_' E Q U A L;
 JSON_OBJECTAGG:                   J S O N '_' O B J E C T A G G;
-K_SKIP:                           K '_' S K I P;
+K_SKIP:                           S K I P;
 KEEP:                             K E E P;
 KEEP_DUPLICATES:                  K E E P '_' D U P L I C A T E S;
 KEY:                              K E Y;
