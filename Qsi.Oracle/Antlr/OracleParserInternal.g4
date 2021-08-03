@@ -609,19 +609,70 @@ subtypeDefinition
     ;
 
 createHierarchy
-    :
+    : CREATE ( OR REPLACE )? ( FORCE | NOFORCE )? 
+        HIERARCHY ( schema '.' )? hierarchy 
+        sharingClause?
+        classificationClause*
+        hierUsingClause
+        levelHierClause
+        hierAttrsClause?
+    ;
+
+hierUsingClause
+    : USING ( schema '.' )? attributeDimension levelHierClause
+    ;
+
+levelHierClause
+    : '(' ( level ( CHILD OF )? )+ ')'
+    ;
+
+hierAttrsClause
+    : hierAttrName classificationClause*
+    ;
+
+hierAttrName
+    : MEMBER_NAME
+    | MEMBER_UNIQUE_NAME
+    | MEMBER_CAPTION
+    | MEMBER_DESCRIPTION
+    | LEVEL_NAME
+    | HIER_ORDER
+    | DEPTH
+    | IS_LEAF
+    | PARENT_LEVEL_NAME
+    | PARENT_UNIQUE_NAME
     ;
 
 createIndextype
-    :
+    : CREATE ( OR REPLACE )? INDEXTYPE ( schema '.' )? indextype
+        FOR ( schema '.' )? operator1 '(' parameterType ( ',' parameterType )*')'
+              ( ',' ( schema '.' )? operator1 '('parameterType ( ',' parameterType )*')'
+              )*
+        usingTypeClause
+        ( WITH LOCAL RANGE? PARTITION )?
+        storageTableClause?
     ;
 
 createInmemoryJoinGroup
-    :
+    : CREATE INMEMORY JOIN GROUP  ( schema '.' )? joinGroup
+        '('  ( schema '.' )? table '(' column ')' ','  ( schema '.' )? table '(' column ')'
+          ( ','  ( schema '.' )? table '(' column ')' )* ')'
     ;
 
 createJava
-    :
+    : CREATE ( OR REPLACE )? ( AND ( RESOLVE | COMPILE ) )? NOFORCE?
+        JAVA ( ( SOURCE | RESOURCE ) NAMED ( schema '.' )? primaryName
+             | CLASS ( SCHEMA schema )?
+             )
+        ( SHARING '=' ( METADATA | NONE ) )?
+        invokerRightsClause?
+        ( RESOLVER '(' ( '(' matchString ','? ( schemaName | '-' ) ')' )+ ')' )?
+        ( USING ( BFILE '(' directoryObjectName ',' serverFileName ')'
+                | ( CLOB | BLOB | BFILE ) subquery
+                | stringLiteral
+                )
+        | AS sourceChar
+        )
     ;
 
 createLibrary
@@ -1113,7 +1164,7 @@ alterJava
       RESOLVER 
       '(' 
         ( 
-          '(' matchString=stringLiteral ','? ( schema | '-' ) ')' 
+          '(' matchString ','? ( schema | '-' ) ')' 
         )* 
       ')'
       ( COMPILE | RESOLVE | invokerRightsClause )
@@ -3001,7 +3052,7 @@ alterDatabaseLink
 alterDimension
     : ALTER DIMENSION (schema '.')? dimension=identifier
       ( ( ADD (levelClause | hierarchyClause | attributeClause | extendedAttributeClause))+
-      | (DROP (LEVEL level=identifier (RESTRICT | CASCADE)? | HIERARCHY hierarchy=identifier | ATTRIBUTE attribute (LEVEL level=identifier (COLUMN column)?)*))+
+      | (DROP (LEVEL level (RESTRICT | CASCADE)? | HIERARCHY hierarchy | ATTRIBUTE attribute (LEVEL level (COLUMN column)?)*))+
       | COMPILE
       )
     ;
@@ -3292,11 +3343,11 @@ dropSynonym
 // clauses
 
 levelClause
-    : LEVEL level=identifier IS (levelClauseItem | '(' levelClauseItem (',' levelClauseItem)* ')') (K_SKIP WHEN NULL)?
+    : LEVEL level IS (levelClauseItem | '(' levelClauseItem (',' levelClauseItem)* ')') (K_SKIP WHEN NULL)?
     ;
 
 hierarchyClause
-    : HIERARCHY hierarchy=identifier '(' childLevel=identifier (CHILD OF parentLevel=identifier)* dimensionJoinClause ')'
+    : HIERARCHY hierarchy '(' childLevel=identifier (CHILD OF parentLevel=identifier)* dimensionJoinClause ')'
     ;
 
 dimensionJoinClause
@@ -3311,13 +3362,13 @@ dimensionJoinClauseItem
     ;
 
 attributeClause
-    : ATTRIBUTE level=identifier DETERMINES ( dependentColumn=identifier 
+    : ATTRIBUTE level DETERMINES ( dependentColumn=identifier 
                                             | '(' dependentColumn=identifier (',' dependentColumn=identifier)* ')'
                                             )
     ;
 
 extendedAttributeClause
-    : ATTRIBUTE attribute (LEVEL level=identifier DETERMINES (dependentColumn=identifier | '(' dependentColumn=identifier (',' dependentColumn=identifier)* ')'))*
+    : ATTRIBUTE attribute (LEVEL level DETERMINES (dependentColumn=identifier | '(' dependentColumn=identifier (',' dependentColumn=identifier)* ')'))*
     ;
 
 levelClauseItem
@@ -6225,7 +6276,7 @@ attrDimAttributeClause
     ;
 
 attrDimLevelClause
-    : LEVEL level=identifier
+    : LEVEL level
       (NOT NULL | K_SKIP WHEN NULL)?
       (classificationClause*
           (
@@ -6669,7 +6720,7 @@ queryTableExpression
     | identifier?
         ( identifier (partitionExtensionClause | '@' dblink)?
           analyticView=identifier hierarchiesClause?
-          hierarchy=identifier
+          hierarchy
         ) sampleClause?
     | LATERAL? '(' subquery
     subqueryRestrictionClause?
@@ -8683,6 +8734,10 @@ baseType
     : identifier
     ;
 
+hierarchy
+    : identifier
+    ;
+
 value
     : expr
     ;
@@ -8971,6 +9026,38 @@ constant
     ;
 
 variable
+    : identifier
+    ;
+
+attributeDimension
+    : identifier
+    ;
+
+level
+    : identifier
+    ;
+
+primaryName
+    : identifier
+    ;
+
+matchString
+    : stringLiteral
+    ;
+
+schemaName
+    : identifier
+    ;
+
+directoryObjectName
+    : identifier
+    ;
+
+serverFileName
+    : identifier
+    ;
+
+sourceChar
     : identifier
     ;
 
