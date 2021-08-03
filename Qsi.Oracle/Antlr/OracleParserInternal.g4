@@ -2466,9 +2466,10 @@ alterDatabaseLink
 
 alterDimension
     : ALTER DIMENSION (schema '.')? dimension=identifier
-      ( ADD (levelClause | hierarchyClause | attributeClause | extendedAttributeClause))* 
-    | (DROP (LEVEL level=identifier (RESTRICT | CASCADE)? | HIERARCHY hierarchy=identifier | ATTRIBUTE attribute (LEVEL level=identifier (COLUMN column)?)*))* 
-    | COMPILE
+      ( ( ADD (levelClause | hierarchyClause | attributeClause | extendedAttributeClause))+
+      | (DROP (LEVEL level=identifier (RESTRICT | CASCADE)? | HIERARCHY hierarchy=identifier | ATTRIBUTE attribute (LEVEL level=identifier (COLUMN column)?)*))+
+      | COMPILE
+      )
     ;
 
 alterDiskgroup
