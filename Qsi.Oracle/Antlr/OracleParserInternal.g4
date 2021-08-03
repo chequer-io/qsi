@@ -52,50 +52,50 @@ create
     : createAnalyticView
     | createAttributeDimension
     | createAuditPolicy
-//    | createCluster
-//    | createContext
-//    | createControlfile
+    | createCluster
+    | createContext
+    | createControlfile
     | createDatabase
-//    | createDatabaseLink
-//    | createDimension
-//    | createDirectory
-//    | createDiskgroup
-//    | createEdition
-//    | createFlashbackArchive
-//    | createFunction
-//    | createHierarchy
+    | createDatabaseLink
+    | createDimension
+    | createDirectory
+    | createDiskgroup
+    | createEdition
+    | createFlashbackArchive
+    | createFunction
+    | createHierarchy
     | createIndex
-//    | createIndextype
-//    | createInmemoryJoinGroup
-//    | createJava
-//    | createLibrary
-//    | createLockdownProfile
-//    | createMaterializedView
-//    | createMaterializedViewLog
-//    | createMaterializedZonemap
-//    | createOperator
-//    | createOutLine
-//    | createPackage
-//    | createPackageBody
-//    | createPfile
-//    | createPluggableDatabase
-//    | createPmemFileStore
-//    | createProcedure
-//    | createProfile
-//    | createRestorePoint
-//    | createRole
-//    | createRollbackSegment
+    | createIndextype
+    | createInmemoryJoinGroup
+    | createJava
+    | createLibrary
+    | createLockdownProfile
+    | createMaterializedView
+    | createMaterializedViewLog
+    | createMaterializedZonemap
+    | createOperator
+    | createOutLine
+    | createPackage
+    | createPackageBody
+    | createPfile
+    | createPluggableDatabase
+    | createPmemFileStore
+    | createProcedure
+    | createProfile
+    | createRestorePoint
+    | createRole
+    | createRollbackSegment
     | createSchema
-//    | createSequence
-//    | createSpfile
+    | createSequence
+    | createSpfile
     | createSynonym
     | createTable
-//    | createTablespace
-//    | createTablespaceSet
-//    | createTrigger
-//    | createType
-//    | createTypeBody
-//    | createUser
+    | createTablespace
+    | createTablespaceSet
+    | createTrigger
+    | createType
+    | createTypeBody
+    | createUser
     | createView
     ;
 
@@ -188,6 +188,540 @@ drop
     | dropTypeBody
     | dropUser
     | dropView
+    ;
+
+createCluster
+    : CREATE CLUSTER ( schema '.' )? cluster
+        '('column datatype ( COLLATE columnCollationName )? SORT?
+          ( ',' column datatype ( COLLATE columnCollationName )? SORT? )*.
+        ')'
+        ( physicalAttributesClause
+          | SIZE sizeClause
+          | TABLESPACE tablespace
+          | ( INDEX
+            | ( SINGLE TABLE )?
+              HASHKEYS integer ( HASH IS expr )?
+            )
+        )*
+        parallelClause?
+        ( NOROWDEPENDENCIES | ROWDEPENDENCIES )?
+        ( CACHE | NOCACHE )? clusterRangePartitions?
+    ;
+
+clusterRangePartitions
+    : PARTITION BY RANGE '(' column ( ',' column )* ')'
+      '(' PARTITION partition?
+          rangeValuesClause tablePartitionDescription
+            ( ',' PARTITION partition?
+              rangeValuesClause tablePartitionDescription
+            )*
+      ')'
+    ;
+
+createContext
+    : CREATE ( OR REPLACE )? CONTEXT namespace
+        USING ( schema '.' )? packageName
+        ( INITIALIZED ( EXTERNALLY | GLOBALLY )
+        | ACCESSED GLOBALLY
+        )?
+    ;
+
+createControlfile
+    : CREATE CONTROLFILE
+        REUSE? SET? DATABASE database
+        logfileClause?
+        ( RESETLOGS | NORESETLOGS )
+        ( DATAFILE fileSpecification
+                   ( ',' fileSpecification )* )?
+        ( MAXLOGFILES integer
+        | MAXLOGMEMBERS integer
+        | MAXLOGHISTORY integer
+        | MAXDATAFILES integer
+        | MAXINSTANCES integer
+        | ( ARCHIVELOG | NOARCHIVELOG )
+        | FORCE LOGGING
+        | SET STANDBY NOLOGGING FOR ( DATA AVAILABILITY | LOAD PERFORMANCE )
+        )*
+        characterSetClause?
+    ;
+
+logfileClause
+    : LOGFILE ( GROUP integer )? fileSpecification ( ',' ( GROUP integer)? fileSpecification )*
+    ;
+
+characterSetClause
+    : CHARACTER SET characterSet
+    ;
+
+createDatabaseLink
+    : CREATE SHARED? PUBLIC? DATABASE LINK dblink
+        ( CONNECT TO
+          ( CURRENT_USER
+          | user IDENTIFIED BY password ( dblinkAuthentication )
+          )
+        | dblinkAuthentication
+        )*
+        ( USING connectString )
+    ;
+
+createDimension
+    : CREATE DIMENSION ( schema '.' )? dimensionName
+        levelClause+
+        ( hierarchyClause
+        | attributeClause
+        | extendedAttributeClause
+        )*
+    ;
+
+createDirectory
+    : CREATE ( OR REPLACE )? DIRECTORY directoryName
+        ( SHARING '=' ( METADATA | NONE ) )?
+        AS pathName
+    ;
+
+createDiskgroup
+    : CREATE DISKGROUP diskgroupName
+        ( ( HIGH | NORMAL | FLEX | EXTENDED ( SITE siteName ) | EXTERNAL ) REDUNDANCY )?
+        ( ( QUORUM | REGULAR )? ( FAILGROUP failgroupName )?
+          DISK qualifiedDiskClause ( ',' qualifiedDiskClause )*
+        )*
+        ( ATTRIBUTE ( stringLiteral '=' stringLiteral )
+                    ( ',' stringLiteral '=' stringLiteral )* )?
+    ;
+
+createEdition
+    : CREATE EDITION editionName
+        ( AS CHILD OF parentEdition )?
+    ;
+
+createFlashbackArchive
+    : CREATE FLASHBACK ARCHIVE DEFAULT? flashbackArchiveName
+        TABLESPACE tablespace
+        flashbackArchiveQuota?
+        ( NO? OPTIMIZE DATA )?
+        flashbackArchiveRetention
+    ;
+
+createFunction
+    : CREATE ( OR REPLACE )?
+      ( EDITIONABLE | NONEDITIONABLE )?
+      FUNCTION plsqlFunctionSource
+    ;
+
+plsqlFunctionSource
+    : ( schema '.' )? functionName
+        ( '(' parameterDeclaration ( ',' parameterDeclaration )* ')' )? RETURN datatype 
+      sharingClause?
+        ( invokerRightsClause
+          | accessibleByClause
+          | defaultCollationClause    
+          | deterministicClause
+          | parallelEnableClause
+          | resultCacheClause 
+          | aggregateClause
+          | pipelinedClause
+          | sqlMacroClause
+          
+        )*
+      ( IS | AS ) ( declareSection? body 
+                    | callSpec
+                  )
+    ;
+
+parameterDeclaration
+    : parameter ( IN? datatype ( ( ':''=' | DEFAULT ) expr )?
+                | ( OUT | IN OUT ) NOCOPY? datatype
+                )
+    ;
+
+defaultCollationClause
+    : DEFAULT COLLATION collationOption
+    ;
+
+collationOption
+    : USING_NLS_COMP
+    ;
+
+deterministicClause
+    : DETERMINISTIC
+    ;
+
+parallelEnableClause
+    : PARALLEL_ENABLE ( '(' PARTITION argument BY ( ANY
+                                                 | ( HASH | RANGE ) '(' column ( ',' column )* ')' streamingClause?
+                                                 | VALUE '(' column ')'
+                                                 ) ')' )?
+    ;
+
+streamingClause
+    : ( ORDER | CLUSTER ) expr BY '(' column ( ',' column )* ')'
+    ;
+
+aggregateClause
+    : AGGREGATE USING ( schema '.' )? implementationType
+    ;
+
+pipelinedClause
+    : PIPELINED
+      ( ( USING ( schema '.' )? implementationType )?
+      | ( ROW | TABLE ) POLYMORPHIC ( USING ( schema '.' )? implementationPackage )?
+      )
+    ;
+
+sqlMacroClause
+    : SQL_MACRO ( '(' ( TYPE '=' '>' )? ( SCALAR | TABLE ) ')' )?
+    ;
+
+declareSection
+    : itemList1 itemList2?
+    | itemList2
+    ;
+
+itemList1
+    : ( typeDefinition
+      | cursorDeclaration
+      | itemDeclaration
+      | functionDeclaration
+      | procedureDeclaration
+      )+
+    ;
+
+itemList2
+    : ( cursorDeclaration
+      | cursorDefinition
+      | functionDeclaration
+      | functionDefinition
+      | procedureDeclaration
+      | procedureDefinition
+      )+
+    ;
+
+procedureDefinition
+    : procedureDeclaration ( IS | AS ) ( declareSection? body | callSpec )
+    ;
+
+functionDeclaration
+    : functionHeading ( DETERMINISTIC | PIPELINED | PARALLEL_ENABLE | RESULT_CACHE )+
+    ;
+
+functionHeading
+    : FUNCTION functionName '(' parameterDeclaration ( ',' parameterDeclaration )* ')' RETURN datatype
+    ;
+
+functionDefinition
+    : functionHeading ( DETERMINISTIC | PIPELINED | PARALLEL_ENABLE | RESULT_CACHE resultCacheClause? )+
+        ( IS | AS ) ( declareSection? body | callSpec )
+    ;
+
+procedureDeclaration
+    : procedureHeading procedureProperties
+    ;
+
+body
+    : BEGIN statement+ ( EXCEPTION exceptionHandler+ )? END name?
+    ;
+
+exceptionHandler
+    : WHEN ( exception ( OR exception )* | OTHERS ) THEN statement+
+    ;
+
+procedureHeading
+    : PROCEDURE procedureName '(' parameterDeclaration ( ',' parameterDeclaration )* ')'
+    ;
+
+procedureProperties
+    : ( accessibleByClause
+      | defaultCollationClause
+      | invokerRightsClause
+      )*
+    ;
+
+itemDeclaration
+    : collectionVariableDecl
+    | constantDeclaration
+    | cursorVariableDeclaration
+    | exceptionDeclaration
+    | recordVariableDeclaration
+    | variableDeclaration
+    ;
+
+expression
+    :
+    // TODO
+    ;
+
+variableDeclaration
+    : variable datatype ( ( NOT NULL )? ( ':' '=' | DEFAULT ) expression )?
+    ;
+
+recordVariableDeclaration
+    : record1 ( recordType | rowTypeAttribute | record2 MOD_SYMBOL TYPE )
+    ;
+
+rowTypeAttribute
+    : ( explicitCursorName | cursorVariableName | dbTableOrViewName ) MOD_SYMBOL ROWTYPE
+    ;
+
+collectionVariableDecl
+    : newCollectionVar ( assocArrayType ( ':' '=' ( qualifiedExpression | functionCall | collectionVar1=collectionVar ) )?
+                       | ( varrayType | nestedTableType ) ( ':' '=' ( collectionConstructor | collectionVar1=collectionVar ) )?
+                       | collectionVar2=collectionVar MOD_SYMBOL TYPE
+                       )
+    ;
+
+cursorVariableDeclaration
+    : cursorVariable type
+    ;
+
+constantDeclaration
+    : constant CONSTANT datatype ( NOT NULL )? ( ':' '=' | DEFAULT ) expression
+    ;
+
+exceptionDeclaration
+    : exception EXCEPTION
+    ;
+
+collectionConstructor
+    : collectionType '(' value ( ',' value )* ')'
+    ;
+
+functionCall
+    : functionName '(' parameter ( ',' parameter )* ')'
+    ;
+
+qualifiedExpression
+    : typemark '(' aggregate ')'
+    ;
+
+typemark
+    : typeName
+    ;
+
+typeName
+    : identifier ( '.' identifier )*
+    ;
+
+aggregate
+    : positionChoiceList? explicitChoiceList?
+    ;
+
+explicitChoiceList
+    : ( ( namedChoiceList | indexChoiceList | basicIteratorChoice | indexIteratorChoice ) ','? )+
+    ;
+
+positionChoiceList
+    : ( ( expr | sequenceIteratorChoice ) ','? )+
+    ;
+
+namedChoiceList
+    : ( identifier '|'? )+ '=' '>' expr
+    ;
+
+indexChoiceList
+    : ( expr '|'? )+ '=' '>' expr
+    ;
+
+basicIteratorChoice
+    : FOR iterator '=' '>' expr
+    ;
+
+indexIteratorChoice
+    : FOR iterator INDEX expr '=' '>' expr
+    ;
+
+sequenceIteratorChoice
+    : FOR iterator SEQUENCE '=' '>' expr
+    ;
+
+cursorDeclaration
+    : CURSOR cursor
+        ( '(' cursorParameterDec ( ',' cursorParameterDec )* ')' )?
+          RETURN rowtype
+    ;
+
+cursorDefinition
+    : CURSOR cursor
+       ( '(' cursorParameterDec ( ',' cursorParameterDec )* ')' )?
+         ( RETURN rowtype )? IS select
+    ;
+
+cursorParameterDec
+    : parameter IN? datatype ( ( ':' '=' | DEFAULT ) expression )?
+    ;
+
+rowtype
+    : ( dbTableOrView | cursor | cursorVariable ) MOD_SYMBOL ROWTYPE
+    | record MOD_SYMBOL TYPE
+    | recordType
+    ;
+
+typeDefinition
+    : collectionTypeDefinition
+    | recordTypeDefinition
+    | refCursorTypeDefinition
+    | subtypeDefinition
+    ;
+
+collectionTypeDefinition
+    : TYPE type IS 
+        ( assocArrayTypeDef
+        | varrayTypeDef
+        | nestedTableTypeDef
+        )
+    ;
+
+assocArrayTypeDef
+    : TABLE OF datatype ( NOT NULL )?
+      INDEX BY ( PLS_INTEGER | BINARY_INTEGER | ( VARCHAR | VARCHAR2 | STRING ) '(' integer ')' | datatype )
+    ;
+
+varrayTypeDef
+    : ( VARRAY | VARYING? ARRAY ) '(' integer ')'
+        OF datatype ( NOT NULL )?
+    ;
+
+nestedTableTypeDef
+    : TABLE OF datatype ( NOT NULL )?
+    ;
+
+recordTypeDefinition
+    : TYPE recordType IS RECORD '(' fieldDefinition ( ',' fieldDefinition )* ')'
+    ;
+
+fieldDefinition
+    : field datatype ( ( NOT NULL )? ( ':' '=' | DEFAULT ) expression )?
+    ;
+
+refCursorTypeDefinition
+    : TYPE type IS REF CURSOR
+        ( RETURN
+          ( ( dbTableOrView | cursor | cursorVariable ) MOD_SYMBOL ROWTYPE
+          | record MOD_SYMBOL TYPE
+          | recordType
+          | refCursorType
+          )
+        )?
+    ;
+
+subtypeDefinition
+    : SUBTYPE subtype IS baseType ( constraint | CHARACTER SET characterSet )?
+        ( NOT NULL )?
+    ;
+
+createHierarchy
+    :
+    ;
+
+createIndextype
+    :
+    ;
+
+createInmemoryJoinGroup
+    :
+    ;
+
+createJava
+    :
+    ;
+
+createLibrary
+    :
+    ;
+
+createLockdownProfile
+    :
+    ;
+
+createMaterializedView
+    :
+    ;
+
+createMaterializedViewLog
+    :
+    ;
+
+createMaterializedZonemap
+    :
+    ;
+
+createOperator
+    :
+    ;
+
+createOutLine
+    :
+    ;
+
+createPackage
+    :
+    ;
+
+createPackageBody
+    :
+    ;
+
+createPfile
+    :
+    ;
+
+createPluggableDatabase
+    :
+    ;
+
+createPmemFileStore
+    :
+    ;
+
+createProcedure
+    :
+    ;
+
+createProfile
+    :
+    ;
+
+createRestorePoint
+    :
+    ;
+
+createRole
+    :
+    ;
+
+createRollbackSegment
+    :
+    ;
+
+createSequence
+    :
+    ;
+
+createSpfile
+    :
+    ;
+
+createTablespace
+    :
+    ;
+
+createTablespaceSet
+    :
+    ;
+
+createTrigger
+    :
+    ;
+
+createType
+    :
+    ;
+
+createTypeBody
+    :
+    ;
+
+createUser
+    :
     ;
 
 insert
@@ -6153,7 +6687,7 @@ flashbackQueryClause
     ;
 
 addDiskClause
-    : ADD (SITE sitename=identifier (QUORUM | REGULAR)? (FAILGROUP failgroupName=identifier)? DISK qualifiedDiskClause (',' qualifiedDiskClause)*)*
+    : ADD (SITE sitename=identifier (QUORUM | REGULAR)? (FAILGROUP failgroupName)? DISK qualifiedDiskClause (',' qualifiedDiskClause)*)*
     ;
 
 qualifiedDiskClause
@@ -6162,7 +6696,7 @@ qualifiedDiskClause
 
 dropDiskClause
     : DROP ((QUORUM | REGULAR)? DISK diskName=identifier (FORCE | NOFORCE)? (',' diskName=identifier (FORCE | NOFORCE)?)* 
-           | DISKS IN (QUORUM | REGULAR)? FAILGROUP failgroupName=identifier (FORCE | NOFORCE)? (',' failgroupName=identifier (FORCE | NOFORCE)?)*)
+           | DISKS IN (QUORUM | REGULAR)? FAILGROUP failgroupName (FORCE | NOFORCE)? (',' failgroupName (FORCE | NOFORCE)?)*)
     ;
 
 resizeDiskClause
@@ -6180,7 +6714,7 @@ renameDiskClause
 
 diskOnlineClause
     : ONLINE ( ( (QUORUM | REGULAR)? DISK diskName=identifier (',' diskName=identifier)* 
-               | DISKS IN (QUORUM | REGULAR)? FAILGROUP failgroupName=identifier (',' failgroupName=identifier)*
+               | DISKS IN (QUORUM | REGULAR)? FAILGROUP failgroupName (',' failgroupName)*
                )*
              | ALL)
       (POWER integer)? (WAIT | NOWAIT)?
@@ -6188,7 +6722,7 @@ diskOnlineClause
 
 diskOfflineClause
     : OFFLINE ( (QUORUM | REGULAR)? DISK diskName=identifier (',' diskName=identifier)* 
-              | DISKS IN (QUORUM | REGULAR)? FAILGROUP failgroupName=identifier (',' failgroupName=identifier)*)*
+              | DISKS IN (QUORUM | REGULAR)? FAILGROUP failgroupName (',' failgroupName)*)*
       timeoutClause?
     ;
 
@@ -6880,6 +7414,10 @@ scale
 
 size
     : S_INTEGER_WITHOUT_SIGN
+    ;
+
+collectionType
+    : identifier
     ;
 
 datatype
@@ -7680,10 +8218,6 @@ database
     : identifier
     ;
 
-typeName
-    : identifier
-    ;
-
 trigger
     : identifier
     ;
@@ -7781,6 +8315,10 @@ newHierName
     ;
 
 implementationType
+    : identifier
+    ;
+
+implementationPackage
     : identifier
     ;
 
@@ -8054,6 +8592,385 @@ fileName
     ;
 
 filePath
+    : identifier
+    ;
+
+label
+    : identifier
+    ;
+
+explicitCursorName
+    : identifier
+    ;
+
+cursorVariableName
+    : identifier
+    ;
+
+dbTableOrViewName
+    : identifier
+    ;
+
+record1
+    : identifier
+    ;
+
+record2
+    : identifier
+    ;
+
+exception
+    : identifier
+    ;
+
+characterSet
+    : identifier
+    ;
+
+connectString
+    : stringLiteral
+    ;
+
+pathName
+    : stringLiteral
+    ;
+
+siteName
+    : identifier
+    ;
+
+failgroupName
+    : identifier
+    ;
+
+parentEdition
+    : identifier
+    ;
+
+recordType
+    : identifier
+    ;
+
+field
+    : identifier
+    ;
+
+dbTableOrView
+    : identifier
+    ;
+
+cursor
+    : identifier
+    ;
+
+cursorVariable
+    : identifier
+    ;
+
+record
+    : identifier
+    ;
+
+refCursorType
+    : identifier
+    ;
+
+subtype
+    : identifier
+    ;
+
+baseType
+    : identifier
+    ;
+
+value
+    : expr
+    ;
+
+newCollectionVar
+    : identifier
+    ;
+
+assocArrayType
+    : identifier
+    ;
+
+nestedTableType
+    : identifier
+    ;
+
+collectionVar
+    : identifier
+    ;
+
+lowerBound
+    : identifier
+    ;
+
+upperBound
+    : identifier
+    ;
+
+iterator
+    : iterandDecl ( ',' iterandDecl )? IN iterationCtlSeq
+    ;
+
+iterandDecl
+    : plsIdentifier ( MUTABLE | IMMUTABLE )? constrainedType?
+    ;
+
+plsIdentifier
+    : identifier
+    ;
+
+constrainedType
+    : identifier
+    ;
+
+iterationCtlSeq
+    : ( qualIterationCtl (',' qualIterationCtl )? )+
+    ;
+
+qualIterationCtl
+    : REVERSE? iterationControl predClauseSeq
+    ;
+
+iterationControl
+    : steppedControl
+    | singleExpressionControl
+    | valuesOfControl
+    | indiciesOfControl
+    | pairsOfControl
+    | cursorIterationControl
+    ;
+
+predClauseSeq
+    : ( WHILE expr )? ( WHEN expr )?
+    ;
+
+steppedControl
+    : lowerBound '.' '.' upperBound ( BY step )?
+    ;
+
+singleExpressionControl
+    : REPEAT? expr
+    ;
+
+valuesOfControl
+    : VALUES OF ( expr
+                | cursorVariable
+                | '(' ( cursorObject | dynamicSql | sqlStatement ) ')'
+                )
+    ;
+dynamicSql
+    : EXECUTE IMMEDIATE dynamicSqlStmt ( USING ( IN? ( bindVariable ','? )+ )? )?
+    ;
+
+step
+    : numberLiteral
+    ;
+
+statement
+    : ( '<' '<' label '>' '>' )* ( assignmentStatement
+                                 | basicLoopStatement
+                                 | caseStatement
+                                 | closeStatement
+                                 | continueStatement
+                                 | cursorForLoopStatement
+                                 | executeImmediateStatement
+                                 | exitStatement
+                                 | fetchStatement
+                                 | forLoopStatement
+                                 | forallStatement
+                                 | gotoStatement
+                                 | ifStatement
+                                 | nullStatement
+                                 | openStatement
+                                 | openForStatement
+                                 | pipeRowStatement
+                                 | plsqlBlock
+                                 | raiseStatement
+                                 | returnStatement
+                                 | selectIntoStatement
+                                 | sqlStatement
+                                 | whileLoopStatement
+                                 )
+                                 // TODO: REMOVE
+                                 MOD_SYMBOL
+    ;
+
+assignmentStatement
+    :
+    ;
+
+basicLoopStatement
+    :
+    ;
+
+caseStatement
+    :
+    ;
+
+closeStatement
+    :
+    ;
+
+continueStatement
+    :
+    ;
+
+cursorForLoopStatement
+    :
+    ;
+
+executeImmediateStatement
+    :
+    ;
+
+exitStatement
+    :
+    ;
+
+fetchStatement
+    :
+    ;
+
+forLoopStatement
+    :
+    ;
+
+forallStatement
+    :
+    ;
+
+gotoStatement
+    :
+    ;
+
+ifStatement
+    :
+    ;
+
+nullStatement
+    :
+    ;
+
+openStatement
+    :
+    ;
+
+openForStatement
+    :
+    ;
+
+pipeRowStatement
+    :
+    ;
+
+plsqlBlock
+    :
+    ;
+
+raiseStatement
+    :
+    ;
+
+returnStatement
+    :
+    ;
+
+selectIntoStatement
+    :
+    ;
+
+whileLoopStatement
+    :
+    ;
+
+sqlStatement
+    : commitStatement
+    | collectionMethodCall
+    | deleteStatement
+    | insertStatement
+    | lockTableStatement
+    | mergeStatement
+    | rollbackStatement
+    | savepointStatement
+    | setTransactionStatement
+    | updateStatement
+    ;
+
+commitStatement
+    :
+    ;
+
+collectionMethodCall
+    :
+    ;
+
+deleteStatement
+    :
+    ;
+
+insertStatement
+    :
+    ;
+
+lockTableStatement
+    :
+    ;
+
+mergeStatement
+    :
+    ;
+
+rollbackStatement
+    :
+    ;
+
+savepointStatement
+    :
+    ;
+
+setTransactionStatement
+    :
+    ;
+
+updateStatement
+    :
+    ;
+
+dynamicSqlStmt
+    : expr
+    ;
+
+cursorObject
+    : identifier
+    ;
+
+indiciesOfControl
+    : INDICES OF ( expr
+                 | cursorVariable
+                 | '(' ( cursorObject | dynamicSql | sqlStatement ) ')'
+                 )
+    ;
+
+pairsOfControl
+    : PAIRS OF ( expr
+               | cursorVariable
+               | '(' ( cursorObject | dynamicSql | sqlStatement ) ')'
+               )
+    ;
+
+cursorIterationControl
+    : '(' ( cursorObject | cursorVariable | dynamicSql | sqlStatement ) ')'
+    ;
+
+constant
+    : identifier
+    ;
+
+variable
     : identifier
     ;
 
