@@ -927,8 +927,8 @@ createPdbFromXml
          ( standbysClause )?
          ( loggingClause )?
          ( createFileDestClause )?
-         ( HOST = stringLiteral )?
-         ( PORT = numberLiteral )?
+         ( HOST '=' stringLiteral )?
+         ( PORT '=' numberLiteral )?
          ( createPdbDecryptFromXml )?
     ;
 
@@ -968,8 +968,8 @@ createPdbClone
         pdbRefreshModeClause?
         ( RELOCATE AVAILABILITY  (MAX | NORMAL ) )?
         NO DATA?
-        ( HOST = stringLiteral )?
-        ( PORT = numberLiteral )?
+        ( HOST '=' stringLiteral )?
+        ( PORT '=' numberLiteral )?
     ;
 
 usingSnapshotClause
@@ -997,8 +997,8 @@ createPdbFromSeed
         standbysClause?
         loggingClause?
         createFileDestClause?
-        ( HOST = stringLiteral )?
-        ( PORT = numberLiteral )?
+        ( HOST '=' stringLiteral )?
+        ( PORT '=' numberLiteral )?
     ;
 
 pdbDbaRoles
@@ -1027,7 +1027,7 @@ tempfileReuseClause
 userTablespacesClause
     : USER_TABLESPACES '='
         ( '(' tablespace ( ',' tablespace )* ')'
-        | ALL ( EXCEPT '(' tablespace ( ',' 'tablespace' )* ')' )?
+        | ALL ( EXCEPT '(' tablespace ( ',' tablespace )* ')' )?
         | NONE
         )
         ( SNAPSHOT COPY | NO DATA | COPY | MOVE | NOCOPY )?
@@ -1076,47 +1076,341 @@ createProfile
     ;
 
 createRestorePoint
-    :
+    : CREATE CLEAN? RESTORE POINT restorePoint
+        ( FOR PLUGGABLE DATABASE pdbName )?
+        ( AS OF ( TIMESTAMP | SCN ) expr )?
+        ( PRESERVE
+        | GUARANTEE FLASHBACK DATABASE
+        )?
     ;
 
 createRole
-    :
+    : CREATE ROLE role
+        ( NOT IDENTIFIED
+        | IDENTIFIED ( BY password
+                     | USING ( schema '.' )? packageName
+                     | EXTERNALLY
+                     | GLOBALLY AS domainNameOfDirectoryGroup
+                     )
+        )? ( CONTAINER '=' ( CURRENT | ALL ) )?
     ;
 
 createRollbackSegment
-    :
+    : CREATE PUBLIC? ROLLBACK SEGMENT rollbackSegment
+        ( TABLESPACE tablespace | storageClause )*
     ;
 
 createSequence
-    :
+    : CREATE SEQUENCE ( schema '.' )? sequence
+        ( SHARING '=' ( METADATA | DATA | NONE ) )
+        ( ( INCREMENT BY | START WITH ) integer
+        | ( MAXVALUE integer | NOMAXVALUE )
+        | ( MINVALUE integer | NOMINVALUE )
+        | ( CYCLE | NOCYCLE )
+        | ( CACHE integer | NOCACHE )
+        | ( ORDER | NOORDER )
+        | ( KEEP | NOKEEP )
+        | ( SCALE ( EXTEND | NOEXTEND ) | NOSCALE )
+        | ( SESSION | GLOBAL )
+        )*
     ;
 
 createSpfile
-    :
+    : CREATE SPFILE ( '=' stringLiteral )?
+        FROM ( PFILE ( '=' stringLiteral )? ( AS COPY )?
+             | MEMORY
+             )
     ;
 
 createTablespace
-    :
+    : CREATE
+        ( BIGFILE | SMALLFILE )?
+        ( permanentTablespaceClause
+        | temporaryTablespaceClause
+        | undoTablespaceClause
+        )
+    ;
+
+permanentTablespaceClause
+    : TABLESPACE tablespace
+        ( DATAFILE fileSpecification ( ',' fileSpecification )* )?
+        permanentTablespaceAttrs?
+        ( IN SHARDSPACE shardspaceName )?
+    ;
+
+permanentTablespaceAttrs
+    : ( MINIMUM EXTENT sizeClause
+      | BLOCKSIZE integer K_K?
+      | loggingClause
+      | FORCE LOGGING
+      | tablespaceEncryptionClause
+      | defaultTablespaceParams
+      | ( ONLINE | OFFLINE )
+      | extentManagementClause
+      | segmentManagementClause
+      | flashbackModeClause
+      )+
+    ;
+
+tablespaceEncryptionClause
+    : ENCRYPTION ( tablespaceEncryptionSpec? ENCRYPT | DECRYPT )?
+    ;
+
+segmentManagementClause
+    : SEGMENT SPACE MANAGEMENT ( AUTO | MANUAL )
+    ;
+
+temporaryTablespaceClause
+    : ( TEMPORARY TABLESPACE
+      | LOCAL TEMPORARY TABLESPACE FOR ( ALL | LEAF )
+      ) tablespace
+      ( TEMPFILE fileSpecification ( ',' fileSpecification )* )?
+      tablespaceGroupClause?
+      extentManagementClause?
+    ;
+
+undoTablespaceClause
+    : UNDO TABLESPACE tablespace
+        ( DATAFILE fileSpecification ( ',' fileSpecification )* )?
+        extentManagementClause?
+        tablespaceRetentionClause?
+        tablespaceEncryptionClause?
     ;
 
 createTablespaceSet
-    :
+    : CREATE TABLESPACE SET tablespaceSet
+        ( IN SHARDSPACE shardspaceName )?
+        ( USING TEMPLATE 
+          '(' ( DATAFILE fileSpecification ( ',' fileSpecification )* )? permanentTablespaceAttrs ')'
+        )
     ;
 
 createTrigger
-    :
+    : CREATE ( OR REPLACE )?
+        ( EDITIONABLE | NONEDITIONABLE )?
+        TRIGGER plsqlTriggerSource
+    ;
+
+plsqlTriggerSource
+    : ( schema '.' )? triggerName
+         sharingClause? defaultCollationClause ?
+         ( simpleDmlTrigger
+         | insteadOfDmlTrigger
+         | compoundDmlTrigger
+         | systemTrigger
+         )
+    ;
+
+systemTrigger
+    : ( BEFORE | AFTER | INSTEAD OF )
+         ( ddlEvent ( OR ddlEvent )* | databaseEvent ( OR databaseEvent )* )
+         ON ( ( schema '.' )? SCHEMA | PLUGGABLE? DATABASE )
+         triggerOrderingClause? 
+         ( ENABLE | DISABLE )? triggerBody
+    ;
+
+compoundDmlTrigger
+    : FOR dmlEventClause referencingClause?
+        triggerEditionClause?
+        triggerOrderingClause?
+        ( ENABLE | DISABLE )?
+        ( WHEN '(' condition ')' )?
+        compoundTriggerBlock
+    ;
+
+compoundTriggerBlock
+    : COMPOUND TRIGGER declareSection? timingPointSection+ END trigger?
+    ;
+
+timingPointSection
+    : timingPoint IS BEGIN tpsBody END timingPoint
+    ;
+
+timingPoint
+    : BEFORE STATEMENT
+    | BEFORE EACH ROW
+    | AFTER STATEMENT
+    | AFTER EACH ROW
+    | INSTEAD OF EACH ROW
+    ;
+
+tpsBody
+    : statement+ ( EXCEPTION exceptionHandler+ )?
+    ;
+
+insteadOfDmlTrigger
+    : INSTEAD OF ( DELETE | INSERT | UPDATE ) ( OR ( DELETE | INSERT | UPDATE ) )*
+        ON ( NESTED TABLE nestedTableColumn OF )? ( schema '.' )? noneditioningView
+        referencingClause?
+        ( FOR EACH ROW )?
+        triggerEditionClause?
+        triggerOrderingClause?
+        ( ENABLE | DISABLE )? triggerBody
+    ;
+
+simpleDmlTrigger
+    : { BEFORE | AFTER } dmlEventClause referencingClause? ( FOR EACH ROW )?
+        triggerEditionClause? triggerOrderingClause?
+        ( ENABLE | DISABLE )? ( WHEN '(' condition ')' )? triggerBody
+    ;
+
+dmlEventClause
+    : ( DELETE | INSERT | UPDATE ( OF column ( ',' column )* )? )
+        ( OR ( DELETE | INSERT | UPDATE ( OF column ( ',' column )* )? ) )+
+        ON ( schema '.' )? ( table | view )
+    ;
+
+referencingClause
+    : REFERENCING
+        ( OLD AS? old
+        | NEW AS? new
+        | PARENT AS? parent
+        )+
+    ;
+
+triggerEditionClause
+    : ( FORWARD | REVERSE )? CROSSEDITION 
+    ;
+
+triggerOrderingClause
+    : ( FOLLOWS | PRECEDES ) ( schema '.' )? trigger ( ',' ( schema '.' )? trigger )* 
+    ;
+
+triggerBody
+    : plsqlBlock
+    | CALL routineClause
+    ;
+
+routineClause
+    : ( schema '.' )? ( type '.' | packageName '.' )?
+         ( functionName | procedureName | method )
+         ( '@' dblinkname )?
+         '(' ( argument ( ',' argument )* )? ')'
     ;
 
 createType
-    :
+    : CREATE ( OR REPLACE )?
+        ( EDITIONABLE | NONEDITIONABLE )?
+        TYPE plsqlTypeSource
+    ;
+
+plsqlTypeSource
+    : ( schema '.' )? typeName FORCE? ( OID stringLiteral )?
+          sharingClause? defaultCollationClause? ( invokerRightsClause |  accessibleByClause )*
+            ( objectBaseTypeDef | objectSubtypeDef )
+    ;
+
+objectBaseTypeDef
+    :  ( IS | AS ) ( objectTypeDef | varrayTypeSpec | nestedTableTypeSpec )
+    ;
+
+objectSubtypeDef
+    : UNDER ( schema '.' )? supertype 
+        '(' ( attribute datatype ( ',' attribute datatype )* ) ( ',' elementSpec )* ')'
+        ( NOT? ( FINAL | INSTANTIABLE ) )*
+    ;
+
+objectTypeDef
+    : OBJECT
+        '(' ( attribute datatype ( ',' attribute datatype )* ) ( ',' elementSpec )* ')'
+        ( NOT? ( FINAL | INSTANTIABLE | PERSISTABLE ) )*
+    ;
+
+varrayTypeSpec
+    : ( VARRAY | VARYING ARRAY ) '(' sizeLimit ')' OF '(' '('? datatype ( NOT NULL )? ')'? | '(' datatype ( NOT NULL )? ')' ( NOT? PERSISTABLE )? ')'
+    ;
+
+nestedTableTypeSpec
+    : TABLE OF '(' '('? datatype ( NOT NULL )? ')'? | '('  datatype ( NOT NULL )? ')'  ( NOT? PERSISTABLE )? ')'
     ;
 
 createTypeBody
-    :
+    : CREATE ( OR REPLACE )?
+        ( EDITIONABLE | NONEDITIONABLE )?
+        TYPE BODY plsqlTypeBodySource
+    ;
+
+plsqlTypeBodySource
+    : ( schema '.' )? typeName  sharingClause?
+         ( IS | AS )
+            ( subprogDeclInType
+            | mapOrderFuncDeclaration
+            )
+              ( ',' ( subprogDeclInType
+                    | mapOrderFuncDeclaration
+                    )
+              )*
+         END
+    ;
+
+subprogDeclInType
+    : procDeclInType
+    | funcDeclInType
+    | constructorDeclaration
+    ;
+
+procDeclInType
+    : PROCEDURE name ( '(' parameterDeclaration ( ',' parameterDeclaration )* ')' )?
+        ( IS | AS ) ( declareSection? body | callSpec )
+    ;
+
+funcDeclInType
+    : FUNCTION name ( '(' parameterDeclaration ( ',' parameterDeclaration )* ')' )?
+        RETURN datatype
+        ( invokerRightsClause
+        | accessibleByClause
+        | DETERMINISTIC
+        | parallelEnableClause
+        | resultCacheClause
+        )* PIPELINED?
+        ( IS | AS ) ( declareSection? body | callSpec )
+    ;
+
+constructorDeclaration
+    : FINAL?
+      INSTANTIABLE?
+      CONSTRUCTOR FUNCTION datatype
+      ( ( SELF IN OUT datatype ',' )?
+        parameter datatype ( ',' parameter datatype )*
+      )?
+      RETURN SELF AS RESULT
+      ( IS | AS ) ( declareSection? body | callSpec )
+    ;
+
+mapOrderFuncDeclaration
+    : ( MAP | ORDER ) MEMBER funcDeclInType
     ;
 
 createUser
-    :
+    : CREATE USER user
+        ( (
+            IDENTIFIED
+            (
+               BY password ( HTTP? DIGEST ( ENABLE | DISABLE ) )?
+               | EXTERNALLY ( AS stringLiteral  |  AS stringLiteral )
+               | GLOBALLY ( AS stringLiteral )?
+            )
+          )
+        | NO AUTHENTICATION
+        )
+        ( DEFAULT COLLATION collationName )?
+        ( DEFAULT TABLESPACE tablespace
+        | LOCAL? TEMPORARY TABLESPACE ( tablespace | tablespaceGroupName )
+        | ( QUOTA ( sizeClause | UNLIMITED ) ON tablespace )+
+        | PROFILE profile
+        | PASSWORD EXPIRE
+        | ACCOUNT ( LOCK | UNLOCK )
+          ( DEFAULT TABLESPACE tablespace
+          | TEMPORARY TABLESPACE
+               ( tablespace | tablespaceGroupName )
+          | ( QUOTA ( sizeClause | UNLIMITED ) ON tablespace )+
+          | PROFILE profile
+          | PASSWORD EXPIRE
+          | ACCOUNT ( LOCK | UNLOCK )
+          | ENABLE EDITIONS
+          | CONTAINER '=' ( CURRENT | ALL )
+          )*
+        )?
     ;
 
 insert
@@ -3855,7 +4149,7 @@ fullDatabaseRecovery
 
 partialDatabaseRecovery
     : TABLESPACE tablespace (',' tablespace)*
-    | DATAFILE (filename=SINGLE_QUOTED_STRING | filenumber=integer)
+    | DATAFILE (filename | filenumber=integer)
     ;
 
 managedStandbyRecovery
@@ -4067,7 +4361,7 @@ prepareClause
     ;
 
 dropMirrorCopy
-    : DROP MIRROR COPY mirrorName=identifier
+    : DROP MIRROR COPY mirrorName
     ;
 
 lostWriteProtection
@@ -6454,7 +6748,7 @@ fileNameConvert
     ;
 
 fileNameConvertItem
-    : filenamePattern=stringLiteral ',' replacementFilenamePattern=stringLiteral
+    : filenamePattern ',' replacementFilenamePattern=stringLiteral
     ;
 
 tablespaceDatafileClauses
@@ -7293,22 +7587,22 @@ createKeystore
     : CREATE ( KEYSTORE stringLiteral
              | LOCAL? AUTO_LOGIN KEYSTORE FROM KEYSTORE stringLiteral
              )
-      IDENTIFIED BY keystorePassword=identifier
+      IDENTIFIED BY keystorePassword
     ;
 
 openKeystore
     : SET KEYSTORE OPEN (FORCE KEYSTORE)?
-      IDENTIFIED BY (EXTERNAL STORE | keystorePassword=identifier)
+      IDENTIFIED BY (EXTERNAL STORE | keystorePassword)
       (CONTAINER '=' (ALL | CURRENT))?
     ;
 
 closeKeystore
-    : SET KEYSTORE CLOSE (IDENTIFIED BY (EXTERNAL STORE | keystorePassword=identifier))? (CONTAINER '=' (ALL | CURRENT))?
+    : SET KEYSTORE CLOSE (IDENTIFIED BY (EXTERNAL STORE | keystorePassword))? (CONTAINER '=' (ALL | CURRENT))?
     ;
 
 backupKeystore
     : BACKUP KEYSTORE (USING stringLiteral)? (FORCE KEYSTORE)? IDENTIFIED BY 
-      (EXTERNAL STORE | keystorePassword=identifier)
+      (EXTERNAL STORE | keystorePassword)
       (TO stringLiteral)?
     ;
 
@@ -7366,7 +7660,7 @@ createKey
     : CREATE ENCRYPTION? KEY (USING TAG stringLiteral)?
       (USING ALGORITHM stringLiteral)?
       (FORCE KEYSTORE)?
-      IDENTIFIED BY (EXTERNAL STORE | keystorePassword=identifier)
+      IDENTIFIED BY (EXTERNAL STORE | keystorePassword)
       (WITH BACKUP (USING stringLiteral)?)?
       (CONTAINER '=' (ALL | CURRENT))?
     ;
@@ -7374,26 +7668,26 @@ createKey
 useKey
     : USE ENCRYPTION? KEY stringLiteral (USING TAG stringLiteral)?
       (FORCE KEYSTORE)?
-      IDENTIFIED BY (EXTERNAL STORE | keystorePassword=identifier)
+      IDENTIFIED BY (EXTERNAL STORE | keystorePassword)
       (WITH BACKUP (USING stringLiteral)?)?
     ;
 
 setKeyTag
     : SET TAG stringLiteral FOR stringLiteral
       (FORCE KEYSTORE)?
-      IDENTIFIED BY (EXTERNAL STORE | keystorePassword=identifier)
+      IDENTIFIED BY (EXTERNAL STORE | keystorePassword)
       (WITH BACKUP (USING stringLiteral)?)?
     ;
 
 exportKeys
     : EXPORT ENCRYPTION? KEYS WITH SECRET secret=identifier TO stringLiteral
-      (FORCE KEYSTORE)? IDENTIFIED BY keystorePassword=identifier
+      (FORCE KEYSTORE)? IDENTIFIED BY keystorePassword
       (WITH IDENTIFIER IN (stringLiteral (',' stringLiteral)* | '(' subquery ')'))?
     ;
 
 importKeys
     : IMPORT ENCRYPTION? KEYS WITH SECRET secret=identifier FROM stringLiteral
-      (FORCE KEYSTORE)? IDENTIFIED BY keystorePassword=identifier
+      (FORCE KEYSTORE)? IDENTIFIED BY keystorePassword
       (WITH BACKUP (USING stringLiteral)?)?
     ;
 
@@ -7411,7 +7705,7 @@ reverseMigrateKey
 
 moveKeys
     : MOVE ENCRYPTION? KEYS TO NEW KEYSTORE keyStoreLocation1=identifier
-      IDENTIFIED BY keystore1Password=identifier FROM FORCE? KEYSTORE IDENTIFIED BY keystorePassword=identifier
+      IDENTIFIED BY keystore1Password=identifier FROM FORCE? KEYSTORE IDENTIFIED BY keystorePassword
       (WITH IDENTIFIER IN (stringLiteral (',' stringLiteral)* | '(' subquery ')'))?
       (WITH BACKUP (USING stringLiteral)?)?
     ;
@@ -7427,13 +7721,13 @@ addUpdateSecret
     : (ADD | UPDATE) SECRET stringLiteral FOR CLIENT stringLiteral 
       (USING TAG stringLiteral)?
       (FORCE KEYSTORE)?
-      IDENTIFIED BY (EXTERNAL STORE | keystorePassword=identifier)
+      IDENTIFIED BY (EXTERNAL STORE | keystorePassword)
       (WITH BACKUP (USING stringLiteral)?)?
     ;
 
 deleteSecret
     : DELETE SECRET FOR CLIENT stringLiteral
-      (FORCE KEYSTORE)? IDENTIFIED BY (EXTERNAL STORE | keystorePassword=identifier)
+      (FORCE KEYSTORE)? IDENTIFIED BY (EXTERNAL STORE | keystorePassword)
       (WITH BACKUP (USING stringLiteral)?)?
     ;
 
@@ -9422,7 +9716,7 @@ sourceOutline
     ;
 
 filenamePattern
-    : identifier
+    : stringLiteral
     ;
 
 cdbName
@@ -9442,11 +9736,11 @@ snapshotTimestamp
     ;
 
 keystorePassword
-    : stringLiteral
+    : identifier
     ;
 
 filename
-    : identifier
+    : SINGLE_QUOTED_STRING
     ;
 
 newPdbName
@@ -9463,6 +9757,42 @@ dblinkname
 
 mirrorName
     : identifier
+    ;
+
+restorePoint
+    : identifier
+    ;
+
+shardspaceName
+    : identifier
+    ;
+
+old
+    : identifier
+    ;
+
+new
+    : identifier
+    ;
+
+parent
+    : identifier
+    ;
+
+nestedTableColumn
+    : identifier
+    ;
+
+noneditioningView
+    : identifier
+    ;
+
+supertype
+    : identifier
+    ;
+
+sizeLimit
+    : integer
     ;
 
 tablespec
@@ -9510,6 +9840,36 @@ dateTimeLiteral
 
 intervalLiteral
     : INTERVAL SINGLE_QUOTED_STRING (YEAR|MONTH) ('(' precision ')')? (TO (YEAR|MONTH))?
+    ;
+
+ddlEvent
+    : ALTER
+    | ANALYZE
+    | ASSOCIATE STATISTICS
+    | AUDIT
+    | COMMENT
+    | CREATE
+    | DISASSOCIATE STATISTICS
+    | DROP
+    | GRANT
+    | NOAUDIT
+    | RENAME
+    | REVOKE
+    | TRUNCATE
+    | DDL
+    ;
+
+databaseEvent
+    : AFTER STARTUP
+    | BEFORE SHUTDOWN
+    | AFTER DB_ROLE_CHANGE
+    | AFTER SERVERERROR
+    | AFTER LOGON
+    | BEFORE LOGOFF
+    | AFTER SUSPEND
+    | AFTER CLONE
+    | BEFORE UNPLUG
+    | ( BEFORE | AFTER )? SET CONTAINER
     ;
 
 lockmode
