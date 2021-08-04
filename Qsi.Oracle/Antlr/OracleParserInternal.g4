@@ -676,59 +676,403 @@ createJava
     ;
 
 createLibrary
-    :
+    : CREATE ( OR REPLACE )? ( EDITIONABLE | NOEDITIONABLE )? LIBRARY plsqlLibrarySource
+    ;
+
+plsqlLibrarySource
+    : ( schema '.' )? libraryName sharingClause? ( IS | AS )
+        ( stringLiteral | stringLiteral IN directoryObject )
+        ( AGENT stringLiteral )? ( CREDENTIAL ( schema '.' )? credentialName )?
     ;
 
 createLockdownProfile
-    :
+    : CREATE LOCKDOWN PROFILE profileName ( staticBaseProfile | dynamicBaseProfile )?
+    ;
+
+staticBaseProfile
+    : FROM baseProfile
+    ;
+
+dynamicBaseProfile
+    : INCLUDING baseProfile
     ;
 
 createMaterializedView
-    :
+    : CREATE MATERIALIZED VIEW ( schema '.' )? materializedView
+        ( OF ( schema '.' )? objectType )?
+        ( '(' ( scopedTableRefConstraint
+            | cAlias ( ENCRYPT encryptionSpec? )?
+            )
+            ( ',' ( scopedTableRefConstraint
+               | cAlias ( ENCRYPT encryptionSpec? )?
+               )
+            )*
+          ')'
+        )?
+        ( DEFAULT COLLATION collationName )?
+        ( ON PREBUILT TABLE
+          ( ( WITH | WITHOUT ) REDUCED PRECISION )?
+        | physicalProperties materializedViewProps
+        )
+        ( USING INDEX
+          ( physicalAttributesClause
+          | TABLESPACE tablespace
+          )*
+        | USING NO INDEX
+        )?
+        createMvRefresh?
+        evaluationEditionClause?
+        ( ( ENABLE | DISABLE ) ON QUERY COMPUTATION )?
+        queryRewriteClause?
+      AS subquery
+    ;
+
+createMvRefresh
+    : REFRESH
+        ( ( FAST | COMPLETE | FORCE )
+        | ( ON DEMAND 
+          | ON COMMIT 
+          | ON STATEMENT
+          )
+        | ( START WITH expr |
+            NEXT expr
+          )+
+        | WITH ( PRIMARY KEY | ROWID )
+        | USING
+           ( DEFAULT ( MASTER | LOCAL )? ROLLBACK SEGMENT
+           | ( MASTER | LOCAL )? ROLLBACK SEGMENT rollbackSegment
+           )+
+        | USING
+           ( ENFORCED | TRUSTED ) CONSTRAINTS
+        )+
+      | NEVER REFRESH
+    ;
+
+queryRewriteClause
+    : ( ENABLE | DISABLE ) QUERY REWRITE unusableEditionsClause?
+    ;
+
+materializedViewProps
+    : columnProperties?
+      tablePartitioningClauses?
+      ( CACHE | NOCACHE )?
+      parallelClause?
+      buildClause?
+    ;
+
+buildClause
+    : BUILD ( IMMEDIATE | DEFERRED )
     ;
 
 createMaterializedViewLog
-    :
+    : CREATE MATERIALIZED VIEW LOG ON ( schema '.' )? table
+        ( physicalAttributesClause
+        | TABLESPACE tablespace
+        | loggingClause
+        | ( CACHE | NOCACHE )
+        )*
+        parallelClause?
+        tablePartitioningClauses?
+        ( WITH ( ( OBJECT ID
+                 | PRIMARY KEY
+                 | ROWID
+                 | SEQUENCE
+                 | COMMIT SCN
+                 )
+                 (  ',' OBJECT ID
+                 | ',' PRIMARY KEY
+                 | ',' ROWID
+                 | ',' SEQUENCE
+                 | ',' COMMIT SCN
+                 )* 
+               )?
+          '(' column ( ',' column )* ')'
+          newValuesClause?
+        )?
+        mvLogPurgeClause?
+        forRefreshClause?
     ;
 
 createMaterializedZonemap
-    :
+    : createZonemapOnTable
+    | createZonemapAsSubquery
+    ;
+
+createZonemapOnTable
+    : CREATE MATERIALIZED ZONEMAP
+              ( schema '.' )? zonemapName
+              zonemapAttributes?
+              zonemapRefreshClause?
+              ( ( ENABLE | DISABLE ) PRUNING )?
+              ON ( schema '.' )? ( table | materializedView ) '(' column ( ',' column )* ')'
+    ;
+
+createZonemapAsSubquery
+    : CREATE MATERIALIZED ZONEMAP
+        ( schema '.' )? zonemapName
+        zonemapAttributes?
+        zonemapRefreshClause?
+        ( ( ENABLE | DISABLE ) PRUNING )?
+        AS queryBlock
+    ;
+
+zonemapAttributes
+    : TABLESPACE tablespace
+    | SCALE integer
+    | ( CACHE | NOCACHE )
     ;
 
 createOperator
-    :
+    : CREATE ( OR REPLACE )? OPERATOR ( schema '.' )? operatorName bindingClause
+    ;
+
+bindingClause
+    : BINDING '(' parameterTypes ')' RETURN returnType implementationClause? usingFunctionClause
+        ( ',' '(' parameterTypes ')' RETURN returnType implementationClause? usingFunctionClause )*
     ;
 
 createOutLine
-    :
+    : CREATE ( OR REPLACE )?
+        ( PUBLIC | PRIVATE )? OUTLINE outline?
+        ( FROM ( PUBLIC | PRIVATE )? sourceOutline )?
+        ( FOR CATEGORY categoryName )?
+        ( ON statement )?
     ;
 
 createPackage
-    :
+    : CREATE ( OR REPLACE )?
+        ( EDITIONABLE | NONEDITIONABLE )?
+        PACKAGE plsqlPackageSource
+    ;
+
+plsqlPackageSource
+    : ( schema '.' )? packageName sharingClause? ( defaultCollationClause | invokerRightsClause | accessibleByClause )*
+         ( IS | AS ) packageItemList END packageName?
+    ;
+
+packageItemList
+    : ( typeDefinition 
+      | cursorDeclaration 
+      | itemDeclaration 
+      | packageFunctionDeclaration 
+      | packageProcedureDeclaration 
+      )+
+    ;
+
+packageFunctionDeclaration
+    : functionHeading 
+        ( accessibleByClause 
+        | deterministicClause 
+        | pipelinedClause 
+        | parallelEnableClause 
+        | resultCacheClause )?
+    ;
+
+packageProcedureDeclaration
+    : procedureHeading accessibleByClause?
     ;
 
 createPackageBody
-    :
+    : CREATE ( OR REPLACE )? ( EDITIONABLE | NONEDITIONABLE )?
+        PACKAGE BODY plsqlPackageBodySource
+    ;
+
+plsqlPackageBodySource
+    : ( schema '.' )? packageName sharingClause?
+        ( IS | AS ) declareSection initializeSection?
+        END packageName?
+    ;
+
+initializeSection
+    : BEGIN statement+ ( EXCEPTION exceptionHandler+ )?
     ;
 
 createPfile
-    :
+    : CREATE PFILE '=' stringLiteral FROM ( SPFILE '=' stringLiteral
+                                          | MEMORY
+                                          )
     ;
 
 createPluggableDatabase
-    :
+    : CREATE PLUGGABLE DATABASE
+        ( pdbName ( AS APPLICATION CONTAINER )? | AS SEED )
+        ( createPdbFromSeed
+        | createPdbClone
+        | createPdbFromXml
+        | createPdbFromMirrorCopy
+        | containerMapClause
+        )
+        pdbSnapshotClause
+    ;
+
+containerMapClause
+    : CONTAINER_MAP UPDATE ( addTablePartition | splitTablePartition )
+    ;
+
+createPdbFromMirrorCopy
+    : newPdbName FROM basePdbName '@' dblinkname
+        USING MIRROR COPY mirrorName
+    ;
+
+createPdbFromXml
+    :  ( AS CLONE )? USING filename
+         ( sourceFileNameConvert | sourceFileDirectory )?
+         ( ( COPY | MOVE )? fileNameConvert | NOCOPY )?
+         ( serviceNameConvert )?
+         ( defaultTablespace )?
+         ( pdbStorageClause )?
+         ( pathPrefixClause )?
+         ( tempfileReuseClause )?
+         ( userTablespacesClause )?
+         ( standbysClause )?
+         ( loggingClause )?
+         ( createFileDestClause )?
+         ( HOST = stringLiteral )?
+         ( PORT = numberLiteral )?
+         ( createPdbDecryptFromXml )?
+    ;
+
+sourceFileNameConvert
+    : SOURCE_FILE_NAME_CONVERT '='
+      ( '(' filenamePattern ','  filenamePattern ')' ( ',' '(' filenamePattern ',' filenamePattern ')' )* 
+      | NONE
+      )
+    ;
+
+sourceFileDirectory
+    : SOURCE_FILE_DIRECTORY '=' ( stringLiteral | NONE )
+    ;
+
+createPdbDecryptFromXml
+    : DECRYPT USING transportSecret
+    ;
+
+createPdbClone
+    : ( ( FROM ( pdbName ( '@' dblink )? ) | ( NON '$' CDB '@' dblink ) )
+      | ( AS PROXY FROM pdbName '@' dblink )
+      )
+        parallelPdbCreationClause?
+        defaultTablespace?
+        pdbStorageClause?
+        fileNameConvert?
+        serviceNameConvert?
+        pathPrefixClause?
+        tempfileReuseClause?
+        ( SNAPSHOT COPY )?
+        usingSnapshotClause?
+        userTablespacesClause?
+        standbysClause?
+        loggingClause?
+        createFileDestClause?
+        keystoreClause?
+        pdbRefreshModeClause?
+        ( RELOCATE AVAILABILITY  (MAX | NORMAL ) )?
+        NO DATA?
+        ( HOST = stringLiteral )?
+        ( PORT = numberLiteral )?
+    ;
+
+usingSnapshotClause
+    : USING SNAPSHOT ( snapshotName
+                     | AT SCN snapshotSCN
+                     | AT snapshotTimestamp
+                     )
+    ;
+
+keystoreClause
+    : KEYSTORE IDENTIFIED BY keystorePassword
+    ;
+
+createPdbFromSeed
+    : ADMIN USER adminUserName IDENTIFIED BY password
+        pdbDbaRoles?
+        parallelPdbCreationClause?
+        defaultTablespace?
+        pdbStorageClause?
+        fileNameConvert?
+        serviceNameConvert?
+        pathPrefixClause?
+        tempfileReuseClause?
+        userTablespacesClause?
+        standbysClause?
+        loggingClause?
+        createFileDestClause?
+        ( HOST = stringLiteral )?
+        ( PORT = numberLiteral )?
+    ;
+
+pdbDbaRoles
+    : ROLES '=' '(' role ( ',' role )* ')'
+    ;
+
+parallelPdbCreationClause
+    : PARALLEL integer?
+    ;
+
+ serviceNameConvert
+    : SERVICE_NAME_CONVERT '='
+      ( '(' serviceName ',' serviceName ')' ( ',' '(' serviceName ',' serviceName ')' )* 
+      | NONE
+      )
+    ;
+
+pathPrefixClause
+    : PATH_PREFIX '=' ( stringLiteral | directoryObjectName | NONE )
+    ;
+
+tempfileReuseClause
+    : TEMPFILE REUSE
+    ;
+
+userTablespacesClause
+    : USER_TABLESPACES '='
+        ( '(' tablespace ( ',' tablespace )* ')'
+        | ALL ( EXCEPT '(' tablespace ( ',' 'tablespace' )* ')' )?
+        | NONE
+        )
+        ( SNAPSHOT COPY | NO DATA | COPY | MOVE | NOCOPY )?
+    ;
+
+standbysClause
+    : STANDBYS '=' ( '(' cdbName ( ',' cdbName )* ')'
+                   | ( ALL ( EXCEPT '(' cdbName ( ',' cdbName )* ')' )? )
+                   | NONE
+                   )
+    ;
+
+createFileDestClause
+    : CREATE_FILE_DEST '=' ( NONE | stringLiteral | diskgroupName )
     ;
 
 createPmemFileStore
-    :
+    : CREATE PMEM FILESTORE filestoreName
+        ( MOUNTPOINT filePath
+        | BACKINGFILE fileName REUSE?
+        | SIZE sizeClause
+        | BLOCK SIZE sizeClause
+        | autoextendClause
+        )
     ;
 
 createProcedure
-    :
+    : CREATE ( OR REPLACE )?
+        ( EDITIONABLE | NONEDITIONABLE )?
+        PROCEDURE plsqlProcedureSource
+    ;
+
+plsqlProcedureSource
+    : ( schema '.' )? procedureName
+        ( '(' parameterDeclaration ( ',' parameterDeclaration )* ')' )? sharingClause?
+        ( defaultCollationClause | invokerRightsClause | accessibleByClause)*
+        ( IS | AS ) ( declareSection? body | callSpec )
     ;
 
 createProfile
-    :
+    : CREATE MANDATORY? PROFILE profile
+        LIMIT ( resourceParameters
+              | passwordParameters
+              )+
+        ( CONTAINER '=' ( CURRENT | ALL ) )?
     ;
 
 createRestorePoint
@@ -6104,7 +6448,7 @@ enablePluggableDatabase
 
 fileNameConvert
     : FILE_NAME_CONVERT '='
-      ( '(' (fileNameConvertItem) (',' fileNameConvertItem)* ')'
+      ( '(' filenamePattern ','  filenamePattern ')' ( ',' '(' filenamePattern ',' filenamePattern ')' )* 
       | NONE
       )
     ;
@@ -9058,6 +9402,66 @@ serverFileName
     ;
 
 sourceChar
+    : identifier
+    ;
+
+directoryObject
+    : identifier
+    ;
+
+credentialName
+    : identifier
+    ;
+
+baseProfile
+    : identifier
+    ;
+
+sourceOutline
+    : identifier
+    ;
+
+filenamePattern
+    : identifier
+    ;
+
+cdbName
+    : identifier
+    ;
+
+adminUserName
+    : identifier
+    ;
+
+snapshotSCN
+    : identifier
+    ;
+
+snapshotTimestamp
+    : dateTimeLiteral
+    ;
+
+keystorePassword
+    : stringLiteral
+    ;
+
+filename
+    : identifier
+    ;
+
+newPdbName
+    : identifier
+    ;
+
+basePdbName
+    : identifier
+    ;
+
+dblinkname
+    : identifier
+    ;
+
+mirrorName
     : identifier
     ;
 
