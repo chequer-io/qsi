@@ -8407,7 +8407,6 @@ functionExpression
     : functionName '(' expressionList? ')'
     | analyticFunction
     | castFunction
-    | treatFunction
     | approxCountFunction
     | approxMedianFunction
     | approxPercentileFunction
@@ -8463,10 +8462,45 @@ functionExpression
     | jsonScalarFunction
     | jsonSerializeFunction
     | jsonTableFunction
-    ;
-
-treatFunction
-    : TREAT '(' expr AS (REF? ( schema '.' )? type | JSON) ')' jsonNonfunctionSteps? jsonFunctionStep?
+    | rowNumberFunction
+    | stddevFunction
+    | stddevPopFunction
+    | stddevSampFunction
+    | sumFunction
+    | sysDburigenFunction
+    | sysdateFunction
+    | systimestampFunction
+    | toBinaryDoubleFunction
+    | toBinaryFloatFunction
+    | toDateFunction
+    | toDsintervalFunction
+    | toNumberFunction
+    | toTimestampFunction
+    | toTimestampTzFunction
+    | toYmintervalFunction
+    | translateUsingFunction
+    | treatFunction
+    | trimFunction
+    | tzOffsetFunction
+    | uidFunction
+    | userFunction
+    | validateConversionFunction
+    | varPopFunction
+    | varSampFunction
+    | varianceFunction
+    | xmlaggFunction
+    | xmlcastFunction
+    | xmlcorattvalFunction
+    | xmlelementFunction
+    | xmlexistsFunction
+    | xmlforestFunction
+    | xmlparseFunction
+    | xmlpiFunction
+    | xmlqueryFunction
+    | xmlrootFunction
+    | xmlsequenceFunction
+    | xmlserializeFunction
+    | xmlTableFunction
     ;
 
 approxCountFunction
@@ -8902,12 +8936,6 @@ ratioToReportFunction
     : RATIO_TO_REPORT '(' expr ')' OVER '(' queryPartitionClause? ')'
     ;
 
-costMatrixClause
-    : COST ( MODEL AUTO? 
-           | '(' expr (',' expr)* ')' VALUES '(' '(' expr (',' expr)* ')' (',' '(' expr (',' expr)* ')')* ')'
-           )
-    ;
-
 linearRegrFunction
     : ( REGR_SLOPE 
       | REGR_INTERCEPT 
@@ -8922,8 +8950,222 @@ linearRegrFunction
       (OVER '(' analyticClause ')')?
     ;
 
+sessiontimezoneFunction
+    : SESSIONTIMEZONE
+    ;
+
 rowNumberFunction
     : ROW_NUMBER '(' ')' OVER '(' queryPartitionClause? orderByClause ')'
+    ;
+
+stddevFunction
+    : STDDEV '(' (DISTINCT | ALL)? expr ')' (OVER '(' analyticClause ')')?
+    ;
+
+stddevPopFunction
+    : STDDEV_POP '(' expr ')' (OVER '(' analyticClause ')')?
+    ;
+
+stddevSampFunction
+    : STDDEV_SAMP '(' expr ')' (OVER '(' analyticClause ')')?
+    ;
+
+sumFunction
+    : SUM '(' (DISTINCT | ALL)? ')' expr ')' (OVER '(' analyticClause ')')?
+    ;
+
+sysDburigenFunction
+    : SYS_DBURIGEN '(' (identifier identifier?) (','identifier identifier?)* (',' stringLiteral '(' ')')? ')'
+    ;
+
+sysdateFunction
+    : SYSDATE
+    ;
+
+systimestampFunction
+    : SYSTIMESTAMP
+    ;
+
+toBinaryDoubleFunction
+    : TO_BINARY_DOUBLE '(' expr (DEFAULT expr ON CONVERSION ERROR)? (',' expr (',' expr)?)?
+    ;
+
+toBinaryFloatFunction
+    : TO_BINARY_FLOAT '(' expr (DEFAULT expr ON CONVERSION ERROR)? (',' expr (',' expr)?)?
+    ;
+
+toDateFunction
+    : TO_DATE '(' expr (DEFAULT expr ON CONVERSION ERROR)? (',' expr (',' stringLiteral)?)?
+    ;
+
+toDsintervalFunction
+    : TO_DSINTERVAL '(' stringLiteral ')' (DEFAULT expr ON CONVERSION ERROR)? ')'
+    ;
+
+toNumberFunction
+    : TO_NUMBER '(' expr (DEFAULT expr ON CONVERSION ERROR)? (',' expr (',' expr)?)? ')'
+    ;
+
+toTimestampFunction
+    : TO_TIMESTAMP '(' expr (DEFAULT expr ON CONVERSION ERROR)? (',' expr (',' expr)?)? ')'
+    ;
+
+toTimestampTzFunction
+    : TO_TIMESTAMP_TZ '(' expr (DEFAULT expr ON CONVERSION ERROR)? (',' expr (',' expr)?)? ')'
+    ;
+
+toYmintervalFunction
+    : TO_YMINTERVAL '(' stringLiteral (DEFAULT expr ON CONVERSION ERROR)? ')'
+    ;
+
+translateUsingFunction
+    : TRANSLATE '(' expr USING (CHAR_CS | NCHAR_CS) ')'
+    ;
+
+treatFunction
+    : TREAT '(' expr AS (REF? ( schema '.' )? type | JSON) ')' jsonNonfunctionSteps? jsonFunctionStep?
+    ;
+
+trimFunction
+    : TRIM '(' (((LEADING | TRAILING | BOTH) expr? | expr) FROM)? expr ')'
+    ;
+
+tzOffsetFunction
+    : TZ_OFFSET '(' (stringLiteral | SESSIONTIMEZONE | DBTIMEZONE) ')'
+    ;
+
+uidFunction
+    : UID
+    ;
+
+userFunction
+    : USER
+    ;
+
+validateConversionFunction
+    : VALIDATE_CONVERSION '(' expr AS identifier (',' expr (',' stringLiteral)?)? ')'
+    ;
+
+varPopFunction
+    : VAR_POP '(' expr ')' (OVER '(' analyticClause ')')?
+    ;
+
+varSampFunction
+    : VAR_SAMP '(' expr ')' (OVER '(' analyticClause ')')?
+    ;
+
+varianceFunction
+    : VARIANCE '(' (DISTINCT | ALL)? expr ')' (OVER '(' analyticClause ')')?
+    ;
+
+xmlaggFunction
+    : XMLAGG '(' expr (',' expr)* orderByClause? ')'
+    ;
+
+xmlcastFunction
+    : XMLCAST '(' expr AS datatype ')'
+    ;
+
+xmlcorattvalFunction
+    : XMLCOLATTVAL '(' xmlcorattvalFunctionItem (',' xmlcorattvalFunctionItem)* ')'
+    ;
+
+xmlelementFunction
+    : XMLELEMENT '(' (ENTITYESCAPING | NOENTITYESCAPING)? (NAME? identifier | EVALNAME expr)
+      (',' xmlAttributesClause)? (',' expr (AS? cAlias)?)*
+    ;
+
+xmlexistsFunction
+    : XMLEXISTS '(' expr xmlPassingClause? ')'
+    ;
+
+xmlforestFunction
+    : XMLFOREST '(' xmlForestItem (',' xmlForestItem)* ')'
+    ;
+
+xmlparseFunction
+    : XMLPARSE '(' (DOCUMENT | CONTENT) expr WELLFORMED? ')'
+    ;
+
+xmlpiFunction
+    : XMLPI '(' (NAME? identifier | EVALNAME expr) (',' expr)?
+    ;
+
+xmlqueryFunction
+    : XMLQUERY '(' stringLiteral xmlPassingClause? RETURNING CONTENT (NULL ON EMPTY)? ')'
+    ;
+
+xmlrootFunction
+    : XMLROOT '(' expr ',' VERSION (expr | NO VALUE) (',' STANDALONE (YES | NO | NO VALUE))? ')'
+    ;
+
+xmlsequenceFunction
+    : XMLSEQUENCE '(' (expr | identifier ',' expr) ')'
+    ;
+
+xmlserializeFunction
+    : XMLSERIALIZE '(' (DOCUMENT | CONTENT) expr (AS datatype)? (ENCODING stringLiteral)? (VERSION stringLiteral)?
+      (NO INDENT | INDENT (SIZE '=' numberLiteral)?)?
+      ((HIDE | SHOW) DEFAULTS)?
+    ;
+
+xmlTableFunction
+    : XMLTABLE '(' (xmlnamespacesClause ',')? expr xmltableOptions ')'
+    ;
+
+xmltableOptions
+    : xmlPassingClause? (RETURNING SEQUENCE BY REF)? (COLUMNS xmlTableColumn (',' xmlTableColumn)*)?
+    ;
+
+xmlTableColumn  
+    : column ( FOR ORDINALITY
+             | ( datatype
+               | XMLTYPE ('(' SEQUENCE ')' BY REF)?
+               ) 
+               (PATH stringLiteral)?
+               (DEFAULT expr)?
+             )
+    ;
+
+xmlnamespacesClause
+    : XMLNAMESPACES '(' xmlnamespacesClauseItem (',' xmlnamespacesClauseItem)* ')' 
+    ;
+
+xmlnamespacesClauseItem
+    : stringLiteral AS identifier
+    | DEFAULT stringLiteral
+    ;
+
+xmlForestItem
+    : expr (AS (cAlias | EVALNAME expr))?
+    ;
+
+xmlPassingClause
+    : PASSING (BY VALUE)? xmlPassingClauseItem (',' xmlPassingClauseItem)*
+    ;
+
+xmlPassingClauseItem
+    : expr (AS identifier)?
+    ;
+
+xmlAttributesClause
+    : XMLATTRIBUTES
+      '(' (ENTITYESCAPING | NOENTITYESCAPING)? (SCHEMACHECK | NOSCHEMACHECK)?
+      xmlAttributesClauseItem
+    ;
+
+xmlAttributesClauseItem
+    : expr (AS? cAlias | AS EVALNAME expr)?
+    ;
+
+xmlcorattvalFunctionItem
+    : expr (AS cAlias | EVALNAME expr)?
+    ;
+
+costMatrixClause
+    : COST ( MODEL AUTO? 
+           | '(' expr (',' expr)* ')' VALUES '(' '(' expr (',' expr)* ')' (',' '(' expr (',' expr)* ')')* ')'
+           )
     ;
 
 listaggOverflowClause
@@ -10717,7 +10959,6 @@ aggregateFunctionName
     | VAR_POP
     | VAR_SAMP
     | VARIANCE
-    | XMLAGG
     ;
 
 analyticFunctionName
@@ -10801,8 +11042,6 @@ singleRowFunctionName
     | ORA_DST_ERROR
     | ROUND
     | SYS_EXTRACT_UTC
-    | SYSDATE
-    | SYSTIMESTAMP
     | TO_CHAR
     | TO_DSINTERVAL
     | TO_TIMESTAMP
@@ -11578,7 +11817,6 @@ nonReservedKeywordIdentifier
     | SEQUENTIAL
     | SERIAL
     | SERVICE
-    | SESSIONTIMEZONE
     | SETS
     | SHA2_512
     | SHARDED
