@@ -509,7 +509,7 @@ namespace Qsi.Analyzers.Action
                 if (target == null)
                     continue;
 
-                var targetRow = target.DuplicateRows.NewRow();
+                var targetRow = new QsiDataRow(target.DuplicateRows.ColumnCount);
 
                 foreach (var pivot in updateTarget.ColumnPivots)
                 {
@@ -523,6 +523,8 @@ namespace Qsi.Analyzers.Action
                         targetRow.Items[pivot.TargetOrder] = QsiDataValue.Unset;
                     }
                 }
+                
+                target.DuplicateRows.Add(targetRow);
             }
         }
 
@@ -531,7 +533,7 @@ namespace Qsi.Analyzers.Action
         {
             foreach (var target in context.Targets)
             {
-                var targetRow = target.InsertRows.NewRow();
+                var targetRow = new QsiDataRow(target.InsertRows.ColumnCount);
 
                 foreach (var pivot in target.ColumnPivots)
                 {
@@ -544,6 +546,8 @@ namespace Qsi.Analyzers.Action
                         targetRow.Items[pivot.TargetOrder] = ResolveDefaultColumnValue(pivot);
                     }
                 }
+
+                target.InsertRows.Add(targetRow);
             }
         }
         #endregion
@@ -585,7 +589,7 @@ namespace Qsi.Analyzers.Action
                 {
                     foreach (var row in dataTable.Rows)
                     {
-                        var targetRow = target.DeleteRows.NewRow();
+                        var targetRow = new QsiDataRow(target.DeleteRows.ColumnCount);
 
                         foreach (var pivot in target.ColumnPivots)
                         {
@@ -598,6 +602,8 @@ namespace Qsi.Analyzers.Action
                                 targetRow.Items[pivot.TargetOrder] = QsiDataValue.Unset;
                             }
                         }
+                        
+                        target.DeleteRows.Add(targetRow);
                     }
 
                     return new QsiDataManipulationResult
@@ -668,8 +674,8 @@ namespace Qsi.Analyzers.Action
                 {
                     foreach (var row in dataTable.Rows)
                     {
-                        var oldRow = target.UpdateBeforeRows.NewRow();
-                        var newRow = target.UpdateAfterRows.NewRow();
+                        var oldRow = new QsiDataRow(target.UpdateBeforeRows.ColumnCount);
+                        var newRow = new QsiDataRow(target.UpdateAfterRows.ColumnCount);
 
                         foreach (var pivot in target.ColumnPivots)
                         {
@@ -686,6 +692,9 @@ namespace Qsi.Analyzers.Action
                                 newRow.Items[pivot.TargetOrder] = QsiDataValue.Unknown;
                             }
                         }
+                        
+                        target.UpdateBeforeRows.Add(oldRow);
+                        target.UpdateAfterRows.Add(newRow);
                     }
 
                     QsiTableColumn[] affectedColumns = target.ColumnPivots

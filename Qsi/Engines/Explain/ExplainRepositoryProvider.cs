@@ -47,10 +47,12 @@ namespace Qsi.Engines.Explain
                 throw new QsiException(QsiError.InvalidNestedExplain, script.Script);
 
             var dataTable = new QsiDataTable(tableResult.Table);
-            var dataRow = dataTable.Rows.NewRow();
+            var dataRow = new QsiDataRow(dataTable.Rows.ColumnCount);
 
             for (int i = 0; i < dataRow.Length; i++)
                 dataRow.Items[i] = QsiDataValue.Explain;
+            
+            dataTable.Rows.Add(dataRow);
 
             return dataTable;
         }

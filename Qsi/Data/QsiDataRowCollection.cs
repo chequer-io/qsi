@@ -1,89 +1,35 @@
-﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 
 namespace Qsi.Data
 {
-    public sealed class QsiDataRowCollection : ICollection<QsiDataRow>
+    public abstract class QsiDataRowCollection : ICollection<QsiDataRow>
     {
-        public int Count => _list.Count;
-
-        public int ColumnCount { get; }
-
-        public QsiDataRow this[int index]
-        {
-            get => _list[index];
-            set => _list[index] = value;
-        }
-
-        bool ICollection<QsiDataRow>.IsReadOnly => false;
-
-        private readonly List<QsiDataRow> _list;
-
-        public QsiDataRowCollection(int columnCount) : this(columnCount, 0)
-        {
-        }
-
-        public QsiDataRowCollection(int columnCount, int capacity)
-        {
-            _list = new List<QsiDataRow>(capacity);
-            ColumnCount = columnCount;
-        }
-
-        public QsiDataRow NewRow()
-        {
-            var row = new QsiDataRow(ColumnCount);
-            _list.Add(row);
-            return row;
-        }
-
-        public void Add(QsiDataRow row)
-        {
-            if (row == null)
-                throw new ArgumentNullException(nameof(row));
-
-            if (row.Length != ColumnCount)
-                throw new ArgumentException(nameof(row));
-
-            _list.Add(row);
-        }
-
-        public void AddRange(IEnumerable<QsiDataRow> rows)
-        {
-            foreach (var row in rows)
-            {
-                Add(row);
-            }
-        }
+        public abstract int Count { get; }
         
-        public void Clear()
-        {
-            _list.Clear();
-        }
+        public abstract int ColumnCount { get; }
 
-        public bool Contains(QsiDataRow item)
-        {
-            return _list.Contains(item);
-        }
+        public abstract QsiDataRow this[int index] { get; }
 
-        public void CopyTo(QsiDataRow[] array, int arrayIndex)
-        {
-            _list.CopyTo(array, arrayIndex);
-        }
+        public abstract bool IsReadOnly { get; }
 
-        public bool Remove(QsiDataRow item)
-        {
-            return _list.Remove(item);
-        }
+        public abstract void Add(QsiDataRow item);
 
-        public IEnumerator<QsiDataRow> GetEnumerator()
-        {
-            return _list.GetEnumerator();
-        }
+        public abstract void AddRange(IEnumerable<QsiDataRow> rows);
+
+        public abstract void Clear();
+
+        public abstract bool Contains(QsiDataRow item);
+
+        public abstract void CopyTo(QsiDataRow[] array, int arrayIndex);
+
+        public abstract bool Remove(QsiDataRow item);
+
+        public abstract IEnumerator<QsiDataRow> GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return _list.GetEnumerator();
+            return ((IEnumerable<QsiDataRow>)this).GetEnumerator();
         }
     }
 }

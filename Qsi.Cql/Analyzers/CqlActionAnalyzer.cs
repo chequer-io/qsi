@@ -208,16 +208,18 @@ namespace Qsi.Cql.Analyzers
                     {
                         if (!partialDelete)
                         {
-                            var targetRow = target.DeleteRows.NewRow();
+                            var targetRow = new QsiDataRow(target.DeleteRows.ColumnCount);
 
                             foreach (var pivot in target.ColumnPivots)
                                 targetRow.Items[pivot.TargetOrder] = row.Items[pivot.TargetOrder];
+                            
+                            target.DeleteRows.Add(targetRow);
 
                             continue;
                         }
 
-                        var beforeRow = target.UpdateBeforeRows.NewRow();
-                        var afterRow = target.UpdateAfterRows.NewRow();
+                        var beforeRow = new QsiDataRow(target.UpdateBeforeRows.ColumnCount);
+                        var afterRow = new QsiDataRow(target.UpdateAfterRows.ColumnCount);
 
                         foreach (var pivot in target.ColumnPivots)
                         {
@@ -281,6 +283,9 @@ namespace Qsi.Cql.Analyzers
                                 afterValue = value;
                             }
                         }
+                        
+                        target.UpdateBeforeRows.Add(beforeRow);
+                        target.UpdateAfterRows.Add(afterRow);
                     }
 
                     return new QsiDataManipulationResult

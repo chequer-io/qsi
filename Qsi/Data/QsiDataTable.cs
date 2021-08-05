@@ -1,4 +1,5 @@
 ﻿using System;
+using Qsi.Data.Cache;
 
 namespace Qsi.Data
 {
@@ -11,7 +12,13 @@ namespace Qsi.Data
         public QsiDataTable(QsiTableStructure table)
         {
             Table = table ?? throw new ArgumentNullException(nameof(table));
-            Rows = new QsiDataRowCollection(table.Columns.Count);
+            Rows = new QsiBaseDataRowCollection(table.Columns.Count);
+        }
+        
+        public QsiDataTable(QsiTableStructure table, IQsiDataTableCacheProvider cacheProvider)
+        {
+            Table = table ?? throw new ArgumentNullException(nameof(table));
+            Rows = new CachedDataRowCollection(table.Columns.Count, cacheProvider);
         }
     }
 }

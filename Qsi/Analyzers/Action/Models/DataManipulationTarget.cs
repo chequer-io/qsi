@@ -11,15 +11,15 @@ namespace Qsi.Analyzers.Action.Models
 
         public DataManipulationTargetColumnPivot[] ColumnPivots { get; }
 
-        public QsiDataRowCollection InsertRows => _insertRows ??= new QsiDataRowCollection(ColumnCount);
+        public QsiDataRowCollection InsertRows => _insertRows ??= new QsiBaseDataRowCollection(ColumnCount);
 
-        public QsiDataRowCollection DuplicateRows => _duplicateRows ??= new QsiDataRowCollection(ColumnCount);
+        public QsiDataRowCollection DuplicateRows => _duplicateRows ??= new QsiBaseDataRowCollection(ColumnCount);
 
-        public QsiDataRowCollection DeleteRows => _deleteRows ??= new QsiDataRowCollection(ColumnCount);
+        public QsiDataRowCollection DeleteRows => _deleteRows ??= new QsiBaseDataRowCollection(ColumnCount);
 
-        public QsiDataRowCollection UpdateBeforeRows => _updateBeforeRows ??= new QsiDataRowCollection(ColumnCount);
+        public QsiDataRowCollection UpdateBeforeRows => _updateBeforeRows ??= new QsiBaseDataRowCollection(ColumnCount);
 
-        public QsiDataRowCollection UpdateAfterRows => _updateAfterRows ??= new QsiDataRowCollection(ColumnCount);
+        public QsiDataRowCollection UpdateAfterRows => _updateAfterRows ??= new QsiBaseDataRowCollection(ColumnCount);
 
         private QsiDataRowCollection _insertRows;
         private QsiDataRowCollection _duplicateRows;
