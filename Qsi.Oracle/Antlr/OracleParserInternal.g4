@@ -6,12 +6,17 @@ options {
 
 root
     : EOF
-    | (oracleStatement (SEMICOLON_SYMBOL EOF? | EOF))+
+    | ((plsqlBlock | oracleStatement) (SEMICOLON_SYMBOL EOF? | EOF))+
+    ;
+
+plsqlBlock
+    : ('<' '<' label '>' '>')* (DECLARE declareSection)? body
     ;
 
 oracleStatement
     : select
     | delete
+    | commit
     | create
     | alter
     | drop
@@ -40,6 +45,12 @@ select
 delete
     : DELETE hint? FROM? (dmlTableExpressionClause | ONLY '(' dmlTableExpressionClause ')')
       tAlias? whereClause? returningClause? errorLoggingClause?
+    ;
+
+commit
+    : COMMIT WORK? ( (COMMENT stringLiteral)? (WRITE (WAIT | NOWAIT)? (IMMEDIATE | BATCH)?)?
+                   | FORCE stringLiteral ',' integer
+                   )
     ;
 
 grant
@@ -445,13 +456,70 @@ itemDeclaration
     | variableDeclaration
     ;
 
-expression
-    :
-    // TODO
+plsqlExpression
+    : identifier                                                                                        #constantOrVariableExpression
+    | booleanLiteral                                                                                    #booleanLiteralExpression
+    | functionCall                                                                                      #functionCallExpression
+    | conditionalPredicate                                                                              #conditionalPredicateExpression
+    | identifier '.' (COUNT | FIRST | LAST | LIMIT | (NEXT | PRIOR | EXISTS) '(' index ')')             #collectionFunctionsExpression
+    | plsqlExpression IS NOT? NULL                                                                      #expressionIsNullExpression
+    | plsqlExpression NOT? BETWEEN plsqlExpression AND plsqlExpression                                  #expressionBetweenExpression
+    | plsqlExpression NOT? IN '(' plsqlExpression (',' plsqlExpression)* ')'                            #expressionInExpression
+    | plsqlExpression NOT? LIKE stringLiteral                                                           #expressionLikeExpression
+    | (plsqlNamedCursor | SQL) '%' (FOUND | ISOPEN | NOTFOUND | ROWCOUNT | BULK_ROWCOUNT '(' index ')') #cursorStateExpression
+    | NOT plsqlExpression                                                                               #notExpression
+    | ('-' | '+') plsqlExpression                                                                       #unarySignExpression
+    | plsqlExpression (AND | OR) plsqlExpression                                                        #andOrExpression
+    | plsqlExpression relationalOperator plsqlExpression                                                #relationalOperatorExpression
+    | plsqlExpression '||' plsqlExpression                                                              #characterConnectExpression
+    | plsqlExpression ('+' | '-' | '*' | '/' | '*' '*') plsqlExpression                                 #signExpression
+    | placeholder                                                                                       #plsqlPlaceholderExpression
+    | collectionType '(' (plsqlExpression (',' plsqlExpression)*)? ')'                                  #plsqlCollectionConstructor
+    | CASE WHEN plsqlExpression THEN plsqlExpression
+      (WHEN plsqlExpression THEN plsqlExpression)*
+      (ELSE plsqlExpression)?
+      END                                                                                               #plsqlSearchedCaseExpression
+    | CASE plsqlExpression WHEN plsqlExpression THEN plsqlExpression
+      (WHEN plsqlExpression THEN plsqlExpression)*
+      (ELSE plsqlExpression)?
+      END                                                                                               #plsqlSimpleCaseExpression
+    ;
+
+booleanLiteral
+    : TRUE 
+    | FALSE 
+    | NULL
+    ;
+
+conditionalPredicate
+    : INSERTING 
+    | UPDATING ('(' stringLiteral ')')? 
+    | DELETING
+    ;
+
+relationalOperator
+    : '='
+    | '<>'
+    | '!='
+    | '~='
+    | '^='
+    | '<'
+    | '>'
+    | '<='
+    | '>='
+    ;
+
+plsqlNamedCursorAttribute
+    : plsqlNamedCursor '%' (ISOPEN | FOUND | NOTFOUND | ROWCOUNT)
+    ;
+
+plsqlNamedCursor
+    : identifier
+    | ':' identifier
     ;
 
 variableDeclaration
-    : variable datatype ( ( NOT NULL )? ( ':' '=' | DEFAULT ) expression )?
+    : variable datatype ( ( NOT NULL )? ( ':' '=' | DEFAULT ) plsqlExpression )?
     ;
 
 recordVariableDeclaration
@@ -474,7 +542,7 @@ cursorVariableDeclaration
     ;
 
 constantDeclaration
-    : constant CONSTANT datatype ( NOT NULL )? ( ':' '=' | DEFAULT ) expression
+    : constant CONSTANT datatype ( NOT NULL )? ( ':' '=' | DEFAULT ) plsqlExpression
     ;
 
 exceptionDeclaration
@@ -546,7 +614,7 @@ cursorDefinition
     ;
 
 cursorParameterDec
-    : parameter IN? datatype ( ( ':' '=' | DEFAULT ) expression )?
+    : parameter IN? datatype ( ( ':' '=' | DEFAULT ) plsqlExpression )?
     ;
 
 rowtype
@@ -589,7 +657,7 @@ recordTypeDefinition
     ;
 
 fieldDefinition
-    : field datatype ( ( NOT NULL )? ( ':' '=' | DEFAULT ) expression )?
+    : field datatype ( ( NOT NULL )? ( ':' '=' | DEFAULT ) plsqlExpression )?
     ;
 
 refCursorTypeDefinition
@@ -604,8 +672,13 @@ refCursorTypeDefinition
     ;
 
 subtypeDefinition
-    : SUBTYPE subtype IS baseType ( constraint | CHARACTER SET characterSet )?
+    : SUBTYPE subtype IS baseType ( plsqlConstraint | CHARACTER SET characterSet )?
         ( NOT NULL )?
+    ;
+
+plsqlConstraint
+    : precision (',' scale)?
+    | RANGE numberLiteral '.' '.' numberLiteral
     ;
 
 createHierarchy
@@ -1571,6 +1644,8 @@ set
     : setConstraints
     | setRole
     | setTransaction
+    // WARN: not definition in documentation
+    | setVariable
     ;
 
 setConstraints
@@ -1598,6 +1673,10 @@ setTransaction
            ) ( NAME stringLiteral )?
          | NAME stringLiteral
          )
+    ;
+
+setVariable
+    : SET identifier '=' expr
     ;
 
 revokeSystemPrivileges
@@ -2865,7 +2944,7 @@ alterSession
     ;
 
 alterSessionSetClause
-    : SET ( ( parameterName '=' parameterValue )+
+    : SET ( ( parameterName '=' stringLiteral )+
           | EDITION '=' editionName
           | CONTAINER '=' containerName ( SERVICE '=' serviceName )
           | ROW ARCHIVAL VISIBILITY '=' ( ACTIVE | ALL )
@@ -3782,7 +3861,7 @@ dropIndex
 
 createView
     : CREATE (OR REPLACE)? (NO? FORCE)? (EDITIONING | EDITIONABLE EDITIONING? | NONEDITIONABLE)? VIEW
-    | (schema '.')? view (SHARING '=' (METADATA | DATA | EXTENDED DATA | NONE))?
+      (schema '.')? view (SHARING '=' (METADATA | DATA | EXTENDED DATA | NONE))?
       ( '(' createViewConstraintItem (',' createViewConstraintItem)* ')'
       | objectViewClause
       | xmlTypeViewClause
@@ -8253,8 +8332,9 @@ outOfLineRefConstraint
     ;
 
 condition
-    : simpleComparisonCondition                                                         #comparisonCondition1
-    | groupComparisonCondition                                                          #comparisonCondition2
+    : expr operator1 expr                                                               #simpleComparisonCondition1
+    | '(' expr (',' expr)* ')' operator2 '(' (expressionList | subquery) ')'            #simpleComparisonCondition2
+    | groupComparisonCondition                                                          #comparisonCondition
     | expr IS NOT? (NAN | INFINITE)                                                     #floatingPointCondition
     | NOT condition                                                                     #logicalNotCondition
     | condition AND condition                                                           #logicalAndCondition
@@ -8314,32 +8394,27 @@ operator2
     | '<>'
     ;
 
-simpleComparisonCondition
-    : expr operator1 expr
-    | '(' expr (',' expr)* ')' operator2 '(' (expressionList | subquery) ')'
-    ;
-
 groupComparisonCondition
     : expr operator1 (ANY | SOME | ALL) '(' (expressionList | subquery) ')'
     | '(' expr (',' expr)* ')' operator2 (ANY | SOME | ALL) '(' (expressionList (',' expressionList)* | subquery) ')'
     ;
 
 expr
-    : '(' expr ')'                              #parenthesisExpr
-    | ('+' | '-'| PRIOR) expr                   #signExpr
-    | TIMESTAMP expr                            #timestampExpr
-    | expr ( '*' | '/' | '+' | '-' | '||') expr #binaryExpr
-    | expr COLLATE collationName                #collateExpr
-    | functionExpression                        #functionExpr
-    | avMeasExpression                          #calcMeasExpr
-    | caseExpression                            #caseExpr
-    | CURSOR '('subquery')'                     #cursorExpr
-    | intervalExpression                        #intervalExpr
-    | modelExpression                           #modelExpr
-    | objectAccessExpression                    #objectAccessExpr
-    | placeholderExpression                     #placeholderExpr
-//    | scalarSubqueryExpression                  #scalarSubqueryExpr
-    | typeConstructorExpression                 #typeConstructorExpr
+    : '(' expr ')'                                                                          #parenthesisExpr
+    | ('+' | '-'| PRIOR) expr                                                               #signExpr
+    | TIMESTAMP expr                                                                        #timestampExpr
+    | expr ( '*' | '/' | '+' | '-' | '||') expr                                             #binaryExpr
+    | expr COLLATE collationName                                                            #collateExpr
+    | functionExpression                                                                    #functionExpr
+    | avMeasExpression                                                                      #calcMeasExpr
+    | caseExpression                                                                        #caseExpr
+    | CURSOR '(' subquery ')'                                                               #cursorExpr
+    | intervalExpression                                                                    #intervalExpr
+    | modelExpression                                                                       #modelExpr
+    | objectAccessExpression                                                                #objectAccessExpr
+    | placeholderExpression                                                                 #placeholderExpr
+    | '(' subquery ')'                                                                      #scalarSubqueryExpr
+    | typeConstructorExpression                                                             #typeConstructorExpr
     | expr AT ( LOCAL | TIME ZONE
         ( S_SINGLE_QUOTE ('+'|'-')? hh=expr ':' mi=expr S_SINGLE_QUOTE
         | DBTIMEZONE
@@ -8347,10 +8422,11 @@ expr
         | timeZoneName=SINGLE_QUOTED_STRING
         | expr
         )
-     )                                          #datetimeExpr
-    | simpleExpression                          #simpleExpr
-    | bindVariable                              #bindVariableExpr
-    | identifier ('.' identifier)* '(' '+' ')'  #columnOuterJoinExpr
+     )                                                                                      #datetimeExpr
+    | simpleExpression                                                                      #simpleExpr
+    | bindVariable                                                                          #bindVariableExpr
+    | identifier MULTISET (EXCEPT | INTERSECT | UNION) (ALL | DISTINCT)? identifier         #multisetExceptExpr
+    | identifier ('.' identifier)* '(' '+' ')'                                              #columnOuterJoinExpr
     ;
 
 datetimeExpression
@@ -10487,153 +10563,171 @@ statement
                                  | sqlStatement
                                  | whileLoopStatement
                                  )
-                                 // TODO: REMOVE
-                                 MOD_SYMBOL
     ;
 
 assignmentStatement
-    :
+    : assignmentStatementTarget ':' '=' plsqlExpression
+    ;
+
+assignmentStatementTarget
+    : ':'? variable ('.' identifier | '(' identifier ')')?
+    | placeholder
+    ;
+
+placeholder
+    : ':' variable (':' variable)?
     ;
 
 basicLoopStatement
-    :
+    : LOOP statement* END LOOP label? ';'
     ;
 
 caseStatement
-    :
+    : CASE caseExpr=plsqlExpression? (WHEN plsqlExpression THEN plsqlExpression ';')+
+      (ELSE statement+ ';')? END CASE label? ';'
     ;
 
 closeStatement
-    :
+    : CLOSE plsqlNamedCursor ';'
     ;
 
 continueStatement
-    :
+    : CONTINUE label? (WHEN plsqlExpression)?
     ;
 
 cursorForLoopStatement
-    :
+    : FOR record IN ( cursor '(' plsqlExpression (',' plsqlExpression)* ')'
+                    | '(' select ')'
+                    )
+      LOOP statement+ END LOOP label? ';'
     ;
 
 executeImmediateStatement
-    :
+    : EXECUTE IMMEDIATE dynamicSqlStmt ( ( plsqlIntoClause
+                                         | plsqlBulkCollectIntoClause
+                                         ) plsqlUsingClause?
+                                       | plsqlUsingClause plsqlDynamicReturningClause?
+                                       | plsqlDynamicReturningClause
+                                       )?
+      ';'
     ;
 
 exitStatement
-    :
+    : EXIT label? (WHEN plsqlExpression)? ';'
     ;
 
 fetchStatement
-    :
+    : FETCH ':'? identifier (plsqlIntoClause | plsqlBulkCollectIntoClause (LIMIT plsqlExpression)?) ';'
     ;
 
 forLoopStatement
-    :
+    : FOR plsqlIterator LOOP statement+ END LOOP label? ';'
     ;
 
 forallStatement
-    :
+    : FORALL index IN plsqlBoundsClause (SAVE EXCEPTIONS)? (insert | update | delete | merge) ';'
     ;
 
 gotoStatement
-    :
+    : GOTO label ';'
     ;
 
 ifStatement
-    :
+    : IF plsqlExpression THEN statement statement* (ELSIF plsqlExpression THEN statement+)* (ELSE statement+)? END IF ';'
     ;
 
 nullStatement
-    :
+    : NULL ';'
     ;
 
 openStatement
-    :
+    : OPEN cursor ('(' plsqlExpression (',' plsqlExpression)*)? ';'
     ;
 
 openForStatement
-    :
+    : OPEN ':'? variable FOR (select | plsqlExpression) plsqlUsingClause? ';'
     ;
 
 pipeRowStatement
-    :
-    ;
-
-plsqlBlock
-    :
+    : PIPE ROW '(' row=identifier ')' ';'
     ;
 
 raiseStatement
-    :
+    : RAISE exception? ';'
     ;
 
 returnStatement
-    :
+    : RETURN plsqlExpression? ';'
     ;
 
 selectIntoStatement
-    :
+    : SELECT (DISTINCT | UNIQUE | ALL)? selectList (plsqlIntoClause | plsqlBulkCollectIntoClause) FROM tableSource
     ;
 
 whileLoopStatement
-    :
+    : WHILE plsqlExpression LOOP statement+ END LOOP label? ';'
     ;
 
 sqlStatement
-    : commitStatement
+    : commit
     | collectionMethodCall
-    | deleteStatement
-    | insertStatement
-    | lockTableStatement
-    | mergeStatement
-    | rollbackStatement
-    | savepointStatement
-    | setTransactionStatement
-    | updateStatement
-    ;
-
-commitStatement
-    :
+    | delete
+    | insert
+    | lockTable
+    | merge
+    | rollback
+    | savepoint
+    | setTransaction
+    | update
     ;
 
 collectionMethodCall
-    :
-    ;
-
-deleteStatement
-    :
-    ;
-
-insertStatement
-    :
-    ;
-
-lockTableStatement
-    :
-    ;
-
-mergeStatement
-    :
-    ;
-
-rollbackStatement
-    :
-    ;
-
-savepointStatement
-    :
-    ;
-
-setTransactionStatement
-    :
-    ;
-
-updateStatement
-    :
+    : identifier '.' ( COUNT 
+                     | DELETE ('(' index (',' index)* ')')? 
+                     | EXISTS ('(' index ')')? 
+                     | EXTEND ('(' index (',' index)* ')')? 
+                     | FIRST 
+                     | LAST 
+                     | LIMIT 
+                     | NEXT '(' index ')' 
+                     | PRIOR '(' index ')' 
+                     | TRIM '(' numberLiteral ')'
+                     )
     ;
 
 dynamicSqlStmt
     : expr
+    | select
+    ;
+
+plsqlUsingClause
+    : USING (plsqlUsingClauseItem (',' plsqlUsingClauseItem)*)?
+    ;
+
+plsqlUsingClauseItem
+    : (IN | OUT | IN OUT)? bindArgument=plsqlExpression
+    ;
+
+plsqlBoundsClause
+    : lowerBound '.' '.' upperBound
+    | INDICES OF collection=identifier (BETWEEN lowerBound AND upperBound)?
+    | VALUES OF indexCollection=identifier
+    ;
+
+plsqlIterator
+    : iterandDecl (',' iterandDecl) IN iterationCtlSeq
+    ;
+
+plsqlIntoClause
+    : INTO identifier (',' identifier)*
+    ;
+
+plsqlBulkCollectIntoClause
+    : BULK COLLECT INTO ':'? identifier (',' ':'? identifier)*
+    ;
+
+plsqlDynamicReturningClause
+    : (RETURN | RETURNING) (plsqlIntoClause | plsqlBulkCollectIntoClause)
     ;
 
 cursorObject
