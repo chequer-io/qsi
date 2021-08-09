@@ -6,12 +6,17 @@ options {
 
 root
     : EOF
-    | (oracleStatement (SEMICOLON_SYMBOL EOF? | EOF))+
+    | ((plsqlBlock | oracleStatement) (SEMICOLON_SYMBOL EOF? | EOF))+
+    ;
+
+plsqlBlock
+    : ('<' '<' label '>' '>')* (DECLARE declareSection)? body
     ;
 
 oracleStatement
     : select
     | delete
+    | commit
     | create
     | alter
     | drop
@@ -40,6 +45,12 @@ select
 delete
     : DELETE hint? FROM? (dmlTableExpressionClause | ONLY '(' dmlTableExpressionClause ')')
       tAlias? whereClause? returningClause? errorLoggingClause?
+    ;
+
+commit
+    : COMMIT WORK? ( (COMMENT stringLiteral)? (WRITE (WAIT | NOWAIT)? (IMMEDIATE | BATCH)?)?
+                   | FORCE stringLiteral ',' integer
+                   )
     ;
 
 grant
@@ -445,13 +456,70 @@ itemDeclaration
     | variableDeclaration
     ;
 
-expression
-    :
-    // TODO
+plsqlExpression
+    : identifier                                                                                        #constantOrVariableExpression
+    | booleanLiteral                                                                                    #booleanLiteralExpression
+    | functionCall                                                                                      #functionCallExpression
+    | conditionalPredicate                                                                              #conditionalPredicateExpression
+    | identifier '.' (COUNT | FIRST | LAST | LIMIT | (NEXT | PRIOR | EXISTS) '(' index ')')             #collectionFunctionsExpression
+    | plsqlExpression IS NOT? NULL                                                                      #expressionIsNullExpression
+    | plsqlExpression NOT? BETWEEN plsqlExpression AND plsqlExpression                                  #expressionBetweenExpression
+    | plsqlExpression NOT? IN '(' plsqlExpression (',' plsqlExpression)* ')'                            #expressionInExpression
+    | plsqlExpression NOT? LIKE stringLiteral                                                           #expressionLikeExpression
+    | (plsqlNamedCursor | SQL) '%' (FOUND | ISOPEN | NOTFOUND | ROWCOUNT | BULK_ROWCOUNT '(' index ')') #cursorStateExpression
+    | NOT plsqlExpression                                                                               #notExpression
+    | ('-' | '+') plsqlExpression                                                                       #unarySignExpression
+    | plsqlExpression (AND | OR) plsqlExpression                                                        #andOrExpression
+    | plsqlExpression relationalOperator plsqlExpression                                                #relationalOperatorExpression
+    | plsqlExpression '||' plsqlExpression                                                              #characterConnectExpression
+    | plsqlExpression ('+' | '-' | '*' | '/' | '*' '*') plsqlExpression                                 #signExpression
+    | placeholder                                                                                       #plsqlPlaceholderExpression
+    | collectionType '(' (plsqlExpression (',' plsqlExpression)*)? ')'                                  #plsqlCollectionConstructor
+    | CASE WHEN plsqlExpression THEN plsqlExpression
+      (WHEN plsqlExpression THEN plsqlExpression)*
+      (ELSE plsqlExpression)?
+      END                                                                                               #plsqlSearchedCaseExpression
+    | CASE plsqlExpression WHEN plsqlExpression THEN plsqlExpression
+      (WHEN plsqlExpression THEN plsqlExpression)*
+      (ELSE plsqlExpression)?
+      END                                                                                               #plsqlSimpleCaseExpression
+    ;
+
+booleanLiteral
+    : TRUE 
+    | FALSE 
+    | NULL
+    ;
+
+conditionalPredicate
+    : INSERTING 
+    | UPDATING ('(' stringLiteral ')')? 
+    | DELETING
+    ;
+
+relationalOperator
+    : '='
+    | '<>'
+    | '!='
+    | '~='
+    | '^='
+    | '<'
+    | '>'
+    | '<='
+    | '>='
+    ;
+
+plsqlNamedCursorAttribute
+    : plsqlNamedCursor '%' (ISOPEN | FOUND | NOTFOUND | ROWCOUNT)
+    ;
+
+plsqlNamedCursor
+    : identifier
+    | ':' identifier
     ;
 
 variableDeclaration
-    : variable datatype ( ( NOT NULL )? ( ':' '=' | DEFAULT ) expression )?
+    : variable datatype ( ( NOT NULL )? ( ':' '=' | DEFAULT ) plsqlExpression )?
     ;
 
 recordVariableDeclaration
@@ -474,7 +542,7 @@ cursorVariableDeclaration
     ;
 
 constantDeclaration
-    : constant CONSTANT datatype ( NOT NULL )? ( ':' '=' | DEFAULT ) expression
+    : constant CONSTANT datatype ( NOT NULL )? ( ':' '=' | DEFAULT ) plsqlExpression
     ;
 
 exceptionDeclaration
@@ -546,7 +614,7 @@ cursorDefinition
     ;
 
 cursorParameterDec
-    : parameter IN? datatype ( ( ':' '=' | DEFAULT ) expression )?
+    : parameter IN? datatype ( ( ':' '=' | DEFAULT ) plsqlExpression )?
     ;
 
 rowtype
@@ -589,7 +657,7 @@ recordTypeDefinition
     ;
 
 fieldDefinition
-    : field datatype ( ( NOT NULL )? ( ':' '=' | DEFAULT ) expression )?
+    : field datatype ( ( NOT NULL )? ( ':' '=' | DEFAULT ) plsqlExpression )?
     ;
 
 refCursorTypeDefinition
@@ -604,8 +672,13 @@ refCursorTypeDefinition
     ;
 
 subtypeDefinition
-    : SUBTYPE subtype IS baseType ( constraint | CHARACTER SET characterSet )?
+    : SUBTYPE subtype IS baseType ( plsqlConstraint | CHARACTER SET characterSet )?
         ( NOT NULL )?
+    ;
+
+plsqlConstraint
+    : precision (',' scale)?
+    | RANGE numberLiteral '.' '.' numberLiteral
     ;
 
 createHierarchy
@@ -1571,6 +1644,8 @@ set
     : setConstraints
     | setRole
     | setTransaction
+    // WARN: not definition in documentation
+    | setVariable
     ;
 
 setConstraints
@@ -1598,6 +1673,10 @@ setTransaction
            ) ( NAME stringLiteral )?
          | NAME stringLiteral
          )
+    ;
+
+setVariable
+    : SET identifier '=' expr
     ;
 
 revokeSystemPrivileges
@@ -2865,7 +2944,7 @@ alterSession
     ;
 
 alterSessionSetClause
-    : SET ( ( parameterName '=' parameterValue )+
+    : SET ( ( parameterName '=' stringLiteral )+
           | EDITION '=' editionName
           | CONTAINER '=' containerName ( SERVICE '=' serviceName )
           | ROW ARCHIVAL VISIBILITY '=' ( ACTIVE | ALL )
@@ -3782,7 +3861,7 @@ dropIndex
 
 createView
     : CREATE (OR REPLACE)? (NO? FORCE)? (EDITIONING | EDITIONABLE EDITIONING? | NONEDITIONABLE)? VIEW
-    | (schema '.')? view (SHARING '=' (METADATA | DATA | EXTENDED DATA | NONE))?
+      (schema '.')? view (SHARING '=' (METADATA | DATA | EXTENDED DATA | NONE))?
       ( '(' createViewConstraintItem (',' createViewConstraintItem)* ')'
       | objectViewClause
       | xmlTypeViewClause
@@ -8253,8 +8332,9 @@ outOfLineRefConstraint
     ;
 
 condition
-    : simpleComparisonCondition                                                         #comparisonCondition1
-    | groupComparisonCondition                                                          #comparisonCondition2
+    : expr operator1 expr                                                               #simpleComparisonCondition1
+    | '(' expr (',' expr)* ')' operator2 '(' (expressionList | subquery) ')'            #simpleComparisonCondition2
+    | groupComparisonCondition                                                          #comparisonCondition
     | expr IS NOT? (NAN | INFINITE)                                                     #floatingPointCondition
     | NOT condition                                                                     #logicalNotCondition
     | condition AND condition                                                           #logicalAndCondition
@@ -8314,32 +8394,27 @@ operator2
     | '<>'
     ;
 
-simpleComparisonCondition
-    : expr operator1 expr
-    | '(' expr (',' expr)* ')' operator2 '(' (expressionList | subquery) ')'
-    ;
-
 groupComparisonCondition
     : expr operator1 (ANY | SOME | ALL) '(' (expressionList | subquery) ')'
     | '(' expr (',' expr)* ')' operator2 (ANY | SOME | ALL) '(' (expressionList (',' expressionList)* | subquery) ')'
     ;
 
 expr
-    : '(' expr ')'                              #parenthesisExpr
-    | ('+' | '-'| PRIOR) expr                   #signExpr
-    | TIMESTAMP expr                            #timestampExpr
-    | expr ( '*' | '/' | '+' | '-' | '||') expr #binaryExpr
-    | expr COLLATE collationName                #collateExpr
-    | functionExpression                        #functionExpr
-    | avMeasExpression                          #calcMeasExpr
-    | caseExpression                            #caseExpr
-    | CURSOR '('subquery')'                     #cursorExpr
-    | intervalExpression                        #intervalExpr
-    | modelExpression                           #modelExpr
-    | objectAccessExpression                    #objectAccessExpr
-    | placeholderExpression                     #placeholderExpr
-//    | scalarSubqueryExpression                  #scalarSubqueryExpr
-    | typeConstructorExpression                 #typeConstructorExpr
+    : '(' expr ')'                                                                          #parenthesisExpr
+    | ('+' | '-'| PRIOR) expr                                                               #signExpr
+    | TIMESTAMP expr                                                                        #timestampExpr
+    | expr ( '*' | '/' | '+' | '-' | '||') expr                                             #binaryExpr
+    | expr COLLATE collationName                                                            #collateExpr
+    | functionExpression                                                                    #functionExpr
+    | avMeasExpression                                                                      #calcMeasExpr
+    | caseExpression                                                                        #caseExpr
+    | CURSOR '(' subquery ')'                                                               #cursorExpr
+    | intervalExpression                                                                    #intervalExpr
+    | modelExpression                                                                       #modelExpr
+    | objectAccessExpression                                                                #objectAccessExpr
+    | placeholderExpression                                                                 #placeholderExpr
+    | '(' subquery ')'                                                                      #scalarSubqueryExpr
+    | typeConstructorExpression                                                             #typeConstructorExpr
     | expr AT ( LOCAL | TIME ZONE
         ( S_SINGLE_QUOTE ('+'|'-')? hh=expr ':' mi=expr S_SINGLE_QUOTE
         | DBTIMEZONE
@@ -8347,10 +8422,11 @@ expr
         | timeZoneName=SINGLE_QUOTED_STRING
         | expr
         )
-     )                                          #datetimeExpr
-    | simpleExpression                          #simpleExpr
-    | bindVariable                              #bindVariableExpr
-    | identifier ('.' identifier)* '(' '+' ')'  #columnOuterJoinExpr
+     )                                                                                      #datetimeExpr
+    | simpleExpression                                                                      #simpleExpr
+    | bindVariable                                                                          #bindVariableExpr
+    | identifier MULTISET (EXCEPT | INTERSECT | UNION) (ALL | DISTINCT)? identifier         #multisetExceptExpr
+    | identifier ('.' identifier)* '(' '+' ')'                                              #columnOuterJoinExpr
     ;
 
 datetimeExpression
@@ -8407,7 +8483,144 @@ functionExpression
     : functionName '(' expressionList? ')'
     | analyticFunction
     | castFunction
+    | approxCountFunction
+    | approxMedianFunction
+    | approxPercentileFunction
+    | approxPercentileDetailFunction
+    | approxRankFunction
+    | approxSumFunction
+    | avgFunction
+    | binToNumFunction
+    | bitAndAggFunction
+    | bitOrAggFunction
+    | bitXorAggFunction
+    | firstFunction
+    | checksumFunction
+    | chrFunction
+    | clusterDetailsFunction
+    | clusterDistanceFunction
+    | clusterIdFunction
+    | clusterProbabilityFunction
+    | clusterProbAnalyticFunction
+    | clusterSetFunction
+    | clusterSetAnalyticFunction
+    | collectFunction
+    | corrFunction
+    | correlationFunction
+    | countFunction
+    | covarPopFunction
+    | covarSampFunction
+    | cubeTableFunction
+    | cumeDistFunction
+    | cumeDistAnalyticFunction
+    | currentDateFunction
+    | currentTimestampFunction
+    | dbTimeZoneFunction
+    | denseRankAggregateFunction
+    | denseRankAnalyticFunction
+    | extractDateTimeFunction
+    | featureCompareFunction
+    | featureDetailsFunction
+    | featureIdFunction
+    | featureIdAnalyticFunction
+    | featureSetFunction
+    | featureSetAnalyticFunction
+    | featureValueFunction
+    | featureValueAnalyticFunction
+    | firstValueFunction
+    | iterationNumberFunction
+    | jsonArrayFunction
+    | jsonArrayAggFunction
+    | jsonMergePatchFunction
+    | jsonObjectFunction
+    | jsonObjectaggFunction
+    | jsonQueryFunction
+    | jsonScalarFunction
+    | jsonSerializeFunction
+    | jsonTableFunction
+    | rowNumberFunction
+    | stddevFunction
+    | stddevPopFunction
+    | stddevSampFunction
+    | sumFunction
+    | sysDburigenFunction
+    | sysdateFunction
+    | systimestampFunction
+    | toBinaryDoubleFunction
+    | toBinaryFloatFunction
+    | toDateFunction
+    | toDsintervalFunction
+    | toNumberFunction
+    | toTimestampFunction
+    | toTimestampTzFunction
+    | toYmintervalFunction
+    | translateUsingFunction
     | treatFunction
+    | trimFunction
+    | tzOffsetFunction
+    | uidFunction
+    | userFunction
+    | validateConversionFunction
+    | varPopFunction
+    | varSampFunction
+    | varianceFunction
+    | xmlaggFunction
+    | xmlcastFunction
+    | xmlcorattvalFunction
+    | xmlelementFunction
+    | xmlexistsFunction
+    | xmlforestFunction
+    | xmlparseFunction
+    | xmlpiFunction
+    | xmlqueryFunction
+    | xmlrootFunction
+    | xmlsequenceFunction
+    | xmlserializeFunction
+    | xmlTableFunction
+    ;
+
+approxCountFunction
+    : APPROX_COUNT '(' ('*'|expr) (',' stringLiteral)? ')'
+    ;
+
+approxMedianFunction
+    : APPROX_MEDIAN '(' expr DETERMINISTIC? (',' stringLiteral)? ')'
+    ;
+
+approxPercentileFunction
+    : APPROX_PERCENTILE '(' expr DETERMINISTIC? (',' stringLiteral)? ')' WITHIN GROUP '(' ORDER BY expr (DESC | ASC)? ')'
+    ;
+
+approxPercentileDetailFunction
+    : APPROX_PERCENTILE_DETAIL '(' expr DETERMINISTIC? ')'
+    ;
+
+approxRankFunction
+    : APPROX_RANK '(' expr? (PARTITION BY identifier)? (ORDER BY expr DESC)? ')'
+    ;
+
+approxSumFunction
+    : APPROX_SUM '(' ('*' | expr) (',' S_SINGLE_QUOTE MAX_ERROR S_SINGLE_QUOTE) ')'?
+    ;
+
+avgFunction
+    : AVG '(' (DISTINCT | ALL)? expr ')' (OVER '(' analyticClause ')')?
+    ;
+
+binToNumFunction
+    : BIN_TO_NUM '(' expr (',' expr)* ')' insertIntoClause
+    ;
+
+bitAndAggFunction
+    : BIT_AND_AGG '(' (DISTINCT | ALL | UNIQUE)? expr ')'
+    ;
+
+bitOrAggFunction
+    : BIT_OR_AGG '(' (DISTINCT | ALL | UNIQUE)? expr ')'
+    ;
+
+bitXorAggFunction
+    : BIT_XOR_AGG '(' (DISTINCT | ALL | UNIQUE)? expr ')'
     ;
 
 castFunction
@@ -8416,8 +8629,870 @@ castFunction
         (',' fmt=expr (',' nlsparam=expr )? )?')'
     ;
 
+checksumFunction
+    : CHECKSUM '(' (DISTINCT | ALL)? expr ')' (OVER '(' analyticClause ')')?
+    ;
+
+chrFunction
+    : CHR '(' expr (USING NCHAR_CS)? ')'
+    ;
+
+clusterDetailsFunction
+    : CLUSTER_DETAILS '(' (schema '.')? model (',' identifier (',' topN=identifier))? (DESC | ASC | ABS) miningAttributeClause
+    ;
+
+clusterDistanceFunction
+    : CLUSTER_DISTANCE '(' (schema '.')? model ('.' identifier)? miningAttributeClause ')'
+    ;
+
+clusterIdFunction
+    : CLUSTER_ID '(' (schema '.')? model miningAttributeClause ')'
+    ;
+
+clusterProbabilityFunction
+    : CLUSTER_PROBABILITY '(' (schema '.')? model (',' identifier)? miningAttributeClause ')' 
+    ;
+
+clusterProbAnalyticFunction
+    : CLUSTER_PROBABILITY '(' INTO expr (',' identifier)? miningAttributeClause ')' OVER '(' miningAnalyticClause ')'
+    ;
+
+clusterSetFunction
+    : CLUSTER_SET '(' (schema '.')? model (',' topN=identifier (',' cutoff=identifier)?)? miningAttributeClause ')'
+    ;
+
+clusterSetAnalyticFunction
+    : CLUSTER_SET '(' INTO expr (',' topN=identifier (',' cutoff=identifier)?)? miningAttributeClause ')' OVER '(' miningAttributeClause ')'
+    ;
+
+collectFunction
+    : COLLECT '(' (DISTINCT | UNIQUE)? column (ORDER BY expr)? ')'
+    ;
+
+corrFunction
+    : CORR '(' expr ',' expr ')' (OVER '(' analyticClause ')')?
+    ;
+
+correlationFunction
+    : (CORR_K | CORR_S) '(' expr ',' expr 
+      (',' (COEFFICIENT | ONE_SIDED_SIG | ONE_SIDED_SIG_POS | ONE_SIDED_SIG_NEG | TWO_SIDED_SIG))?
+      ')'    
+    ;
+
+countFunction
+    : COUNT '(' ('*' | (DISTINCT | ALL)? expr) ')' (OVER '(' analyticClause ')')?
+    ;
+
+covarPopFunction
+    : COVAR_POP '(' expr ',' expr ')' (OVER '(' analyticClause ')')?
+    ;
+
+covarSampFunction
+    : COVAR_SAMP '(' expr ',' expr ')' (OVER '(' analyticClause ')')?
+    ;
+
+cubeTableFunction
+    : CUBE_TABLE '(' stringLiteral ')'
+    ;
+
+cumeDistFunction
+    : CUME_DIST '(' expr (',' expr)* ')' WITHIN GROUP '(' ORDER BY cumeDistItem (',' cumeDistItem)* ')'
+    ;
+
+cumeDistAnalyticFunction
+    : CUME_DIST '(' ')' OVER '(' queryPartitionClause? orderByClause ')'
+    ;
+
+currentDateFunction
+    : CURRENT_DATE
+    ;
+
+currentTimestampFunction
+    : CURRENT_TIMESTAMP ('(' precision ')')?
+    ;
+
+dbTimeZoneFunction
+    : DBTIMEZONE
+    ;
+
+denseRankAggregateFunction
+    : DENSE_RANK '(' expr (',' expr)* ')' WITHIN GROUP
+      '(' ORDER BY denseRankAggregateItem (',' denseRankAggregateItem)* ')'
+    ;
+
+denseRankAnalyticFunction
+    : DENSE_RANK '(' ')' OVER '(' queryPartitionClause? orderByClause ')'
+    ;
+
+extractDateTimeFunction
+    : EXTRACT '(' 
+      (YEAR | MONTH | DAY | HOUR | MINUTE | SECOND | TIMEZONE_HOUR | TIMEZONE_MINUTE | TIMEZONE_REGION | TIMEZONE_ABBR)
+      FROM expr ')'
+    ;
+
+featureCompareFunction
+    : FEATURE_COMPARE '(' (schema '.')? model miningAttributeClause AND miningAttributeClause ')'
+    ;
+
+featureDetailsFunction
+    : FEATURE_DETAILS '(' (schema '.')? model
+      (',' identifier (',' identifier)?)? (DESC | ASC | ABS)? miningAttributeClause ')'
+    ;
+
+featureIdFunction
+    : FEATURE_ID '(' (schema '.')? model miningAttributeClause ')'
+    ;
+
+featureIdAnalyticFunction
+    : FEATURE_ID '(' INTO identifier miningAttributeClause ')' OVER '(' miningAnalyticClause ')'
+    ;
+
+featureSetFunction
+    : FEATURE_SET '(' (schema '.')? model miningAttributeClause ')'
+    ;
+
+featureSetAnalyticFunction
+    : FEATURE_SET '(' INTO identifier (',' identifier (',' identifier)?)? miningAttributeClause ')' OVER '(' miningAnalyticClause ')'
+    ;
+
+featureValueFunction
+    : FEATURE_VALUE '(' (schema '.')? model (',' identifier)? miningAttributeClause ')'
+    ;
+
+featureValueAnalyticFunction
+    : FEATURE_VALUE '(' INTO identifier (',' identifier)? miningAttributeClause ')' OVER '(' miningAnalyticClause ')'
+    ;
+
+firstFunction
+    : functionCall KEEP '(' DENSE_RANK FIRST ORDER BY expr (DESC | ASC)? (NULLS (FIRST | LAST))? ')'
+      (OVER '(' queryPartitionClause? ')')?
+    ;
+
+firstValueFunction
+    : FIRST_VALUE ('(' expr ')' ((RESPECT | IGNORE) NULLS)?
+                  |'(' expr ((RESPECT | IGNORE) NULLS)? ')'
+                  )
+      OVER '(' analyticClause ')'
+    ;
+
+iterationNumberFunction
+    : ITERATION_NUMBER
+    ;
+
+jsonArrayFunction
+    : JSON_ARRAY '(' jsonArrayContent ')'
+    | JSON '[' jsonArrayContent ']'
+    ;
+
+jsonArrayAggFunction
+    : JSON_ARRAYAGG '(' expr (FORMAT JSON)? orderByClause? jsonOnNullClause?
+      jsonReturningClause? STRICT? ')'
+    ;
+
+jsonMergePatchFunction
+    : JSON_MERGEPATCH '(' expr ',' expr jsonReturningClause? PRETTY? ASCII? TRUNCATE? jsonOnErrorClause
+    ;
+
+jsonObjectFunction
+    : JSON_OBJECT '(' jsonObjectContent ')'
+    | JSON '(' jsonObjectContent ')'
+    ;
+
+jsonObjectaggFunction
+    : JSON_OBJECTAGG '(' KEY? expr VALUE expr jsonOnNullClause? jsonReturningClause? 
+      STRICT? (WITH UNIQUE KEYS)? ')'
+    ;
+
+jsonQueryFunction
+    : JSON_QUERY '(' expr (FORMAT JSON)? ',' jsonBasicPathExpression
+      jsonQueryReturningClause jsonQueryWrapperClause?
+      jsonQueryOnErrorClause? jsonQueryOnEmptyClause?
+    ;
+
+jsonScalarFunction
+    : JSON_SCALAR '(' expr (SQL | JSON)? (NULL ON NULL)? ')'
+    ;
+
+jsonSerializeFunction
+    : JSON_SERIALIZE '(' expr jsonReturningClause?
+      PRETTY? ASCII? TRUNCATE? ((NULL | ERROR) ON ERROR)? ')'
+    ;
+
+jsonTableFunction
+    : JSON_TABLE '(' expr (FORMAT JSON)? (',' jsonBasicPathExpression)? jsonTableOnErrorClause? jsonColumnsClause ')'
+    ;
+
+jsonTransformFunction
+    : JSON_TRANSFORM '(' expr ',' operation (',' operation) ')' jsonTransformReturningClause? jsonPassingClause?
+    ;
+
+jsonValueFunction
+    : JSON_VALUE '(' expr (FORMAT JSON)? ',' jsonBasicPathExpression? jsonValueReturningClause?
+      jsonValueOnErrorClause? jsonValueOnEmptyClause? jsonValueOnMismatchClause?
+    ;
+
+kurtosisPopFunction
+    : KURTOSIS_POP '(' (DISTINCT | ALL | UNIQUE)? expr ')'
+    ;
+
+kurtosisSampFunction
+    : KURTOSIS_SAMP '(' (DISTINCT | ALL | UNIQUE)? expr ')'
+    ;
+
+lagFunction
+    : LAG ( '(' expr (',' expr (',' expr))? ')' ((RESPECT | IGNORE) NULLS)?
+          | '(' expr ((RESPECT | IGNORE) NULLS)? (',' expr (',' expr)?)? ')'
+          )
+      OVER '(' queryPartitionClause? orderByClause ')'
+    ;
+
+lastFunction
+    : functionCall KEEP '(' DENSE_RANK LAST ORDER BY lastFunctionItem (',' lastFunctionItem)* ')'
+      (OVER '(' queryPartitionClause? ')')?
+    ;
+
+lastValueFunction
+    : FIRST_VALUE ('(' expr ')' ((RESPECT | IGNORE) NULLS)?
+                  |'(' expr ((RESPECT | IGNORE) NULLS)? ')'
+                  )
+      OVER '(' analyticClause ')'
+    ;
+
+leadFunction
+    : LEAD ( '(' expr (',' expr (',' expr)?)? ')' ((RESPECT | IGNORE) NULLS)? 
+           | '(' expr ((RESPECT | IGNORE) NULLS)? (',' expr (',' expr)?)? ')'
+           )
+           OVER '(' queryPartitionClause? orderByClause ')'
+    ;
+
+listaggFunction
+    : LISTAGG '(' ALL? DISTINCT? expr (',' stringLiteral)? listaggOverflowClause? ')' (WITHIN GROUP)? '(' orderByClause ')' (OVER queryPartitionClause)?
+    ;
+
+localtimestampFunction
+    : LOCALTIMESTAMP ('(' expr ')')?
+    ;
+
+maxFunction
+    : MAX '(' (DISTINCT | ALL)? expr ')' (OVER '(' analyticClause ')')?
+    ;
+
+medianFunction
+    : MEDIAN '(' expr ')' (OVER '(' analyticClause ')')?
+    ;
+
+minFunction
+    : MIN '(' (DISTINCT | ALL)? expr ')' (OVER '(' analyticClause ')')?
+    ;
+
+nthValueFunction
+    : NTH_VALUE '(' expr ',' expr ')' (FROM (FIRST | LAST))? ((RESPECT | IGNORE) NULLS)?
+      OVER '(' analyticClause ')'
+    ;
+
+ntileFunction
+    : NTILE '(' expr ')' OVER '(' queryPartitionClause? orderByClause ')'
+    ;
+
+oraDmPartitionNameFunction
+    : ORA_DM_PARTITION_NAME '(' (schema '.')? model miningAttributeClause ')'
+    ;
+
+oraInvokingUserFunction
+    : ORA_INVOKING_USER
+    ;
+
+oraInvokingUserIdFunction
+    : ORA_INVOKING_USERID
+    ;
+
+percentRankAggregateFunction
+    : PERCENT_RANK '(' expr (',' expr)* ')' WITHIN GROUP '(' ORDER BY 
+      expr (DESC | ASC)? (NULLS (FIRST | LAST))? (',' expr (DESC | ASC)? (NULLS (FIRST | LAST))?)* 
+      ')'
+    ;
+
+percentRankAnalyticFunction
+    : PERCENT_RANK '(' ')' OVER '(' queryPartitionClause? orderByClause ')'
+    ;
+
+percentileContFunction
+    : PERCENTILE_CONT '(' expr ')' WITHIN GROUP '(' ORDER BY expr (DESC | ASC)? ')'
+      (OVER '(' queryPartitionClause ')')?
+    ;
+
+percentileDiscFunction
+    : PERCENTILE_DISC '(' expr ')' WITHIN GROUP '(' ORDER BY expr (DESC | ASC)? ')'
+      (OVER '(' queryPartitionClause ')')?
+    ;
+
+predictionFunction
+    : PRDICTION '(' 
+//      WARN: can't find definition 
+//      groupingHint?
+      (schema '.')? model costMatrixClause? miningAttributeClause ')'
+    ;
+
+predictionOrderedFunction
+    : PREDICTION '('
+//      WARN: can't find definition 
+//      groupingHint?
+      (schema '.')? model
+      costMatrixClause? miningAttributeClause ')'
+      OVER '(' orderByClause (',' orderByClause)* ')'
+    ;
+
+predictionAnalyticFunction
+    : PREDICTION '(' (OF ANOMALY | FOR expr) costMatrixClause? miningAttributeClause ')'
+      OVER '(' miningAnalyticClause ')'
+    ;
+
+predictionBoundsFunction
+    : PREDICTION_BOUNDS '(' (schema '.')? model (',' identifier (',' expr)?)? miningAttributeClause ')'
+    ;
+
+predictionCostFunction
+    : PREDICTION_COST '(' (schema '.')? model (',' identifier)? costMatrixClause miningAttributeClause ')'
+    ;
+
+predictionCostOrderedFunction
+    : PREDICTION_COST '(' (schema '.')? model (',' identifier)? costMatrixClause miningAttributeClause ')'
+      OVER '(' orderByClause (',' orderByClause)* ')'
+    ;
+
+predictionCostAnalyticFunction
+    : PREDICTION_COST '(' ( OF ANOMALY | FOR expr ) (',' identifier)? costMatrixClause miningAttributeClause ')' OVER '(' miningAnalyticClause ')'
+    ;
+
+predictionDetailsFunction
+    : PREDICTION_DETAILS '(' (schema '.')? model (',' expr (',' identifier)?)? (DESC | ASC | ABS)? miningAttributeClause ')'
+    ;
+
+predictionDetailsOrderedFunction
+    : PREDICTION_DETAILS '(' (schema '.')? model (',' expr (',' identifier)?)? (DESC | ASC | ABS)? miningAttributeClause ')' OVER '(' orderByClause (',' orderByClause)? ')'
+    ;
+
+predictionDetailsAnalyticFunction
+    : PREDICTION_DETAILS '(' ( OF ANOMALY | FOR expr ) (',' expr (',' identifier)?)? (DESC | ASC | ABS)? miningAttributeClause ')' OVER '(' miningAnalyticClause ')'
+    ;
+
+predictionProbabilityFunction
+    : PREDICTION_PROBABILITY '(' (schema '.')? model (',' expr)? miningAttributeClause ')'
+    ;
+
+predictionProbabilityOrderedFunction
+    : PREDICTION_PROBABILITY '(' (schema '.')? model (',' expr)? miningAttributeClause ')' OVER '(' orderByClause (',' orderByClause)* ')'
+    ;
+
+predictionProbAnalyticFunction
+    : PREDICTION_PROBABILITY '(' ( OF ANOMALY | FOR expr ) (',' identifier)? miningAttributeClause ')' OVER '(' miningAnalyticClause ')'
+    ;
+
+predictionSetFunction
+    : PREDICTION_SET '(' (schema '.')? model (',' identifier (',' identifier)?)? costMatrixClause? miningAttributeClause ')'
+    ;
+
+predictionSetOrderedFunction
+    : PREDICTION_SET '(' (schema '.')? model (',' identifier (',' identifier)?)? costMatrixClause? miningAttributeClause ')' OVER '(' orderByClause (',' orderByClause)* ')'
+    ;
+
+predictionSetAnalyticFunction
+    : PREDICTION_SET '(' '(' OF ANOMALY | FOR stringLiteral ')' (',' identifier (',' identifier)?)? costMatrixClause? miningAttributeClause ')' OVER '(' miningAnalyticClause ')'
+    ;
+
+rankAggregateFunction
+    : RANK '(' expr (',' expr)* ')' WITHIN GROUP '(' ORDER BY expr (DESC | ASC)? (NULLS (FIRST | LAST))? (',' expr (DESC | ASC)? (NULLS (FIRST | LAST))?)* ')'
+    ;
+
+rankAnalyticFunction
+    : RANK '(' ')' OVER '(' queryPartitionClause? orderByClause ')'
+    ;
+
+ratioToReportFunction
+    : RATIO_TO_REPORT '(' expr ')' OVER '(' queryPartitionClause? ')'
+    ;
+
+linearRegrFunction
+    : ( REGR_SLOPE 
+      | REGR_INTERCEPT 
+      | REGR_COUNT 
+      | REGR_R2 
+      | REGR_AVGX 
+      | REGR_AVGY 
+      | REGR_SXX 
+      | REGR_SYY 
+      | REGR_SXY
+      ) '(' expr ',' expr ')'
+      (OVER '(' analyticClause ')')?
+    ;
+
+sessiontimezoneFunction
+    : SESSIONTIMEZONE
+    ;
+
+rowNumberFunction
+    : ROW_NUMBER '(' ')' OVER '(' queryPartitionClause? orderByClause ')'
+    ;
+
+stddevFunction
+    : STDDEV '(' (DISTINCT | ALL)? expr ')' (OVER '(' analyticClause ')')?
+    ;
+
+stddevPopFunction
+    : STDDEV_POP '(' expr ')' (OVER '(' analyticClause ')')?
+    ;
+
+stddevSampFunction
+    : STDDEV_SAMP '(' expr ')' (OVER '(' analyticClause ')')?
+    ;
+
+sumFunction
+    : SUM '(' (DISTINCT | ALL)? ')' expr ')' (OVER '(' analyticClause ')')?
+    ;
+
+sysDburigenFunction
+    : SYS_DBURIGEN '(' (identifier identifier?) (','identifier identifier?)* (',' stringLiteral '(' ')')? ')'
+    ;
+
+sysdateFunction
+    : SYSDATE
+    ;
+
+systimestampFunction
+    : SYSTIMESTAMP
+    ;
+
+toBinaryDoubleFunction
+    : TO_BINARY_DOUBLE '(' expr (DEFAULT expr ON CONVERSION ERROR)? (',' expr (',' expr)?)?
+    ;
+
+toBinaryFloatFunction
+    : TO_BINARY_FLOAT '(' expr (DEFAULT expr ON CONVERSION ERROR)? (',' expr (',' expr)?)?
+    ;
+
+toDateFunction
+    : TO_DATE '(' expr (DEFAULT expr ON CONVERSION ERROR)? (',' expr (',' stringLiteral)?)?
+    ;
+
+toDsintervalFunction
+    : TO_DSINTERVAL '(' stringLiteral ')' (DEFAULT expr ON CONVERSION ERROR)? ')'
+    ;
+
+toNumberFunction
+    : TO_NUMBER '(' expr (DEFAULT expr ON CONVERSION ERROR)? (',' expr (',' expr)?)? ')'
+    ;
+
+toTimestampFunction
+    : TO_TIMESTAMP '(' expr (DEFAULT expr ON CONVERSION ERROR)? (',' expr (',' expr)?)? ')'
+    ;
+
+toTimestampTzFunction
+    : TO_TIMESTAMP_TZ '(' expr (DEFAULT expr ON CONVERSION ERROR)? (',' expr (',' expr)?)? ')'
+    ;
+
+toYmintervalFunction
+    : TO_YMINTERVAL '(' stringLiteral (DEFAULT expr ON CONVERSION ERROR)? ')'
+    ;
+
+translateUsingFunction
+    : TRANSLATE '(' expr USING (CHAR_CS | NCHAR_CS) ')'
+    ;
+
 treatFunction
     : TREAT '(' expr AS (REF? ( schema '.' )? type | JSON) ')' jsonNonfunctionSteps? jsonFunctionStep?
+    ;
+
+trimFunction
+    : TRIM '(' (((LEADING | TRAILING | BOTH) expr? | expr) FROM)? expr ')'
+    ;
+
+tzOffsetFunction
+    : TZ_OFFSET '(' (stringLiteral | SESSIONTIMEZONE | DBTIMEZONE) ')'
+    ;
+
+uidFunction
+    : UID
+    ;
+
+userFunction
+    : USER
+    ;
+
+validateConversionFunction
+    : VALIDATE_CONVERSION '(' expr AS identifier (',' expr (',' stringLiteral)?)? ')'
+    ;
+
+varPopFunction
+    : VAR_POP '(' expr ')' (OVER '(' analyticClause ')')?
+    ;
+
+varSampFunction
+    : VAR_SAMP '(' expr ')' (OVER '(' analyticClause ')')?
+    ;
+
+varianceFunction
+    : VARIANCE '(' (DISTINCT | ALL)? expr ')' (OVER '(' analyticClause ')')?
+    ;
+
+xmlaggFunction
+    : XMLAGG '(' expr (',' expr)* orderByClause? ')'
+    ;
+
+xmlcastFunction
+    : XMLCAST '(' expr AS datatype ')'
+    ;
+
+xmlcorattvalFunction
+    : XMLCOLATTVAL '(' xmlcorattvalFunctionItem (',' xmlcorattvalFunctionItem)* ')'
+    ;
+
+xmlelementFunction
+    : XMLELEMENT '(' (ENTITYESCAPING | NOENTITYESCAPING)? (NAME? identifier | EVALNAME expr)
+      (',' xmlAttributesClause)? (',' expr (AS? cAlias)?)*
+    ;
+
+xmlexistsFunction
+    : XMLEXISTS '(' expr xmlPassingClause? ')'
+    ;
+
+xmlforestFunction
+    : XMLFOREST '(' xmlForestItem (',' xmlForestItem)* ')'
+    ;
+
+xmlparseFunction
+    : XMLPARSE '(' (DOCUMENT | CONTENT) expr WELLFORMED? ')'
+    ;
+
+xmlpiFunction
+    : XMLPI '(' (NAME? identifier | EVALNAME expr) (',' expr)?
+    ;
+
+xmlqueryFunction
+    : XMLQUERY '(' stringLiteral xmlPassingClause? RETURNING CONTENT (NULL ON EMPTY)? ')'
+    ;
+
+xmlrootFunction
+    : XMLROOT '(' expr ',' VERSION (expr | NO VALUE) (',' STANDALONE (YES | NO | NO VALUE))? ')'
+    ;
+
+xmlsequenceFunction
+    : XMLSEQUENCE '(' (expr | identifier ',' expr) ')'
+    ;
+
+xmlserializeFunction
+    : XMLSERIALIZE '(' (DOCUMENT | CONTENT) expr (AS datatype)? (ENCODING stringLiteral)? (VERSION stringLiteral)?
+      (NO INDENT | INDENT (SIZE '=' numberLiteral)?)?
+      ((HIDE | SHOW) DEFAULTS)?
+    ;
+
+xmlTableFunction
+    : XMLTABLE '(' (xmlnamespacesClause ',')? expr xmltableOptions ')'
+    ;
+
+xmltableOptions
+    : xmlPassingClause? (RETURNING SEQUENCE BY REF)? (COLUMNS xmlTableColumn (',' xmlTableColumn)*)?
+    ;
+
+xmlTableColumn  
+    : column ( FOR ORDINALITY
+             | ( datatype
+               | XMLTYPE ('(' SEQUENCE ')' BY REF)?
+               ) 
+               (PATH stringLiteral)?
+               (DEFAULT expr)?
+             )
+    ;
+
+xmlnamespacesClause
+    : XMLNAMESPACES '(' xmlnamespacesClauseItem (',' xmlnamespacesClauseItem)* ')' 
+    ;
+
+xmlnamespacesClauseItem
+    : stringLiteral AS identifier
+    | DEFAULT stringLiteral
+    ;
+
+xmlForestItem
+    : expr (AS (cAlias | EVALNAME expr))?
+    ;
+
+xmlPassingClause
+    : PASSING (BY VALUE)? xmlPassingClauseItem (',' xmlPassingClauseItem)*
+    ;
+
+xmlPassingClauseItem
+    : expr (AS identifier)?
+    ;
+
+xmlAttributesClause
+    : XMLATTRIBUTES
+      '(' (ENTITYESCAPING | NOENTITYESCAPING)? (SCHEMACHECK | NOSCHEMACHECK)?
+      xmlAttributesClauseItem
+    ;
+
+xmlAttributesClauseItem
+    : expr (AS? cAlias | AS EVALNAME expr)?
+    ;
+
+xmlcorattvalFunctionItem
+    : expr (AS cAlias | EVALNAME expr)?
+    ;
+
+costMatrixClause
+    : COST ( MODEL AUTO? 
+           | '(' expr (',' expr)* ')' VALUES '(' '(' expr (',' expr)* ')' (',' '(' expr (',' expr)* ')')* ')'
+           )
+    ;
+
+listaggOverflowClause
+    : ON OVERFLOW ERROR
+    | ON OVERFLOW TRUNCATE stringLiteral? ((WITH | WITHOUT) COUNT)?
+    ;
+
+lastFunctionItem
+    : expr (DESC | ASC)? (NULLS (FIRST | LAST))?
+    ;
+
+jsonValueReturningClause
+    : RETURNING jsonValueReturnType ASCII?
+    ;
+
+jsonValueOnMismatchClause
+    : ((IGNORE | ERROR | NULL) ON MISMATCH ('(' jsonValueOnMismatchClauseItem (',' jsonValueOnMismatchClauseItem)* ')')?)+
+    ;
+
+jsonValueOnMismatchClauseItem
+    : MISSING DATA
+    | EXTRA DATA
+    | TYPE ERROR
+    ;
+
+operation
+    : removeOp
+    | insertOp
+    | replaceOp
+    | appendOp
+    | setOp
+    | renameOp
+    | keepOp
+    ;
+
+removeOp
+    : REMOVE expr ((IGNORE | ERROR) ON MISSING)?
+    ;
+
+insertOp
+    : INSERT expr '=' rhsExpr ((REPLACE | IGNORE | ERROR) ON EXISTING)? ((NULL | IGNORE | ERROR | REMOVE) ON NULL)?
+    ;
+
+replaceOp
+    : REPLACE expr '=' rhsExpr ((CREATE | IGNORE | ERROR) ON MISSING)? ((NULL | IGNORE | ERROR | REMOVE) ON NULL)?
+    ;
+
+appendOp
+    : APPEND expr '=' rhsExpr ((CREATE | IGNORE | ERROR) ON MISSING) ((NULL | IGNORE | ERROR) ON NULL)?
+    ;
+
+setOp
+    : SET expr '=' rhsExpr ((IGNORE | ERROR | REPLACE) ON EXISTING)? ((CREATE | IGNORE | ERROR) ON MISSING)? 
+      ((NULL | IGNORE | ERROR) ON NULL)?
+    ;
+
+renameOp
+    : RENAME expr WITH stringLiteral ((IGNORE | ERROR) ON MISSING)?
+    ;
+
+keepOp
+    : KEEP keepOpItem (',' keepOpItem)*
+    ;
+
+keepOpItem
+    : expr ((IGNORE | ERROR) ON MISSING)?
+    ;
+
+rhsExpr
+    : sqlExpr=expr (FORMAT JSON)?
+    ;
+
+jsonTransformReturningClause
+    : RETURNING ( VARCHAR2 ('(' size (BYTE | CHAR)?)?
+                | CLOB
+                | BLOB
+                | JSON)
+                (ALLOW | DISALLOW)?
+    ;
+
+jsonPassingClause
+    : PASSING expr AS identifier (',' expr AS identifier)*
+    ;
+
+jsonTableOnErrorClause
+    : (ERROR | NULL) ON ERROR
+    ;
+
+jsonColumnsClause
+    : COLUMNS '(' jsonColumnDefinition (',' jsonColumnDefinition)* TRUNCATE ')'
+    ;
+
+jsonColumnDefinition
+    : jsonExistsColumn
+    | jsonQueryColumn
+    | jsonValueColumn
+    | jsonNestedPath
+    | ordinalityColumn
+    ;
+
+jsonExistsColumn
+    : column jsonValueReturnType? EXISTS (PATH jsonPath=stringLiteral)?
+      jsonExistsOnErrorClause? jsonExistsOnEmptyClause?
+    ;
+
+jsonQueryColumn
+    : column jsonQueryReturnType? (FORMAT JSON)?
+      (ALLOW | DISALLOW SCALARS)? jsonQueryWrapperClause?
+      (PATH jsonPath=stringLiteral)? jsonQueryOnErrorClause?
+    ;
+
+jsonValueColumn
+    : column jsonValueReturnType? TRUNCATE? (PATH jsonPath=stringLiteral)?
+      jsonValueOnErrorClause? jsonValueOnEmptyClause?
+    ;
+
+jsonValueOnErrorClause
+    : (ERROR | NULL | DEFAULT literal) ON ERROR
+    ;
+
+jsonValueOnEmptyClause
+    : (ERROR | NULL | DEFAULT literal) ON EMPTY
+    ;
+
+jsonNestedPath
+    : NESTED PATH? jsonPath=stringLiteral jsonColumnsClause
+    ;
+
+ordinalityColumn
+    : column FOR ORDINALITY
+    ;
+
+jsonValueReturnType
+    : VARCHAR2 ('(' size (BYTE | CHAR)? ')')? TRUNCATE?
+    | CLOB
+    | NUMBER ('(' precision (',' scale)? ')')?
+    | DATE ((TRUNCATE | PRESERVE) TIME)?
+    | TIMESTAMP (WITH TIMEZONE)?
+    | SDO_GEOMETRY
+    | jsonValueReturnObjectInstance
+    ;
+
+jsonValueReturnObjectInstance
+    : identifier jsonValueMapperClause?
+    ;
+
+jsonValueMapperClause
+    : USING CASE_SENSITIVE MAPPING
+    ;
+
+jsonArrayContent
+    : jsonArrayElement (',' jsonArrayElement)* jsonOnNullClause?
+      jsonReturningClause? STRICT?
+    ;
+
+jsonArrayElement
+    : expr formatClause?
+    ;
+
+formatClause
+    : FORMAT JSON
+    ;
+
+jsonOnNullClause
+    : (NULL | ABSENT) ON NULL
+    ;
+
+jsonReturningClause
+    : RETURNING ( VARCHAR ('(' size (BYTE | CHAR)? ')')? (WITH TYPENAME)?
+                | CLOB
+                | BLOB
+                | JSON
+                )
+    ;
+
+jsonQueryReturningClause
+    : (RETURNING jsonQueryReturnType)? ((ALLOW | DISALLOW) SCALARS)? PRETTY? ASCII?
+    ;
+
+jsonQueryReturnType
+    : VARCHAR2 ('(' size (BYTE | CHAR)? ')')?
+    | CLOB
+    | BLOB
+    | JSON
+    ;
+
+jsonQueryWrapperClause
+    : WITHOUT ARRAY? WRAPPER
+    | WITH (UNCONDITIONAL | CONDITIONAL)? ARRAY? WRAPPER
+    ;
+
+jsonQueryOnErrorClause
+    : (ERROR
+      | NULL
+      | EMPTY
+      | EMPTY ARRAY
+      | EMPTY OBJECT
+      ) ON ERROR
+    ;
+
+jsonQueryOnEmptyClause
+    : (ERROR
+      | NULL
+      | EMPTY
+      | EMPTY ARRAY
+      | EMPTY OBJECT
+      ) ON EMPTY
+    ;
+
+jsonObjectContent
+    : (entry (',' entry)* | '*')? jsonOnNullClause? jsonReturningClause?
+      STRICT? (WITH UNIQUE KEYS)?
+    ;
+
+entry
+    : regularEntry formatClause?
+    | wildcard
+    ;
+
+regularEntry
+    : KEY? stringLiteral VALUE expr
+    | expr (':' expr)?
+    | column
+    ;
+
+wildcard
+    : (identifier '.') identifier '.' '*'
+    ;
+
+jsonOnErrorClause
+    : (ERROR | NULL) ON ERROR
+    ;
+
+denseRankAggregateItem
+    : expr (DESC | ASC)? (NULLS (FIRST |LAST))?
+    ;
+
+cumeDistItem
+    : expr (DESC | ASC)? (NULLS (FIRST |LAST))?
+    ;
+
+miningAnalyticClause
+    : queryPartitionClause? orderByClause?
+    ;
+
+miningAttributeClause
+    : USING ('*' | miningAttributeClauseItem (',' miningAttributeClauseItem)*)
+    ;
+
+miningAttributeClauseItem
+    : (schema '.')? table '.' '*' | expr (AS alias)?
     ;
 
 avMeasExpression
@@ -9488,153 +10563,171 @@ statement
                                  | sqlStatement
                                  | whileLoopStatement
                                  )
-                                 // TODO: REMOVE
-                                 MOD_SYMBOL
     ;
 
 assignmentStatement
-    :
+    : assignmentStatementTarget ':' '=' plsqlExpression
+    ;
+
+assignmentStatementTarget
+    : ':'? variable ('.' identifier | '(' identifier ')')?
+    | placeholder
+    ;
+
+placeholder
+    : ':' variable (':' variable)?
     ;
 
 basicLoopStatement
-    :
+    : LOOP statement* END LOOP label? ';'
     ;
 
 caseStatement
-    :
+    : CASE caseExpr=plsqlExpression? (WHEN plsqlExpression THEN plsqlExpression ';')+
+      (ELSE statement+ ';')? END CASE label? ';'
     ;
 
 closeStatement
-    :
+    : CLOSE plsqlNamedCursor ';'
     ;
 
 continueStatement
-    :
+    : CONTINUE label? (WHEN plsqlExpression)?
     ;
 
 cursorForLoopStatement
-    :
+    : FOR record IN ( cursor '(' plsqlExpression (',' plsqlExpression)* ')'
+                    | '(' select ')'
+                    )
+      LOOP statement+ END LOOP label? ';'
     ;
 
 executeImmediateStatement
-    :
+    : EXECUTE IMMEDIATE dynamicSqlStmt ( ( plsqlIntoClause
+                                         | plsqlBulkCollectIntoClause
+                                         ) plsqlUsingClause?
+                                       | plsqlUsingClause plsqlDynamicReturningClause?
+                                       | plsqlDynamicReturningClause
+                                       )?
+      ';'
     ;
 
 exitStatement
-    :
+    : EXIT label? (WHEN plsqlExpression)? ';'
     ;
 
 fetchStatement
-    :
+    : FETCH ':'? identifier (plsqlIntoClause | plsqlBulkCollectIntoClause (LIMIT plsqlExpression)?) ';'
     ;
 
 forLoopStatement
-    :
+    : FOR plsqlIterator LOOP statement+ END LOOP label? ';'
     ;
 
 forallStatement
-    :
+    : FORALL index IN plsqlBoundsClause (SAVE EXCEPTIONS)? (insert | update | delete | merge) ';'
     ;
 
 gotoStatement
-    :
+    : GOTO label ';'
     ;
 
 ifStatement
-    :
+    : IF plsqlExpression THEN statement statement* (ELSIF plsqlExpression THEN statement+)* (ELSE statement+)? END IF ';'
     ;
 
 nullStatement
-    :
+    : NULL ';'
     ;
 
 openStatement
-    :
+    : OPEN cursor ('(' plsqlExpression (',' plsqlExpression)*)? ';'
     ;
 
 openForStatement
-    :
+    : OPEN ':'? variable FOR (select | plsqlExpression) plsqlUsingClause? ';'
     ;
 
 pipeRowStatement
-    :
-    ;
-
-plsqlBlock
-    :
+    : PIPE ROW '(' row=identifier ')' ';'
     ;
 
 raiseStatement
-    :
+    : RAISE exception? ';'
     ;
 
 returnStatement
-    :
+    : RETURN plsqlExpression? ';'
     ;
 
 selectIntoStatement
-    :
+    : SELECT (DISTINCT | UNIQUE | ALL)? selectList (plsqlIntoClause | plsqlBulkCollectIntoClause) FROM tableSource
     ;
 
 whileLoopStatement
-    :
+    : WHILE plsqlExpression LOOP statement+ END LOOP label? ';'
     ;
 
 sqlStatement
-    : commitStatement
+    : commit
     | collectionMethodCall
-    | deleteStatement
-    | insertStatement
-    | lockTableStatement
-    | mergeStatement
-    | rollbackStatement
-    | savepointStatement
-    | setTransactionStatement
-    | updateStatement
-    ;
-
-commitStatement
-    :
+    | delete
+    | insert
+    | lockTable
+    | merge
+    | rollback
+    | savepoint
+    | setTransaction
+    | update
     ;
 
 collectionMethodCall
-    :
-    ;
-
-deleteStatement
-    :
-    ;
-
-insertStatement
-    :
-    ;
-
-lockTableStatement
-    :
-    ;
-
-mergeStatement
-    :
-    ;
-
-rollbackStatement
-    :
-    ;
-
-savepointStatement
-    :
-    ;
-
-setTransactionStatement
-    :
-    ;
-
-updateStatement
-    :
+    : identifier '.' ( COUNT 
+                     | DELETE ('(' index (',' index)* ')')? 
+                     | EXISTS ('(' index ')')? 
+                     | EXTEND ('(' index (',' index)* ')')? 
+                     | FIRST 
+                     | LAST 
+                     | LIMIT 
+                     | NEXT '(' index ')' 
+                     | PRIOR '(' index ')' 
+                     | TRIM '(' numberLiteral ')'
+                     )
     ;
 
 dynamicSqlStmt
     : expr
+    | select
+    ;
+
+plsqlUsingClause
+    : USING (plsqlUsingClauseItem (',' plsqlUsingClauseItem)*)?
+    ;
+
+plsqlUsingClauseItem
+    : (IN | OUT | IN OUT)? bindArgument=plsqlExpression
+    ;
+
+plsqlBoundsClause
+    : lowerBound '.' '.' upperBound
+    | INDICES OF collection=identifier (BETWEEN lowerBound AND upperBound)?
+    | VALUES OF indexCollection=identifier
+    ;
+
+plsqlIterator
+    : iterandDecl (',' iterandDecl) IN iterationCtlSeq
+    ;
+
+plsqlIntoClause
+    : INTO identifier (',' identifier)*
+    ;
+
+plsqlBulkCollectIntoClause
+    : BULK COLLECT INTO ':'? identifier (',' ':'? identifier)*
+    ;
+
+plsqlDynamicReturningClause
+    : (RETURN | RETURNING) (plsqlIntoClause | plsqlBulkCollectIntoClause)
     ;
 
 cursorObject
@@ -9960,7 +11053,6 @@ aggregateFunctionName
     | VAR_POP
     | VAR_SAMP
     | VARIANCE
-    | XMLAGG
     ;
 
 analyticFunctionName
@@ -10031,12 +11123,9 @@ analyticFunctionName
 
 singleRowFunctionName
     : ADD_MONTHS
-    | CURRENT_DATE
-    | CURRENT_TIMESTAMP
     | EXTRACT
     | FROM_TZ
     | LAST_DAY
-    | LOCALTIMESTAMP
     | MONTHS_BETWEEN
     | NEW_TIME
     | NEXT_DAY
@@ -10047,8 +11136,6 @@ singleRowFunctionName
     | ORA_DST_ERROR
     | ROUND
     | SYS_EXTRACT_UTC
-    | SYSDATE
-    | SYSTIMESTAMP
     | TO_CHAR
     | TO_DSINTERVAL
     | TO_TIMESTAMP
@@ -10291,7 +11378,6 @@ nonReservedKeywordIdentifier
     | DAY_TO_SECOND
     | DAYS
     | DBA_RECYCLEBIN
-    | DBTIMEZONE
     | DEBUG
     | DEC
     | DECREMENT
@@ -10825,7 +11911,6 @@ nonReservedKeywordIdentifier
     | SEQUENTIAL
     | SERIAL
     | SERVICE
-    | SESSIONTIMEZONE
     | SETS
     | SHA2_512
     | SHARDED
@@ -10993,5 +12078,6 @@ nonReservedKeywordIdentifier
     | K_T
     | K_P
     | K_E
+    | K_C
     | HEXA1
     ;
