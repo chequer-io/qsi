@@ -1322,7 +1322,7 @@ insteadOfDmlTrigger
     ;
 
 simpleDmlTrigger
-    : ( BEFORE | AFTER )? dmlEventClause referencingClause? ( FOR EACH ROW )?
+    : ( BEFORE | AFTER ) dmlEventClause referencingClause? ( FOR EACH ROW )?
         triggerEditionClause? triggerOrderingClause?
         ( ENABLE | DISABLE )? ( WHEN '(' condition ')' )? triggerBody
     ;
