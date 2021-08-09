@@ -433,7 +433,7 @@ body
     ;
 
 exceptionHandler
-    : WHEN ( exception ( OR exception )* | OTHERS ) THEN statement+
+    : WHEN ( exceptionMessage ( OR exceptionMessage )* | OTHERS ) THEN statement+
     ;
 
 procedureHeading
@@ -546,7 +546,7 @@ constantDeclaration
     ;
 
 exceptionDeclaration
-    : exception EXCEPTION
+    : exceptionMessage EXCEPTION
     ;
 
 collectionConstructor
@@ -10383,7 +10383,7 @@ record2
     : identifier
     ;
 
-exception
+exceptionMessage
     : identifier
     ;
 
@@ -10653,7 +10653,7 @@ pipeRowStatement
     ;
 
 raiseStatement
-    : RAISE exception? ';'
+    : RAISE exceptionMessage? ';'
     ;
 
 returnStatement
