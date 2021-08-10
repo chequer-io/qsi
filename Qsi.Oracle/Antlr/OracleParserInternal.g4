@@ -471,6 +471,7 @@ typeAttribute
 
 plsqlExpression
     : identifier                                                                                        #constantOrVariableExpression
+    | numberLiteral                                                                                     #numberLiteralExpression
     | booleanLiteral                                                                                    #booleanLiteralExpression
     | functionCall                                                                                      #functionCallExpression
     | conditionalPredicate                                                                              #conditionalPredicateExpression
@@ -803,7 +804,7 @@ createMaterializedView
         ( ON PREBUILT TABLE
           ( ( WITH | WITHOUT ) REDUCED PRECISION )?
         | physicalProperties materializedViewProps
-        )
+        )?
         ( USING INDEX
           ( physicalAttributesClause
           | TABLESPACE tablespace
@@ -1407,11 +1408,11 @@ objectTypeDef
     ;
 
 varrayTypeSpec
-    : ( VARRAY | VARYING ARRAY ) '(' sizeLimit ')' OF '(' '('? plsqlDatatype ( NOT NULL )? ')'? | '(' plsqlDatatype ( NOT NULL )? ')' ( NOT? PERSISTABLE )? ')'
+    : ( VARRAY | VARYING ARRAY ) '(' sizeLimit ')' OF ( '('? plsqlDatatype ( NOT NULL )? ')'? | '(' plsqlDatatype ( NOT NULL )? ')' ( NOT? PERSISTABLE )? )
     ;
 
 nestedTableTypeSpec
-    : TABLE OF '(' '('? plsqlDatatype ( NOT NULL )? ')'? | '('  plsqlDatatype ( NOT NULL )? ')'  ( NOT? PERSISTABLE )? ')'
+    : TABLE OF ( '('? plsqlDatatype ( NOT NULL )? ')'? | '(' plsqlDatatype ( NOT NULL )? ')'  ( NOT? PERSISTABLE )? )
     ;
 
 createTypeBody
@@ -4583,7 +4584,7 @@ relationalTable
 
 objectTable
     : OF (schema '.')? objectType objectTableSubstitution?
-      ('(' objectProperties ')') (ON COMMIT (DELETE | PRESERVE) ROWS)?
+      ('(' objectProperties ')')? (ON COMMIT (DELETE | PRESERVE) ROWS)?
       oidClause? oidIndexClause? physicalProperties? tableProperties
     ;
 
@@ -8051,6 +8052,7 @@ tableCollectionExpression
 collectionExpression
     : subquery
     | column
+    | expr
 //    | function
 //    | collectionConstructor
     ;
@@ -8078,7 +8080,11 @@ hierarchicalQueryClause
     ;
 
 groupByClause
-    : GROUP BY groupByItem (',' groupByItem)* (HAVING condition)?
+    : GROUP BY (groupByItems | '(' groupByItems ')') (HAVING condition)?
+    ;
+
+groupByItems
+    : groupByItem (',' groupByItem)*
     ;
 
 groupByItem
@@ -8383,19 +8389,16 @@ condition
     | expr IS NOT? JSON (FORMAT JSON)? (STRICT | LAX)?
       ((ALLOW | DISALLOW) SCALARS)? ((WITH | WITHOUT) UNIQUE KEYS)?                     #jsonIsJsonCondition
     | JSON_EQUAL '(' expr ',' expr ')'                                                  #jsonEqualCondition
-//    | JSON_EXISTS '(' expr (FORMAT JSON)? ',' jsonBasicPathExpression
-//      jsonPassingClause=expr? jsonExistsOnErrorClause? jsonExistsOnEmptyClause?  #jsonExistsCondition
-//    | JSON_TEXTCONTAINS '('
-//        column ','
-//        jsonBasicPathExpression ','
-//        stringLiteral ')'                                                   #jsonTextContainsCondition
+    | JSON_EXISTS '(' expr (FORMAT JSON)? ',' stringLiteral
+      jsonPassingClause? jsonExistsOnErrorClause? jsonExistsOnEmptyClause? ')'          #jsonExistsCondition
+    | JSON_TEXTCONTAINS '(' column ',' stringLiteral ',' stringLiteral ')'              #jsonTextContainsCondition
     | '(' condition ')'                                                                 #compoundParenthesisCondition
     | expr NOT? BETWEEN expr AND expr                                                   #betweenCondition
     | EXISTS '(' subquery ')'                                                           #existsCondition
     | expr NOT? IN '(' (expressionList|subquery) ')'                                    #inCondition1
     | '(' expr (',' expr)* ')' NOT?
       IN '(' (expressionList (',' expressionList)* | subquery) ')' #inCondition2
-    | expr IS NOT? OF TYPE? '(' isOfTypeConditionItem (',' isOfTypeConditionItem) ')'   #isOfTypeCondition
+    | expr IS NOT? OF TYPE? '(' isOfTypeConditionItem (',' isOfTypeConditionItem)* ')'  #isOfTypeCondition
     ;
 
 isOfTypeConditionItem
@@ -8524,8 +8527,10 @@ functionExpression
     | checksumFunction
     | chrFunction
     | clusterDetailsFunction
+    | clusterDetailsAnalyticFunction
     | clusterDistanceFunction
     | clusterIdFunction
+    | clusterIdAnalyticFunction
     | clusterProbabilityFunction
     | clusterProbAnalyticFunction
     | clusterSetFunction
@@ -8564,6 +8569,49 @@ functionExpression
     | jsonScalarFunction
     | jsonSerializeFunction
     | jsonTableFunction
+    | jsonTransformFunction
+    | jsonValueFunction
+    | kurtosisPopFunction
+    | kurtosisSampFunction
+    | lagFunction
+    | lastFunction
+    | lastValueFunction
+    | leadFunction
+    | listaggFunction
+    | localtimestampFunction
+    | maxFunction
+    | medianFunction
+    | minFunction
+    | nthValueFunction
+    | ntileFunction
+    | oraDmPartitionNameFunction
+    | oraInvokingUserFunction
+    | oraInvokingUserIdFunction
+    | percentRankAggregateFunction
+    | percentRankAnalyticFunction
+    | percentileContFunction
+    | percentileDiscFunction
+    | predictionFunction
+    | predictionOrderedFunction
+    | predictionAnalyticFunction
+    | predictionBoundsFunction
+    | predictionCostFunction
+    | predictionCostOrderedFunction
+    | predictionCostAnalyticFunction
+    | predictionDetailsFunction
+    | predictionDetailsOrderedFunction
+    | predictionDetailsAnalyticFunction
+    | predictionProbabilityFunction
+    | predictionProbabilityOrderedFunction
+    | predictionProbAnalyticFunction
+    | predictionSetFunction
+    | predictionSetOrderedFunction
+    | predictionSetAnalyticFunction
+    | rankAggregateFunction
+    | rankAnalyticFunction
+    | ratioToReportFunction
+    | linearRegrFunction
+    | sessiontimezoneFunction
     | rowNumberFunction
     | stddevFunction
     | stddevPopFunction
@@ -8650,7 +8698,7 @@ bitXorAggFunction
     ;
 
 castFunction
-    : CAST'('(expr | MULTISET '('subquery')' ) AS (identifier | TIMESTAMP WITH LOCAL? TIME ZONE)
+    : CAST'(' (expr | MULTISET '('subquery')' ) AS (datatype | TIMESTAMP WITH LOCAL? TIME ZONE)
         ( DEFAULT returnValue=expr ON CONVERSION ERROR )?
         (',' fmt=expr (',' nlsparam=expr )? )?')'
     ;
@@ -8664,7 +8712,11 @@ chrFunction
     ;
 
 clusterDetailsFunction
-    : CLUSTER_DETAILS '(' (schema '.')? model (',' identifier (',' topN=identifier))? (DESC | ASC | ABS) miningAttributeClause
+    : CLUSTER_DETAILS '(' (schema '.')? model (',' clusterId (',' topN=expr))? (DESC | ASC | ABS)? miningAttributeClause ')'
+    ;
+
+clusterDetailsAnalyticFunction
+    : CLUSTER_DETAILS '(' INTO numberLiteral (',' clusterId (',' topN=expr))? (DESC | ASC | ABS)? miningAttributeClause ')' OVER '(' miningAnalyticClause ')'
     ;
 
 clusterDistanceFunction
@@ -8673,6 +8725,10 @@ clusterDistanceFunction
 
 clusterIdFunction
     : CLUSTER_ID '(' (schema '.')? model miningAttributeClause ')'
+    ;
+
+clusterIdAnalyticFunction
+    : CLUSTER_ID '(' INTO expr miningAttributeClause ')' OVER '(' miningAnalyticClause ')'
     ;
 
 clusterProbabilityFunction
@@ -8684,11 +8740,11 @@ clusterProbAnalyticFunction
     ;
 
 clusterSetFunction
-    : CLUSTER_SET '(' (schema '.')? model (',' topN=identifier (',' cutoff=identifier)?)? miningAttributeClause ')'
+    : CLUSTER_SET '(' (schema '.')? model (',' topN=expr (',' cutoff=expr)?)? miningAttributeClause ')'
     ;
 
 clusterSetAnalyticFunction
-    : CLUSTER_SET '(' INTO expr (',' topN=identifier (',' cutoff=identifier)?)? miningAttributeClause ')' OVER '(' miningAttributeClause ')'
+    : CLUSTER_SET '(' INTO expr (',' topN=expr (',' cutoff=expr)?)? miningAttributeClause ')' OVER '(' miningAttributeClause ')'
     ;
 
 collectFunction
@@ -10200,6 +10256,10 @@ maxPdbSnapshots
     : identifier
     ;
 
+clusterId
+    : identifier '.' identifier
+    ;
+
 partitionKeyValue
     : expr
     ;
@@ -10347,6 +10407,7 @@ libName
 
 argument
     : expr
+    | expr '=' '>' expr
     ;
 
 externalParameter
@@ -11170,8 +11231,10 @@ singleRowFunctionName
     | TO_YMINTERVAL
     | TRUNC
     | TZ_OFFSET
+    | ASCII
     | ASCIISTR
     | BIN_TO_NUM
+    | COALESCE
     | CAST
     | CHARTOROWID
     | COMPOSE
@@ -11357,6 +11420,7 @@ nonReservedKeywordIdentifier
     | CLUSTER_SET
     | CLUSTERING
     | CODE
+    | COEFFICIENT
     | COLLATION
     | COLLECT
     | COLUMN_VALUE
@@ -11614,6 +11678,7 @@ nonReservedKeywordIdentifier
     | LENGTH
     | LESS
     | LEVELS
+    | LEVEL_NAME
     | LIBRARY
     | LIKE2
     | LIKE4
@@ -11896,6 +11961,7 @@ nonReservedKeywordIdentifier
     | REPLICATION
     | RESTORE
     | RESTRICTED
+    | RESULT
     | RESULT_CACHE
     | RESUMABLE
     | RETENTION
@@ -11959,6 +12025,7 @@ nonReservedKeywordIdentifier
     | STANDARD
     | STANDBY
     | STAR_TRANSFORMATION
+    | STATE
     | STATEMENT
     | STATEMENT_QUEUING
     | STATISTICS
