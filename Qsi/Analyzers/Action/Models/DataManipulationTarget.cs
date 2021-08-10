@@ -1,5 +1,6 @@
 ﻿using System;
 using Qsi.Data;
+using Qsi.Data.Cache;
 
 namespace Qsi.Analyzers.Action.Models
 {
@@ -11,29 +12,33 @@ namespace Qsi.Analyzers.Action.Models
 
         public DataManipulationTargetColumnPivot[] ColumnPivots { get; }
 
-        public QsiDataRowCollection InsertRows => _insertRows ??= new QsiBaseDataRowCollection(ColumnCount);
+        public QsiDataRowCollection InsertRows => _insertRows ??= new QsiDataRowCollection(ColumnCount, _cacheProviderFactory());
 
-        public QsiDataRowCollection DuplicateRows => _duplicateRows ??= new QsiBaseDataRowCollection(ColumnCount);
+        public QsiDataRowCollection DuplicateRows => _duplicateRows ??= new QsiDataRowCollection(ColumnCount, _cacheProviderFactory());
 
-        public QsiDataRowCollection DeleteRows => _deleteRows ??= new QsiBaseDataRowCollection(ColumnCount);
+        public QsiDataRowCollection DeleteRows => _deleteRows ??= new QsiDataRowCollection(ColumnCount, _cacheProviderFactory());
 
-        public QsiDataRowCollection UpdateBeforeRows => _updateBeforeRows ??= new QsiBaseDataRowCollection(ColumnCount);
+        public QsiDataRowCollection UpdateBeforeRows => _updateBeforeRows ??= new QsiDataRowCollection(ColumnCount, _cacheProviderFactory());
 
-        public QsiDataRowCollection UpdateAfterRows => _updateAfterRows ??= new QsiBaseDataRowCollection(ColumnCount);
+        public QsiDataRowCollection UpdateAfterRows => _updateAfterRows ??= new QsiDataRowCollection(ColumnCount, _cacheProviderFactory());
 
         private QsiDataRowCollection _insertRows;
         private QsiDataRowCollection _duplicateRows;
         private QsiDataRowCollection _deleteRows;
         private QsiDataRowCollection _updateBeforeRows;
         private QsiDataRowCollection _updateAfterRows;
+        
+        public readonly Func<IQsiDataTableCacheProvider> _cacheProviderFactory;
 
-        public DataManipulationTarget(QsiTableStructure table, DataManipulationTargetColumnPivot[] pivots)
+        public DataManipulationTarget(QsiTableStructure table, DataManipulationTargetColumnPivot[] pivots, Func<IQsiDataTableCacheProvider> cacheProviderFactory)
         {
             if (table.Type != QsiTableType.Table)
                 throw new ArgumentException(nameof(table));
 
             if (pivots.Length != table.Columns.Count)
                 throw new ArgumentException(nameof(pivots));
+
+            _cacheProviderFactory = cacheProviderFactory;
 
             Table = table;
             ColumnPivots = pivots;

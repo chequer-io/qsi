@@ -146,13 +146,13 @@ namespace Qsi.Analyzers.Action
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected virtual IEnumerable<DataManipulationTarget> ResolveDataManipulationTargets(QsiTableStructure table)
+        protected virtual IEnumerable<DataManipulationTarget> ResolveDataManipulationTargets(IAnalyzerContext context, QsiTableStructure table)
         {
-            return ResolveDataManipulationTargetsCore(table.Columns.SelectMany(ResolveDataManipulationTargetColumns));
+            return ResolveDataManipulationTargetsCore(context, table.Columns.SelectMany(ResolveDataManipulationTargetColumns));
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected virtual IEnumerable<DataManipulationTarget> ResolveDataManipulationTargets(QsiTableStructure table, IEnumerable<QsiQualifiedIdentifier> columnNames)
+        protected virtual IEnumerable<DataManipulationTarget> ResolveDataManipulationTargets(IAnalyzerContext context, QsiTableStructure table, IEnumerable<QsiQualifiedIdentifier> columnNames)
         {
             QsiTableColumn[] columnsBuffer = table.Columns.ToArray();
 
@@ -168,11 +168,11 @@ namespace Qsi.Analyzers.Action
                     return ResolveDataManipulationTargetColumns(table.Columns[index], i);
                 });
 
-            return ResolveDataManipulationTargetsCore(rawPivots);
+            return ResolveDataManipulationTargetsCore(context, rawPivots);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected virtual IEnumerable<DataManipulationTarget> ResolveDataManipulationTargetsCore(IEnumerable<DataManipulationTargetColumnPivot> rawPivots)
+        protected virtual IEnumerable<DataManipulationTarget> ResolveDataManipulationTargetsCore(IAnalyzerContext context, IEnumerable<DataManipulationTargetColumnPivot> rawPivots)
         {
             return rawPivots
                 .GroupBy(c => c.TargetColumn.Parent)
@@ -191,7 +191,7 @@ namespace Qsi.Analyzers.Action
                         buffer[i] = new DataManipulationTargetColumnPivot(i, g.Key.Columns[i], -1, null);
                     }
 
-                    return new DataManipulationTarget(g.Key, buffer);
+                    return new DataManipulationTarget(g.Key, buffer, context.Engine.CacheProviderFactory);
                 });
         }
 
@@ -348,7 +348,7 @@ namespace Qsi.Analyzers.Action
             var dataContext = new TableDataInsertContext(context, table)
             {
                 ColumnNames = columnNames,
-                Targets = ResolveDataManipulationTargets(table, columnNames).ToArray()
+                Targets = ResolveDataManipulationTargets(context, table, columnNames).ToArray()
             };
 
             if (action.ValueTable != null)
@@ -502,7 +502,7 @@ namespace Qsi.Analyzers.Action
 
             var setColumnsPivot = ResolveSetColumnsPivot(action.SetValues, true);
 
-            foreach (var updateTarget in ResolveDataManipulationTargets(context.Table, setColumnsPivot.Columns))
+            foreach (var updateTarget in ResolveDataManipulationTargets(context, context.Table, setColumnsPivot.Columns))
             {
                 var target = context.Targets.FirstOrDefault(t => t.Table == updateTarget.Table);
 
@@ -584,7 +584,7 @@ namespace Qsi.Analyzers.Action
                 }
             }
 
-            return ResolveDataManipulationTargets(table, columnNames)
+            return ResolveDataManipulationTargets(context, table, columnNames)
                 .Select(target =>
                 {
                     foreach (var row in dataTable.Rows)
@@ -669,7 +669,7 @@ namespace Qsi.Analyzers.Action
                 throw new QsiException(QsiError.Syntax);
             }
 
-            return ResolveDataManipulationTargets(sourceTable)
+            return ResolveDataManipulationTargets(context, sourceTable)
                 .Select(target =>
                 {
                     foreach (var row in dataTable.Rows)

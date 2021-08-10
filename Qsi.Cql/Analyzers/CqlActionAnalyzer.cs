@@ -200,6 +200,7 @@ namespace Qsi.Cql.Analyzers
             var dataTable = await GetDataTableByCommonTableNode(context, targetNode);
 
             return ResolveDataManipulationTargets(
+                    context,
                     table,
                     columnPlans.Select(c => new QsiQualifiedIdentifier(c.Name)))
                 .Select(target =>

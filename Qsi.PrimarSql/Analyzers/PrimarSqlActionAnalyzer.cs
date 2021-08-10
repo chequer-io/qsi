@@ -37,7 +37,7 @@ namespace Qsi.PrimarSql.Analyzers
             var commonTableNode = ReassembleCommonTableNode(action.Target);
             var dataTable = await GetDataTableByCommonTableNode(context, commonTableNode);
 
-            var deleteRows = new QsiBaseDataRowCollection(1);
+            var deleteRows = new QsiDataRowCollection(1, context.Engine.CacheProviderFactory());
 
             foreach (var row in dataTable.Rows)
             {
@@ -75,8 +75,8 @@ namespace Qsi.PrimarSql.Analyzers
             var commonTableNode = ReassembleCommonTableNode(action.Target);
             var dataTable = await GetDataTableByCommonTableNode(context, commonTableNode);
 
-            var updateBeforeRows = new QsiBaseDataRowCollection(1);
-            var updateAfterRows = new QsiBaseDataRowCollection(1);
+            var updateBeforeRows = new QsiDataRowCollection(1, context.Engine.CacheProviderFactory());
+            var updateAfterRows = new QsiDataRowCollection(1, context.Engine.CacheProviderFactory());
 
             (object[], QsiExpressionNode, bool)[] setValues = action.SetValues
                 .OfType<PrimarSqlSetColumnExpressionNode>()
@@ -149,7 +149,7 @@ namespace Qsi.PrimarSql.Analyzers
             var table = await tableAnalyzer.BuildTableStructure(tableContext, action.Target);
             var tempTable = CreateTemporaryTable(table.Identifier);
 
-            var insertRows = new QsiBaseDataRowCollection(1);
+            var insertRows = new QsiDataRowCollection(1, context.Engine.CacheProviderFactory());
 
             QsiQualifiedIdentifier[] columns = ResolveColumnNames(table, action);
 

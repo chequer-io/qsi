@@ -9,16 +9,10 @@ namespace Qsi.Data
 
         public QsiDataRowCollection Rows { get; }
 
-        public QsiDataTable(QsiTableStructure table)
+        public QsiDataTable(QsiTableStructure table, Func<IQsiDataTableCacheProvider> cacheProviderFactory)
         {
             Table = table ?? throw new ArgumentNullException(nameof(table));
-            Rows = new QsiBaseDataRowCollection(table.Columns.Count);
-        }
-        
-        public QsiDataTable(QsiTableStructure table, IQsiDataTableCacheProvider cacheProvider)
-        {
-            Table = table ?? throw new ArgumentNullException(nameof(table));
-            Rows = new CachedDataRowCollection(table.Columns.Count, cacheProvider);
+            Rows = new QsiDataRowCollection(table.Columns.Count, cacheProviderFactory());
         }
     }
 }

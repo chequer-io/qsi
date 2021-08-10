@@ -46,7 +46,7 @@ namespace Qsi.Engines.Explain
             if (results.Length != 1 || results[0] is not QsiTableResult tableResult)
                 throw new QsiException(QsiError.InvalidNestedExplain, script.Script);
 
-            var dataTable = new QsiDataTable(tableResult.Table);
+            var dataTable = new QsiDataTable(tableResult.Table, _engine.CacheProviderFactory);
             var dataRow = new QsiDataRow(dataTable.Rows.ColumnCount);
 
             for (int i = 0; i < dataRow.Length; i++)
