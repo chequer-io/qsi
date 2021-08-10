@@ -11023,15 +11023,9 @@ dateTimeLiteral
     | TIMESTAMP SINGLE_QUOTED_STRING    #timestampLiteral
     ;
 
-timeExpression
-    : HH ( ':' MI ( ':' SS ( '.' integer )? )? )?
-    | MI ( ':' SS ( '.' integer )? )?
-    | SS ( '.' integer )?
-    ;
-
 intervalLiteral
     : INTERVAL SINGLE_QUOTED_STRING ( YEAR | MONTH ) ('(' precision ')')? ( TO ( YEAR | MONTH ) )?
-    | INTERVAL S_SINGLE_QUOTE ( integer | integer timeExpression | timeExpression ) S_SINGLE_QUOTE
+    | INTERVAL SINGLE_QUOTED_STRING
         ( ( DAY | HOUR | MINUTE ) ( '(' precision ')' )?
         | SECOND ( '(' precision ( ',' fractionalSecondsPrecision )? ')' )?
         )
