@@ -3825,6 +3825,7 @@ createSchema
 
 createTable
     : CREATE
+      hint?
       ( (GLOBAL|PRIVATE) TEMPORARY
       | SHARDED
       | DUPLICATED
@@ -7362,9 +7363,9 @@ hintItem
       '(' hintQueryBlockName? tablespec indexspec* (integer | DEFAULT)? ')'         #parallelIndexHint
     | PQ_CONCURRENT_UNION ('(' hintQueryBlockName ')')?                             #pqConcurrentUnionHint
     // TODO: Impl
-//    | PQ_DISTRIBUTE
-//      '(' hintQueryBlockName? tablespec
-//      (distribution | outerDistribution innerDistribution) ')'                      #pqDistributeHint
+    | PQ_DISTRIBUTE
+      '(' hintQueryBlockName? tablespec
+      (',' distribution | outerDistribution ',' innerDistribution) ')'              #pqDistributeHint
     | PQ_FILTER '(' (SERIAL | NONE | HASH | RANDOM) ')'                             #pqFilterHint
     | PQ_SKEW '(' hintQueryBlockName? tablespec ')'                                 #pqSkewHint
     | PUSH_PRED
@@ -7387,8 +7388,29 @@ hintItem
     | USE_NL_WITH_INDEX '(' hintQueryBlockName? tablespec indexspec* ')'            #useNlWithIndexHint
     ;
 
+outerDistribution
+    : NONE
+    | BROADCAST
+    | HASH
+    | PARTITION
+    ;
+
+innerDistribution
+    : NONE
+    | BROADCAST
+    | HASH
+    | PARTITION
+    ;
+
+distribution
+    : NONE
+    | PARTITION
+    | RANDOM
+    | RANDOM_LOCAL
+    ;
+
 hintQueryBlockName
-    : '@'? UNQUOTED_OBJECT_NAME
+    : '@' UNQUOTED_OBJECT_NAME
     ;
 
 queryBehavior
