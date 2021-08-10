@@ -8438,7 +8438,7 @@ groupComparisonCondition
 
 expr
     : '(' expr ')'                                                                          #parenthesisExpr
-    | ('+' | '-'| PRIOR) expr                                                               #signExpr
+    | ( '+' | '-' | PRIOR ) expr                                                            #signExpr
     | TIMESTAMP expr                                                                        #timestampExpr
     | expr ( '*' | '/' | '+' | '-' | '||') expr                                             #binaryExpr
     | expr COLLATE collationName                                                            #collateExpr
@@ -11045,7 +11045,7 @@ intervalLiteral
     ;
 
 fractionalSecondsPrecision
-    : NON_ZERO_DIGITS
+    : precision
     ;
 
 ddlEvent
