@@ -7491,10 +7491,10 @@ inlineAnalyticView
 
 queryTableExpression
     : queryName=fullObjectPath
-    | identifier?
-        ( identifier (partitionExtensionClause | '@' dblink)?
-          analyticView=identifier hierarchiesClause?
-          hierarchy
+    | ( schema '.' )?
+        ( table (partitionExtensionClause | '@' dblink )?
+        | analyticView=identifier hierarchiesClause?
+        | hierarchy
         ) sampleClause?
     | LATERAL? '(' subquery
     subqueryRestrictionClause?
