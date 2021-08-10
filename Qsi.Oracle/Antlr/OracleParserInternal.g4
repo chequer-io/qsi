@@ -4875,14 +4875,14 @@ blockchainHashAndDataFormatClause
     ;
 
 physicalProperties
-    : deferredSegmentCreation? segmentAttributesClause tableCompression? inmemoryTableClause ilmClause?
+    : deferredSegmentCreation? segmentAttributesClause tableCompression? inmemoryTableClause? ilmClause?
     | deferredSegmentCreation? ( ORGANIZATION ( HEAP segmentAttributesClause? heapOrgTableClause
                                               | INDEX segmentAttributesClause? indexOrgTableClause
                                               | EXTERNAL externalTableClause
                                               )
                                | EXTERNAL PARTITION ATTRIBUTES externalTableClause (REJECT LIMIT)?
                                )
-    | CLUSTER cluster '(' column (',' column)* ')'
+    | CLUSTER cluster '(' column (',' column )* ')'
     ;
 
 objectTableSubstitution
