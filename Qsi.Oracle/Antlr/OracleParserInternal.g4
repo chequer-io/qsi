@@ -8374,6 +8374,7 @@ condition
     | '(' expr (',' expr)* ')' operator2 '(' (expressionList | subquery) ')'            #simpleComparisonCondition2
     | groupComparisonCondition                                                          #comparisonCondition
     | expr IS NOT? (NAN | INFINITE)                                                     #floatingPointCondition
+    | expr IS NOT? DANGLING                                                             #danglingCondition
     | NOT condition                                                                     #logicalNotCondition
     | condition AND condition                                                           #logicalAndCondition
     | condition OR condition                                                            #logicalOrCondition

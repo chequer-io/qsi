@@ -332,6 +332,7 @@ CURRVAL:                          C U R R V A L;
 CURSOR:                           C U R S O R;
 CURSOR_SHARING_EXACT:             C U R S O R '_' S H A R I N G '_' E X A C T;
 CYCLE:                            C Y C L E;
+DANGLING:                         D A N G L I N G;
 DATA:                             D A T A;
 DATABASE:                         D A T A B A S E;
 DATAFILE:                         D A T A F I L E;
