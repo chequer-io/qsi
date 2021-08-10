@@ -7187,7 +7187,7 @@ queryBlock
 withClause
     : WITH
       plsqlDeclarations*
-      clauses+=factoringClause (',' clauses+=factoringClause)?
+      clauses+=factoringClause (',' clauses+=factoringClause)*
     ;
 
 plsqlDeclarations
@@ -7415,15 +7415,21 @@ tableSource
 
 tableReference
     : (
-          (
-              ( ONLY '(' queryTableExpression ')' | queryTableExpression )
-              flashbackQueryClause?
-              (pivotClause | unpivotClause | rowPatternClause)?
-          )
-        | containersClause
-        | shardsClause
+       (
+           ( ONLY '(' queryTableExpression ')' | queryTableExpression )
+           flashbackQueryClause?
+           (pivotClause | unpivotClause | rowPatternClause)?
+       )
+      | containersClause
+      | shardsClause
       )
       tAlias?
+    | tablePrimary (AS? tAlias)?
+    ;
+
+tablePrimary
+    : jsonTableFunction
+    | xmlTableFunction
     ;
 
 innerCrossJoinClause
@@ -8377,8 +8383,8 @@ condition
     | nestedTable=identifier IS NOT? EMPTY                                              #multisetIsEmptyCondition
     | expr NOT? MEMBER OF? nestedTable=identifier                                       #multisetMemberCondition
     | nestedTable1=identifier NOT? SUBMULTISET OF? nestedTable2=identifier              #multisetSubmultisetCondition
-    | (column|stringLiteral) NOT? (LIKE | LIKEC | LIKE2 | LIKE4)
-      (column|stringLiteral) (ESCAPE stringLiteral)?                                    #patternMatchingLikeCondition
+    | expr NOT? (LIKE | LIKEC | LIKE2 | LIKE4)
+      expr (ESCAPE stringLiteral)?                                                      #patternMatchingLikeCondition
     | REGEXP_LIKE '(' (column|stringLiteral) ','
                       (column|stringLiteral)
                       (',' (column|stringLiteral))? ')'                                 #patternMatchingRegexpLikeCondition
@@ -8426,6 +8432,7 @@ operator2
 groupComparisonCondition
     : expr operator1 (ANY | SOME | ALL) '(' (expressionList | subquery) ')'
     | '(' expr (',' expr)* ')' operator2 (ANY | SOME | ALL) '(' (expressionList (',' expressionList)* | subquery) ')'
+    | LNNVL '(' condition ')'
     ;
 
 expr
@@ -8490,8 +8497,7 @@ errorLoggingSimpleExpression
 simpleExpression
     : ((schema '.')? table '.')? ROWID
     | ROWNUM
-    | stringLiteral
-    | numberLiteral
+    | literal
     | sequence '.' (CURRVAL | NEXTVAL)
     | NULL
     ;
@@ -8509,7 +8515,8 @@ calcMeasExpression
     ;
 
 functionExpression
-    : functionName '(' expressionList? ')'
+    : functionExpression '.' identifier
+    | functionName '(' expressionList? ')'
     | analyticFunction
     | castFunction
     | approxCountFunction
@@ -8596,10 +8603,8 @@ functionExpression
     | predictionAnalyticFunction
     | predictionBoundsFunction
     | predictionCostFunction
-    | predictionCostOrderedFunction
     | predictionCostAnalyticFunction
     | predictionDetailsFunction
-    | predictionDetailsOrderedFunction
     | predictionDetailsAnalyticFunction
     | predictionProbabilityFunction
     | predictionProbabilityOrderedFunction
@@ -8809,7 +8814,7 @@ denseRankAnalyticFunction
 extractDateTimeFunction
     : EXTRACT '(' 
       (YEAR | MONTH | DAY | HOUR | MINUTE | SECOND | TIMEZONE_HOUR | TIMEZONE_MINUTE | TIMEZONE_REGION | TIMEZONE_ABBR)
-      FROM expr ')'
+      FROM expressionList ')'
     ;
 
 featureCompareFunction
@@ -8818,7 +8823,7 @@ featureCompareFunction
 
 featureDetailsFunction
     : FEATURE_DETAILS '(' (schema '.')? model
-      (',' identifier (',' identifier)?)? (DESC | ASC | ABS)? miningAttributeClause ')'
+      (',' expr (',' expr)?)? (DESC | ASC | ABS)? miningAttributeClause ')'
     ;
 
 featureIdFunction
@@ -8830,19 +8835,19 @@ featureIdAnalyticFunction
     ;
 
 featureSetFunction
-    : FEATURE_SET '(' (schema '.')? model miningAttributeClause ')'
+    : FEATURE_SET '(' (schema '.')? model (',' expr (',' expr)?)? miningAttributeClause ')'
     ;
 
 featureSetAnalyticFunction
-    : FEATURE_SET '(' INTO identifier (',' identifier (',' identifier)?)? miningAttributeClause ')' OVER '(' miningAnalyticClause ')'
+    : FEATURE_SET '(' INTO expr (',' expr (',' expr)?)? miningAttributeClause ')' OVER '(' miningAnalyticClause ')'
     ;
 
 featureValueFunction
-    : FEATURE_VALUE '(' (schema '.')? model (',' identifier)? miningAttributeClause ')'
+    : FEATURE_VALUE '(' (schema '.')? model (',' expr)? miningAttributeClause ')'
     ;
 
 featureValueAnalyticFunction
-    : FEATURE_VALUE '(' INTO identifier (',' identifier)? miningAttributeClause ')' OVER '(' miningAnalyticClause ')'
+    : FEATURE_VALUE '(' INTO expr (',' featureId)? miningAttributeClause ')' OVER '(' miningAnalyticClause ')'
     ;
 
 firstFunction
@@ -8886,9 +8891,10 @@ jsonObjectaggFunction
     ;
 
 jsonQueryFunction
-    : JSON_QUERY '(' expr (FORMAT JSON)? ',' jsonBasicPathExpression
+    : JSON_QUERY '(' expr (FORMAT JSON)? ',' stringLiteral
       jsonQueryReturningClause jsonQueryWrapperClause?
       jsonQueryOnErrorClause? jsonQueryOnEmptyClause?
+      ')'
     ;
 
 jsonScalarFunction
@@ -8901,7 +8907,7 @@ jsonSerializeFunction
     ;
 
 jsonTableFunction
-    : JSON_TABLE '(' expr (FORMAT JSON)? (',' jsonBasicPathExpression)? jsonTableOnErrorClause? jsonColumnsClause ')'
+    : JSON_TABLE '(' expr (FORMAT JSON)? (',' stringLiteral)? jsonTableOnErrorClause? jsonColumnsClause ')'
     ;
 
 jsonTransformFunction
@@ -8909,8 +8915,9 @@ jsonTransformFunction
     ;
 
 jsonValueFunction
-    : JSON_VALUE '(' expr (FORMAT JSON)? ',' jsonBasicPathExpression? jsonValueReturningClause?
+    : JSON_VALUE '(' expr (FORMAT JSON)? ',' stringLiteral? jsonValueReturningClause?
       jsonValueOnErrorClause? jsonValueOnEmptyClause? jsonValueOnMismatchClause?
+      ')'
     ;
 
 kurtosisPopFunction
@@ -8948,7 +8955,7 @@ leadFunction
     ;
 
 listaggFunction
-    : LISTAGG '(' ALL? DISTINCT? expr (',' stringLiteral)? listaggOverflowClause? ')' (WITHIN GROUP)? '(' orderByClause ')' (OVER queryPartitionClause)?
+    : LISTAGG '(' ALL? DISTINCT? expr (',' stringLiteral)? listaggOverflowClause? ')' (WITHIN GROUP)? '(' orderByClause ')' (OVER '(' queryPartitionClause ')')?
     ;
 
 localtimestampFunction
@@ -9009,7 +9016,7 @@ percentileDiscFunction
     ;
 
 predictionFunction
-    : PRDICTION '(' 
+    : PREDICTION '(' 
 //      WARN: can't find definition 
 //      groupingHint?
       (schema '.')? model costMatrixClause? miningAttributeClause ')'
@@ -9030,16 +9037,12 @@ predictionAnalyticFunction
     ;
 
 predictionBoundsFunction
-    : PREDICTION_BOUNDS '(' (schema '.')? model (',' identifier (',' expr)?)? miningAttributeClause ')'
+    : PREDICTION_BOUNDS '(' (schema '.')? model (',' expr (',' expr)?)? miningAttributeClause ')'
     ;
 
 predictionCostFunction
-    : PREDICTION_COST '(' (schema '.')? model (',' identifier)? costMatrixClause miningAttributeClause ')'
-    ;
-
-predictionCostOrderedFunction
-    : PREDICTION_COST '(' (schema '.')? model (',' identifier)? costMatrixClause miningAttributeClause ')'
-      OVER '(' orderByClause (',' orderByClause)* ')'
+    : PREDICTION_COST '(' (schema '.')? model (',' expr)? costMatrixClause miningAttributeClause ')'
+      (OVER '(' orderByClause (',' orderByClause)* ')')?
     ;
 
 predictionCostAnalyticFunction
@@ -9047,15 +9050,12 @@ predictionCostAnalyticFunction
     ;
 
 predictionDetailsFunction
-    : PREDICTION_DETAILS '(' (schema '.')? model (',' expr (',' identifier)?)? (DESC | ASC | ABS)? miningAttributeClause ')'
-    ;
-
-predictionDetailsOrderedFunction
-    : PREDICTION_DETAILS '(' (schema '.')? model (',' expr (',' identifier)?)? (DESC | ASC | ABS)? miningAttributeClause ')' OVER '(' orderByClause (',' orderByClause)? ')'
+    : PREDICTION_DETAILS '(' (schema '.')? model (',' expr (',' expr)?)? (DESC | ASC | ABS)? miningAttributeClause ')'
+      (OVER '(' orderByClause (',' orderByClause)? ')')?
     ;
 
 predictionDetailsAnalyticFunction
-    : PREDICTION_DETAILS '(' ( OF ANOMALY | FOR expr ) (',' expr (',' identifier)?)? (DESC | ASC | ABS)? miningAttributeClause ')' OVER '(' miningAnalyticClause ')'
+    : PREDICTION_DETAILS '(' ( OF ANOMALY | FOR expr ) (',' expr (',' expr)?)? (DESC | ASC | ABS)? miningAttributeClause ')' OVER '(' miningAnalyticClause ')'
     ;
 
 predictionProbabilityFunction
@@ -9067,7 +9067,7 @@ predictionProbabilityOrderedFunction
     ;
 
 predictionProbAnalyticFunction
-    : PREDICTION_PROBABILITY '(' ( OF ANOMALY | FOR expr ) (',' identifier)? miningAttributeClause ')' OVER '(' miningAnalyticClause ')'
+    : PREDICTION_PROBABILITY '(' ( OF ANOMALY | FOR expr ) (',' expr)? miningAttributeClause ')' OVER '(' miningAnalyticClause ')'
     ;
 
 predictionSetFunction
@@ -9413,7 +9413,7 @@ jsonTableOnErrorClause
     ;
 
 jsonColumnsClause
-    : COLUMNS '(' jsonColumnDefinition (',' jsonColumnDefinition)* TRUNCATE ')'
+    : COLUMNS '(' jsonColumnDefinition (',' jsonColumnDefinition)* TRUNCATE? ')'
     ;
 
 jsonColumnDefinition
@@ -9492,7 +9492,7 @@ jsonOnNullClause
     ;
 
 jsonReturningClause
-    : RETURNING ( VARCHAR ('(' size (BYTE | CHAR)? ')')? (WITH TYPENAME)?
+    : RETURNING ( VARCHAR2 ('(' size (BYTE | CHAR)? ')')? (WITH TYPENAME)?
                 | CLOB
                 | BLOB
                 | JSON
@@ -10257,6 +10257,10 @@ maxPdbSnapshots
     ;
 
 clusterId
+    : identifier '.' identifier
+    ;
+
+featureId
     : identifier '.' identifier
     ;
 
@@ -11173,7 +11177,6 @@ analyticFunctionName
     | LAST
     | LAST_VALUE
     | LEAD
-    | LISTAGG
     | MAX
     | MIN
     | NTH_VALUE
@@ -11197,7 +11200,6 @@ analyticFunctionName
     | REGR_SXX
     | REGR_SYY
     | REGR_SXY
-    | ROW_NUMBER
     | STDDEV
     | STDDEV_POP
     | SKEWNESS_POP
