@@ -9736,7 +9736,6 @@ modelExpression
                 | singleColumnForLoop (',' singleColumnForLoop )*
                 | multiColumnForLoop
               ) ']'
-    | analyticFunction
     ;
 
 analyticFunction
