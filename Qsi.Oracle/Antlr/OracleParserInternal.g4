@@ -7388,7 +7388,7 @@ hintItem
     ;
 
 hintQueryBlockName
-    : '@' UNQUOTED_OBJECT_NAME
+    : '@'? UNQUOTED_OBJECT_NAME
     ;
 
 queryBehavior
@@ -12192,6 +12192,7 @@ nonReservedKeywordIdentifier
     | K_T
     | K_P
     | K_E
+    | K_H
     | K_C
     | HEXA1
     ;
