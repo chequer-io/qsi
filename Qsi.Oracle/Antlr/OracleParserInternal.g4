@@ -408,11 +408,11 @@ itemList2
     ;
 
 procedureDefinition
-    : procedureDeclaration ( IS | AS ) ( declareSection? body | callSpec )
+    : procedureDeclaration ( IS | AS ) ( declareSection? body | callSpec ) ';'
     ;
 
 functionDeclaration
-    : functionHeading ( DETERMINISTIC | PIPELINED | PARALLEL_ENABLE | RESULT_CACHE )+
+    : functionHeading ( DETERMINISTIC | PIPELINED | PARALLEL_ENABLE | RESULT_CACHE )+ ';'
     ;
 
 functionHeading
@@ -454,6 +454,19 @@ itemDeclaration
     | exceptionDeclaration
     | recordVariableDeclaration
     | variableDeclaration
+    ;
+
+plsqlDatatype
+    : collectionOrRecordOrRefCursorType=identifier
+    | REF? objectType
+    | rowTypeAttribute
+// WARNING: no documentation
+    | scalarDatatype=datatype
+    | typeAttribute
+    ;
+
+typeAttribute
+    : identifier ('.' identifier)? MOD_SYMBOL TYPE
     ;
 
 plsqlExpression
@@ -519,11 +532,11 @@ plsqlNamedCursor
     ;
 
 variableDeclaration
-    : variable datatype ( ( NOT NULL )? ( ':' '=' | DEFAULT ) plsqlExpression )?
+    : variable plsqlDatatype ( ( NOT NULL )? ( ':' '=' | DEFAULT ) plsqlExpression )? ';'
     ;
 
 recordVariableDeclaration
-    : record1 ( recordType | rowTypeAttribute | record2 MOD_SYMBOL TYPE )
+    : record1 ( recordType | rowTypeAttribute | record2 MOD_SYMBOL TYPE ) ';'
     ;
 
 rowTypeAttribute
@@ -535,6 +548,7 @@ collectionVariableDecl
                        | ( varrayType | nestedTableType ) ( ':' '=' ( collectionConstructor | collectionVar1=collectionVar ) )?
                        | collectionVar2=collectionVar MOD_SYMBOL TYPE
                        )
+      ';'
     ;
 
 cursorVariableDeclaration
@@ -542,7 +556,7 @@ cursorVariableDeclaration
     ;
 
 constantDeclaration
-    : constant CONSTANT datatype ( NOT NULL )? ( ':' '=' | DEFAULT ) plsqlExpression
+    : constant CONSTANT plsqlDatatype ( NOT NULL )? ( ':' '=' | DEFAULT ) plsqlExpression ';'
     ;
 
 exceptionDeclaration
@@ -610,7 +624,7 @@ cursorDeclaration
 cursorDefinition
     : CURSOR cursor
        ( '(' cursorParameterDec ( ',' cursorParameterDec )* ')' )?
-         ( RETURN rowtype )? IS select
+         ( RETURN rowtype )? IS select ';'
     ;
 
 cursorParameterDec
@@ -636,28 +650,29 @@ collectionTypeDefinition
         | varrayTypeDef
         | nestedTableTypeDef
         )
+     ';'
     ;
 
 assocArrayTypeDef
-    : TABLE OF datatype ( NOT NULL )?
-      INDEX BY ( PLS_INTEGER | BINARY_INTEGER | ( VARCHAR | VARCHAR2 | STRING ) '(' integer ')' | datatype )
+    : TABLE OF plsqlDatatype ( NOT NULL )?
+      INDEX BY ( PLS_INTEGER | BINARY_INTEGER | ( VARCHAR | VARCHAR2 | STRING ) '(' integer ')' | plsqlDatatype )
     ;
 
 varrayTypeDef
     : ( VARRAY | VARYING? ARRAY ) '(' integer ')'
-        OF datatype ( NOT NULL )?
+        OF plsqlDatatype ( NOT NULL )?
     ;
 
 nestedTableTypeDef
-    : TABLE OF datatype ( NOT NULL )?
+    : TABLE OF plsqlDatatype ( NOT NULL )?
     ;
 
 recordTypeDefinition
-    : TYPE recordType IS RECORD '(' fieldDefinition ( ',' fieldDefinition )* ')'
+    : TYPE recordType IS RECORD '(' fieldDefinition ( ',' fieldDefinition )* ')' ';'
     ;
 
 fieldDefinition
-    : field datatype ( ( NOT NULL )? ( ':' '=' | DEFAULT ) plsqlExpression )?
+    : field plsqlDatatype ( ( NOT NULL )? ( ':' '=' | DEFAULT ) plsqlExpression )?
     ;
 
 refCursorTypeDefinition
@@ -669,11 +684,13 @@ refCursorTypeDefinition
           | refCursorType
           )
         )?
+     ';'
     ;
 
 subtypeDefinition
     : SUBTYPE subtype IS baseType ( plsqlConstraint | CHARACTER SET characterSet )?
         ( NOT NULL )?
+      ';'
     ;
 
 plsqlConstraint
@@ -1379,22 +1396,22 @@ objectBaseTypeDef
 
 objectSubtypeDef
     : UNDER ( schema '.' )? supertype 
-        '(' ( attribute datatype ( ',' attribute datatype )* ) ( ',' elementSpec )* ')'
+        '(' ( attribute plsqlDatatype ( ',' attribute plsqlDatatype )* ) ( ',' elementSpec )* ')'
         ( NOT? ( FINAL | INSTANTIABLE ) )*
     ;
 
 objectTypeDef
     : OBJECT
-        '(' ( attribute datatype ( ',' attribute datatype )* ) ( ',' elementSpec )* ')'
+        '(' ( attribute plsqlDatatype ( ',' attribute plsqlDatatype )* ) ( ',' elementSpec )* ')'
         ( NOT? ( FINAL | INSTANTIABLE | PERSISTABLE ) )*
     ;
 
 varrayTypeSpec
-    : ( VARRAY | VARYING ARRAY ) '(' sizeLimit ')' OF '(' '('? datatype ( NOT NULL )? ')'? | '(' datatype ( NOT NULL )? ')' ( NOT? PERSISTABLE )? ')'
+    : ( VARRAY | VARYING ARRAY ) '(' sizeLimit ')' OF '(' '('? plsqlDatatype ( NOT NULL )? ')'? | '(' plsqlDatatype ( NOT NULL )? ')' ( NOT? PERSISTABLE )? ')'
     ;
 
 nestedTableTypeSpec
-    : TABLE OF '(' '('? datatype ( NOT NULL )? ')'? | '('  datatype ( NOT NULL )? ')'  ( NOT? PERSISTABLE )? ')'
+    : TABLE OF '(' '('? plsqlDatatype ( NOT NULL )? ')'? | '('  plsqlDatatype ( NOT NULL )? ')'  ( NOT? PERSISTABLE )? ')'
     ;
 
 createTypeBody
@@ -1429,7 +1446,7 @@ procDeclInType
 
 funcDeclInType
     : FUNCTION name ( '(' parameterDeclaration ( ',' parameterDeclaration )* ')' )?
-        RETURN datatype
+        RETURN plsqlDatatype
         ( invokerRightsClause
         | accessibleByClause
         | DETERMINISTIC
@@ -1442,9 +1459,9 @@ funcDeclInType
 constructorDeclaration
     : FINAL?
       INSTANTIABLE?
-      CONSTRUCTOR FUNCTION datatype
-      ( ( SELF IN OUT datatype ',' )?
-        parameter datatype ( ',' parameter datatype )*
+      CONSTRUCTOR FUNCTION plsqlDatatype
+      ( ( SELF IN OUT plsqlDatatype ',' )?
+        parameter plsqlDatatype ( ',' parameter plsqlDatatype )*
       )?
       RETURN SELF AS RESULT
       ( IS | AS ) ( declareSection? body | callSpec )
@@ -7168,8 +7185,17 @@ queryBlock
 
 withClause
     : WITH
-//      plsqlDeclarations?
+      plsqlDeclarations*
       clauses+=factoringClause (',' clauses+=factoringClause)?
+    ;
+
+plsqlDeclarations
+    : plsqlDeclaration+
+    ;
+
+plsqlDeclaration
+    : functionDeclaration 
+    | procedureDeclaration
     ;
 
 factoringClause
@@ -10563,6 +10589,7 @@ statement
                                  | sqlStatement
                                  | whileLoopStatement
                                  )
+      ';'
     ;
 
 assignmentStatement
