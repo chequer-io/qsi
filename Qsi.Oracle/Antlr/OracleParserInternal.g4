@@ -7288,7 +7288,7 @@ hintItem
     | CONTAINERS '(' DEFAULT_PDB_HINT '=' SINGLE_QUOTED_STRING ')'                  #containersHint
     | CURSOR_SHARING_EXACT                                                          #cursorSharingExactHint
     | DISABLE_PARALLEL_DML                                                          #disableParallelDmlHint
-    | DRIVING_SITE                                                                  #drivingSiteHint
+    | DRIVING_SITE '(' ( '@' queryBlock )? tablespec ')'                            #drivingSiteHint
     | DYNAMIC_SAMPLING '(' hintQueryBlockName? tablespec? integer ')'               #dynamicSamplingHint
     | ENABLE_PARALLEL_DML                                                           #enableParallelDmlHint
     | FACT '(' hintQueryBlockName? tablespec ')'                                    #factHint
@@ -11285,13 +11285,15 @@ functionName
     ;
 
 identifier
-    : UNQUOTED_OBJECT_NAME
-    | QUOTED_OBJECT_NAME
-    | nonReservedKeywordIdentifier
-    | singleRowFunctionName
-    | aggregateFunctionName
-    | analyticFunctionName
-    | pseudoColumn
+    : ( UNQUOTED_OBJECT_NAME
+      | QUOTED_OBJECT_NAME
+      | nonReservedKeywordIdentifier
+      | singleRowFunctionName
+      | aggregateFunctionName
+      | analyticFunctionName
+      | pseudoColumn
+      )
+      ( '@' dblink )?
     ;
 
 pseudoColumn
