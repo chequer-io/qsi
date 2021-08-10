@@ -8264,9 +8264,9 @@ longAndRawDatatypes
 
 datetimeDatatypes
     : DATE
-    | TIMESTAMP ('(' fractionalSecondsPrecision=precision ')')? (WITH LOCAL? TIME ZONE)?
+    | TIMESTAMP ('(' fractionalSecondsPrecision ')')? (WITH LOCAL? TIME ZONE)?
     | INTERVAL YEAR ('(' yearPrecision=precision ')')? TO MONTH
-    | INTERVAL DAY ('(' dayPrecision=precision ')')? TO SECOND ('(' factionalSecondsPrecision=precision ')')?
+    | INTERVAL DAY ('(' dayPrecision=precision ')')? TO SECOND ('(' fractionalSecondsPrecision ')')?
     ;
 
 largeObjectDatatypes
@@ -11022,8 +11022,29 @@ dateTimeLiteral
     | TIMESTAMP SINGLE_QUOTED_STRING    #timestampLiteral
     ;
 
+timeExpression
+    : HH ( ':' MI ( ':' SS ( '.' integer )? )? )?
+    | MI ( ':' SS ( '.' integer )? )?
+    | SS ( '.' integer )?
+    ;
+
 intervalLiteral
-    : INTERVAL SINGLE_QUOTED_STRING (YEAR|MONTH) ('(' precision ')')? (TO (YEAR|MONTH))?
+    : INTERVAL SINGLE_QUOTED_STRING ( YEAR | MONTH ) ('(' precision ')')? ( TO ( YEAR | MONTH ) )?
+    | INTERVAL S_SINGLE_QUOTE ( integer | integer timeExpression | timeExpression ) S_SINGLE_QUOTE
+        ( ( DAY | HOUR | MINUTE ) ( '(' precision ')' )?
+        | SECOND ( '(' precision ( ',' fractionalSecondsPrecision )? ')' )?
+        )
+        ( TO
+          ( DAY
+          | HOUR
+          | MINUTE
+          | SECOND ( '(' fractionalSecondsPrecision ')' )?
+          )
+        )?
+    ;
+
+fractionalSecondsPrecision
+    : NON_ZERO_DIGITS
     ;
 
 ddlEvent
