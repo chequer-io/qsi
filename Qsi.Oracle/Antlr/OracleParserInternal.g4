@@ -8933,7 +8933,7 @@ jsonSerializeFunction
     ;
 
 jsonTableFunction
-    : JSON_TABLE '(' expr (FORMAT JSON)? (',' stringLiteral)? jsonTableOnErrorClause? jsonColumnsClause ')'
+    : JSON_TABLE '(' expr (FORMAT JSON)? (',' stringLiteral)? jsonTableOnErrorClause? ','? jsonColumnsClause ')'
     ;
 
 jsonTransformFunction
