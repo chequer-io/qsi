@@ -8317,7 +8317,7 @@ xmlTypes
     ;
 
 spatialTypes
-    : SDO_GEOMERTY
+    : SDO_GEOMETRY
     | SDO_TOPO_GEOMETRY
     | SDO_GEORASTER
     ;
