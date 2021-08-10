@@ -8541,6 +8541,7 @@ calcMeasExpression
 
 functionExpression
     : functionExpression '.' identifier
+    | functionExpression '.' functionExpression
     | functionName '(' expressionList? ')'
     | analyticFunction
     | castFunction
@@ -10025,7 +10026,7 @@ index
     ;
 
 column
-    : ( tAlias '.' )? identifier
+    : ( identifier '.' )* identifier
     ;
 
 user
