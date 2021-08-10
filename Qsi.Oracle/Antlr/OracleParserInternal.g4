@@ -12008,7 +12008,7 @@ nonReservedKeywordIdentifier
     | SCHEMA
     | SCN
     | SCOPE
-    | SDO_GEOMERTY
+    | SDO_GEOMETRY
     | SDO_GEORASTER
     | SDO_TOPO_GEOMETRY
     | SEARCH
@@ -12044,6 +12044,7 @@ nonReservedKeywordIdentifier
     | STAR_TRANSFORMATION
     | STATE
     | STATEMENT
+    | STATEMENT_ID
     | STATEMENT_QUEUING
     | STATISTICS
     | STATS_BINOMIAL_TEST
