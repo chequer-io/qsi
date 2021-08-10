@@ -1225,7 +1225,6 @@ SCN:                              S C N;
 SCN_TO_TIMESTAMP:                 S C N '_' T O '_' T I M E S T A M P;
 SCOPE:                            S C O P E;
 SCRUB:                            S C R U B;
-SDO_GEOMERTY:                     S D O '_' G E O M E R T Y;
 SDO_GEOMETRY:                     S D O '_' G E O M E T R Y;
 SDO_GEORASTER:                    S D O '_' G E O R A S T E R;
 SDO_TOPO_GEOMETRY:                S D O '_' T O P O '_' G E O M E T R Y;
