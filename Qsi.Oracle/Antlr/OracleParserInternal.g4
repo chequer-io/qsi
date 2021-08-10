@@ -1549,7 +1549,8 @@ updateSetClause
     ;
 
 updateSetSubstituteClause
-    : '(' column ( ',' column )* ')' '=' '(' subquery ')' | column '=' ( expr | '(' subquery ')' | DEFAULT )
+    : '(' column ( ',' column )* ')' '=' '(' subquery ')'
+    | column '=' ( expr | '(' subquery ')' | DEFAULT )
     ;
 
 merge
@@ -1677,7 +1678,7 @@ setRole
     : SET ROLE
       ( role ( IDENTIFIED BY password )?
         ( ',' role ( IDENTIFIED BY password )? )*
-      | ALL ( EXCEPT role ( ',' role )* )
+      | ALL ( EXCEPT role ( ',' role )* )?
       | NONE
       )
     ;
@@ -6560,6 +6561,7 @@ systemWritePrivilege
 // TODO: impl
 role
     : ACCHK_READ
+    | identifier
     ;
 
 objectAction
