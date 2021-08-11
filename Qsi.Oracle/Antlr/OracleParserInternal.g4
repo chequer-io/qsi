@@ -6,7 +6,7 @@ options {
 
 root
     : EOF
-    | ((plsqlBlock | oracleStatement) (SEMICOLON_SYMBOL EOF? | EOF))+
+    | ((plsqlBlock | statement | oracleStatement) (SEMICOLON_SYMBOL EOF? | EOF))+
     ;
 
 plsqlBlock
@@ -10829,7 +10829,13 @@ returnStatement
     ;
 
 selectIntoStatement
-    : SELECT (DISTINCT | UNIQUE | ALL)? selectList (plsqlIntoClause | plsqlBulkCollectIntoClause) FROM tableSource
+    : SELECT (DISTINCT | UNIQUE | ALL)? selectList (plsqlIntoClause | plsqlBulkCollectIntoClause) 
+        FROM ( ( tableReference | THE? '(' subquery ')' ) alias? )*
+        whereClause?
+        hierarchicalQueryClause?
+        groupByClause?
+        modelClause?
+        windowClause?
     ;
 
 whileLoopStatement
