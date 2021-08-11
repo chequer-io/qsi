@@ -2184,7 +2184,7 @@ zonemapRefreshClause
     ;
 
 alterOperator
-    : ALTER OPERATOR ( schema '.' )? operator=operator1
+    : ALTER OPERATOR ( schema '.' )? operatorName
       ( addBindingClause
       | dropBindingClause
       | COMPILE
