@@ -4290,7 +4290,7 @@ databaseFileClauses
     ;
 
 createDatafileClause
-    : CREATE DATAFILE (stringLiteral | filenumber=integer) (',' (stringLiteral | filenumber=integer)*)
+    : CREATE DATAFILE (stringLiteral | filenumber=integer) ( ',' (stringLiteral | filenumber=integer)* )?
       (AS (fileSpecification (',' fileSpecification)* | NEW))?
     ;
 
