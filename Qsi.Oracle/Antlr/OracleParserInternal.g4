@@ -2965,7 +2965,7 @@ alterSession
 alterSessionSetClause
     : SET ( ( parameterName '=' stringLiteral )+
           | EDITION '=' editionName
-          | CONTAINER '=' containerName ( SERVICE '=' serviceName )
+          | CONTAINER '=' containerName ( SERVICE '=' serviceName )?
           | ROW ARCHIVAL VISIBILITY '=' ( ACTIVE | ALL )
           | DEFAULT COLLATION '=' ( collationName | NONE )
           )
@@ -12213,6 +12213,7 @@ nonReservedKeywordIdentifier
     | SYSTEM
     | TABLES
     | TABLESPACE
+    | TAG
     | TEMP
     | TEMPLATE
     | TEMPORARY
