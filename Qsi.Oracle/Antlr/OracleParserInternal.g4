@@ -9227,7 +9227,19 @@ userFunction
     ;
 
 validateConversionFunction
-    : VALIDATE_CONVERSION '(' expr AS identifier (',' expr (',' stringLiteral)?)? ')'
+    : VALIDATE_CONVERSION '(' expr AS validateConversionTypeName (',' expr (',' stringLiteral)?)? ')'
+    ;
+
+validateConversionTypeName
+    : BINARY_DOUBLE
+    | BINARY_FLOAT
+    | DATE
+    | INTERVAL DAY TO SECOND
+    | INTERVAL YEAR TO MONTH
+    | NUMBER
+    | TIMESTAMP
+    | TIMESTAMP WITH TIME ZONE
+    | TIMESTAMP WITH LOCAL TIME ZONE
     ;
 
 varPopFunction
