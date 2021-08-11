@@ -4216,8 +4216,8 @@ modifyIndexSubpartition
     ;
 
 databaseClause
-    : DATEBASE dbName=identifier
-    | PLUGGABLE DATABASE pdbName
+    : DATABASE database?
+    | PLUGGABLE DATABASE pdbName?
     ;
 
 startupClauses
@@ -4331,8 +4331,10 @@ logfileClauses
     ;
 
 addLogfileClauses
-    : ADD STANDBY? LOGFILE ( (INSTANCE stringLiteral | THREAD integer)? (GROUP integer)? redoLogFileSpec (',' (GROUP integer)? redoLogFileSpec)*
-                           | MEMBER stringLiteral REUSE? (',' stringLiteral REUSE?)* TO logfileDescriptor (',' logfileDescriptor)*)
+    : ADD STANDBY? LOGFILE 
+        ( ( INSTANCE stringLiteral | THREAD integer )? ( GROUP integer )? redoLogFileSpec (',' ( GROUP integer )? redoLogFileSpec)*
+        | MEMBER stringLiteral REUSE? (',' stringLiteral REUSE?)* TO logfileDescriptor (',' logfileDescriptor)*
+        )
     ;
 
 dropLogfileClauses

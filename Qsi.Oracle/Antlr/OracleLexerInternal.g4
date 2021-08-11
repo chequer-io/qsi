@@ -344,7 +344,6 @@ DATASTORE:                        D A T A S T O R E;
 DATE:                             D A T E;
 DATE_CACHE:                       D A T E '_' C A C H E;
 DATE_FORMAT:                      D A T E '_' F O R M A T;
-DATEBASE:                         D A T E B A S E;
 DAY:                              D A Y;
 DAY_TO_SECOND:                    D A Y '_' T O '_' S E C O N D;
 DAYS:                             D A Y S;
