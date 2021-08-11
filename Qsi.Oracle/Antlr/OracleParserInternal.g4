@@ -9269,7 +9269,7 @@ xmlcorattvalFunction
 
 xmlelementFunction
     : XMLELEMENT '(' (ENTITYESCAPING | NOENTITYESCAPING)? (NAME? identifier | EVALNAME expr)
-      (',' xmlAttributesClause)? (',' expr (AS? cAlias)?)* ')'
+      (',' xmlAttributesClause)? (',' expr (AS? cAlias)? )* ')'
     ;
 
 xmlCdataFunction
@@ -9352,7 +9352,8 @@ xmlPassingClauseItem
 xmlAttributesClause
     : XMLATTRIBUTES
       '(' 
-        (ENTITYESCAPING | NOENTITYESCAPING)? (SCHEMACHECK | NOSCHEMACHECK)? xmlAttributesClauseItem 
+        (ENTITYESCAPING | NOENTITYESCAPING)? (SCHEMACHECK | NOSCHEMACHECK)?
+        xmlAttributesClauseItem ( ',' xmlAttributesClauseItem )* 
       ')'
     ;
 
