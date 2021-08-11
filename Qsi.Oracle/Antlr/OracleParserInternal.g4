@@ -1861,7 +1861,7 @@ alterHierarchy
     ;
 
 alterIndextype
-    : ALTER INDEXTYPE ( schema '.' ) indextype
+    : ALTER INDEXTYPE ( schema '.' )? indextype
         ( ( ADD | DROP ) ( schema '.' )? operator=operator1 '(' parameterTypes ')' 
             ( ',' ( ADD | DROP ) ( schema '.' )? operator=operator1 '(' parameterTypes ')' )* usingTypeClause?
         | COMPILE
@@ -1901,7 +1901,7 @@ alterJava
       '(' 
         ( 
           '(' matchString ','? ( schema | '-' ) ')' 
-        )* 
+        )*
       ')'
       ( COMPILE | RESOLVE | invokerRightsClause )
     ;
@@ -7603,11 +7603,12 @@ checkDiskgroupClause
     ;
 
 diskgroupTemplateClauses
-    : ((ADD | MODIFY) TEMPLATE templateName=identifier qualifiedTemplateClause (',' templateName=identifier qualifiedTemplateClause)* | DROP TEMPLATE templateName=identifier (',' templateName=identifier)*)
+    : ((ADD | MODIFY) TEMPLATE templateName=identifier qualifiedTemplateClause (',' templateName=identifier qualifiedTemplateClause)*
+    | DROP TEMPLATE templateName=identifier (',' templateName=identifier)*)
     ;
 
 qualifiedTemplateClause
-    : ATTRIBUTE '(' redundancyClause? stripingClause? ')'
+    : ATTRIBUTES '(' redundancyClause? stripingClause? ')'
     ;
 
 redundancyClause
@@ -10990,6 +10991,7 @@ primaryName
 
 matchString
     : stringLiteral
+    | '*'
     ;
 
 schemaName
@@ -12062,6 +12064,7 @@ nonReservedKeywordIdentifier
     | PROFILE
     | PROGRAM
     | PROTOCOL
+    | PUBLIC
     | PURGE
     | PUSH_PRED
     | PUSH_SUBQ
