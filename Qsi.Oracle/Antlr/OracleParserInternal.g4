@@ -11622,6 +11622,7 @@ nonReservedKeywordIdentifier
     | DECREMENT
     | DECRYPT
     | DEDUPLICATE
+    | DEFAULT
     | DEFAULT_PDB_HINT
     | DEFAULTIF
     | DEFERRABLE
