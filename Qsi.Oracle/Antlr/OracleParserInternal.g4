@@ -4617,10 +4617,10 @@ relationalProperty
     ;
 
 columnDefinition
-    : column (datatype (COLLATE columnCollateName=identifier)?) SORT? (VISIBLE|INVISIBLE)?
-      (DEFAULT (ON NULL)? expr | identityClause)?
-      (ENCRYPT encryptionSpec)?
-      (inlineConstraint+|inlineRefConstraint)?
+    : column ( datatype (COLLATE columnCollateName=identifier)? )? SORT? ( VISIBLE | INVISIBLE )?
+      ( DEFAULT ( ON NULL )? expr | identityClause)?
+      ( ENCRYPT encryptionSpec )?
+      ( inlineConstraint+ | inlineRefConstraint )?
     ;
 
 virtualColumnDefinition
@@ -8327,7 +8327,7 @@ ansiSupportedDatatypes
     ;
 
 userDefinedTypes
-    : identifier
+    : REF? identifier
     ;
 
 oracleSuppliedTypes
@@ -8393,7 +8393,7 @@ inlineRefConstraint
     ;
 
 outOfLineRefConstraint
-    :  SCOPE FOR '(' (refCol+=identifier | refAttr+=identifier) ')' IS (schema '.')? scopeTable=identifier
+    : SCOPE FOR '(' (refCol+=identifier | refAttr+=identifier) ')' IS (schema '.')? scopeTable=identifier
     | REF '(' (refCol+=identifier | refAttr+=identifier) ')' WITH ROWID
     | (CONSTRAINT constraintName)?
       FOREIGN KEY '(' (refCol+=identifier (',' refCol+=identifier)? | refAttr+=identifier (',' refAttr+=identifier)?) ')'
