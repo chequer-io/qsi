@@ -2243,7 +2243,7 @@ packageCompileClause
     ;
 
 alterPluggableDatabase
-    : ALTER PLUGGABLE DATABASE
+    : ALTER databaseClause
       ( pdbUnplugClause
       | pdbSettingsClauses
       | pdbDatafileClause
