@@ -3099,7 +3099,8 @@ alterSystemResetClause
 
 alterTable
     : ALTER TABLE ( schema '.' )? table
-        memoptimizeReadClause
+        memoptimizeReadClause?
+        memoptimizeWriteClause?
         ( 
           alterTableProperties
         | columnClauses
@@ -3269,8 +3270,8 @@ outOfLinePartStorage
 
 modifyColumnClauses
     : MODIFY
-        ( '(' modifyColProperties | modifyVirtcolProperties
-            ( ',' modifyColProperties | modifyVirtcolProperties )* ')'
+        ( '(' ( modifyColProperties | modifyVirtcolProperties )
+            ( ',' ( modifyColProperties | modifyVirtcolProperties ) )* ')'
         | '(' modifyColVisibility ( ',' modifyColVisibility )* ')'
         | modifyColSubstitutable
         )
@@ -3309,7 +3310,13 @@ alterXMLSchemaClause
     ;
 
 memoptimizeReadClause
-    : ( ( MEMOPTIMIZE FOR READ ) | ( NO MEMOPTIMIZE FOR READ ) )?
+    : MEMOPTIMIZE FOR READ
+    | NO MEMOPTIMIZE FOR READ
+    ;
+
+memoptimizeWriteClause
+    : MEMOPTIMIZE FOR WRITE
+    | NO MEMOPTIMIZE FOR WRITE
     ;
 
 alterTableProperties
@@ -8359,7 +8366,7 @@ constraint
     ;
 
 inlineConstraint
-    : (CONSTRAINT constraintName)?
+    : ( CONSTRAINT constraintName )?
       ( NOT? NULL
       | UNIQUE
       | PRIMARY KEY
