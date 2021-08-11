@@ -9212,19 +9212,19 @@ systimestampFunction
     ;
 
 toBinaryDoubleFunction
-    : TO_BINARY_DOUBLE '(' expr (DEFAULT expr ON CONVERSION ERROR)? (',' expr (',' expr)?)?
+    : TO_BINARY_DOUBLE '(' expr (DEFAULT expr ON CONVERSION ERROR)? (',' expr (',' expr)?)? ')'
     ;
 
 toBinaryFloatFunction
-    : TO_BINARY_FLOAT '(' expr (DEFAULT expr ON CONVERSION ERROR)? (',' expr (',' expr)?)?
+    : TO_BINARY_FLOAT '(' expr (DEFAULT expr ON CONVERSION ERROR)? (',' expr (',' expr)?)? ')'
     ;
 
 toDateFunction
-    : TO_DATE '(' expr (DEFAULT expr ON CONVERSION ERROR)? (',' expr (',' stringLiteral)?)?
+    : TO_DATE '(' expr (DEFAULT expr ON CONVERSION ERROR)? (',' expr (',' stringLiteral)?)? ')'
     ;
 
 toDsintervalFunction
-    : TO_DSINTERVAL '(' stringLiteral ')' (DEFAULT expr ON CONVERSION ERROR)? ')'
+    : TO_DSINTERVAL '(' stringLiteral (DEFAULT expr ON CONVERSION ERROR)? ')'
     ;
 
 toNumberFunction
