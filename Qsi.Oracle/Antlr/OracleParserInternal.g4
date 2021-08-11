@@ -4559,7 +4559,7 @@ clusterIndexClause
     ;
 
 tableIndexClause
-    : (schema '.')? table tAlias? tableIndexClauseItem (',' tableIndexClauseItem)* indexProperties
+    : (schema '.')? table tAlias? '(' tableIndexClauseItem (',' tableIndexClauseItem)* ')' indexProperties
     ;
 
 tableIndexClauseItem
