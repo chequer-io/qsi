@@ -3801,7 +3801,7 @@ alterDimension
     ;
 
 alterDiskgroup
-    : ALTER DISKGROUP (diskgroupName ( ((addDiskClause | dropDiskClause) (',' (addDiskClause | dropDiskClause))* | resizeDiskClause) rebalanceDiskgroupClause
+    : ALTER DISKGROUP (diskgroupName ( ((addDiskClause | dropDiskClause)+ | resizeDiskClause) rebalanceDiskgroupClause?
                                      | replaceDiskClause
                                      | renameDiskClause 
                                      | diskOnlineClause 
@@ -7549,7 +7549,7 @@ flashbackQueryClause
     ;
 
 addDiskClause
-    : ADD (SITE sitename=identifier (QUORUM | REGULAR)? (FAILGROUP failgroupName)? DISK qualifiedDiskClause (',' qualifiedDiskClause)*)*
+    : ADD ( ( SITE sitename=identifier )? (QUORUM | REGULAR)? (FAILGROUP failgroupName)? DISK qualifiedDiskClause (',' qualifiedDiskClause)*)+
     ;
 
 qualifiedDiskClause
