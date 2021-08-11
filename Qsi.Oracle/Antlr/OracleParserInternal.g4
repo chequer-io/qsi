@@ -4809,7 +4809,7 @@ partitionIndexClause
 
 parallelClause
     : NOPARALLEL
-    | PARALLEL integer
+    | PARALLEL integer?
     ;
 
 indexSubpartitionClause
