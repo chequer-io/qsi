@@ -1360,7 +1360,6 @@ SYSTEM:                           S Y S T E M;
 SYSTIMESTAMP:                     S Y S T I M E S T A M P;
 TABLE:                            T A B L E;
 TABLES:                           T A B L E S;
-TABLESAPCE:                       T A B L E S A P C E;
 TABLESPACE:                       T A B L E S P A C E;
 TAG:                              T A G;
 TARGET:                           T A R G E T;

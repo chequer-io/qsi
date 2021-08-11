@@ -4690,7 +4690,7 @@ usingIndexClause
     ;
 
 indexProperties
-    : ( (globalPartitionedIndex | localPartitionedIndex | indexAttributes)+
+    : ( ( globalPartitionedIndex | localPartitionedIndex | indexAttributes )+
       | INDEXTYPE IS (domainIndexClause | xmlIndexClause)
       )?
     ;
@@ -4780,7 +4780,7 @@ indexAttributesItem
     : physicalAttributesClause
     | loggingClause
     | ONLINE
-    | TABLESAPCE (tablespace | DEFAULT)
+    | TABLESPACE (tablespace | DEFAULT)
     | indexCompression
     | SORT
     | NOSORT
@@ -12172,7 +12172,6 @@ nonReservedKeywordIdentifier
     | SYSRAC
     | SYSTEM
     | TABLES
-    | TABLESAPCE
     | TABLESPACE
     | TEMP
     | TEMPLATE
