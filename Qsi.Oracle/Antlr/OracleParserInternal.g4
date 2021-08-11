@@ -429,7 +429,7 @@ procedureDeclaration
     ;
 
 body
-    : BEGIN statement+ ( EXCEPTION exceptionHandler+ )? END name?
+    : BEGIN statement* ( EXCEPTION exceptionHandler+ )? END name?
     ;
 
 exceptionHandler
