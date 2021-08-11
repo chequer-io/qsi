@@ -11568,6 +11568,7 @@ nonReservedKeywordIdentifier
     | COLUMNS
     | COMMIT
     | COMPONENT
+    | CONNECT
     | CONSISTENT
     | CONSTRAINT
     | CONSTRAINTS
