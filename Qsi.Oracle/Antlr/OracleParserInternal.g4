@@ -9808,7 +9808,7 @@ aggregateFunction
     ;
 
 objectAccessExpression
-    : ('(' expr ')' '.')? identifier ('.' identifier arrayStep* )* ('(' ( argument (',' argument )* ) ')')?
+    : ('(' expr ')' '.')? identifier ('.' identifier arrayStep* )* ('(' ( argument (',' argument )* )? ')')?
     ;
 
 placeholderExpression
@@ -11911,6 +11911,7 @@ nonReservedKeywordIdentifier
     | NTILE
     | NULLIF
     | NULLS
+    | NUMBER
     | NUMBERONLY
     | NUMERIC
     | NVARCHAR2
