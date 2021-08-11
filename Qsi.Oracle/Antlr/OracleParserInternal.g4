@@ -6888,10 +6888,34 @@ datafileTempfileSpec
 redoLogFileSpec
     : (stringLiteral
       | '(' stringLiteral ( ',' stringLiteral )* ')'
-      )?
+      )
+    | ( SIZE sizeClause )
+    | ( BLOCKSIZE sizeClause )
+    | REUSE
+    | (stringLiteral
+            | '(' stringLiteral ( ',' stringLiteral )* ')'
+            )
       ( SIZE sizeClause )?
       ( BLOCKSIZE sizeClause )?
       REUSE?
+    | (stringLiteral
+            | '(' stringLiteral ( ',' stringLiteral )* ')'
+            )?
+      ( SIZE sizeClause )
+      ( BLOCKSIZE sizeClause )?
+      REUSE?
+    | (stringLiteral
+            | '(' stringLiteral ( ',' stringLiteral )* ')'
+            )?
+      ( SIZE sizeClause )?
+      ( BLOCKSIZE sizeClause )
+      REUSE?
+    | (stringLiteral
+            | '(' stringLiteral ( ',' stringLiteral )* ')'
+            )?
+      ( SIZE sizeClause )?
+      ( BLOCKSIZE sizeClause )?
+      REUSE
     ;
 
 // TODO: The auditCondition can have a maximum length of 4000 characters. It can contain expressions, as well as the following functions and conditions:
@@ -7139,7 +7163,7 @@ granteeClauseItem
 
 subquery
     : queryBlock orderByClause? rowOffset? rowFetchOption?
-    | subquery ((UNION ALL? | INTERSECT | MINUS) subquery)+ orderByClause? rowOffset? rowFetchOption?
+    | subquery ((UNION ALL? | INTERSECT | MINUS | EXCEPT) subquery)+ orderByClause? rowOffset? rowFetchOption?
     | '(' subquery ')' orderByClause? rowOffset? rowFetchOption?
     ;
 
