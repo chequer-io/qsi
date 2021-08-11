@@ -2363,8 +2363,8 @@ instancesClause
     ;
 
 pdbClose
-    : '(' CLOSE IMMEDIATE? ( instancesClause | relocateClause )?
-    | ABORT? instancesClause? ')'
+    : CLOSE IMMEDIATE? ( instancesClause | relocateClause )?
+    | CLOSE ABORT? instancesClause?
     ;
 
 relocateClause
