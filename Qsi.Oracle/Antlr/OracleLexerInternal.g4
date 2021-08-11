@@ -77,6 +77,9 @@ fragment SINGLE_QUOTE: '\'';
 fragment DOUBLE_QUOTE: '"';
 fragment ALPHABET: [A-Za-z];
 
+fragment LETTER_WHEN_UNQUOTED: DIGIT | LETTER_WHEN_UNQUOTED_NO_DIGIT;
+fragment LETTER_WHEN_UNQUOTED_NO_DIGIT: [a-zA-Z_$#\u0080-\uffff];
+
 ABORT:                            A B O R T;
 ABS:                              A B S;
 ABSENT:                           A B S E N T;
@@ -1579,7 +1582,7 @@ K_C:          C;
 HEXA1: X;
 HEXA2: '0' X;
 
-UNQUOTED_OBJECT_NAME: ALPHABET [A-Za-z0-9_$#]*;
+UNQUOTED_OBJECT_NAME: LETTER_WHEN_UNQUOTED_NO_DIGIT LETTER_WHEN_UNQUOTED*;
 QUOTED_OBJECT_NAME: DOUBLE_QUOTE ~[\r\n"]* DOUBLE_QUOTE;
 
 S_INTEGER_WITHOUT_SIGN: DIGIT+;
