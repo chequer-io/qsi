@@ -1538,6 +1538,7 @@ XML:                              X M L;
 XMLAGG:                           X M L A G G;
 XMLATTRIBUTES:                    X M L A T T R I B U T E S;
 XMLCAST:                          X M L C A S T;
+XMLCDATA:                         X M L C D A T A;
 XMLCOLATTVAL:                     X M L C O L A T T V A L;
 XMLELEMENT:                       X M L E L E M E N T;
 XMLEXISTS:                        X M L E X I S T S;

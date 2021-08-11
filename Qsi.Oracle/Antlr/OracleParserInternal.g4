@@ -8673,6 +8673,7 @@ functionExpression
     | xmlcastFunction
     | xmlcorattvalFunction
     | xmlelementFunction
+    | xmlCdataFunction
     | xmlexistsFunction
     | xmlforestFunction
     | xmlparseFunction
@@ -9268,7 +9269,11 @@ xmlcorattvalFunction
 
 xmlelementFunction
     : XMLELEMENT '(' (ENTITYESCAPING | NOENTITYESCAPING)? (NAME? identifier | EVALNAME expr)
-      (',' xmlAttributesClause)? (',' expr (AS? cAlias)?)*
+      (',' xmlAttributesClause)? (',' expr (AS? cAlias)?)* ')'
+    ;
+
+xmlCdataFunction
+    : XMLCDATA '(' stringLiteral ')'
     ;
 
 xmlexistsFunction
@@ -9284,7 +9289,7 @@ xmlparseFunction
     ;
 
 xmlpiFunction
-    : XMLPI '(' (NAME? identifier | EVALNAME expr) (',' expr)?
+    : XMLPI '(' (NAME? identifier | EVALNAME expr) (',' expr)? ')'
     ;
 
 xmlqueryFunction
@@ -9302,7 +9307,7 @@ xmlsequenceFunction
 xmlserializeFunction
     : XMLSERIALIZE '(' (DOCUMENT | CONTENT) expr (AS datatype)? (ENCODING stringLiteral)? (VERSION stringLiteral)?
       (NO INDENT | INDENT (SIZE '=' numberLiteral)?)?
-      ((HIDE | SHOW) DEFAULTS)?
+      ((HIDE | SHOW) DEFAULTS)? ')'
     ;
 
 xmlTableFunction
@@ -9346,8 +9351,9 @@ xmlPassingClauseItem
 
 xmlAttributesClause
     : XMLATTRIBUTES
-      '(' (ENTITYESCAPING | NOENTITYESCAPING)? (SCHEMACHECK | NOSCHEMACHECK)?
-      xmlAttributesClauseItem
+      '(' 
+        (ENTITYESCAPING | NOENTITYESCAPING)? (SCHEMACHECK | NOSCHEMACHECK)? xmlAttributesClauseItem 
+      ')'
     ;
 
 xmlAttributesClauseItem
