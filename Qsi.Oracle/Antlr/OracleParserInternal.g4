@@ -3732,7 +3732,7 @@ alterAuditPolicy
       | (ONLY TOPLEVEL)?
       )
       (CONDITION ( DROP
-                 | S_SINGLE_QUOTE auditCondition S_SINGLE_QUOTE EVALUATE PER (STATEMENT | SESSION | INSTANCE)
+                 | SINGLE_QUOTED_STRING EVALUATE PER (STATEMENT | SESSION | INSTANCE)
                  )
       )?
     ;
@@ -4238,8 +4238,10 @@ generalRecovery
       ( ( fullDatabaseRecovery
         | partialDatabaseRecovery
         | LOGFILE SINGLE_QUOTED_STRING
-        )
-      | )
+        ) ( TEST | ALLOW integer CORRUPTION | parallelClause )*
+      | CONTINUE DEFAULT?
+      | CANCEL
+      )
     ;
 
 fullDatabaseRecovery
