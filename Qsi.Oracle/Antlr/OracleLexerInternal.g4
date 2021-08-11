@@ -41,6 +41,7 @@ LEFT_CURLY_BRACKET2:                '{-';
 RIGHT_CURLY_BRACKET2:               '-}';
 COLON:                              ':';
 HASH_SYMBOL:                        '#';
+JSON_PATH_SYMBOL:                   '$' DOT_SYMBOL;
 
 S_SINGLE_QUOTE: SINGLE_QUOTE;
 

@@ -9480,10 +9480,11 @@ jsonNestedPath
 
 jsonPath
     : dotnotation
+    | stringLiteral
     ;
 
 dotnotation
-    : ( '$' '.' )? dotnotationExpr ('.' dotnotationExpr)*
+    : JSON_PATH_SYMBOL? dotnotationExpr ('.' dotnotationExpr)*
     ;
 
 dotnotationExpr 
