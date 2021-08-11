@@ -4245,15 +4245,15 @@ generalRecovery
     ;
 
 fullDatabaseRecovery
-    :  STANDBY? DATABASE
-       ( UNTIL ( CANCEL
-               | TIME date=stringLiteral
-               | CHANGE integer
-               | CONSISTENT
-               )
-       | USING BACKUP CONTROLFILE
-       | SNAPSHOT TIME date=stringLiteral
-       )*
+    : STANDBY? DATABASE?
+      ( UNTIL ( CANCEL
+              | TIME date=stringLiteral
+              | CHANGE integer
+              | CONSISTENT
+              )
+      | USING BACKUP CONTROLFILE
+      | SNAPSHOT TIME date=stringLiteral
+      )*
     ;
 
 partialDatabaseRecovery
