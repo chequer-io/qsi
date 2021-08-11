@@ -4499,13 +4499,13 @@ replayUpgradeClause
     ;
 
 alterAddCacheClause
-    : ADD CACHE MEASURE GROUP (ALL | measName=identifier (',' measName=identifier)*)?
-      LEVELS alterCacheClauseItem (',' alterCacheClauseItem)*
+    : ADD CACHE MEASURE GROUP (ALL | '(' measName=identifier (',' measName=identifier)* ')' )?
+      LEVELS '(' alterCacheClauseItem (',' alterCacheClauseItem)* ')'
     ;
 
 alterDropCacheClause
-    : DROP CACHE MEASURE GROUP (ALL | measName=identifier (',' measName=identifier)*)?
-      LEVELS alterCacheClauseItem (',' alterCacheClauseItem)*
+    : DROP CACHE MEASURE GROUP (ALL | '(' measName=identifier (',' measName=identifier)* ')' )?
+      LEVELS '(' alterCacheClauseItem (',' alterCacheClauseItem)* ')'
     ;
 
 alterCacheClauseItem
