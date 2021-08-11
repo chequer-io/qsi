@@ -9451,18 +9451,18 @@ jsonColumnDefinition
     ;
 
 jsonExistsColumn
-    : column jsonValueReturnType? EXISTS (PATH jsonPath=stringLiteral)?
+    : column jsonValueReturnType? EXISTS (PATH jsonPath)?
       jsonExistsOnErrorClause? jsonExistsOnEmptyClause?
     ;
 
 jsonQueryColumn
     : column jsonQueryReturnType? (FORMAT JSON)?
       (ALLOW | DISALLOW SCALARS)? jsonQueryWrapperClause?
-      (PATH jsonPath=stringLiteral)? jsonQueryOnErrorClause?
+      (PATH jsonPath)? jsonQueryOnErrorClause?
     ;
 
 jsonValueColumn
-    : column jsonValueReturnType? TRUNCATE? (PATH jsonPath=stringLiteral)?
+    : column jsonValueReturnType? TRUNCATE? (PATH jsonPath)?
       jsonValueOnErrorClause? jsonValueOnEmptyClause?
     ;
 
@@ -9475,8 +9475,39 @@ jsonValueOnEmptyClause
     ;
 
 jsonNestedPath
-    : NESTED PATH? jsonPath=stringLiteral jsonColumnsClause
+    : NESTED PATH? jsonPath jsonColumnsClause
     ;
+
+jsonPath
+    : dotnotation
+    ;
+
+dotnotation
+    : ( '$' '.' )? dotnotationExpr ('.' dotnotationExpr)*
+    ;
+
+dotnotationExpr 
+    : identifierWithQualifier
+    | identifier
+    ;
+
+identifierWithQualifier 
+    : identifier '[' ']'
+    | identifier '[' integer ']'
+    | identifier '[' queryExpr ']'
+    | identifier '[' '?' '(' queryExpr ')' ']'
+    ;
+
+queryExpr : queryExpr ('&&' queryExpr )+
+          | queryExpr ('||' queryExpr )+
+          | '*'
+          | '@' '.' identifier
+          | '@' '.' identifier '>' integer
+          | '@' '.' identifier '<' integer
+          | '@' '.' LENGTH '-' integer
+          | '@' '.' identifier '=' '=' integer
+          | '@' '.' identifier '=' '=' SINGLE_QUOTED_STRING
+          ;
 
 ordinalityColumn
     : column FOR ORDINALITY
