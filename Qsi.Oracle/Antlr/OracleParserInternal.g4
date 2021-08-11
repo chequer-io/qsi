@@ -6883,11 +6883,12 @@ datafileTempfileSpec
     ;
 
 redoLogFileSpec
-    : stringLiteral
-    |'(' stringLiteral ')'
-    | SIZE sizeClause
-    | BLOCKSIZE sizeClause
-    | REUSE
+    : (stringLiteral
+      | '(' stringLiteral ( ',' stringLiteral )* ')'
+      )?
+      ( SIZE sizeClause )?
+      ( BLOCKSIZE sizeClause )?
+      REUSE?
     ;
 
 // TODO: The auditCondition can have a maximum length of 4000 characters. It can contain expressions, as well as the following functions and conditions:
