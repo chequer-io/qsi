@@ -284,6 +284,7 @@ CONFIRM:                          C O N F I R M;
 CONNECT:                          C O N N E C T;
 CONNECT_BY_ISCYCLE:               C O N N E C T '_' B Y '_' I S C Y C L E;
 CONNECT_BY_ISLEAF:                C O N N E C T '_' B Y '_' I S L E A F;
+CONNECT_BY_ROOT:                  C O N N E C T '_' B Y '_' R O O T;
 CONNECT_TIME:                     C O N N E C T '_' T I M E;
 CONSIDER:                         C O N S I D E R;
 CONSISTENT:                       C O N S I S T E N T;

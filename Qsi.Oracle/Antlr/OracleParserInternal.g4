@@ -4226,6 +4226,7 @@ startupClauses
            | READ ONLY
            )
     ;
+
 recoveryClauses
     : generalRecovery
     | managedStandbyRecovery
@@ -8579,6 +8580,7 @@ functionExpression
     | clusterSetFunction
     | clusterSetAnalyticFunction
     | collectFunction
+    | connectByRootFunction
     | corrFunction
     | correlationFunction
     | countFunction
@@ -8791,6 +8793,10 @@ clusterSetAnalyticFunction
 
 collectFunction
     : COLLECT '(' (DISTINCT | UNIQUE)? column (ORDER BY expr)? ')'
+    ;
+
+connectByRootFunction
+    : CONNECT_BY_ROOT column
     ;
 
 corrFunction
