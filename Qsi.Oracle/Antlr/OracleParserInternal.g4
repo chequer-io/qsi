@@ -2035,12 +2035,14 @@ alterMvRefresh
     : REFRESH
       ( ( FAST | COMPLETE | FORCE )
       | ON ( DEMAND | COMMIT )
-      | ( START WITH | NEXT ) dateTimeLiteral
+      | ( START WITH | NEXT ) date=expr
       | WITH PRIMARY KEY
       | USING
-           ( DEFAULT MASTER ROLLBACK SEGMENT| MASTER ROLLBACK SEGMENT rollbackSegment )
+           ( DEFAULT MASTER ROLLBACK SEGMENT
+           | MASTER ROLLBACK SEGMENT rollbackSegment
+           )
       | USING ( ENFORCED | TRUSTED ) CONSTRAINTS
-      )
+      )+
     ;
 
 alterIotClauses
