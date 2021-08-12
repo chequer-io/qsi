@@ -11575,7 +11575,6 @@ nonReservedKeywordIdentifier
     | ELSIF
     | EM
     | EMBEDDED
-    | KW_EMPTY
     | ENABLE
     | ENABLE_ALL
     | ENABLE_PARALLEL_DML
@@ -11785,16 +11784,6 @@ nonReservedKeywordIdentifier
     | JSON_TEXTCONTAINS
     | JSON_TRANSFORM
     | JSON_VALUE
-    | KW_A
-    | KW_C
-    | KW_E
-    | KW_G
-    | KW_H
-    | KW_K
-    | KW_M
-    | KW_P
-    | KW_SKIP
-    | KW_T
     | KEEP
     | KEEP_DUPLICATES
     | KEY
@@ -11803,6 +11792,18 @@ nonReservedKeywordIdentifier
     | KILL
     | KURTOSIS_POP
     | KURTOSIS_SAMP
+    | KW_A
+    | KW_C
+    | KW_E
+    | KW_EMPTY
+    | KW_G
+    | KW_H
+    | KW_K
+    | KW_M
+    | KW_P
+    | KW_SKIP
+    | KW_T
+    | KW_X
     | LAG
     | LAG_DIFF
     | LAG_DIFF_PERCENT
@@ -12293,7 +12294,6 @@ nonReservedKeywordIdentifier
     | RULE
     | RULES
     | RUNNING
-    | SINGLE_QUOTE_SYMBOL
     | SALT
     | SAMPLE
     | SAVE

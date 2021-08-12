@@ -1020,7 +1020,6 @@ options { tokenVocab=predefined; }
 //QUORUM:                           Q U O R U M;
 //QUOTA:                            Q U O T A;
 //QUOTAGROUP:                       Q U O T A G R O U P;
-//QUOTED_OBJECT_NAME:               Q U O T E D '_' O B J E C T '_' N A M E;
 //RAISE:                            R A I S E;
 //RANDOM:                           R A N D O M;
 //RANDOM_LOCAL:                     R A N D O M '_' L O C A L;
@@ -1347,7 +1346,6 @@ options { tokenVocab=predefined; }
 //UNPLUG:                           U N P L U G;
 //UNPROTECTED:                      U N P R O T E C T E D;
 //UNQUIESCE:                        U N Q U I E S C E;
-//UNQUOTED_OBJECT_NAME:             U N Q U O T E D '_' O B J E C T '_' N A M E;
 //UNRECOVERABLE:                    U N R E C O V E R A B L E;
 //UNSIGNED:                         U N S I G N E D;
 //UNTIL:                            U N T I L;
