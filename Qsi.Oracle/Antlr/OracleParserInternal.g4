@@ -11210,7 +11210,8 @@ specialIdentifier
     ;
 
 simpleIdentifier
-    : TK_IDENTIFIER_OR_KEYWORD
+    : TK_IDENTIFIER
+    | TK_IDENTIFIER_OR_KEYWORD
     | nonReservedKeywordIdentifier
     ;
 

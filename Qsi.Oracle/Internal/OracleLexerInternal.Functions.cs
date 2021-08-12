@@ -13,7 +13,7 @@
         {
             Type = Dialect.KeywordMap.TryGetValue(Text.ToLower(), out var keywordId) 
                 ? keywordId 
-                : IDENTIFIER;
+                : TK_IDENTIFIER;
         }
     }
 }
