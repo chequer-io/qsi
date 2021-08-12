@@ -4,7 +4,7 @@
     {
         public OracleDialect Dialect { get; } = new();
 
-        protected bool isValidDelimiter()
+        protected bool IsValidDelimiter()
         {
             return InputStream.LA(1) == Text[2] && (InputStream.LA(2) == '\'');
         }

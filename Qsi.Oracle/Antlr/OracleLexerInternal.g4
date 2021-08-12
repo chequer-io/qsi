@@ -1521,7 +1521,7 @@ TK_QUOTED_STRING
         | QS_BRACE 
         | QS_BRACK 
         | QS_PAREN 
-        | QS_OTHER_CH ( {!isValidDelimiter()}? . )* QS_OTHER_CH 
+        | QS_OTHER_CH ( {!IsValidDelimiter()}? . )* QS_OTHER_CH 
         )
       SINGLE_QUOTE
     ;
