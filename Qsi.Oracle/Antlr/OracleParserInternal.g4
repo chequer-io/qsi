@@ -10791,11 +10791,10 @@ statement
                                  | sqlStatement
                                  | whileLoopStatement
                                  )
-      ';'
     ;
 
 assignmentStatement
-    : assignmentStatementTarget ':' '=' plsqlExpression
+    : assignmentStatementTarget ':' '=' plsqlExpression ';'
     ;
 
 assignmentStatementTarget
