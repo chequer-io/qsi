@@ -3693,6 +3693,7 @@ dbUserProxyClauses
          )
        )?
        ( AUTHENTICATION REQUIRED )?
+       ( AUTHENTICATED USING ( PASSWORD | CERTIFICATE | DISTINGUISHED NAME ) )?
     ;
 
 dropAnalyticView
