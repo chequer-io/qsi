@@ -10281,6 +10281,7 @@ parameterName
 parameterValue
     : identifier
     | stringLiteral
+    | numberLiteral
     ;
 
 newHierName
