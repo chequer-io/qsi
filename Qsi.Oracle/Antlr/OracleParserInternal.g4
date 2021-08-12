@@ -5245,7 +5245,7 @@ tableProperties
       | flashbackArchiveClause
       | (ROW ARCHIVAL)
       | (AS subquery | (FOR EXCHANGE WITH TABLE (schema '.')? table))
-      )+
+      )*
     ;
 
 columnProperties
