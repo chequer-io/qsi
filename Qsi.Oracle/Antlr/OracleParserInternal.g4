@@ -10746,7 +10746,7 @@ statement
                                  | selectIntoStatement
                                  | sqlStatement
                                  | whileLoopStatement
-                                 )
+                                 ) ';'
     ;
 
 assignmentStatement
