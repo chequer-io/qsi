@@ -5226,17 +5226,22 @@ storageClauseOption
     ;
 
 tableProperties
-    : columnProperties? readOnlyClause?
-      indexingClause? tablePartitioningClauses?
-      attributeClusteringClause? (CACHE | NOCACHE)?
-      resultCacheClause? parallelClause?
-      (ROWDEPENDENCIES | NOROWDEPENDENCIES)?
-      enableDisableClause*
-      rowMovementClause?
-      logicalReplicationClause?
-      flashbackArchiveClause?
-      (ROW ARCHIVAL)?
-      (AS subquery | (FOR EXCHANGE WITH TABLE (schema '.')? table))?
+    : ( columnProperties
+      | readOnlyClause
+      | indexingClause
+      | tablePartitioningClauses
+      | attributeClusteringClause
+      | (CACHE | NOCACHE)
+      | resultCacheClause
+      | parallelClause
+      | (ROWDEPENDENCIES | NOROWDEPENDENCIES)
+      | enableDisableClause
+      | rowMovementClause
+      | logicalReplicationClause
+      | flashbackArchiveClause
+      | (ROW ARCHIVAL)
+      | (AS subquery | (FOR EXCHANGE WITH TABLE (schema '.')? table))
+      )+
     ;
 
 columnProperties
