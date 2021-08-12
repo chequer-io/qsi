@@ -792,10 +792,10 @@ createMaterializedView
     : CREATE MATERIALIZED VIEW ( schema '.' )? materializedView
         ( OF ( schema '.' )? objectType )?
         ( '(' ( scopedTableRefConstraint
-            | cAlias ( ENCRYPT encryptionSpec? )?
+            | cAlias ( ENCRYPT encryptionSpec )?
             )
             ( ',' ( scopedTableRefConstraint
-               | cAlias ( ENCRYPT encryptionSpec? )?
+               | cAlias ( ENCRYPT encryptionSpec )?
                )
             )*
           ')'
@@ -2648,7 +2648,7 @@ deallocateUnusedCluse
 
 moveTablePartition
     : MOVE partitionExtendedName
-        MAPPING TABLE?
+        ( MAPPING TABLE )?
         tablePartitionDescription
         filterCondition?
         updateIndexClauses?
@@ -2662,7 +2662,7 @@ filterCondition
     ;
 
 moveTableSubpartition
-    : MOVE subpartitionExtendedName 
+    : MOVE subpartitionExtendedName
         indexingClause?
         partitioningStorageClause?
         updateIndexClauses?
@@ -3123,6 +3123,8 @@ alterTable
 constraintClauses
     :  ADD ( outOfLineConstraint+
            | outOfLineRefConstraint
+           | '(' outOfLineConstraint+ ')'
+           | '(' outOfLineRefConstraint ')'
            )
     | MODIFY ( CONSTRAINT constraintName
              | PRIMARY KEY
@@ -3250,7 +3252,10 @@ alterVarrayColProperties
     ;
 
 addColumnClause
-    : ADD '(' (columnDefinition | virtualColumnDefinition) ( ',' (columnDefinition | virtualColumnDefinition))* ')'
+    : ADD ( '(' (columnDefinition | virtualColumnDefinition) ( ',' (columnDefinition | virtualColumnDefinition))* ')'
+          | columnDefinition
+          | virtualColumnDefinition 
+          )
         columnProperties?
         ( '(' outOfLinePartStorage ( ',' outOfLinePartStorage )* ')' )?
     ;
@@ -3276,6 +3281,8 @@ modifyColumnClauses
             ( ',' ( modifyColProperties | modifyVirtcolProperties ) )* ')'
         | '(' modifyColVisibility ( ',' modifyColVisibility )* ')'
         | modifyColSubstitutable
+        | modifyColProperties
+        | modifyVirtcolProperties
         )
     ;
 
@@ -3283,7 +3290,7 @@ modifyColProperties
     : column datatype?
        ( COLLATE columnCollationName )?
        ( DEFAULT ( ON NULL )? expr | identityClause | DROP IDENTITY )?
-       ( ( ENCRYPT encryptionSpec ) | DECRYPT )?
+       ( ENCRYPT encryptionSpec | DECRYPT )?
        inlineConstraint*
        lobStorageClause?
        alterXMLSchemaClause?
@@ -4634,9 +4641,9 @@ columnDefinition
     ;
 
 virtualColumnDefinition
-    : column (datatype (COLLATE columnCollactionName=identifier)) (VISIBLE | INVISIBLE)?
+    : column (datatype (COLLATE columnCollactionName=identifier)? )? (VISIBLE | INVISIBLE)?
       (GENERATED | ALWAYS)? AS '(' columnExpression=expr ')' VIRTUAL? evaluationEditionClause?
-      unusableEditionsClause inlineConstraint*
+      unusableEditionsClause? inlineConstraint*
     ;
 
 evaluationEditionClause
@@ -4842,7 +4849,7 @@ advancedIndexCompression
     ;
 
 indexPartitioningClause
-    : PARTITION partition? VALUES LESS THAN '(' literal (',' literal)* ')' segmentAttributesClause?
+    : PARTITION partition? VALUES LESS THAN '(' expr (',' expr )* ')' segmentAttributesClause?
     ;
 
 exceptionsClause
@@ -4873,7 +4880,7 @@ identityOption
     ;
 
 encryptionSpec
-    : (USING encryptAlgorithm=stringLiteral)? (IDENTIFIED BY password) (integrityAlgorithm=stringLiteral) (NO? SALT)?
+    : (USING encryptAlgorithm=stringLiteral)? (IDENTIFIED BY password)? (integrityAlgorithm=stringLiteral)? (NO? SALT)?
     ;
 
 blockchainTableClauses
@@ -5595,9 +5602,7 @@ varrayStorageClause
     ;
 
 lobStorageClause
-    : LOB ( '(' lobItem (',' lobItem)* ')' STORE AS (SECUREFILE | BASICFILE | '(' lobStorageParameters ')')+
-          | '(' lobItem ')' STORE AS (SECUREFILE | BASICFILE | lobSegName | '(' lobStorageParameters ')')+
-          )
+    : LOB '(' lobItem (',' lobItem)* ')' STORE AS ( SECUREFILE | BASICFILE | lobSegName | '(' lobStorageParameters ')' )+
     ;
 
 lobPartitionStorage
@@ -5612,7 +5617,7 @@ lobStorageParameters
 lobStorageParameter
     : ( TABLESPACE tablespace
       | TABLESPACE SET tablespaceSet
-      ) storageClause
+      ) storageClause?
     | lobParameters storageClause?
     ;
 
@@ -8419,10 +8424,10 @@ inlineConstraint
     ;
 
 outOfLineConstraint
-    : (CONSTRAINT constraintName)?
-      ( UNIQUE '(' fullObjectPath (',' fullObjectPath)* ')'
-      | PRIMARY KEY '(' fullObjectPath (',' fullObjectPath)* ')'
-      | FOREIGN KEY '(' fullObjectPath (',' fullObjectPath)* ')' referencesClause
+    : ( CONSTRAINT constraintName )?
+      ( UNIQUE '(' column (',' column)* ')'
+      | PRIMARY KEY '(' column (',' column )* ')'
+      | FOREIGN KEY '(' column (',' column )* ')' referencesClause
       | CHECK '(' condition ')'
       )
       constraintState
@@ -12128,6 +12133,7 @@ nonReservedKeywordIdentifier
     | RESULT
     | RESULT_CACHE
     | RESUMABLE
+    | RESUME
     | RETENTION
     | RETRY_ON_ROW_CHANGE
     | RETURN
