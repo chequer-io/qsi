@@ -471,29 +471,30 @@ typeAttribute
 
 plsqlExpression
     : identifier                                                                                        #constantOrVariableExpression
+    | '(' plsqlExpression ')'                                                                           #subqueryExpression
     | numberLiteral                                                                                     #numberLiteralExpression
     | booleanLiteral                                                                                    #booleanLiteralExpression
     | functionCall                                                                                      #functionCallExpression
     | conditionalPredicate                                                                              #conditionalPredicateExpression
     | identifier '.' (COUNT | FIRST | LAST | LIMIT | (NEXT | PRIOR | EXISTS) '(' index ')')             #collectionFunctionsExpression
     | plsqlExpression IS NOT? NULL                                                                      #expressionIsNullExpression
-    | plsqlExpression NOT? BETWEEN plsqlExpression AND plsqlExpression                                  #expressionBetweenExpression
-    | plsqlExpression NOT? IN '(' plsqlExpression (',' plsqlExpression)* ')'                            #expressionInExpression
+    | <assoc=right> plsqlExpression NOT? BETWEEN plsqlExpression AND plsqlExpression                    #expressionBetweenExpression
+    | <assoc=right> plsqlExpression NOT? IN '(' plsqlExpression (',' plsqlExpression)* ')'              #expressionInExpression
     | plsqlExpression NOT? LIKE stringLiteral                                                           #expressionLikeExpression
     | (plsqlNamedCursor | SQL) '%' (FOUND | ISOPEN | NOTFOUND | ROWCOUNT | BULK_ROWCOUNT '(' index ')') #cursorStateExpression
     | NOT plsqlExpression                                                                               #notExpression
     | ('-' | '+') plsqlExpression                                                                       #unarySignExpression
-    | plsqlExpression (AND | OR) plsqlExpression                                                        #andOrExpression
-    | plsqlExpression relationalOperator plsqlExpression                                                #relationalOperatorExpression
-    | plsqlExpression '||' plsqlExpression                                                              #characterConnectExpression
-    | plsqlExpression ('+' | '-' | '*' | '/' | '*' '*') plsqlExpression                                 #signExpression
+    | <assoc=right> plsqlExpression (AND | OR) plsqlExpression                                          #andOrExpression
+    | <assoc=right> plsqlExpression relationalOperator plsqlExpression                                  #relationalOperatorExpression
+    | <assoc=right> plsqlExpression '||' plsqlExpression                                                #characterConnectExpression
+    | <assoc=right> plsqlExpression ('+' | '-' | '*' | '/' | '*' '*') plsqlExpression                   #signExpression
     | placeholder                                                                                       #plsqlPlaceholderExpression
-    | collectionType '(' (plsqlExpression (',' plsqlExpression)*)? ')'                                  #plsqlCollectionConstructor
-    | CASE WHEN plsqlExpression THEN plsqlExpression
+    | <assoc=right> collectionType '(' (plsqlExpression (',' plsqlExpression)*)? ')'                    #plsqlCollectionConstructor
+    | <assoc=right> CASE WHEN plsqlExpression THEN plsqlExpression
       (WHEN plsqlExpression THEN plsqlExpression)*
       (ELSE plsqlExpression)?
       END                                                                                               #plsqlSearchedCaseExpression
-    | CASE plsqlExpression WHEN plsqlExpression THEN plsqlExpression
+    | <assoc=right> CASE plsqlExpression WHEN plsqlExpression THEN plsqlExpression
       (WHEN plsqlExpression THEN plsqlExpression)*
       (ELSE plsqlExpression)?
       END                                                                                               #plsqlSimpleCaseExpression
@@ -569,7 +570,7 @@ collectionConstructor
     ;
 
 functionCall
-    : functionName '(' parameter ( ',' parameter )* ')'
+    : functionName '(' ( parameter ( ',' parameter )* )? ')'
     ;
 
 qualifiedExpression
@@ -8322,9 +8323,9 @@ oracleBuiltInDatatypes
 
 characterDatatypes
     : CHAR ('(' size (BYTE | CHAR)? ')')?
-    | VARCHAR2 '(' size (BYTE | CHAR)? ')'
+    | VARCHAR2 ( '(' size (BYTE | CHAR)? ')' )?
     | NCHAR ('(' size ')')?
-    | NVARCHAR2 '(' size ')'
+    | NVARCHAR2 ( '(' size ')' )?
     ;
 
 numberDatatypes
@@ -10903,16 +10904,17 @@ whileLoopStatement
     ;
 
 sqlStatement
-    : commit
-    | collectionMethodCall
-    | delete
-    | insert
-    | lockTable
-    | merge
-    | rollback
-    | savepoint
-    | setTransaction
-    | update
+    : ( commit
+      | collectionMethodCall
+      | delete
+      | insert
+      | lockTable
+      | merge
+      | rollback
+      | savepoint
+      | setTransaction
+      | update
+      ) ';'
     ;
 
 collectionMethodCall
@@ -11426,7 +11428,7 @@ singleRowFunctionName
     ;
 
 functionName
-    : identifier
+    : ( identifier '.' )* identifier
     ;
 
 identifier
@@ -11576,6 +11578,7 @@ nonReservedKeywordIdentifier
     | CLASS
     | CLASSIFICATION
     | CLASSIFIER
+    | CLIENT
     | CLOB
     | CLUSTER_DETAILS
     | CLUSTER_DISTANCE
@@ -12055,6 +12058,7 @@ nonReservedKeywordIdentifier
     | PFILE
     | PIVOT
     | PLAN
+    | PLS_INTEGER
     | PLUGGABLE
     | POINT
     | POLICY
@@ -12269,6 +12273,7 @@ nonReservedKeywordIdentifier
     | TRUNCATE
     | TUNING
     | TYPE
+    | TYPENAME
     | UNBOUNDED
     | UNDER
     | UNDER_PATH
