@@ -1232,7 +1232,7 @@ permanentTablespaceClause
 
 permanentTablespaceAttrs
     : ( MINIMUM EXTENT sizeClause
-      | BLOCKSIZE integer K_K?
+      | BLOCKSIZE integer KW_K?
       | loggingClause
       | FORCE LOGGING
       | tablespaceEncryptionClause
@@ -3608,7 +3608,7 @@ javaDeclaration
     ;
 
 cDeclaration
-    : (LANGUAGE K_C | EXTERNAL ) ( ( NAME name )? LIBRARY libName | LIBRARY libName ( NAME name )? )
+    : (LANGUAGE KW_C | EXTERNAL ) ( ( NAME name )? LIBRARY libName | LIBRARY libName ( NAME name )? )
         ( AGENT IN '(' argument ( ',' argument )* ')' )?
         ( WITH CONTEXT )?
         ( PARAMETERS '(' externalParameter ( ',' externalParameter )* ')' )?
@@ -3728,7 +3728,7 @@ createAuditPolicy
       privilegeAuditClause?
       actionAuditClause?
       roleAuditClause?
-      (WHEN S_SINGLE_QUOTE auditCondition S_SINGLE_QUOTE
+      (WHEN SINGLE_QUOTE_SYMBOL auditCondition SINGLE_QUOTE_SYMBOL
        EVALUATE PER (STATEMENT | SESSION | INSTANCE)
       )?
       (ONLY TOPLEVEL)?
@@ -3746,7 +3746,7 @@ alterAuditPolicy
       | (ONLY TOPLEVEL)?
       )
       (CONDITION ( DROP
-                 | SINGLE_QUOTED_STRING EVALUATE PER (STATEMENT | SESSION | INSTANCE)
+                 | stringLiteral EVALUATE PER (STATEMENT | SESSION | INSTANCE)
                  )
       )?
     ;
@@ -4101,7 +4101,7 @@ dropSynonym
 // clauses
 
 levelClause
-    : LEVEL level IS (levelClauseItem | '(' levelClauseItem (',' levelClauseItem)* ')') (K_SKIP WHEN NULL)?
+    : LEVEL level IS (levelClauseItem | '(' levelClauseItem (',' levelClauseItem)* ')') (KW_SKIP WHEN NULL)?
     ;
 
 hierarchyClause
@@ -4248,10 +4248,10 @@ recoveryClauses
     ;
 
 generalRecovery
-    : RECOVER AUTOMATIC? (FROM SINGLE_QUOTED_STRING)?
+    : RECOVER AUTOMATIC? (FROM stringLiteral)?
       ( ( fullDatabaseRecovery
         | partialDatabaseRecovery
-        | LOGFILE SINGLE_QUOTED_STRING
+        | LOGFILE stringLiteral
         ) ( TEST | ALLOW integer CORRUPTION | parallelClause )*
       | CONTINUE DEFAULT?
       | CANCEL
@@ -4439,7 +4439,7 @@ commitSwitchoverClause
 
 // TODO: scnValue
 startStandbyClause
-    : START LOGICAL STANDBY APPLY IMMEDIATE? NODELAY? (NEW PRIMARY dblink | INITIAL scnValue=literal? | (K_SKIP FAILED TRANSACTION | FINISH))?
+    : START LOGICAL STANDBY APPLY IMMEDIATE? NODELAY? (NEW PRIMARY dblink | INITIAL scnValue=literal? | (KW_SKIP FAILED TRANSACTION | FINISH))?
     ;
 
 stopStandbyClause
@@ -4999,7 +4999,7 @@ etRecordSepcOptionsItem
     | etOutputFiles
     | READSIZE integer
     | DISABLE_DIRECTORY_LINK_CHECK
-    | (DATE_CACHE | K_SKIP) integer
+    | (DATE_CACHE | KW_SKIP) integer
     | FIELD_NAMES ( FIEST FILE IGNORE?
                   | ALL FILES IGNORE?
                   | NONE
@@ -5091,7 +5091,7 @@ etDataTypeSpec
 
 etDateFormatSpec
     : DATE_FORMAT?
-    ( (DATE | TIMESTAMP (WITH LOCAL? TIME ZONE)?)+ MASK QUOTED_OBJECT_NAME
+    ( (DATE | TIMESTAMP (WITH LOCAL? TIME ZONE)?)+ MASK identifier
     | INTERVAL (YEAR_TO_MONTH | DAY_TO_SECOND)
     )
     ;
@@ -5105,7 +5105,7 @@ etLlsSpec
     ;
 
 etString
-    : (HEXA1 | HEXA2)? (SINGLE_QUOTED_STRING | QUOTED_OBJECT_NAME)
+    : (TK_HEXA | KW_X)? (stringLiteral | identifier)
     ;
 
 mappingTableClause
@@ -6855,7 +6855,7 @@ undoTablespace
     ;
 
 sizeClause
-    : integer unit=(K_K | K_M | K_G | K_T | K_P | K_E)?
+    : integer unit=(KW_K | KW_M | KW_G | KW_T | KW_P | KW_E)?
     ;
 
 databaseLoggingLogFileClause
@@ -7048,7 +7048,7 @@ attrDimAttributeClause
 
 attrDimLevelClause
     : LEVEL level
-      (NOT NULL | K_SKIP WHEN NULL)?
+      (NOT NULL | KW_SKIP WHEN NULL)?
       (classificationClause*
           (
               LEVEL TYPE
@@ -7206,7 +7206,7 @@ rowFetchOption
     ;
 
 forUpdateClause
-    : FOR UPDATE (OF fullColumnPath (',' fullColumnPath)*)? (NOWAIT | WAIT S_INTEGER_WITHOUT_SIGN | K_SKIP LOCKED)?
+    : FOR UPDATE (OF fullColumnPath (',' fullColumnPath)*)? (NOWAIT | WAIT TK_INTEGER_WITHOUT_SIGN | KW_SKIP LOCKED)?
     ;
 
 queryBlock
@@ -7257,8 +7257,8 @@ searchClause
 cycleClause
     : CYCLE cAlias (',' cAlias)*
       SET cycleMarkCAlias=identifier
-      TO cycleValue=SINGLE_QUOTED_STRING
-      DEFAULT noCycleValue=SINGLE_QUOTED_STRING
+      TO cycleValue=stringLiteral
+      DEFAULT noCycleValue=stringLiteral
     ;
 
 subavFactoringClause
@@ -7321,7 +7321,7 @@ hintItem
       '(' identifier ( '.' identifier | '(' identifier ('.' identifier)* ')' ) ')'  #changeDupkeyErrorIndexHint
     | CLUSTER '(' hintQueryBlockName? tablespec ')'                                 #clusterHint
     | CLUSTERING                                                                    #clusteringHint
-    | CONTAINERS '(' DEFAULT_PDB_HINT '=' SINGLE_QUOTED_STRING ')'                  #containersHint
+    | CONTAINERS '(' DEFAULT_PDB_HINT '=' stringLiteral ')'                         #containersHint
     | CURSOR_SHARING_EXACT                                                          #cursorSharingExactHint
     | DISABLE_PARALLEL_DML                                                          #disableParallelDmlHint
     | DRIVING_SITE '(' ( '@' queryBlock )? tablespec ')'                            #drivingSiteHint
@@ -7407,7 +7407,7 @@ hintItem
       ('(' hintQueryBlockName ')' | '(' hintQueryBlockName? tablespec ')')?         #pushPredHint
     | PUSH_SUBQ ('(' hintQueryBlockName ')')?                                       #pushSubqHint
     | PX_JOIN_FILTER '(' tablespec ')'                                              #pxJoinFilterHint
-    | QB_NAME '(' UNQUOTED_OBJECT_NAME ')'                                          #qbNameHint
+    | QB_NAME '(' identifier ')'                                                    #qbNameHint
     | RESULT_CACHE (TEMP '=' (TRUE | FALSE))?                                       #resultCacheHint
     | RETRY_ON_ROW_CHANGE                                                           #retryOnRowChangeHint
     | REWRITE ('(' hintQueryBlockName? view* ')')?                                  #rewriteHint
@@ -7445,7 +7445,7 @@ distribution
     ;
 
 hintQueryBlockName
-    : '@' UNQUOTED_OBJECT_NAME
+    : '@' identifier
     ;
 
 queryBehavior
@@ -7583,7 +7583,7 @@ diskOfflineClause
     ;
 
 timeoutClause
-    : DROP AFTER integer (K_M | K_H)
+    : DROP AFTER integer (KW_M | KW_H)
     ;
 
 rebalanceDiskgroupClause
@@ -7639,7 +7639,7 @@ diskgroupVolumeClauses
 
 addVolumeClause
     : ADD VOLUME asmVolume=identifier SIZE sizeClause redundancyClause?
-      (STRIPE_WIDTH integer (K_K  | K_M))?
+      (STRIPE_WIDTH integer (KW_K  | KW_M))?
       (STRIPE_COLUMNS integer)?
     ;
 
@@ -7973,11 +7973,11 @@ rowPatternRowsPerMatch
 rowPatternSkipTo
     : AFTER MATCH
        (
-           K_SKIP TO NEXT ROW
-         | K_SKIP PAST LAST ROW
-         | K_SKIP TO FIRST variableName
-         | K_SKIP TO LAST variableName
-         | K_SKIP TO variableName
+           KW_SKIP TO NEXT ROW
+         | KW_SKIP PAST LAST ROW
+         | KW_SKIP TO FIRST variableName
+         | KW_SKIP TO LAST variableName
+         | KW_SKIP TO variableName
        )
     ;
 
@@ -8010,8 +8010,8 @@ rowPatternQuantifier
     : '*' '?'?
     | '+' '?'?
     | '?' '?'?
-    | '{' S_INTEGER_WITHOUT_SIGN? ',' S_INTEGER_WITHOUT_SIGN? '}' '?'?
-    | '{' S_INTEGER_WITHOUT_SIGN '}'
+    | '{' TK_INTEGER_WITHOUT_SIGN? ',' TK_INTEGER_WITHOUT_SIGN? '}' '?'?
+    | '{' TK_INTEGER_WITHOUT_SIGN '}'
     ;
 
 rowPatternSubsetClause
@@ -8267,15 +8267,15 @@ windowingClause
     ;
 
 precision
-    : S_INTEGER_WITHOUT_SIGN
+    : TK_INTEGER_WITHOUT_SIGN
     ;
 
 scale
-    : S_INTEGER_WITHOUT_SIGN
+    : TK_INTEGER_WITHOUT_SIGN
     ;
 
 size
-    : S_INTEGER_WITHOUT_SIGN
+    : TK_INTEGER_WITHOUT_SIGN
     ;
 
 collectionType
@@ -8436,8 +8436,8 @@ condition
     | condition OR condition                                                            #logicalOrCondition
     | (dimensionColumn=identifier IS)? ANY                                              #modelIsAnyCondition
     | cellReference=cellAssignment IS PRESENT                                           #modelIsPresentCondition
-    | nestedTable=identifier IS NOT? K_A SET                                            #multisetIsASetCondition
-    | nestedTable=identifier IS NOT? K_EMPTY                                              #multisetIsEmptyCondition
+    | nestedTable=identifier IS NOT? KW_A SET                                            #multisetIsASetCondition
+    | nestedTable=identifier IS NOT? KW_EMPTY                                              #multisetIsEmptyCondition
     | expr NOT? MEMBER OF? nestedTable=identifier                                       #multisetMemberCondition
     | nestedTable1=identifier NOT? SUBMULTISET OF? nestedTable2=identifier              #multisetSubmultisetCondition
     | expr NOT? (LIKE | LIKEC | LIKE2 | LIKE4)
@@ -8509,10 +8509,10 @@ expr
     | '(' subquery ')'                                                                      #scalarSubqueryExpr
     | typeConstructorExpression                                                             #typeConstructorExpr
     | expr AT ( LOCAL | TIME ZONE
-        ( S_SINGLE_QUOTE ('+'|'-')? hh=expr ':' mi=expr S_SINGLE_QUOTE
+        ( SINGLE_QUOTE_SYMBOL ('+'|'-')? hh=expr ':' mi=expr SINGLE_QUOTE_SYMBOL
         | DBTIMEZONE
         | SESSIONTIMEZONE
-        | timeZoneName=SINGLE_QUOTED_STRING
+        | timeZoneName=stringLiteral
         | expr
         )
      )                                                                                      #datetimeExpr
@@ -8524,10 +8524,10 @@ expr
 
 datetimeExpression
     : expr AT ( LOCAL | TIME ZONE
-        ( S_SINGLE_QUOTE ('+'|'-')? hh=expr ':' mi=expr S_SINGLE_QUOTE
+        ( SINGLE_QUOTE_SYMBOL ('+'|'-')? hh=expr ':' mi=expr SINGLE_QUOTE_SYMBOL
         | DBTIMEZONE
         | SESSIONTIMEZONE
-        | timeZoneName=SINGLE_QUOTED_STRING
+        | timeZoneName=stringLiteral
         | expr
         )
      )
@@ -8539,7 +8539,7 @@ bindVariable
     ;
 
 indexBindVariable
-    : ':' S_INTEGER_WITHOUT_SIGN
+    : ':' TK_INTEGER_WITHOUT_SIGN
     ;
 
 namedBindVariable
@@ -8739,7 +8739,7 @@ approxRankFunction
     ;
 
 approxSumFunction
-    : APPROX_SUM '(' ('*' | expr) (',' S_SINGLE_QUOTE MAX_ERROR S_SINGLE_QUOTE) ')'?
+    : APPROX_SUM '(' ('*' | expr) (',' SINGLE_QUOTE_SYMBOL MAX_ERROR SINGLE_QUOTE_SYMBOL) ')'?
     ;
 
 avgFunction
@@ -9330,7 +9330,7 @@ xmlpiFunction
     ;
 
 xmlqueryFunction
-    : XMLQUERY '(' stringLiteral xmlPassingClause? RETURNING CONTENT (NULL ON K_EMPTY)? ')'
+    : XMLQUERY '(' stringLiteral xmlPassingClause? RETURNING CONTENT (NULL ON KW_EMPTY)? ')'
     ;
 
 xmlrootFunction
@@ -9527,7 +9527,7 @@ jsonValueOnErrorClause
     ;
 
 jsonValueOnEmptyClause
-    : (ERROR | NULL | DEFAULT literal) ON K_EMPTY
+    : (ERROR | NULL | DEFAULT literal) ON KW_EMPTY
     ;
 
 jsonNestedPath
@@ -9563,7 +9563,7 @@ queryExpr : queryExpr ('&&' queryExpr )+
           | '@' '.' identifier '<' integer
           | '@' '.' LENGTH '-' integer
           | '@' '.' identifier '=' '=' integer
-          | '@' '.' identifier '=' '=' SINGLE_QUOTED_STRING
+          | '@' '.' identifier '=' '=' stringLiteral
           ;
 
 ordinalityColumn
@@ -9632,19 +9632,19 @@ jsonQueryWrapperClause
 jsonQueryOnErrorClause
     : (ERROR
       | NULL
-      | K_EMPTY
-      | K_EMPTY ARRAY
-      | K_EMPTY OBJECT
+      | KW_EMPTY
+      | KW_EMPTY ARRAY
+      | KW_EMPTY OBJECT
       ) ON ERROR
     ;
 
 jsonQueryOnEmptyClause
     : (ERROR
       | NULL
-      | K_EMPTY
-      | K_EMPTY ARRAY
-      | K_EMPTY OBJECT
-      ) ON K_EMPTY
+      | KW_EMPTY
+      | KW_EMPTY ARRAY
+      | KW_EMPTY OBJECT
+      ) ON KW_EMPTY
     ;
 
 jsonObjectContent
@@ -9889,9 +9889,9 @@ jsonExistsOnErrorClause
     ;
 
 jsonExistsOnEmptyClause
-    : NULL ON K_EMPTY
-    | ERROR ON K_EMPTY
-    | DEFAULT literal ON K_EMPTY
+    : NULL ON KW_EMPTY
+    | ERROR ON KW_EMPTY
+    | DEFAULT literal ON KW_EMPTY
     ;
 
 jsonBasicPathExpression
@@ -10007,12 +10007,12 @@ jsonVar
     ;
 
 jsonScalar
-    : ('+' | '-') S_INTEGER_WITHOUT_SIGN
-    | S_INTEGER_WITHOUT_SIGN
+    : ('+' | '-') TK_INTEGER_WITHOUT_SIGN
+    | TK_INTEGER_WITHOUT_SIGN
     | TRUE
     | FALSE
     | NULL
-    | QUOTED_OBJECT_NAME
+    | identifier
     ;
 
 fullColumnPath
@@ -10746,7 +10746,7 @@ statement
                                  | selectIntoStatement
                                  | sqlStatement
                                  | whileLoopStatement
-                                 ) ';'
+                                 )
     ;
 
 assignmentStatement
@@ -10859,7 +10859,8 @@ whileLoopStatement
     ;
 
 sqlStatement
-    : ( commit
+    : ( select
+      | commit
       | collectionMethodCall
       | delete
       | insert
@@ -11027,7 +11028,7 @@ keystorePassword
     ;
 
 filename
-    : SINGLE_QUOTED_STRING
+    : stringLiteral
     ;
 
 newPdbName
@@ -11092,8 +11093,8 @@ indexspec
     ;
 
 integer
-    : S_INTEGER_WITHOUT_SIGN
-    | ('+' | '-') S_INTEGER_WITHOUT_SIGN
+    : TK_INTEGER_WITHOUT_SIGN
+    | ('+' | '-') TK_INTEGER_WITHOUT_SIGN
     ;
 
 literal
@@ -11104,10 +11105,10 @@ literal
     ;
 
 numberLiteral
-    : ('+' | '-') S_INTEGER_WITHOUT_SIGN
-    | ('+' | '-') S_NUMBER_WITHOUT_SIGN
-    | S_INTEGER_WITHOUT_SIGN
-    | S_NUMBER_WITHOUT_SIGN
+    : ('+' | '-') TK_INTEGER_WITHOUT_SIGN
+    | ('+' | '-') TK_NUMBER_WITHOUT_SIGN
+    | TK_INTEGER_WITHOUT_SIGN
+    | TK_NUMBER_WITHOUT_SIGN
     ;
 
 // '…'
@@ -11115,19 +11116,19 @@ numberLiteral
 // N'…'
 // NQ'…'
 stringLiteral
-    : SINGLE_QUOTED_STRING
-    | QUOTED_STRING
-    | NATIONAL_STRING
+    : TK_SINGLE_QUOTED_STRING
+    | TK_QUOTED_STRING
+    | TK_NATIONAL_STRING
     ;
 
 dateTimeLiteral
-    : DATE SINGLE_QUOTED_STRING         #dateLiteral
-    | TIMESTAMP SINGLE_QUOTED_STRING    #timestampLiteral
+    : DATE TK_SINGLE_QUOTED_STRING         #dateLiteral
+    | TIMESTAMP TK_SINGLE_QUOTED_STRING    #timestampLiteral
     ;
 
 intervalLiteral
-    : INTERVAL SINGLE_QUOTED_STRING ( YEAR | MONTH ) ('(' precision ')')? ( TO ( YEAR | MONTH ) )?
-    | INTERVAL SINGLE_QUOTED_STRING
+    : INTERVAL TK_SINGLE_QUOTED_STRING ( YEAR | MONTH ) ('(' precision ')')? ( TO ( YEAR | MONTH ) )?
+    | INTERVAL TK_SINGLE_QUOTED_STRING
         ( ( DAY | HOUR | MINUTE ) ( '(' precision ')' )?
         | SECOND ( '(' precision ( ',' fractionalSecondsPrecision )? ')' )?
         )
@@ -11209,7 +11210,7 @@ specialIdentifier
     ;
 
 simpleIdentifier
-    : IDENTIFIER
+    : TK_IDENTIFIER_OR_KEYWORD
     | nonReservedKeywordIdentifier
     ;
 
@@ -11573,7 +11574,7 @@ nonReservedKeywordIdentifier
     | ELSIF
     | EM
     | EMBEDDED
-    | K_EMPTY
+    | KW_EMPTY
     | ENABLE
     | ENABLE_ALL
     | ENABLE_PARALLEL_DML
@@ -11689,7 +11690,6 @@ nonReservedKeywordIdentifier
     | HASHING
     | HASHKEYS
     | HEAP
-    | HEXA2
     | HIDE
     | HIER_ANCESTOR
     | HIER_CAPTION
@@ -11784,16 +11784,16 @@ nonReservedKeywordIdentifier
     | JSON_TEXTCONTAINS
     | JSON_TRANSFORM
     | JSON_VALUE
-    | K_A
-    | K_C
-    | K_E
-    | K_G
-    | K_H
-    | K_K
-    | K_M
-    | K_P
-    | K_SKIP
-    | K_T
+    | KW_A
+    | KW_C
+    | KW_E
+    | KW_G
+    | KW_H
+    | KW_K
+    | KW_M
+    | KW_P
+    | KW_SKIP
+    | KW_T
     | KEEP
     | KEEP_DUPLICATES
     | KEY
@@ -11944,7 +11944,6 @@ nonReservedKeywordIdentifier
     | NAMESPACE
     | NAN
     | NATIONAL
-    | NATIONAL_STRING
     | NATIVE_FULL_OUTER_JOIN
     | NATURAL
     | NAV
@@ -12200,8 +12199,6 @@ nonReservedKeywordIdentifier
     | QUORUM
     | QUOTA
     | QUOTAGROUP
-    | QUOTED_OBJECT_NAME
-    | QUOTED_STRING
     | RAISE
     | RANDOM
     | RANDOM_LOCAL
@@ -12295,9 +12292,7 @@ nonReservedKeywordIdentifier
     | RULE
     | RULES
     | RUNNING
-    | S_INTEGER_WITHOUT_SIGN
-    | S_NUMBER_WITHOUT_SIGN
-    | S_SINGLE_QUOTE
+    | SINGLE_QUOTE_SYMBOL
     | SALT
     | SAMPLE
     | SAVE
@@ -12348,7 +12343,6 @@ nonReservedKeywordIdentifier
     | SIBLINGS
     | SID
     | SINGLE
-    | SINGLE_QUOTED_STRING
     | SITE
     | SIZES
     | SKEWNESS_POP
@@ -12505,7 +12499,6 @@ nonReservedKeywordIdentifier
     | UNPLUG
     | UNPROTECTED
     | UNQUIESCE
-    | UNQUOTED_OBJECT_NAME
     | UNRECOVERABLE
     | UNSIGNED
     | UNTIL
