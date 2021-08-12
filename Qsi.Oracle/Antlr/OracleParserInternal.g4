@@ -12170,6 +12170,7 @@ nonReservedKeywordIdentifier
     | SHARE_OF
     | SHARING
     | SIBLINGS
+    | SID
     | SINGLE
     | SIZES
     | SKEWNESS_POP
