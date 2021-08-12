@@ -1232,7 +1232,7 @@ permanentTablespaceClause
 
 permanentTablespaceAttrs
     : ( MINIMUM EXTENT sizeClause
-      | BLOCKSIZE integer K_K?
+      | BLOCKSIZE integer KW_K?
       | loggingClause
       | FORCE LOGGING
       | tablespaceEncryptionClause
@@ -3608,7 +3608,7 @@ javaDeclaration
     ;
 
 cDeclaration
-    : (LANGUAGE K_C | EXTERNAL ) ( ( NAME name )? LIBRARY libName | LIBRARY libName ( NAME name )? )
+    : (LANGUAGE KW_C | EXTERNAL ) ( ( NAME name )? LIBRARY libName | LIBRARY libName ( NAME name )? )
         ( AGENT IN '(' argument ( ',' argument )* ')' )?
         ( WITH CONTEXT )?
         ( PARAMETERS '(' externalParameter ( ',' externalParameter )* ')' )?
@@ -3728,7 +3728,7 @@ createAuditPolicy
       privilegeAuditClause?
       actionAuditClause?
       roleAuditClause?
-      (WHEN S_SINGLE_QUOTE auditCondition S_SINGLE_QUOTE
+      (WHEN SINGLE_QUOTE_SYMBOL auditCondition SINGLE_QUOTE_SYMBOL
        EVALUATE PER (STATEMENT | SESSION | INSTANCE)
       )?
       (ONLY TOPLEVEL)?
@@ -3746,7 +3746,7 @@ alterAuditPolicy
       | (ONLY TOPLEVEL)?
       )
       (CONDITION ( DROP
-                 | SINGLE_QUOTED_STRING EVALUATE PER (STATEMENT | SESSION | INSTANCE)
+                 | stringLiteral EVALUATE PER (STATEMENT | SESSION | INSTANCE)
                  )
       )?
     ;
@@ -4101,7 +4101,7 @@ dropSynonym
 // clauses
 
 levelClause
-    : LEVEL level IS (levelClauseItem | '(' levelClauseItem (',' levelClauseItem)* ')') (K_SKIP WHEN NULL)?
+    : LEVEL level IS (levelClauseItem | '(' levelClauseItem (',' levelClauseItem)* ')') (KW_SKIP WHEN NULL)?
     ;
 
 hierarchyClause
@@ -4248,10 +4248,10 @@ recoveryClauses
     ;
 
 generalRecovery
-    : RECOVER AUTOMATIC? (FROM SINGLE_QUOTED_STRING)?
+    : RECOVER AUTOMATIC? (FROM stringLiteral)?
       ( ( fullDatabaseRecovery
         | partialDatabaseRecovery
-        | LOGFILE SINGLE_QUOTED_STRING
+        | LOGFILE stringLiteral
         ) ( TEST | ALLOW integer CORRUPTION | parallelClause )*
       | CONTINUE DEFAULT?
       | CANCEL
@@ -4439,7 +4439,7 @@ commitSwitchoverClause
 
 // TODO: scnValue
 startStandbyClause
-    : START LOGICAL STANDBY APPLY IMMEDIATE? NODELAY? (NEW PRIMARY dblink | INITIAL scnValue=literal? | (K_SKIP FAILED TRANSACTION | FINISH))?
+    : START LOGICAL STANDBY APPLY IMMEDIATE? NODELAY? (NEW PRIMARY dblink | INITIAL scnValue=literal? | (KW_SKIP FAILED TRANSACTION | FINISH))?
     ;
 
 stopStandbyClause
@@ -4999,7 +4999,7 @@ etRecordSepcOptionsItem
     | etOutputFiles
     | READSIZE integer
     | DISABLE_DIRECTORY_LINK_CHECK
-    | (DATE_CACHE | K_SKIP) integer
+    | (DATE_CACHE | KW_SKIP) integer
     | FIELD_NAMES ( FIEST FILE IGNORE?
                   | ALL FILES IGNORE?
                   | NONE
@@ -5091,7 +5091,7 @@ etDataTypeSpec
 
 etDateFormatSpec
     : DATE_FORMAT?
-    ( (DATE | TIMESTAMP (WITH LOCAL? TIME ZONE)?)+ MASK QUOTED_OBJECT_NAME
+    ( (DATE | TIMESTAMP (WITH LOCAL? TIME ZONE)?)+ MASK identifier
     | INTERVAL (YEAR_TO_MONTH | DAY_TO_SECOND)
     )
     ;
@@ -5105,7 +5105,7 @@ etLlsSpec
     ;
 
 etString
-    : (HEXA1 | HEXA2)? (SINGLE_QUOTED_STRING | QUOTED_OBJECT_NAME)
+    : (TK_HEXA | KW_X)? (stringLiteral | identifier)
     ;
 
 mappingTableClause
@@ -6855,7 +6855,7 @@ undoTablespace
     ;
 
 sizeClause
-    : integer unit=(K_K | K_M | K_G | K_T | K_P | K_E)?
+    : integer unit=(KW_K | KW_M | KW_G | KW_T | KW_P | KW_E)?
     ;
 
 databaseLoggingLogFileClause
@@ -7048,7 +7048,7 @@ attrDimAttributeClause
 
 attrDimLevelClause
     : LEVEL level
-      (NOT NULL | K_SKIP WHEN NULL)?
+      (NOT NULL | KW_SKIP WHEN NULL)?
       (classificationClause*
           (
               LEVEL TYPE
@@ -7206,7 +7206,7 @@ rowFetchOption
     ;
 
 forUpdateClause
-    : FOR UPDATE (OF fullColumnPath (',' fullColumnPath)*)? (NOWAIT | WAIT S_INTEGER_WITHOUT_SIGN | K_SKIP LOCKED)?
+    : FOR UPDATE (OF fullColumnPath (',' fullColumnPath)*)? (NOWAIT | WAIT TK_INTEGER_WITHOUT_SIGN | KW_SKIP LOCKED)?
     ;
 
 queryBlock
@@ -7257,8 +7257,8 @@ searchClause
 cycleClause
     : CYCLE cAlias (',' cAlias)*
       SET cycleMarkCAlias=identifier
-      TO cycleValue=SINGLE_QUOTED_STRING {isCycleValue()}?
-      DEFAULT noCycleValue=SINGLE_QUOTED_STRING {isCycleValue()}?
+      TO cycleValue=stringLiteral
+      DEFAULT noCycleValue=stringLiteral
     ;
 
 subavFactoringClause
@@ -7321,7 +7321,7 @@ hintItem
       '(' identifier ( '.' identifier | '(' identifier ('.' identifier)* ')' ) ')'  #changeDupkeyErrorIndexHint
     | CLUSTER '(' hintQueryBlockName? tablespec ')'                                 #clusterHint
     | CLUSTERING                                                                    #clusteringHint
-    | CONTAINERS '(' DEFAULT_PDB_HINT '=' SINGLE_QUOTED_STRING ')'                  #containersHint
+    | CONTAINERS '(' DEFAULT_PDB_HINT '=' stringLiteral ')'                         #containersHint
     | CURSOR_SHARING_EXACT                                                          #cursorSharingExactHint
     | DISABLE_PARALLEL_DML                                                          #disableParallelDmlHint
     | DRIVING_SITE '(' ( '@' queryBlock )? tablespec ')'                            #drivingSiteHint
@@ -7407,7 +7407,7 @@ hintItem
       ('(' hintQueryBlockName ')' | '(' hintQueryBlockName? tablespec ')')?         #pushPredHint
     | PUSH_SUBQ ('(' hintQueryBlockName ')')?                                       #pushSubqHint
     | PX_JOIN_FILTER '(' tablespec ')'                                              #pxJoinFilterHint
-    | QB_NAME '(' UNQUOTED_OBJECT_NAME ')'                                          #qbNameHint
+    | QB_NAME '(' identifier ')'                                                    #qbNameHint
     | RESULT_CACHE (TEMP '=' (TRUE | FALSE))?                                       #resultCacheHint
     | RETRY_ON_ROW_CHANGE                                                           #retryOnRowChangeHint
     | REWRITE ('(' hintQueryBlockName? view* ')')?                                  #rewriteHint
@@ -7445,7 +7445,7 @@ distribution
     ;
 
 hintQueryBlockName
-    : '@' UNQUOTED_OBJECT_NAME
+    : '@' identifier
     ;
 
 queryBehavior
@@ -7473,7 +7473,7 @@ tableSource
 tableReference
     : (
        (
-           ( ONLY '(' queryTableExpression ')' | queryTableExpression )
+           ( queryTableExpression | ONLY '(' queryTableExpression ')' )
            flashbackQueryClause?
            (pivotClause | unpivotClause | rowPatternClause)?
        )
@@ -7523,15 +7523,13 @@ inlineAnalyticView
     ;
 
 queryTableExpression
-    : queryName=fullObjectPath
-    | ( schema '.' )?
-        ( table (partitionExtensionClause | '@' dblink )?
-        | analyticView=identifier hierarchiesClause?
-        | hierarchy
-        ) sampleClause?
-    | LATERAL? '(' subquery
-    subqueryRestrictionClause?
-    ')'
+    : fullObjectPath
+       ( partitionExtensionClause
+       | '@' identifierFragment 
+       | hierarchiesClause
+       )?
+       sampleClause?
+    | LATERAL? '(' subquery subqueryRestrictionClause? ')'
     | tableCollectionExpression
     ;
 
@@ -7585,7 +7583,7 @@ diskOfflineClause
     ;
 
 timeoutClause
-    : DROP AFTER integer (K_M | K_H)
+    : DROP AFTER integer (KW_M | KW_H)
     ;
 
 rebalanceDiskgroupClause
@@ -7641,7 +7639,7 @@ diskgroupVolumeClauses
 
 addVolumeClause
     : ADD VOLUME asmVolume=identifier SIZE sizeClause redundancyClause?
-      (STRIPE_WIDTH integer (K_K  | K_M))?
+      (STRIPE_WIDTH integer (KW_K  | KW_M))?
       (STRIPE_COLUMNS integer)?
     ;
 
@@ -7975,11 +7973,11 @@ rowPatternRowsPerMatch
 rowPatternSkipTo
     : AFTER MATCH
        (
-           K_SKIP TO NEXT ROW
-         | K_SKIP PAST LAST ROW
-         | K_SKIP TO FIRST variableName
-         | K_SKIP TO LAST variableName
-         | K_SKIP TO variableName
+           KW_SKIP TO NEXT ROW
+         | KW_SKIP PAST LAST ROW
+         | KW_SKIP TO FIRST variableName
+         | KW_SKIP TO LAST variableName
+         | KW_SKIP TO variableName
        )
     ;
 
@@ -8012,8 +8010,8 @@ rowPatternQuantifier
     : '*' '?'?
     | '+' '?'?
     | '?' '?'?
-    | '{' S_INTEGER_WITHOUT_SIGN? ',' S_INTEGER_WITHOUT_SIGN? '}' '?'?
-    | '{' S_INTEGER_WITHOUT_SIGN '}'
+    | '{' TK_INTEGER_WITHOUT_SIGN? ',' TK_INTEGER_WITHOUT_SIGN? '}' '?'?
+    | '{' TK_INTEGER_WITHOUT_SIGN '}'
     ;
 
 rowPatternSubsetClause
@@ -8269,15 +8267,15 @@ windowingClause
     ;
 
 precision
-    : S_INTEGER_WITHOUT_SIGN
+    : TK_INTEGER_WITHOUT_SIGN
     ;
 
 scale
-    : S_INTEGER_WITHOUT_SIGN
+    : TK_INTEGER_WITHOUT_SIGN
     ;
 
 size
-    : S_INTEGER_WITHOUT_SIGN
+    : TK_INTEGER_WITHOUT_SIGN
     ;
 
 collectionType
@@ -8438,8 +8436,8 @@ condition
     | condition OR condition                                                            #logicalOrCondition
     | (dimensionColumn=identifier IS)? ANY                                              #modelIsAnyCondition
     | cellReference=cellAssignment IS PRESENT                                           #modelIsPresentCondition
-    | nestedTable=identifier IS NOT? K_A SET                                            #multisetIsASetCondition
-    | nestedTable=identifier IS NOT? EMPTY                                              #multisetIsEmptyCondition
+    | nestedTable=identifier IS NOT? KW_A SET                                            #multisetIsASetCondition
+    | nestedTable=identifier IS NOT? KW_EMPTY                                              #multisetIsEmptyCondition
     | expr NOT? MEMBER OF? nestedTable=identifier                                       #multisetMemberCondition
     | nestedTable1=identifier NOT? SUBMULTISET OF? nestedTable2=identifier              #multisetSubmultisetCondition
     | expr NOT? (LIKE | LIKEC | LIKE2 | LIKE4)
@@ -8511,10 +8509,10 @@ expr
     | '(' subquery ')'                                                                      #scalarSubqueryExpr
     | typeConstructorExpression                                                             #typeConstructorExpr
     | expr AT ( LOCAL | TIME ZONE
-        ( S_SINGLE_QUOTE ('+'|'-')? hh=expr ':' mi=expr S_SINGLE_QUOTE
+        ( SINGLE_QUOTE_SYMBOL ('+'|'-')? hh=expr ':' mi=expr SINGLE_QUOTE_SYMBOL
         | DBTIMEZONE
         | SESSIONTIMEZONE
-        | timeZoneName=SINGLE_QUOTED_STRING
+        | timeZoneName=stringLiteral
         | expr
         )
      )                                                                                      #datetimeExpr
@@ -8526,10 +8524,10 @@ expr
 
 datetimeExpression
     : expr AT ( LOCAL | TIME ZONE
-        ( S_SINGLE_QUOTE ('+'|'-')? hh=expr ':' mi=expr S_SINGLE_QUOTE
+        ( SINGLE_QUOTE_SYMBOL ('+'|'-')? hh=expr ':' mi=expr SINGLE_QUOTE_SYMBOL
         | DBTIMEZONE
         | SESSIONTIMEZONE
-        | timeZoneName=SINGLE_QUOTED_STRING
+        | timeZoneName=stringLiteral
         | expr
         )
      )
@@ -8541,7 +8539,7 @@ bindVariable
     ;
 
 indexBindVariable
-    : ':' S_INTEGER_WITHOUT_SIGN
+    : ':' TK_INTEGER_WITHOUT_SIGN
     ;
 
 namedBindVariable
@@ -8577,7 +8575,7 @@ functionExpression
     : functionExpression '.' identifier
     | functionExpression '.' functionExpression
     | functionName '(' expressionList? ')'
-    | analyticFunction
+    | functionName '(' expressionList? ')' OVER ( identifier | '(' analyticClause ')' )
     | castFunction
     | approxCountFunction
     | approxMedianFunction
@@ -8741,7 +8739,7 @@ approxRankFunction
     ;
 
 approxSumFunction
-    : APPROX_SUM '(' ('*' | expr) (',' S_SINGLE_QUOTE MAX_ERROR S_SINGLE_QUOTE) ')'?
+    : APPROX_SUM '(' ('*' | expr) (',' SINGLE_QUOTE_SYMBOL MAX_ERROR SINGLE_QUOTE_SYMBOL) ')'?
     ;
 
 avgFunction
@@ -9332,7 +9330,7 @@ xmlpiFunction
     ;
 
 xmlqueryFunction
-    : XMLQUERY '(' stringLiteral xmlPassingClause? RETURNING CONTENT (NULL ON EMPTY)? ')'
+    : XMLQUERY '(' stringLiteral xmlPassingClause? RETURNING CONTENT (NULL ON KW_EMPTY)? ')'
     ;
 
 xmlrootFunction
@@ -9529,7 +9527,7 @@ jsonValueOnErrorClause
     ;
 
 jsonValueOnEmptyClause
-    : (ERROR | NULL | DEFAULT literal) ON EMPTY
+    : (ERROR | NULL | DEFAULT literal) ON KW_EMPTY
     ;
 
 jsonNestedPath
@@ -9565,7 +9563,7 @@ queryExpr : queryExpr ('&&' queryExpr )+
           | '@' '.' identifier '<' integer
           | '@' '.' LENGTH '-' integer
           | '@' '.' identifier '=' '=' integer
-          | '@' '.' identifier '=' '=' SINGLE_QUOTED_STRING
+          | '@' '.' identifier '=' '=' stringLiteral
           ;
 
 ordinalityColumn
@@ -9634,19 +9632,19 @@ jsonQueryWrapperClause
 jsonQueryOnErrorClause
     : (ERROR
       | NULL
-      | EMPTY
-      | EMPTY ARRAY
-      | EMPTY OBJECT
+      | KW_EMPTY
+      | KW_EMPTY ARRAY
+      | KW_EMPTY OBJECT
       ) ON ERROR
     ;
 
 jsonQueryOnEmptyClause
     : (ERROR
       | NULL
-      | EMPTY
-      | EMPTY ARRAY
-      | EMPTY OBJECT
-      ) ON EMPTY
+      | KW_EMPTY
+      | KW_EMPTY ARRAY
+      | KW_EMPTY OBJECT
+      ) ON KW_EMPTY
     ;
 
 jsonObjectContent
@@ -9846,7 +9844,7 @@ arrayStep
 
 modelExpression
     : measureColumn=identifier '[' ( condition | expr ) (',' ( condition | expr ) )* ']'
-    | aggregateFunction '['
+    | functionExpression '['
               (
                 ( condition | expr ) (',' ( condition | expr ) )*
                 | singleColumnForLoop (',' singleColumnForLoop )*
@@ -9854,20 +9852,13 @@ modelExpression
               ) ']'
     ;
 
-analyticFunction
-    : analyticFunctionName '(' expr? ( ',' expr )? ( ',' expr )? ')' OVER ( windowName=identifier | '(' analyticClause ')' )
-    ;
-
 analyticClause
     : ( windowName=identifier | queryPartitionClause )? ( orderByClause windowingClause? )?
     ;
 
-aggregateFunction
-    : aggregateFunctionName '(' expressionList? ')'
-    ;
-
 objectAccessExpression
-    : ('(' expr ')' '.')? identifier ('.' identifier arrayStep* )* ('(' ( argument (',' argument )* )? ')')?
+    : ('(' expr ')' '.')? simpleIdentifier ('.' identifier arrayStep* )* ('(' ( argument (',' argument )* )? ')')?
+    | pseudoColumn
     ;
 
 placeholderExpression
@@ -9877,21 +9868,6 @@ placeholderExpression
 typeConstructorExpression
     : NEW ( schema '.' )? typeName '(' ( expr (',' expr )* )? ')'
     ;
-
-//arrayStepItem
-//    : ( integer (TO integer)? )
-//    ;
-//
-//function
-//    : aggregateFunction
-//    | analyticFunction
-//    | objectReferenceFunction
-//    | modelFunction
-//    | userDefinedFunction
-//    | olapFunction
-//    | dataCartridgeFunction
-//    ;
-//
 
 simpleCaseExpression
     : expr (WHEN comparisonExpr=expr THEN returnExpr=expr)+
@@ -9913,9 +9889,9 @@ jsonExistsOnErrorClause
     ;
 
 jsonExistsOnEmptyClause
-    : NULL ON EMPTY
-    | ERROR ON EMPTY
-    | DEFAULT literal ON EMPTY
+    : NULL ON KW_EMPTY
+    | ERROR ON KW_EMPTY
+    | DEFAULT literal ON KW_EMPTY
     ;
 
 jsonBasicPathExpression
@@ -10031,12 +10007,12 @@ jsonVar
     ;
 
 jsonScalar
-    : ('+' | '-') S_INTEGER_WITHOUT_SIGN
-    | S_INTEGER_WITHOUT_SIGN
+    : ('+' | '-') TK_INTEGER_WITHOUT_SIGN
+    | TK_INTEGER_WITHOUT_SIGN
     | TRUE
     | FALSE
     | NULL
-    | QUOTED_OBJECT_NAME
+    | identifier
     ;
 
 fullColumnPath
@@ -10883,7 +10859,8 @@ whileLoopStatement
     ;
 
 sqlStatement
-    : ( commit
+    : ( select
+      | commit
       | collectionMethodCall
       | delete
       | insert
@@ -11051,7 +11028,7 @@ keystorePassword
     ;
 
 filename
-    : SINGLE_QUOTED_STRING
+    : stringLiteral
     ;
 
 newPdbName
@@ -11116,8 +11093,8 @@ indexspec
     ;
 
 integer
-    : S_INTEGER_WITHOUT_SIGN
-    | ('+' | '-') S_INTEGER_WITHOUT_SIGN
+    : TK_INTEGER_WITHOUT_SIGN
+    | ('+' | '-') TK_INTEGER_WITHOUT_SIGN
     ;
 
 literal
@@ -11128,10 +11105,10 @@ literal
     ;
 
 numberLiteral
-    : ('+' | '-') S_INTEGER_WITHOUT_SIGN
-    | ('+' | '-') S_NUMBER_WITHOUT_SIGN
-    | S_INTEGER_WITHOUT_SIGN
-    | S_NUMBER_WITHOUT_SIGN
+    : ('+' | '-') TK_INTEGER_WITHOUT_SIGN
+    | ('+' | '-') TK_NUMBER_WITHOUT_SIGN
+    | TK_INTEGER_WITHOUT_SIGN
+    | TK_NUMBER_WITHOUT_SIGN
     ;
 
 // '…'
@@ -11139,19 +11116,19 @@ numberLiteral
 // N'…'
 // NQ'…'
 stringLiteral
-    : SINGLE_QUOTED_STRING
-    | v=QUOTED_STRING     { validateStringLiteral($v.text) }?
-    | v=NATIONAL_STRING   { validateStringLiteral($v.text) }?
+    : TK_SINGLE_QUOTED_STRING
+    | TK_QUOTED_STRING
+    | TK_NATIONAL_STRING
     ;
 
 dateTimeLiteral
-    : DATE SINGLE_QUOTED_STRING         #dateLiteral
-    | TIMESTAMP SINGLE_QUOTED_STRING    #timestampLiteral
+    : DATE TK_SINGLE_QUOTED_STRING         #dateLiteral
+    | TIMESTAMP TK_SINGLE_QUOTED_STRING    #timestampLiteral
     ;
 
 intervalLiteral
-    : INTERVAL SINGLE_QUOTED_STRING ( YEAR | MONTH ) ('(' precision ')')? ( TO ( YEAR | MONTH ) )?
-    | INTERVAL SINGLE_QUOTED_STRING
+    : INTERVAL TK_SINGLE_QUOTED_STRING ( YEAR | MONTH ) ('(' precision ')')? ( TO ( YEAR | MONTH ) )?
+    | INTERVAL TK_SINGLE_QUOTED_STRING
         ( ( DAY | HOUR | MINUTE ) ( '(' precision ')' )?
         | SECOND ( '(' precision ( ',' fractionalSecondsPrecision )? ')' )?
         )
@@ -11209,217 +11186,33 @@ lockmode
     | NOWAIT
     ;
 
-aggregateFunctionName
-    : ANY_VALUE
-    | APPROX_COUNT
-    | APPROX_COUNT_DISTINCT
-    | APPROX_COUNT_DISTINCT_AGG
-    | APPROX_COUNT_DISTINCT_DETAIL
-    | APPROX_MEDIAN
-    | APPROX_PERCENTILE
-    | APPROX_PERCENTILE_AGG
-    | APPROX_PERCENTILE_DETAIL
-    | APPROX_RANK
-    | APPROX_SUM
-    | AVG
-    | BIT_AND_AGG
-    | BIT_OR_AGG
-    | BIT_XOR_AGG
-    | CHECKSUM
-    | COLLECT
-    | CORR
-    | CORR_S
-    | CORR_K
-    | COUNT
-    | COVAR_POP
-    | COVAR_SAMP
-    | CUME_DIST
-    | DENSE_RANK
-    | FIRST
-    | GROUP_ID
-    | GROUPING
-    | GROUPING_ID
-    | JSON_ARRAYAGG
-    | JSON_OBJECTAGG
-    | KURTOSIS_POP
-    | KURTOSIS_SAMP
-    | LAST
-    | LISTAGG
-    | MAX
-    | MEDIAN
-    | MIN
-    | PERCENT_RANK
-    | PERCENTILE_CONT
-    | PERCENTILE_DISC
-    | RANK
-    | REGR_SLOPE
-    | REGR_INTERCEPT
-    | REGR_COUNT
-    | REGR_R2
-    | REGR_AVGX
-    | REGR_AVGY
-    | REGR_SXX
-    | REGR_SYY
-    | REGR_SXY
-    | SKEWNESS_POP
-    | SKEWNESS_SAMP
-    | STATS_BINOMIAL_TEST
-    | STATS_CROSSTAB
-    | STATS_F_TEST
-    | STATS_KS_TEST
-    | STATS_MODE
-    | STATS_MW_TEST
-    | STATS_ONE_WAY_ANOVA
-    | STATS_T_TEST_ONE
-    | STATS_T_TEST_PAIRED
-    | STATS_T_TEST_INDEP
-    | STATS_T_TEST_INDEPU
-    | STATS_WSR_TEST
-    | STDDEV
-    | STDDEV_POP
-    | STDDEV_SAMP
-    | SUM
-    | SYS_OP_ZONE_ID
-    | SYS_XMLAGG
-    | TO_APPROX_COUNT_DISTINCT
-    | TO_APPROX_PERCENTILE
-    | VAR_POP
-    | VAR_SAMP
-    | VARIANCE
-    ;
-
-analyticFunctionName
-    : ANY_VALUE
-    | AVG
-    | BIT_AND_AGG
-    | BIT_OR_AGG
-    | BIT_XOR_AGG
-    | CHECKSUM
-    | CLUSTER_DETAILS
-    | CLUSTER_DISTANCE
-    | CLUSTER_ID
-    | CLUSTER_PROBABILITY
-    | CLUSTER_SET
-    | CORR
-    | COUNT
-    | COVAR_POP
-    | COVAR_SAMP
-    | CUME_DIST
-    | DENSE_RANK
-    | FEATURE_DETAILS
-    | FEATURE_ID
-    | FEATURE_SET
-    | FEATURE_VALUE
-    | FIRST
-    | FIRST_VALUE
-    | KURTOSIS_POP
-    | KURTOSIS_SAMP
-    | LAG
-    | LAST
-    | LAST_VALUE
-    | LEAD
-    | MAX
-    | MIN
-    | NTH_VALUE
-    | NTILE
-    | PERCENT_RANK
-    | PERCENTILE_CONT
-    | PERCENTILE_DISC
-    | PREDICTION
-    | PREDICTION_COST
-    | PREDICTION_DETAILS
-    | PREDICTION_PROBABILITY
-    | PREDICTION_SET
-    | RANK
-    | RATIO_TO_REPORT
-    | REGR_SLOPE
-    | REGR_INTERCEPT
-    | REGR_COUNT
-    | REGR_R2
-    | REGR_AVGX
-    | REGR_AVGY
-    | REGR_SXX
-    | REGR_SYY
-    | REGR_SXY
-    | STDDEV
-    | STDDEV_POP
-    | SKEWNESS_POP
-    | SKEWNESS_SAMP
-    | STDDEV_SAMP
-    | SUM
-    | VAR_POP
-    | VAR_SAMP
-    | VARIANCE
-    ;
-
-singleRowFunctionName
-    : ADD_MONTHS
-    | EXTRACT
-    | FROM_TZ
-    | LAST_DAY
-    | MONTHS_BETWEEN
-    | NEW_TIME
-    | NEXT_DAY
-    | NUMTODSINTERVAL
-    | NUMTOYMINTERVAL
-    | ORA_DST_AFFECTED
-    | ORA_DST_CONVERT
-    | ORA_DST_ERROR
-    | ROUND
-    | SYS_EXTRACT_UTC
-    | TO_CHAR
-    | TO_DSINTERVAL
-    | TO_TIMESTAMP
-    | TO_TIMESTAMP_TZ
-    | TO_YMINTERVAL
-    | TRUNC
-    | TZ_OFFSET
-    | ASCII
-    | ASCIISTR
-    | BIN_TO_NUM
-    | COALESCE
-    | CAST
-    | CHARTOROWID
-    | COMPOSE
-    | CONVERT
-    | DECOMPOSE
-    | HEXTORAW
-    | RAWTOHEX
-    | RAWTONHEX
-    | ROWIDTOCHAR
-    | ROWIDTONCHAR
-    | SCN_TO_TIMESTAMP
-    | TIMESTAMP_TO_SCN
-    | TO_BINARY_DOUBLE
-    | TO_BINARY_FLOAT
-    | TO_BLOB
-    | TO_CLOB
-    | TO_DATE
-    | TO_LOB
-    | TO_MULTI_BYTE
-    | TO_NCHAR
-    | TO_NCLOB
-    | TO_NUMBER
-    | TO_SINGLE_BYTE
-    | TREAT
-    | UNISTR
-    | VALIDATE_CONVERSION
-    ;
-
 functionName
-    : ( identifier '.' )* identifier
+    : ( simpleIdentifier '.' )* simpleIdentifier
     ;
 
 identifier
-    : ( UNQUOTED_OBJECT_NAME
-      | QUOTED_OBJECT_NAME
-      | nonReservedKeywordIdentifier
-      | singleRowFunctionName
-      | aggregateFunctionName
-      | analyticFunctionName
-      | pseudoColumn
-      )
-      ( '@' dblink )?
+    : identifierFragment ( '@' identifierFragment )?
+    ;
+
+identifierFragment
+    : simpleIdentifier
+    | specialIdentifier
+    | pseudoColumn
+    ;
+
+specialIdentifier
+    : DBTIMEZONE
+    | SESSIONTIMEZONE
+    | SYSDATE
+    | SYSTIMESTAMP
+    | UID
+    | USER
+    ;
+
+simpleIdentifier
+    : TK_IDENTIFIER
+    | TK_IDENTIFIER_OR_KEYWORD
+    | nonReservedKeywordIdentifier
     ;
 
 pseudoColumn
@@ -11456,23 +11249,38 @@ sqlOperation
     ;
 
 nonReservedKeywordIdentifier
-    : ABS
+    : ABORT
+    | ABS
+    | ABSENT
+    | ACCESSED
+    | ACCESSIBLE
     | ACCHK_READ
+    | ACCOUNT
     | ACROSS
     | ACTIONS
+    | ACTIVATE
+    | ACTIVE
     | ADMIN
     | ADMINISTER
     | ADVANCED
+    | ADVISE
     | ADVISOR
+    | AFFINITY
     | AFTER
+    | AGENT
     | AGGREGATE
+    | ALGORITHM
+    | ALIAS
     | ALL_ROWS
+    | ALLOCATE
     | ALLOW
     | ALTERNATE
     | ALWAYS
     | ANALYTIC
     | ANALYZE
     | ANCESTOR
+    | ANCILLARY
+    | ANOMALY
     | ANY_VALUE
     | ANYDATA
     | ANYDATASET
@@ -11480,6 +11288,7 @@ nonReservedKeywordIdentifier
     | ANYTYPE
     | APPEND
     | APPEND_VALUES
+    | APPLICATION
     | APPLY
     | APPROX_COUNT
     | APPROX_COUNT_DISTINCT
@@ -11493,35 +11302,49 @@ nonReservedKeywordIdentifier
     | APPROX_SUM
     | ARCHIVAL
     | ARCHIVE
+    | ARCHIVED
     | ARCHIVELOG
     | ARE
+    | ARRAY
+    | ASCII
     | ASSEMBLY
     | ASSOCIATE
+    | ASYNCHRONOUS
     | AT
     | ATTRIBUTE
     | ATTRIBUTES
+    | AUTHENTICATED
     | AUTHENTICATION
+    | AUTHID
     | AUTHORIZATION
     | AUTO
+    | AUTO_LOGIN
     | AUTOALLOCATE
     | AUTOEXTEND
+    | AUTOLOGIN
     | AUTOMATIC
     | AVAILABILITY
     | AVG
+    | BACKINGFILE
     | BACKUP
     | BADFILE
     | BASIC
     | BASICFILE
+    | BATCH
     | BECOME
     | BEFORE
+    | BEGIN
     | BEGINNING
     | BEQUEATH
     | BFILE
     | BIG
     | BIGFILE
+    | BIN_TO_NUM
     | BINARY
     | BINARY_DOUBLE
     | BINARY_FLOAT
+    | BINARY_INTEGER
+    | BINDING
     | BIT_AND_AGG
     | BIT_OR_AGG
     | BIT_XOR_AGG
@@ -11533,38 +11356,62 @@ nonReservedKeywordIdentifier
     | BODY
     | BOOLEAN
     | BOOLEANONLY
+    | BOTH
     | BREADTH
+    | BROADCAST
+    | BUFFER_CACHE
     | BUFFER_POOL
     | BUILD
+    | BULK
+    | BULK_ROWCOUNT
     | BYTE
     | BYTEORDERMARK
     | BYTES
     | CACHE
+    | CACHING
     | CALL
+    | CANCEL
     | CAPACITY
     | CAPTION
     | CASCADE
     | CASE
+    | CASE_SENSITIVE
+    | CAST
+    | CATEGORY
+    | CDB
     | CEILING
     | CELL_FLASH_CACHE
+    | CERTIFICATE
     | CHANGE
     | CHANGE_DUPKEY_ERROR_INDEX
+    | CHAR_CS
     | CHARACTER
     | CHARACTERS
     | CHARACTERSET
+    | CHECKPOINT
     | CHECKSUM
+    | CHILD
+    | CHR
     | CHUNK
     | CLASS
     | CLASSIFICATION
     | CLASSIFIER
+    | CLAUSE
+    | CLEAN
+    | CLEANUP
+    | CLEAR
     | CLIENT
     | CLOB
+    | CLONE
+    | CLOSE
     | CLUSTER_DETAILS
     | CLUSTER_DISTANCE
     | CLUSTER_ID
     | CLUSTER_PROBABILITY
     | CLUSTER_SET
     | CLUSTERING
+    | COALESCE
+    | COARSE
     | CODE
     | COEFFICIENT
     | COLLATION
@@ -11572,58 +11419,97 @@ nonReservedKeywordIdentifier
     | COLUMN_VALUE
     | COLUMNS
     | COMMIT
+    | COMMITTED
+    | COMPACT
+    | COMPATIBILITY
+    | COMPILE
+    | COMPLETE
     | COMPONENT
-    | CONNECT
+    | COMPOSITE_LIMIT
+    | COMPOUND
+    | COMPUTATION
+    | COMPUTE
+    | CONDITION
+    | CONDITIONAL
+    | CONFIRM
+    | CONNECT_BY_ISCYCLE
+    | CONNECT_BY_ISLEAF
+    | CONNECT_BY_ROOT
+    | CONNECT_TIME
+    | CONSIDER
     | CONSISTENT
+    | CONSTANT
     | CONSTRAINT
     | CONSTRAINTS
+    | CONSTRUCTOR
     | CONTAINER
+    | CONTAINER_DATA
     | CONTAINER_MAP
     | CONTAINERS
     | CONTAINERS_DEFAULT
+    | CONTENT
+    | CONTENTS
     | CONTEXT
+    | CONTINUE
     | CONTROLFILE
+    | CONVERSION
+    | CONVERT
+    | COPY
     | CORR
     | CORR_K
     | CORR_S
+    | CORRUPTION
     | COST
     | COUNT
     | COUNTED
     | COVAR_POP
     | COVAR_SAMP
+    | CPU_PER_CALL
+    | CPU_PER_SESSION
+    | CREATE_FILE_DEST
     | CREATION
     | CREDENTIAL
+    | CREDENTIALS
     | CRITICAL
     | CROSS
+    | CROSSEDITION
     | CSV
     | CUBE
+    | CUBE_TABLE
     | CUME_DIST
+    | CURRENT_DATE
+    | CURRENT_TIMESTAMP
     | CURRENT_USER
     | CURRVAL
     | CURSOR
     | CURSOR_SHARING_EXACT
     | CYCLE
+    | DANGLING
     | DATA
     | DATABASE
     | DATAFILE
     | DATAFILES
     | DATAPUMP
     | DATASTORE
-    | DATE
     | DATE_CACHE
     | DATE_FORMAT
     | DAY
     | DAY_TO_SECOND
     | DAYS
+    | DB_ROLE_CHANGE
     | DBA_RECYCLEBIN
+    | DDL
+    | DEALLOCATE
     | DEBUG
     | DEC
+    | DECLARE
     | DECREMENT
     | DECRYPT
     | DEDUPLICATE
-    | DEFAULT
+    | DEFAULT_CREDENTIAL
     | DEFAULT_PDB_HINT
     | DEFAULTIF
+    | DEFAULTS
     | DEFERRABLE
     | DEFERRED
     | DEFINE
@@ -11631,17 +11517,23 @@ nonReservedKeywordIdentifier
     | DEFINITION
     | DELEGATE
     | DELETE_ALL
+    | DELETING
     | DELIMITED
+    | DEMAND
     | DENSE_RANK
+    | DEPENDENT
     | DEPTH
     | DEQUEUE
     | DESCRIPTION
     | DETECTED
     | DETERMINES
+    | DETERMINISTIC
     | DIAGNOSTICS
     | DICTIONARY
+    | DIGEST
     | DIMENSION
     | DIRECT_LOAD
+    | DIRECT_PATH
     | DIRECTIO
     | DIRECTORY
     | DISABLE
@@ -11650,14 +11542,23 @@ nonReservedKeywordIdentifier
     | DISABLE_PARALLEL_DML
     | DISALLOW
     | DISASSOCIATE
+    | DISCARD
     | DISCARDFILE
+    | DISCONNECT
     | DISK
+    | DISKGROUP
+    | DISKS
+    | DISMOUNT
+    | DISTINGUISHED
     | DISTRIBUTE
+    | DISTRIBUTED
     | DML
     | DNFS_DISABLE
     | DNFS_ENABLE
     | DNFS_READBUFFERS
+    | DOCUMENT
     | DOUBLE
+    | DOWNGRADE
     | DRIVING_SITE
     | DSINTERVAL
     | DUPLICATE
@@ -11665,40 +11566,68 @@ nonReservedKeywordIdentifier
     | DV
     | DYNAMIC
     | DYNAMIC_SAMPLING
+    | EACH
     | EDITION
     | EDITIONABLE
     | EDITIONING
+    | EDITIONS
     | ELEMENT
+    | ELSIF
     | EM
     | EMBEDDED
-    | EMPTY
+    | KW_EMPTY
     | ENABLE
     | ENABLE_ALL
     | ENABLE_PARALLEL_DML
     | ENCLOSED
+    | ENCODING
     | ENCRYPT
+    | ENCRYPTION
     | END
     | ENDIAN
+    | ENFORCED
     | ENQUEUE
+    | ENTERPRISE
+    | ENTITYESCAPING
     | EQUALS_PATH
     | ERROR
     | ERRORS
     | ESCAPE
+    | EVALNAME
     | EVALUATE
     | EVALUATION
+    | EVERY
+    | EXCEPT
+    | EXCEPTION
     | EXCEPTIONS
     | EXCHANGE
     | EXCLUDE
+    | EXCLUDING
     | EXECUTE
     | EXEMPT
+    | EXISTING
+    | EXIT
+    | EXPIRE
     | EXPLAIN
     | EXPORT
     | EXPRESS
+    | EXTEND
     | EXTENDED
     | EXTENT
     | EXTERNAL
+    | EXTERNALLY
+    | EXTRA
+    | EXTRACT
     | FACT
+    | FAILED
+    | FAILED_LOGIN_ATTEMPTS
+    | FAILGROUP
+    | FAILOVER
     | FALSE
+    | FAR
+    | FAST
+    | FEATURE
+    | FEATURE_COMPARE
     | FEATURE_DETAILS
     | FEATURE_ID
     | FEATURE_SET
@@ -11709,25 +11638,36 @@ nonReservedKeywordIdentifier
     | FIELDS
     | FIEST
     | FILE_NAME_CONVERT
+    | FILEGROUP
     | FILES
+    | FILESTORE
     | FILESYSTEM_LIKE_LOGGING
     | FILTER
     | FINAL
+    | FINE
+    | FINISH
     | FIRST
     | FIRST_ROWS
     | FIRST_VALUE
     | FIXED
     | FLASH_CACHE
     | FLASHBACK
+    | FLEX
     | FLOOR
+    | FLUSH
     | FOLDER
     | FOLLOWING
+    | FOLLOWS
+    | FORALL
     | FORCE
     | FOREIGN
     | FORMAT
+    | FORWARD
+    | FOUND
     | FREELIST
     | FREELISTS
     | FREEPOOLS
+    | FRESH
     | FRESH_MV
     | FTP
     | FULL
@@ -11735,14 +11675,23 @@ nonReservedKeywordIdentifier
     | GATHER_OPTIMIZER_STATISTICS
     | GENERATED
     | GLOBAL
+    | GLOBAL_NAME
+    | GLOBAL_TOPIC_ENABLED
+    | GLOBALLY
+    | GOTO
+    | GRANTED
     | GROUP_ID
     | GROUPING
     | GROUPING_ID
     | GROUPS
+    | GUARANTEE
+    | GUARD
     | HALF_YEARS
     | HASH
     | HASHING
+    | HASHKEYS
     | HEAP
+    | HIDE
     | HIER_ANCESTOR
     | HIER_CAPTION
     | HIER_DEPTH
@@ -11752,21 +11701,31 @@ nonReservedKeywordIdentifier
     | HIER_LEVEL
     | HIER_MEMBER_NAME
     | HIER_MEMBER_UNIQUE_NAME
+    | HIER_ORDER
     | HIER_PARENT
     | HIERARCHY
     | HIGH
+    | HINT
+    | HOST
+    | HOUR
     | HOURS
     | HTTP
     | ID
     | IDENTIFIER
     | IDENTITY
     | IDLE
+    | IDLE_TIME
+    | IF
     | IGNORE
     | IGNORE_CHARS_AFTER_EOR
     | IGNORE_ROW_ON_DUPKEY_INDEX
     | ILM
+    | IMMUTABLE
     | IMPORT
+    | INACTIVE_ACCOUNT_TIME
     | INCLUDE
+    | INCLUDING
+    | INDENT
     | INDEX_ASC
     | INDEX_COMBINE
     | INDEX_DESC
@@ -11775,37 +11734,73 @@ nonReservedKeywordIdentifier
     | INDEX_SS
     | INDEX_SS_ASC
     | INDEX_SS_DESC
+    | INDEXES
     | INDEXING
     | INDEXTYPE
     | INDICATOR
+    | INDICES
     | INFINITE
     | INHERIT
+    | INITIALIZED
     | INITIALLY
     | INITRANS
     | INMEMORY
     | INMEMORY_PRUNING
     | INNER
+    | INSERTING
+    | INSTALL
     | INSTANCE
+    | INSTANCES
+    | INSTANTIABLE
+    | INSTEAD
     | INT
     | INTERLEAVED
     | INTERNAL
     | INTERVAL
+    | INVALIDATE
     | INVALIDATION
     | INVISIBLE
     | IO_OPTIONS
+    | IS_LEAF
+    | ISOLATE
+    | ISOLATION
+    | ISOPEN
     | ITERATE
+    | ITERATION_NUMBER
     | JAVA
     | JOB
     | JOIN
     | JSON
+    | JSON_ARRAY
     | JSON_ARRAYAGG
     | JSON_EQUAL
+    | JSON_EXISTS
+    | JSON_MERGEPATCH
+    | JSON_OBJECT
     | JSON_OBJECTAGG
-    | K_SKIP
+    | JSON_QUERY
+    | JSON_SCALAR
+    | JSON_SERIALIZE
+    | JSON_TABLE
+    | JSON_TEXTCONTAINS
+    | JSON_TRANSFORM
+    | JSON_VALUE
+    | KW_A
+    | KW_C
+    | KW_E
+    | KW_G
+    | KW_H
+    | KW_K
+    | KW_M
+    | KW_P
+    | KW_SKIP
+    | KW_T
     | KEEP
     | KEEP_DUPLICATES
     | KEY
     | KEYS
+    | KEYSTORE
+    | KILL
     | KURTOSIS_POP
     | KURTOSIS_SAMP
     | LAG
@@ -11818,6 +11813,8 @@ nonReservedKeywordIdentifier
     | LAX
     | LDRTRIM
     | LEAD
+    | LEAD_CDB
+    | LEAD_CDB_URI
     | LEAD_DIFF
     | LEAD_DIFF_PERCENT
     | LEADING
@@ -11825,8 +11822,8 @@ nonReservedKeywordIdentifier
     | LEFT
     | LENGTH
     | LESS
-    | LEVELS
     | LEVEL_NAME
+    | LEVELS
     | LIBRARY
     | LIKE2
     | LIKE4
@@ -11838,10 +11835,12 @@ nonReservedKeywordIdentifier
     | LISTAGG
     | LITTLE
     | LLS
+    | LNNVL
     | LOAD
     | LOB
     | LOBS
     | LOCAL
+    | LOCALTIMESTAMP
     | LOCATION
     | LOCATOR
     | LOCKDOWN
@@ -11849,11 +11848,16 @@ nonReservedKeywordIdentifier
     | LOCKING
     | LOG
     | LOGFILE
+    | LOGFILES
     | LOGGING
     | LOGICAL
+    | LOGICAL_READS_PER_CALL
+    | LOGICAL_READS_PER_SESSION
     | LOGMINING
     | LOGOFF
     | LOGON
+    | LOOP
+    | LOST
     | LOW
     | LOW_COST_TBS
     | LOWER
@@ -11861,17 +11865,27 @@ nonReservedKeywordIdentifier
     | LTRIM
     | MAIN
     | MANAGE
+    | MANAGED
     | MANAGEMENT
     | MANAGER
+    | MANDATORY
+    | MANUAL
+    | MAP
     | MAPPING
     | MASK
+    | MASTER
     | MATCH
     | MATCH_NUMBER
     | MATCH_RECOGNIZE
+    | MATCHED
+    | MATERIALIZE
     | MATERIALIZED
     | MAX
+    | MAX_AUDIT_SIZE
+    | MAX_DIAG_SIZE
     | MAX_ERROR
     | MAXDATAFILES
+    | MAXIMIZE
     | MAXINSTANCES
     | MAXLOGFILES
     | MAXLOGHISTORY
@@ -11885,37 +11899,61 @@ nonReservedKeywordIdentifier
     | MEDIAN
     | MEDIUM
     | MEMBER
+    | MEMBER_CAPTION
+    | MEMBER_DESCRIPTION
+    | MEMBER_NAME
+    | MEMBER_UNIQUE_NAME
     | MEMCOMPRESS
     | MEMOPTIMIZE
+    | MEMORY
     | MERGE
     | METADATA
+    | MIGRATE
+    | MIGRATION
     | MIN
     | MINALUE
     | MINEXTENTS
+    | MINIMIZE
+    | MINIMUM
     | MINING
     | MINNUMBER
     | MINSTRING
+    | MINUTE
     | MINUTES
     | MINVALUE
+    | MIRROR
+    | MISMATCH
     | MISSING
     | MLE
     | MODEL
     | MODEL_MIN_ANALYSIS
     | MODIFICATION
     | MONITOR
+    | MONITORING
     | MONTH
     | MONTHS
+    | MOUNT
+    | MOUNTPATH
+    | MOUNTPOINT
+    | MOVE
     | MOVEMENT
+    | MULTISET
     | MULTIVALUE
+    | MUTABLE
     | NAME
+    | NAMED
+    | NAMESPACE
     | NAN
     | NATIONAL
     | NATIVE_FULL_OUTER_JOIN
     | NATURAL
     | NAV
     | NCHAR
+    | NCHAR_CS
     | NCLOB
     | NESTED
+    | NETWORK
+    | NEVER
     | NEW
     | NEWLINE
     | NEXT
@@ -11959,24 +11997,46 @@ nonReservedKeywordIdentifier
     | NOBADFILE
     | NOCACHE
     | NOCHECK
+    | NOCOPY
     | NOCYCLE
+    | NODELAY
     | NODIRECTIO
     | NODISCARDFILE
+    | NOEDITIONABLE
+    | NOENTITYESCAPING
+    | NOEXTEND
     | NOFORCE
+    | NOGUARANTEE
+    | NOKEEP
     | NOLOGFILE
     | NOLOGGING
     | NOMAPPING
     | NOMAXVALUE
+    | NOMINIMIZE
     | NOMINVALUE
+    | NOMONITORING
+    | NON
     | NONE
     | NONEDITIONABLE
     | NONSCHEMA
     | NONULLIF
     | NOORDER
     | NOPARALLEL
+    | NORELOCATE
     | NORELY
+    | NOREPAIR
+    | NOREPLAY
+    | NORESETLOGS
+    | NOREVERSE
+    | NORMAL
     | NOROWDEPENDENCIES
+    | NOSCALE
+    | NOSCHEMACHECK
+    | NOSHARD
     | NOSORT
+    | NOSWITCH
+    | NOTFOUND
+    | NOTHING
     | NOTIFICATION
     | NOTRIM
     | NOVALIDATE
@@ -11984,43 +12044,78 @@ nonReservedKeywordIdentifier
     | NTILE
     | NULLIF
     | NULLS
-    | NUMBER
     | NUMBERONLY
     | NUMERIC
     | NVARCHAR2
     | OBJECT
     | OFF
     | OFFSET
+    | OID
     | OIDINDEX
+    | OLD
     | OLS
+    | OLTP
     | ONE
+    | ONE_SIDED_SIG
+    | ONE_SIDED_SIG_NEG
+    | ONE_SIDED_SIG_POS
     | ONLY
+    | OPAQUE
+    | OPEN
     | OPERATOR
     | OPT_PARAM
     | OPTIMAL
     | OPTIMIZE
     | OPTIONALLY
+    | ORA_DM_PARTITION_NAME
+    | ORA_INVOKING_USER
+    | ORA_INVOKING_USERID
+    | ORA_ROWSCN
     | ORACLE_DATE
     | ORACLE_NUMBER
     | ORDERED
+    | ORDINALITY
     | ORGANIZATION
+    | OTHER
+    | OTHERS
+    | OUT
     | OUTER
     | OUTLINE
     | OVER
     | OVERFLOW
     | OVERRIDE
+    | OVERRIDING
+    | OWNER
+    | OWNERSHIP
     | PACKAGE
+    | PAIRS
     | PARALLEL
+    | PARALLEL_ENABLE
     | PARALLEL_INDEX
     | PARAMETERS
     | PARENT
+    | PARENT_LEVEL_NAME
+    | PARENT_UNIQUE_NAME
+    | PARITY
     | PARTIAL
     | PARTITION
+    | PARTITIONING
     | PARTITIONS
     | PARTITIONSET
+    | PASSING
     | PASSWORD
+    | PASSWORD_GRACE_TIME
+    | PASSWORD_LIFE_TIME
+    | PASSWORD_LOCK_TIME
+    | PASSWORD_REUSE_MAX
+    | PASSWORD_REUSE_TIME
+    | PASSWORD_ROLLOVER_TIME
+    | PASSWORD_VERIFY_FUNCTION
+    | PASSWORDFILE_METADATA_CACHE
     | PAST
+    | PATCH
     | PATH
+    | PATH_PREFIX
     | PATTERN
     | PCTINCREASE
     | PCTTHRESHOLD
@@ -12033,41 +12128,65 @@ nonReservedKeywordIdentifier
     | PERCENTILE_DISC
     | PERFORMANCE
     | PERIOD
+    | PERMANENT
+    | PERMISSION
     | PERMUTE
+    | PERSISTABLE
     | PFILE
+    | PHYSICAL
+    | PIPE
+    | PIPELINED
     | PIVOT
     | PLAN
     | PLS_INTEGER
     | PLUGGABLE
+    | PMEM
     | POINT
     | POLICY
+    | POLYMORPHIC
+    | PORT
     | POSITION
+    | POST_TRANSACTION
+    | POWER
     | PQ_CONCURRENT_UNION
+    | PQ_DISTRIBUTE
     | PQ_FILTER
     | PQ_SKEW
+    | PRAGMA
+    | PREBUILT
+    | PRECEDES
     | PRECEDING
     | PRECISION
     | PREDICTION
+    | PREDICTION_BOUNDS
     | PREDICTION_COST
     | PREDICTION_DETAILS
     | PREDICTION_PROBABILITY
     | PREDICTION_SET
+    | PREPARE
     | PREPROCESSOR
     | PREPROCESSOR_TIMEOUT
     | PRESENT
     | PRESERVE
+    | PRETTY
     | PREV
     | PRIMARY
     | PRIORITY
     | PRIVATE
+    | PRIVATE_SGA
     | PRIVILEGE
     | PRIVILEGES
+    | PROCEDURAL
     | PROCEDURE
     | PROCESS
     | PROFILE
     | PROGRAM
+    | PROJECT
+    | PROPERTY
+    | PROTECTION
     | PROTOCOL
-    | PUBLIC
+    | PROXY
+    | PRUNING
     | PURGE
     | PUSH_PRED
     | PUSH_SUBQ
@@ -12077,7 +12196,13 @@ nonReservedKeywordIdentifier
     | QUARTERS
     | QUERY
     | QUEUE
+    | QUIESCE
+    | QUORUM
+    | QUOTA
+    | QUOTAGROUP
+    | RAISE
     | RANDOM
+    | RANDOM_LOCAL
     | RANGE
     | RANK
     | RATIO_TO_REPORT
@@ -12085,16 +12210,28 @@ nonReservedKeywordIdentifier
     | READS
     | READSIZE
     | REAL
+    | REBALANCE
+    | REBUILD
+    | RECORD
     | RECORDS
+    | RECORDS_PER_BLOCK
+    | RECOVER
+    | RECOVERY
     | RECYCLE
     | RECYCLEBIN
     | REDACTION
     | REDEFINE
+    | REDO
+    | REDUCED
+    | REDUNDANCY
     | REF
     | REFERENCE
+    | REFERENCED
     | REFERENCES
+    | REFERENCING
     | REFRESH
     | REGEXP_LIKE
+    | REGISTER
     | REGR_AVGX
     | REGR_AVGY
     | REGR_COUNT
@@ -12104,13 +12241,29 @@ nonReservedKeywordIdentifier
     | REGR_SXX
     | REGR_SXY
     | REGR_SYY
+    | REGULAR
     | REJECT
+    | REKEY
     | RELATIONAL
+    | RELOCATE
     | RELY
     | REMOTE
+    | REMOVE
+    | REPAIR
+    | REPEAT
     | REPLACE
     | REPLICATION
+    | REQUIRED
+    | RESET
+    | RESETLOGS
+    | RESIZE
+    | RESOLVE
+    | RESOLVER
+    | RESPECT
+    | RESTART
     | RESTORE
+    | RESTRICT
+    | RESTRICT_REFERENCES
     | RESTRICTED
     | RESULT
     | RESULT_CACHE
@@ -12124,64 +12277,102 @@ nonReservedKeywordIdentifier
     | REVERSE
     | REWRITE
     | RIGHT
+    | RNDS
+    | RNPS
     | ROLE
     | ROLES
     | ROLLBACK
+    | ROLLING
     | ROLLUP
+    | ROOT
     | ROW_NUMBER
+    | ROWCOUNT
     | ROWDEPENDENCIES
+    | ROWTYPE
     | RTRIM
     | RULE
     | RULES
     | RUNNING
+    | SINGLE_QUOTE_SYMBOL
     | SALT
     | SAMPLE
+    | SAVE
     | SAVEPOINT
+    | SCALAR
     | SCALARS
+    | SCALE
     | SCAN
     | SCHEDULER
     | SCHEMA
+    | SCHEMACHECK
     | SCN
     | SCOPE
+    | SCRUB
     | SDO_GEOMETRY
     | SDO_GEORASTER
     | SDO_TOPO_GEOMETRY
     | SEARCH
     | SECOND
     | SECONDS
+    | SECRET
     | SECUREFILE
     | SEED
     | SEGMENT
+    | SELF
     | SEQUENCE
     | SEQUENTIAL
     | SERIAL
+    | SERIALIZABLE
+    | SERVERERROR
     | SERVICE
+    | SERVICE_NAME_CONVERT
+    | SESSIONS_PER_USER
     | SETS
+    | SETTINGS
     | SHA2_512
+    | SHARD
     | SHARDED
     | SHARDS
+    | SHARDSPACE
     | SHARE_OF
+    | SHARED
+    | SHARED_POOL
     | SHARING
+    | SHOW
+    | SHRINK
+    | SHUTDOWN
     | SIBLINGS
     | SID
     | SINGLE
+    | SITE
     | SIZES
     | SKEWNESS_POP
     | SKEWNESS_SAMP
     | SMALLFILE
+    | SNAPSHOT
     | SOME
     | SORT
     | SOURCE
+    | SOURCE_FILE_DIRECTORY
+    | SOURCE_FILE_NAME_CONVERT
+    | SPACE
     | SPATIAL
     | SPFILE
+    | SPLIT
     | SQL
+    | SQL_MACRO
+    | STANDALONE
     | STANDARD
     | STANDBY
+    | STANDBYS
     | STAR_TRANSFORMATION
+    | STARTUP
     | STATE
     | STATEMENT
     | STATEMENT_ID
     | STATEMENT_QUEUING
+    | STATEMENTS
+    | STATIC
     | STATISTICS
     | STATS_BINOMIAL_TEST
     | STATS_CROSSTAB
@@ -12198,19 +12389,29 @@ nonReservedKeywordIdentifier
     | STDDEV
     | STDDEV_POP
     | STDDEV_SAMP
+    | STOP
     | STORAGE
     | STORE
     | STRICT
     | STRING
     | STRINGONLY
+    | STRIPE_COLUMNS
+    | STRIPE_WIDTH
     | SUBMULTISET
     | SUBPARTITION
     | SUBPARTITIONS
     | SUBSET
     | SUBSTITUTABLE
+    | SUBTYPE
     | SUM
     | SUPPLEMENTAL
+    | SUSPEND
+    | SWITCH
+    | SWITCHOVER
+    | SYNC
+    | SYNCHRONOUS
     | SYS
+    | SYS_DBURIGEN
     | SYS_OP_ZONE_ID
     | SYS_XMLAGG
     | SYSAUX
@@ -12225,7 +12426,9 @@ nonReservedKeywordIdentifier
     | TABLES
     | TABLESPACE
     | TAG
+    | TARGET
     | TEMP
+    | TEMPFILE
     | TEMPLATE
     | TEMPORARY
     | TERMINATED
@@ -12233,43 +12436,84 @@ nonReservedKeywordIdentifier
     | TEST
     | TEXT
     | THAN
+    | THE
     | THESE
+    | THREAD
+    | THROUGH
     | TIER
     | TIES
     | TIME
+    | TIMEOUT
     | TIMESTAMP
     | TIMEZONE
+    | TIMEZONE_ABBR
+    | TIMEZONE_HOUR
+    | TIMEZONE_MINUTE
+    | TIMEZONE_REGION
     | TO_APPROX_COUNT_DISTINCT
     | TO_APPROX_PERCENTILE
+    | TO_BINARY_DOUBLE
+    | TO_BINARY_FLOAT
+    | TO_DATE
+    | TO_DSINTERVAL
+    | TO_NUMBER
+    | TO_TIMESTAMP
+    | TO_TIMESTAMP_TZ
+    | TO_YMINTERVAL
+    | TODO
     | TOPLEVEL
+    | TRACE
     | TRACING
     | TRACKING
+    | TRAILING
     | TRANSACTION
     | TRANSFORM
     | TRANSLATE
     | TRANSLATION
+    | TREAT
+    | TRIGGERS
+    | TRIM
     | TRUE
     | TRUNCATE
+    | TRUST
+    | TRUSTED
     | TUNING
+    | TWO_SIDED_SIG
     | TYPE
     | TYPENAME
+    | TZ_OFFSET
+    | UNARCHIVED
     | UNBOUNDED
+    | UNCONDITIONAL
     | UNDER
     | UNDER_PATH
     | UNDO
+    | UNDROP
     | UNIFORM
+    | UNINSTALL
+    | UNITE
     | UNLIMITED
+    | UNLOCK
     | UNNEST
+    | UNPACKED
     | UNPIVOT
+    | UNPLUG
+    | UNPROTECTED
+    | UNQUIESCE
+    | UNRECOVERABLE
     | UNSIGNED
     | UNTIL
     | UNUSABLE
+    | UNUSED
     | UPDATED
+    | UPDATING
+    | UPGRADE
     | UPPER
     | UPSERT
     | URITYPE
     | UROWID
     | USABLE
+    | USAGE
     | USE
     | USE_BAND
     | USE_CONCAT
@@ -12278,9 +12522,16 @@ nonReservedKeywordIdentifier
     | USE_MERGE
     | USE_NL
     | USE_NL_WITH_INDEX
+    | USE_STORED_OUTLINES
     | USER_DATA
+    | USER_TABLESPACES
+    | USERGROUP
+    | USERS
     | USING
+    | USING_NLS_COMP
     | V1
+    | VALIDATE_CONVERSION
+    | VALIDATION
     | VALUE
     | VAR_POP
     | VAR_SAMP
@@ -12292,24 +12543,56 @@ nonReservedKeywordIdentifier
     | VARRAY
     | VARRAYS
     | VARYING
+    | VERIFY
     | VERSION
     | VERSIONS
+    | VERSIONS_ENDSCN
+    | VERSIONS_ENDTIME
+    | VERSIONS_OPERATION
+    | VERSIONS_STARTSCN
+    | VERSIONS_STARTTIME
+    | VERSIONS_XID
     | VIRTUAL
+    | VISIBILITY
     | VISIBLE
+    | VOLUME
     | WAIT
+    | WALLET
+    | WARN
+    | WARNING
     | WEEKS
+    | WELLFORMED
     | WHEN
+    | WHILE
     | WHITESPACE
     | WINDOW
     | WITHIN
     | WITHOUT
+    | WNDS
+    | WNPS
     | WORK
+    | WRAPPER
     | WRITE
     | XDB
     | XML
     | XMLAGG
+    | XMLATTRIBUTES
+    | XMLCAST
+    | XMLCDATA
+    | XMLCOLATTVAL
+    | XMLELEMENT
+    | XMLEXISTS
+    | XMLFOREST
     | XMLINDEX
+    | XMLNAMESPACES
+    | XMLPARSE
+    | XMLPI
+    | XMLQUERY
+    | XMLROOT
     | XMLSCHEMA
+    | XMLSEQUENCE
+    | XMLSERIALIZE
+    | XMLTABLE
     | XMLTAG
     | XMLTYPE
     | XS
@@ -12321,14 +12604,4 @@ nonReservedKeywordIdentifier
     | ZONE
     | ZONED
     | ZONEMAP
-    | K_A
-    | K_K
-    | K_M
-    | K_G
-    | K_T
-    | K_P
-    | K_E
-    | K_H
-    | K_C
-    | HEXA1
     ;

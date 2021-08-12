@@ -26,10 +26,12 @@ using Qsi.Debugger.Vendor.Cql;
 using Qsi.Debugger.Vendor.Hana;
 using Qsi.Debugger.Vendor.Impala;
 using Qsi.Debugger.Vendor.MySql;
+using Qsi.Debugger.Vendor.Oracle;
 using Qsi.Debugger.Vendor.PhoenixSql;
 using Qsi.Debugger.Vendor.PostgreSql;
 using Qsi.Debugger.Vendor.PrimarSql;
 using Qsi.Debugger.Vendor.SqlServer;
+using Qsi.Diagnostics;
 using Qsi.SqlServer.Common;
 using Qsi.Tree;
 
@@ -74,7 +76,8 @@ namespace Qsi.Debugger
                 ["PrimarSql"] = new(() => new PrimarSqlDebugger()),
                 ["SAP HANA"] = new(() => new HanaDebugger()),
                 ["Impala 2.11.x"] = new(() => new ImpalaDebugger(new Version(2, 11, 0))),
-                ["Impala 3.x"] = new(() => new ImpalaDebugger(new Version(3, 0, 0)))
+                ["Impala 3.x"] = new(() => new ImpalaDebugger(new Version(3, 0, 0))),
+                ["Oracle"] = new(() => new OracleDebugger())
             };
 
             _cbLanguages = this.Find<ComboBox>("cbLanguages");
