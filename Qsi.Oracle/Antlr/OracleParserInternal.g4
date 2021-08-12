@@ -3430,7 +3430,7 @@ defaultIndexCompression
 
 datafileTempfileClauses
     : ADD ( DATAFILE | TEMPFILE )
-       ( fileSpecification ( ',' fileSpecification )* )?
+       fileSpecification ( ',' fileSpecification )*
     | DROP ( DATAFILE | TEMPFILE ) ( stringLiteral | numberLiteral )
     | SHRINK TEMPFILE ( stringLiteral | numberLiteral ) ( KEEP sizeClause )?
     | RENAME DATAFILE stringLiteral ( ',' stringLiteral )*
@@ -4418,7 +4418,7 @@ maximizeStandbyDbClause
 
 registerLogfileClause
     : REGISTER (OR REPLACE)? (PHYSICAL | LOGICAL)?
-      LOGFILE (fileSpecification (',' fileSpecification)*)?
+      LOGFILE fileSpecification (',' fileSpecification)*
       (FOR logminerSessionName=identifier)?
     ;
 
@@ -6885,11 +6885,13 @@ tablespaceDatafileClauses
     ;
 
 autoextendClause
-    : AUTOEXTEND (OFF|ON (NEXT sizeClause)? maxsizeClause?)
+    : AUTOEXTEND ( OFF 
+                 | ON ( NEXT sizeClause )? maxsizeClause?
+                 )
     ;
 
 maxsizeClause
-    : MAXSIZE (UNLIMITED|sizeClause)
+    : MAXSIZE ( UNLIMITED | sizeClause )
     ;
 
 fileSpecification
@@ -6898,43 +6900,19 @@ fileSpecification
     ;
 
 datafileTempfileSpec
-    : stringLiteral
-    | (SIZE sizeClause)
-    | REUSE
-    | autoextendClause
+    : stringLiteral?
+      ( SIZE sizeClause )?
+      REUSE?
+      autoextendClause?
     ;
 
 redoLogFileSpec
-    : (stringLiteral
+    : ( stringLiteral
       | '(' stringLiteral ( ',' stringLiteral )* ')'
-      )
-    | ( SIZE sizeClause )
-    | ( BLOCKSIZE sizeClause )
-    | REUSE
-    | (stringLiteral
-            | '(' stringLiteral ( ',' stringLiteral )* ')'
-            )
+      )?
       ( SIZE sizeClause )?
       ( BLOCKSIZE sizeClause )?
       REUSE?
-    | (stringLiteral
-            | '(' stringLiteral ( ',' stringLiteral )* ')'
-            )?
-      ( SIZE sizeClause )
-      ( BLOCKSIZE sizeClause )?
-      REUSE?
-    | (stringLiteral
-            | '(' stringLiteral ( ',' stringLiteral )* ')'
-            )?
-      ( SIZE sizeClause )?
-      ( BLOCKSIZE sizeClause )
-      REUSE?
-    | (stringLiteral
-            | '(' stringLiteral ( ',' stringLiteral )* ')'
-            )?
-      ( SIZE sizeClause )?
-      ( BLOCKSIZE sizeClause )?
-      REUSE
     ;
 
 // TODO: The auditCondition can have a maximum length of 4000 characters. It can contain expressions, as well as the following functions and conditions:
