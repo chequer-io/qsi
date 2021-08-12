@@ -3170,7 +3170,7 @@ dropColumnClause
     | DROP ( UNUSED COLUMNS
            | COLUMNS CONTINUE
            )
-      ( CHECKPOINT integer )
+      ( CHECKPOINT integer )?
     ;
 
 moveTableClause
