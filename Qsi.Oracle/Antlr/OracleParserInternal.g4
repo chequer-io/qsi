@@ -1992,7 +1992,7 @@ alterMaterializedView
           )?
         | inmemoryTableClause
       )
-      alterIotClauses
+      alterIotClauses?
       ( USING INDEX physicalAttributesClause )?
       ( MODIFY scopedTableRefConstraint | alterMvRefresh )?
       evaluationEditionClause?
@@ -3342,9 +3342,12 @@ alterTableProperties
         | flashbackArchiveClause
         )+
       | RENAME TO newTableName
-     )
-     alterIotClauses 
-     alterXMLSchemaClause?
+      )
+      alterIotClauses?
+      alterXMLSchemaClause?
+    | alterIotClauses
+      alterXMLSchemaClause?
+    | alterXMLSchemaClause
     | shrinkClause 
     | READ ONLY
     | READ WRITE 
@@ -4940,7 +4943,8 @@ heapOrgTableClause
     ;
 
 indexOrgTableClause
-    : indexOrgTableClauseItem* indexOrgOverflowClause?
+    : indexOrgTableClauseItem+ indexOrgOverflowClause?
+    | indexOrgOverflowClause
     ;
 
 indexOrgTableClauseItem
