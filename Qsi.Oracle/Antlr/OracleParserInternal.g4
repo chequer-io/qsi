@@ -470,7 +470,7 @@ typeAttribute
     ;
 
 plsqlExpression
-    : identifier                                                                                        #constantOrVariableExpression
+    : column                                                                                            #constantOrVariableExpression
     | '(' plsqlExpression ')'                                                                           #subqueryExpression
     | numberLiteral                                                                                     #numberLiteralExpression
     | booleanLiteral                                                                                    #booleanLiteralExpression
