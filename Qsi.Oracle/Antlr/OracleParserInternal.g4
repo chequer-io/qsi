@@ -12228,6 +12228,7 @@ nonReservedKeywordIdentifier
     | TEMPORARY
     | TERMINATED
     | TERRITORY
+    | TEST
     | TEXT
     | THAN
     | THESE
