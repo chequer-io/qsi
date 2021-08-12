@@ -2965,7 +2965,7 @@ alterSession
     ;
 
 alterSessionSetClause
-    : SET ( ( parameterName '=' stringLiteral )+
+    : SET ( ( parameterName '=' parameterValue )+
           | EDITION '=' editionName
           | CONTAINER '=' containerName ( SERVICE '=' serviceName )?
           | ROW ARCHIVAL VISIBILITY '=' ( ACTIVE | ALL )
@@ -3018,11 +3018,11 @@ archiveLogClause
     ;
 
 checkpointClause
-    : CHECKPOINT ( GLOBAL | LOCAL )
+    : CHECKPOINT ( GLOBAL | LOCAL )?
     ;
 
 checkDatafilesClause
-    : CHECK DATAFILES ( GLOBAL | LOCAL )
+    : CHECK DATAFILES ( GLOBAL | LOCAL )?
     ;
 
 distributedRecovClauses
@@ -7601,7 +7601,7 @@ rebalanceDiskgroupClause
     ;
 
 checkDiskgroupClause
-    : CHECK (REPAIR | NOREPAIR)?
+    : CHECK ALL? (REPAIR | NOREPAIR)?
     ;
 
 diskgroupTemplateClauses
@@ -10275,6 +10275,7 @@ parameterName
 
 parameterValue
     : identifier
+    | stringLiteral
     ;
 
 newHierName
@@ -10992,7 +10993,8 @@ primaryName
     ;
 
 matchString
-    : stringLiteral
+    : identifier
+    | stringLiteral
     | '*'
     ;
 
@@ -11050,6 +11052,7 @@ snapshotTimestamp
 
 keystorePassword
     : identifier
+    | stringLiteral
     ;
 
 filename
