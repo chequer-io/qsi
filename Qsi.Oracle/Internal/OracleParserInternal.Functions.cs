@@ -6,12 +6,12 @@ namespace Qsi.Oracle.Internal
     {
         public bool validateStringLiteral(string literal)
         {
-            throw new NotImplementedException();
+            return true;
         }
 
         public bool isCycleValue()
         {
-            throw new NotImplementedException();
+            return true;
         }
     }
 }
