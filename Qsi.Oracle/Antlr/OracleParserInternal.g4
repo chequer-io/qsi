@@ -2757,7 +2757,7 @@ truncatePartitionSubpart
 
 splitTablePartition
     : SPLIT partitionExtendedName
-        ( AT '(' literal ( ',' literal )* ')'
+        ( AT '(' expr ( ',' expr )* ')'
           ( INTO '(' rangePartitionDesc ',' rangePartitionDesc ')' )?
         | VALUES '(' listValues ')'
           ( INTO '(' listPartitionDesc ',' listPartitionDesc ')' )?
@@ -5398,12 +5398,12 @@ listPartitionsetClause
     ;
 
 listPartitionsetDesc
-    : PARTITIONSET partitionSet=identifier listValuesClause (TABLESPACE SET tablespaceSet)? lobStorageClause?
+    : PARTITIONSET partitionSet=identifier listValuesClause? (TABLESPACE SET tablespaceSet)? lobStorageClause?
       (SUBPARTITIONS STORE IN '(' tablespaceSet (',' tablespaceSet) ')')?
     ;
 
 rangePartitionDesc
-    : PARTITION partition? rangeValuesClause tablePartitionDescription
+    : PARTITION partition? rangeValuesClause? tablePartitionDescription
       ( '(' ( rangeSubpartitionDesc (',' rangeSubpartitionDesc)*
             | listSubpartitionDesc (',' listSubpartitionDesc)*
             | individualHashSubparts (',' individualHashSubparts)*
@@ -5414,7 +5414,7 @@ rangePartitionDesc
     ;
 
 listPartitionDesc
-    : PARTITION partition? listValuesClause tablePartitionDescription
+    : PARTITION partition? listValuesClause? tablePartitionDescription
       ( '(' ( rangeSubpartitionDesc (',' rangeSubpartitionDesc)*
             | listSubpartitionDesc (',' listSubpartitionDesc)*
             | individualHashSubparts (',' individualHashSubparts)*
