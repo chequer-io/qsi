@@ -2053,11 +2053,11 @@ usingStatisticsType
     ;
 
 defaultCostClause
-    : DEFAULT COST '(' cpuCost=identifier ',' ioCost=identifier ',' networkCost=identifier ')'
+    : DEFAULT COST '(' cpuCost=numberLiteral ',' ioCost=numberLiteral ',' networkCost=numberLiteral ')'
     ;
 
 defaultSelectivityClause
-    : DEFAULT SELECTIVITY defaultSelectivity=identifier
+    : DEFAULT SELECTIVITY defaultSelectivity=numberLiteral
     ;
 
 
@@ -2116,7 +2116,7 @@ auditOperationClause
     : ( sqlStatementShortcut | ALL STATEMENTS? )
       ( ',' ( sqlStatementShortcut | ALL STATEMENTS? ) )*
     | ( systemPrivilege | ALL PRIVILEGES ) 
-      (',' ( systemPrivilege | ALL PRIVILEGES ) )
+      (',' ( systemPrivilege | ALL PRIVILEGES ) )*
     ;
 
 sqlStatementShortcut
