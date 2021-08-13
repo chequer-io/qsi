@@ -475,6 +475,7 @@ oracleStatement
     | audit
     | call
     | associateStatistics
+    | disassociateStatistics
     | comment
     ;
 
@@ -2028,6 +2029,17 @@ call
 
 associateStatistics
     : ASSOCIATE STATISTICS WITH ( columnAssociation | functionAssociation ) storageTableClause?
+    ;
+
+disassociateStatistics
+    : DISASSOCIATE STATISTICS FROM  ( FUNCTIONS ( schema '.' )? functionName ( ',' ( schema '.' )? functionName )*
+                                    | PACKAGES ( schema '.' )? packageName ( ',' ( schema '.' )? packageName )*
+                                    | TYPES ( schema '.' )? typeName ( ',' ( schema '.' )? typeName )*
+                                    | INDEXES ( schema '.' )? index ( ',' ( schema '.' )? index )*
+                                    | INDEXTYPES ( schema '.' )? indextype ( ',' ( schema '.' )? indextype )*
+                                    | COLUMNS ( schema '.' )? table '.' column ( ',' ( schema '.' )? table '.' column )* 
+                                    )
+                                    FORCE?
     ;
 
 comment
