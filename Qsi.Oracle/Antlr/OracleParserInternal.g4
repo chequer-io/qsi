@@ -11823,6 +11823,7 @@ sqlOperation
     | UPDATE
     | ALTER
     | EXECUTE
+    | READ
     ;
 
 nonReservedKeywordIdentifier
