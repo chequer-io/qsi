@@ -473,6 +473,7 @@ oracleStatement
     | administerKeyManagement
     | analyze
     | audit
+    | call
     ;
 
 select
@@ -2019,6 +2020,10 @@ mergeInsertClause
       whereClause?
     ;
 
+call
+    : CALL ( routineClause | objectAccessExpression ) ( INTO ':' hostVariableName ( INDICATOR? ':' indicatorVariable=identifier )? )?
+    ;
+
 audit
     : traditionalAudit
     | unifiedAudit
@@ -2105,10 +2110,6 @@ unifiedNoaudit
           ( ',' CONTEXT NAMESPACE namespace ATTRIBUTES attribute ( ',' attribute )* )*
         ( BY user ( ',' user )* )? ( WHENEVER NOT? SUCCESSFUL )?
       )
-    ;
-
-byUsersWithRoles
-    : BY USERS WITH GRANTED ROLES role ( ',' role )*
     ;
 
 purge
