@@ -475,6 +475,7 @@ oracleStatement
     | audit
     | call
     | associateStatistics
+    | comment
     ;
 
 select
@@ -2027,6 +2028,21 @@ call
 
 associateStatistics
     : ASSOCIATE STATISTICS WITH ( columnAssociation | functionAssociation ) storageTableClause?
+    ;
+
+comment
+    : COMMENT ON
+        ( AUDIT POLICY policy
+        | COLUMN ( schema '.' )?
+            ( table '.' | view '.' | materializedView '.' ) column
+        | EDITION editionName
+        | INDEXTYPE ( schema '.' )? indextype
+        | MATERIALIZED VIEW materializedView
+        | MINING MODEL ( schema '.' )? model
+        | OPERATOR ( schema '.' )? operatorName
+        | TABLE ( schema '.' )? ( table | view )
+        )
+        IS stringLiteral
     ;
 
 columnAssociation
