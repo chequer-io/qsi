@@ -489,7 +489,7 @@ delete
 
 commit
     : COMMIT WORK? ( (COMMENT stringLiteral)? (WRITE (WAIT | NOWAIT)? (IMMEDIATE | BATCH)?)?
-                   | FORCE stringLiteral ',' integer
+                   | FORCE stringLiteral ( ',' integer )?
                    )
     ;
 
@@ -7207,22 +7207,20 @@ objectAction
 // TODO: impl
 systemAction
     : CREATE TABLE
-    | DROP TABLE
-    | ALTER TABLE
-    | LOCK TABLE
     | INSERT
     | SELECT
-    | UPDATE
-    | DELETE
-    | COMMIT
     | CREATE CLUSTER
     | ALTER CLUSTER
+    | UPDATE
+    | DELETE
     | DROP CLUSTER
     | CREATE INDEX
     | DROP INDEX
     | ALTER INDEX
+    | DROP TABLE
     | CREATE SEQUENCE
     | ALTER SEQUENCE
+    | ALTER TABLE
     | DROP SEQUENCE
     | CREATE SYNONYM
     | DROP SYNONYM
@@ -7230,6 +7228,7 @@ systemAction
     | DROP VIEW
     | CREATE PROCEDURE
     | ALTER PROCEDURE
+    | LOCK TABLE
     | RENAME
     | COMMENT
     | CREATE DATABASE LINK
@@ -7243,6 +7242,7 @@ systemAction
     | DROP TABLESPACE
     | ALTER SESSION
     | ALTER USER
+    | COMMIT
     | ROLLBACK
     | SET TRANSACTION
     | ALTER SYSTEM
@@ -7267,9 +7267,9 @@ systemAction
     | CREATE MATERIALIZED VIEW LOG
     | ALTER MATERIALIZED VIEW LOG
     | DROP MATERIALIZED VIEW  LOG
-    | CREATE MATERIALIZED VIEW
-    | ALTER MATERIALIZED VIEW
-    | DROP MATERIALIZED VIEW
+    | CREATE MATERIALIZED VIEW 
+    | ALTER MATERIALIZED VIEW 
+    | DROP MATERIALIZED VIEW 
     | CREATE TYPE
     | DROP TYPE
     | ALTER ROLE
@@ -7378,6 +7378,9 @@ systemAction
     | CALL
     | PURGE DBA_RECYCLEBIN
     | ALL
+    | READ DIRECTORY
+    | WRITE DIRECTORY
+    | EXECUTE DIRECTORY
     ;
 
 componentAction
