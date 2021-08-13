@@ -2289,10 +2289,9 @@ analyze
 
 validationClauses
     : VALIDATE REF UPDATE ( SET DANGLING TO NULL )?
-    | VALIDATE STRUCTURE ( CASCADE? ( FAST 
-                                    | COMPLETE? ( ONLINE | OFFLINE ) intoClause? 
-                                    )?
-                         )
+    | VALIDATE STRUCTURE CASCADE? ( FAST 
+                                  | COMPLETE? ( ONLINE | OFFLINE ) intoClause? 
+                                  )?
     ;
 
 intoClause
