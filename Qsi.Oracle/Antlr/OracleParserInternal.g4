@@ -6,11 +6,446 @@ options {
 
 root
     : EOF
-    | ((plsqlBlock | statement | oracleStatement) (SEMICOLON_SYMBOL EOF? | EOF))+
+    | (block (SEMICOLON_SYMBOL EOF? | EOF))+
+    ;
+
+block
+    : plsqlBlock
+    | sqlplusCommand
+    | statement
+    | oracleStatement
     ;
 
 plsqlBlock
     : ('<' '<' label '>' '>')* (DECLARE declareSection)? body
+    ;
+
+sqlplusCommand
+    : '/'
+    | sqlplusAtSignCommand
+    | sqlplusDoubleAtSignCommand
+    | sqlplusAcceptCommand
+    | sqlplusAppendCommand
+    | sqlplusArchiveLogCommand
+    | sqlplusAttributeCommand
+    | sqlplusBreakCommand
+    | sqlplusBtitleCommand
+    | sqlplusChangeCommand
+    | sqlplusClearCommand
+    | sqlplusColumnCommand
+    | sqlplusComputeCommand
+    | sqlplusConnectCommand
+    | sqlplusCopyCommand
+    | sqlplusDefineCommand
+    | sqlplusDelCommand
+    | sqlplusDescribeCommand
+    | sqlplusDisconnectCommand
+    | sqlplusEditCommand
+    | sqlplusExecuteCommand
+    | sqlplusExitCommand
+    | sqlplusHelpCommand
+    | sqlplusGetCommand
+    | sqlplusHistoryCommand
+    | sqlplusHostCommand
+    | sqlplusInputCommand
+    | sqlplusListCommand
+    | sqlplusPasswordCommand
+    | sqlplusPauseCommand
+    | sqlplusPrintCommand
+    | sqlplusPromptCommand
+    | sqlplusRecoverCommand
+    | sqlplusRepfooterCommand
+    | sqlplusRepheaderCommand
+    | sqlplusRunCommand
+    | sqlplusSaveCommand
+    | sqlplusSetCommand
+    | sqlplusShowCommand
+    | sqlplusShutdownCommand
+    | sqlplusSpoolCommand
+    | sqlplusStartCommand
+    | sqlplusStartupCommand
+    | sqlplusStoreCommand
+    | sqlplusTimingCommand
+    | sqlplusTtitleCommand
+    ;
+
+sqlplusAtSignCommand
+    : '@' sqlplusLegalfilename
+    ;
+
+sqlplusDoubleAtSignCommand
+    : '@' '@' sqlplusLegalfilename
+    ;
+
+sqlplusAcceptCommand
+    : (ACC | ACCEPT) identifier (NUM | NUMBER | CHAR | DATE | BINARY_FORMAT | BINARY_DOUBLE)?
+      ((FOR | FORMAT) stringLiteral)? ((DEF | DEFAULT) stringLiteral)? (PROMPT (stringLiteral | (NOPR | NOPROMPT))) HIDE?
+    ;
+
+sqlplusAppendCommand
+    : (KW_A | APPEND) .+?
+    ;
+
+sqlplusArchiveLogCommand
+    : ARCHIVE LOG LIST
+    ;
+
+sqlplusAttributeCommand
+    : (ATTRIBUTE | ATTR) sqlplusLegalfilename sqlplusAttributeOptions*
+    ;
+
+sqlplusBreakCommand
+    : (BRE | BREAK) sqlplusBreakOnSomething+
+    ;
+
+sqlplusBtitleCommand
+    : (BTI | BTITLE) (sqlplusBtitlePrintSpec stringLiteral?)+ (ON | OFF)?
+    ;
+
+sqlplusChangeCommand
+    : (KW_C | CHANGE) .+?
+    ;
+
+sqlplusClearCommand
+    : (CL | CLEAR) sqlplusClearOptions+
+    ;
+
+sqlplusColumnCommand
+    : (COL | COLUMN) .+?
+    ;
+
+sqlplusComputeCommand
+    : COMPUTE identifier (LAB | LABEL) stringLiteral OF identifier ON identifier
+    ;
+
+sqlplusConnectCommand
+    : (CONN | CONNECT) .+?
+    ;
+
+sqlplusCopyCommand
+    : COPY (FROM sqlplusDatabase | TO sqlplusDatabase | FROM sqlplusDatabase TO sqlplusDatabase)
+      (APPEND | CREATE | INSERT | REPLACE) identifier ('(' identifier (',' identifier)* ')')?
+      USING oracleStatement
+    ;
+
+sqlplusDefineCommand
+    : (DEF | DEFINE) (identifier | identifier '=' stringLiteral)
+    ;
+
+sqlplusDelCommand
+    : DEL ( numberLiteral (numberLiteral | '*')
+          | '*'? LAST
+          | '*' numberLiteral
+          | '*'
+          )
+    ;
+
+sqlplusDescribeCommand
+    : (DESC | DESCRIBE) (identifierFragment '.')? identifierFragment ('@' identifierFragment)?
+    ;
+
+sqlplusDisconnectCommand
+    : DISC 
+    | DISCONNECT
+    ;
+
+sqlplusEditCommand
+    : (ED | EDIT) sqlplusLegalfilename
+    ;
+
+sqlplusExecuteCommand
+    : (EXEC | EXECUTE) statement
+    ;
+
+sqlplusExitCommand
+    : (EXIT | QUIT) (identifierFragment | numberLiteral | bindVariable)
+    ;
+
+sqlplusHelpCommand
+    : (HELP | '?') identifierFragment
+    ;
+
+sqlplusGetCommand
+    : GET sqlplusLegalfilename (LIST | NOLIST)?
+    ;
+
+sqlplusHistoryCommand
+    : (HIST | HISTORY) ( numberLiteral? ((KW_R| RUN) | (KW_E | EDIT) | (KW_D | DELETE))
+                       | CLEAR
+                       | LIST
+                       )
+    ;
+
+sqlplusHostCommand
+    : (HO | HOST) .+?
+    ;
+
+sqlplusInputCommand
+    : (KW_I | INPUT) .+?
+    ;
+
+sqlplusListCommand
+    : (KW_L | LIST) ( numberLiteral (numberLiteral | '*')
+                    | '*'? LAST
+                    | '*' numberLiteral
+                    | '*'
+                    )
+    ;
+
+sqlplusPasswordCommand
+    : (PASSW | PASSWORD) identifierFragment
+    ;
+
+sqlplusPauseCommand
+    : (PAU | PAUSE) .+?
+    ;
+
+sqlplusPrintCommand
+    : PRINT identifierFragment
+    ;
+
+sqlplusPromptCommand
+    : (PRO | PROMPT) .+?
+    ;
+
+sqlplusRecoverCommand
+    : RECOVER (sqlplusRecoverGeneralClause | sqlplusRecoverManagedClause | BEGIN BACKUP | END BACKUP)
+    ;
+
+// TODO: REM | REMARK ...
+
+sqlplusRepfooterCommand
+    : (REPF | REPFOOTER) PAGE? sqlplusRepFooterOrHeaderCommandPrintspec*
+    ;
+
+sqlplusRepheaderCommand
+    : (REPH | REPHEADER) PAGE? sqlplusRepFooterOrHeaderCommandPrintspec*
+    ;
+
+sqlplusRunCommand
+    : KW_R
+    | RUN
+    ;
+
+sqlplusSaveCommand
+    : (SAV | SAVE) sqlplusLegalfilename (CRE | CREATE | REP | REPLACE | APP | APPEND)?
+    ;
+
+sqlplusSetCommand
+    : SET identifierFragment (literal | identifierFragment)?
+    ;
+
+sqlplusShowCommand
+    : (SHO | SHOW) sqlplusShowCommandOption
+    ;
+
+sqlplusShutdownCommand
+    : SHUTDOWN (ABORT | IMMEDIATE | NORMAL | TRANSACTIONAL LOCAL?)
+    ;
+
+sqlplusSpoolCommand
+    : (SPO | SPOOL) sqlplusLegalfilename (CRE | CREATE | REP | REPLACE | APP | APPEND | OFF)?
+    ;
+
+sqlplusStartCommand
+    : (STA | START) sqlplusLegalfilename literal*
+    ;
+
+sqlplusStartupCommand
+    : STARTUP (sqlplusDbOptions | sqlplusCdbOptions | sqlplusUpgradeOptions)
+    ;
+
+sqlplusStoreCommand
+    : STORE SET sqlplusLegalfilename (CRE | CREATE | REP | REPLACE | APP | APPEND)?
+    ;
+
+sqlplusTimingCommand
+    : (TIMI | TIMING) (START stringLiteral | SHOW | STOP)
+    ;
+
+sqlplusTtitleCommand
+    : (TTI | TTITLE) (sqlplusTtitlePrintspec identifierFragment?)* (ON | OFF)?
+    ;
+
+sqlplusUndefineCommand
+    : (UNDEF | UNDEFINE) identifierFragment
+    ;
+
+sqlplusVariableCommand
+    : (VAR | VARIABLE) (identifierFragment (datatype ('=' literal)?)?)?
+    ;
+
+sqlplusWheneverCommand
+    : WHENEVER (OSERROR | SQLERROR) ( EXIT (SUCCESS | FAILURE | numberLiteral | identifierFragment | bindVariable)? (COMMIT | ROLLBACK)?
+                                    | CONTINUE (COMMIT | ROLLBACK | NONE)?)
+    ;
+
+sqlplusXqueryCommand
+    : XQUERY .+?
+    ;
+
+sqlplusTtitlePrintspec
+    : BOLD
+    | CE | CENTER
+    | COL numberLiteral
+    | FORMAT stringLiteral
+    | LE | LEFT
+    | KW_R | RIGHT
+    | (KW_S | KW_SKIP) numberLiteral
+    | TAB numberLiteral
+    ;
+
+sqlplusAttributeOptions
+    : (ALI | ALIAS) identifier
+    | (CLE | CLEAR)
+    | (FOR | FORMAT) identifier
+    | LIKE sqlplusLegalfilename
+    | ON
+    | OFF
+    ;
+
+sqlplusDbOptions
+    : FORCE? RESTRICT? (PFILE '=' stringLiteral)? QUIET? 
+      (MOUNT identifierFragment | OPEN sqlplusOpenDbOptions? identifierFragment | NOMOUNT)?
+    ;
+
+sqlplusOpenDbOptions
+    : READ (ONLY | WRITE RECOVER?) RECOVER
+    ;
+
+sqlplusCdbOptions
+    : sqlplusRootConnectionOptions
+    | sqlplusPdbConnectionOptions
+    ;
+
+sqlplusRootConnectionOptions
+    : PLUGGABLE DATABASE identifierFragment (FORCE | UPGRADE | RESTRICT | OPEN sqlplusOpenPdbOptions?)?
+    ;
+
+sqlplusPdbConnectionOptions
+    : FORCE
+    | UPGRADE
+    | RESTRICT
+    | OPEN sqlplusOpenPdbOptions
+    ;
+
+sqlplusOpenPdbOptions
+    : READ (WRITE | ONLY)
+    ;
+
+sqlplusUpgradeOptions
+    : (PFILE '=' identifierFragment)? (UPGRADE | DOWNGRADE) QUIET?
+    ;
+
+sqlplusShowCommandOption
+    : identifierFragment
+    | ALL
+    | BTI | BTITLE
+    | CON_ID
+    | CON_NAME
+    | EDITION
+    | (ERR | ERRORS) (ANALYTIC VIEW 
+                     | ATTRIBUTE DIMENSION 
+                     | HIERARCHY 
+                     | FUNCTION 
+                     | PROCEDURE 
+                     | PACKAGE 
+                     | PACKAGE BODY 
+                     | TRIGGER 
+                     | VIEW 
+                     | TYPE 
+                     | TYPE BODY 
+                     | DIMENSION 
+                     | JAVA CLASS 
+                     )? (identifierFragment '.')? identifierFragment
+    ;
+
+sqlplusRepFooterOrHeaderCommandPrintspec
+    : COL numberLiteral
+    | (KW_S | KW_SKIP) numberLiteral
+    | TAB numberLiteral
+    | LE | LEFT
+    | CE | CENTER
+    | KW_R | RIGHT
+    | BOLD
+    | FORMAT stringLiteral
+    ;
+
+sqlplusRecoverGeneralClause
+    : AUTOMATIC? (FROM stringLiteral)?
+      (fullDatabaseRecovery | partialDatabaseRecovery | LOGFILE stringLiteral)
+      (TEST | ALLOW integer CORRUPTION | parallelClause)*
+    | CONTINUE DEFAULT?
+    | CANCEL
+    ;
+
+sqlplusRecoverManagedClause
+    : MANAGED STANDBY DATABASE (sqlplusRecoverRecoverClause | sqlplusRecoverCancelClause | sqlplusRecoverFinishClause)
+    ;
+
+sqlplusRecoverRecoverClause
+    : (( DISCONNECT (FROM SESSION)?  | ( TIMEOUT integer | NOTIMEOUT ))
+      | (NODELAY | DEFAULT DELAY | DELAY integer )
+      | NEXT integer  
+      | (EXPIRE integer | NO EXPIRE )
+      | parallelClause 
+      | USING CURRENT LOGFILE 
+      | UNTIL CHANGE integer
+      | THROUGH ( (THREAD integer)? SEQUENCE integer 
+                | ALL ARCHIVELOG
+                | (ALL | LAST | NEXT) SWITCHOVER)
+      )+
+    ;
+
+sqlplusRecoverCancelClause
+    : CANCEL IMMEDIATE? (WAIT | NOWAIT)
+    ;
+
+sqlplusRecoverFinishClause
+    : (DISCONNECT (FROM SESSION)?)? (parallelClause)?
+      FINISH (KW_SKIP (STANDBY LOGFILE)?)? (WAIT | NOWAIT)?
+    ;
+
+sqlplusDatabase
+    : identifier ('/' identifier)? '@' identifier
+    ;
+
+sqlplusBreakOnSomething
+    : ON identifier identifier?
+    ;
+
+sqlplusClearOptions
+    : BRE | BREAKS
+    | BUFF | BUFFER
+    | COL | COLUMNS
+    | COMP | COMPUTES
+    | SCR | SCREEN
+    | SQL
+    | TIMI | TIMING
+    ;
+
+sqlplusBtitlePrintSpec
+    : BOLD
+    | CE
+    | CENTER
+    | COL numberLiteral
+    | FORMAT stringLiteral
+    | LE
+    | LEFT
+    | KW_R
+    | RIGHT
+    | (KW_S | KW_SKIP) numberLiteral
+    | TAB numberLiteral
+    ;
+
+sqlplusLegalfilename
+    : sqlplusFileNameFragment+
+    ;
+
+sqlplusFileNameFragment
+    : identifier
+    | '.'
+    | numberLiteral
     ;
 
 oracleStatement
@@ -11252,6 +11687,8 @@ nonReservedKeywordIdentifier
     : ABORT
     | ABS
     | ABSENT
+    | ACC
+    | ACCEPT
     | ACCESSED
     | ACCESSIBLE
     | ACCHK_READ
@@ -11270,6 +11707,7 @@ nonReservedKeywordIdentifier
     | AGENT
     | AGGREGATE
     | ALGORITHM
+    | ALI
     | ALIAS
     | ALL_ROWS
     | ALLOCATE
@@ -11286,6 +11724,7 @@ nonReservedKeywordIdentifier
     | ANYDATASET
     | ANYSCHEMA
     | ANYTYPE
+    | APP
     | APPEND
     | APPEND_VALUES
     | APPLICATION
@@ -11311,6 +11750,7 @@ nonReservedKeywordIdentifier
     | ASSOCIATE
     | ASYNCHRONOUS
     | AT
+    | ATTR
     | ATTRIBUTE
     | ATTRIBUTES
     | AUTHENTICATED
@@ -11343,6 +11783,7 @@ nonReservedKeywordIdentifier
     | BINARY
     | BINARY_DOUBLE
     | BINARY_FLOAT
+    | BINARY_FORMAT
     | BINARY_INTEGER
     | BINDING
     | BIT_AND_AGG
@@ -11354,11 +11795,19 @@ nonReservedKeywordIdentifier
     | BLOCKCHAIN
     | BLOCKSIZE
     | BODY
+    | BOLD
     | BOOLEAN
     | BOOLEANONLY
     | BOTH
+    | BRE
     | BREADTH
+    | BREAK
+    | BREAKS
     | BROADCAST
+    | BTI
+    | BTITLE
+    | BUFF
+    | BUFFER
     | BUFFER_CACHE
     | BUFFER_POOL
     | BUILD
@@ -11379,8 +11828,10 @@ nonReservedKeywordIdentifier
     | CAST
     | CATEGORY
     | CDB
+    | CE
     | CEILING
     | CELL_FLASH_CACHE
+    | CENTER
     | CERTIFICATE
     | CHANGE
     | CHANGE_DUPKEY_ERROR_INDEX
@@ -11393,10 +11844,12 @@ nonReservedKeywordIdentifier
     | CHILD
     | CHR
     | CHUNK
+    | CL
     | CLASS
     | CLASSIFICATION
     | CLASSIFIER
     | CLAUSE
+    | CLE
     | CLEAN
     | CLEANUP
     | CLEAR
@@ -11414,12 +11867,14 @@ nonReservedKeywordIdentifier
     | COARSE
     | CODE
     | COEFFICIENT
+    | COL
     | COLLATION
     | COLLECT
     | COLUMN_VALUE
     | COLUMNS
     | COMMIT
     | COMMITTED
+    | COMP
     | COMPACT
     | COMPATIBILITY
     | COMPILE
@@ -11429,9 +11884,13 @@ nonReservedKeywordIdentifier
     | COMPOUND
     | COMPUTATION
     | COMPUTE
+    | COMPUTES
+    | CON_ID
+    | CON_NAME
     | CONDITION
     | CONDITIONAL
     | CONFIRM
+    | CONN
     | CONNECT_BY_ISCYCLE
     | CONNECT_BY_ISLEAF
     | CONNECT_BY_ROOT
@@ -11466,6 +11925,7 @@ nonReservedKeywordIdentifier
     | COVAR_SAMP
     | CPU_PER_CALL
     | CPU_PER_SESSION
+    | CRE
     | CREATE_FILE_DEST
     | CREATION
     | CREDENTIAL
@@ -11506,6 +11966,7 @@ nonReservedKeywordIdentifier
     | DECREMENT
     | DECRYPT
     | DEDUPLICATE
+    | DEF
     | DEFAULT_CREDENTIAL
     | DEFAULT_PDB_HINT
     | DEFAULTIF
@@ -11515,6 +11976,8 @@ nonReservedKeywordIdentifier
     | DEFINE
     | DEFINER
     | DEFINITION
+    | DEL
+    | DELAY
     | DELEGATE
     | DELETE_ALL
     | DELETING
@@ -11524,6 +11987,7 @@ nonReservedKeywordIdentifier
     | DEPENDENT
     | DEPTH
     | DEQUEUE
+    | DESCRIBE
     | DESCRIPTION
     | DETECTED
     | DETERMINES
@@ -11542,6 +12006,7 @@ nonReservedKeywordIdentifier
     | DISABLE_PARALLEL_DML
     | DISALLOW
     | DISASSOCIATE
+    | DISC
     | DISCARD
     | DISCARDFILE
     | DISCONNECT
@@ -11567,6 +12032,8 @@ nonReservedKeywordIdentifier
     | DYNAMIC
     | DYNAMIC_SAMPLING
     | EACH
+    | ED
+    | EDIT
     | EDITION
     | EDITIONABLE
     | EDITIONING
@@ -11589,6 +12056,7 @@ nonReservedKeywordIdentifier
     | ENTERPRISE
     | ENTITYESCAPING
     | EQUALS_PATH
+    | ERR
     | ERROR
     | ERRORS
     | ESCAPE
@@ -11602,6 +12070,7 @@ nonReservedKeywordIdentifier
     | EXCHANGE
     | EXCLUDE
     | EXCLUDING
+    | EXEC
     | EXECUTE
     | EXEMPT
     | EXISTING
@@ -11622,6 +12091,7 @@ nonReservedKeywordIdentifier
     | FAILED_LOGIN_ATTEMPTS
     | FAILGROUP
     | FAILOVER
+    | FAILURE
     | FALSE
     | FAR
     | FAST
@@ -11673,6 +12143,7 @@ nonReservedKeywordIdentifier
     | FUNCTION
     | GATHER_OPTIMIZER_STATISTICS
     | GENERATED
+    | GET
     | GLOBAL
     | GLOBAL_NAME
     | GLOBAL_TOPIC_ENABLED
@@ -11690,6 +12161,7 @@ nonReservedKeywordIdentifier
     | HASHING
     | HASHKEYS
     | HEAP
+    | HELP
     | HIDE
     | HIER_ANCESTOR
     | HIER_CAPTION
@@ -11705,6 +12177,9 @@ nonReservedKeywordIdentifier
     | HIERARCHY
     | HIGH
     | HINT
+    | HIST
+    | HISTORY
+    | HO
     | HOST
     | HOUR
     | HOURS
@@ -11746,6 +12221,7 @@ nonReservedKeywordIdentifier
     | INMEMORY
     | INMEMORY_PRUNING
     | INNER
+    | INPUT
     | INSERTING
     | INSTALL
     | INSTANCE
@@ -11794,16 +12270,23 @@ nonReservedKeywordIdentifier
     | KURTOSIS_SAMP
     | KW_A
     | KW_C
+    | KW_D
     | KW_E
     | KW_EMPTY
     | KW_G
     | KW_H
+    | KW_I
     | KW_K
+    | KW_L
     | KW_M
     | KW_P
+    | KW_R
+    | KW_S
     | KW_SKIP
     | KW_T
     | KW_X
+    | LAB
+    | LABEL
     | LAG
     | LAG_DIFF
     | LAG_DIFF_PERCENT
@@ -11813,6 +12296,7 @@ nonReservedKeywordIdentifier
     | LATERAL
     | LAX
     | LDRTRIM
+    | LE
     | LEAD
     | LEAD_CDB
     | LEAD_CDB_URI
@@ -12009,6 +12493,7 @@ nonReservedKeywordIdentifier
     | NOFORCE
     | NOGUARANTEE
     | NOKEEP
+    | NOLIST
     | NOLOGFILE
     | NOLOGGING
     | NOMAPPING
@@ -12016,6 +12501,7 @@ nonReservedKeywordIdentifier
     | NOMINIMIZE
     | NOMINVALUE
     | NOMONITORING
+    | NOMOUNT
     | NON
     | NONE
     | NONEDITIONABLE
@@ -12023,6 +12509,8 @@ nonReservedKeywordIdentifier
     | NONULLIF
     | NOORDER
     | NOPARALLEL
+    | NOPR
+    | NOPROMPT
     | NORELOCATE
     | NORELY
     | NOREPAIR
@@ -12039,12 +12527,14 @@ nonReservedKeywordIdentifier
     | NOTFOUND
     | NOTHING
     | NOTIFICATION
+    | NOTIMEOUT
     | NOTRIM
     | NOVALIDATE
     | NTH_VALUE
     | NTILE
     | NULLIF
     | NULLS
+    | NUM
     | NUMBERONLY
     | NUMERIC
     | NVARCHAR2
@@ -12077,6 +12567,7 @@ nonReservedKeywordIdentifier
     | ORDERED
     | ORDINALITY
     | ORGANIZATION
+    | OSERROR
     | OTHER
     | OTHERS
     | OUT
@@ -12089,6 +12580,7 @@ nonReservedKeywordIdentifier
     | OWNER
     | OWNERSHIP
     | PACKAGE
+    | PAGE
     | PAIRS
     | PARALLEL
     | PARALLEL_ENABLE
@@ -12104,6 +12596,7 @@ nonReservedKeywordIdentifier
     | PARTITIONS
     | PARTITIONSET
     | PASSING
+    | PASSW
     | PASSWORD
     | PASSWORD_GRACE_TIME
     | PASSWORD_LIFE_TIME
@@ -12118,6 +12611,8 @@ nonReservedKeywordIdentifier
     | PATH
     | PATH_PREFIX
     | PATTERN
+    | PAU
+    | PAUSE
     | PCTINCREASE
     | PCTTHRESHOLD
     | PCTUSED
@@ -12172,17 +12667,20 @@ nonReservedKeywordIdentifier
     | PRETTY
     | PREV
     | PRIMARY
+    | PRINT
     | PRIORITY
     | PRIVATE
     | PRIVATE_SGA
     | PRIVILEGE
     | PRIVILEGES
+    | PRO
     | PROCEDURAL
     | PROCEDURE
     | PROCESS
     | PROFILE
     | PROGRAM
     | PROJECT
+    | PROMPT
     | PROPERTY
     | PROTECTION
     | PROTOCOL
@@ -12198,6 +12696,8 @@ nonReservedKeywordIdentifier
     | QUERY
     | QUEUE
     | QUIESCE
+    | QUIET
+    | QUIT
     | QUORUM
     | QUOTA
     | QUOTAGROUP
@@ -12250,8 +12750,13 @@ nonReservedKeywordIdentifier
     | RELY
     | REMOTE
     | REMOVE
+    | REP
     | REPAIR
     | REPEAT
+    | REPF
+    | REPFOOTER
+    | REPH
+    | REPHEADER
     | REPLACE
     | REPLICATION
     | REQUIRED
@@ -12293,9 +12798,11 @@ nonReservedKeywordIdentifier
     | RTRIM
     | RULE
     | RULES
+    | RUN
     | RUNNING
     | SALT
     | SAMPLE
+    | SAV
     | SAVE
     | SAVEPOINT
     | SCALAR
@@ -12307,6 +12814,8 @@ nonReservedKeywordIdentifier
     | SCHEMACHECK
     | SCN
     | SCOPE
+    | SCR
+    | SCREEN
     | SCRUB
     | SDO_GEOMETRY
     | SDO_GEORASTER
@@ -12338,6 +12847,7 @@ nonReservedKeywordIdentifier
     | SHARED
     | SHARED_POOL
     | SHARING
+    | SHO
     | SHOW
     | SHRINK
     | SHUTDOWN
@@ -12359,8 +12869,12 @@ nonReservedKeywordIdentifier
     | SPATIAL
     | SPFILE
     | SPLIT
+    | SPO
+    | SPOOL
     | SQL
     | SQL_MACRO
+    | SQLERROR
+    | STA
     | STANDALONE
     | STANDARD
     | STANDBY
@@ -12403,6 +12917,7 @@ nonReservedKeywordIdentifier
     | SUBSET
     | SUBSTITUTABLE
     | SUBTYPE
+    | SUCCESS
     | SUM
     | SUPPLEMENTAL
     | SUSPEND
@@ -12423,6 +12938,7 @@ nonReservedKeywordIdentifier
     | SYSOPER
     | SYSRAC
     | SYSTEM
+    | TAB
     | TABLES
     | TABLESPACE
     | TAG
@@ -12450,6 +12966,8 @@ nonReservedKeywordIdentifier
     | TIMEZONE_HOUR
     | TIMEZONE_MINUTE
     | TIMEZONE_REGION
+    | TIMI
+    | TIMING
     | TO_APPROX_COUNT_DISTINCT
     | TO_APPROX_PERCENTILE
     | TO_BINARY_DOUBLE
@@ -12460,13 +12978,13 @@ nonReservedKeywordIdentifier
     | TO_TIMESTAMP
     | TO_TIMESTAMP_TZ
     | TO_YMINTERVAL
-    | TODO
     | TOPLEVEL
     | TRACE
     | TRACING
     | TRACKING
     | TRAILING
     | TRANSACTION
+    | TRANSACTIONAL
     | TRANSFORM
     | TRANSLATE
     | TRANSLATION
@@ -12477,6 +12995,8 @@ nonReservedKeywordIdentifier
     | TRUNCATE
     | TRUST
     | TRUSTED
+    | TTI
+    | TTITLE
     | TUNING
     | TWO_SIDED_SIG
     | TYPE
@@ -12485,6 +13005,8 @@ nonReservedKeywordIdentifier
     | UNARCHIVED
     | UNBOUNDED
     | UNCONDITIONAL
+    | UNDEF
+    | UNDEFINE
     | UNDER
     | UNDER_PATH
     | UNDO
@@ -12533,6 +13055,7 @@ nonReservedKeywordIdentifier
     | VALIDATE_CONVERSION
     | VALIDATION
     | VALUE
+    | VAR
     | VAR_POP
     | VAR_SAMP
     | VARCHARC
@@ -12595,6 +13118,7 @@ nonReservedKeywordIdentifier
     | XMLTABLE
     | XMLTAG
     | XMLTYPE
+    | XQUERY
     | XS
     | YEAR
     | YEAR_TO_MONTH

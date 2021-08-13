@@ -8,6 +8,8 @@ options { tokenVocab=predefined; }
 //ABORT:                            A B O R T;
 //ABS:                              A B S;
 //ABSENT:                           A B S E N T;
+//ACC:                              A C C;
+//ACCEPT:                           A C C E P T;
 //ACCESS:                           A C C E S S;
 //ACCESSED:                         A C C E S S E D;
 //ACCESSIBLE:                       A C C E S S I B L E;
@@ -28,6 +30,7 @@ options { tokenVocab=predefined; }
 //AGENT:                            A G E N T;
 //AGGREGATE:                        A G G R E G A T E;
 //ALGORITHM:                        A L G O R I T H M;
+//ALI:                              A L I;
 //ALIAS:                            A L I A S;
 //ALL:                              A L L;
 //ALL_ROWS:                         A L L '_' R O W S;
@@ -48,6 +51,7 @@ options { tokenVocab=predefined; }
 //ANYDATASET:                       A N Y D A T A S E T;
 //ANYSCHEMA:                        A N Y S C H E M A;
 //ANYTYPE:                          A N Y T Y P E;
+//APP:                              A P P;
 //APPEND:                           A P P E N D;
 //APPEND_VALUES:                    A P P E N D '_' V A L U E S;
 //APPLICATION:                      A P P L I C A T I O N;
@@ -75,6 +79,7 @@ options { tokenVocab=predefined; }
 //ASSOCIATE:                        A S S O C I A T E;
 //ASYNCHRONOUS:                     A S Y N C H R O N O U S;
 //AT:                               A T;
+//ATTR:                             A T T R;
 //ATTRIBUTE:                        A T T R I B U T E;
 //ATTRIBUTES:                       A T T R I B U T E S;
 //AUDIT:                            A U D I T;
@@ -109,6 +114,7 @@ options { tokenVocab=predefined; }
 //BINARY:                           B I N A R Y;
 //BINARY_DOUBLE:                    B I N A R Y '_' D O U B L E;
 //BINARY_FLOAT:                     B I N A R Y '_' F L O A T;
+//BINARY_FORMAT:                    B I N A R Y '_' F O R M A T;
 //BINARY_INTEGER:                   B I N A R Y '_' I N T E G E R;
 //BINDING:                          B I N D I N G;
 //BIT_AND_AGG:                      B I T '_' A N D '_' A G G;
@@ -120,11 +126,19 @@ options { tokenVocab=predefined; }
 //BLOCKCHAIN:                       B L O C K C H A I N;
 //BLOCKSIZE:                        B L O C K S I Z E;
 //BODY:                             B O D Y;
+//BOLD:                             B O L D;
 //BOOLEAN:                          B O O L E A N;
 //BOOLEANONLY:                      B O O L E A N O N L Y;
 //BOTH:                             B O T H;
+//BRE:                              B R E;
 //BREADTH:                          B R E A D T H;
+//BREAK:                            B R E A K;
+//BREAKS:                           B R E A K S;
 //BROADCAST:                        B R O A D C A S T;
+//BTI:                              B T I;
+//BTITLE:                           B T I T L E;
+//BUFF:                             B U F F;
+//BUFFER:                           B U F F E R;
 //BUFFER_CACHE:                     B U F F E R '_' C A C H E;
 //BUFFER_POOL:                      B U F F E R '_' P O O L;
 //BUILD:                            B U I L D;
@@ -146,8 +160,10 @@ options { tokenVocab=predefined; }
 //CAST:                             C A S T;
 //CATEGORY:                         C A T E G O R Y;
 //CDB:                              C D B;
+//CE:                               C E;
 //CEILING:                          C E I L I N G;
 //CELL_FLASH_CACHE:                 C E L L '_' F L A S H '_' C A C H E;
+//CENTER:                           C E N T E R;
 //CERTIFICATE:                      C E R T I F I C A T E;
 //CHANGE:                           C H A N G E;
 //CHANGE_DUPKEY_ERROR_INDEX:        C H A N G E '_' D U P K E Y '_' E R R O R '_' I N D E X;
@@ -162,10 +178,12 @@ options { tokenVocab=predefined; }
 //CHILD:                            C H I L D;
 //CHR:                              C H R;
 //CHUNK:                            C H U N K;
+//CL:                               C L;
 //CLASS:                            C L A S S;
 //CLASSIFICATION:                   C L A S S I F I C A T I O N;
 //CLASSIFIER:                       C L A S S I F I E R;
 //CLAUSE:                           C L A U S E;
+//CLE:                              C L E;
 //CLEAN:                            C L E A N;
 //CLEANUP:                          C L E A N U P;
 //CLEAR:                            C L E A R;
@@ -184,6 +202,7 @@ options { tokenVocab=predefined; }
 //COARSE:                           C O A R S E;
 //CODE:                             C O D E;
 //COEFFICIENT:                      C O E F F I C I E N T;
+//COL:                              C O L;
 //COLLATE:                          C O L L A T E;
 //COLLATION:                        C O L L A T I O N;
 //COLLECT:                          C O L L E C T;
@@ -193,6 +212,7 @@ options { tokenVocab=predefined; }
 //COMMENT:                          C O M M E N T;
 //COMMIT:                           C O M M I T;
 //COMMITTED:                        C O M M I T T E D;
+//COMP:                             C O M P;
 //COMPACT:                          C O M P A C T;
 //COMPATIBILITY:                    C O M P A T I B I L I T Y;
 //COMPILE:                          C O M P I L E;
@@ -203,9 +223,13 @@ options { tokenVocab=predefined; }
 //COMPRESS:                         C O M P R E S S;
 //COMPUTATION:                      C O M P U T A T I O N;
 //COMPUTE:                          C O M P U T E;
+//COMPUTES:                         C O M P U T E S;
+//CON_ID:                           C O N '_' I D;
+//CON_NAME:                         C O N '_' N A M E;
 //CONDITION:                        C O N D I T I O N;
 //CONDITIONAL:                      C O N D I T I O N A L;
 //CONFIRM:                          C O N F I R M;
+//CONN:                             C O N N;
 //CONNECT:                          C O N N E C T;
 //CONNECT_BY_ISCYCLE:               C O N N E C T '_' B Y '_' I S C Y C L E;
 //CONNECT_BY_ISLEAF:                C O N N E C T '_' B Y '_' I S L E A F;
@@ -241,6 +265,7 @@ options { tokenVocab=predefined; }
 //COVAR_SAMP:                       C O V A R '_' S A M P;
 //CPU_PER_CALL:                     C P U '_' P E R '_' C A L L;
 //CPU_PER_SESSION:                  C P U '_' P E R '_' S E S S I O N;
+//CRE:                              C R E;
 //CREATE:                           C R E A T E;
 //CREATE_FILE_DEST:                 C R E A T E '_' F I L E '_' D E S T;
 //CREATION:                         C R E A T I O N;
@@ -286,6 +311,7 @@ options { tokenVocab=predefined; }
 //DECREMENT:                        D E C R E M E N T;
 //DECRYPT:                          D E C R Y P T;
 //DEDUPLICATE:                      D E D U P L I C A T E;
+//DEF:                              D E F;
 //DEFAULT:                          D E F A U L T;
 //DEFAULT_CREDENTIAL:               D E F A U L T '_' C R E D E N T I A L;
 //DEFAULT_PDB_HINT:                 D E F A U L T '_' P D B '_' H I N T;
@@ -296,6 +322,8 @@ options { tokenVocab=predefined; }
 //DEFINE:                           D E F I N E;
 //DEFINER:                          D E F I N E R;
 //DEFINITION:                       D E F I N I T I O N;
+//DEL:                              D E L;
+//DELAY:                            D E L A Y;
 //DELEGATE:                         D E L E G A T E;
 //DELETE:                           D E L E T E;
 //DELETE_ALL:                       D E L E T E '_' A L L;
@@ -307,6 +335,7 @@ options { tokenVocab=predefined; }
 //DEPTH:                            D E P T H;
 //DEQUEUE:                          D E Q U E U E;
 //DESC:                             D E S C;
+//DESCRIBE:                         D E S C R I B E;
 //DESCRIPTION:                      D E S C R I P T I O N;
 //DETECTED:                         D E T E C T E D;
 //DETERMINES:                       D E T E R M I N E S;
@@ -325,6 +354,7 @@ options { tokenVocab=predefined; }
 //DISABLE_PARALLEL_DML:             D I S A B L E '_' P A R A L L E L '_' D M L;
 //DISALLOW:                         D I S A L L O W;
 //DISASSOCIATE:                     D I S A S S O C I A T E;
+//DISC:                             D I S C;
 //DISCARD:                          D I S C A R D;
 //DISCARDFILE:                      D I S C A R D F I L E;
 //DISCONNECT:                       D I S C O N N E C T;
@@ -352,6 +382,8 @@ options { tokenVocab=predefined; }
 //DYNAMIC:                          D Y N A M I C;
 //DYNAMIC_SAMPLING:                 D Y N A M I C '_' S A M P L I N G;
 //EACH:                             E A C H;
+//ED:                               E D;
+//EDIT:                             E D I T;
 //EDITION:                          E D I T I O N;
 //EDITIONABLE:                      E D I T I O N A B L E;
 //EDITIONING:                       E D I T I O N I N G;
@@ -375,6 +407,7 @@ options { tokenVocab=predefined; }
 //ENTERPRISE:                       E N T E R P R I S E;
 //ENTITYESCAPING:                   E N T I T Y E S C A P I N G;
 //EQUALS_PATH:                      E Q U A L S '_' P A T H;
+//ERR:                              E R R;
 //ERROR:                            E R R O R;
 //ERRORS:                           E R R O R S;
 //ESCAPE:                           E S C A P E;
@@ -389,6 +422,7 @@ options { tokenVocab=predefined; }
 //EXCLUDE:                          E X C L U D E;
 //EXCLUDING:                        E X C L U D I N G;
 //EXCLUSIVE:                        E X C L U S I V E;
+//EXEC:                             E X E C;
 //EXECUTE:                          E X E C U T E;
 //EXEMPT:                           E X E M P T;
 //EXISTING:                         E X I S T I N G;
@@ -410,6 +444,7 @@ options { tokenVocab=predefined; }
 //FAILED_LOGIN_ATTEMPTS:            F A I L E D '_' L O G I N '_' A T T E M P T S;
 //FAILGROUP:                        F A I L G R O U P;
 //FAILOVER:                         F A I L O V E R;
+//FAILURE:                          F A I L U R E;
 //FALSE:                            F A L S E;
 //FAR:                              F A R;
 //FAST:                             F A S T;
@@ -465,6 +500,7 @@ options { tokenVocab=predefined; }
 //FUNCTION:                         F U N C T I O N;
 //GATHER_OPTIMIZER_STATISTICS:      G A T H E R '_' O P T I M I Z E R '_' S T A T I S T I C S;
 //GENERATED:                        G E N E R A T E D;
+//GET:                              G E T;
 //GLOBAL:                           G L O B A L;
 //GLOBAL_NAME:                      G L O B A L '_' N A M E;
 //GLOBAL_TOPIC_ENABLED:             G L O B A L '_' T O P I C '_' E N A B L E D;
@@ -485,6 +521,7 @@ options { tokenVocab=predefined; }
 //HASHKEYS:                         H A S H K E Y S;
 //HAVING:                           H A V I N G;
 //HEAP:                             H E A P;
+//HELP:                             H E L P;
 //HIDE:                             H I D E;
 //HIER_ANCESTOR:                    H I E R '_' A N C E S T O R;
 //HIER_CAPTION:                     H I E R '_' C A P T I O N;
@@ -501,6 +538,9 @@ options { tokenVocab=predefined; }
 //HIERARCHY:                        H I E R A R C H Y;
 //HIGH:                             H I G H;
 //HINT:                             H I N T;
+//HIST:                             H I S T;
+//HISTORY:                          H I S T O R Y;
+//HO:                               H O;
 //HOST:                             H O S T;
 //HOUR:                             H O U R;
 //HOURS:                            H O U R S;
@@ -548,6 +588,7 @@ options { tokenVocab=predefined; }
 //INMEMORY:                         I N M E M O R Y;
 //INMEMORY_PRUNING:                 I N M E M O R Y '_' P R U N I N G;
 //INNER:                            I N N E R;
+//INPUT:                            I N P U T;
 //INSERT:                           I N S E R T;
 //INSERTING:                        I N S E R T I N G;
 //INSTALL:                          I N S T A L L;
@@ -599,6 +640,8 @@ options { tokenVocab=predefined; }
 //KILL:                             K I L L;
 //KURTOSIS_POP:                     K U R T O S I S '_' P O P;
 //KURTOSIS_SAMP:                    K U R T O S I S '_' S A M P;
+//LAB:                              L A B;
+//LABEL:                            L A B E L;
 //LAG:                              L A G;
 //LAG_DIFF:                         L A G '_' D I F F;
 //LAG_DIFF_PERCENT:                 L A G '_' D I F F '_' P E R C E N T;
@@ -608,6 +651,7 @@ options { tokenVocab=predefined; }
 //LATERAL:                          L A T E R A L;
 //LAX:                              L A X;
 //LDRTRIM:                          L D R T R I M;
+//LE:                               L E;
 //LEAD:                             L E A D;
 //LEAD_CDB:                         L E A D '_' C D B;
 //LEAD_CDB_URI:                     L E A D '_' C D B '_' U R I;
@@ -814,6 +858,7 @@ options { tokenVocab=predefined; }
 //NOFORCE:                          N O F O R C E;
 //NOGUARANTEE:                      N O G U A R A N T E E;
 //NOKEEP:                           N O K E E P;
+//NOLIST:                           N O L I S T;
 //NOLOGFILE:                        N O L O G F I L E;
 //NOLOGGING:                        N O L O G G I N G;
 //NOMAPPING:                        N O M A P P I N G;
@@ -821,6 +866,7 @@ options { tokenVocab=predefined; }
 //NOMINIMIZE:                       N O M I N I M I Z E;
 //NOMINVALUE:                       N O M I N V A L U E;
 //NOMONITORING:                     N O M O N I T O R I N G;
+//NOMOUNT:                          N O M O U N T;
 //NON:                              N O N;
 //NONE:                             N O N E;
 //NONEDITIONABLE:                   N O N E D I T I O N A B L E;
@@ -828,6 +874,8 @@ options { tokenVocab=predefined; }
 //NONULLIF:                         N O N U L L I F;
 //NOORDER:                          N O O R D E R;
 //NOPARALLEL:                       N O P A R A L L E L;
+//NOPR:                             N O P R;
+//NOPROMPT:                         N O P R O M P T;
 //NORELOCATE:                       N O R E L O C A T E;
 //NORELY:                           N O R E L Y;
 //NOREPAIR:                         N O R E P A I R;
@@ -845,6 +893,7 @@ options { tokenVocab=predefined; }
 //NOTFOUND:                         N O T F O U N D;
 //NOTHING:                          N O T H I N G;
 //NOTIFICATION:                     N O T I F I C A T I O N;
+//NOTIMEOUT:                        N O T I M E O U T;
 //NOTRIM:                           N O T R I M;
 //NOVALIDATE:                       N O V A L I D A T E;
 //NOWAIT:                           N O W A I T;
@@ -853,6 +902,7 @@ options { tokenVocab=predefined; }
 //NULL:                             N U L L;
 //NULLIF:                           N U L L I F;
 //NULLS:                            N U L L S;
+//NUM:                              N U M;
 //NUMBER:                           N U M B E R;
 //NUMBERONLY:                       N U M B E R O N L Y;
 //NUMERIC:                          N U M E R I C;
@@ -893,6 +943,7 @@ options { tokenVocab=predefined; }
 //ORDERED:                          O R D E R E D;
 //ORDINALITY:                       O R D I N A L I T Y;
 //ORGANIZATION:                     O R G A N I Z A T I O N;
+//OSERROR:                          O S E R R O R;
 //OTHER:                            O T H E R;
 //OTHERS:                           O T H E R S;
 //OUT:                              O U T;
@@ -905,6 +956,7 @@ options { tokenVocab=predefined; }
 //OWNER:                            O W N E R;
 //OWNERSHIP:                        O W N E R S H I P;
 //PACKAGE:                          P A C K A G E;
+//PAGE:                             P A G E;
 //PAIRS:                            P A I R S;
 //PARALLEL:                         P A R A L L E L;
 //PARALLEL_ENABLE:                  P A R A L L E L '_' E N A B L E;
@@ -920,6 +972,7 @@ options { tokenVocab=predefined; }
 //PARTITIONS:                       P A R T I T I O N S;
 //PARTITIONSET:                     P A R T I T I O N S E T;
 //PASSING:                          P A S S I N G;
+//PASSW:                            P A S S W;
 //PASSWORD:                         P A S S W O R D;
 //PASSWORD_GRACE_TIME:              P A S S W O R D '_' G R A C E '_' T I M E;
 //PASSWORD_LIFE_TIME:               P A S S W O R D '_' L I F E '_' T I M E;
@@ -934,6 +987,8 @@ options { tokenVocab=predefined; }
 //PATH:                             P A T H;
 //PATH_PREFIX:                      P A T H '_' P R E F I X;
 //PATTERN:                          P A T T E R N;
+//PAU:                              P A U;
+//PAUSE:                            P A U S E;
 //PCTFREE:                          P C T F R E E;
 //PCTINCREASE:                      P C T I N C R E A S E;
 //PCTTHRESHOLD:                     P C T T H R E S H O L D;
@@ -989,18 +1044,21 @@ options { tokenVocab=predefined; }
 //PRETTY:                           P R E T T Y;
 //PREV:                             P R E V;
 //PRIMARY:                          P R I M A R Y;
+//PRINT:                            P R I N T;
 //PRIOR:                            P R I O R;
 //PRIORITY:                         P R I O R I T Y;
 //PRIVATE:                          P R I V A T E;
 //PRIVATE_SGA:                      P R I V A T E '_' S G A;
 //PRIVILEGE:                        P R I V I L E G E;
 //PRIVILEGES:                       P R I V I L E G E S;
+//PRO:                              P R O;
 //PROCEDURAL:                       P R O C E D U R A L;
 //PROCEDURE:                        P R O C E D U R E;
 //PROCESS:                          P R O C E S S;
 //PROFILE:                          P R O F I L E;
 //PROGRAM:                          P R O G R A M;
 //PROJECT:                          P R O J E C T;
+//PROMPT:                           P R O M P T;
 //PROPERTY:                         P R O P E R T Y;
 //PROTECTION:                       P R O T E C T I O N;
 //PROTOCOL:                         P R O T O C O L;
@@ -1017,6 +1075,8 @@ options { tokenVocab=predefined; }
 //QUERY:                            Q U E R Y;
 //QUEUE:                            Q U E U E;
 //QUIESCE:                          Q U I E S C E;
+//QUIET:                            Q U I E T;
+//QUIT:                             Q U I T;
 //QUORUM:                           Q U O R U M;
 //QUOTA:                            Q U O T A;
 //QUOTAGROUP:                       Q U O T A G R O U P;
@@ -1071,8 +1131,13 @@ options { tokenVocab=predefined; }
 //REMOTE:                           R E M O T E;
 //REMOVE:                           R E M O V E;
 //RENAME:                           R E N A M E;
+//REP:                              R E P;
 //REPAIR:                           R E P A I R;
 //REPEAT:                           R E P E A T;
+//REPF:                             R E P F;
+//REPFOOTER:                        R E P F O O T E R;
+//REPH:                             R E P H;
+//REPHEADER:                        R E P H E A D E R;
 //REPLACE:                          R E P L A C E;
 //REPLICATION:                      R E P L I C A T I O N;
 //REQUIRED:                         R E Q U I R E D;
@@ -1120,9 +1185,11 @@ options { tokenVocab=predefined; }
 //RTRIM:                            R T R I M;
 //RULE:                             R U L E;
 //RULES:                            R U L E S;
+//RUN:                              R U N;
 //RUNNING:                          R U N N I N G;
 //SALT:                             S A L T;
 //SAMPLE:                           S A M P L E;
+//SAV:                              S A V;
 //SAVE:                             S A V E;
 //SAVEPOINT:                        S A V E P O I N T;
 //SCALAR:                           S C A L A R;
@@ -1134,6 +1201,8 @@ options { tokenVocab=predefined; }
 //SCHEMACHECK:                      S C H E M A C H E C K;
 //SCN:                              S C N;
 //SCOPE:                            S C O P E;
+//SCR:                              S C R;
+//SCREEN:                           S C R E E N;
 //SCRUB:                            S C R U B;
 //SDO_GEOMETRY:                     S D O '_' G E O M E T R Y;
 //SDO_GEORASTER:                    S D O '_' G E O R A S T E R;
@@ -1170,6 +1239,7 @@ options { tokenVocab=predefined; }
 //SHARED:                           S H A R E D;
 //SHARED_POOL:                      S H A R E D '_' P O O L;
 //SHARING:                          S H A R I N G;
+//SHO:                              S H O;
 //SHOW:                             S H O W;
 //SHRINK:                           S H R I N K;
 //SHUTDOWN:                         S H U T D O W N;
@@ -1193,8 +1263,12 @@ options { tokenVocab=predefined; }
 //SPATIAL:                          S P A T I A L;
 //SPFILE:                           S P F I L E;
 //SPLIT:                            S P L I T;
+//SPO:                              S P O;
+//SPOOL:                            S P O O L;
 //SQL:                              S Q L;
 //SQL_MACRO:                        S Q L '_' M A C R O;
+//SQLERROR:                         S Q L E R R O R;
+//STA:                              S T A;
 //STANDALONE:                       S T A N D A L O N E;
 //STANDARD:                         S T A N D A R D;
 //STANDBY:                          S T A N D B Y;
@@ -1238,6 +1312,7 @@ options { tokenVocab=predefined; }
 //SUBSET:                           S U B S E T;
 //SUBSTITUTABLE:                    S U B S T I T U T A B L E;
 //SUBTYPE:                          S U B T Y P E;
+//SUCCESS:                          S U C C E S S;
 //SUCCESSFUL:                       S U C C E S S F U L;
 //SUM:                              S U M;
 //SUPPLEMENTAL:                     S U P P L E M E N T A L;
@@ -1262,6 +1337,7 @@ options { tokenVocab=predefined; }
 //SYSRAC:                           S Y S R A C;
 //SYSTEM:                           S Y S T E M;
 //SYSTIMESTAMP:                     S Y S T I M E S T A M P;
+//TAB:                              T A B;
 //TABLE:                            T A B L E;
 //TABLES:                           T A B L E S;
 //TABLESPACE:                       T A B L E S P A C E;
@@ -1291,6 +1367,8 @@ options { tokenVocab=predefined; }
 //TIMEZONE_HOUR:                    T I M E Z O N E '_' H O U R;
 //TIMEZONE_MINUTE:                  T I M E Z O N E '_' M I N U T E;
 //TIMEZONE_REGION:                  T I M E Z O N E '_' R E G I O N;
+//TIMI:                             T I M I;
+//TIMING:                           T I M I N G;
 //TO:                               T O;
 //TO_APPROX_COUNT_DISTINCT:         T O '_' A P P R O X '_' C O U N T '_' D I S T I N C T;
 //TO_APPROX_PERCENTILE:             T O '_' A P P R O X '_' P E R C E N T I L E;
@@ -1302,13 +1380,13 @@ options { tokenVocab=predefined; }
 //TO_TIMESTAMP:                     T O '_' T I M E S T A M P;
 //TO_TIMESTAMP_TZ:                  T O '_' T I M E S T A M P '_' T Z;
 //TO_YMINTERVAL:                    T O '_' Y M I N T E R V A L;
-//TODO:                             T O D O;
 //TOPLEVEL:                         T O P L E V E L;
 //TRACE:                            T R A C E;
 //TRACING:                          T R A C I N G;
 //TRACKING:                         T R A C K I N G;
 //TRAILING:                         T R A I L I N G;
 //TRANSACTION:                      T R A N S A C T I O N;
+//TRANSACTIONAL:                    T R A N S A C T I O N A L;
 //TRANSFORM:                        T R A N S F O R M;
 //TRANSLATE:                        T R A N S L A T E;
 //TRANSLATION:                      T R A N S L A T I O N;
@@ -1320,6 +1398,8 @@ options { tokenVocab=predefined; }
 //TRUNCATE:                         T R U N C A T E;
 //TRUST:                            T R U S T;
 //TRUSTED:                          T R U S T E D;
+//TTI:                              T T I;
+//TTITLE:                           T T I T L E;
 //TUNING:                           T U N I N G;
 //TWO_SIDED_SIG:                    T W O '_' S I D E D '_' S I G;
 //TYPE:                             T Y P E;
@@ -1329,6 +1409,8 @@ options { tokenVocab=predefined; }
 //UNARCHIVED:                       U N A R C H I V E D;
 //UNBOUNDED:                        U N B O U N D E D;
 //UNCONDITIONAL:                    U N C O N D I T I O N A L;
+//UNDEF:                            U N D E F;
+//UNDEFINE:                         U N D E F I N E;
 //UNDER:                            U N D E R;
 //UNDER_PATH:                       U N D E R '_' P A T H;
 //UNDO:                             U N D O;
@@ -1383,6 +1465,7 @@ options { tokenVocab=predefined; }
 //VALIDATION:                       V A L I D A T I O N;
 //VALUE:                            V A L U E;
 //VALUES:                           V A L U E S;
+//VAR:                              V A R;
 //VAR_POP:                          V A R '_' P O P;
 //VAR_SAMP:                         V A R '_' S A M P;
 //VARCHAR:                          V A R C H A R;
@@ -1451,6 +1534,7 @@ options { tokenVocab=predefined; }
 //XMLTABLE:                         X M L T A B L E;
 //XMLTAG:                           X M L T A G;
 //XMLTYPE:                          X M L T Y P E;
+//XQUERY:                           X Q U E R Y;
 //XS:                               X S;
 //YEAR:                             Y E A R;
 //YEAR_TO_MONTH:                    Y E A R '_' T O '_' M O N T H;
@@ -1465,12 +1549,17 @@ options { tokenVocab=predefined; }
 //KW_SKIP:                          S K I P;
 //KW_A:                             A;
 //KW_C:                             C;
+//KW_D:                             D;
 //KW_E:                             E;
 //KW_G:                             G;
 //KW_H:                             H;
+//KW_I:                             I;
 //KW_K:                             K;
+//KW_L:                             L;
 //KW_M:                             M;
 //KW_P:                             P;
+//KW_R:                             R;
+//KW_S:                             S;
 //KW_T:                             T;
 //KW_X:                             X;
 
