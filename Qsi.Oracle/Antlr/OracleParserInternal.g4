@@ -12597,6 +12597,7 @@ nonReservedKeywordIdentifier
     | NTILE
     | NULLIF
     | NULLS
+    | NUMBER
     | NUM
     | NUMBERONLY
     | NUMERIC
