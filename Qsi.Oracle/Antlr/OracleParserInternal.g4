@@ -2042,16 +2042,16 @@ traditionalAudit
 
 unifiedAudit
     : AUDIT
-        ( POLICY policy
-          ( ( BY user (',' user )* )
-          | ( EXCEPT user (',' user )* )
-          | byUsersWithRoles )?
-          ( WHENEVER NOT? SUCCESSFUL )?
-        )
-        |
-        ( CONTEXT NAMESPACE namespace ATTRIBUTES attribute ( ',' attribute )*
-            ( ',' CONTEXT NAMESPACE namespace ATTRIBUTES attribute ( ',' attribute )* )*
-          ( BY user (',' user )* )?
+        ( ( POLICY policy
+            ( ( BY user (',' user )* )
+            | ( EXCEPT user (',' user )* )
+            | byUsersWithRoles )?
+            ( WHENEVER NOT? SUCCESSFUL )?
+          )
+        | ( CONTEXT NAMESPACE namespace ATTRIBUTES attribute ( ',' attribute )*
+              ( ',' CONTEXT NAMESPACE namespace ATTRIBUTES attribute ( ',' attribute )* )*
+            ( BY user (',' user )* )?
+          )
         )
     ;
 
@@ -2077,13 +2077,38 @@ traditionalNoAudit
 
 auditOperationClause
     : ( sqlStatementShortcut | ALL STATEMENTS? )
-      ( ',' ( sqlStatementShortcut | ALL ) )?
-    | ( systemPrivilege | ALL PRIVILEGES) 
+      ( ',' ( sqlStatementShortcut | ALL STATEMENTS? ) )*
+    | ( systemPrivilege | ALL PRIVILEGES ) 
       (',' ( systemPrivilege | ALL PRIVILEGES ) )
     ;
 
 sqlStatementShortcut
-    :
+    : ALTER SYSTEM
+    | CLUSTER
+    | CONTEXT
+    | DATABASE LINK
+    | DIMENSION
+    | DIRECTORY
+    | INDEX
+    | MATERIALIZED VIEW
+    | NOT EXISTS
+    | OUTLINE
+    | PLUGGABLE DATABASE
+    | PROCEDURE
+    | PROFILE
+    | ROLE
+    | ROLLBACK SEGMENT
+    | SEQUENCE
+    | SESSION
+    | SYNONYM
+    | SYSTEM AUDIT
+    | SYSTEM GRANT
+    | TABLE
+    | TABLESPACE
+    | TRIGGER
+    | TYPE
+    | USER
+    | VIEW
     ;
 
 auditingByClause
