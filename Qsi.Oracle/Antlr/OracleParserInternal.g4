@@ -5474,7 +5474,7 @@ hashSubpartsByQuantity
     ;
 
 rangeValuesClause
-    : VALUES LESS THAN '(' (literal | MAXVALUE) (',' (literal | MAXVALUE))* ')'
+    : VALUES LESS THAN '(' expr (',' expr )* ')'
     ;
 
 listValuesClause
@@ -12045,6 +12045,7 @@ nonReservedKeywordIdentifier
     | NTILE
     | NULLIF
     | NULLS
+    | NUMBER
     | NUMBERONLY
     | NUMERIC
     | NVARCHAR2
