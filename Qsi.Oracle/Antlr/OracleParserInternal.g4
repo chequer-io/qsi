@@ -471,6 +471,7 @@ oracleStatement
     | flashback
     | explain
     | administerKeyManagement
+    | analyze
     ;
 
 select
@@ -2234,6 +2235,31 @@ administerKeyManagement
                                 | secretManagementClauses
                                 | zeroDowntimeSoftwarePatchingClauses
                                 )
+    ;
+
+analyze
+    : ANALYZE
+        ( ( TABLE ( schema '.' )? table
+          | INDEX ( schema '.' )? index
+          ) partitionExtensionClause?
+        | CLUSTER ( schema'.' )? cluster
+        )
+        ( validationClauses
+        | LIST CHAINED ROWS intoClause?
+        | DELETE SYSTEM? STATISTICS
+        )
+    ;
+
+validationClauses
+    : VALIDATE REF UPDATE ( SET DANGLING TO NULL )?
+    | VALIDATE STRUCTURE ( CASCADE ( FAST 
+                                  | COMPLETE ( ONLINE | OFFLINE ) intoClause? 
+                                  )
+                        )?
+    ;
+
+intoClause
+    : INTO ( schema '.' )? table
     ;
 
 createAnalyticView
