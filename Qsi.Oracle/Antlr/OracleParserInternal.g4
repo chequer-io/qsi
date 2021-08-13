@@ -1909,7 +1909,7 @@ constructorDeclaration
     ;
 
 mapOrderFuncDeclaration
-    : ( MAP | ORDER ) MEMBER funcDeclInType
+    : ( MAP | ORDER )? MEMBER funcDeclInType
     ;
 
 createUser
