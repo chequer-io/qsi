@@ -472,6 +472,7 @@ oracleStatement
     | explain
     | administerKeyManagement
     | analyze
+    | audit
     ;
 
 select
@@ -2016,6 +2017,41 @@ mergeInsertClause
       INSERT ( '(' column ( ',' column )* ')' )?
       VALUES '(' ( expr | DEFAULT ) ( ',' ( expr | DEFAULT ) )* ')'
       whereClause?
+    ;
+
+audit
+    : traditionalAudit
+    | unifiedAudit
+    ;
+
+traditionalAudit
+    :  AUDIT
+         ( auditOperationClause ( auditingByClause | IN SESSION CURRENT )?
+         | auditSchemaObjectClause
+         | NETWORK
+         | DIRECT_PATH LOAD auditingByClause?
+         ) ( BY ( SESSION | ACCESS ) )?
+           ( WHENEVER NOT? SUCCESSFUL )?
+           ( CONTAINER '=' ( CURRENT | ALL ) )?
+    ;
+
+unifiedAudit
+    : AUDIT
+        ( POLICY policy
+          ( ( BY user (',' user )* )
+          | ( EXCEPT user (',' user )* )
+          | byUsersWithRoles )?
+          ( WHENEVER NOT? SUCCESSFUL )?
+        )
+        |
+        ( CONTEXT NAMESPACE namespace ATTRIBUTES attribute ( ',' attribute )*
+            ( ',' CONTEXT NAMESPACE namespace ATTRIBUTES attribute ( ',' attribute )* )*
+          ( BY user (',' user )* )?
+        )
+    ;
+
+byUsersWithRoles
+    : BY USERS WITH GRANTED ROLES role ( ',' role )*
     ;
 
 noaudit
