@@ -474,6 +474,7 @@ oracleStatement
     | analyze
     | audit
     | call
+    | associateStatistics
     ;
 
 select
@@ -2023,6 +2024,42 @@ mergeInsertClause
 call
     : CALL ( routineClause | objectAccessExpression ) ( INTO ':' hostVariableName ( INDICATOR? ':' indicatorVariable=identifier )? )?
     ;
+
+associateStatistics
+    : ASSOCIATE STATISTICS WITH ( columnAssociation | functionAssociation ) storageTableClause?
+    ;
+
+columnAssociation
+    : COLUMNS ( schema '.' )? table '.' column ( ',' ( schema '.' )? table '.' column )* usingStatisticsType
+    ;
+
+functionAssociation
+    : ( FUNCTIONS ( schema '.' )? functionName ( ',' ( schema '.' )? functionName )*
+      | PACKAGES ( schema '.' )? packageName ( ',' ( schema '.' )? packageName )*
+      | TYPES ( schema '.' )? typeName ( ',' ( schema '.' )? typeName )*
+      | INDEXES ( schema '.' )? index ( ',' ( schema '.' )? index )*
+      | INDEXTYPES ( schema '.' )? indextype ( ',' ( schema '.' )? indextype )*
+      )
+      ( usingStatisticsType
+      | defaultCostClause ( ',' defaultSelectivityClause )?
+      | defaultSelectivityClause ( ',' defaultCostClause )?
+      )
+    ;
+
+usingStatisticsType
+    : USING ( NULL
+            | ( schema '.' )? statisticsType=identifier
+            )
+    ;
+
+defaultCostClause
+    : DEFAULT COST '(' cpuCost=identifier ',' ioCost=identifier ',' networkCost=identifier ')'
+    ;
+
+defaultSelectivityClause
+    : DEFAULT SELECTIVITY defaultSelectivity=identifier
+    ;
+
 
 audit
     : traditionalAudit

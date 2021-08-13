@@ -1573,7 +1573,12 @@ namespace Qsi.Oracle
                 ["t"] = OracleLexerInternal.KW_T,
                 ["x"] = OracleLexerInternal.KW_X,
                 ["chained"] = OracleLexerInternal.CHAINED,
-                ["structure"] = OracleLexerInternal.STRUCTURE
+                ["structure"] = OracleLexerInternal.STRUCTURE,
+                ["functions"] = OracleLexerInternal.FUNCTIONS,
+                ["packages"] = OracleLexerInternal.PACKAGES,
+                ["types"] = OracleLexerInternal.TYPES,
+                ["indextypes"] = OracleLexerInternal.INDEXTYPES,
+                ["selectivity"] = OracleLexerInternal.SELECTIVITY
             };
         }
     }
