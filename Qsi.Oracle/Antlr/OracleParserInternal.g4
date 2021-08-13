@@ -1809,7 +1809,7 @@ triggerOrderingClause
 
 triggerBody
     : plsqlBlock
-    | CALL routineClause
+    | CALL routineClause ( '.' routineClause )*
     ;
 
 routineClause
@@ -2022,7 +2022,7 @@ mergeInsertClause
     ;
 
 call
-    : CALL ( routineClause | objectAccessExpression ) ( INTO ':' hostVariableName ( INDICATOR? ':' indicatorVariable=identifier )? )?
+    : CALL ( routineClause ( '.' routineClause )* | objectAccessExpression ) ( INTO ':' hostVariableName ( INDICATOR? ':' indicatorVariable=identifier )? )?
     ;
 
 associateStatistics
