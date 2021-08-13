@@ -2171,7 +2171,7 @@ auditingByClause
     ;
 
 auditSchemaObjectClause
-    : ( sqlOperation ( ',' sqlOperation )? | ALL ) auditingOnClause
+    : ( sqlOperation ( ',' sqlOperation )* | ALL ) auditingOnClause
     ;
 
 auditingOnClause
