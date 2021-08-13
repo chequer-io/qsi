@@ -12045,7 +12045,6 @@ nonReservedKeywordIdentifier
     | NTILE
     | NULLIF
     | NULLS
-    | NUMBER
     | NUMBERONLY
     | NUMERIC
     | NVARCHAR2
