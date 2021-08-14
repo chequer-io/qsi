@@ -1578,7 +1578,8 @@ namespace Qsi.Oracle
                 ["packages"] = OracleLexerInternal.PACKAGES,
                 ["types"] = OracleLexerInternal.TYPES,
                 ["indextypes"] = OracleLexerInternal.INDEXTYPES,
-                ["selectivity"] = OracleLexerInternal.SELECTIVITY
+                ["selectivity"] = OracleLexerInternal.SELECTIVITY,
+                ["time_zone"] = OracleLexerInternal.TIME_ZONE
             };
         }
     }

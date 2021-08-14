@@ -710,11 +710,11 @@ createDatabaseLink
     : CREATE SHARED? PUBLIC? DATABASE LINK dblink
         ( CONNECT TO
           ( CURRENT_USER
-          | user IDENTIFIED BY password ( dblinkAuthentication )
+          | user IDENTIFIED BY password dblinkAuthentication?
           )
         | dblinkAuthentication
         )*
-        ( USING connectString )
+        ( USING connectString )?
     ;
 
 createDimension
@@ -774,7 +774,6 @@ plsqlFunctionSource
           | aggregateClause
           | pipelinedClause
           | sqlMacroClause
-          
         )*
       ( IS | AS ) ( declareSection? body 
                     | callSpec
@@ -854,7 +853,7 @@ procedureDefinition
     ;
 
 functionDeclaration
-    : functionHeading ( DETERMINISTIC | PIPELINED | PARALLEL_ENABLE | RESULT_CACHE )+ ';'
+    : functionHeading ( DETERMINISTIC | PIPELINED | PARALLEL_ENABLE | RESULT_CACHE )* ';'
     ;
 
 functionHeading
@@ -862,7 +861,7 @@ functionHeading
     ;
 
 functionDefinition
-    : functionHeading ( DETERMINISTIC | PIPELINED | PARALLEL_ENABLE | RESULT_CACHE resultCacheClause? )+
+    : functionHeading ( DETERMINISTIC | PIPELINED | PARALLEL_ENABLE | RESULT_CACHE resultCacheClause? )*
         ( IS | AS ) ( declareSection? body | callSpec )
     ;
 
@@ -871,7 +870,7 @@ procedureDeclaration
     ;
 
 body
-    : BEGIN statement* ( EXCEPTION exceptionHandler+ )? END name?
+    : BEGIN statement* ( EXCEPTION exceptionHandler+ )? END name? ';'
     ;
 
 exceptionHandler
@@ -2435,7 +2434,7 @@ alterFlashbackArchive
         ( SET DEFAULT
         | ( ADD | MODIFY ) TABLESPACE tablespace flashbackArchiveQuota?
         | REMOVE TABLESPACE tablespace
-        | MODIFY RETENTION flashbackArchiveRetention
+        | MODIFY flashbackArchiveRetention
         | PURGE ( ALL | BEFORE ( SCN | TIMESTAMP ) expr )
         | NO? OPTIMIZE DATA
         )
@@ -4131,7 +4130,7 @@ elementSpec
     : inheritanceClauses?
         ( subprogramSpec
         | constructorSpec
-        | mapOrderFunctionSpec
+        | mapOrderFuncDeclaration
         )+ 
         ( ',' restrictReferencesPragma )?
     ;
@@ -4174,12 +4173,8 @@ unitKind
     ;
 
 alterMethodSpec
-    : ( ADD | DROP ) ( mapOrderFunctionSpec | subprogramSpec )
-        ( ',' ( ADD | DROP ) ( mapOrderFunctionSpec | subprogramSpec ) )*
-    ;
-
-mapOrderFunctionSpec
-    : ( MAP | ORDER ) MEMBER functionSpec
+    : ( ADD | DROP ) ( mapOrderFuncDeclaration | subprogramSpec )
+        ( ',' ( ADD | DROP ) ( mapOrderFuncDeclaration | subprogramSpec ) )*
     ;
 
 subprogramSpec
@@ -7411,7 +7406,7 @@ createDatabaseOption
     | tablespaceClauses                                         #createDatabaseTablespaceClausesOption
     | setTimeZoneClause                                         #createDatabaseSetTimeZoneClauseOption
     | (BIGFILE | SMALLFILE)? USER_DATA TABLESPACE
-      tablespaceName=identifier
+      tablespace
       DATAFILE datafileTempfileSpec (',' datafileTempfileSpec)* #createDatabaseDataFileOption
     | enablePluggableDatabase                                   #createDatabaseEnablePluggableDatabaseOption
     ;
@@ -7447,11 +7442,13 @@ extentManagementClause
     ;
 
 defaultTempTablespace
-    : (BIGFILE|SMALLFILE)?
+    : ( BIGFILE | SMALLFILE )?
       DEFAULT
-      (TEMPORARY TABLESPACE
-      |LOCAL TEMPORARY TABLESPACE FOR (ALL|LEAF)
+      ( TEMPORARY TABLESPACE
+      | LOCAL TEMPORARY TABLESPACE FOR ( ALL | LEAF )
       ) tablespace
+      ( TEMPFILE fileSpecification ( ',' fileSpecification )*)?
+      extentManagementClause?
     ;
 
 undoTablespace
@@ -7468,7 +7465,7 @@ databaseLoggingLogFileClause
     ;
 
 setTimeZoneClause
-    : SET TIMEZONE '=' stringLiteral
+    : SET TIME_ZONE '=' stringLiteral
     ;
 
 enablePluggableDatabase
@@ -7827,7 +7824,7 @@ queryBlock
 
 withClause
     : WITH
-      plsqlDeclarations*
+      plsqlDeclarations?
       clauses+=factoringClause (',' clauses+=factoringClause)*
     ;
 
@@ -7836,8 +7833,10 @@ plsqlDeclarations
     ;
 
 plsqlDeclaration
-    : functionDeclaration 
+    : functionDeclaration
+    | functionDefinition
     | procedureDeclaration
+    | procedureDefinition
     ;
 
 factoringClause
@@ -8136,6 +8135,8 @@ queryTableExpression
        sampleClause?
     | LATERAL? '(' subquery subqueryRestrictionClause? ')'
     | tableCollectionExpression
+    // returning table function 
+    | functionExpression
     ;
 
 flashbackQueryClause
@@ -10653,7 +10654,7 @@ tablespaceSet
     ;
 
 dblink
-    : identifier
+    : ( identifier '.' )* identifier
     ;
 
 attribute
