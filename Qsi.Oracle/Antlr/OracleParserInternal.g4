@@ -1307,19 +1307,18 @@ createMaterializedViewLog
         parallelClause?
         tablePartitioningClauses?
         ( WITH ( ( OBJECT ID
-                 | PRIMARY KEY
-                 | ROWID
-                 | SEQUENCE
-                 | COMMIT SCN
-                 )
-                 (  ',' OBJECT ID
-                 | ',' PRIMARY KEY
-                 | ',' ROWID
-                 | ',' SEQUENCE
-                 | ',' COMMIT SCN
-                 )* 
-               )?
-          '(' column ( ',' column )* ')'
+                     | PRIMARY KEY
+                     | ROWID
+                     | SEQUENCE
+                     | COMMIT SCN
+                     ) ( '(' column ( ',' column )* ')' )?
+                     ( ( ',' OBJECT ID
+                       | ',' PRIMARY KEY
+                       | ',' ROWID
+                       | ',' SEQUENCE
+                       | ',' COMMIT SCN
+                       ) ( '(' column ( ',' column )* ')' )? )* 
+                  )?
           newValuesClause?
         )?
         mvLogPurgeClause?
@@ -1434,8 +1433,8 @@ createPluggableDatabase
         | createPdbFromXml
         | createPdbFromMirrorCopy
         | containerMapClause
+        | pdbSnapshotClause
         )
-        pdbSnapshotClause
     ;
 
 containerMapClause
@@ -1517,7 +1516,7 @@ keystoreClause
     ;
 
 createPdbFromSeed
-    : ADMIN USER adminUserName IDENTIFIED BY password
+    : ADMIN USER adminUserName? IDENTIFIED BY password
         pdbDbaRoles?
         parallelPdbCreationClause?
         defaultTablespace?
@@ -2503,12 +2502,12 @@ alterInmemoryJoinGroup
 alterJava
     : ALTER JAVA
       ( SOURCE | CLASS ) ( schema '.' )? objectName 
-      RESOLVER 
+      ( RESOLVER
       '(' 
         ( 
           '(' matchString ','? ( schema | '-' ) ')' 
         )*
-      ')'
+      ')' )?
       ( COMPILE | RESOLVE | invokerRightsClause )
     ;
 
@@ -2747,11 +2746,11 @@ mvLogPurgeClause
       ( IMMEDIATE ( SYNCHRONOUS | ASYNCHRONOUS )?
       | START WITH datetimeExpression 
         ( NEXT datetimeExpression 
-        | REPEAT INTERVAL intervalExpression 
+        | REPEAT ( intervalLiteral | INTERVAL intervalExpression ) 
         )?
       | ( START WITH datetimeExpression )?
         ( NEXT datetimeExpression 
-        | REPEAT INTERVAL intervalExpression 
+        | REPEAT ( intervalLiteral | INTERVAL intervalExpression ) 
         )
       )
     ;
@@ -7474,7 +7473,8 @@ enablePluggableDatabase
 
 fileNameConvert
     : FILE_NAME_CONVERT '='
-      ( '(' filenamePattern ','  filenamePattern ')' ( ',' '(' filenamePattern ',' filenamePattern ')' )* 
+      ( '(' SINGLE_QUOTE_SYMBOL filenamePattern ','  filenamePattern SINGLE_QUOTE_SYMBOL ')' 
+          ( ',' SINGLE_QUOTE_SYMBOL  '(' filenamePattern ',' filenamePattern ')' SINGLE_QUOTE_SYMBOL )* 
       | NONE
       )
     ;
@@ -8526,9 +8526,8 @@ pivotClause
     ;
 
 pivotItem
-    :
+    : expr (AS? alias)?
 //    aggregateFunction
-     '(' expr ')' (AS? alias)?
     ;
 
 unpivotClause
@@ -9611,7 +9610,7 @@ lastFunction
     ;
 
 lastValueFunction
-    : FIRST_VALUE ('(' expr ')' ((RESPECT | IGNORE) NULLS)?
+    : LAST_VALUE ('(' expr ')' ((RESPECT | IGNORE) NULLS)?
                   |'(' expr ((RESPECT | IGNORE) NULLS)? ')'
                   )
       OVER '(' analyticClause ')'
@@ -10876,7 +10875,7 @@ parameterTypes
     ;
 
 type
-    : identifier
+    : datatype
     ;
 
 varrayType
@@ -13133,6 +13132,7 @@ nonReservedKeywordIdentifier
     | TIER
     | TIES
     | TIME
+    | TIME_ZONE
     | TIMEOUT
     | TIMESTAMP
     | TIMEZONE
