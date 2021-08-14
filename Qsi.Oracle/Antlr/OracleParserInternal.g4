@@ -477,6 +477,7 @@ oracleStatement
     | associateStatistics
     | disassociateStatistics
     | comment
+    | deallocateUnused
     ;
 
 select
@@ -644,8 +645,8 @@ drop
 
 createCluster
     : CREATE CLUSTER ( schema '.' )? cluster
-        '('column datatype ( COLLATE columnCollationName )? SORT?
-          ( ',' column datatype ( COLLATE columnCollationName )? SORT? )*.
+        '(' column datatype ( COLLATE columnCollationName )? SORT?
+          ( ',' column datatype ( COLLATE columnCollationName )? SORT? )*
         ')'
         ( physicalAttributesClause
           | SIZE sizeClause
@@ -1635,7 +1636,7 @@ createRollbackSegment
 
 createSequence
     : CREATE SEQUENCE ( schema '.' )? sequence
-        ( SHARING '=' ( METADATA | DATA | NONE ) )
+        ( SHARING '=' ( METADATA | DATA | NONE ) )?
         ( ( INCREMENT BY | START WITH ) integer
         | ( MAXVALUE integer | NOMAXVALUE )
         | ( MINVALUE integer | NOMINVALUE )
@@ -2592,7 +2593,7 @@ alterMaterializedView
           | parallelClause
           | loggingClause
           | allocateExtentClause
-          | deallocateUnusedClause
+          | deallocateUnused
           | shrinkClause
           | ( CACHE | NOCACHE )
           )?
@@ -2629,7 +2630,7 @@ modifyLOBParameters
       | ( CACHE | ( NOCACHE | CACHE READS ) loggingClause? )
       | allocateExtentClause
       | shrinkClause
-      | deallocateUnusedClause
+      | deallocateUnused
       )+
     ;
 
@@ -2664,12 +2665,12 @@ alterOverflowClause
       ( segmentAttributesClause
       | allocateExtentClause
       | shrinkClause
-      | deallocateUnusedClause
+      | deallocateUnused
       )+
     ;
 
 alterMappingTableClauses
-    : MAPPING TABLE ( allocateExtentClause | deallocateUnusedClause )
+    : MAPPING TABLE ( allocateExtentClause | deallocateUnused )
     ;
 
 addOverflowClause
@@ -3131,7 +3132,7 @@ partitionAttributes
     : ( ( physicalAttributesClause
         | loggingClause
         | allocateExtentClause
-        | deallocateUnusedClause
+        | deallocateUnused
         | shrinkClause
         )+
       )?
@@ -3139,7 +3140,7 @@ partitionAttributes
         ( physicalAttributesClause
         | loggingClause
         | allocateExtentClause
-        | deallocateUnusedClause
+        | deallocateUnused
         )+
       )?
       tableCompression?
@@ -3207,7 +3208,7 @@ allowDisallowClustering
     ;
 
 alterMappingTableClause
-    : MAPPING TABLE ( allocateExtentClause | deallocateUnusedClause )
+    : MAPPING TABLE ( allocateExtentClause | deallocateUnused )
     ;
 
 modifyHashPartition
@@ -3238,7 +3239,7 @@ modifyListPartition
 modifyTableSubpartition
     : MODIFY subpartitionExtendedName
       ( allocateExtentClause
-      | deallocateUnusedCluse
+      | deallocateUnused
       | shrinkClause
       | ( ( LOB lobItem | VARRAY varrayItem ) '(' modifyLOBParameters ')' )+
       | REBUILD? UNUSABLE LOCAL INDEXES
@@ -3246,10 +3247,6 @@ modifyTableSubpartition
       | readOnlyClause
       | indexingClause
       )
-    ;
-
-deallocateUnusedCluse
-    : DEALLOCATE UNUSED ( KEEP sizeClause )?
     ;
 
 moveTablePartition
@@ -3944,7 +3941,7 @@ alterTableProperties
         | ilmClause
         | supplementalTableLogging
         | allocateExtentClause
-        | deallocateUnusedClause
+        | deallocateUnused
         | ( CACHE | NOCACHE )
         | resultCacheClause
         | upgradeTableClause
@@ -4195,7 +4192,7 @@ procedureSpec
 
 functionSpec
     : FUNCTION functionName
-        '(' parameter datatype ( ',' parameter datatype )*')'
+       ( '(' parameter datatype ( ',' parameter datatype )* ')' )?
         returnClause
     ;
 
@@ -4333,7 +4330,7 @@ createAuditPolicy
       privilegeAuditClause?
       actionAuditClause?
       roleAuditClause?
-      (WHEN SINGLE_QUOTE_SYMBOL auditCondition SINGLE_QUOTE_SYMBOL
+      (WHEN stringLiteral
        EVALUATE PER (STATEMENT | SESSION | INSTANCE)
       )?
       (ONLY TOPLEVEL)?
@@ -4365,7 +4362,7 @@ alterCluster
       ( physicalAttributesClause 
       | SIZE sizeClause 
       | (MODIFY PARTITION partition)? allocateExtentClause 
-      | deallocateUnusedClause 
+      | deallocateUnused 
       | (CACHE | NOCACHE)
       )* parallelClause?
     ;
@@ -4471,14 +4468,14 @@ dropTable
     ;
 
 createIndex
-    : CREATE (UNIQUE | BITMAP | MULTIVALUE)? INDEX (schema '.')? indexName=identifier
+    : CREATE (UNIQUE | BITMAP | MULTIVALUE)? INDEX (schema '.')? index
       indexIlmClause? ON (clusterIndexClause | tableIndexClause | bitmapJoinIndexClause)
       (USABLE | UNUSABLE)? ((DEFERRED | IMMEDIATE) INVALIDATION)?
     ;
 
 alterIndex
     : ALTER INDEX (schema '.')? indexName=identifier indexIlmClause?
-      ( ( deallocateUnusedClause
+      ( ( deallocateUnused
         | allocateExtentClause
         | shrinkClause
         | parallelClause
@@ -4742,7 +4739,7 @@ dblinkAuthentication
     : AUTHENTICATED BY user IDENTIFIED BY password
     ;
 
-deallocateUnusedClause
+deallocateUnused
     : DEALLOCATE UNUSED (KEEP sizeClause)?
     ;
 
@@ -4796,7 +4793,7 @@ addHashIndexPartition
 
 modifyIndexPartition
     : MODIFY PARTITION partition
-      ( (deallocateUnusedClause | allocateExtentClause | physicalAttributesClause | loggingClause | indexCompression)*
+      ( (deallocateUnused | allocateExtentClause | physicalAttributesClause | loggingClause | indexCompression)*
       | PARAMETERS '(' stringLiteral ')'
       | COALESCE CLEANUP? parallelClause?
       | UPDATE BLOCK REFERENCES
@@ -4831,7 +4828,7 @@ coalesceIndexPartition
     ;
 
 modifyIndexSubpartition
-    : MODIFY SUBPARTITION subpartition (UNUSABLE | allocateExtentClause | deallocateUnusedClause)
+    : MODIFY SUBPARTITION subpartition (UNUSABLE | allocateExtentClause | deallocateUnused)
     ;
 
 databaseClause
@@ -5179,7 +5176,7 @@ trackingStatisticsClause
     ;
 
 clusterIndexClause
-    : CLUSTER (schema '.')? cluster indexAttributes
+    : CLUSTER (schema '.')? cluster tAlias? ( '(' indexExpr ( ASC | DESC )? ( ',' indexExpr ( ASC | DESC )? )* ')' )? indexProperties
     ;
 
 tableIndexClause
@@ -12141,6 +12138,7 @@ nonReservedKeywordIdentifier
     | DECRYPT
     | DEDUPLICATE
     | DEF
+    | DEFAULT
     | DEFAULT_CREDENTIAL
     | DEFAULT_PDB_HINT
     | DEFAULTIF
