@@ -1017,9 +1017,8 @@ functionCall
 
 plsqlParameter
     : identifier
-    | literal
     | plsqlExpression
-    | identifier '=' '>' ( identifier | literal | plsqlExpression )
+    | identifier '=' '>' ( identifier | plsqlExpression )
     ;
 
 qualifiedExpression
@@ -1526,21 +1525,22 @@ keystoreClause
 
 createPdbFromSeed
     : ADMIN USER adminUserName? IDENTIFIED BY password
-        pdbDbaRoles?
-        parallelPdbCreationClause?
-        defaultTablespace?
-        pdbStorageClause?
-        fileNameConvert?
-        serviceNameConvert?
-        pathPrefixClause?
-        tempfileReuseClause?
-        containerMapClause?
-        userTablespacesClause?
-        standbysClause?
-        loggingClause?
-        createFileDestClause?
-        ( HOST '=' stringLiteral )?
-        ( PORT '=' numberLiteral )?
+        ( pdbDbaRoles
+        | parallelPdbCreationClause
+        | defaultTablespace
+        | pdbStorageClause
+        | fileNameConvert
+        | serviceNameConvert
+        | pathPrefixClause
+        | tempfileReuseClause
+        | containerMapClause
+        | userTablespacesClause
+        | standbysClause
+        | loggingClause
+        | createFileDestClause
+        | ( HOST '=' stringLiteral )
+        | ( PORT '=' numberLiteral )
+        )*
     ;
 
 pdbDbaRoles
@@ -1632,7 +1632,7 @@ createRole
         | IDENTIFIED ( BY password
                      | USING ( schema '.' )? packageName
                      | EXTERNALLY
-                     | GLOBALLY AS domainNameOfDirectoryGroup
+                     | GLOBALLY ( AS domainNameOfDirectoryGroup )?
                      )
         )? ( CONTAINER '=' ( CURRENT | ALL ) )?
     ;
@@ -1929,30 +1929,22 @@ createUser
             IDENTIFIED
             (
                BY password ( HTTP? DIGEST ( ENABLE | DISABLE ) )?
-               | EXTERNALLY ( AS stringLiteral  |  AS stringLiteral )
+               | EXTERNALLY ( AS stringLiteral  |  AS stringLiteral )?
                | GLOBALLY ( AS stringLiteral )?
             )
           )
         | NO AUTHENTICATION
         )
-        ( DEFAULT COLLATION collationName )?
-        ( DEFAULT TABLESPACE tablespace
+        ( DEFAULT COLLATION collationName
+        | DEFAULT TABLESPACE tablespace
         | LOCAL? TEMPORARY TABLESPACE ( tablespace | tablespaceGroupName )
         | ( QUOTA ( sizeClause | UNLIMITED ) ON tablespace )+
         | PROFILE profile
         | PASSWORD EXPIRE
         | ACCOUNT ( LOCK | UNLOCK )
-          ( DEFAULT TABLESPACE tablespace
-          | TEMPORARY TABLESPACE
-               ( tablespace | tablespaceGroupName )
-          | ( QUOTA ( sizeClause | UNLIMITED ) ON tablespace )+
-          | PROFILE profile
-          | PASSWORD EXPIRE
-          | ACCOUNT ( LOCK | UNLOCK )
-          | ENABLE EDITIONS
-          | CONTAINER '=' ( CURRENT | ALL )
-          )*
-        )?
+        | ENABLE EDITIONS
+        | CONTAINER '=' ( CURRENT | ALL )
+        )*
     ;
 
 insert
@@ -5216,7 +5208,7 @@ indexExpr
 relationalTable
     : ('(' relationalProperties ')')? blockchainTableClauses?
       (DEFAULT COLLATION identifier)? (ON COMMIT (DROP|PRESERVE) DEFINITION)?
-      (ON COMMIT (DELETE|PRESERVE)? ROWS)? physicalProperties? tableProperties
+      (ON COMMIT (DELETE|PRESERVE)? ROWS)? ( physicalProperties? tableProperties | tableProperties physicalProperties? )
     ;
 
 objectTable
@@ -5561,8 +5553,7 @@ heapOrgTableClause
     ;
 
 indexOrgTableClause
-    : indexOrgTableClauseItem+ indexOrgOverflowClause?
-    | indexOrgOverflowClause
+    : ( indexOrgTableClauseItem | indexOrgOverflowClause )+
     ;
 
 indexOrgTableClauseItem
@@ -5724,6 +5715,7 @@ mappingTableClause
 
 indexOrgOverflowClause
     : ( INCLUDING column )? OVERFLOW segmentAttributesClause?
+    | INCLUDING column ( OVERFLOW segmentAttributesClause? )?
     ;
 
 tableCompression
@@ -5907,7 +5899,7 @@ rangePartitions
     ;
 
 rangePartitionsItem
-    : (PARTITION partition rangeValuesClause tablePartitionDescription externalPartSubpartDataProps?)
+    : PARTITION partition rangeValuesClause tablePartitionDescription externalPartSubpartDataProps?
     ;
 
 externalPartSubpartDataProps
@@ -5940,7 +5932,7 @@ hashPartitionsByQuantity
 listPartitions
     : PARTITION BY LIST '(' column (',' column)* ')'
       (AUTOMATIC (STORE IN '(' tablespace (',' tablespace)* ')')?)?
-      '(' listPartitionsItem (',' listPartitionsItem) ')'
+      '(' listPartitionsItem (',' listPartitionsItem)* ')'
     ;
 
 listPartitionsItem
@@ -5968,7 +5960,7 @@ compositeListPartitions
     ;
 
 referencePartitioning
-    : PARTITION BY REFERENCE '(' constraint ')' ('(' referencePartitionDesc* ')')?
+    : PARTITION BY REFERENCE '(' column (',' column)* ')' ('(' referencePartitionDesc* ')')?
     ;
 
 referencePartitionDesc
@@ -6086,12 +6078,11 @@ rangeValuesClause
     ;
 
 listValuesClause
-    : VALUES '(' listValues | DEFAULT ')'
+    : VALUES '(' ( listValues | DEFAULT ) ')'
     ;
 
 listValues
-    : ((literal | NULL) (',' (literal | NULL))*)
-    | '(' (literal | NULL) (',' (literal | NULL))* ')' (',' '(' (literal | NULL) (',' (literal | NULL))* ')')?
+    : expr ( ',' expr )*
     ;
 
 tablePartitionDescription
@@ -6180,7 +6171,7 @@ substitutableColumnClause
 
 nestedTableColProperties
     : NESTED TABLE (nestedItem=identifier | COLUMN_VALUE) substitutableColumnClause? (LOCAL | GLOBAL)?
-      STORE AS storageTable=identifier ('(' ('(' objectProperties ')' | physicalProperties | columnProperties)+ ')')?
+      STORE AS storageTable=identifier? ('(' ('(' objectProperties ')' | physicalProperties | columnProperties)+ ')')?
       (RETURN AS? (LOCATOR | VALUE))?
     ;
 
@@ -6227,8 +6218,9 @@ lobStorageParameters
 lobStorageParameter
     : ( TABLESPACE tablespace
       | TABLESPACE SET tablespaceSet
-      ) storageClause?
-    | lobParameters storageClause?
+      | lobParameters storageClause?
+      )+
+    | storageClause
     ;
 
 lobParameters
@@ -11392,7 +11384,7 @@ statement
     ;
 
 procedureCall
-    : procedureName ( '(' ( plsqlParameter ( ',' plsqlParameter )* )? ')' )?
+    : procedureName ( '(' ( plsqlParameter ( ',' plsqlParameter )* )? ')' )? ';'
     ;
 
 assignmentStatement
