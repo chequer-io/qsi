@@ -1562,6 +1562,14 @@ options { tokenVocab=predefined; }
 //KW_S:                             S;
 //KW_T:                             T;
 //KW_X:                             X;
+//CHAINED:                          C H A I N E D;
+//STRUCTURE:                        S T R U C T U R E;
+//FUNCTIONS:                        F U N C T I O N S;
+//PACKAGES:                         P A C K A G E S;
+//TYPES:                            T Y P E S;
+//INDEXTYPES:                       I N D E X T Y P E S;
+//SELECTIVITY:                      S E L E C T I V I T Y;
+//TIME_ZONE:                        T I M E '_' Z O N E;
 
 fragment A: [aA];
 fragment B: [bB];

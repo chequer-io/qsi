@@ -232,7 +232,7 @@ sqlplusSaveCommand
     ;
 
 sqlplusSetCommand
-    : SET identifierFragment (literal | identifierFragment)?
+    : SET (literal | identifierFragment)+
     ;
 
 sqlplusShowCommand
@@ -446,6 +446,7 @@ sqlplusFileNameFragment
     : identifier
     | '.'
     | numberLiteral
+    | '/'
     ;
 
 oracleStatement
@@ -707,13 +708,13 @@ characterSetClause
     ;
 
 createDatabaseLink
-    : CREATE SHARED? PUBLIC? DATABASE LINK dblink
+    : CREATE SHARED? PUBLIC? DATABASE LINK identifierFragments
         ( CONNECT TO
           ( CURRENT_USER
           | user IDENTIFIED BY password dblinkAuthentication?
           )
         | dblinkAuthentication
-        )*
+        )+
         ( USING connectString )?
     ;
 
@@ -7767,9 +7768,10 @@ granteeClauseItem
     ;
 
 subquery
-    : queryBlock orderByClause? rowOffset? rowFetchOption?
-    | subquery ((UNION ALL? | INTERSECT | MINUS | EXCEPT) subquery)+ orderByClause? rowOffset? rowFetchOption?
-    | '(' subquery ')' orderByClause? rowOffset? rowFetchOption?
+    : queryBlock orderByClause? rowOffset? rowFetchOption?              #queryBlockSubquery
+    | subquery ((UNION ALL? | INTERSECT | MINUS | EXCEPT) subquery)+
+      orderByClause? rowOffset? rowFetchOption?                         #joinedSubquery
+    | '(' subquery ')' orderByClause? rowOffset? rowFetchOption?        #parenthesisSubquery
     ;
 
 orderByClause
@@ -8074,23 +8076,24 @@ selectListItem
     ;
 
 tableSource
-    : tableReference ( innerCrossJoinClause | outerJoinClause | crossOuterApplyClause)*
-    | '(' tableSource ')'
-    | inlineAnalyticView
+    : tableReference tableJoinClause* #tableOrJoinTableSource
+    | '(' tableSource ')'             #parenthesisTableSource
+    | inlineAnalyticView              #inlineAnalyticViewTableSource
+    ;
+
+tableJoinClause
+    : innerCrossJoinClause 
+    | outerJoinClause 
+    | crossOuterApplyClause
     ;
 
 tableReference
-    : (
-       (
-           ( queryTableExpression | ONLY '(' queryTableExpression ')' )
-           flashbackQueryClause?
-           (pivotClause | unpivotClause | rowPatternClause)?
-       )
-      | containersClause
-      | shardsClause
-      )
-      tAlias?
-    | tablePrimary (AS? tAlias)?
+    : ( queryTableExpression | ONLY '(' queryTableExpression ')' )
+      flashbackQueryClause? 
+      (pivotClause | unpivotClause | rowPatternClause)? tAlias?         #queryTableReference
+    | containersClause tAlias?                                          #containersClauseReference
+    | shardsClause tAlias?                                              #shardsClauseReference
+    | tablePrimary (AS? tAlias)?                                        #tablePrimaryReference
     ;
 
 tablePrimary
@@ -8132,32 +8135,65 @@ inlineAnalyticView
     ;
 
 queryTableExpression
-    : ( schema '.' )? ( table ( modifiedExternalTable | partitionExtensionClause | '@' dblink )?
-                      | ( view | materializedView ) ( '@' dblink )?
-                      | hierarchyName
-                      | analyticViewName=identifier ( HIERARCHIES '(' ( ( attributeDimension '.' )? hierarchyName ( ',' ( attributeDimension '.' )? hierarchyName )* )? ')' )?
-                      | inlineExternalTable
-                      )
-                      sampleClause?
-    | LATERAL? '(' subquery subqueryRestrictionClause? ')'
-    | tableCollectionExpression
-    // returning table function
-    | functionExpression
+    : fullObjectPath ( partitionExtensionClause 
+                     | hierarchiesClause 
+                     | modifiedExternalTable
+                     )? sampleClause?                                   #objectPathTableExpression
+    | LATERAL? '(' subquery subqueryRestrictionClause? ')'              #subqueryTableExpression
+    | tableCollectionExpression                                         #queryTableCollectionExpression
+    // returning table function 
+    | functionExpression                                                #functionTableExpression
+//    : ( schema '.' )? ( table ( modifiedExternalTable | partitionExtensionClause | '@' dblink )?
+//                      | ( view | materializedView ) ( '@' dblink )?
+//                      | hierarchyName
+//                      | analyticViewName=identifier ( HIERARCHIES '(' ( ( attributeDimension '.' )? hierarchyName ( ',' ( attributeDimension '.' )? hierarchyName )* )? ')' )?
+//                      | inlineExternalTable
+//                      )
+//                      sampleClause?
+//    | LATERAL? '(' subquery subqueryRestrictionClause? ')'
+//    | tableCollectionExpression
+//    // returning table function
+//    | functionExpression
     ;
 
 modifiedExternalTable
-    : EXTERNAL MODIFY '(' modifyExternalTableProperties ')'
+    : EXTERNAL MODIFY '(' modifyExternalTableProperties+ ')'
     ;
 
 modifyExternalTableProperties
-    : ( DEFAULT DIRECTORY directoryName )?
-      ( LOCATION ( '(' ( directoryName ':' )? TK_SINGLE_QUOTED_STRING ( ',' ( directoryName ':' )? TK_SINGLE_QUOTED_STRING )* ')'
-                 | ( directoryName ':' )? TK_SINGLE_QUOTED_STRING
-                 )
-      )?
-      ( ACCESS PARAMETERS ( BADFILE | LOGFILE | DISCARDFILE ) filename )?
-      ( REJECT LIMIT ( integer | UNLIMITED ) )?
+    : DEFAULT DIRECTORY identifier
+    | LOCATION '(' fileNameWithDirectory (',' fileNameWithDirectory)* ')'
+    | ACCESS PARAMETERS '(' modifyExternalAccessParametersItem+ ')'
+    | REJECT LIMIT (integer | UNLIMITED)
     ;
+
+modifyExternalAccessParametersItem
+    : BADFILE fileNameWithDirectory 
+    | LOGFILE fileNameWithDirectory 
+    | DISCARDFILE fileNameWithDirectory
+    | NOBADFILE
+    | NOLOGFILE
+    | NODISCARDFILE
+    ;
+
+fileNameWithDirectory
+    : (directoryName ':')? stringLiteral
+    | directoryName
+    ;
+
+//modifiedExternalTable
+//    : EXTERNAL MODIFY '(' modifyExternalTableProperties ')'
+//    ;
+//
+//modifyExternalTableProperties
+//    : ( DEFAULT DIRECTORY directoryName )?
+//      ( LOCATION ( '(' ( directoryName ':' )? TK_SINGLE_QUOTED_STRING ( ',' ( directoryName ':' )? TK_SINGLE_QUOTED_STRING )* ')'
+//                 | ( directoryName ':' )? TK_SINGLE_QUOTED_STRING
+//                 )
+//      )?
+//      ( ACCESS PARAMETERS ( BADFILE | LOGFILE | DISCARDFILE ) filename )?
+//      ( REJECT LIMIT ( integer | UNLIMITED ) )?
+//    ;
 
 inlineExternalTable
     : EXTERNAL '(' '(' columnDefinition ( ',' columnDefinition )* ')' inlineExternalTableProperties ')'
@@ -8702,11 +8738,11 @@ rowPatternAggregateFunc
     ;
 
 containersClause
-    : CONTAINERS '(' (schema '.')? (table | view) ')'
+    : CONTAINERS '(' (schema '.')? identifier ')'
     ;
 
 shardsClause
-    : SHARDS '(' (schema '.')? (table | view) ')'
+    : SHARDS '(' (schema '.')? identifier ')'
     ;
 
 pivotForClause
@@ -9205,8 +9241,7 @@ calcMeasExpression
     ;
 
 functionExpression
-    : functionExpression '.' identifier
-    | functionExpression '.' functionExpression
+    : functionExpression ('.' (functionExpression | identifier))+
     | functionName '(' expressionList? ')'
     | functionName '(' expressionList? ')' OVER ( identifier | '(' analyticClause ')' )
     | castFunction
@@ -10653,7 +10688,7 @@ fullColumnPath
     ;
 
 fullObjectPath
-    : identifier ('.' identifier)?
+    : (identifierFragment '.')? identifier
     ;
 
 varrayItem
@@ -10681,7 +10716,7 @@ tablespaceSet
     ;
 
 dblink
-    : ( identifier '.' )* identifier
+    : identifierFragment ('@' identifierFragment)?
     ;
 
 attribute
@@ -10737,7 +10772,7 @@ object
     ;
 
 directoryName
-    : identifier
+    : identifierFragment
     ;
 
 model
@@ -11822,11 +11857,15 @@ lockmode
     ;
 
 functionName
-    : ( simpleIdentifier '.' )* simpleIdentifier
+    : ( identifier '.' )* identifier
     ;
 
 identifier
-    : identifierFragment ( '@' identifierFragment )?
+    : identifierFragment ( '@' dblink )?
+    ;
+
+identifierFragments
+    : identifierFragment ('.' identifierFragment)*
     ;
 
 identifierFragment
@@ -12749,6 +12788,7 @@ nonReservedKeywordIdentifier
     | OLD
     | OLS
     | OLTP
+    | ON
     | ONE
     | ONE_SIDED_SIG
     | ONE_SIDED_SIG_NEG
