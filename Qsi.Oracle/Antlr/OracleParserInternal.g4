@@ -306,7 +306,7 @@ sqlplusAttributeOptions
 
 sqlplusDbOptions
     : FORCE? RESTRICT? (PFILE '=' stringLiteral)? QUIET? 
-      (MOUNT identifierFragment | OPEN sqlplusOpenDbOptions? identifierFragment | NOMOUNT)?
+      (MOUNT identifierFragment? | OPEN sqlplusOpenDbOptions? identifierFragment? | NOMOUNT)?
     ;
 
 sqlplusOpenDbOptions
@@ -853,7 +853,7 @@ procedureDefinition
     ;
 
 functionDeclaration
-    : functionHeading ( DETERMINISTIC | PIPELINED | PARALLEL_ENABLE | RESULT_CACHE )* ';'
+    : functionHeading ( DETERMINISTIC | PIPELINED | PARALLEL_ENABLE | RESULT_CACHE resultCacheClause? )* ';'
     ;
 
 functionHeading
@@ -915,6 +915,7 @@ plsqlExpression
     | '(' plsqlExpression ')'                                                                           #subqueryExpression
     | numberLiteral                                                                                     #numberLiteralExpression
     | booleanLiteral                                                                                    #booleanLiteralExpression
+    | stringLiteral                                                                                     #stringLiteralExpression
     | functionCall                                                                                      #functionCallExpression
     | conditionalPredicate                                                                              #conditionalPredicateExpression
     | identifier '.' (COUNT | FIRST | LAST | LIMIT | (NEXT | PRIOR | EXISTS) '(' index ')')             #collectionFunctionsExpression
@@ -1011,7 +1012,14 @@ collectionConstructor
     ;
 
 functionCall
-    : functionName '(' ( parameter ( ',' parameter )* )? ')'
+    : functionName '(' ( plsqlParameter ( ',' plsqlParameter )* )? ')'
+    ;
+
+plsqlParameter
+    : identifier
+    | literal
+    | plsqlExpression
+    | identifier '=' '>' ( identifier | literal | plsqlExpression )
     ;
 
 qualifiedExpression
@@ -1178,8 +1186,8 @@ hierAttrName
 
 createIndextype
     : CREATE ( OR REPLACE )? INDEXTYPE ( schema '.' )? indextype
-        FOR ( schema '.' )? operator1 '(' parameterType ( ',' parameterType )*')'
-              ( ',' ( schema '.' )? operator1 '('parameterType ( ',' parameterType )*')'
+        FOR ( schema '.' )? operatorName '(' parameterType ( ',' parameterType )*')'
+              ( ',' ( schema '.' )? operatorName '('parameterType ( ',' parameterType )*')'
               )*
         usingTypeClause
         ( WITH LOCAL RANGE? PARTITION )?
@@ -1245,8 +1253,8 @@ createMaterializedView
         ( DEFAULT COLLATION collationName )?
         ( ON PREBUILT TABLE
           ( ( WITH | WITHOUT ) REDUCED PRECISION )?
-        | physicalProperties materializedViewProps
-        )?
+        | physicalProperties? materializedViewProps
+        )
         ( USING INDEX
           ( physicalAttributesClause
           | TABLESPACE tablespace
@@ -1309,16 +1317,17 @@ createMaterializedViewLog
         ( WITH ( ( OBJECT ID
                      | PRIMARY KEY
                      | ROWID
-                     | SEQUENCE
+                     | SEQUENCE '(' column ( ',' column )* ')'
                      | COMMIT SCN
-                     ) ( '(' column ( ',' column )* ')' )?
-                     ( ( ',' OBJECT ID
-                       | ',' PRIMARY KEY
-                       | ',' ROWID
-                       | ',' SEQUENCE
-                       | ',' COMMIT SCN
-                       ) ( '(' column ( ',' column )* ')' )? )* 
+                     )
+                     ( ',' OBJECT ID
+                     | ',' PRIMARY KEY
+                     | ',' ROWID
+                     | ',' SEQUENCE '(' column ( ',' column )* ')'
+                     | ',' COMMIT SCN
+                     )* 
                   )?
+          ( '(' column ( ',' column )* ')' )?
           newValuesClause?
         )?
         mvLogPurgeClause?
@@ -1438,7 +1447,7 @@ createPluggableDatabase
     ;
 
 containerMapClause
-    : CONTAINER_MAP UPDATE ( addTablePartition | splitTablePartition )
+    : CONTAINER_MAP UPDATE '(' ( addTablePartition | splitTablePartition ) ')'
     ;
 
 createPdbFromMirrorCopy
@@ -1480,8 +1489,8 @@ createPdbDecryptFromXml
     ;
 
 createPdbClone
-    : ( ( FROM ( pdbName ( '@' dblink )? ) | ( NON '$' CDB '@' dblink ) )
-      | ( AS PROXY FROM pdbName '@' dblink )
+    : ( FROM ( pdbName ( '@' dblink )? ) | ( NON '$' CDB '@' dblink )
+      | AS PROXY FROM pdbName '@' dblink
       )
         parallelPdbCreationClause?
         defaultTablespace?
@@ -1499,7 +1508,7 @@ createPdbClone
         keystoreClause?
         pdbRefreshModeClause?
         ( RELOCATE AVAILABILITY  (MAX | NORMAL ) )?
-        NO DATA?
+        ( NO DATA )?
         ( HOST '=' stringLiteral )?
         ( PORT '=' numberLiteral )?
     ;
@@ -1525,6 +1534,7 @@ createPdbFromSeed
         serviceNameConvert?
         pathPrefixClause?
         tempfileReuseClause?
+        containerMapClause?
         userTablespacesClause?
         standbysClause?
         loggingClause?
@@ -2124,8 +2134,8 @@ byUsersWithRoles
     ;
 
 noaudit
-    : traditionalNoAudit
-    | unifiedNoaudit
+    : unifiedNoaudit
+    | traditionalNoAudit
     ;
 
 traditionalNoAudit
@@ -2212,10 +2222,10 @@ auditingOnClause
 
 unifiedNoaudit
     : NOAUDIT
-      ( POLICY policy ( ( BY user ( ',' user )* ) | byUsersWithRoles )? )
-      | ( CONTEXT NAMESPACE namespace ATTRIBUTES attribute ( ',' attribute )*
+      ( POLICY policy ( ( BY user ( ',' user )* ) | byUsersWithRoles )?
+      | CONTEXT NAMESPACE namespace ATTRIBUTES attribute ( ',' attribute )*
           ( ',' CONTEXT NAMESPACE namespace ATTRIBUTES attribute ( ',' attribute )* )*
-        ( BY user ( ',' user )* )? ( WHENEVER NOT? SUCCESSFUL )?
+          ( BY user ( ',' user )* )? ( WHENEVER NOT? SUCCESSFUL )?
       )
     ;
 
@@ -2886,7 +2896,7 @@ pdbSettingsClauses
       | pdbLoggingClauses
       | pdbRefreshModeClause
       | REFRESH pdbRefreshSwitchoverClause?
-        | SET CONTAINER_MAP '=' stringLiteral
+      | SET CONTAINER_MAP '=' stringLiteral
       )
     | CONTAINERS ( DEFAULT TARGET '=' ( '(' containerName ')' | NONE )
                  | HOST '=' stringLiteral
@@ -4195,7 +4205,7 @@ functionSpec
     ;
 
 returnClause
-    : RETURN datatype ( ( IS | AS ) callSpec )?
+    : RETURN datatype ( DETERMINISTIC | PIPELINED | PARALLEL_ENABLE | RESULT_CACHE resultCacheClause? )* ( ( IS | AS ) callSpec )?
     ;
 
 callSpec
@@ -4656,13 +4666,12 @@ dropSequence
 dropTablespace
     : DROP TABLESPACE tablespace
          ( ( DROP | KEEP ) QUOTA )?
-         ( INCLUDING CONTENTS ( ( AND | KEEP ) DATAFILES )? ( CASCADE CONSTRAINTS )? )
+         ( INCLUDING CONTENTS ( ( AND | KEEP ) DATAFILES )? ( CASCADE CONSTRAINTS )? )?
     ;
 
 dropTablespaceSet
     : DROP TABLESPACE SET tablespaceSet
-         ( ( DROP | KEEP ) QUOTA )?
-         ( INCLUDING CONTENTS ( ( AND | KEEP ) DATAFILES )? ( CASCADE CONSTRAINTS )? )
+         ( INCLUDING CONTENTS ( ( AND | KEEP ) DATAFILES )? ( CASCADE CONSTRAINTS )? )?
     ;
 
 dropTrigger
@@ -4709,24 +4718,24 @@ hierarchyClause
     ;
 
 dimensionJoinClause
-    : (dimensionJoinClauseItem)*
+    : dimensionJoinClauseItem*
     ;
 
 dimensionJoinClauseItem
-    : JOIN KEY ( childKeyColumn=identifier 
-               | '(' childKeyColumn=identifier (',' childKeyColumn=identifier)* ')'
+    : JOIN KEY ( childKeyColumn=column 
+               | '(' childKeyColumn=column (',' childKeyColumn=column)* ')'
                )
       REFERENCES parentLevel=identifier
     ;
 
 attributeClause
-    : ATTRIBUTE level DETERMINES ( dependentColumn=identifier 
-                                            | '(' dependentColumn=identifier (',' dependentColumn=identifier)* ')'
+    : ATTRIBUTE level DETERMINES ( dependentColumn=column 
+                                            | '(' dependentColumn=column (',' dependentColumn=column)* ')'
                                             )
     ;
 
 extendedAttributeClause
-    : ATTRIBUTE attribute (LEVEL level DETERMINES (dependentColumn=identifier | '(' dependentColumn=identifier (',' dependentColumn=identifier)* ')'))*
+    : ATTRIBUTE attribute (LEVEL level DETERMINES (dependentColumn=column | '(' dependentColumn=column (',' dependentColumn=column)* ')'))*
     ;
 
 levelClauseItem
@@ -5174,11 +5183,11 @@ trackingStatisticsClause
     ;
 
 clusterIndexClause
-    : CLUSTER (schema '.')? cluster tAlias? ( '(' indexExpr ( ASC | DESC )? ( ',' indexExpr ( ASC | DESC )? )* ')' )? indexProperties
+    : CLUSTER (schema '.')? cluster tAlias? ( '(' indexExpr ( ASC | DESC )? ( ',' indexExpr ( ASC | DESC )? )* ')' )? indexProperties?
     ;
 
 tableIndexClause
-    : (schema '.')? table tAlias? '(' tableIndexClauseItem (',' tableIndexClauseItem)* ')' indexProperties
+    : (schema '.')? table tAlias? '(' tableIndexClauseItem (',' tableIndexClauseItem)* ')' indexProperties?
     ;
 
 tableIndexClauseItem
@@ -5311,14 +5320,13 @@ constraintState
 usingIndexClause
     : USING INDEX ((schema '.')? index
                   | '(' createIndex ')'
-                  | indexProperties
+                  | indexProperties?
                   )
     ;
 
 indexProperties
-    : ( ( globalPartitionedIndex | localPartitionedIndex | indexAttributes )+
-      | INDEXTYPE IS (domainIndexClause | xmlIndexClause)
-      )?
+    : ( globalPartitionedIndex | localPartitionedIndex | indexAttributes )+
+    | INDEXTYPE IS (domainIndexClause | xmlIndexClause)
     ;
 
 domainIndexClause
@@ -5351,7 +5359,7 @@ localDomainIndexClauseItem
     ;
 
 globalPartitionedIndex
-    : GLOBAL PARTITION BY ( RANGE columnList '(' indexPartitioningClause ')'
+    : GLOBAL PARTITION BY ( RANGE columnList '(' indexPartitioningClause ( ',' indexPartitioningClause )* ')'
                           | HASH columnList (individualHashPartitions | hashPartitionsByQuantity)
                           )
     ;
@@ -5503,6 +5511,7 @@ blockchainHashAndDataFormatClause
 
 physicalProperties
     : deferredSegmentCreation? segmentAttributesClause tableCompression? inmemoryTableClause? ilmClause?
+    | deferredSegmentCreation segmentAttributesClause? tableCompression? inmemoryTableClause? ilmClause?
     | deferredSegmentCreation? ( ORGANIZATION ( HEAP segmentAttributesClause? heapOrgTableClause
                                               | INDEX segmentAttributesClause? indexOrgTableClause
                                               | EXTERNAL externalTableClause
@@ -5563,7 +5572,7 @@ indexOrgTableClauseItem
     ;
 
 externalTableClause
-    : '(' (TYPE accessDriverType=identifier)? externalTableDataProps* ')' (REJECT LIMIT (integer | UNLIMITED))?
+    : '(' (TYPE accessDriverType)? externalTableDataProps* ')' (REJECT LIMIT (integer | UNLIMITED))?
     ;
 
 externalTableDataProps
@@ -5714,8 +5723,7 @@ mappingTableClause
     ;
 
 indexOrgOverflowClause
-    : prefixCompression
-    | advancedIndexCompression
+    : ( INCLUDING column )? OVERFLOW segmentAttributesClause?
     ;
 
 tableCompression
@@ -8132,16 +8140,39 @@ inlineAnalyticView
     ;
 
 queryTableExpression
-    : fullObjectPath
-       ( partitionExtensionClause
-       | '@' identifierFragment 
-       | hierarchiesClause
-       )?
-       sampleClause?
+    : ( schema '.' )? ( table ( modifiedExternalTable | partitionExtensionClause | '@' dblink )?
+                      | ( view | materializedView ) ( '@' dblink )?
+                      | hierarchyName
+                      | analyticViewName=identifier ( HIERARCHIES '(' ( ( attributeDimension '.' )? hierarchyName ( ',' ( attributeDimension '.' )? hierarchyName )* )? ')' )?
+                      | inlineExternalTable
+                      )
+                      sampleClause?
     | LATERAL? '(' subquery subqueryRestrictionClause? ')'
     | tableCollectionExpression
-    // returning table function 
+    // returning table function
     | functionExpression
+    ;
+
+modifiedExternalTable
+    : EXTERNAL MODIFY '(' modifyExternalTableProperties ')'
+    ;
+
+modifyExternalTableProperties
+    : ( DEFAULT DIRECTORY directoryName )?
+      ( LOCATION ( '(' ( directoryName ':' )? TK_SINGLE_QUOTED_STRING ( ',' ( directoryName ':' )? TK_SINGLE_QUOTED_STRING )* ')'
+                 | ( directoryName ':' )? TK_SINGLE_QUOTED_STRING
+                 )
+      )?
+      ( ACCESS PARAMETERS ( BADFILE | LOGFILE | DISCARDFILE ) filename )?
+      ( REJECT LIMIT ( integer | UNLIMITED ) )?
+    ;
+
+inlineExternalTable
+    : EXTERNAL '(' '(' columnDefinition ( ',' columnDefinition )* ')' inlineExternalTableProperties ')'
+    ;
+
+inlineExternalTableProperties
+    : ( TYPE accessDriverType )? externalTableDataProps ( REJECT LIMIT ( integer | UNLIMITED ))?
     ;
 
 flashbackQueryClause
@@ -8691,13 +8722,12 @@ pivotForClause
     ;
 
 pivotInClause
-    : IN '('
-          (
-            ((expr | '(' expr (',' expr)* ')') (AS? alias)?)*
-          | subquery
-          | ANY (',' ANY)*
-          )
-      ')'
+    : IN '(' 
+         ( ((expr | '(' expr (',' expr)* ')') (AS? alias)?) ( ',' ((expr | '(' expr (',' expr)* ')') (AS? alias)?) )*
+         | subquery
+         | ANY (',' ANY)*
+         ) 
+         ')'
     ;
 
 partitionExtensionClause
@@ -8854,7 +8884,7 @@ windowClause
     ;
 
 windowClauseItem
-    : windowName=identifier AS existingWindowName=identifier? queryPartitionClause? orderByClause? windowingClause?
+    : windowName=identifier AS '(' existingWindowName=identifier? queryPartitionClause? orderByClause? windowingClause? ')'
     ;
 
 windowingClause
@@ -8920,6 +8950,7 @@ numberDatatypes
     | FLOAT ('(' precision ')')?
     | BINARY_FLOAT
     | BINARY_DOUBLE
+    | BINARY_INTEGER
     ;
 
 longAndRawDatatypes
@@ -8962,7 +8993,7 @@ ansiSupportedDatatypes
     ;
 
 userDefinedTypes
-    : REF? identifier
+    : REF? ( identifier '.' )* identifier
     ;
 
 oracleSuppliedTypes
@@ -9530,10 +9561,10 @@ firstFunction
     ;
 
 firstValueFunction
-    : FIRST_VALUE ('(' expr ')' ((RESPECT | IGNORE) NULLS)?
-                  |'(' expr ((RESPECT | IGNORE) NULLS)? ')'
+    : FIRST_VALUE ('(' ( expr | identifier ) ')' ((RESPECT | IGNORE) NULLS)?
+                  |'(' ( expr | identifier ) ((RESPECT | IGNORE) NULLS)? ')'
                   )
-      OVER '(' analyticClause ')'
+      OVER ( '(' analyticClause ')' | analyticClause )
     ;
 
 iterationNumberFunction
@@ -9615,10 +9646,10 @@ lastFunction
     ;
 
 lastValueFunction
-    : LAST_VALUE ('(' expr ')' ((RESPECT | IGNORE) NULLS)?
-                  |'(' expr ((RESPECT | IGNORE) NULLS)? ')'
+    : LAST_VALUE ('(' ( expr | identifier ) ')' ((RESPECT | IGNORE) NULLS)?
+                  |'(' ( expr | identifier ) ((RESPECT | IGNORE) NULLS)? ')'
                   )
-      OVER '(' analyticClause ')'
+      OVER ( '(' analyticClause ')' | analyticClause )
     ;
 
 leadFunction
@@ -9649,8 +9680,8 @@ minFunction
     ;
 
 nthValueFunction
-    : NTH_VALUE '(' expr ',' expr ')' (FROM (FIRST | LAST))? ((RESPECT | IGNORE) NULLS)?
-      OVER '(' analyticClause ')'
+    : NTH_VALUE '(' ( expr | identifier ) ',' ( expr | identifier ) ')' (FROM (FIRST | LAST))? ((RESPECT | IGNORE) NULLS)?
+      OVER ( '(' analyticClause ')' | analyticClause )
     ;
 
 ntileFunction
@@ -10838,7 +10869,7 @@ filestoreName
     ;
 
 procedureName
-    : identifier
+    : ( identifier '.' )* identifier
     ;
 
 partition
@@ -11351,12 +11382,17 @@ statement
                                  | openForStatement
                                  | pipeRowStatement
                                  | plsqlBlock
+                                 | procedureCall
                                  | raiseStatement
                                  | returnStatement
                                  | selectIntoStatement
                                  | sqlStatement
                                  | whileLoopStatement
                                  )
+    ;
+
+procedureCall
+    : procedureName ( '(' ( plsqlParameter ( ',' plsqlParameter )* )? ')' )?
     ;
 
 assignmentStatement
@@ -11593,6 +11629,11 @@ serverFileName
     ;
 
 sourceChar
+    : identifier
+    | stringLiteral
+    ;
+
+accessDriverType
     : identifier
     ;
 
