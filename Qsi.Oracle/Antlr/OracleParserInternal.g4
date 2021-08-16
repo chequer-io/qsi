@@ -59,6 +59,8 @@ sqlplusCommand
     | sqlplusRunCommand
     | sqlplusSaveCommand
     | sqlplusSetCommand
+    | sqlplusSetLineSizeCommand
+    | sqlplusSetPageSizeCommand
     | sqlplusShowCommand
     | sqlplusShutdownCommand
     | sqlplusSpoolCommand
@@ -145,7 +147,7 @@ sqlplusDescribeCommand
     ;
 
 sqlplusDisconnectCommand
-    : DISC 
+    : DISC
     | DISCONNECT
     ;
 
@@ -235,6 +237,14 @@ sqlplusSetCommand
     : SET (literal | identifierFragment)+
     ;
 
+sqlplusSetLineSizeCommand
+    : SET ( LIN | LINESIZE ) integer
+    ;
+
+sqlplusSetPageSizeCommand
+    : SET ( PAGES | PAGESIZE ) integer
+    ;
+
 sqlplusShowCommand
     : (SHO | SHOW) sqlplusShowCommandOption
     ;
@@ -305,7 +315,7 @@ sqlplusAttributeOptions
     ;
 
 sqlplusDbOptions
-    : FORCE? RESTRICT? (PFILE '=' stringLiteral)? QUIET? 
+    : FORCE? RESTRICT? (PFILE '=' stringLiteral)? QUIET?
       (MOUNT identifierFragment? | OPEN sqlplusOpenDbOptions? identifierFragment? | NOMOUNT)?
     ;
 
@@ -344,19 +354,19 @@ sqlplusShowCommandOption
     | CON_ID
     | CON_NAME
     | EDITION
-    | (ERR | ERRORS) (ANALYTIC VIEW 
-                     | ATTRIBUTE DIMENSION 
-                     | HIERARCHY 
-                     | FUNCTION 
-                     | PROCEDURE 
-                     | PACKAGE 
-                     | PACKAGE BODY 
-                     | TRIGGER 
-                     | VIEW 
-                     | TYPE 
-                     | TYPE BODY 
-                     | DIMENSION 
-                     | JAVA CLASS 
+    | (ERR | ERRORS) (ANALYTIC VIEW
+                     | ATTRIBUTE DIMENSION
+                     | HIERARCHY
+                     | FUNCTION
+                     | PROCEDURE
+                     | PACKAGE
+                     | PACKAGE BODY
+                     | TRIGGER
+                     | VIEW
+                     | TYPE
+                     | TYPE BODY
+                     | DIMENSION
+                     | JAVA CLASS
                      )? (identifierFragment '.')? identifierFragment
     ;
 
@@ -386,12 +396,12 @@ sqlplusRecoverManagedClause
 sqlplusRecoverRecoverClause
     : (( DISCONNECT (FROM SESSION)?  | ( TIMEOUT integer | NOTIMEOUT ))
       | (NODELAY | DEFAULT DELAY | DELAY integer )
-      | NEXT integer  
+      | NEXT integer
       | (EXPIRE integer | NO EXPIRE )
-      | parallelClause 
-      | USING CURRENT LOGFILE 
+      | parallelClause
+      | USING CURRENT LOGFILE
       | UNTIL CHANGE integer
-      | THROUGH ( (THREAD integer)? SEQUENCE integer 
+      | THROUGH ( (THREAD integer)? SEQUENCE integer
                 | ALL ARCHIVELOG
                 | (ALL | LAST | NEXT) SWITCHOVER)
       )+
@@ -714,7 +724,7 @@ createDatabaseLink
           | user IDENTIFIED BY password dblinkAuthentication?
           )
         | dblinkAuthentication
-        )+
+        )*
         ( USING connectString )?
     ;
 
@@ -764,20 +774,20 @@ createFunction
 
 plsqlFunctionSource
     : ( schema '.' )? functionName
-        ( '(' parameterDeclaration ( ',' parameterDeclaration )* ')' )? RETURN datatype 
+        ( '(' parameterDeclaration ( ',' parameterDeclaration )* ')' )? RETURN datatype
       sharingClause?
         ( invokerRightsClause
           | accessibleByClause
-          | defaultCollationClause    
+          | defaultCollationClause
           | deterministicClause
           | parallelEnableClause
-          | resultCacheClause 
+          | resultCacheClause
           | aggregateClause
           | pipelinedClause
           | sqlMacroClause
         )*
-      ( IS | AS ) ( declareSection? body 
-                    | callSpec
+      ( IS | AS ) ( declareSection? body
+                  | callSpec
                   )
     ;
 
@@ -944,14 +954,14 @@ plsqlExpression
     ;
 
 booleanLiteral
-    : TRUE 
-    | FALSE 
+    : TRUE
+    | FALSE
     | NULL
     ;
 
 conditionalPredicate
-    : INSERTING 
-    | UPDATING ('(' stringLiteral ')')? 
+    : INSERTING
+    | UPDATING ('(' stringLiteral ')')?
     | DELETING
     ;
 
@@ -1096,7 +1106,7 @@ typeDefinition
     ;
 
 collectionTypeDefinition
-    : TYPE type IS 
+    : TYPE type IS
         ( assocArrayTypeDef
         | varrayTypeDef
         | nestedTableTypeDef
@@ -1150,8 +1160,8 @@ plsqlConstraint
     ;
 
 createHierarchy
-    : CREATE ( OR REPLACE )? ( FORCE | NOFORCE )? 
-        HIERARCHY ( schema '.' )? hierarchy 
+    : CREATE ( OR REPLACE )? ( FORCE | NOFORCE )?
+        HIERARCHY ( schema '.' )? hierarchy
         sharingClause?
         classificationClause*
         hierUsingClause
@@ -1271,8 +1281,8 @@ createMaterializedView
 createMvRefresh
     : REFRESH
         ( ( FAST | COMPLETE | FORCE )
-        | ( ON DEMAND 
-          | ON COMMIT 
+        | ( ON DEMAND
+          | ON COMMIT
           | ON STATEMENT
           )
         | ( START WITH expr |
@@ -1325,7 +1335,7 @@ createMaterializedViewLog
                      | ',' ROWID
                      | ',' SEQUENCE '(' column ( ',' column )* ')'
                      | ',' COMMIT SCN
-                     )* 
+                     )*
                   )?
           ( '(' column ( ',' column )* ')' )?
           newValuesClause?
@@ -1392,20 +1402,20 @@ plsqlPackageSource
     ;
 
 packageItemList
-    : ( typeDefinition 
-      | cursorDeclaration 
-      | itemDeclaration 
-      | packageFunctionDeclaration 
-      | packageProcedureDeclaration 
+    : ( typeDefinition
+      | cursorDeclaration
+      | itemDeclaration
+      | packageFunctionDeclaration
+      | packageProcedureDeclaration
       )+
     ;
 
 packageFunctionDeclaration
-    : functionHeading 
-        ( accessibleByClause 
-        | deterministicClause 
-        | pipelinedClause 
-        | parallelEnableClause 
+    : functionHeading
+        ( accessibleByClause
+        | deterministicClause
+        | pipelinedClause
+        | parallelEnableClause
         | resultCacheClause )?
     ;
 
@@ -1475,7 +1485,7 @@ createPdbFromXml
 
 sourceFileNameConvert
     : SOURCE_FILE_NAME_CONVERT '='
-      ( '(' filenamePattern ','  filenamePattern ')' ( ',' '(' filenamePattern ',' filenamePattern ')' )* 
+      ( '(' filenamePattern ','  filenamePattern ')' ( ',' '(' filenamePattern ',' filenamePattern ')' )*
       | NONE
       )
     ;
@@ -1554,7 +1564,7 @@ parallelPdbCreationClause
 
  serviceNameConvert
     : SERVICE_NAME_CONVERT '='
-      ( '(' serviceName ',' serviceName ')' ( ',' '(' serviceName ',' serviceName ')' )* 
+      ( '(' serviceName ',' serviceName ')' ( ',' '(' serviceName ',' serviceName ')' )*
       | NONE
       )
     ;
@@ -1723,7 +1733,7 @@ undoTablespaceClause
 createTablespaceSet
     : CREATE TABLESPACE SET tablespaceSet
         ( IN SHARDSPACE shardspaceName )?
-        ( USING TEMPLATE 
+        ( USING TEMPLATE
           '(' ( DATAFILE fileSpecification ( ',' fileSpecification )* )? permanentTablespaceAttrs ')'
         )
     ;
@@ -1748,7 +1758,7 @@ systemTrigger
     : ( BEFORE | AFTER | INSTEAD OF )
          ( ddlEvent ( OR ddlEvent )* | databaseEvent ( OR databaseEvent )* )
          ON ( ( schema '.' )? SCHEMA | PLUGGABLE? DATABASE )
-         triggerOrderingClause? 
+         triggerOrderingClause?
          ( ENABLE | DISABLE )? triggerBody
     ;
 
@@ -1812,11 +1822,11 @@ referencingClause
     ;
 
 triggerEditionClause
-    : ( FORWARD | REVERSE )? CROSSEDITION 
+    : ( FORWARD | REVERSE )? CROSSEDITION
     ;
 
 triggerOrderingClause
-    : ( FOLLOWS | PRECEDES ) ( schema '.' )? trigger ( ',' ( schema '.' )? trigger )* 
+    : ( FOLLOWS | PRECEDES ) ( schema '.' )? trigger ( ',' ( schema '.' )? trigger )*
     ;
 
 triggerBody
@@ -1848,7 +1858,7 @@ objectBaseTypeDef
     ;
 
 objectSubtypeDef
-    : UNDER ( schema '.' )? supertype 
+    : UNDER ( schema '.' )? supertype
         '(' ( attribute plsqlDatatype ( ',' attribute plsqlDatatype )* ) ( ',' elementSpec )* ')'
         ( NOT? ( FINAL | INSTANTIABLE ) )*
     ;
@@ -2000,9 +2010,9 @@ updateSetSubstituteClause
 merge
     : MERGE hint?
       INTO ( schema '.' )? ( table | view ) tAlias?
-      USING ( 
+      USING (
               ( schema '.' )? ( table | view )
-            | subquery 
+            | subquery
             ) tAlias?
       ON ( condition )
       mergeUpdateClause?
@@ -2039,7 +2049,7 @@ disassociateStatistics
                                     | TYPES ( schema '.' )? typeName ( ',' ( schema '.' )? typeName )*
                                     | INDEXES ( schema '.' )? index ( ',' ( schema '.' )? index )*
                                     | INDEXTYPES ( schema '.' )? indextype ( ',' ( schema '.' )? indextype )*
-                                    | COLUMNS ( schema '.' )? table '.' column ( ',' ( schema '.' )? table '.' column )* 
+                                    | COLUMNS ( schema '.' )? table '.' column ( ',' ( schema '.' )? table '.' column )*
                                     )
                                     FORCE?
     ;
@@ -2132,7 +2142,7 @@ noaudit
     ;
 
 traditionalNoAudit
-    : NOAUDIT 
+    : NOAUDIT
          ( auditOperationClause auditingByClause?
          | auditSchemaObjectClause
          | NETWORK
@@ -2145,7 +2155,7 @@ traditionalNoAudit
 auditOperationClause
     : ( sqlStatementShortcut | ALL STATEMENTS? )
       ( ',' ( sqlStatementShortcut | ALL STATEMENTS? ) )*
-    | ( systemPrivilege | ALL PRIVILEGES ) 
+    | ( systemPrivilege | ALL PRIVILEGES )
       (',' ( systemPrivilege | ALL PRIVILEGES ) )*
     ;
 
@@ -2252,9 +2262,9 @@ set
     ;
 
 setConstraints
-    : SET 
+    : SET
       ( CONSTRAINT | CONSTRAINTS )
-      ( constraint ( ',' constraint )* | ALL )
+      ( constraintName ( ',' constraintName )* | ALL )
       ( IMMEDIATE | DEFERRED )
     ;
 
@@ -2334,7 +2344,7 @@ lock
 
 lockTable
     : LOCK TABLE ( schema '.' )? ( table | view )
-         ( partitionExtensionClause | '@' dblink )? 
+         ( partitionExtensionClause | '@' dblink )?
          ( ',' ( schema '.' )? ( table | view ) ( partitionExtensionClause | '@' dblink )? )*
          IN lockmode MODE
          ( NOWAIT | WAIT integer )?
@@ -2349,12 +2359,12 @@ flashbackTable
     : FLASHBACK TABLE
          ( schema '.' )? table
          ( ',' ( schema '.' )? table )*
-         TO 
+         TO
          (
-           ( 
-             ( SCN | TIMESTAMP ) expr 
-           | RESTORE POINT restorePointName 
-           ) 
+           (
+             ( SCN | TIMESTAMP ) expr
+           | RESTORE POINT restorePointName
+           )
            ( ( ENABLE | DISABLE ) TRIGGERS )?
          | BEFORE DROP ( RENAME TO table )?
          )
@@ -2399,8 +2409,8 @@ analyze
 
 validationClauses
     : VALIDATE REF UPDATE ( SET DANGLING TO NULL )?
-    | VALIDATE STRUCTURE CASCADE? ( FAST 
-                                  | COMPLETE? ( ONLINE | OFFLINE ) intoClause? 
+    | VALIDATE STRUCTURE CASCADE? ( FAST
+                                  | COMPLETE? ( ONLINE | OFFLINE ) intoClause?
                                   )?
     ;
 
@@ -2464,13 +2474,13 @@ compilerParametersClause
     ;
 
 alterHierarchy
-    : ALTER HIERARCHY ( schema '.' )? hierarchyName 
+    : ALTER HIERARCHY ( schema '.' )? hierarchyName
         ( RENAME TO newHierName | COMPILE )
     ;
 
 alterIndextype
     : ALTER INDEXTYPE ( schema '.' )? indextype
-        ( ( ADD | DROP ) ( schema '.' )? operator=operator1 '(' parameterTypes ')' 
+        ( ( ADD | DROP ) ( schema '.' )? operator=operator1 '(' parameterTypes ')'
             ( ',' ( ADD | DROP ) ( schema '.' )? operator=operator1 '(' parameterTypes ')' )* usingTypeClause?
         | COMPILE
         )
@@ -2484,7 +2494,7 @@ usingTypeClause
 arrayDMLClause
     : ( WITH | WITHOUT )?
       ARRAY DML
-      ( 
+      (
         '(' ( schema '.' )? type
         ( ',' ( schema '.' )? varrayType )? ')'
         ( ',' '(' ( schema '.' )? type
@@ -2504,11 +2514,11 @@ alterInmemoryJoinGroup
 
 alterJava
     : ALTER JAVA
-      ( SOURCE | CLASS ) ( schema '.' )? objectName 
+      ( SOURCE | CLASS ) ( schema '.' )? objectName
       ( RESOLVER
-      '(' 
-        ( 
-          '(' matchString ','? ( schema | '-' ) ')' 
+      '('
+        (
+          '(' matchString ','? ( schema | '-' ) ')'
         )*
       ')' )?
       ( COMPILE | RESOLVE | invokerRightsClause )
@@ -2538,21 +2548,21 @@ alterLockdownProfile
 lockdownFeatures
     : ( DISABLE | ENABLE ) FEATURE
       ( '=' '(' stringLiteral ( ',' stringLiteral )* ')'
-      | ALL ( EXCEPT  '=' '(' stringLiteral ( ',' stringLiteral )* ')' )? 
+      | ALL ( EXCEPT  '=' '(' stringLiteral ( ',' stringLiteral )* ')' )?
       )
     ;
 
 lockdownOptions
     : ( DISABLE | ENABLE ) OPTION
       ( '=' '(' stringLiteral ( ',' stringLiteral )* ')'
-      | ALL ( EXCEPT  '=' '(' stringLiteral ( ',' stringLiteral )* ')' )? 
+      | ALL ( EXCEPT  '=' '(' stringLiteral ( ',' stringLiteral )* ')' )?
       )
     ;
 
 lockdownStatements
     : ( DISABLE | ENABLE ) STATEMENT
       ( '=' '(' stringLiteral ( ',' stringLiteral )* ')'
-      | ALL ( EXCEPT  '=' '(' stringLiteral ( ',' stringLiteral )* ')' )? 
+      | ALL ( EXCEPT  '=' '(' stringLiteral ( ',' stringLiteral )* ')' )?
       | '=' '(' stringLiteral statementClauses ')'
       )
     ;
@@ -2560,7 +2570,7 @@ lockdownStatements
 statementClauses
     : CLAUSE
       ( '=' '(' stringLiteral ( ',' stringLiteral )* ')'
-      | ALL ( EXCEPT  '=' '(' stringLiteral ( ',' stringLiteral )* ')' )? 
+      | ALL ( EXCEPT  '=' '(' stringLiteral ( ',' stringLiteral )* ')' )?
       | '=' '(' stringLiteral clauseOptions ')'
       )
     ;
@@ -2568,13 +2578,13 @@ statementClauses
 clauseOptions
     : OPTION
       ( '=' '(' stringLiteral ( ',' stringLiteral )* ')'
-      | ALL ( EXCEPT  '=' '(' stringLiteral ( ',' stringLiteral )* ')' )? 
+      | ALL ( EXCEPT  '=' '(' stringLiteral ( ',' stringLiteral )* ')' )?
       | '=' '(' stringLiteral optionValues ')'
       )
     ;
 
 optionValues
-    : ( 
+    : (
         VALUE '=' '(' stringLiteral ( ',' stringLiteral )* ')'
       | MINVALUE '=' stringLiteral
       | MAXVALUE '=' stringLiteral
@@ -2675,7 +2685,7 @@ alterMappingTableClauses
     ;
 
 addOverflowClause
-    : ADD OVERFLOW 
+    : ADD OVERFLOW
       segmentAttributesClause?
       (
           '('
@@ -2703,7 +2713,7 @@ alterMaterializedViewLog
       | moveMvLogClause
       | CACHE
       | NOCACHE
-      )? 
+      )?
       mvLogAugmentation?
       mvLogPurgeClause?
       forRefreshClause?
@@ -2718,17 +2728,17 @@ moveMvLogClause
     ;
 
 mvLogAugmentation
-    : ADD 
-      ( 
+    : ADD
+      (
         ( OBJECT ID
         | PRIMARY KEY
         | ROWID
         | SEQUENCE
         ) ( '(' column ( ',' column )* ')' )?
         | '(' column ( ',' column )* ')'
-      ) 
+      )
       (','
-        ( 
+        (
           ( OBJECT ID
           | PRIMARY KEY
           | ROWID
@@ -2745,21 +2755,21 @@ newValuesClause
     ;
 
 mvLogPurgeClause
-    : PURGE 
+    : PURGE
       ( IMMEDIATE ( SYNCHRONOUS | ASYNCHRONOUS )?
-      | START WITH datetimeExpression 
-        ( NEXT datetimeExpression 
-        | REPEAT ( intervalLiteral | INTERVAL intervalExpression ) 
+      | START WITH datetimeExpression
+        ( NEXT datetimeExpression
+        | REPEAT ( intervalLiteral | INTERVAL intervalExpression )
         )?
       | ( START WITH datetimeExpression )?
-        ( NEXT datetimeExpression 
-        | REPEAT ( intervalLiteral | INTERVAL intervalExpression ) 
+        ( NEXT datetimeExpression
+        | REPEAT ( intervalLiteral | INTERVAL intervalExpression )
         )
       )
     ;
 
 forRefreshClause
-    : FOR 
+    : FOR
       (
         SYNCHRONOUS REFRESH USING stagingLogName
       | FAST REFRESH
@@ -2820,7 +2830,7 @@ contextClause
     : ( WITH COLUMN CONTEXT )?
         WITH INDEX CONTEXT ',' SCAN CONTEXT implementationType ( COMPUTE ANCILLARY DATA )?
     | WITH COLUMN CONTEXT
-    | WITH INDEX CONTEXT ',' SCAN CONTEXT implementationType ( COMPUTE ANCILLARY DATA )? ( WITH COLUMN CONTEXT )? 
+    | WITH INDEX CONTEXT ',' SCAN CONTEXT implementationType ( COMPUTE ANCILLARY DATA )? ( WITH COLUMN CONTEXT )?
     ;
 
 usingFunctionClause
@@ -2842,7 +2852,7 @@ alterOutline
     ;
 
 alterPackage
-    : ALTER PACKAGE ( schema '.' )? packageName 
+    : ALTER PACKAGE ( schema '.' )? packageName
       ( packageCompileClause |  EDITIONABLE | NONEDITIONABLE )
     ;
 
@@ -2898,7 +2908,7 @@ pdbSettingsClauses
     ;
 
 pdbStorageClause
-    : STORAGE ( '(' ( ( MAXSIZE | MAX_AUDIT_SIZE | MAX_DIAG_SIZE ) ( UNLIMITED | sizeClause ) )+ ')' 
+    : STORAGE ( '(' ( ( MAXSIZE | MAX_AUDIT_SIZE | MAX_DIAG_SIZE ) ( UNLIMITED | sizeClause ) )+ ')'
               | UNLIMITED
               )
     ;
@@ -2925,7 +2935,7 @@ pdbRefreshSwitchoverClause
     ;
 
 pdbDatafileClause
-    : pdbName? DATAFILE 
+    : pdbName? DATAFILE
       (
         ( integer | stringLiteral ) ( ',' ( integer | stringLiteral ) )*
       | ALL
@@ -2966,7 +2976,7 @@ pdbOpen
 instancesClause
     : INSTANCES
       ( '=' '(' stringLiteral ( ',' stringLiteral )* ')'
-      | ALL ( EXCEPT  '=' '(' stringLiteral ( ',' stringLiteral )* ')' )? 
+      | ALL ( EXCEPT  '=' '(' stringLiteral ( ',' stringLiteral )* ')' )?
       )
     ;
 
@@ -3150,15 +3160,15 @@ partitionAttributes
     ;
 
 addRangeSubpartition
-    : ADD rangeSubpartitionDesc 
+    : ADD rangeSubpartitionDesc
       ( ',' rangeSubpartitionDesc )*
-      dependentTablesClause? 
+      dependentTablesClause?
       updateIndexClauses?
     ;
 
 dependentTablesClause
     : DEPENDENT TABLES
-          '(' 
+          '('
             table '(' partitionSpec ( ',' partitionSpec)* ')'
             ( ',' table '(' partitionSpec ( ',' partitionSpec)* ')' )*
           ')'
@@ -3178,9 +3188,9 @@ updateGlobalIndexClause
     ;
 
 updateAllIndexesClause
-    : UPDATE INDEXES ( '(' 
-                         index '(' ( updateIndexPartition | updateIndexSubpartition ) ')' 
-                         ( ',' index '(' ( updateIndexPartition | updateIndexSubpartition ) ')' )* 
+    : UPDATE INDEXES ( '('
+                         index '(' ( updateIndexPartition | updateIndexSubpartition ) ')'
+                         ( ',' index '(' ( updateIndexPartition | updateIndexSubpartition ) ')' )*
                        ')' )?
     ;
 
@@ -3229,7 +3239,7 @@ modifyListPartition
       | ( ADD | DROP ) VALUES '(' listValues ')'
       | addRangeSubpartition
       | addListSubpartition
-      | addHashSubpartition   
+      | addHashSubpartition
       | coalesceTableSubpartition
       | REBUILD? UNUSABLE LOCAL INDEXES
       | readOnlyClause
@@ -3281,7 +3291,7 @@ addExternalPartitionAttrs
     ;
 
 addTablePartition
-    : ADD 
+    : ADD
         (
           PARTITION partition? addRangePartitionClause
           ( ',' PARTITION partition? addRangePartitionClause )*
@@ -3291,7 +3301,7 @@ addTablePartition
           ( ',' PARTITION partition? addSystemPartitionClause )*
           ( BEFORE ( partitionName | partitionNumber ) )?
         | PARTITION partition? addHashPartitionClause
-        ) 
+        )
         dependentTablesClause?
     ;
 
@@ -3320,8 +3330,8 @@ addListPartitionClause
     ;
 
 addSystemPartitionClause
-    : 
-    tablePartitionDescription 
+    :
+    tablePartitionDescription
     updateIndexClauses?
     ;
 
@@ -3366,7 +3376,7 @@ splitTablePartition
         | VALUES '(' listValues ')'
           ( INTO '(' listPartitionDesc ',' listPartitionDesc ')' )?
         | INTO '(' ( rangePartitionDesc ( ',' rangePartitionDesc )*
-                   | listPartitionDesc ( ',' listPartitionDesc )* 
+                   | listPartitionDesc ( ',' listPartitionDesc )*
                    )
                ',' partitionSpec ')'
         ) splitNestedTablePart?
@@ -3396,7 +3406,7 @@ splitTableSubpartition
        | VALUES '(' listValues ')'
          ( INTO '(' listSubpartitionDesc',' listSubpartitionDesc ')' )?
        | INTO '(' ( rangeSubpartitionDesc (',' rangeSubpartitionDesc )*
-                  | listSubpartitionDesc (',' listSubpartitionDesc )* 
+                  | listSubpartitionDesc (',' listSubpartitionDesc )*
                   )
               ',' subpartitionSpec ')'
         ) filterCondition?
@@ -3426,9 +3436,9 @@ mergeTablePartitions
 mergeTableSubpartitions
     : MERGE SUBPARTITIONS subpartitionOrKeyValue
         ( ',' subpartitionOrKeyValue ( ',' subpartitionOrKeyValue )*
-        | TO subpartitionOrKeyValue 
+        | TO subpartitionOrKeyValue
         )
-        ( INTO ( rangeSubpartitionDesc 
+        ( INTO ( rangeSubpartitionDesc
                | listSubpartitionDesc
                )
         )?
@@ -3453,10 +3463,10 @@ alterPmemFilestore
     : ALTER PMEM FILESTORE filestoreName
         (
           ( RESIZE sizeClause )?
-        | autoextendClause 
+        | autoextendClause
         | MOUNT ( ( MOUNTPOINT filePath | BACKINGFILE fileName ) )? FORCE?
         | DISMOUNT
-        ) 
+        )
     ;
 
 alterProcedure
@@ -3520,7 +3530,7 @@ alterRole
             ( BY password
             | USING ( schema '.' ) packageName
             | EXTERNALLY
-            | GLOBALLY AS domainNameOfDirectoryGroup    
+            | GLOBALLY AS domainNameOfDirectoryGroup
             )
         )
         ( CONTAINER '=' ( CURRENT | ALL ) )?
@@ -3540,7 +3550,7 @@ alterSequence
         ( INCREMENT BY integer
         | ( MAXVALUE integer | NOMAXVALUE )
         | ( MINVALUE integer | NOMINVALUE )
-        | RESTART 
+        | RESTART
         | ( CYCLE | NOCYCLE )
         | ( CACHE integer | NOCACHE )
         | ( ORDER | NOORDER )
@@ -3563,7 +3573,7 @@ alterSession
           | DISABLE RESUMABLE
           )
         | ( ENABLE | DISABLE ) SHARD DDL
-        | SYNC WITH PRIMARY  
+        | SYNC WITH PRIMARY
         | alterSessionSetClause
         )
     ;
@@ -3583,7 +3593,7 @@ alterSystem
         | checkpointClause
         | checkDatafilesClause
         | distributedRecovClauses
-        | FLUSH ( SHARED_POOL | GLOBAL CONTEXT | BUFFER_CACHE | FLASH_CACHE          
+        | FLUSH ( SHARED_POOL | GLOBAL CONTEXT | BUFFER_CACHE | FLASH_CACHE
                       | REDO TO targetDbName ( NO? CONFIRM APPLY )? )
         | endSessionClauses
         | SWITCH LOGFILE
@@ -3707,7 +3717,7 @@ alterTable
     : ALTER TABLE ( schema '.' )? table
         memoptimizeReadClause?
         memoptimizeWriteClause?
-        ( 
+        (
           alterTableProperties
         | columnClauses
         | constraintClauses
@@ -3739,19 +3749,19 @@ constraintClauses
     ;
 
 dropConstraintClause
-    : DROP 
-        ( 
+    : DROP
+        (
           ( PRIMARY KEY
           | UNIQUE '(' column ( ',' column )* ')'
-          | CONSTRAINT constraintName 
-          ) 
+          | CONSTRAINT constraintName
+          )
 		  CASCADE? ( ( KEEP | DROP ) INDEX )?
-	    ) 
+	    )
 	    ONLINE?
     ;
 
 alterExternalTable
-    : ( 
+    : (
         addColumnClause
       | modifyColumnClauses
       | dropColumnClause
@@ -3792,12 +3802,12 @@ moveTableClause
         ( UPDATE INDEXES
           ( '(' index ( segmentAttributesClause
                       | updateIndexPartition
-                      | GLOBAL 
+                      | GLOBAL
                       )
               ( ',' index ( segmentAttributesClause
                           | updateIndexPartition
-                          | GLOBAL  
-                          ) 
+                          | GLOBAL
+                          )
               )*
             ')'
           )?
@@ -3858,7 +3868,7 @@ alterVarrayColProperties
 addColumnClause
     : ADD ( '(' (columnDefinition | virtualColumnDefinition) ( ',' (columnDefinition | virtualColumnDefinition))* ')'
           | columnDefinition
-          | virtualColumnDefinition 
+          | virtualColumnDefinition
           )
         columnProperties?
         ( '(' outOfLinePartStorage ( ',' outOfLinePartStorage )* ')' )?
@@ -3934,7 +3944,7 @@ memoptimizeWriteClause
 
 alterTableProperties
     : (
-        ( 
+        (
           physicalAttributesClause
         | loggingClause
         | tableCompression
@@ -3959,10 +3969,10 @@ alterTableProperties
     | alterIotClauses
       alterXMLSchemaClause?
     | alterXMLSchemaClause
-    | shrinkClause 
+    | shrinkClause
     | READ ONLY
-    | READ WRITE 
-    | REKEY encryptionSpec 
+    | READ WRITE
+    | REKEY encryptionSpec
     | DEFAULT COLLATION collationName
     | NO? ROW ARCHIVAL
     | ADD attributeClusteringClause
@@ -4018,7 +4028,7 @@ defaultTablespaceParams
     ;
 
 defaultTableCompression
-    : TABLE ( COMPRESS FOR OLTP      
+    : TABLE ( COMPRESS FOR OLTP
             | COMPRESS FOR QUERY ( LOW | HIGH )
             | COMPRESS FOR ARCHIVE ( LOW | HIGH )
             | NOCOMPRESS
@@ -4119,10 +4129,10 @@ typeCompileClause
 
 typeReplaceClause
     : REPLACE
-        ( invokerRightsClause accessibleByClause? 
-        | accessibleByClause invokerRightsClause? 
+        ( invokerRightsClause accessibleByClause?
+        | accessibleByClause invokerRightsClause?
         )?
-        AS OBJECT  
+        AS OBJECT
         '(' attribute datatype ( ',' attribute datatype )*
            ( ',' elementSpec )*
         ')'
@@ -4133,7 +4143,7 @@ elementSpec
         ( subprogramSpec
         | constructorSpec
         | mapOrderFunctionSpec
-        )+ 
+        )+
         ( ',' restrictReferencesPragma )?
     ;
 
@@ -4167,10 +4177,10 @@ accessor
     ;
 
 unitKind
-    : FUNCTION 
-    | PROCEDURE 
-    | PACKAGE 
-    | TRIGGER 
+    : FUNCTION
+    | PROCEDURE
+    | PACKAGE
+    | TRIGGER
     | TYPE
     ;
 
@@ -4202,7 +4212,7 @@ returnClause
     ;
 
 callSpec
-    : javaDeclaration 
+    : javaDeclaration
     | cDeclaration
     ;
 
@@ -4250,7 +4260,7 @@ alterUser
             | EXTERNALLY ( AS stringLiteral )?
             | GLOBALLY ( AS stringLiteral )?
             )
-          | NO AUTHENTICATION 
+          | NO AUTHENTICATION
           | DEFAULT COLLATION collationName
           | DEFAULT TABLESPACE tablespace
           | LOCAL? TEMPORARY TABLESPACE ( tablespace | tablespaceGroupName )
@@ -4360,10 +4370,10 @@ dropAuditPolicy
 
 alterCluster
     : ALTER CLUSTER (schema '.')? cluster
-      ( physicalAttributesClause 
-      | SIZE sizeClause 
-      | (MODIFY PARTITION partition)? allocateExtentClause 
-      | deallocateUnused 
+      ( physicalAttributesClause
+      | SIZE sizeClause
+      | (MODIFY PARTITION partition)? allocateExtentClause
+      | deallocateUnused
       | (CACHE | NOCACHE)
       )* parallelClause?
     ;
@@ -4398,8 +4408,8 @@ dropDatabase
     ;
 
 alterDatabaseDictionary
-    : ALTER DATABASE DICTIONARY ( ENCRYPT CREDENTIALS 
-                                | REKEY CREDENTIALS 
+    : ALTER DATABASE DICTIONARY ( ENCRYPT CREDENTIALS
+                                | REKEY CREDENTIALS
                                 | DELETE CREDENTIALS KEY
                                 )
     ;
@@ -4420,26 +4430,26 @@ alterDimension
 alterDiskgroup
     : ALTER DISKGROUP (diskgroupName ( ((addDiskClause | dropDiskClause)+ | resizeDiskClause) rebalanceDiskgroupClause?
                                      | replaceDiskClause
-                                     | renameDiskClause 
-                                     | diskOnlineClause 
-                                     | diskOfflineClause 
-                                     | rebalanceDiskgroupClause 
-                                     | checkDiskgroupClause 
-                                     | diskgroupTemplateClauses 
-                                     | diskgroupDirectoryClauses 
-                                     | diskgroupAliasClauses 
-                                     | diskgroupVolumeClauses 
-                                     | diskgroupAttributes 
-                                     | dropDiskgroupFileClause 
-                                     | convertRedundancyClause 
-                                     | usergroupClauses 
-                                     | userClauses 
-                                     | filePermissionsClause 
-                                     | fileOwnerClause 
-                                     | scrubClause 
-                                     | quotagroupClauses 
+                                     | renameDiskClause
+                                     | diskOnlineClause
+                                     | diskOfflineClause
+                                     | rebalanceDiskgroupClause
+                                     | checkDiskgroupClause
+                                     | diskgroupTemplateClauses
+                                     | diskgroupDirectoryClauses
+                                     | diskgroupAliasClauses
+                                     | diskgroupVolumeClauses
+                                     | diskgroupAttributes
+                                     | dropDiskgroupFileClause
+                                     | convertRedundancyClause
+                                     | usergroupClauses
+                                     | userClauses
+                                     | filePermissionsClause
+                                     | fileOwnerClause
+                                     | scrubClause
+                                     | quotagroupClauses
                                      | filegroupClauses
-                                     ) 
+                                     )
                       | (diskgroupName (',' diskgroupName)* | ALL) (undropDiskClause | diskgroupAvailability | enableDisableVolume))
     ;
 
@@ -4689,7 +4699,7 @@ dropView
 
 createSynonym
     : CREATE (OR REPLACE)? (EDITIONABLE | NONEDITIONABLE)? (PUBLIC)? SYNONYM (schema '.')? synonym=identifier
-      (SHARING '=' (METADATA | NONE))? FOR (schema '.')? object ('@' dblink)?
+      (SHARING '=' (METADATA | NONE))? FOR (schema '.')? object ( '@' identifierFragments )?
     ;
 
 alterSynonym
@@ -4715,14 +4725,14 @@ dimensionJoinClause
     ;
 
 dimensionJoinClauseItem
-    : JOIN KEY ( childKeyColumn=column 
+    : JOIN KEY ( childKeyColumn=column
                | '(' childKeyColumn=column (',' childKeyColumn=column)* ')'
                )
       REFERENCES parentLevel=identifier
     ;
 
 attributeClause
-    : ATTRIBUTE level DETERMINES ( dependentColumn=column 
+    : ATTRIBUTE level DETERMINES ( dependentColumn=column
                                             | '(' dependentColumn=column (',' dependentColumn=column)* ')'
                                             )
     ;
@@ -4950,7 +4960,7 @@ logfileClauses
     ;
 
 addLogfileClauses
-    : ADD STANDBY? LOGFILE 
+    : ADD STANDBY? LOGFILE
         ( ( INSTANCE stringLiteral | THREAD integer )? ( GROUP integer )? redoLogFileSpec (',' ( GROUP integer )? redoLogFileSpec)*
         | MEMBER stringLiteral REUSE? (',' stringLiteral REUSE?)* TO logfileDescriptor (',' logfileDescriptor)*
         )
@@ -5259,10 +5269,10 @@ evaluationEditionClause
 
 unusableEditionsClause
     : UNUSABLE BEFORE ( CURRENT EDITION | EDITION edition=identifier)
-    | ( UNUSABLE BEFORE ( CURRENT EDITION | EDITION edition=identifier) )? 
+    | ( UNUSABLE BEFORE ( CURRENT EDITION | EDITION edition=identifier) )?
         UNUSABLE BEGINNING WITH ( CURRENT EDITION | EDITION edition=identifier | NULL EDITION )
     | UNUSABLE BEGINNING WITH ( CURRENT EDITION | EDITION edition=identifier | NULL EDITION )
-        ( UNUSABLE BEFORE ( CURRENT EDITION | EDITION edition=identifier) )? 
+        ( UNUSABLE BEFORE ( CURRENT EDITION | EDITION edition=identifier) )?
     ;
 
 periodDefinition
@@ -5727,7 +5737,7 @@ tableCompression
     ;
 
 inmemoryTableClause
-    : INMEMORY inmemoryAttributes inmemoryColumnClause? 
+    : INMEMORY inmemoryAttributes inmemoryColumnClause?
     | NO INMEMORY inmemoryColumnClause?
     ;
 
@@ -7275,9 +7285,9 @@ systemAction
     | CREATE MATERIALIZED VIEW LOG
     | ALTER MATERIALIZED VIEW LOG
     | DROP MATERIALIZED VIEW  LOG
-    | CREATE MATERIALIZED VIEW 
-    | ALTER MATERIALIZED VIEW 
-    | DROP MATERIALIZED VIEW 
+    | CREATE MATERIALIZED VIEW
+    | ALTER MATERIALIZED VIEW
+    | DROP MATERIALIZED VIEW
     | CREATE TYPE
     | DROP TYPE
     | ALTER ROLE
@@ -7494,7 +7504,7 @@ tablespaceDatafileClauses
     ;
 
 autoextendClause
-    : AUTOEXTEND ( OFF 
+    : AUTOEXTEND ( OFF
                  | ON ( NEXT sizeClause )? maxsizeClause?
                  )
     ;
@@ -8082,14 +8092,14 @@ tableSource
     ;
 
 tableJoinClause
-    : innerCrossJoinClause 
-    | outerJoinClause 
+    : innerCrossJoinClause
+    | outerJoinClause
     | crossOuterApplyClause
     ;
 
 tableReference
     : ( queryTableExpression | ONLY '(' queryTableExpression ')' )
-      flashbackQueryClause? 
+      flashbackQueryClause?
       (pivotClause | unpivotClause | rowPatternClause)? tAlias?         #queryTableReference
     | containersClause tAlias?                                          #containersClauseReference
     | shardsClause tAlias?                                              #shardsClauseReference
@@ -8135,13 +8145,13 @@ inlineAnalyticView
     ;
 
 queryTableExpression
-    : fullObjectPath ( partitionExtensionClause 
-                     | hierarchiesClause 
+    : fullObjectPath ( partitionExtensionClause
+                     | hierarchiesClause
                      | modifiedExternalTable
                      )? sampleClause?                                   #objectPathTableExpression
     | LATERAL? '(' subquery subqueryRestrictionClause? ')'              #subqueryTableExpression
     | tableCollectionExpression                                         #queryTableCollectionExpression
-    // returning table function 
+    // returning table function
     | functionExpression                                                #functionTableExpression
 //    : ( schema '.' )? ( table ( modifiedExternalTable | partitionExtensionClause | '@' dblink )?
 //                      | ( view | materializedView ) ( '@' dblink )?
@@ -8168,8 +8178,8 @@ modifyExternalTableProperties
     ;
 
 modifyExternalAccessParametersItem
-    : BADFILE fileNameWithDirectory 
-    | LOGFILE fileNameWithDirectory 
+    : BADFILE fileNameWithDirectory
+    | LOGFILE fileNameWithDirectory
     | DISCARDFILE fileNameWithDirectory
     | NOBADFILE
     | NOLOGFILE
@@ -8221,7 +8231,7 @@ qualifiedDiskClause
     ;
 
 dropDiskClause
-    : DROP ((QUORUM | REGULAR)? DISK diskName=identifier (FORCE | NOFORCE)? (',' diskName=identifier (FORCE | NOFORCE)?)* 
+    : DROP ((QUORUM | REGULAR)? DISK diskName=identifier (FORCE | NOFORCE)? (',' diskName=identifier (FORCE | NOFORCE)?)*
            | DISKS IN (QUORUM | REGULAR)? FAILGROUP failgroupName (FORCE | NOFORCE)? (',' failgroupName (FORCE | NOFORCE)?)*)
     ;
 
@@ -8234,12 +8244,12 @@ replaceDiskClause
     ;
 
 renameDiskClause
-    : RENAME ( DISK oldDiskName=identifier TO newDiskName=identifier (',' oldDiskName=identifier TO newDiskName=identifier)* 
+    : RENAME ( DISK oldDiskName=identifier TO newDiskName=identifier (',' oldDiskName=identifier TO newDiskName=identifier)*
              | DISKS ALL)
     ;
 
 diskOnlineClause
-    : ONLINE ( ( (QUORUM | REGULAR)? DISK diskName=identifier (',' diskName=identifier)* 
+    : ONLINE ( ( (QUORUM | REGULAR)? DISK diskName=identifier (',' diskName=identifier)*
                | DISKS IN (QUORUM | REGULAR)? FAILGROUP failgroupName (',' failgroupName)*
                )*
              | ALL)
@@ -8247,7 +8257,7 @@ diskOnlineClause
     ;
 
 diskOfflineClause
-    : OFFLINE ( (QUORUM | REGULAR)? DISK diskName=identifier (',' diskName=identifier)* 
+    : OFFLINE ( (QUORUM | REGULAR)? DISK diskName=identifier (',' diskName=identifier)*
               | DISKS IN (QUORUM | REGULAR)? FAILGROUP failgroupName (',' failgroupName)*)*
       timeoutClause?
     ;
@@ -8276,34 +8286,34 @@ qualifiedTemplateClause
     ;
 
 redundancyClause
-    : MIRROR 
-    | HIGH 
-    | UNPROTECTED 
-    | PARITY 
+    : MIRROR
+    | HIGH
+    | UNPROTECTED
+    | PARITY
     | DOUBLE
     ;
 
 stripingClause
-    : FINE 
+    : FINE
     | COARSE
     ;
 
 diskgroupDirectoryClauses
-    : ADD DIRECTORY stringLiteral (',' stringLiteral)* 
+    : ADD DIRECTORY stringLiteral (',' stringLiteral)*
     | DROP DIRECTORY stringLiteral (FORCE | NOFORCE)? (',' stringLiteral (FORCE | NOFORCE)?)*
     | RENAME DIRECTORY stringLiteral TO stringLiteral (',' stringLiteral TO stringLiteral)*
     ;
 
 diskgroupAliasClauses
-    : ADD ALIAS stringLiteral FOR stringLiteral (',' stringLiteral FOR stringLiteral)* 
-    | DROP ALIAS stringLiteral (',' stringLiteral)* 
+    : ADD ALIAS stringLiteral FOR stringLiteral (',' stringLiteral FOR stringLiteral)*
+    | DROP ALIAS stringLiteral (',' stringLiteral)*
     | RENAME ALIAS stringLiteral TO stringLiteral (',' stringLiteral TO stringLiteral)*
     ;
 
 diskgroupVolumeClauses
     : addVolumeClause
-    | modifyVolumeClause 
-    | RESIZE VOLUME asmVolume=identifier SIZE sizeClause 
+    | modifyVolumeClause
+    | RESIZE VOLUME asmVolume=identifier SIZE sizeClause
     | DROP VOLUME asmVolume=identifier
     ;
 
@@ -8332,14 +8342,14 @@ convertRedundancyClause
     ;
 
 usergroupClauses
-    : ADD USERGROUP stringLiteral WITH MEMBER stringLiteral (',' stringLiteral)* 
-    | MODIFY USERGROUP stringLiteral (ADD | DROP) MEMBER stringLiteral (',' stringLiteral)* 
+    : ADD USERGROUP stringLiteral WITH MEMBER stringLiteral (',' stringLiteral)*
+    | MODIFY USERGROUP stringLiteral (ADD | DROP) MEMBER stringLiteral (',' stringLiteral)*
     | DROP USERGROUP stringLiteral
     ;
 
 userClauses
-    : ADD USER stringLiteral (',' stringLiteral)* 
-    | DROP USER stringLiteral (',' stringLiteral)* CASCADE? 
+    : ADD USER stringLiteral (',' stringLiteral)*
+    | DROP USER stringLiteral (',' stringLiteral)* CASCADE?
     | REPLACE USER stringLiteral WITH stringLiteral (',' stringLiteral WITH stringLiteral)*
     ;
 
@@ -8350,7 +8360,7 @@ filePermissionsClause
     ;
 
 fileOwnerClause
-    : SET OWNERSHIP ( OWNER '=' stringLiteral 
+    : SET OWNERSHIP ( OWNER '=' stringLiteral
                     | GROUP '=' stringLiteral
                     )
                     (',' ( OWNER '=' stringLiteral
@@ -8364,23 +8374,23 @@ scrubClause
     ;
 
 quotagroupClauses
-    : ADD QUOTAGROUP quotagroupName=identifier (SET propertyName=identifier '=' propertyValue=identifier)? 
+    : ADD QUOTAGROUP quotagroupName=identifier (SET propertyName=identifier '=' propertyValue=identifier)?
     | MODIFY QUOTAGROUP quotagroupName=identifier SET propertyName=identifier '=' propertyValue=identifier
     | MOVE FILEGROUP filegroupName=identifier TO quotagroupName=identifier
     | DROP QUOTAGROUP quotagroupName=identifier
     ;
 
 filegroupClauses
-    : addFilegroupClause 
-    | modifyFilegroupClause 
-    | moveToFilegroupClause 
+    : addFilegroupClause
+    | modifyFilegroupClause
+    | moveToFilegroupClause
     | dropFilegroupClause
     ;
 
 addFilegroupClause
-    : ADD FILEGROUP filegroupName=identifier ( DATABASE databaseName=identifier 
-                                             | CLUSTER clusterName=identifier 
-                                             | VOLUME asmVolume=identifier 
+    : ADD FILEGROUP filegroupName=identifier ( DATABASE databaseName=identifier
+                                             | CLUSTER clusterName=identifier
+                                             | VOLUME asmVolume=identifier
                                              | TEMPLATE (FROM TEMPLATE templateName=identifier)?)
       (SET stringLiteral '=' stringLiteral)?
     ;
@@ -8439,7 +8449,7 @@ closeKeystore
     ;
 
 backupKeystore
-    : BACKUP KEYSTORE (USING stringLiteral)? (FORCE KEYSTORE)? IDENTIFIED BY 
+    : BACKUP KEYSTORE (USING stringLiteral)? (FORCE KEYSTORE)? IDENTIFIED BY
       (EXTERNAL STORE | keystorePassword)
       (TO stringLiteral)?
     ;
@@ -8471,7 +8481,7 @@ isolateKeystore
 uniteKeystore
     : UNITE KEYSTORE IDENTIFIED BY isolatedKeystorePassword=identifier WITH ROOT KEYSTORE
       (FORCE KEYSTORE)? IDENTIFIED BY (EXTERNAL STORE | unitedKeystorePassword=identifier)
-      (WITH BACKUP (USING stringLiteral)?)? 
+      (WITH BACKUP (USING stringLiteral)?)?
     ;
 
 keyManagementClauses
@@ -8549,14 +8559,14 @@ moveKeys
     ;
 
 secretManagementClauses
-    : addUpdateSecret 
-    | deleteSecret 
-    | addUpdateSecretSeps 
+    : addUpdateSecret
+    | deleteSecret
+    | addUpdateSecretSeps
     | deleteSecretSeps
     ;
 
 addUpdateSecret
-    : (ADD | UPDATE) SECRET stringLiteral FOR CLIENT stringLiteral 
+    : (ADD | UPDATE) SECRET stringLiteral FOR CLIENT stringLiteral
       (USING TAG stringLiteral)?
       (FORCE KEYSTORE)?
       IDENTIFIED BY (EXTERNAL STORE | keystorePassword)
@@ -8750,11 +8760,11 @@ pivotForClause
     ;
 
 pivotInClause
-    : IN '(' 
+    : IN '('
          ( ((expr | '(' expr (',' expr)* ')') (AS? alias)?) ( ',' ((expr | '(' expr (',' expr)* ')') (AS? alias)?) )*
          | subquery
          | ANY (',' ANY)*
-         ) 
+         )
          ')'
     ;
 
@@ -9465,7 +9475,7 @@ clusterIdAnalyticFunction
     ;
 
 clusterProbabilityFunction
-    : CLUSTER_PROBABILITY '(' (schema '.')? model (',' identifier)? miningAttributeClause ')' 
+    : CLUSTER_PROBABILITY '(' (schema '.')? model (',' identifier)? miningAttributeClause ')'
     ;
 
 clusterProbAnalyticFunction
@@ -9493,9 +9503,9 @@ corrFunction
     ;
 
 correlationFunction
-    : (CORR_K | CORR_S) '(' expr ',' expr 
+    : (CORR_K | CORR_S) '(' expr ',' expr
       (',' (COEFFICIENT | ONE_SIDED_SIG | ONE_SIDED_SIG_POS | ONE_SIDED_SIG_NEG | TWO_SIDED_SIG))?
-      ')'    
+      ')'
     ;
 
 countFunction
@@ -9544,7 +9554,7 @@ denseRankAnalyticFunction
     ;
 
 extractDateTimeFunction
-    : EXTRACT '(' 
+    : EXTRACT '('
       (YEAR | MONTH | DAY | HOUR | MINUTE | SECOND | TIMEZONE_HOUR | TIMEZONE_MINUTE | TIMEZONE_REGION | TIMEZONE_ABBR)
       FROM expressionList ')'
     ;
@@ -9618,7 +9628,7 @@ jsonObjectFunction
     ;
 
 jsonObjectaggFunction
-    : JSON_OBJECTAGG '(' KEY? expr VALUE expr jsonOnNullClause? jsonReturningClause? 
+    : JSON_OBJECTAGG '(' KEY? expr VALUE expr jsonOnNullClause? jsonReturningClause?
       STRICT? (WITH UNIQUE KEYS)? ')'
     ;
 
@@ -9680,7 +9690,7 @@ lastValueFunction
     ;
 
 leadFunction
-    : LEAD ( '(' expr (',' expr (',' expr)?)? ')' ((RESPECT | IGNORE) NULLS)? 
+    : LEAD ( '(' expr (',' expr (',' expr)?)? ')' ((RESPECT | IGNORE) NULLS)?
            | '(' expr ((RESPECT | IGNORE) NULLS)? (',' expr (',' expr)?)? ')'
            )
            OVER '(' queryPartitionClause? orderByClause ')'
@@ -9728,8 +9738,8 @@ oraInvokingUserIdFunction
     ;
 
 percentRankAggregateFunction
-    : PERCENT_RANK '(' expr (',' expr)* ')' WITHIN GROUP '(' ORDER BY 
-      expr (DESC | ASC)? (NULLS (FIRST | LAST))? (',' expr (DESC | ASC)? (NULLS (FIRST | LAST))?)* 
+    : PERCENT_RANK '(' expr (',' expr)* ')' WITHIN GROUP '(' ORDER BY
+      expr (DESC | ASC)? (NULLS (FIRST | LAST))? (',' expr (DESC | ASC)? (NULLS (FIRST | LAST))?)*
       ')'
     ;
 
@@ -9748,15 +9758,15 @@ percentileDiscFunction
     ;
 
 predictionFunction
-    : PREDICTION '(' 
-//      WARN: can't find definition 
+    : PREDICTION '('
+//      WARN: can't find definition
 //      groupingHint?
       (schema '.')? model costMatrixClause? miningAttributeClause ')'
     ;
 
 predictionOrderedFunction
     : PREDICTION '('
-//      WARN: can't find definition 
+//      WARN: can't find definition
 //      groupingHint?
       (schema '.')? model
       costMatrixClause? miningAttributeClause ')'
@@ -9827,14 +9837,14 @@ ratioToReportFunction
     ;
 
 linearRegrFunction
-    : ( REGR_SLOPE 
-      | REGR_INTERCEPT 
-      | REGR_COUNT 
-      | REGR_R2 
-      | REGR_AVGX 
-      | REGR_AVGY 
-      | REGR_SXX 
-      | REGR_SYY 
+    : ( REGR_SLOPE
+      | REGR_INTERCEPT
+      | REGR_COUNT
+      | REGR_R2
+      | REGR_AVGX
+      | REGR_AVGY
+      | REGR_SXX
+      | REGR_SYY
       | REGR_SXY
       ) '(' expr ',' expr ')'
       (OVER '(' analyticClause ')')?
@@ -10023,18 +10033,18 @@ xmltableOptions
     : xmlPassingClause? (RETURNING SEQUENCE BY REF)? (COLUMNS xmlTableColumn (',' xmlTableColumn)*)?
     ;
 
-xmlTableColumn  
+xmlTableColumn
     : column ( FOR ORDINALITY
              | ( datatype
                | XMLTYPE ('(' SEQUENCE ')' BY REF)?
-               ) 
+               )
                (PATH stringLiteral)?
                (DEFAULT expr)?
              )
     ;
 
 xmlnamespacesClause
-    : XMLNAMESPACES '(' xmlnamespacesClauseItem (',' xmlnamespacesClauseItem)* ')' 
+    : XMLNAMESPACES '(' xmlnamespacesClauseItem (',' xmlnamespacesClauseItem)* ')'
     ;
 
 xmlnamespacesClauseItem
@@ -10056,9 +10066,9 @@ xmlPassingClauseItem
 
 xmlAttributesClause
     : XMLATTRIBUTES
-      '(' 
+      '('
         (ENTITYESCAPING | NOENTITYESCAPING)? (SCHEMACHECK | NOSCHEMACHECK)?
-        xmlAttributesClauseItem ( ',' xmlAttributesClauseItem )* 
+        xmlAttributesClauseItem ( ',' xmlAttributesClauseItem )*
       ')'
     ;
 
@@ -10071,7 +10081,7 @@ xmlcorattvalFunctionItem
     ;
 
 costMatrixClause
-    : COST ( MODEL AUTO? 
+    : COST ( MODEL AUTO?
            | '(' expr (',' expr)* ')' VALUES '(' '(' expr (',' expr)* ')' (',' '(' expr (',' expr)* ')')* ')'
            )
     ;
@@ -10126,7 +10136,7 @@ appendOp
     ;
 
 setOp
-    : SET expr '=' rhsExpr ((IGNORE | ERROR | REPLACE) ON EXISTING)? ((CREATE | IGNORE | ERROR) ON MISSING)? 
+    : SET expr '=' rhsExpr ((IGNORE | ERROR | REPLACE) ON EXISTING)? ((CREATE | IGNORE | ERROR) ON MISSING)?
       ((NULL | IGNORE | ERROR) ON NULL)?
     ;
 
@@ -10211,12 +10221,12 @@ dotnotation
     : JSON_PATH_SYMBOL? dotnotationExpr ('.' dotnotationExpr)*
     ;
 
-dotnotationExpr 
+dotnotationExpr
     : identifierWithQualifier
     | identifier
     ;
 
-identifierWithQualifier 
+identifierWithQualifier
     : identifier '[' ']'
     | identifier '[' integer ']'
     | identifier '[' queryExpr ']'
@@ -11115,7 +11125,7 @@ columnCollationName
     ;
 
 constraintName
-    : identifier
+    : ( identifier '.' )? identifier ( '@' identifierFragments )?
     ;
 
 oldName
@@ -11419,7 +11429,7 @@ statement
     ;
 
 procedureCall
-    : procedureName ( '(' ( plsqlParameter ( ',' plsqlParameter )* )? ')' )? ';'
+    : procedureName '(' ( plsqlParameter ( ',' plsqlParameter )* )? ')' ';'
     ;
 
 assignmentStatement
@@ -11518,7 +11528,7 @@ returnStatement
     ;
 
 selectIntoStatement
-    : SELECT (DISTINCT | UNIQUE | ALL)? selectList (plsqlIntoClause | plsqlBulkCollectIntoClause) 
+    : SELECT (DISTINCT | UNIQUE | ALL)? selectList (plsqlIntoClause | plsqlBulkCollectIntoClause)
         FROM ( ( tableReference | THE? '(' subquery ')' ) alias? )*
         whereClause?
         hierarchicalQueryClause?
@@ -11547,15 +11557,15 @@ sqlStatement
     ;
 
 collectionMethodCall
-    : identifier '.' ( COUNT 
-                     | DELETE ('(' index (',' index)* ')')? 
-                     | EXISTS ('(' index ')')? 
-                     | EXTEND ('(' index (',' index)* ')')? 
-                     | FIRST 
-                     | LAST 
-                     | LIMIT 
-                     | NEXT '(' index ')' 
-                     | PRIOR '(' index ')' 
+    : identifier '.' ( COUNT
+                     | DELETE ('(' index (',' index)* ')')?
+                     | EXISTS ('(' index ')')?
+                     | EXTEND ('(' index (',' index)* ')')?
+                     | FIRST
+                     | LAST
+                     | LIMIT
+                     | NEXT '(' index ')'
+                     | PRIOR '(' index ')'
                      | TRIM '(' numberLiteral ')'
                      )
     ;
