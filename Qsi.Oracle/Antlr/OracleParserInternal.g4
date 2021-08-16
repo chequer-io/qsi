@@ -1882,12 +1882,12 @@ subprogDeclInType
     ;
 
 procDeclInType
-    : PROCEDURE name ( '(' parameterDeclaration ( ',' parameterDeclaration )* ')' )?
+    : STATIC? PROCEDURE name ( '(' parameterDeclaration ( ',' parameterDeclaration )* ')' )?
         ( IS | AS ) ( declareSection? body | callSpec )
     ;
 
 funcDeclInType
-    : FUNCTION name ( '(' parameterDeclaration ( ',' parameterDeclaration )* ')' )?
+    : STATIC? FUNCTION name ( '(' parameterDeclaration ( ',' parameterDeclaration )* ')' )?
         RETURN plsqlDatatype
         ( invokerRightsClause
         | accessibleByClause
