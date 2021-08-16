@@ -1794,8 +1794,8 @@ dmlEventClause
 
 referencingClause
     : REFERENCING
-        ( OLD AS? old
-        | NEW AS? new
+        ( OLD AS? oldName
+        | NEW AS? newName
         | PARENT AS? parent
         )+
     ;
@@ -4129,7 +4129,7 @@ elementSpec
     : inheritanceClauses?
         ( subprogramSpec
         | constructorSpec
-        | mapOrderFuncDeclaration
+        | mapOrderFunctionSpec
         )+ 
         ( ',' restrictReferencesPragma )?
     ;
@@ -4172,8 +4172,12 @@ unitKind
     ;
 
 alterMethodSpec
-    : ( ADD | DROP ) ( mapOrderFuncDeclaration | subprogramSpec )
-        ( ',' ( ADD | DROP ) ( mapOrderFuncDeclaration | subprogramSpec ) )*
+    : ( ADD | DROP ) ( mapOrderFunctionSpec | subprogramSpec )
+        ( ',' ( ADD | DROP ) ( mapOrderFunctionSpec | subprogramSpec ) )*
+    ;
+
+mapOrderFunctionSpec
+    : ( MAP | ORDER ) MEMBER functionSpec
     ;
 
 subprogramSpec
@@ -5347,8 +5351,8 @@ localDomainIndexClauseItem
     ;
 
 globalPartitionedIndex
-    : GLOBAL PARTITION BY ( RANGE '(' columnList ')' '(' indexPartitioningClause ')'
-                          | HASH '(' columnList ')' (individualHashPartitions | hashPartitionsByQuantity)
+    : GLOBAL PARTITION BY ( RANGE columnList '(' indexPartitioningClause ')'
+                          | HASH columnList (individualHashPartitions | hashPartitionsByQuantity)
                           )
     ;
 
@@ -7184,10 +7188,10 @@ systemWritePrivilege
     : WRITE ANY ANALYTIC VIEW CACHE
     ;
 
-// TODO: impl
 role
     : ACCHK_READ
     | identifier
+    | CONNECT
     ;
 
 objectAction
@@ -7473,8 +7477,9 @@ enablePluggableDatabase
 
 fileNameConvert
     : FILE_NAME_CONVERT '='
-      ( '(' SINGLE_QUOTE_SYMBOL filenamePattern ','  filenamePattern SINGLE_QUOTE_SYMBOL ')' 
-          ( ',' SINGLE_QUOTE_SYMBOL  '(' filenamePattern ',' filenamePattern ')' SINGLE_QUOTE_SYMBOL )* 
+      ( '(' TK_SINGLE_QUOTED_STRING
+          ( ',' TK_SINGLE_QUOTED_STRING )*
+        ')'
       | NONE
       )
     ;
@@ -11660,14 +11665,6 @@ shardspaceName
     : identifier
     ;
 
-old
-    : identifier
-    ;
-
-new
-    : identifier
-    ;
-
 parent
     : identifier
     ;
@@ -12859,6 +12856,7 @@ nonReservedKeywordIdentifier
     | PROTOCOL
     | PROXY
     | PRUNING
+    | PUBLIC
     | PURGE
     | PUSH_PRED
     | PUSH_SUBQ
