@@ -924,6 +924,7 @@ typeAttribute
 plsqlExpression
     : column                                                                                            #constantOrVariableExpression
     | '(' plsqlExpression ')'                                                                           #subqueryExpression
+    | <assoc=right> plsqlExpression '.' plsqlExpression                                                 #referenceExpression
     | numberLiteral                                                                                     #numberLiteralExpression
     | booleanLiteral                                                                                    #booleanLiteralExpression
     | stringLiteral                                                                                     #stringLiteralExpression
@@ -1884,15 +1885,11 @@ createTypeBody
     ;
 
 plsqlTypeBodySource
-    : ( schema '.' )? typeName  sharingClause?
+    : ( schema '.' )? typeName sharingClause?
          ( IS | AS )
             ( subprogDeclInType
             | mapOrderFuncDeclaration
-            )
-              ( ',' ( subprogDeclInType
-                    | mapOrderFuncDeclaration
-                    )
-              )*
+            )+
          END
     ;
 
@@ -4198,12 +4195,12 @@ subprogramSpec
     ;
 
 procedureSpec
-    : PROCEDURE procedureName '(' parameter datatype ( ',' parameter datatype )* ')' ( ( IS | AS ) callSpec )?
+    : PROCEDURE procedureName '(' parameterDeclaration ( ',' parameterDeclaration )* ')' ( ( IS | AS ) callSpec )?
     ;
 
 functionSpec
     : FUNCTION functionName
-       ( '(' parameter datatype ( ',' parameter datatype )* ')' )?
+       ( '(' parameterDeclaration ( ',' parameterDeclaration )* ')' )?
         returnClause
     ;
 
@@ -7842,7 +7839,7 @@ queryBlock
 withClause
     : WITH
       plsqlDeclarations?
-      clauses+=factoringClause (',' clauses+=factoringClause)*
+      ( clauses+=factoringClause (',' clauses+=factoringClause)* )?
     ;
 
 plsqlDeclarations
@@ -11335,10 +11332,12 @@ collectionVar
 
 lowerBound
     : identifier
+    | numberLiteral
     ;
 
 upperBound
     : identifier
+    | numberLiteral
     ;
 
 iterator
@@ -11590,7 +11589,7 @@ plsqlBoundsClause
     ;
 
 plsqlIterator
-    : iterandDecl (',' iterandDecl) IN iterationCtlSeq
+    : iterandDecl (',' iterandDecl)* IN iterationCtlSeq
     ;
 
 plsqlIntoClause
