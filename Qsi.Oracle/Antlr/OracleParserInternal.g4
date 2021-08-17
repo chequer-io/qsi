@@ -8169,9 +8169,14 @@ modifiedExternalTable
 
 modifyExternalTableProperties
     : DEFAULT DIRECTORY identifier
-    | LOCATION '(' fileNameWithDirectory (',' fileNameWithDirectory)* ')'
+    | LOCATION modifyExternalTableLocation
     | ACCESS PARAMETERS '(' modifyExternalAccessParametersItem+ ')'
     | REJECT LIMIT (integer | UNLIMITED)
+    ;
+
+modifyExternalTableLocation
+    : fileNameWithDirectory (',' fileNameWithDirectory)*
+    | '(' fileNameWithDirectory (',' fileNameWithDirectory)* ')'
     ;
 
 modifyExternalAccessParametersItem
@@ -9249,8 +9254,8 @@ calcMeasExpression
 
 functionExpression
     : functionExpression ('.' (functionExpression | identifier))+
-    | functionName '(' expressionList? ')'
-    | functionName '(' expressionList? ')' OVER ( identifier | '(' analyticClause ')' )
+    | functionName '(' argumentList? ')'
+    | functionName '(' argumentList? ')' OVER ( identifier | '(' analyticClause ')' )
     | castFunction
     | approxCountFunction
     | approxMedianFunction
@@ -10513,9 +10518,9 @@ intervalExpression
       )
     ;
 
-arrayStep
-    : '[' (( integer | integer TO integer (',' (integer | integer TO integer) )* ) | '*') ']'
-    ;
+//arrayStep
+//    : '[' (( integer | integer TO integer (',' (integer | integer TO integer) )* ) | '*') ']'
+//    ;
 
 modelExpression
     : measureColumn=identifier '[' ( condition | expr ) (',' ( condition | expr ) )* ']'
@@ -10532,8 +10537,9 @@ analyticClause
     ;
 
 objectAccessExpression
-    : ('(' expr ')' '.')? simpleIdentifier ('.' identifier arrayStep* )* ('(' ( argument (',' argument )* )? ')')?
-    | pseudoColumn
+    : '(' expr ')' '.' simpleIdentifier ('.' identifier)*   #columnWithExprAccessExpression
+    | simpleIdentifier ('.' identifier)*                    #columnAccessExpression
+    | pseudoColumn                                          #pseudoColumnAccessExpression
     ;
 
 placeholderExpression
@@ -11175,6 +11181,11 @@ name
 
 libName
     : identifier
+    ;
+
+argumentList
+    : '(' argumentList ')'
+    | argument (',' argument)*
     ;
 
 argument

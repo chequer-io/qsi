@@ -1570,6 +1570,10 @@ options { tokenVocab=predefined; }
 //INDEXTYPES:                       I N D E X T Y P E S;
 //SELECTIVITY:                      S E L E C T I V I T Y;
 //TIME_ZONE:                        T I M E '_' Z O N E;
+//LIN:                              L I N;
+//LINESIZE:                         L I N E S I Z E;
+//PAGES:                            P A G E S;
+//PAGESIZE:                         P A G E S I Z E;
 
 fragment A: [aA];
 fragment B: [bB];
