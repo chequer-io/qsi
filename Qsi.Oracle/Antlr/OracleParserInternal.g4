@@ -9175,10 +9175,10 @@ groupComparisonCondition
 
 expr
     : '(' expr ')'                                                                          #parenthesisExpr
-    | ( '+' | '-' | PRIOR ) expr                                                            #signExpr
+    | op=( '+' | '-' | PRIOR ) expr                                                         #signExpr
     | TIMESTAMP expr                                                                        #timestampExpr
-    | expr ( '*' | '/' | '+' | '-' | '||') expr                                             #binaryExpr
-    | expr COLLATE collationName                                                            #collateExpr
+    | <assoc=right>l=expr op=( '*' | '/' | '+' | '-' | '||') r=expr                         #binaryExpr
+    | l=expr op=COLLATE r=collationName                                                     #collateExpr
     | functionExpression                                                                    #functionExpr
     | avMeasExpression                                                                      #calcMeasExpr
     | caseExpression                                                                        #caseExpr

@@ -5,6 +5,7 @@ using Qsi.Data;
 using Qsi.Oracle.Internal;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
+using Qsi.Utilities;
 
 namespace Qsi.Oracle.Tree.Visitors
 {
@@ -101,29 +102,48 @@ namespace Qsi.Oracle.Tree.Visitors
             };
         }
 
-        public static QsiExpressionNode VisitParenthesisExpr(ParenthesisExprContext context)
-        {
-            throw new NotImplementedException();
-        }
-
         public static QsiExpressionNode VisitSignExpr(SignExprContext context)
         {
-            throw new NotImplementedException();
+            var node = TreeHelper.CreateUnary(context.op.Text, VisitExpr(context.expr()));
+
+            OracleTree.PutContextSpan(node, context);
+
+            return node;
         }
 
         public static QsiExpressionNode VisitTimestampExpr(TimestampExprContext context)
         {
-            throw new NotImplementedException();
+            var node = TreeHelper.CreateUnary(context.TIMESTAMP().GetText(), VisitExpr(context.expr()));
+
+            OracleTree.PutContextSpan(node, context);
+
+            return node;
         }
 
         public static QsiExpressionNode VisitBinaryExpr(BinaryExprContext context)
         {
-            throw new NotImplementedException();
+            var node = OracleTree.CreateWithSpan<QsiBinaryExpressionNode>(context);
+
+            node.Left.Value = VisitExpr(context.l);
+            node.Operator = context.op.Text;
+            node.Right.Value = VisitExpr(context.r);
+
+            return node;
         }
 
         public static QsiExpressionNode VisitCollateExpr(CollateExprContext context)
         {
-            throw new NotImplementedException();
+            var node = OracleTree.CreateWithSpan<QsiBinaryExpressionNode>(context);
+
+            var rightNode = OracleTree.CreateWithSpan<QsiFieldExpressionNode>(context);
+            var collationName = IdentifierVisitor.VisitIdentifier(context.r.identifier());
+            rightNode.Identifier = new QsiQualifiedIdentifier(collationName);
+
+            node.Left.Value = VisitExpr(context.l);
+            node.Operator = context.COLLATE().GetText();
+            node.Right.Value = rightNode;
+
+            return node;
         }
 
         public static QsiExpressionNode VisitFunctionExpr(FunctionExpressionContext context)
