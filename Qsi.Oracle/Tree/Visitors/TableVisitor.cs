@@ -79,8 +79,18 @@ namespace Qsi.Oracle.Tree.Visitors
             if (withClause is not null)
                 node.Directives.Value = VisitWithClause(withClause);
 
+            var whereClause = context.whereClause();
+
+            if (whereClause is not null)
+            {
+                var whereNode = OracleTree.CreateWithSpan<QsiWhereExpressionNode>(whereClause);
+                whereNode.Expression.Value = ExpressionVisitor.VisitCondition(whereClause.condition());
+
+                node.Where.Value = whereNode;
+            }
+
             // TODO: Impl
-            // whereClause, hierarchicalQueryClause, groupByClause, modelClause, windowClause
+            // hierarchicalQueryClause, groupByClause, modelClause, windowClause
 
             return node;
         }

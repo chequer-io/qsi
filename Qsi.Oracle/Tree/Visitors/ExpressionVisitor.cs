@@ -70,6 +70,7 @@ namespace Qsi.Oracle.Tree.Visitors
             throw new NotSupportedException();
         }
 
+        #region Expr
         public static QsiExpressionNode VisitExpr(ExprContext context)
         {
             while (context is ParenthesisExprContext parens)
@@ -230,5 +231,184 @@ namespace Qsi.Oracle.Tree.Visitors
         {
             throw new NotImplementedException();
         }
+        #endregion
+
+        #region Condition
+        public static QsiExpressionNode VisitCondition(ConditionContext context)
+        {
+            return context switch
+            {
+                SimpleComparisonCondition1Context simpleComparisonCondition1 => VisitSimpleComparisonCondition1(simpleComparisonCondition1),
+                SimpleComparisonCondition2Context simpleComparisonCondition2 => VisitSimpleComparisonCondition2(simpleComparisonCondition2),
+                ComparisonConditionContext comparisonCondition => VisitComparisonCondition(comparisonCondition),
+                FloatingPointConditionContext floatingPointCondition => VisitFloatingPointCondition(floatingPointCondition),
+                DanglingConditionContext danglingCondition => VisitDanglingCondition(danglingCondition),
+                LogicalNotConditionContext logicalNotCondition => VisitLogicalNotCondition(logicalNotCondition),
+                LogicalAndConditionContext logicalAndCondition => VisitLogicalAndCondition(logicalAndCondition),
+                LogicalOrConditionContext logicalOrCondition => VisitLogicalOrCondition(logicalOrCondition),
+                ModelIsAnyConditionContext modelIsAnyCondition => VisitModelIsAnyCondition(modelIsAnyCondition),
+                ModelIsPresentConditionContext modelIsPresentCondition => VisitModelIsPresentCondition(modelIsPresentCondition),
+                MultisetIsASetConditionContext multisetIsASetCondition => VisitMultisetIsASetCondition(multisetIsASetCondition),
+                MultisetIsEmptyConditionContext multisetIsEmptyCondition => VisitMultisetIsEmptyCondition(multisetIsEmptyCondition),
+                MultisetMemberConditionContext multisetMemberCondition => VisitMultisetMemberCondition(multisetMemberCondition),
+                MultisetSubmultisetConditionContext multisetSubmultisetCondition => VisitMultisetSubmultisetCondition(multisetSubmultisetCondition),
+                PatternMatchingLikeConditionContext patternMatchingLikeCondition => VisitPatternMatchingLikeCondition(patternMatchingLikeCondition),
+                PatternMatchingRegexpLikeConditionContext patternMatchingRegexpLikeCondition => VisitPatternMatchingRegexpLikeCondition(patternMatchingRegexpLikeCondition),
+                IsNullConditionContext isNullCondition => VisitIsNullCondition(isNullCondition),
+                XmlEqualsPathConditionContext xmlEqualsPathCondition => VisitXmlEqualsPathCondition(xmlEqualsPathCondition),
+                XmlUnderPathConditionContext xmlUnderPathCondition => VisitXmlUnderPathCondition(xmlUnderPathCondition),
+                JsonIsJsonConditionContext jsonIsJsonCondition => VisitJsonIsJsonCondition(jsonIsJsonCondition),
+                JsonEqualConditionContext jsonEqualCondition => VisitJsonEqualCondition(jsonEqualCondition),
+                JsonExistsConditionContext jsonExistsCondition => VisitJsonExistsCondition(jsonExistsCondition),
+                JsonTextContainsConditionContext jsonTextContainsCondition => VisitJsonTextContainsCondition(jsonTextContainsCondition),
+                CompoundParenthesisConditionContext compoundParenthesisCondition => VisitCompoundParenthesisCondition(compoundParenthesisCondition),
+                BetweenConditionContext betweenCondition => VisitBetweenCondition(betweenCondition),
+                ExistsConditionContext existsCondition => VisitExistsCondition(existsCondition),
+                InCondition1Context inCondition1 => VisitInCondition1(inCondition1),
+                IsOfTypeConditionContext isOfTypeCondition => VisitIsOfTypeCondition(isOfTypeCondition),
+                _ => throw new NotSupportedException()
+            };
+        }
+
+        public static QsiExpressionNode VisitSimpleComparisonCondition1(SimpleComparisonCondition1Context context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static QsiExpressionNode VisitSimpleComparisonCondition2(SimpleComparisonCondition2Context context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static QsiExpressionNode VisitComparisonCondition(ComparisonConditionContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static QsiExpressionNode VisitFloatingPointCondition(FloatingPointConditionContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static QsiExpressionNode VisitDanglingCondition(DanglingConditionContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static QsiExpressionNode VisitLogicalNotCondition(LogicalNotConditionContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static QsiExpressionNode VisitLogicalAndCondition(LogicalAndConditionContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static QsiExpressionNode VisitLogicalOrCondition(LogicalOrConditionContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static QsiExpressionNode VisitModelIsAnyCondition(ModelIsAnyConditionContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static QsiExpressionNode VisitModelIsPresentCondition(ModelIsPresentConditionContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static QsiExpressionNode VisitMultisetIsASetCondition(MultisetIsASetConditionContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static QsiExpressionNode VisitMultisetIsEmptyCondition(MultisetIsEmptyConditionContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static QsiExpressionNode VisitMultisetMemberCondition(MultisetMemberConditionContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static QsiExpressionNode VisitMultisetSubmultisetCondition(MultisetSubmultisetConditionContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static QsiExpressionNode VisitPatternMatchingLikeCondition(PatternMatchingLikeConditionContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static QsiExpressionNode VisitPatternMatchingRegexpLikeCondition(PatternMatchingRegexpLikeConditionContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static QsiExpressionNode VisitIsNullCondition(IsNullConditionContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static QsiExpressionNode VisitXmlEqualsPathCondition(XmlEqualsPathConditionContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static QsiExpressionNode VisitXmlUnderPathCondition(XmlUnderPathConditionContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static QsiExpressionNode VisitJsonIsJsonCondition(JsonIsJsonConditionContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static QsiExpressionNode VisitJsonEqualCondition(JsonEqualConditionContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static QsiExpressionNode VisitJsonExistsCondition(JsonExistsConditionContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static QsiExpressionNode VisitJsonTextContainsCondition(JsonTextContainsConditionContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static QsiExpressionNode VisitCompoundParenthesisCondition(CompoundParenthesisConditionContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static QsiExpressionNode VisitBetweenCondition(BetweenConditionContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static QsiExpressionNode VisitExistsCondition(ExistsConditionContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static QsiExpressionNode VisitInCondition1(InCondition1Context context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static QsiExpressionNode VisitIsOfTypeCondition(IsOfTypeConditionContext context)
+        {
+            throw new NotImplementedException();
+        }
+        #endregion
     }
 }

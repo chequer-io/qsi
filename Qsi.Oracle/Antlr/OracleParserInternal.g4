@@ -9117,8 +9117,8 @@ condition
     | condition OR condition                                                            #logicalOrCondition
     | (dimensionColumn=identifier IS)? ANY                                              #modelIsAnyCondition
     | cellReference=cellAssignment IS PRESENT                                           #modelIsPresentCondition
-    | nestedTable=identifier IS NOT? KW_A SET                                            #multisetIsASetCondition
-    | nestedTable=identifier IS NOT? KW_EMPTY                                              #multisetIsEmptyCondition
+    | nestedTable=identifier IS NOT? KW_A SET                                           #multisetIsASetCondition
+    | nestedTable=identifier IS NOT? KW_EMPTY                                           #multisetIsEmptyCondition
     | expr NOT? MEMBER OF? nestedTable=identifier                                       #multisetMemberCondition
     | nestedTable1=identifier NOT? SUBMULTISET OF? nestedTable2=identifier              #multisetSubmultisetCondition
     | expr NOT? (LIKE | LIKEC | LIKE2 | LIKE4)
