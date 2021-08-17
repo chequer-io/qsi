@@ -10538,7 +10538,7 @@ analyticClause
 
 objectAccessExpression
     : '(' expr ')' '.' simpleIdentifier ('.' identifier)*   #columnWithExprAccessExpression
-    | simpleIdentifier ('.' identifier)*                    #columnAccessExpression
+    | identifier ('.' identifier)*                          #columnAccessExpression
     | pseudoColumn                                          #pseudoColumnAccessExpression
     ;
 

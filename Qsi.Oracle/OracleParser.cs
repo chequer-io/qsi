@@ -16,16 +16,21 @@ namespace Qsi.Oracle
         {
             var parser = OracleUtility.CreateParser(script.Script);
 
-            var block = parser.block();
+            var block = parser.root();
 
-            switch (block.children[0])
+            if (block.block() != null)
             {
-                case OracleStatementContext oracleStatement:
-                    return ParseOracleStatement(oracleStatement);
+                switch (block.block(0).children[0])
+                {
+                    case OracleStatementContext oracleStatement:
+                        return ParseOracleStatement(oracleStatement);
 
-                default:
-                    throw TreeHelper.NotSupportedTree(block.children[0]);
+                    default:
+                        throw TreeHelper.NotSupportedTree(block.children[0]);
+                }
             }
+
+            return null;
         }
 
         private static IQsiTreeNode ParseOracleStatement(OracleStatementContext oracleStatement)

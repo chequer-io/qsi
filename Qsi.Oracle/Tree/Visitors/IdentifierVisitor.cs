@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Qsi.Data;
 using Qsi.Oracle.Internal;
 using Qsi.Tree;
@@ -10,6 +11,12 @@ namespace Qsi.Oracle.Tree.Visitors
     internal static class IdentifierVisitor
     {
         public static QsiIdentifier VisitIdentifierFragment(IdentifierFragmentContext context)
+        {
+            var text = context.GetText();
+            return new QsiIdentifier(text, text.StartsWith('"'));
+        }
+
+        public static QsiIdentifier VisitSimpleIdentifier(SimpleIdentifierContext context)
         {
             var text = context.GetText();
             return new QsiIdentifier(text, text.StartsWith('"'));
@@ -45,6 +52,22 @@ namespace Qsi.Oracle.Tree.Visitors
         public static QsiQualifiedIdentifier CreateQualifiedIdentifier(params IdentifierContext[] identifiers)
         {
             return new(identifiers.Select(VisitIdentifier));
+        }
+
+        public static IEnumerable<QsiColumnNode> VisitColumnList(ColumnListContext context)
+        {
+            foreach (var identifier in context.identifier())
+            {
+                var node = OracleTree.CreateWithSpan<QsiSequentialColumnNode>(identifier);
+                var qsiIdentifier = VisitIdentifier(identifier);
+
+                node.Alias.Value = new QsiAliasNode
+                {
+                    Name = qsiIdentifier
+                };
+
+                yield return node;
+            }
         }
     }
 }

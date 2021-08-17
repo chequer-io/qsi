@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using Qsi.Analyzers;
 using Qsi.Analyzers.Action;
-using Qsi.Analyzers.Table;
 using Qsi.Engines;
+using Qsi.Oracle.Analyzers;
 using Qsi.Parsing;
 using Qsi.Services;
 
@@ -33,7 +33,7 @@ namespace Qsi.Oracle
         public override IEnumerable<QsiAnalyzerBase> CreateAnalyzers(QsiEngine engine)
         {
             yield return new QsiActionAnalyzer(engine);
-            yield return new QsiTableAnalyzer(engine);
+            yield return new OracleTableAnalyzer(engine);
         }
     }
 }

@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Linq;
 using Qsi.Oracle.Internal;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
+using Qsi.Utilities;
 
 namespace Qsi.Oracle.Tree.Visitors
 {
@@ -39,8 +41,6 @@ namespace Qsi.Oracle.Tree.Visitors
 
         public static QsiTableNode VisitQueryBlock(QueryBlockContext context)
         {
-            // var withClause = context.withClause();
-
             var node = OracleTree.CreateWithSpan<QsiDerivedTableNode>(context);
             node.Columns.Value = OracleTree.CreateWithSpan<QsiColumnsDeclarationNode>(context.selectList());
 
@@ -55,8 +55,29 @@ namespace Qsi.Oracle.Tree.Visitors
             }
             else
             {
-                throw new NotImplementedException();
+                var source = VisitTableSource(context._tables[0]);
+
+                for (int i = 1; i < context._tables.Count; i++)
+                {
+                    var leftContext = context._tables[i - 1];
+                    var rightContext = context._tables[i];
+
+                    var joinedTable = OracleTree.CreateWithSpan<QsiJoinedTableNode>(leftContext.Start, rightContext.Stop);
+
+                    joinedTable.IsComma = true;
+                    joinedTable.Left.Value = source;
+                    joinedTable.Right.Value = VisitTableSource(rightContext);
+
+                    source = joinedTable;
+                }
+
+                node.Source.Value = source;
             }
+
+            var withClause = context.withClause();
+
+            if (withClause is not null)
+                node.Directives.Value = VisitWithClause(withClause);
 
             // TODO: Impl
             // whereClause, hierarchicalQueryClause, groupByClause, modelClause, windowClause
@@ -103,6 +124,25 @@ namespace Qsi.Oracle.Tree.Visitors
             var node = VisitQueryTableExpression(context.queryTableExpression());
             bool isOnly = context.HasToken(ONLY);
 
+            // TODO: Ignored flashbackQueryClause
+            // TODO: Ignored pivotClause, unpivotClause, rowPatternClause 
+
+            if (context.tAlias() != null)
+            {
+                if (node is not QsiDerivedTableNode derivedTableNode)
+                {
+                    derivedTableNode = OracleTree.CreateWithSpan<QsiDerivedTableNode>(context);
+                    derivedTableNode.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+                    derivedTableNode.Source.Value = node;
+                    node = derivedTableNode;
+                }
+
+                derivedTableNode.Alias.Value = new QsiAliasNode
+                {
+                    Name = IdentifierVisitor.VisitIdentifier(context.tAlias().identifier())
+                };
+            }
+
             return node;
         }
 
@@ -126,6 +166,49 @@ namespace Qsi.Oracle.Tree.Visitors
             // TODO: Impl sampleClause
 
             return reference;
+        }
+
+        public static QsiTableDirectivesNode VisitWithClause(WithClauseContext context)
+        {
+            var node = OracleTree.CreateWithSpan<QsiTableDirectivesNode>(context);
+            node.Tables.AddRange(context._clauses.Select(VisitFactoringClause));
+            return node;
+        }
+
+        public static QsiDerivedTableNode VisitFactoringClause(FactoringClauseContext context)
+        {
+            switch (context.children[0])
+            {
+                case SubqueryFactoringClauseContext subqueryFactoringClause:
+                    var node = OracleTree.CreateWithSpan<QsiDerivedTableNode>(context);
+
+                    node.Alias.Value = new QsiAliasNode
+                    {
+                        Name = IdentifierVisitor.VisitIdentifier(subqueryFactoringClause.identifier())
+                    };
+
+                    var columnList = subqueryFactoringClause.columnList();
+
+                    if (columnList is not null)
+                    {
+                        node.Columns.Value = new QsiColumnsDeclarationNode();
+                        node.Columns.Value.Columns.AddRange(IdentifierVisitor.VisitColumnList(columnList));
+                    }
+                    else
+                    {
+                        node.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+                    }
+
+                    node.Source.Value = VisitSubquery(subqueryFactoringClause.subquery());
+
+                    // ignored searchClause, cycleClause
+                    return node;
+
+                case SubavFactoringClauseContext subavFactoringClause:
+                    break;
+            }
+
+            throw new NotSupportedException();
         }
     }
 }

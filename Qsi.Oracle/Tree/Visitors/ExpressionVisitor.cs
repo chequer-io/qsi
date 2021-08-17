@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using Qsi.Data;
 using Qsi.Oracle.Internal;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
@@ -30,18 +32,39 @@ namespace Qsi.Oracle.Tree.Visitors
                     return allNode;
 
                 case ExprSelectListItemContext exprSelectListItem:
-                    var node = OracleTree.CreateWithSpan<QsiDerivedColumnNode>(exprSelectListItem);
-                    node.Expression.Value = VisitExpr(exprSelectListItem.expr());
+                    QsiColumnNode columnNode;
+
+                    var exprNode = VisitExpr(exprSelectListItem.expr());
+
+                    if (exprNode is QsiColumnExpressionNode columnExpressionNode)
+                    {
+                        columnNode = columnExpressionNode.Column.Value;
+                    }
+                    else
+                    {
+                        var node = OracleTree.CreateWithSpan<QsiDerivedColumnNode>(exprSelectListItem);
+                        node.Expression.Value = exprNode;
+
+                        columnNode = node;
+                    }
 
                     if (exprSelectListItem.alias() != null)
                     {
-                        node.Alias.Value = new QsiAliasNode
+                        if (columnNode is not QsiDerivedColumnNode qsiDerivedColumn)
+                        {
+                            qsiDerivedColumn = OracleTree.CreateWithSpan<QsiDerivedColumnNode>(exprSelectListItem);
+                            qsiDerivedColumn.Column.Value = columnNode;
+
+                            columnNode = qsiDerivedColumn;
+                        }
+
+                        qsiDerivedColumn.Alias.Value = new QsiAliasNode
                         {
                             Name = IdentifierVisitor.VisitAlias(exprSelectListItem.alias())
                         };
                     }
 
-                    return node;
+                    return columnNode;
             }
 
             throw new NotSupportedException();
@@ -134,7 +157,38 @@ namespace Qsi.Oracle.Tree.Visitors
 
         public static QsiExpressionNode VisitObjectAccessExpr(ObjectAccessExpressionContext context)
         {
-            throw new NotImplementedException();
+            switch (context)
+            {
+                case ColumnWithExprAccessExpressionContext columnWithExprAccessExpression:
+                    throw new NotSupportedException();
+
+                case ColumnAccessExpressionContext columnAccessExpression:
+                {
+                    var columnExpressionNode = OracleTree.CreateWithSpan<QsiColumnExpressionNode>(columnAccessExpression);
+                    var columnNode = OracleTree.CreateWithSpan<QsiColumnReferenceNode>(columnAccessExpression);
+                    columnNode.Name = new QsiQualifiedIdentifier(columnAccessExpression.identifier().Select(IdentifierVisitor.VisitIdentifier));
+                    columnExpressionNode.Column.Value = columnNode;
+
+                    return columnExpressionNode;
+                }
+
+                case PseudoColumnAccessExpressionContext pseudoColumnAccessExpression:
+                {
+                    var pseudoColumn = pseudoColumnAccessExpression.pseudoColumn();
+
+                    var columnExpressionNode = OracleTree.CreateWithSpan<QsiColumnExpressionNode>(pseudoColumnAccessExpression);
+                    var columnNode = OracleTree.CreateWithSpan<QsiColumnReferenceNode>(pseudoColumn);
+                    var text = pseudoColumn.GetText();
+                    var identifier = new QsiIdentifier(text, false);
+                    columnNode.Name = new QsiQualifiedIdentifier(identifier);
+
+                    columnExpressionNode.Column.Value = columnNode;
+
+                    return columnExpressionNode;
+                }
+            }
+
+            throw new NotSupportedException();
         }
 
         public static QsiExpressionNode VisitPlaceholderExpr(PlaceholderExpressionContext context)
