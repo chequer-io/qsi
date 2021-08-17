@@ -35,7 +35,7 @@ namespace Qsi.Oracle.Tree.Visitors
 
                     if (exprSelectListItem.alias() != null)
                     {
-                        node.Alias.Value = new QsiAliasNode()
+                        node.Alias.Value = new QsiAliasNode
                         {
                             Name = IdentifierVisitor.VisitAlias(exprSelectListItem.alias())
                         };
@@ -49,71 +49,32 @@ namespace Qsi.Oracle.Tree.Visitors
 
         public static QsiExpressionNode VisitExpr(ExprContext context)
         {
-            switch (context)
+            while (context is ParenthesisExprContext parens)
+                context = parens.expr();
+
+            return context switch
             {
-                case ParenthesisExprContext parenthesisExpr:
-                    return VisitParenthesisExpr(parenthesisExpr);
-
-                case SignExprContext signExpr:
-                    return VisitSignExpr(signExpr);
-
-                case TimestampExprContext timestampExpr:
-                    return VisitTimestampExpr(timestampExpr);
-
-                case BinaryExprContext binaryExpr:
-                    return VisitBinaryExpr(binaryExpr);
-
-                case CollateExprContext collateExpr:
-                    return VisitCollateExpr(collateExpr);
-
-                case FunctionExprContext functionExpr:
-                    return VisitFunctionExpr(functionExpr);
-
-                case CalcMeasExprContext calcMeasExpr:
-                    return VisitCalcMeasExpr(calcMeasExpr);
-
-                case CaseExprContext caseExpr:
-                    return VisitCaseExpr(caseExpr);
-
-                case CursorExprContext cursorExpr:
-                    return VisitCursorExpr(cursorExpr);
-
-                case IntervalExprContext intervalExpr:
-                    return VisitIntervalExpr(intervalExpr);
-
-                case ModelExprContext modelExpr:
-                    return VisitModelExpr(modelExpr);
-
-                case ObjectAccessExprContext objectAccessExpr:
-                    return VisitObjectAccessExpr(objectAccessExpr);
-
-                case PlaceholderExprContext placeholderExpr:
-                    return VisitPlaceholderExpr(placeholderExpr);
-
-                case ScalarSubqueryExprContext scalarSubqueryExpr:
-                    return VisitScalarSubqueryExpr(scalarSubqueryExpr);
-
-                case TypeConstructorExprContext typeConstructorExpr:
-                    return VisitTypeConstructorExpr(typeConstructorExpr);
-
-                case DatetimeExprContext datetimeExpr:
-                    return VisitDatetimeExpr(datetimeExpr);
-
-                case SimpleExprContext simpleExpr:
-                    return VisitSimpleExpr(simpleExpr);
-
-                case BindVariableExprContext bindVariableExpr:
-                    return VisitBindVariableExpr(bindVariableExpr);
-
-                case MultisetExceptExprContext multisetExceptExpr:
-                    return VisitMultisetExceptExpr(multisetExceptExpr);
-
-                case ColumnOuterJoinExprContext columnOuterJoinExpr:
-                    return VisitColumnOuterJoinExpr(columnOuterJoinExpr);
-
-                default:
-                    throw new NotSupportedException();
-            }
+                SignExprContext signExpr => VisitSignExpr(signExpr),
+                TimestampExprContext timestampExpr => VisitTimestampExpr(timestampExpr),
+                BinaryExprContext binaryExpr => VisitBinaryExpr(binaryExpr),
+                CollateExprContext collateExpr => VisitCollateExpr(collateExpr),
+                FunctionExprContext functionExpr => VisitFunctionExpr(functionExpr.functionExpression()),
+                CalcMeasExprContext calcMeasExpr => VisitCalcMeasExpr(calcMeasExpr.avMeasExpression()),
+                CaseExprContext caseExpr => VisitCaseExpr(caseExpr.caseExpression()),
+                CursorExprContext cursorExpr => VisitCursorExpr(cursorExpr),
+                IntervalExprContext intervalExpr => VisitIntervalExpr(intervalExpr.intervalExpression()),
+                ModelExprContext modelExpr => VisitModelExpr(modelExpr.modelExpression()),
+                ObjectAccessExprContext objectAccessExpr => VisitObjectAccessExpr(objectAccessExpr.objectAccessExpression()),
+                PlaceholderExprContext placeholderExpr => VisitPlaceholderExpr(placeholderExpr.placeholderExpression()),
+                ScalarSubqueryExprContext scalarSubqueryExpr => VisitScalarSubqueryExpr(scalarSubqueryExpr),
+                TypeConstructorExprContext typeConstructorExpr => VisitTypeConstructorExpr(typeConstructorExpr.typeConstructorExpression()),
+                DatetimeExprContext datetimeExpr => VisitDatetimeExpr(datetimeExpr),
+                SimpleExprContext simpleExpr => VisitSimpleExpr(simpleExpr.simpleExpression()),
+                BindVariableExprContext bindVariableExpr => VisitBindVariable(bindVariableExpr.bindVariable()),
+                MultisetExceptExprContext multisetExceptExpr => VisitMultisetExceptExpr(multisetExceptExpr),
+                ColumnOuterJoinExprContext columnOuterJoinExpr => VisitColumnOuterJoinExpr(columnOuterJoinExpr),
+                _ => throw new NotSupportedException()
+            };
         }
 
         public static QsiExpressionNode VisitParenthesisExpr(ParenthesisExprContext context)
@@ -141,17 +102,17 @@ namespace Qsi.Oracle.Tree.Visitors
             throw new NotImplementedException();
         }
 
-        public static QsiExpressionNode VisitFunctionExpr(FunctionExprContext context)
+        public static QsiExpressionNode VisitFunctionExpr(FunctionExpressionContext context)
         {
             throw new NotImplementedException();
         }
 
-        public static QsiExpressionNode VisitCalcMeasExpr(CalcMeasExprContext context)
+        public static QsiExpressionNode VisitCalcMeasExpr(AvMeasExpressionContext context)
         {
             throw new NotImplementedException();
         }
 
-        public static QsiExpressionNode VisitCaseExpr(CaseExprContext context)
+        public static QsiExpressionNode VisitCaseExpr(CaseExpressionContext context)
         {
             throw new NotImplementedException();
         }
@@ -161,22 +122,22 @@ namespace Qsi.Oracle.Tree.Visitors
             throw new NotImplementedException();
         }
 
-        public static QsiExpressionNode VisitIntervalExpr(IntervalExprContext context)
+        public static QsiExpressionNode VisitIntervalExpr(IntervalExpressionContext context)
         {
             throw new NotImplementedException();
         }
 
-        public static QsiExpressionNode VisitModelExpr(ModelExprContext context)
+        public static QsiExpressionNode VisitModelExpr(ModelExpressionContext context)
         {
             throw new NotImplementedException();
         }
 
-        public static QsiExpressionNode VisitObjectAccessExpr(ObjectAccessExprContext context)
+        public static QsiExpressionNode VisitObjectAccessExpr(ObjectAccessExpressionContext context)
         {
             throw new NotImplementedException();
         }
 
-        public static QsiExpressionNode VisitPlaceholderExpr(PlaceholderExprContext context)
+        public static QsiExpressionNode VisitPlaceholderExpr(PlaceholderExpressionContext context)
         {
             throw new NotImplementedException();
         }
@@ -186,7 +147,7 @@ namespace Qsi.Oracle.Tree.Visitors
             throw new NotImplementedException();
         }
 
-        public static QsiExpressionNode VisitTypeConstructorExpr(TypeConstructorExprContext context)
+        public static QsiExpressionNode VisitTypeConstructorExpr(TypeConstructorExpressionContext context)
         {
             throw new NotImplementedException();
         }
@@ -196,12 +157,12 @@ namespace Qsi.Oracle.Tree.Visitors
             throw new NotImplementedException();
         }
 
-        public static QsiExpressionNode VisitSimpleExpr(SimpleExprContext context)
+        public static QsiExpressionNode VisitSimpleExpr(SimpleExpressionContext context)
         {
             throw new NotImplementedException();
         }
 
-        public static QsiExpressionNode VisitBindVariableExpr(BindVariableExprContext context)
+        public static QsiExpressionNode VisitBindVariable(BindVariableContext context)
         {
             throw new NotImplementedException();
         }
