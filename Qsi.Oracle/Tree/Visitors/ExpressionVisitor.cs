@@ -182,36 +182,33 @@ namespace Qsi.Oracle.Tree.Visitors
                                 return (accumulator, index + 1);
 
                             case IdentifierContext childIdentifierContext:
-                                QsiFieldExpressionNode childFieldNode;
-
                                 if (childs.Count() - 1 > index)
                                 {
                                     var childAccessNode = OracleTree.CreateWithSpan<QsiMemberAccessExpressionNode>(childIdentifierContext);
 
-                                    childFieldNode = OracleTree.CreateWithSpan<QsiFieldExpressionNode>(childIdentifierContext);
-
-                                    childFieldNode.Identifier = new QsiQualifiedIdentifier(
-                                        IdentifierVisitor.VisitIdentifier(childIdentifierContext)
-                                    );
-
-                                    childAccessNode.Member.Value = childFieldNode;
+                                    childAccessNode.Member.Value = VisitFunctionMemberExpression(childIdentifierContext);
                                     accumulator.Member.Value = childAccessNode;
 
                                     return (childAccessNode, index + 1);
                                 }
 
-                                childFieldNode = OracleTree.CreateWithSpan<QsiFieldExpressionNode>(childIdentifierContext);
-
-                                childFieldNode.Identifier = new QsiQualifiedIdentifier(
-                                    IdentifierVisitor.VisitIdentifier(childIdentifierContext)
-                                );
-
-                                accumulator.Member.Value = childFieldNode;
+                                accumulator.Member.Value = VisitFunctionMemberExpression(childIdentifierContext);
                                 return (accumulator, index + 1);
                         }
 
                         return acc;
                     });
+
+                    static QsiFieldExpressionNode VisitFunctionMemberExpression(IdentifierContext context)
+                    {
+                        var node = OracleTree.CreateWithSpan<QsiFieldExpressionNode>(context);
+
+                        node.Identifier = new QsiQualifiedIdentifier(
+                            IdentifierVisitor.VisitIdentifier(context)
+                        );
+
+                        return node;
+                    }
 
                     return accessNode;
                 }
@@ -232,7 +229,7 @@ namespace Qsi.Oracle.Tree.Visitors
                         node.Parameters.AddRange(argumentList);
 
                     // TODO
-                    
+
                     return null;
                 }
 
@@ -250,7 +247,7 @@ namespace Qsi.Oracle.Tree.Visitors
                 context = context.argumentList();
 
             // TODO: Make named parameter node
-            
+
             return null;
         }
 
