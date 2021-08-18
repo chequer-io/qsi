@@ -9255,7 +9255,6 @@ calcMeasExpression
 functionExpression
     : <assoc=right> functionExpression ('.' (functionExpression | identifier))+
     | functionName '(' argumentList? ')'
-    | functionName '(' argumentList? ')' OVER ( identifier | '(' analyticClause ')' )
     | castFunction
     | approxCountFunction
     | approxMedianFunction

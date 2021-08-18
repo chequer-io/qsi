@@ -223,14 +223,12 @@ namespace Qsi.Oracle.Tree.Visitors
 
                     node.Member.Value = functionExpressionNode;
 
-                    var argumentList = VisitArgumentList(context.argumentList());
+                    IEnumerable<QsiExpressionNode> argumentList = VisitArgumentList(context.argumentList());
 
                     if (argumentList is not null)
                         node.Parameters.AddRange(argumentList);
 
-                    // TODO
-
-                    return null;
+                    return node;
                 }
 
                 default:
