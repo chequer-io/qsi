@@ -7776,9 +7776,16 @@ granteeClauseItem
 
 subquery
     : queryBlock orderByClause? rowOffset? rowFetchOption?              #queryBlockSubquery
-    | subquery ((UNION ALL? | INTERSECT | MINUS | EXCEPT) subquery)+
+    | subquery (subqueryJoinType subquery)+
       orderByClause? rowOffset? rowFetchOption?                         #joinedSubquery
     | '(' subquery ')' orderByClause? rowOffset? rowFetchOption?        #parenthesisSubquery
+    ;
+
+subqueryJoinType
+    : UNION ALL? 
+    | INTERSECT 
+    | MINUS 
+    | EXCEPT
     ;
 
 orderByClause

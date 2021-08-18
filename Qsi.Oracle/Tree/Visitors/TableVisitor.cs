@@ -28,8 +28,8 @@ namespace Qsi.Oracle.Tree.Visitors
             return context switch
             {
                 QueryBlockSubqueryContext queryBlocksubquery => VisitQueryBlockSubquery(queryBlocksubquery),
-                // JoinedSubqueryContext joinedSubquery => VisitJoinedSubquery(joinedSubquery),
-                // ParenthesisSubqueryContext parenthesisSubquery => VisitParenthesisSubquery(parenthesisSubquery),
+                JoinedSubqueryContext joinedSubquery => VisitJoinedSubquery(joinedSubquery),
+                ParenthesisSubqueryContext parenthesisSubquery => VisitParenthesisSubquery(parenthesisSubquery),
                 _ => throw new NotSupportedException()
             };
         }
@@ -41,16 +41,92 @@ namespace Qsi.Oracle.Tree.Visitors
             var orderByClause = queryBlockSubquery.orderByClause();
 
             if (orderByClause is not null)
+                node.Order.Value = VisitOrderByClause(orderByClause);
+
+            // TODO: rowOffset, rowFetchOption
+
+            return node;
+        }
+
+        public static QsiTableNode VisitJoinedSubquery(JoinedSubqueryContext context)
+        {
+            var subqueryItems = context.subquery();
+            var source = VisitSubquery(subqueryItems[0]);
+
+            for (int i = 1; i < subqueryItems.Length; i++)
             {
-                var multipleOrderExpressionNode = OracleTree.CreateWithSpan<OracleMultipleOrderExpressionNode>(orderByClause);
+                var leftContext = subqueryItems[i - 1];
+                var rightContext = subqueryItems[i];
 
-                multipleOrderExpressionNode.IsSiblings = orderByClause.HasToken(SIBLINGS);
-                multipleOrderExpressionNode.Orders.AddRange(orderByClause._items.Select(VisitOrderByItem));
+                var joinedTable = OracleTree.CreateWithSpan<OracleBinaryTableNode>(leftContext.Start, rightContext.Stop);
 
-                node.Order.Value = multipleOrderExpressionNode;
+                joinedTable.Left.Value = source;
+                joinedTable.BinaryTableType = VisitSubqueryJoinType(context.subqueryJoinType(i - 1));
+                joinedTable.Right.Value = VisitSubquery(rightContext);
+
+                source = joinedTable;
+            }
+
+            if (source is OracleBinaryTableNode binaryTableNode)
+            {
+                if (context.orderByClause() != null)
+                    binaryTableNode.Order.Value = VisitOrderByClause(context.orderByClause());
             }
 
             // TODO: rowOffset, rowFetchOption
+
+            return source;
+        }
+
+        public static OracleBinaryTableType VisitSubqueryJoinType(SubqueryJoinTypeContext context)
+        {
+            switch (context.children[0])
+            {
+                case ITerminalNode { Symbol: { Type: UNION } }:
+                    return context.ALL() != null
+                        ? OracleBinaryTableType.UnionAll
+                        : OracleBinaryTableType.Union;
+
+                case ITerminalNode { Symbol: { Type: INTERSECT } }:
+                    return OracleBinaryTableType.Intersect;
+
+                case ITerminalNode { Symbol: { Type: MINUS } }:
+                    return OracleBinaryTableType.Minus;
+
+                case ITerminalNode { Symbol: { Type: EXCEPT } }:
+                    return OracleBinaryTableType.Except;
+
+                default:
+                    throw TreeHelper.NotSupportedTree(context);
+            }
+        }
+
+        public static QsiTableNode VisitParenthesisSubquery(ParenthesisSubqueryContext context)
+        {
+            var node = OracleTree.CreateWithSpan<QsiDerivedTableNode>(context);
+
+            node.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+            node.Source.Value = VisitSubquery(context.subquery());
+
+            var orderByClause = context.orderByClause();
+
+            if (orderByClause is not null)
+                node.Order.Value = VisitOrderByClause(orderByClause);
+
+            var rowOffset = context.rowOffset();
+            var rowFetchOption = context.rowFetchOption();
+
+            // TODO: rowOffset, rowFetchOption
+
+            return node;
+        }
+
+        public static OracleMultipleOrderExpressionNode VisitOrderByClause(OrderByClauseContext context)
+        {
+            var node = OracleTree.CreateWithSpan<OracleMultipleOrderExpressionNode>(context);
+
+            node.IsSiblings = context.HasToken(SIBLINGS);
+            node.Orders.AddRange(context._items.Select(VisitOrderByItem));
 
             return node;
         }
