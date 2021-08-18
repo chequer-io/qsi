@@ -1461,7 +1461,7 @@ namespace Qsi.Oracle.Tree.Visitors
         {
             var node = OracleTree.CreateWithSpan<OracleMultipleOrderExpressionNode>(context);
 
-            node.Siblings = context.SIBLINGS() is not null;
+            node.IsSiblings = context.SIBLINGS() is not null;
 
             // TODO
 
@@ -1611,7 +1611,7 @@ namespace Qsi.Oracle.Tree.Visitors
                     return VisitNumberLiteral(numberLiteral);
 
                 case IntervalLiteralContext intervalLiteral:
-                    throw new NotImplementedException();
+                    return VisitIntevalLiteral(intervalLiteral);
 
                 case DateTimeLiteralContext dateTimeLiteral:
                     throw new NotImplementedException();
@@ -1658,7 +1658,6 @@ namespace Qsi.Oracle.Tree.Visitors
         public static QsiLiteralExpressionNode VisitNumberLiteral(NumberLiteralContext context)
         {
             var node = OracleTree.CreateWithSpan<QsiLiteralExpressionNode>(context);
-
             var text = context.GetText();
 
             switch (context)
@@ -1680,6 +1679,16 @@ namespace Qsi.Oracle.Tree.Visitors
                     break;
                 }
             }
+
+            return node;
+        }
+
+        public static QsiLiteralExpressionNode VisitIntevalLiteral(IntervalLiteralContext context)
+        {
+            var node = OracleTree.CreateWithSpan<QsiLiteralExpressionNode>(context);
+            // WARNING: Interval
+            node.Type = QsiDataType.DateTime;
+            node.Value = context.GetText();
 
             return node;
         }

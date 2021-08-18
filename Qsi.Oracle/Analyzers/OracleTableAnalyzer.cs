@@ -10,6 +10,8 @@ namespace Qsi.Oracle.Analyzers
 {
     public sealed class OracleTableAnalyzer : QsiTableAnalyzer
     {
+        // TODO: Build Sequence: => seq.NEXTVAL, seq.CURRVAL
+
         public OracleTableAnalyzer(QsiEngine engine) : base(engine)
         {
         }

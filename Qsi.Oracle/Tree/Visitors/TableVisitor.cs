@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using Qsi.Data;
+using Qsi.Oracle.Common;
 using Qsi.Oracle.Internal;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
@@ -34,12 +37,41 @@ namespace Qsi.Oracle.Tree.Visitors
         public static QsiTableNode VisitQueryBlockSubquery(QueryBlockSubqueryContext queryBlockSubquery)
         {
             var node = VisitQueryBlock(queryBlockSubquery.queryBlock());
-            // TODO: orderByClause, rowOffset, rowFetchOption
+
+            var orderByClause = queryBlockSubquery.orderByClause();
+
+            if (orderByClause is not null)
+            {
+                var multipleOrderExpressionNode = OracleTree.CreateWithSpan<OracleMultipleOrderExpressionNode>(orderByClause);
+
+                multipleOrderExpressionNode.IsSiblings = orderByClause.HasToken(SIBLINGS);
+                multipleOrderExpressionNode.Orders.AddRange(orderByClause._items.Select(VisitOrderByItem));
+
+                node.Order.Value = multipleOrderExpressionNode;
+            }
+
+            // TODO: rowOffset, rowFetchOption
 
             return node;
         }
 
-        public static QsiTableNode VisitQueryBlock(QueryBlockContext context)
+        public static QsiOrderExpressionNode VisitOrderByItem(OrderByItemContext context)
+        {
+            var node = OracleTree.CreateWithSpan<OracleOrderExpressionNode>(context);
+            node.Expression.Value = ExpressionVisitor.VisitExpr(context.expr());
+
+            if (context.order != null)
+                node.Order = context.order.Type == DESC ? QsiSortOrder.Descending : QsiSortOrder.Ascending;
+
+            if (context.nullsOrder != null)
+                node.NullsOrder = context.nullsOrder.Type == FIRST
+                    ? OracleNullsOrder.First
+                    : OracleNullsOrder.Last;
+
+            return node;
+        }
+
+        public static QsiDerivedTableNode VisitQueryBlock(QueryBlockContext context)
         {
             var node = OracleTree.CreateWithSpan<QsiDerivedTableNode>(context);
             node.Columns.Value = OracleTree.CreateWithSpan<QsiColumnsDeclarationNode>(context.selectList());
@@ -89,10 +121,34 @@ namespace Qsi.Oracle.Tree.Visitors
                 node.Where.Value = whereNode;
             }
 
-            // TODO: Impl
-            // hierarchicalQueryClause, groupByClause, modelClause, windowClause
+            var groupByClause = context.groupByClause();
+
+            if (groupByClause is not null)
+            {
+                var groupingNode = OracleTree.CreateWithSpan<QsiGroupingExpressionNode>(groupByClause);
+                groupingNode.Items.AddRange(groupByClause.groupByItems().groupByItem().Select(VisitGroupByItem));
+                var groupingByHavingClause = groupByClause.groupByHavingClause();
+
+                if (groupingByHavingClause is not null)
+                    groupingNode.Having.Value = ExpressionVisitor.VisitCondition(groupingByHavingClause.condition());
+
+                node.Grouping.Value = groupingNode;
+            }
+
+            // hierarchicalQueryClause, modelClause, windowClause ignored
 
             return node;
+        }
+
+        public static QsiExpressionNode VisitGroupByItem(GroupByItemContext context)
+        {
+            return context.children[0] switch
+            {
+                ExprContext expr => ExpressionVisitor.VisitExpr(expr),
+                RollupCubeClauseContext rollupCubeClause => throw new NotImplementedException(),
+                GroupingSetsClauseContext groupingSetsClause => throw new NotImplementedException(),
+                _ => throw new NotSupportedException()
+            };
         }
 
         public static QsiTableNode VisitTableSource(TableSourceContext context)
@@ -137,7 +193,7 @@ namespace Qsi.Oracle.Tree.Visitors
             // TODO: Ignored flashbackQueryClause
             // TODO: Ignored pivotClause, unpivotClause, rowPatternClause 
 
-            if (context.tAlias() != null)
+            if (context.tAlias() is not null)
             {
                 if (node is not QsiDerivedTableNode derivedTableNode)
                 {

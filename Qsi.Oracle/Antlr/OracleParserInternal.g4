@@ -7786,7 +7786,7 @@ orderByClause
     ;
 
 orderByItem
-    : (expr | position=integer) (ASC | DESC)? (NULLS FIRST | NULLS LAST)?
+    : expr order=(ASC | DESC)? (NULLS nullsOrder=(FIRST | LAST))?
     ;
 
 dmlTableExpressionClause
@@ -8822,7 +8822,11 @@ hierarchicalQueryClause
     ;
 
 groupByClause
-    : GROUP BY (groupByItems | '(' groupByItems ')') (HAVING condition)?
+    : GROUP BY (groupByItems | '(' groupByItems ')') groupByHavingClause?
+    ;
+
+groupByHavingClause
+    : HAVING condition
     ;
 
 groupByItems
@@ -8830,7 +8834,9 @@ groupByItems
     ;
 
 groupByItem
-    : (expr | rollupCubeClause | groupingSetsClause)
+    : expr 
+    | rollupCubeClause 
+    | groupingSetsClause
     ;
 
 rollupCubeClause
