@@ -11,7 +11,7 @@ namespace Qsi.Oracle.Tree
 
         public QsiQualifiedIdentifier WindowName { get; set; }
 
-        public QsiTreeNodeProperty<QsiExpressionNode> PartitionE { get; set; }
+        public QsiTreeNodeProperty<OraclePartitionExpressionNode> Partition { get; set; }
 
         public QsiTreeNodeProperty<OracleMultipleOrderExpressionNode> Order { get; set; }
 

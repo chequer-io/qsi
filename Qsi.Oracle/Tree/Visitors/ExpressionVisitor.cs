@@ -168,7 +168,7 @@ namespace Qsi.Oracle.Tree.Visitors
                         switch (cur)
                         {
                             case FunctionExpressionContext childFunctionExpressionContext:
-                                if (childs.Count() - 1 > index)
+                                if (context.ChildCount - 3 > index)
                                 {
                                     var childAccessNode = OracleTree.CreateWithSpan<QsiMemberAccessExpressionNode>(childFunctionExpressionContext);
 
@@ -182,7 +182,7 @@ namespace Qsi.Oracle.Tree.Visitors
                                 return (accumulator, index + 1);
 
                             case IdentifierContext childIdentifierContext:
-                                if (childs.Count() - 1 > index)
+                                if (context.ChildCount - 3 > index)
                                 {
                                     var childAccessNode = OracleTree.CreateWithSpan<QsiMemberAccessExpressionNode>(childIdentifierContext);
 
@@ -233,13 +233,302 @@ namespace Qsi.Oracle.Tree.Visitors
 
                 case AnalyticFunctionContext analyticFunctionContext:
                 {
+                    var node = OracleTree.CreateWithSpan<OracleAnalyticFunctionExpressionNode>(analyticFunctionContext);
 
-                    return null;
+                    switch (analyticFunctionContext.children[0])
+                    {
+                        case AnyValueFunctionContext anyValueFunctionContext:
+                            node.Function.Value = VisitAnyValueFunctionContext(anyValueFunctionContext);
+                            break;
+
+                        case AvgFunctionContext avgFunctionContext:
+                            node.Function.Value = VisitAvgFunctionContext(avgFunctionContext);
+                            break;
+
+                        case BitAndAggFunctionContext bitAndAggFunctionContext:
+                            node.Function.Value = VisitBitAndAggFunctionContext(bitAndAggFunctionContext);
+                            break;
+
+                        case BitOrAggFunctionContext bitOrAggFunctionContext:
+                            node.Function.Value = VisitBitOrAggFunctionContext(bitOrAggFunctionContext);
+                            break;
+
+                        case BitXorAggFunctionContext bitXorAggFunctionContext:
+                            node.Function.Value = VisitBitXorAggFunctionContext(bitXorAggFunctionContext);
+                            break;
+
+                        case ChecksumFunctionContext checksumFunctionContext:
+                            node.Function.Value = VisitChecksumFunctionContext(checksumFunctionContext);
+                            break;
+
+                        case CorrFunctionContext corrFunctionContext:
+                            node.Function.Value = VisitCorrFunctionContext(corrFunctionContext);
+                            break;
+
+                        case CountFunctionContext countFunctionContext:
+                            node.Function.Value = VisitCountFunctionContext(countFunctionContext);
+                            break;
+
+                        case CovarPopFunctionContext covarPopFunctionContext:
+                            node.Function.Value = VisitCovarPopFunctionContext(covarPopFunctionContext);
+                            break;
+
+                        case CovarSampFunctionContext covarSampFunctionContext:
+                            node.Function.Value = VisitCovarSampFunctionContext(covarSampFunctionContext);
+                            break;
+
+                        case FirstValueFunctionContext firstValueFunctionContext:
+                            node.Function.Value = VisitFirstValueFunctionContext(firstValueFunctionContext);
+                            break;
+
+                        case KurtosisPopFunctionContext kurtosisPopFunctionContext:
+                            node.Function.Value = VisitKurtosisPopFunctionContext(kurtosisPopFunctionContext);
+                            break;
+
+                        case KurtosisSampFunctionContext kurtosisSampFunctionContext:
+                            node.Function.Value = VisitKurtosisSampFunctionContext(kurtosisSampFunctionContext);
+                            break;
+
+                        case LastValueFunctionContext lastValueFunctionContext:
+                            node.Function.Value = VisitLastValueFunctionContext(lastValueFunctionContext);
+                            break;
+
+                        case MaxFunctionContext maxFunctionContext:
+                            node.Function.Value = VisitMaxFunctionContext(maxFunctionContext);
+                            break;
+
+                        case MedianFunctionContext medianFunctionContext:
+                            node.Function.Value = VisitMedianFunctionContext(medianFunctionContext);
+                            break;
+
+                        case MinFunctionContext minFunctionContext:
+                            node.Function.Value = VisitMinFunctionContext(minFunctionContext);
+                            break;
+
+                        case NthValueFunctionContext nthValueFunctionContext:
+                            node.Function.Value = VisitNthValueFunctionContext(nthValueFunctionContext);
+                            break;
+
+                        case LinearRegrFunctionContext linearRegrFunctionContext:
+                            node.Function.Value = VisitLinearRegrFunctionContext(linearRegrFunctionContext);
+                            break;
+
+                        case StddevFunctionContext stddevFunctionContext:
+                            node.Function.Value = VisitStddevFunctionContext(stddevFunctionContext);
+                            break;
+
+                        case StddevPopFunctionContext stddevPopFunctionContext:
+                            node.Function.Value = VisitStddevPopFunctionContext(stddevPopFunctionContext);
+                            break;
+
+                        case StddevSampFunctionContext stddevSampFunctionContext:
+                            node.Function.Value = VisitStddevSampFunctionContext(stddevSampFunctionContext);
+                            break;
+
+                        case SumFunctionContext sumFunctionContext:
+                            node.Function.Value = VisitSumFunctionContext(sumFunctionContext);
+                            break;
+
+                        case VarPopFunctionContext varPopFunctionContext:
+                            node.Function.Value = VisitVarPopFunctionContext(varPopFunctionContext);
+                            break;
+
+                        case VarSampFunctionContext varSampFunctionContext:
+                            node.Function.Value = VisitVarSampFunctionContext(varSampFunctionContext);
+                            break;
+
+                        case VarianceFunctionContext varianceFunctionContext:
+                            node.Function.Value = VisitVarianceFunctionContext(varianceFunctionContext);
+                            break;
+                    }
+
+                    if (analyticFunctionContext.HasToken(OVER))
+                    {
+                        if (analyticFunctionContext.windowName is not null)
+                        {
+                            node.WindowName = IdentifierVisitor.CreateQualifiedIdentifier(analyticFunctionContext.windowName);
+                        }
+                        else if (analyticFunctionContext.analyticClause() is not null)
+                        {
+                            var analyticClause = analyticFunctionContext.analyticClause();
+
+                            if (analyticClause.windowName is not null)
+                                node.WindowName = IdentifierVisitor.CreateQualifiedIdentifier(analyticClause.windowName);
+
+                            if (analyticClause.queryPartitionClause() is not null)
+                                node.Partition.Value = VisitQueryPartitionClause(analyticClause.queryPartitionClause());
+
+                            if (analyticClause.orderByClause() is not null)
+                                node.Order.Value = VisitOrderByClause(analyticClause.orderByClause());
+
+                            if (analyticClause.windowingClause() is not null)
+                                node.Windowing.Value = VisitWindowingClause(analyticClause.windowingClause());
+                        }
+                    }
+
+                    return node;
                 }
 
                 default:
                     throw TreeHelper.NotSupportedTree(context.children[0]);
             }
+        }
+
+        #region Analytic Functions
+        public static QsiInvokeExpressionNode VisitAnyValueFunctionContext(AnyValueFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitAvgFunctionContext(AvgFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitBitAndAggFunctionContext(BitAndAggFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitBitOrAggFunctionContext(BitOrAggFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitBitXorAggFunctionContext(BitXorAggFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitChecksumFunctionContext(ChecksumFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitCorrFunctionContext(CorrFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitCountFunctionContext(CountFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitCovarPopFunctionContext(CovarPopFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitCovarSampFunctionContext(CovarSampFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitFirstValueFunctionContext(FirstValueFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitKurtosisPopFunctionContext(KurtosisPopFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitKurtosisSampFunctionContext(KurtosisSampFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitLastValueFunctionContext(LastValueFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitMaxFunctionContext(MaxFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitMedianFunctionContext(MedianFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitMinFunctionContext(MinFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitNthValueFunctionContext(NthValueFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitLinearRegrFunctionContext(LinearRegrFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitStddevFunctionContext(StddevFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitStddevPopFunctionContext(StddevPopFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitStddevSampFunctionContext(StddevSampFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitSumFunctionContext(SumFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitVarPopFunctionContext(VarPopFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitVarSampFunctionContext(VarSampFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitVarianceFunctionContext(VarianceFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+        #endregion
+
+        public static QsiExpressionNode VisitWindowingClause(WindowingClauseContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static OracleMultipleOrderExpressionNode VisitOrderByClause(OrderByClauseContext context)
+        {
+            var node = OracleTree.CreateWithSpan<OracleMultipleOrderExpressionNode>(context);
+
+            node.Siblings = context.SIBLINGS() is not null;
+
+            // TODO
+
+            return node;
+        }
+
+        public static OraclePartitionExpressionNode VisitQueryPartitionClause(QueryPartitionClauseContext context)
+        {
+            var node = OracleTree.CreateWithSpan<OraclePartitionExpressionNode>(context);
+
+            node.Elements.AddRange(context.queryPartitionExpressions().expr().Select(VisitExpr));
+
+            return node;
         }
 
         public static IEnumerable<QsiExpressionNode> VisitArgumentList(ArgumentListContext context)
