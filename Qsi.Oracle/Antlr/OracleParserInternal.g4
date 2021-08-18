@@ -9430,11 +9430,11 @@ approxPercentileDetailFunction
     ;
 
 approxRankFunction
-    : APPROX_RANK '(' expr? (PARTITION BY identifier)? (ORDER BY expr DESC)? ')'
+    : APPROX_RANK '(' rankExpr=expr (PARTITION BY partitionName)? (ORDER BY orderExpr=expr DESC)? ')'
     ;
 
 approxSumFunction
-    : APPROX_SUM '(' ('*' | expr) (',' SINGLE_QUOTE_SYMBOL MAX_ERROR SINGLE_QUOTE_SYMBOL) ')'?
+    : APPROX_SUM '(' ( '*' | expr ) ( ',' stringLiteral ) ')'?
     ;
 
 avgFunction

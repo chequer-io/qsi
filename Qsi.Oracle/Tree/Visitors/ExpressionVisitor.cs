@@ -789,32 +789,139 @@ namespace Qsi.Oracle.Tree.Visitors
 
         public static QsiInvokeExpressionNode VisitApproxCountFunction(ApproxCountFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.APPROX_COUNT().GetText());
+
+            if (context.HasToken(MULT_SYMBOL))
+            {
+                var paramNode = OracleTree.CreateWithSpan<QsiFieldExpressionNode>(context);
+                paramNode.Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(context.MULT_SYMBOL().GetText(), false));
+
+                node.Parameters.Add(paramNode);
+            }
+            else
+            {
+                node.Parameters.Add(VisitExpr(context.expr()));
+            }
+
+            if (context.stringLiteral() is not null)
+                node.Parameters.Add(VisitStringLiteral(context.stringLiteral()));
+
+            return node;
         }
 
         public static QsiInvokeExpressionNode VisitApproxMedianFunction(ApproxMedianFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.APPROX_MEDIAN().GetText());
+
+            node.Parameters.Add(VisitExpr(context.expr()));
+
+            if (context.DETERMINISTIC() is not null)
+            {
+                var deterministicNode = OracleTree.CreateWithSpan<QsiExpressionFragmentNode>(context);
+                deterministicNode.Text = context.DETERMINISTIC().GetText();
+
+                node.Parameters.Add(deterministicNode);
+            }
+
+            if (context.stringLiteral() is not null)
+                node.Parameters.Add(VisitStringLiteral(context.stringLiteral()));
+
+            return node;
         }
 
         public static QsiInvokeExpressionNode VisitApproxPercentileFunction(ApproxPercentileFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.APPROX_PERCENTILE().GetText());
+
+            node.Parameters.Add(VisitExpr(context.expr(0)));
+
+            if (context.DETERMINISTIC() is not null)
+            {
+                var deterministicNode = OracleTree.CreateWithSpan<QsiExpressionFragmentNode>(context);
+                deterministicNode.Text = context.DETERMINISTIC().GetText();
+
+                node.Parameters.Add(deterministicNode);
+            }
+
+            if (context.stringLiteral() is not null)
+                node.Parameters.Add(VisitStringLiteral(context.stringLiteral()));
+
+            var orderByNode = OracleTree.CreateWithSpan<OracleOrderExpressionNode>(context);
+            orderByNode.Expression.Value = VisitExpr(context.expr(1));
+
+            if (context.HasToken(DESC))
+                orderByNode.Order = QsiSortOrder.Descending;
+            else if (context.HasToken(ASC))
+                orderByNode.Order = QsiSortOrder.Ascending;
+
+            node.Parameters.Add(orderByNode);
+
+            return node;
         }
 
         public static QsiInvokeExpressionNode VisitApproxPercentileDetailFunction(ApproxPercentileDetailFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.APPROX_PERCENTILE_DETAIL().GetText());
+
+            node.Parameters.Add(VisitExpr(context.expr()));
+
+            if (context.DETERMINISTIC() is not null)
+            {
+                var deterministicNode = OracleTree.CreateWithSpan<QsiExpressionFragmentNode>(context);
+                deterministicNode.Text = context.DETERMINISTIC().GetText();
+
+                node.Parameters.Add(deterministicNode);
+            }
+
+            return node;
         }
 
         public static QsiInvokeExpressionNode VisitApproxRankFunction(ApproxRankFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.APPROX_RANK().GetText());
+
+            node.Parameters.Add(VisitExpr(context.rankExpr));
+
+            if (context.partitionName() is not null)
+            {
+                var partitionNode = OracleTree.CreateWithSpan<QsiFieldExpressionNode>(context.partitionName());
+                partitionNode.Identifier = new QsiQualifiedIdentifier(IdentifierVisitor.VisitIdentifier(context.partitionName().identifier()));
+
+                node.Parameters.Add(partitionNode);
+            }
+
+            if (context.orderExpr is not null)
+                node.Parameters.Add(VisitExpr(context.orderExpr));
+
+            return node;
         }
 
         public static QsiInvokeExpressionNode VisitApproxSumFunction(ApproxSumFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.APPROX_SUM().GetText());
+
+            if (context.HasToken(MULT_SYMBOL))
+            {
+                var paramNode = OracleTree.CreateWithSpan<QsiFieldExpressionNode>(context);
+                paramNode.Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(context.MULT_SYMBOL().GetText(), false));
+
+                node.Parameters.Add(paramNode);
+            }
+            else
+            {
+                node.Parameters.Add(VisitExpr(context.expr()));
+            }
+
+            if (context.stringLiteral() is not null)
+                node.Parameters.Add(VisitStringLiteral(context.stringLiteral()));
+
+            return node;
         }
 
         public static QsiInvokeExpressionNode VisitBinToNumFunction(BinToNumFunctionContext context)
