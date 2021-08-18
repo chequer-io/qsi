@@ -1769,7 +1769,7 @@ namespace Qsi.Oracle.Tree.Visitors
                     return VisitIntevalLiteral(intervalLiteral);
 
                 case DateTimeLiteralContext dateTimeLiteral:
-                    throw new NotImplementedException();
+                    return VisitDateTimeLiteral(dateTimeLiteral);
 
                 default:
                     throw TreeHelper.NotSupportedTree(context.children[0]);
@@ -1848,11 +1848,21 @@ namespace Qsi.Oracle.Tree.Visitors
             return node;
         }
 
+        public static QsiLiteralExpressionNode VisitDateTimeLiteral(DateTimeLiteralContext context)
+        {
+            var node = OracleTree.CreateWithSpan<QsiLiteralExpressionNode>(context);
+            // WARNING: Interval
+            node.Type = QsiDataType.DateTime;
+            node.Value = context.GetInputText();
+
+            return node;
+        }
+
         public static QsiLiteralExpressionNode VisitInteger(IntegerContext context)
         {
             var node = OracleTree.CreateWithSpan<QsiLiteralExpressionNode>(context);
             node.Type = QsiDataType.Numeric;
-            node.Value = int.Parse(context.GetText());
+            node.Value = int.Parse(context.GetInputText());
 
             return node;
         }
