@@ -345,9 +345,111 @@ namespace Qsi.Oracle.Tree.Visitors
             throw new NotImplementedException();
         }
 
-        public static QsiExpressionNode VisitSimpleExpr(SimpleExpressionContext context)
+        public static QsiLiteralExpressionNode VisitSimpleExpr(SimpleExpressionContext context)
         {
-            throw new NotImplementedException();
+            if (context.HasToken(NULL))
+            {
+                var node = OracleTree.CreateWithSpan<QsiLiteralExpressionNode>(context);
+                node.Type = QsiDataType.Null;
+                node.Value = null;
+
+                return node;
+            }
+
+            return VisitLiteral(context.literal());
+        }
+
+        public static QsiLiteralExpressionNode VisitLiteral(LiteralContext context)
+        {
+            switch (context.children[0])
+            {
+                case StringLiteralContext stringLiteral:
+                    return VisitStringLiteral(stringLiteral);
+
+                case NumberLiteralContext numberLiteral:
+                    return VisitNumberLiteral(numberLiteral);
+
+                case IntervalLiteralContext intervalLiteral:
+                    throw new NotImplementedException();
+
+                case DateTimeLiteralContext dateTimeLiteral:
+                    throw new NotImplementedException();
+
+                default:
+                    throw TreeHelper.NotSupportedTree(context.children[0]);
+            }
+        }
+
+        public static QsiLiteralExpressionNode VisitStringLiteral(StringLiteralContext context)
+        {
+            var node = OracleTree.CreateWithSpan<QsiLiteralExpressionNode>(context);
+            node.Type = QsiDataType.String;
+
+            var text = context.GetText();
+
+            switch (context.children[0])
+            {
+                case ITerminalNode { Symbol: { Type: TK_SINGLE_QUOTED_STRING } }:
+                {
+                    node.Value = text[1..^1];
+                    break;
+                }
+
+                case ITerminalNode { Symbol: { Type: TK_QUOTED_STRING } }:
+                {
+                    node.Value = text[3..^2];
+                    break;
+                }
+
+                case ITerminalNode { Symbol: { Type: TK_NATIONAL_STRING } }:
+                {
+                    node.Value = text[1] is 'q' or 'Q' ? text[4..^2] : text[2..^1];
+                    break;
+                }
+
+                default:
+                    throw TreeHelper.NotSupportedTree(context.children[0]);
+            }
+
+            return node;
+        }
+
+        public static QsiLiteralExpressionNode VisitNumberLiteral(NumberLiteralContext context)
+        {
+            var node = OracleTree.CreateWithSpan<QsiLiteralExpressionNode>(context);
+
+            var text = context.GetText();
+
+            switch (context)
+            {
+                case IntegerLiteralContext:
+                {
+                    node.Type = QsiDataType.Numeric;
+                    node.Value = int.Parse(text);
+                    break;
+                }
+
+                case NumbericLiteralContext numbericLiteral:
+                {
+                    if (numbericLiteral.numberType is not null)
+                        text = text[..^1];
+
+                    node.Type = QsiDataType.Decimal;
+                    node.Value = decimal.Parse(text, System.Globalization.NumberStyles.Float);
+                    break;
+                }
+            }
+
+            return node;
+        }
+
+        public static QsiLiteralExpressionNode VisitInteger(IntegerContext context)
+        {
+            var node = OracleTree.CreateWithSpan<QsiLiteralExpressionNode>(context);
+            node.Type = QsiDataType.Numeric;
+            node.Value = int.Parse(context.GetText());
+
+            return node;
         }
 
         public static QsiExpressionNode VisitBindVariable(BindVariableContext context)

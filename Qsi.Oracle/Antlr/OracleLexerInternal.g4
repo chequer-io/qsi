@@ -1551,6 +1551,7 @@ options { tokenVocab=predefined; }
 //KW_C:                             C;
 //KW_D:                             D;
 //KW_E:                             E;
+//KW_F:                             F;
 //KW_G:                             G;
 //KW_H:                             H;
 //KW_I:                             I;
@@ -1638,8 +1639,8 @@ TK_HEXA: '0' X;
 TK_IDENTIFIER_OR_KEYWORD: IDENTIFIER_FRAGMENT { CategorizeIdentifier(); };
 TK_IDENTIFIER: DOUBLE_QUOTE ~[\r\n"]* DOUBLE_QUOTE;
 
-TK_INTEGER_WITHOUT_SIGN: DIGIT+;
-TK_NUMBER_WITHOUT_SIGN: (DIGIT+ | DIGIT* '.' DIGIT+) (E? ('+' | '-')? DIGIT+)? (F|D)?;
+TK_INTEGER: DIGIT+;
+TK_NUMBER: (DIGIT+ | DIGIT* [ ]* '.' [ ]* DIGIT+) [ ]* (E? [ ]* ('+' | '-')? [ ]* DIGIT+)?;
 
 TK_SINGLE_QUOTED_STRING: '\'' ( '\'\'' | ~['] )* '\'';
 

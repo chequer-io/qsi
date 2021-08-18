@@ -7822,7 +7822,7 @@ rowFetchOption
     ;
 
 forUpdateClause
-    : FOR UPDATE (OF fullColumnPath (',' fullColumnPath)*)? (NOWAIT | WAIT TK_INTEGER_WITHOUT_SIGN | KW_SKIP LOCKED)?
+    : FOR UPDATE (OF fullColumnPath (',' fullColumnPath)*)? (NOWAIT | WAIT TK_INTEGER | KW_SKIP LOCKED)?
     ;
 
 queryBlock
@@ -8691,8 +8691,8 @@ rowPatternQuantifier
     : '*' '?'?
     | '+' '?'?
     | '?' '?'?
-    | '{' TK_INTEGER_WITHOUT_SIGN? ',' TK_INTEGER_WITHOUT_SIGN? '}' '?'?
-    | '{' TK_INTEGER_WITHOUT_SIGN '}'
+    | '{' TK_INTEGER? ',' TK_INTEGER? '}' '?'?
+    | '{' TK_INTEGER '}'
     ;
 
 rowPatternSubsetClause
@@ -8947,15 +8947,15 @@ windowingClause
     ;
 
 precision
-    : TK_INTEGER_WITHOUT_SIGN
+    : TK_INTEGER
     ;
 
 scale
-    : TK_INTEGER_WITHOUT_SIGN
+    : TK_INTEGER
     ;
 
 size
-    : TK_INTEGER_WITHOUT_SIGN
+    : TK_INTEGER
     ;
 
 collectionType
@@ -9220,7 +9220,7 @@ bindVariable
     ;
 
 indexBindVariable
-    : ':' TK_INTEGER_WITHOUT_SIGN
+    : ':' TK_INTEGER
     ;
 
 namedBindVariable
@@ -9233,10 +9233,7 @@ errorLoggingSimpleExpression
     ;
 
 simpleExpression
-    : ((schema '.')? table '.')? ROWID
-    | ROWNUM
-    | literal
-    | sequence '.' (CURRVAL | NEXTVAL)
+    : literal
     | NULL
     ;
 
@@ -10704,8 +10701,8 @@ jsonVar
     ;
 
 jsonScalar
-    : ('+' | '-') TK_INTEGER_WITHOUT_SIGN
-    | TK_INTEGER_WITHOUT_SIGN
+    : ('+' | '-') TK_INTEGER
+    | TK_INTEGER
     | TRUE
     | FALSE
     | NULL
@@ -11799,8 +11796,8 @@ indexspec
     ;
 
 integer
-    : TK_INTEGER_WITHOUT_SIGN
-    | ('+' | '-') TK_INTEGER_WITHOUT_SIGN
+    : TK_INTEGER
+    | ('+' | '-') TK_INTEGER
     ;
 
 literal
@@ -11811,10 +11808,8 @@ literal
     ;
 
 numberLiteral
-    : ('+' | '-') TK_INTEGER_WITHOUT_SIGN
-    | ('+' | '-') TK_NUMBER_WITHOUT_SIGN
-    | TK_INTEGER_WITHOUT_SIGN
-    | TK_NUMBER_WITHOUT_SIGN
+    : ('+' | '-')? TK_INTEGER                           #integerLiteral
+    | ('+' | '-')? TK_NUMBER numberType=(KW_D | KW_F)?  #numbericLiteral
     ;
 
 // '…'
