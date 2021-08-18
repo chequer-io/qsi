@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Antlr4.Runtime.Tree;
 using Qsi.Data;
 using Qsi.Oracle.Internal;
 using Qsi.Shared.Extensions;
@@ -148,7 +149,109 @@ namespace Qsi.Oracle.Tree.Visitors
 
         public static QsiExpressionNode VisitFunctionExpr(FunctionExpressionContext context)
         {
-            throw new NotImplementedException();
+            switch (context.children[0])
+            {
+                case FunctionExpressionContext functionExpressionContext:
+                {
+                    var accessNode = OracleTree.CreateWithSpan<QsiMemberAccessExpressionNode>(functionExpressionContext);
+
+                    accessNode.Target.Value = VisitFunctionExpr(functionExpressionContext);
+
+                    IEnumerable<IParseTree> childs = context.children
+                        .Skip(2)
+                        .Where(c => c is FunctionExpressionContext or IdentifierContext);
+
+                    childs.Aggregate((accessNode, 0), (acc, cur) =>
+                    {
+                        var (accumulator, index) = acc;
+
+                        switch (cur)
+                        {
+                            case FunctionExpressionContext childFunctionExpressionContext:
+                                if (childs.Count() - 1 > index)
+                                {
+                                    var childAccessNode = OracleTree.CreateWithSpan<QsiMemberAccessExpressionNode>(childFunctionExpressionContext);
+
+                                    childAccessNode.Member.Value = VisitFunctionExpr(childFunctionExpressionContext);
+                                    accumulator.Member.Value = childAccessNode;
+
+                                    return (childAccessNode, index + 1);
+                                }
+
+                                accumulator.Member.Value = VisitFunctionExpr(childFunctionExpressionContext);
+                                return (accumulator, index + 1);
+
+                            case IdentifierContext childIdentifierContext:
+                                QsiFieldExpressionNode childFieldNode;
+
+                                if (childs.Count() - 1 > index)
+                                {
+                                    var childAccessNode = OracleTree.CreateWithSpan<QsiMemberAccessExpressionNode>(childIdentifierContext);
+
+                                    childFieldNode = OracleTree.CreateWithSpan<QsiFieldExpressionNode>(childIdentifierContext);
+
+                                    childFieldNode.Identifier = new QsiQualifiedIdentifier(
+                                        IdentifierVisitor.VisitIdentifier(childIdentifierContext)
+                                    );
+
+                                    childAccessNode.Member.Value = childFieldNode;
+                                    accumulator.Member.Value = childAccessNode;
+
+                                    return (childAccessNode, index + 1);
+                                }
+
+                                childFieldNode = OracleTree.CreateWithSpan<QsiFieldExpressionNode>(childIdentifierContext);
+
+                                childFieldNode.Identifier = new QsiQualifiedIdentifier(
+                                    IdentifierVisitor.VisitIdentifier(childIdentifierContext)
+                                );
+
+                                accumulator.Member.Value = childFieldNode;
+                                return (accumulator, index + 1);
+                        }
+
+                        return acc;
+                    });
+
+                    return accessNode;
+                }
+
+                case FunctionNameContext functionNameContext:
+                {
+                    var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+                    var functionName = IdentifierVisitor.CreateQualifiedIdentifier(functionNameContext.identifier());
+
+                    var functionExpressionNode = OracleTree.CreateWithSpan<QsiFunctionExpressionNode>(context);
+                    functionExpressionNode.Identifier = functionName;
+
+                    node.Member.Value = functionExpressionNode;
+
+                    var argumentList = VisitArgumentList(context.argumentList());
+
+                    if (argumentList is not null)
+                        node.Parameters.AddRange(argumentList);
+
+                    // TODO
+                    
+                    return null;
+                }
+
+                default:
+                    throw TreeHelper.NotSupportedTree(context.children[0]);
+            }
+        }
+
+        private static IEnumerable<QsiExpressionNode> VisitArgumentList(ArgumentListContext context)
+        {
+            if (context is null)
+                return null;
+
+            while (context.argumentList() is not null)
+                context = context.argumentList();
+
+            // TODO: Make named parameter node
+            
+            return null;
         }
 
         public static QsiExpressionNode VisitCalcMeasExpr(AvMeasExpressionContext context)

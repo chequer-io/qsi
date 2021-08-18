@@ -9253,7 +9253,7 @@ calcMeasExpression
     ;
 
 functionExpression
-    : functionExpression ('.' (functionExpression | identifier))+
+    : <assoc=right> functionExpression ('.' (functionExpression | identifier))+
     | functionName '(' argumentList? ')'
     | functionName '(' argumentList? ')' OVER ( identifier | '(' analyticClause ')' )
     | castFunction
@@ -11190,7 +11190,7 @@ argumentList
 
 argument
     : expr
-    | expr '=' '>' expr
+    | identifier '=' '>' expr
     ;
 
 externalParameter
