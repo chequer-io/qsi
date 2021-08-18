@@ -18,5 +18,13 @@ namespace Qsi.Oracle.Tree
         public QsiTreeNodeProperty<QsiExpressionNode> Windowing { get; set; }
 
         public override IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
+
+        public OracleAnalyticFunctionExpressionNode()
+        {
+            Function = new QsiTreeNodeProperty<QsiInvokeExpressionNode>(this);
+            Partition = new QsiTreeNodeProperty<OraclePartitionExpressionNode>(this);
+            Order = new QsiTreeNodeProperty<OracleMultipleOrderExpressionNode>(this);
+            Windowing = new QsiTreeNodeProperty<QsiExpressionNode>(this);
+        }
     }
 }

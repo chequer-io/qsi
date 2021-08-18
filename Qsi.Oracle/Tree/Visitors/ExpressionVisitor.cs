@@ -4,6 +4,7 @@ using System.Linq;
 using Antlr4.Runtime.Tree;
 using Qsi.Data;
 using Qsi.Oracle.Internal;
+using Qsi.Parsing;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
 using Qsi.Utilities;
@@ -731,7 +732,59 @@ namespace Qsi.Oracle.Tree.Visitors
         #region Known Functions
         public static QsiInvokeExpressionNode VisitCastFunction(CastFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.CAST().GetText());
+
+            if (context.castExpr is not null)
+            {
+                node.Parameters.Add(VisitExpr(context.castExpr));
+            }
+            else
+            {
+                var tableExpressionNode = OracleTree.CreateWithSpan<QsiTableExpressionNode>(context.castSubquery);
+                tableExpressionNode.Table.Value = TableVisitor.VisitSubquery(context.castSubquery);
+
+                node.Parameters.Add(tableExpressionNode);
+            }
+
+            node.Parameters.Add(VisitDataType(context.datatype()));
+
+            if (context.defaultValue is not null)
+            {
+                var defaultValueNode = OracleTreeHelper.CreateNamedParameter(context.defaultValue, "defaultValue");
+                defaultValueNode.Expression.Value = VisitExpr(context.defaultValue);
+
+                node.Parameters.Add(defaultValueNode);
+            }
+
+            if (context.fmt is not null)
+            {
+                var fmtNode = OracleTreeHelper.CreateNamedParameter(context.fmt, "fmt");
+                fmtNode.Expression.Value = VisitExpr(context.fmt);
+
+                node.Parameters.Add(fmtNode);
+            }
+
+            if (context.nlsparam is not null)
+            {
+                var nlsparamNode = OracleTreeHelper.CreateNamedParameter(context.nlsparam, "nlsparam");
+                nlsparamNode.Expression.Value = VisitExpr(context.nlsparam);
+
+                node.Parameters.Add(nlsparamNode);
+            }
+
+            return node;
+        }
+
+        public static QsiExpressionNode VisitDataType(DatatypeContext context)
+        {
+            var node = OracleTree.CreateWithSpan<QsiTypeExpressionNode>(context);
+
+            node.Identifier = new QsiQualifiedIdentifier(
+                new QsiIdentifier(context.GetInputText(), false)
+            );
+
+            return node;
         }
 
         public static QsiInvokeExpressionNode VisitApproxCountFunction(ApproxCountFunctionContext context)

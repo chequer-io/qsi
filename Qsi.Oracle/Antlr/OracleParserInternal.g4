@@ -9458,8 +9458,8 @@ bitXorAggFunction
     ;
 
 castFunction
-    : CAST'(' (expr | MULTISET '('subquery')' ) AS (datatype | TIMESTAMP WITH LOCAL? TIME ZONE)
-        ( DEFAULT returnValue=expr ON CONVERSION ERROR )?
+    : CAST '(' (castExpr=expr | MULTISET '(' castSubquery=subquery ')' ) AS datatype
+        ( DEFAULT defaultValue=expr ON CONVERSION ERROR )?
         (',' fmt=expr (',' nlsparam=expr )? )?')'
     ;
 
