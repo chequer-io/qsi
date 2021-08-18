@@ -5,7 +5,6 @@ using Antlr4.Runtime.Tree;
 using Qsi.Data;
 using Qsi.Oracle.Common;
 using Qsi.Oracle.Internal;
-using Qsi.Parsing;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
 using Qsi.Utilities;
@@ -2051,6 +2050,14 @@ namespace Qsi.Oracle.Tree.Visitors
         }
         #endregion
 
+        public static QsiLimitExpressionNode VisitRowOffset(RowOffsetContext context)
+        {
+            var node = OracleTree.CreateWithSpan<QsiLimitExpressionNode>(context);
+            node.Offset.Value = VisitExpr(context.offset);
+
+            return node;
+        }
+        
         public static OracleMultipleOrderExpressionNode VisitOrderByClause(OrderByClauseContext context)
         {
             var node = OracleTree.CreateWithSpan<OracleMultipleOrderExpressionNode>(context);
@@ -2064,7 +2071,7 @@ namespace Qsi.Oracle.Tree.Visitors
         public static QsiOrderExpressionNode VisitOrderByItem(OrderByItemContext context)
         {
             var node = OracleTree.CreateWithSpan<OracleOrderExpressionNode>(context);
-            node.Expression.Value = ExpressionVisitor.VisitExpr(context.expr());
+            node.Expression.Value = VisitExpr(context.expr());
 
             if (context.order != null)
                 node.Order = context.order.Type == DESC ? QsiSortOrder.Descending : QsiSortOrder.Ascending;

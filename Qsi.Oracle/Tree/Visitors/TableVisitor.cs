@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using Antlr4.Runtime.Tree;
-using Qsi.Data;
 using Qsi.Oracle.Common;
 using Qsi.Oracle.Internal;
 using Qsi.Shared.Extensions;
@@ -34,16 +33,20 @@ namespace Qsi.Oracle.Tree.Visitors
             };
         }
 
-        public static QsiTableNode VisitQueryBlockSubquery(QueryBlockSubqueryContext queryBlockSubquery)
+        public static QsiTableNode VisitQueryBlockSubquery(QueryBlockSubqueryContext context)
         {
-            var node = VisitQueryBlock(queryBlockSubquery.queryBlock());
+            var node = VisitQueryBlock(context.queryBlock());
 
-            var orderByClause = queryBlockSubquery.orderByClause();
+            var orderByClause = context.orderByClause();
+            var rowOffset = context.rowOffset();
 
             if (orderByClause is not null)
                 node.Order.Value = ExpressionVisitor.VisitOrderByClause(orderByClause);
 
-            // TODO: rowOffset, rowFetchOption
+            if (rowOffset is not null)
+                node.Limit.Value = ExpressionVisitor.VisitRowOffset(rowOffset);
+
+            // TODO: rowFetchOption
 
             return node;
         }
@@ -69,11 +72,17 @@ namespace Qsi.Oracle.Tree.Visitors
 
             if (source is OracleBinaryTableNode binaryTableNode)
             {
-                if (context.orderByClause() is not null)
-                    binaryTableNode.Order.Value = ExpressionVisitor.VisitOrderByClause(context.orderByClause());
-            }
+                var orderByClause = context.orderByClause();
+                var rowOffset = context.rowOffset();
 
-            // TODO: rowOffset, rowFetchOption
+                if (orderByClause is not null)
+                    binaryTableNode.Order.Value = ExpressionVisitor.VisitOrderByClause(orderByClause);
+
+                if (rowOffset is not null)
+                    binaryTableNode.Limit.Value = ExpressionVisitor.VisitRowOffset(rowOffset);
+
+                // TODO: rowFetchOption
+            }
 
             return source;
         }
@@ -109,14 +118,16 @@ namespace Qsi.Oracle.Tree.Visitors
             node.Source.Value = VisitSubquery(context.subquery());
 
             var orderByClause = context.orderByClause();
+            var rowOffset = context.rowOffset();
+            var rowFetchOption = context.rowFetchOption();
 
             if (orderByClause is not null)
                 node.Order.Value = ExpressionVisitor.VisitOrderByClause(orderByClause);
 
-            var rowOffset = context.rowOffset();
-            var rowFetchOption = context.rowFetchOption();
+            if (rowOffset is not null)
+                node.Limit.Value = ExpressionVisitor.VisitRowOffset(rowOffset);
 
-            // TODO: rowOffset, rowFetchOption
+            // TODO: rowFetchOption
 
             return node;
         }
