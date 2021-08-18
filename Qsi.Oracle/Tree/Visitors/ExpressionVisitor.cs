@@ -231,6 +231,12 @@ namespace Qsi.Oracle.Tree.Visitors
                     return node;
                 }
 
+                case AnalyticFunctionContext analyticFunctionContext:
+                {
+
+                    return null;
+                }
+
                 default:
                     throw TreeHelper.NotSupportedTree(context.children[0]);
             }

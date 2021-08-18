@@ -1685,6 +1685,7 @@ COLON_SYMBOL:                       ':';
 HASH_SYMBOL:                        '#';
 JSON_PATH_SYMBOL:                   '$' DOT_SYMBOL;
 SINGLE_QUOTE_SYMBOL:                SINGLE_QUOTE;
+PARAMETER_SUBSTITUTE_SYMBOL:        '=>';
 
 H_WHITESPACE:    [ \t\f\r\n] -> channel(HIDDEN); // Ignore whitespaces.
 H_BLOCK_COMMENT: ( '/**/' | '/*' ~[+] .*? '*/') -> channel(HIDDEN);

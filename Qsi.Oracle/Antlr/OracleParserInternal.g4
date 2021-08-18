@@ -832,7 +832,7 @@ pipelinedClause
     ;
 
 sqlMacroClause
-    : SQL_MACRO ( '(' ( TYPE '=' '>' )? ( SCALAR | TABLE ) ')' )?
+    : SQL_MACRO ( '(' ( TYPE PARAMETER_SUBSTITUTE_SYMBOL )? ( SCALAR | TABLE ) ')' )?
     ;
 
 declareSection
@@ -1030,7 +1030,7 @@ functionCall
 plsqlParameter
     : identifier
     | plsqlExpression
-    | identifier '=' '>' ( identifier | plsqlExpression )
+    | identifier PARAMETER_SUBSTITUTE_SYMBOL ( identifier | plsqlExpression )
     ;
 
 qualifiedExpression
@@ -1058,23 +1058,23 @@ positionChoiceList
     ;
 
 namedChoiceList
-    : ( identifier '|'? )+ '=' '>' expr
+    : ( identifier '|'? )+ PARAMETER_SUBSTITUTE_SYMBOL expr
     ;
 
 indexChoiceList
-    : ( expr '|'? )+ '=' '>' expr
+    : ( expr '|'? )+ PARAMETER_SUBSTITUTE_SYMBOL expr
     ;
 
 basicIteratorChoice
-    : FOR iterator '=' '>' expr
+    : FOR iterator PARAMETER_SUBSTITUTE_SYMBOL expr
     ;
 
 indexIteratorChoice
-    : FOR iterator INDEX expr '=' '>' expr
+    : FOR iterator INDEX expr PARAMETER_SUBSTITUTE_SYMBOL expr
     ;
 
 sequenceIteratorChoice
-    : FOR iterator SEQUENCE '=' '>' expr
+    : FOR iterator SEQUENCE PARAMETER_SUBSTITUTE_SYMBOL expr
     ;
 
 cursorDeclaration
@@ -11203,7 +11203,7 @@ argumentList
 
 argument
     : expr
-    | identifier '=' '>' expr
+    | identifier PARAMETER_SUBSTITUTE_SYMBOL expr
     ;
 
 externalParameter
