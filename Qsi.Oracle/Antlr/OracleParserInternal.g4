@@ -9283,10 +9283,10 @@ analyticFunction
     ;
 
 functionExpression
-    : <assoc=right> functionExpression ('.' (functionExpression | identifier))+
+    : analyticFunction
+    | <assoc=right> functionExpression ('.' (functionExpression | identifier))+
     | functionName '(' argumentList? ')'
     | castFunction
-    | analyticFunction
     | approxCountFunction
     | approxMedianFunction
     | approxPercentileFunction
@@ -9889,7 +9889,7 @@ skewnessSampFunction
     ;
 
 sumFunction
-    : SUM '(' (DISTINCT | ALL)? ')' expr ')'
+    : SUM '(' ( DISTINCT | ALL )? expr ')'
     ;
 
 sysDburigenFunction
