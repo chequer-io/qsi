@@ -369,10 +369,956 @@ namespace Qsi.Oracle.Tree.Visitors
                     return node;
                 }
 
+                case CastFunctionContext castFunctionContext:
+                    return VisitCastFunction(castFunctionContext);
+
+                case ApproxCountFunctionContext approxCountFunctionContext:
+                    return VisitApproxCountFunction(approxCountFunctionContext);
+
+                case ApproxMedianFunctionContext approxMedianFunctionContext:
+                    return VisitApproxMedianFunction(approxMedianFunctionContext);
+
+                case ApproxPercentileFunctionContext approxPercentileFunctionContext:
+                    return VisitApproxPercentileFunction(approxPercentileFunctionContext);
+
+                case ApproxPercentileDetailFunctionContext approxPercentileDetailFunctionContext:
+                    return VisitApproxPercentileDetailFunction(approxPercentileDetailFunctionContext);
+
+                case ApproxRankFunctionContext approxRankFunctionContext:
+                    return VisitApproxRankFunction(approxRankFunctionContext);
+
+                case ApproxSumFunctionContext approxSumFunctionContext:
+                    return VisitApproxSumFunction(approxSumFunctionContext);
+
+                case BinToNumFunctionContext binToNumFunctionContext:
+                    return VisitBinToNumFunction(binToNumFunctionContext);
+
+                case FirstFunctionContext firstFunctionContext:
+                    return VisitFirstFunction(firstFunctionContext);
+
+                case ChrFunctionContext chrFunctionContext:
+                    return VisitChrFunction(chrFunctionContext);
+
+                case ClusterDetailsFunctionContext clusterDetailsFunctionContext:
+                    return VisitClusterDetailsFunction(clusterDetailsFunctionContext);
+
+                case ClusterDetailsAnalyticFunctionContext clusterDetailsAnalyticFunctionContext:
+                    return VisitClusterDetailsAnalyticFunction(clusterDetailsAnalyticFunctionContext);
+
+                case ClusterDistanceFunctionContext clusterDistanceFunctionContext:
+                    return VisitClusterDistanceFunction(clusterDistanceFunctionContext);
+
+                case ClusterIdFunctionContext clusterIdFunctionContext:
+                    return VisitClusterIdFunction(clusterIdFunctionContext);
+
+                case ClusterIdAnalyticFunctionContext clusterIdAnalyticFunctionContext:
+                    return VisitClusterIdAnalyticFunction(clusterIdAnalyticFunctionContext);
+
+                case ClusterProbabilityFunctionContext clusterProbabilityFunctionContext:
+                    return VisitClusterProbabilityFunction(clusterProbabilityFunctionContext);
+
+                case ClusterProbAnalyticFunctionContext clusterProbAnalyticFunctionContext:
+                    return VisitClusterProbAnalyticFunction(clusterProbAnalyticFunctionContext);
+
+                case ClusterSetFunctionContext clusterSetFunctionContext:
+                    return VisitClusterSetFunction(clusterSetFunctionContext);
+
+                case ClusterSetAnalyticFunctionContext clusterSetAnalyticFunctionContext:
+                    return VisitClusterSetAnalyticFunction(clusterSetAnalyticFunctionContext);
+
+                case CollectFunctionContext collectFunctionContext:
+                    return VisitCollectFunction(collectFunctionContext);
+
+                case ConnectByRootFunctionContext connectByRootFunctionContext:
+                    return VisitConnectByRootFunction(connectByRootFunctionContext);
+
+                case CorrelationFunctionContext correlationFunctionContext:
+                    return VisitCorrelationFunction(correlationFunctionContext);
+
+                case CubeTableFunctionContext cubeTableFunctionContext:
+                    return VisitCubeTableFunction(cubeTableFunctionContext);
+
+                case CumeDistFunctionContext cumeDistFunctionContext:
+                    return VisitCumeDistFunction(cumeDistFunctionContext);
+
+                case CumeDistAnalyticFunctionContext cumeDistAnalyticFunctionContext:
+                    return VisitCumeDistAnalyticFunction(cumeDistAnalyticFunctionContext);
+
+                case CurrentDateFunctionContext currentDateFunctionContext:
+                    return VisitCurrentDateFunction(currentDateFunctionContext);
+
+                case CurrentTimestampFunctionContext currentTimestampFunctionContext:
+                    return VisitCurrentTimestampFunction(currentTimestampFunctionContext);
+
+                case DbTimeZoneFunctionContext dbTimeZoneFunctionContext:
+                    return VisitDbTimeZoneFunction(dbTimeZoneFunctionContext);
+
+                case DenseRankAggregateFunctionContext denseRankAggregateFunctionContext:
+                    return VisitDenseRankAggregateFunction(denseRankAggregateFunctionContext);
+
+                case DenseRankAnalyticFunctionContext denseRankAnalyticFunctionContext:
+                    return VisitDenseRankAnalyticFunction(denseRankAnalyticFunctionContext);
+
+                case ExtractDateTimeFunctionContext extractDateTimeFunctionContext:
+                    return VisitExtractDateTimeFunction(extractDateTimeFunctionContext);
+
+                case FeatureCompareFunctionContext featureCompareFunctionContext:
+                    return VisitFeatureCompareFunction(featureCompareFunctionContext);
+
+                case FeatureDetailsFunctionContext featureDetailsFunctionContext:
+                    return VisitFeatureDetailsFunction(featureDetailsFunctionContext);
+
+                case FeatureIdFunctionContext featureIdFunctionContext:
+                    return VisitFeatureIdFunction(featureIdFunctionContext);
+
+                case FeatureIdAnalyticFunctionContext featureIdAnalyticFunctionContext:
+                    return VisitFeatureIdAnalyticFunction(featureIdAnalyticFunctionContext);
+
+                case FeatureSetFunctionContext featureSetFunctionContext:
+                    return VisitFeatureSetFunction(featureSetFunctionContext);
+
+                case FeatureSetAnalyticFunctionContext featureSetAnalyticFunctionContext:
+                    return VisitFeatureSetAnalyticFunction(featureSetAnalyticFunctionContext);
+
+                case FeatureValueFunctionContext featureValueFunctionContext:
+                    return VisitFeatureValueFunction(featureValueFunctionContext);
+
+                case FeatureValueAnalyticFunctionContext featureValueAnalyticFunctionContext:
+                    return VisitFeatureValueAnalyticFunction(featureValueAnalyticFunctionContext);
+
+                case FirstValueFunctionContext firstValueFunctionContext:
+                    return VisitFirstValueFunction(firstValueFunctionContext);
+
+                case IterationNumberFunctionContext iterationNumberFunctionContext:
+                    return VisitIterationNumberFunction(iterationNumberFunctionContext);
+
+                case JsonArrayFunctionContext jsonArrayFunctionContext:
+                    return VisitJsonArrayFunction(jsonArrayFunctionContext);
+
+                case JsonArrayAggFunctionContext jsonArrayAggFunctionContext:
+                    return VisitJsonArrayAggFunction(jsonArrayAggFunctionContext);
+
+                case JsonMergePatchFunctionContext jsonMergePatchFunctionContext:
+                    return VisitJsonMergePatchFunction(jsonMergePatchFunctionContext);
+
+                case JsonObjectFunctionContext jsonObjectFunctionContext:
+                    return VisitJsonObjectFunction(jsonObjectFunctionContext);
+
+                case JsonObjectaggFunctionContext jsonObjectaggFunctionContext:
+                    return VisitJsonObjectaggFunction(jsonObjectaggFunctionContext);
+
+                case JsonQueryFunctionContext jsonQueryFunctionContext:
+                    return VisitJsonQueryFunction(jsonQueryFunctionContext);
+
+                case JsonScalarFunctionContext jsonScalarFunctionContext:
+                    return VisitJsonScalarFunction(jsonScalarFunctionContext);
+
+                case JsonSerializeFunctionContext jsonSerializeFunctionContext:
+                    return VisitJsonSerializeFunction(jsonSerializeFunctionContext);
+
+                case JsonTableFunctionContext jsonTableFunctionContext:
+                    return VisitJsonTableFunction(jsonTableFunctionContext);
+
+                case JsonTransformFunctionContext jsonTransformFunctionContext:
+                    return VisitJsonTransformFunction(jsonTransformFunctionContext);
+
+                case JsonValueFunctionContext jsonValueFunctionContext:
+                    return VisitJsonValueFunction(jsonValueFunctionContext);
+
+                case LagFunctionContext lagFunctionContext:
+                    return VisitLagFunction(lagFunctionContext);
+
+                case LastFunctionContext lastFunctionContext:
+                    return VisitLastFunction(lastFunctionContext);
+
+                case LeadFunctionContext leadFunctionContext:
+                    return VisitLeadFunction(leadFunctionContext);
+
+                case ListaggFunctionContext listaggFunctionContext:
+                    return VisitListaggFunction(listaggFunctionContext);
+
+                case LocaltimestampFunctionContext localtimestampFunctionContext:
+                    return VisitLocaltimestampFunction(localtimestampFunctionContext);
+
+                case NtileFunctionContext ntileFunctionContext:
+                    return VisitNtileFunction(ntileFunctionContext);
+
+                case OraDmPartitionNameFunctionContext oraDmPartitionNameFunctionContext:
+                    return VisitOraDmPartitionNameFunction(oraDmPartitionNameFunctionContext);
+
+                case OraInvokingUserFunctionContext oraInvokingUserFunctionContext:
+                    return VisitOraInvokingUserFunction(oraInvokingUserFunctionContext);
+
+                case OraInvokingUserIdFunctionContext oraInvokingUserIdFunctionContext:
+                    return VisitOraInvokingUserIdFunction(oraInvokingUserIdFunctionContext);
+
+                case PercentRankAggregateFunctionContext percentRankAggregateFunctionContext:
+                    return VisitPercentRankAggregateFunction(percentRankAggregateFunctionContext);
+
+                case PercentRankAnalyticFunctionContext percentRankAnalyticFunctionContext:
+                    return VisitPercentRankAnalyticFunction(percentRankAnalyticFunctionContext);
+
+                case PercentileContFunctionContext percentileContFunctionContext:
+                    return VisitPercentileContFunction(percentileContFunctionContext);
+
+                case PercentileDiscFunctionContext percentileDiscFunctionContext:
+                    return VisitPercentileDiscFunction(percentileDiscFunctionContext);
+
+                case PredictionFunctionContext predictionFunctionContext:
+                    return VisitPredictionFunction(predictionFunctionContext);
+
+                case PredictionOrderedFunctionContext predictionOrderedFunctionContext:
+                    return VisitPredictionOrderedFunction(predictionOrderedFunctionContext);
+
+                case PredictionAnalyticFunctionContext predictionAnalyticFunctionContext:
+                    return VisitPredictionAnalyticFunction(predictionAnalyticFunctionContext);
+
+                case PredictionBoundsFunctionContext predictionBoundsFunctionContext:
+                    return VisitPredictionBoundsFunction(predictionBoundsFunctionContext);
+
+                case PredictionCostFunctionContext predictionCostFunctionContext:
+                    return VisitPredictionCostFunction(predictionCostFunctionContext);
+
+                case PredictionCostAnalyticFunctionContext predictionCostAnalyticFunctionContext:
+                    return VisitPredictionCostAnalyticFunction(predictionCostAnalyticFunctionContext);
+
+                case PredictionDetailsFunctionContext predictionDetailsFunctionContext:
+                    return VisitPredictionDetailsFunction(predictionDetailsFunctionContext);
+
+                case PredictionDetailsAnalyticFunctionContext predictionDetailsAnalyticFunctionContext:
+                    return VisitPredictionDetailsAnalyticFunction(predictionDetailsAnalyticFunctionContext);
+
+                case PredictionProbabilityFunctionContext predictionProbabilityFunctionContext:
+                    return VisitPredictionProbabilityFunction(predictionProbabilityFunctionContext);
+
+                case PredictionProbabilityOrderedFunctionContext predictionProbabilityOrderedFunctionContext:
+                    return VisitPredictionProbabilityOrderedFunction(predictionProbabilityOrderedFunctionContext);
+
+                case PredictionProbAnalyticFunctionContext predictionProbAnalyticFunctionContext:
+                    return VisitPredictionProbAnalyticFunction(predictionProbAnalyticFunctionContext);
+
+                case PredictionSetFunctionContext predictionSetFunctionContext:
+                    return VisitPredictionSetFunction(predictionSetFunctionContext);
+
+                case PredictionSetOrderedFunctionContext predictionSetOrderedFunctionContext:
+                    return VisitPredictionSetOrderedFunction(predictionSetOrderedFunctionContext);
+
+                case PredictionSetAnalyticFunctionContext predictionSetAnalyticFunctionContext:
+                    return VisitPredictionSetAnalyticFunction(predictionSetAnalyticFunctionContext);
+
+                case RankAggregateFunctionContext rankAggregateFunctionContext:
+                    return VisitRankAggregateFunction(rankAggregateFunctionContext);
+
+                case RankAnalyticFunctionContext rankAnalyticFunctionContext:
+                    return VisitRankAnalyticFunction(rankAnalyticFunctionContext);
+
+                case RatioToReportFunctionContext ratioToReportFunctionContext:
+                    return VisitRatioToReportFunction(ratioToReportFunctionContext);
+
+                case SessiontimezoneFunctionContext sessiontimezoneFunctionContext:
+                    return VisitSessiontimezoneFunction(sessiontimezoneFunctionContext);
+
+                case RowNumberFunctionContext rowNumberFunctionContext:
+                    return VisitRowNumberFunction(rowNumberFunctionContext);
+
+                case SkewnessPopFunctionContext skewnessPopFunctionContext:
+                    return VisitSkewnessPopFunction(skewnessPopFunctionContext);
+
+                case SkewnessSampFunctionContext skewnessSampFunctionContext:
+                    return VisitSkewnessSampFunction(skewnessSampFunctionContext);
+
+                case SysDburigenFunctionContext sysDburigenFunctionContext:
+                    return VisitSysDburigenFunction(sysDburigenFunctionContext);
+
+                case SysdateFunctionContext sysdateFunctionContext:
+                    return VisitSysdateFunction(sysdateFunctionContext);
+
+                case SystimestampFunctionContext systimestampFunctionContext:
+                    return VisitSystimestampFunction(systimestampFunctionContext);
+
+                case ToBinaryDoubleFunctionContext toBinaryDoubleFunctionContext:
+                    return VisitToBinaryDoubleFunction(toBinaryDoubleFunctionContext);
+
+                case ToBinaryFloatFunctionContext toBinaryFloatFunctionContext:
+                    return VisitToBinaryFloatFunction(toBinaryFloatFunctionContext);
+
+                case ToDateFunctionContext toDateFunctionContext:
+                    return VisitToDateFunction(toDateFunctionContext);
+
+                case ToDsintervalFunctionContext toDsintervalFunctionContext:
+                    return VisitToDsintervalFunction(toDsintervalFunctionContext);
+
+                case ToNumberFunctionContext toNumberFunctionContext:
+                    return VisitToNumberFunction(toNumberFunctionContext);
+
+                case ToTimestampFunctionContext toTimestampFunctionContext:
+                    return VisitToTimestampFunction(toTimestampFunctionContext);
+
+                case ToTimestampTzFunctionContext toTimestampTzFunctionContext:
+                    return VisitToTimestampTzFunction(toTimestampTzFunctionContext);
+
+                case ToYmintervalFunctionContext toYmintervalFunctionContext:
+                    return VisitToYmintervalFunction(toYmintervalFunctionContext);
+
+                case TranslateUsingFunctionContext translateUsingFunctionContext:
+                    return VisitTranslateUsingFunction(translateUsingFunctionContext);
+
+                case TreatFunctionContext treatFunctionContext:
+                    return VisitTreatFunction(treatFunctionContext);
+
+                case TrimFunctionContext trimFunctionContext:
+                    return VisitTrimFunction(trimFunctionContext);
+
+                case TzOffsetFunctionContext tzOffsetFunctionContext:
+                    return VisitTzOffsetFunction(tzOffsetFunctionContext);
+
+                case UidFunctionContext uidFunctionContext:
+                    return VisitUidFunction(uidFunctionContext);
+
+                case UserFunctionContext userFunctionContext:
+                    return VisitUserFunction(userFunctionContext);
+
+                case ValidateConversionFunctionContext validateConversionFunctionContext:
+                    return VisitValidateConversionFunction(validateConversionFunctionContext);
+
+                case XmlaggFunctionContext xmlaggFunctionContext:
+                    return VisitXmlaggFunction(xmlaggFunctionContext);
+
+                case XmlcastFunctionContext xmlcastFunctionContext:
+                    return VisitXmlcastFunction(xmlcastFunctionContext);
+
+                case XmlcorattvalFunctionContext xmlcorattvalFunctionContext:
+                    return VisitXmlcorattvalFunction(xmlcorattvalFunctionContext);
+
+                case XmlelementFunctionContext xmlelementFunctionContext:
+                    return VisitXmlelementFunction(xmlelementFunctionContext);
+
+                case XmlCdataFunctionContext xmlCdataFunctionContext:
+                    return VisitXmlCdataFunction(xmlCdataFunctionContext);
+
+                case XmlexistsFunctionContext xmlexistsFunctionContext:
+                    return VisitXmlexistsFunction(xmlexistsFunctionContext);
+
+                case XmlforestFunctionContext xmlforestFunctionContext:
+                    return VisitXmlforestFunction(xmlforestFunctionContext);
+
+                case XmlparseFunctionContext xmlparseFunctionContext:
+                    return VisitXmlparseFunction(xmlparseFunctionContext);
+
+                case XmlpiFunctionContext xmlpiFunctionContext:
+                    return VisitXmlpiFunction(xmlpiFunctionContext);
+
+                case XmlqueryFunctionContext xmlqueryFunctionContext:
+                    return VisitXmlqueryFunction(xmlqueryFunctionContext);
+
+                case XmlrootFunctionContext xmlrootFunctionContext:
+                    return VisitXmlrootFunction(xmlrootFunctionContext);
+
+                case XmlsequenceFunctionContext xmlsequenceFunctionContext:
+                    return VisitXmlsequenceFunction(xmlsequenceFunctionContext);
+
+                case XmlserializeFunctionContext xmlserializeFunctionContext:
+                    return VisitXmlserializeFunction(xmlserializeFunctionContext);
+
+                case XmlTableFunctionContext xmlTableFunctionContext:
+                    return VisitXmlTableFunction(xmlTableFunctionContext);
+
                 default:
                     throw TreeHelper.NotSupportedTree(context.children[0]);
             }
         }
+
+        #region Known Functions
+        public static QsiInvokeExpressionNode VisitCastFunction(CastFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitApproxCountFunction(ApproxCountFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitApproxMedianFunction(ApproxMedianFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitApproxPercentileFunction(ApproxPercentileFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitApproxPercentileDetailFunction(ApproxPercentileDetailFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitApproxRankFunction(ApproxRankFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitApproxSumFunction(ApproxSumFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitBinToNumFunction(BinToNumFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitFirstFunction(FirstFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitChrFunction(ChrFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitClusterDetailsFunction(ClusterDetailsFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitClusterDetailsAnalyticFunction(ClusterDetailsAnalyticFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitClusterDistanceFunction(ClusterDistanceFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitClusterIdFunction(ClusterIdFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitClusterIdAnalyticFunction(ClusterIdAnalyticFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitClusterProbabilityFunction(ClusterProbabilityFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitClusterProbAnalyticFunction(ClusterProbAnalyticFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitClusterSetFunction(ClusterSetFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitClusterSetAnalyticFunction(ClusterSetAnalyticFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitCollectFunction(CollectFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitConnectByRootFunction(ConnectByRootFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitCorrelationFunction(CorrelationFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitCubeTableFunction(CubeTableFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitCumeDistFunction(CumeDistFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitCumeDistAnalyticFunction(CumeDistAnalyticFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitCurrentDateFunction(CurrentDateFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitCurrentTimestampFunction(CurrentTimestampFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitDbTimeZoneFunction(DbTimeZoneFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitDenseRankAggregateFunction(DenseRankAggregateFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitDenseRankAnalyticFunction(DenseRankAnalyticFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitExtractDateTimeFunction(ExtractDateTimeFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitFeatureCompareFunction(FeatureCompareFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitFeatureDetailsFunction(FeatureDetailsFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitFeatureIdFunction(FeatureIdFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitFeatureIdAnalyticFunction(FeatureIdAnalyticFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitFeatureSetFunction(FeatureSetFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitFeatureSetAnalyticFunction(FeatureSetAnalyticFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitFeatureValueFunction(FeatureValueFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitFeatureValueAnalyticFunction(FeatureValueAnalyticFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitFirstValueFunction(FirstValueFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitIterationNumberFunction(IterationNumberFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitJsonArrayFunction(JsonArrayFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitJsonArrayAggFunction(JsonArrayAggFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitJsonMergePatchFunction(JsonMergePatchFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitJsonObjectFunction(JsonObjectFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitJsonObjectaggFunction(JsonObjectaggFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitJsonQueryFunction(JsonQueryFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitJsonScalarFunction(JsonScalarFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitJsonSerializeFunction(JsonSerializeFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitJsonTableFunction(JsonTableFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitJsonTransformFunction(JsonTransformFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitJsonValueFunction(JsonValueFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitLagFunction(LagFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitLastFunction(LastFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitLeadFunction(LeadFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitListaggFunction(ListaggFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitLocaltimestampFunction(LocaltimestampFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitNtileFunction(NtileFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitOraDmPartitionNameFunction(OraDmPartitionNameFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitOraInvokingUserFunction(OraInvokingUserFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitOraInvokingUserIdFunction(OraInvokingUserIdFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitPercentRankAggregateFunction(PercentRankAggregateFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitPercentRankAnalyticFunction(PercentRankAnalyticFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitPercentileContFunction(PercentileContFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitPercentileDiscFunction(PercentileDiscFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitPredictionFunction(PredictionFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitPredictionOrderedFunction(PredictionOrderedFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitPredictionAnalyticFunction(PredictionAnalyticFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitPredictionBoundsFunction(PredictionBoundsFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitPredictionCostFunction(PredictionCostFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitPredictionCostAnalyticFunction(PredictionCostAnalyticFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitPredictionDetailsFunction(PredictionDetailsFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitPredictionDetailsAnalyticFunction(PredictionDetailsAnalyticFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitPredictionProbabilityFunction(PredictionProbabilityFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitPredictionProbabilityOrderedFunction(PredictionProbabilityOrderedFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitPredictionProbAnalyticFunction(PredictionProbAnalyticFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitPredictionSetFunction(PredictionSetFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitPredictionSetOrderedFunction(PredictionSetOrderedFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitPredictionSetAnalyticFunction(PredictionSetAnalyticFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitRankAggregateFunction(RankAggregateFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitRankAnalyticFunction(RankAnalyticFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitRatioToReportFunction(RatioToReportFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitSessiontimezoneFunction(SessiontimezoneFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitRowNumberFunction(RowNumberFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitSkewnessPopFunction(SkewnessPopFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitSkewnessSampFunction(SkewnessSampFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitSysDburigenFunction(SysDburigenFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitSysdateFunction(SysdateFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitSystimestampFunction(SystimestampFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitToBinaryDoubleFunction(ToBinaryDoubleFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitToBinaryFloatFunction(ToBinaryFloatFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitToDateFunction(ToDateFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitToDsintervalFunction(ToDsintervalFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitToNumberFunction(ToNumberFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitToTimestampFunction(ToTimestampFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitToTimestampTzFunction(ToTimestampTzFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitToYmintervalFunction(ToYmintervalFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitTranslateUsingFunction(TranslateUsingFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitTreatFunction(TreatFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitTrimFunction(TrimFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitTzOffsetFunction(TzOffsetFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitUidFunction(UidFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitUserFunction(UserFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitValidateConversionFunction(ValidateConversionFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitXmlaggFunction(XmlaggFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitXmlcastFunction(XmlcastFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitXmlcorattvalFunction(XmlcorattvalFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitXmlelementFunction(XmlelementFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitXmlCdataFunction(XmlCdataFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitXmlexistsFunction(XmlexistsFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitXmlforestFunction(XmlforestFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitXmlparseFunction(XmlparseFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitXmlpiFunction(XmlpiFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitXmlqueryFunction(XmlqueryFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitXmlrootFunction(XmlrootFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitXmlsequenceFunction(XmlsequenceFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitXmlserializeFunction(XmlserializeFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static QsiInvokeExpressionNode VisitXmlTableFunction(XmlTableFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+        #endregion
 
         #region Analytic Functions
         public static QsiInvokeExpressionNode VisitAnyValueFunctionContext(AnyValueFunctionContext context)
