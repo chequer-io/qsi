@@ -236,7 +236,7 @@ namespace Qsi.Oracle.Tree.Visitors
             }
         }
 
-        private static IEnumerable<QsiExpressionNode> VisitArgumentList(ArgumentListContext context)
+        public static IEnumerable<QsiExpressionNode> VisitArgumentList(ArgumentListContext context)
         {
             if (context is null)
                 return null;
@@ -244,9 +244,24 @@ namespace Qsi.Oracle.Tree.Visitors
             while (context.argumentList() is not null)
                 context = context.argumentList();
 
-            // TODO: Make named parameter node
+            return context.argument().Select(VisitArgument);
+        }
 
-            return null;
+        public static QsiExpressionNode VisitArgument(ArgumentContext context)
+        {
+            var name = context.identifier();
+
+            if (name is not null)
+            {
+                var node = OracleTree.CreateWithSpan<OracleNamedParameterExpressionNode>(context);
+
+                node.Identifier = IdentifierVisitor.CreateQualifiedIdentifier(name);
+                node.Expression.Value = VisitExpr(context.expr());
+
+                return node;
+            }
+
+            return VisitExpr(context.expr());
         }
 
         public static QsiExpressionNode VisitCalcMeasExpr(AvMeasExpressionContext context)
