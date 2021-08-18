@@ -41,7 +41,7 @@ namespace Qsi.Oracle.Tree.Visitors
             var orderByClause = queryBlockSubquery.orderByClause();
 
             if (orderByClause is not null)
-                node.Order.Value = VisitOrderByClause(orderByClause);
+                node.Order.Value = ExpressionVisitor.VisitOrderByClause(orderByClause);
 
             // TODO: rowOffset, rowFetchOption
 
@@ -50,7 +50,7 @@ namespace Qsi.Oracle.Tree.Visitors
 
         public static QsiTableNode VisitJoinedSubquery(JoinedSubqueryContext context)
         {
-            var subqueryItems = context.subquery();
+            SubqueryContext[] subqueryItems = context.subquery();
             var source = VisitSubquery(subqueryItems[0]);
 
             for (int i = 1; i < subqueryItems.Length; i++)
@@ -69,8 +69,8 @@ namespace Qsi.Oracle.Tree.Visitors
 
             if (source is OracleBinaryTableNode binaryTableNode)
             {
-                if (context.orderByClause() != null)
-                    binaryTableNode.Order.Value = VisitOrderByClause(context.orderByClause());
+                if (context.orderByClause() is not null)
+                    binaryTableNode.Order.Value = ExpressionVisitor.VisitOrderByClause(context.orderByClause());
             }
 
             // TODO: rowOffset, rowFetchOption
@@ -111,38 +111,12 @@ namespace Qsi.Oracle.Tree.Visitors
             var orderByClause = context.orderByClause();
 
             if (orderByClause is not null)
-                node.Order.Value = VisitOrderByClause(orderByClause);
+                node.Order.Value = ExpressionVisitor.VisitOrderByClause(orderByClause);
 
             var rowOffset = context.rowOffset();
             var rowFetchOption = context.rowFetchOption();
 
             // TODO: rowOffset, rowFetchOption
-
-            return node;
-        }
-
-        public static OracleMultipleOrderExpressionNode VisitOrderByClause(OrderByClauseContext context)
-        {
-            var node = OracleTree.CreateWithSpan<OracleMultipleOrderExpressionNode>(context);
-
-            node.IsSiblings = context.HasToken(SIBLINGS);
-            node.Orders.AddRange(context._items.Select(VisitOrderByItem));
-
-            return node;
-        }
-
-        public static QsiOrderExpressionNode VisitOrderByItem(OrderByItemContext context)
-        {
-            var node = OracleTree.CreateWithSpan<OracleOrderExpressionNode>(context);
-            node.Expression.Value = ExpressionVisitor.VisitExpr(context.expr());
-
-            if (context.order != null)
-                node.Order = context.order.Type == DESC ? QsiSortOrder.Descending : QsiSortOrder.Ascending;
-
-            if (context.nullsOrder != null)
-                node.NullsOrder = context.nullsOrder.Type == FIRST
-                    ? OracleNullsOrder.First
-                    : OracleNullsOrder.Last;
 
             return node;
         }
@@ -194,26 +168,12 @@ namespace Qsi.Oracle.Tree.Visitors
             var whereClause = context.whereClause();
 
             if (whereClause is not null)
-            {
-                var whereNode = OracleTree.CreateWithSpan<QsiWhereExpressionNode>(whereClause);
-                whereNode.Expression.Value = ExpressionVisitor.VisitCondition(whereClause.condition());
-
-                node.Where.Value = whereNode;
-            }
+                node.Where.Value = ExpressionVisitor.VisitWhereClause(whereClause);
 
             var groupByClause = context.groupByClause();
 
             if (groupByClause is not null)
-            {
-                var groupingNode = OracleTree.CreateWithSpan<QsiGroupingExpressionNode>(groupByClause);
-                groupingNode.Items.AddRange(groupByClause.groupByItems().groupByItem().Select(VisitGroupByItem));
-                var groupingByHavingClause = groupByClause.groupByHavingClause();
-
-                if (groupingByHavingClause is not null)
-                    groupingNode.Having.Value = ExpressionVisitor.VisitCondition(groupingByHavingClause.condition());
-
-                node.Grouping.Value = groupingNode;
-            }
+                node.Grouping.Value = ExpressionVisitor.VisitGroupByClause(groupByClause);
 
             // hierarchicalQueryClause, modelClause, windowClause ignored
 
@@ -241,17 +201,6 @@ namespace Qsi.Oracle.Tree.Visitors
                 default:
                     throw TreeHelper.NotSupportedTree(context.children[0]);
             }
-        }
-
-        public static QsiExpressionNode VisitGroupByItem(GroupByItemContext context)
-        {
-            return context.children[0] switch
-            {
-                ExprContext expr => ExpressionVisitor.VisitExpr(expr),
-                RollupCubeClauseContext rollupCubeClause => throw new NotImplementedException(),
-                GroupingSetsClauseContext groupingSetsClause => throw new NotImplementedException(),
-                _ => throw new NotSupportedException()
-            };
         }
 
         public static QsiTableNode VisitTableSource(TableSourceContext context)

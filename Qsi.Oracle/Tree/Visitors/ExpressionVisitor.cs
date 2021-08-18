@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Antlr4.Runtime.Tree;
 using Qsi.Data;
+using Qsi.Oracle.Common;
 using Qsi.Oracle.Internal;
 using Qsi.Parsing;
 using Qsi.Shared.Extensions;
@@ -1612,17 +1613,6 @@ namespace Qsi.Oracle.Tree.Visitors
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static OracleMultipleOrderExpressionNode VisitOrderByClause(OrderByClauseContext context)
-        {
-            var node = OracleTree.CreateWithSpan<OracleMultipleOrderExpressionNode>(context);
-
-            node.IsSiblings = context.SIBLINGS() is not null;
-
-            // TODO
-
-            return node;
-        }
-
         public static OraclePartitionExpressionNode VisitQueryPartitionClause(QueryPartitionClauseContext context)
         {
             var node = OracleTree.CreateWithSpan<OraclePartitionExpressionNode>(context);
@@ -2060,5 +2050,62 @@ namespace Qsi.Oracle.Tree.Visitors
             throw new NotImplementedException();
         }
         #endregion
+
+        public static OracleMultipleOrderExpressionNode VisitOrderByClause(OrderByClauseContext context)
+        {
+            var node = OracleTree.CreateWithSpan<OracleMultipleOrderExpressionNode>(context);
+
+            node.IsSiblings = context.HasToken(SIBLINGS);
+            node.Orders.AddRange(context._items.Select(VisitOrderByItem));
+
+            return node;
+        }
+
+        public static QsiOrderExpressionNode VisitOrderByItem(OrderByItemContext context)
+        {
+            var node = OracleTree.CreateWithSpan<OracleOrderExpressionNode>(context);
+            node.Expression.Value = ExpressionVisitor.VisitExpr(context.expr());
+
+            if (context.order != null)
+                node.Order = context.order.Type == DESC ? QsiSortOrder.Descending : QsiSortOrder.Ascending;
+
+            if (context.nullsOrder != null)
+                node.NullsOrder = context.nullsOrder.Type == FIRST
+                    ? OracleNullsOrder.First
+                    : OracleNullsOrder.Last;
+
+            return node;
+        }
+
+        public static QsiWhereExpressionNode VisitWhereClause(WhereClauseContext context)
+        {
+            var node = OracleTree.CreateWithSpan<QsiWhereExpressionNode>(context);
+            node.Expression.Value = VisitCondition(context.condition());
+
+            return node;
+        }
+
+        public static QsiGroupingExpressionNode VisitGroupByClause(GroupByClauseContext context)
+        {
+            var node = OracleTree.CreateWithSpan<QsiGroupingExpressionNode>(context);
+            node.Items.AddRange(context.groupByItems().groupByItem().Select(VisitGroupByItem));
+            var groupingByHavingClause = context.groupByHavingClause();
+
+            if (groupingByHavingClause is not null)
+                node.Having.Value = VisitCondition(groupingByHavingClause.condition());
+
+            return node;
+        }
+
+        public static QsiExpressionNode VisitGroupByItem(GroupByItemContext context)
+        {
+            return context.children[0] switch
+            {
+                ExprContext expr => VisitExpr(expr),
+                RollupCubeClauseContext rollupCubeClause => throw new NotImplementedException(),
+                GroupingSetsClauseContext groupingSetsClause => throw new NotImplementedException(),
+                _ => throw new NotSupportedException()
+            };
+        }
     }
 }
