@@ -239,107 +239,107 @@ namespace Qsi.Oracle.Tree.Visitors
                     switch (analyticFunctionContext.children[0])
                     {
                         case AnyValueFunctionContext anyValueFunctionContext:
-                            node.Function.Value = VisitAnyValueFunctionContext(anyValueFunctionContext);
+                            node.Function.Value = VisitAnyValueFunction(anyValueFunctionContext);
                             break;
 
                         case AvgFunctionContext avgFunctionContext:
-                            node.Function.Value = VisitAvgFunctionContext(avgFunctionContext);
+                            node.Function.Value = VisitAvgFunction(avgFunctionContext);
                             break;
 
                         case BitAndAggFunctionContext bitAndAggFunctionContext:
-                            node.Function.Value = VisitBitAndAggFunctionContext(bitAndAggFunctionContext);
+                            node.Function.Value = VisitBitAndAggFunction(bitAndAggFunctionContext);
                             break;
 
                         case BitOrAggFunctionContext bitOrAggFunctionContext:
-                            node.Function.Value = VisitBitOrAggFunctionContext(bitOrAggFunctionContext);
+                            node.Function.Value = VisitBitOrAggFunction(bitOrAggFunctionContext);
                             break;
 
                         case BitXorAggFunctionContext bitXorAggFunctionContext:
-                            node.Function.Value = VisitBitXorAggFunctionContext(bitXorAggFunctionContext);
+                            node.Function.Value = VisitBitXorAggFunction(bitXorAggFunctionContext);
                             break;
 
                         case ChecksumFunctionContext checksumFunctionContext:
-                            node.Function.Value = VisitChecksumFunctionContext(checksumFunctionContext);
+                            node.Function.Value = VisitChecksumFunction(checksumFunctionContext);
                             break;
 
                         case CorrFunctionContext corrFunctionContext:
-                            node.Function.Value = VisitCorrFunctionContext(corrFunctionContext);
+                            node.Function.Value = VisitCorrFunction(corrFunctionContext);
                             break;
 
                         case CountFunctionContext countFunctionContext:
-                            node.Function.Value = VisitCountFunctionContext(countFunctionContext);
+                            node.Function.Value = VisitCountFunction(countFunctionContext);
                             break;
 
                         case CovarPopFunctionContext covarPopFunctionContext:
-                            node.Function.Value = VisitCovarPopFunctionContext(covarPopFunctionContext);
+                            node.Function.Value = VisitCovarPopFunction(covarPopFunctionContext);
                             break;
 
                         case CovarSampFunctionContext covarSampFunctionContext:
-                            node.Function.Value = VisitCovarSampFunctionContext(covarSampFunctionContext);
+                            node.Function.Value = VisitCovarSampFunction(covarSampFunctionContext);
                             break;
 
                         case FirstValueFunctionContext firstValueFunctionContext:
-                            node.Function.Value = VisitFirstValueFunctionContext(firstValueFunctionContext);
+                            node.Function.Value = VisitFirstValueFunction(firstValueFunctionContext);
                             break;
 
                         case KurtosisPopFunctionContext kurtosisPopFunctionContext:
-                            node.Function.Value = VisitKurtosisPopFunctionContext(kurtosisPopFunctionContext);
+                            node.Function.Value = VisitKurtosisPopFunction(kurtosisPopFunctionContext);
                             break;
 
                         case KurtosisSampFunctionContext kurtosisSampFunctionContext:
-                            node.Function.Value = VisitKurtosisSampFunctionContext(kurtosisSampFunctionContext);
+                            node.Function.Value = VisitKurtosisSampFunction(kurtosisSampFunctionContext);
                             break;
 
                         case LastValueFunctionContext lastValueFunctionContext:
-                            node.Function.Value = VisitLastValueFunctionContext(lastValueFunctionContext);
+                            node.Function.Value = VisitLastValueFunction(lastValueFunctionContext);
                             break;
 
                         case MaxFunctionContext maxFunctionContext:
-                            node.Function.Value = VisitMaxFunctionContext(maxFunctionContext);
+                            node.Function.Value = VisitMaxFunction(maxFunctionContext);
                             break;
 
                         case MedianFunctionContext medianFunctionContext:
-                            node.Function.Value = VisitMedianFunctionContext(medianFunctionContext);
+                            node.Function.Value = VisitMedianFunction(medianFunctionContext);
                             break;
 
                         case MinFunctionContext minFunctionContext:
-                            node.Function.Value = VisitMinFunctionContext(minFunctionContext);
+                            node.Function.Value = VisitMinFunction(minFunctionContext);
                             break;
 
                         case NthValueFunctionContext nthValueFunctionContext:
-                            node.Function.Value = VisitNthValueFunctionContext(nthValueFunctionContext);
+                            node.Function.Value = VisitNthValueFunction(nthValueFunctionContext);
                             break;
 
                         case LinearRegrFunctionContext linearRegrFunctionContext:
-                            node.Function.Value = VisitLinearRegrFunctionContext(linearRegrFunctionContext);
+                            node.Function.Value = VisitLinearRegrFunction(linearRegrFunctionContext);
                             break;
 
                         case StddevFunctionContext stddevFunctionContext:
-                            node.Function.Value = VisitStddevFunctionContext(stddevFunctionContext);
+                            node.Function.Value = VisitStddevFunction(stddevFunctionContext);
                             break;
 
                         case StddevPopFunctionContext stddevPopFunctionContext:
-                            node.Function.Value = VisitStddevPopFunctionContext(stddevPopFunctionContext);
+                            node.Function.Value = VisitStddevPopFunction(stddevPopFunctionContext);
                             break;
 
                         case StddevSampFunctionContext stddevSampFunctionContext:
-                            node.Function.Value = VisitStddevSampFunctionContext(stddevSampFunctionContext);
+                            node.Function.Value = VisitStddevSampFunction(stddevSampFunctionContext);
                             break;
 
                         case SumFunctionContext sumFunctionContext:
-                            node.Function.Value = VisitSumFunctionContext(sumFunctionContext);
+                            node.Function.Value = VisitSumFunction(sumFunctionContext);
                             break;
 
                         case VarPopFunctionContext varPopFunctionContext:
-                            node.Function.Value = VisitVarPopFunctionContext(varPopFunctionContext);
+                            node.Function.Value = VisitVarPopFunction(varPopFunctionContext);
                             break;
 
                         case VarSampFunctionContext varSampFunctionContext:
-                            node.Function.Value = VisitVarSampFunctionContext(varSampFunctionContext);
+                            node.Function.Value = VisitVarSampFunction(varSampFunctionContext);
                             break;
 
                         case VarianceFunctionContext varianceFunctionContext:
-                            node.Function.Value = VisitVarianceFunctionContext(varianceFunctionContext);
+                            node.Function.Value = VisitVarianceFunction(varianceFunctionContext);
                             break;
                     }
 
@@ -1084,11 +1084,6 @@ namespace Qsi.Oracle.Tree.Visitors
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitFirstValueFunction(FirstValueFunctionContext context)
-        {
-            throw TreeHelper.NotSupportedTree(context);
-        }
-
         public static QsiInvokeExpressionNode VisitIterationNumberFunction(IterationNumberFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
@@ -1481,132 +1476,132 @@ namespace Qsi.Oracle.Tree.Visitors
         #endregion
 
         #region Analytic Functions
-        public static QsiInvokeExpressionNode VisitAnyValueFunctionContext(AnyValueFunctionContext context)
+        public static QsiInvokeExpressionNode VisitAnyValueFunction(AnyValueFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitAvgFunctionContext(AvgFunctionContext context)
+        public static QsiInvokeExpressionNode VisitAvgFunction(AvgFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitBitAndAggFunctionContext(BitAndAggFunctionContext context)
+        public static QsiInvokeExpressionNode VisitBitAndAggFunction(BitAndAggFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitBitOrAggFunctionContext(BitOrAggFunctionContext context)
+        public static QsiInvokeExpressionNode VisitBitOrAggFunction(BitOrAggFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitBitXorAggFunctionContext(BitXorAggFunctionContext context)
+        public static QsiInvokeExpressionNode VisitBitXorAggFunction(BitXorAggFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitChecksumFunctionContext(ChecksumFunctionContext context)
+        public static QsiInvokeExpressionNode VisitChecksumFunction(ChecksumFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitCorrFunctionContext(CorrFunctionContext context)
+        public static QsiInvokeExpressionNode VisitCorrFunction(CorrFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitCountFunctionContext(CountFunctionContext context)
+        public static QsiInvokeExpressionNode VisitCountFunction(CountFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitCovarPopFunctionContext(CovarPopFunctionContext context)
+        public static QsiInvokeExpressionNode VisitCovarPopFunction(CovarPopFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitCovarSampFunctionContext(CovarSampFunctionContext context)
+        public static QsiInvokeExpressionNode VisitCovarSampFunction(CovarSampFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitFirstValueFunctionContext(FirstValueFunctionContext context)
+        public static QsiInvokeExpressionNode VisitFirstValueFunction(FirstValueFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitKurtosisPopFunctionContext(KurtosisPopFunctionContext context)
+        public static QsiInvokeExpressionNode VisitKurtosisPopFunction(KurtosisPopFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitKurtosisSampFunctionContext(KurtosisSampFunctionContext context)
+        public static QsiInvokeExpressionNode VisitKurtosisSampFunction(KurtosisSampFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitLastValueFunctionContext(LastValueFunctionContext context)
+        public static QsiInvokeExpressionNode VisitLastValueFunction(LastValueFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitMaxFunctionContext(MaxFunctionContext context)
+        public static QsiInvokeExpressionNode VisitMaxFunction(MaxFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitMedianFunctionContext(MedianFunctionContext context)
+        public static QsiInvokeExpressionNode VisitMedianFunction(MedianFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitMinFunctionContext(MinFunctionContext context)
+        public static QsiInvokeExpressionNode VisitMinFunction(MinFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitNthValueFunctionContext(NthValueFunctionContext context)
+        public static QsiInvokeExpressionNode VisitNthValueFunction(NthValueFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitLinearRegrFunctionContext(LinearRegrFunctionContext context)
+        public static QsiInvokeExpressionNode VisitLinearRegrFunction(LinearRegrFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitStddevFunctionContext(StddevFunctionContext context)
+        public static QsiInvokeExpressionNode VisitStddevFunction(StddevFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitStddevPopFunctionContext(StddevPopFunctionContext context)
+        public static QsiInvokeExpressionNode VisitStddevPopFunction(StddevPopFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitStddevSampFunctionContext(StddevSampFunctionContext context)
+        public static QsiInvokeExpressionNode VisitStddevSampFunction(StddevSampFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitSumFunctionContext(SumFunctionContext context)
+        public static QsiInvokeExpressionNode VisitSumFunction(SumFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitVarPopFunctionContext(VarPopFunctionContext context)
+        public static QsiInvokeExpressionNode VisitVarPopFunction(VarPopFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitVarSampFunctionContext(VarSampFunctionContext context)
+        public static QsiInvokeExpressionNode VisitVarSampFunction(VarSampFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitVarianceFunctionContext(VarianceFunctionContext context)
+        public static QsiInvokeExpressionNode VisitVarianceFunction(VarianceFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }

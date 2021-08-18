@@ -9328,7 +9328,6 @@ functionExpression
     | featureSetAnalyticFunction
     | featureValueFunction
     | featureValueAnalyticFunction
-    | firstValueFunction
     | iterationNumberFunction
     | jsonArrayFunction
     | jsonArrayAggFunction
