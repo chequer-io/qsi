@@ -9251,24 +9251,50 @@ calcMeasExpression
 //    | compoundExpression
 //    | intervalExpression
     ;
+    
+analyticFunction
+    : ( anyValueFunction
+      | avgFunction
+      | bitAndAggFunction
+      | bitOrAggFunction
+      | bitXorAggFunction
+      | checksumFunction
+      | corrFunction
+      | countFunction
+      | covarPopFunction
+      | covarSampFunction
+      | firstValueFunction
+      | kurtosisPopFunction
+      | kurtosisSampFunction
+      | lastValueFunction 
+      | maxFunction
+      | medianFunction
+      | minFunction
+      | nthValueFunction
+      | linearRegrFunction
+      | stddevFunction
+      | stddevPopFunction
+      | stddevSampFunction
+      | sumFunction
+      | varPopFunction
+      | varSampFunction
+      | varianceFunction
+      ) ( OVER ( '(' analyticClause ')' | windowName=identifier ) )?
+    ;
 
 functionExpression
     : <assoc=right> functionExpression ('.' (functionExpression | identifier))+
     | functionName '(' argumentList? ')'
     | castFunction
+    | analyticFunction
     | approxCountFunction
     | approxMedianFunction
     | approxPercentileFunction
     | approxPercentileDetailFunction
     | approxRankFunction
     | approxSumFunction
-    | avgFunction
     | binToNumFunction
-    | bitAndAggFunction
-    | bitOrAggFunction
-    | bitXorAggFunction
     | firstFunction
-    | checksumFunction
     | chrFunction
     | clusterDetailsFunction
     | clusterDetailsAnalyticFunction
@@ -9281,11 +9307,7 @@ functionExpression
     | clusterSetAnalyticFunction
     | collectFunction
     | connectByRootFunction
-    | corrFunction
     | correlationFunction
-    | countFunction
-    | covarPopFunction
-    | covarSampFunction
     | cubeTableFunction
     | cumeDistFunction
     | cumeDistAnalyticFunction
@@ -9316,18 +9338,11 @@ functionExpression
     | jsonTableFunction
     | jsonTransformFunction
     | jsonValueFunction
-    | kurtosisPopFunction
-    | kurtosisSampFunction
     | lagFunction
     | lastFunction
-    | lastValueFunction
     | leadFunction
     | listaggFunction
     | localtimestampFunction
-    | maxFunction
-    | medianFunction
-    | minFunction
-    | nthValueFunction
     | ntileFunction
     | oraDmPartitionNameFunction
     | oraInvokingUserFunction
@@ -9353,13 +9368,10 @@ functionExpression
     | rankAggregateFunction
     | rankAnalyticFunction
     | ratioToReportFunction
-    | linearRegrFunction
     | sessiontimezoneFunction
     | rowNumberFunction
-    | stddevFunction
-    | stddevPopFunction
-    | stddevSampFunction
-    | sumFunction
+    | skewnessPopFunction
+    | skewnessSampFunction
     | sysDburigenFunction
     | sysdateFunction
     | systimestampFunction
@@ -9378,9 +9390,6 @@ functionExpression
     | uidFunction
     | userFunction
     | validateConversionFunction
-    | varPopFunction
-    | varSampFunction
-    | varianceFunction
     | xmlaggFunction
     | xmlcastFunction
     | xmlcorattvalFunction
@@ -9395,6 +9404,10 @@ functionExpression
     | xmlsequenceFunction
     | xmlserializeFunction
     | xmlTableFunction
+    ;
+
+anyValueFunction
+    : ANY_VALUE '(' ( DISTINCT | ALL )? expr ')'
     ;
 
 approxCountFunction
@@ -9422,7 +9435,7 @@ approxSumFunction
     ;
 
 avgFunction
-    : AVG '(' (DISTINCT | ALL)? expr ')' (OVER '(' analyticClause ')')?
+    : AVG '(' (DISTINCT | ALL)? expr ')'
     ;
 
 binToNumFunction
@@ -9448,7 +9461,7 @@ castFunction
     ;
 
 checksumFunction
-    : CHECKSUM '(' (DISTINCT | ALL)? expr ')' (OVER '(' analyticClause ')')?
+    : CHECKSUM '(' (DISTINCT | ALL)? expr ')'
     ;
 
 chrFunction
@@ -9500,7 +9513,7 @@ connectByRootFunction
     ;
 
 corrFunction
-    : CORR '(' expr ',' expr ')' (OVER '(' analyticClause ')')?
+    : CORR '(' expr ',' expr ')'
     ;
 
 correlationFunction
@@ -9510,15 +9523,15 @@ correlationFunction
     ;
 
 countFunction
-    : COUNT '(' ('*' | (DISTINCT | ALL)? expr) ')' (OVER '(' analyticClause ')')?
+    : COUNT '(' ('*' | (DISTINCT | ALL)? expr) ')'
     ;
 
 covarPopFunction
-    : COVAR_POP '(' expr ',' expr ')' (OVER '(' analyticClause ')')?
+    : COVAR_POP '(' expr ',' expr ')'
     ;
 
 covarSampFunction
-    : COVAR_SAMP '(' expr ',' expr ')' (OVER '(' analyticClause ')')?
+    : COVAR_SAMP '(' expr ',' expr ')'
     ;
 
 cubeTableFunction
@@ -9602,7 +9615,6 @@ firstValueFunction
     : FIRST_VALUE ('(' ( expr | identifier ) ')' ((RESPECT | IGNORE) NULLS)?
                   |'(' ( expr | identifier ) ((RESPECT | IGNORE) NULLS)? ')'
                   )
-      OVER ( '(' analyticClause ')' | analyticClause )
     ;
 
 iterationNumberFunction
@@ -9687,7 +9699,6 @@ lastValueFunction
     : LAST_VALUE ('(' ( expr | identifier ) ')' ((RESPECT | IGNORE) NULLS)?
                   |'(' ( expr | identifier ) ((RESPECT | IGNORE) NULLS)? ')'
                   )
-      OVER ( '(' analyticClause ')' | analyticClause )
     ;
 
 leadFunction
@@ -9706,20 +9717,19 @@ localtimestampFunction
     ;
 
 maxFunction
-    : MAX '(' (DISTINCT | ALL)? expr ')' (OVER '(' analyticClause ')')?
+    : MAX '(' (DISTINCT | ALL)? expr ')'
     ;
 
 medianFunction
-    : MEDIAN '(' expr ')' (OVER '(' analyticClause ')')?
+    : MEDIAN '(' expr ')'
     ;
 
 minFunction
-    : MIN '(' (DISTINCT | ALL)? expr ')' (OVER '(' analyticClause ')')?
+    : MIN '(' (DISTINCT | ALL)? expr ')'
     ;
 
 nthValueFunction
     : NTH_VALUE '(' ( expr | identifier ) ',' ( expr | identifier ) ')' (FROM (FIRST | LAST))? ((RESPECT | IGNORE) NULLS)?
-      OVER ( '(' analyticClause ')' | analyticClause )
     ;
 
 ntileFunction
@@ -9848,7 +9858,6 @@ linearRegrFunction
       | REGR_SYY
       | REGR_SXY
       ) '(' expr ',' expr ')'
-      (OVER '(' analyticClause ')')?
     ;
 
 sessiontimezoneFunction
@@ -9860,19 +9869,27 @@ rowNumberFunction
     ;
 
 stddevFunction
-    : STDDEV '(' (DISTINCT | ALL)? expr ')' (OVER '(' analyticClause ')')?
+    : STDDEV '(' (DISTINCT | ALL)? expr ')'
     ;
 
 stddevPopFunction
-    : STDDEV_POP '(' expr ')' (OVER '(' analyticClause ')')?
+    : STDDEV_POP '(' expr ')'
     ;
 
 stddevSampFunction
-    : STDDEV_SAMP '(' expr ')' (OVER '(' analyticClause ')')?
+    : STDDEV_SAMP '(' expr ')'
+    ;
+
+skewnessPopFunction
+    : SKEWNESS_POP ( DISTINCT | ALL | UNIQUE )? '(' expr ')'
+    ;
+
+skewnessSampFunction
+    : SKEWNESS_POP ( DISTINCT | ALL | UNIQUE )? '(' expr ')'
     ;
 
 sumFunction
-    : SUM '(' (DISTINCT | ALL)? ')' expr ')' (OVER '(' analyticClause ')')?
+    : SUM '(' (DISTINCT | ALL)? ')' expr ')'
     ;
 
 sysDburigenFunction
@@ -9960,15 +9977,15 @@ validateConversionTypeName
     ;
 
 varPopFunction
-    : VAR_POP '(' expr ')' (OVER '(' analyticClause ')')?
+    : VAR_POP '(' expr ')'
     ;
 
 varSampFunction
-    : VAR_SAMP '(' expr ')' (OVER '(' analyticClause ')')?
+    : VAR_SAMP '(' expr ')'
     ;
 
 varianceFunction
-    : VARIANCE '(' (DISTINCT | ALL)? expr ')' (OVER '(' analyticClause ')')?
+    : VARIANCE '(' (DISTINCT | ALL)? expr ')'
     ;
 
 xmlaggFunction
