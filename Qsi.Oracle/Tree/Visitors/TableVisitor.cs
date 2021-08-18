@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
+using Antlr4.Runtime.Tree;
 using Qsi.Data;
 using Qsi.Oracle.Common;
 using Qsi.Oracle.Internal;
@@ -73,13 +73,22 @@ namespace Qsi.Oracle.Tree.Visitors
 
         public static QsiDerivedTableNode VisitQueryBlock(QueryBlockContext context)
         {
-            var node = OracleTree.CreateWithSpan<QsiDerivedTableNode>(context);
+            var node = OracleTree.CreateWithSpan<OracleDerivedTableNode>(context);
+            var withClause = context.withClause();
+
+            if (withClause is not null)
+                node.Directives.Value = VisitWithClause(withClause);
+
+            if (context.hint() is not null)
+                node.Hint = VisitHint(context.hint());
+
+            if (context.queryBehavior() is not null)
+                node.QueryBehavior = VisitQueryBehavior(context.queryBehavior());
+
             node.Columns.Value = OracleTree.CreateWithSpan<QsiColumnsDeclarationNode>(context.selectList());
 
             foreach (var selectItem in ExpressionVisitor.VisitSelectList(context.selectList()))
-            {
                 node.Columns.Value.Columns.Add(selectItem);
-            }
 
             if (context._tables.Count == 1)
             {
@@ -105,11 +114,6 @@ namespace Qsi.Oracle.Tree.Visitors
 
                 node.Source.Value = source;
             }
-
-            var withClause = context.withClause();
-
-            if (withClause is not null)
-                node.Directives.Value = VisitWithClause(withClause);
 
             var whereClause = context.whereClause();
 
@@ -138,6 +142,29 @@ namespace Qsi.Oracle.Tree.Visitors
             // hierarchicalQueryClause, modelClause, windowClause ignored
 
             return node;
+        }
+
+        public static string VisitHint(HintContext context)
+        {
+            return context.GetInputText();
+        }
+
+        public static OracleQueryBehavior VisitQueryBehavior(QueryBehaviorContext context)
+        {
+            switch (context.children[0])
+            {
+                case ITerminalNode { Symbol: { Type: DISTINCT } }:
+                    return OracleQueryBehavior.Distinct;
+
+                case ITerminalNode { Symbol: { Type: UNIQUE } }:
+                    return OracleQueryBehavior.Unique;
+
+                case ITerminalNode { Symbol: { Type: ALL } }:
+                    return OracleQueryBehavior.All;
+
+                default:
+                    throw TreeHelper.NotSupportedTree(context.children[0]);
+            }
         }
 
         public static QsiExpressionNode VisitGroupByItem(GroupByItemContext context)
