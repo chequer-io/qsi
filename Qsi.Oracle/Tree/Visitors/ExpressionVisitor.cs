@@ -74,6 +74,18 @@ namespace Qsi.Oracle.Tree.Visitors
         }
 
         #region Expr
+        public static QsiMultipleExpressionNode VisitExpressionList(ExpressionListContext context)
+        {
+            var node = OracleTree.CreateWithSpan<QsiMultipleExpressionNode>(context);
+
+            while (context.OPEN_PAR_SYMBOL() != null)
+                context = context.expressionList();
+
+            node.Elements.AddRange(context.expr().Select(VisitExpr));
+
+            return node;
+        }
+
         public static QsiExpressionNode VisitExpr(ExprContext context)
         {
             while (context is ParenthesisExprContext parens)
@@ -1879,7 +1891,7 @@ namespace Qsi.Oracle.Tree.Visitors
             {
                 SimpleComparisonCondition1Context simpleComparisonCondition1 => VisitSimpleComparisonCondition1(simpleComparisonCondition1),
                 SimpleComparisonCondition2Context simpleComparisonCondition2 => VisitSimpleComparisonCondition2(simpleComparisonCondition2),
-                ComparisonConditionContext comparisonCondition => VisitComparisonCondition(comparisonCondition),
+                ComparisonConditionContext comparisonCondition => VisitGroupComparisonCondition(comparisonCondition.groupComparisonCondition()),
                 FloatingPointConditionContext floatingPointCondition => VisitFloatingPointCondition(floatingPointCondition),
                 DanglingConditionContext danglingCondition => VisitDanglingCondition(danglingCondition),
                 LogicalNotConditionContext logicalNotCondition => VisitLogicalNotCondition(logicalNotCondition),
@@ -1911,15 +1923,31 @@ namespace Qsi.Oracle.Tree.Visitors
 
         public static QsiExpressionNode VisitSimpleComparisonCondition1(SimpleComparisonCondition1Context context)
         {
-            throw new NotImplementedException();
+            var node = OracleTree.CreateWithSpan<QsiBinaryExpressionNode>(context);
+
+            node.Left.Value = VisitExpr(context.l);
+            node.Operator = context.operator1().GetText();
+            node.Right.Value = VisitExpr(context.r);
+
+            return node;
         }
 
         public static QsiExpressionNode VisitSimpleComparisonCondition2(SimpleComparisonCondition2Context context)
         {
-            throw new NotImplementedException();
+            var node = OracleTree.CreateWithSpan<QsiBinaryExpressionNode>(context);
+            node.Left.Value = VisitExpressionList(context.expressionList(0));
+
+            if (context.subquery() is not null)
+                node.Right.Value = VisitSubquery(context.subquery());
+            else
+                node.Right.Value = VisitExpressionList(context.expressionList(1));
+
+            node.Operator = context.operator2().GetText();
+
+            return node;
         }
 
-        public static QsiExpressionNode VisitComparisonCondition(ComparisonConditionContext context)
+        public static QsiExpressionNode VisitGroupComparisonCondition(GroupComparisonConditionContext context)
         {
             throw new NotImplementedException();
         }
@@ -2134,6 +2162,14 @@ namespace Qsi.Oracle.Tree.Visitors
                 GroupingSetsClauseContext groupingSetsClause => throw new NotImplementedException(),
                 _ => throw new NotSupportedException()
             };
+        }
+
+        public static QsiTableExpressionNode VisitSubquery(SubqueryContext context)
+        {
+            var node = OracleTree.CreateWithSpan<QsiTableExpressionNode>(context);
+            node.Table.Value = TableVisitor.VisitSubquery(context);
+
+            return node;
         }
     }
 }

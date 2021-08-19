@@ -9120,22 +9120,22 @@ outOfLineRefConstraint
     ;
 
 condition
-    : expr operator1 expr                                                               #simpleComparisonCondition1
-    | '(' expr (',' expr)* ')' operator2 '(' (expressionList | subquery) ')'            #simpleComparisonCondition2
+    : l=expr operator1 r=expr                                                           #simpleComparisonCondition1
+    | '(' expressionList ')' operator2 '(' (expressionList | subquery) ')'              #simpleComparisonCondition2
     | groupComparisonCondition                                                          #comparisonCondition
     | expr IS NOT? (NAN | INFINITE)                                                     #floatingPointCondition
     | expr IS NOT? DANGLING                                                             #danglingCondition
     | NOT condition                                                                     #logicalNotCondition
-    | condition AND condition                                                           #logicalAndCondition
-    | condition OR condition                                                            #logicalOrCondition
+    | l=condition AND r=condition                                                       #logicalAndCondition
+    | l=condition OR r=condition                                                        #logicalOrCondition
     | (dimensionColumn=identifier IS)? ANY                                              #modelIsAnyCondition
     | cellReference=cellAssignment IS PRESENT                                           #modelIsPresentCondition
     | nestedTable=identifier IS NOT? KW_A SET                                           #multisetIsASetCondition
     | nestedTable=identifier IS NOT? KW_EMPTY                                           #multisetIsEmptyCondition
     | expr NOT? MEMBER OF? nestedTable=identifier                                       #multisetMemberCondition
     | nestedTable1=identifier NOT? SUBMULTISET OF? nestedTable2=identifier              #multisetSubmultisetCondition
-    | expr NOT? (LIKE | LIKEC | LIKE2 | LIKE4)
-      expr (ESCAPE stringLiteral)?                                                      #patternMatchingLikeCondition
+    | l=expr NOT? (LIKE | LIKEC | LIKE2 | LIKE4)
+      r=expr (ESCAPE stringLiteral)?                                                    #patternMatchingLikeCondition
     | REGEXP_LIKE '(' (column|stringLiteral) ','
                       (column|stringLiteral)
                       (',' (column|stringLiteral))? ')'                                 #patternMatchingRegexpLikeCondition
@@ -9150,7 +9150,7 @@ condition
       jsonPassingClause? jsonExistsOnErrorClause? jsonExistsOnEmptyClause? ')'          #jsonExistsCondition
     | JSON_TEXTCONTAINS '(' column ',' stringLiteral ',' stringLiteral ')'              #jsonTextContainsCondition
     | '(' condition ')'                                                                 #compoundParenthesisCondition
-    | expr NOT? BETWEEN expr AND expr                                                   #betweenCondition
+    | e1=expr NOT? BETWEEN e2=expr AND e3=expr                                          #betweenCondition
     | EXISTS '(' subquery ')'                                                           #existsCondition
     | expr NOT? IN '(' (expressionList|subquery) ')'                                    #inCondition1
     | '(' expr (',' expr)* ')' NOT?
@@ -9181,9 +9181,9 @@ operator2
     ;
 
 groupComparisonCondition
-    : expr operator1 (ANY | SOME | ALL) '(' (expressionList | subquery) ')'
-    | '(' expr (',' expr)* ')' operator2 (ANY | SOME | ALL) '(' (expressionList (',' expressionList)* | subquery) ')'
-    | LNNVL '(' condition ')'
+    : expr operator1 option=(ANY | SOME | ALL) '(' (expressionList | subquery) ')'                                              #exprGroupComparisonCondition
+    | '(' expr (',' expr)* ')' operator2 option=(ANY | SOME | ALL) '(' (expressionList (',' expressionList)* | subquery) ')'    #listGroupComparisonCondition
+    | LNNVL '(' condition ')'                                                                                                   #lnnvlGroupComparisonCondition
     ;
 
 expr
