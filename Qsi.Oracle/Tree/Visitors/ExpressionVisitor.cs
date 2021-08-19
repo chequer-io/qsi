@@ -2050,14 +2050,35 @@ namespace Qsi.Oracle.Tree.Visitors
         }
         #endregion
 
-        public static QsiLimitExpressionNode VisitRowOffset(RowOffsetContext context)
+        public static OracleLimitExpressionNode VisitRowlimitingContexts(RowOffsetContext rowOffset, RowFetchOptionContext rowFetchOption)
         {
-            var node = OracleTree.CreateWithSpan<QsiLimitExpressionNode>(context);
-            node.Offset.Value = VisitExpr(context.offset);
+            OracleLimitExpressionNode node;
+
+            if (rowOffset is not null && rowFetchOption is null)
+                node = OracleTree.CreateWithSpan<OracleLimitExpressionNode>(rowOffset);
+            else if (rowOffset is null && rowFetchOption is not null)
+                node = OracleTree.CreateWithSpan<OracleLimitExpressionNode>(rowFetchOption);
+            else
+                node = OracleTree.CreateWithSpan<OracleLimitExpressionNode>(rowOffset!.Start, rowFetchOption!.Stop);
+
+            if (rowOffset is not null)
+            {
+                node.Offset.Value = VisitExpr(rowOffset.offset);
+            }
+
+            if (rowFetchOption is not null)
+            {
+                if (rowFetchOption.HasToken(PERCENT))
+                    node.LimitPercent.Value = VisitExpr(rowFetchOption.percent);
+                else
+                    node.Limit.Value = VisitExpr(rowFetchOption.rowcount);
+
+                node.FetchOption = rowFetchOption.HasToken(ONLY) ? OracleFetchOption.Only : OracleFetchOption.WithTies;
+            }
 
             return node;
         }
-        
+
         public static OracleMultipleOrderExpressionNode VisitOrderByClause(OrderByClauseContext context)
         {
             var node = OracleTree.CreateWithSpan<OracleMultipleOrderExpressionNode>(context);

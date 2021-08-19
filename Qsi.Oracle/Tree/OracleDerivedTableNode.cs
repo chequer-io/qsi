@@ -8,5 +8,12 @@ namespace Qsi.Oracle.Tree
         public string Hint { get; set; }
 
         public OracleQueryBehavior? QueryBehavior { get; set; }
+
+        public QsiTreeNodeProperty<OraclePartitionExpressionNode> Partition { get; }
+
+        public OracleDerivedTableNode()
+        {
+            Partition = new QsiTreeNodeProperty<OraclePartitionExpressionNode>(this);
+        }
     }
 }

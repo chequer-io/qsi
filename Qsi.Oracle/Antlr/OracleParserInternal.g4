@@ -7775,13 +7775,13 @@ granteeClauseItem
     ;
 
 subquery
-    : queryBlock orderByClause? rowOffset? rowFetchOption?              #queryBlockSubquery
-    | subquery (subqueryJoinType subquery)+
-      orderByClause? rowOffset? rowFetchOption?                         #joinedSubquery
-    | '(' subquery ')' orderByClause? rowOffset? rowFetchOption?        #parenthesisSubquery
+    : queryBlock orderByClause? rowOffset? rowFetchOption?        #queryBlockSubquery
+    | subquery (subqueryCompositeType subquery)+
+      orderByClause? rowOffset? rowFetchOption?                   #compositeSubquery
+    | '(' subquery ')' orderByClause? rowOffset? rowFetchOption?  #parenthesisSubquery
     ;
 
-subqueryJoinType
+subqueryCompositeType
     : UNION ALL? 
     | INTERSECT 
     | MINUS 
@@ -8116,8 +8116,8 @@ tablePrimary
     ;
 
 innerCrossJoinClause
-    : INNER? JOIN tableReference (ON condition | USING '(' column (',' column)* ')')
-    | (CROSS | NATURAL INNER?) JOIN tableReference
+    : INNER? JOIN tableReference (ON condition | USING '(' column (',' column)* ')')    #innerJoinClause
+    | (CROSS | NATURAL INNER?) JOIN tableReference                                      #crossOrNatrualInnerJoinClause
     ;
 
 outerJoinClause

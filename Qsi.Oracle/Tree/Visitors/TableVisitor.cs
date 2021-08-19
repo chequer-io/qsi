@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
 using Qsi.Oracle.Common;
 using Qsi.Oracle.Internal;
@@ -17,7 +18,7 @@ namespace Qsi.Oracle.Tree.Visitors
         {
             var node = VisitSubquery(context.subquery());
 
-            // TODO: forUpdateClause
+            // forUpdateClause ignored
 
             return node;
         }
@@ -27,7 +28,7 @@ namespace Qsi.Oracle.Tree.Visitors
             return context switch
             {
                 QueryBlockSubqueryContext queryBlocksubquery => VisitQueryBlockSubquery(queryBlocksubquery),
-                JoinedSubqueryContext joinedSubquery => VisitJoinedSubquery(joinedSubquery),
+                CompositeSubqueryContext joinedSubquery => VisitCompositeSubquery(joinedSubquery),
                 ParenthesisSubqueryContext parenthesisSubquery => VisitParenthesisSubquery(parenthesisSubquery),
                 _ => throw new NotSupportedException()
             };
@@ -39,19 +40,18 @@ namespace Qsi.Oracle.Tree.Visitors
 
             var orderByClause = context.orderByClause();
             var rowOffset = context.rowOffset();
+            var rowFetchOption = context.rowFetchOption();
 
             if (orderByClause is not null)
                 node.Order.Value = ExpressionVisitor.VisitOrderByClause(orderByClause);
 
-            if (rowOffset is not null)
-                node.Limit.Value = ExpressionVisitor.VisitRowOffset(rowOffset);
-
-            // TODO: rowFetchOption
+            if (rowOffset is not null || rowFetchOption is not null)
+                node.Limit.Value = ExpressionVisitor.VisitRowlimitingContexts(rowOffset, rowFetchOption);
 
             return node;
         }
 
-        public static QsiTableNode VisitJoinedSubquery(JoinedSubqueryContext context)
+        public static QsiTableNode VisitCompositeSubquery(CompositeSubqueryContext context)
         {
             SubqueryContext[] subqueryItems = context.subquery();
             var source = VisitSubquery(subqueryItems[0]);
@@ -64,7 +64,7 @@ namespace Qsi.Oracle.Tree.Visitors
                 var joinedTable = OracleTree.CreateWithSpan<OracleBinaryTableNode>(leftContext.Start, rightContext.Stop);
 
                 joinedTable.Left.Value = source;
-                joinedTable.BinaryTableType = VisitSubqueryJoinType(context.subqueryJoinType(i - 1));
+                joinedTable.BinaryTableType = VisitSubqueryCompositeType(context.subqueryCompositeType(i - 1));
                 joinedTable.Right.Value = VisitSubquery(rightContext);
 
                 source = joinedTable;
@@ -74,20 +74,19 @@ namespace Qsi.Oracle.Tree.Visitors
             {
                 var orderByClause = context.orderByClause();
                 var rowOffset = context.rowOffset();
+                var rowFetchOption = context.rowFetchOption();
 
                 if (orderByClause is not null)
                     binaryTableNode.Order.Value = ExpressionVisitor.VisitOrderByClause(orderByClause);
 
-                if (rowOffset is not null)
-                    binaryTableNode.Limit.Value = ExpressionVisitor.VisitRowOffset(rowOffset);
-
-                // TODO: rowFetchOption
+                if (rowOffset is not null || rowFetchOption is not null)
+                    binaryTableNode.Limit.Value = ExpressionVisitor.VisitRowlimitingContexts(rowOffset, rowFetchOption);
             }
 
             return source;
         }
 
-        public static OracleBinaryTableType VisitSubqueryJoinType(SubqueryJoinTypeContext context)
+        public static OracleBinaryTableType VisitSubqueryCompositeType(SubqueryCompositeTypeContext context)
         {
             switch (context.children[0])
             {
@@ -125,9 +124,7 @@ namespace Qsi.Oracle.Tree.Visitors
                 node.Order.Value = ExpressionVisitor.VisitOrderByClause(orderByClause);
 
             if (rowOffset is not null)
-                node.Limit.Value = ExpressionVisitor.VisitRowOffset(rowOffset);
-
-            // TODO: rowFetchOption
+                node.Limit.Value = ExpressionVisitor.VisitRowlimitingContexts(rowOffset, rowFetchOption);
 
             return node;
         }
@@ -231,7 +228,74 @@ namespace Qsi.Oracle.Tree.Visitors
         {
             var node = VisitTableReference(context.tableReference());
 
+            for (int i = 0; i < context.ChildCount - 1; i++)
+            {
+                var leftToken = i == 0
+                    ? context.tableReference().Start
+                    : context.tableJoinClause(i - 1).Start;
+
+                var joinedNode = VisitTableJoinClause(leftToken, context.tableJoinClause(i));
+                joinedNode.Left.Value = node;
+                node = joinedNode;
+            }
+
             return node;
+        }
+
+        public static OracleJoinedTableNode VisitTableJoinClause(IToken leftToken, TableJoinClauseContext context)
+        {
+            return context.children[0] switch
+            {
+                InnerCrossJoinClauseContext innerCrossJoin => VisitInnerCrossJoinClause(leftToken, innerCrossJoin),
+                OuterJoinClauseContext outerJoin => VisitOuterJoinClause(leftToken, outerJoin),
+                CrossOuterApplyClauseContext crossOuterJoin => VisitCrossOuterApplyClause(leftToken, crossOuterJoin),
+                _ => throw new NotSupportedException()
+            };
+        }
+
+        public static OracleJoinedTableNode VisitInnerCrossJoinClause(IToken leftToken, InnerCrossJoinClauseContext context)
+        {
+            var node = OracleTree.CreateWithSpan<OracleJoinedTableNode>(leftToken, context.Stop);
+
+            switch (context)
+            {
+                case InnerJoinClauseContext innerJoinClause:
+                    node.JoinType = innerJoinClause.HasToken(INNER) ? "INNER JOIN" : "JOIN";
+                    node.Right.Value = VisitTableReference(innerJoinClause.tableReference());
+
+                    // ON condition
+                    // USING (column..)
+                    break;
+
+                case CrossOrNatrualInnerJoinClauseContext crossOrNatrualInnerJoinClause:
+                    if (crossOrNatrualInnerJoinClause.HasToken(CROSS))
+                    {
+                        node.JoinType = "CROSS JOIN";
+                    }
+                    else
+                    {
+                        node.JoinType = crossOrNatrualInnerJoinClause.HasToken(INNER) ? "NATURAL INNER JOIN" : "NATURAL JOIN";
+                        node.IsNatural = true;
+                    }
+
+                    node.Right.Value = VisitTableReference(crossOrNatrualInnerJoinClause.tableReference());
+                    break;
+
+                default:
+                    throw new NotSupportedException();
+            }
+
+            return node;
+        }
+
+        public static OracleJoinedTableNode VisitOuterJoinClause(IToken leftToken, OuterJoinClauseContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static OracleJoinedTableNode VisitCrossOuterApplyClause(IToken leftToken, CrossOuterApplyClauseContext context)
+        {
+            throw new NotImplementedException();
         }
 
         public static QsiTableNode VisitInlineAnalyticView(InlineAnalyticViewContext context)

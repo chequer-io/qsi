@@ -7,15 +7,15 @@ namespace Qsi.Oracle.Tree
 {
     public class OracleAnalyticFunctionExpressionNode : QsiExpressionNode
     {
-        public QsiTreeNodeProperty<QsiInvokeExpressionNode> Function { get; set; }
+        public QsiTreeNodeProperty<QsiInvokeExpressionNode> Function { get; }
 
         public QsiQualifiedIdentifier WindowName { get; set; }
 
-        public QsiTreeNodeProperty<OraclePartitionExpressionNode> Partition { get; set; }
+        public QsiTreeNodeProperty<OraclePartitionExpressionNode> Partition { get; }
 
-        public QsiTreeNodeProperty<OracleMultipleOrderExpressionNode> Order { get; set; }
+        public QsiTreeNodeProperty<OracleMultipleOrderExpressionNode> Order { get; }
 
-        public QsiTreeNodeProperty<QsiExpressionNode> Windowing { get; set; }
+        public QsiTreeNodeProperty<QsiExpressionNode> Windowing { get; }
 
         public override IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
 
