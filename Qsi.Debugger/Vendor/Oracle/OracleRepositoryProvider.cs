@@ -12,7 +12,7 @@ namespace Qsi.Debugger.Vendor.Oracle
             {
                 1 => new QsiQualifiedIdentifier(
                     new QsiIdentifier("xe", false),
-                    new QsiIdentifier("system", false),
+                    new QsiIdentifier("SYSTEM", false),
                     identifier[0]
                 ),
                 2 => new QsiQualifiedIdentifier(
@@ -31,23 +31,39 @@ namespace Qsi.Debugger.Vendor.Oracle
 
         protected override QsiTableStructure LookupTable(QsiQualifiedIdentifier identifier)
         {
-            var tableName = IdentifierUtility.Unescape(identifier[^1].Value);
+            var tableIdentifier = identifier[^1];
+            var schemaIdentifier = identifier.Level >= 2 ? identifier[^2] : null;
+
+            var tableName = tableIdentifier.IsEscaped ? IdentifierUtility.Unescape(tableIdentifier.Value) : tableIdentifier.Value.ToUpper();
+
+            if (schemaIdentifier != null)
+            {
+                var schemaName = schemaIdentifier.IsEscaped ? IdentifierUtility.Unescape(schemaIdentifier.Value) : schemaIdentifier.Value.ToUpper();
+
+                if (schemaName != "SYSTEM")
+                    return null;
+            }
 
             switch (tableName)
             {
-                case "actor":
-                    var actor = CreateTable("xe", "system", "actor");
+                case "DUAL":
+                    var dual = CreateTable("xe", "SYSTEM", "DUAL");
+                    AddColumns(dual, "dummy");
+                    return dual;
+
+                case "ACTOR":
+                    var actor = CreateTable("xe", "SYSTEM", "ACTOR");
                     AddColumns(actor, "actor_id", "first_name", "last_name", "last_update");
                     return actor;
 
-                case "actor_view":
-                    var actorView = CreateTable("xe", "system", "actor_view");
+                case "ACTOR_VIEW":
+                    var actorView = CreateTable("xe", "SYSTEM", "ACTOR_VIEW");
                     actorView.Type = QsiTableType.View;
                     AddColumns(actorView, "actor_id", "first_name", "last_name", "last_update", "first_name + last_name");
                     return actorView;
 
-                case "actor_view2":
-                    var actorView2 = CreateTable("xe", "system", "actor_view2");
+                case "ACTOR_VIEW2":
+                    var actorView2 = CreateTable("xe", "SYSTEM", "ACTOR_VIEW2");
                     actorView2.Type = QsiTableType.View;
                     AddColumns(actorView2, "actor_id", "first_name", "last_name", "last_update");
                     return actorView2;
