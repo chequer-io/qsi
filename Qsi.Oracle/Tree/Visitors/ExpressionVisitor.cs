@@ -938,7 +938,23 @@ namespace Qsi.Oracle.Tree.Visitors
 
         public static QsiInvokeExpressionNode VisitBinToNumFunction(BinToNumFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.BIN_TO_NUM().GetText());
+
+            node.Parameters.Add(VisitExpressionList(context.expressionList()));
+
+            node.Parameters.Add(VisitInsertIntoClause(context.insertIntoClause()));
+
+            return node;
+        }
+
+        public static QsiExpressionNode VisitInsertIntoClause(InsertIntoClauseContext context)
+        {
+            var node = OracleTree.CreateWithSpan<QsiTableExpressionNode>(context);
+
+            node.Table.Value = TableVisitor.VisitDmlTableExpressionClause(context.dmlTableExpressionClause());
+
+            return node;
         }
 
         public static QsiInvokeExpressionNode VisitFirstFunction(FirstFunctionContext context)
@@ -1629,6 +1645,32 @@ namespace Qsi.Oracle.Tree.Visitors
             var node = OracleTree.CreateWithSpan<OraclePartitionExpressionNode>(context);
 
             node.Elements.AddRange(context.queryPartitionExpressions().expr().Select(VisitExpr));
+
+            return node;
+        }
+
+        public static OraclePartitionExpressionNode VisitPartitionExtensionClause(PartitionExtensionClauseContext context)
+        {
+            var node = OracleTree.CreateWithSpan<OraclePartitionExpressionNode>(context);
+
+            node.IsSubpartition = context.HasToken(SUBPARTITION);
+
+            if (node.IsSubpartition)
+            {
+                node.Identifier = IdentifierVisitor.CreateQualifiedIdentifier(context.subpartition().identifier());
+
+                node.Elements.AddRange(
+                    context.subpartitionKeyValue().Select(c => VisitExpr(c.expr())
+                    ));
+            }
+            else
+            {
+                node.Identifier = IdentifierVisitor.CreateQualifiedIdentifier(context.partition().identifier());
+
+                node.Elements.AddRange(
+                    context.partitionKeyValue().Select(c => VisitExpr(c.expr())
+                    ));
+            }
 
             return node;
         }

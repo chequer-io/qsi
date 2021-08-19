@@ -7797,14 +7797,14 @@ orderByItem
     ;
 
 dmlTableExpressionClause
-    : (table ('.' schema)? (partitionExtensionClause | '@' dblink)?
-    | (view | materializedView) ('@' dblink)?)
+    : ( schema '.' )? table ( partitionExtensionClause )?
+    | ( view | materializedView )
     | '(' subquery subqueryRestrictionClause? ')'
     | tableCollectionExpression
     ;
 
 returningClause
-    : (RETURN | RETURNING) expr (',' expr)* INTO dataItem (',' dataItem)*
+    : (RETURN | RETURNING) expressionList INTO dataItem (',' dataItem)*
     ;
 
 dataItem
@@ -9448,7 +9448,7 @@ avgFunction
     ;
 
 binToNumFunction
-    : BIN_TO_NUM '(' expr (',' expr)* ')' insertIntoClause
+    : BIN_TO_NUM '(' expressionList ')' insertIntoClause
     ;
 
 bitAndAggFunction

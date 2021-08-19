@@ -348,6 +348,29 @@ namespace Qsi.Oracle.Tree.Visitors
             };
         }
 
+        public static QsiTableNode VisitDmlTableExpressionClause(DmlTableExpressionClauseContext context)
+        {
+            var node = new OracleTableReferenceNode();
+
+            if (context.schema() is not null)
+                node.Identifier = IdentifierVisitor.CreateQualifiedIdentifier(context.schema().identifier(), context.table().identifier());
+            else if (context.table() is not null)
+                node.Identifier = IdentifierVisitor.CreateQualifiedIdentifier(context.table().identifier());
+            else if (context.view() is not null)
+                node.Identifier = IdentifierVisitor.CreateQualifiedIdentifier(context.view().identifier());
+            else if (context.materializedView() is not null)
+                node.Identifier = IdentifierVisitor.CreateQualifiedIdentifier(context.materializedView().identifier());
+
+            // TODO: subquery, tableCollection
+
+            if (context.partitionExtensionClause() is not null)
+            {
+                node.Partition.Value = ExpressionVisitor.VisitPartitionExtensionClause(context.partitionExtensionClause());
+            }
+
+            return node;
+        }
+
         public static QsiTableNode VisitObjectPathTableExpression(ObjectPathTableExpressionContext context)
         {
             var reference = new QsiTableReferenceNode
