@@ -10766,7 +10766,7 @@ alias
     ;
 
 tAlias // table alias
-    : identifier
+    : {checkTAlias()}? identifier
     ;
 
 cAlias // column alias
