@@ -2417,6 +2417,8 @@ intoClause
 
 createAnalyticView
     : CREATE (OR REPLACE)? (FORCE | NOFORCE)? ANALYTIC VIEW
+      // Oracle 12.2
+      (schema '.')? 
       analyticViewName=identifier
       sharingClause?
       classificationClause*
@@ -9162,10 +9164,10 @@ groupComparisonCondition
 
 expr
     : '(' expr ')'                                                                          #parenthesisExpr
-    | op=( '+' | '-' | PRIOR ) expr                                                         #signExpr
     | TIMESTAMP expr                                                                        #timestampExpr
-    | <assoc=right>l=expr op=( '*' | '/' | '+' | '-' | '||') r=expr                         #binaryExpr
-    | l=expr op=COLLATE r=collationName                                                     #collateExpr
+    | op=( '+' | '-' | PRIOR ) expr                                                         #signExpr // compound
+    | <assoc=right>l=expr op=( '*' | '/' | '+' | '-' | '||') r=expr                         #binaryExpr // compound
+    | l=expr op=COLLATE r=collationName                                                     #collateExpr // compound
     | functionExpression                                                                    #functionExpr
     | avMeasExpression                                                                      #calcMeasExpr
     | caseExpression                                                                        #caseExpr
@@ -9188,6 +9190,14 @@ expr
     | bindVariable                                                                          #bindVariableExpr
     | identifier MULTISET (EXCEPT | INTERSECT | UNION) (ALL | DISTINCT)? identifier         #multisetExceptExpr
     | identifier ('.' identifier)* '(' '+' ')'                                              #columnOuterJoinExpr
+    ;
+
+// compoundExpression use calcMeasExpression and expr.
+// but when use this rule in expr, manually left recursive error
+compoundExpression
+    : op=('+' | '-' | PRIOR) expr
+    | expr op=('*' | '/' | '+' | '-' | '||') expr
+    | expr COLLATE collationName
     ;
 
 datetimeExpression
@@ -9224,18 +9234,14 @@ simpleExpression
     | NULL
     ;
 
-//cursorExpression
-//    : CURSOR '(' subquery ')'
-//    ;
-
 calcMeasExpression
     : avMeasExpression
     | avSimpleExpression
     | caseExpression
-//    | compoundExpression
-//    | intervalExpression
+    | compoundExpression
+    | intervalExpression
     ;
-    
+
 analyticFunction
     : ( anyValueFunction
       | avgFunction
@@ -10391,7 +10397,7 @@ leadLagFunctionName
     ;
 
 leadLagClause
-    : HIERARCHY hierarchyRef OFFSET offsetExpr=expr ( WITHIN ( LEVEL | PARENT ) | ACROSS ANCESTOR AT LEVEL levelRef=identifier POSITION FROM ( BEGINNING | END ))
+    : HIERARCHY hierarchyRef OFFSET offsetExpr=expr ( WITHIN ( LEVEL | PARENT ) | ACROSS ANCESTOR AT LEVEL levelRef=identifier (POSITION FROM ( BEGINNING | END ))?)?
     ;
 
 hierarchyRef
@@ -10399,7 +10405,7 @@ hierarchyRef
     ;
 
 avWindowExpression
-    : functionExpression OVER ( avWindowClause )
+    : functionExpression OVER '(' avWindowClause ')'
     ;
 
 avWindowClause
@@ -10415,7 +10421,7 @@ followingBoundary
     ;
 
 shareOfExpression
-    : SHARE_OF ( calcMeasExpression  shareClause )
+    : SHARE_OF '(' calcMeasExpression shareClause ')'
     ;
 
 shareClause
@@ -10493,18 +10499,6 @@ hierFunctionName
 measureRef
     : ( MEASURES '.' )? measName=identifier
     ;
-
-//compoundExpression
-//    :
-//    ;
-
-//datetimeExpressionession
-//    :
-//    ;
-
-//intervalExpression
-//    :
-//    ;
 
 caseExpression
     : CASE (simpleCaseExpression | searchedCaseExpression) elseClause? END
