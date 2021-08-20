@@ -3,7 +3,7 @@ using Qsi.Tree;
 
 namespace Qsi.Oracle.Tree
 {
-    public sealed class OracleDerivedTableNode : QsiDerivedTableNode
+    public sealed class OracleDerivedTableNode : QsiDerivedTableNode, IOraclePartitionTableNode
     {
         public string Hint { get; set; }
 

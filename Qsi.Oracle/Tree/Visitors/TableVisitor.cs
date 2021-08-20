@@ -111,7 +111,7 @@ namespace Qsi.Oracle.Tree.Visitors
 
         public static QsiTableNode VisitParenthesisSubquery(ParenthesisSubqueryContext context)
         {
-            var node = OracleTree.CreateWithSpan<QsiDerivedTableNode>(context);
+            var node = OracleTree.CreateWithSpan<OracleDerivedTableNode>(context);
 
             node.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
             node.Source.Value = VisitSubquery(context.subquery());
@@ -129,7 +129,7 @@ namespace Qsi.Oracle.Tree.Visitors
             return node;
         }
 
-        public static QsiDerivedTableNode VisitQueryBlock(QueryBlockContext context)
+        public static OracleDerivedTableNode VisitQueryBlock(QueryBlockContext context)
         {
             var node = OracleTree.CreateWithSpan<OracleDerivedTableNode>(context);
             var withClause = context.withClause();
@@ -219,7 +219,7 @@ namespace Qsi.Oracle.Tree.Visitors
             return context switch
             {
                 TableOrJoinTableSourceContext tableOrJoinTableSource => VisitTableOrJoinTableSource(tableOrJoinTableSource),
-                InlineAnalyticViewTableSourceContext inlineAnalyticViewTableSource => throw new NotImplementedException(),
+                InlineAnalyticViewTableSourceContext => throw TreeHelper.NotSupportedFeature("Analytic View"),
                 _ => throw new InvalidOperationException()
             };
         }
@@ -234,7 +234,7 @@ namespace Qsi.Oracle.Tree.Visitors
                     ? context.tableReference().Start
                     : context.tableJoinClause(i - 1).Start;
 
-                var joinedNode = VisitTableJoinClause(leftToken, context.tableJoinClause(i));
+                var joinedNode = VisitTableJoinClause(node, leftToken, context.tableJoinClause(i));
                 joinedNode.Left.Value = node;
                 node = joinedNode;
             }
@@ -242,14 +242,14 @@ namespace Qsi.Oracle.Tree.Visitors
             return node;
         }
 
-        public static OracleJoinedTableNode VisitTableJoinClause(IToken leftToken, TableJoinClauseContext context)
+        public static OracleJoinedTableNode VisitTableJoinClause(QsiTableNode leftNode, IToken leftToken, TableJoinClauseContext context)
         {
             return context.children[0] switch
             {
                 InnerCrossJoinClauseContext innerCrossJoin => VisitInnerCrossJoinClause(leftToken, innerCrossJoin),
-                OuterJoinClauseContext outerJoin => VisitOuterJoinClause(leftToken, outerJoin),
+                OuterJoinClauseContext outerJoin => VisitOuterJoinClause(leftNode, leftToken, outerJoin),
                 CrossOuterApplyClauseContext crossOuterJoin => VisitCrossOuterApplyClause(leftToken, crossOuterJoin),
-                _ => throw new NotSupportedException()
+                _ => throw new InvalidOperationException()
             };
         }
 
@@ -263,8 +263,8 @@ namespace Qsi.Oracle.Tree.Visitors
                     node.JoinType = innerJoinClause.HasToken(INNER) ? "INNER JOIN" : "JOIN";
                     node.Right.Value = VisitTableReference(innerJoinClause.tableReference());
 
-                    // ON condition
-                    // USING (column..)
+                    // TODO: ON condition
+                    // TODO: USING (column..)
                     break;
 
                 case CrossOrNatrualInnerJoinClauseContext crossOrNatrualInnerJoinClause:
@@ -282,23 +282,48 @@ namespace Qsi.Oracle.Tree.Visitors
                     break;
 
                 default:
-                    throw new NotSupportedException();
+                    throw new InvalidOperationException();
             }
 
             return node;
         }
 
-        public static OracleJoinedTableNode VisitOuterJoinClause(IToken leftToken, OuterJoinClauseContext context)
+        public static OracleJoinedTableNode VisitOuterJoinClause(QsiTableNode leftNode, IToken leftToken, OuterJoinClauseContext context)
         {
-            throw new NotImplementedException();
+            var node = OracleTree.CreateWithSpan<OracleJoinedTableNode>(leftToken, context.Stop);
+
+            SetTableNodePartition(leftNode, context.leftQpc);
+
+            if (context.HasToken(NATURAL))
+                node.IsNatural = true;
+
+            node.JoinType = $"{(node.IsNatural ? "NATURAL" : "")} {string.Join(" ", context.outerJoinType().children.Select(c => c.GetText()))} JOIN";
+
+            var rightNode = VisitTableReference(context.tableReference());
+            SetTableNodePartition(rightNode, context.rightQpc);
+
+            node.Right.Value = rightNode;
+
+            // TODO: ON condition
+            // TODO: USING (column..)
+
+            return node;
+
+            static void SetTableNodePartition(QsiTableNode tableNode, QueryPartitionClauseContext queryPartitionClause)
+            {
+                if (queryPartitionClause == null)
+                    return;
+
+                var partitionNode = ExpressionVisitor.VisitQueryPartitionClause(queryPartitionClause);
+
+                if (tableNode is not IOraclePartitionTableNode partitionTableNode)
+                    throw new QsiException(QsiError.SyntaxError, "Invalid query partition clause");
+
+                partitionTableNode.Partition.Value = partitionNode;
+            }
         }
 
         public static OracleJoinedTableNode VisitCrossOuterApplyClause(IToken leftToken, CrossOuterApplyClauseContext context)
-        {
-            throw new NotImplementedException();
-        }
-
-        public static QsiTableNode VisitInlineAnalyticView(InlineAnalyticViewContext context)
         {
             throw new NotImplementedException();
         }
@@ -322,9 +347,9 @@ namespace Qsi.Oracle.Tree.Visitors
 
             if (context.tAlias() is not null)
             {
-                if (node is not QsiDerivedTableNode derivedTableNode)
+                if (node is not OracleDerivedTableNode derivedTableNode)
                 {
-                    derivedTableNode = OracleTree.CreateWithSpan<QsiDerivedTableNode>(context);
+                    derivedTableNode = OracleTree.CreateWithSpan<OracleDerivedTableNode>(context);
                     derivedTableNode.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
                     derivedTableNode.Source.Value = node;
                     node = derivedTableNode;
@@ -443,12 +468,12 @@ namespace Qsi.Oracle.Tree.Visitors
             return node;
         }
 
-        public static QsiDerivedTableNode VisitFactoringClause(FactoringClauseContext context)
+        public static OracleDerivedTableNode VisitFactoringClause(FactoringClauseContext context)
         {
             switch (context.children[0])
             {
                 case SubqueryFactoringClauseContext subqueryFactoringClause:
-                    var node = OracleTree.CreateWithSpan<QsiDerivedTableNode>(context);
+                    var node = OracleTree.CreateWithSpan<OracleDerivedTableNode>(context);
 
                     node.Alias.Value = new QsiAliasNode
                     {

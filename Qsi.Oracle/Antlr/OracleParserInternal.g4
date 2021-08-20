@@ -8122,9 +8122,9 @@ innerCrossJoinClause
     ;
 
 outerJoinClause
-    : queryPartitionClause?
+    : leftQpc=queryPartitionClause?
       NATURAL?
-      outerJoinType JOIN tableReference queryPartitionClause?
+      outerJoinType JOIN tableReference rightQpc=queryPartitionClause?
       (ON condition | USING '(' column (',' column)* ')')?
     ;
 
@@ -10734,7 +10734,7 @@ alias
     ;
 
 tAlias // table alias
-    : {checkTAlias()}? identifier
+    : {CheckTAlias()}? identifier
     ;
 
 cAlias // column alias

@@ -2,7 +2,7 @@
 
 namespace Qsi.Oracle.Tree
 {
-    public class OracleTableReferenceNode : QsiTableReferenceNode
+    public class OracleTableReferenceNode : QsiTableReferenceNode, IOraclePartitionTableNode
     {
         public QsiTreeNodeProperty<OraclePartitionExpressionNode> Partition { get; }
 
