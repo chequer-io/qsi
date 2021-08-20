@@ -5467,7 +5467,7 @@ exceptionsClause
     ;
 
 identityClause
-    : GENERATED (ALWAYS|BY DEFAULT (ON NULL)?)? AS IDENTITY ('(' identityOptions ')')?
+    : GENERATED (ALWAYS|BY DEFAULT (ON NULL)?)? AS IDENTITY ('(' identityOptions ')' | identityOptions)?
     ;
 
 identityOptions
