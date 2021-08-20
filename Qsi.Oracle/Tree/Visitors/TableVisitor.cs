@@ -344,8 +344,53 @@ namespace Qsi.Oracle.Tree.Visitors
             return context switch
             {
                 ObjectPathTableExpressionContext objectPathTableExpression => VisitObjectPathTableExpression(objectPathTableExpression),
+                SubqueryTableExpressionContext subqueryTableExpression => VisitSubqueryTableExpression(subqueryTableExpression),
+                FunctionTableExpressionContext _ => throw TreeHelper.NotSupportedFeature("Table function"),
+                QueryTableCollectionExpressionContext queryTableExpressionContext => VisitTableCollectionExpression(queryTableExpressionContext.tableCollectionExpression()),
                 _ => throw new NotImplementedException()
             };
+        }
+
+        public static QsiTableNode VisitObjectPathTableExpression(ObjectPathTableExpressionContext context)
+        {
+            var node = OracleTree.CreateWithSpan<OracleTableReferenceNode>(context);
+
+            node.Identifier = IdentifierVisitor.VisitFullObjectPath(context.fullObjectPath());
+
+            if (context.partitionExtensionClause() is not null)
+                node.Partition.Value = ExpressionVisitor.VisitPartitionExtensionClause(context.partitionExtensionClause());
+
+            if (context.hierarchiesClause() is not null)
+                node.Hierarchies.Value = ExpressionVisitor.VisitHierarchiesClause(context.hierarchiesClause());
+
+            if (context.modifiedExternalTable() is not null)
+                throw TreeHelper.NotSupportedFeature("External table");
+
+            // TODO: Impl sampleClause
+
+            return node;
+        }
+
+        public static QsiTableNode VisitSubqueryTableExpression(SubqueryTableExpressionContext context)
+        {
+            QsiTableNode node;
+
+            if (context.HasToken(LATERAL))
+            {
+                var lateralNode = OracleTree.CreateWithSpan<OracleLateralTableNode>(context);
+                lateralNode.Source.Value = VisitSubquery(context.subquery());
+                node = lateralNode;
+            }
+            else
+            {
+                var derivedTable = OracleTree.CreateWithSpan<OracleDerivedTableNode>(context);
+                derivedTable.Source.Value = VisitSubquery(context.subquery());
+                node = derivedTable;
+            }
+
+            // subqueryRestrictionClause ignored
+
+            return node;
         }
 
         public static QsiTableNode VisitDmlTableExpressionClause(DmlTableExpressionClauseContext context)
@@ -386,17 +431,9 @@ namespace Qsi.Oracle.Tree.Visitors
             // TODO: tableCollection
         }
 
-        public static QsiTableNode VisitObjectPathTableExpression(ObjectPathTableExpressionContext context)
+        public static QsiTableNode VisitTableCollectionExpression(TableCollectionExpressionContext context)
         {
-            var reference = new QsiTableReferenceNode
-            {
-                Identifier = IdentifierVisitor.VisitFullObjectPath(context.fullObjectPath())
-            };
-
-            // TODO: Impl partitionExtensionClause, hierarchiesClause, modifiedExternalTable
-            // TODO: Impl sampleClause
-
-            return reference;
+            throw TreeHelper.NotSupportedFeature("Nested table");
         }
 
         public static QsiTableDirectivesNode VisitWithClause(WithClauseContext context)

@@ -2120,6 +2120,25 @@ namespace Qsi.Oracle.Tree.Visitors
         }
         #endregion
 
+        public static OracleHierarchiesExpressionNode VisitHierarchiesClause(HierarchiesClauseContext context)
+        {
+            var node = OracleTree.CreateWithSpan<OracleHierarchiesExpressionNode>(context);
+            node.Identifiers.AddRange(VisitHierIds(context.hierIds()));
+
+            return node;
+        }
+
+        public static IEnumerable<QsiQualifiedIdentifier> VisitHierIds(HierIdsContext context)
+        {
+            foreach (var hierId in context.hierId())
+            {
+                if (hierId.HasToken(MEASURES))
+                    yield return new QsiQualifiedIdentifier(new QsiIdentifier("MEASURES", false));
+                else
+                    yield return IdentifierVisitor.CreateQualifiedIdentifier(hierId.identifier());
+            }
+        }
+
         public static OracleLimitExpressionNode VisitRowlimitingContexts(RowOffsetContext rowOffset, RowFetchOptionContext rowFetchOption)
         {
             OracleLimitExpressionNode node;

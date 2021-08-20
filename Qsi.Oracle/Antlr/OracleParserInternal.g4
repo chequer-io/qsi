@@ -8156,17 +8156,6 @@ queryTableExpression
     | tableCollectionExpression                                         #queryTableCollectionExpression
     // returning table function
     | functionExpression                                                #functionTableExpression
-//    : ( schema '.' )? ( table ( modifiedExternalTable | partitionExtensionClause | '@' dblink )?
-//                      | ( view | materializedView ) ( '@' dblink )?
-//                      | hierarchyName
-//                      | analyticViewName=identifier ( HIERARCHIES '(' ( ( attributeDimension '.' )? hierarchyName ( ',' ( attributeDimension '.' )? hierarchyName )* )? ')' )?
-//                      | inlineExternalTable
-//                      )
-//                      sampleClause?
-//    | LATERAL? '(' subquery subqueryRestrictionClause? ')'
-//    | tableCollectionExpression
-//    // returning table function
-//    | functionExpression
     ;
 
 modifiedExternalTable
@@ -8198,20 +8187,6 @@ fileNameWithDirectory
     : (directoryName ':')? stringLiteral
     | directoryName
     ;
-
-//modifiedExternalTable
-//    : EXTERNAL MODIFY '(' modifyExternalTableProperties ')'
-//    ;
-//
-//modifyExternalTableProperties
-//    : ( DEFAULT DIRECTORY directoryName )?
-//      ( LOCATION ( '(' ( directoryName ':' )? TK_SINGLE_QUOTED_STRING ( ',' ( directoryName ':' )? TK_SINGLE_QUOTED_STRING )* ')'
-//                 | ( directoryName ':' )? TK_SINGLE_QUOTED_STRING
-//                 )
-//      )?
-//      ( ACCESS PARAMETERS ( BADFILE | LOGFILE | DISCARDFILE ) filename )?
-//      ( REJECT LIMIT ( integer | UNLIMITED ) )?
-//    ;
 
 inlineExternalTable
     : EXTERNAL '(' '(' columnDefinition ( ',' columnDefinition )* ')' inlineExternalTableProperties ')'
