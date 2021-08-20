@@ -7797,10 +7797,9 @@ orderByItem
     ;
 
 dmlTableExpressionClause
-    : ( schema '.' )? table ( partitionExtensionClause )?
-    | ( view | materializedView )
-    | '(' subquery subqueryRestrictionClause? ')'
-    | tableCollectionExpression
+    : ( schema '.' )? table ( partitionExtensionClause )?   #dmlGeneralTableExpressionClause
+    | '(' subquery subqueryRestrictionClause? ')'           #dmlSubqueryExpressionClause
+    | tableCollectionExpression                             #dmlTableCollectionExpressionClause
     ;
 
 returningClause

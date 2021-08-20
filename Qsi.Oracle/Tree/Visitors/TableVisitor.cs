@@ -350,25 +350,40 @@ namespace Qsi.Oracle.Tree.Visitors
 
         public static QsiTableNode VisitDmlTableExpressionClause(DmlTableExpressionClauseContext context)
         {
-            var node = new OracleTableReferenceNode();
-
-            if (context.schema() is not null)
-                node.Identifier = IdentifierVisitor.CreateQualifiedIdentifier(context.schema().identifier(), context.table().identifier());
-            else if (context.table() is not null)
-                node.Identifier = IdentifierVisitor.CreateQualifiedIdentifier(context.table().identifier());
-            else if (context.view() is not null)
-                node.Identifier = IdentifierVisitor.CreateQualifiedIdentifier(context.view().identifier());
-            else if (context.materializedView() is not null)
-                node.Identifier = IdentifierVisitor.CreateQualifiedIdentifier(context.materializedView().identifier());
-
-            // TODO: subquery, tableCollection
-
-            if (context.partitionExtensionClause() is not null)
+            switch (context)
             {
-                node.Partition.Value = ExpressionVisitor.VisitPartitionExtensionClause(context.partitionExtensionClause());
+                case DmlGeneralTableExpressionClauseContext context1:
+                {
+                    var node = new OracleTableReferenceNode
+                    {
+                        Identifier = context1.schema() is not null
+                            ? IdentifierVisitor.CreateQualifiedIdentifier(context1.schema().identifier(), context1.table().identifier())
+                            : IdentifierVisitor.CreateQualifiedIdentifier(context1.table().identifier())
+                    };
+
+                    if (context1.partitionExtensionClause() is not null)
+                        node.Partition.Value = ExpressionVisitor.VisitPartitionExtensionClause(context1.partitionExtensionClause());
+
+                    return node;
+                }
+
+                case DmlSubqueryExpressionClauseContext context2:
+                {
+                    var node = OracleTree.CreateWithSpan<OracleDerivedTableNode>(context2);
+
+                    node.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+                    node.Source.Value = VisitSubquery(context2.subquery());
+
+                    // subqueryRestrictionClause ignored
+
+                    return node;
+                }
+
+                default:
+                    throw TreeHelper.NotSupportedTree(context);
             }
 
-            return node;
+            // TODO: tableCollection
         }
 
         public static QsiTableNode VisitObjectPathTableExpression(ObjectPathTableExpressionContext context)
