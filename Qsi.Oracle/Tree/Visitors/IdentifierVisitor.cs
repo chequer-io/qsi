@@ -80,5 +80,18 @@ namespace Qsi.Oracle.Tree.Visitors
                 yield return node;
             }
         }
+
+        public static QsiColumnNode VisitColumn(ColumnContext context)
+        {
+            var node = OracleTree.CreateWithSpan<QsiSequentialColumnNode>(context);
+            var identifier = CreateQualifiedIdentifier(context.identifier());
+
+            node.Alias.Value = new QsiAliasNode
+            {
+                Name = identifier[^1]
+            };
+
+            return node;
+        }
     }
 }

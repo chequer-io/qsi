@@ -9494,7 +9494,7 @@ clusterSetAnalyticFunction
     ;
 
 collectFunction
-    : COLLECT '(' (DISTINCT | UNIQUE)? column (ORDER BY expr)? ')'
+    : COLLECT '(' (DISTINCT | UNIQUE)? column orderByClause? ')'
     ;
 
 connectByRootFunction

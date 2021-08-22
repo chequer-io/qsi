@@ -1017,7 +1017,15 @@ namespace Qsi.Oracle.Tree.Visitors
 
         public static QsiInvokeExpressionNode VisitConnectByRootFunction(ConnectByRootFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.CONNECT_BY_ROOT().GetText());
+
+            var columnNode = OracleTree.CreateWithSpan<QsiColumnExpressionNode>(context);
+            columnNode.Column.Value = IdentifierVisitor.VisitColumn(context.column());
+
+            node.Parameters.Add(columnNode);
+
+            return node;
         }
 
         public static QsiInvokeExpressionNode VisitCorrelationFunction(CorrelationFunctionContext context)
