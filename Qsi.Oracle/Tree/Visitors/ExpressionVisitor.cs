@@ -1721,7 +1721,12 @@ namespace Qsi.Oracle.Tree.Visitors
 
         public static QsiExpressionNode VisitCursorExpr(CursorExprContext context)
         {
-            throw new NotImplementedException();
+            var node = OracleTree.CreateWithSpan<OracleTableExpressionNode>(context);
+            node.IsCursor = true;
+
+            node.Table.Value = TableVisitor.VisitSubquery(context.subquery());
+
+            return node;
         }
 
         public static QsiExpressionNode VisitIntervalExpr(IntervalExpressionContext context)
