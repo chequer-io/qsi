@@ -1782,7 +1782,11 @@ namespace Qsi.Oracle.Tree.Visitors
 
         public static QsiExpressionNode VisitScalarSubqueryExpr(ScalarSubqueryExprContext context)
         {
-            throw new NotImplementedException();
+            var node = OracleTree.CreateWithSpan<OracleTableExpressionNode>(context);
+
+            node.Table.Value = TableVisitor.VisitSubquery(context.subquery());
+
+            return node;
         }
 
         public static QsiExpressionNode VisitTypeConstructorExpr(TypeConstructorExpressionContext context)

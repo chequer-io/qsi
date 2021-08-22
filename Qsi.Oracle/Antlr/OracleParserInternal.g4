@@ -10541,7 +10541,7 @@ placeholderExpression
     ;
 
 typeConstructorExpression
-    : NEW ( schema '.' )? typeName '(' ( expr (',' expr )* )? ')'
+    : NEW? ( schema '.' )? typeName '(' expressionList? ')'
     ;
 
 simpleCaseExpression
