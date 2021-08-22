@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
 using Qsi.Data;
 using Qsi.Oracle.Common;
@@ -61,10 +62,7 @@ namespace Qsi.Oracle.Tree.Visitors
                             columnNode = qsiDerivedColumn;
                         }
 
-                        qsiDerivedColumn.Alias.Value = new QsiAliasNode
-                        {
-                            Name = IdentifierVisitor.VisitAlias(exprSelectListItem.alias())
-                        };
+                        qsiDerivedColumn.Alias.Value = IdentifierVisitor.VisitAlias(exprSelectListItem.alias());
                     }
 
                     return columnNode;
@@ -227,22 +225,7 @@ namespace Qsi.Oracle.Tree.Visitors
                 }
 
                 case FunctionNameContext functionNameContext:
-                {
-                    var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
-                    var functionName = IdentifierVisitor.CreateQualifiedIdentifier(functionNameContext.identifier());
-
-                    var functionExpressionNode = OracleTree.CreateWithSpan<QsiFunctionExpressionNode>(context);
-                    functionExpressionNode.Identifier = functionName;
-
-                    node.Member.Value = functionExpressionNode;
-
-                    IEnumerable<QsiExpressionNode> argumentList = VisitArgumentList(context.argumentList());
-
-                    if (argumentList is not null)
-                        node.Parameters.AddRange(argumentList);
-
-                    return node;
-                }
+                    return VisitCommonFunction(context, functionNameContext, context.argumentList());
 
                 case AnalyticFunctionContext analyticFunctionContext:
                 {
@@ -948,23 +931,38 @@ namespace Qsi.Oracle.Tree.Visitors
             return node;
         }
 
-        public static QsiExpressionNode VisitInsertIntoClause(InsertIntoClauseContext context)
+        public static OracleAggregateFunctionExpressionNode VisitFirstFunction(FirstFunctionContext context)
         {
-            var node = OracleTree.CreateWithSpan<QsiTableExpressionNode>(context);
+            var node = OracleTree.CreateWithSpan<OracleAggregateFunctionExpressionNode>(context);
+            node.Function.Value = VisitCommonFunction(context, context.functionName(), context.argumentList());
 
-            node.Table.Value = TableVisitor.VisitDmlTableExpressionClause(context.dmlTableExpressionClause());
+            if (context.orderByClause() is not null)
+                node.Order.Value = VisitOrderByClause(context.orderByClause());
+
+            if (context.queryPartitionClause() is not null)
+                node.Partition.Value = VisitQueryPartitionClause(context.queryPartitionClause());
 
             return node;
         }
 
-        public static QsiInvokeExpressionNode VisitFirstFunction(FirstFunctionContext context)
-        {
-            throw TreeHelper.NotSupportedTree(context);
-        }
-
         public static QsiInvokeExpressionNode VisitChrFunction(ChrFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+
+            node.Parameters.Add(VisitExpr(context.expr()));
+
+            if (context.USING() is not null)
+            {
+                var usingNode = OracleTree.CreateWithSpan<OracleNamedParameterExpressionNode>(context);
+                var fragment = TreeHelper.Fragment(context.USING().GetText(), context.NCHAR_CS().GetText());
+
+                usingNode.Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(fragment.Text, false));
+                usingNode.Expression.Value = fragment;
+
+                node.Parameters.Add(usingNode);
+            }
+
+            return node;
         }
 
         public static QsiInvokeExpressionNode VisitClusterDetailsFunction(ClusterDetailsFunctionContext context)
@@ -2229,6 +2227,50 @@ namespace Qsi.Oracle.Tree.Visitors
         {
             var node = OracleTree.CreateWithSpan<QsiTableExpressionNode>(context);
             node.Table.Value = TableVisitor.VisitSubquery(context);
+
+            return node;
+        }
+
+        public static QsiTableExpressionNode VisitInsertIntoClause(InsertIntoClauseContext context)
+        {
+            var node = OracleTree.CreateWithSpan<QsiTableExpressionNode>(context);
+
+            var tableNode = OracleTree.CreateWithSpan<QsiDerivedTableNode>(context);
+
+            tableNode.Source.Value = TableVisitor.VisitDmlTableExpressionClause(context.dmlTableExpressionClause());
+
+            if (context.tAlias() is not null)
+                tableNode.Alias.Value = IdentifierVisitor.VisitAlias(context.tAlias());
+
+            if (context.columnList() is null)
+            {
+                tableNode.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+            }
+            else
+            {
+                tableNode.Columns.Value = new QsiColumnsDeclarationNode();
+                tableNode.Columns.Value.Columns.AddRange(IdentifierVisitor.VisitColumnList(context.columnList()));
+            }
+
+            node.Table.Value = tableNode;
+
+            return node;
+        }
+
+        public static QsiInvokeExpressionNode VisitCommonFunction(ParserRuleContext context, FunctionNameContext functionNameContext, ArgumentListContext argumentListContext)
+        {
+            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            var functionName = IdentifierVisitor.CreateQualifiedIdentifier(functionNameContext.identifier());
+
+            var functionExpressionNode = OracleTree.CreateWithSpan<QsiFunctionExpressionNode>(context);
+            functionExpressionNode.Identifier = functionName;
+
+            node.Member.Value = functionExpressionNode;
+
+            IEnumerable<QsiExpressionNode> argumentList = VisitArgumentList(argumentListContext);
+
+            if (argumentList is not null)
+                node.Parameters.AddRange(argumentList);
 
             return node;
         }

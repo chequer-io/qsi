@@ -1964,7 +1964,7 @@ singleTableInsert
     ;
 
 insertIntoClause
-    : INTO dmlTableExpressionClause tAlias? ( '('column (',' column )* ')' )?
+    : INTO dmlTableExpressionClause tAlias? columnList?
     ;
 
 valuesClause
@@ -9596,7 +9596,7 @@ featureValueAnalyticFunction
     ;
 
 firstFunction
-    : functionCall KEEP '(' DENSE_RANK FIRST ORDER BY expr (DESC | ASC)? (NULLS (FIRST | LAST))? ')'
+    : functionName '(' argumentList? ')' KEEP '(' DENSE_RANK FIRST orderByClause ')'
       (OVER '(' queryPartitionClause? ')')?
     ;
 
@@ -10373,7 +10373,8 @@ miningAttributeClause
     ;
 
 miningAttributeClauseItem
-    : (schema '.')? table '.' '*' | expr (AS alias)?
+    : ( schema '.' )? table '.' '*'
+    | expr ( AS alias )?
     ;
 
 avMeasExpression

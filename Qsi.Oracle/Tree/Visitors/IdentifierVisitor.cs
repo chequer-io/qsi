@@ -44,9 +44,20 @@ namespace Qsi.Oracle.Tree.Visitors
             return VisitIdentifierFragment(context.identifierFragment());
         }
 
-        public static QsiIdentifier VisitAlias(AliasContext context)
+        public static QsiAliasNode VisitAlias(AliasContext context)
         {
-            return VisitIdentifier(context.identifier());
+            var node = OracleTree.CreateWithSpan<QsiAliasNode>(context);
+            node.Name = VisitIdentifier(context.identifier());
+
+            return node;
+        }
+
+        public static QsiAliasNode VisitAlias(TAliasContext context)
+        {
+            var node = OracleTree.CreateWithSpan<QsiAliasNode>(context);
+            node.Name = VisitIdentifier(context.identifier());
+
+            return node;
         }
 
         public static QsiQualifiedIdentifier CreateQualifiedIdentifier(params IdentifierContext[] identifiers)
