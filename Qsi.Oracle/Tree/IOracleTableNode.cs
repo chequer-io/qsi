@@ -2,8 +2,10 @@
 
 namespace Qsi.Oracle.Tree
 {
-    public interface IOraclePartitionTableNode
+    public interface IOracleTableNode
     {
+        bool IsOnly { get; set; }
+
         QsiTreeNodeProperty<OraclePartitionExpressionNode> Partition { get; }
     }
 }

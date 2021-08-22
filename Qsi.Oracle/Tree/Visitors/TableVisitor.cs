@@ -263,8 +263,19 @@ namespace Qsi.Oracle.Tree.Visitors
                     node.JoinType = innerJoinClause.HasToken(INNER) ? "INNER JOIN" : "JOIN";
                     node.Right.Value = VisitTableReference(innerJoinClause.tableReference());
 
-                    // TODO: ON condition
-                    // TODO: USING (column..)
+                    // USING (column..)
+                    if (innerJoinClause.HasToken(USING))
+                    {
+                        var pivotColumnsNode = OracleTree.CreateWithSpan<QsiColumnsDeclarationNode>(innerJoinClause.USING().Symbol, innerJoinClause.CLOSE_PAR_SYMBOL().Symbol);
+                        pivotColumnsNode.Columns.AddRange(innerJoinClause.column().Select(IdentifierVisitor.VisitColumn));
+                        node.PivotColumns.Value = pivotColumnsNode;
+                    }
+                    // ON condition
+                    else
+                    {
+                        node.OnCondition.Value = ExpressionVisitor.VisitCondition(innerJoinClause.condition());
+                    }
+
                     break;
 
                 case CrossOrNatrualInnerJoinClauseContext crossOrNatrualInnerJoinClause:
@@ -297,15 +308,25 @@ namespace Qsi.Oracle.Tree.Visitors
             if (context.HasToken(NATURAL))
                 node.IsNatural = true;
 
-            node.JoinType = $"{(node.IsNatural ? "NATURAL" : "")} {string.Join(" ", context.outerJoinType().children.Select(c => c.GetText()))} JOIN";
+            node.JoinType = $"{(node.IsNatural ? "NATURAL" : string.Empty)} {string.Join(" ", context.outerJoinType().children.Select(c => c.GetText()))} JOIN";
 
             var rightNode = VisitTableReference(context.tableReference());
             SetTableNodePartition(rightNode, context.rightQpc);
 
             node.Right.Value = rightNode;
 
-            // TODO: ON condition
-            // TODO: USING (column..)
+            // USING (column..)
+            if (context.HasToken(USING))
+            {
+                var pivotColumnsNode = OracleTree.CreateWithSpan<QsiColumnsDeclarationNode>(context.USING().Symbol, context.CLOSE_PAR_SYMBOL().Symbol);
+                pivotColumnsNode.Columns.AddRange(context.column().Select(IdentifierVisitor.VisitColumn));
+                node.PivotColumns.Value = pivotColumnsNode;
+            }
+            // ON condition
+            else if (context.HasToken(ON))
+            {
+                node.OnCondition.Value = ExpressionVisitor.VisitCondition(context.condition());
+            }
 
             return node;
 
@@ -316,7 +337,7 @@ namespace Qsi.Oracle.Tree.Visitors
 
                 var partitionNode = ExpressionVisitor.VisitQueryPartitionClause(queryPartitionClause);
 
-                if (tableNode is not IOraclePartitionTableNode partitionTableNode)
+                if (tableNode is not IOracleTableNode partitionTableNode)
                     throw new QsiException(QsiError.SyntaxError, "Invalid query partition clause");
 
                 partitionTableNode.Partition.Value = partitionNode;
@@ -325,7 +346,15 @@ namespace Qsi.Oracle.Tree.Visitors
 
         public static OracleJoinedTableNode VisitCrossOuterApplyClause(IToken leftToken, CrossOuterApplyClauseContext context)
         {
-            throw new NotImplementedException();
+            var node = OracleTree.CreateWithSpan<OracleJoinedTableNode>(leftToken, context.Stop);
+
+            node.JoinType = context.HasToken(CROSS) ? "CROSS APPLY" : "OUTER APPLY";
+
+            node.Right.Value = context.tableReference() is not null
+                ? VisitTableReference(context.tableReference())
+                : VisitCollectionExpression(context.collectionExpression());
+
+            return node;
         }
 
         public static QsiTableNode VisitTableReference(TableReferenceContext context)
@@ -340,17 +369,63 @@ namespace Qsi.Oracle.Tree.Visitors
         public static QsiTableNode VisitQueryTableReference(QueryTableReferenceContext context)
         {
             var node = VisitQueryTableExpression(context.queryTableExpression());
-            bool isOnly = context.HasToken(ONLY);
 
-            // TODO: Ignored flashbackQueryClause
-            // TODO: Ignored pivotClause, unpivotClause, rowPatternClause 
+            if (context.flashbackQueryClause() is not null)
+            {
+                if (node is not OracleDerivedTableNode derivedTableNode)
+                {
+                    derivedTableNode = OracleTree.CreateWithSpan<OracleDerivedTableNode>(context);
+                    derivedTableNode.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+                    derivedTableNode.Source.Value = node;
+                }
+
+                derivedTableNode.FlashbackQueryClause.Value = TreeHelper.Fragment(context.flashbackQueryClause().GetInputText());
+                node = derivedTableNode;
+            }
+
+            if (context.pivotClause() is not null)
+            {
+                if (node is not OracleDerivedTableNode derivedTableNode)
+                {
+                    derivedTableNode = OracleTree.CreateWithSpan<OracleDerivedTableNode>(context);
+                    derivedTableNode.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+                    derivedTableNode.Source.Value = node;
+                }
+
+                derivedTableNode.TableClauses.Value = TreeHelper.Fragment(context.pivotClause().GetInputText());
+                node = derivedTableNode;
+            }
+            else if (context.unpivotClause() is not null)
+            {
+                if (node is not OracleDerivedTableNode derivedTableNode)
+                {
+                    derivedTableNode = OracleTree.CreateWithSpan<OracleDerivedTableNode>(context);
+                    derivedTableNode.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+                    derivedTableNode.Source.Value = node;
+                }
+
+                derivedTableNode.TableClauses.Value = TreeHelper.Fragment(context.unpivotClause().GetInputText());
+                node = derivedTableNode;
+            }
+            else if (context.rowPatternClause() is not null)
+            {
+                if (node is not OracleDerivedTableNode derivedTableNode)
+                {
+                    derivedTableNode = OracleTree.CreateWithSpan<OracleDerivedTableNode>(context);
+                    derivedTableNode.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+                    derivedTableNode.Source.Value = node;
+                }
+
+                derivedTableNode.TableClauses.Value = TreeHelper.Fragment(context.rowPatternClause().GetInputText());
+                node = derivedTableNode;
+            }
 
             if (context.tAlias() is not null)
             {
                 if (node is not OracleDerivedTableNode derivedTableNode)
                 {
                     derivedTableNode = OracleTree.CreateWithSpan<OracleDerivedTableNode>(context);
-                    derivedTableNode.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+                    derivedTableNode.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
                     derivedTableNode.Source.Value = node;
                     node = derivedTableNode;
                 }
@@ -361,6 +436,9 @@ namespace Qsi.Oracle.Tree.Visitors
                 };
             }
 
+            if (node is IOracleTableNode oracleNode)
+                oracleNode.IsOnly = context.HasToken(ONLY);
+
             return node;
         }
 
@@ -370,9 +448,9 @@ namespace Qsi.Oracle.Tree.Visitors
             {
                 ObjectPathTableExpressionContext objectPathTableExpression => VisitObjectPathTableExpression(objectPathTableExpression),
                 SubqueryTableExpressionContext subqueryTableExpression => VisitSubqueryTableExpression(subqueryTableExpression),
-                FunctionTableExpressionContext _ => throw TreeHelper.NotSupportedFeature("Table function"),
                 QueryTableCollectionExpressionContext queryTableExpressionContext => VisitTableCollectionExpression(queryTableExpressionContext.tableCollectionExpression()),
-                _ => throw new NotImplementedException()
+                FunctionTableExpressionContext _ => throw TreeHelper.NotSupportedFeature("Table function"),
+                _ => throw new NotSupportedException()
             };
         }
 
@@ -391,7 +469,7 @@ namespace Qsi.Oracle.Tree.Visitors
             if (context.modifiedExternalTable() is not null)
                 throw TreeHelper.NotSupportedFeature("External table");
 
-            // TODO: Impl sampleClause
+            // Ignored sampleClause
 
             return node;
         }
@@ -449,14 +527,20 @@ namespace Qsi.Oracle.Tree.Visitors
                     return node;
                 }
 
+                case DmlTableCollectionExpressionClauseContext context3:
+                    return VisitTableCollectionExpression(context3.tableCollectionExpression());
+
                 default:
                     throw TreeHelper.NotSupportedTree(context);
             }
-
-            // TODO: tableCollection
         }
 
         public static QsiTableNode VisitTableCollectionExpression(TableCollectionExpressionContext context)
+        {
+            throw TreeHelper.NotSupportedFeature("Nested table");
+        }
+
+        public static QsiTableNode VisitCollectionExpression(CollectionExpressionContext context)
         {
             throw TreeHelper.NotSupportedFeature("Nested table");
         }
@@ -497,8 +581,8 @@ namespace Qsi.Oracle.Tree.Visitors
                     // ignored searchClause, cycleClause
                     return node;
 
-                case SubavFactoringClauseContext subavFactoringClause:
-                    break;
+                case SubavFactoringClauseContext:
+                    throw TreeHelper.NotSupportedFeature("Analytic View");
             }
 
             throw new NotSupportedException();

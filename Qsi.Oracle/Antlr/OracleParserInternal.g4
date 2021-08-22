@@ -4513,15 +4513,33 @@ dropIndex
     ;
 
 createView
-    : CREATE (OR REPLACE)? (NO? FORCE)? (EDITIONING | EDITIONABLE EDITIONING? | NONEDITIONABLE)? VIEW
-      (schema '.')? view (SHARING '=' (METADATA | DATA | EXTENDED DATA | NONE))?
+    : CREATE (OR REPLACE)? (NO? FORCE)? createViewEditionOption? VIEW
+      (schema '.')? view createViewSharingOption?
       ( '(' createViewConstraintItem (',' createViewConstraintItem)* ')'
       | objectViewClause
       | xmlTypeViewClause
       )?
-      (DEFAULT COLLATION collationName)?
-      (BEQUEATH (CURRENT_USER | DEFINER))?
-      AS subquery subqueryRestrictionClause? (CONTAINER_MAP | CONTAINERS_DEFAULT)?
+      defaultCollationOption? createViewBequeathOption?
+      AS subquery 
+      subqueryRestrictionClause? containerOption=(CONTAINER_MAP | CONTAINERS_DEFAULT)?
+    ;
+
+createViewBequeathOption
+    : BEQUEATH (CURRENT_USER | DEFINER)
+    ;
+
+defaultCollationOption
+    : DEFAULT COLLATION collationName
+    ;
+
+createViewEditionOption
+    : EDITIONING 
+    | EDITIONABLE EDITIONING? 
+    | NONEDITIONABLE
+    ;
+
+createViewSharingOption
+    : SHARING '=' (METADATA | DATA | EXTENDED DATA | NONE)
     ;
 
 alterView

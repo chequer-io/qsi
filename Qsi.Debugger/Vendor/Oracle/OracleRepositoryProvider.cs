@@ -59,7 +59,7 @@ namespace Qsi.Debugger.Vendor.Oracle
                 case "ACTOR_VIEW":
                     var actorView = CreateTable("xe", "SYSTEM", "ACTOR_VIEW");
                     actorView.Type = QsiTableType.View;
-                    AddColumns(actorView, "actor_id", "first_name", "last_name", "last_update", "first_name + last_name");
+                    AddColumns(actorView, "actor_id", "first_name", "last_name", "last_update", "first_name||last_name");
                     return actorView;
 
                 case "ACTOR_VIEW2":
@@ -74,7 +74,18 @@ namespace Qsi.Debugger.Vendor.Oracle
 
         protected override QsiScript LookupDefinition(QsiQualifiedIdentifier identifier, QsiTableType type)
         {
-            throw new NotImplementedException();
+            var name = IdentifierUtility.Unescape(identifier[^1].Value);
+
+            switch (name)
+            {
+                case "ACTOR_VIEW":
+                    return new QsiScript("CREATE VIEW actor_view AS (select actor_id, first_name, last_name, last_update, first_name || last_name from actor);", QsiScriptType.Create);
+
+                case "ACTOR_VIEW2":
+                    return new QsiScript("CREATE VIEW actor_view AS (select * from actor);", QsiScriptType.Create);
+            }
+
+            return null;
         }
 
         protected override QsiVariable LookupVariable(QsiQualifiedIdentifier identifier)

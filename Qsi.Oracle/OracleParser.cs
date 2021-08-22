@@ -40,6 +40,12 @@ namespace Qsi.Oracle
                 case SelectContext select:
                     return TableVisitor.VisitSelect(select);
 
+                case CreateContext create:
+                    return ActionVisitor.VisitCreate(create);
+
+                case UpdateContext update:
+                    return ActionVisitor.VisitUpdate(update);
+
                 default:
                     throw TreeHelper.NotSupportedTree(oracleStatement.children[0]);
             }
