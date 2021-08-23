@@ -10523,7 +10523,7 @@ caseExpression
     ;
 
 intervalExpression
-    : '(' expr '-' expr ')'
+    : '(' from=expr '-' to=expr ')'
       ( DAY ('(' leadingFieldPrecision=expr ')')? TO SECOND ('(' fractionalSecondPrecision=expr ')')?
       | YEAR ('(' leadingFieldPrecision=expr ')')? TO MONTH
       )
@@ -10562,11 +10562,11 @@ typeConstructorExpression
     ;
 
 simpleCaseExpression
-    : expr (WHEN comparisonExpr=expr THEN returnExpr=expr)+
+    : caseExpr=expr (WHEN comparisonExpr+=expr THEN returnExpr+=expr)+
     ;
 
 searchedCaseExpression
-    : (WHEN condition THEN returnExpr=expr)+
+    : (WHEN comparisonExpr+=condition THEN returnExpr+=expr)+
     ;
 
 elseClause
