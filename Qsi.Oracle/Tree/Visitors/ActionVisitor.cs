@@ -23,9 +23,48 @@ namespace Qsi.Oracle.Tree.Visitors
             }
         }
 
+        public static IQsiTreeNode VisitDelete(DeleteContext context)
+        {
+            var node = OracleTree.CreateWithSpan<OracleDataDeleteActionNode>(context);
+
+            if (context.hint() is not null)
+                node.Hint = context.hint().GetInputText();
+
+            var targetNode = TableVisitor.VisitDmlTableExpressionClause(context.dmlTableExpressionClause());
+
+            if (targetNode is not QsiTableReferenceNode referenceNode)
+                throw TreeHelper.NotSupportedFeature("Expression Target in Update");
+
+            if (context.whereClause() is not null)
+            {
+                var derivedTableNode = new OracleDerivedTableNode();
+
+                derivedTableNode.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+                derivedTableNode.Source.Value = referenceNode;
+                derivedTableNode.Where.Value = ExpressionVisitor.VisitWhereClause(context.whereClause());
+
+                node.Target.Value = derivedTableNode;
+            }
+            else
+            {
+                node.Target.Value = referenceNode;
+            }
+
+            if (node.Target.Value is IOracleTableNode oracleTableNode)
+                oracleTableNode.IsOnly = context.HasToken(ONLY);
+
+            // tAlias ignored
+            // returningClause, errorLoggingClause ignored
+
+            return node;
+        }
+
         public static IQsiTreeNode VisitUpdate(UpdateContext context)
         {
             var node = OracleTree.CreateWithSpan<OracleDataUpdateActionNode>(context);
+
+            if (context.hint() is not null)
+                node.Hint = context.hint().GetInputText();
 
             var targetNode = TableVisitor.VisitDmlTableExpressionClause(context.dmlTableExpressionClause());
 

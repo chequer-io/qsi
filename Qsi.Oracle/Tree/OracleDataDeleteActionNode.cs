@@ -2,7 +2,7 @@
 
 namespace Qsi.Oracle.Tree
 {
-    public sealed class OracleDataUpdateActionNode : QsiDataUpdateActionNode
+    public sealed class OracleDataDeleteActionNode : QsiDataDeleteActionNode
     {
         public string Hint { get; set; }
     }
