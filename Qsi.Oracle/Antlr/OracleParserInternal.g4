@@ -10523,7 +10523,7 @@ caseExpression
     ;
 
 intervalExpression
-    : '(' expr '-' expr ')'
+    : '(' from=expr '-' to=expr ')'
       ( DAY ('(' leadingFieldPrecision=expr ')')? TO SECOND ('(' fractionalSecondPrecision=expr ')')?
       | YEAR ('(' leadingFieldPrecision=expr ')')? TO MONTH
       )

@@ -1781,7 +1781,22 @@ namespace Qsi.Oracle.Tree.Visitors
 
         public static QsiExpressionNode VisitIntervalExpr(IntervalExpressionContext context)
         {
-            throw new NotImplementedException();
+            var node = OracleTree.CreateWithSpan<OracleIntervalExpressionNode>(context);
+
+            node.From.Value = VisitExpr(context.from);
+            node.To.Value = VisitExpr(context.to);
+
+            node.Cycle = context.HasToken(DAY)
+                ? OracleIntervalCycle.DayToSecond
+                : OracleIntervalCycle.YearToMonth;
+
+            if (context.leadingFieldPrecision is not null)
+                node.LeadingFieldPrecision.Value = VisitExpr(context.leadingFieldPrecision);
+
+            if (context.fractionalSecondPrecision is not null)
+                node.FractionalSecondPrecision.Value = VisitExpr(context.fractionalSecondPrecision);
+
+            return node;
         }
 
         public static QsiExpressionNode VisitModelExpr(ModelExpressionContext context)
