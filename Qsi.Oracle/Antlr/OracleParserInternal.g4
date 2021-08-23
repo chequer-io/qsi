@@ -9196,12 +9196,11 @@ expr
     | placeholderExpression                                                                 #placeholderExpr
     | '(' subquery ')'                                                                      #scalarSubqueryExpr
     | typeConstructorExpression                                                             #typeConstructorExpr
-    | expr AT ( LOCAL | TIME ZONE
-        ( SINGLE_QUOTE_SYMBOL ('+'|'-')? hh=expr ':' mi=expr SINGLE_QUOTE_SYMBOL
-        | DBTIMEZONE
+    | <assoc=right> l=expr AT ( LOCAL | TIME ZONE
+        ( DBTIMEZONE
         | SESSIONTIMEZONE
-        | timeZoneName=stringLiteral
-        | expr
+        | timeZoneNameOrFormat=stringLiteral
+        | timeZoneExpr=expr
         )
      )                                                                                      #datetimeExpr
     | simpleExpression                                                                      #simpleExpr
@@ -9219,14 +9218,14 @@ compoundExpression
     ;
 
 datetimeExpression
-    : expr AT ( LOCAL | TIME ZONE
-        ( SINGLE_QUOTE_SYMBOL ('+'|'-')? hh=expr ':' mi=expr SINGLE_QUOTE_SYMBOL
-        | DBTIMEZONE
-        | SESSIONTIMEZONE
-        | timeZoneName=stringLiteral
-        | expr
-        )
-     )
+    : <assoc=right> l=expr AT ( LOCAL 
+              | TIME ZONE
+                  ( DBTIMEZONE
+                  | SESSIONTIMEZONE
+                  | timeZoneNameOrFormat=stringLiteral
+                  | timeZoneExpr=expr
+                  )
+             )
     ;
 
 bindVariable

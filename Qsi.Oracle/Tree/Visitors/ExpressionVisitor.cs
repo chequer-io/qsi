@@ -952,15 +952,7 @@ namespace Qsi.Oracle.Tree.Visitors
             node.Parameters.Add(VisitExpr(context.expr()));
 
             if (context.USING() is not null)
-            {
-                var usingNode = OracleTree.CreateWithSpan<OracleNamedParameterExpressionNode>(context);
-                var fragment = TreeHelper.Fragment(context.USING().GetText(), context.NCHAR_CS().GetText());
-
-                usingNode.Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(fragment.Text, false));
-                usingNode.Expression.Value = fragment;
-
-                node.Parameters.Add(usingNode);
-            }
+                node.Parameters.Add(TreeHelper.Fragment(context.USING().GetText(), context.NCHAR_CS().GetText()));
 
             return node;
         }
@@ -1804,7 +1796,21 @@ namespace Qsi.Oracle.Tree.Visitors
 
         public static QsiExpressionNode VisitDatetimeExpr(DatetimeExprContext context)
         {
-            throw new NotImplementedException();
+            var node = OracleTree.CreateWithSpan<OracleDatetimeExpressionNode>(context);
+            node.Expression.Value = VisitExpr(context.l);
+
+            if (context.HasToken(LOCAL))
+                node.TimeZone.Value = TreeHelper.Fragment(context.LOCAL().GetText());
+            else if (context.HasToken(DBTIMEZONE))
+                node.TimeZone.Value = TreeHelper.Fragment(context.TIME().GetText(), context.ZONE().GetText(), context.DBTIMEZONE().GetText());
+            else if (context.HasToken(SESSIONTIMEZONE))
+                node.TimeZone.Value = TreeHelper.Fragment(context.TIME().GetText(), context.ZONE().GetText(), context.SESSIONTIMEZONE().GetText());
+            else if (context.timeZoneNameOrFormat is not null)
+                node.TimeZone.Value = TreeHelper.Fragment(context.TIME().GetText(), context.ZONE().GetText(), context.timeZoneNameOrFormat.GetInputText());
+            else
+                node.TimeZone.Value = VisitExpr(context.timeZoneExpr);
+
+            return node;
         }
 
         public static QsiLiteralExpressionNode VisitSimpleExpr(SimpleExpressionContext context)
