@@ -39,7 +39,7 @@ namespace Qsi.Oracle
 
         public override IEnumerable<QsiAnalyzerBase> CreateAnalyzers(QsiEngine engine)
         {
-            yield return new QsiActionAnalyzer(engine);
+            yield return new OracleActionAnalyzer(engine);
             yield return new OracleTableAnalyzer(engine);
         }
     }

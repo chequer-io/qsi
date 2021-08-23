@@ -2306,7 +2306,7 @@ namespace Qsi.Oracle.Tree.Visitors
             return node;
         }
 
-        public static IEnumerable<QsiSetColumnExpressionNode> VisitUpdateSetClause(UpdateSetClauseContext context)
+        public static IEnumerable<OracleSetValueExpressionNode> VisitUpdateSetClause(UpdateSetClauseContext context)
         {
             if (context.HasToken(VALUE))
                 throw TreeHelper.NotSupportedFeature("Update Object Table");
@@ -2314,13 +2314,22 @@ namespace Qsi.Oracle.Tree.Visitors
             return context.updateSetSubstituteClause().Select(VisitUpdateSetSubstituteClause);
         }
 
-        public static QsiSetColumnExpressionNode VisitUpdateSetSubstituteClause(UpdateSetSubstituteClauseContext context)
+        public static OracleSetValueExpressionNode VisitUpdateSetSubstituteClause(UpdateSetSubstituteClauseContext context)
         {
+            var oracleNode = OracleTree.CreateWithSpan<OracleSetValueExpressionNode>(context);
+
             switch (context)
             {
                 case MultipleUpdateSetSubstituteClauseContext multipleUpdateSetContext:
-                    // TODO: Can implement?
-                    throw TreeHelper.NotSupportedFeature("Update Multiple Column Target");
+                {
+                    var node = OracleTree.CreateWithSpan<OracleSetColumnsExpressionNode>(context);
+
+                    node.Targets = multipleUpdateSetContext.column().Select(c => IdentifierVisitor.CreateQualifiedIdentifier(c.identifier())).ToArray();
+                    node.Value.Value = TableVisitor.VisitSubquery(multipleUpdateSetContext.subquery());
+
+                    oracleNode.SetValueFromTable.Value = node;
+                    break;
+                }
 
                 case SingleUpdateSetSubstituteClauseContext singleUpdateSetContext:
                 {
@@ -2335,12 +2344,15 @@ namespace Qsi.Oracle.Tree.Visitors
                     else
                         node.Value.Value = TreeHelper.CreateDefaultLiteral();
 
-                    return node;
+                    oracleNode.SetValue.Value = node;
+                    break;
                 }
 
                 default:
                     throw TreeHelper.NotSupportedTree(context);
             }
+
+            return oracleNode;
         }
     }
 }

@@ -89,7 +89,7 @@ namespace Qsi.Oracle.Tree.Visitors
             if (node.Target.Value is IOracleTableNode oracleTableNode)
                 oracleTableNode.IsOnly = context.HasToken(ONLY);
 
-            node.SetValues.AddRange(ExpressionVisitor.VisitUpdateSetClause(context.updateSetClause()));
+            node.SetValueExpressions.AddRange(ExpressionVisitor.VisitUpdateSetClause(context.updateSetClause()));
 
             // tAlias ignored
             // returningClause, errorLoggingClause ignored
