@@ -1509,7 +1509,18 @@ namespace Qsi.Oracle.Tree.Visitors
 
         public static QsiInvokeExpressionNode VisitAvgFunction(AvgFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+
+            node.Member.Value = TreeHelper.CreateFunction(context.AVG().GetText());
+
+            if (context.HasToken(DISTINCT))
+                node.QueryBehavior = OracleQueryBehavior.Distinct;
+            else if (context.HasToken(ALL))
+                node.QueryBehavior = OracleQueryBehavior.All;
+
+            node.Parameters.Add(VisitExpr(context.expr()));
+
+            return node;
         }
 
         public static QsiInvokeExpressionNode VisitBitAndAggFunction(BitAndAggFunctionContext context)
@@ -1708,7 +1719,54 @@ namespace Qsi.Oracle.Tree.Visitors
 
         public static QsiExpressionNode VisitCaseExpr(CaseExpressionContext context)
         {
-            throw new NotImplementedException();
+            QsiExpressionNode valueNode = null;
+            QsiExpressionNode[] whenNodes;
+            QsiExpressionNode[] thenNodes;
+            QsiExpressionNode elseNode = null;
+
+            switch (context.children[1])
+            {
+                case SimpleCaseExpressionContext simpleCaseExpression:
+                    valueNode = VisitExpr(simpleCaseExpression.caseExpr);
+                    whenNodes = simpleCaseExpression._comparisonExpr.Select(VisitExpr).ToArray();
+                    thenNodes = simpleCaseExpression._returnExpr.Select(VisitExpr).ToArray();
+
+                    break;
+
+                case SearchedCaseExpressionContext searchCaseExpression:
+                    whenNodes = searchCaseExpression._comparisonExpr.Select(VisitCondition).ToArray();
+                    thenNodes = searchCaseExpression._returnExpr.Select(VisitExpr).ToArray();
+
+                    break;
+
+                default:
+                    throw TreeHelper.NotSupportedTree(context.children[1]);
+            }
+
+            if (context.elseClause() is not null)
+                elseNode = VisitExpr(context.elseClause().elseExpr);
+
+            var node = OracleTree.CreateWithSpan<QsiSwitchExpressionNode>(context);
+
+            if (valueNode is not null)
+                node.Value.SetValue(valueNode);
+
+            for (int i = 0; i < whenNodes.Length; i++)
+            {
+                var caseNode = new QsiSwitchCaseExpressionNode();
+                caseNode.Condition.SetValue(whenNodes[i]);
+                caseNode.Consequent.SetValue(thenNodes[i]);
+                node.Cases.Add(caseNode);
+            }
+
+            if (elseNode is not null)
+            {
+                var caseNode = new QsiSwitchCaseExpressionNode();
+                caseNode.Consequent.SetValue(elseNode);
+                node.Cases.Add(caseNode);
+            }
+
+            return node;
         }
 
         public static QsiExpressionNode VisitCursorExpr(CursorExprContext context)
