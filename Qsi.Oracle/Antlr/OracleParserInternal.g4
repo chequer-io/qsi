@@ -9545,7 +9545,7 @@ cubeTableFunction
     ;
 
 cumeDistFunction
-    : CUME_DIST '(' expr (',' expr)* ')' WITHIN GROUP '(' ORDER BY cumeDistItem (',' cumeDistItem)* ')'
+    : CUME_DIST '(' expr (',' expr)* ')' WITHIN GROUP '(' orderByClause ')'
     ;
 
 cumeDistAnalyticFunction
@@ -9566,7 +9566,7 @@ dbTimeZoneFunction
 
 denseRankAggregateFunction
     : DENSE_RANK '(' expr (',' expr)* ')' WITHIN GROUP
-      '(' ORDER BY denseRankAggregateItem (',' denseRankAggregateItem)* ')'
+      '(' orderByClause ')'
     ;
 
 denseRankAnalyticFunction

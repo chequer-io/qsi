@@ -813,12 +813,7 @@ namespace Qsi.Oracle.Tree.Visitors
             node.Parameters.Add(VisitExpr(context.expr()));
 
             if (context.DETERMINISTIC() is not null)
-            {
-                var deterministicNode = OracleTree.CreateWithSpan<QsiExpressionFragmentNode>(context);
-                deterministicNode.Text = context.DETERMINISTIC().GetText();
-
-                node.Parameters.Add(deterministicNode);
-            }
+                node.Parameters.Add(TreeHelper.Fragment(context.DETERMINISTIC().GetText()));
 
             if (context.stringLiteral() is not null)
                 node.Parameters.Add(VisitStringLiteral(context.stringLiteral()));
@@ -834,12 +829,7 @@ namespace Qsi.Oracle.Tree.Visitors
             node.Parameters.Add(VisitExpr(context.expr(0)));
 
             if (context.DETERMINISTIC() is not null)
-            {
-                var deterministicNode = OracleTree.CreateWithSpan<QsiExpressionFragmentNode>(context);
-                deterministicNode.Text = context.DETERMINISTIC().GetText();
-
-                node.Parameters.Add(deterministicNode);
-            }
+                node.Parameters.Add(TreeHelper.Fragment(context.DETERMINISTIC().GetText()));
 
             if (context.stringLiteral() is not null)
                 node.Parameters.Add(VisitStringLiteral(context.stringLiteral()));
@@ -865,12 +855,7 @@ namespace Qsi.Oracle.Tree.Visitors
             node.Parameters.Add(VisitExpr(context.expr()));
 
             if (context.DETERMINISTIC() is not null)
-            {
-                var deterministicNode = OracleTree.CreateWithSpan<QsiExpressionFragmentNode>(context);
-                deterministicNode.Text = context.DETERMINISTIC().GetText();
-
-                node.Parameters.Add(deterministicNode);
-            }
+                node.Parameters.Add(TreeHelper.Fragment(context.DETERMINISTIC().GetText()));
 
             return node;
         }
@@ -1002,9 +987,29 @@ namespace Qsi.Oracle.Tree.Visitors
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static OracleInvokeExpressionNode VisitCollectFunction(CollectFunctionContext context)
+        public static QsiExpressionNode VisitCollectFunction(CollectFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleAggregateFunctionExpressionNode>(context);
+
+            var invokeNode = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            invokeNode.Member.Value = TreeHelper.CreateFunction(context.COLLECT().GetText());
+
+            if (context.HasToken(DISTINCT))
+                invokeNode.QueryBehavior = OracleQueryBehavior.Distinct;
+            else if (context.HasToken(UNIQUE))
+                invokeNode.QueryBehavior = OracleQueryBehavior.Unique;
+
+            var columnNode = OracleTree.CreateWithSpan<QsiColumnExpressionNode>(context);
+            columnNode.Column.Value = IdentifierVisitor.VisitColumn(context.column());
+
+            invokeNode.Parameters.Add(columnNode);
+
+            node.Function.Value = invokeNode;
+
+            if (context.orderByClause() is not null)
+                node.Order.Value = VisitOrderByClause(context.orderByClause());
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitConnectByRootFunction(ConnectByRootFunctionContext context)
@@ -1022,47 +1027,134 @@ namespace Qsi.Oracle.Tree.Visitors
 
         public static OracleInvokeExpressionNode VisitCorrelationFunction(CorrelationFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+
+            node.Member.Value = TreeHelper.CreateFunction(context.HasToken(CORR_K)
+                ? context.CORR_K().GetText()
+                : context.CORR_S().GetText());
+
+            foreach (var exprContext in context.expr())
+                node.Parameters.Add(VisitExpr(exprContext));
+
+            if (context.HasToken(COEFFICIENT))
+                node.Parameters.Add(TreeHelper.Fragment(context.COEFFICIENT().GetText()));
+            else if (context.HasToken(ONE_SIDED_SIG))
+                node.Parameters.Add(TreeHelper.Fragment(context.ONE_SIDED_SIG().GetText()));
+            else if (context.HasToken(ONE_SIDED_SIG_POS))
+                node.Parameters.Add(TreeHelper.Fragment(context.ONE_SIDED_SIG_POS().GetText()));
+            else if (context.HasToken(ONE_SIDED_SIG_NEG))
+                node.Parameters.Add(TreeHelper.Fragment(context.ONE_SIDED_SIG_NEG().GetText()));
+            else if (context.HasToken(TWO_SIDED_SIG))
+                node.Parameters.Add(TreeHelper.Fragment(context.TWO_SIDED_SIG().GetText()));
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitCubeTableFunction(CubeTableFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.CUBE_TABLE().GetText());
+
+            node.Parameters.Add(VisitStringLiteral(context.stringLiteral()));
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitCumeDistFunction(CumeDistFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleAggregateFunctionExpressionNode>(context);
+
+            var invokeNode = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            invokeNode.Member.Value = TreeHelper.CreateFunction(context.CUME_DIST().GetText());
+
+            foreach (var exprContext in context.expr())
+                invokeNode.Parameters.Add(VisitExpr(exprContext));
+
+            node.Function.Value = invokeNode;
+            node.Order.Value = VisitOrderByClause(context.orderByClause());
+
+            return invokeNode;
         }
 
         public static OracleInvokeExpressionNode VisitCumeDistAnalyticFunction(CumeDistAnalyticFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleAnalyticFunctionExpressionNode>(context);
+
+            var invokeNode = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            invokeNode.Member.Value = TreeHelper.CreateFunction(context.CUME_DIST().GetText());
+
+            node.Function.Value = invokeNode;
+
+            if (context.queryPartitionClause() is not null)
+                node.Partition.Value = VisitQueryPartitionClause(context.queryPartitionClause());
+
+            node.Order.Value = VisitOrderByClause(context.orderByClause());
+
+            return invokeNode;
         }
 
         public static OracleInvokeExpressionNode VisitCurrentDateFunction(CurrentDateFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.CURRENT_DATE().GetText());
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitCurrentTimestampFunction(CurrentTimestampFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.CURRENT_TIMESTAMP().GetText());
+
+            if (context.precision() is not null)
+                node.Parameters.Add(new QsiLiteralExpressionNode
+                {
+                    Type = QsiDataType.Decimal,
+                    Value = context.precision().GetInputText()
+                });
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitDbTimeZoneFunction(DbTimeZoneFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.DBTIMEZONE().GetText());
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitDenseRankAggregateFunction(DenseRankAggregateFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleAggregateFunctionExpressionNode>(context);
+
+            var invokeNode = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            invokeNode.Member.Value = TreeHelper.CreateFunction(context.DENSE_RANK().GetText());
+
+            foreach (var exprContext in context.expr())
+                invokeNode.Parameters.Add(VisitExpr(exprContext));
+
+            node.Function.Value = invokeNode;
+            node.Order.Value = VisitOrderByClause(context.orderByClause());
+
+            return invokeNode;
         }
 
         public static OracleInvokeExpressionNode VisitDenseRankAnalyticFunction(DenseRankAnalyticFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleAnalyticFunctionExpressionNode>(context);
+
+            var invokeNode = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            invokeNode.Member.Value = TreeHelper.CreateFunction(context.DENSE_RANK().GetText());
+
+            node.Function.Value = invokeNode;
+
+            if (context.queryPartitionClause() is not null)
+                node.Partition.Value = VisitQueryPartitionClause(context.queryPartitionClause());
+
+            node.Order.Value = VisitOrderByClause(context.orderByClause());
+
+            return invokeNode;
         }
 
         public static OracleInvokeExpressionNode VisitExtractDateTimeFunction(ExtractDateTimeFunctionContext context)
@@ -1842,7 +1934,10 @@ namespace Qsi.Oracle.Tree.Visitors
 
         public static QsiExpressionNode VisitPlaceholderExpr(PlaceholderExpressionContext context)
         {
-            throw new NotImplementedException();
+            var node = OracleTree.CreateWithSpan<QsiVariableExpressionNode>(context);
+            node.Identifier = IdentifierVisitor.CreateQualifiedIdentifier(context.namedBindVariable().identifier());
+            // skip indicator
+            return node;
         }
 
         public static QsiExpressionNode VisitScalarSubqueryExpr(ScalarSubqueryExprContext context)
