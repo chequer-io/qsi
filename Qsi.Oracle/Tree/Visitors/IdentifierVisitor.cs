@@ -81,22 +81,12 @@ namespace Qsi.Oracle.Tree.Visitors
             }
         }
 
-        public static QsiColumnNode VisitColumn(ColumnContext context)
+        public static QsiColumnReferenceNode VisitColumn(ColumnContext context)
         {
             var node = OracleTree.CreateWithSpan<QsiColumnReferenceNode>(context);
             node.Name = CreateQualifiedIdentifier(context.identifier());
 
             return node;
-
-            // var node = OracleTree.CreateWithSpan<QsiSequentialColumnNode>(context);
-            // var identifier = CreateQualifiedIdentifier(context.identifier());
-            //
-            // node.Alias.Value = new QsiAliasNode
-            // {
-            //     Name = identifier[^1]
-            // };
-            //
-            // return node;
         }
     }
 }
