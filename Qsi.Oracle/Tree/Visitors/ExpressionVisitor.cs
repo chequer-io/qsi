@@ -1791,7 +1791,15 @@ namespace Qsi.Oracle.Tree.Visitors
 
         public static QsiExpressionNode VisitTypeConstructorExpr(TypeConstructorExpressionContext context)
         {
-            throw new NotImplementedException();
+            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+
+            var typeConstructorNode = OracleTree.CreateWithSpan<QsiFunctionExpressionNode>(context);
+            typeConstructorNode.Identifier = IdentifierVisitor.CreateQualifiedIdentifier(context.typeName().identifier());
+
+            node.Member.Value = typeConstructorNode;
+            node.Parameters.Add(VisitExpressionList(context.expressionList()));
+
+            return node;
         }
 
         public static QsiExpressionNode VisitDatetimeExpr(DatetimeExprContext context)
