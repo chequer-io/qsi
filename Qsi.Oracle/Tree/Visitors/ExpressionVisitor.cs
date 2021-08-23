@@ -725,9 +725,9 @@ namespace Qsi.Oracle.Tree.Visitors
         }
 
         #region Known Functions
-        public static QsiInvokeExpressionNode VisitCastFunction(CastFunctionContext context)
+        public static OracleInvokeExpressionNode VisitCastFunction(CastFunctionContext context)
         {
-            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
             node.Member.Value = TreeHelper.CreateFunction(context.CAST().GetText());
 
             if (context.castExpr is not null)
@@ -782,15 +782,15 @@ namespace Qsi.Oracle.Tree.Visitors
             return node;
         }
 
-        public static QsiInvokeExpressionNode VisitApproxCountFunction(ApproxCountFunctionContext context)
+        public static OracleInvokeExpressionNode VisitApproxCountFunction(ApproxCountFunctionContext context)
         {
-            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
             node.Member.Value = TreeHelper.CreateFunction(context.APPROX_COUNT().GetText());
 
             if (context.HasToken(MULT_SYMBOL))
             {
-                var paramNode = OracleTree.CreateWithSpan<QsiFieldExpressionNode>(context);
-                paramNode.Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(context.MULT_SYMBOL().GetText(), false));
+                var paramNode = OracleTree.CreateWithSpan<QsiColumnExpressionNode>(context);
+                paramNode.Column.Value = OracleTree.CreateWithSpan<QsiAllColumnNode>(context);
 
                 node.Parameters.Add(paramNode);
             }
@@ -805,9 +805,9 @@ namespace Qsi.Oracle.Tree.Visitors
             return node;
         }
 
-        public static QsiInvokeExpressionNode VisitApproxMedianFunction(ApproxMedianFunctionContext context)
+        public static OracleInvokeExpressionNode VisitApproxMedianFunction(ApproxMedianFunctionContext context)
         {
-            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
             node.Member.Value = TreeHelper.CreateFunction(context.APPROX_MEDIAN().GetText());
 
             node.Parameters.Add(VisitExpr(context.expr()));
@@ -826,9 +826,9 @@ namespace Qsi.Oracle.Tree.Visitors
             return node;
         }
 
-        public static QsiInvokeExpressionNode VisitApproxPercentileFunction(ApproxPercentileFunctionContext context)
+        public static OracleInvokeExpressionNode VisitApproxPercentileFunction(ApproxPercentileFunctionContext context)
         {
-            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
             node.Member.Value = TreeHelper.CreateFunction(context.APPROX_PERCENTILE().GetText());
 
             node.Parameters.Add(VisitExpr(context.expr(0)));
@@ -857,9 +857,9 @@ namespace Qsi.Oracle.Tree.Visitors
             return node;
         }
 
-        public static QsiInvokeExpressionNode VisitApproxPercentileDetailFunction(ApproxPercentileDetailFunctionContext context)
+        public static OracleInvokeExpressionNode VisitApproxPercentileDetailFunction(ApproxPercentileDetailFunctionContext context)
         {
-            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
             node.Member.Value = TreeHelper.CreateFunction(context.APPROX_PERCENTILE_DETAIL().GetText());
 
             node.Parameters.Add(VisitExpr(context.expr()));
@@ -875,9 +875,9 @@ namespace Qsi.Oracle.Tree.Visitors
             return node;
         }
 
-        public static QsiInvokeExpressionNode VisitApproxRankFunction(ApproxRankFunctionContext context)
+        public static OracleInvokeExpressionNode VisitApproxRankFunction(ApproxRankFunctionContext context)
         {
-            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
             node.Member.Value = TreeHelper.CreateFunction(context.APPROX_RANK().GetText());
 
             node.Parameters.Add(VisitExpr(context.rankExpr));
@@ -896,15 +896,15 @@ namespace Qsi.Oracle.Tree.Visitors
             return node;
         }
 
-        public static QsiInvokeExpressionNode VisitApproxSumFunction(ApproxSumFunctionContext context)
+        public static OracleInvokeExpressionNode VisitApproxSumFunction(ApproxSumFunctionContext context)
         {
-            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
             node.Member.Value = TreeHelper.CreateFunction(context.APPROX_SUM().GetText());
 
             if (context.HasToken(MULT_SYMBOL))
             {
-                var paramNode = OracleTree.CreateWithSpan<QsiFieldExpressionNode>(context);
-                paramNode.Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(context.MULT_SYMBOL().GetText(), false));
+                var paramNode = OracleTree.CreateWithSpan<QsiColumnExpressionNode>(context);
+                paramNode.Column.Value = OracleTree.CreateWithSpan<QsiAllColumnNode>(context);
 
                 node.Parameters.Add(paramNode);
             }
@@ -919,9 +919,9 @@ namespace Qsi.Oracle.Tree.Visitors
             return node;
         }
 
-        public static QsiInvokeExpressionNode VisitBinToNumFunction(BinToNumFunctionContext context)
+        public static OracleInvokeExpressionNode VisitBinToNumFunction(BinToNumFunctionContext context)
         {
-            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
             node.Member.Value = TreeHelper.CreateFunction(context.BIN_TO_NUM().GetText());
 
             node.Parameters.Add(VisitExpressionList(context.expressionList()));
@@ -945,9 +945,9 @@ namespace Qsi.Oracle.Tree.Visitors
             return node;
         }
 
-        public static QsiInvokeExpressionNode VisitChrFunction(ChrFunctionContext context)
+        public static OracleInvokeExpressionNode VisitChrFunction(ChrFunctionContext context)
         {
-            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
 
             node.Parameters.Add(VisitExpr(context.expr()));
 
@@ -957,59 +957,59 @@ namespace Qsi.Oracle.Tree.Visitors
             return node;
         }
 
-        public static QsiInvokeExpressionNode VisitClusterDetailsFunction(ClusterDetailsFunctionContext context)
+        public static OracleInvokeExpressionNode VisitClusterDetailsFunction(ClusterDetailsFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitClusterDetailsAnalyticFunction(ClusterDetailsAnalyticFunctionContext context)
+        public static OracleInvokeExpressionNode VisitClusterDetailsAnalyticFunction(ClusterDetailsAnalyticFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitClusterDistanceFunction(ClusterDistanceFunctionContext context)
+        public static OracleInvokeExpressionNode VisitClusterDistanceFunction(ClusterDistanceFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitClusterIdFunction(ClusterIdFunctionContext context)
+        public static OracleInvokeExpressionNode VisitClusterIdFunction(ClusterIdFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitClusterIdAnalyticFunction(ClusterIdAnalyticFunctionContext context)
+        public static OracleInvokeExpressionNode VisitClusterIdAnalyticFunction(ClusterIdAnalyticFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitClusterProbabilityFunction(ClusterProbabilityFunctionContext context)
+        public static OracleInvokeExpressionNode VisitClusterProbabilityFunction(ClusterProbabilityFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitClusterProbAnalyticFunction(ClusterProbAnalyticFunctionContext context)
+        public static OracleInvokeExpressionNode VisitClusterProbAnalyticFunction(ClusterProbAnalyticFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitClusterSetFunction(ClusterSetFunctionContext context)
+        public static OracleInvokeExpressionNode VisitClusterSetFunction(ClusterSetFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitClusterSetAnalyticFunction(ClusterSetAnalyticFunctionContext context)
+        public static OracleInvokeExpressionNode VisitClusterSetAnalyticFunction(ClusterSetAnalyticFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitCollectFunction(CollectFunctionContext context)
+        public static OracleInvokeExpressionNode VisitCollectFunction(CollectFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitConnectByRootFunction(ConnectByRootFunctionContext context)
+        public static OracleInvokeExpressionNode VisitConnectByRootFunction(ConnectByRootFunctionContext context)
         {
-            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
             node.Member.Value = TreeHelper.CreateFunction(context.CONNECT_BY_ROOT().GetText());
 
             var columnNode = OracleTree.CreateWithSpan<QsiColumnExpressionNode>(context);
@@ -1020,494 +1020,494 @@ namespace Qsi.Oracle.Tree.Visitors
             return node;
         }
 
-        public static QsiInvokeExpressionNode VisitCorrelationFunction(CorrelationFunctionContext context)
+        public static OracleInvokeExpressionNode VisitCorrelationFunction(CorrelationFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitCubeTableFunction(CubeTableFunctionContext context)
+        public static OracleInvokeExpressionNode VisitCubeTableFunction(CubeTableFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitCumeDistFunction(CumeDistFunctionContext context)
+        public static OracleInvokeExpressionNode VisitCumeDistFunction(CumeDistFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitCumeDistAnalyticFunction(CumeDistAnalyticFunctionContext context)
+        public static OracleInvokeExpressionNode VisitCumeDistAnalyticFunction(CumeDistAnalyticFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitCurrentDateFunction(CurrentDateFunctionContext context)
+        public static OracleInvokeExpressionNode VisitCurrentDateFunction(CurrentDateFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitCurrentTimestampFunction(CurrentTimestampFunctionContext context)
+        public static OracleInvokeExpressionNode VisitCurrentTimestampFunction(CurrentTimestampFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitDbTimeZoneFunction(DbTimeZoneFunctionContext context)
+        public static OracleInvokeExpressionNode VisitDbTimeZoneFunction(DbTimeZoneFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitDenseRankAggregateFunction(DenseRankAggregateFunctionContext context)
+        public static OracleInvokeExpressionNode VisitDenseRankAggregateFunction(DenseRankAggregateFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitDenseRankAnalyticFunction(DenseRankAnalyticFunctionContext context)
+        public static OracleInvokeExpressionNode VisitDenseRankAnalyticFunction(DenseRankAnalyticFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitExtractDateTimeFunction(ExtractDateTimeFunctionContext context)
+        public static OracleInvokeExpressionNode VisitExtractDateTimeFunction(ExtractDateTimeFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitFeatureCompareFunction(FeatureCompareFunctionContext context)
+        public static OracleInvokeExpressionNode VisitFeatureCompareFunction(FeatureCompareFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitFeatureDetailsFunction(FeatureDetailsFunctionContext context)
+        public static OracleInvokeExpressionNode VisitFeatureDetailsFunction(FeatureDetailsFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitFeatureIdFunction(FeatureIdFunctionContext context)
+        public static OracleInvokeExpressionNode VisitFeatureIdFunction(FeatureIdFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitFeatureIdAnalyticFunction(FeatureIdAnalyticFunctionContext context)
+        public static OracleInvokeExpressionNode VisitFeatureIdAnalyticFunction(FeatureIdAnalyticFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitFeatureSetFunction(FeatureSetFunctionContext context)
+        public static OracleInvokeExpressionNode VisitFeatureSetFunction(FeatureSetFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitFeatureSetAnalyticFunction(FeatureSetAnalyticFunctionContext context)
+        public static OracleInvokeExpressionNode VisitFeatureSetAnalyticFunction(FeatureSetAnalyticFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitFeatureValueFunction(FeatureValueFunctionContext context)
+        public static OracleInvokeExpressionNode VisitFeatureValueFunction(FeatureValueFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitFeatureValueAnalyticFunction(FeatureValueAnalyticFunctionContext context)
+        public static OracleInvokeExpressionNode VisitFeatureValueAnalyticFunction(FeatureValueAnalyticFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitIterationNumberFunction(IterationNumberFunctionContext context)
+        public static OracleInvokeExpressionNode VisitIterationNumberFunction(IterationNumberFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitJsonArrayFunction(JsonArrayFunctionContext context)
+        public static OracleInvokeExpressionNode VisitJsonArrayFunction(JsonArrayFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitJsonArrayAggFunction(JsonArrayAggFunctionContext context)
+        public static OracleInvokeExpressionNode VisitJsonArrayAggFunction(JsonArrayAggFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitJsonMergePatchFunction(JsonMergePatchFunctionContext context)
+        public static OracleInvokeExpressionNode VisitJsonMergePatchFunction(JsonMergePatchFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitJsonObjectFunction(JsonObjectFunctionContext context)
+        public static OracleInvokeExpressionNode VisitJsonObjectFunction(JsonObjectFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitJsonObjectaggFunction(JsonObjectaggFunctionContext context)
+        public static OracleInvokeExpressionNode VisitJsonObjectaggFunction(JsonObjectaggFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitJsonQueryFunction(JsonQueryFunctionContext context)
+        public static OracleInvokeExpressionNode VisitJsonQueryFunction(JsonQueryFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitJsonScalarFunction(JsonScalarFunctionContext context)
+        public static OracleInvokeExpressionNode VisitJsonScalarFunction(JsonScalarFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitJsonSerializeFunction(JsonSerializeFunctionContext context)
+        public static OracleInvokeExpressionNode VisitJsonSerializeFunction(JsonSerializeFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitJsonTableFunction(JsonTableFunctionContext context)
+        public static OracleInvokeExpressionNode VisitJsonTableFunction(JsonTableFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitJsonTransformFunction(JsonTransformFunctionContext context)
+        public static OracleInvokeExpressionNode VisitJsonTransformFunction(JsonTransformFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitJsonValueFunction(JsonValueFunctionContext context)
+        public static OracleInvokeExpressionNode VisitJsonValueFunction(JsonValueFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitLagFunction(LagFunctionContext context)
+        public static OracleInvokeExpressionNode VisitLagFunction(LagFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitLastFunction(LastFunctionContext context)
+        public static OracleInvokeExpressionNode VisitLastFunction(LastFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitLeadFunction(LeadFunctionContext context)
+        public static OracleInvokeExpressionNode VisitLeadFunction(LeadFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitListaggFunction(ListaggFunctionContext context)
+        public static OracleInvokeExpressionNode VisitListaggFunction(ListaggFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitLocaltimestampFunction(LocaltimestampFunctionContext context)
+        public static OracleInvokeExpressionNode VisitLocaltimestampFunction(LocaltimestampFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitNtileFunction(NtileFunctionContext context)
+        public static OracleInvokeExpressionNode VisitNtileFunction(NtileFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitOraDmPartitionNameFunction(OraDmPartitionNameFunctionContext context)
+        public static OracleInvokeExpressionNode VisitOraDmPartitionNameFunction(OraDmPartitionNameFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitOraInvokingUserFunction(OraInvokingUserFunctionContext context)
+        public static OracleInvokeExpressionNode VisitOraInvokingUserFunction(OraInvokingUserFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitOraInvokingUserIdFunction(OraInvokingUserIdFunctionContext context)
+        public static OracleInvokeExpressionNode VisitOraInvokingUserIdFunction(OraInvokingUserIdFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitPercentRankAggregateFunction(PercentRankAggregateFunctionContext context)
+        public static OracleInvokeExpressionNode VisitPercentRankAggregateFunction(PercentRankAggregateFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitPercentRankAnalyticFunction(PercentRankAnalyticFunctionContext context)
+        public static OracleInvokeExpressionNode VisitPercentRankAnalyticFunction(PercentRankAnalyticFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitPercentileContFunction(PercentileContFunctionContext context)
+        public static OracleInvokeExpressionNode VisitPercentileContFunction(PercentileContFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitPercentileDiscFunction(PercentileDiscFunctionContext context)
+        public static OracleInvokeExpressionNode VisitPercentileDiscFunction(PercentileDiscFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitPredictionFunction(PredictionFunctionContext context)
+        public static OracleInvokeExpressionNode VisitPredictionFunction(PredictionFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitPredictionOrderedFunction(PredictionOrderedFunctionContext context)
+        public static OracleInvokeExpressionNode VisitPredictionOrderedFunction(PredictionOrderedFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitPredictionAnalyticFunction(PredictionAnalyticFunctionContext context)
+        public static OracleInvokeExpressionNode VisitPredictionAnalyticFunction(PredictionAnalyticFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitPredictionBoundsFunction(PredictionBoundsFunctionContext context)
+        public static OracleInvokeExpressionNode VisitPredictionBoundsFunction(PredictionBoundsFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitPredictionCostFunction(PredictionCostFunctionContext context)
+        public static OracleInvokeExpressionNode VisitPredictionCostFunction(PredictionCostFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitPredictionCostAnalyticFunction(PredictionCostAnalyticFunctionContext context)
+        public static OracleInvokeExpressionNode VisitPredictionCostAnalyticFunction(PredictionCostAnalyticFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitPredictionDetailsFunction(PredictionDetailsFunctionContext context)
+        public static OracleInvokeExpressionNode VisitPredictionDetailsFunction(PredictionDetailsFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitPredictionDetailsAnalyticFunction(PredictionDetailsAnalyticFunctionContext context)
+        public static OracleInvokeExpressionNode VisitPredictionDetailsAnalyticFunction(PredictionDetailsAnalyticFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitPredictionProbabilityFunction(PredictionProbabilityFunctionContext context)
+        public static OracleInvokeExpressionNode VisitPredictionProbabilityFunction(PredictionProbabilityFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitPredictionProbabilityOrderedFunction(PredictionProbabilityOrderedFunctionContext context)
+        public static OracleInvokeExpressionNode VisitPredictionProbabilityOrderedFunction(PredictionProbabilityOrderedFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitPredictionProbAnalyticFunction(PredictionProbAnalyticFunctionContext context)
+        public static OracleInvokeExpressionNode VisitPredictionProbAnalyticFunction(PredictionProbAnalyticFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitPredictionSetFunction(PredictionSetFunctionContext context)
+        public static OracleInvokeExpressionNode VisitPredictionSetFunction(PredictionSetFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitPredictionSetOrderedFunction(PredictionSetOrderedFunctionContext context)
+        public static OracleInvokeExpressionNode VisitPredictionSetOrderedFunction(PredictionSetOrderedFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitPredictionSetAnalyticFunction(PredictionSetAnalyticFunctionContext context)
+        public static OracleInvokeExpressionNode VisitPredictionSetAnalyticFunction(PredictionSetAnalyticFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitRankAggregateFunction(RankAggregateFunctionContext context)
+        public static OracleInvokeExpressionNode VisitRankAggregateFunction(RankAggregateFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitRankAnalyticFunction(RankAnalyticFunctionContext context)
+        public static OracleInvokeExpressionNode VisitRankAnalyticFunction(RankAnalyticFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitRatioToReportFunction(RatioToReportFunctionContext context)
+        public static OracleInvokeExpressionNode VisitRatioToReportFunction(RatioToReportFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitSessiontimezoneFunction(SessiontimezoneFunctionContext context)
+        public static OracleInvokeExpressionNode VisitSessiontimezoneFunction(SessiontimezoneFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitRowNumberFunction(RowNumberFunctionContext context)
+        public static OracleInvokeExpressionNode VisitRowNumberFunction(RowNumberFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitSkewnessPopFunction(SkewnessPopFunctionContext context)
+        public static OracleInvokeExpressionNode VisitSkewnessPopFunction(SkewnessPopFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitSkewnessSampFunction(SkewnessSampFunctionContext context)
+        public static OracleInvokeExpressionNode VisitSkewnessSampFunction(SkewnessSampFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitSysDburigenFunction(SysDburigenFunctionContext context)
+        public static OracleInvokeExpressionNode VisitSysDburigenFunction(SysDburigenFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitSysdateFunction(SysdateFunctionContext context)
+        public static OracleInvokeExpressionNode VisitSysdateFunction(SysdateFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitSystimestampFunction(SystimestampFunctionContext context)
+        public static OracleInvokeExpressionNode VisitSystimestampFunction(SystimestampFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitToBinaryDoubleFunction(ToBinaryDoubleFunctionContext context)
+        public static OracleInvokeExpressionNode VisitToBinaryDoubleFunction(ToBinaryDoubleFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitToBinaryFloatFunction(ToBinaryFloatFunctionContext context)
+        public static OracleInvokeExpressionNode VisitToBinaryFloatFunction(ToBinaryFloatFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitToDateFunction(ToDateFunctionContext context)
+        public static OracleInvokeExpressionNode VisitToDateFunction(ToDateFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitToDsintervalFunction(ToDsintervalFunctionContext context)
+        public static OracleInvokeExpressionNode VisitToDsintervalFunction(ToDsintervalFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitToNumberFunction(ToNumberFunctionContext context)
+        public static OracleInvokeExpressionNode VisitToNumberFunction(ToNumberFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitToTimestampFunction(ToTimestampFunctionContext context)
+        public static OracleInvokeExpressionNode VisitToTimestampFunction(ToTimestampFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitToTimestampTzFunction(ToTimestampTzFunctionContext context)
+        public static OracleInvokeExpressionNode VisitToTimestampTzFunction(ToTimestampTzFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitToYmintervalFunction(ToYmintervalFunctionContext context)
+        public static OracleInvokeExpressionNode VisitToYmintervalFunction(ToYmintervalFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitTranslateUsingFunction(TranslateUsingFunctionContext context)
+        public static OracleInvokeExpressionNode VisitTranslateUsingFunction(TranslateUsingFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitTreatFunction(TreatFunctionContext context)
+        public static OracleInvokeExpressionNode VisitTreatFunction(TreatFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitTrimFunction(TrimFunctionContext context)
+        public static OracleInvokeExpressionNode VisitTrimFunction(TrimFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitTzOffsetFunction(TzOffsetFunctionContext context)
+        public static OracleInvokeExpressionNode VisitTzOffsetFunction(TzOffsetFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitUidFunction(UidFunctionContext context)
+        public static OracleInvokeExpressionNode VisitUidFunction(UidFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitUserFunction(UserFunctionContext context)
+        public static OracleInvokeExpressionNode VisitUserFunction(UserFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitValidateConversionFunction(ValidateConversionFunctionContext context)
+        public static OracleInvokeExpressionNode VisitValidateConversionFunction(ValidateConversionFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitXmlaggFunction(XmlaggFunctionContext context)
+        public static OracleInvokeExpressionNode VisitXmlaggFunction(XmlaggFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitXmlcastFunction(XmlcastFunctionContext context)
+        public static OracleInvokeExpressionNode VisitXmlcastFunction(XmlcastFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitXmlcorattvalFunction(XmlcorattvalFunctionContext context)
+        public static OracleInvokeExpressionNode VisitXmlcorattvalFunction(XmlcorattvalFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitXmlelementFunction(XmlelementFunctionContext context)
+        public static OracleInvokeExpressionNode VisitXmlelementFunction(XmlelementFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitXmlCdataFunction(XmlCdataFunctionContext context)
+        public static OracleInvokeExpressionNode VisitXmlCdataFunction(XmlCdataFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitXmlexistsFunction(XmlexistsFunctionContext context)
+        public static OracleInvokeExpressionNode VisitXmlexistsFunction(XmlexistsFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitXmlforestFunction(XmlforestFunctionContext context)
+        public static OracleInvokeExpressionNode VisitXmlforestFunction(XmlforestFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitXmlparseFunction(XmlparseFunctionContext context)
+        public static OracleInvokeExpressionNode VisitXmlparseFunction(XmlparseFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitXmlpiFunction(XmlpiFunctionContext context)
+        public static OracleInvokeExpressionNode VisitXmlpiFunction(XmlpiFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitXmlqueryFunction(XmlqueryFunctionContext context)
+        public static OracleInvokeExpressionNode VisitXmlqueryFunction(XmlqueryFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitXmlrootFunction(XmlrootFunctionContext context)
+        public static OracleInvokeExpressionNode VisitXmlrootFunction(XmlrootFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitXmlsequenceFunction(XmlsequenceFunctionContext context)
+        public static OracleInvokeExpressionNode VisitXmlsequenceFunction(XmlsequenceFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitXmlserializeFunction(XmlserializeFunctionContext context)
+        public static OracleInvokeExpressionNode VisitXmlserializeFunction(XmlserializeFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitXmlTableFunction(XmlTableFunctionContext context)
+        public static OracleInvokeExpressionNode VisitXmlTableFunction(XmlTableFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
         #endregion
 
         #region Analytic Functions
-        public static QsiInvokeExpressionNode VisitAnyValueFunction(AnyValueFunctionContext context)
+        public static OracleInvokeExpressionNode VisitAnyValueFunction(AnyValueFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitAvgFunction(AvgFunctionContext context)
+        public static OracleInvokeExpressionNode VisitAvgFunction(AvgFunctionContext context)
         {
             var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
 
@@ -1523,122 +1523,122 @@ namespace Qsi.Oracle.Tree.Visitors
             return node;
         }
 
-        public static QsiInvokeExpressionNode VisitBitAndAggFunction(BitAndAggFunctionContext context)
+        public static OracleInvokeExpressionNode VisitBitAndAggFunction(BitAndAggFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitBitOrAggFunction(BitOrAggFunctionContext context)
+        public static OracleInvokeExpressionNode VisitBitOrAggFunction(BitOrAggFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitBitXorAggFunction(BitXorAggFunctionContext context)
+        public static OracleInvokeExpressionNode VisitBitXorAggFunction(BitXorAggFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitChecksumFunction(ChecksumFunctionContext context)
+        public static OracleInvokeExpressionNode VisitChecksumFunction(ChecksumFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitCorrFunction(CorrFunctionContext context)
+        public static OracleInvokeExpressionNode VisitCorrFunction(CorrFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitCountFunction(CountFunctionContext context)
+        public static OracleInvokeExpressionNode VisitCountFunction(CountFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitCovarPopFunction(CovarPopFunctionContext context)
+        public static OracleInvokeExpressionNode VisitCovarPopFunction(CovarPopFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitCovarSampFunction(CovarSampFunctionContext context)
+        public static OracleInvokeExpressionNode VisitCovarSampFunction(CovarSampFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitFirstValueFunction(FirstValueFunctionContext context)
+        public static OracleInvokeExpressionNode VisitFirstValueFunction(FirstValueFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitKurtosisPopFunction(KurtosisPopFunctionContext context)
+        public static OracleInvokeExpressionNode VisitKurtosisPopFunction(KurtosisPopFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitKurtosisSampFunction(KurtosisSampFunctionContext context)
+        public static OracleInvokeExpressionNode VisitKurtosisSampFunction(KurtosisSampFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitLastValueFunction(LastValueFunctionContext context)
+        public static OracleInvokeExpressionNode VisitLastValueFunction(LastValueFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitMaxFunction(MaxFunctionContext context)
+        public static OracleInvokeExpressionNode VisitMaxFunction(MaxFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitMedianFunction(MedianFunctionContext context)
+        public static OracleInvokeExpressionNode VisitMedianFunction(MedianFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitMinFunction(MinFunctionContext context)
+        public static OracleInvokeExpressionNode VisitMinFunction(MinFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitNthValueFunction(NthValueFunctionContext context)
+        public static OracleInvokeExpressionNode VisitNthValueFunction(NthValueFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitLinearRegrFunction(LinearRegrFunctionContext context)
+        public static OracleInvokeExpressionNode VisitLinearRegrFunction(LinearRegrFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitStddevFunction(StddevFunctionContext context)
+        public static OracleInvokeExpressionNode VisitStddevFunction(StddevFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitStddevPopFunction(StddevPopFunctionContext context)
+        public static OracleInvokeExpressionNode VisitStddevPopFunction(StddevPopFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitStddevSampFunction(StddevSampFunctionContext context)
+        public static OracleInvokeExpressionNode VisitStddevSampFunction(StddevSampFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitSumFunction(SumFunctionContext context)
+        public static OracleInvokeExpressionNode VisitSumFunction(SumFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitVarPopFunction(VarPopFunctionContext context)
+        public static OracleInvokeExpressionNode VisitVarPopFunction(VarPopFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitVarSampFunction(VarSampFunctionContext context)
+        public static OracleInvokeExpressionNode VisitVarSampFunction(VarSampFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
 
-        public static QsiInvokeExpressionNode VisitVarianceFunction(VarianceFunctionContext context)
+        public static OracleInvokeExpressionNode VisitVarianceFunction(VarianceFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
@@ -1841,7 +1841,7 @@ namespace Qsi.Oracle.Tree.Visitors
 
         public static QsiExpressionNode VisitTypeConstructorExpr(TypeConstructorExpressionContext context)
         {
-            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
 
             var typeConstructorNode = OracleTree.CreateWithSpan<QsiFunctionExpressionNode>(context);
             typeConstructorNode.Identifier = IdentifierVisitor.CreateQualifiedIdentifier(context.typeName().identifier());
@@ -2346,9 +2346,9 @@ namespace Qsi.Oracle.Tree.Visitors
             return node;
         }
 
-        public static QsiInvokeExpressionNode VisitCommonFunction(ParserRuleContext context, FunctionNameContext functionNameContext, ArgumentListContext argumentListContext)
+        public static OracleInvokeExpressionNode VisitCommonFunction(ParserRuleContext context, FunctionNameContext functionNameContext, ArgumentListContext argumentListContext)
         {
-            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
             var functionName = IdentifierVisitor.CreateQualifiedIdentifier(functionNameContext.identifier());
 
             var functionExpressionNode = OracleTree.CreateWithSpan<QsiFunctionExpressionNode>(context);
