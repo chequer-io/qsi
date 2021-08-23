@@ -22,6 +22,27 @@ namespace Qsi.Oracle
             writer.Write(script.Script[range]);
         }
 
+        protected override void DeparseTableNode(ScriptWriter writer, IQsiTableNode node, QsiScript script)
+        {
+            switch (node)
+            {
+                case OracleLateralTableNode lateralNode:
+                    DeparseLateralTableNode(writer, lateralNode, script);
+                    break;
+
+                default:
+                    base.DeparseTableNode(writer, node, script);
+                    break;
+            }
+        }
+
+        private void DeparseLateralTableNode(ScriptWriter writer, OracleLateralTableNode lateralNode, QsiScript script)
+        {
+            writer.Write("LATERAL(");
+            DeparseTreeNode(writer, lateralNode.Source.Value, script);
+            writer.Write(")");
+        }
+
         protected override void DeparseCompositeTableNode(ScriptWriter writer, IQsiCompositeTableNode node, QsiScript script)
         {
             if (node is OracleBinaryTableNode oracleBinaryTableNode)

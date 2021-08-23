@@ -1,4 +1,6 @@
-﻿using Qsi.Oracle.Internal;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Qsi.Oracle.Internal;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
 using Qsi.Utilities;
@@ -23,21 +25,35 @@ namespace Qsi.Oracle.Tree.Visitors
 
         public static IQsiTreeNode VisitUpdate(UpdateContext context)
         {
-            var node = OracleTree.CreateWithSpan<QsiDataInsertActionNode>(context);
+            var node = OracleTree.CreateWithSpan<OracleDataUpdateActionNode>(context);
 
             var targetNode = TableVisitor.VisitDmlTableExpressionClause(context.dmlTableExpressionClause());
 
             if (targetNode is not QsiTableReferenceNode referenceNode)
                 throw TreeHelper.NotSupportedFeature("Expression Target in Update");
 
-            node.Target.Value = referenceNode;
+            if (context.whereClause() is not null)
+            {
+                var derivedTableNode = new OracleDerivedTableNode();
 
-            if (node.ValueTable.Value is IOracleTableNode oracleTableNode)
+                derivedTableNode.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+                derivedTableNode.Source.Value = referenceNode;
+                derivedTableNode.Where.Value = ExpressionVisitor.VisitWhereClause(context.whereClause());
+
+                node.Target.Value = derivedTableNode;
+            }
+            else
+            {
+                node.Target.Value = referenceNode;
+            }
+
+            if (node.Target.Value is IOracleTableNode oracleTableNode)
                 oracleTableNode.IsOnly = context.HasToken(ONLY);
 
-            // ignore tAlias
+            node.SetValues.AddRange(ExpressionVisitor.VisitUpdateSetClause(context.updateSetClause()));
 
-            // TODO: Impl
+            // tAlias ignored
+            // returningClause, errorLoggingClause ignored
 
             return node;
         }

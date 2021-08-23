@@ -469,7 +469,7 @@ namespace Qsi.Oracle.Tree.Visitors
             if (context.modifiedExternalTable() is not null)
                 throw TreeHelper.NotSupportedFeature("External table");
 
-            // Ignored sampleClause
+            // sampleClause ignored
 
             return node;
         }
@@ -578,7 +578,7 @@ namespace Qsi.Oracle.Tree.Visitors
 
                     node.Source.Value = VisitSubquery(subqueryFactoringClause.subquery());
 
-                    // ignored searchClause, cycleClause
+                    // searchClause, cycleClause ignored
                     return node;
 
                 case SubavFactoringClauseContext:

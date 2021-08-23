@@ -2000,8 +2000,8 @@ updateSetClause
     ;
 
 updateSetSubstituteClause
-    : '(' column ( ',' column )* ')' '=' '(' subquery ')'
-    | column '=' ( expr | '(' subquery ')' | DEFAULT )
+    : '(' column ( ',' column )* ')' '=' '(' subquery ')'   #multipleUpdateSetSubstituteClause
+    | column '=' ( expr | '(' subquery ')' | DEFAULT )      #singleUpdateSetSubstituteClause
     ;
 
 merge

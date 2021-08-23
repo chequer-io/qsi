@@ -2291,5 +2291,42 @@ namespace Qsi.Oracle.Tree.Visitors
 
             return node;
         }
+
+        public static IEnumerable<QsiSetColumnExpressionNode> VisitUpdateSetClause(UpdateSetClauseContext context)
+        {
+            if (context.HasToken(VALUE))
+                throw TreeHelper.NotSupportedFeature("Update Object Table");
+
+            return context.updateSetSubstituteClause().Select(VisitUpdateSetSubstituteClause);
+        }
+
+        public static QsiSetColumnExpressionNode VisitUpdateSetSubstituteClause(UpdateSetSubstituteClauseContext context)
+        {
+            switch (context)
+            {
+                case MultipleUpdateSetSubstituteClauseContext multipleUpdateSetContext:
+                    // TODO: Can implement?
+                    throw TreeHelper.NotSupportedFeature("Update Multiple Column Target");
+
+                case SingleUpdateSetSubstituteClauseContext singleUpdateSetContext:
+                {
+                    var node = OracleTree.CreateWithSpan<QsiSetColumnExpressionNode>(context);
+
+                    node.Target = IdentifierVisitor.CreateQualifiedIdentifier(singleUpdateSetContext.column().identifier());
+
+                    if (singleUpdateSetContext.expr() is not null)
+                        node.Value.Value = VisitExpr(singleUpdateSetContext.expr());
+                    else if (singleUpdateSetContext.subquery() is not null)
+                        node.Value.Value = VisitSubquery(singleUpdateSetContext.subquery());
+                    else
+                        node.Value.Value = TreeHelper.CreateDefaultLiteral();
+
+                    return node;
+                }
+
+                default:
+                    throw TreeHelper.NotSupportedTree(context);
+            }
+        }
     }
 }
