@@ -1109,8 +1109,8 @@ namespace Qsi.Oracle.Tree.Visitors
             if (context.precision() is not null)
                 node.Parameters.Add(new QsiLiteralExpressionNode
                 {
-                    Type = QsiDataType.Decimal,
-                    Value = context.precision().GetInputText()
+                    Type = QsiDataType.Numeric,
+                    Value = int.Parse(context.precision().GetInputText())
                 });
 
             return node;
