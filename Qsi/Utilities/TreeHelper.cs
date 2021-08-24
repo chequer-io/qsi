@@ -11,9 +11,9 @@ namespace Qsi.Utilities
     public static class TreeHelper
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static QsiExpressionFragmentNode Fragment(params string[] value)
+        public static QsiExpressionFragmentNode Fragment(string value)
         {
-            return new() { Text = string.Join(" ", value) };
+            return new() { Text = value };
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

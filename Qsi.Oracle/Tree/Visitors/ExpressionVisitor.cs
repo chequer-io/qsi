@@ -818,7 +818,7 @@ namespace Qsi.Oracle.Tree.Visitors
             node.Parameters.Add(VisitExpr(context.expr()));
 
             if (context.DETERMINISTIC() is not null)
-                node.Parameters.Add(TreeHelper.Fragment(context.DETERMINISTIC().GetText()));
+                node.Parameters.Add(TreeHelper.CreateConstantLiteral("DETERMINISTIC"));
 
             if (context.stringLiteral() is not null)
                 node.Parameters.Add(VisitStringLiteral(context.stringLiteral()));
@@ -834,7 +834,7 @@ namespace Qsi.Oracle.Tree.Visitors
             node.Parameters.Add(VisitExpr(context.expr(0)));
 
             if (context.DETERMINISTIC() is not null)
-                node.Parameters.Add(TreeHelper.Fragment(context.DETERMINISTIC().GetText()));
+                node.Parameters.Add(TreeHelper.CreateConstantLiteral("DETERMINISTIC"));
 
             if (context.stringLiteral() is not null)
                 node.Parameters.Add(VisitStringLiteral(context.stringLiteral()));
@@ -860,7 +860,7 @@ namespace Qsi.Oracle.Tree.Visitors
             node.Parameters.Add(VisitExpr(context.expr()));
 
             if (context.DETERMINISTIC() is not null)
-                node.Parameters.Add(TreeHelper.Fragment(context.DETERMINISTIC().GetText()));
+                node.Parameters.Add(TreeHelper.CreateConstantLiteral("DETERMINISTIC"));
 
             return node;
         }
@@ -943,7 +943,7 @@ namespace Qsi.Oracle.Tree.Visitors
             node.Parameters.Add(VisitExpr(context.expr()));
 
             if (context.USING() is not null)
-                node.Parameters.Add(TreeHelper.Fragment(context.USING().GetText(), context.NCHAR_CS().GetText()));
+                node.Parameters.Add(TreeHelper.CreateConstantLiteral("USING NCHAR_CS"));
 
             return node;
         }
@@ -973,11 +973,11 @@ namespace Qsi.Oracle.Tree.Visitors
                 node.Parameters.Add(VisitExpr(context.topN));
 
             if (context.HasToken(DESC))
-                node.Parameters.Add(TreeHelper.Fragment(context.DESC().GetText()));
+                node.Parameters.Add(TreeHelper.CreateConstantLiteral("DESC"));
             else if (context.HasToken(ASC))
-                node.Parameters.Add(TreeHelper.Fragment(context.ASC().GetText()));
+                node.Parameters.Add(TreeHelper.CreateConstantLiteral("ASC"));
             else if (context.HasToken(ABS))
-                node.Parameters.Add(TreeHelper.Fragment(context.ABS().GetText()));
+                node.Parameters.Add(TreeHelper.CreateConstantLiteral("ABS"));
 
             var miningNode = OracleTree.CreateWithSpan<OracleMiningAttributeExpressionNode>(context.miningAttributeClause());
             miningNode.Columns.Value = OracleTree.CreateWithSpan<QsiColumnsDeclarationNode>(context.miningAttributeClause());
@@ -1009,11 +1009,11 @@ namespace Qsi.Oracle.Tree.Visitors
                 node.Parameters.Add(VisitExpr(context.topN));
 
             if (context.HasToken(DESC))
-                node.Parameters.Add(TreeHelper.Fragment(context.DESC().GetText()));
+                node.Parameters.Add(TreeHelper.CreateConstantLiteral("DESC"));
             else if (context.HasToken(ASC))
-                node.Parameters.Add(TreeHelper.Fragment(context.ASC().GetText()));
+                node.Parameters.Add(TreeHelper.CreateConstantLiteral("ASC"));
             else if (context.HasToken(ABS))
-                node.Parameters.Add(TreeHelper.Fragment(context.ABS().GetText()));
+                node.Parameters.Add(TreeHelper.CreateConstantLiteral("ABS"));
 
             var miningNode = OracleTree.CreateWithSpan<OracleMiningAttributeExpressionNode>(context.miningAttributeClause());
             miningNode.Columns.Value = OracleTree.CreateWithSpan<QsiColumnsDeclarationNode>(context.miningAttributeClause());
@@ -1290,15 +1290,15 @@ namespace Qsi.Oracle.Tree.Visitors
                 node.Parameters.Add(VisitExpr(exprContext));
 
             if (context.HasToken(COEFFICIENT))
-                node.Parameters.Add(TreeHelper.Fragment(context.COEFFICIENT().GetText()));
+                node.Parameters.Add(TreeHelper.CreateConstantLiteral("COEFFICIENT"));
             else if (context.HasToken(ONE_SIDED_SIG))
-                node.Parameters.Add(TreeHelper.Fragment(context.ONE_SIDED_SIG().GetText()));
+                node.Parameters.Add(TreeHelper.CreateConstantLiteral("ONE_SIDED_SIG"));
             else if (context.HasToken(ONE_SIDED_SIG_POS))
-                node.Parameters.Add(TreeHelper.Fragment(context.ONE_SIDED_SIG_POS().GetText()));
+                node.Parameters.Add(TreeHelper.CreateConstantLiteral("ONE_SIDED_SIG_POS"));
             else if (context.HasToken(ONE_SIDED_SIG_NEG))
-                node.Parameters.Add(TreeHelper.Fragment(context.ONE_SIDED_SIG_NEG().GetText()));
+                node.Parameters.Add(TreeHelper.CreateConstantLiteral("ONE_SIDED_SIG_NEG"));
             else if (context.HasToken(TWO_SIDED_SIG))
-                node.Parameters.Add(TreeHelper.Fragment(context.TWO_SIDED_SIG().GetText()));
+                node.Parameters.Add(TreeHelper.CreateConstantLiteral("TWO_SIDED_SIG"));
 
             return node;
         }
@@ -1415,7 +1415,7 @@ namespace Qsi.Oracle.Tree.Visitors
             var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
             node.Member.Value = TreeHelper.CreateFunction(context.EXTRACT().GetText());
 
-            node.Parameters.Add(TreeHelper.Fragment(context.children[2].GetText()));
+            node.Parameters.Add(TreeHelper.CreateConstantLiteral(context.children[2].GetText()));
 
             node.Parameters.Add(VisitExpressionList(context.expressionList()));
 
@@ -1466,11 +1466,11 @@ namespace Qsi.Oracle.Tree.Visitors
                 node.Parameters.Add(VisitExpr(exprContext));
 
             if (context.HasToken(DESC))
-                node.Parameters.Add(TreeHelper.Fragment(context.DESC().GetText()));
+                node.Parameters.Add(TreeHelper.CreateConstantLiteral("DESC"));
             else if (context.HasToken(ASC))
-                node.Parameters.Add(TreeHelper.Fragment(context.ASC().GetText()));
+                node.Parameters.Add(TreeHelper.CreateConstantLiteral("ASC"));
             else if (context.HasToken(ABS))
-                node.Parameters.Add(TreeHelper.Fragment(context.ABS().GetText()));
+                node.Parameters.Add(TreeHelper.CreateConstantLiteral("ABS"));
 
             var miningNode = OracleTree.CreateWithSpan<OracleMiningAttributeExpressionNode>(context.miningAttributeClause());
             miningNode.Columns.Value = OracleTree.CreateWithSpan<QsiColumnsDeclarationNode>(context.miningAttributeClause());
@@ -1656,61 +1656,6 @@ namespace Qsi.Oracle.Tree.Visitors
             node.Member.Value = TreeHelper.CreateFunction(context.ITERATION_NUMBER().GetText());
 
             return node;
-        }
-
-        public static OracleInvokeExpressionNode VisitJsonArrayFunction(JsonArrayFunctionContext context)
-        {
-            throw TreeHelper.NotSupportedTree(context);
-        }
-
-        public static OracleInvokeExpressionNode VisitJsonArrayAggFunction(JsonArrayAggFunctionContext context)
-        {
-            throw TreeHelper.NotSupportedTree(context);
-        }
-
-        public static OracleInvokeExpressionNode VisitJsonMergePatchFunction(JsonMergePatchFunctionContext context)
-        {
-            throw TreeHelper.NotSupportedTree(context);
-        }
-
-        public static OracleInvokeExpressionNode VisitJsonObjectFunction(JsonObjectFunctionContext context)
-        {
-            throw TreeHelper.NotSupportedTree(context);
-        }
-
-        public static OracleInvokeExpressionNode VisitJsonObjectaggFunction(JsonObjectaggFunctionContext context)
-        {
-            throw TreeHelper.NotSupportedTree(context);
-        }
-
-        public static OracleInvokeExpressionNode VisitJsonQueryFunction(JsonQueryFunctionContext context)
-        {
-            throw TreeHelper.NotSupportedTree(context);
-        }
-
-        public static OracleInvokeExpressionNode VisitJsonScalarFunction(JsonScalarFunctionContext context)
-        {
-            throw TreeHelper.NotSupportedTree(context);
-        }
-
-        public static OracleInvokeExpressionNode VisitJsonSerializeFunction(JsonSerializeFunctionContext context)
-        {
-            throw TreeHelper.NotSupportedTree(context);
-        }
-
-        public static OracleInvokeExpressionNode VisitJsonTableFunction(JsonTableFunctionContext context)
-        {
-            throw TreeHelper.NotSupportedTree(context);
-        }
-
-        public static OracleInvokeExpressionNode VisitJsonTransformFunction(JsonTransformFunctionContext context)
-        {
-            throw TreeHelper.NotSupportedTree(context);
-        }
-
-        public static OracleInvokeExpressionNode VisitJsonValueFunction(JsonValueFunctionContext context)
-        {
-            throw TreeHelper.NotSupportedTree(context);
         }
 
         public static OracleAnalyticFunctionExpressionNode VisitLagFunction(LagFunctionContext context)
@@ -2079,19 +2024,84 @@ namespace Qsi.Oracle.Tree.Visitors
 
         public static OracleInvokeExpressionNode VisitUidFunction(UidFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.UID().GetText());
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitUserFunction(UserFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.USER().GetText());
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitValidateConversionFunction(ValidateConversionFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
+        #endregion
 
+        #region Json Functions
+        public static OracleInvokeExpressionNode VisitJsonArrayFunction(JsonArrayFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static OracleInvokeExpressionNode VisitJsonArrayAggFunction(JsonArrayAggFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static OracleInvokeExpressionNode VisitJsonMergePatchFunction(JsonMergePatchFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static OracleInvokeExpressionNode VisitJsonObjectFunction(JsonObjectFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static OracleInvokeExpressionNode VisitJsonObjectaggFunction(JsonObjectaggFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static OracleInvokeExpressionNode VisitJsonQueryFunction(JsonQueryFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static OracleInvokeExpressionNode VisitJsonScalarFunction(JsonScalarFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static OracleInvokeExpressionNode VisitJsonSerializeFunction(JsonSerializeFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static OracleInvokeExpressionNode VisitJsonTableFunction(JsonTableFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static OracleInvokeExpressionNode VisitJsonTransformFunction(JsonTransformFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static OracleInvokeExpressionNode VisitJsonValueFunction(JsonValueFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+        #endregion
+
+        #region XML Functions
         public static OracleInvokeExpressionNode VisitXmlaggFunction(XmlaggFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
@@ -2760,13 +2770,13 @@ namespace Qsi.Oracle.Tree.Visitors
             node.Expression.Value = VisitExpr(context.l);
 
             if (context.HasToken(LOCAL))
-                node.TimeZone.Value = TreeHelper.Fragment(context.LOCAL().GetText());
+                node.TimeZone.Value = TreeHelper.CreateConstantLiteral("LOCAL");
             else if (context.HasToken(DBTIMEZONE))
-                node.TimeZone.Value = TreeHelper.Fragment(context.TIME().GetText(), context.ZONE().GetText(), context.DBTIMEZONE().GetText());
+                node.TimeZone.Value = TreeHelper.CreateConstantLiteral("TIME ZONE DBTIMEZONE");
             else if (context.HasToken(SESSIONTIMEZONE))
-                node.TimeZone.Value = TreeHelper.Fragment(context.TIME().GetText(), context.ZONE().GetText(), context.SESSIONTIMEZONE().GetText());
+                node.TimeZone.Value = TreeHelper.CreateConstantLiteral("TIME ZONE SESSIONTIMEZONE");
             else if (context.timeZoneNameOrFormat is not null)
-                node.TimeZone.Value = TreeHelper.Fragment(context.TIME().GetText(), context.ZONE().GetText(), context.timeZoneNameOrFormat.GetInputText());
+                node.TimeZone.Value = TreeHelper.CreateConstantLiteral("TIME ZONE " + context.timeZoneNameOrFormat.GetInputText());
             else
                 node.TimeZone.Value = VisitExpr(context.timeZoneExpr);
 
