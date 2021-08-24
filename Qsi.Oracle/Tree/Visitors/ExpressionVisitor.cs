@@ -2166,7 +2166,18 @@ namespace Qsi.Oracle.Tree.Visitors
         #region Analytic Functions
         public static OracleInvokeExpressionNode VisitAnyValueFunction(AnyValueFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+
+            node.Member.Value = TreeHelper.CreateFunction(context.ANY_VALUE().GetText());
+
+            if (context.HasToken(DISTINCT))
+                node.QueryBehavior = OracleQueryBehavior.Distinct;
+            else if (context.HasToken(ALL))
+                node.QueryBehavior = OracleQueryBehavior.All;
+
+            node.Parameters.Add(VisitExpr(context.expr()));
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitAvgFunction(AvgFunctionContext context)
@@ -2187,62 +2198,184 @@ namespace Qsi.Oracle.Tree.Visitors
 
         public static OracleInvokeExpressionNode VisitBitAndAggFunction(BitAndAggFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.BIT_AND_AGG().GetText());
+
+            if (context.HasToken(DISTINCT))
+                node.QueryBehavior = OracleQueryBehavior.Distinct;
+            else if (context.HasToken(ALL))
+                node.QueryBehavior = OracleQueryBehavior.All;
+            else if (context.HasToken(UNIQUE))
+                node.QueryBehavior = OracleQueryBehavior.Unique;
+
+            node.Parameters.Add(VisitExpr(context.expr()));
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitBitOrAggFunction(BitOrAggFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.BIT_OR_AGG().GetText());
+
+            if (context.HasToken(DISTINCT))
+                node.QueryBehavior = OracleQueryBehavior.Distinct;
+            else if (context.HasToken(ALL))
+                node.QueryBehavior = OracleQueryBehavior.All;
+            else if (context.HasToken(UNIQUE))
+                node.QueryBehavior = OracleQueryBehavior.Unique;
+
+            node.Parameters.Add(VisitExpr(context.expr()));
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitBitXorAggFunction(BitXorAggFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.BIT_XOR_AGG().GetText());
+
+            if (context.HasToken(DISTINCT))
+                node.QueryBehavior = OracleQueryBehavior.Distinct;
+            else if (context.HasToken(ALL))
+                node.QueryBehavior = OracleQueryBehavior.All;
+            else if (context.HasToken(UNIQUE))
+                node.QueryBehavior = OracleQueryBehavior.Unique;
+
+            node.Parameters.Add(VisitExpr(context.expr()));
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitChecksumFunction(ChecksumFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.CHECKSUM().GetText());
+
+            if (context.HasToken(DISTINCT))
+                node.QueryBehavior = OracleQueryBehavior.Distinct;
+            else if (context.HasToken(ALL))
+                node.QueryBehavior = OracleQueryBehavior.All;
+
+            node.Parameters.Add(VisitExpr(context.expr()));
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitCorrFunction(CorrFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.CORR().GetText());
+
+            foreach (var exprContext in context.expr())
+                node.Parameters.Add(VisitExpr(exprContext));
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitCountFunction(CountFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.COUNT().GetText());
+
+            if (context.HasToken(MULT_SYMBOL))
+            {
+                var columnNode = OracleTree.CreateWithSpan<QsiColumnExpressionNode>(context);
+                columnNode.Column.Value = OracleTree.CreateWithSpan<QsiAllColumnNode>(context);
+
+                node.Parameters.Add(columnNode);
+
+                return node;
+            }
+
+            if (context.HasToken(DISTINCT))
+                node.QueryBehavior = OracleQueryBehavior.Distinct;
+            else if (context.HasToken(ALL))
+                node.QueryBehavior = OracleQueryBehavior.All;
+
+            node.Parameters.Add(VisitExpr(context.expr()));
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitCovarPopFunction(CovarPopFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.COVAR_POP().GetText());
+
+            foreach (var exprContext in context.expr())
+                node.Parameters.Add(VisitExpr(exprContext));
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitCovarSampFunction(CovarSampFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.COVAR_SAMP().GetText());
+
+            foreach (var exprContext in context.expr())
+                node.Parameters.Add(VisitExpr(exprContext));
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitFirstValueFunction(FirstValueFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.FIRST_VALUE().GetText());
+
+            node.Parameters.Add(VisitExpr(context.expr()));
+
+            // skip nulls
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitKurtosisPopFunction(KurtosisPopFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.KURTOSIS_POP().GetText());
+
+            if (context.HasToken(DISTINCT))
+                node.QueryBehavior = OracleQueryBehavior.Distinct;
+            else if (context.HasToken(ALL))
+                node.QueryBehavior = OracleQueryBehavior.All;
+            else if (context.HasToken(UNIQUE))
+                node.QueryBehavior = OracleQueryBehavior.Unique;
+
+            node.Parameters.Add(VisitExpr(context.expr()));
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitKurtosisSampFunction(KurtosisSampFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.KURTOSIS_SAMP().GetText());
+
+            if (context.HasToken(DISTINCT))
+                node.QueryBehavior = OracleQueryBehavior.Distinct;
+            else if (context.HasToken(ALL))
+                node.QueryBehavior = OracleQueryBehavior.All;
+            else if (context.HasToken(UNIQUE))
+                node.QueryBehavior = OracleQueryBehavior.Unique;
+
+            node.Parameters.Add(VisitExpr(context.expr()));
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitLastValueFunction(LastValueFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.LAST_VALUE().GetText());
+
+            node.Parameters.Add(VisitExpr(context.expr()));
+
+            // skip nulls
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitMaxFunction(MaxFunctionContext context)

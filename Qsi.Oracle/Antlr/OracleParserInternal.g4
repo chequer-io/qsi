@@ -9623,8 +9623,8 @@ firstFunction
     ;
 
 firstValueFunction
-    : FIRST_VALUE ('(' ( expr | identifier ) ')' ((RESPECT | IGNORE) NULLS)?
-                  |'(' ( expr | identifier ) ((RESPECT | IGNORE) NULLS)? ')'
+    : FIRST_VALUE ('(' expr ')' ((RESPECT | IGNORE) NULLS)?
+                  |'(' expr ((RESPECT | IGNORE) NULLS)? ')'
                   )
     ;
 
@@ -9707,8 +9707,8 @@ lastFunction
     ;
 
 lastValueFunction
-    : LAST_VALUE ('(' ( expr | identifier ) ')' ((RESPECT | IGNORE) NULLS)?
-                  |'(' ( expr | identifier ) ((RESPECT | IGNORE) NULLS)? ')'
+    : LAST_VALUE ('(' expr ')' ((RESPECT | IGNORE) NULLS)?
+                  |'(' expr ((RESPECT | IGNORE) NULLS)? ')'
                   )
     ;
 
