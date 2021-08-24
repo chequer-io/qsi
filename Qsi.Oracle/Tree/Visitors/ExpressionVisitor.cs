@@ -25,6 +25,11 @@ namespace Qsi.Oracle.Tree.Visitors
                 yield return VisitSelectListItem(selectListItem);
         }
 
+        public static IEnumerable<QsiColumnNode> VisitSelectList(MiningAttributeClauseContext context)
+        {
+            return VisitSelectList(context.selectList());
+        }
+
         public static QsiColumnNode VisitSelectListItem(SelectListItemContext context)
         {
             switch (context)
@@ -933,6 +938,7 @@ namespace Qsi.Oracle.Tree.Visitors
         public static OracleInvokeExpressionNode VisitChrFunction(ChrFunctionContext context)
         {
             var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.CHR().GetText());
 
             node.Parameters.Add(VisitExpr(context.expr()));
 
@@ -944,47 +950,294 @@ namespace Qsi.Oracle.Tree.Visitors
 
         public static OracleInvokeExpressionNode VisitClusterDetailsFunction(ClusterDetailsFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.CLUSTER_DETAILS().GetText());
+
+            var modelNode = OracleTree.CreateWithSpan<QsiFieldExpressionNode>(context);
+
+            modelNode.Identifier = context.schema() is not null
+                ? IdentifierVisitor.CreateQualifiedIdentifier(context.schema().identifier(), context.model().identifier())
+                : IdentifierVisitor.CreateQualifiedIdentifier(context.model().identifier());
+
+            node.Parameters.Add(modelNode);
+
+            if (context.clusterId() is not null)
+            {
+                var clusterIdNode = OracleTree.CreateWithSpan<QsiFieldExpressionNode>(context);
+                clusterIdNode.Identifier = IdentifierVisitor.CreateQualifiedIdentifier(context.clusterId().identifier());
+
+                node.Parameters.Add(clusterIdNode);
+            }
+
+            if (context.topN is not null)
+                node.Parameters.Add(VisitExpr(context.topN));
+
+            if (context.HasToken(DESC))
+                node.Parameters.Add(TreeHelper.Fragment(context.DESC().GetText()));
+            else if (context.HasToken(ASC))
+                node.Parameters.Add(TreeHelper.Fragment(context.ASC().GetText()));
+            else if (context.HasToken(ABS))
+                node.Parameters.Add(TreeHelper.Fragment(context.ABS().GetText()));
+
+            var miningNode = OracleTree.CreateWithSpan<OracleMiningAttributeExpressionNode>(context.miningAttributeClause());
+            miningNode.Columns.Value = OracleTree.CreateWithSpan<QsiColumnsDeclarationNode>(context.miningAttributeClause());
+
+            foreach (var columnNode in VisitSelectList(context.miningAttributeClause()))
+                miningNode.Columns.Value.Columns.Add(columnNode);
+
+            node.Parameters.Add(miningNode);
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitClusterDetailsAnalyticFunction(ClusterDetailsAnalyticFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.CLUSTER_DETAILS().GetText());
+
+            node.Parameters.Add(VisitNumberLiteral(context.numberLiteral()));
+
+            if (context.clusterId() is not null)
+            {
+                var clusterIdNode = OracleTree.CreateWithSpan<QsiFieldExpressionNode>(context);
+                clusterIdNode.Identifier = IdentifierVisitor.CreateQualifiedIdentifier(context.clusterId().identifier());
+
+                node.Parameters.Add(clusterIdNode);
+            }
+
+            if (context.topN is not null)
+                node.Parameters.Add(VisitExpr(context.topN));
+
+            if (context.HasToken(DESC))
+                node.Parameters.Add(TreeHelper.Fragment(context.DESC().GetText()));
+            else if (context.HasToken(ASC))
+                node.Parameters.Add(TreeHelper.Fragment(context.ASC().GetText()));
+            else if (context.HasToken(ABS))
+                node.Parameters.Add(TreeHelper.Fragment(context.ABS().GetText()));
+
+            var miningNode = OracleTree.CreateWithSpan<OracleMiningAttributeExpressionNode>(context.miningAttributeClause());
+            miningNode.Columns.Value = OracleTree.CreateWithSpan<QsiColumnsDeclarationNode>(context.miningAttributeClause());
+
+            foreach (var columnNode in VisitSelectList(context.miningAttributeClause()))
+                miningNode.Columns.Value.Columns.Add(columnNode);
+
+            node.Parameters.Add(miningNode);
+
+            var analyticClause = context.miningAnalyticClause();
+
+            if (analyticClause.queryPartitionClause() is not null)
+                node.Parameters.Add(VisitQueryPartitionClause(analyticClause.queryPartitionClause()));
+
+            if (analyticClause.orderByClause() is not null)
+                node.Parameters.Add(VisitOrderByClause(analyticClause.orderByClause()));
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitClusterDistanceFunction(ClusterDistanceFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.CLUSTER_DISTANCE().GetText());
+
+            var modelNode = OracleTree.CreateWithSpan<QsiFieldExpressionNode>(context);
+
+            modelNode.Identifier = IdentifierVisitor.CreateQualifiedIdentifier(new[]
+                {
+                    context.schema()?.identifier(),
+                    context.model().identifier(),
+                    context.identifier()
+                }
+                .Where(c => c is not null)
+                .ToArray()
+            );
+
+            node.Parameters.Add(modelNode);
+
+            var miningNode = OracleTree.CreateWithSpan<OracleMiningAttributeExpressionNode>(context.miningAttributeClause());
+            miningNode.Columns.Value = OracleTree.CreateWithSpan<QsiColumnsDeclarationNode>(context.miningAttributeClause());
+
+            foreach (var columnNode in VisitSelectList(context.miningAttributeClause()))
+                miningNode.Columns.Value.Columns.Add(columnNode);
+
+            node.Parameters.Add(miningNode);
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitClusterIdFunction(ClusterIdFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.CLUSTER_ID().GetText());
+
+            var modelNode = OracleTree.CreateWithSpan<QsiFieldExpressionNode>(context);
+
+            modelNode.Identifier = context.schema() is not null
+                ? IdentifierVisitor.CreateQualifiedIdentifier(context.schema().identifier(), context.model().identifier())
+                : IdentifierVisitor.CreateQualifiedIdentifier(context.model().identifier());
+
+            node.Parameters.Add(modelNode);
+
+            var miningNode = OracleTree.CreateWithSpan<OracleMiningAttributeExpressionNode>(context.miningAttributeClause());
+            miningNode.Columns.Value = OracleTree.CreateWithSpan<QsiColumnsDeclarationNode>(context.miningAttributeClause());
+
+            foreach (var columnNode in VisitSelectList(context.miningAttributeClause()))
+                miningNode.Columns.Value.Columns.Add(columnNode);
+
+            node.Parameters.Add(miningNode);
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitClusterIdAnalyticFunction(ClusterIdAnalyticFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.CLUSTER_ID().GetText());
+
+            node.Parameters.Add(VisitExpr(context.expr()));
+
+            var miningNode = OracleTree.CreateWithSpan<OracleMiningAttributeExpressionNode>(context.miningAttributeClause());
+            miningNode.Columns.Value = OracleTree.CreateWithSpan<QsiColumnsDeclarationNode>(context.miningAttributeClause());
+
+            foreach (var columnNode in VisitSelectList(context.miningAttributeClause()))
+                miningNode.Columns.Value.Columns.Add(columnNode);
+
+            node.Parameters.Add(miningNode);
+
+            var analyticClause = context.miningAnalyticClause();
+
+            if (analyticClause.queryPartitionClause() is not null)
+                node.Parameters.Add(VisitQueryPartitionClause(analyticClause.queryPartitionClause()));
+
+            if (analyticClause.orderByClause() is not null)
+                node.Parameters.Add(VisitOrderByClause(analyticClause.orderByClause()));
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitClusterProbabilityFunction(ClusterProbabilityFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.CLUSTER_PROBABILITY().GetText());
+
+            var modelNode = OracleTree.CreateWithSpan<QsiFieldExpressionNode>(context);
+
+            modelNode.Identifier = IdentifierVisitor.CreateQualifiedIdentifier(new[]
+                {
+                    context.schema()?.identifier(),
+                    context.model().identifier(),
+                    context.identifier()
+                }
+                .Where(c => c is not null)
+                .ToArray()
+            );
+
+            node.Parameters.Add(modelNode);
+
+            var miningNode = OracleTree.CreateWithSpan<OracleMiningAttributeExpressionNode>(context.miningAttributeClause());
+            miningNode.Columns.Value = OracleTree.CreateWithSpan<QsiColumnsDeclarationNode>(context.miningAttributeClause());
+
+            foreach (var columnNode in VisitSelectList(context.miningAttributeClause()))
+                miningNode.Columns.Value.Columns.Add(columnNode);
+
+            node.Parameters.Add(miningNode);
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitClusterProbAnalyticFunction(ClusterProbAnalyticFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.CLUSTER_PROBABILITY().GetText());
+
+            node.Parameters.Add(VisitExpr(context.expr()));
+
+            if (context.identifier() is not null)
+            {
+                var identNode = OracleTree.CreateWithSpan<QsiFieldExpressionNode>(context);
+                identNode.Identifier = IdentifierVisitor.CreateQualifiedIdentifier(context.identifier());
+
+                node.Parameters.Add(identNode);
+            }
+
+            var miningNode = OracleTree.CreateWithSpan<OracleMiningAttributeExpressionNode>(context.miningAttributeClause());
+            miningNode.Columns.Value = OracleTree.CreateWithSpan<QsiColumnsDeclarationNode>(context.miningAttributeClause());
+
+            foreach (var columnNode in VisitSelectList(context.miningAttributeClause()))
+                miningNode.Columns.Value.Columns.Add(columnNode);
+
+            node.Parameters.Add(miningNode);
+
+            var analyticClause = context.miningAnalyticClause();
+
+            if (analyticClause.queryPartitionClause() is not null)
+                node.Parameters.Add(VisitQueryPartitionClause(analyticClause.queryPartitionClause()));
+
+            if (analyticClause.orderByClause() is not null)
+                node.Parameters.Add(VisitOrderByClause(analyticClause.orderByClause()));
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitClusterSetFunction(ClusterSetFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.CLUSTER_SET().GetText());
+
+            var modelNode = OracleTree.CreateWithSpan<QsiFieldExpressionNode>(context);
+
+            modelNode.Identifier = context.schema() is not null
+                ? IdentifierVisitor.CreateQualifiedIdentifier(context.schema().identifier(), context.model().identifier())
+                : IdentifierVisitor.CreateQualifiedIdentifier(context.model().identifier());
+
+            node.Parameters.Add(modelNode);
+
+            if (context.topN is not null)
+                node.Parameters.Add(VisitExpr(context.topN));
+
+            if (context.cutoff is not null)
+                node.Parameters.Add(VisitExpr(context.cutoff));
+
+            var miningNode = OracleTree.CreateWithSpan<OracleMiningAttributeExpressionNode>(context.miningAttributeClause());
+            miningNode.Columns.Value = OracleTree.CreateWithSpan<QsiColumnsDeclarationNode>(context.miningAttributeClause());
+
+            foreach (var columnNode in VisitSelectList(context.miningAttributeClause()))
+                miningNode.Columns.Value.Columns.Add(columnNode);
+
+            node.Parameters.Add(miningNode);
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitClusterSetAnalyticFunction(ClusterSetAnalyticFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.CLUSTER_SET().GetText());
+
+            node.Parameters.Add(VisitExpr(context.intoExpr));
+
+            if (context.topN is not null)
+                node.Parameters.Add(VisitExpr(context.topN));
+
+            if (context.cutoff is not null)
+                node.Parameters.Add(VisitExpr(context.cutoff));
+
+            var miningNode = OracleTree.CreateWithSpan<OracleMiningAttributeExpressionNode>(context.miningAttributeClause());
+            miningNode.Columns.Value = OracleTree.CreateWithSpan<QsiColumnsDeclarationNode>(context.miningAttributeClause());
+
+            foreach (var columnNode in VisitSelectList(context.miningAttributeClause()))
+                miningNode.Columns.Value.Columns.Add(columnNode);
+
+            node.Parameters.Add(miningNode);
+
+            var analyticClause = context.miningAnalyticClause();
+
+            if (analyticClause.queryPartitionClause() is not null)
+                node.Parameters.Add(VisitQueryPartitionClause(analyticClause.queryPartitionClause()));
+
+            if (analyticClause.orderByClause() is not null)
+                node.Parameters.Add(VisitOrderByClause(analyticClause.orderByClause()));
+
+            return node;
         }
 
         public static QsiExpressionNode VisitCollectFunction(CollectFunctionContext context)
