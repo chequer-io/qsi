@@ -9475,11 +9475,11 @@ chrFunction
     ;
 
 clusterDetailsFunction
-    : CLUSTER_DETAILS '(' (schema '.')? model (',' clusterId (',' topN=expr))? (DESC | ASC | ABS)? miningAttributeClause ')'
+    : CLUSTER_DETAILS '(' (schema '.')? model (',' clusterId (',' topN=expr)? )? (DESC | ASC | ABS)? miningAttributeClause ')'
     ;
 
 clusterDetailsAnalyticFunction
-    : CLUSTER_DETAILS '(' INTO numberLiteral (',' clusterId (',' topN=expr))? (DESC | ASC | ABS)? miningAttributeClause ')' OVER '(' miningAnalyticClause ')'
+    : CLUSTER_DETAILS '(' INTO numberLiteral (',' clusterId (',' topN=expr)? )? (DESC | ASC | ABS)? miningAttributeClause ')' OVER '(' miningAnalyticClause ')'
     ;
 
 clusterDistanceFunction
@@ -9500,14 +9500,14 @@ clusterProbabilityFunction
 
 clusterProbAnalyticFunction
     : CLUSTER_PROBABILITY '(' INTO expr (',' identifier)? miningAttributeClause ')' OVER '(' miningAnalyticClause ')'
-    ;
+    ;   
 
 clusterSetFunction
     : CLUSTER_SET '(' (schema '.')? model (',' topN=expr (',' cutoff=expr)?)? miningAttributeClause ')'
     ;
 
 clusterSetAnalyticFunction
-    : CLUSTER_SET '(' INTO expr (',' topN=expr (',' cutoff=expr)?)? miningAttributeClause ')' OVER '(' miningAttributeClause ')'
+    : CLUSTER_SET '(' INTO intoExpr=expr (',' topN=expr (',' cutoff=expr)?)? miningAttributeClause ')' OVER '(' miningAnalyticClause ')'
     ;
 
 collectFunction
@@ -10386,12 +10386,7 @@ miningAnalyticClause
     ;
 
 miningAttributeClause
-    : USING ('*' | miningAttributeClauseItem (',' miningAttributeClauseItem)*)
-    ;
-
-miningAttributeClauseItem
-    : ( schema '.' )? table '.' '*'
-    | expr ( AS alias )?
+    : USING selectList
     ;
 
 avMeasExpression
