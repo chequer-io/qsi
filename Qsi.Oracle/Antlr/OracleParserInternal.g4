@@ -9894,7 +9894,7 @@ skewnessPopFunction
     ;
 
 skewnessSampFunction
-    : SKEWNESS_POP ( DISTINCT | ALL | UNIQUE )? '(' expr ')'
+    : SKEWNESS_SAMP ( DISTINCT | ALL | UNIQUE )? '(' expr ')'
     ;
 
 sumFunction
