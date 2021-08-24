@@ -2011,12 +2011,9 @@ updateSetSubstituteClause
 
 merge
     : MERGE hint?
-      INTO ( schema '.' )? ( table | view ) tAlias?
-      USING (
-              ( schema '.' )? ( table | view )
-            | subquery
-            ) tAlias?
-      ON ( condition )
+      INTO leftTable=fullObjectPath leftAlias=tAlias?
+      USING ( rightReference=fullObjectPath | '(' rightSubquery=subquery ')' ) rightAlias=tAlias?
+      ON '(' condition ')'
       mergeUpdateClause?
       mergeInsertClause?
       errorLoggingClause?
@@ -2024,16 +2021,24 @@ merge
 
 mergeUpdateClause
     : WHEN MATCHED THEN
-      UPDATE SET column '=' ( expr | DEFAULT )
-                 (',' column '=' ( expr | DEFAULT ) )*
-      whereClause?
-      ( DELETE whereClause )?
+      UPDATE SET mergeSetValue (',' mergeSetValue )*
+      where=whereClause?
+      ( DELETE deleteWhere=whereClause )?
+    ;
+
+mergeSetValue
+    : column '=' ( expr | DEFAULT )
+    ;
+
+mergeValue
+    : expr 
+    | DEFAULT
     ;
 
 mergeInsertClause
     : WHEN NOT MATCHED THEN
       INSERT ( '(' column ( ',' column )* ')' )?
-      VALUES '(' ( expr | DEFAULT ) ( ',' ( expr | DEFAULT ) )* ')'
+      VALUES '(' mergeValue (',' mergeValue)* ')'
       whereClause?
     ;
 

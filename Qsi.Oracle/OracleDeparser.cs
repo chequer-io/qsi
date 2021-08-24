@@ -151,6 +151,22 @@ namespace Qsi.Oracle
             }
             else
             {
+                if (node.Alias is not null &&
+                    node.Directives is null &&
+                    node.Where is null &&
+                    node.Grouping is null &&
+                    node.Order is null &&
+                    node.Limit is null &&
+                    node.Columns is not null &&
+                    IsWildcard(node.Columns)
+                )
+                {
+                    DeparseTreeNodeWithParenthesis(writer, node.Source, script);
+                    writer.WriteSpace();
+                    DeparseTreeNode(writer, node.Alias, script);
+                    return;
+                }
+
                 base.DeparseDerivedTableNode(writer, node, script);
             }
 
@@ -176,6 +192,12 @@ namespace Qsi.Oracle
             }
         }
 
+        protected override void DeparseAliasNode(ScriptWriter writer, IQsiAliasNode node, QsiScript script)
+        {
+            writer.WriteSpace();
+            writer.Write(node.Name);
+        }
+
         protected override void DeparseTableReferenceNode(ScriptWriter writer, IQsiTableReferenceNode node, QsiScript script)
         {
             base.DeparseTableReferenceNode(writer, node, script);
@@ -193,6 +215,20 @@ namespace Qsi.Oracle
             {
                 writer.WriteSpace();
                 DeparseTreeNode(writer, oracleNode.Hierarchies.Value, script);
+            }
+        }
+
+        protected override void DeparseJoinedTableNode(ScriptWriter writer, IQsiJoinedTableNode node, QsiScript script)
+        {
+            base.DeparseJoinedTableNode(writer, node, script);
+
+            if (node is OracleJoinedTableNode oracleNode)
+            {
+                if (!oracleNode.OnCondition.IsEmpty)
+                {
+                    writer.Write(" ON ");
+                    DeparseTreeNodeWithParenthesis(writer, oracleNode.OnCondition.Value, script);
+                }
             }
         }
 

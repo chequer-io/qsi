@@ -9,7 +9,6 @@ using Qsi.Analyzers.Table;
 using Qsi.Analyzers.Table.Context;
 using Qsi.Data;
 using Qsi.Engines;
-using Qsi.Oracle.Collections;
 using Qsi.Oracle.Tree;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
@@ -21,6 +20,55 @@ namespace Qsi.Oracle.Analyzers
     {
         public OracleActionAnalyzer(QsiEngine engine) : base(engine)
         {
+        }
+
+        protected override async ValueTask<IQsiAnalysisResult[]> OnExecute(IAnalyzerContext context)
+        {
+            switch (context.Tree)
+            {
+                case OracleMergeActionNode mergeActionNode:
+                    return await ExecuteMergeAction(context, mergeActionNode);
+            }
+
+            return await base.OnExecute(context);
+        }
+
+        private async ValueTask<IQsiAnalysisResult[]> ExecuteMergeAction(IAnalyzerContext context, OracleMergeActionNode mergeActionNode)
+        {
+            var results = new List<IQsiAnalysisResult>();
+
+            foreach (var actionNode in mergeActionNode.ActionNodes)
+            {
+                IQsiAnalysisResult[] result;
+
+                switch (actionNode)
+                {
+                    case QsiDataInsertActionNode insertActionNode:
+                    {
+                        result = await ExecuteDataInsertAction(context, insertActionNode);
+                        break;
+                    }
+
+                    case QsiDataDeleteActionNode deleteActionNode:
+                    {
+                        result = await ExecuteDataDeleteAction(context, deleteActionNode);
+                        break;
+                    }
+
+                    case QsiDataUpdateActionNode updateActionNode:
+                    {
+                        result = await ExecuteDataUpdateAction(context, updateActionNode);
+                        break;
+                    }
+
+                    default:
+                        throw TreeHelper.NotSupportedTree(actionNode);
+                }
+
+                results.AddRange(result);
+            }
+
+            return results.ToArray();
         }
 
         protected override async ValueTask<IQsiAnalysisResult[]> ExecuteDataUpdateAction(IAnalyzerContext context, IQsiDataUpdateActionNode action)
@@ -139,7 +187,5 @@ namespace Qsi.Oracle.Analyzers
                 })
                 .ToArray<IQsiAnalysisResult>();
         }
-        
-        
     }
 }

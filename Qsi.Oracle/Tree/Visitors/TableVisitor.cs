@@ -366,6 +366,14 @@ namespace Qsi.Oracle.Tree.Visitors
             };
         }
 
+        public static QsiTableReferenceNode VisitTableReference(FullObjectPathContext context)
+        {
+            var node = OracleTree.CreateWithSpan<OracleTableReferenceNode>(context);
+            node.Identifier = IdentifierVisitor.VisitFullObjectPath(context);
+
+            return node;
+        }
+
         public static QsiTableNode VisitQueryTableReference(QueryTableReferenceContext context)
         {
             var node = VisitQueryTableExpression(context.queryTableExpression());

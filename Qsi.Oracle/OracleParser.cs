@@ -52,7 +52,8 @@ namespace Qsi.Oracle
                 case InsertContext insert:
                     return ActionVisitor.VisitInsert(insert);
 
-                // TODO: Merge
+                case MergeContext merge:
+                    return ActionVisitor.VisitMerge(merge);
 
                 default:
                     throw TreeHelper.NotSupportedTree(oracleStatement.children[0]);
