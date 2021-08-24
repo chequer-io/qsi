@@ -49,7 +49,10 @@ namespace Qsi.Oracle
                 case DeleteContext delete:
                     return ActionVisitor.VisitDelete(delete);
 
-                // TODO: Insert, Merge
+                case InsertContext insert:
+                    return ActionVisitor.VisitInsert(insert);
+
+                // TODO: Merge
 
                 default:
                     throw TreeHelper.NotSupportedTree(oracleStatement.children[0]);

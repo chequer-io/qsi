@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using Qsi.Oracle.Internal;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
@@ -21,6 +20,58 @@ namespace Qsi.Oracle.Tree.Visitors
                 default:
                     throw TreeHelper.NotSupportedTree(context.children[0]);
             }
+        }
+
+        public static IQsiTreeNode VisitInsert(InsertContext context)
+        {
+            var node = OracleTree.CreateWithSpan<OracleDataInsertActionNode>(context);
+
+            if (context.hint() is not null)
+                node.Hint = context.hint().GetInputText();
+
+            var singleTableInsert = context.singleTableInsert();
+
+            if (singleTableInsert is not null)
+            {
+                var insertIntoClause = singleTableInsert.insertIntoClause();
+                var valuesClause = singleTableInsert.valuesClause();
+
+                var targetNode = TableVisitor.VisitDmlTableExpressionClause(insertIntoClause.dmlTableExpressionClause());
+
+                if (targetNode is not QsiTableReferenceNode referenceNode)
+                    throw TreeHelper.NotSupportedFeature("Expression Target in Update");
+
+                node.Target.Value = referenceNode;
+
+                if (insertIntoClause.columnList() is not null)
+                {
+                    node.Columns = insertIntoClause
+                        .columnList()
+                        ._columns.Select(c => IdentifierVisitor.CreateQualifiedIdentifier(c))
+                        .ToArray();
+                }
+
+                if (valuesClause is not null)
+                {
+                    var rowValueNode = OracleTree.CreateWithSpan<QsiRowValueExpressionNode>(valuesClause);
+
+                    rowValueNode.ColumnValues.AddRange(valuesClause
+                        .valuesClauseValue()
+                        .Select(v =>
+                            v.expr() is not null
+                                ? ExpressionVisitor.VisitExpr(v.expr())
+                                : TreeHelper.CreateDefaultLiteral())
+                    );
+
+                    node.Values.Add(rowValueNode);
+                }
+            }
+            else
+            {
+                TreeHelper.NotSupportedFeature("Multi Table Insert");
+            }
+
+            return node;
         }
 
         public static IQsiTreeNode VisitDelete(DeleteContext context)

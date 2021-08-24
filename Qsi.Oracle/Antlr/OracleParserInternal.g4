@@ -1968,7 +1968,12 @@ insertIntoClause
     ;
 
 valuesClause
-    : VALUES '(' ( expr | DEFAULT ) (',' ( expr | DEFAULT ) )* ')'
+    : VALUES '(' valuesClauseValue (',' valuesClauseValue)* ')'
+    ;
+
+valuesClauseValue
+    : expr 
+    | DEFAULT
     ;
 
 multiTableInsert
