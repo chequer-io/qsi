@@ -9695,14 +9695,14 @@ kurtosisSampFunction
     ;
 
 lagFunction
-    : LAG ( '(' expr (',' expr (',' expr))? ')' ((RESPECT | IGNORE) NULLS)?
+    : LAG ( '(' expr (',' expr (',' expr)?)? ')' ((RESPECT | IGNORE) NULLS)?
           | '(' expr ((RESPECT | IGNORE) NULLS)? (',' expr (',' expr)?)? ')'
           )
       OVER '(' queryPartitionClause? orderByClause ')'
     ;
 
 lastFunction
-    : functionCall KEEP '(' DENSE_RANK LAST ORDER BY lastFunctionItem (',' lastFunctionItem)* ')'
+    : functionName '(' argumentList? ')' KEEP '(' DENSE_RANK LAST orderByClause ')'
       (OVER '(' queryPartitionClause? ')')?
     ;
 
@@ -9740,7 +9740,7 @@ minFunction
     ;
 
 nthValueFunction
-    : NTH_VALUE '(' ( expr | identifier ) ',' ( expr | identifier ) ')' (FROM (FIRST | LAST))? ((RESPECT | IGNORE) NULLS)?
+    : NTH_VALUE '(' expr ',' expr ')' (FROM (FIRST | LAST))? ((RESPECT | IGNORE) NULLS)?
     ;
 
 ntileFunction
@@ -9760,9 +9760,7 @@ oraInvokingUserIdFunction
     ;
 
 percentRankAggregateFunction
-    : PERCENT_RANK '(' expr (',' expr)* ')' WITHIN GROUP '(' ORDER BY
-      expr (DESC | ASC)? (NULLS (FIRST | LAST))? (',' expr (DESC | ASC)? (NULLS (FIRST | LAST))?)*
-      ')'
+    : PERCENT_RANK '(' expr (',' expr)* ')' WITHIN GROUP '(' orderByClause ')'
     ;
 
 percentRankAnalyticFunction
@@ -9770,7 +9768,7 @@ percentRankAnalyticFunction
     ;
 
 percentileContFunction
-    : PERCENTILE_CONT '(' expr ')' WITHIN GROUP '(' ORDER BY expr (DESC | ASC)? ')'
+    : PERCENTILE_CONT '(' expr ')' WITHIN GROUP '(' orderByClause ')'
       (OVER '(' queryPartitionClause ')')?
     ;
 
