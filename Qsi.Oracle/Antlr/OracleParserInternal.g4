@@ -9778,7 +9778,7 @@ percentileContFunction
     ;
 
 percentileDiscFunction
-    : PERCENTILE_DISC '(' expr ')' WITHIN GROUP '(' ORDER BY expr (DESC | ASC)? ')'
+    : PERCENTILE_DISC '(' expr ')' WITHIN GROUP '(' orderByClause ')'
       (OVER '(' queryPartitionClause ')')?
     ;
 
@@ -9822,7 +9822,7 @@ predictionDetailsFunction
     ;
 
 predictionDetailsAnalyticFunction
-    : PREDICTION_DETAILS '(' ( OF ANOMALY | FOR expr ) (',' expr (',' expr)?)? (DESC | ASC | ABS)? miningAttributeClause ')' OVER '(' miningAnalyticClause ')'
+    : PREDICTION_DETAILS '(' ( OF ANOMALY | FOR forExpr=expr ) (',' expr (',' expr)?)? (DESC | ASC | ABS)? miningAttributeClause ')' OVER '(' miningAnalyticClause ')'
     ;
 
 predictionProbabilityFunction
@@ -9846,11 +9846,11 @@ predictionSetOrderedFunction
     ;
 
 predictionSetAnalyticFunction
-    : PREDICTION_SET '(' '(' OF ANOMALY | FOR stringLiteral ')' (',' identifier (',' identifier)?)? costMatrixClause? miningAttributeClause ')' OVER '(' miningAnalyticClause ')'
+    : PREDICTION_SET '(' ( OF ANOMALY | FOR stringLiteral ) (',' identifier (',' identifier)?)? costMatrixClause? miningAttributeClause ')' OVER '(' miningAnalyticClause ')'
     ;
 
 rankAggregateFunction
-    : RANK '(' expr (',' expr)* ')' WITHIN GROUP '(' ORDER BY expr (DESC | ASC)? (NULLS (FIRST | LAST))? (',' expr (DESC | ASC)? (NULLS (FIRST | LAST))?)* ')'
+    : RANK '(' expr (',' expr)* ')' WITHIN GROUP '(' orderByClause ')'
     ;
 
 rankAnalyticFunction
@@ -10114,7 +10114,8 @@ xmlcorattvalFunctionItem
 
 costMatrixClause
     : COST ( MODEL AUTO?
-           | '(' expr (',' expr)* ')' VALUES '(' '(' expr (',' expr)* ')' (',' '(' expr (',' expr)* ')')* ')'
+           | '(' models=expressionList ')' VALUES 
+               '(' '(' values+=expressionList ')' (',' '(' values+=expressionList ')')* ')'
            )
     ;
 
