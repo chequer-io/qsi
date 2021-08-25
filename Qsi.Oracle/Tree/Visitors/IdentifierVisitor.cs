@@ -88,5 +88,17 @@ namespace Qsi.Oracle.Tree.Visitors
 
             return node;
         }
+
+        public static QsiTableExpressionNode VisitNestedTable(NestedTableContext context)
+        {
+            var tableExprNode = new QsiTableExpressionNode();
+
+            tableExprNode.Table.Value = new QsiTableReferenceNode
+            {
+                Identifier = new QsiQualifiedIdentifier(VisitIdentifier(context.identifier()))
+            };
+
+            return tableExprNode;
+        }
     }
 }

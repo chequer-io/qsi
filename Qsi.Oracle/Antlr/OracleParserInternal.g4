@@ -9134,15 +9134,13 @@ condition
     | l=condition OR r=condition                                                        #logicalOrCondition
     | (dimensionColumn=identifier IS)? ANY                                              #modelIsAnyCondition
     | cellReference=cellAssignment IS PRESENT                                           #modelIsPresentCondition
-    | nestedTable=identifier IS NOT? KW_A SET                                           #multisetIsASetCondition
-    | nestedTable=identifier IS NOT? KW_EMPTY                                           #multisetIsEmptyCondition
-    | expr NOT? MEMBER OF? nestedTable=identifier                                       #multisetMemberCondition
-    | nestedTable1=identifier NOT? SUBMULTISET OF? nestedTable2=identifier              #multisetSubmultisetCondition
-    | l=expr NOT? (LIKE | LIKEC | LIKE2 | LIKE4)
+    | nestedTable IS NOT? KW_A SET                                                      #multisetIsASetCondition
+    | nestedTable IS NOT? KW_EMPTY                                                      #multisetIsEmptyCondition
+    | expr NOT? MEMBER OF? nestedTable                                                  #multisetMemberCondition
+    | l=nestedTable NOT? SUBMULTISET OF? r=nestedTable                                  #multisetSubmultisetCondition
+    | l=expr NOT? likeType=(LIKE | LIKEC | LIKE2 | LIKE4)
       r=expr (ESCAPE stringLiteral)?                                                    #patternMatchingLikeCondition
-    | REGEXP_LIKE '(' (column|stringLiteral) ','
-                      (column|stringLiteral)
-                      (',' (column|stringLiteral))? ')'                                 #patternMatchingRegexpLikeCondition
+    | REGEXP_LIKE '(' regLikeParameter ',' regLikeParameter (',' regLikeParameter)? ')' #patternMatchingRegexpLikeCondition
 //    | rangeCondition
     | expr IS NOT? NULL                                                                 #isNullCondition
     | EQUALS_PATH '(' expr ',' expr (',' expr)? ')'                                     #xmlEqualsPathCondition
@@ -9154,16 +9152,16 @@ condition
       jsonPassingClause? jsonExistsOnErrorClause? jsonExistsOnEmptyClause? ')'          #jsonExistsCondition
     | JSON_TEXTCONTAINS '(' column ',' stringLiteral ',' stringLiteral ')'              #jsonTextContainsCondition
     | '(' condition ')'                                                                 #compoundParenthesisCondition
-    | e1=expr NOT? BETWEEN e2=expr AND e3=expr                                          #betweenCondition
+    | expr NOT? BETWEEN expr AND expr                                                   #betweenCondition
     | EXISTS '(' subquery ')'                                                           #existsCondition
     | expr NOT? IN '(' (expressionList|subquery) ')'                                    #inCondition1
-    | '(' expr (',' expr)* ')' NOT?
-      IN '(' (expressionList (',' expressionList)* | subquery) ')' #inCondition2
+    | '(' l=expressionList ')' NOT? IN 
+      '(' (expressionList (',' expressionList)* | subquery) ')'                         #inCondition2
     | expr IS NOT? OF TYPE? '(' isOfTypeConditionItem (',' isOfTypeConditionItem)* ')'  #isOfTypeCondition
     ;
 
 isOfTypeConditionItem
-    : ONLY? (SCHEMA '.')? type
+    : ONLY? fullObjectPath
     ;
 
 operator1
@@ -9185,9 +9183,15 @@ operator2
     ;
 
 groupComparisonCondition
-    : expr operator1 option=(ANY | SOME | ALL) '(' (expressionList | subquery) ')'                                              #exprGroupComparisonCondition
-    | '(' expr (',' expr)* ')' operator2 option=(ANY | SOME | ALL) '(' (expressionList (',' expressionList)* | subquery) ')'    #listGroupComparisonCondition
-    | LNNVL '(' condition ')'                                                                                                   #lnnvlGroupComparisonCondition
+    : expr operator1 option=(ANY | SOME | ALL) '(' (expressionList | subquery) ')'      #exprGroupComparisonCondition
+    | '(' l=expressionList ')' operator2 option=(ANY | SOME | ALL)
+      '(' (exprList+=expressionList (',' exprList+=expressionList)* | subquery) ')'     #listGroupComparisonCondition
+    | LNNVL '(' condition ')'                                                           #lnnvlGroupComparisonCondition
+    ;
+
+regLikeParameter
+    : column
+    | stringLiteral
     ;
 
 expr
@@ -11650,6 +11654,10 @@ pairsOfControl
 
 cursorIterationControl
     : '(' ( cursorObject | cursorVariable | dynamicSql | sqlStatement ) ')'
+    ;
+
+nestedTable
+    : identifier
     ;
 
 constant

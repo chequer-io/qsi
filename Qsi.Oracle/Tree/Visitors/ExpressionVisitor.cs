@@ -3371,6 +3371,7 @@ namespace Qsi.Oracle.Tree.Visitors
                 BetweenConditionContext betweenCondition => VisitBetweenCondition(betweenCondition),
                 ExistsConditionContext existsCondition => VisitExistsCondition(existsCondition),
                 InCondition1Context inCondition1 => VisitInCondition1(inCondition1),
+                InCondition2Context inCondition2 => VisitInCondition2(inCondition2),
                 IsOfTypeConditionContext isOfTypeCondition => VisitIsOfTypeCondition(isOfTypeCondition),
                 _ => throw new NotSupportedException()
             };
@@ -3404,132 +3405,400 @@ namespace Qsi.Oracle.Tree.Visitors
 
         public static QsiExpressionNode VisitGroupComparisonCondition(GroupComparisonConditionContext context)
         {
-            throw new NotImplementedException();
+            return context switch
+            {
+                ExprGroupComparisonConditionContext context1 => VisitExprGroupComparisonCondition(context1),
+                ListGroupComparisonConditionContext context2 => VisitListGroupComparisonCondition(context2),
+                LnnvlGroupComparisonConditionContext context3 => VisitLnnvlGroupComparisonCondition(context3),
+                _ => throw new InvalidOperationException()
+            };
+        }
+
+        public static QsiExpressionNode VisitExprGroupComparisonCondition(ExprGroupComparisonConditionContext context)
+        {
+            var node = OracleTree.CreateWithSpan<QsiBinaryExpressionNode>(context);
+
+            node.Left.Value = VisitExpr(context.expr());
+            node.Operator = string.Join(" ", context.operator1().GetText(), context.option.Text);
+
+            if (context.expressionList() is not null)
+                node.Right.Value = VisitExpressionList(context.expressionList());
+            else
+                node.Right.Value = VisitSubquery(context.subquery());
+
+            return node;
+        }
+
+        public static QsiExpressionNode VisitListGroupComparisonCondition(ListGroupComparisonConditionContext context)
+        {
+            var node = OracleTree.CreateWithSpan<QsiBinaryExpressionNode>(context);
+
+            node.Left.Value = VisitExpressionList(context.l);
+
+            node.Operator = string.Join(" ", context.operator2().GetText(), context.option.Text);
+
+            if (context.subquery() is not null)
+            {
+                node.Right.Value = VisitSubquery(context.subquery());
+            }
+            else
+            {
+                var multipleExpressionNode = OracleTree.CreateWithSpan<QsiMultipleExpressionNode>(context.OPEN_PAR_SYMBOL(1).Symbol, context.CLOSE_PAR_SYMBOL(1).Symbol);
+
+                foreach (var exprList in context._exprList)
+                    multipleExpressionNode.Elements.Add(VisitExpressionList(exprList));
+
+                node.Right.Value = multipleExpressionNode;
+            }
+
+            return node;
+        }
+
+        public static QsiExpressionNode VisitLnnvlGroupComparisonCondition(LnnvlGroupComparisonConditionContext context)
+        {
+            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+
+            node.Member.Value = TreeHelper.CreateFunction("LNNVL");
+            node.Parameters.Add(VisitCondition(context.condition()));
+
+            return node;
         }
 
         public static QsiExpressionNode VisitFloatingPointCondition(FloatingPointConditionContext context)
         {
-            throw new NotImplementedException();
+            string functionName;
+            bool isNot = context.HasToken(NOT);
+
+            if (context.HasToken(NAN))
+                functionName = isNot ? OracleKnownFunction.IsNotNaN : OracleKnownFunction.IsNaN;
+            else
+                functionName = isNot ? OracleKnownFunction.IsNotInfinite : OracleKnownFunction.IsInfinite;
+
+            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+
+            node.Member.Value = TreeHelper.CreateFunction(functionName);
+            node.Parameters.Add(VisitExpr(context.expr()));
+
+            return node;
         }
 
         public static QsiExpressionNode VisitDanglingCondition(DanglingConditionContext context)
         {
-            throw new NotImplementedException();
+            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+
+            string functionName = context.HasToken(NOT) ? OracleKnownFunction.IsNotDangling : OracleKnownFunction.IsDangling;
+
+            node.Member.Value = TreeHelper.CreateFunction(functionName);
+            node.Parameters.Add(VisitExpr(context.expr()));
+
+            return node;
         }
 
         public static QsiExpressionNode VisitLogicalNotCondition(LogicalNotConditionContext context)
         {
-            throw new NotImplementedException();
+            var node = OracleTree.CreateWithSpan<QsiUnaryExpressionNode>(context);
+            node.Operator = "NOT";
+            node.Expression.Value = VisitCondition(context.condition());
+
+            return node;
         }
 
         public static QsiExpressionNode VisitLogicalAndCondition(LogicalAndConditionContext context)
         {
-            throw new NotImplementedException();
+            var node = OracleTree.CreateWithSpan<QsiBinaryExpressionNode>(context);
+            node.Left.Value = VisitCondition(context.l);
+            node.Operator = "AND";
+            node.Right.Value = VisitCondition(context.r);
+
+            return node;
         }
 
         public static QsiExpressionNode VisitLogicalOrCondition(LogicalOrConditionContext context)
         {
-            throw new NotImplementedException();
+            var node = OracleTree.CreateWithSpan<QsiBinaryExpressionNode>(context);
+            node.Left.Value = VisitCondition(context.l);
+            node.Operator = "OR";
+            node.Right.Value = VisitCondition(context.r);
+
+            return node;
         }
 
         public static QsiExpressionNode VisitModelIsAnyCondition(ModelIsAnyConditionContext context)
         {
-            throw new NotImplementedException();
+            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(OracleKnownFunction.IsAny);
+
+            if (context.HasToken(IS))
+            {
+                var columnExprNode = new QsiColumnExpressionNode();
+
+                columnExprNode.Column.Value = new QsiColumnReferenceNode
+                {
+                    Name = new QsiQualifiedIdentifier(IdentifierVisitor.VisitIdentifier(context.identifier()))
+                };
+
+                node.Parameters.Add(columnExprNode);
+            }
+
+            return node;
         }
 
         public static QsiExpressionNode VisitModelIsPresentCondition(ModelIsPresentConditionContext context)
         {
-            throw new NotImplementedException();
+            throw TreeHelper.NotSupportedFeature("Cell Assignment");
         }
 
         public static QsiExpressionNode VisitMultisetIsASetCondition(MultisetIsASetConditionContext context)
         {
-            throw new NotImplementedException();
+            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+
+            string functionName = context.HasToken(NOT) ? OracleKnownFunction.IsNotASet : OracleKnownFunction.IsASet;
+
+            node.Member.Value = TreeHelper.CreateFunction(functionName);
+            node.Parameters.Add(IdentifierVisitor.VisitNestedTable(context.nestedTable()));
+
+            return node;
         }
 
         public static QsiExpressionNode VisitMultisetIsEmptyCondition(MultisetIsEmptyConditionContext context)
         {
-            throw new NotImplementedException();
+            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+
+            string functionName = context.HasToken(NOT) ? OracleKnownFunction.IsNotEmpty : OracleKnownFunction.IsEmpty;
+
+            node.Member.Value = TreeHelper.CreateFunction(functionName);
+            node.Parameters.Add(IdentifierVisitor.VisitNestedTable(context.nestedTable()));
+
+            return node;
         }
 
         public static QsiExpressionNode VisitMultisetMemberCondition(MultisetMemberConditionContext context)
         {
-            throw new NotImplementedException();
+            var node = OracleTree.CreateWithSpan<QsiBinaryExpressionNode>(context);
+            node.Left.Value = VisitExpr(context.expr());
+            node.Operator = context.HasToken(NOT) ? "NOT MEMBER OF" : "MEMBER OF";
+            node.Right.Value = IdentifierVisitor.VisitNestedTable(context.nestedTable());
+
+            return node;
         }
 
         public static QsiExpressionNode VisitMultisetSubmultisetCondition(MultisetSubmultisetConditionContext context)
         {
-            throw new NotImplementedException();
+            var node = OracleTree.CreateWithSpan<QsiBinaryExpressionNode>(context);
+            node.Left.Value = IdentifierVisitor.VisitNestedTable(context.l);
+            node.Operator = context.HasToken(NOT) ? "NOT SUBMULTISET OF" : "SUBMULTISET OF";
+            node.Right.Value = IdentifierVisitor.VisitNestedTable(context.r);
+
+            return node;
         }
 
         public static QsiExpressionNode VisitPatternMatchingLikeCondition(PatternMatchingLikeConditionContext context)
         {
-            throw new NotImplementedException();
+            bool isNot = context.HasToken(NOT);
+
+            string functionName = context.likeType.Type switch
+            {
+                LIKE => isNot ? OracleKnownFunction.NotLike : OracleKnownFunction.Like,
+                LIKEC => isNot ? OracleKnownFunction.NotLikeC : OracleKnownFunction.LikeC,
+                LIKE2 => isNot ? OracleKnownFunction.NotLike2 : OracleKnownFunction.Like2,
+                LIKE4 => isNot ? OracleKnownFunction.NotLike4 : OracleKnownFunction.Like4,
+                _ => throw new InvalidOperationException()
+            };
+
+            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(functionName);
+
+            node.Parameters.Add(VisitExpr(context.l));
+            node.Parameters.Add(VisitExpr(context.r));
+
+            if (context.HasToken(ESCAPE))
+            {
+                node.Parameters.Add(VisitStringLiteral(context.stringLiteral()));
+            }
+
+            return node;
         }
 
         public static QsiExpressionNode VisitPatternMatchingRegexpLikeCondition(PatternMatchingRegexpLikeConditionContext context)
         {
-            throw new NotImplementedException();
+            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(OracleKnownFunction.RegexpLike);
+            node.Parameters.AddRange(context.regLikeParameter().Select(VisitRegLikeParameter));
+
+            return node;
+        }
+
+        public static QsiExpressionNode VisitRegLikeParameter(RegLikeParameterContext context)
+        {
+            if (context.column() is not null)
+            {
+                var columnExprNode = new QsiColumnExpressionNode();
+                columnExprNode.Column.Value = IdentifierVisitor.VisitColumn(context.column());
+
+                return columnExprNode;
+            }
+
+            return VisitStringLiteral(context.stringLiteral());
         }
 
         public static QsiExpressionNode VisitIsNullCondition(IsNullConditionContext context)
         {
-            throw new NotImplementedException();
+            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            var functionName = context.HasToken(NOT) ? OracleKnownFunction.IsNotNull : OracleKnownFunction.IsNull;
+            node.Member.Value = TreeHelper.CreateFunction(functionName);
+
+            node.Parameters.Add(VisitExpr(context.expr()));
+
+            return node;
         }
 
         public static QsiExpressionNode VisitXmlEqualsPathCondition(XmlEqualsPathConditionContext context)
         {
-            throw new NotImplementedException();
+            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction("EQUALS_PATH");
+            node.Parameters.AddRange(context.expr().Select(VisitExpr));
+
+            return node;
         }
 
         public static QsiExpressionNode VisitXmlUnderPathCondition(XmlUnderPathConditionContext context)
         {
-            throw new NotImplementedException();
+            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction("UNDER_PATH");
+            node.Parameters.AddRange(context.expr().Select(VisitExpr));
+
+            return node;
         }
 
         public static QsiExpressionNode VisitJsonIsJsonCondition(JsonIsJsonConditionContext context)
         {
-            throw new NotImplementedException();
+            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            var functionName = context.HasToken(NOT) ? OracleKnownFunction.IsJson : OracleKnownFunction.IsNotJson;
+            node.Member.Value = TreeHelper.CreateFunction(functionName);
+
+            node.Parameters.Add(VisitExpr(context.expr()));
+
+            return node;
         }
 
         public static QsiExpressionNode VisitJsonEqualCondition(JsonEqualConditionContext context)
         {
-            throw new NotImplementedException();
+            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction("JSON_EQUAL");
+            node.Parameters.AddRange(context.expr().Select(VisitExpr));
+
+            return node;
         }
 
         public static QsiExpressionNode VisitJsonExistsCondition(JsonExistsConditionContext context)
         {
-            throw new NotImplementedException();
+            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction("JSON_EXISTS");
+            node.Parameters.Add(VisitExpr(context.expr()));
+            node.Parameters.Add(VisitStringLiteral(context.stringLiteral()));
+
+            // FORMAT JSON, jsonPassingClause, jsonExistsOnErrorClause, jsonExistsOnEmptyClause ignored
+
+            return node;
         }
 
         public static QsiExpressionNode VisitJsonTextContainsCondition(JsonTextContainsConditionContext context)
         {
-            throw new NotImplementedException();
+            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction("JSON_TEXTCONTAINS");
+
+            var columnNode = OracleTree.CreateWithSpan<QsiColumnExpressionNode>(context);
+            columnNode.Column.Value = IdentifierVisitor.VisitColumn(context.column());
+
+            node.Parameters.Add(columnNode);
+            node.Parameters.Add(VisitStringLiteral(context.stringLiteral(0)));
+            node.Parameters.Add(VisitStringLiteral(context.stringLiteral(1)));
+
+            // FORMAT JSON, jsonPassingClause, jsonExistsOnErrorClause, jsonExistsOnEmptyClause ignored
+
+            return node;
         }
 
         public static QsiExpressionNode VisitCompoundParenthesisCondition(CompoundParenthesisConditionContext context)
         {
-            throw new NotImplementedException();
+            return VisitCondition(context.condition());
         }
 
         public static QsiExpressionNode VisitBetweenCondition(BetweenConditionContext context)
         {
-            throw new NotImplementedException();
+            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            var functionName = context.HasToken(NOT) ? OracleKnownFunction.NotBetween : OracleKnownFunction.Between;
+            node.Member.Value = TreeHelper.CreateFunction(functionName);
+            node.Parameters.AddRange(context.expr().Select(VisitExpr));
+
+            return node;
         }
 
         public static QsiExpressionNode VisitExistsCondition(ExistsConditionContext context)
         {
-            throw new NotImplementedException();
+            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction("EXISTS");
+            node.Parameters.Add(VisitSubquery(context.subquery()));
+
+            return node;
         }
 
         public static QsiExpressionNode VisitInCondition1(InCondition1Context context)
         {
-            throw new NotImplementedException();
+            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            var functionName = context.HasToken(NOT) ? OracleKnownFunction.NotIn : OracleKnownFunction.In;
+            node.Member.Value = TreeHelper.CreateFunction(functionName);
+
+            node.Parameters.Add(VisitExpr(context.expr()));
+
+            if (context.expressionList() is not null)
+                node.Parameters.Add(VisitExpressionList(context.expressionList()));
+            else
+                node.Parameters.Add(VisitSubquery(context.subquery()));
+
+            return node;
+        }
+
+        public static QsiExpressionNode VisitInCondition2(InCondition2Context context)
+        {
+            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            var functionName = context.HasToken(NOT) ? OracleKnownFunction.NotIn : OracleKnownFunction.In;
+            node.Member.Value = TreeHelper.CreateFunction(functionName);
+
+            node.Parameters.Add(VisitExpressionList(context.l));
+
+            if (context.expressionList() is not null)
+                node.Parameters.AddRange(context.expressionList().Select(VisitExpressionList));
+            else
+                node.Parameters.Add(VisitSubquery(context.subquery()));
+
+            return node;
         }
 
         public static QsiExpressionNode VisitIsOfTypeCondition(IsOfTypeConditionContext context)
         {
-            throw new NotImplementedException();
+            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            var functionName = context.HasToken(NOT) ? OracleKnownFunction.NotIn : OracleKnownFunction.In;
+            node.Member.Value = TreeHelper.CreateFunction(functionName);
+
+            node.Parameters.Add(VisitExpr(context.expr()));
+
+            foreach (var item in context.isOfTypeConditionItem())
+            {
+                // Node name is TableReference, but isOfTypeConditionItem is type
+                var typeNode = new OracleTableReferenceNode
+                {
+                    Identifier = IdentifierVisitor.VisitFullObjectPath(item.fullObjectPath()),
+                    IsOnly = item.HasToken(ONLY)
+                };
+
+                var parameter = new OracleTableExpressionNode();
+                parameter.Table.Value = typeNode;
+
+                node.Parameters.Add(parameter);
+            }
+
+            return node;
         }
         #endregion
 
