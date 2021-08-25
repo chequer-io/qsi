@@ -9911,7 +9911,7 @@ sumFunction
     ;
 
 sysDburigenFunction
-    : SYS_DBURIGEN '(' (identifier identifier?) (','identifier identifier?)* (',' stringLiteral '(' ')')? ')'
+    : SYS_DBURIGEN '(' fullObjectPath ( ',' fullObjectPath )* (',' stringLiteral )? ')'
     ;
 
 sysdateFunction

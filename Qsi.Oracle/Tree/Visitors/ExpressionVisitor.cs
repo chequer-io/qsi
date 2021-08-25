@@ -2341,104 +2341,337 @@ namespace Qsi.Oracle.Tree.Visitors
             return node;
         }
 
-        public static OracleInvokeExpressionNode VisitRatioToReportFunction(RatioToReportFunctionContext context)
+        public static OracleAnalyticFunctionExpressionNode VisitRatioToReportFunction(RatioToReportFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleAnalyticFunctionExpressionNode>(context);
+
+            var invokeNode = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            invokeNode.Member.Value = TreeHelper.CreateFunction(context.RATIO_TO_REPORT().GetText());
+
+            invokeNode.Parameters.Add(VisitExpr(context.expr()));
+
+            node.Function.Value = invokeNode;
+
+            if (context.queryPartitionClause() is not null)
+                node.Partition.Value = VisitQueryPartitionClause(context.queryPartitionClause());
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitSessiontimezoneFunction(SessiontimezoneFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.SESSIONTIMEZONE().GetText());
+
+            return node;
         }
 
-        public static OracleInvokeExpressionNode VisitRowNumberFunction(RowNumberFunctionContext context)
+        public static OracleAnalyticFunctionExpressionNode VisitRowNumberFunction(RowNumberFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleAnalyticFunctionExpressionNode>(context);
+
+            var invokeNode = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            invokeNode.Member.Value = TreeHelper.CreateFunction(context.ROW_NUMBER().GetText());
+
+            node.Function.Value = invokeNode;
+
+            if (context.queryPartitionClause() is not null)
+                node.Partition.Value = VisitQueryPartitionClause(context.queryPartitionClause());
+
+            node.Order.Value = VisitOrderByClause(context.orderByClause());
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitSkewnessPopFunction(SkewnessPopFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.SKEWNESS_POP().GetText());
+
+            if (context.HasToken(DISTINCT))
+                node.QueryBehavior = OracleQueryBehavior.Distinct;
+            else if (context.HasToken(ALL))
+                node.QueryBehavior = OracleQueryBehavior.All;
+            else if (context.HasToken(UNIQUE))
+                node.QueryBehavior = OracleQueryBehavior.Unique;
+
+            node.Parameters.Add(VisitExpr(context.expr()));
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitSkewnessSampFunction(SkewnessSampFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.SKEWNESS_SAMP().GetText());
+
+            if (context.HasToken(DISTINCT))
+                node.QueryBehavior = OracleQueryBehavior.Distinct;
+            else if (context.HasToken(ALL))
+                node.QueryBehavior = OracleQueryBehavior.All;
+            else if (context.HasToken(UNIQUE))
+                node.QueryBehavior = OracleQueryBehavior.Unique;
+
+            node.Parameters.Add(VisitExpr(context.expr()));
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitSysDburigenFunction(SysDburigenFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.SYS_DBURIGEN().GetText());
+
+            node.Parameters.AddRange(context.fullObjectPath().Select(c =>
+            {
+                var objectNode = OracleTree.CreateWithSpan<QsiFieldExpressionNode>(c);
+                objectNode.Identifier = IdentifierVisitor.VisitFullObjectPath(c);
+
+                return objectNode;
+            }));
+
+            if (context.stringLiteral() is not null)
+                node.Parameters.Add(VisitStringLiteral(context.stringLiteral()));
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitSysdateFunction(SysdateFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.SYSDATE().GetText());
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitSystimestampFunction(SystimestampFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.SYSTIMESTAMP().GetText());
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitToBinaryDoubleFunction(ToBinaryDoubleFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleTypeCastFunctionExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.TO_BINARY_DOUBLE().GetText());
+
+            ExprContext[] expressions = context.expr();
+
+            if (context.HasToken(DEFAULT))
+            {
+                node.Parameters.Add(VisitExpr(expressions[0]));
+                node.DefaultExpressionOnError.Value = VisitExpr(expressions[1]);
+
+                if (expressions.Length > 2)
+                    node.Parameters.AddRange(expressions.Skip(2).Select(VisitExpr));
+            }
+            else
+            {
+                node.Parameters.AddRange(expressions.Select(VisitExpr));
+            }
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitToBinaryFloatFunction(ToBinaryFloatFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleTypeCastFunctionExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.TO_BINARY_FLOAT().GetText());
+
+            ExprContext[] expressions = context.expr();
+
+            if (context.HasToken(DEFAULT))
+            {
+                node.Parameters.Add(VisitExpr(expressions[0]));
+                node.DefaultExpressionOnError.Value = VisitExpr(expressions[1]);
+
+                if (expressions.Length > 2)
+                    node.Parameters.AddRange(expressions.Skip(2).Select(VisitExpr));
+            }
+            else
+            {
+                node.Parameters.AddRange(expressions.Select(VisitExpr));
+            }
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitToDateFunction(ToDateFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleTypeCastFunctionExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.TO_DATE().GetText());
+
+            ExprContext[] expressions = context.expr();
+
+            if (context.HasToken(DEFAULT))
+            {
+                node.Parameters.Add(VisitExpr(expressions[0]));
+                node.DefaultExpressionOnError.Value = VisitExpr(expressions[1]);
+
+                if (expressions.Length > 2)
+                    node.Parameters.AddRange(expressions.Skip(2).Select(VisitExpr));
+            }
+            else
+            {
+                node.Parameters.AddRange(expressions.Select(VisitExpr));
+            }
+
+            if (context.stringLiteral() is not null)
+                node.Parameters.Add(VisitStringLiteral(context.stringLiteral()));
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitToDsintervalFunction(ToDsintervalFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleTypeCastFunctionExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.TO_DSINTERVAL().GetText());
+
+            node.Parameters.Add(VisitStringLiteral(context.stringLiteral()));
+
+            if (context.HasToken(DEFAULT))
+                node.Parameters.Add(VisitExpr(context.expr()));
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitToNumberFunction(ToNumberFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleTypeCastFunctionExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.TO_NUMBER().GetText());
+
+            ExprContext[] expressions = context.expr();
+
+            if (context.HasToken(DEFAULT))
+            {
+                node.Parameters.Add(VisitExpr(expressions[0]));
+                node.DefaultExpressionOnError.Value = VisitExpr(expressions[1]);
+
+                if (expressions.Length > 2)
+                    node.Parameters.AddRange(expressions.Skip(2).Select(VisitExpr));
+            }
+            else
+            {
+                node.Parameters.AddRange(expressions.Select(VisitExpr));
+            }
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitToTimestampFunction(ToTimestampFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleTypeCastFunctionExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.TO_TIMESTAMP().GetText());
+
+            ExprContext[] expressions = context.expr();
+
+            if (context.HasToken(DEFAULT))
+            {
+                node.Parameters.Add(VisitExpr(expressions[0]));
+                node.DefaultExpressionOnError.Value = VisitExpr(expressions[1]);
+
+                if (expressions.Length > 2)
+                    node.Parameters.AddRange(expressions.Skip(2).Select(VisitExpr));
+            }
+            else
+            {
+                node.Parameters.AddRange(expressions.Select(VisitExpr));
+            }
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitToTimestampTzFunction(ToTimestampTzFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleTypeCastFunctionExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.TO_TIMESTAMP_TZ().GetText());
+
+            ExprContext[] expressions = context.expr();
+
+            if (context.HasToken(DEFAULT))
+            {
+                node.Parameters.Add(VisitExpr(expressions[0]));
+                node.DefaultExpressionOnError.Value = VisitExpr(expressions[1]);
+
+                if (expressions.Length > 2)
+                    node.Parameters.AddRange(expressions.Skip(2).Select(VisitExpr));
+            }
+            else
+            {
+                node.Parameters.AddRange(expressions.Select(VisitExpr));
+            }
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitToYmintervalFunction(ToYmintervalFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleTypeCastFunctionExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.TO_YMINTERVAL().GetText());
+
+            node.Parameters.Add(VisitStringLiteral(context.stringLiteral()));
+
+            if (context.HasToken(DEFAULT))
+                node.Parameters.Add(VisitExpr(context.expr()));
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitTranslateUsingFunction(TranslateUsingFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
-        }
+            var node = OracleTree.CreateWithSpan<OracleTypeCastFunctionExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.TRANSLATE().GetText());
 
-        public static OracleInvokeExpressionNode VisitTreatFunction(TreatFunctionContext context)
-        {
-            throw TreeHelper.NotSupportedTree(context);
+            node.Parameters.Add(VisitExpr(context.expr()));
+
+            if (context.HasToken(CHAR_CS))
+                node.Parameters.Add(TreeHelper.CreateConstantLiteral("USING CHAR_CS"));
+            else if (context.HasToken(NCHAR_CS))
+                node.Parameters.Add(TreeHelper.CreateConstantLiteral("USING NCHAR_CS"));
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitTrimFunction(TrimFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.TRIM().GetText());
+
+            if (context.HasToken(FROM))
+            {
+                if (context.HasToken(LEADING))
+                    node.Parameters.Add(TreeHelper.CreateConstantLiteral("LEADING"));
+                else if (context.HasToken(TRAILING))
+                    node.Parameters.Add(TreeHelper.CreateConstantLiteral("TRAILING"));
+                else if (context.HasToken(BOTH))
+                    node.Parameters.Add(TreeHelper.CreateConstantLiteral("BOTH"));
+
+                if (context.expr().Length == 2)
+                    node.Parameters.Add(VisitExpr(context.expr(0)));
+
+                node.Parameters.Add(TreeHelper.CreateConstantLiteral("FROM"));
+            }
+
+            node.Parameters.Add(VisitExpr(context.expr(1)));
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitTzOffsetFunction(TzOffsetFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.TZ_OFFSET().GetText());
+
+            if (context.HasToken(DBTIMEZONE))
+                node.Parameters.Add(TreeHelper.CreateConstantLiteral("DBTIMEZONE"));
+            else if (context.HasToken(SESSIONTIMEZONE))
+                node.Parameters.Add(TreeHelper.CreateConstantLiteral("SESSIONTIMEZONE"));
+            else if (context.stringLiteral() is not null)
+                node.Parameters.Add(VisitStringLiteral(context.stringLiteral()));
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitUidFunction(UidFunctionContext context)
@@ -2459,7 +2692,21 @@ namespace Qsi.Oracle.Tree.Visitors
 
         public static OracleInvokeExpressionNode VisitValidateConversionFunction(ValidateConversionFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.VALIDATE_CONVERSION().GetText());
+
+            ExprContext[] expressions = context.expr();
+
+            node.Parameters.Add(VisitExpr(expressions[0]));
+            node.Parameters.Add(TreeHelper.CreateConstantLiteral(context.validateConversionTypeName().GetInputText()));
+
+            if (expressions.Length == 2)
+                node.Parameters.Add(VisitExpr(expressions[1]));
+
+            if (context.stringLiteral() is not null)
+                node.Parameters.Add(VisitStringLiteral(context.stringLiteral()));
+
+            return node;
         }
         #endregion
 
@@ -2515,6 +2762,11 @@ namespace Qsi.Oracle.Tree.Visitors
         }
 
         public static OracleInvokeExpressionNode VisitJsonValueFunction(JsonValueFunctionContext context)
+        {
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        public static OracleInvokeExpressionNode VisitTreatFunction(TreatFunctionContext context)
         {
             throw TreeHelper.NotSupportedTree(context);
         }
