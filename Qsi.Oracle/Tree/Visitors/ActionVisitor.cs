@@ -1,7 +1,9 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Qsi.Data;
 using Qsi.Oracle.Common;
 using Qsi.Oracle.Internal;
+using Qsi.Oracle.Utilities;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
 using Qsi.Utilities;
@@ -194,6 +196,97 @@ namespace Qsi.Oracle.Tree.Visitors
             return node;
         }
 
+        public static OracleMergeActionNode VisitMerge(MergeContext context)
+        {
+            var targetTable = TableVisitor.VisitTableReference(context.leftTable);
+
+            var sourceTable = context.rightReference is not null
+                ? TableVisitor.VisitTableReference(context.rightReference)
+                : TableVisitor.VisitSubquery(context.rightSubquery);
+
+            var onCondition = ExpressionVisitor.VisitCondition(context.condition());
+            var node = OracleTree.CreateWithSpan<OracleMergeActionNode>(context);
+
+            if (context.hint() is not null)
+                node.Hint = context.hint().GetInputText();
+
+            if (context.mergeUpdateClause() is not null)
+            {
+                node.ActionNodes.AddRange(
+                    VisitMergeUpdateClause(context, context.mergeUpdateClause(), targetTable, sourceTable, onCondition)
+                );
+            }
+
+            if (context.mergeInsertClause() is not null)
+            {
+                node.ActionNodes.Add(
+                    VisitMergeInsertClause(context, context.mergeInsertClause(), targetTable, sourceTable, onCondition)
+                );
+            }
+
+            return node;
+        }
+
+        public static IEnumerable<QsiActionNode> VisitMergeUpdateClause(
+            MergeContext context,
+            MergeUpdateClauseContext mergeUpdateClause,
+            QsiTableNode leftNode,
+            QsiTableNode rightNode,
+            QsiExpressionNode onCondition
+        )
+        {
+            if (context.leftAlias is not null)
+                leftNode = OracleHelper.CreateDerivedTable(leftNode, context.leftAlias);
+
+            if (context.rightAlias is not null)
+                rightNode = OracleHelper.CreateDerivedTable(rightNode, context.rightAlias);
+
+            var joinedTable = OracleHelper.CreateJoinedTable(leftNode, rightNode, onCondition);
+
+            QsiTableNode updateTarget = joinedTable;
+
+            if (mergeUpdateClause.where is not null)
+            {
+                var derivedTable = new OracleDerivedTableNode();
+                derivedTable.Source.Value = updateTarget;
+                derivedTable.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+                derivedTable.Where.Value = ExpressionVisitor.VisitWhereClause(mergeUpdateClause.where);
+
+                updateTarget = derivedTable;
+            }
+
+            // MERGE DELETE
+            if (mergeUpdateClause.HasToken(DELETE))
+            {
+                var deleteTarget = new OracleDerivedTableNode();
+                deleteTarget.Source.Value = joinedTable;
+                deleteTarget.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+                deleteTarget.Where.Value = ExpressionVisitor.VisitWhereClause(mergeUpdateClause.deleteWhere);
+
+                var deleteActionNode = new OracleDataDeleteActionNode();
+                deleteActionNode.Target.Value = deleteTarget;
+
+                yield return deleteActionNode;
+            }
+
+            // MERGE UPDATE
+            var updateActionNode = new OracleDataUpdateActionNode();
+            updateActionNode.Target.Value = updateTarget;
+
+            foreach (var setValue in mergeUpdateClause.mergeSetValue())
+            {
+                var setValueNode = OracleTree.CreateWithSpan<QsiSetColumnExpressionNode>(setValue);
+                setValueNode.Target = IdentifierVisitor.CreateQualifiedIdentifier(setValue.column().identifier());
+
+                var setValueExprNode = new OracleSetValueExpressionNode();
+                setValueExprNode.SetValue.Value = setValueNode;
+
+                updateActionNode.SetValueExpressions.Add(setValueExprNode);
+            }
+
+            yield return updateActionNode;
+        }
+
         //
         // -- MERGE Statement
         //
@@ -262,61 +355,23 @@ namespace Qsi.Oracle.Tree.Visitors
                 rightPath = new QsiQualifiedIdentifier(rightAlias);
                 directives = CreateDirectiveTable(subqueryAlias, rightNode);
 
-                var rightDerivedNode = new OracleDerivedTableNode();
+                var rightDerivedSource = new OracleTableReferenceNode { Identifier = new QsiQualifiedIdentifier(subqueryAlias) };
+                var rightAliasNode = new QsiAliasNode { Name = rightAlias };
 
-                rightDerivedNode.Source.Value = new OracleTableReferenceNode
-                {
-                    Identifier = new QsiQualifiedIdentifier(subqueryAlias)
-                };
-
-                rightDerivedNode.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
-
-                rightDerivedNode.Alias.Value = new QsiAliasNode
-                {
-                    Name = rightAlias
-                };
-
-                rightSource = rightDerivedNode;
+                rightSource = OracleHelper.CreateDerivedTable(rightDerivedSource, rightAliasNode);
             }
 
-            var matchedItemsNode = new OracleJoinedTableNode();
-            matchedItemsNode.Left.Value = leftNode;
-            matchedItemsNode.Right.Value = rightSource;
-            matchedItemsNode.JoinType = "JOIN";
-            matchedItemsNode.OnCondition.Value = onCondition;
+            var minusJoinTableLeftSource = OracleHelper.CreateDerivedTable(rightSource);
 
-            var selectInJoinedTableNode = new OracleDerivedTableNode();
-            selectInJoinedTableNode.Source.Value = matchedItemsNode;
-
-            var columns = new QsiColumnsDeclarationNode();
-
-            var allNode = new QsiAllColumnNode
-            {
-                Path = rightPath
-            };
-
-            columns.Columns.Add(allNode);
-
-            selectInJoinedTableNode.Columns.Value = columns;
-
-            var minusJoinTableLeftSource = new OracleDerivedTableNode();
-
-            minusJoinTableLeftSource.Source.Value = rightSource;
-            minusJoinTableLeftSource.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+            var matchedItemsNode = OracleHelper.CreateJoinedTable(leftNode, rightSource, onCondition);
+            var selectInJoinedTableNode = OracleHelper.CreateDerivedTableWithPath(matchedItemsNode, rightPath);
 
             var minusJoinTable = new OracleBinaryTableNode();
             minusJoinTable.Left.Value = minusJoinTableLeftSource;
             minusJoinTable.Right.Value = selectInJoinedTableNode;
             minusJoinTable.BinaryTableType = OracleBinaryTableType.Minus;
 
-            var minusJoinAliasedTable = new OracleDerivedTableNode();
-            minusJoinAliasedTable.Source.Value = minusJoinTable;
-            minusJoinAliasedTable.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
-
-            minusJoinAliasedTable.Alias.Value = new QsiAliasNode
-            {
-                Name = rightAlias
-            };
+            var minusJoinAliasedTable = OracleHelper.CreateDerivedTable(minusJoinTable, new QsiAliasNode { Name = rightAlias });
 
             var itemSelectionSubqueryTable = new OracleDerivedTableNode();
 
@@ -388,110 +443,6 @@ namespace Qsi.Oracle.Tree.Visitors
             directives.Tables.Add(node);
 
             return directives;
-        }
-
-        public static OracleMergeActionNode VisitMerge(MergeContext context)
-        {
-            var targetTable = TableVisitor.VisitTableReference(context.leftTable);
-            QsiTableNode leftTable = targetTable;
-
-            var onCondition = ExpressionVisitor.VisitCondition(context.condition());
-
-            if (context.leftAlias is not null)
-            {
-                var derivedTable = OracleTree.CreateWithSpan<QsiDerivedTableNode>(context.leftTable.Start, context.leftAlias.Stop);
-                derivedTable.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
-                derivedTable.Alias.Value = IdentifierVisitor.VisitAlias(context.leftAlias);
-
-                leftTable = derivedTable;
-            }
-
-            var sourceTable = context.rightReference is not null
-                ? TableVisitor.VisitTableReference(context.rightReference)
-                : TableVisitor.VisitSubquery(context.rightSubquery);
-
-            var rightTable = sourceTable;
-
-            if (context.rightAlias is not null)
-            {
-                var rightStart = context.rightReference is not null ? context.rightReference.Start : context.OPEN_PAR_SYMBOL(0).Symbol;
-                var derivedTable = OracleTree.CreateWithSpan<QsiDerivedTableNode>(rightStart, context.rightAlias.Stop);
-                derivedTable.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
-                derivedTable.Alias.Value = IdentifierVisitor.VisitAlias(context.rightAlias);
-
-                rightTable = derivedTable;
-            }
-
-            var joinedTable = TreeHelper.Create<OracleJoinedTableNode>(n =>
-            {
-                n.Left.SetValue(leftTable);
-                n.Right.SetValue(rightTable);
-                n.JoinType = "JOIN";
-                n.OnCondition.Value = onCondition;
-            });
-
-            var node = OracleTree.CreateWithSpan<OracleMergeActionNode>(context);
-
-            if (context.hint() is not null)
-
-                node.Hint = context.hint().GetInputText();
-
-            var mergeUpdateClause = context.mergeUpdateClause();
-
-            var mergeInsertClause = context.mergeInsertClause();
-
-            if (mergeUpdateClause is not null)
-            {
-                QsiTableNode updateTarget = joinedTable;
-
-                if (mergeUpdateClause.where is not null)
-                {
-                    var derivedTable = new OracleDerivedTableNode();
-                    derivedTable.Source.Value = updateTarget;
-                    derivedTable.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
-                    derivedTable.Where.Value = ExpressionVisitor.VisitWhereClause(mergeUpdateClause.where);
-
-                    updateTarget = derivedTable;
-                }
-
-                // MERGE DELETE
-                if (mergeUpdateClause.HasToken(DELETE))
-                {
-                    var deleteTarget = new OracleDerivedTableNode();
-                    deleteTarget.Source.Value = joinedTable;
-                    deleteTarget.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
-                    deleteTarget.Where.Value = ExpressionVisitor.VisitWhereClause(mergeUpdateClause.deleteWhere);
-
-                    var deleteActionNode = new OracleDataDeleteActionNode();
-                    deleteActionNode.Target.Value = deleteTarget;
-
-                    node.ActionNodes.Add(deleteActionNode);
-                }
-
-                // MERGE UPDATE
-                var updateActionNode = new OracleDataUpdateActionNode();
-                updateActionNode.Target.Value = updateTarget;
-
-                foreach (var setValue in mergeUpdateClause.mergeSetValue())
-                {
-                    var setValueNode = OracleTree.CreateWithSpan<QsiSetColumnExpressionNode>(setValue);
-                    setValueNode.Target = IdentifierVisitor.CreateQualifiedIdentifier(setValue.column().identifier());
-
-                    var setValueExprNode = new OracleSetValueExpressionNode();
-                    setValueExprNode.SetValue.Value = setValueNode;
-
-                    updateActionNode.SetValueExpressions.Add(setValueExprNode);
-                }
-
-                node.ActionNodes.Add(updateActionNode);
-            }
-
-            if (mergeInsertClause is not null)
-            {
-                node.ActionNodes.Add(VisitMergeInsertClause(context, mergeInsertClause, targetTable, sourceTable, onCondition));
-            }
-
-            return node;
         }
     }
 }
