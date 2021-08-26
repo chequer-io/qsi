@@ -4,6 +4,8 @@
     {
         public OracleDialect Dialect { get; } = new();
 
+        protected LexHint Hint { get; set; }
+
         protected bool IsValidDelimiter()
         {
             return InputStream.LA(1) == Text[2] && (InputStream.LA(2) == '\'');
@@ -11,9 +13,21 @@
 
         protected void CategorizeIdentifier()
         {
-            Type = Dialect.KeywordMap.TryGetValue(Text.ToLower(), out var keywordId) 
-                ? keywordId 
+            Type = Dialect.KeywordMap.TryGetValue(Text.ToLower(), out var keywordId)
+                ? keywordId
                 : TK_IDENTIFIER;
+        }
+
+        protected bool IsCommentPlanHint()
+        {
+            return OracleUtility.IsCommentPlanHint(Text);
+        }
+
+        protected enum LexHint
+        {
+            Default,
+            SingleLineComment,
+            MultiLineComment
         }
     }
 }

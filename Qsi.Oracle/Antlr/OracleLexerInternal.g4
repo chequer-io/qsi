@@ -1687,6 +1687,50 @@ JSON_PATH_SYMBOL:                   '$' DOT_SYMBOL;
 SINGLE_QUOTE_SYMBOL:                SINGLE_QUOTE;
 PARAMETER_SUBSTITUTE_SYMBOL:        '=>';
 
-H_WHITESPACE:    [ \t\f\r\n] -> channel(HIDDEN); // Ignore whitespaces.
-H_BLOCK_COMMENT: ( '/**/' | '/*' ~[+] .*? '*/') -> channel(HIDDEN);
-H_COMMENT:       '--' ~[\r\n]* ('\r'? '\n' | EOF) -> channel(HIDDEN);
+H_COMMENT
+    : '--'
+      { Hint == default }?
+      (~[\r\n]* ('\r'? '\n' | { InputStream.LA(1) == Eof }?))
+      { !IsCommentPlanHint() }?
+      -> skip
+    ;
+
+H_MULTILINE_COMMENT
+    : '/*'
+      { Hint == default }?
+      (.*? '*/')
+      { !IsCommentPlanHint() }?
+      -> skip
+    ;
+
+H_CommentedHintBegin
+    : '/*'
+      { Hint == default }?
+      '+'
+      { Hint = LexHint.MultiLineComment; }
+      -> type(HINT_OPEN_SYMBOL)
+    ;
+
+H_EolHintBegin
+    : '--'
+      { Hint == default }?
+      ('+')
+      { Hint = LexHint.SingleLineComment; }
+      -> type(HINT_OPEN_SYMBOL)
+    ;
+
+H_CommentedHintEnd
+    : '*/'
+      { Hint == LexHint.MultiLineComment }?
+      { Hint = default; }
+      -> type(HINT_CLOSE_SYMBOL)
+    ;
+
+H_LineTerminator
+    : ('\r'? '\n' | EOF)
+      { Hint == LexHint.SingleLineComment }?
+      { Hint = default; }
+      -> type(HINT_CLOSE_SYMBOL)
+    ;
+
+WS: [ \t\f\r\n] -> skip;

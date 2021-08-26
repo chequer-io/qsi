@@ -1,4 +1,5 @@
-﻿using Antlr4.Runtime;
+﻿using System;
+using Antlr4.Runtime;
 
 namespace Qsi.Oracle.Internal
 {
@@ -14,6 +15,26 @@ namespace Qsi.Oracle.Internal
             parser.AddErrorListener(new ErrorListener());
 
             return parser;
+        }
+
+        public static bool IsCommentPlanHint(ReadOnlySpan<char> text)
+        {
+            if (text.StartsWith("/*") || text.StartsWith("--"))
+            {
+                ReadOnlySpan<char> span = text[2..];
+
+                while (!span.IsEmpty && span[0] != '+')
+                {
+                    if (!char.IsWhiteSpace(span[0]))
+                        return false;
+
+                    span = span[1..];
+                }
+
+                return !span.IsEmpty && span[0] == '+';
+            }
+
+            return false;
         }
     }
 }
