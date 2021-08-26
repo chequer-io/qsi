@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
@@ -81,9 +82,72 @@ namespace Qsi.Oracle.Tree.Visitors
 
                 if (rowOffset is not null || rowFetchOption is not null)
                     binaryTableNode.Limit.Value = ExpressionVisitor.VisitRowlimitingContexts(rowOffset, rowFetchOption);
+
+                source = ExtractDirectivesToBinaryTableNode(binaryTableNode);
             }
 
             return source;
+        }
+
+        // ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+        // │             ┌ Derived (Directives: 2)   ┌ WITH A AS (SELECT * FROM table1), B AS (SELECT * FROM table2)  │
+        // │ BinaryTable │                           └ SELECT * FROM A                                                │
+        // │             │ UNION ALL                                                                                  │
+        // │             └ Derived (Directive: 0)    ─ SELECT * FROM B                                                │
+        // └──────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+        //                                   ▼                ▼                ▼
+        //            ┌───────────────────────────────────────────────────────────────────────────────────┐
+        //            │                 ┌  WITH A AS (SELECT * FROM table1), B AS (SELECT * FROM table2)  │
+        //            │ Derived         │              ┌ Derived    ─ SELECT * FROM A                     │     
+        //            │ (Directives: 2) │  BinaryTable │ UNION ALL                                        │ 
+        //            │                 └              └ Derived    ─ SELECT * FROM B                     │             
+        //            └───────────────────────────────────────────────────────────────────────────────────┘
+        public static QsiTableNode ExtractDirectivesToBinaryTableNode(OracleBinaryTableNode node)
+        {
+            IEnumerable<QsiDerivedTableNode> leftItems = null;
+            IEnumerable<QsiDerivedTableNode> rightItems = null;
+
+            if (node.Left.Value is QsiDerivedTableNode left)
+            {
+                if (!left.Directives.IsEmpty)
+                {
+                    leftItems = left.Directives.Value.Tables.ToArray();
+                    left.Directives.Value.Tables.Clear();
+                }
+            }
+
+            if (node.Right.Value is QsiDerivedTableNode right)
+            {
+                if (!right.Directives.IsEmpty)
+                {
+                    rightItems = right.Directives.Value.Tables.ToArray();
+                    right.Directives.Value.Tables.Clear();
+                }
+            }
+
+            if (leftItems is null && rightItems is null)
+                return node;
+
+            var directivesNode = new QsiTableDirectivesNode();
+
+            if (leftItems is not null)
+            {
+                foreach (var item in leftItems)
+                    directivesNode.Tables.Add(item);
+            }
+
+            if (rightItems is not null)
+            {
+                foreach (var item in rightItems)
+                    directivesNode.Tables.Add(item);
+            }
+
+            var derivedTableNode = new QsiDerivedTableNode();
+            derivedTableNode.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+            derivedTableNode.Source.Value = node;
+            derivedTableNode.Directives.Value = directivesNode;
+
+            return derivedTableNode;
         }
 
         public static OracleBinaryTableType VisitSubqueryCompositeType(SubqueryCompositeTypeContext context)
@@ -496,6 +560,7 @@ namespace Qsi.Oracle.Tree.Visitors
             {
                 var derivedTable = OracleTree.CreateWithSpan<OracleDerivedTableNode>(context);
                 derivedTable.Source.Value = VisitSubquery(context.subquery());
+                derivedTable.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
                 node = derivedTable;
             }
 
