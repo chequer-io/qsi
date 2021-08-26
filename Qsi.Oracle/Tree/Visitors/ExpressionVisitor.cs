@@ -1361,7 +1361,7 @@ namespace Qsi.Oracle.Tree.Visitors
                 node.Parameters.Add(new QsiLiteralExpressionNode
                 {
                     Type = QsiDataType.Numeric,
-                    Value = int.Parse(context.precision().GetInputText())
+                    Value = long.Parse(context.precision().GetInputText())
                 });
 
             return node;
@@ -3528,7 +3528,7 @@ namespace Qsi.Oracle.Tree.Visitors
                 case IntegerLiteralContext:
                 {
                     node.Type = QsiDataType.Numeric;
-                    node.Value = int.Parse(text);
+                    node.Value = long.Parse(text);
                     break;
                 }
 
@@ -3570,7 +3570,7 @@ namespace Qsi.Oracle.Tree.Visitors
         {
             var node = OracleTree.CreateWithSpan<QsiLiteralExpressionNode>(context);
             node.Type = QsiDataType.Numeric;
-            node.Value = int.Parse(context.GetInputText());
+            node.Value = long.Parse(context.GetInputText());
 
             return node;
         }
