@@ -8941,26 +8941,34 @@ windowClause
     ;
 
 windowClauseItem
-    : windowName=identifier AS '(' existingWindowName=identifier? queryPartitionClause? orderByClause? windowingClause? ')'
+    : windowName=identifier AS '(' windowSpecification ')'
+    ;
+
+windowSpecification
+    : existingWindowName=identifier? queryPartitionClause? orderByClause? windowingClause?
     ;
 
 windowingClause
-    : ( ROWS | RANGE )
+    : ( ROWS | RANGE | GROUPS )
       ( BETWEEN
-        ( UNBOUNDED PRECEDING
-        | CURRENT ROW
-        | valueExpr=expr ( PRECEDING | FOLLOWING )
-        )
+        windowingClauseItem
         AND
-        ( UNBOUNDED FOLLOWING
-        | CURRENT ROW
-        | valueExpr=expr ( PRECEDING | FOLLOWING )
-        )
-      | ( UNBOUNDED PRECEDING
-        | CURRENT ROW
-        | valueExpr=expr PRECEDING
-        )
+        windowingClauseItem
+      | windowingClauseItem
       )
+      ( EXCLUDE
+          ( CURRENT ROW
+          | GROUPS
+          | TIES
+          | NO OTHERS
+          )
+      )?
+    ;
+
+windowingClauseItem
+    : UNBOUNDED PRECEDING
+    | CURRENT ROW
+    | valueExpr=expr ( PRECEDING | FOLLOWING )
     ;
 
 precision

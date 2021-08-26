@@ -247,6 +247,11 @@ namespace Qsi.Oracle.Tree.Visitors
             if (groupByClause is not null)
                 node.Grouping.Value = ExpressionVisitor.VisitGroupByClause(groupByClause);
 
+            var windowClause = context.windowClause();
+
+            if (windowClause is not null)
+                node.Window.Value = ExpressionVisitor.VisitWindowClause(windowClause);
+            
             // hierarchicalQueryClause, modelClause, windowClause ignored
 
             return node;

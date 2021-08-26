@@ -17,11 +17,14 @@ namespace Qsi.Oracle.Tree
 
         public QsiTreeNodeProperty<OraclePartitionExpressionNode> Partition { get; }
 
+        public QsiTreeNodeProperty<OracleWindowExpressionNode> Window { get; }
+
         public OracleDerivedTableNode()
         {
             FlashbackQueryClause = new QsiTreeNodeProperty<QsiExpressionFragmentNode>(this);
             TableClauses = new QsiTreeNodeProperty<QsiExpressionFragmentNode>(this);
             Partition = new QsiTreeNodeProperty<OraclePartitionExpressionNode>(this);
+            Window = new QsiTreeNodeProperty<OracleWindowExpressionNode>(this);
         }
     }
 }

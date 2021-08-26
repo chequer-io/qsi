@@ -3204,9 +3204,88 @@ namespace Qsi.Oracle.Tree.Visitors
         }
         #endregion
 
-        public static QsiExpressionNode VisitWindowingClause(WindowingClauseContext context)
+        public static OracleWindowExpressionNode VisitWindowClause(WindowClauseContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleWindowExpressionNode>(context);
+            node.Items.AddRange(context.windowClauseItem().Select(VisitWindowClauseItem));
+
+            return node;
+        }
+
+        public static OracleWindowItemNode VisitWindowClauseItem(WindowClauseItemContext context)
+        {
+            var node = OracleTree.CreateWithSpan<OracleWindowItemNode>(context);
+            node.Identifier = IdentifierVisitor.CreateQualifiedIdentifier(context.windowName);
+
+            var specification = context.windowSpecification();
+
+            if (specification.existingWindowName is not null)
+                node.ExistingWindow = IdentifierVisitor.CreateQualifiedIdentifier(specification.existingWindowName);
+
+            if (specification.queryPartitionClause() is not null)
+                node.Partition.Value = VisitQueryPartitionClause(specification.queryPartitionClause());
+
+            if (specification.orderByClause() is not null)
+                node.Order.Value = VisitOrderByClause(specification.orderByClause());
+
+            if (specification.windowingClause() is not null)
+                node.Windowing.Value = VisitWindowingClause(specification.windowingClause());
+
+            return node;
+        }
+
+        public static OracleWindowingExpressionNode VisitWindowingClause(WindowingClauseContext context)
+        {
+            var node = OracleTree.CreateWithSpan<OracleWindowingExpressionNode>(context);
+
+            node.Type = Enum.Parse<OracleWindowingType>(context.children[0].GetText(), true);
+
+            node.Items.AddRange(context.windowingClauseItem().Select(VisitWindowingClauseItem));
+
+            if (context.HasToken(EXCLUDE))
+            {
+                if (context.HasToken(CURRENT))
+                    node.Exclude.Value = TreeHelper.CreateConstantLiteral("CURRENT ROW");
+                else if (context.HasToken(GROUPS))
+                    node.Exclude.Value = TreeHelper.CreateConstantLiteral("GROUPS");
+                else if (context.HasToken(TIES))
+                    node.Exclude.Value = TreeHelper.CreateConstantLiteral("TIES");
+                else if (context.HasToken(NO))
+                    node.Exclude.Value = TreeHelper.CreateConstantLiteral("NO OTHERS");
+            }
+
+            return node;
+        }
+
+        private static OracleWindowingItemNode VisitWindowingClauseItem(WindowingClauseItemContext context)
+        {
+            var node = OracleTree.CreateWithSpan<OracleWindowingItemNode>(context);
+
+            switch (context.children[0])
+            {
+                case ExprContext exprContext:
+                    node.Left.Value = VisitExpr(exprContext);
+
+                    if (context.HasToken(PRECEDING))
+                        node.Right.Value = TreeHelper.CreateConstantLiteral("PRECEDING");
+                    else if (context.HasToken(FOLLOWING))
+                        node.Right.Value = TreeHelper.CreateConstantLiteral("FOLLOWING");
+
+                    return node;
+
+                case ITerminalNode { Symbol: { Type: UNBOUNDED } }:
+                    node.Left.Value = TreeHelper.CreateConstantLiteral("UNBOUNDED");
+                    node.Right.Value = TreeHelper.CreateConstantLiteral("PRECEDING");
+                    return node;
+
+                case ITerminalNode { Symbol: { Type: CURRENT } }:
+                    node.Left.Value = TreeHelper.CreateConstantLiteral("CURRENT");
+                    node.Right.Value = TreeHelper.CreateConstantLiteral("ROW");
+                    return node;
+
+                default:
+                    throw TreeHelper.NotSupportedTree(context.children[0]);
+            }
         }
 
         public static OraclePartitionExpressionNode VisitQueryPartitionClause(QueryPartitionClauseContext context)
