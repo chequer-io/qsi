@@ -1733,4 +1733,4 @@ H_LineTerminator
       -> type(HINT_CLOSE_SYMBOL)
     ;
 
-WS: [ \t\f\r\n] -> skip;
+H_WS: [ \t\f\r\n] -> channel(HIDDEN);
