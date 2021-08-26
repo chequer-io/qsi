@@ -9245,6 +9245,7 @@ datetimeExpression
 bindVariable
     : indexBindVariable
     | namedBindVariable
+    | questionBindVariable
     ;
 
 indexBindVariable
@@ -9253,6 +9254,11 @@ indexBindVariable
 
 namedBindVariable
     : ':' identifier
+    ;
+
+// not official spec, but for parsing
+questionBindVariable
+    : '?'
     ;
 
 errorLoggingSimpleExpression
