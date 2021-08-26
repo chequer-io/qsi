@@ -232,6 +232,19 @@ namespace Qsi.Oracle
             }
         }
 
+        protected override void DeparseExpressionNode(ScriptWriter writer, IQsiExpressionNode node, QsiScript script)
+        {
+            if (node is OracleColumnOuterJoinExpressionNode outerJoinExpressionNode)
+            {
+                DeparseTreeNode(writer, outerJoinExpressionNode.Column.Value, script);
+                writer.Write("(+)");
+            }
+            else
+            {
+                base.DeparseExpressionNode(writer, node, script);
+            }
+        }
+
         protected override void DeparseLimitExpressionNode(ScriptWriter writer, IQsiLimitExpressionNode node, QsiScript script)
         {
             if (node is not OracleLimitExpressionNode oracleNode)

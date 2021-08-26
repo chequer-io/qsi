@@ -3577,17 +3577,87 @@ namespace Qsi.Oracle.Tree.Visitors
 
         public static QsiExpressionNode VisitBindVariable(BindVariableContext context)
         {
-            throw new NotImplementedException();
+            return context.children[0] switch
+            {
+                IndexBindVariableContext c1 => VisitIndexBindVariable(c1),
+                NamedBindVariableContext c2 => VisitNamedBindVariable(c2),
+                QuestionBindVariableContext c3 => VisitQuestionBindVariable(c3),
+                _ => throw TreeHelper.NotSupportedTree(context.children[0])
+            };
+        }
+
+        public static QsiBindParameterExpressionNode VisitIndexBindVariable(IndexBindVariableContext context)
+        {
+            var node = OracleTree.CreateWithSpan<QsiBindParameterExpressionNode>(context);
+
+            node.Prefix = ":";
+            node.Index = int.Parse(context.TK_INTEGER().GetText());
+            node.NoSuffix = true;
+            node.Type = QsiParameterType.Index;
+
+            return node;
+        }
+
+        public static QsiBindParameterExpressionNode VisitNamedBindVariable(NamedBindVariableContext context)
+        {
+            var node = OracleTree.CreateWithSpan<QsiBindParameterExpressionNode>(context);
+
+            node.Prefix = ":";
+            node.Name = context.identifier().GetText();
+            node.Type = QsiParameterType.Name;
+
+            return node;
+        }
+
+        // WARNING: not used, only for parse
+        public static QsiBindParameterExpressionNode VisitQuestionBindVariable(QuestionBindVariableContext context)
+        {
+            var node = OracleTree.CreateWithSpan<QsiBindParameterExpressionNode>(context);
+
+            node.Prefix = "?";
+            node.NoSuffix = true;
+            node.Index = 0;
+            node.Type = QsiParameterType.Index;
+
+            return node;
         }
 
         public static QsiExpressionNode VisitMultisetExceptExpr(MultisetExceptExprContext context)
         {
-            throw new NotImplementedException();
+            var node = OracleTree.CreateWithSpan<QsiBinaryExpressionNode>(context);
+
+            var leftColumnNode = new QsiColumnExpressionNode();
+            var rightColumnNode = new QsiColumnExpressionNode();
+
+            leftColumnNode.Column.Value = new QsiColumnReferenceNode
+            {
+                Name = IdentifierVisitor.CreateQualifiedIdentifier(context.identifier(0))
+            };
+
+            rightColumnNode.Column.Value = new QsiColumnReferenceNode
+            {
+                Name = IdentifierVisitor.CreateQualifiedIdentifier(context.identifier(1))
+            };
+
+            node.Left.Value = leftColumnNode;
+            node.Operator = string.Join(" ", context.children.Skip(1).Take(context.ChildCount - 2).Select(c => c.GetText()));
+            node.Right.Value = rightColumnNode;
+
+            return node;
         }
 
         public static QsiExpressionNode VisitColumnOuterJoinExpr(ColumnOuterJoinExprContext context)
         {
-            throw new NotImplementedException();
+            var columnRefNode = new QsiColumnReferenceNode
+            {
+                Name = IdentifierVisitor.VisitFullObjectPath(context.fullObjectPath())
+            };
+
+            var node = OracleTree.CreateWithSpan<OracleColumnOuterJoinExpressionNode>(context);
+
+            node.Column.Value = columnRefNode;
+
+            return node;
         }
         #endregion
 

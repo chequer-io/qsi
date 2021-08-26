@@ -9220,7 +9220,7 @@ expr
     | simpleExpression                                                                      #simpleExpr
     | bindVariable                                                                          #bindVariableExpr
     | identifier MULTISET (EXCEPT | INTERSECT | UNION) (ALL | DISTINCT)? identifier         #multisetExceptExpr
-    | identifier ('.' identifier)* '(' '+' ')'                                              #columnOuterJoinExpr
+    | fullObjectPath '(' '+' ')'                                                            #columnOuterJoinExpr
     ;
 
 // compoundExpression use calcMeasExpression and expr.
