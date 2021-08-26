@@ -1,9 +1,11 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Qsi.Analyzers.Table;
 using Qsi.Analyzers.Table.Context;
 using Qsi.Data;
 using Qsi.Engines;
 using Qsi.Oracle.Internal;
+using Qsi.Oracle.Tree;
 using Qsi.Tree;
 
 namespace Qsi.Oracle.Analyzers
@@ -22,6 +24,21 @@ namespace Qsi.Oracle.Analyzers
                 throw new QsiException(QsiError.NoFromClause);
 
             return base.BuildDerivedTableStructure(context, table);
+        }
+
+        protected override IEnumerable<QsiTableColumn> ResolveColumnsInExpression(TableCompileContext context, IQsiExpressionNode expression)
+        {
+            switch (expression)
+            {
+                case OracleAggregateFunctionExpressionNode e:
+                    return base.ResolveColumnsInExpression(context, e.Function.Value);
+
+                case OracleAnalyticFunctionExpressionNode e:
+                    return base.ResolveColumnsInExpression(context, e.Function.Value);
+
+                default:
+                    return base.ResolveColumnsInExpression(context, expression);
+            }
         }
 
         protected override QsiTableColumn ResolveColumnReference(TableCompileContext context, IQsiColumnReferenceNode column)
