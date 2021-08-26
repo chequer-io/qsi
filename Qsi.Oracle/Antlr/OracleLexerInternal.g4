@@ -1682,7 +1682,6 @@ QMARK_SYMBOL:                       '?';
 LEFT_CURLY_BRACKET2_SYMBOL:         '{-';
 RIGHT_CURLY_BRACKET2_SYMBOL:        '-}';
 COLON_SYMBOL:                       ':';
-HASH_SYMBOL:                        '#';
 JSON_PATH_SYMBOL:                   '$' DOT_SYMBOL;
 SINGLE_QUOTE_SYMBOL:                SINGLE_QUOTE;
 PARAMETER_SUBSTITUTE_SYMBOL:        '=>';

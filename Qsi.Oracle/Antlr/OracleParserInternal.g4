@@ -6230,7 +6230,7 @@ xmlTypeStorage
     ;
 
 xmlSchemaSpec
-    : (XMLSCHEMA xmlSchemaUrl=identifier)? ELEMENT (element=identifier | xmlSchemaUrl=identifier '#' element=identifier)
+    : (XMLSCHEMA xmlSchemaUrl=identifier)? ELEMENT element=identifier
       (STORE ALL VARRAYS AS (LOBS|TABLES))?
       ((ALLOW | DISALLOW) NONSCHEMA)?
       ((ALLOW | DISALLOW) ANYSCHEMA)?

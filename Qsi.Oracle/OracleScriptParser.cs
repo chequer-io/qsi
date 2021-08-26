@@ -29,6 +29,11 @@ namespace Qsi.Oracle
 
         private const string BlockKey = "Oracle::Type";
 
+        public OracleScriptParser()
+        {
+            EnablePoundComment = false;
+        }
+
         protected override QsiScriptType GetSuitableType(CommonScriptCursor cursor, IReadOnlyList<Token> tokens, Token[] leadingTokens)
         {
             if (leadingTokens.Length >= 1 && Exec.EqualsIgnoreCase(cursor.Value[leadingTokens[0].Span]))
