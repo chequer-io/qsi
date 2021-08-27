@@ -3353,7 +3353,7 @@ namespace Qsi.Oracle.Tree.Visitors
 
         public static QsiExpressionNode VisitCalcMeasExpr(AvMeasExpressionContext context)
         {
-            throw new NotImplementedException();
+            throw TreeHelper.NotSupportedFeature("Analytic View");
         }
 
         public static QsiExpressionNode VisitCaseExpr(CaseExpressionContext context)
@@ -3440,14 +3440,14 @@ namespace Qsi.Oracle.Tree.Visitors
 
         public static QsiExpressionNode VisitModelExpr(ModelExpressionContext context)
         {
-            throw new NotImplementedException();
+            throw TreeHelper.NotSupportedFeature("Model expression");
         }
 
         public static QsiExpressionNode VisitObjectAccessExpr(ObjectAccessExpressionContext context)
         {
             switch (context)
             {
-                case ColumnWithExprAccessExpressionContext columnWithExprAccessExpression:
+                case ColumnWithExprAccessExpressionContext:
                     throw new NotSupportedException();
 
                 case ColumnAccessExpressionContext columnAccessExpression:
@@ -4302,10 +4302,41 @@ namespace Qsi.Oracle.Tree.Visitors
             return context.children[0] switch
             {
                 ExprContext expr => VisitExpr(expr),
-                RollupCubeClauseContext rollupCubeClause => throw new NotImplementedException(),
-                GroupingSetsClauseContext groupingSetsClause => throw new NotImplementedException(),
+                RollupCubeClauseContext rollupCubeClause => VisitRollupCubeClause(rollupCubeClause),
+                GroupingSetsClauseContext groupingSetsClause => VisitGroupingSetsClause(groupingSetsClause),
                 _ => throw new NotSupportedException()
             };
+        }
+
+        public static QsiExpressionNode VisitRollupCubeClause(RollupCubeClauseContext context)
+        {
+            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            var functionName = context.HasToken(ROLLUP) ? "ROLLUP" : "CUBE";
+            node.Member.Value = TreeHelper.CreateFunction(functionName);
+            node.Parameters.Add(VisitGroupingExpressionList(context.groupingExpressionList()));
+
+            return node;
+        }
+
+        public static QsiExpressionNode VisitGroupingSetsClause(GroupingSetsClauseContext context)
+        {
+            var node = OracleTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(OracleKnownFunction.GroupingSets);
+
+            node.Parameters.Add(context.groupingExpressionList() is not null
+                ? VisitGroupingExpressionList(context.groupingExpressionList())
+                : VisitRollupCubeClause(context.rollupCubeClause())
+            );
+
+            return node;
+        }
+
+        public static QsiMultipleExpressionNode VisitGroupingExpressionList(GroupingExpressionListContext context)
+        {
+            var node = OracleTree.CreateWithSpan<QsiMultipleExpressionNode>(context);
+            node.Elements.AddRange(context.expressionList().Select(VisitExpressionList));
+
+            return node;
         }
 
         public static QsiTableExpressionNode VisitSubquery(SubqueryContext context)

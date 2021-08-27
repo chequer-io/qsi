@@ -101,5 +101,9 @@
         // <expression> IS NOT JSON ...
         // ▶ IS_NOT_JSON(<expression>)
         public const string IsNotJson = "IS_NOT_JSON";
+
+        // GROUPING SETS ( {rollupCubeClause|groupingExpressionList} )
+        // ▶ GROUPING_SETS( {rollupCubeClause|groupingExpressionList} )
+        public const string GroupingSets = "GROUPING_SETS";
     }
 }

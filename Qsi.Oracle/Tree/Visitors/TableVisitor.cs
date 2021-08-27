@@ -251,8 +251,8 @@ namespace Qsi.Oracle.Tree.Visitors
 
             if (windowClause is not null)
                 node.Window.Value = ExpressionVisitor.VisitWindowClause(windowClause);
-            
-            // hierarchicalQueryClause, modelClause, windowClause ignored
+
+            // hierarchicalQueryClause, modelClause ignored
 
             return node;
         }
@@ -431,7 +431,10 @@ namespace Qsi.Oracle.Tree.Visitors
             return context switch
             {
                 QueryTableReferenceContext queryTableReference => VisitQueryTableReference(queryTableReference),
-                _ => throw new NotImplementedException()
+                ContainersClauseReferenceContext => throw TreeHelper.NotSupportedFeature("Containers Caluse"),
+                ShardsClauseReferenceContext => throw TreeHelper.NotSupportedFeature("Shards Clause"),
+                TablePrimaryReferenceContext tablePrimaryReference => VisitTablePrimaryReference(tablePrimaryReference),
+                _ => throw new InvalidOperationException()
             };
         }
 
@@ -441,6 +444,16 @@ namespace Qsi.Oracle.Tree.Visitors
             node.Identifier = IdentifierVisitor.VisitFullObjectPath(context);
 
             return node;
+        }
+
+        public static QsiTableNode VisitTablePrimaryReference(TablePrimaryReferenceContext context)
+        {
+            return context.children[0] switch
+            {
+                JsonTableFunctionContext => throw TreeHelper.NotSupportedFeature("Json Table"),
+                XmlTableFunctionContext => throw TreeHelper.NotSupportedFeature("Xml Table"),
+                _ => throw new InvalidOperationException()
+            };
         }
 
         public static QsiTableNode VisitQueryTableReference(QueryTableReferenceContext context)
