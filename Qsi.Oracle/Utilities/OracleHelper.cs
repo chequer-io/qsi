@@ -1,4 +1,5 @@
-﻿using Qsi.Data;
+﻿using Antlr4.Runtime;
+using Qsi.Data;
 using Qsi.Oracle.Tree;
 using Qsi.Oracle.Tree.Visitors;
 using Qsi.Tree;
@@ -50,6 +51,15 @@ namespace Qsi.Oracle.Utilities
             node.Right.SetValue(right);
             node.JoinType = "JOIN";
             node.OnCondition.Value = onCondition;
+
+            return node;
+        }
+
+        public static OracleNamedParameterExpressionNode CreateNamedParameter(ParserRuleContext context, string name)
+        {
+            var node = OracleTree.CreateWithSpan<OracleNamedParameterExpressionNode>(context);
+
+            node.Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(name, false));
 
             return node;
         }

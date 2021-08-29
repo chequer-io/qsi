@@ -2,8 +2,6 @@
 {
     internal partial class OracleLexerInternal
     {
-        public OracleDialect Dialect { get; } = new();
-
         protected LexHint Hint { get; set; }
 
         protected bool IsValidDelimiter()
@@ -13,7 +11,7 @@
 
         protected void CategorizeIdentifier()
         {
-            Type = Dialect.KeywordMap.TryGetValue(Text.ToLower(), out var keywordId)
+            Type = OracleDialect.KeywordMap.TryGetValue(Text.ToLower(), out var keywordId)
                 ? keywordId
                 : TK_IDENTIFIER;
         }

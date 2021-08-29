@@ -6,6 +6,7 @@ using Antlr4.Runtime.Tree;
 using Qsi.Data;
 using Qsi.Oracle.Common;
 using Qsi.Oracle.Internal;
+using Qsi.Oracle.Utilities;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
 using Qsi.Utilities;
@@ -751,7 +752,7 @@ namespace Qsi.Oracle.Tree.Visitors
 
             if (context.defaultValue is not null)
             {
-                var defaultValueNode = OracleTreeHelper.CreateNamedParameter(context.defaultValue, "defaultValue");
+                var defaultValueNode = OracleHelper.CreateNamedParameter(context.defaultValue, "defaultValue");
                 defaultValueNode.Expression.Value = VisitExpr(context.defaultValue);
 
                 node.Parameters.Add(defaultValueNode);
@@ -759,7 +760,7 @@ namespace Qsi.Oracle.Tree.Visitors
 
             if (context.fmt is not null)
             {
-                var fmtNode = OracleTreeHelper.CreateNamedParameter(context.fmt, "fmt");
+                var fmtNode = OracleHelper.CreateNamedParameter(context.fmt, "fmt");
                 fmtNode.Expression.Value = VisitExpr(context.fmt);
 
                 node.Parameters.Add(fmtNode);
@@ -767,7 +768,7 @@ namespace Qsi.Oracle.Tree.Visitors
 
             if (context.nlsparam is not null)
             {
-                var nlsparamNode = OracleTreeHelper.CreateNamedParameter(context.nlsparam, "nlsparam");
+                var nlsparamNode = OracleHelper.CreateNamedParameter(context.nlsparam, "nlsparam");
                 nlsparamNode.Expression.Value = VisitExpr(context.nlsparam);
 
                 node.Parameters.Add(nlsparamNode);

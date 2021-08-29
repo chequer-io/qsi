@@ -3,16 +3,16 @@ using Qsi.Oracle.Internal;
 
 namespace Qsi.Oracle
 {
-    public class OracleDialect
+    public static class OracleDialect
     {
-        internal Dictionary<string, int> KeywordMap { get; }
+        internal static Dictionary<string, int> KeywordMap { get; }
 
-        public OracleDialect()
+        static OracleDialect()
         {
             KeywordMap = LoadKeywordMap();
         }
 
-        private Dictionary<string, int> LoadKeywordMap()
+        private static Dictionary<string, int> LoadKeywordMap()
         {
             return new()
             {
