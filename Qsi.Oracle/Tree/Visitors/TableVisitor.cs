@@ -98,9 +98,9 @@ namespace Qsi.Oracle.Tree.Visitors
         //                                   ▼                ▼                ▼
         //            ┌───────────────────────────────────────────────────────────────────────────────────┐
         //            │                 ┌  WITH A AS (SELECT * FROM table1), B AS (SELECT * FROM table2)  │
-        //            │ Derived         │              ┌ Derived    ─ SELECT * FROM A                     │     
-        //            │ (Directives: 2) │  BinaryTable │ UNION ALL                                        │ 
-        //            │                 └              └ Derived    ─ SELECT * FROM B                     │             
+        //            │ Derived         │              ┌ Derived    ─ SELECT * FROM A                     │
+        //            │ (Directives: 2) │  BinaryTable │ UNION ALL                                        │
+        //            │                 └              └ Derived    ─ SELECT * FROM B                     │
         //            └───────────────────────────────────────────────────────────────────────────────────┘
         public static QsiTableNode ExtractDirectivesToBinaryTableNode(OracleBinaryTableNode node)
         {

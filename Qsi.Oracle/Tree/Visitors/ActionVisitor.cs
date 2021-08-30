@@ -334,8 +334,8 @@ namespace Qsi.Oracle.Tree.Visitors
             QsiQualifiedIdentifier rightPath;
             QsiTableDirectivesNode directives = null;
 
-            var rightAlias = context.rightAlias is not null ?
-                IdentifierVisitor.VisitIdentifier(context.rightAlias.identifier())
+            var rightAlias = context.rightAlias is not null 
+                ? IdentifierVisitor.VisitIdentifier(context.rightAlias.identifier())
                 : null;
 
             if (rightNode is QsiTableReferenceNode rightReferenceNode)
