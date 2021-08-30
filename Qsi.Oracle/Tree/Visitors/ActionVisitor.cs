@@ -87,28 +87,29 @@ namespace Qsi.Oracle.Tree.Visitors
 
             var targetNode = TableVisitor.VisitDmlTableExpressionClause(context.dmlTableExpressionClause());
 
-            if (targetNode is not QsiTableReferenceNode referenceNode)
-                throw TreeHelper.NotSupportedFeature("Expression Target in Update");
-
-            if (context.whereClause() is not null)
+            if (context.whereClause() is not null || context.tAlias() is not null)
             {
                 var derivedTableNode = new OracleDerivedTableNode();
 
                 derivedTableNode.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
-                derivedTableNode.Source.Value = referenceNode;
-                derivedTableNode.Where.Value = ExpressionVisitor.VisitWhereClause(context.whereClause());
+                derivedTableNode.Source.Value = targetNode;
+
+                if (context.whereClause() is not null)
+                    derivedTableNode.Where.Value = ExpressionVisitor.VisitWhereClause(context.whereClause());
+
+                if (context.tAlias() is not null)
+                    derivedTableNode.Alias.Value = IdentifierVisitor.VisitAlias(context.tAlias());
 
                 node.Target.Value = derivedTableNode;
             }
             else
             {
-                node.Target.Value = referenceNode;
+                node.Target.Value = targetNode;
             }
 
             if (node.Target.Value is IOracleTableNode oracleTableNode)
                 oracleTableNode.IsOnly = context.HasToken(ONLY);
 
-            // tAlias ignored
             // returningClause, errorLoggingClause ignored
 
             return node;
@@ -123,22 +124,24 @@ namespace Qsi.Oracle.Tree.Visitors
 
             var targetNode = TableVisitor.VisitDmlTableExpressionClause(context.dmlTableExpressionClause());
 
-            if (targetNode is not QsiTableReferenceNode referenceNode)
-                throw TreeHelper.NotSupportedFeature("Expression Target in Update");
-
-            if (context.whereClause() is not null)
+            if (context.whereClause() is not null || context.tAlias() is not null)
             {
                 var derivedTableNode = new OracleDerivedTableNode();
 
                 derivedTableNode.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
-                derivedTableNode.Source.Value = referenceNode;
-                derivedTableNode.Where.Value = ExpressionVisitor.VisitWhereClause(context.whereClause());
+                derivedTableNode.Source.Value = targetNode;
+
+                if (context.whereClause() is not null)
+                    derivedTableNode.Where.Value = ExpressionVisitor.VisitWhereClause(context.whereClause());
+
+                if (context.tAlias() is not null)
+                    derivedTableNode.Alias.Value = IdentifierVisitor.VisitAlias(context.tAlias());
 
                 node.Target.Value = derivedTableNode;
             }
             else
             {
-                node.Target.Value = referenceNode;
+                node.Target.Value = targetNode;
             }
 
             if (node.Target.Value is IOracleTableNode oracleTableNode)
@@ -146,7 +149,6 @@ namespace Qsi.Oracle.Tree.Visitors
 
             node.SetValueExpressions.AddRange(ExpressionVisitor.VisitUpdateSetClause(context.updateSetClause()));
 
-            // tAlias ignored
             // returningClause, errorLoggingClause ignored
 
             return node;
