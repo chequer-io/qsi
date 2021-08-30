@@ -165,6 +165,7 @@ options { tokenVocab=predefined; }
 //CELL_FLASH_CACHE:                 C E L L '_' F L A S H '_' C A C H E;
 //CENTER:                           C E N T E R;
 //CERTIFICATE:                      C E R T I F I C A T E;
+//CHAINED:                          C H A I N E D;
 //CHANGE:                           C H A N G E;
 //CHANGE_DUPKEY_ERROR_INDEX:        C H A N G E '_' D U P K E Y '_' E R R O R '_' I N D E X;
 //CHAR:                             C H A R;
@@ -498,6 +499,7 @@ options { tokenVocab=predefined; }
 //FTP:                              F T P;
 //FULL:                             F U L L;
 //FUNCTION:                         F U N C T I O N;
+//FUNCTIONS:                        F U N C T I O N S;
 //GATHER_OPTIMIZER_STATISTICS:      G A T H E R '_' O P T I M I Z E R '_' S T A T I S T I C S;
 //GENERATED:                        G E N E R A T E D;
 //GET:                              G E T;
@@ -577,6 +579,7 @@ options { tokenVocab=predefined; }
 //INDEXES:                          I N D E X E S;
 //INDEXING:                         I N D E X I N G;
 //INDEXTYPE:                        I N D E X T Y P E;
+//INDEXTYPES:                       I N D E X T Y P E S;
 //INDICATOR:                        I N D I C A T O R;
 //INDICES:                          I N D I C E S;
 //INFINITE:                         I N F I N I T E;
@@ -671,7 +674,9 @@ options { tokenVocab=predefined; }
 //LIKE4:                            L I K E '4';
 //LIKEC:                            L I K E C;
 //LIMIT:                            L I M I T;
+//LIN:                              L I N;
 //LINEAR:                           L I N E A R;
+//LINESIZE:                         L I N E S I Z E;
 //LINK:                             L I N K;
 //LIST:                             L I S T;
 //LISTAGG:                          L I S T A G G;
@@ -956,7 +961,10 @@ options { tokenVocab=predefined; }
 //OWNER:                            O W N E R;
 //OWNERSHIP:                        O W N E R S H I P;
 //PACKAGE:                          P A C K A G E;
+//PACKAGES:                         P A C K A G E S;
 //PAGE:                             P A G E;
+//PAGES:                            P A G E S;
+//PAGESIZE:                         P A G E S I Z E;
 //PAIRS:                            P A I R S;
 //PARALLEL:                         P A R A L L E L;
 //PARALLEL_ENABLE:                  P A R A L L E L '_' E N A B L E;
@@ -1215,6 +1223,7 @@ options { tokenVocab=predefined; }
 //SEED:                             S E E D;
 //SEGMENT:                          S E G M E N T;
 //SELECT:                           S E L E C T;
+//SELECTIVITY:                      S E L E C T I V I T Y;
 //SELF:                             S E L F;
 //SEQUENCE:                         S E Q U E N C E;
 //SEQUENTIAL:                       S E Q U E N T I A L;
@@ -1306,6 +1315,7 @@ options { tokenVocab=predefined; }
 //STRINGONLY:                       S T R I N G O N L Y;
 //STRIPE_COLUMNS:                   S T R I P E '_' C O L U M N S;
 //STRIPE_WIDTH:                     S T R I P E '_' W I D T H;
+//STRUCTURE:                        S T R U C T U R E;
 //SUBMULTISET:                      S U B M U L T I S E T;
 //SUBPARTITION:                     S U B P A R T I T I O N;
 //SUBPARTITIONS:                    S U B P A R T I T I O N S;
@@ -1360,6 +1370,7 @@ options { tokenVocab=predefined; }
 //TIER:                             T I E R;
 //TIES:                             T I E S;
 //TIME:                             T I M E;
+//TIME_ZONE:                        T I M E '_' Z O N E;
 //TIMEOUT:                          T I M E O U T;
 //TIMESTAMP:                        T I M E S T A M P;
 //TIMEZONE:                         T I M E Z O N E;
@@ -1404,6 +1415,7 @@ options { tokenVocab=predefined; }
 //TWO_SIDED_SIG:                    T W O '_' S I D E D '_' S I G;
 //TYPE:                             T Y P E;
 //TYPENAME:                         T Y P E N A M E;
+//TYPES:                            T Y P E S;
 //TZ_OFFSET:                        T Z '_' O F F S E T;
 //UID:                              U I D;
 //UNARCHIVED:                       U N A R C H I V E D;
@@ -1563,18 +1575,6 @@ options { tokenVocab=predefined; }
 //KW_S:                             S;
 //KW_T:                             T;
 //KW_X:                             X;
-//CHAINED:                          C H A I N E D;
-//STRUCTURE:                        S T R U C T U R E;
-//FUNCTIONS:                        F U N C T I O N S;
-//PACKAGES:                         P A C K A G E S;
-//TYPES:                            T Y P E S;
-//INDEXTYPES:                       I N D E X T Y P E S;
-//SELECTIVITY:                      S E L E C T I V I T Y;
-//TIME_ZONE:                        T I M E '_' Z O N E;
-//LIN:                              L I N;
-//LINESIZE:                         L I N E S I Z E;
-//PAGES:                            P A G E S;
-//PAGESIZE:                         P A G E S I Z E;
 
 fragment A: [aA];
 fragment B: [bB];
