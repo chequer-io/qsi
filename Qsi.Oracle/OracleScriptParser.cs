@@ -26,6 +26,7 @@ namespace Qsi.Oracle
         private const string If = "IF";
 
         private const string Exec = "EXEC";
+        private const string SemiColon = ";";
 
         private const string BlockKey = "Oracle::Type";
 
@@ -143,16 +144,19 @@ namespace Qsi.Oracle
                 }
                 else if (If.EqualsIgnoreCase(t.Current))
                 {
+                    block.ExpectedToken.Push(SemiColon);
                     block.ExpectedToken.Push(If);
                     block.ExpectedToken.Push(End);
                 }
                 else if (Case.EqualsIgnoreCase(t.Current))
                 {
+                    block.ExpectedToken.Push(SemiColon);
                     block.ExpectedToken.Push(Case);
                     block.ExpectedToken.Push(End);
                 }
                 else if (Begin.EqualsIgnoreCase(t.Current))
                 {
+                    block.ExpectedToken.Push(SemiColon);
                     block.ExpectedToken.Push(End);
                 }
 
