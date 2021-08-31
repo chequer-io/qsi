@@ -43,7 +43,7 @@ namespace Qsi.Oracle.Tree.Visitors
                 var targetNode = TableVisitor.VisitDmlTableExpressionClause(insertIntoClause.dmlTableExpressionClause());
 
                 if (targetNode is not QsiTableReferenceNode referenceNode)
-                    throw TreeHelper.NotSupportedFeature("Expression Target in Update");
+                    throw TreeHelper.NotSupportedFeature("Expression Target in Insert");
 
                 node.Target.Value = referenceNode;
 
