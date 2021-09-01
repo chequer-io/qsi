@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Qsi.Oracle.Internal;
 
 namespace Qsi.Oracle
@@ -14,7 +15,7 @@ namespace Qsi.Oracle
 
         private static Dictionary<string, int> LoadKeywordMap()
         {
-            return new()
+            return new(StringComparer.InvariantCultureIgnoreCase)
             {
                 ["abort"] = OracleLexerInternal.ABORT,
                 ["abs"] = OracleLexerInternal.ABS,

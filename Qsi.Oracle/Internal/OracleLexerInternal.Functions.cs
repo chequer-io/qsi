@@ -11,7 +11,7 @@
 
         protected void CategorizeIdentifier()
         {
-            Type = OracleDialect.KeywordMap.TryGetValue(Text.ToLower(), out var keywordId)
+            Type = OracleDialect.KeywordMap.TryGetValue(Text, out var keywordId)
                 ? keywordId
                 : TK_IDENTIFIER;
         }
