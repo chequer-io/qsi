@@ -468,6 +468,10 @@ namespace Qsi.Oracle.Tree.Visitors
                     derivedTableNode.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
                     derivedTableNode.Source.Value = node;
                 }
+                else
+                {
+                    OracleTree.PutContextSpan(derivedTableNode, context);
+                }
 
                 derivedTableNode.FlashbackQueryClause.Value = TreeHelper.Fragment(context.flashbackQueryClause().GetInputText());
                 node = derivedTableNode;
@@ -481,6 +485,10 @@ namespace Qsi.Oracle.Tree.Visitors
                     derivedTableNode.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
                     derivedTableNode.Source.Value = node;
                 }
+                else
+                {
+                    OracleTree.PutContextSpan(derivedTableNode, context);
+                }
 
                 derivedTableNode.TableClauses.Value = TreeHelper.Fragment(context.pivotClause().GetInputText());
                 node = derivedTableNode;
@@ -493,6 +501,10 @@ namespace Qsi.Oracle.Tree.Visitors
                     derivedTableNode.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
                     derivedTableNode.Source.Value = node;
                 }
+                else
+                {
+                    OracleTree.PutContextSpan(derivedTableNode, context);
+                }
 
                 derivedTableNode.TableClauses.Value = TreeHelper.Fragment(context.unpivotClause().GetInputText());
                 node = derivedTableNode;
@@ -504,6 +516,10 @@ namespace Qsi.Oracle.Tree.Visitors
                     derivedTableNode = OracleTree.CreateWithSpan<OracleDerivedTableNode>(context);
                     derivedTableNode.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
                     derivedTableNode.Source.Value = node;
+                }
+                else
+                {
+                    OracleTree.PutContextSpan(derivedTableNode, context);
                 }
 
                 derivedTableNode.TableClauses.Value = TreeHelper.Fragment(context.rowPatternClause().GetInputText());
@@ -518,6 +534,10 @@ namespace Qsi.Oracle.Tree.Visitors
                     derivedTableNode.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
                     derivedTableNode.Source.Value = node;
                     node = derivedTableNode;
+                }
+                else
+                {
+                    OracleTree.PutContextSpan(derivedTableNode, context);
                 }
 
                 derivedTableNode.Alias.Value = new QsiAliasNode
