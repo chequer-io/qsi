@@ -1,17 +1,22 @@
 ﻿using System.Collections.Generic;
 using Qsi.Analyzers;
-using Qsi.Analyzers.Action;
 using Qsi.Engines;
-using Qsi.JSql;
+using Qsi.Oracle.Analyzers;
 using Qsi.Parsing;
+using Qsi.Services;
 
 namespace Qsi.Oracle
 {
-    public abstract class OracleLanguageServiceBase : JSqlLanguageServiceBase
+    public abstract class OracleLanguageServiceBase : QsiLanguageServiceBase
     {
         public override IQsiTreeParser CreateTreeParser()
         {
             return new OracleParser();
+        }
+
+        public override IQsiTreeDeparser CreateTreeDeparser()
+        {
+            return new OracleDeparser();
         }
 
         public override IQsiScriptParser CreateScriptParser()
@@ -21,16 +26,12 @@ namespace Qsi.Oracle
 
         public override QsiAnalyzerOptions CreateAnalyzerOptions()
         {
-            return new()
-            {
-                AllowNoAliasInDerivedTable = true,
-                UseAutoFixRecursiveQuery = true
-            };
+            return new();
         }
 
         public override IEnumerable<QsiAnalyzerBase> CreateAnalyzers(QsiEngine engine)
         {
-            yield return new QsiActionAnalyzer(engine);
+            yield return new OracleActionAnalyzer(engine);
             yield return new OracleTableAnalyzer(engine);
         }
     }

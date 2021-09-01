@@ -80,21 +80,5 @@ namespace Qsi.SqlServer.Analyzers
 
             return new ValueTask<IQsiAnalysisResult>(action);
         }
-
-        protected override IQsiTableNode ReassembleCommonTableNode(IQsiTableNode node)
-        {
-            switch (node)
-            {
-                case ISqlServerBinaryTableNode binaryTableNode:
-                    return new ImmutableSqlServerBinaryTableNode(
-                        binaryTableNode.Parent,
-                        binaryTableNode.Left,
-                        binaryTableNode.BinaryTableType,
-                        binaryTableNode.Right,
-                        binaryTableNode.UserData);
-            }
-
-            return base.ReassembleCommonTableNode(node);
-        }
     }
 }
