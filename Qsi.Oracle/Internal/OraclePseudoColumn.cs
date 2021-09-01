@@ -1,10 +1,13 @@
 ﻿using System;
+using Qsi.Data;
 
-namespace Qsi.Oracle
+namespace Qsi.Oracle.Internal
 {
     internal static class OraclePseudoColumn
     {
-        public static readonly string[] Names =
+        private static QsiTableStructure _pseudoTable;
+
+        private static readonly string[] _names =
         {
             "ROWNUM",
             "ROWID",
@@ -25,10 +28,35 @@ namespace Qsi.Oracle
             "VERSIONS_OPERATION"
         };
 
-        public static bool Contains(string name, out int index)
+        public static bool TryGetColumn(string name, out QsiTableColumn tableColumn)
         {
-            index = Array.IndexOf(Names, name);
-            return index >= 0;
+            _pseudoTable ??= CreatePseudoTable();
+            int index = Array.FindIndex(_names, t => t.Equals(name, StringComparison.InvariantCultureIgnoreCase));
+
+            if (index != -1)
+            {
+                tableColumn = _pseudoTable.Columns[index];
+                return true;
+            }
+
+            tableColumn = null;
+            return false;
+        }
+
+        private static QsiTableStructure CreatePseudoTable()
+        {
+            var table = new QsiTableStructure
+            {
+                Identifier = new QsiQualifiedIdentifier(new QsiIdentifier("PseudoColumns", false))
+            };
+
+            foreach (var name in _names)
+            {
+                var c = table.NewColumn();
+                c.Name = new QsiIdentifier(name, false);
+            }
+
+            return table;
         }
     }
 }

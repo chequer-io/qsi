@@ -7,11 +7,10 @@
     <PropertyGroup Label="Nuspec">
         <Title>Query Structure Interface of Oracle</Title>
         <Description>$(Title)</Description>
-        <PackageTags>$(PackageTags);oracle;jsql;javacc</PackageTags>
+        <PackageTags>$(PackageTags);oracle;antlr;javacc</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Qsi.JSql\Qsi.JSql.csproj" />
         <ProjectReference Include="..\Qsi\Qsi.csproj" />
     </ItemGroup>
 

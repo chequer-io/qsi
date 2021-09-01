@@ -7,7 +7,8 @@ $Tasks = @(
     "Qsi.MySql",
     "Qsi.Cql",
     "Qsi.Hana",
-    "Qsi.Impala"
+    "Qsi.Impala",
+    "Qsi.Oracle"
 )
 
 if ($Target -eq 'All') {

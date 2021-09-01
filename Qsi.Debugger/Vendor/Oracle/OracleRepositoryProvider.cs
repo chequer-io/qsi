@@ -4,34 +4,62 @@ using Qsi.Utilities;
 
 namespace Qsi.Debugger.Vendor.Oracle
 {
-    internal sealed class OracleRepositoryProvider : VendorRepositoryProvider
+    internal class OracleRepositoryProvider : VendorRepositoryProvider
     {
+        protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier)
+        {
+            identifier = identifier.Level switch
+            {
+                1 => new QsiQualifiedIdentifier(
+                    new QsiIdentifier("xe", false),
+                    new QsiIdentifier("SYSTEM", false),
+                    identifier[0]
+                ),
+                2 => new QsiQualifiedIdentifier(
+                    new QsiIdentifier("xe", false),
+                    identifier[0],
+                    identifier[1]
+                ),
+                _ => identifier
+            };
+
+            if (identifier.Level != 3)
+                throw new InvalidOperationException();
+
+            return identifier;
+        }
+
         protected override QsiTableStructure LookupTable(QsiQualifiedIdentifier identifier)
         {
-            var tableName = GetName(identifier[^1]);
+            var tableIdentifier = identifier[^1];
+            var schemaIdentifier = identifier.Level >= 2 ? identifier[^2] : null;
+            var tableName = IdentifierUtility.Unescape(tableIdentifier.Value);
+
+            if (schemaIdentifier is not null && schemaIdentifier.Value != "SYSTEM")
+                return null;
 
             switch (tableName)
             {
                 case "DUAL":
-                    var dual = CreateTable("PUBLIC", "DUAL");
-                    AddColumns(dual, "DUMMY");
+                    var dual = CreateTable("xe", "SYSTEM", "DUAL");
+                    AddColumns(dual, "dummy");
                     return dual;
 
                 case "ACTOR":
-                    var actor = CreateTable("PUBLIC", "ACTOR");
-                    AddColumns(actor, "ACTOR_ID", "FIRST_NAME", "LAST_NAME", "LAST_UPDATE");
+                    var actor = CreateTable("xe", "SYSTEM", "ACTOR");
+                    AddColumns(actor, "actor_id", "first_name", "last_name", "last_update");
                     return actor;
 
-                case "ACTOR_VIEW_1":
-                    var actorView1 = CreateTable("PUBLIC", "ACTOR_VIEW_1");
-                    actorView1.Type = QsiTableType.View;
-                    AddColumns(actorView1, "ACTOR_ID", "FIRST_NAME", "LAST_NAME", "LAST_UPDATE");
-                    return actorView1;
+                case "ACTOR_VIEW":
+                    var actorView = CreateTable("xe", "SYSTEM", "ACTOR_VIEW");
+                    actorView.Type = QsiTableType.View;
+                    AddColumns(actorView, "actor_id", "first_name", "last_name", "last_update", "first_name||last_name");
+                    return actorView;
 
-                case "ACTOR_VIEW_2":
-                    var actorView2 = CreateTable("PUBLIC", "ACTOR_VIEW_2");
+                case "ACTOR_VIEW2":
+                    var actorView2 = CreateTable("xe", "SYSTEM", "ACTOR_VIEW2");
                     actorView2.Type = QsiTableType.View;
-                    AddColumns(actorView2, "A", "B", "C", "D");
+                    AddColumns(actorView2, "actor_id", "first_name", "last_name", "last_update");
                     return actorView2;
             }
 
@@ -40,15 +68,15 @@ namespace Qsi.Debugger.Vendor.Oracle
 
         protected override QsiScript LookupDefinition(QsiQualifiedIdentifier identifier, QsiTableType type)
         {
-            var name = GetName(identifier[^1]);
+            var name = IdentifierUtility.Unescape(identifier[^1].Value);
 
             switch (name)
             {
-                case "ACTOR_VIEW_1":
-                    return new QsiScript("CREATE VIEW \"CHEQUER\".\"ACTOR_VIEW_1\" (\"ACTOR_ID\", \"FIRST_NAME\", \"LAST_NAME\", \"LAST_UPDATE\") AS select \"ACTOR_ID\",\"FIRST_NAME\",\"LAST_NAME\",\"LAST_UPDATE\" from actor", QsiScriptType.Create);
+                case "ACTOR_VIEW":
+                    return new QsiScript("CREATE VIEW actor_view AS (select actor_id, first_name, last_name, last_update, first_name || last_name from actor);", QsiScriptType.Create);
 
-                case "ACTOR_VIEW_2":
-                    return new QsiScript("CREATE VIEW \"CHEQUER\".\"ACTOR_VIEW_2\" (\"A\", \"B\", \"C\", \"D\") AS select \"ACTOR_ID\",\"FIRST_NAME\",\"LAST_NAME\",\"LAST_UPDATE\" from actor", QsiScriptType.Create);
+                case "ACTOR_VIEW2":
+                    return new QsiScript("CREATE VIEW actor_view AS (select * from actor);", QsiScriptType.Create);
             }
 
             return null;
@@ -57,28 +85,6 @@ namespace Qsi.Debugger.Vendor.Oracle
         protected override QsiVariable LookupVariable(QsiQualifiedIdentifier identifier)
         {
             throw new NotImplementedException();
-        }
-
-        protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier)
-        {
-            if (identifier.Level == 1)
-            {
-                var sys = new QsiIdentifier("PUBLIC", false);
-                identifier = new QsiQualifiedIdentifier(sys, identifier[0]);
-            }
-
-            if (identifier.Level != 2)
-                throw new InvalidOperationException();
-
-            return identifier;
-        }
-
-        private static string GetName(QsiIdentifier identifier)
-        {
-            if (identifier.IsEscaped)
-                return IdentifierUtility.Unescape(identifier.Value);
-
-            return identifier.Value;
         }
     }
 }
