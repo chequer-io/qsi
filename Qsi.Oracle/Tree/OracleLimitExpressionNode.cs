@@ -10,7 +10,7 @@ namespace Qsi.Oracle.Tree
         public QsiTreeNodeProperty<QsiExpressionNode> LimitPercent { get; }
 
         public OracleFetchOption FetchOption { get; set; }
-        
+
         public override IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Limit, Offset, LimitPercent);
 
         public OracleLimitExpressionNode()

@@ -2,6 +2,7 @@
 using System.Linq;
 using Qsi.Oracle.Common;
 using Qsi.Tree;
+using Qsi.Utilities;
 
 namespace Qsi.Oracle.Tree
 {
@@ -17,7 +18,7 @@ namespace Qsi.Oracle.Tree
 
         public QsiTreeNodeProperty<QsiExpressionNode> FractionalSecondPrecision { get; }
 
-        public override IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
+        public override IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(From, To, LeadingFieldPrecision, FractionalSecondPrecision);
 
         public OracleIntervalExpressionNode()
         {

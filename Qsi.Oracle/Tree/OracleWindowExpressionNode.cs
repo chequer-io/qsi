@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Qsi.Data;
 using Qsi.Tree;
+using Qsi.Utilities;
 
 namespace Qsi.Oracle.Tree
 {
@@ -29,7 +29,7 @@ namespace Qsi.Oracle.Tree
 
         public QsiTreeNodeProperty<OracleWindowingExpressionNode> Windowing { get; }
 
-        public override IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
+        public override IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Partition, Order, Windowing);
 
         public OracleWindowItemNode()
         {

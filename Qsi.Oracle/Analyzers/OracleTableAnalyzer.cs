@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Qsi.Analyzers.Table;
 using Qsi.Analyzers.Table.Context;
@@ -30,14 +31,90 @@ namespace Qsi.Oracle.Analyzers
         {
             switch (expression)
             {
-                case OracleAggregateFunctionExpressionNode e:
-                    return base.ResolveColumnsInExpression(context, e.Function.Value);
+                case OracleColumnOuterJoinExpressionNode e:
+                {
+                    yield return ResolveColumnReference(context, e.Column.Value);
 
-                case OracleAnalyticFunctionExpressionNode e:
-                    return base.ResolveColumnsInExpression(context, e.Function.Value);
+                    break;
+                }
+
+                case OracleMiningAttributeExpressionNode e:
+                {
+                    if (e.Columns.IsEmpty)
+                        yield break;
+
+                    foreach (var c in e.Columns.Value.SelectMany(x => ResolveColumns(context, x)))
+                        yield return c;
+
+                    break;
+                }
+
+                case OracleTypeCastFunctionExpressionNode e:
+                {
+                    if (!e.DefaultExpressionOnError.IsEmpty)
+                        foreach (var c in ResolveColumnsInExpression(context, e.DefaultExpressionOnError.Value))
+                            yield return c;
+
+                    // QsiInvokeExpressionNode
+                    foreach (var c in base.ResolveColumnsInExpression(context, e))
+                        yield return c;
+
+                    break;
+                }
+
+                case OracleWindowExpressionNode e:
+                {
+                    foreach (var column in e.Items
+                        .SelectMany(x => x.Children
+                            .OfType<IQsiExpressionNode>()
+                            .SelectMany(y => ResolveColumnsInExpression(context, y))))
+                    {
+                        yield return column;
+                    }
+
+                    break;
+                }
+
+                case OracleWindowingExpressionNode e:
+                {
+                    foreach (var column in e.Items
+                        .SelectMany(x => x.Children
+                            .OfType<IQsiExpressionNode>()
+                            .SelectMany(y => ResolveColumnsInExpression(context, y))))
+                    {
+                        yield return column;
+                    }
+
+                    if (!e.Exclude.IsEmpty)
+                        foreach (var c in base.ResolveColumnsInExpression(context, e.Exclude.Value))
+                            yield return c;
+
+                    break;
+                }
+
+                case OracleAggregateFunctionExpressionNode:
+                case OracleAnalyticFunctionExpressionNode:
+                case OracleCostMatrixExpressionNode:
+                case OracleDatetimeExpressionNode:
+                case OracleIntervalExpressionNode:
+                case OracleLimitExpressionNode:
+                case OracleNamedParameterExpressionNode:
+                {
+                    foreach (var column in expression.Children
+                        .OfType<IQsiExpressionNode>()
+                        .SelectMany(x => ResolveColumnsInExpression(context, x)))
+                    {
+                        yield return column;
+                    }
+
+                    break;
+                }
 
                 default:
-                    return base.ResolveColumnsInExpression(context, expression);
+                    foreach (var c in base.ResolveColumnsInExpression(context, expression))
+                        yield return c;
+
+                    break;
             }
         }
 

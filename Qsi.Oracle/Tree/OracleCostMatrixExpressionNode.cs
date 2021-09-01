@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Qsi.Tree;
+using Qsi.Utilities;
 
 namespace Qsi.Oracle.Tree
 {
@@ -14,7 +15,7 @@ namespace Qsi.Oracle.Tree
 
         public QsiTreeNodeList<QsiExpressionNode> ModelValues { get; }
 
-        public override IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
+        public override IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Models, ModelValues);
 
         public OracleCostMatrixExpressionNode()
         {

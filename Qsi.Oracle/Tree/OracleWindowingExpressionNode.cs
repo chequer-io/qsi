@@ -3,6 +3,7 @@ using System.Linq;
 using Qsi.Data;
 using Qsi.Oracle.Common;
 using Qsi.Tree;
+using Qsi.Utilities;
 
 namespace Qsi.Oracle.Tree
 {
@@ -14,7 +15,7 @@ namespace Qsi.Oracle.Tree
 
         public QsiTreeNodeProperty<QsiExpressionNode> Exclude { get; }
 
-        public override IEnumerable<IQsiTreeNode> Children => Items;
+        public override IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Items, Exclude);
 
         public OracleWindowingExpressionNode()
         {
@@ -29,7 +30,7 @@ namespace Qsi.Oracle.Tree
 
         public QsiTreeNodeProperty<QsiExpressionNode> Right { get; }
 
-        public override IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
+        public override IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Left, Right);
 
         public OracleWindowingItemNode()
         {
