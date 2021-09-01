@@ -33,16 +33,10 @@ namespace Qsi.Debugger.Vendor.Oracle
         {
             var tableIdentifier = identifier[^1];
             var schemaIdentifier = identifier.Level >= 2 ? identifier[^2] : null;
+            var tableName = IdentifierUtility.Unescape(tableIdentifier.Value);
 
-            var tableName = tableIdentifier.IsEscaped ? IdentifierUtility.Unescape(tableIdentifier.Value) : tableIdentifier.Value.ToUpper();
-
-            if (schemaIdentifier != null)
-            {
-                var schemaName = schemaIdentifier.IsEscaped ? IdentifierUtility.Unescape(schemaIdentifier.Value) : schemaIdentifier.Value.ToUpper();
-
-                if (schemaName != "SYSTEM")
-                    return null;
-            }
+            if (schemaIdentifier is not null && schemaIdentifier.Value != "SYSTEM")
+                return null;
 
             switch (tableName)
             {

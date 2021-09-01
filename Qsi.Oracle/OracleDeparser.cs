@@ -112,7 +112,7 @@ namespace Qsi.Oracle
                 if (oracleNode.QueryBehavior is not null)
                 {
                     writer.WriteSpace();
-                    writer.Write(oracleNode.QueryBehavior?.ToString().ToUpper());
+                    writer.Write(oracleNode.QueryBehavior?.ToString().ToUpperInvariant());
                 }
 
                 if (node.Columns is not null)

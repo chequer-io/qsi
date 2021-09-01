@@ -13,13 +13,21 @@ namespace Qsi.Oracle.Tree.Visitors
         public static QsiIdentifier VisitIdentifierFragment(IdentifierFragmentContext context)
         {
             var text = context.GetText();
-            return new QsiIdentifier(text, text.StartsWith('"'));
+            bool isEscaped = text.StartsWith('"');
+
+            text = isEscaped ? text : text.ToUpperInvariant();
+
+            return new QsiIdentifier(text, isEscaped);
         }
 
         public static QsiIdentifier VisitSimpleIdentifier(SimpleIdentifierContext context)
         {
             var text = context.GetText();
-            return new QsiIdentifier(text, text.StartsWith('"'));
+            bool isEscaped = text.StartsWith('"');
+
+            text = isEscaped ? text : text.ToUpperInvariant();
+
+            return new QsiIdentifier(text, isEscaped);
         }
 
         // [[database] .] object [@ dblink]
