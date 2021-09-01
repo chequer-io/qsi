@@ -96,13 +96,6 @@ namespace Qsi.Analyzers.Table
 
                 switch (viewNode)
                 {
-                    /* TODO: Remove old view node
-                       [V] Cql
-                       [-] JSql (Deprecated)
-                       [V] MySql
-                       [V] PhoenixSql
-                       [V] SqlServer
-                     */
                     case IQsiTableNode viewTableNode:
                     {
                         var viewTableStructure = await BuildTableStructure(viewCompileContext, viewTableNode);
