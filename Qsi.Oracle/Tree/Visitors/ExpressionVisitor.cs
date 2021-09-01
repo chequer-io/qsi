@@ -3389,20 +3389,20 @@ namespace Qsi.Oracle.Tree.Visitors
             var node = OracleTree.CreateWithSpan<QsiSwitchExpressionNode>(context);
 
             if (valueNode is not null)
-                node.Value.SetValue(valueNode);
+                node.Value.Value = valueNode;
 
             for (int i = 0; i < whenNodes.Length; i++)
             {
                 var caseNode = new QsiSwitchCaseExpressionNode();
-                caseNode.Condition.SetValue(whenNodes[i]);
-                caseNode.Consequent.SetValue(thenNodes[i]);
+                caseNode.Condition.Value = whenNodes[i];
+                caseNode.Consequent.Value = thenNodes[i];
                 node.Cases.Add(caseNode);
             }
 
             if (elseNode is not null)
             {
                 var caseNode = new QsiSwitchCaseExpressionNode();
-                caseNode.Consequent.SetValue(elseNode);
+                caseNode.Consequent.Value = elseNode;
                 node.Cases.Add(caseNode);
             }
 

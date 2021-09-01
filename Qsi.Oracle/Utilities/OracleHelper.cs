@@ -47,8 +47,8 @@ namespace Qsi.Oracle.Utilities
         public static OracleJoinedTableNode CreateJoinedTable(QsiTableNode left, QsiTableNode right, QsiExpressionNode onCondition)
         {
             var node = new OracleJoinedTableNode();
-            node.Left.SetValue(left);
-            node.Right.SetValue(right);
+            node.Left.Value = left;
+            node.Right.Value = right;
             node.JoinType = "JOIN";
             node.OnCondition.Value = onCondition;
 
