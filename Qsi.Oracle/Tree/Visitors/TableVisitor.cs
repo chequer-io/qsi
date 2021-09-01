@@ -557,7 +557,7 @@ namespace Qsi.Oracle.Tree.Visitors
                 node.Hierarchies.Value = ExpressionVisitor.VisitHierarchiesClause(context.hierarchiesClause());
 
             if (context.modifiedExternalTable() is not null)
-                throw TreeHelper.NotSupportedFeature("External table");
+                throw TreeHelper.NotSupportedFeature("External Modify");
 
             // sampleClause ignored
 
