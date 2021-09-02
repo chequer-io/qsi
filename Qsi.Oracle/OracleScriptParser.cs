@@ -1,13 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using Qsi.Data;
-using Qsi.JSql;
 using Qsi.Parsing.Common;
 using Qsi.Shared.Extensions;
 
 namespace Qsi.Oracle
 {
-    public sealed class OracleScriptParser : JSqlScriptParser
+    public sealed class OracleScriptParser : CommonScriptParser
     {
         private const string Create = "CREATE";
         private const string Or = "OR";
@@ -27,8 +26,14 @@ namespace Qsi.Oracle
         private const string If = "IF";
 
         private const string Exec = "EXEC";
+        private const string SemiColon = ";";
 
         private const string BlockKey = "Oracle::Type";
+
+        public OracleScriptParser()
+        {
+            EnablePoundComment = false;
+        }
 
         protected override QsiScriptType GetSuitableType(CommonScriptCursor cursor, IReadOnlyList<Token> tokens, Token[] leadingTokens)
         {
@@ -51,7 +56,7 @@ namespace Qsi.Oracle
                 if (!block.EndOfBlock)
                     return false;
 
-                if (block.Type == BlockType.Begin)
+                if (block.BlockType == BlockType.Begin)
                 {
                     context.SetUserData<Block>(BlockKey, null);
                     return true;
@@ -139,16 +144,19 @@ namespace Qsi.Oracle
                 }
                 else if (If.EqualsIgnoreCase(t.Current))
                 {
+                    block.ExpectedToken.Push(SemiColon);
                     block.ExpectedToken.Push(If);
                     block.ExpectedToken.Push(End);
                 }
                 else if (Case.EqualsIgnoreCase(t.Current))
                 {
+                    block.ExpectedToken.Push(SemiColon);
                     block.ExpectedToken.Push(Case);
                     block.ExpectedToken.Push(End);
                 }
                 else if (Begin.EqualsIgnoreCase(t.Current))
                 {
+                    block.ExpectedToken.Push(SemiColon);
                     block.ExpectedToken.Push(End);
                 }
 
@@ -246,7 +254,7 @@ namespace Qsi.Oracle
 
         private sealed class Block
         {
-            public BlockType Type { get; }
+            public BlockType BlockType { get; }
 
             public int LastTokenCount { get; set; }
 
@@ -256,9 +264,9 @@ namespace Qsi.Oracle
 
             public bool BodyOpened { get; set; }
 
-            public Block(BlockType type)
+            public Block(BlockType blockType)
             {
-                Type = type;
+                BlockType = blockType;
                 ExpectedToken = new Stack<string>();
             }
         }

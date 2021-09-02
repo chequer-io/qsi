@@ -1,24 +1,63 @@
-﻿using Qsi.JSql;
-using Qsi.JSql.Tree;
-using Qsi.Oracle.Tree;
+﻿using System.Threading;
+using Qsi.Data;
+using Qsi.Oracle.Internal;
+using Qsi.Oracle.Tree.Visitors;
+using Qsi.Parsing;
+using Qsi.Tree;
+using Qsi.Utilities;
 
 namespace Qsi.Oracle
 {
-    public sealed class OracleParser : JSqlParser
+    using static OracleParserInternal;
+
+    public sealed class OracleParser : IQsiTreeParser
     {
-        protected override JSqlTableVisitor CreateTableVisitor(IJSqlVisitorSet set)
+        public IQsiTreeNode Parse(QsiScript script, CancellationToken cancellationToken = default)
         {
-            return new OracleTableVisitor(set);
+            var parser = OracleUtility.CreateParser(script.Script);
+
+            var block = parser.root();
+
+            if (block.block() != null)
+            {
+                switch (block.block(0).children[0])
+                {
+                    case OracleStatementContext oracleStatement:
+                        return ParseOracleStatement(oracleStatement);
+
+                    default:
+                        throw TreeHelper.NotSupportedTree(block.children[0]);
+                }
+            }
+
+            return null;
         }
 
-        protected override JSqlExpressionVisitor CreateExpressionVisitor(IJSqlVisitorSet set)
+        private static IQsiTreeNode ParseOracleStatement(OracleStatementContext oracleStatement)
         {
-            return new OracleExpressionVisitor(set);
-        }
+            switch (oracleStatement.children[0])
+            {
+                case SelectContext select:
+                    return TableVisitor.VisitSelect(select);
 
-        protected override JSqlIdentifierVisitor CreateIdentifierVisitor(IJSqlVisitorSet set)
-        {
-            return new OracleIdentifierVisitor(set);
+                case CreateContext create:
+                    return ActionVisitor.VisitCreate(create);
+
+                case UpdateContext update:
+                    return ActionVisitor.VisitUpdate(update);
+
+                case DeleteContext delete:
+                    return ActionVisitor.VisitDelete(delete);
+
+                case InsertContext insert:
+                    return ActionVisitor.VisitInsert(insert);
+
+                case MergeContext merge:
+                    return ActionVisitor.VisitMerge(merge);
+
+                default:
+                    throw TreeHelper.NotSupportedTree(oracleStatement.children[0]);
+            }
         }
     }
 }

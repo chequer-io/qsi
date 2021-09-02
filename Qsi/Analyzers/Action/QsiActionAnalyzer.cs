@@ -704,7 +704,7 @@ namespace Qsi.Analyzers.Action
                 .ToArray<IQsiAnalysisResult>();
         }
 
-        private int FindColumnIndex(IAnalyzerContext context, QsiTableStructure table, QsiQualifiedIdentifier identifier)
+        protected int FindColumnIndex(IAnalyzerContext context, QsiTableStructure table, QsiQualifiedIdentifier identifier)
         {
             var alias = new QsiQualifiedIdentifier(identifier[..^1]);
             var name = identifier[^1];
