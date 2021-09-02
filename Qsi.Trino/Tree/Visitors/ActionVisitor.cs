@@ -25,8 +25,6 @@ namespace Qsi.Trino.Tree.Visitors
             if (columnAliases is not null)
                 node.Columns.AddRange(columnAliases.identifier().Select(identifierContext => new QsiQualifiedIdentifier(identifierContext.qi)));
 
-            node.
-            
             return node;
         }
     }
