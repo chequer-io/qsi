@@ -155,7 +155,7 @@ namespace Qsi.Oracle.Tree.Visitors
             switch (context.children[0])
             {
                 case ITerminalNode { Symbol: { Type: UNION } }:
-                    return context.ALL() != null
+                    return context.HasToken(ALL)
                         ? OracleBinaryTableType.UnionAll
                         : OracleBinaryTableType.Union;
 

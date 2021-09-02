@@ -1,4 +1,4 @@
-﻿using System.Threading;
+using System.Threading;
 using Qsi.Data;
 using Qsi.Oracle.Internal;
 using Qsi.Oracle.Tree.Visitors;
@@ -18,7 +18,7 @@ namespace Qsi.Oracle
 
             var block = parser.root();
 
-            if (block.block() != null)
+            if (block.block() is not null)
             {
                 switch (block.block(0).children[0])
                 {
