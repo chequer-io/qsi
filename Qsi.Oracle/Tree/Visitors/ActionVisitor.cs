@@ -76,7 +76,8 @@ namespace Qsi.Oracle.Tree.Visitors
                         .Select(v =>
                             v.expr() is not null
                                 ? ExpressionVisitor.VisitExpr(v.expr())
-                                : TreeHelper.CreateDefaultLiteral())
+                                : TreeHelper.CreateDefaultLiteral()
+                        )
                     );
 
                     node.Values.Add(rowValueNode);
