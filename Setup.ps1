@@ -25,12 +25,12 @@ Class Task {
 }
 
 $Tasks = @(
-    "Qsi.MySql",
-    "Qsi.Cql",
-    "Qsi.Hana",
-    "Qsi.Impala",
-    "Qsi.Trino",
-    "Qsi.Oracle"
+    [Task]::new("Qsi.MySql",   $true,  $true, @("predefined.tokens")),
+    [Task]::new("Qsi.Cql",     $true,  $true),
+    [Task]::new("Qsi.Hana",    $true,  $true),
+    [Task]::new("Qsi.Impala",  $true,  $true),
+    [Task]::new("Qsi.Trino",   $false, $true),
+    [Task]::new("Qsi.Oracle",  $true,  $true, @("predefined.tokens"))
 )
 
 if ($Target -eq 'All') {
