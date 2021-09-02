@@ -18,6 +18,12 @@ tokens {
     DELIMITER
 }
 
+@header {
+    using Qsi.Data;
+    using Qsi.Tree;
+    using Qsi.Utilities;
+}
+
 singleStatement
     : statement EOF
     ;
@@ -40,13 +46,13 @@ standaloneRowPattern
 
 statement
     : query                                                            #statementDefault
-    | USE schema=identifier                                            #use
-    | USE catalog=identifier '.' schema=identifier                     #use
+    | USE schema=identifier[null]                                      #use
+    | USE catalog=identifier[null] '.' schema=identifier[null]         #use
     | CREATE SCHEMA (IF NOT EXISTS)? qualifiedName
         (AUTHORIZATION principal)?
         (WITH properties)?                                             #createSchema
     | DROP SCHEMA (IF EXISTS)? qualifiedName (CASCADE | RESTRICT)?     #dropSchema
-    | ALTER SCHEMA qualifiedName RENAME TO identifier                  #renameSchema
+    | ALTER SCHEMA qualifiedName RENAME TO identifier[null]                  #renameSchema
     | ALTER SCHEMA qualifiedName SET AUTHORIZATION principal           #setSchemaAuthorization
     | CREATE TABLE (IF NOT EXISTS)? qualifiedName columnAliases?
         (COMMENT string)?
@@ -63,7 +69,7 @@ statement
     | COMMENT ON TABLE qualifiedName IS (string | NULL)                #commentTable
     | COMMENT ON COLUMN qualifiedName IS (string | NULL)               #commentColumn
     | ALTER TABLE (IF EXISTS)? tableName=qualifiedName
-        RENAME COLUMN (IF EXISTS)? from=identifier TO to=identifier    #renameColumn
+        RENAME COLUMN (IF EXISTS)? from=identifier[null] TO to=identifier[null]    #renameColumn
     | ALTER TABLE (IF EXISTS)? tableName=qualifiedName
         DROP COLUMN (IF EXISTS)? column=qualifiedName                  #dropColumn
     | ALTER TABLE (IF EXISTS)? tableName=qualifiedName
@@ -84,9 +90,9 @@ statement
     | ALTER VIEW from=qualifiedName RENAME TO to=qualifiedName         #renameView
     | ALTER VIEW from=qualifiedName SET AUTHORIZATION principal        #setViewAuthorization
     | CALL qualifiedName '(' (callArgument (',' callArgument)*)? ')'   #call
-    | CREATE ROLE name=identifier
+    | CREATE ROLE name=identifier[null]
         (WITH ADMIN grantor)?                                          #createRole
-    | DROP ROLE name=identifier                                        #dropRole
+    | DROP ROLE name=identifier[null]                                  #dropRole
     | GRANT
         roles
         TO principal (',' principal)*
@@ -97,7 +103,7 @@ statement
         roles
         FROM principal (',' principal)*
         (GRANTED BY grantor)?                                          #revokeRoles
-    | SET ROLE (ALL | NONE | role=identifier)                          #setRole
+    | SET ROLE (ALL | NONE | role=identifier[null])                    #setRole
     | GRANT
         (privilege (',' privilege)* | ALL PRIVILEGES)
         ON (SCHEMA | TABLE)? qualifiedName
@@ -118,7 +124,7 @@ statement
     | SHOW CREATE MATERIALIZED VIEW qualifiedName                      #showCreateMaterializedView
     | SHOW TABLES ((FROM | IN) qualifiedName)?
         (LIKE pattern=string (ESCAPE escape=string)?)?                 #showTables
-    | SHOW SCHEMAS ((FROM | IN) identifier)?
+    | SHOW SCHEMAS ((FROM | IN) identifier[null])?
         (LIKE pattern=string (ESCAPE escape=string)?)?                 #showSchemas
     | SHOW CATALOGS
         (LIKE pattern=string (ESCAPE escape=string)?)?                 #showCatalogs
@@ -126,8 +132,8 @@ statement
         (LIKE pattern=string (ESCAPE escape=string)?)?                 #showColumns
     | SHOW STATS FOR qualifiedName                                     #showStats
     | SHOW STATS FOR '(' query ')'                                     #showStatsForQuery
-    | SHOW CURRENT? ROLES ((FROM | IN) identifier)?                    #showRoles
-    | SHOW ROLE GRANTS ((FROM | IN) identifier)?                       #showRoleGrants
+    | SHOW CURRENT? ROLES ((FROM | IN) identifier[null])?              #showRoles
+    | SHOW ROLE GRANTS ((FROM | IN) identifier[null])?                 #showRoleGrants
     | DESCRIBE qualifiedName                                           #showColumns
     | DESC qualifiedName                                               #showColumns
     | SHOW FUNCTIONS
@@ -139,17 +145,17 @@ statement
     | START TRANSACTION (transactionMode (',' transactionMode)*)?      #startTransaction
     | COMMIT WORK?                                                     #commit
     | ROLLBACK WORK?                                                   #rollback
-    | PREPARE identifier FROM statement                                #prepare
-    | DEALLOCATE PREPARE identifier                                    #deallocate
-    | EXECUTE identifier (USING expression (',' expression)*)?         #execute
-    | DESCRIBE INPUT identifier                                        #describeInput
-    | DESCRIBE OUTPUT identifier                                       #describeOutput
+    | PREPARE identifier[null] FROM statement                          #prepare
+    | DEALLOCATE PREPARE identifier[null]                              #deallocate
+    | EXECUTE identifier[null] (USING expression (',' expression)*)?   #execute
+    | DESCRIBE INPUT identifier[null]                                  #describeInput
+    | DESCRIBE OUTPUT identifier[null]                                 #describeOutput
     | SET PATH pathSpecification                                       #setPath
     | SET TIME ZONE (LOCAL | expression)                               #setTimeZone
     | UPDATE qualifiedName
         SET updateAssignment (',' updateAssignment)*
         (WHERE where=booleanExpression)?                               #update
-    | MERGE INTO qualifiedName (AS? identifier)?
+    | MERGE INTO qualifiedName (AS? identifier[null])?
         USING relation ON expression mergeCase+                        #merge
     ;
 
@@ -167,7 +173,7 @@ tableElement
     ;
 
 columnDefinition
-    : identifier type (NOT NULL)? (COMMENT string)? (WITH properties)?
+    : identifier[null] type (NOT NULL)? (COMMENT string)? (WITH properties)?
     ;
 
 likeClause
@@ -179,7 +185,7 @@ properties
     ;
 
 property
-    : identifier EQ expression
+    : identifier[null] EQ expression
     ;
 
 queryNoWith:
@@ -242,18 +248,18 @@ groupingSet
     ;
 
 windowDefinition
-    : name=identifier AS '(' windowSpecification ')'
+    : name=identifier[null] AS '(' windowSpecification ')'
     ;
 
 windowSpecification
-    : (existingWindowName=identifier)?
+    : (existingWindowName=identifier[null])?
       (PARTITION BY partition+=expression (',' partition+=expression)*)?
       (ORDER BY sortItem (',' sortItem)*)?
       windowFrame?
     ;
 
 namedQuery
-    : name=identifier (columnAliases)? AS '(' query ')'
+    : name=identifier[null] (columnAliases)? AS '(' query ')'
     ;
 
 setQuantifier
@@ -262,7 +268,7 @@ setQuantifier
     ;
 
 selectItem
-    : expression (AS? identifier)?                          #selectSingle
+    : expression (AS? identifier[null])?                          #selectSingle
     | primaryExpression '.' ASTERISK (AS columnAliases)?    #selectAll
     | ASTERISK                                              #selectAll
     ;
@@ -285,7 +291,7 @@ joinType
 
 joinCriteria
     : ON booleanExpression
-    | USING '(' identifier (',' identifier)* ')'
+    | USING '(' identifier[null] (',' identifier[null])* ')'
     ;
 
 sampledRelation
@@ -312,11 +318,11 @@ patternRecognition
                 (SUBSET subsetDefinition (',' subsetDefinition)*)?
                 DEFINE variableDefinition (',' variableDefinition)*
             ')'
-        (AS? identifier columnAliases?)?)?
+        (AS? identifier[null] columnAliases?)?)?
     ;
 
 measureDefinition
-    : expression AS identifier
+    : expression AS identifier[null]
     ;
 
 rowsPerMatch
@@ -333,25 +339,25 @@ emptyMatchHandling
 skipTo
     : 'SKIP' TO NEXT ROW
     | 'SKIP' PAST LAST ROW
-    | 'SKIP' TO FIRST identifier
-    | 'SKIP' TO LAST identifier
-    | 'SKIP' TO identifier
+    | 'SKIP' TO FIRST identifier[null]
+    | 'SKIP' TO LAST identifier[null]
+    | 'SKIP' TO identifier[null]
     ;
 
 subsetDefinition
-    : name=identifier EQ '(' union+=identifier (',' union+=identifier)* ')'
+    : name=identifier[null] EQ '(' union+=identifier[null] (',' union+=identifier[null])* ')'
     ;
 
 variableDefinition
-    : identifier AS expression
+    : identifier[null] AS expression
     ;
 
 aliasedRelation
-    : relationPrimary (AS? identifier columnAliases?)?
+    : relationPrimary (AS? identifier[null] columnAliases?)?
     ;
 
 columnAliases
-    : '(' identifier (',' identifier)* ')'
+    : '(' identifier[null] (',' identifier[null])* ')'
     ;
 
 relationPrimary
@@ -397,7 +403,7 @@ valueExpression
 primaryExpression
     : NULL                                                                                #nullLiteral
     | interval                                                                            #intervalLiteral
-    | identifier string                                                                   #typeConstructor
+    | identifier[null] string                                                             #typeConstructor
     | DOUBLE PRECISION string                                                             #typeConstructor
     | number                                                                              #numericLiteral
     | booleanValue                                                                        #booleanLiteral
@@ -410,9 +416,9 @@ primaryExpression
     | qualifiedName '(' ASTERISK ')' filter? over?                                        #functionCall
     | processingMode? qualifiedName '(' (setQuantifier? expression (',' expression)*)?
         (ORDER BY sortItem (',' sortItem)*)? ')' filter? (nullTreatment? over)?           #functionCall
-    | identifier over                                                                     #measure
-    | identifier '->' expression                                                          #lambda
-    | '(' (identifier (',' identifier)*)? ')' '->' expression                             #lambda
+    | identifier[null] over                                                               #measure
+    | identifier[null] '->' expression                                                    #lambda
+    | '(' (identifier[null] (',' identifier[null])*)? ')' '->' expression                 #lambda
     | '(' query ')'                                                                       #subqueryExpression
     // This is an extension to ANSI SQL, which considers EXISTS to be a <boolean expression>
     | EXISTS '(' query ')'                                                                #exists
@@ -422,8 +428,8 @@ primaryExpression
     | TRY_CAST '(' expression AS type ')'                                                 #cast
     | ARRAY '[' (expression (',' expression)*)? ']'                                       #arrayConstructor
     | value=primaryExpression '[' index=valueExpression ']'                               #subscript
-    | identifier                                                                          #columnReference
-    | expr=primaryExpression '.' fieldName=identifier                                     #dereference
+    | identifier[null]                                                                    #columnReference
+    | expr=primaryExpression '.' fieldName=identifier[null]                               #dereference
     | name=CURRENT_DATE                                                                   #specialDateTimeFunction
     | name=CURRENT_TIME ('(' precision=INTEGER_VALUE ')')?                                #specialDateTimeFunction
     | name=CURRENT_TIMESTAMP ('(' precision=INTEGER_VALUE ')')?                           #specialDateTimeFunction
@@ -435,7 +441,7 @@ primaryExpression
     | name=CURRENT_PATH                                                                   #currentPath
     | SUBSTRING '(' valueExpression FROM valueExpression (FOR valueExpression)? ')'       #substring
     | NORMALIZE '(' valueExpression (',' normalForm)? ')'                                 #normalize
-    | EXTRACT '(' identifier FROM valueExpression ')'                                     #extract
+    | EXTRACT '(' identifier[null] FROM valueExpression ')'                               #extract
     | '(' expression ')'                                                                  #parenthesizedExpression
     | GROUPING '(' (qualifiedName (',' qualifiedName)*)? ')'                              #groupingOperation
     ;
@@ -495,12 +501,12 @@ type
     | ARRAY '<' type '>'                                                           #legacyArrayType
     | MAP '<' keyType=type ',' valueType=type '>'                                  #legacyMapType
     | type ARRAY ('[' INTEGER_VALUE ']')?                                          #arrayType
-    | identifier ('(' typeParameter (',' typeParameter)* ')')?                     #genericType
+    | identifier[null] ('(' typeParameter (',' typeParameter)* ')')?               #genericType
     ;
 
 rowField
     : type
-    | identifier type;
+    | identifier[null] type;
 
 typeParameter
     : INTEGER_VALUE | type
@@ -516,16 +522,16 @@ filter
 
 mergeCase
     : WHEN MATCHED (AND condition=expression)? THEN
-        UPDATE SET targets+=identifier EQ values+=expression
-          (',' targets+=identifier EQ values+=expression)*                  #mergeUpdate
+        UPDATE SET targets+=identifier[null] EQ values+=expression
+          (',' targets+=identifier[null] EQ values+=expression)*            #mergeUpdate
     | WHEN MATCHED (AND condition=expression)? THEN DELETE                  #mergeDelete
     | WHEN NOT MATCHED (AND condition=expression)? THEN
-        INSERT ('(' targets+=identifier (',' targets+=identifier)* ')')?
+        INSERT ('(' targets+=identifier[null] (',' targets+=identifier[null])* ')')?
         VALUES '(' values+=expression (',' values+=expression)* ')'         #mergeInsert
     ;
 
 over
-    : OVER (windowName=identifier | '(' windowSpecification ')')
+    : OVER (windowName=identifier[null] | '(' windowSpecification ')')
     ;
 
 windowFrame
@@ -561,7 +567,7 @@ rowPattern
     ;
 
 patternPrimary
-    : identifier                                        #patternVariable
+    : identifier[null]                                  #patternVariable
     | '(' ')'                                           #emptyPattern
     | PERMUTE '(' rowPattern (',' rowPattern)* ')'      #patternPermutation
     | '(' rowPattern ')'                                #groupedPattern
@@ -579,7 +585,7 @@ patternQuantifier
     ;
 
 updateAssignment
-    : identifier EQ expression
+    : identifier[null] EQ expression
     ;
 
 explainOption
@@ -600,13 +606,13 @@ levelOfIsolation
     ;
 
 callArgument
-    : expression                    #positionalArgument
-    | identifier '=>' expression    #namedArgument
+    : expression                          #positionalArgument
+    | identifier[null] '=>' expression    #namedArgument
     ;
 
 pathElement
-    : identifier '.' identifier     #qualifiedArgument
-    | identifier                    #unqualifiedArgument
+    : identifier[null] '.' identifier[null]     #qualifiedArgument
+    | identifier[null]                          #unqualifiedArgument
     ;
 
 pathSpecification
@@ -617,8 +623,10 @@ privilege
     : SELECT | DELETE | INSERT | UPDATE
     ;
 
-qualifiedName
-    : identifier ('.' identifier)*
+qualifiedName returns [QsiQualifiedIdentifier qqi] locals [List<QsiIdentifier> buffer]
+    @init { $buffer = new List<QsiIdentifier>(); }
+    @after { $qqi = new QsiQualifiedIdentifier($buffer); }
+    : identifier[$buffer] ('.' identifier[$buffer] )*
     ;
 
 grantor
@@ -628,21 +636,22 @@ grantor
     ;
 
 principal
-    : identifier            #unspecifiedPrincipal
-    | USER identifier       #userPrincipal
-    | ROLE identifier       #rolePrincipal
+    : identifier[null]            #unspecifiedPrincipal
+    | USER identifier[null]       #userPrincipal
+    | ROLE identifier[null]       #rolePrincipal
     ;
 
 roles
-    : identifier (',' identifier)*
+    : identifier[null] (',' identifier[null])*
     ;
 
-identifier
-    : IDENTIFIER             #unquotedIdentifier
-    | QUOTED_IDENTIFIER      #quotedIdentifier
-    | nonReserved            #unquotedIdentifier
-    | BACKQUOTED_IDENTIFIER  #backQuotedIdentifier
-    | DIGIT_IDENTIFIER       #digitIdentifier
+identifier[List<QsiIdentifier> buffer] returns [QsiIdentifier qi]
+    @after { $buffer?.Add($qi); }
+    : i=IDENTIFIER { $qi = new QsiIdentifier($i.text.ToUpper(), false); }             #unquotedIdentifier
+    | i=QUOTED_IDENTIFIER { $qi = new QsiIdentifier($i.text, true); }                 #quotedIdentifier
+    | ki=nonReserved { $qi = new QsiIdentifier($ki.text.ToUpper(), false); }           #unquotedIdentifier
+    | i=BACKQUOTED_IDENTIFIER { $qi = new QsiIdentifier($i.text, true); }             #backQuotedIdentifier
+    | i=DIGIT_IDENTIFIER { $qi = new QsiIdentifier($i.text.ToUpper(), false); }       #digitIdentifier
     ;
 
 number
