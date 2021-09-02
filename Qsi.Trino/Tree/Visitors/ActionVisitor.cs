@@ -10,7 +10,7 @@ namespace Qsi.Trino.Tree.Visitors
 
     internal static class ActionVisitor
     {
-        public static QsiDataInsertActionNode VisitInsertStatement(InsertIntoContext context)
+        public static QsiDataInsertActionNode VisitInsertInto(InsertIntoContext context)
         {
             var name = context.qualifiedName();
             var columnAliases = context.columnAliases();

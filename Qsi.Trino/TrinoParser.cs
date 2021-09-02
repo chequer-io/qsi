@@ -3,6 +3,7 @@ using Qsi.Data;
 using Qsi.Parsing;
 using Qsi.Tree;
 using Qsi.Trino.Internal;
+using Qsi.Trino.Tree.Visitors;
 using Qsi.Utilities;
 
 namespace Qsi.Trino
