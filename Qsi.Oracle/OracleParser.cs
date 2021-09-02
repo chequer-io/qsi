@@ -1,4 +1,4 @@
-using System.Threading;
+﻿using System.Threading;
 using Qsi.Data;
 using Qsi.Oracle.Internal;
 using Qsi.Oracle.Tree.Visitors;
@@ -54,6 +54,9 @@ namespace Qsi.Oracle
 
                 case MergeContext merge:
                     return ActionVisitor.VisitMerge(merge);
+
+                case AlterContext alter:
+                    return ActionVisitor.VisitAlter(alter);
 
                 default:
                     throw TreeHelper.NotSupportedTree(oracleStatement.children[0]);
