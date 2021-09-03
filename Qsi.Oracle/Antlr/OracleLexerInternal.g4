@@ -1640,7 +1640,7 @@ TK_IDENTIFIER_OR_KEYWORD: IDENTIFIER_FRAGMENT { CategorizeIdentifier(); };
 TK_IDENTIFIER: DOUBLE_QUOTE ~[\r\n"]* DOUBLE_QUOTE;
 
 TK_INTEGER: DIGIT+;
-TK_NUMBER: (DIGIT+ | DIGIT* [ ]* '.' [ ]* DIGIT+) (([ ]* E)? [ ]* ('+' | '-')? [ ]* DIGIT+)?;
+TK_NUMBER: (DIGIT+ | DIGIT* [ ]* '.' [ ]* DIGIT+) ([ ]* E [ ]* ('+' | '-')? [ ]* DIGIT+)?;
 
 TK_SINGLE_QUOTED_STRING: '\'' ( '\'\'' | ~['] )* '\'';
 
