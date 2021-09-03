@@ -24,7 +24,7 @@ namespace Qsi.Trino.Tree.Visitors
             return node;
         }
 
-        private static QsiTableNode VisitQueryNoWith(QueryNoWithContext context)
+        public static QsiTableNode VisitQueryNoWith(QueryNoWithContext context)
         {
             throw new NotImplementedException();
         }
@@ -61,6 +61,14 @@ namespace Qsi.Trino.Tree.Visitors
             }
 
             node.Source.Value = VisitQuery(context.query());
+
+            return node;
+        }
+
+        public static QsiTableReferenceNode VisitQualifiedName(QualifiedNameContext context)
+        {
+            var node = TrinoTree.CreateWithSpan<QsiTableReferenceNode>(context);
+            node.Identifier = context.qqi;
 
             return node;
         }

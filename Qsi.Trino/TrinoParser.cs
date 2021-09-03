@@ -28,6 +28,9 @@ namespace Qsi.Trino
                 case InsertIntoContext insertIntoContext:
                     return ActionVisitor.VisitInsertInto(insertIntoContext);
 
+                case UpdateContext updateContext:
+                    return ActionVisitor.VisitUpdate(updateContext);
+
                 default:
                     throw TreeHelper.NotSupportedTree(context);
             }
