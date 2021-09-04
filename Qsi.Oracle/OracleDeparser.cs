@@ -43,6 +43,25 @@ namespace Qsi.Oracle
             writer.Write(")");
         }
 
+        protected override void DeparseTableDirectivesNode(ScriptWriter writer, IQsiTableDirectivesNode node, QsiScript script)
+        {
+            writer.Write("WITH ");
+
+            writer.WriteJoin(", ", node.Tables, (w, table) =>
+            {
+                w.Write(table.Alias.Name);
+
+                if (table.Columns is not null && !IsWildcard(table.Columns))
+                {
+                    w.WriteSpace();
+                    DeparseTreeNodeWithParenthesis(w, table.Columns, script);
+                }
+
+                w.Write(" AS ");
+                DeparseTreeNodeWithParenthesis(w, table.Source, script);
+            });
+        }
+
         protected override void DeparseCompositeTableNode(ScriptWriter writer, IQsiCompositeTableNode node, QsiScript script)
         {
             if (node is OracleBinaryTableNode oracleBinaryTableNode)
