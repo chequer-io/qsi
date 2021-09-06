@@ -437,9 +437,7 @@ namespace Qsi.Oracle.Tree.Visitors
             var aliasNode = new QsiAliasNode { Name = alias };
 
             node.Alias.Value = aliasNode;
-
             node.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
-
             node.Source.Value = tableNode;
 
             directives.Tables.Add(node);

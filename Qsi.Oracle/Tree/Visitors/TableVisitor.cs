@@ -129,6 +129,7 @@ namespace Qsi.Oracle.Tree.Visitors
                 return node;
 
             var directivesNode = new QsiTableDirectivesNode();
+            directivesNode.IsRecursive = true;
 
             if (leftItems is not null)
             {
