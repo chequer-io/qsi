@@ -942,7 +942,7 @@ plsqlExpression
     | <assoc=right> plsqlExpression relationalOperator plsqlExpression                                  #relationalOperatorExpression
     | <assoc=right> plsqlExpression '||' plsqlExpression                                                #characterConnectExpression
     | <assoc=right> plsqlExpression ('+' | '-' | '*' | '/' | '*' '*') plsqlExpression                   #signExpression
-    | bindVariable                                                                                      #plsqlPlaceholderExpression
+    | bindVariable bindVariable?                                                                        #plsqlPlaceholderExpression
     | <assoc=right> collectionType '(' (plsqlExpression (',' plsqlExpression)*)? ')'                    #plsqlCollectionConstructor
     | <assoc=right> CASE WHEN plsqlExpression THEN plsqlExpression
       (WHEN plsqlExpression THEN plsqlExpression)*
