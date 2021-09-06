@@ -11680,6 +11680,7 @@ constant
 
 variable
     : identifier
+    | numberLiteral
     ;
 
 attributeDimension
