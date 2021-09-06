@@ -12569,6 +12569,7 @@ nonReservedKeywordIdentifier
     | KW_D
     | KW_E
     | KW_EMPTY
+    | KW_F
     | KW_G
     | KW_H
     | KW_I
