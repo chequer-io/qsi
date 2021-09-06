@@ -129,6 +129,7 @@ namespace Qsi.Oracle
                     continue;
 
                 block.BodyOpened = true;
+                block.ExpectedToken.Push(SemiColon);
                 block.ExpectedToken.Push(End);
                 break;
             }
