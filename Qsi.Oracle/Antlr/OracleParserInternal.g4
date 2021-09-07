@@ -9680,14 +9680,14 @@ jsonObjectaggFunction
     ;
 
 jsonQueryFunction
-    : JSON_QUERY '(' expr (FORMAT JSON)? ',' stringLiteral
+    : JSON_QUERY '(' expr formatClause ',' stringLiteral
       jsonQueryReturningClause jsonQueryWrapperClause?
       jsonQueryOnErrorClause? jsonQueryOnEmptyClause?
       ')'
     ;
 
 jsonScalarFunction
-    : JSON_SCALAR '(' expr (SQL | JSON)? (NULL ON NULL)? ')'
+    : JSON_SCALAR '(' expr (SQL | JSON)? jsonOnNullClause? ')'
     ;
 
 jsonSerializeFunction
@@ -9700,7 +9700,7 @@ jsonTableFunction
     ;
 
 jsonTransformFunction
-    : JSON_TRANSFORM '(' expr ',' operation (',' operation) ')' jsonTransformReturningClause? jsonPassingClause?
+    : JSON_TRANSFORM '(' expr ',' operation (',' operation)* ')' jsonTransformReturningClause? jsonPassingClause?
     ;
 
 jsonValueFunction
