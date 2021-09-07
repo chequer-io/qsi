@@ -25,11 +25,14 @@ namespace Qsi.Trino
         {
             switch (context)
             {
-                case InsertIntoContext insertIntoContext:
-                    return ActionVisitor.VisitInsertInto(insertIntoContext);
+                case InsertIntoContext insertInto:
+                    return ActionVisitor.VisitInsertInto(insertInto);
 
-                case UpdateContext updateContext:
-                    return ActionVisitor.VisitUpdate(updateContext);
+                case UpdateContext update:
+                    return ActionVisitor.VisitUpdate(update);
+
+                case DeleteContext delete:
+                    return ActionVisitor.VisitDelete(delete);
 
                 default:
                     throw TreeHelper.NotSupportedTree(context);

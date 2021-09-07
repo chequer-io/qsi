@@ -1,4 +1,5 @@
-﻿using Qsi.Data;
+﻿using Antlr4.Runtime;
+using Qsi.Data;
 using Qsi.Tree;
 using Qsi.Trino.Internal;
 using Qsi.Utilities;
@@ -46,9 +47,9 @@ namespace Qsi.Trino.Tree.Visitors
         }
         #endregion
 
-        public static QsiWhereExpressionNode VisitWhere(BooleanExpressionContext context)
+        public static QsiWhereExpressionNode VisitWhere(BooleanExpressionContext context, IToken whereToken)
         {
-            var node = TrinoTree.CreateWithSpan<QsiWhereExpressionNode>(context);
+            var node = TrinoTree.CreateWithSpan<QsiWhereExpressionNode>(whereToken, context.Stop);
             node.Expression.Value = VisitBooleanExpression(context);
 
             return node;
