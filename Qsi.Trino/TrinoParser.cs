@@ -14,16 +14,11 @@ namespace Qsi.Trino
     {
         public IQsiTreeNode Parse(QsiScript script, CancellationToken cancellationToken = default)
         {
-            var parser = TrinoUtility.CreateParser(script.Script);
+            var (_, result) = SqlParser.Parse(script.Script, p => p.singleStatement());
 
-            var statement = parser.singleStatement().statement();
+            var statement = result.statement();
 
-            return ParseTrinoStatement(statement);
-        }
-
-        private static IQsiTreeNode ParseTrinoStatement(StatementContext context)
-        {
-            switch (context)
+            switch (statement)
             {
                 case InsertIntoContext insertInto:
                     return ActionVisitor.VisitInsertInto(insertInto);
@@ -35,7 +30,7 @@ namespace Qsi.Trino
                     return ActionVisitor.VisitDelete(delete);
 
                 default:
-                    throw TreeHelper.NotSupportedTree(context);
+                    throw TreeHelper.NotSupportedTree(statement);
             }
         }
     }

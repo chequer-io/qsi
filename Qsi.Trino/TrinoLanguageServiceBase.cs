@@ -14,12 +14,12 @@ namespace Qsi.Trino
 
         public override IQsiTreeParser CreateTreeParser()
         {
-            throw new System.NotImplementedException();
+            return new TrinoParser();
         }
 
         public override IQsiTreeDeparser CreateTreeDeparser()
         {
-            throw new System.NotImplementedException();
+            return new TrinoDeparser();
         }
 
         public override IQsiScriptParser CreateScriptParser()
