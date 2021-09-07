@@ -11,6 +11,16 @@ namespace Qsi.Oracle.Tree
 
         public string ReturnType { get; set; }
 
+        public bool IsStrict { get; set; }
+
+        public bool IsPretty { get; set; }
+
+        public bool IsAscii { get; set; }
+
+        public bool IsTruncate { get; set; }
+
+        public OracleOnErrorBehavior OnErrorBehavior { get; set; }
+
         public override IEnumerable<IQsiTreeNode> Children => Parameters;
     }
 
@@ -26,5 +36,16 @@ namespace Qsi.Oracle.Tree
         {
             Expression = new QsiTreeNodeProperty<QsiExpressionNode>(this);
         }
+    }
+
+    public class OracleJsonEntryNode : QsiExpressionNode
+    {
+        public QsiTreeNodeProperty<QsiExpressionNode> Key { get; }
+
+        public QsiTreeNodeProperty<QsiExpressionNode> Value { get; }
+
+        public bool IsFormatted { get; set; }
+
+        public override IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
     }
 }

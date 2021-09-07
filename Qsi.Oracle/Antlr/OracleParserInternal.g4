@@ -9661,7 +9661,7 @@ jsonArrayFunction
     ;
 
 jsonArrayAggFunction
-    : JSON_ARRAYAGG '(' expr (FORMAT JSON)? orderByClause? jsonOnNullClause?
+    : JSON_ARRAYAGG '(' jsonArrayElement orderByClause? jsonOnNullClause?
       jsonReturningClause? STRICT? ')'
     ;
 
@@ -9675,7 +9675,7 @@ jsonObjectFunction
     ;
 
 jsonObjectaggFunction
-    : JSON_OBJECTAGG '(' KEY? expr VALUE expr jsonOnNullClause? jsonReturningClause?
+    : JSON_OBJECTAGG '(' entry jsonOnNullClause? jsonReturningClause?
       STRICT? (WITH UNIQUE KEYS)? ')'
     ;
 
@@ -9692,11 +9692,11 @@ jsonScalarFunction
 
 jsonSerializeFunction
     : JSON_SERIALIZE '(' expr jsonReturningClause?
-      PRETTY? ASCII? TRUNCATE? ((NULL | ERROR) ON ERROR)? ')'
+      PRETTY? ASCII? TRUNCATE? jsonOnErrorClause? ')'
     ;
 
 jsonTableFunction
-    : JSON_TABLE '(' expr (FORMAT JSON)? (',' stringLiteral)? jsonTableOnErrorClause? ','? jsonColumnsClause ')'
+    : JSON_TABLE '(' expr formatClause? (',' stringLiteral)? jsonTableOnErrorClause? ','? jsonColumnsClause ')'
     ;
 
 jsonTransformFunction
@@ -9704,7 +9704,7 @@ jsonTransformFunction
     ;
 
 jsonValueFunction
-    : JSON_VALUE '(' expr (FORMAT JSON)? ',' stringLiteral? jsonValueReturningClause?
+    : JSON_VALUE '(' expr formatClause? ',' stringLiteral? jsonValueReturningClause?
       jsonValueOnErrorClause? jsonValueOnEmptyClause? jsonValueOnMismatchClause?
       ')'
     ;
@@ -10387,13 +10387,13 @@ entry
     ;
 
 regularEntry
-    : KEY? stringLiteral VALUE expr
-    | expr (':' expr)?
-    | column
+    : KEY? stringLiteral VALUE expr     #keyValueEntry
+    | expr (':' expr)?                  #exprEntry
+    | column                            #columnEntry
     ;
 
 wildcard
-    : (identifier '.') identifier '.' '*'
+    : (identifier '.')? identifier '.' '*'
     ;
 
 jsonOnErrorClause
