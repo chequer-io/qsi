@@ -57,10 +57,9 @@ Function Antlr-Generate {
         $GenArgs += "-no-visitor";
     }
 
-    $proc = Start-Process "java" -ArgumentList $GenArgs -NoNewWindow -PassThru
-    $proc.WaitForExit()
+    $proc = Start-Process "java" -ArgumentList $GenArgs -NoNewWindow -PassThru -Wait
 
-    if ($LASTEXITCODE -ne 0) {
+    if ($proc.ExitCode -ne 0) {
         throw "$Header $($ProjectName) Failed generate"
     }
 
