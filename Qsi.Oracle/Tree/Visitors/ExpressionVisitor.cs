@@ -2883,7 +2883,7 @@ namespace Qsi.Oracle.Tree.Visitors
             var functionNode = OracleTree.CreateWithSpan<OracleJsonFunctionExpressionNode>(context);
             functionNode.Member.Value = TreeHelper.CreateFunction(OracleKnownFunction.JsonObject);
 
-            functionNode.Parameters.AddRange(VisitJsonEntry(context.entry()));
+            functionNode.Parameters.Add(VisitJsonEntry(context.entry()));
 
             var onNullClause = context.jsonOnNullClause();
 
