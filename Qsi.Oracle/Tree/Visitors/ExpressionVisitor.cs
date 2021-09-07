@@ -2881,7 +2881,7 @@ namespace Qsi.Oracle.Tree.Visitors
             var node = OracleTree.CreateWithSpan<OracleAggregateFunctionExpressionNode>(context);
 
             var functionNode = OracleTree.CreateWithSpan<OracleJsonFunctionExpressionNode>(context);
-            functionNode.Member.Value = TreeHelper.CreateFunction(OracleKnownFunction.JsonObject);
+            functionNode.Member.Value = TreeHelper.CreateFunction(context.JSON_OBJECTAGG().GetText());
 
             functionNode.Parameters.Add(VisitJsonEntry(context.entry()));
 
