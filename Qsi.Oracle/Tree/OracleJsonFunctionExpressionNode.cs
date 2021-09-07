@@ -7,7 +7,7 @@ namespace Qsi.Oracle.Tree
 {
     public class OracleJsonFunctionExpressionNode : OracleInvokeExpressionNode
     {
-        public OracleNullBehavior NullBehavior { get; set; }
+        public OracleNullBehavior NullBehavior { get; set; } = OracleNullBehavior.Absent;
 
         public string ReturnType { get; set; }
 
