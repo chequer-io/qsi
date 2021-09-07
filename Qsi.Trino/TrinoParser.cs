@@ -29,6 +29,9 @@ namespace Qsi.Trino
                 case DeleteContext delete:
                     return ActionVisitor.VisitDelete(delete);
 
+                case StatementDefaultContext statementDefault:
+                    return TableVisitor.VisitQuery(statementDefault.query());
+
                 default:
                     throw TreeHelper.NotSupportedTree(statement);
             }

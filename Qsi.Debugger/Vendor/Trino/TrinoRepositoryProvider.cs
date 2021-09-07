@@ -11,12 +11,12 @@ namespace Qsi.Debugger.Vendor.Trino
             identifier = identifier.Level switch
             {
                 1 => new QsiQualifiedIdentifier(
-                    new QsiIdentifier("trino", false),
-                    new QsiIdentifier("chequer", false),
+                    new QsiIdentifier("TRINO", false),
+                    new QsiIdentifier("CHEQUER", false),
                     identifier[0]
                 ),
                 2 => new QsiQualifiedIdentifier(
-                    new QsiIdentifier("trino", false),
+                    new QsiIdentifier("TRINO", false),
                     identifier[0],
                     identifier[1]
                 ),
@@ -35,21 +35,21 @@ namespace Qsi.Debugger.Vendor.Trino
 
             switch (tableName)
             {
-                case "actor":
-                    var actor = CreateTable("trino", "chequer", "actor");
-                    AddColumns(actor, "actor_id", "first_name", "last_name", "last_update");
+                case "ACTOR":
+                    var actor = CreateTable("TRINO", "CHEQUER", "ACTOR");
+                    AddColumns(actor, "ACTOR_ID", "FIRST_NAME", "LAST_NAME", "LAST_UPDATE");
                     return actor;
 
-                case "actor_view":
-                    var actorView = CreateTable("trino", "chequer", "actor_view");
+                case "ACTOR_VIEW":
+                    var actorView = CreateTable("TRINO", "CHEQUER", "ACTOR_VIEW");
                     actorView.Type = QsiTableType.View;
-                    AddColumns(actorView, "actor_id", "first_name", "last_name", "last_update", "first_name + last_name");
+                    AddColumns(actorView, "ACTOR_ID", "FIRST_NAME", "LAST_NAME", "LAST_UPDATE", "FIRST_NAME||LAST_NAME");
                     return actorView;
 
-                case "actor_view2":
-                    var actorView2 = CreateTable("trino", "chequer", "actor_view2");
+                case "ACTOR_VIEW2":
+                    var actorView2 = CreateTable("TRINO", "CHEQUER", "ACTOR_VIEW2");
                     actorView2.Type = QsiTableType.View;
-                    AddColumns(actorView2, "actor_id", "first_name", "last_name", "last_update");
+                    AddColumns(actorView2, "ACTOR_ID", "FIRST_NAME", "LAST_NAME", "LAST_UPDATE");
                     return actorView2;
             }
 

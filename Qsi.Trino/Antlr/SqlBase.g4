@@ -191,8 +191,8 @@ property
 queryNoWith:
       queryTerm
       (ORDER BY sortItem (',' sortItem)*)?
-      (OFFSET offset=rowCount (ROW | ROWS)?)?
-      ((LIMIT limit=limitRowCount) | (FETCH (FIRST | NEXT) (fetchFirst=rowCount)? (ROW | ROWS) (ONLY | WITH TIES)))?
+      (OFFSET offset=rowCount offsetRow=(ROW | ROWS)?)?
+      ((LIMIT limit=limitRowCount) | (FETCH (FIRST | NEXT) (fetchFirst=rowCount)? fetchFirstRow=(ROW | ROWS) (ONLY | WITH TIES)))?
       ;
 
 limitRowCount
@@ -202,7 +202,7 @@ limitRowCount
 
 rowCount
     : INTEGER_VALUE
-    | QUESTION_MARK
+    | parameterExpression
     ;
 
 queryTerm
@@ -268,7 +268,7 @@ setQuantifier
     ;
 
 selectItem
-    : expression (AS? identifier[null])?                          #selectSingle
+    : expression (AS? identifier[null])?                    #selectSingle
     | primaryExpression '.' ASTERISK (AS columnAliases)?    #selectAll
     | ASTERISK                                              #selectAll
     ;
@@ -409,7 +409,7 @@ primaryExpression
     | booleanValue                                                                        #booleanLiteral
     | string                                                                              #stringLiteral
     | BINARY_LITERAL                                                                      #binaryLiteral
-    | QUESTION_MARK                                                                       #parameter
+    | parameterExpression                                                                 #parameter
     | POSITION '(' valueExpression IN valueExpression ')'                                 #position
     | '(' expression (',' expression)+ ')'                                                #rowConstructor
     | ROW '(' expression (',' expression)* ')'                                            #rowConstructor
@@ -454,6 +454,10 @@ processingMode
 nullTreatment
     : IGNORE NULLS
     | RESPECT NULLS
+    ;
+
+parameterExpression returns [int index]
+    : QUESTION_MARK { $index = NextBindParameterIndex(); }
     ;
 
 string
