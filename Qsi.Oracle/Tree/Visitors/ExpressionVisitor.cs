@@ -2714,7 +2714,34 @@ namespace Qsi.Oracle.Tree.Visitors
         #region Json Functions
         public static OracleInvokeExpressionNode VisitJsonArrayFunction(JsonArrayFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleJsonFunctionExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(OracleKnownFunction.JsonArray);
+
+            var content = context.jsonArrayContent();
+            node.Parameters.AddRange(content.jsonArrayElement().Select(VisitJsonArrayElement));
+
+            var onNullClause = content.jsonOnNullClause();
+
+            node.NullBehavior = onNullClause.children[0] is ITerminalNode { Symbol: { Type: NULL } }
+                ? OracleNullBehavior.Null
+                : OracleNullBehavior.Absent;
+
+            var returningClause = content.jsonReturningClause();
+
+            if (returningClause is not null)
+                node.ReturnType = returningClause.GetText()[9..].TrimStart();
+
+            return node;
+        }
+
+        public static OracleJsonElementNode VisitJsonArrayElement(JsonArrayElementContext context)
+        {
+            var node = OracleTree.CreateWithSpan<OracleJsonElementNode>(context);
+
+            node.Expression.Value = VisitExpr(context.expr());
+            node.IsFormatted = context.formatClause() is not null;
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitJsonArrayAggFunction(JsonArrayAggFunctionContext context)
