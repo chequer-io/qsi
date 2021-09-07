@@ -129,6 +129,7 @@ namespace Qsi.Oracle.Tree.Visitors
                 return node;
 
             var directivesNode = new QsiTableDirectivesNode();
+            directivesNode.IsRecursive = true;
 
             if (leftItems is not null)
             {
@@ -659,6 +660,7 @@ namespace Qsi.Oracle.Tree.Visitors
         public static QsiTableDirectivesNode VisitWithClause(WithClauseContext context)
         {
             var node = OracleTree.CreateWithSpan<QsiTableDirectivesNode>(context);
+            node.IsRecursive = true;
             node.Tables.AddRange(context._clauses.Select(VisitFactoringClause));
             return node;
         }

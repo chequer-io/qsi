@@ -942,7 +942,7 @@ plsqlExpression
     | <assoc=right> plsqlExpression relationalOperator plsqlExpression                                  #relationalOperatorExpression
     | <assoc=right> plsqlExpression '||' plsqlExpression                                                #characterConnectExpression
     | <assoc=right> plsqlExpression ('+' | '-' | '*' | '/' | '*' '*') plsqlExpression                   #signExpression
-    | placeholder                                                                                       #plsqlPlaceholderExpression
+    | bindVariable bindVariable?                                                                        #plsqlPlaceholderExpression
     | <assoc=right> collectionType '(' (plsqlExpression (',' plsqlExpression)*)? ')'                    #plsqlCollectionConstructor
     | <assoc=right> CASE WHEN plsqlExpression THEN plsqlExpression
       (WHEN plsqlExpression THEN plsqlExpression)*
@@ -11481,11 +11481,7 @@ assignmentStatement
 
 assignmentStatementTarget
     : ':'? variable ('.' identifier | '(' identifier ')')?
-    | placeholder
-    ;
-
-placeholder
-    : ':' variable (':' variable)?
+    | bindVariable
     ;
 
 basicLoopStatement
@@ -12569,6 +12565,7 @@ nonReservedKeywordIdentifier
     | KW_D
     | KW_E
     | KW_EMPTY
+    | KW_F
     | KW_G
     | KW_H
     | KW_I

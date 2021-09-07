@@ -42,24 +42,24 @@ namespace Qsi.Debugger.Vendor.Oracle
             {
                 case "DUAL":
                     var dual = CreateTable("xe", "SYSTEM", "DUAL");
-                    AddColumns(dual, "dummy");
+                    AddColumns(dual, "DUMMY");
                     return dual;
 
                 case "ACTOR":
                     var actor = CreateTable("xe", "SYSTEM", "ACTOR");
-                    AddColumns(actor, "actor_id", "first_name", "last_name", "last_update");
+                    AddColumns(actor, "ACTOR_ID", "FIRST_NAME", "LAST_NAME", "LAST_UPDATE");
                     return actor;
 
                 case "ACTOR_VIEW":
                     var actorView = CreateTable("xe", "SYSTEM", "ACTOR_VIEW");
                     actorView.Type = QsiTableType.View;
-                    AddColumns(actorView, "actor_id", "first_name", "last_name", "last_update", "first_name||last_name");
+                    AddColumns(actorView, "ACTOR_ID", "FIRST_NAME", "LAST_NAME", "LAST_UPDATE", "FIRST_NAME||LAST_NAME");
                     return actorView;
 
                 case "ACTOR_VIEW2":
                     var actorView2 = CreateTable("xe", "SYSTEM", "ACTOR_VIEW2");
                     actorView2.Type = QsiTableType.View;
-                    AddColumns(actorView2, "actor_id", "first_name", "last_name", "last_update");
+                    AddColumns(actorView2, "ACTOR_ID", "FIRST_NAME", "LAST_NAME", "LAST_UPDATE");
                     return actorView2;
             }
 
