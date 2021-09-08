@@ -9680,7 +9680,7 @@ jsonObjectaggFunction
     ;
 
 jsonQueryFunction
-    : JSON_QUERY '(' expr formatClause ',' stringLiteral
+    : JSON_QUERY '(' jsonArrayElement ',' stringLiteral
       jsonQueryReturningClause jsonQueryWrapperClause?
       jsonQueryOnErrorClause? jsonQueryOnEmptyClause?
       ')'
@@ -9696,7 +9696,7 @@ jsonSerializeFunction
     ;
 
 jsonTableFunction
-    : JSON_TABLE '(' expr formatClause? (',' stringLiteral)? jsonTableOnErrorClause? ','? jsonColumnsClause ')'
+    : JSON_TABLE '(' jsonArrayElement (',' stringLiteral)? jsonTableOnErrorClause? ','? jsonColumnsClause ')'
     ;
 
 jsonTransformFunction
@@ -9704,7 +9704,7 @@ jsonTransformFunction
     ;
 
 jsonValueFunction
-    : JSON_VALUE '(' expr formatClause? ',' stringLiteral? jsonValueReturningClause?
+    : JSON_VALUE '(' jsonArrayElement (',' stringLiteral)? jsonValueReturningClause?
       jsonValueOnErrorClause? jsonValueOnEmptyClause? jsonValueOnMismatchClause?
       ')'
     ;
@@ -10204,7 +10204,7 @@ keepOpItem
     ;
 
 rhsExpr
-    : sqlExpr=expr (FORMAT JSON)?
+    : sqlExpr=expr formatClause?
     ;
 
 jsonTransformReturningClause
@@ -10241,8 +10241,8 @@ jsonExistsColumn
     ;
 
 jsonQueryColumn
-    : column jsonQueryReturnType? (FORMAT JSON)?
-      (ALLOW | DISALLOW SCALARS)? jsonQueryWrapperClause?
+    : column jsonQueryReturnType? formatClause?
+      ((ALLOW | DISALLOW) SCALARS)? jsonQueryWrapperClause?
       (PATH jsonPath)? jsonQueryOnErrorClause?
     ;
 
@@ -10359,7 +10359,7 @@ jsonQueryWrapperClause
     ;
 
 jsonQueryOnErrorClause
-    : (ERROR
+    : ( ERROR
       | NULL
       | KW_EMPTY
       | KW_EMPTY ARRAY
@@ -10368,7 +10368,7 @@ jsonQueryOnErrorClause
     ;
 
 jsonQueryOnEmptyClause
-    : (ERROR
+    : ( ERROR
       | NULL
       | KW_EMPTY
       | KW_EMPTY ARRAY

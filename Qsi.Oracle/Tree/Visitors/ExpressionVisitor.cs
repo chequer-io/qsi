@@ -2902,37 +2902,479 @@ namespace Qsi.Oracle.Tree.Visitors
 
         public static OracleInvokeExpressionNode VisitJsonQueryFunction(JsonQueryFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleJsonFunctionExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.JSON_QUERY().GetText());
+
+            node.Parameters.Add(VisitJsonArrayElement(context.jsonArrayElement()));
+            node.Parameters.Add(VisitStringLiteral(context.stringLiteral()));
+
+            var returningClause = context.jsonQueryReturningClause();
+            var returnType = returningClause.jsonQueryReturnType();
+
+            if (returnType is not null)
+                node.ReturnType = returnType.GetText()[9..].TrimStart();
+
+            // ignore scalars
+
+            node.IsPretty = returningClause.PRETTY() is not null;
+            node.IsAscii = returningClause.ASCII() is not null;
+
+            // ignore wrapper
+
+            var onErrorClause = context.jsonQueryOnErrorClause();
+
+            switch (onErrorClause.children[0])
+            {
+                case ITerminalNode { Symbol: { Type: ERROR } }:
+                    node.OnErrorBehavior = OracleOnErrorBehavior.Error;
+                    break;
+
+                case ITerminalNode { Symbol: { Type: NULL } }:
+                    node.OnErrorBehavior = OracleOnErrorBehavior.Null;
+                    break;
+
+                case ITerminalNode { Symbol: { Type: KW_EMPTY } }:
+                    node.OnErrorBehavior = onErrorClause.children[1] switch
+                    {
+                        ITerminalNode { Symbol: { Type: ARRAY } } => OracleOnErrorBehavior.EmptyArray,
+                        ITerminalNode { Symbol: { Type: OBJECT } } => OracleOnErrorBehavior.EmptyObject,
+                        _ => OracleOnErrorBehavior.Empty
+                    };
+
+                    break;
+            }
+
+            var onEmptyClause = context.jsonQueryOnEmptyClause();
+
+            switch (onEmptyClause.children[0])
+            {
+                case ITerminalNode { Symbol: { Type: ERROR } }:
+                    node.OnEmptyBehavior = OracleOnEmptyBehavior.Error;
+                    break;
+
+                case ITerminalNode { Symbol: { Type: NULL } }:
+                    node.OnEmptyBehavior = OracleOnEmptyBehavior.Null;
+                    break;
+
+                case ITerminalNode { Symbol: { Type: KW_EMPTY } }:
+                    node.OnEmptyBehavior = onEmptyClause.children[1] switch
+                    {
+                        ITerminalNode { Symbol: { Type: ARRAY } } => OracleOnEmptyBehavior.EmptyArray,
+                        ITerminalNode { Symbol: { Type: OBJECT } } => OracleOnEmptyBehavior.EmptyObject,
+                        _ => OracleOnEmptyBehavior.Empty
+                    };
+
+                    break;
+            }
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitJsonScalarFunction(JsonScalarFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleJsonFunctionExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.JSON_SCALAR().GetText());
+
+            node.Parameters.Add(VisitExpr(context.expr()));
+
+            // ignore scalar type
+
+            var onNullClause = context.jsonOnNullClause();
+
+            if (onNullClause is not null)
+                node.NullBehavior = onNullClause.children[0] is ITerminalNode { Symbol: { Type: NULL } }
+                    ? OracleNullBehavior.Null
+                    : OracleNullBehavior.Absent;
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitJsonSerializeFunction(JsonSerializeFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleJsonFunctionExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.JSON_SERIALIZE().GetText());
+
+            node.Parameters.Add(VisitExpr(context.expr()));
+
+            var returningClause = context.jsonReturningClause();
+
+            if (returningClause is not null)
+                node.ReturnType = returningClause.GetText()[9..].TrimStart();
+
+            node.IsPretty = context.PRETTY() is not null;
+            node.IsAscii = context.ASCII() is not null;
+            node.IsTruncate = context.TRUNCATE() is not null;
+
+            var onErrorClause = context.jsonOnErrorClause();
+
+            switch (onErrorClause.children[0])
+            {
+                case ITerminalNode { Symbol: { Type: ERROR } }:
+                    node.OnErrorBehavior = OracleOnErrorBehavior.Error;
+                    break;
+
+                case ITerminalNode { Symbol: { Type: NULL } }:
+                    node.OnErrorBehavior = OracleOnErrorBehavior.Null;
+                    break;
+            }
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitJsonTableFunction(JsonTableFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleJsonFunctionExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.JSON_TABLE().GetText());
+
+            node.Parameters.Add(VisitJsonArrayElement(context.jsonArrayElement()));
+            var stringLiteral = context.stringLiteral();
+
+            if (stringLiteral is not null)
+                node.Parameters.Add(VisitStringLiteral(stringLiteral));
+
+            var onErrorClause = context.jsonTableOnErrorClause();
+
+            switch (onErrorClause.children[0])
+            {
+                case ITerminalNode { Symbol: { Type: ERROR } }:
+                    node.OnErrorBehavior = OracleOnErrorBehavior.Error;
+                    break;
+
+                case ITerminalNode { Symbol: { Type: NULL } }:
+                    node.OnErrorBehavior = OracleOnErrorBehavior.Null;
+                    break;
+            }
+
+            var columns = context.jsonColumnsClause();
+
+            var declarationNode = OracleTree.CreateWithSpan<OracleJsonColumnExpressionNode>(columns);
+            declarationNode.Columns.AddRange(columns.jsonColumnDefinition().Select(VisitJsonColumnDefinition));
+
+            node.Parameters.Add(declarationNode);
+
+            return node;
+        }
+
+        public static OracleJsonColumnNode VisitJsonColumnDefinition(JsonColumnDefinitionContext context)
+        {
+            var node = OracleTree.CreateWithSpan<OracleJsonColumnNode>(context);
+
+            switch (context.children[0])
+            {
+                case JsonExistsColumnContext existsColumn:
+                {
+                    node.Column.Value = IdentifierVisitor.VisitColumn(existsColumn.column());
+
+                    var returnType = existsColumn.jsonValueReturnType();
+
+                    if (returnType is not null)
+                        node.ReturnType = returnType.GetText();
+
+                    var jsonPath = existsColumn.jsonPath();
+
+                    if (jsonPath is not null)
+                        node.JsonPath = jsonPath.GetText();
+
+                    var onErrorClause = existsColumn.jsonExistsOnErrorClause();
+
+                    if (onErrorClause is not null)
+                        node.OnErrorBehavior = onErrorClause.children[0].GetText();
+
+                    var onEmptyClause = existsColumn.jsonExistsOnEmptyClause();
+
+                    if (onEmptyClause is not null)
+                        node.OnEmptyBehavior = onEmptyClause.children[0] switch
+                        {
+                            ITerminalNode { Symbol: { Type: DEFAULT } } => string.Join(" ", onEmptyClause.children[0].GetText(), onEmptyClause.children[1].GetText()),
+                            _ => onEmptyClause.children[0].GetText()
+                        };
+
+                    break;
+                }
+
+                case JsonQueryColumnContext queryColumn:
+                {
+                    node.Column.Value = IdentifierVisitor.VisitColumn(queryColumn.column());
+
+                    var returnType = queryColumn.jsonQueryReturnType();
+
+                    if (returnType is not null)
+                        node.ReturnType = returnType.GetText();
+
+                    // ignore scalars, wrapper
+
+                    var jsonPath = queryColumn.jsonPath();
+
+                    if (jsonPath is not null)
+                        node.JsonPath = jsonPath.GetText();
+
+                    var onErrorClause = queryColumn.jsonQueryOnErrorClause();
+
+                    if (onErrorClause is not null)
+                        node.OnErrorBehavior = onErrorClause.children[0].GetText();
+
+                    break;
+                }
+
+                case JsonValueColumnContext valueColumn:
+                {
+                    node.Column.Value = IdentifierVisitor.VisitColumn(valueColumn.column());
+
+                    var returnType = valueColumn.jsonValueReturnType();
+
+                    if (returnType is not null)
+                        node.ReturnType = returnType.GetText();
+
+                    node.IsTruncate = valueColumn.TRUNCATE() is not null;
+
+                    var jsonPath = valueColumn.jsonPath();
+
+                    if (jsonPath is not null)
+                        node.JsonPath = jsonPath.GetText();
+
+                    var onErrorClause = valueColumn.jsonValueOnErrorClause();
+
+                    if (onErrorClause is not null)
+                        node.OnErrorBehavior = onErrorClause.children[0].GetText();
+
+                    var onEmptyClause = valueColumn.jsonValueOnEmptyClause();
+
+                    if (onEmptyClause is not null)
+                        node.OnEmptyBehavior = onEmptyClause.children[0] switch
+                        {
+                            ITerminalNode { Symbol: { Type: DEFAULT } } => string.Join(" ", onEmptyClause.children[0].GetText(), onEmptyClause.children[1].GetText()),
+                            _ => onEmptyClause.children[0].GetText()
+                        };
+
+                    break;
+                }
+
+                case JsonNestedPathContext nestedPath:
+                {
+                    node.JsonPath = nestedPath.jsonPath().GetText();
+
+                    var columns = nestedPath.jsonColumnsClause();
+
+                    var declarationNode = OracleTree.CreateWithSpan<OracleJsonColumnExpressionNode>(columns);
+                    declarationNode.Columns.AddRange(columns.jsonColumnDefinition().Select(VisitJsonColumnDefinition));
+
+                    node.NestedColumn.Value = declarationNode;
+
+                    break;
+                }
+
+                case OrdinalityColumnContext ordinalityColumn:
+                {
+                    node.Column.Value = IdentifierVisitor.VisitColumn(ordinalityColumn.column());
+                    node.IsOrdinality = true;
+
+                    break;
+                }
+            }
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitJsonTransformFunction(JsonTransformFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleJsonFunctionExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.JSON_TRANSFORM().GetText());
+
+            node.Parameters.Add(VisitExpr(context.expr()));
+            node.Parameters.AddRange(context.operation().Select(VisitOperation));
+
+            return node;
+        }
+
+        public static QsiExpressionNode VisitOperation(OperationContext context)
+        {
+            switch (context.children[0])
+            {
+                case RemoveOpContext removeOp:
+                {
+                    var node = OracleTree.CreateWithSpan<OracleJsonOperationExpressionNode>(removeOp);
+                    node.Type = removeOp.REMOVE().GetText();
+                    node.Left.Value = VisitExpr(removeOp.expr());
+
+                    return node;
+                }
+
+                case InsertOpContext insertOp:
+                {
+                    var node = OracleTree.CreateWithSpan<OracleJsonOperationExpressionNode>(insertOp);
+                    node.Type = insertOp.children[0].GetText();
+                    node.Left.Value = VisitExpr(insertOp.expr());
+                    node.Right.Value = VisitExpr(insertOp.rhsExpr().sqlExpr);
+
+                    return node;
+                }
+
+                case ReplaceOpContext replaceOp:
+                {
+                    var node = OracleTree.CreateWithSpan<OracleJsonOperationExpressionNode>(replaceOp);
+                    node.Type = replaceOp.children[0].GetText();
+                    node.Left.Value = VisitExpr(replaceOp.expr());
+                    node.Right.Value = VisitExpr(replaceOp.rhsExpr().sqlExpr);
+
+                    return node;
+                }
+
+                case AppendOpContext appendOp:
+                {
+                    var node = OracleTree.CreateWithSpan<OracleJsonOperationExpressionNode>(appendOp);
+                    node.Type = appendOp.children[0].GetText();
+                    node.Left.Value = VisitExpr(appendOp.expr());
+                    node.Right.Value = VisitExpr(appendOp.rhsExpr().sqlExpr);
+
+                    return node;
+                }
+
+                case SetOpContext setOp:
+                {
+                    var node = OracleTree.CreateWithSpan<OracleJsonOperationExpressionNode>(setOp);
+                    node.Type = setOp.children[0].GetText();
+                    node.Left.Value = VisitExpr(setOp.expr());
+                    node.Right.Value = VisitExpr(setOp.rhsExpr().sqlExpr);
+
+                    return node;
+                }
+
+                case RenameOpContext renameOp:
+                {
+                    var node = OracleTree.CreateWithSpan<OracleJsonOperationExpressionNode>(renameOp);
+                    node.Type = renameOp.children[0].GetText();
+                    node.Left.Value = VisitExpr(renameOp.expr());
+                    node.Right.Value = VisitStringLiteral(renameOp.stringLiteral());
+
+                    return node;
+                }
+
+                case KeepOpContext keepOp:
+                {
+                    var node = OracleTree.CreateWithSpan<OracleJsonKeepOperationExpressionNode>(keepOp);
+                    node.Items.AddRange(keepOp.keepOpItem().Select(s => s.expr()).Select(VisitExpr));
+
+                    return node;
+                }
+
+                default:
+                    throw TreeHelper.NotSupportedTree(context.children[0]);
+            }
         }
 
         public static OracleInvokeExpressionNode VisitJsonValueFunction(JsonValueFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleJsonFunctionExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.JSON_QUERY().GetText());
+
+            node.Parameters.Add(VisitJsonArrayElement(context.jsonArrayElement()));
+            var stringLiteral = context.stringLiteral();
+
+            if (stringLiteral is not null)
+                node.Parameters.Add(VisitStringLiteral(stringLiteral));
+
+            var returningClause = context.jsonValueReturningClause();
+            var returnType = returningClause.jsonValueReturnType();
+
+            if (returnType is not null)
+                node.ReturnType = returnType.GetText()[9..].TrimStart();
+
+            node.IsAscii = returningClause.ASCII() is not null;
+
+            var onErrorClause = context.jsonValueOnErrorClause();
+
+            switch (onErrorClause.children[0])
+            {
+                case ITerminalNode { Symbol: { Type: ERROR } }:
+                    node.OnErrorBehavior = OracleOnErrorBehavior.Error;
+                    break;
+
+                case ITerminalNode { Symbol: { Type: NULL } }:
+                    node.OnErrorBehavior = OracleOnErrorBehavior.Null;
+                    break;
+
+                case ITerminalNode { Symbol: { Type: DEFAULT } }:
+                    node.OnErrorBehavior = OracleOnErrorBehavior.Default;
+                    node.OnErrorDefault = onErrorClause.children[1].GetText();
+
+                    break;
+            }
+
+            var onEmptyClause = context.jsonValueOnEmptyClause();
+
+            switch (onEmptyClause.children[0])
+            {
+                case ITerminalNode { Symbol: { Type: ERROR } }:
+                    node.OnEmptyBehavior = OracleOnEmptyBehavior.Error;
+                    break;
+
+                case ITerminalNode { Symbol: { Type: NULL } }:
+                    node.OnEmptyBehavior = OracleOnEmptyBehavior.Null;
+                    break;
+
+                case ITerminalNode { Symbol: { Type: DEFAULT } }:
+                    node.OnEmptyBehavior = OracleOnEmptyBehavior.Default;
+                    node.OnEmptyDefault = onErrorClause.children[1].GetText();
+
+                    break;
+            }
+
+            // ignore mismatch
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitTreatFunction(TreatFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+
+            node.Parameters.Add(VisitExpr(context.expr()));
+            var type = context.type();
+
+            if (type is not null)
+            {
+                var schema = context.schema();
+                var dataType = type.datatype();
+                var userDefined = dataType.userDefinedTypes();
+
+                if (schema is not null && userDefined is not null)
+                {
+                    List<IdentifierContext> identifiers = new();
+                    identifiers.Add(schema.identifier());
+                    identifiers.AddRange(userDefined.identifier());
+
+                    node.Parameters.Add(new QsiColumnExpressionNode
+                    {
+                        Column =
+                        {
+                            Value = new QsiColumnReferenceNode
+                            {
+                                Name = IdentifierVisitor.CreateQualifiedIdentifier(identifiers.ToArray())
+                            }
+                        }
+                    });
+                }
+                else
+                {
+                    node.Parameters.Add(TreeHelper.CreateConstantLiteral(dataType.GetText()));
+                }
+            }
+            else
+            {
+                node.Parameters.Add(TreeHelper.CreateConstantLiteral("JSON"));
+            }
+
+            var nonFunctionSteps = context.jsonNonfunctionSteps();
+
+            if (nonFunctionSteps is not null)
+                node.Parameters.Add(TreeHelper.CreateConstantLiteral(nonFunctionSteps.GetText()));
+
+            var functionStep = context.jsonFunctionStep();
+
+            if (functionStep is not null)
+                node.Parameters.Add(TreeHelper.CreateConstantLiteral(functionStep.GetText()));
+
+            return node;
         }
         #endregion
 

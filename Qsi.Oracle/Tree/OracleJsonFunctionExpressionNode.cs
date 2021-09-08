@@ -21,6 +21,12 @@ namespace Qsi.Oracle.Tree
 
         public OracleOnErrorBehavior OnErrorBehavior { get; set; }
 
+        public string OnErrorDefault { get; set; }
+
+        public OracleOnEmptyBehavior OnEmptyBehavior { get; set; }
+
+        public string OnEmptyDefault { get; set; }
+
         public override IEnumerable<IQsiTreeNode> Children => Parameters;
     }
 
@@ -47,5 +53,11 @@ namespace Qsi.Oracle.Tree
         public bool IsFormatted { get; set; }
 
         public override IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
+
+        public OracleJsonEntryNode()
+        {
+            Key = new QsiTreeNodeProperty<QsiExpressionNode>(this);
+            Value = new QsiTreeNodeProperty<QsiExpressionNode>(this);
+        }
     }
 }

@@ -1,6 +1,6 @@
-namespace Qsi.Oracle.Common
+﻿namespace Qsi.Oracle.Common
 {
-    public enum OracleOnErrorBehavior
+    public enum OracleOnEmptyBehavior
     {
         Error,
         Null,
