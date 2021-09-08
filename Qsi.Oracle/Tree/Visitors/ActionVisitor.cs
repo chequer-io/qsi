@@ -334,7 +334,7 @@ namespace Qsi.Oracle.Tree.Visitors
             QsiQualifiedIdentifier rightPath;
             QsiTableDirectivesNode directives = null;
 
-            var rightAlias = context.rightAlias is not null 
+            var rightAlias = context.rightAlias is not null
                 ? IdentifierVisitor.VisitIdentifier(context.rightAlias.identifier())
                 : null;
 
@@ -368,10 +368,10 @@ namespace Qsi.Oracle.Tree.Visitors
             var matchedItemsNode = OracleHelper.CreateJoinedTable(leftNode, rightSource, onCondition);
             var selectInJoinedTableNode = OracleHelper.CreateDerivedTableWithPath(matchedItemsNode, rightPath);
 
-            var minusJoinTable = new OracleBinaryTableNode();
-            minusJoinTable.Left.Value = minusJoinTableLeftSource;
-            minusJoinTable.Right.Value = selectInJoinedTableNode;
-            minusJoinTable.BinaryTableType = OracleBinaryTableType.Minus;
+            var minusJoinTable = new QsiCompositeTableNode();
+            minusJoinTable.Sources.Add(minusJoinTableLeftSource);
+            minusJoinTable.Sources.Add(selectInJoinedTableNode);
+            minusJoinTable.CompositeType = "MINUS";
 
             var minusJoinAliasedTable = OracleHelper.CreateDerivedTable(minusJoinTable, new QsiAliasNode { Name = rightAlias });
 

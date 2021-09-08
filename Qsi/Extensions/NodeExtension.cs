@@ -464,6 +464,7 @@ namespace Qsi.Extensions
                 node.Sources,
                 node.Order,
                 node.Limit,
+                node.CompositeType,
                 ignoreUserData ? null : node.UserData);
         }
 

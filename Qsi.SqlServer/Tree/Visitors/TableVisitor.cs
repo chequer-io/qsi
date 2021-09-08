@@ -138,18 +138,18 @@ namespace Qsi.SqlServer.Tree
             throw TreeHelper.NotSupportedTree(queryExpression);
         }
 
-        public SqlServerBinaryTableNode VisitBinaryQueryExpression(BinaryQueryExpression binaryQueryExpression)
+        public QsiCompositeTableNode VisitBinaryQueryExpression(BinaryQueryExpression binaryQueryExpression)
         {
-            return TreeHelper.Create<SqlServerBinaryTableNode>(n =>
+            return TreeHelper.Create<QsiCompositeTableNode>(n =>
             {
-                n.Left.SetValue(VisitQueryExpression(binaryQueryExpression.FirstQueryExpression));
-                n.Right.SetValue(VisitQueryExpression(binaryQueryExpression.SecondQueryExpression));
+                n.Sources.Add(VisitQueryExpression(binaryQueryExpression.FirstQueryExpression));
+                n.Sources.Add(VisitQueryExpression(binaryQueryExpression.SecondQueryExpression));
 
-                n.BinaryTableType = binaryQueryExpression.BinaryQueryExpressionType switch
+                n.CompositeType = binaryQueryExpression.BinaryQueryExpressionType switch
                 {
-                    BinaryQueryExpressionType.Except => SqlServerBinaryTableType.Except,
-                    BinaryQueryExpressionType.Intersect => SqlServerBinaryTableType.Intersect,
-                    BinaryQueryExpressionType.Union => SqlServerBinaryTableType.Union,
+                    BinaryQueryExpressionType.Except => "EXCEPT",
+                    BinaryQueryExpressionType.Intersect => "INTERSECT",
+                    BinaryQueryExpressionType.Union => "UNION",
                     _ => throw new InvalidOperationException()
                 };
 

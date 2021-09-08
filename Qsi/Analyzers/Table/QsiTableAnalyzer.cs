@@ -454,6 +454,7 @@ namespace Qsi.Analyzers.Table
                                 .ToArray(),
                             compositeTableNode.Order,
                             compositeTableNode.Limit,
+                            compositeTableNode.CompositeType,
                             compositeTableNode.UserData);
                     }
 
