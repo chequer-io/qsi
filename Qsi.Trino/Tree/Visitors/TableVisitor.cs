@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Antlr4.Runtime;
 using Qsi.Data;
@@ -132,7 +130,7 @@ namespace Qsi.Trino.Tree.Visitors
                     return VisitQueryPrimary(queryTermDefault.queryPrimary());
 
                 case SetOperationContext setOperation:
-                    throw new NotImplementedException();
+                    return VisitSetOperation(setOperation);
 
                 default:
                     throw TreeHelper.NotSupportedTree(context);
@@ -147,10 +145,10 @@ namespace Qsi.Trino.Tree.Visitors
                     return VisitQuerySpecification(queryPrimaryDefault.querySpecification());
 
                 case TableContext table:
-                    throw new NotImplementedException();
+                    return VisitTable(table);
 
                 case InlineTableContext inlineTable:
-                    throw new NotImplementedException();
+                    return VisitInlineTable(inlineTable);
 
                 default:
                     throw TreeHelper.NotSupportedTree(context);
@@ -175,10 +173,24 @@ namespace Qsi.Trino.Tree.Visitors
 
                 var source = VisitRelation(relations[0]);
 
-                if (relations.Length == 1)
-                    node.Source.Value = source;
-                else
-                    throw new NotImplementedException("Comma Join");
+                if (relations.Length != 1)
+                {
+                    for (int i = 1; i < relations.Length; i++)
+                    {
+                        var leftContext = relations[i - 1];
+                        var rightContext = relations[i];
+
+                        var joinedTable = TrinoTree.CreateWithSpan<QsiJoinedTableNode>(leftContext.Start, rightContext.Stop);
+
+                        joinedTable.IsComma = true;
+                        joinedTable.Left.Value = source;
+                        joinedTable.Right.Value = VisitRelation(rightContext);
+
+                        source = joinedTable;
+                    }
+                }
+
+                node.Source.Value = source;
             }
 
             if (context.HasToken(WHERE))
@@ -221,6 +233,49 @@ namespace Qsi.Trino.Tree.Visitors
             }
 
             // Ignored WindowDefinition
+
+            return node;
+        }
+
+        public static QsiTableNode VisitTable(TableContext context)
+        {
+            var node = TrinoTree.CreateWithSpan<QsiDerivedTableNode>(context);
+
+            node.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+            node.Source.Value = VisitQualifiedName(context.qualifiedName());
+
+            return node;
+        }
+
+        public static QsiInlineDerivedTableNode VisitInlineTable(InlineTableContext context)
+        {
+            var node = TrinoTree.CreateWithSpan<QsiInlineDerivedTableNode>(context);
+
+            foreach (var expression in context.expression())
+            {
+                var rowNode = TrinoTree.CreateWithSpan<QsiRowValueExpressionNode>(expression);
+
+                rowNode.ColumnValues.Add(ExpressionVisitor.VisitExpression(expression));
+                node.Rows.Add(rowNode);
+            }
+
+            return node;
+        }
+
+        public static QsiTableNode VisitSetOperation(SetOperationContext context)
+        {
+            var node = TrinoTree.CreateWithSpan<QsiCompositeTableNode>(context);
+
+            var left = VisitQueryTerm(context.left);
+            var right = VisitQueryTerm(context.right);
+
+            node.CompositeType = context.@operator.Text;
+
+            if (context.setQuantifier() is not null)
+                node.CompositeType += $" {context.setQuantifier().GetText()}";
+
+            node.Sources.Add(left);
+            node.Sources.Add(right);
 
             return node;
         }
@@ -348,16 +403,14 @@ namespace Qsi.Trino.Tree.Visitors
 
         public static QsiTableNode VisitSampledRelation(SampledRelationContext context)
         {
-            if (context.HasToken(TABLESAMPLE))
-                throw new NotImplementedException();
+            // Ignored tablesample
 
             return VisitPatternRecognition(context.patternRecognition());
         }
 
         public static QsiTableNode VisitPatternRecognition(PatternRecognitionContext context)
         {
-            if (context.HasToken(MATCH_RECOGNIZE))
-                throw new NotImplementedException();
+            // Ignored matchRecognize
 
             return VisitAliasedRelation(context.aliasedRelation());
         }
@@ -408,13 +461,13 @@ namespace Qsi.Trino.Tree.Visitors
                     return VisitQualifiedName(tableName.qualifiedName());
 
                 case SubqueryRelationContext subqueryRelation:
-                    throw new NotImplementedException();
+                    return VisitQuery(subqueryRelation.query());
 
                 case UnnestContext unnest:
-                    throw new NotImplementedException();
+                    return VisitUnnest(unnest);
 
                 case LateralContext lateral:
-                    throw new NotImplementedException();
+                    return VisitLateral(lateral);
 
                 case ParenthesizedRelationContext parenthesizedRelation:
                     return VisitRelation(parenthesizedRelation.relation());
@@ -422,6 +475,20 @@ namespace Qsi.Trino.Tree.Visitors
                 default:
                     throw TreeHelper.NotSupportedTree(context);
             }
+        }
+
+        public static QsiTableNode VisitUnnest(UnnestContext context)
+        {
+            // TODO: Impl Unnest table
+            throw TreeHelper.NotSupportedFeature("Unnest table");
+        }
+
+        public static QsiTableNode VisitLateral(LateralContext context)
+        {
+            var node = TrinoTree.CreateWithSpan<TrinoLateralTableNode>(context);
+            node.Source.Value = VisitQuery(context.query());
+
+            return node;
         }
 
         public static QsiTableDirectivesNode VisitWithClause(WithContext context)
