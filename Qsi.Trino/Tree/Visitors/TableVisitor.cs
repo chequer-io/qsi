@@ -289,8 +289,8 @@ namespace Qsi.Trino.Tree.Visitors
 
             node.Path = columnRefNode.Name;
 
-            // if (context.HasToken(AS))
-            //     node.SequentialColumns.AddRange(VisitColumnAliases(context.columnAliases()));
+            if (context.HasToken(AS))
+                node.SequentialColumns.AddRange(VisitColumnAliases(context.columnAliases()));
 
             return node;
         }
