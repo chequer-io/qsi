@@ -236,6 +236,7 @@ namespace Qsi.Extensions
             return new(
                 node.Parent,
                 node.Path,
+                node.SequentialColumns,
                 ignoreUserData ? null : node.UserData);
         }
 
