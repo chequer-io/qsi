@@ -3265,7 +3265,7 @@ namespace Qsi.Oracle.Tree.Visitors
         public static OracleInvokeExpressionNode VisitJsonValueFunction(JsonValueFunctionContext context)
         {
             var node = OracleTree.CreateWithSpan<OracleJsonFunctionExpressionNode>(context);
-            node.Member.Value = TreeHelper.CreateFunction(context.JSON_QUERY().GetText());
+            node.Member.Value = TreeHelper.CreateFunction(context.JSON_VALUE().GetText());
 
             node.Parameters.Add(VisitJsonArrayElement(context.jsonArrayElement()));
             var stringLiteral = context.stringLiteral();
