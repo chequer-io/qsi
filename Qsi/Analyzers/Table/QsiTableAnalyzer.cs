@@ -261,6 +261,9 @@ namespace Qsi.Analyzers.Table
                                     declaredColumn.IsVisible = c.IsVisible;
                             }
 
+                            if (aliasedAllColumn && allColumnNode.SequentialColumns.Length != i)
+                                throw new QsiException(QsiError.DifferentColumnsCount);
+
                             break;
                         }
                     }
