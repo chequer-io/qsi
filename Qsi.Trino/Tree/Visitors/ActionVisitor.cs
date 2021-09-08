@@ -2,6 +2,7 @@
 using Qsi.Data;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
+using Qsi.Tree.Definition;
 using Qsi.Trino.Internal;
 using Qsi.Utilities;
 
@@ -11,6 +12,21 @@ namespace Qsi.Trino.Tree.Visitors
 
     internal static class ActionVisitor
     {
+        public static QsiViewDefinitionNode VisitCreateView(CreateViewContext context)
+        {
+            var node = TrinoTree.CreateWithSpan<QsiViewDefinitionNode>(context);
+
+            if (context.HasToken(REPLACE))
+                node.ConflictBehavior = QsiDefinitionConflictBehavior.Replace;
+
+            node.Identifier = context.qualifiedName().qqi;
+            node.Source.Value = TableVisitor.VisitQuery(context.query());
+
+            // ignored comment, security
+
+            return node;
+        }
+
         public static QsiDataInsertActionNode VisitInsertInto(InsertIntoContext context)
         {
             var name = context.qualifiedName();

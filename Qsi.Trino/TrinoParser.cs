@@ -32,6 +32,9 @@ namespace Qsi.Trino
                 case StatementDefaultContext statementDefault:
                     return TableVisitor.VisitQuery(statementDefault.query());
 
+                case CreateViewContext createView:
+                    return ActionVisitor.VisitCreateView(createView);
+                
                 default:
                     throw TreeHelper.NotSupportedTree(statement);
             }
