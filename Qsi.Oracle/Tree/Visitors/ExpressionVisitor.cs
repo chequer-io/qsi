@@ -689,8 +689,8 @@ namespace Qsi.Oracle.Tree.Visitors
                 case XmlcastFunctionContext xmlcastFunctionContext:
                     return VisitXmlcastFunction(xmlcastFunctionContext);
 
-                case XmlcorattvalFunctionContext xmlcorattvalFunctionContext:
-                    return VisitXmlcorattvalFunction(xmlcorattvalFunctionContext);
+                case XmlcolattvalFunctionContext xmlcolattvalFunctionContext:
+                    return VisitXmlcolattvalFunction(xmlcolattvalFunctionContext);
 
                 case XmlelementFunctionContext xmlelementFunctionContext:
                     return VisitXmlelementFunction(xmlelementFunctionContext);
@@ -3334,30 +3334,16 @@ namespace Qsi.Oracle.Tree.Visitors
             if (type is not null)
             {
                 var schema = context.schema();
-                var dataType = type.datatype();
-                var userDefined = dataType.userDefinedTypes();
+                var datatype = type.datatype();
+                var userDefined = datatype.userDefinedTypes();
 
                 if (schema is not null && userDefined is not null)
-                {
-                    List<IdentifierContext> identifiers = new();
-                    identifiers.Add(schema.identifier());
-                    identifiers.AddRange(userDefined.identifier());
-
-                    node.Parameters.Add(new QsiColumnExpressionNode
+                    node.Parameters.Add(new QsiTypeExpressionNode
                     {
-                        Column =
-                        {
-                            Value = new QsiColumnReferenceNode
-                            {
-                                Name = IdentifierVisitor.CreateQualifiedIdentifier(identifiers.ToArray())
-                            }
-                        }
+                        Identifier = IdentifierVisitor.CreateQualifiedIdentifier(new[] { schema.identifier() }.Concat(userDefined.identifier()).ToArray())
                     });
-                }
                 else
-                {
-                    node.Parameters.Add(TreeHelper.CreateConstantLiteral(dataType.GetText()));
-                }
+                    node.Parameters.Add(VisitDataType(datatype));
             }
             else
             {
@@ -3379,74 +3365,359 @@ namespace Qsi.Oracle.Tree.Visitors
         #endregion
 
         #region XML Functions
-        public static OracleInvokeExpressionNode VisitXmlaggFunction(XmlaggFunctionContext context)
+        public static OracleAggregateFunctionExpressionNode VisitXmlaggFunction(XmlaggFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleAggregateFunctionExpressionNode>(context);
+
+            var functionNode = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            functionNode.Member.Value = TreeHelper.CreateFunction(context.XMLAGG().GetText());
+            functionNode.Parameters.AddRange(context.expr().Select(VisitExpr));
+
+            var orderByClause = context.orderByClause();
+
+            if (orderByClause is not null)
+                node.Order.Value = VisitOrderByClause(orderByClause);
+
+            node.Function.Value = functionNode;
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitXmlcastFunction(XmlcastFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.XMLCAST().GetText());
+
+            node.Parameters.Add(VisitExpr(context.expr()));
+            node.Parameters.Add(TreeHelper.CreateConstantLiteral(context.datatype()));
+
+            return node;
         }
 
-        public static OracleInvokeExpressionNode VisitXmlcorattvalFunction(XmlcorattvalFunctionContext context)
+        public static OracleInvokeExpressionNode VisitXmlcolattvalFunction(XmlcolattvalFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.XMLCOLATTVAL().GetText());
+
+            node.Parameters.AddRange(context.xmlcolattvalFunctionItem().Select(VisitXmlColumnAttributeItem));
+
+            return node;
+        }
+
+        public static OracleXmlColumnAttributeItemNode VisitXmlColumnAttributeItem(XmlcolattvalFunctionItemContext context)
+        {
+            var node = OracleTree.CreateWithSpan<OracleXmlColumnAttributeItemNode>(context);
+            node.Expression.Value = VisitExpr(context.l);
+
+            var cAlias = context.cAlias();
+
+            if (cAlias is not null)
+                node.Alias = IdentifierVisitor.VisitAlias(cAlias);
+            else if (context.r is not null)
+                node.EvalName.Value = VisitExpr(context.r);
+
+            return node;
+        }
+
+        public static OracleXmlColumnAttributeItemNode VisitXmlAttributesClauseItem(XmlAttributesClauseItemContext context)
+        {
+            var node = OracleTree.CreateWithSpan<OracleXmlColumnAttributeItemNode>(context);
+            node.Expression.Value = VisitExpr(context.l);
+
+            var cAlias = context.cAlias();
+
+            if (cAlias is not null)
+                node.Alias = IdentifierVisitor.VisitAlias(cAlias);
+            else if (context.r is not null)
+                node.EvalName.Value = VisitExpr(context.r);
+
+            return node;
+        }
+
+        public static OracleXmlExpressionNode VisitXmlPassingClauseItem(XmlPassingClauseItemContext context)
+        {
+            var node = OracleTree.CreateWithSpan<OracleXmlExpressionNode>(context);
+            node.Expression.Value = VisitExpr(context.expr());
+
+            var identifier = context.identifier();
+
+            if (identifier is not null)
+                node.Alias = new QsiAliasNode
+                {
+                    Name = IdentifierVisitor.VisitIdentifier(identifier)
+                };
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitXmlelementFunction(XmlelementFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.XMLELEMENT().GetText());
+
+            if (context.identifier() is not null)
+                node.Parameters.Add(new QsiFieldExpressionNode
+                {
+                    Identifier = IdentifierVisitor.CreateQualifiedIdentifier(context.identifier())
+                });
+            else
+                node.Parameters.Add(VisitExpr(context.evalName));
+
+            var attributesClause = context.xmlAttributesClause();
+
+            if (attributesClause is not null)
+                node.Parameters.Add(VisitXmlAttributes(attributesClause));
+
+            var xmlExpressions = context.xmlExpression();
+
+            if (xmlExpressions is not null)
+                node.Parameters.AddRange(xmlExpressions.Select(VisitXmlExpression));
+
+            return node;
+        }
+
+        public static QsiExpressionNode VisitXmlExpression(XmlExpressionContext context)
+        {
+            var node = OracleTree.CreateWithSpan<OracleXmlExpressionNode>(context);
+            node.Expression.Value = VisitExpr(context.ex);
+
+            if (context.exa is not null)
+                node.Alias = IdentifierVisitor.VisitAlias(context.exa);
+
+            return node;
+        }
+
+        public static OracleXmlAttributesExpressionNode VisitXmlAttributes(XmlAttributesClauseContext context)
+        {
+            var node = OracleTree.CreateWithSpan<OracleXmlAttributesExpressionNode>(context);
+            node.Attributes.AddRange(context.xmlAttributesClauseItem().Select(VisitXmlAttributesClauseItem));
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitXmlCdataFunction(XmlCdataFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.XMLCDATA().GetText());
+            node.Parameters.Add(VisitStringLiteral(context.stringLiteral()));
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitXmlexistsFunction(XmlexistsFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleXmlFunctionExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.XMLEXISTS().GetText());
+            node.Parameters.Add(VisitExpr(context.expr()));
+
+            var passingClause = context.xmlPassingClause();
+
+            if (passingClause is not null)
+                node.Passings.AddRange(passingClause.xmlPassingClauseItem().Select(VisitXmlPassingClauseItem));
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitXmlforestFunction(XmlforestFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleXmlFunctionExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.XMLFOREST().GetText());
+
+            node.Parameters.AddRange(context.xmlcolattvalFunctionItem().Select(VisitXmlColumnAttributeItem));
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitXmlparseFunction(XmlparseFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.XMLPARSE().GetText());
+
+            node.Parameters.Add(TreeHelper.CreateConstantLiteral(context.children[2].GetText()));
+            node.Parameters.Add(VisitExpr(context.expr()));
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitXmlpiFunction(XmlpiFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.XMLPI().GetText());
+
+            var identifier = context.identifier();
+
+            if (identifier is not null)
+                node.Parameters.Add(new QsiFieldExpressionNode
+                {
+                    Identifier = IdentifierVisitor.CreateQualifiedIdentifier(identifier)
+                });
+            else
+                node.Parameters.Add(VisitExpr(context.evalName));
+
+            if (context.valueExpr is not null)
+                node.Parameters.Add(VisitExpr(context.valueExpr));
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitXmlqueryFunction(XmlqueryFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleXmlFunctionExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.XMLQUERY().GetText());
+
+            node.Parameters.Add(VisitStringLiteral(context.stringLiteral()));
+
+            var passingClause = context.xmlPassingClause();
+
+            if (passingClause is not null)
+                node.Passings.AddRange(passingClause.xmlPassingClauseItem().Select(VisitXmlPassingClauseItem));
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitXmlrootFunction(XmlrootFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleXmlFunctionExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.XMLROOT().GetText());
+
+            node.Parameters.Add(VisitExpr(context.target));
+
+            if (context.version is not null)
+                node.Parameters.Add(VisitExpr(context.version));
+            else
+                node.Parameters.Add(TreeHelper.CreateConstantLiteral("NO VALUE"));
+
+            if (context.STANDALONE() is not null)
+            {
+                var lastToken = context.children[^1];
+
+                if (lastToken is ITerminalNode { Symbol: { Type: VALUE } })
+                    node.Parameters.Add(TreeHelper.CreateConstantLiteral("NO VALUE"));
+                else
+                    node.Parameters.Add(TreeHelper.CreateConstantLiteral(lastToken.GetText()));
+            }
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitXmlsequenceFunction(XmlsequenceFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.XMLSEQUENCE().GetText());
+
+            var identifier = context.identifier();
+
+            if (identifier is not null)
+            {
+                node.Parameters.Add(new QsiFieldExpressionNode
+                {
+                    Identifier = IdentifierVisitor.CreateQualifiedIdentifier(identifier)
+                });
+            }
+
+            node.Parameters.Add(VisitExpr(context.expr()));
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitXmlserializeFunction(XmlserializeFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleXmlFunctionExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.XMLSERIALIZE().GetText());
+
+            node.Parameters.Add(TreeHelper.CreateConstantLiteral(context.children[2].GetText()));
+            node.Parameters.Add(VisitExpr(context.expr()));
+            var datatype = context.datatype();
+
+            if (datatype is not null)
+                node.Parameters.Add(VisitDataType(datatype));
+
+            if (context.encoding is not null)
+                node.Parameters.AddRange(
+                    new QsiExpressionNode[]
+                    {
+                        new OracleNamedParameterExpressionNode
+                        {
+                            Identifier = new QsiQualifiedIdentifier(new QsiIdentifier("ENCODING", false))
+                        },
+                        VisitStringLiteral(context.encoding)
+                    }
+                );
+
+            if (context.version is not null)
+                node.Parameters.AddRange(
+                    new QsiExpressionNode[]
+                    {
+                        new OracleNamedParameterExpressionNode
+                        {
+                            Identifier = new QsiQualifiedIdentifier(new QsiIdentifier("VERSION", false))
+                        },
+                        VisitStringLiteral(context.version)
+                    }
+                );
+
+            if (context.size() is not null)
+                node.Parameters.AddRange(
+                    new QsiExpressionNode[]
+                    {
+                        new OracleNamedParameterExpressionNode
+                        {
+                            Identifier = new QsiQualifiedIdentifier(new QsiIdentifier("SIZE", false))
+                        },
+                        new QsiLiteralExpressionNode
+                        {
+                            Type = QsiDataType.Numeric,
+                            Value = long.Parse(context.size().GetText())
+                        }
+                    }
+                );
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitXmlTableFunction(XmlTableFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleXmlTableFunctionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.XMLTABLE().GetText());
+
+            var namespacesClause = context.xmlnamespacesClause();
+
+            if (namespacesClause is not null)
+                node.Namespaces = namespacesClause.xmlnamespacesClauseItem().Select(VisitXmlNamespaceClauseItem).ToArray();
+
+            node.Parameters.Add(VisitExpr(context.expr()));
+
+            var tableOptions = context.xmltableOptions();
+
+            var passingClause = tableOptions.xmlPassingClause();
+            if (passingClause is not null)
+                node.Passings.AddRange(passingClause.xmlPassingClauseItem().Select(VisitXmlPassingClauseItem));
+
+            node.IsReturningSequenceByRef = tableOptions.RETURNING() is not null;
+
+            XmlTableColumnContext[] tableColumns = tableOptions.xmlTableColumn();
+
+            if (tableColumns is not null)
+                node.Columns = tableColumns.Select(VisitXmlColumnDefinition).ToArray();
+            
+            return node;
+
+            static OracleXmlNamespaceNode VisitXmlNamespaceClauseItem(XmlnamespacesClauseItemContext context)
+            {
+                var identifier = context.identifier();
+
+                return identifier is not null 
+                    ? new OracleXmlNamespaceNode(context.stringLiteral().GetText(), identifier.GetText()) 
+                    : new OracleXmlNamespaceNode(context.stringLiteral().GetText());
+            }
+
+            static OracleXmlColumnDefinitionNode VisitXmlColumnDefinition(XmlTableColumnContext context)
+            {
+                return new OracleXmlColumnDefinitionNode(
+                    IdentifierVisitor.VisitColumn(context.column()),
+                    context.xmlTableColumnType().GetInputText()
+                );
+            }
         }
         #endregion
 

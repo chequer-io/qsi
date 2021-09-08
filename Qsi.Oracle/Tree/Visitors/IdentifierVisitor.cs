@@ -68,6 +68,14 @@ namespace Qsi.Oracle.Tree.Visitors
             return node;
         }
 
+        public static QsiAliasNode VisitAlias(CAliasContext context)
+        {
+            var node = OracleTree.CreateWithSpan<QsiAliasNode>(context);
+            node.Name = VisitIdentifier(context.identifier());
+
+            return node;
+        }
+
         public static QsiQualifiedIdentifier CreateQualifiedIdentifier(params IdentifierContext[] identifiers)
         {
             return new(identifiers.Select(VisitIdentifier));

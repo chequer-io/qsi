@@ -9426,7 +9426,7 @@ functionExpression
     | validateConversionFunction
     | xmlaggFunction
     | xmlcastFunction
-    | xmlcorattvalFunction
+    | xmlcolattvalFunction
     | xmlelementFunction
     | xmlCdataFunction
     | xmlexistsFunction
@@ -10028,13 +10028,17 @@ xmlcastFunction
     : XMLCAST '(' expr AS datatype ')'
     ;
 
-xmlcorattvalFunction
-    : XMLCOLATTVAL '(' xmlcorattvalFunctionItem (',' xmlcorattvalFunctionItem)* ')'
+xmlcolattvalFunction
+    : XMLCOLATTVAL '(' xmlcolattvalFunctionItem (',' xmlcolattvalFunctionItem)* ')'
     ;
 
 xmlelementFunction
-    : XMLELEMENT '(' (ENTITYESCAPING | NOENTITYESCAPING)? (NAME? identifier | EVALNAME expr)
-      (',' xmlAttributesClause)? (',' expr (AS? cAlias)? )* ')'
+    : XMLELEMENT '(' (ENTITYESCAPING | NOENTITYESCAPING)? (NAME? identifier | EVALNAME evalName=expr)
+      (',' xmlAttributesClause)? (',' xmlExpression )* ')'
+    ;
+
+xmlExpression
+    : ex=expr (AS? exa=cAlias)?
     ;
 
 xmlCdataFunction
@@ -10046,7 +10050,7 @@ xmlexistsFunction
     ;
 
 xmlforestFunction
-    : XMLFOREST '(' xmlForestItem (',' xmlForestItem)* ')'
+    : XMLFOREST '(' xmlcolattvalFunctionItem (',' xmlcolattvalFunctionItem)* ')'
     ;
 
 xmlparseFunction
@@ -10054,7 +10058,7 @@ xmlparseFunction
     ;
 
 xmlpiFunction
-    : XMLPI '(' (NAME? identifier | EVALNAME expr) (',' expr)? ')'
+    : XMLPI '(' (NAME? identifier | EVALNAME evalName=expr) (',' valueExpr=expr)? ')'
     ;
 
 xmlqueryFunction
@@ -10062,7 +10066,7 @@ xmlqueryFunction
     ;
 
 xmlrootFunction
-    : XMLROOT '(' expr ',' VERSION (expr | NO VALUE) (',' STANDALONE (YES | NO | NO VALUE))? ')'
+    : XMLROOT '(' target=expr ',' VERSION (version=expr | NO VALUE) (',' STANDALONE (YES | NO | NO VALUE))? ')'
     ;
 
 xmlsequenceFunction
@@ -10070,8 +10074,8 @@ xmlsequenceFunction
     ;
 
 xmlserializeFunction
-    : XMLSERIALIZE '(' (DOCUMENT | CONTENT) expr (AS datatype)? (ENCODING stringLiteral)? (VERSION stringLiteral)?
-      (NO INDENT | INDENT (SIZE '=' numberLiteral)?)?
+    : XMLSERIALIZE '(' (DOCUMENT | CONTENT) expr (AS datatype)? (ENCODING encoding=stringLiteral)? (VERSION version=stringLiteral)?
+      (NO INDENT | INDENT (SIZE '=' size)?)?
       ((HIDE | SHOW) DEFAULTS)? ')'
     ;
 
@@ -10084,14 +10088,17 @@ xmltableOptions
     ;
 
 xmlTableColumn
-    : column ( FOR ORDINALITY
-             | ( datatype
-               | XMLTYPE ('(' SEQUENCE ')' BY REF)?
-               )
-               (PATH stringLiteral)?
-               (DEFAULT expr)?
-             )
+    : column xmlTableColumnType
     ;
+
+xmlTableColumnType
+    : FOR ORDINALITY
+    | ( datatype
+      | XMLTYPE ('(' SEQUENCE ')' BY REF)?
+      )
+      (PATH stringLiteral)?
+      (DEFAULT expr)?
+      ;
 
 xmlnamespacesClause
     : XMLNAMESPACES '(' xmlnamespacesClauseItem (',' xmlnamespacesClauseItem)* ')'
@@ -10100,10 +10107,6 @@ xmlnamespacesClause
 xmlnamespacesClauseItem
     : stringLiteral AS identifier
     | DEFAULT stringLiteral
-    ;
-
-xmlForestItem
-    : expr (AS (cAlias | EVALNAME expr))?
     ;
 
 xmlPassingClause
@@ -10123,11 +10126,11 @@ xmlAttributesClause
     ;
 
 xmlAttributesClauseItem
-    : expr (AS? cAlias | AS EVALNAME expr)?
+    : l=expr (AS? cAlias | AS EVALNAME r=expr)?
     ;
 
-xmlcorattvalFunctionItem
-    : expr (AS cAlias | EVALNAME expr)?
+xmlcolattvalFunctionItem
+    : l=expr (AS cAlias | EVALNAME r=expr)?
     ;
 
 costMatrixClause
