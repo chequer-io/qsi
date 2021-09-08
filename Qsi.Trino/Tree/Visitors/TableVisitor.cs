@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using Antlr4.Runtime;
 using Qsi.Data;
@@ -157,11 +159,13 @@ namespace Qsi.Trino.Tree.Visitors
 
         public static QsiDerivedTableNode VisitQuerySpecification(QuerySpecificationContext context)
         {
-            var node = TrinoTree.CreateWithSpan<QsiDerivedTableNode>(context);
+            var node = TrinoTree.CreateWithSpan<TrinoDerivedTableNode>(context);
 
-            // TODO: setQuantifier
+            if (context.setQuantifier() is not null)
+                node.SetQuantifier = VisitSetQuantifier(context.setQuantifier());
 
             var columnsNode = new QsiColumnsDeclarationNode();
+
             columnsNode.Columns.AddRange(context.selectItem().Select(VisitSelectItem));
             node.Columns.Value = columnsNode;
 
@@ -177,7 +181,53 @@ namespace Qsi.Trino.Tree.Visitors
                     throw new NotImplementedException("Comma Join");
             }
 
+            if (context.HasToken(WHERE))
+            {
+                var whereNode = TrinoTree.CreateWithSpan<QsiWhereExpressionNode>(context.WHERE().Symbol, context.where.Stop);
+                whereNode.Expression.Value = ExpressionVisitor.VisitBooleanExpression(context.where);
+                node.Where.Value = whereNode;
+            }
+
+            IToken groupingStartToken = null;
+            IToken groupingEndToken = null;
+            TrinoGroupingExpressionNode groupingNode = null;
+
+            if (context.HasToken(GROUP))
+            {
+                var groupByContext = context.groupBy();
+
+                groupingStartToken = context.GROUP().Symbol;
+                groupingEndToken = groupByContext.Stop;
+                groupingNode = new TrinoGroupingExpressionNode();
+
+                if (groupByContext.setQuantifier() is not null)
+                    groupingNode.SetQuantifier = VisitSetQuantifier(groupByContext.setQuantifier());
+
+                groupingNode.Items.AddRange(groupByContext.groupingElement().Select(ExpressionVisitor.VisitGroupingElement));
+            }
+
+            if (context.HasToken(HAVING))
+            {
+                groupingStartToken ??= context.HAVING().Symbol;
+                groupingEndToken = context.having.Stop;
+                groupingNode ??= new TrinoGroupingExpressionNode();
+                groupingNode.Having.Value = ExpressionVisitor.VisitBooleanExpression(context.having);
+            }
+
+            if (groupingNode is not null)
+            {
+                TrinoTree.PutContextSpan(groupingNode, groupingStartToken, groupingEndToken);
+                node.Grouping.Value = groupingNode;
+            }
+
+            // Ignored WindowDefinition
+
             return node;
+        }
+
+        public static TrinoSetQuantifier VisitSetQuantifier(SetQuantifierContext context)
+        {
+            return context.HasToken(ALL) ? TrinoSetQuantifier.All : TrinoSetQuantifier.Distinct;
         }
 
         public static QsiColumnNode VisitSelectItem(SelectItemContext context)
@@ -226,10 +276,34 @@ namespace Qsi.Trino.Tree.Visitors
 
         public static QsiColumnNode VisitSelectAll(SelectAllContext context)
         {
-            if (context.primaryExpression() is null)
-                return new QsiAllColumnNode();
+            var node = TrinoTree.CreateWithSpan<QsiAllColumnNode>(context);
 
-            throw new NotImplementedException("Select All with Primary expression");
+            if (context.primaryExpression() is null)
+                return node;
+
+            var expr = ExpressionVisitor.VisitPrimaryExpression(context.primaryExpression());
+
+            if (!(expr is QsiColumnExpressionNode columnExpressionNode &&
+                  columnExpressionNode.Column.Value is QsiColumnReferenceNode columnRefNode))
+                throw new QsiException(QsiError.Internal, "Expected expression of type Row");
+
+            node.Path = columnRefNode.Name;
+
+            // if (context.HasToken(AS))
+            //     node.SequentialColumns.AddRange(VisitColumnAliases(context.columnAliases()));
+
+            return node;
+        }
+
+        public static IEnumerable<QsiSequentialColumnNode> VisitColumnAliases(ColumnAliasesContext context)
+        {
+            return context.identifier().Select(x =>
+            {
+                var node = TrinoTree.CreateWithSpan<QsiSequentialColumnNode>(context);
+                node.Alias.Value = new QsiAliasNode { Name = x.qi };
+
+                return node;
+            });
         }
 
         public static QsiTableNode VisitRelation(RelationContext context)
@@ -306,7 +380,7 @@ namespace Qsi.Trino.Tree.Visitors
                 TrinoTree.PutContextSpan(derivedTableNode, context);
             }
 
-            TreeHelper.CreateAliasedTableNode(derivedTableNode, identifierContext.qi);
+            derivedTableNode.Alias.Value = new QsiAliasNode { Name = identifierContext.qi };
 
             if (!context.TryGetRuleContext<ColumnAliasesContext>(out var columnAliasesContext))
                 return derivedTableNode;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Antlr4.Runtime;
 using Qsi.Data;
 using Qsi.Shared.Extensions;
@@ -118,6 +119,60 @@ namespace Qsi.Trino.Tree.Visitors
             return node;
         }
         #endregion
+
+        public static QsiExpressionNode VisitGroupingElement(GroupingElementContext context)
+        {
+            switch (context)
+            {
+                case SingleGroupingSetContext singleGroupingSet:
+                {
+                    return VisitGroupingSet(singleGroupingSet.groupingSet());
+                }
+
+                case RollupContext rollup:
+                {
+                    var invokeNode = TrinoTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+                    invokeNode.Member.Value = TreeHelper.CreateFunction("ROLLUP");
+                    invokeNode.Parameters.AddRange(rollup.expression().Select(VisitExpression));
+
+                    return invokeNode;
+                }
+
+                case CubeContext cube:
+                {
+                    var invokeNode = TrinoTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+                    invokeNode.Member.Value = TreeHelper.CreateFunction("CUBE");
+                    invokeNode.Parameters.AddRange(cube.expression().Select(VisitExpression));
+
+                    return invokeNode;
+                }
+
+                case MultipleGroupingSetsContext multipleGroupingSets:
+                {
+                    var invokeNode = TrinoTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+                    invokeNode.Member.Value = TreeHelper.CreateFunction(TrinoKnownFunction.GroupingSets);
+                    invokeNode.Parameters.AddRange(multipleGroupingSets.groupingSet().Select(VisitGroupingSet));
+
+                    return invokeNode;
+                }
+
+                default:
+                    throw TreeHelper.NotSupportedTree(context);
+            }
+        }
+
+        public static QsiExpressionNode VisitGroupingSet(GroupingSetContext context)
+        {
+            if (context.GetText()[0] == '(')
+            {
+                var multipleExpressionNode = TrinoTree.CreateWithSpan<QsiMultipleExpressionNode>(context);
+                multipleExpressionNode.Elements.AddRange(context.expression().Select(VisitExpression));
+
+                return multipleExpressionNode;
+            }
+
+            return VisitExpression(context.expression(0));
+        }
 
         public static QsiOrderExpressionNode VisitSortItem(SortItemContext context)
         {
