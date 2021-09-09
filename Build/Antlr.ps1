@@ -41,11 +41,11 @@ Function Antlr-Generate {
 
     # Generate
     $GenArgs = @(
-        "-jar $AntlrJar",
+        "-jar", "$AntlrJar"
         "-Dlanguage=CSharp",
-        "-package $Namespace",
+        "-package", "$Namespace"
         "-Xexact-output-dir",
-        "-o $OutputDirectory",
+        "-o", "$OutputDirectory"
         "$GrammarDirectory/*.g4"
     )
 
@@ -57,9 +57,9 @@ Function Antlr-Generate {
         $GenArgs += "-no-visitor";
     }
 
-    $proc = Start-Process "java" -ArgumentList $GenArgs -NoNewWindow -PassThru -Wait
+    & "java" $GenArgs
 
-    if ($proc.ExitCode -ne 0) {
+    if (!($?)) {
         throw "$Header $($ProjectName) Failed generate"
     }
 
