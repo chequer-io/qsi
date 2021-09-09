@@ -232,7 +232,13 @@ namespace Qsi.Trino.Tree.Visitors
                 node.Grouping.Value = groupingNode;
             }
 
-            // Ignored WindowDefinition
+            if (context.windowDefinition() is not null)
+            {
+                var windowNode = TrinoTree.CreateWithSpan<TrinoWindowExpressionNode>(context.WINDOW().Symbol, context.windowDefinition()[^1].Stop);
+                windowNode.Items.AddRange(context.windowDefinition().Select(ExpressionVisitor.VisitWindowDefinition));
+
+                node.Window.Value = windowNode;
+            }
 
             return node;
         }

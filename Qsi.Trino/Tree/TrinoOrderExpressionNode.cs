@@ -2,7 +2,7 @@
 
 namespace Qsi.Trino.Tree
 {
-    public sealed class TrinoOrderByExpressionNode : QsiOrderExpressionNode
+    public sealed class TrinoOrderExpressionNode : QsiOrderExpressionNode
     {
         public TrinoOrderByNullBehavior? NullBehavior { get; set; }
     }
