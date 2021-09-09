@@ -41,11 +41,11 @@ Function Antlr-Generate {
 
     # Generate
     $GenArgs = @(
-        "-jar", "$AntlrJar"
+        "-jar", "$AntlrJar",
         "-Dlanguage=CSharp",
-        "-package", "$Namespace"
+        "-package", "$Namespace",
         "-Xexact-output-dir",
-        "-o", "$OutputDirectory"
+        "-o", "$OutputDirectory",
         "$GrammarDirectory/*.g4"
     )
 
