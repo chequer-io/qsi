@@ -119,6 +119,21 @@ namespace Qsi.Trino.Tree.Visitors
             return node;
         }
 
+        public static QsiExpressionNode VisitLambda(LambdaContext context)
+        {
+            var node = TrinoTree.CreateWithSpan<TrinoLambdaExpressionNode>(context);
+
+            node.Identifiers.AddRange(context.identifier().Select(i => i.qi));
+            node.Expression.Value = VisitExpression(context.expression());
+
+            return node;
+        }
+
+        public static QsiTableNode VisitSubqueryExpression(SubqueryExpressionContext context)
+        {
+            return TableVisitor.VisitQuery(context.query());
+        }
+
         public static QsiExpressionNode VisitExists(ExistsContext context)
         {
             var node = TrinoTree.CreateWithSpan<TrinoExistsExpressionNode>(context);
