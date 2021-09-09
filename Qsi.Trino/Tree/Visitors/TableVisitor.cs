@@ -232,7 +232,7 @@ namespace Qsi.Trino.Tree.Visitors
                 node.Grouping.Value = groupingNode;
             }
 
-            if (context.windowDefinition() is not null)
+            if (context.HasToken(WINDOW))
             {
                 var windowNode = TrinoTree.CreateWithSpan<TrinoWindowExpressionNode>(context.WINDOW().Symbol, context.windowDefinition()[^1].Stop);
                 windowNode.Items.AddRange(context.windowDefinition().Select(ExpressionVisitor.VisitWindowDefinition));

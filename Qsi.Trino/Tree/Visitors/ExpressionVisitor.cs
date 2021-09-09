@@ -739,18 +739,17 @@ namespace Qsi.Trino.Tree.Visitors
 
             QualifiedNameContext[] qualifiedNames = context.qualifiedName();
 
-            if (qualifiedNames is not null)
-                node.Parameters.AddRange(qualifiedNames.Select(name => new QsiColumnExpressionNode
+            node.Parameters.AddRange(qualifiedNames.Select(name => new QsiColumnExpressionNode
+                {
+                    Column =
                     {
-                        Column =
+                        Value = new QsiColumnReferenceNode
                         {
-                            Value = new QsiColumnReferenceNode
-                            {
-                                Name = name.qqi
-                            }
+                            Name = name.qqi
                         }
-                    })
-                );
+                    }
+                })
+            );
 
             return node;
         }
@@ -797,8 +796,7 @@ namespace Qsi.Trino.Tree.Visitors
             if (context.processingMode() is not null)
                 node.ProcessingMode = context.processingMode().HasToken(RUNNING) ? TrinoProcessingMode.Running : TrinoProcessingMode.Final;
 
-            if (context.expression() is not null)
-                node.Parameters.AddRange(context.expression().Select(VisitExpression));
+            node.Parameters.AddRange(context.expression().Select(VisitExpression));
 
             if (context.HasToken(ORDER))
             {
