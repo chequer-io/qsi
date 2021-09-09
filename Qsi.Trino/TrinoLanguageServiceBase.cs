@@ -1,7 +1,11 @@
-﻿using Qsi.Analyzers;
+﻿using System.Collections.Generic;
+using Qsi.Analyzers;
+using Qsi.Analyzers.Table;
+using Qsi.Engines;
 using Qsi.Parsing;
 using Qsi.Parsing.Common;
 using Qsi.Services;
+using Qsi.Trino.Analyzers;
 
 namespace Qsi.Trino
 {
@@ -25,6 +29,12 @@ namespace Qsi.Trino
         public override IQsiScriptParser CreateScriptParser()
         {
             return new CommonScriptParser();
+        }
+
+        public override IEnumerable<IQsiAnalyzer> CreateAnalyzers(QsiEngine engine)
+        {
+            yield return new TrinoActionAnalyzer(engine);
+            yield return new QsiTableAnalyzer(engine);
         }
     }
 }
