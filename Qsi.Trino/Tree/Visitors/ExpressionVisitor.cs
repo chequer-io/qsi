@@ -118,6 +118,225 @@ namespace Qsi.Trino.Tree.Visitors
 
             return node;
         }
+
+        public static QsiExpressionNode VisitExists(ExistsContext context)
+        {
+            var node = TrinoTree.CreateWithSpan<TrinoExistsExpressionNode>(context);
+            node.Query.Value = TableVisitor.VisitQuery(context.query());
+
+            return node;
+        }
+
+        public static QsiSwitchCaseExpressionNode VisitWhenClause(WhenClauseContext context)
+        {
+            var node = TrinoTree.CreateWithSpan<QsiSwitchCaseExpressionNode>(context);
+            node.Condition.Value = VisitExpression(context.condition);
+            node.Consequent.Value = VisitExpression(context.result);
+
+            return node;
+        }
+
+        public static QsiExpressionNode VisitSimpleCase(SimpleCaseContext context)
+        {
+            var node = TrinoTree.CreateWithSpan<QsiSwitchExpressionNode>(context);
+
+            QsiExpressionNode elseNode = null;
+
+            var valueNode = VisitExpression(context.operand);
+            QsiSwitchCaseExpressionNode[] caseExpressionNodes = context.whenClause().Select(VisitWhenClause).ToArray();
+
+            if (context.elseExpression != null)
+                elseNode = VisitExpression(context.elseExpression);
+
+            node.Value.Value = valueNode;
+
+            node.Cases.AddRange(caseExpressionNodes);
+
+            if (elseNode != null)
+            {
+                var caseNode = new QsiSwitchCaseExpressionNode();
+                caseNode.Consequent.SetValue(elseNode);
+                node.Cases.Add(caseNode);
+            }
+
+            return node;
+        }
+
+        public static QsiExpressionNode VisitSearchedCase(SearchedCaseContext context)
+        {
+            var node = TrinoTree.CreateWithSpan<QsiSwitchExpressionNode>(context);
+
+            QsiExpressionNode elseNode = null;
+            QsiSwitchCaseExpressionNode[] caseExpressionNodes = context.whenClause().Select(VisitWhenClause).ToArray();
+
+            if (context.elseExpression != null)
+                elseNode = VisitExpression(context.elseExpression);
+
+            node.Cases.AddRange(caseExpressionNodes);
+
+            if (elseNode != null)
+            {
+                var caseNode = new QsiSwitchCaseExpressionNode();
+                caseNode.Consequent.SetValue(elseNode);
+                node.Cases.Add(caseNode);
+            }
+
+            return node;
+        }
+
+        public static QsiExpressionNode VisitCast(CastContext context)
+        {
+            var node = TrinoTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(TrinoKnownFunction.Cast);
+
+            node.Parameters.Add(VisitExpression(context.expression()));
+            node.Parameters.Add(TreeHelper.CreateConstantLiteral(context.type().GetText()));
+
+            return node;
+        }
+
+        public static QsiExpressionNode VisitArrayConstructor(ArrayConstructorContext context)
+        {
+            var node = TrinoTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.ARRAY().GetText());
+
+            node.Parameters.AddRange(context.expression().Select(VisitExpression));
+
+            return node;
+        }
+
+        public static QsiExpressionNode VisitSubscript(SubscriptContext context)
+        {
+            var node = TrinoTree.CreateWithSpan<TrinoSubscriptExpressionNode>(context);
+
+            node.Value.Value = VisitPrimaryExpression(context.value);
+            node.Index.Value = VisitValueExpression(context.index);
+
+            return node;
+        }
+
+        public static QsiExpressionNode VisitDereference(DereferenceContext context)
+        {
+            var node = TrinoTree.CreateWithSpan<QsiMemberAccessExpressionNode>(context);
+            node.Target.Value = VisitPrimaryExpression(context.expr);
+
+            node.Member.Value = new QsiColumnExpressionNode
+            {
+                Column =
+                {
+                    Value = new QsiColumnReferenceNode
+                    {
+                        Name = new QsiQualifiedIdentifier(context.fieldName.qi)
+                    }
+                }
+            };
+
+            return node;
+        }
+
+        public static QsiExpressionNode VisitSpecialDateTimeFunction(SpecialDateTimeFunctionContext context)
+        {
+            var node = TrinoTree.CreateWithSpan<TrinoDateTimeFunctionExpressionNode>(context);
+            node.Name = context.name.Text;
+
+            if (context.precision is not null)
+                node.Precision = long.Parse(context.precision.Text);
+
+            return node;
+        }
+
+        public static QsiExpressionNode VisitCurrentUser(CurrentUserContext context)
+        {
+            return TreeHelper.CreateConstantLiteral("CURRENT_USER");
+        }
+
+        public static QsiExpressionNode VisitCurrentCatalog(CurrentCatalogContext context)
+        {
+            return TreeHelper.CreateConstantLiteral("CURRENT_CATALOG");
+        }
+
+        public static QsiExpressionNode VisitCurrentSchema(CurrentSchemaContext context)
+        {
+            return TreeHelper.CreateConstantLiteral("CURRENT_SCHEMA");
+        }
+
+        public static QsiExpressionNode VisitCurrentPath(CurrentPathContext context)
+        {
+            return TreeHelper.CreateConstantLiteral("CURRENT_PATH");
+        }
+
+        public static QsiExpressionNode VisitSubstring(SubstringContext context)
+        {
+            var node = TrinoTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.SUBSTRING().GetText());
+
+            node.Parameters.AddRange(context.valueExpression().Select(VisitValueExpression));
+
+            return node;
+        }
+
+        public static QsiExpressionNode VisitNormalize(NormalizeContext context)
+        {
+            var node = TrinoTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.NORMALIZE().GetText());
+            node.Parameters.Add(VisitValueExpression(context.valueExpression()));
+
+            var normalForm = context.normalForm();
+
+            if (normalForm is not null)
+                node.Parameters.Add(TreeHelper.CreateConstantLiteral(normalForm.GetText()));
+
+            return node;
+        }
+
+        public static QsiExpressionNode VisitExtract(ExtractContext context)
+        {
+            var node = TrinoTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.EXTRACT().GetText());
+
+            node.Parameters.Add(new QsiColumnExpressionNode
+            {
+                Column =
+                {
+                    Value = new QsiColumnReferenceNode
+                    {
+                        Name = new QsiQualifiedIdentifier(context.identifier().qi)
+                    }
+                }
+            });
+
+            node.Parameters.Add(VisitValueExpression(context.valueExpression()));
+
+            return node;
+        }
+
+        public static QsiExpressionNode VisitParenthesizedExpression(ParenthesizedExpressionContext context)
+        {
+            return VisitExpression(context.expression());
+        }
+
+        public static QsiExpressionNode VisitGroupingOperation(GroupingOperationContext context)
+        {
+            var node = TrinoTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.GROUPING().GetText());
+
+            QualifiedNameContext[] qualifiedNames = context.qualifiedName();
+
+            if (qualifiedNames is not null)
+                node.Parameters.AddRange(qualifiedNames.Select(name => new QsiColumnExpressionNode
+                    {
+                        Column =
+                        {
+                            Value = new QsiColumnReferenceNode
+                            {
+                                Name = name.qqi
+                            }
+                        }
+                    })
+                );
+
+            return node;
+        }
         #endregion
 
         public static QsiExpressionNode VisitGroupingElement(GroupingElementContext context)
