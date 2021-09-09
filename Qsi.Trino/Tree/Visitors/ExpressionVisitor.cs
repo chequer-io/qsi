@@ -129,9 +129,12 @@ namespace Qsi.Trino.Tree.Visitors
             return node;
         }
 
-        public static QsiTableNode VisitSubqueryExpression(SubqueryExpressionContext context)
+        public static QsiExpressionNode VisitSubqueryExpression(SubqueryExpressionContext context)
         {
-            return TableVisitor.VisitQuery(context.query());
+            var node = TrinoTree.CreateWithSpan<QsiTableExpressionNode>(context);
+            node.Table.Value = TableVisitor.VisitQuery(context.query());
+
+            return node;
         }
 
         public static QsiExpressionNode VisitExists(ExistsContext context)
