@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using System.Linq;
 using Qsi.Tree;
+using Qsi.Utilities;
 
 namespace Qsi.Trino.Tree
 {
@@ -10,7 +10,7 @@ namespace Qsi.Trino.Tree
 
         public QsiTreeNodeProperty<QsiExpressionNode> Index { get; }
 
-        public override IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
+        public override IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Value, Index);
 
         public TrinoSubscriptExpressionNode()
         {

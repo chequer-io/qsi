@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Qsi.Tree;
+using Qsi.Utilities;
 
 namespace Qsi.Trino.Tree
 {
@@ -7,14 +8,7 @@ namespace Qsi.Trino.Tree
     {
         public QsiTreeNodeProperty<QsiTableNode> Source { get; }
 
-        public override IEnumerable<IQsiTreeNode> Children
-        {
-            get
-            {
-                if (!Source.IsEmpty)
-                    yield return Source.Value;
-            }
-        }
+        public override IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Source);
 
         public TrinoLateralTableNode()
         {

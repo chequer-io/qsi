@@ -4,7 +4,7 @@ using Qsi.Utilities;
 
 namespace Qsi.Trino.Tree
 {
-    public class TrinoHelper
+    internal static class TrinoHelper
     {
         public static QsiDerivedTableNode CreateDerivedTableWithPath(QsiTableNode source, QsiQualifiedIdentifier path)
         {

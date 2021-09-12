@@ -28,7 +28,7 @@ namespace Qsi.Trino
 
         public override IQsiScriptParser CreateScriptParser()
         {
-            return new CommonScriptParser();
+            return new TrinoScriptParser();
         }
 
         public override IEnumerable<IQsiAnalyzer> CreateAnalyzers(QsiEngine engine)

@@ -483,9 +483,8 @@ namespace Qsi.Trino.Tree.Visitors
             }
         }
 
-        public static QsiTableNode VisitUnnest(UnnestContext context)
+        public static QsiTableNode VisitUnnest(UnnestContext _)
         {
-            // TODO: Impl Unnest table
             throw TreeHelper.NotSupportedFeature("Unnest table");
         }
 

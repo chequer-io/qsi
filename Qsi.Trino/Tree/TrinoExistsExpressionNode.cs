@@ -1,14 +1,14 @@
 using System.Collections.Generic;
-using System.Linq;
 using Qsi.Tree;
+using Qsi.Utilities;
 
 namespace Qsi.Trino.Tree
 {
     public class TrinoExistsExpressionNode : QsiExpressionNode
     {
-        public QsiTreeNodeProperty<QsiTableNode> Query { get; } 
+        public QsiTreeNodeProperty<QsiTableNode> Query { get; }
 
-        public override IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
+        public override IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Query);
 
         public TrinoExistsExpressionNode()
         {

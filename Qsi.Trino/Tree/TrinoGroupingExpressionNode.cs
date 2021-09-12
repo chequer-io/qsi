@@ -4,6 +4,6 @@ namespace Qsi.Trino.Tree
 {
     public sealed class TrinoGroupingExpressionNode : QsiGroupingExpressionNode
     {
-        public TrinoSetQuantifier SetQuantifier { get; set; }
+        public TrinoSetQuantifier? SetQuantifier { get; set; }
     }
 }

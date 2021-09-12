@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using Qsi.Tree;
 using Qsi.Trino.Common;
 
@@ -14,6 +16,25 @@ namespace Qsi.Trino.Tree
         public QsiTreeNodeProperty<QsiExpressionNode> Filter { get; }
 
         public QsiTreeNodeProperty<TrinoWindowExpressionNode> Over { get; }
+
+        public override IEnumerable<IQsiTreeNode> Children
+        {
+            get
+            {
+                IEnumerable<IQsiTreeNode> enumerable = base.Children;
+
+                if (!OrderBy.IsEmpty)
+                    enumerable = enumerable.Append(OrderBy.Value);
+
+                if (!Filter.IsEmpty)
+                    enumerable = enumerable.Append(Filter.Value);
+
+                if (!Over.IsEmpty)
+                    enumerable = enumerable.Append(Over.Value);
+
+                return enumerable;
+            }
+        }
 
         public TrinoInvokeExpressionNode()
         {

@@ -653,39 +653,51 @@ namespace Qsi.Trino.Tree.Visitors
 
         public static QsiExpressionNode VisitSpecialDateTimeFunction(SpecialDateTimeFunctionContext context)
         {
-            var node = TrinoTree.CreateWithSpan<TrinoDateTimeFunctionExpressionNode>(context);
-            node.Name = context.name.Text;
+            var node = TrinoTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.name.Text);
 
             if (context.precision is not null)
-                node.Precision = long.Parse(context.precision.Text);
+                node.Parameters.Add(TreeHelper.CreateLiteral(long.Parse(context.precision.Text)));
 
             return node;
         }
 
         public static QsiExpressionNode VisitCurrentUser(CurrentUserContext context)
         {
-            return TreeHelper.CreateConstantLiteral("CURRENT_USER");
+            var node = TrinoTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction("CURRENT_USER");
+
+            return node;
         }
 
         public static QsiExpressionNode VisitCurrentCatalog(CurrentCatalogContext context)
         {
-            return TreeHelper.CreateConstantLiteral("CURRENT_CATALOG");
+            var node = TrinoTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction("CURRENT_CATALOG");
+
+            return node;
         }
 
         public static QsiExpressionNode VisitCurrentSchema(CurrentSchemaContext context)
         {
-            return TreeHelper.CreateConstantLiteral("CURRENT_SCHEMA");
+            var node = TrinoTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction("CURRENT_SCHEMA");
+
+            return node;
         }
 
         public static QsiExpressionNode VisitCurrentPath(CurrentPathContext context)
         {
-            return TreeHelper.CreateConstantLiteral("CURRENT_PATH");
+            var node = TrinoTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction("CURRENT_PATH");
+
+            return node;
         }
 
         public static QsiExpressionNode VisitSubstring(SubstringContext context)
         {
             var node = TrinoTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
-            node.Member.Value = TreeHelper.CreateFunction(context.SUBSTRING().GetText());
+            node.Member.Value = TreeHelper.CreateFunction("SUBSTRING");
 
             node.Parameters.AddRange(context.valueExpression().Select(VisitValueExpression));
 
@@ -695,7 +707,7 @@ namespace Qsi.Trino.Tree.Visitors
         public static QsiExpressionNode VisitNormalize(NormalizeContext context)
         {
             var node = TrinoTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
-            node.Member.Value = TreeHelper.CreateFunction(context.NORMALIZE().GetText());
+            node.Member.Value = TreeHelper.CreateFunction("NORMALIZE");
             node.Parameters.Add(VisitValueExpression(context.valueExpression()));
 
             var normalForm = context.normalForm();
@@ -709,7 +721,7 @@ namespace Qsi.Trino.Tree.Visitors
         public static QsiExpressionNode VisitExtract(ExtractContext context)
         {
             var node = TrinoTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
-            node.Member.Value = TreeHelper.CreateFunction(context.EXTRACT().GetText());
+            node.Member.Value = TreeHelper.CreateFunction("EXTRACT");
 
             node.Parameters.Add(new QsiColumnExpressionNode
             {
@@ -735,7 +747,7 @@ namespace Qsi.Trino.Tree.Visitors
         public static QsiExpressionNode VisitGroupingOperation(GroupingOperationContext context)
         {
             var node = TrinoTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
-            node.Member.Value = TreeHelper.CreateFunction(context.GROUPING().GetText());
+            node.Member.Value = TreeHelper.CreateFunction("GROUPING");
 
             QualifiedNameContext[] qualifiedNames = context.qualifiedName();
 
@@ -789,7 +801,10 @@ namespace Qsi.Trino.Tree.Visitors
 
             if (context.HasToken(ASTERISK))
             {
-                node.Parameters.Add(TreeHelper.CreateConstantLiteral("*"));
+                var columnExpr = new QsiColumnExpressionNode();
+                columnExpr.Column.Value = new QsiAllColumnNode();
+
+                node.Parameters.Add(columnExpr);
                 return node;
             }
 
@@ -950,10 +965,14 @@ namespace Qsi.Trino.Tree.Visitors
             node.Expression.Value = VisitExpression(context.expression());
 
             if (context.ordering is not null)
-                node.Order = context.ordering.Type == ASC ? QsiSortOrder.Ascending : QsiSortOrder.Descending;
+                node.Order = context.ordering.Type == ASC
+                    ? QsiSortOrder.Ascending
+                    : QsiSortOrder.Descending;
 
             if (context.HasToken(NULLS))
-                node.NullBehavior = context.nullOrdering.Type == FIRST ? TrinoOrderByNullBehavior.NullsFirst : TrinoOrderByNullBehavior.NullsLast;
+                node.NullBehavior = context.nullOrdering.Type == FIRST
+                    ? TrinoOrderByNullBehavior.NullsFirst
+                    : TrinoOrderByNullBehavior.NullsLast;
 
             return node;
         }
