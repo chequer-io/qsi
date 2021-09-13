@@ -34,7 +34,7 @@ namespace Qsi.Trino
         public override IEnumerable<IQsiAnalyzer> CreateAnalyzers(QsiEngine engine)
         {
             yield return new TrinoActionAnalyzer(engine);
-            yield return new QsiTableAnalyzer(engine);
+            yield return new TrinoTableAnalyzer(engine);
         }
     }
 }
