@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Qsi.Tree;
+using Qsi.Utilities;
 
 namespace Qsi.Oracle.Tree
 {
@@ -12,7 +13,7 @@ namespace Qsi.Oracle.Tree
 
         public QsiTreeNodeProperty<QsiExpressionNode> Right { get; }
 
-        public override IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
+        public override IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Left, Right);
 
         public OracleJsonOperationExpressionNode()
         {

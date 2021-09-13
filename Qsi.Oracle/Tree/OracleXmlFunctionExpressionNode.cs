@@ -2,6 +2,7 @@
 using System.Linq;
 using Qsi.Data;
 using Qsi.Tree;
+using Qsi.Utilities;
 
 namespace Qsi.Oracle.Tree
 {
@@ -16,7 +17,7 @@ namespace Qsi.Oracle.Tree
             Passings = new QsiTreeNodeList<OracleXmlExpressionNode>(this);
         }
     }
-    
+
     public sealed class OracleXmlAttributesExpressionNode : QsiExpressionNode
     {
         public QsiTreeNodeList<OracleXmlColumnAttributeItemNode> Attributes { get; }
@@ -34,10 +35,10 @@ namespace Qsi.Oracle.Tree
         public QsiTreeNodeProperty<QsiExpressionNode> Expression { get; }
 
         public QsiAliasNode Alias { get; set; }
-        
+
         public QsiTreeNodeProperty<QsiExpressionNode> EvalName { get; }
 
-        public override IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
+        public override IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Expression, EvalName);
 
         public OracleXmlColumnAttributeItemNode()
         {
@@ -52,33 +53,37 @@ namespace Qsi.Oracle.Tree
 
         public QsiAliasNode Alias { get; set; }
 
-        public override IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
+        public override IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Expression);
 
         public OracleXmlExpressionNode()
         {
             Expression = new QsiTreeNodeProperty<QsiExpressionNode>(this);
         }
     }
-    
+
     public sealed class OracleXmlTableFunctionNode : OracleXmlFunctionExpressionNode
     {
         public OracleXmlNamespaceNode[] Namespaces { get; set; }
 
         public OracleXmlColumnDefinitionNode[] Columns { get; set; }
-        
+
         public bool IsReturningSequenceByRef { get; set; }
 
         public override IEnumerable<IQsiTreeNode> Children
         {
             get
             {
-                if (Namespaces != null)
+                if (Passings is not null)
+                    foreach (var passing in Passings)
+                        yield return passing;
+
+                if (Namespaces is not null)
                 {
                     foreach (var OracleNamespace in Namespaces)
                         yield return OracleNamespace;
                 }
 
-                if (Columns != null)
+                if (Columns is not null)
                 {
                     foreach (var column in Columns)
                         yield return column;
@@ -106,17 +111,12 @@ namespace Qsi.Oracle.Tree
         }
     }
 
-    public sealed class OracleXmlColumnDefinitionNode : QsiTreeNode
+    public sealed class OracleXmlColumnDefinitionNode : QsiColumnExpressionNode
     {
-        public QsiColumnNode Column { get; }
-
         public string Type { get; }
 
-        public override IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
-
-        public OracleXmlColumnDefinitionNode(QsiColumnNode column, string type)
+        public OracleXmlColumnDefinitionNode(string type)
         {
-            Column = column;
             Type = type;
         }
     }

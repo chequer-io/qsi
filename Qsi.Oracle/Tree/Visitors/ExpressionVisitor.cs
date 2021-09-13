@@ -1359,11 +1359,7 @@ namespace Qsi.Oracle.Tree.Visitors
             node.Member.Value = TreeHelper.CreateFunction(context.CURRENT_TIMESTAMP().GetText());
 
             if (context.precision() is not null)
-                node.Parameters.Add(new QsiLiteralExpressionNode
-                {
-                    Type = QsiDataType.Numeric,
-                    Value = long.Parse(context.precision().GetInputText())
-                });
+                node.Parameters.Add(VisitPrecision(context.precision()));
 
             return node;
         }
@@ -3664,13 +3660,27 @@ namespace Qsi.Oracle.Tree.Visitors
                         {
                             Identifier = new QsiQualifiedIdentifier(new QsiIdentifier("SIZE", false))
                         },
-                        new QsiLiteralExpressionNode
-                        {
-                            Type = QsiDataType.Numeric,
-                            Value = long.Parse(context.size().GetText())
-                        }
+                        VisitSize(context.size())
                     }
                 );
+
+            return node;
+        }
+
+        public static QsiExpressionNode VisitSize(SizeContext context)
+        {
+            var node = OracleTree.CreateWithSpan<QsiLiteralExpressionNode>(context);
+            node.Type = QsiDataType.Numeric;
+            node.Value = long.Parse(context.GetText());
+
+            return node;
+        }
+
+        public static QsiExpressionNode VisitPrecision(PrecisionContext context)
+        {
+            var node = OracleTree.CreateWithSpan<QsiLiteralExpressionNode>(context);
+            node.Type = QsiDataType.Numeric;
+            node.Value = long.Parse(context.GetText());
 
             return node;
         }
@@ -3690,6 +3700,7 @@ namespace Qsi.Oracle.Tree.Visitors
             var tableOptions = context.xmltableOptions();
 
             var passingClause = tableOptions.xmlPassingClause();
+
             if (passingClause is not null)
                 node.Passings.AddRange(passingClause.xmlPassingClauseItem().Select(VisitXmlPassingClauseItem));
 
@@ -3699,24 +3710,27 @@ namespace Qsi.Oracle.Tree.Visitors
 
             if (tableColumns is not null)
                 node.Columns = tableColumns.Select(VisitXmlColumnDefinition).ToArray();
-            
+
             return node;
 
             static OracleXmlNamespaceNode VisitXmlNamespaceClauseItem(XmlnamespacesClauseItemContext context)
             {
                 var identifier = context.identifier();
 
-                return identifier is not null 
-                    ? new OracleXmlNamespaceNode(context.stringLiteral().GetText(), identifier.GetText()) 
+                return identifier is not null
+                    ? new OracleXmlNamespaceNode(context.stringLiteral().GetText(), identifier.GetText())
                     : new OracleXmlNamespaceNode(context.stringLiteral().GetText());
             }
 
             static OracleXmlColumnDefinitionNode VisitXmlColumnDefinition(XmlTableColumnContext context)
             {
-                return new OracleXmlColumnDefinitionNode(
-                    IdentifierVisitor.VisitColumn(context.column()),
-                    context.xmlTableColumnType().GetInputText()
-                );
+                return new OracleXmlColumnDefinitionNode(context.xmlTableColumnType().GetInputText())
+                {
+                    Column =
+                    {
+                        Value = IdentifierVisitor.VisitColumn(context.column())
+                    }
+                };
             }
         }
         #endregion

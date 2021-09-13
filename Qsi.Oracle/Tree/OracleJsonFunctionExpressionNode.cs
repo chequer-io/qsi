@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Qsi.Oracle.Common;
 using Qsi.Tree;
+using Qsi.Utilities;
 
 namespace Qsi.Oracle.Tree
 {
@@ -26,8 +27,6 @@ namespace Qsi.Oracle.Tree
         public OracleOnEmptyBehavior OnEmptyBehavior { get; set; }
 
         public string OnEmptyDefault { get; set; }
-
-        public override IEnumerable<IQsiTreeNode> Children => Parameters;
     }
 
     public class OracleJsonElementNode : QsiExpressionNode
@@ -36,7 +35,7 @@ namespace Qsi.Oracle.Tree
 
         public bool IsFormatted { get; set; }
 
-        public override IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
+        public override IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Expression);
 
         public OracleJsonElementNode()
         {
@@ -52,7 +51,7 @@ namespace Qsi.Oracle.Tree
 
         public bool IsFormatted { get; set; }
 
-        public override IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
+        public override IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Key, Value);
 
         public OracleJsonEntryNode()
         {
