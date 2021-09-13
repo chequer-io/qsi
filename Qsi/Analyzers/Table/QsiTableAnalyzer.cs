@@ -618,6 +618,8 @@ namespace Qsi.Analyzers.Table
                 Type = QsiTableType.Union
             };
 
+            compositeSource.References.AddRange(sources);
+
             for (int i = 0; i < columnCount; i++)
             {
                 var baseColumn = sources[0].Columns[i];
