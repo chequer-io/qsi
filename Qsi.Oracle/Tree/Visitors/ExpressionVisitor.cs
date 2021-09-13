@@ -3693,7 +3693,7 @@ namespace Qsi.Oracle.Tree.Visitors
             var namespacesClause = context.xmlnamespacesClause();
 
             if (namespacesClause is not null)
-                node.Namespaces = namespacesClause.xmlnamespacesClauseItem().Select(VisitXmlNamespaceClauseItem).ToArray();
+                node.Namespaces.AddRange(namespacesClause.xmlnamespacesClauseItem().Select(VisitXmlNamespaceClauseItem));
 
             node.Parameters.Add(VisitExpr(context.expr()));
 
@@ -3709,7 +3709,7 @@ namespace Qsi.Oracle.Tree.Visitors
             XmlTableColumnContext[] tableColumns = tableOptions.xmlTableColumn();
 
             if (tableColumns is not null)
-                node.Columns = tableColumns.Select(VisitXmlColumnDefinition).ToArray();
+                node.Columns.AddRange(tableColumns.Select(VisitXmlColumnDefinition));
 
             return node;
 

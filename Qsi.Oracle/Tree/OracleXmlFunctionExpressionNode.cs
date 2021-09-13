@@ -63,9 +63,9 @@ namespace Qsi.Oracle.Tree
 
     public sealed class OracleXmlTableFunctionNode : OracleXmlFunctionExpressionNode
     {
-        public OracleXmlNamespaceNode[] Namespaces { get; set; }
+        public QsiTreeNodeList<OracleXmlNamespaceNode> Namespaces { get; }
 
-        public OracleXmlColumnDefinitionNode[] Columns { get; set; }
+        public QsiTreeNodeList<OracleXmlColumnDefinitionNode> Columns { get; }
 
         public bool IsReturningSequenceByRef { get; set; }
 
@@ -73,22 +73,21 @@ namespace Qsi.Oracle.Tree
         {
             get
             {
-                if (Passings is not null)
-                    foreach (var passing in Passings)
-                        yield return passing;
+                foreach (var passing in Passings)
+                    yield return passing;
 
-                if (Namespaces is not null)
-                {
-                    foreach (var OracleNamespace in Namespaces)
-                        yield return OracleNamespace;
-                }
+                foreach (var OracleNamespace in Namespaces)
+                    yield return OracleNamespace;
 
-                if (Columns is not null)
-                {
-                    foreach (var column in Columns)
-                        yield return column;
-                }
+                foreach (var column in Columns)
+                    yield return column;
             }
+        }
+
+        public OracleXmlTableFunctionNode()
+        {
+            Namespaces = new QsiTreeNodeList<OracleXmlNamespaceNode>(this);
+            Columns = new QsiTreeNodeList<OracleXmlColumnDefinitionNode>(this);
         }
     }
 
