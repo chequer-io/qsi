@@ -147,13 +147,13 @@ namespace Qsi.Oracle.Analyzers
                 }
             }
 
-            return ResolveDataManipulationTargets(sourceTable)
+            return ResolveDataManipulationTargets(context, sourceTable)
                 .Select(target =>
                 {
                     foreach (var row in dataTable.Rows)
                     {
-                        var oldRow = target.UpdateBeforeRows.NewRow();
-                        var newRow = target.UpdateAfterRows.NewRow();
+                        var oldRow = new QsiDataRow(target.UpdateBeforeRows.ColumnCount);
+                        var newRow = new QsiDataRow(target.UpdateAfterRows.ColumnCount);
 
                         foreach (var pivot in target.ColumnPivots)
                         {
@@ -170,6 +170,9 @@ namespace Qsi.Oracle.Analyzers
                                 newRow.Items[pivot.TargetOrder] = QsiDataValue.Unknown;
                             }
                         }
+                        
+                        target.UpdateBeforeRows.Add(oldRow);
+                        target.UpdateAfterRows.Add(newRow);
                     }
 
                     QsiTableColumn[] affectedColumns = target.ColumnPivots
