@@ -9700,7 +9700,7 @@ jsonTableFunction
     ;
 
 jsonTransformFunction
-    : JSON_TRANSFORM '(' expr ',' operation (',' operation)* ')' jsonTransformReturningClause? jsonPassingClause?
+    : JSON_TRANSFORM '(' expr (',' operation)+ ')' jsonTransformReturningClause? jsonPassingClause?
     ;
 
 jsonValueFunction
