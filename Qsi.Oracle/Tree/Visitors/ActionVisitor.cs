@@ -18,8 +18,20 @@ namespace Qsi.Oracle.Tree.Visitors
         {
             switch (context.children[0])
             {
-                case CreateViewContext createViewContext:
-                    return VisitCreateView(createViewContext);
+                case CreateViewContext createView:
+                    return VisitCreateView(createView);
+
+                default:
+                    throw TreeHelper.NotSupportedTree(context.children[0]);
+            }
+        }
+
+        public static IQsiTreeNode VisitAlter(AlterContext context)
+        {
+            switch (context.children[0])
+            {
+                case AlterSessionContext alterSession:
+                    return VisitAlterSession(alterSession);
 
                 default:
                     throw TreeHelper.NotSupportedTree(context.children[0]);
@@ -64,7 +76,8 @@ namespace Qsi.Oracle.Tree.Visitors
                         .Select(v =>
                             v.expr() is not null
                                 ? ExpressionVisitor.VisitExpr(v.expr())
-                                : TreeHelper.CreateDefaultLiteral())
+                                : TreeHelper.CreateDefaultLiteral()
+                        )
                     );
 
                     node.Values.Add(rowValueNode);
@@ -196,6 +209,64 @@ namespace Qsi.Oracle.Tree.Visitors
                 node.DefaultCollationName = context.defaultCollationOption().collationName().GetText();
 
             return node;
+        }
+
+        public static IQsiTreeNode VisitAlterSession(AlterSessionContext context)
+        {
+            var node = context.alterSessionItem() switch
+            {
+                AlterSessionSetClauseItemContext setClause => VisitAlterSessionSetClause(setClause),
+                _ => throw TreeHelper.NotSupportedTree(context.alterSessionItem())
+            };
+
+            OracleTree.PutContextSpan(node, context);
+
+            return node;
+        }
+
+        public static IQsiTreeNode VisitAlterSessionSetClause(AlterSessionSetClauseItemContext context)
+        {
+            var c = context.alterSessionSetClause().alterSessionSetItem();
+
+            switch (c)
+            {
+                case AlterSessionParameterSetItemContext parameterSet:
+                    return VisitAlterSessionParameterSetItem(parameterSet);
+
+                default:
+                    throw TreeHelper.NotSupportedTree(c);
+            }
+        }
+
+        public static IQsiTreeNode VisitAlterSessionParameterSetItem(AlterSessionParameterSetItemContext context)
+        {
+            for (int i = 0; i < context.parameterName().Length; i++)
+            {
+                var parameterName = IdentifierVisitor.VisitIdentifier(context.parameterName(i).identifier());
+                var parameterValue = context.parameterValue(i);
+
+                switch (parameterName.Value)
+                {
+                    case "CURRENT_SCHEMA":
+                    {
+                        if (!parameterValue.TryGetRuleContext<IdentifierContext>(out var identifier))
+                            throw new QsiException(QsiError.SyntaxError, "Missing or invalid schema authorization identifier");
+
+                        return new QsiChangeSearchPathActionNode
+                        {
+                            Identifiers = new[]
+                            {
+                                IdentifierVisitor.VisitIdentifier(identifier)
+                            }
+                        };
+                    }
+
+                    default:
+                        throw TreeHelper.NotSupportedFeature($"ALTER SESSION PARAMETER: {parameterName.Value}");
+                }
+            }
+
+            throw TreeHelper.NotSupportedTree(context);
         }
 
         public static OracleMergeActionNode VisitMerge(MergeContext context)
@@ -334,7 +405,7 @@ namespace Qsi.Oracle.Tree.Visitors
             QsiQualifiedIdentifier rightPath;
             QsiTableDirectivesNode directives = null;
 
-            var rightAlias = context.rightAlias is not null 
+            var rightAlias = context.rightAlias is not null
                 ? IdentifierVisitor.VisitIdentifier(context.rightAlias.identifier())
                 : null;
 

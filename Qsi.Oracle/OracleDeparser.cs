@@ -189,7 +189,7 @@ namespace Qsi.Oracle
                 base.DeparseDerivedTableNode(writer, node, script);
             }
 
-            if (oracleNode != null)
+            if (oracleNode is not null)
             {
                 if (!oracleNode.FlashbackQueryClause.IsEmpty)
                 {

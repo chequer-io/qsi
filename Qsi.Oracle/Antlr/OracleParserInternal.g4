@@ -3571,29 +3571,34 @@ alterSequence
     ;
 
 alterSession
-    : ALTER SESSION
-        ( ADVISE ( COMMIT | ROLLBACK | NOTHING )
-        | CLOSE DATABASE LINK dblink
-        | ( ENABLE | DISABLE ) COMMIT IN PROCEDURE
-        | ( ENABLE | DISABLE ) GUARD
-        | ( ENABLE | DISABLE | FORCE ) PARALLEL
-          ( DML | DDL | QUERY ) ( PARALLEL integer )?
-        | ( ENABLE RESUMABLE ( TIMEOUT integer )? ( NAME stringLiteral )?
-          | DISABLE RESUMABLE
-          )
-        | ( ENABLE | DISABLE ) SHARD DDL
-        | SYNC WITH PRIMARY
-        | alterSessionSetClause
-        )
+    : ALTER SESSION alterSessionItem
+    ;
+
+alterSessionItem
+    : ADVISE ( COMMIT | ROLLBACK | NOTHING )                            #alterSessionAdviseItem
+    | CLOSE DATABASE LINK dblink                                        #alterSessionCloseDatabaseLinkItem
+    | ( ENABLE | DISABLE ) COMMIT IN PROCEDURE                          #alterSessionCommitInProdecureItem
+    | ( ENABLE | DISABLE ) GUARD                                        #alterSessionGuardItem
+    | ( ENABLE | DISABLE | FORCE ) PARALLEL
+      ( DML | DDL | QUERY ) ( PARALLEL integer )?                       #alterSessionParallelItem
+    | ( ENABLE RESUMABLE ( TIMEOUT integer )? ( NAME stringLiteral )?
+      | DISABLE RESUMABLE
+      )                                                                 #alterSessionResumableItem
+    | ( ENABLE | DISABLE ) SHARD DDL                                    #alterSessionShardDdlItem
+    | SYNC WITH PRIMARY                                                 #alterSessionSyncWithPrimaryItem
+    | alterSessionSetClause                                             #alterSessionSetClauseItem
     ;
 
 alterSessionSetClause
-    : SET ( ( parameterName '=' parameterValue )+
-          | EDITION '=' editionName
-          | CONTAINER '=' containerName ( SERVICE '=' serviceName )?
-          | ROW ARCHIVAL VISIBILITY '=' ( ACTIVE | ALL )
-          | DEFAULT COLLATION '=' ( collationName | NONE )
-          )
+    : SET alterSessionSetItem
+    ;
+
+alterSessionSetItem
+    : ( parameterName '=' parameterValue )+                     #alterSessionParameterSetItem
+    | EDITION '=' editionName                                   #alterSessionEditionSetItem
+    | CONTAINER '=' containerName ( SERVICE '=' serviceName )?  #alterSessionContainerSetItem
+    | ROW ARCHIVAL VISIBILITY '=' ( ACTIVE | ALL )              #alterSessionRowArchivalVisibilitySetItem
+    | DEFAULT COLLATION '=' ( collationName | NONE )            #alterSessionDefaultCollationSetItem
     ;
 
 alterSystem

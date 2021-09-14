@@ -157,7 +157,7 @@ namespace Qsi.Oracle.Analyzers
 
                         foreach (var pivot in target.ColumnPivots)
                         {
-                            if (pivot.DeclaredColumn != null)
+                            if (pivot.DeclaredColumn is not null)
                             {
                                 var value = row.Items[pivot.DeclaredOrder];
 
@@ -173,7 +173,7 @@ namespace Qsi.Oracle.Analyzers
                     }
 
                     QsiTableColumn[] affectedColumns = target.ColumnPivots
-                        .Where(p => p.DeclaredColumn != null && affectedColumnMap[p.DeclaredOrder])
+                        .Where(p => p.DeclaredColumn is not null && affectedColumnMap[p.DeclaredOrder])
                         .Select(p => p.DeclaredColumn)
                         .ToArray();
 
