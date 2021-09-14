@@ -58,7 +58,6 @@ namespace Qsi.Oracle.Utilities
         public static OracleNamedParameterExpressionNode CreateNamedParameter(ParserRuleContext context, string name)
         {
             var node = OracleTree.CreateWithSpan<OracleNamedParameterExpressionNode>(context);
-
             node.Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(name, false));
 
             return node;
