@@ -18,7 +18,7 @@ namespace Qsi.Oracle
 
             var block = parser.root();
 
-            if (block.block() != null)
+            if (block.block() is not null)
             {
                 switch (block.block(0).children[0])
                 {
@@ -54,6 +54,9 @@ namespace Qsi.Oracle
 
                 case MergeContext merge:
                     return ActionVisitor.VisitMerge(merge);
+
+                case AlterContext alter:
+                    return ActionVisitor.VisitAlter(alter);
 
                 default:
                     throw TreeHelper.NotSupportedTree(oracleStatement.children[0]);

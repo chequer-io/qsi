@@ -58,7 +58,7 @@ namespace Qsi.Oracle.Tree.Visitors
                         columnNode = node;
                     }
 
-                    if (exprSelectListItem.alias() != null)
+                    if (exprSelectListItem.alias() is not null)
                     {
                         if (columnNode is not QsiDerivedColumnNode qsiDerivedColumn)
                         {
@@ -82,7 +82,7 @@ namespace Qsi.Oracle.Tree.Visitors
         {
             var node = OracleTree.CreateWithSpan<QsiMultipleExpressionNode>(context);
 
-            while (context.OPEN_PAR_SYMBOL() != null)
+            while (context.HasToken(OPEN_PAR_SYMBOL))
                 context = context.expressionList();
 
             node.Elements.AddRange(context.expr().Select(VisitExpr));
@@ -818,7 +818,7 @@ namespace Qsi.Oracle.Tree.Visitors
 
             node.Parameters.Add(VisitExpr(context.expr()));
 
-            if (context.DETERMINISTIC() is not null)
+            if (context.HasToken(DETERMINISTIC))
                 node.Parameters.Add(TreeHelper.CreateConstantLiteral("DETERMINISTIC"));
 
             if (context.stringLiteral() is not null)
@@ -834,7 +834,7 @@ namespace Qsi.Oracle.Tree.Visitors
 
             node.Parameters.Add(VisitExpr(context.expr(0)));
 
-            if (context.DETERMINISTIC() is not null)
+            if (context.HasToken(DETERMINISTIC))
                 node.Parameters.Add(TreeHelper.CreateConstantLiteral("DETERMINISTIC"));
 
             if (context.stringLiteral() is not null)
@@ -860,7 +860,7 @@ namespace Qsi.Oracle.Tree.Visitors
 
             node.Parameters.Add(VisitExpr(context.expr()));
 
-            if (context.DETERMINISTIC() is not null)
+            if (context.HasToken(DETERMINISTIC))
                 node.Parameters.Add(TreeHelper.CreateConstantLiteral("DETERMINISTIC"));
 
             return node;
@@ -943,7 +943,7 @@ namespace Qsi.Oracle.Tree.Visitors
 
             node.Parameters.Add(VisitExpr(context.expr()));
 
-            if (context.USING() is not null)
+            if (context.HasToken(USING))
                 node.Parameters.Add(TreeHelper.CreateConstantLiteral("USING NCHAR_CS"));
 
             return node;
@@ -5157,10 +5157,10 @@ namespace Qsi.Oracle.Tree.Visitors
             var node = OracleTree.CreateWithSpan<OracleOrderExpressionNode>(context);
             node.Expression.Value = VisitExpr(context.expr());
 
-            if (context.order != null)
+            if (context.order is not null)
                 node.Order = context.order.Type == DESC ? QsiSortOrder.Descending : QsiSortOrder.Ascending;
 
-            if (context.nullsOrder != null)
+            if (context.nullsOrder is not null)
                 node.NullsOrder = context.nullsOrder.Type == FIRST
                     ? OracleNullsOrder.First
                     : OracleNullsOrder.Last;
