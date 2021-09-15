@@ -38,6 +38,9 @@ namespace Qsi.Trino
                 case CreateViewContext createView:
                     return ActionVisitor.VisitCreateView(createView);
 
+                case UseContext use:
+                    return ActionVisitor.VisitUse(use);
+                
                 default:
                     throw TreeHelper.NotSupportedTree(statement);
             }

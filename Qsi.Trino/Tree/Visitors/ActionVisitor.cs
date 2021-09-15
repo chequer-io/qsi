@@ -268,6 +268,19 @@ namespace Qsi.Trino.Tree.Visitors
             return node;
         }
 
+        public static QsiChangeSearchPathActionNode VisitUse(UseContext context)
+        {
+            var path = context.catalog is not null
+                ? new QsiQualifiedIdentifier(context.catalog.qi, context.schema.qi)
+                : new QsiQualifiedIdentifier(context.schema.qi);
+
+            var node = TrinoTree.CreateWithSpan<QsiChangeSearchPathActionNode>(context);
+
+            node.Identifiers = new[] { path };
+            
+            return node;
+        }
+
         private static QsiTableDirectivesNode CreateDirectiveTable(QsiIdentifier alias, QsiTableNode tableNode)
         {
             var directives = new QsiTableDirectivesNode();

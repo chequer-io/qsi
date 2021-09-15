@@ -256,7 +256,7 @@ namespace Qsi.Oracle.Tree.Visitors
                         {
                             Identifiers = new[]
                             {
-                                IdentifierVisitor.VisitIdentifier(identifier)
+                                new QsiQualifiedIdentifier(IdentifierVisitor.VisitIdentifier(identifier))
                             }
                         };
                     }

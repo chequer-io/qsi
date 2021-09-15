@@ -19,7 +19,7 @@ namespace Qsi.SqlServer.Tree
             {
                 Identifiers = new[]
                 {
-                    IdentifierVisitor.CreateIdentifier(useStatement.DatabaseName),
+                    new QsiQualifiedIdentifier(IdentifierVisitor.CreateIdentifier(useStatement.DatabaseName)),
                 }
             };
 

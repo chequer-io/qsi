@@ -9,7 +9,7 @@ namespace Qsi.Tree.Immutable
     {
         public IQsiTreeNode Parent { get; }
 
-        public QsiIdentifier[] Identifiers { get; }
+        public QsiQualifiedIdentifier[] Identifiers { get; }
 
         public IUserDataHolder UserData { get; }
 
@@ -17,7 +17,7 @@ namespace Qsi.Tree.Immutable
 
         public ImmutableChangeSearchPathActionNode(
             IQsiTreeNode parent,
-            QsiIdentifier[] identifiers,
+            QsiQualifiedIdentifier[] identifiers,
             IUserDataHolder userData)
         {
             Parent = parent;
