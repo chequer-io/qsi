@@ -419,7 +419,7 @@ namespace Qsi.Trino.Tree.Visitors
             {
                 case DecimalLiteralContext:
                     node.Type = QsiDataType.Numeric;
-                    node.Value = long.Parse(text);
+                    node.Value = decimal.Parse(text, NumberStyles.Float);
                     break;
 
                 case DoubleLiteralContext:
