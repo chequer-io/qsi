@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Qsi.Analyzers;
-using Qsi.Analyzers.Table;
+using Qsi.Collections;
+using Qsi.Data;
 using Qsi.Engines;
 using Qsi.Parsing;
-using Qsi.Parsing.Common;
 using Qsi.Services;
 using Qsi.Trino.Analyzers;
 
@@ -11,6 +12,11 @@ namespace Qsi.Trino
 {
     public abstract class TrinoLanguageServiceBase : QsiLanguageServiceBase
     {
+        protected override IEqualityComparer<QsiIdentifier> GetIdentifierComparer()
+        {
+            return new QsiIdentifierEqualityComparer(StringComparison.OrdinalIgnoreCase);
+        }
+
         public override QsiAnalyzerOptions CreateAnalyzerOptions()
         {
             return new();
