@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Antlr4.Runtime;
+using Antlr4.Runtime.Tree;
 using Qsi.Data;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
@@ -387,6 +388,13 @@ namespace Qsi.Trino.Tree.Visitors
             var node = TrinoTree.CreateWithSpan<QsiJoinedTableNode>(context);
             node.Left.Value = VisitRelation(context.left);
 
+            string joinType = string.Join(
+                " ",
+                (context.joinType()?.children ?? Enumerable.Empty<IParseTree>()).Select(c => c.GetText())
+            );
+
+            bool hasJoinType = string.IsNullOrEmpty(joinType);
+
             if (context.HasToken(CROSS))
             {
                 node.JoinType = "CROSS JOIN";
@@ -395,12 +403,12 @@ namespace Qsi.Trino.Tree.Visitors
             else if (context.HasToken(NATURAL))
             {
                 node.IsNatural = true;
-                node.JoinType = $"NATURAL {string.Join(" ", context.joinType().children.Select(c => c.GetText()))} JOIN";
+                node.JoinType = hasJoinType ? "NATURAL JOIN" : $"NATURAL {joinType} JOIN";
                 node.Right.Value = VisitSampledRelation(context.right);
             }
             else
             {
-                node.JoinType = $"{string.Join(" ", context.joinType().children.Select(c => c.GetText()))} JOIN";
+                node.JoinType = hasJoinType ? "JOIN" : $"{joinType} JOIN";
                 node.Right.Value = VisitRelation(context.rightRelation);
             }
 
