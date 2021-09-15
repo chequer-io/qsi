@@ -634,19 +634,28 @@ namespace Qsi.Trino.Tree.Visitors
 
         public static QsiExpressionNode VisitDereference(DereferenceContext context)
         {
-            var node = TrinoTree.CreateWithSpan<QsiMemberAccessExpressionNode>(context);
-            node.Target.Value = VisitPrimaryExpression(context.expr);
+            var target = VisitPrimaryExpression(context.expr);
+            var memberIdentifier = context.fieldName.qi;
 
-            node.Member.Value = new QsiColumnExpressionNode
+            if (target is QsiColumnExpressionNode columnExpression &&
+                columnExpression.Column.Value is QsiColumnReferenceNode refNode)
             {
-                Column =
-                {
-                    Value = new QsiColumnReferenceNode
-                    {
-                        Name = new QsiQualifiedIdentifier(context.fieldName.qi)
-                    }
-                }
+                refNode.Name = new QsiQualifiedIdentifier(refNode.Name.Append(memberIdentifier));
+                TrinoTree.PutContextSpan(refNode, context);
+                TrinoTree.PutContextSpan(columnExpression, context);
+
+                return columnExpression;
+            }
+
+            var node = TrinoTree.CreateWithSpan<QsiMemberAccessExpressionNode>(context);
+            node.Target.Value = target;
+
+            var memberRefNode = new QsiColumnReferenceNode
+            {
+                Name = new QsiQualifiedIdentifier(memberIdentifier)
             };
+
+            node.Member.Value = new QsiColumnExpressionNode { Column = { Value = memberRefNode } };
 
             return node;
         }
