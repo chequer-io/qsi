@@ -18,7 +18,7 @@ namespace Qsi.Trino
                 return;
             }
 
-            base.DeparseTreeNode(writer, node, script);
+            writer.Write(script.Script[range]);
         }
 
         protected override void DeparseTableNode(ScriptWriter writer, IQsiTableNode node, QsiScript script)
