@@ -689,8 +689,8 @@ namespace Qsi.Oracle.Tree.Visitors
                 case XmlcastFunctionContext xmlcastFunctionContext:
                     return VisitXmlcastFunction(xmlcastFunctionContext);
 
-                case XmlcorattvalFunctionContext xmlcorattvalFunctionContext:
-                    return VisitXmlcorattvalFunction(xmlcorattvalFunctionContext);
+                case XmlcolattvalFunctionContext xmlcolattvalFunctionContext:
+                    return VisitXmlcolattvalFunction(xmlcolattvalFunctionContext);
 
                 case XmlelementFunctionContext xmlelementFunctionContext:
                     return VisitXmlelementFunction(xmlelementFunctionContext);
@@ -1359,11 +1359,7 @@ namespace Qsi.Oracle.Tree.Visitors
             node.Member.Value = TreeHelper.CreateFunction(context.CURRENT_TIMESTAMP().GetText());
 
             if (context.precision() is not null)
-                node.Parameters.Add(new QsiLiteralExpressionNode
-                {
-                    Type = QsiDataType.Numeric,
-                    Value = long.Parse(context.precision().GetInputText())
-                });
+                node.Parameters.Add(VisitPrecision(context.precision()));
 
             return node;
         }
@@ -2712,136 +2708,1030 @@ namespace Qsi.Oracle.Tree.Visitors
         #endregion
 
         #region Json Functions
-        public static OracleInvokeExpressionNode VisitJsonArrayFunction(JsonArrayFunctionContext context)
+        public static OracleJsonElementNode VisitJsonArrayElement(JsonArrayElementContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleJsonElementNode>(context);
+
+            node.Expression.Value = VisitExpr(context.expr());
+            node.IsFormatted = context.formatClause() is not null;
+
+            return node;
         }
 
-        public static OracleInvokeExpressionNode VisitJsonArrayAggFunction(JsonArrayAggFunctionContext context)
+        public static QsiExpressionNode VisitJsonEntry(EntryContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleJsonEntryNode>(context);
+
+            switch (context.children[0])
+            {
+                case KeyValueEntryContext keyValueEntry:
+                    node.Key.Value = VisitStringLiteral(keyValueEntry.stringLiteral());
+                    node.Value.Value = VisitExpr(keyValueEntry.expr());
+
+                    node.IsFormatted = context.formatClause() is not null;
+                    break;
+
+                case ExprEntryContext exprEntry:
+                    ExprContext[] expr = exprEntry.expr();
+                    node.Key.Value = VisitExpr(expr[0]);
+
+                    if (expr.Length == 2)
+                        node.Value.Value = VisitExpr(expr[1]);
+
+                    node.IsFormatted = context.formatClause() is not null;
+
+                    break;
+
+                case ColumnEntryContext columnEntry:
+                {
+                    var columnNode = OracleTree.CreateWithSpan<QsiColumnExpressionNode>(columnEntry);
+                    columnNode.Column.Value = IdentifierVisitor.VisitColumn(columnEntry.column());
+
+                    node.Key.Value = columnNode;
+                    node.IsFormatted = context.formatClause() is not null;
+                    break;
+                }
+
+                case WildcardContext wildcard:
+                {
+                    var columnNode = OracleTree.CreateWithSpan<QsiColumnExpressionNode>(wildcard);
+                    var allColumnNode = OracleTree.CreateWithSpan<QsiAllColumnNode>(wildcard);
+                    allColumnNode.Path = IdentifierVisitor.CreateQualifiedIdentifier(wildcard.identifier());
+
+                    columnNode.Column.Value = allColumnNode;
+
+                    node.Key.Value = columnNode;
+                    break;
+                }
+
+                default:
+                    throw TreeHelper.NotSupportedTree(context);
+            }
+
+            return node;
+        }
+
+        public static OracleInvokeExpressionNode VisitJsonArrayFunction(JsonArrayFunctionContext context)
+        {
+            var node = OracleTree.CreateWithSpan<OracleJsonFunctionExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(OracleKnownFunction.JsonArray);
+
+            var content = context.jsonArrayContent();
+            node.Parameters.AddRange(content.jsonArrayElement().Select(VisitJsonArrayElement));
+
+            var onNullClause = content.jsonOnNullClause();
+
+            if (onNullClause is not null)
+                node.NullBehavior = onNullClause.children[0] is ITerminalNode { Symbol: { Type: NULL } }
+                    ? OracleNullBehavior.Null
+                    : OracleNullBehavior.Absent;
+
+            var returningClause = content.jsonReturningClause();
+
+            if (returningClause is not null)
+                node.ReturnType = returningClause.GetText()[9..].TrimStart();
+
+            return node;
+        }
+
+        public static OracleAggregateFunctionExpressionNode VisitJsonArrayAggFunction(JsonArrayAggFunctionContext context)
+        {
+            var node = OracleTree.CreateWithSpan<OracleAggregateFunctionExpressionNode>(context);
+
+            var functionNode = OracleTree.CreateWithSpan<OracleJsonFunctionExpressionNode>(context);
+            functionNode.Member.Value = TreeHelper.CreateFunction(context.JSON_ARRAYAGG().GetText());
+
+            functionNode.Parameters.Add(VisitJsonArrayElement(context.jsonArrayElement()));
+
+            var orderByClause = context.orderByClause();
+
+            if (orderByClause is not null)
+                node.Order.Value = VisitOrderByClause(orderByClause);
+
+            var onNullClause = context.jsonOnNullClause();
+
+            if (onNullClause is not null)
+                functionNode.NullBehavior = onNullClause.children[0] is ITerminalNode { Symbol: { Type: NULL } }
+                    ? OracleNullBehavior.Null
+                    : OracleNullBehavior.Absent;
+
+            var returningClause = context.jsonReturningClause();
+
+            if (returningClause is not null)
+                functionNode.ReturnType = returningClause.GetText()[9..].TrimStart();
+
+            functionNode.IsStrict = context.STRICT() is not null;
+
+            node.Function.Value = functionNode;
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitJsonMergePatchFunction(JsonMergePatchFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleJsonFunctionExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.JSON_MERGEPATCH().GetText());
+
+            node.Parameters.AddRange(context.expr().Select(VisitExpr));
+
+            var returningClause = context.jsonReturningClause();
+
+            if (returningClause is not null)
+                node.ReturnType = returningClause.GetText()[9..].TrimStart();
+
+            var onErrorClause = context.jsonOnErrorClause();
+
+            if (onErrorClause is not null)
+                node.OnErrorBehavior = onErrorClause.children[0] is ITerminalNode { Symbol: { Type: ERROR } }
+                    ? OracleOnErrorBehavior.Error
+                    : OracleOnErrorBehavior.Null;
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitJsonObjectFunction(JsonObjectFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleJsonFunctionExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(OracleKnownFunction.JsonObject);
+
+            var content = context.jsonObjectContent();
+            node.Parameters.AddRange(content.entry().Select(VisitJsonEntry));
+
+            var onNullClause = content.jsonOnNullClause();
+
+            if (onNullClause is not null)
+                node.NullBehavior = onNullClause.children[0] is ITerminalNode { Symbol: { Type: NULL } }
+                    ? OracleNullBehavior.Null
+                    : OracleNullBehavior.Absent;
+
+            var returningClause = content.jsonReturningClause();
+
+            if (returningClause is not null)
+                node.ReturnType = returningClause.GetText()[9..].TrimStart();
+
+            return node;
         }
 
-        public static OracleInvokeExpressionNode VisitJsonObjectaggFunction(JsonObjectaggFunctionContext context)
+        public static OracleAggregateFunctionExpressionNode VisitJsonObjectaggFunction(JsonObjectaggFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleAggregateFunctionExpressionNode>(context);
+
+            var functionNode = OracleTree.CreateWithSpan<OracleJsonFunctionExpressionNode>(context);
+            functionNode.Member.Value = TreeHelper.CreateFunction(context.JSON_OBJECTAGG().GetText());
+
+            functionNode.Parameters.Add(VisitJsonEntry(context.entry()));
+
+            var onNullClause = context.jsonOnNullClause();
+
+            if (onNullClause is not null)
+                functionNode.NullBehavior = onNullClause.children[0] is ITerminalNode { Symbol: { Type: NULL } }
+                    ? OracleNullBehavior.Null
+                    : OracleNullBehavior.Absent;
+
+            var returningClause = context.jsonReturningClause();
+
+            if (returningClause is not null)
+                functionNode.ReturnType = returningClause.GetText()[9..].TrimStart();
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitJsonQueryFunction(JsonQueryFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleJsonFunctionExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.JSON_QUERY().GetText());
+
+            node.Parameters.Add(VisitJsonArrayElement(context.jsonArrayElement()));
+            node.Parameters.Add(VisitStringLiteral(context.stringLiteral()));
+
+            var returningClause = context.jsonQueryReturningClause();
+            var returnType = returningClause.jsonQueryReturnType();
+
+            if (returnType is not null)
+                node.ReturnType = returnType.GetText()[9..].TrimStart();
+
+            // ignore scalars
+
+            node.IsPretty = returningClause.PRETTY() is not null;
+            node.IsAscii = returningClause.ASCII() is not null;
+
+            // ignore wrapper
+
+            var onErrorClause = context.jsonQueryOnErrorClause();
+
+            switch (onErrorClause.children[0])
+            {
+                case ITerminalNode { Symbol: { Type: ERROR } }:
+                    node.OnErrorBehavior = OracleOnErrorBehavior.Error;
+                    break;
+
+                case ITerminalNode { Symbol: { Type: NULL } }:
+                    node.OnErrorBehavior = OracleOnErrorBehavior.Null;
+                    break;
+
+                case ITerminalNode { Symbol: { Type: KW_EMPTY } }:
+                    node.OnErrorBehavior = onErrorClause.children[1] switch
+                    {
+                        ITerminalNode { Symbol: { Type: ARRAY } } => OracleOnErrorBehavior.EmptyArray,
+                        ITerminalNode { Symbol: { Type: OBJECT } } => OracleOnErrorBehavior.EmptyObject,
+                        _ => OracleOnErrorBehavior.Empty
+                    };
+
+                    break;
+            }
+
+            var onEmptyClause = context.jsonQueryOnEmptyClause();
+
+            switch (onEmptyClause.children[0])
+            {
+                case ITerminalNode { Symbol: { Type: ERROR } }:
+                    node.OnEmptyBehavior = OracleOnEmptyBehavior.Error;
+                    break;
+
+                case ITerminalNode { Symbol: { Type: NULL } }:
+                    node.OnEmptyBehavior = OracleOnEmptyBehavior.Null;
+                    break;
+
+                case ITerminalNode { Symbol: { Type: KW_EMPTY } }:
+                    node.OnEmptyBehavior = onEmptyClause.children[1] switch
+                    {
+                        ITerminalNode { Symbol: { Type: ARRAY } } => OracleOnEmptyBehavior.EmptyArray,
+                        ITerminalNode { Symbol: { Type: OBJECT } } => OracleOnEmptyBehavior.EmptyObject,
+                        _ => OracleOnEmptyBehavior.Empty
+                    };
+
+                    break;
+            }
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitJsonScalarFunction(JsonScalarFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleJsonFunctionExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.JSON_SCALAR().GetText());
+
+            node.Parameters.Add(VisitExpr(context.expr()));
+
+            // ignore scalar type
+
+            var onNullClause = context.jsonOnNullClause();
+
+            if (onNullClause is not null)
+                node.NullBehavior = onNullClause.children[0] is ITerminalNode { Symbol: { Type: NULL } }
+                    ? OracleNullBehavior.Null
+                    : OracleNullBehavior.Absent;
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitJsonSerializeFunction(JsonSerializeFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleJsonFunctionExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.JSON_SERIALIZE().GetText());
+
+            node.Parameters.Add(VisitExpr(context.expr()));
+
+            var returningClause = context.jsonReturningClause();
+
+            if (returningClause is not null)
+                node.ReturnType = returningClause.GetText()[9..].TrimStart();
+
+            node.IsPretty = context.PRETTY() is not null;
+            node.IsAscii = context.ASCII() is not null;
+            node.IsTruncate = context.TRUNCATE() is not null;
+
+            var onErrorClause = context.jsonOnErrorClause();
+
+            switch (onErrorClause.children[0])
+            {
+                case ITerminalNode { Symbol: { Type: ERROR } }:
+                    node.OnErrorBehavior = OracleOnErrorBehavior.Error;
+                    break;
+
+                case ITerminalNode { Symbol: { Type: NULL } }:
+                    node.OnErrorBehavior = OracleOnErrorBehavior.Null;
+                    break;
+            }
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitJsonTableFunction(JsonTableFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleJsonFunctionExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.JSON_TABLE().GetText());
+
+            node.Parameters.Add(VisitJsonArrayElement(context.jsonArrayElement()));
+            var stringLiteral = context.stringLiteral();
+
+            if (stringLiteral is not null)
+                node.Parameters.Add(VisitStringLiteral(stringLiteral));
+
+            var onErrorClause = context.jsonTableOnErrorClause();
+
+            switch (onErrorClause.children[0])
+            {
+                case ITerminalNode { Symbol: { Type: ERROR } }:
+                    node.OnErrorBehavior = OracleOnErrorBehavior.Error;
+                    break;
+
+                case ITerminalNode { Symbol: { Type: NULL } }:
+                    node.OnErrorBehavior = OracleOnErrorBehavior.Null;
+                    break;
+            }
+
+            var columns = context.jsonColumnsClause();
+
+            var declarationNode = OracleTree.CreateWithSpan<OracleJsonColumnExpressionNode>(columns);
+            declarationNode.Columns.AddRange(columns.jsonColumnDefinition().Select(VisitJsonColumnDefinition));
+
+            node.Parameters.Add(declarationNode);
+
+            return node;
+        }
+
+        public static OracleJsonColumnNode VisitJsonColumnDefinition(JsonColumnDefinitionContext context)
+        {
+            var node = OracleTree.CreateWithSpan<OracleJsonColumnNode>(context);
+
+            switch (context.children[0])
+            {
+                case JsonExistsColumnContext existsColumn:
+                {
+                    node.Column.Value = IdentifierVisitor.VisitColumn(existsColumn.column());
+
+                    var returnType = existsColumn.jsonValueReturnType();
+
+                    if (returnType is not null)
+                        node.ReturnType = returnType.GetText();
+
+                    var jsonPath = existsColumn.jsonPath();
+
+                    if (jsonPath is not null)
+                        node.JsonPath = jsonPath.GetText();
+
+                    var onErrorClause = existsColumn.jsonExistsOnErrorClause();
+
+                    if (onErrorClause is not null)
+                        node.OnErrorBehavior = onErrorClause.children[0].GetText();
+
+                    var onEmptyClause = existsColumn.jsonExistsOnEmptyClause();
+
+                    if (onEmptyClause is not null)
+                        node.OnEmptyBehavior = onEmptyClause.children[0] switch
+                        {
+                            ITerminalNode { Symbol: { Type: DEFAULT } } => string.Join(" ", onEmptyClause.children[0].GetText(), onEmptyClause.children[1].GetText()),
+                            _ => onEmptyClause.children[0].GetText()
+                        };
+
+                    break;
+                }
+
+                case JsonQueryColumnContext queryColumn:
+                {
+                    node.Column.Value = IdentifierVisitor.VisitColumn(queryColumn.column());
+
+                    var returnType = queryColumn.jsonQueryReturnType();
+
+                    if (returnType is not null)
+                        node.ReturnType = returnType.GetText();
+
+                    // ignore scalars, wrapper
+
+                    var jsonPath = queryColumn.jsonPath();
+
+                    if (jsonPath is not null)
+                        node.JsonPath = jsonPath.GetText();
+
+                    var onErrorClause = queryColumn.jsonQueryOnErrorClause();
+
+                    if (onErrorClause is not null)
+                        node.OnErrorBehavior = onErrorClause.children[0].GetText();
+
+                    break;
+                }
+
+                case JsonValueColumnContext valueColumn:
+                {
+                    node.Column.Value = IdentifierVisitor.VisitColumn(valueColumn.column());
+
+                    var returnType = valueColumn.jsonValueReturnType();
+
+                    if (returnType is not null)
+                        node.ReturnType = returnType.GetText();
+
+                    node.IsTruncate = valueColumn.TRUNCATE() is not null;
+
+                    var jsonPath = valueColumn.jsonPath();
+
+                    if (jsonPath is not null)
+                        node.JsonPath = jsonPath.GetText();
+
+                    var onErrorClause = valueColumn.jsonValueOnErrorClause();
+
+                    if (onErrorClause is not null)
+                        node.OnErrorBehavior = onErrorClause.children[0].GetText();
+
+                    var onEmptyClause = valueColumn.jsonValueOnEmptyClause();
+
+                    if (onEmptyClause is not null)
+                        node.OnEmptyBehavior = onEmptyClause.children[0] switch
+                        {
+                            ITerminalNode { Symbol: { Type: DEFAULT } } => string.Join(" ", onEmptyClause.children[0].GetText(), onEmptyClause.children[1].GetText()),
+                            _ => onEmptyClause.children[0].GetText()
+                        };
+
+                    break;
+                }
+
+                case JsonNestedPathContext nestedPath:
+                {
+                    node.JsonPath = nestedPath.jsonPath().GetText();
+
+                    var columns = nestedPath.jsonColumnsClause();
+
+                    var declarationNode = OracleTree.CreateWithSpan<OracleJsonColumnExpressionNode>(columns);
+                    declarationNode.Columns.AddRange(columns.jsonColumnDefinition().Select(VisitJsonColumnDefinition));
+
+                    node.NestedColumn.Value = declarationNode;
+
+                    break;
+                }
+
+                case OrdinalityColumnContext ordinalityColumn:
+                {
+                    node.Column.Value = IdentifierVisitor.VisitColumn(ordinalityColumn.column());
+                    node.IsOrdinality = true;
+
+                    break;
+                }
+            }
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitJsonTransformFunction(JsonTransformFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleJsonFunctionExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.JSON_TRANSFORM().GetText());
+
+            node.Parameters.Add(VisitExpr(context.expr()));
+            node.Parameters.AddRange(context.operation().Select(VisitOperation));
+
+            return node;
+        }
+
+        public static QsiExpressionNode VisitOperation(OperationContext context)
+        {
+            switch (context.children[0])
+            {
+                case RemoveOpContext removeOp:
+                {
+                    var node = OracleTree.CreateWithSpan<OracleJsonOperationExpressionNode>(removeOp);
+                    node.Type = removeOp.REMOVE().GetText();
+                    node.Left.Value = VisitExpr(removeOp.expr());
+
+                    return node;
+                }
+
+                case InsertOpContext insertOp:
+                {
+                    var node = OracleTree.CreateWithSpan<OracleJsonOperationExpressionNode>(insertOp);
+                    node.Type = insertOp.children[0].GetText();
+                    node.Left.Value = VisitExpr(insertOp.expr());
+                    node.Right.Value = VisitExpr(insertOp.rhsExpr().sqlExpr);
+
+                    return node;
+                }
+
+                case ReplaceOpContext replaceOp:
+                {
+                    var node = OracleTree.CreateWithSpan<OracleJsonOperationExpressionNode>(replaceOp);
+                    node.Type = replaceOp.children[0].GetText();
+                    node.Left.Value = VisitExpr(replaceOp.expr());
+                    node.Right.Value = VisitExpr(replaceOp.rhsExpr().sqlExpr);
+
+                    return node;
+                }
+
+                case AppendOpContext appendOp:
+                {
+                    var node = OracleTree.CreateWithSpan<OracleJsonOperationExpressionNode>(appendOp);
+                    node.Type = appendOp.children[0].GetText();
+                    node.Left.Value = VisitExpr(appendOp.expr());
+                    node.Right.Value = VisitExpr(appendOp.rhsExpr().sqlExpr);
+
+                    return node;
+                }
+
+                case SetOpContext setOp:
+                {
+                    var node = OracleTree.CreateWithSpan<OracleJsonOperationExpressionNode>(setOp);
+                    node.Type = setOp.children[0].GetText();
+                    node.Left.Value = VisitExpr(setOp.expr());
+                    node.Right.Value = VisitExpr(setOp.rhsExpr().sqlExpr);
+
+                    return node;
+                }
+
+                case RenameOpContext renameOp:
+                {
+                    var node = OracleTree.CreateWithSpan<OracleJsonOperationExpressionNode>(renameOp);
+                    node.Type = renameOp.children[0].GetText();
+                    node.Left.Value = VisitExpr(renameOp.expr());
+                    node.Right.Value = VisitStringLiteral(renameOp.stringLiteral());
+
+                    return node;
+                }
+
+                case KeepOpContext keepOp:
+                {
+                    var node = OracleTree.CreateWithSpan<OracleJsonKeepOperationExpressionNode>(keepOp);
+                    node.Items.AddRange(keepOp.keepOpItem().Select(s => s.expr()).Select(VisitExpr));
+
+                    return node;
+                }
+
+                default:
+                    throw TreeHelper.NotSupportedTree(context.children[0]);
+            }
         }
 
         public static OracleInvokeExpressionNode VisitJsonValueFunction(JsonValueFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleJsonFunctionExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.JSON_VALUE().GetText());
+
+            node.Parameters.Add(VisitJsonArrayElement(context.jsonArrayElement()));
+            var stringLiteral = context.stringLiteral();
+
+            if (stringLiteral is not null)
+                node.Parameters.Add(VisitStringLiteral(stringLiteral));
+
+            var returningClause = context.jsonValueReturningClause();
+            var returnType = returningClause.jsonValueReturnType();
+
+            if (returnType is not null)
+                node.ReturnType = returnType.GetText()[9..].TrimStart();
+
+            node.IsAscii = returningClause.ASCII() is not null;
+
+            var onErrorClause = context.jsonValueOnErrorClause();
+
+            switch (onErrorClause.children[0])
+            {
+                case ITerminalNode { Symbol: { Type: ERROR } }:
+                    node.OnErrorBehavior = OracleOnErrorBehavior.Error;
+                    break;
+
+                case ITerminalNode { Symbol: { Type: NULL } }:
+                    node.OnErrorBehavior = OracleOnErrorBehavior.Null;
+                    break;
+
+                case ITerminalNode { Symbol: { Type: DEFAULT } }:
+                    node.OnErrorBehavior = OracleOnErrorBehavior.Default;
+                    node.OnErrorDefault = onErrorClause.children[1].GetText();
+
+                    break;
+            }
+
+            var onEmptyClause = context.jsonValueOnEmptyClause();
+
+            switch (onEmptyClause.children[0])
+            {
+                case ITerminalNode { Symbol: { Type: ERROR } }:
+                    node.OnEmptyBehavior = OracleOnEmptyBehavior.Error;
+                    break;
+
+                case ITerminalNode { Symbol: { Type: NULL } }:
+                    node.OnEmptyBehavior = OracleOnEmptyBehavior.Null;
+                    break;
+
+                case ITerminalNode { Symbol: { Type: DEFAULT } }:
+                    node.OnEmptyBehavior = OracleOnEmptyBehavior.Default;
+                    node.OnEmptyDefault = onErrorClause.children[1].GetText();
+
+                    break;
+            }
+
+            // ignore mismatch
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitTreatFunction(TreatFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+
+            node.Parameters.Add(VisitExpr(context.expr()));
+            var type = context.type();
+
+            if (type is not null)
+            {
+                var schema = context.schema();
+                var datatype = type.datatype();
+                var userDefined = datatype.userDefinedTypes();
+
+                if (schema is not null && userDefined is not null)
+                    node.Parameters.Add(new QsiTypeExpressionNode
+                    {
+                        Identifier = IdentifierVisitor.CreateQualifiedIdentifier(new[] { schema.identifier() }.Concat(userDefined.identifier()).ToArray())
+                    });
+                else
+                    node.Parameters.Add(VisitDataType(datatype));
+            }
+            else
+            {
+                node.Parameters.Add(TreeHelper.CreateConstantLiteral("JSON"));
+            }
+
+            var nonFunctionSteps = context.jsonNonfunctionSteps();
+
+            if (nonFunctionSteps is not null)
+                node.Parameters.Add(TreeHelper.CreateConstantLiteral(nonFunctionSteps.GetText()));
+
+            var functionStep = context.jsonFunctionStep();
+
+            if (functionStep is not null)
+                node.Parameters.Add(TreeHelper.CreateConstantLiteral(functionStep.GetText()));
+
+            return node;
         }
         #endregion
 
         #region XML Functions
-        public static OracleInvokeExpressionNode VisitXmlaggFunction(XmlaggFunctionContext context)
+        public static OracleAggregateFunctionExpressionNode VisitXmlaggFunction(XmlaggFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleAggregateFunctionExpressionNode>(context);
+
+            var functionNode = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            functionNode.Member.Value = TreeHelper.CreateFunction(context.XMLAGG().GetText());
+            functionNode.Parameters.AddRange(context.expr().Select(VisitExpr));
+
+            var orderByClause = context.orderByClause();
+
+            if (orderByClause is not null)
+                node.Order.Value = VisitOrderByClause(orderByClause);
+
+            node.Function.Value = functionNode;
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitXmlcastFunction(XmlcastFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.XMLCAST().GetText());
+
+            node.Parameters.Add(VisitExpr(context.expr()));
+            node.Parameters.Add(TreeHelper.CreateConstantLiteral(context.datatype()));
+
+            return node;
         }
 
-        public static OracleInvokeExpressionNode VisitXmlcorattvalFunction(XmlcorattvalFunctionContext context)
+        public static OracleInvokeExpressionNode VisitXmlcolattvalFunction(XmlcolattvalFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.XMLCOLATTVAL().GetText());
+
+            node.Parameters.AddRange(context.xmlcolattvalFunctionItem().Select(VisitXmlColumnAttributeItem));
+
+            return node;
+        }
+
+        public static OracleXmlColumnAttributeItemNode VisitXmlColumnAttributeItem(XmlcolattvalFunctionItemContext context)
+        {
+            var node = OracleTree.CreateWithSpan<OracleXmlColumnAttributeItemNode>(context);
+            node.Expression.Value = VisitExpr(context.l);
+
+            var cAlias = context.cAlias();
+
+            if (cAlias is not null)
+                node.Alias = IdentifierVisitor.VisitAlias(cAlias);
+            else if (context.r is not null)
+                node.EvalName.Value = VisitExpr(context.r);
+
+            return node;
+        }
+
+        public static OracleXmlColumnAttributeItemNode VisitXmlAttributesClauseItem(XmlAttributesClauseItemContext context)
+        {
+            var node = OracleTree.CreateWithSpan<OracleXmlColumnAttributeItemNode>(context);
+            node.Expression.Value = VisitExpr(context.l);
+
+            var cAlias = context.cAlias();
+
+            if (cAlias is not null)
+                node.Alias = IdentifierVisitor.VisitAlias(cAlias);
+            else if (context.r is not null)
+                node.EvalName.Value = VisitExpr(context.r);
+
+            return node;
+        }
+
+        public static OracleXmlExpressionNode VisitXmlPassingClauseItem(XmlPassingClauseItemContext context)
+        {
+            var node = OracleTree.CreateWithSpan<OracleXmlExpressionNode>(context);
+            node.Expression.Value = VisitExpr(context.expr());
+
+            var identifier = context.identifier();
+
+            if (identifier is not null)
+                node.Alias = new QsiAliasNode
+                {
+                    Name = IdentifierVisitor.VisitIdentifier(identifier)
+                };
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitXmlelementFunction(XmlelementFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.XMLELEMENT().GetText());
+
+            if (context.identifier() is not null)
+                node.Parameters.Add(new QsiFieldExpressionNode
+                {
+                    Identifier = IdentifierVisitor.CreateQualifiedIdentifier(context.identifier())
+                });
+            else
+                node.Parameters.Add(VisitExpr(context.evalName));
+
+            var attributesClause = context.xmlAttributesClause();
+
+            if (attributesClause is not null)
+                node.Parameters.Add(VisitXmlAttributes(attributesClause));
+
+            var xmlExpressions = context.xmlExpression();
+
+            if (xmlExpressions is not null)
+                node.Parameters.AddRange(xmlExpressions.Select(VisitXmlExpression));
+
+            return node;
+        }
+
+        public static QsiExpressionNode VisitXmlExpression(XmlExpressionContext context)
+        {
+            var node = OracleTree.CreateWithSpan<OracleXmlExpressionNode>(context);
+            node.Expression.Value = VisitExpr(context.ex);
+
+            if (context.exa is not null)
+                node.Alias = IdentifierVisitor.VisitAlias(context.exa);
+
+            return node;
+        }
+
+        public static OracleXmlAttributesExpressionNode VisitXmlAttributes(XmlAttributesClauseContext context)
+        {
+            var node = OracleTree.CreateWithSpan<OracleXmlAttributesExpressionNode>(context);
+            node.Attributes.AddRange(context.xmlAttributesClauseItem().Select(VisitXmlAttributesClauseItem));
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitXmlCdataFunction(XmlCdataFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.XMLCDATA().GetText());
+            node.Parameters.Add(VisitStringLiteral(context.stringLiteral()));
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitXmlexistsFunction(XmlexistsFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleXmlFunctionExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.XMLEXISTS().GetText());
+            node.Parameters.Add(VisitExpr(context.expr()));
+
+            var passingClause = context.xmlPassingClause();
+
+            if (passingClause is not null)
+                node.Passings.AddRange(passingClause.xmlPassingClauseItem().Select(VisitXmlPassingClauseItem));
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitXmlforestFunction(XmlforestFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleXmlFunctionExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.XMLFOREST().GetText());
+
+            node.Parameters.AddRange(context.xmlcolattvalFunctionItem().Select(VisitXmlColumnAttributeItem));
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitXmlparseFunction(XmlparseFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.XMLPARSE().GetText());
+
+            node.Parameters.Add(TreeHelper.CreateConstantLiteral(context.children[2].GetText()));
+            node.Parameters.Add(VisitExpr(context.expr()));
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitXmlpiFunction(XmlpiFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.XMLPI().GetText());
+
+            var identifier = context.identifier();
+
+            if (identifier is not null)
+                node.Parameters.Add(new QsiFieldExpressionNode
+                {
+                    Identifier = IdentifierVisitor.CreateQualifiedIdentifier(identifier)
+                });
+            else
+                node.Parameters.Add(VisitExpr(context.evalName));
+
+            if (context.valueExpr is not null)
+                node.Parameters.Add(VisitExpr(context.valueExpr));
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitXmlqueryFunction(XmlqueryFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleXmlFunctionExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.XMLQUERY().GetText());
+
+            node.Parameters.Add(VisitStringLiteral(context.stringLiteral()));
+
+            var passingClause = context.xmlPassingClause();
+
+            if (passingClause is not null)
+                node.Passings.AddRange(passingClause.xmlPassingClauseItem().Select(VisitXmlPassingClauseItem));
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitXmlrootFunction(XmlrootFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleXmlFunctionExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.XMLROOT().GetText());
+
+            node.Parameters.Add(VisitExpr(context.target));
+
+            if (context.version is not null)
+                node.Parameters.Add(VisitExpr(context.version));
+            else
+                node.Parameters.Add(TreeHelper.CreateConstantLiteral("NO VALUE"));
+
+            if (context.STANDALONE() is not null)
+            {
+                var lastToken = context.children[^1];
+
+                if (lastToken is ITerminalNode { Symbol: { Type: VALUE } })
+                    node.Parameters.Add(TreeHelper.CreateConstantLiteral("NO VALUE"));
+                else
+                    node.Parameters.Add(TreeHelper.CreateConstantLiteral(lastToken.GetText()));
+            }
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitXmlsequenceFunction(XmlsequenceFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.XMLSEQUENCE().GetText());
+
+            var identifier = context.identifier();
+
+            if (identifier is not null)
+            {
+                node.Parameters.Add(new QsiFieldExpressionNode
+                {
+                    Identifier = IdentifierVisitor.CreateQualifiedIdentifier(identifier)
+                });
+            }
+
+            node.Parameters.Add(VisitExpr(context.expr()));
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitXmlserializeFunction(XmlserializeFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleXmlFunctionExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.XMLSERIALIZE().GetText());
+
+            node.Parameters.Add(TreeHelper.CreateConstantLiteral(context.children[2].GetText()));
+            node.Parameters.Add(VisitExpr(context.expr()));
+            var datatype = context.datatype();
+
+            if (datatype is not null)
+                node.Parameters.Add(VisitDataType(datatype));
+
+            if (context.encoding is not null)
+                node.Parameters.AddRange(
+                    new QsiExpressionNode[]
+                    {
+                        new OracleNamedParameterExpressionNode
+                        {
+                            Identifier = new QsiQualifiedIdentifier(new QsiIdentifier("ENCODING", false))
+                        },
+                        VisitStringLiteral(context.encoding)
+                    }
+                );
+
+            if (context.version is not null)
+                node.Parameters.AddRange(
+                    new QsiExpressionNode[]
+                    {
+                        new OracleNamedParameterExpressionNode
+                        {
+                            Identifier = new QsiQualifiedIdentifier(new QsiIdentifier("VERSION", false))
+                        },
+                        VisitStringLiteral(context.version)
+                    }
+                );
+
+            if (context.size() is not null)
+                node.Parameters.AddRange(
+                    new QsiExpressionNode[]
+                    {
+                        new OracleNamedParameterExpressionNode
+                        {
+                            Identifier = new QsiQualifiedIdentifier(new QsiIdentifier("SIZE", false))
+                        },
+                        VisitSize(context.size())
+                    }
+                );
+
+            return node;
+        }
+
+        public static QsiExpressionNode VisitSize(SizeContext context)
+        {
+            var node = OracleTree.CreateWithSpan<QsiLiteralExpressionNode>(context);
+            node.Type = QsiDataType.Numeric;
+            node.Value = long.Parse(context.GetText());
+
+            return node;
+        }
+
+        public static QsiExpressionNode VisitPrecision(PrecisionContext context)
+        {
+            var node = OracleTree.CreateWithSpan<QsiLiteralExpressionNode>(context);
+            node.Type = QsiDataType.Numeric;
+            node.Value = long.Parse(context.GetText());
+
+            return node;
         }
 
         public static OracleInvokeExpressionNode VisitXmlTableFunction(XmlTableFunctionContext context)
         {
-            throw TreeHelper.NotSupportedTree(context);
+            var node = OracleTree.CreateWithSpan<OracleXmlTableFunctionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(context.XMLTABLE().GetText());
+
+            var namespacesClause = context.xmlnamespacesClause();
+
+            if (namespacesClause is not null)
+                node.Namespaces.AddRange(namespacesClause.xmlnamespacesClauseItem().Select(VisitXmlNamespaceClauseItem));
+
+            node.Parameters.Add(VisitExpr(context.expr()));
+
+            var tableOptions = context.xmltableOptions();
+
+            var passingClause = tableOptions.xmlPassingClause();
+
+            if (passingClause is not null)
+                node.Passings.AddRange(passingClause.xmlPassingClauseItem().Select(VisitXmlPassingClauseItem));
+
+            node.IsReturningSequenceByRef = tableOptions.RETURNING() is not null;
+
+            XmlTableColumnContext[] tableColumns = tableOptions.xmlTableColumn();
+
+            if (tableColumns is not null)
+                node.Columns.AddRange(tableColumns.Select(VisitXmlColumnDefinition));
+
+            return node;
+
+            static OracleXmlNamespaceNode VisitXmlNamespaceClauseItem(XmlnamespacesClauseItemContext context)
+            {
+                var identifier = context.identifier();
+
+                return identifier is not null
+                    ? new OracleXmlNamespaceNode(context.stringLiteral().GetText(), identifier.GetText())
+                    : new OracleXmlNamespaceNode(context.stringLiteral().GetText());
+            }
+
+            static OracleXmlColumnDefinitionNode VisitXmlColumnDefinition(XmlTableColumnContext context)
+            {
+                return new OracleXmlColumnDefinitionNode(context.xmlTableColumnType().GetInputText())
+                {
+                    Column =
+                    {
+                        Value = IdentifierVisitor.VisitColumn(context.column())
+                    }
+                };
+            }
         }
         #endregion
 

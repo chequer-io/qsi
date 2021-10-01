@@ -99,6 +99,10 @@ namespace Qsi.Oracle.Analyzers
                 case OracleIntervalExpressionNode:
                 case OracleLimitExpressionNode:
                 case OracleNamedParameterExpressionNode:
+                case OracleJsonKeepOperationExpressionNode:
+                case OracleXmlAttributesExpressionNode:
+                case OracleXmlFunctionExpressionNode:
+                case OracleXmlColumnAttributeItemNode:
                 {
                     foreach (var column in expression.Children
                         .OfType<IQsiExpressionNode>()
@@ -109,6 +113,18 @@ namespace Qsi.Oracle.Analyzers
 
                     break;
                 }
+
+                case OracleJsonColumnExpressionNode e:
+                    foreach (var c in e.Columns.SelectMany(x => ResolveColumns(context, x)))
+                        yield return c;
+
+                    break;
+
+                case OracleXmlColumnDefinitionNode e:
+                    foreach (var c in ResolveColumns(context, e.Column.Value))
+                        yield return c;
+
+                    break;
 
                 default:
                     foreach (var c in base.ResolveColumnsInExpression(context, expression))
@@ -131,6 +147,14 @@ namespace Qsi.Oracle.Analyzers
 
                 throw;
             }
+        }
+
+        protected override IEnumerable<QsiTableColumn> ResolveDerivedColumns(TableCompileContext context, IQsiDerivedColumnNode column)
+        {
+            if (column is OracleJsonColumnNode { NestedColumn: { } } node)
+                return ResolveColumnsInExpression(context, node.NestedColumn.Value);
+
+            return base.ResolveDerivedColumns(context, column);
         }
     }
 }
