@@ -9431,7 +9431,7 @@ functionExpression
     | validateConversionFunction
     | xmlaggFunction
     | xmlcastFunction
-    | xmlcorattvalFunction
+    | xmlcolattvalFunction
     | xmlelementFunction
     | xmlCdataFunction
     | xmlexistsFunction
@@ -9666,7 +9666,7 @@ jsonArrayFunction
     ;
 
 jsonArrayAggFunction
-    : JSON_ARRAYAGG '(' expr (FORMAT JSON)? orderByClause? jsonOnNullClause?
+    : JSON_ARRAYAGG '(' jsonArrayElement orderByClause? jsonOnNullClause?
       jsonReturningClause? STRICT? ')'
     ;
 
@@ -9680,36 +9680,36 @@ jsonObjectFunction
     ;
 
 jsonObjectaggFunction
-    : JSON_OBJECTAGG '(' KEY? expr VALUE expr jsonOnNullClause? jsonReturningClause?
+    : JSON_OBJECTAGG '(' entry jsonOnNullClause? jsonReturningClause?
       STRICT? (WITH UNIQUE KEYS)? ')'
     ;
 
 jsonQueryFunction
-    : JSON_QUERY '(' expr (FORMAT JSON)? ',' stringLiteral
+    : JSON_QUERY '(' jsonArrayElement ',' stringLiteral
       jsonQueryReturningClause jsonQueryWrapperClause?
       jsonQueryOnErrorClause? jsonQueryOnEmptyClause?
       ')'
     ;
 
 jsonScalarFunction
-    : JSON_SCALAR '(' expr (SQL | JSON)? (NULL ON NULL)? ')'
+    : JSON_SCALAR '(' expr (SQL | JSON)? jsonOnNullClause? ')'
     ;
 
 jsonSerializeFunction
     : JSON_SERIALIZE '(' expr jsonReturningClause?
-      PRETTY? ASCII? TRUNCATE? ((NULL | ERROR) ON ERROR)? ')'
+      PRETTY? ASCII? TRUNCATE? jsonOnErrorClause? ')'
     ;
 
 jsonTableFunction
-    : JSON_TABLE '(' expr (FORMAT JSON)? (',' stringLiteral)? jsonTableOnErrorClause? ','? jsonColumnsClause ')'
+    : JSON_TABLE '(' jsonArrayElement (',' stringLiteral)? jsonTableOnErrorClause? ','? jsonColumnsClause ')'
     ;
 
 jsonTransformFunction
-    : JSON_TRANSFORM '(' expr ',' operation (',' operation) ')' jsonTransformReturningClause? jsonPassingClause?
+    : JSON_TRANSFORM '(' expr (',' operation)+ ')' jsonTransformReturningClause? jsonPassingClause?
     ;
 
 jsonValueFunction
-    : JSON_VALUE '(' expr (FORMAT JSON)? ',' stringLiteral? jsonValueReturningClause?
+    : JSON_VALUE '(' jsonArrayElement (',' stringLiteral)? jsonValueReturningClause?
       jsonValueOnErrorClause? jsonValueOnEmptyClause? jsonValueOnMismatchClause?
       ')'
     ;
@@ -10033,13 +10033,17 @@ xmlcastFunction
     : XMLCAST '(' expr AS datatype ')'
     ;
 
-xmlcorattvalFunction
-    : XMLCOLATTVAL '(' xmlcorattvalFunctionItem (',' xmlcorattvalFunctionItem)* ')'
+xmlcolattvalFunction
+    : XMLCOLATTVAL '(' xmlcolattvalFunctionItem (',' xmlcolattvalFunctionItem)* ')'
     ;
 
 xmlelementFunction
-    : XMLELEMENT '(' (ENTITYESCAPING | NOENTITYESCAPING)? (NAME? identifier | EVALNAME expr)
-      (',' xmlAttributesClause)? (',' expr (AS? cAlias)? )* ')'
+    : XMLELEMENT '(' (ENTITYESCAPING | NOENTITYESCAPING)? (NAME? identifier | EVALNAME evalName=expr)
+      (',' xmlAttributesClause)? (',' xmlExpression )* ')'
+    ;
+
+xmlExpression
+    : ex=expr (AS? exa=cAlias)?
     ;
 
 xmlCdataFunction
@@ -10051,7 +10055,7 @@ xmlexistsFunction
     ;
 
 xmlforestFunction
-    : XMLFOREST '(' xmlForestItem (',' xmlForestItem)* ')'
+    : XMLFOREST '(' xmlcolattvalFunctionItem (',' xmlcolattvalFunctionItem)* ')'
     ;
 
 xmlparseFunction
@@ -10059,7 +10063,7 @@ xmlparseFunction
     ;
 
 xmlpiFunction
-    : XMLPI '(' (NAME? identifier | EVALNAME expr) (',' expr)? ')'
+    : XMLPI '(' (NAME? identifier | EVALNAME evalName=expr) (',' valueExpr=expr)? ')'
     ;
 
 xmlqueryFunction
@@ -10067,7 +10071,7 @@ xmlqueryFunction
     ;
 
 xmlrootFunction
-    : XMLROOT '(' expr ',' VERSION (expr | NO VALUE) (',' STANDALONE (YES | NO | NO VALUE))? ')'
+    : XMLROOT '(' target=expr ',' VERSION (version=expr | NO VALUE) (',' STANDALONE (YES | NO | NO VALUE))? ')'
     ;
 
 xmlsequenceFunction
@@ -10075,8 +10079,8 @@ xmlsequenceFunction
     ;
 
 xmlserializeFunction
-    : XMLSERIALIZE '(' (DOCUMENT | CONTENT) expr (AS datatype)? (ENCODING stringLiteral)? (VERSION stringLiteral)?
-      (NO INDENT | INDENT (SIZE '=' numberLiteral)?)?
+    : XMLSERIALIZE '(' (DOCUMENT | CONTENT) expr (AS datatype)? (ENCODING encoding=stringLiteral)? (VERSION version=stringLiteral)?
+      (NO INDENT | INDENT (SIZE '=' size)?)?
       ((HIDE | SHOW) DEFAULTS)? ')'
     ;
 
@@ -10089,14 +10093,17 @@ xmltableOptions
     ;
 
 xmlTableColumn
-    : column ( FOR ORDINALITY
-             | ( datatype
-               | XMLTYPE ('(' SEQUENCE ')' BY REF)?
-               )
-               (PATH stringLiteral)?
-               (DEFAULT expr)?
-             )
+    : column xmlTableColumnType
     ;
+
+xmlTableColumnType
+    : FOR ORDINALITY
+    | ( datatype
+      | XMLTYPE ('(' SEQUENCE ')' BY REF)?
+      )
+      (PATH stringLiteral)?
+      (DEFAULT expr)?
+      ;
 
 xmlnamespacesClause
     : XMLNAMESPACES '(' xmlnamespacesClauseItem (',' xmlnamespacesClauseItem)* ')'
@@ -10105,10 +10112,6 @@ xmlnamespacesClause
 xmlnamespacesClauseItem
     : stringLiteral AS identifier
     | DEFAULT stringLiteral
-    ;
-
-xmlForestItem
-    : expr (AS (cAlias | EVALNAME expr))?
     ;
 
 xmlPassingClause
@@ -10128,11 +10131,11 @@ xmlAttributesClause
     ;
 
 xmlAttributesClauseItem
-    : expr (AS? cAlias | AS EVALNAME expr)?
+    : l=expr (AS? cAlias | AS EVALNAME r=expr)?
     ;
 
-xmlcorattvalFunctionItem
-    : expr (AS cAlias | EVALNAME expr)?
+xmlcolattvalFunctionItem
+    : l=expr (AS cAlias | EVALNAME r=expr)?
     ;
 
 costMatrixClause
@@ -10209,7 +10212,7 @@ keepOpItem
     ;
 
 rhsExpr
-    : sqlExpr=expr (FORMAT JSON)?
+    : sqlExpr=expr formatClause?
     ;
 
 jsonTransformReturningClause
@@ -10246,8 +10249,8 @@ jsonExistsColumn
     ;
 
 jsonQueryColumn
-    : column jsonQueryReturnType? (FORMAT JSON)?
-      (ALLOW | DISALLOW SCALARS)? jsonQueryWrapperClause?
+    : column jsonQueryReturnType? formatClause?
+      ((ALLOW | DISALLOW) SCALARS)? jsonQueryWrapperClause?
       (PATH jsonPath)? jsonQueryOnErrorClause?
     ;
 
@@ -10364,7 +10367,7 @@ jsonQueryWrapperClause
     ;
 
 jsonQueryOnErrorClause
-    : (ERROR
+    : ( ERROR
       | NULL
       | KW_EMPTY
       | KW_EMPTY ARRAY
@@ -10373,7 +10376,7 @@ jsonQueryOnErrorClause
     ;
 
 jsonQueryOnEmptyClause
-    : (ERROR
+    : ( ERROR
       | NULL
       | KW_EMPTY
       | KW_EMPTY ARRAY
@@ -10392,13 +10395,13 @@ entry
     ;
 
 regularEntry
-    : KEY? stringLiteral VALUE expr
-    | expr (':' expr)?
-    | column
+    : KEY? stringLiteral VALUE expr     #keyValueEntry
+    | expr (':' expr)?                  #exprEntry
+    | column                            #columnEntry
     ;
 
 wildcard
-    : (identifier '.') identifier '.' '*'
+    : (identifier '.')? identifier '.' '*'
     ;
 
 jsonOnErrorClause
