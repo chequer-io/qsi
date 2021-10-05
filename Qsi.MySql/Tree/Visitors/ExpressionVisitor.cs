@@ -1187,6 +1187,7 @@ namespace Qsi.MySql.Tree
                 });
 
                 n.Parameters.AddRange(parameters);
+                MySqlTree.PutContextSpan(n, context);
             });
         }
         #endregion
