@@ -341,7 +341,9 @@ namespace Qsi.Trino.Tree.Visitors
             QsiColumnNode columnNode;
 
             if (node is QsiColumnExpressionNode columnExpressionNode)
+            {
                 columnNode = columnExpressionNode.Column.Value;
+            }
             else
             {
                 var derivedColumnNode = new QsiDerivedColumnNode();

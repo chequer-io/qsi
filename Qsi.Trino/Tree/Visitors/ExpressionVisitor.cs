@@ -418,19 +418,52 @@ namespace Qsi.Trino.Tree.Visitors
             switch (context)
             {
                 case DecimalLiteralContext:
-                    node.Type = QsiDataType.Numeric;
-                    node.Value = decimal.Parse(text, NumberStyles.Float);
+                {
+                    if (decimal.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out decimal value))
+                    {
+                        node.Value = value;
+                        node.Type = QsiDataType.Numeric;
+                    }
+                    else
+                    {
+                        node.Value = text;
+                        node.Type = QsiDataType.Raw;
+                    }
+
                     break;
+                }
 
                 case DoubleLiteralContext:
-                    node.Type = QsiDataType.Decimal;
-                    node.Value = decimal.Parse(text, NumberStyles.Float);
+                {
+                    if (decimal.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out decimal value))
+                    {
+                        node.Value = value;
+                        node.Type = QsiDataType.Decimal;
+                    }
+                    else
+                    {
+                        node.Value = text;
+                        node.Type = QsiDataType.Raw;
+                    }
+
                     break;
+                }
 
                 case IntegerLiteralContext:
-                    node.Type = QsiDataType.Numeric;
-                    node.Value = long.Parse(text);
+                {
+                    if (long.TryParse(text, out long value))
+                    {
+                        node.Value = value;
+                        node.Type = QsiDataType.Numeric;
+                    }
+                    else
+                    {
+                        node.Value = text;
+                        node.Type = QsiDataType.Raw;
+                    }
+
                     break;
+                }
 
                 default:
                     throw TreeHelper.NotSupportedTree(context);
@@ -452,13 +485,15 @@ namespace Qsi.Trino.Tree.Visitors
         public static QsiLiteralExpressionNode VisitString(StringContext context)
         {
             var node = TrinoTree.CreateWithSpan<QsiLiteralExpressionNode>(context);
-            node.Type = QsiDataType.String;
 
             switch (context)
             {
                 case BasicStringLiteralContext:
+                {
+                    node.Type = QsiDataType.String;
                     node.Value = context.GetText()[1..^1];
                     break;
+                }
 
                 case UnicodeStringLiteralContext unicodeString:
                 {
@@ -468,8 +503,9 @@ namespace Qsi.Trino.Tree.Visitors
                         ? unicodeString.STRING().GetText()[1]
                         : '\\';
 
-                    var pattern = new Regex($@"{Regex.Escape(escapeString.ToString())}(\d+)");
-                    node.Value = pattern.Replace(text, match => char.ConvertFromUtf32(int.Parse(match.Groups[1].Value)));
+                    node.Type = QsiDataType.Custom;
+                    node.Value = new TrinoString(text, escapeString);
+
                     break;
                 }
             }
