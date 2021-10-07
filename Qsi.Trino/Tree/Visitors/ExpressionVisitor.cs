@@ -284,8 +284,8 @@ namespace Qsi.Trino.Tree.Visitors
                 case IntervalLiteralContext intervalLiteral:
                     return VisitInterval(intervalLiteral.interval());
 
-                case TypeConstructorContext:
-                    throw TreeHelper.NotSupportedFeature("Type constructor");
+                case TypeConstructorContext typeConstructor:
+                    return VisitTypeConstructor(typeConstructor);
 
                 case NumericLiteralContext numericLiteral:
                     return VisitNumber(numericLiteral.number());
@@ -499,7 +499,22 @@ namespace Qsi.Trino.Tree.Visitors
             node.Time.Value = timeNode;
 
             node.From = VisitIntervalField(context.from);
-            node.To = VisitIntervalField(context.to);
+
+            if (context.HasToken(TO))
+                node.To = VisitIntervalField(context.to);
+
+            return node;
+        }
+
+        public static TrinoTypeConstructorExpressionNode VisitTypeConstructor(TypeConstructorContext context)
+        {
+            var node = TrinoTree.CreateWithSpan<TrinoTypeConstructorExpressionNode>(context);
+
+            node.Name = context.HasToken(DOUBLE) && context.HasToken(PRECISION)
+                ? new QsiIdentifier("DOUBLE_PRECISION", false)
+                : context.identifier().qi;
+
+            node.Expression.Value = VisitString(context.@string());
 
             return node;
         }

@@ -44,6 +44,9 @@ namespace Qsi.Trino.Tree.Visitors
         {
             var table = VisitQueryTerm(context.queryTerm());
 
+            if (table is TrinoValuesTableNode valuesInlineTable)
+                return valuesInlineTable;
+
             if (table is not QsiDerivedTableNode node)
             {
                 var derivedTableNode = TrinoTree.CreateWithSpan<QsiDerivedTableNode>(context);
@@ -164,8 +167,20 @@ namespace Qsi.Trino.Tree.Visitors
                 node.SetQuantifier = VisitSetQuantifier(context.setQuantifier());
 
             var columnsNode = new QsiColumnsDeclarationNode();
+            int columnIndex = 0;
 
-            columnsNode.Columns.AddRange(context.selectItem().Select(VisitSelectItem));
+            foreach (var column in context.selectItem().Select(VisitSelectItem))
+            {
+                if (column is QsiDerivedColumnNode derivedColumn &&
+                    !derivedColumn.Expression.IsEmpty)
+                {
+                    derivedColumn.InferredName = new QsiIdentifier($"_col{columnIndex}", false);
+                }
+
+                columnsNode.Columns.Add(column);
+                columnIndex++;
+            }
+
             node.Columns.Value = columnsNode;
 
             if (context.HasToken(FROM))
@@ -254,15 +269,28 @@ namespace Qsi.Trino.Tree.Visitors
             return node;
         }
 
-        public static QsiInlineDerivedTableNode VisitInlineTable(InlineTableContext context)
+        public static TrinoValuesTableNode VisitInlineTable(InlineTableContext context)
         {
-            var node = TrinoTree.CreateWithSpan<QsiInlineDerivedTableNode>(context);
+            var node = TrinoTree.CreateWithSpan<TrinoValuesTableNode>(context);
 
             foreach (var expression in context.expression())
             {
                 var rowNode = TrinoTree.CreateWithSpan<QsiRowValueExpressionNode>(expression);
 
-                rowNode.ColumnValues.Add(ExpressionVisitor.VisitExpression(expression));
+                var expr = ExpressionVisitor.VisitExpression(expression);
+
+                if (expr is QsiMultipleExpressionNode multipleExpr)
+                {
+                    foreach (var element in multipleExpr.Elements)
+                    {
+                        rowNode.ColumnValues.Add(element);
+                    }
+                }
+                else
+                {
+                    rowNode.ColumnValues.Add(expr);
+                }
+
                 node.Rows.Add(rowNode);
             }
 
