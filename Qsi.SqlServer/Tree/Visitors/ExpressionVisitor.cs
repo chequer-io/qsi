@@ -444,6 +444,9 @@ namespace Qsi.SqlServer.Tree
         {
             switch (primaryExpression)
             {
+                case ParenthesisExpression parentesis:
+                    return VisitScalarExpression(parentesis.Expression);
+ 
                 // inputdate AT TIME ZONE timezone
                 case AtTimeZoneCall atTimeZoneCall:
                     return CreateInvokeExpression(atTimeZoneCall, SqlServerKnownFunction.AtTimeZone, atTimeZoneCall.DateValue, atTimeZoneCall.TimeZone);

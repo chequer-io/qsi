@@ -383,6 +383,8 @@ namespace Qsi.MySql.Tree
                     n.Left.SetValue(VisitBitExpr(context.bitExpr(0)));
                     n.Operator = context.op.Text;
                     n.Right.SetValue(VisitBitExpr(context.bitExpr(1)));
+
+                    MySqlTree.PutContextSpan(n, context);
                 });
             }
 
@@ -681,6 +683,8 @@ namespace Qsi.MySql.Tree
             {
                 n.Operator = context.BINARY_SYMBOL().GetText();
                 n.Expression.SetValue(VisitSimpleExpr(context.simpleExpr()));
+
+                MySqlTree.PutContextSpan(n, context);
             });
         }
 
@@ -1187,6 +1191,7 @@ namespace Qsi.MySql.Tree
                 });
 
                 n.Parameters.AddRange(parameters);
+                MySqlTree.PutContextSpan(n, context);
             });
         }
         #endregion

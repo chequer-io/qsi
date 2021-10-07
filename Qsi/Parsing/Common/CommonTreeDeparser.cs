@@ -99,7 +99,7 @@ namespace Qsi.Parsing.Common
                     throw new NotImplementedException();
 
                 default:
-                    throw new NotSupportedException();
+                    throw new QsiException(QsiError.NotSupportedTree, $"{node.GetType()} node is not supported in deparsing");
             }
         }
 
@@ -161,7 +161,7 @@ namespace Qsi.Parsing.Common
                     break;
 
                 default:
-                    throw new NotSupportedException();
+                    throw new QsiException(QsiError.NotSupportedTree, $"{node.GetType()} node is not supported in deparsing");
             }
         }
 
@@ -232,7 +232,7 @@ namespace Qsi.Parsing.Common
                     break;
 
                 default:
-                    throw new NotSupportedException();
+                    throw new QsiException(QsiError.NotSupportedTree, $"{node.GetType()} node is not supported in deparsing");
             }
         }
 
@@ -395,7 +395,7 @@ namespace Qsi.Parsing.Common
                     break;
 
                 default:
-                    throw new NotImplementedException();
+                    throw new QsiException(QsiError.NotSupportedTree, $"{node.GetType()} node is not supported in deparsing");
             }
         }
 
