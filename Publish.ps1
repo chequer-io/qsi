@@ -49,9 +49,9 @@ if ($_Mode -eq [PublishMode]::Publish) {
         throw "The version is lower than the git tag. ($GitTagVersion >= $Version)"
     }
 
-    $_API_KEY = $Env:QSI_NUGET_API_KEY
+    $NugetApiKey = $Env:QSI_NUGET_API_KEY
 
-    if ($_API_KEY.Length -eq 0) {
+    if ($NugetApiKey.Length -eq 0) {
         throw "QSI_NUGET_API_KEY environment variable not found."
     }
 }
@@ -114,11 +114,7 @@ Function NuGet-Push {
 
     Write-Host "[NuGet] '$($PackageFile.Name)' Push to '$Source'" -ForegroundColor Cyan
 
-    if ($ApiKey.Length -eq $null) {
-        dotnet nuget push $PackageFile --source $Source
-    } else {
-        dotnet nuget push $PackageFile --source $Source --api-key $ApiKey
-    }
+    dotnet nuget push $PackageFile --source $Source --api-key $ApiKey
 }
 
 # Clean publish
@@ -134,14 +130,10 @@ $Tasks | ForEach-Object {
 
 Write-Host "Done pack." -ForegroundColor Green
 
-if ($_Mode -ne [PublishMode]::Archive) {
+if ($_Mode -eq [PublishMode]::Publish) {
     # Publish
     Get-ChildItem -Path $PublishDirectory/*.nupkg | ForEach-Object {
-        if ($_Mode -eq [PublishMode]::Publish) {
-            NuGet-Push $PSItem "nuget.org"
-        } else {
-            NuGet-Push $PSItem "local"
-        }
+        NuGet-Push $PSItem "https://api.nuget.org/v3/index.json" $NugetApiKey
     }
 
     # Tag
