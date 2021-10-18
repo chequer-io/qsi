@@ -5,6 +5,7 @@ using System.Linq;
 using Qsi.Data;
 using Qsi.PostgreSql.Internal;
 using Qsi.PostgreSql.Internal.PG10.Types;
+using Qsi.PostgreSql.Tree.PG10.Nodes;
 using Qsi.Tree;
 using Qsi.Utilities;
 
@@ -431,10 +432,46 @@ namespace Qsi.PostgreSql.Tree.PG10
             });
         }
 
-        private QsiTableNode VisitRangeFunction(RangeFunction function)
+        private QsiTableNode VisitRangeFunction(RangeFunction rangeFunction)
         {
-            // TODO: Implement table function
-            throw TreeHelper.NotSupportedFeature("Table function");
+            if (ListUtility.IsNullOrEmpty(rangeFunction.alias))
+                throw new QsiException(QsiError.NoAlias);
+
+            if (rangeFunction.alias.Length != 1)
+                throw TreeHelper.NotSupportedTree(rangeFunction);
+
+            var func = rangeFunction.functions[0].Cast<FuncCall>().First();
+            var source = ExpressionVisitor.VisitFunctionCall(func);
+
+            var alias = new QsiAliasNode
+            {
+                Name = new QsiIdentifier(rangeFunction.alias[0].aliasname, false)
+            };
+
+            QsiColumnsDeclarationNode columsDeclaration;
+
+            PgString[] columns = rangeFunction.alias[0].colnames?
+                .Cast<PgString>()
+                .ToArray();
+
+            if (ListUtility.IsNullOrEmpty(columns))
+            {
+                columsDeclaration = TreeHelper.CreateAllColumnsDeclaration();
+            }
+            else
+            {
+                columsDeclaration = TreeHelper.Create<QsiColumnsDeclarationNode>(cn =>
+                {
+                    cn.Columns.AddRange(CreateSequentialColumnNodes(columns));
+                });
+            }
+
+            return TreeHelper.Create<PgRangeFunctionNode>(n =>
+            {
+                n.Columns.Value = columsDeclaration;
+                n.Source.Value = source;
+                n.Alias.Value = alias;
+            });
         }
 
         public QsiJoinedTableNode VisitJoinExpression(JoinExpr joinExpr)

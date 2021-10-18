@@ -48,6 +48,80 @@ namespace Qsi.Debugger.Vendor.PostgreSql
                     var csMemo = CreateTable("postgres", "public", "cs_memo");
                     AddColumns(csMemo, "id", "memo");
                     return csMemo;
+
+                case "pg_database":
+                    var pgDatabase = CreateTable("postgres", "pg_catalog", "pg_database");
+
+                    AddColumns(
+                        pgDatabase,
+                        "oid",
+                        "datname",
+                        "datdba",
+                        "encoding",
+                        "datcollate",
+                        "datctype",
+                        "datistemplate",
+                        "datallowconn",
+                        "datconnlimit",
+                        "datlastsysoid",
+                        "datfrozenxid",
+                        "datminmxid",
+                        "dattablespace",
+                        "datacl"
+                    );
+
+                    return pgDatabase;
+
+                case "pg_authid":
+                    var pgAuthid = CreateTable("postgres", "pg_catalog", "pg_authid");
+
+                    AddColumns(
+                        pgAuthid,
+                        "oid",
+                        "rolname",
+                        "rolsuper",
+                        "rolinherit",
+                        "rolcreaterole",
+                        "rolcreatedb",
+                        "rolcanlogin",
+                        "rolreplication",
+                        "rolbypassrls",
+                        "rolconnlimit",
+                        "rolpassword",
+                        "rolvaliduntil"
+                    );
+
+                    return pgAuthid;
+
+                case "pg_stat_activity":
+
+                    var pgStatActivity = CreateTable("postgres", "pg_catalog", "pg_stat_activity");
+                    pgStatActivity.Type = QsiTableType.View;
+
+                    AddColumns(pgStatActivity,
+                        "datid",
+                        "datname",
+                        "pid",
+                        "usesysid",
+                        "usename",
+                        "application_name",
+                        "client_addr",
+                        "client_hostname",
+                        "client_port",
+                        "backend_start",
+                        "xact_start",
+                        "query_start",
+                        "state_change",
+                        "wait_event_type",
+                        "wait_event",
+                        "state",
+                        "backend_xid",
+                        "backend_xmin",
+                        "query",
+                        "backend_type"
+                    );
+
+                    return pgStatActivity;
             }
 
             return null;
@@ -89,6 +163,31 @@ namespace Qsi.Debugger.Vendor.PostgreSql
 
                 case "actor_mat_view":
                     return new QsiScript("CREATE MATERIALIZED VIEW public.actor_view AS SELECT actor.actor_id, actor.first_name, actor.last_name, actor.last_update FROM actor;", QsiScriptType.Create);
+
+                case "pg_stat_activity":
+                    return new QsiScript(@"CREATE OR REPLACE VIEW pg_catalog.pg_stat_activity AS  SELECT s.datid,
+    d.datname,
+    s.pid,
+    s.usesysid,
+    u.rolname AS usename,
+    s.application_name,
+    s.client_addr,
+    s.client_hostname,
+    s.client_port,
+    s.backend_start,
+    s.xact_start,
+    s.query_start,
+    s.state_change,
+    s.wait_event_type,
+    s.wait_event,
+    s.state,
+    s.backend_xid,
+    s.backend_xmin,
+    s.query,
+    s.backend_type
+   FROM ((pg_stat_get_activity(NULL::integer) s(datid, pid, usesysid, application_name, state, query, wait_event_type, wait_event, xact_start, query_start, backend_start, state_change, client_addr, client_hostname, client_port, backend_xid, backend_xmin, backend_type, ssl, sslversion, sslcipher, sslbits, sslcompression, ssl_client_dn, ssl_client_serial, ssl_issuer_dn, gss_auth, gss_princ, gss_enc)
+     LEFT JOIN pg_database d ON ((s.datid = d.oid)))
+     LEFT JOIN pg_authid u ON ((s.usesysid = u.oid)));", QsiScriptType.Create);
             }
 
             return null;
