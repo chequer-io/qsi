@@ -122,34 +122,52 @@ namespace Qsi.Debugger.Vendor.PostgreSql
                     );
 
                     return pgStatActivity;
+
+                case "pg_stat_database":
+
+                    var pgStatDatabase = CreateTable("postgres", "pg_catalog", "pg_stat_database");
+                    pgStatDatabase.Type = QsiTableType.View;
+
+                    AddColumns(pgStatDatabase,
+                        "datid",
+                        "datname",
+                        "numbackends",
+                        "xact_commit",
+                        "xact_rollback",
+                        "blks_read",
+                        "blks_hit",
+                        "tup_returned",
+                        "tup_fetched",
+                        "tup_inserted",
+                        "tup_updated",
+                        "tup_deleted",
+                        "conflicts",
+                        "temp_files",
+                        "temp_bytes",
+                        "deadlocks",
+                        "checksum_failures",
+                        "checksum_last_failure",
+                        "blk_read_time",
+                        "blk_write_time",
+                        "stats_reset"
+                    );
+
+                    return pgStatDatabase;
+
+                case "pg_db_role_setting":
+                    var pgDbRoleSetting = CreateTable("postgres", "pg_catalog", "pg_db_role_setting");
+
+                    AddColumns(pgDbRoleSetting, "setdatabase", "setrole", "setconfig");
+                    return pgDbRoleSetting;
+
+                case "pg_auth_members":
+                    var pgAuthMembers = CreateTable("postgres", "pg_catalog", "pg_auth_members");
+
+                    AddColumns(pgAuthMembers, "roleid", "member", "grantor", "admin_option");
+                    return pgAuthMembers;
             }
 
             return null;
-        }
-
-        protected override QsiTableStructure CreateTable(params string[] path)
-        {
-            var hiddenColumns = new[]
-            {
-                "oid",
-                "tableoid",
-                "xmin",
-                "cmin",
-                "xmax",
-                "cmax",
-                "ctid"
-            };
-
-            var table = base.CreateTable(path);
-
-            foreach (var hiddenColumn in hiddenColumns)
-            {
-                var column = table.NewColumn();
-                column.Name = new QsiIdentifier(hiddenColumn, false);
-                column.IsVisible = false;
-            }
-
-            return table;
         }
 
         protected override QsiScript LookupDefinition(QsiQualifiedIdentifier identifier, QsiTableType type)
@@ -188,6 +206,38 @@ namespace Qsi.Debugger.Vendor.PostgreSql
    FROM ((pg_stat_get_activity(NULL::integer) s(datid, pid, usesysid, application_name, state, query, wait_event_type, wait_event, xact_start, query_start, backend_start, state_change, client_addr, client_hostname, client_port, backend_xid, backend_xmin, backend_type, ssl, sslversion, sslcipher, sslbits, sslcompression, ssl_client_dn, ssl_client_serial, ssl_issuer_dn, gss_auth, gss_princ, gss_enc)
      LEFT JOIN pg_database d ON ((s.datid = d.oid)))
      LEFT JOIN pg_authid u ON ((s.usesysid = u.oid)));", QsiScriptType.Create);
+
+                case "pg_stat_database":
+                    return new QsiScript(@"CREATE OR REPLACE VIEW pg_catalog.pg_stat_database AS  SELECT d.oid AS datid,
+    d.datname,
+        CASE
+            WHEN (d.oid = (0)::oid) THEN 0
+            ELSE pg_stat_get_db_numbackends(d.oid)
+        END AS numbackends,
+    pg_stat_get_db_xact_commit(d.oid) AS xact_commit,
+    pg_stat_get_db_xact_rollback(d.oid) AS xact_rollback,
+    (pg_stat_get_db_blocks_fetched(d.oid) - pg_stat_get_db_blocks_hit(d.oid)) AS blks_read,
+    pg_stat_get_db_blocks_hit(d.oid) AS blks_hit,
+    pg_stat_get_db_tuples_returned(d.oid) AS tup_returned,
+    pg_stat_get_db_tuples_fetched(d.oid) AS tup_fetched,
+    pg_stat_get_db_tuples_inserted(d.oid) AS tup_inserted,
+    pg_stat_get_db_tuples_updated(d.oid) AS tup_updated,
+    pg_stat_get_db_tuples_deleted(d.oid) AS tup_deleted,
+    pg_stat_get_db_conflict_all(d.oid) AS conflicts,
+    pg_stat_get_db_temp_files(d.oid) AS temp_files,
+    pg_stat_get_db_temp_bytes(d.oid) AS temp_bytes,
+    pg_stat_get_db_deadlocks(d.oid) AS deadlocks,
+    pg_stat_get_db_checksum_failures(d.oid) AS checksum_failures,
+    pg_stat_get_db_checksum_last_failure(d.oid) AS checksum_last_failure,
+    pg_stat_get_db_blk_read_time(d.oid) AS blk_read_time,
+    pg_stat_get_db_blk_write_time(d.oid) AS blk_write_time,
+    pg_stat_get_db_stat_reset_time(d.oid) AS stats_reset
+   FROM ( SELECT 0 AS oid,
+            NULL::name AS datname
+        UNION ALL
+         SELECT pg_database.oid,
+            pg_database.datname
+           FROM pg_database) d;", QsiScriptType.Create);
             }
 
             return null;
