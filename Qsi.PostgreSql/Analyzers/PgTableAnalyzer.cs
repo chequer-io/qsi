@@ -23,7 +23,6 @@ namespace Qsi.PostgreSql.Analyzers
                     switch (e.Column)
                     {
                         case IQsiColumnReferenceNode column:
-
                             IEnumerable<QsiTableStructure> sources = Enumerable.Empty<QsiTableStructure>();
                             QsiTableStructure[] tableName = null;
 
