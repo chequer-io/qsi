@@ -154,6 +154,29 @@ namespace Qsi.Debugger.Vendor.PostgreSql
 
                     return pgStatDatabase;
 
+                case "pg_roles":
+
+                    var pgRoles = CreateTable("postgres", "pg_catalog", "pg_roles");
+                    pgRoles.Type = QsiTableType.View;
+
+                    AddColumns(pgRoles,
+                        "rolname",
+                        "rolsuper",
+                        "rolinherit",
+                        "rolcreaterole",
+                        "rolcreatedb",
+                        "rolcanlogin",
+                        "rolreplication",
+                        "rolconnlimit",
+                        "rolpassword",
+                        "rolvaliduntil",
+                        "rolbypassrls",
+                        "rolconfig",
+                        "oid"
+                    );
+
+                    return pgRoles;
+
                 case "pg_db_role_setting":
                     var pgDbRoleSetting = CreateTable("postgres", "pg_catalog", "pg_db_role_setting");
 
@@ -238,6 +261,23 @@ namespace Qsi.Debugger.Vendor.PostgreSql
          SELECT pg_database.oid,
             pg_database.datname
            FROM pg_database) d;", QsiScriptType.Create);
+
+                case "pg_roles":
+                    return new QsiScript(@"CREATE OR REPLACE VIEW pg_catalog.pg_roles AS  SELECT pg_authid.rolname,
+    pg_authid.rolsuper,
+    pg_authid.rolinherit,
+    pg_authid.rolcreaterole,
+    pg_authid.rolcreatedb,
+    pg_authid.rolcanlogin,
+    pg_authid.rolreplication,
+    pg_authid.rolconnlimit,
+    '********'::text AS rolpassword,
+    pg_authid.rolvaliduntil,
+    pg_authid.rolbypassrls,
+    s.setconfig AS rolconfig,
+    pg_authid.oid
+   FROM (pg_authid
+     LEFT JOIN pg_db_role_setting s ON (((pg_authid.oid = s.setrole) AND (s.setdatabase = (0)::oid))));", QsiScriptType.Create);
             }
 
             return null;
