@@ -26,6 +26,7 @@ namespace Qsi.Oracle
         private const string If = "IF";
 
         private const string Exec = "EXEC";
+        private const string Execute = "EXECUTE";
         private const string SemiColon = ";";
 
         private const string BlockKey = "Oracle::Type";
@@ -160,6 +161,11 @@ namespace Qsi.Oracle
                     block.ExpectedToken.Push(SemiColon);
                     block.ExpectedToken.Push(End);
                 }
+                else if (Exec.EqualsIgnoreCase(t.Current) ||
+                         Execute.EqualsIgnoreCase(t.Current))
+                {
+                    block.ExpectedToken.Push(SemiColon);
+                }
 
                 if (block.ExpectedToken.Count == 0)
                     return true;
@@ -194,6 +200,15 @@ namespace Qsi.Oracle
                 return true;
             }
 
+            // EXEC | EXECUTE
+            if (Exec.EqualsIgnoreCase(k.Current) ||
+                Execute.EqualsIgnoreCase(k.Current))
+            {
+                endIndex = k.Index;
+                type = BlockType.Execute;
+                return true;
+            }
+            
             // CREATE
             if (!Create.EqualsIgnoreCase(k.Current) || !k.MoveNext())
                 return false;
@@ -250,7 +265,8 @@ namespace Qsi.Oracle
             CreateTrigger,
             CreateType,
             Begin,
-            Declare
+            Declare,
+            Execute
         }
 
         private sealed class Block
