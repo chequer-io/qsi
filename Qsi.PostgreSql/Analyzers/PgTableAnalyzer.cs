@@ -34,10 +34,13 @@ namespace Qsi.PostgreSql.Analyzers
 
                             if (tableName is { Length: 1 })
                             {
-                                foreach (var tableColumn in ResolveAllColumns(context, new QsiAllColumnNode
+                                foreach (var tableColumn in ResolveAllColumns(
+                                    context,
+                                    new QsiAllColumnNode
                                     {
                                         Path = tableName[0].Identifier
-                                    }, false
+                                    },
+                                    false
                                 ))
                                 {
                                     yield return tableColumn;
