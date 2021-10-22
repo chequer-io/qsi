@@ -206,7 +206,7 @@ namespace Qsi.MySql.Tree
             {
                 Identifiers = new[]
                 {
-                    IdentifierVisitor.VisitIdentifier(context.identifier())
+                    new QsiQualifiedIdentifier(IdentifierVisitor.VisitIdentifier(context.identifier()))
                 }
             };
 

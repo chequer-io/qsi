@@ -80,6 +80,7 @@ namespace Qsi.PhoenixSql.Tree
             return TreeHelper.Create<QsiCompositeTableNode>(n =>
             {
                 n.Sources.AddRange(statements.Select(VisitSelectStatement));
+                n.CompositeType = "UNION";
             });
         }
 

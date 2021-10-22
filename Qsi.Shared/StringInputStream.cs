@@ -2,7 +2,7 @@ using Antlr4.Runtime;
 
 namespace Qsi.Shared
 {
-    public class StringInputStream : AntlrInputStream
+    internal class StringInputStream : AntlrInputStream
     {
         public string Input { get; }
 

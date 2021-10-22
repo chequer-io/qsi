@@ -13,14 +13,17 @@ namespace Qsi.Tree.Immutable
 
         public bool IncludeInvisibleColumns { get; }
 
+        public IQsiSequentialColumnNode[] SequentialColumns { get; }
+
         public IUserDataHolder UserData { get; }
 
         public IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
 
-        public ImmutableAllColumnNode(IQsiTreeNode parent, QsiQualifiedIdentifier path, IUserDataHolder userData)
+        public ImmutableAllColumnNode(IQsiTreeNode parent, QsiQualifiedIdentifier path, IQsiSequentialColumnNode[] sequentialColumns, IUserDataHolder userData)
         {
             Parent = parent;
             Path = path;
+            SequentialColumns = sequentialColumns;
             UserData = userData;
             IncludeInvisibleColumns = false;
         }

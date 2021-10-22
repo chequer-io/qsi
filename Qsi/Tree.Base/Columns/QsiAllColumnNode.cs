@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Qsi.Data;
+using Qsi.Utilities;
 
 namespace Qsi.Tree
 {
@@ -10,6 +11,17 @@ namespace Qsi.Tree
 
         public bool IncludeInvisibleColumns { get; set; }
 
-        public override IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
+        public QsiTreeNodeList<QsiSequentialColumnNode> SequentialColumns { get; }
+
+        public override IEnumerable<IQsiTreeNode> Children => SequentialColumns;
+
+        #region Explicit
+        IQsiSequentialColumnNode[] IQsiAllColumnNode.SequentialColumns => SequentialColumns.Cast<IQsiSequentialColumnNode>().ToArray();
+        #endregion
+
+        public QsiAllColumnNode()
+        {
+            SequentialColumns = new QsiTreeNodeList<QsiSequentialColumnNode>(this);
+        }
     }
 }

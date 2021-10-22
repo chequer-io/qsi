@@ -2,7 +2,6 @@
 using System.Linq;
 using Microsoft.SqlServer.TransactSql.ScriptDom;
 using Qsi.Data;
-using Qsi.SqlServer.Data;
 using Qsi.Tree;
 using Qsi.Utilities;
 
@@ -20,7 +19,7 @@ namespace Qsi.SqlServer.Tree
             {
                 Identifiers = new[]
                 {
-                    IdentifierVisitor.CreateIdentifier(useStatement.DatabaseName),
+                    new QsiQualifiedIdentifier(IdentifierVisitor.CreateIdentifier(useStatement.DatabaseName)),
                 }
             };
 
@@ -294,21 +293,21 @@ namespace Qsi.SqlServer.Tree
 
                         case MergeCondition.NotMatchedBySource:
                         {
-                            var exceptTable = TreeHelper.Create<SqlServerBinaryTableNode>(btn =>
+                            var exceptTable = TreeHelper.Create<QsiCompositeTableNode>(btn =>
                             {
-                                btn.Left.SetValue(TreeHelper.Create<QsiDerivedTableNode>(ln =>
+                                btn.Sources.Add(TreeHelper.Create<QsiDerivedTableNode>(ln =>
                                 {
                                     ln.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
                                     ln.Source.SetValue(accessNode);
                                 }));
 
-                                btn.Right.SetValue(TreeHelper.Create<QsiDerivedTableNode>(dtn =>
+                                btn.Sources.Add(TreeHelper.Create<QsiDerivedTableNode>(dtn =>
                                 {
                                     dtn.Columns.SetValue(leftTableColumnDeclaration);
                                     dtn.Source.SetValue(joinedTable);
                                 }));
 
-                                btn.BinaryTableType = SqlServerBinaryTableType.Except;
+                                btn.CompositeType = "EXCEPT";
                             });
 
                             if (actionClause.SearchCondition != null)

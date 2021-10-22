@@ -40,7 +40,7 @@ namespace Qsi.PostgreSql.Tree.PG10
                 {
                     Identifiers = variableSetStmt.args
                         .Cast<A_Const>()
-                        .Select(x => new QsiIdentifier(x.val.str, false))
+                        .Select(x => new QsiQualifiedIdentifier(new QsiIdentifier(x.val.str, false)))
                         .ToArray()
                 };
 

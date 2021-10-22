@@ -13,5 +13,7 @@
         IQsiMultipleOrderExpressionNode Order { get; }
 
         IQsiLimitExpressionNode Limit { get; }
+
+        string CompositeType { get; }
     }
 }

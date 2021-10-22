@@ -24,7 +24,6 @@ if (Get-Module Antlr) {
 }
 
 Import-Module ".\Build\Common.ps1"
-Import-Module ".\Build\Antlr.ps1"
 
 if ($_Mode -eq [PublishMode]::Publish) {
     # git rev-parse HEAD
@@ -122,7 +121,7 @@ Remove-Directory-Safe $PublishDirectory
 
 $Tasks | ForEach-Object {
     if ($PSItem.Antlr) {
-        Antlr-Generate $PSItem.Project
+        & "$PSScriptRoot\Setup.ps1" $PSItem.Project
     }
 
     DotNet-Pack $PSItem.Project

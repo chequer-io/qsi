@@ -11,6 +11,8 @@ namespace Qsi.Tree
 
         public QsiTreeNodeProperty<QsiLimitExpressionNode> Limit { get; }
 
+        public string CompositeType { get; set; }
+
         public override IEnumerable<IQsiTreeNode> Children => Sources;
 
         #region Explicit

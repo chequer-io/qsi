@@ -236,6 +236,7 @@ namespace Qsi.Extensions
             return new(
                 node.Parent,
                 node.Path,
+                node.SequentialColumns,
                 ignoreUserData ? null : node.UserData);
         }
 
@@ -463,6 +464,7 @@ namespace Qsi.Extensions
                 node.Sources,
                 node.Order,
                 node.Limit,
+                node.CompositeType,
                 ignoreUserData ? null : node.UserData);
         }
 

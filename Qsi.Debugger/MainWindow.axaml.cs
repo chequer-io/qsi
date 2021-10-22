@@ -31,7 +31,7 @@ using Qsi.Debugger.Vendor.PhoenixSql;
 using Qsi.Debugger.Vendor.PostgreSql;
 using Qsi.Debugger.Vendor.PrimarSql;
 using Qsi.Debugger.Vendor.SqlServer;
-using Qsi.Diagnostics;
+using Qsi.Debugger.Vendor.Trino;
 using Qsi.SqlServer.Common;
 using Qsi.Tree;
 
@@ -77,6 +77,7 @@ namespace Qsi.Debugger
                 ["SAP HANA"] = new(() => new HanaDebugger()),
                 ["Impala 2.11.x"] = new(() => new ImpalaDebugger(new Version(2, 11, 0))),
                 ["Impala 3.x"] = new(() => new ImpalaDebugger(new Version(3, 0, 0))),
+                ["Trino"] = new(() => new TrinoDebugger()),
                 ["Oracle"] = new(() => new OracleDebugger())
             };
 
