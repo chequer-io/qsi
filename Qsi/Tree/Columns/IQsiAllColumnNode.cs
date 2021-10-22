@@ -13,5 +13,7 @@ namespace Qsi.Tree
         public QsiQualifiedIdentifier Path { get; }
 
         public bool IncludeInvisibleColumns { get; }
+
+        public IQsiSequentialColumnNode[] SequentialColumns { get; }
     }
 }

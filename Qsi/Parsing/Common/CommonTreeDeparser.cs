@@ -243,7 +243,7 @@ namespace Qsi.Parsing.Common
             if (parenthesis)
                 writer.Write('(');
 
-            JoinElements(writer, " UNION ", node.Sources, script);
+            JoinElements(writer, $" {node.CompositeType ?? "UNION"} ", node.Sources, script);
 
             if (parenthesis)
                 writer.Write(')');

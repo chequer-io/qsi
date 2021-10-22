@@ -184,24 +184,34 @@ namespace Qsi.Hana.Tree.Visitors
 
         private static QsiTableNode VisitSetOperatorClause(SetOperatorClauseContext context, QsiTableNode topTableNode)
         {
-            // node + subquries
-            IEnumerable<QsiTableNode> sources = context.setSubquery()
-                .Select(VisitSetSubquery)
-                .Prepend(topTableNode);
+            var source = topTableNode;
 
-            var node = new QsiCompositeTableNode();
+            for (int i = 0; i < context.setOperator().Length; i++)
+            {
+                var node = new QsiCompositeTableNode();
 
-            node.Sources.AddRange(sources);
+                var setOperator = context.setOperator(i);
+                var setSubquery = context.setSubquery(i);
 
-            if (context.orderBy != null)
-                node.Order.SetValue(ExpressionVisitor.VisitOrderByClause(context.orderBy));
+                node.Sources.Add(source);
+                node.Sources.Add(VisitSetSubquery(setSubquery));
+                node.CompositeType = string.Join(" ", setOperator.children.Select(c => c.GetText()));
 
-            if (context.limit != null)
-                node.Limit.SetValue(ExpressionVisitor.VisitLimitClause(context.limit));
+                source = node;
+            }
 
-            HanaTree.PutContextSpan(node, context);
+            if (source is QsiCompositeTableNode compositeNode)
+            {
+                if (context.orderBy != null)
+                    compositeNode.Order.SetValue(ExpressionVisitor.VisitOrderByClause(context.orderBy));
 
-            return node;
+                if (context.limit != null)
+                    compositeNode.Limit.SetValue(ExpressionVisitor.VisitLimitClause(context.limit));
+            }
+
+            HanaTree.PutContextSpan(source, context);
+
+            return source;
         }
 
         private static QsiTableNode VisitSetSubquery(SetSubqueryContext context)

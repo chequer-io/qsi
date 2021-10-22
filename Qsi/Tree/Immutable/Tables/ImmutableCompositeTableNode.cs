@@ -13,6 +13,8 @@ namespace Qsi.Tree.Immutable
 
         public IQsiLimitExpressionNode Limit { get; }
 
+        public string CompositeType { get; }
+
         public IUserDataHolder UserData { get; }
 
         public IEnumerable<IQsiTreeNode> Children => Sources;
@@ -22,12 +24,14 @@ namespace Qsi.Tree.Immutable
             IQsiTableNode[] sources,
             IQsiMultipleOrderExpressionNode orderExpression,
             IQsiLimitExpressionNode limitExpression,
+            string compositeType,
             IUserDataHolder userData)
         {
             Parent = parent;
             Sources = sources;
             Order = orderExpression;
             Limit = limitExpression;
+            CompositeType = compositeType;
             UserData = userData;
         }
     }

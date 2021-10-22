@@ -256,7 +256,7 @@ namespace Qsi.Oracle.Tree.Visitors
                         {
                             Identifiers = new[]
                             {
-                                IdentifierVisitor.VisitIdentifier(identifier)
+                                new QsiQualifiedIdentifier(IdentifierVisitor.VisitIdentifier(identifier))
                             }
                         };
                     }
@@ -439,10 +439,10 @@ namespace Qsi.Oracle.Tree.Visitors
             var matchedItemsNode = OracleHelper.CreateJoinedTable(leftNode, rightSource, onCondition);
             var selectInJoinedTableNode = OracleHelper.CreateDerivedTableWithPath(matchedItemsNode, rightPath);
 
-            var minusJoinTable = new OracleBinaryTableNode();
-            minusJoinTable.Left.Value = minusJoinTableLeftSource;
-            minusJoinTable.Right.Value = selectInJoinedTableNode;
-            minusJoinTable.BinaryTableType = OracleBinaryTableType.Minus;
+            var minusJoinTable = new QsiCompositeTableNode();
+            minusJoinTable.Sources.Add(minusJoinTableLeftSource);
+            minusJoinTable.Sources.Add(selectInJoinedTableNode);
+            minusJoinTable.CompositeType = "MINUS";
 
             var minusJoinAliasedTable = OracleHelper.CreateDerivedTable(minusJoinTable, new QsiAliasNode { Name = rightAlias });
 

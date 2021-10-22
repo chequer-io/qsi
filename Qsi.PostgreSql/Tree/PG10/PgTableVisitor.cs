@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Qsi.Data;
@@ -120,6 +121,21 @@ namespace Qsi.PostgreSql.Tree.PG10
             {
                 n.Sources.Add(VisitSelectStmt(stmt.larg[0]));
                 n.Sources.Add(VisitSelectStmt(stmt.rarg[0]));
+
+                if (!stmt.op.HasValue)
+                {
+                    n.CompositeType = "UNION";
+                }
+                else
+                {
+                    n.CompositeType = stmt.op switch
+                    {
+                        SetOperation.SETOP_UNION => "UNION",
+                        SetOperation.SETOP_EXCEPT => "EXCEPT",
+                        SetOperation.SETOP_INTERSECT => "INTERSET",
+                        _ => throw TreeHelper.NotSupportedFeature($"Composite Type: {stmt.op.Value}")
+                    };
+                }
             });
         }
 

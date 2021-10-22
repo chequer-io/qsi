@@ -239,16 +239,30 @@ namespace Qsi.Analyzers.Table
 
                         default:
                         {
+                            var allColumnNode = column as IQsiAllColumnNode;
+                            bool aliasedAllColumn = !ListUtility.IsNullOrEmpty(allColumnNode?.SequentialColumns);
+                            int i = 0;
+
                             foreach (var c in resolvedColumns)
                             {
+                                if (aliasedAllColumn && allColumnNode.SequentialColumns.Length < i + 1)
+                                    throw new QsiException(QsiError.DifferentColumnsCount);
+
+                                var seqentialColumn = aliasedAllColumn ? allColumnNode?.SequentialColumns[i++] : null;
                                 var declaredColumn = declaredTable.NewColumn();
 
-                                declaredColumn.Name = ResolveCompoundColumnName(context, table, column, c);
+                                declaredColumn.Name = seqentialColumn is null
+                                    ? ResolveCompoundColumnName(context, table, column, c)
+                                    : seqentialColumn.Alias.Name;
+
                                 declaredColumn.References.Add(c);
 
                                 if (keepVisible)
                                     declaredColumn.IsVisible = c.IsVisible;
                             }
+
+                            if (aliasedAllColumn && allColumnNode.SequentialColumns.Length != i)
+                                throw new QsiException(QsiError.DifferentColumnsCount);
 
                             break;
                         }
@@ -440,6 +454,7 @@ namespace Qsi.Analyzers.Table
                                 .ToArray(),
                             compositeTableNode.Order,
                             compositeTableNode.Limit,
+                            compositeTableNode.CompositeType,
                             compositeTableNode.UserData);
                     }
 

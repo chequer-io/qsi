@@ -773,7 +773,7 @@ namespace Qsi.Analyzers.Action
             QsiQualifiedIdentifier[] identifiers = action.Identifiers
                 .Select(identifier =>
                 {
-                    var qualifiedIdentifier = new QsiQualifiedIdentifier(identifier, fakeRefIdentifier);
+                    var qualifiedIdentifier = new QsiQualifiedIdentifier(identifier.Append(fakeRefIdentifier));
                     qualifiedIdentifier = context.Engine.RepositoryProvider.ResolveQualifiedIdentifier(qualifiedIdentifier);
                     return new QsiQualifiedIdentifier(qualifiedIdentifier[..^1]);
                 })

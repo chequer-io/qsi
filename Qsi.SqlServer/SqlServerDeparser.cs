@@ -22,44 +22,6 @@ namespace Qsi.SqlServer
             writer.Write(script.Script[range]);
         }
 
-        protected override void DeparseCompositeTableNode(ScriptWriter writer, IQsiCompositeTableNode node, QsiScript script)
-        {
-            switch (node)
-            {
-                case SqlServerBinaryTableNode sqlServerBinaryTableNode:
-                {
-                    string binaryTableType;
-
-                    switch (sqlServerBinaryTableNode.BinaryTableType)
-                    {
-                        case SqlServerBinaryTableType.Except:
-                            binaryTableType = " EXCEPT ";
-                            break;
-
-                        case SqlServerBinaryTableType.Intersect:
-                            binaryTableType = " INTERSECT ";
-                            break;
-
-                        case SqlServerBinaryTableType.Union:
-                            binaryTableType = " UNION ";
-                            break;
-
-                        default:
-                            throw new NotSupportedException(sqlServerBinaryTableNode.BinaryTableType.ToString());
-                    }
-
-                    DeparseTreeNode(writer, sqlServerBinaryTableNode.Left.Value, script);
-                    writer.Write(binaryTableType);
-                    DeparseTreeNode(writer, sqlServerBinaryTableNode.Right.Value, script);
-                    break;
-                }
-
-                default:
-                    base.DeparseCompositeTableNode(writer, node, script);
-                    break;
-            }
-        }
-
         protected override void DeparseJoinedTableNode(ScriptWriter writer, IQsiJoinedTableNode node, QsiScript script)
         {
             base.DeparseJoinedTableNode(writer, node, script);
