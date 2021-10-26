@@ -20,8 +20,8 @@ namespace Qsi.Engines
         public IQsiScriptParser ScriptParser => _scriptParser.Value;
 
         public IQsiRepositoryProvider RepositoryProvider => _repositoryProvider.Value;
-        
-        public Func<IQsiDataTableCacheProvider> CacheProviderFactory => _cacheProviderFactory ?? MemoryCacheProviderFactory;
+
+        public Func<IQsiDataTableCacheProvider> CacheProviderFactory { get; }
 
         public IQsiLanguageService LanguageService { get; }
 
@@ -32,23 +32,14 @@ namespace Qsi.Engines
         private readonly Lazy<IQsiScriptParser> _scriptParser;
         private readonly Lazy<IQsiRepositoryProvider> _repositoryProvider;
         private readonly Lazy<IQsiAnalyzer[]> _analyzers;
-        
-        private readonly Func<IQsiDataTableCacheProvider> _cacheProviderFactory;
 
-        public QsiEngine(IQsiLanguageService languageService)
+        public QsiEngine(IQsiLanguageService languageService) : this(languageService, () => new QsiDataTableMemoryCacheProvider())
         {
-            LanguageService = languageService;
-
-            _treeParser = new Lazy<IQsiTreeParser>(LanguageService.CreateTreeParser);
-            _treeDeparser = new Lazy<IQsiTreeDeparser>(LanguageService.CreateTreeDeparser);
-            _scriptParser = new Lazy<IQsiScriptParser>(LanguageService.CreateScriptParser);
-            _repositoryProvider = new Lazy<IQsiRepositoryProvider>(LanguageService.CreateRepositoryProvider);
-            _analyzers = new Lazy<IQsiAnalyzer[]>(() => LanguageService.CreateAnalyzers(this).ToArray());
         }
-        
+
         public QsiEngine(IQsiLanguageService languageService, Func<IQsiDataTableCacheProvider> cacheProviderFactory)
         {
-            _cacheProviderFactory = cacheProviderFactory;
+            CacheProviderFactory = cacheProviderFactory;
 
             LanguageService = languageService;
 
@@ -95,11 +86,6 @@ namespace Qsi.Engines
             explainLanguageService.ExplainEngine = explainEngine;
 
             return explainEngine.Execute(script, parameters, cancellationToken);
-        }
-
-        private static IQsiDataTableCacheProvider MemoryCacheProviderFactory()
-        {
-            return new QsiDataTableMemoryCacheProvider();
         }
     }
 }
