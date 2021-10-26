@@ -260,9 +260,6 @@ namespace Qsi.Oracle.Tree.Visitors
                             }
                         };
                     }
-
-                    default:
-                        throw TreeHelper.NotSupportedFeature($"ALTER SESSION PARAMETER: {parameterName.Value}");
                 }
             }
 
