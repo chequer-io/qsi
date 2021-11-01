@@ -199,6 +199,15 @@ namespace Qsi.PostgreSql.Tree.PG10
             });
         }
 
+        public QsiSetColumnExpressionNode VisitSetColumn(ResTarget target)
+        {
+            return TreeHelper.Create<QsiSetColumnExpressionNode>(n =>
+            {
+                n.Target = new QsiQualifiedIdentifier(new QsiIdentifier(target.name, false));
+                n.Value.Value = ExpressionVisitor.Visit(target.val[0]);
+            });
+        }
+
         public QsiColumnNode VisitResTarget(ResTarget target)
         {
             Debug.Assert(target.val.Length == 1);
@@ -233,6 +242,12 @@ namespace Qsi.PostgreSql.Tree.PG10
                     });
 
                     break;
+
+                case NodeTag.T_ResTarget:
+                    return TreeHelper.Create<QsiColumnReferenceNode>(n =>
+                    {
+                        n.Name = new QsiQualifiedIdentifier(new QsiIdentifier(target.name, false));
+                    });
 
                 default:
                     throw TreeHelper.NotSupportedTree(value);
