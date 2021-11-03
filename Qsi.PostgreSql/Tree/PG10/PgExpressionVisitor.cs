@@ -68,9 +68,20 @@ namespace Qsi.PostgreSql.Tree.PG10
 
                 case ParamRef paramRef:
                     return VisitParamRef(paramRef);
+
+                case SQLValueFunction sqlValueFunction:
+                    return VisitSqlValueFunction(sqlValueFunction);
             }
 
             throw TreeHelper.NotSupportedTree(node);
+        }
+
+        public QsiExpressionNode VisitSqlValueFunction(SQLValueFunction context)
+        {
+            return new QsiLiteralExpressionNode
+            {
+                Value = context.op.ToString()?[6..]
+            };
         }
 
         private QsiExpressionNode VisitExpressions(IPg10Node[] expressions)
