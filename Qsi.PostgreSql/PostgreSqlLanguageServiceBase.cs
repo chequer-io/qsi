@@ -29,7 +29,8 @@ namespace Qsi.PostgreSql
         {
             return new()
             {
-                AllowEmptyColumnsInSelect = true
+                AllowEmptyColumnsInSelect = true,
+                AllowNoAliasInDerivedTable = true
             };
         }
 

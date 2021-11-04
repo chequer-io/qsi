@@ -30,6 +30,12 @@ namespace Qsi.PostgreSql.Tree.PG10
                 case A_ArrayExpr arrayExpr:
                     return VisitAtomicArrayExpression(arrayExpr);
 
+                case A_Indirection indirection:
+                    return VisitAtomicIndirection(indirection);
+
+                case A_Indices indices:
+                    return VisitAtomicIndices(indices);
+
                 case FuncCall funcCall:
                     return VisitFunctionCall(funcCall);
 
@@ -71,9 +77,42 @@ namespace Qsi.PostgreSql.Tree.PG10
 
                 case SQLValueFunction sqlValueFunction:
                     return VisitSqlValueFunction(sqlValueFunction);
+
+                case MinMaxExpr minMaxExpr:
+                    return VisitMinMaxExpr(minMaxExpr);
             }
 
             throw TreeHelper.NotSupportedTree(node);
+        }
+
+        public QsiExpressionNode VisitMinMaxExpr(MinMaxExpr minMaxExpr)
+        {
+            return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            {
+                n.Member.Value = new QsiFunctionExpressionNode
+                {
+                    Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(minMaxExpr.op.ToString()![3..], false))
+                };
+
+                n.Parameters.AddRange(minMaxExpr.args.Select(Visit));
+            });
+        }
+
+        public QsiExpressionNode VisitAtomicIndices(A_Indices indices)
+        {
+            if (indices.uidx is not null)
+                return VisitColumnRef((ColumnRef)indices.uidx[0]);
+
+            throw TreeHelper.NotSupportedTree(indices);
+        }
+
+        public QsiExpressionNode VisitAtomicIndirection(A_Indirection indirection)
+        {
+            return TreeHelper.Create<QsiMemberAccessExpressionNode>(n =>
+            {
+                n.Target.Value = Visit(indirection.arg[0]);
+                n.Member.Value = Visit(indirection.indirection[0]);
+            });
         }
 
         public QsiExpressionNode VisitSqlValueFunction(SQLValueFunction context)
@@ -281,17 +320,32 @@ namespace Qsi.PostgreSql.Tree.PG10
             return node;
         }
 
-        private QsiExpressionNode VisitTypeCast(TypeCast typeCast)
+        public QsiExpressionNode VisitTypeCast(TypeCast typeCast)
         {
-            return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            return TreeHelper.Create<QsiColumnExpressionNode>(n =>
             {
-                n.Member.SetValue(new QsiFunctionExpressionNode
+                var column = new QsiDerivedColumnNode();
+                var castFunction = new QsiInvokeExpressionNode();
+
+                castFunction.Member.SetValue(new QsiFunctionExpressionNode
                 {
                     Identifier = new QsiQualifiedIdentifier(new QsiIdentifier("CAST", false))
                 });
 
-                n.Parameters.Add(Visit(typeCast.arg[0]));
-                n.Parameters.AddRange(typeCast.typeName.Select(VisitTypeName));
+                castFunction.Parameters.Add(Visit(typeCast.arg[0]));
+                castFunction.Parameters.AddRange(typeCast.typeName.Select(VisitTypeName));
+
+                column.Expression.Value = castFunction;
+
+                if (castFunction.Parameters[0] is QsiColumnExpressionNode { Column: { Value: QsiColumnReferenceNode columnReferenceNode } })
+                {
+                    column.Alias.Value = new QsiAliasNode
+                    {
+                        Name = columnReferenceNode.Name[^1]
+                    };
+                }
+
+                n.Column.Value = column;
             });
         }
 

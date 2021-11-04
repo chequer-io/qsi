@@ -237,9 +237,14 @@ namespace Qsi.PostgreSql.Tree.PG10
                 case NodeTag.T_CoalesceExpr:
                 case NodeTag.T_ParamRef:
                 case NodeTag.T_SQLValueFunction:
+                case NodeTag.T_A_Indirection:
+                case NodeTag.T_MinMaxExpr:
                     columnNode = TreeHelper.Create<QsiDerivedColumnNode>(n =>
                     {
                         n.Expression.SetValue(ExpressionVisitor.Visit(value));
+
+                        if (n.Expression.Value is QsiColumnExpressionNode { Column: { Value: QsiDerivedColumnNode { Alias: { Value: { } alias } } } })
+                            n.Alias.Value = alias;
                     });
 
                     break;
@@ -450,43 +455,42 @@ namespace Qsi.PostgreSql.Tree.PG10
 
         private QsiTableNode VisitRangeFunction(RangeFunction rangeFunction)
         {
-            if (ListUtility.IsNullOrEmpty(rangeFunction.alias))
-                throw new QsiException(QsiError.NoAlias);
-
-            if (rangeFunction.alias.Length != 1)
-                throw TreeHelper.NotSupportedTree(rangeFunction);
-
             var func = rangeFunction.functions[0].Cast<FuncCall>().First();
             var source = ExpressionVisitor.VisitFunctionCall(func);
 
-            var alias = new QsiAliasNode
-            {
-                Name = new QsiIdentifier(rangeFunction.alias[0].aliasname, false)
-            };
+            QsiAliasNode alias = null;
 
-            QsiColumnsDeclarationNode columsDeclaration;
+            if (rangeFunction.alias is { Length: >=1 })
+                alias = new QsiAliasNode
+                {
+                    Name = new QsiIdentifier(rangeFunction.alias[0].aliasname, false)
+                };
 
-            PgString[] columns = rangeFunction.alias[0].colnames?
+            PgString[] columns = rangeFunction.alias?[0].colnames?
                 .Cast<PgString>()
                 .ToArray();
 
             if (ListUtility.IsNullOrEmpty(columns))
             {
-                columsDeclaration = TreeHelper.CreateAllColumnsDeclaration();
-            }
-            else
-            {
-                columsDeclaration = TreeHelper.Create<QsiColumnsDeclarationNode>(cn =>
+                return TreeHelper.Create<QsiTableFunctionNode>(n =>
                 {
-                    cn.Columns.AddRange(CreateSequentialColumnNodes(columns));
+                    n.Member.Value = source.Member.Value;
+                    n.Parameters.AddRange(source.Parameters);
                 });
             }
+
+            var columsDeclaration = TreeHelper.Create<QsiColumnsDeclarationNode>(cn =>
+            {
+                cn.Columns.AddRange(CreateSequentialColumnNodes(columns));
+            });
 
             return TreeHelper.Create<PgRangeFunctionNode>(n =>
             {
                 n.Columns.Value = columsDeclaration;
                 n.Source.Value = source;
-                n.Alias.Value = alias;
+
+                if (alias is not null)
+                    n.Alias.Value = alias;
             });
         }
 
