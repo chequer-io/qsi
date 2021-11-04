@@ -1,6 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using Qsi.Data;
+using Qsi.Data.Object;
 
 namespace Qsi.Services
 {
@@ -13,6 +14,8 @@ namespace Qsi.Services
         protected abstract QsiScript LookupDefinition(QsiQualifiedIdentifier identifier, QsiTableType type);
 
         protected abstract QsiVariable LookupVariable(QsiQualifiedIdentifier identifier);
+
+        protected abstract QsiObject LookupObject(QsiQualifiedIdentifier identifier, QsiObjectType type);
 
         protected abstract QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier);
 
@@ -50,6 +53,11 @@ namespace Qsi.Services
         QsiVariable IQsiRepositoryProvider.LookupVariable(QsiQualifiedIdentifier identifier)
         {
             return LookupVariable(identifier);
+        }
+
+        QsiObject IQsiRepositoryProvider.LookupObject(QsiQualifiedIdentifier identifier, QsiObjectType type)
+        {
+            return LookupObject(identifier, type);
         }
 
         QsiQualifiedIdentifier IQsiRepositoryProvider.ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier)

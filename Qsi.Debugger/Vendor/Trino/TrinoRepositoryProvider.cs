@@ -1,5 +1,6 @@
 ﻿using System;
 using Qsi.Data;
+using Qsi.Data.Object;
 using Qsi.Utilities;
 
 namespace Qsi.Debugger.Vendor.Trino
@@ -64,6 +65,11 @@ namespace Qsi.Debugger.Vendor.Trino
         protected override QsiVariable LookupVariable(QsiQualifiedIdentifier identifier)
         {
             throw new NotImplementedException();
+        }
+
+        protected override QsiObject LookupObject(QsiQualifiedIdentifier identifier, QsiObjectType type)
+        {
+            return null;
         }
     }
 }

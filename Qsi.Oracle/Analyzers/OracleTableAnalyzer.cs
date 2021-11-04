@@ -149,6 +149,16 @@ namespace Qsi.Oracle.Analyzers
             }
         }
 
+        protected override QsiTableColumn ResolveColumnFromObject(TableCompileContext context, QsiQualifiedIdentifier identifier)
+        {
+            var lastName = identifier[^1];
+
+            if (lastName.Value != "CURRVAL" && lastName.Value != "NEXTVAL")
+                return null;
+
+            return base.ResolveColumnFromObject(context, identifier);
+        }
+
         protected override IEnumerable<QsiTableColumn> ResolveDerivedColumns(TableCompileContext context, IQsiDerivedColumnNode column)
         {
             if (column is OracleJsonColumnNode { NestedColumn: { } } node)

@@ -4,12 +4,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Qsi.Analyzers.Context;
 using Qsi.Analyzers.Table.Context;
-using Qsi.Tree.Immutable;
 using Qsi.Data;
+using Qsi.Data.Object;
 using Qsi.Engines;
 using Qsi.Extensions;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
+using Qsi.Tree.Immutable;
 using Qsi.Utilities;
 
 namespace Qsi.Analyzers.Table
@@ -747,6 +748,21 @@ namespace Qsi.Analyzers.Table
             return tables.SelectMany(t => includeInvisible ? t.Columns : t.VisibleColumns);
         }
 
+        protected virtual QsiTableColumn ResolveColumnFromObject(TableCompileContext context, QsiQualifiedIdentifier identifier)
+        {
+            // TODO: how get object another type
+            var qsiObject = LookupObject(context, new QsiQualifiedIdentifier(identifier[..^1]), QsiObjectType.Sequence);
+
+            if (qsiObject is null)
+                return null;
+
+            return new QsiTableColumn
+            {
+                Name = qsiObject.Identifier[^1],
+                ObjectReferences = { qsiObject }
+            };
+        }
+
         protected virtual QsiTableColumn ResolveColumnReference(TableCompileContext context, IQsiColumnReferenceNode column)
         {
             context.ThrowIfCancellationRequested();
@@ -759,7 +775,14 @@ namespace Qsi.Analyzers.Table
                 sources = LookupDataTableStructuresInExpression(context, identifier).ToArray();
 
                 if (!sources.Any())
-                    throw new QsiException(QsiError.UnknownTableIn, identifier, scopeFieldList);
+                {
+                    var objColumn = ResolveColumnFromObject(context, column.Name);
+
+                    if (objColumn is null)
+                        throw new QsiException(QsiError.UnknownTableIn, identifier, scopeFieldList);
+
+                    return objColumn;
+                }
             }
             else if (column.Name.Level == 0)
             {
@@ -1034,6 +1057,13 @@ namespace Qsi.Analyzers.Table
             tables.AddRange(context.SourceTables);
 
             return tables.Where(t => Match(context, t, identifier));
+        }
+        #endregion
+
+        #region Object Lookup
+        private QsiObject LookupObject(TableCompileContext context, QsiQualifiedIdentifier identifier, QsiObjectType type)
+        {
+            return context.Engine.RepositoryProvider.LookupObject(ResolveQualifiedIdentifier(context, identifier), type);
         }
         #endregion
 

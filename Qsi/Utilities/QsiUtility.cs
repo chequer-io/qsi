@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Qsi.Data;
+using Qsi.Data.Object;
 
 namespace Qsi.Utilities
 {
