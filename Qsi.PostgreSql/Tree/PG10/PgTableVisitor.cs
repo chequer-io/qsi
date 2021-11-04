@@ -221,12 +221,37 @@ namespace Qsi.PostgreSql.Tree.PG10
                     columnNode = VisitColumnRef((ColumnRef)value);
                     break;
 
+                case NodeTag.T_TypeCast:
+                    columnNode = TreeHelper.Create<QsiDerivedColumnNode>(n =>
+                    {
+                        var node = ExpressionVisitor.VisitTypeCast((TypeCast)value);
+                        n.Expression.SetValue(node);
+
+                        var columnExpression = node.Parameters[0];
+
+                        // for nested typeCast
+                        while (columnExpression is not QsiColumnExpressionNode)
+                        {
+                            if (columnExpression is QsiInvokeExpressionNode invokeExpressionNode)
+                                columnExpression = invokeExpressionNode.Parameters[0];
+                            else
+                                break;
+                        }
+
+                        if (columnExpression is QsiColumnExpressionNode columnExpressionNode)
+                            n.Alias.Value = new QsiAliasNode
+                            {
+                                Name = ((QsiColumnReferenceNode)columnExpressionNode.Column.Value).Name[^1]
+                            };
+                    });
+
+                    break;
+
                 case NodeTag.T_A_Expr:
                 case NodeTag.T_A_ArrayExpr:
                 case NodeTag.T_A_Const:
                 case NodeTag.T_FuncCall:
                 case NodeTag.T_SubLink:
-                case NodeTag.T_TypeCast:
                 case NodeTag.T_TypeName:
                 case NodeTag.T_Value:
                 case NodeTag.T_CaseExpr:
@@ -242,9 +267,6 @@ namespace Qsi.PostgreSql.Tree.PG10
                     columnNode = TreeHelper.Create<QsiDerivedColumnNode>(n =>
                     {
                         n.Expression.SetValue(ExpressionVisitor.Visit(value));
-
-                        if (n.Expression.Value is QsiColumnExpressionNode { Column: { Value: QsiDerivedColumnNode { Alias: { Value: { } alias } } } })
-                            n.Alias.Value = alias;
                     });
 
                     break;

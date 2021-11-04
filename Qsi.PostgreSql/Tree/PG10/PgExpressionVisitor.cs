@@ -100,8 +100,8 @@ namespace Qsi.PostgreSql.Tree.PG10
 
         public QsiExpressionNode VisitAtomicIndices(A_Indices indices)
         {
-            if (indices.uidx is not null)
-                return VisitColumnRef((ColumnRef)indices.uidx[0]);
+            if (indices.uidx is { Length: 1 })
+                return Visit(indices.uidx[0]);
 
             throw TreeHelper.NotSupportedTree(indices);
         }
@@ -320,32 +320,17 @@ namespace Qsi.PostgreSql.Tree.PG10
             return node;
         }
 
-        public QsiExpressionNode VisitTypeCast(TypeCast typeCast)
+        public QsiInvokeExpressionNode VisitTypeCast(TypeCast typeCast)
         {
-            return TreeHelper.Create<QsiColumnExpressionNode>(n =>
+            return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
-                var column = new QsiDerivedColumnNode();
-                var castFunction = new QsiInvokeExpressionNode();
-
-                castFunction.Member.SetValue(new QsiFunctionExpressionNode
+                n.Member.SetValue(new QsiFunctionExpressionNode
                 {
                     Identifier = new QsiQualifiedIdentifier(new QsiIdentifier("CAST", false))
                 });
 
-                castFunction.Parameters.Add(Visit(typeCast.arg[0]));
-                castFunction.Parameters.AddRange(typeCast.typeName.Select(VisitTypeName));
-
-                column.Expression.Value = castFunction;
-
-                if (castFunction.Parameters[0] is QsiColumnExpressionNode { Column: { Value: QsiColumnReferenceNode columnReferenceNode } })
-                {
-                    column.Alias.Value = new QsiAliasNode
-                    {
-                        Name = columnReferenceNode.Name[^1]
-                    };
-                }
-
-                n.Column.Value = column;
+                n.Parameters.Add(Visit(typeCast.arg[0]));
+                n.Parameters.AddRange(typeCast.typeName.Select(VisitTypeName));
             });
         }
 
