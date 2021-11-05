@@ -26,7 +26,26 @@ namespace Qsi.Utilities
 
         public static IEnumerable<QsiTableColumn> FlattenReferenceColumns(QsiTableColumn column)
         {
-            return FlattenCore(column, c => c.References, x => IsReferenceType(x.Parent.Type));
+            return FlattenCore(column, c => c.References, x => x.Parent is not null && IsReferenceType(x.Parent.Type));
+        }
+
+        public static IEnumerable<QsiObject> FlattenObjectReferences(QsiTableColumn column)
+        {
+            return FlattenObjectReferencesInternal(column, c => c.References, new HashSet<QsiTableColumn>());
+
+            static IEnumerable<QsiObject> FlattenObjectReferencesInternal(QsiTableColumn source, Func<QsiTableColumn, IEnumerable<QsiTableColumn>> selector, HashSet<QsiTableColumn> visited)
+            {
+                foreach (var objectReferences in source.ObjectReferences)
+                    yield return objectReferences;
+
+                foreach (var child in selector(source).Where(x => !visited.Contains(x)))
+                {
+                    visited.Add(child);
+
+                    foreach (var childReference in FlattenObjectReferencesInternal(child, selector, visited))
+                        yield return childReference;
+                }
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
