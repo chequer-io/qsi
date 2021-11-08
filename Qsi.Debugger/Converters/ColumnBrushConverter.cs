@@ -45,7 +45,7 @@ namespace Qsi.Debugger.Converters
             if (item.Column.IsAnonymous)
                 return _grey;
 
-            if (item.Column.Parent?.Type is QsiTableType.Table or QsiTableType.View or QsiTableType.MaterializedView)
+            if (item.Column.Parent.Type is QsiTableType.Table or QsiTableType.View or QsiTableType.MaterializedView)
                 return _red;
 
             return _grey;

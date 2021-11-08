@@ -26,7 +26,7 @@ namespace Qsi.Utilities
 
         public static IEnumerable<QsiTableColumn> FlattenReferenceColumns(QsiTableColumn column)
         {
-            return FlattenCore(column, c => c.References, x => x.Parent is not null && IsReferenceType(x.Parent.Type));
+            return FlattenCore(column, c => c.References, x => IsReferenceType(x.Parent.Type));
         }
 
         public static IEnumerable<QsiObject> FlattenObjectReferences(QsiTableColumn column)

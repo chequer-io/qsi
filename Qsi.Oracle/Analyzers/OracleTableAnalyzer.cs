@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Qsi.Analyzers.Table;
 using Qsi.Analyzers.Table.Context;
 using Qsi.Data;
+using Qsi.Data.Object;
 using Qsi.Engines;
 using Qsi.Oracle.Internal;
 using Qsi.Oracle.Tree;
@@ -145,18 +146,36 @@ namespace Qsi.Oracle.Analyzers
                 if (OraclePseudoColumn.TryGetColumn(column.Name[0].Value, out var tableColumn))
                     return tableColumn;
 
+                // TODO: Work
+                // if (ResolveColumnFromObject(context, context))
+
                 throw;
             }
         }
 
-        protected override QsiTableColumn ResolveColumnFromObject(TableCompileContext context, QsiQualifiedIdentifier identifier)
+        private QsiTableColumn ResolveColumnFromObject(TableCompileContext context, QsiQualifiedIdentifier identifier)
         {
             var lastName = identifier[^1];
 
             if (lastName.Value != "CURRVAL" && lastName.Value != "NEXTVAL")
                 return null;
 
-            return base.ResolveColumnFromObject(context, identifier);
+            var qsiObject = LookupObject(context, new QsiQualifiedIdentifier(identifier[..^1]), QsiObjectType.Sequence);
+
+            if (qsiObject is null)
+                return null;
+
+            // TODO: Add Parent
+            return new QsiTableColumn
+            {
+                Name = qsiObject.Identifier[^1],
+                ObjectReferences = { qsiObject }
+            };
+        }
+
+        private QsiObject LookupObject(TableCompileContext context, QsiQualifiedIdentifier identifier, QsiObjectType type)
+        {
+            return context.Engine.RepositoryProvider.LookupObject(ResolveQualifiedIdentifier(context, identifier), type);
         }
 
         protected override IEnumerable<QsiTableColumn> ResolveDerivedColumns(TableCompileContext context, IQsiDerivedColumnNode column)
