@@ -8,7 +8,7 @@ namespace Qsi.Data
 {
     public class QsiTableColumn
     {
-        public QsiTableStructure Parent { get; internal set; }
+        public QsiTableStructure Parent { get; set; }
 
         public QsiIdentifier Name { get; set; }
 

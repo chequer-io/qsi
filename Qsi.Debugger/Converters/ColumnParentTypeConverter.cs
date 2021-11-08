@@ -13,6 +13,12 @@ namespace Qsi.Debugger.Converters
             if (value is not QsiColumnTreeItem item)
                 return value;
 
+            if (item.Column.ObjectReferences.Count > 0)
+            {
+                var objectReference = item.Column.ObjectReferences[0];
+                return $"{objectReference.Type}: {objectReference.Identifier}";
+            }
+
             var type = item.Column.Parent.Type.ToString().ToLower();
 
             if (item.Column.Parent.HasIdentifier)

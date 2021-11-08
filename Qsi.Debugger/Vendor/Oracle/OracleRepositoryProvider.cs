@@ -98,7 +98,7 @@ namespace Qsi.Debugger.Vendor.Oracle
                 case QsiObjectType.Sequence:
                     switch (name)
                     {
-                        case "TEST_SEQENCE":
+                        case "TEST_SEQUENCE":
                             return new QsiSequenceObject(CreateIdentifier("xe", "SYSTEM", "TEST_SEQUENCE"));
                     }
 

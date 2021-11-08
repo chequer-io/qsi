@@ -146,8 +146,14 @@ namespace Qsi.Oracle.Analyzers
                 if (OraclePseudoColumn.TryGetColumn(column.Name[0].Value, out var tableColumn))
                     return tableColumn;
 
-                // TODO: Work
-                // if (ResolveColumnFromObject(context, context))
+                throw;
+            }
+            catch (QsiException e) when (e.Error is QsiError.UnknownTableIn)
+            {
+                var objectColumn = ResolveColumnFromObject(context, column.Name);
+
+                if (objectColumn is not null)
+                    return objectColumn;
 
                 throw;
             }
@@ -165,11 +171,11 @@ namespace Qsi.Oracle.Analyzers
             if (qsiObject is null)
                 return null;
 
-            // TODO: Add Parent
             return new QsiTableColumn
             {
                 Name = qsiObject.Identifier[^1],
-                ObjectReferences = { qsiObject }
+                ObjectReferences = { qsiObject },
+                Parent = context.SourceTable
             };
         }
 
