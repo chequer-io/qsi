@@ -1,5 +1,6 @@
 ﻿using Qsi.Data;
 using System;
+using Qsi.Data.Object;
 using Qsi.Utilities;
 
 namespace Qsi.Debugger.Vendor.MySql
@@ -87,6 +88,11 @@ namespace Qsi.Debugger.Vendor.MySql
                     };
             }
 
+            return null;
+        }
+
+        protected override QsiObject LookupObject(QsiQualifiedIdentifier identifier, QsiObjectType type)
+        {
             return null;
         }
 

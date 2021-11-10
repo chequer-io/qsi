@@ -1,5 +1,7 @@
 ﻿using System;
 using Qsi.Data;
+using Qsi.Data.Object;
+using Qsi.Data.Object.Sequence;
 using Qsi.Utilities;
 
 namespace Qsi.Debugger.Vendor.Oracle
@@ -85,6 +87,25 @@ namespace Qsi.Debugger.Vendor.Oracle
         protected override QsiVariable LookupVariable(QsiQualifiedIdentifier identifier)
         {
             throw new NotImplementedException();
+        }
+
+        protected override QsiObject LookupObject(QsiQualifiedIdentifier identifier, QsiObjectType type)
+        {
+            var name = IdentifierUtility.Unescape(identifier[^1].Value);
+
+            switch (type)
+            {
+                case QsiObjectType.Sequence:
+                    switch (name)
+                    {
+                        case "TEST_SEQUENCE":
+                            return new QsiSequenceObject(CreateIdentifier("xe", "SYSTEM", "TEST_SEQUENCE"));
+                    }
+
+                    break;
+            }
+
+            return null;
         }
     }
 }

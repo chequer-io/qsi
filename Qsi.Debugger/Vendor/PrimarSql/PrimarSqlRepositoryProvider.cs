@@ -1,4 +1,5 @@
 ﻿using Qsi.Data;
+using Qsi.Data.Object;
 using Qsi.Utilities;
 
 namespace Qsi.Debugger.Vendor.PrimarSql
@@ -53,6 +54,11 @@ namespace Qsi.Debugger.Vendor.PrimarSql
         protected override QsiVariable LookupVariable(QsiQualifiedIdentifier identifier)
         {
             throw new System.NotImplementedException();
+        }
+
+        protected override QsiObject LookupObject(QsiQualifiedIdentifier identifier, QsiObjectType type)
+        {
+            return null;
         }
     }
 }
