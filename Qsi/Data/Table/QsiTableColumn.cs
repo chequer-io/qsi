@@ -8,6 +8,7 @@ namespace Qsi.Data
 {
     public class QsiTableColumn
     {
+        // TODO: Revert setter access modifier to internal after refactoring QsiTableAnalyzer
         public QsiTableStructure Parent { get; set; }
 
         public QsiIdentifier Name { get; set; }
