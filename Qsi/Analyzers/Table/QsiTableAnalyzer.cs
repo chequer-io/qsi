@@ -4,12 +4,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Qsi.Analyzers.Context;
 using Qsi.Analyzers.Table.Context;
-using Qsi.Tree.Immutable;
 using Qsi.Data;
+using Qsi.Data.Object;
 using Qsi.Engines;
 using Qsi.Extensions;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
+using Qsi.Tree.Immutable;
 using Qsi.Utilities;
 
 namespace Qsi.Analyzers.Table
@@ -986,7 +987,7 @@ namespace Qsi.Analyzers.Table
         #endregion
 
         #region Table Lookup
-        private QsiQualifiedIdentifier ResolveQualifiedIdentifier(TableCompileContext context, QsiQualifiedIdentifier identifier)
+        protected QsiQualifiedIdentifier ResolveQualifiedIdentifier(TableCompileContext context, QsiQualifiedIdentifier identifier)
         {
             context.ThrowIfCancellationRequested();
 
