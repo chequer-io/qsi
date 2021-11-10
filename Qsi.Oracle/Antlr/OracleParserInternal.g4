@@ -11582,6 +11582,7 @@ selectIntoStatement
         groupByClause?
         modelClause?
         windowClause?
+        ';'
     ;
 
 whileLoopStatement
@@ -11641,7 +11642,11 @@ plsqlIterator
     ;
 
 plsqlIntoClause
-    : INTO identifier (',' identifier)*
+    : INTO plsqlIntoClauseItem (',' plsqlIntoClauseItem)*
+    ;
+
+plsqlIntoClauseItem
+    : ':' identifier
     ;
 
 plsqlBulkCollectIntoClause
