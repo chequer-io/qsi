@@ -17,7 +17,7 @@ namespace Qsi.PostgreSql
 
         public override IQsiTreeDeparser CreateTreeDeparser()
         {
-            throw new System.NotImplementedException();
+            return new PostgreSqlDeparser();
         }
 
         public override IQsiScriptParser CreateScriptParser()
@@ -30,6 +30,7 @@ namespace Qsi.PostgreSql
             return new()
             {
                 AllowEmptyColumnsInSelect = true,
+                AllowEmptyColumnsInInline = true,
                 AllowNoAliasInDerivedTable = true
             };
         }

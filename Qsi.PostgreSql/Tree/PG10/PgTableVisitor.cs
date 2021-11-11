@@ -494,7 +494,7 @@ namespace Qsi.PostgreSql.Tree.PG10
 
             if (ListUtility.IsNullOrEmpty(columns))
             {
-                return TreeHelper.Create<QsiTableFunctionNode>(n =>
+                return TreeHelper.Create<PgRoutineNode>(n =>
                 {
                     n.Member.Value = source.Member.Value;
                     n.Parameters.AddRange(source.Parameters);

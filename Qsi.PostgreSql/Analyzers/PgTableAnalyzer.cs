@@ -24,21 +24,19 @@ namespace Qsi.PostgreSql.Analyzers
                     {
                         case IQsiColumnReferenceNode column:
                             IEnumerable<QsiTableStructure> sources = Enumerable.Empty<QsiTableStructure>();
-                            QsiTableStructure[] tableName = null;
 
                             if (context.SourceTable is not null)
                                 sources = new[] { context.SourceTable };
 
-                            if (column.Name.Level == 1)
-                                tableName = sources.Where(s => s.Identifier[^1].Value == column.Name[0].Value).ToArray();
+                            QsiTableStructure result = null;
 
-                            if (tableName is { Length: 1 })
+                            if (column.Name.Level == 1 && sources.FirstOrDefault(s => TryResolveTableNameFromColumn(s, column, out result)) is not null)
                             {
                                 foreach (var tableColumn in ResolveAllColumns(
                                     context,
                                     new QsiAllColumnNode
                                     {
-                                        Path = tableName[0].Identifier
+                                        Path = result.Identifier
                                     },
                                     false
                                 ))
@@ -62,6 +60,57 @@ namespace Qsi.PostgreSql.Analyzers
                         yield return qsiTableColumn;
 
                     break;
+            }
+
+            static bool TryResolveTableNameFromColumn(QsiTableStructure table, IQsiColumnReferenceNode column, out QsiTableStructure result)
+            {
+                if (table.Identifier is not null && table.Identifier[^1].Value == column.Name[0].Value)
+                {
+                    result = table;
+                    return true;
+                }
+
+                foreach (var tableStructure in table.References)
+                {
+                    if (TryResolveTableNameFromColumn(tableStructure, column, out result))
+                        return true;
+                }
+
+                result = default;
+                return false;
+            }
+        }
+
+        protected override QsiTableColumn ResolveColumnReference(TableCompileContext context, IQsiColumnReferenceNode column)
+        {
+            try
+            {
+                return base.ResolveColumnReference(context, column);
+            }
+            catch (QsiException e)
+            {
+                if (e.Error is QsiError.UnknownColumnIn)
+                {
+                    if (context.SourceTable.Columns.Count == 0)
+                        return new QsiTableColumn
+                        {
+                            Name = column.Name[^1],
+                            IsVisible = true,
+                            Parent = context.SourceTable
+                        };
+
+                    var table = context.SourceTables.FirstOrDefault(s => s.Columns.Count == 0);
+
+                    if (table is not null)
+                        return new QsiTableColumn
+                        {
+                            Name = column.Name[^1],
+                            IsVisible = true,
+                            Parent = table
+                        };
+                }
+
+                throw;
             }
         }
     }
