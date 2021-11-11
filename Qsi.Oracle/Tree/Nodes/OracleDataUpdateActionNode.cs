@@ -9,7 +9,17 @@ namespace Qsi.Oracle.Tree
 
         public QsiTreeNodeList<OracleSetValueExpressionNode> SetValueExpressions { get; }
 
-        public override IEnumerable<IQsiTreeNode> Children => SetValueExpressions;
+        public override IEnumerable<IQsiTreeNode> Children
+        {
+            get
+            {
+                foreach (var child in base.Children)
+                    yield return child;
+
+                foreach (var setValueExpression in SetValueExpressions)
+                    yield return setValueExpression;
+            }
+        }
 
         public OracleDataUpdateActionNode()
         {

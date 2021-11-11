@@ -4561,7 +4561,7 @@ namespace Qsi.Oracle.Tree.Visitors
             var node = OracleTree.CreateWithSpan<QsiBindParameterExpressionNode>(context);
 
             node.Prefix = ":";
-            node.Index = int.Parse(context.TK_INTEGER().GetText());
+            node.Index = int.Parse(context.TK_INTEGER().GetText()) - 1;
             node.NoSuffix = true;
             node.Type = QsiParameterType.Index;
 
