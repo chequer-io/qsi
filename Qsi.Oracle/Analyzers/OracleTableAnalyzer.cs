@@ -143,7 +143,7 @@ namespace Qsi.Oracle.Analyzers
             }
             catch (QsiException e) when (e.Error is QsiError.UnknownColumn or QsiError.UnknownColumnIn)
             {
-                if (OraclePseudoColumn.TryGetColumn(column.Name[0].Value, out var tableColumn))
+                if (OraclePseudoColumn.TryGetColumn(column.Name[^1].Value, out var tableColumn))
                     return tableColumn;
 
                 throw;
