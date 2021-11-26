@@ -1020,7 +1020,7 @@ namespace Qsi.Analyzers.Table
 
             return
                 context.Directives.FirstOrDefault(d => Match(d.Identifier, identifier)) ??
-                context.Engine.RepositoryProvider.LookupTable(ResolveQualifiedIdentifier(context, identifier));
+                context.Engine.RepositoryProvider.LookupTable(ResolveQualifiedIdentifier(context, identifier))?.Clone();
         }
 
         private IEnumerable<QsiTableStructure> LookupDataTableStructuresInExpression(TableCompileContext context, QsiQualifiedIdentifier identifier)
