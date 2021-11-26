@@ -34,5 +34,10 @@
         /// Get the pivot columns declaration.
         /// </summary>
         IQsiColumnsDeclarationNode PivotColumns { get; }
+
+        /// <summary>
+        /// Get the pivot expression declaration.
+        /// </summary>
+        IQsiExpressionNode PivotExpression { get; }
     }
 }

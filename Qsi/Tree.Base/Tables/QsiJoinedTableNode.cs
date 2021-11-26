@@ -17,6 +17,8 @@ namespace Qsi.Tree
 
         public QsiTreeNodeProperty<QsiColumnsDeclarationNode> PivotColumns { get; }
 
+        public QsiTreeNodeProperty<QsiExpressionNode> PivotExpression { get; }
+
         public override IEnumerable<IQsiTreeNode> Children
             => TreeHelper.YieldChildren(Left, Right, PivotColumns);
 
@@ -26,6 +28,8 @@ namespace Qsi.Tree
         IQsiTableNode IQsiJoinedTableNode.Right => Right.Value;
 
         IQsiColumnsDeclarationNode IQsiJoinedTableNode.PivotColumns => PivotColumns.Value;
+
+        IQsiExpressionNode IQsiJoinedTableNode.PivotExpression => PivotExpression.Value;
         #endregion
 
         public QsiJoinedTableNode()
@@ -33,6 +37,7 @@ namespace Qsi.Tree
             Left = new QsiTreeNodeProperty<QsiTableNode>(this);
             Right = new QsiTreeNodeProperty<QsiTableNode>(this);
             PivotColumns = new QsiTreeNodeProperty<QsiColumnsDeclarationNode>(this);
+            PivotExpression = new QsiTreeNodeProperty<QsiExpressionNode>(this);
         }
     }
 }

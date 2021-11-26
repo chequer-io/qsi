@@ -20,6 +20,8 @@ namespace Qsi.Tree.Immutable
 
         public IQsiColumnsDeclarationNode PivotColumns { get; }
 
+        public IQsiExpressionNode PivotExpression { get; }
+
         public IUserDataHolder UserData { get; }
 
         public IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Left, Right, PivotColumns);
@@ -32,6 +34,7 @@ namespace Qsi.Tree.Immutable
             bool isComma,
             IQsiTableNode right,
             IQsiColumnsDeclarationNode pivotColumns,
+            IQsiExpressionNode pivotExpression,
             IUserDataHolder userData)
         {
             Parent = parent;
@@ -41,6 +44,7 @@ namespace Qsi.Tree.Immutable
             IsComma = isComma;
             Right = right;
             PivotColumns = pivotColumns;
+            PivotExpression = pivotExpression;
             UserData = userData;
         }
     }
