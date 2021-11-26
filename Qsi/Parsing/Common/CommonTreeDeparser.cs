@@ -344,10 +344,15 @@ namespace Qsi.Parsing.Common
             writer.Write(joinType);
             DeparseTreeNode(writer, node.Right, script);
 
-            if (node.PivotColumns is not null)
+            if (node.PivotColumns is { } pivotColumns)
             {
                 writer.Write(" USING ");
-                DeparseTreeNodeWithParenthesis(writer, node.PivotColumns, script);
+                DeparseTreeNodeWithParenthesis(writer, pivotColumns, script);
+            }
+            else if (node.PivotExpression is { } pivotExpression)
+            {
+                writer.Write(" ON ");
+                DeparseTreeNode(writer, pivotExpression, script);
             }
         }
 
