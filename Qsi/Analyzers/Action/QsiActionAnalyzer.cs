@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -149,7 +149,20 @@ namespace Qsi.Analyzers.Action
         [MethodImpl(MethodImplOptions.NoInlining)]
         protected virtual IEnumerable<DataManipulationTarget> ResolveDataManipulationTargets(IAnalyzerContext context, QsiTableStructure table)
         {
-            return ResolveDataManipulationTargetsCore(context, table.Columns.SelectMany(ResolveDataManipulationTargetColumns));
+            IEnumerable<DataManipulationTargetColumnPivot> pivots =
+                table.Columns.SelectMany((declaredColumn, declaredOrder) =>
+                {
+                    try
+                    {
+                        return ResolveDataManipulationTargetColumns(declaredColumn, declaredOrder);
+                    }
+                    catch (QsiException e) when (e.Error is QsiError.NotUpdatableColumn)
+                    {
+                        return Enumerable.Empty<DataManipulationTargetColumnPivot>();
+                    }
+                });
+
+            return ResolveDataManipulationTargetsCore(context, pivots);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
