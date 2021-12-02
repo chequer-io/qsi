@@ -77,9 +77,10 @@ namespace Qsi.PrimarSql.Analyzers
             return await base.OnExecute(context);
         }
 
-        protected override QsiTableColumn ResolveColumnReference(TableCompileContext context, IQsiColumnReferenceNode column)
+        protected override QsiTableColumn[] ResolveColumnReference(TableCompileContext context, IQsiColumnReferenceNode column, out QsiQualifiedIdentifier implicitTableWildcardTarget)
         {
             context.ThrowIfCancellationRequested();
+            implicitTableWildcardTarget = default;
 
             if (column is not PrimarSqlColumnReferenceNode columnReferenceNode)
                 throw new ArgumentException(nameof(column));
@@ -107,10 +108,10 @@ namespace Qsi.PrimarSql.Analyzers
                 };
 
                 source.Columns.Add(newColumn);
-                return newColumn;
+                return new QsiTableColumn[] { newColumn };
             }
 
-            return columns[0];
+            return new QsiTableColumn[] { columns[0] };
         }
 
         protected override IEnumerable<QsiTableColumn> ResolveColumnsInExpression(TableCompileContext context, IQsiExpressionNode expression)

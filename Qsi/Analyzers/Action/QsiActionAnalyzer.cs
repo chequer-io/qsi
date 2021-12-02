@@ -13,6 +13,7 @@ using Qsi.Engines;
 using Qsi.Extensions;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
+using Qsi.Tree.Data;
 using Qsi.Tree.Immutable;
 using Qsi.Utilities;
 
@@ -523,7 +524,7 @@ namespace Qsi.Analyzers.Action
                         targetRow.Items[pivot.TargetOrder] = QsiDataValue.Unset;
                     }
                 }
-                
+
                 target.DuplicateRows.Add(targetRow);
             }
         }
@@ -559,13 +560,58 @@ namespace Qsi.Analyzers.Action
             QsiTableStructure table;
             int tableColumnCount;
 
-            using (var tableContext = new TableCompileContext(context))
+            var actionTarget = action.Target;
+
+            var options = context.Options with
             {
-                table = await tableAnalyzer.BuildTableStructure(tableContext, action.Target);
+                UseImplicitTableWildcardInSelect = actionTarget is IQsiDerivedTableNode
+            };
+
+            using (var tableContext = new TableCompileContext(context, options))
+            {
+                table = await tableAnalyzer.BuildTableStructure(tableContext, actionTarget);
                 tableColumnCount = table.Columns.Count;
+
+                // TODO: How to compile without IsImplicitTableWildcard options
+                HashSet<QsiQualifiedIdentifier> implicitTableWildcardSources = table.Columns
+                    .Select(x => x.ImplicitTableWildcardTarget)
+                    .Where(x => x is not null)
+                    .ToHashSet(QualifiedIdentifierComparer);
+
+                if (implicitTableWildcardSources.Count > 0)
+                {
+                    var derived = (IQsiDerivedTableNode)actionTarget;
+                    IQsiColumnNode[] columnNodes = derived.Columns.Columns.ToArray();
+
+                    for (int i = 0; i < columnNodes.Length; i++)
+                    {
+                        if (columnNodes[i] is IQsiColumnReferenceNode referenceNode &&
+                            implicitTableWildcardSources.Contains(referenceNode.Name))
+                        {
+                            columnNodes[i] = new QsiAllColumnNode { Path = referenceNode.Name };
+                        }
+                    }
+
+                    actionTarget = new ImmutableDerivedTableNode(
+                        derived.Parent,
+                        derived.Directives,
+                        new ImmutableColumnsDeclarationNode(
+                            derived.Columns.Parent,
+                            columnNodes,
+                            null
+                        ),
+                        derived.Source,
+                        null,
+                        derived.Where,
+                        derived.Grouping,
+                        derived.Order,
+                        derived.Limit,
+                        null
+                    );
+                }
             }
 
-            var commonTableNode = ReassembleCommonTableNode(action.Target);
+            var commonTableNode = ReassembleCommonTableNode(actionTarget);
             var dataTable = await GetDataTableByCommonTableNode(context, commonTableNode);
 
             if (ListUtility.IsNullOrEmpty(action.Columns) && dataTable.Table.Columns.Count != tableColumnCount)
@@ -602,7 +648,7 @@ namespace Qsi.Analyzers.Action
                                 targetRow.Items[pivot.TargetOrder] = QsiDataValue.Unset;
                             }
                         }
-                        
+
                         target.DeleteRows.Add(targetRow);
                     }
 
@@ -692,7 +738,7 @@ namespace Qsi.Analyzers.Action
                                 newRow.Items[pivot.TargetOrder] = QsiDataValue.Unknown;
                             }
                         }
-                        
+
                         target.UpdateBeforeRows.Add(oldRow);
                         target.UpdateAfterRows.Add(newRow);
                     }

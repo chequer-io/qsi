@@ -21,7 +21,11 @@ namespace Qsi.Analyzers.Table.Context
         private readonly List<QsiTableStructure> _directives;
         private Stack<QsiQualifiedIdentifier> _identifierScope;
 
-        public TableCompileContext(IAnalyzerContext context) : base(context)
+        public TableCompileContext(IAnalyzerContext context) : this(context, context.Options)
+        {
+        }
+
+        public TableCompileContext(IAnalyzerContext context, QsiAnalyzerOptions options) : base(context, options)
         {
             _directives = new List<QsiTableStructure>();
             Directives = _directives;
@@ -29,7 +33,7 @@ namespace Qsi.Analyzers.Table.Context
             SourceTables = new List<QsiTableStructure>();
         }
 
-        public TableCompileContext(TableCompileContext context) : this((IAnalyzerContext)context)
+        public TableCompileContext(TableCompileContext context) : this(context, context.Options)
         {
             Parent = context;
             Depth = context.Depth + 1;

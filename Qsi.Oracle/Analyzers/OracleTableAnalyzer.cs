@@ -34,7 +34,8 @@ namespace Qsi.Oracle.Analyzers
             {
                 case OracleColumnOuterJoinExpressionNode e:
                 {
-                    yield return ResolveColumnReference(context, e.Column.Value);
+                    foreach (var column in ResolveColumnReference(context, e.Column.Value, out _))
+                        yield return column;
 
                     break;
                 }
@@ -44,7 +45,7 @@ namespace Qsi.Oracle.Analyzers
                     if (e.Columns.IsEmpty)
                         yield break;
 
-                    foreach (var c in e.Columns.Value.SelectMany(x => ResolveColumns(context, x)))
+                    foreach (var c in e.Columns.Value.SelectMany(x => ResolveColumns(context, x, out _)))
                         yield return c;
 
                     break;
@@ -116,13 +117,13 @@ namespace Qsi.Oracle.Analyzers
                 }
 
                 case OracleJsonColumnExpressionNode e:
-                    foreach (var c in e.Columns.SelectMany(x => ResolveColumns(context, x)))
+                    foreach (var c in e.Columns.SelectMany(x => ResolveColumns(context, x, out _)))
                         yield return c;
 
                     break;
 
                 case OracleXmlColumnDefinitionNode e:
-                    foreach (var c in ResolveColumns(context, e.Column.Value))
+                    foreach (var c in ResolveColumns(context, e.Column.Value, out _))
                         yield return c;
 
                     break;
@@ -135,16 +136,18 @@ namespace Qsi.Oracle.Analyzers
             }
         }
 
-        protected override QsiTableColumn ResolveColumnReference(TableCompileContext context, IQsiColumnReferenceNode column)
+        protected override QsiTableColumn[] ResolveColumnReference(TableCompileContext context, IQsiColumnReferenceNode column, out QsiQualifiedIdentifier implicitTableWildcardTarget)
         {
+            implicitTableWildcardTarget = default;
+
             try
             {
-                return base.ResolveColumnReference(context, column);
+                return base.ResolveColumnReference(context, column, out implicitTableWildcardTarget);
             }
             catch (QsiException e) when (e.Error is QsiError.UnknownColumn or QsiError.UnknownColumnIn)
             {
                 if (OraclePseudoColumn.TryGetColumn(column.Name[^1].Value, out var tableColumn))
-                    return tableColumn;
+                    return new[] { tableColumn };
 
                 throw;
             }
@@ -153,7 +156,7 @@ namespace Qsi.Oracle.Analyzers
                 var objectColumn = ResolveColumnFromObject(context, column.Name);
 
                 if (objectColumn is not null)
-                    return objectColumn;
+                    return new[] { objectColumn };
 
                 throw;
             }

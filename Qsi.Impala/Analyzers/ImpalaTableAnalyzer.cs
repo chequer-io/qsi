@@ -57,7 +57,7 @@ namespace Qsi.Impala.Analyzers
 
                     IEnumerable<QsiTableColumn> references =
                         value is IQsiColumnExpressionNode columnExpressionNode ?
-                            ResolveColumns(context, columnExpressionNode.Column) :
+                            ResolveColumns(context, columnExpressionNode.Column, out _) :
                             ResolveColumnsInExpression(context, value);
 
                     structure.Columns[i].References.AddRange(references);

@@ -33,7 +33,7 @@ namespace Qsi.Data
             set => _isExpression = value;
         }
 
-        internal IQsiColumnNode ColumnNode { get; set; }
+        internal QsiQualifiedIdentifier ImplicitTableWildcardTarget { get; set; }
 
         internal bool _isExpression;
 
@@ -47,7 +47,7 @@ namespace Qsi.Data
             column.IsBinding = IsBinding;
             column.IsDynamic = IsDynamic;
             column.Default = Default;
-            column.ColumnNode = ColumnNode;
+            column.ImplicitTableWildcardTarget = ImplicitTableWildcardTarget;
             column._isExpression = _isExpression;
 
             return column;
