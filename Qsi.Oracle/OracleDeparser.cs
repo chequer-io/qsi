@@ -195,20 +195,6 @@ namespace Qsi.Oracle
             }
         }
 
-        protected override void DeparseJoinedTableNode(ScriptWriter writer, IQsiJoinedTableNode node, QsiScript script)
-        {
-            base.DeparseJoinedTableNode(writer, node, script);
-
-            if (node is OracleJoinedTableNode oracleNode)
-            {
-                if (!oracleNode.OnCondition.IsEmpty)
-                {
-                    writer.Write(" ON ");
-                    DeparseTreeNodeWithParenthesis(writer, oracleNode.OnCondition.Value, script);
-                }
-            }
-        }
-
         protected override void DeparseExpressionNode(ScriptWriter writer, IQsiExpressionNode node, QsiScript script)
         {
             if (node is OracleColumnOuterJoinExpressionNode outerJoinExpressionNode)
