@@ -50,8 +50,6 @@ namespace Qsi.Oracle.Tree.Visitors
             if (singleTableInsert is not null)
             {
                 var insertIntoClause = singleTableInsert.insertIntoClause();
-                var valuesClause = singleTableInsert.valuesClause();
-
                 var targetNode = TableVisitor.VisitDmlTableExpressionClause(insertIntoClause.dmlTableExpressionClause());
 
                 if (targetNode is not QsiTableReferenceNode referenceNode)
@@ -67,6 +65,9 @@ namespace Qsi.Oracle.Tree.Visitors
                         .ToArray();
                 }
 
+                var subquery = singleTableInsert.subquery();
+                var valuesClause = singleTableInsert.valuesClause();
+
                 if (valuesClause is not null)
                 {
                     var rowValueNode = OracleTree.CreateWithSpan<QsiRowValueExpressionNode>(valuesClause);
@@ -81,6 +82,12 @@ namespace Qsi.Oracle.Tree.Visitors
                     );
 
                     node.Values.Add(rowValueNode);
+                }
+
+                if (subquery is not null)
+                {
+                    var subqueryTableNode = TableVisitor.VisitSubquery(subquery);
+                    node.ValueTable.Value = subqueryTableNode;
                 }
             }
             else
