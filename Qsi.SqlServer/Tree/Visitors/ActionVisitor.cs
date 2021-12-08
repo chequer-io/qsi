@@ -242,12 +242,12 @@ namespace Qsi.SqlServer.Tree
                 });
             }
 
-            var joinedTable = TreeHelper.Create<SqlServerJoinedTableNode>(n =>
+            var joinedTable = TreeHelper.Create<QsiJoinedTableNode>(n =>
             {
                 n.Left.SetValue(leftTable);
                 n.Right.SetValue(rightTable);
                 n.JoinType = "JOIN";
-                n.Expression.SetValue(ExpressionVisitor.VisitBooleanExpression(mergeSpecification.SearchCondition));
+                n.PivotExpression.SetValue(ExpressionVisitor.VisitBooleanExpression(mergeSpecification.SearchCondition));
             });
 
             var leftTableColumnDeclaration = TreeHelper.Create<QsiColumnsDeclarationNode>(n =>

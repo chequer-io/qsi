@@ -20,7 +20,7 @@ namespace Qsi.Tree
         public QsiTreeNodeProperty<QsiExpressionNode> PivotExpression { get; }
 
         public override IEnumerable<IQsiTreeNode> Children
-            => TreeHelper.YieldChildren(Left, Right, PivotColumns);
+            => TreeHelper.YieldChildren(Left, Right, PivotColumns, PivotExpression);
 
         #region Explicit
         IQsiTableNode IQsiJoinedTableNode.Left => Left.Value;

@@ -544,15 +544,15 @@ namespace Qsi.SqlServer.Tree
             throw TreeHelper.NotSupportedTree(joinTableReference);
         }
 
-        public SqlServerJoinedTableNode CreateJoinedTableNode(string joinType, JoinTableReference joinTableReference, BooleanExpression searchCondition = null)
+        public QsiJoinedTableNode CreateJoinedTableNode(string joinType, JoinTableReference joinTableReference, BooleanExpression searchCondition = null)
         {
-            return TreeHelper.Create<SqlServerJoinedTableNode>(n =>
+            return TreeHelper.Create<QsiJoinedTableNode>(n =>
             {
                 n.Left.SetValue(VisitTableReference(joinTableReference.FirstTableReference));
                 n.Right.SetValue(VisitTableReference(joinTableReference.SecondTableReference));
 
-                if (searchCondition != null)
-                    n.Expression.SetValue(ExpressionVisitor.VisitBooleanExpression(searchCondition));
+                if (searchCondition is not null)
+                    n.PivotExpression.SetValue(ExpressionVisitor.VisitBooleanExpression(searchCondition));
 
                 n.JoinType = joinType;
 

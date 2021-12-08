@@ -35,13 +35,13 @@ namespace Qsi.Trino.Tree
             return node;
         }
 
-        public static TrinoJoinedTableNode CreateJoinedTable(QsiTableNode left, QsiTableNode right, QsiExpressionNode onCondition)
+        public static QsiJoinedTableNode CreateJoinedTable(QsiTableNode left, QsiTableNode right, QsiExpressionNode onCondition)
         {
-            var node = new TrinoJoinedTableNode();
+            var node = new QsiJoinedTableNode();
             node.Left.Value = left;
             node.Right.Value = right;
             node.JoinType = "JOIN";
-            node.OnCondition.Value = onCondition;
+            node.PivotExpression.Value = onCondition;
 
             return node;
         }

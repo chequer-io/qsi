@@ -44,13 +44,13 @@ namespace Qsi.Oracle.Utilities
             return CreateDerivedTable(source, IdentifierVisitor.VisitAlias(alias));
         }
 
-        public static OracleJoinedTableNode CreateJoinedTable(QsiTableNode left, QsiTableNode right, QsiExpressionNode onCondition)
+        public static QsiJoinedTableNode CreateJoinedTable(QsiTableNode left, QsiTableNode right, QsiExpressionNode pivotExpression)
         {
-            var node = new OracleJoinedTableNode();
+            var node = new QsiJoinedTableNode();
             node.Left.Value = left;
             node.Right.Value = right;
             node.JoinType = "JOIN";
-            node.OnCondition.Value = onCondition;
+            node.PivotExpression.Value = pivotExpression;
 
             return node;
         }
