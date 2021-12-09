@@ -309,7 +309,7 @@ namespace Qsi.Oracle.Tree.Visitors
             MergeUpdateClauseContext mergeUpdateClause,
             QsiTableNode leftNode,
             QsiTableNode rightNode,
-            QsiExpressionNode onCondition
+            QsiExpressionNode pivotExpression
         )
         {
             if (context.leftAlias is not null)
@@ -318,7 +318,7 @@ namespace Qsi.Oracle.Tree.Visitors
             if (context.rightAlias is not null)
                 rightNode = OracleHelper.CreateDerivedTable(rightNode, context.rightAlias);
 
-            var joinedTable = OracleHelper.CreateJoinedTable(leftNode, rightNode, onCondition);
+            var joinedTable = OracleHelper.CreateJoinedTable(leftNode, rightNode, pivotExpression);
 
             QsiTableNode updateTarget = joinedTable;
 
@@ -402,7 +402,7 @@ namespace Qsi.Oracle.Tree.Visitors
             MergeInsertClauseContext mergeInsertClause,
             QsiTableReferenceNode leftNode,
             QsiTableNode rightNode,
-            QsiExpressionNode onCondition
+            QsiExpressionNode pivotExpression
         )
         {
             QsiTableNode rightSource;
@@ -440,7 +440,7 @@ namespace Qsi.Oracle.Tree.Visitors
 
             var minusJoinTableLeftSource = OracleHelper.CreateDerivedTable(rightSource);
 
-            var matchedItemsNode = OracleHelper.CreateJoinedTable(leftNode, rightSource, onCondition);
+            var matchedItemsNode = OracleHelper.CreateJoinedTable(leftNode, rightSource, pivotExpression);
             var selectInJoinedTableNode = OracleHelper.CreateDerivedTableWithPath(matchedItemsNode, rightPath);
 
             var minusJoinTable = new QsiCompositeTableNode();

@@ -295,7 +295,7 @@ namespace Qsi.Oracle.Tree.Visitors
             return node;
         }
 
-        public static OracleJoinedTableNode VisitTableJoinClause(QsiTableNode leftNode, IToken leftToken, TableJoinClauseContext context)
+        public static QsiJoinedTableNode VisitTableJoinClause(QsiTableNode leftNode, IToken leftToken, TableJoinClauseContext context)
         {
             return context.children[0] switch
             {
@@ -306,9 +306,9 @@ namespace Qsi.Oracle.Tree.Visitors
             };
         }
 
-        public static OracleJoinedTableNode VisitInnerCrossJoinClause(IToken leftToken, InnerCrossJoinClauseContext context)
+        public static QsiJoinedTableNode VisitInnerCrossJoinClause(IToken leftToken, InnerCrossJoinClauseContext context)
         {
-            var node = OracleTree.CreateWithSpan<OracleJoinedTableNode>(leftToken, context.Stop);
+            var node = OracleTree.CreateWithSpan<QsiJoinedTableNode>(leftToken, context.Stop);
 
             switch (context)
             {
@@ -326,7 +326,7 @@ namespace Qsi.Oracle.Tree.Visitors
                     // ON condition
                     else
                     {
-                        node.OnCondition.Value = ExpressionVisitor.VisitCondition(innerJoinClause.condition());
+                        node.PivotExpression.Value = ExpressionVisitor.VisitCondition(innerJoinClause.condition());
                     }
 
                     break;
@@ -352,9 +352,9 @@ namespace Qsi.Oracle.Tree.Visitors
             return node;
         }
 
-        public static OracleJoinedTableNode VisitOuterJoinClause(QsiTableNode leftNode, IToken leftToken, OuterJoinClauseContext context)
+        public static QsiJoinedTableNode VisitOuterJoinClause(QsiTableNode leftNode, IToken leftToken, OuterJoinClauseContext context)
         {
-            var node = OracleTree.CreateWithSpan<OracleJoinedTableNode>(leftToken, context.Stop);
+            var node = OracleTree.CreateWithSpan<QsiJoinedTableNode>(leftToken, context.Stop);
 
             SetTableNodePartition(leftNode, context.leftQpc);
 
@@ -378,7 +378,7 @@ namespace Qsi.Oracle.Tree.Visitors
             // ON condition
             else if (context.HasToken(ON))
             {
-                node.OnCondition.Value = ExpressionVisitor.VisitCondition(context.condition());
+                node.PivotExpression.Value = ExpressionVisitor.VisitCondition(context.condition());
             }
 
             return node;
@@ -397,9 +397,9 @@ namespace Qsi.Oracle.Tree.Visitors
             }
         }
 
-        public static OracleJoinedTableNode VisitCrossOuterApplyClause(IToken leftToken, CrossOuterApplyClauseContext context)
+        public static QsiJoinedTableNode VisitCrossOuterApplyClause(IToken leftToken, CrossOuterApplyClauseContext context)
         {
-            var node = OracleTree.CreateWithSpan<OracleJoinedTableNode>(leftToken, context.Stop);
+            var node = OracleTree.CreateWithSpan<QsiJoinedTableNode>(leftToken, context.Stop);
 
             node.JoinType = context.HasToken(CROSS) ? "CROSS APPLY" : "OUTER APPLY";
 
