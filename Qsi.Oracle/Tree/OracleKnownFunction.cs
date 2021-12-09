@@ -105,5 +105,13 @@
         // GROUPING SETS ( {rollupCubeClause|groupingExpressionList} )
         // ▶ GROUPING_SETS( {rollupCubeClause|groupingExpressionList} )
         public const string GroupingSets = "GROUPING_SETS";
+
+        // JSON [ jsonObjectContent ]
+        // ▶ JSON_ARRAY ( jsonObjectContent )
+        public const string JsonArray = "JSON_ARRAY";
+
+        // JSON ( jsonObjectContent )
+        // ▶ JSON_OBJECT ( jsonObjectContent )
+        public const string JsonObject = "JSON_OBJECT";
     }
 }

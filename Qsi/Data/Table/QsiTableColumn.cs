@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Qsi.Data.Object;
 using Qsi.Tree;
 using Qsi.Utilities;
 
@@ -7,11 +8,14 @@ namespace Qsi.Data
 {
     public class QsiTableColumn
     {
-        public QsiTableStructure Parent { get; internal set; }
+        // TODO: Revert setter access modifier to internal after refactoring QsiTableAnalyzer
+        public QsiTableStructure Parent { get; set; }
 
         public QsiIdentifier Name { get; set; }
 
         public List<QsiTableColumn> References { get; } = new();
+
+        public List<QsiObject> ObjectReferences { get; } = new();
 
         public bool IsVisible { get; set; } = true;
 
@@ -29,7 +33,7 @@ namespace Qsi.Data
             set => _isExpression = value;
         }
 
-        internal IQsiColumnNode ColumnNode { get; set; }
+        internal QsiQualifiedIdentifier ImplicitTableWildcardTarget { get; set; }
 
         internal bool _isExpression;
 
@@ -43,7 +47,7 @@ namespace Qsi.Data
             column.IsBinding = IsBinding;
             column.IsDynamic = IsDynamic;
             column.Default = Default;
-            column.ColumnNode = ColumnNode;
+            column.ImplicitTableWildcardTarget = ImplicitTableWildcardTarget;
             column._isExpression = _isExpression;
 
             return column;

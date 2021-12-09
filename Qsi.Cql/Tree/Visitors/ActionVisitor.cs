@@ -17,9 +17,9 @@ namespace Qsi.Cql.Tree
         {
             var node = new QsiChangeSearchPathActionNode
             {
-                Identifiers = new []
+                Identifiers = new[]
                 {
-                    context.ks.id, 
+                    new QsiQualifiedIdentifier(context.ks.id)
                 }
             };
 

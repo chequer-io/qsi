@@ -324,7 +324,7 @@ namespace Qsi.Hana.Tree.Visitors
             {
                 Identifiers = new[]
                 {
-                    context.identifier().qi
+                    new QsiQualifiedIdentifier(context.identifier().qi)
                 }
             };
 

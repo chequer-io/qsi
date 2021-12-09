@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Qsi.Data;
@@ -18,7 +17,10 @@ namespace Qsi.Impala.Tree.Visitors
         public static IQsiTreeNode VisitUseStmt(Use_stmtContext context)
         {
             var node = ImpalaTree.CreateWithSpan<QsiChangeSearchPathActionNode>(context);
-            node.Identifiers = new[] { IdentifierVisitor.VisitIdentOrDefault(context.ident_or_default()) };
+            node.Identifiers = new[]
+            {
+                new QsiQualifiedIdentifier(IdentifierVisitor.VisitIdentOrDefault(context.ident_or_default()))
+            };
             return node;
         }
 

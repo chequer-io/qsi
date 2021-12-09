@@ -33,20 +33,20 @@ namespace Qsi.Oracle.Tree.Visitors
         // [[database] .] object [@ dblink]
         public static QsiQualifiedIdentifier VisitFullObjectPath(FullObjectPathContext context)
         {
-            var dbIdentifier = context.identifierFragment() != null ?
+            var dbIdentifier = context.identifierFragment() is not null ?
                 VisitIdentifierFragment(context.identifierFragment())
                 : null;
 
             var objIdentifier = VisitIdentifier(context.identifier());
 
-            return dbIdentifier != null ?
+            return dbIdentifier is not null ?
                 new QsiQualifiedIdentifier(dbIdentifier, objIdentifier) :
                 new QsiQualifiedIdentifier(objIdentifier);
         }
 
         public static QsiIdentifier VisitIdentifier(IdentifierContext context)
         {
-            if (context.dblink() != null)
+            if (context.dblink() is not null)
                 throw new QsiException(QsiError.NotSupportedFeature, "dblink");
 
             return VisitIdentifierFragment(context.identifierFragment());
@@ -61,6 +61,14 @@ namespace Qsi.Oracle.Tree.Visitors
         }
 
         public static QsiAliasNode VisitAlias(TAliasContext context)
+        {
+            var node = OracleTree.CreateWithSpan<QsiAliasNode>(context);
+            node.Name = VisitIdentifier(context.identifier());
+
+            return node;
+        }
+
+        public static QsiAliasNode VisitAlias(CAliasContext context)
         {
             var node = OracleTree.CreateWithSpan<QsiAliasNode>(context);
             node.Name = VisitIdentifier(context.identifier());

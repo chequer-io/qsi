@@ -52,6 +52,7 @@ namespace Qsi.Impala.Tree.Visitors
                 var node = ImpalaTree.CreateWithSpan<QsiCompositeTableNode>(context);
 
                 node.Sources.AddRange(sources);
+                node.CompositeType = string.Join(" ", context._set_op.children.Select(c => c.GetText()));
 
                 if (orderByClause is not null)
                     node.Order.Value = ExpressionVisitor.VisitOrderByClause(orderByClause);

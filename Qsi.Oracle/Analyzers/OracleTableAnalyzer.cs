@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Qsi.Analyzers.Table;
 using Qsi.Analyzers.Table.Context;
 using Qsi.Data;
+using Qsi.Data.Object;
 using Qsi.Engines;
 using Qsi.Oracle.Internal;
 using Qsi.Oracle.Tree;
@@ -33,7 +34,8 @@ namespace Qsi.Oracle.Analyzers
             {
                 case OracleColumnOuterJoinExpressionNode e:
                 {
-                    yield return ResolveColumnReference(context, e.Column.Value);
+                    foreach (var column in ResolveColumnReference(context, e.Column.Value, out _))
+                        yield return column;
 
                     break;
                 }
@@ -43,7 +45,7 @@ namespace Qsi.Oracle.Analyzers
                     if (e.Columns.IsEmpty)
                         yield break;
 
-                    foreach (var c in e.Columns.Value.SelectMany(x => ResolveColumns(context, x)))
+                    foreach (var c in e.Columns.Value.SelectMany(x => ResolveColumns(context, x, out _)))
                         yield return c;
 
                     break;
@@ -99,6 +101,10 @@ namespace Qsi.Oracle.Analyzers
                 case OracleIntervalExpressionNode:
                 case OracleLimitExpressionNode:
                 case OracleNamedParameterExpressionNode:
+                case OracleJsonKeepOperationExpressionNode:
+                case OracleXmlAttributesExpressionNode:
+                case OracleXmlFunctionExpressionNode:
+                case OracleXmlColumnAttributeItemNode:
                 {
                     foreach (var column in expression.Children
                         .OfType<IQsiExpressionNode>()
@@ -110,6 +116,18 @@ namespace Qsi.Oracle.Analyzers
                     break;
                 }
 
+                case OracleJsonColumnExpressionNode e:
+                    foreach (var c in e.Columns.SelectMany(x => ResolveColumns(context, x, out _)))
+                        yield return c;
+
+                    break;
+
+                case OracleXmlColumnDefinitionNode e:
+                    foreach (var c in ResolveColumns(context, e.Column.Value, out _))
+                        yield return c;
+
+                    break;
+
                 default:
                     foreach (var c in base.ResolveColumnsInExpression(context, expression))
                         yield return c;
@@ -118,19 +136,63 @@ namespace Qsi.Oracle.Analyzers
             }
         }
 
-        protected override QsiTableColumn ResolveColumnReference(TableCompileContext context, IQsiColumnReferenceNode column)
+        protected override QsiTableColumn[] ResolveColumnReference(TableCompileContext context, IQsiColumnReferenceNode column, out QsiQualifiedIdentifier implicitTableWildcardTarget)
         {
+            implicitTableWildcardTarget = default;
+
             try
             {
-                return base.ResolveColumnReference(context, column);
+                return base.ResolveColumnReference(context, column, out implicitTableWildcardTarget);
             }
             catch (QsiException e) when (e.Error is QsiError.UnknownColumn or QsiError.UnknownColumnIn)
             {
-                if (OraclePseudoColumn.TryGetColumn(column.Name[0].Value, out var tableColumn))
-                    return tableColumn;
+                if (OraclePseudoColumn.TryGetColumn(column.Name[^1].Value, out var tableColumn))
+                    return new[] { tableColumn };
 
                 throw;
             }
+            catch (QsiException e) when (e.Error is QsiError.UnknownTableIn)
+            {
+                var objectColumn = ResolveColumnFromObject(context, column.Name);
+
+                if (objectColumn is not null)
+                    return new[] { objectColumn };
+
+                throw;
+            }
+        }
+
+        private QsiTableColumn ResolveColumnFromObject(TableCompileContext context, QsiQualifiedIdentifier identifier)
+        {
+            var lastName = identifier[^1];
+
+            if (lastName.Value != "CURRVAL" && lastName.Value != "NEXTVAL")
+                return null;
+
+            var qsiObject = LookupObject(context, new QsiQualifiedIdentifier(identifier[..^1]), QsiObjectType.Sequence);
+
+            if (qsiObject is null)
+                return null;
+
+            return new QsiTableColumn
+            {
+                Name = qsiObject.Identifier[^1],
+                ObjectReferences = { qsiObject },
+                Parent = context.SourceTable
+            };
+        }
+
+        private QsiObject LookupObject(TableCompileContext context, QsiQualifiedIdentifier identifier, QsiObjectType type)
+        {
+            return context.Engine.RepositoryProvider.LookupObject(ResolveQualifiedIdentifier(context, identifier), type);
+        }
+
+        protected override IEnumerable<QsiTableColumn> ResolveDerivedColumns(TableCompileContext context, IQsiDerivedColumnNode column)
+        {
+            if (column is OracleJsonColumnNode { NestedColumn: { } } node)
+                return ResolveColumnsInExpression(context, node.NestedColumn.Value);
+
+            return base.ResolveDerivedColumns(context, column);
         }
     }
 }

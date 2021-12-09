@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Qsi.Analyzers;
 using Qsi.Data;
+using Qsi.Data.Cache;
 using Qsi.Engines.Explain;
 using Qsi.Parsing;
 using Qsi.Services;
@@ -20,6 +21,8 @@ namespace Qsi.Engines
 
         public IQsiRepositoryProvider RepositoryProvider => _repositoryProvider.Value;
 
+        public Func<IQsiDataTableCacheProvider> CacheProviderFactory { get; }
+
         public IQsiLanguageService LanguageService { get; }
 
         internal bool IsExplainEngine => LanguageService is ExplainLanguageService;
@@ -30,8 +33,14 @@ namespace Qsi.Engines
         private readonly Lazy<IQsiRepositoryProvider> _repositoryProvider;
         private readonly Lazy<IQsiAnalyzer[]> _analyzers;
 
-        public QsiEngine(IQsiLanguageService languageService)
+        public QsiEngine(IQsiLanguageService languageService) : this(languageService, () => new QsiDataTableMemoryCacheProvider())
         {
+        }
+
+        public QsiEngine(IQsiLanguageService languageService, Func<IQsiDataTableCacheProvider> cacheProviderFactory)
+        {
+            CacheProviderFactory = cacheProviderFactory;
+
             LanguageService = languageService;
 
             _treeParser = new Lazy<IQsiTreeParser>(LanguageService.CreateTreeParser);

@@ -37,12 +37,19 @@ namespace Qsi.PrimarSql.Analyzers
             var commonTableNode = ReassembleCommonTableNode(action.Target);
             var dataTable = await GetDataTableByCommonTableNode(context, commonTableNode);
 
-            var deleteRows = new QsiDataRowCollection(1);
+            var deleteRows = new QsiDataRowCollection(1, context.Engine.CacheProviderFactory());
 
             foreach (var row in dataTable.Rows)
             {
-                var targetRow = deleteRows.NewRow();
-                targetRow.Items[0] = row.Items[0];
+                var targetRow = new QsiDataRow(deleteRows.ColumnCount)
+                {
+                    Items =
+                    {
+                        [0] = row.Items[0]
+                    }
+                };
+
+                deleteRows.Add(targetRow);
             }
 
             return new QsiDataManipulationResult
@@ -68,8 +75,8 @@ namespace Qsi.PrimarSql.Analyzers
             var commonTableNode = ReassembleCommonTableNode(action.Target);
             var dataTable = await GetDataTableByCommonTableNode(context, commonTableNode);
 
-            var updateBeforeRows = new QsiDataRowCollection(1);
-            var updateAfterRows = new QsiDataRowCollection(1);
+            var updateBeforeRows = new QsiDataRowCollection(1, context.Engine.CacheProviderFactory());
+            var updateAfterRows = new QsiDataRowCollection(1, context.Engine.CacheProviderFactory());
 
             (object[], QsiExpressionNode, bool)[] setValues = action.SetValues
                 .OfType<PrimarSqlSetColumnExpressionNode>()
@@ -87,8 +94,8 @@ namespace Qsi.PrimarSql.Analyzers
 
             foreach (var row in dataTable.Rows)
             {
-                var oldRow = updateBeforeRows.NewRow();
-                var newRow = updateAfterRows.NewRow();
+                var oldRow = new QsiDataRow(updateBeforeRows.ColumnCount);
+                var newRow = new QsiDataRow(updateAfterRows.ColumnCount);
 
                 var beforeValue = row.Items[0];
                 var afterValue = JObject.Parse(beforeValue.Value.ToString() ?? throw new InvalidOperationException());
@@ -106,6 +113,9 @@ namespace Qsi.PrimarSql.Analyzers
 
                 oldRow.Items[0] = beforeValue;
                 newRow.Items[0] = new QsiDataValue(afterValue.ToString(Formatting.None), QsiDataType.Object);
+                
+                updateBeforeRows.Add(oldRow);
+                updateAfterRows.Add(newRow);
             }
 
             var tempTable2 = new QsiTableStructure
@@ -139,7 +149,7 @@ namespace Qsi.PrimarSql.Analyzers
             var table = await tableAnalyzer.BuildTableStructure(tableContext, action.Target);
             var tempTable = CreateTemporaryTable(table.Identifier);
 
-            var insertRows = new QsiDataRowCollection(1);
+            var insertRows = new QsiDataRowCollection(1, context.Engine.CacheProviderFactory());
 
             QsiQualifiedIdentifier[] columns = ResolveColumnNames(table, action);
 
@@ -158,8 +168,15 @@ namespace Qsi.PrimarSql.Analyzers
                     obj[IdentifierUtility.Unescape(column.Value)] = ConvertToToken(columnValue, context);
                 }
 
-                var row = insertRows.NewRow();
-                row.Items[0] = new QsiDataValue(obj.ToString(Formatting.None), QsiDataType.Object);
+                var row = new QsiDataRow(insertRows.ColumnCount)
+                {
+                    Items =
+                    {
+                        [0] = new QsiDataValue(obj.ToString(Formatting.None), QsiDataType.Object)
+                    }
+                };
+
+                insertRows.Add(row);
             }
 
             var tempTable2 = new QsiTableStructure

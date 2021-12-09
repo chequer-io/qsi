@@ -67,9 +67,10 @@ namespace Qsi.PhoenixSql.Analyzers
             }
         }
 
-        protected override QsiTableColumn ResolveColumnReference(TableCompileContext context, IQsiColumnReferenceNode column)
+        protected override QsiTableColumn[] ResolveColumnReference(TableCompileContext context, IQsiColumnReferenceNode column, out QsiQualifiedIdentifier implicitTableWildcardTarget)
         {
             context.ThrowIfCancellationRequested();
+            implicitTableWildcardTarget = default;
 
             if (column.Name.Level > 1)
             {
@@ -95,7 +96,7 @@ namespace Qsi.PhoenixSql.Analyzers
                         {
                             0 => throw new QsiException(QsiError.UnknownColumnIn, name.Value, scopeFieldList),
                             > 1 => throw new QsiException(QsiError.AmbiguousColumnIn, column.Name, scopeFieldList),
-                            _ => columns[0]
+                            _ => new[] { columns[0] }
                         };
                     }
 
@@ -106,7 +107,7 @@ namespace Qsi.PhoenixSql.Analyzers
                 }
             }
 
-            return base.ResolveColumnReference(context, column);
+            return base.ResolveColumnReference(context, column, out implicitTableWildcardTarget);
         }
     }
 }

@@ -99,7 +99,7 @@ namespace Qsi.Parsing.Common
                     throw new NotImplementedException();
 
                 default:
-                    throw new NotSupportedException();
+                    throw new QsiException(QsiError.NotSupportedTree, $"{node.GetType()} node is not supported in deparsing");
             }
         }
 
@@ -161,7 +161,7 @@ namespace Qsi.Parsing.Common
                     break;
 
                 default:
-                    throw new NotSupportedException();
+                    throw new QsiException(QsiError.NotSupportedTree, $"{node.GetType()} node is not supported in deparsing");
             }
         }
 
@@ -232,7 +232,7 @@ namespace Qsi.Parsing.Common
                     break;
 
                 default:
-                    throw new NotSupportedException();
+                    throw new QsiException(QsiError.NotSupportedTree, $"{node.GetType()} node is not supported in deparsing");
             }
         }
 
@@ -243,7 +243,7 @@ namespace Qsi.Parsing.Common
             if (parenthesis)
                 writer.Write('(');
 
-            JoinElements(writer, " UNION ", node.Sources, script);
+            JoinElements(writer, $" {node.CompositeType ?? "UNION"} ", node.Sources, script);
 
             if (parenthesis)
                 writer.Write(')');
@@ -344,10 +344,15 @@ namespace Qsi.Parsing.Common
             writer.Write(joinType);
             DeparseTreeNode(writer, node.Right, script);
 
-            if (node.PivotColumns is not null)
+            if (node.PivotColumns is { } pivotColumns)
             {
                 writer.Write(" USING ");
-                DeparseTreeNodeWithParenthesis(writer, node.PivotColumns, script);
+                DeparseTreeNodeWithParenthesis(writer, pivotColumns, script);
+            }
+            else if (node.PivotExpression is { } pivotExpression)
+            {
+                writer.Write(" ON ");
+                DeparseTreeNode(writer, pivotExpression, script);
             }
         }
 
@@ -395,7 +400,7 @@ namespace Qsi.Parsing.Common
                     break;
 
                 default:
-                    throw new NotImplementedException();
+                    throw new QsiException(QsiError.NotSupportedTree, $"{node.GetType()} node is not supported in deparsing");
             }
         }
 

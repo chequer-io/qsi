@@ -542,7 +542,7 @@ namespace Qsi.MySql.Tree
             var node = new QsiJoinedTableNode();
             var child = context.children[0];
 
-            node.Left.SetValue(left);
+            node.Left.Value = left;
 
             switch (child)
             {
@@ -566,25 +566,31 @@ namespace Qsi.MySql.Tree
                     throw TreeHelper.NotSupportedTree(child);
             }
 
-            var usingList = context.identifierListWithParentheses();
+            if (context.identifierListWithParentheses() is { } usingList)
+            {
+                node.PivotColumns.Value = VisitIdentifierList(usingList.identifierList());
+            }
+            else if (context.expr() is { } expr)
+            {
+                node.PivotExpression.Value = ExpressionVisitor.VisitExpr(expr);
+            }
 
-            if (usingList != null)
-                node.PivotColumns.SetValue(VisitIdentifierListWithParentheses(usingList));
+            MySqlTree.PutContextSpan(node, context);
 
-            var leftSpan = MySqlTree.Span[node.Left.Value];
-            var rightSpan = MySqlTree.Span[node.Right.Value];
-
-            MySqlTree.Span[node] = new Range(leftSpan.Start, rightSpan.End);
+            MySqlTree.Span[node] = new Range(
+                MySqlTree.Span[left].Start,
+                MySqlTree.Span[node].End
+            );
 
             return node;
         }
 
-        public static QsiColumnsDeclarationNode VisitIdentifierListWithParentheses(IdentifierListWithParenthesesContext context)
+        public static QsiColumnsDeclarationNode VisitIdentifierList(IdentifierListContext context)
         {
             var node = new QsiColumnsDeclarationNode();
 
             IEnumerable<QsiIdentifier> identifiers = context
-                .identifierList().identifier()
+                .identifier()
                 .Select(IdentifierVisitor.VisitIdentifier);
 
             node.Columns.AddRange(identifiers.Select(i =>

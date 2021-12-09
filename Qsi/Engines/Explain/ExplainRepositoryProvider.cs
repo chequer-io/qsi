@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Qsi.Analyzers;
 using Qsi.Analyzers.Table;
 using Qsi.Data;
+using Qsi.Data.Object;
 using Qsi.Services;
 
 namespace Qsi.Engines.Explain
@@ -39,6 +40,11 @@ namespace Qsi.Engines.Explain
             return _repositoryProvider.LookupVariable(identifier);
         }
 
+        public QsiObject LookupObject(QsiQualifiedIdentifier identifier, QsiObjectType type)
+        {
+            return _repositoryProvider.LookupObject(identifier, type);
+        }
+
         public async Task<QsiDataTable> GetDataTable(QsiScript script, QsiParameter[] parameters, CancellationToken cancellationToken)
         {
             IQsiAnalysisResult[] results = await _engine.Explain(script, cancellationToken);
@@ -46,11 +52,13 @@ namespace Qsi.Engines.Explain
             if (results.Length != 1 || results[0] is not QsiTableResult tableResult)
                 throw new QsiException(QsiError.InvalidNestedExplain, script.Script);
 
-            var dataTable = new QsiDataTable(tableResult.Table);
-            var dataRow = dataTable.Rows.NewRow();
+            var dataTable = new QsiDataTable(tableResult.Table, _engine.CacheProviderFactory);
+            var dataRow = new QsiDataRow(dataTable.Rows.ColumnCount);
 
             for (int i = 0; i < dataRow.Length; i++)
                 dataRow.Items[i] = QsiDataValue.Explain;
+
+            dataTable.Rows.Add(dataRow);
 
             return dataTable;
         }

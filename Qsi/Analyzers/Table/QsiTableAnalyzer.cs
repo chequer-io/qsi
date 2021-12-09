@@ -4,12 +4,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Qsi.Analyzers.Context;
 using Qsi.Analyzers.Table.Context;
-using Qsi.Tree.Immutable;
 using Qsi.Data;
+using Qsi.Data.Object;
 using Qsi.Engines;
 using Qsi.Extensions;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
+using Qsi.Tree.Immutable;
 using Qsi.Utilities;
 
 namespace Qsi.Analyzers.Table
@@ -222,7 +223,7 @@ namespace Qsi.Analyzers.Table
 
                 foreach (var column in columns)
                 {
-                    IEnumerable<QsiTableColumn> resolvedColumns = ResolveColumns(scopedContext, column);
+                    IEnumerable<QsiTableColumn> resolvedColumns = ResolveColumns(scopedContext, column, out var implicitTableWildcard);
                     bool keepVisible = column is IQsiAllColumnNode;
 
                     switch (column)
@@ -239,16 +240,31 @@ namespace Qsi.Analyzers.Table
 
                         default:
                         {
+                            var allColumnNode = column as IQsiAllColumnNode;
+                            var aliasedAllColumn = !ListUtility.IsNullOrEmpty(allColumnNode?.SequentialColumns);
+                            int i = 0;
+
                             foreach (var c in resolvedColumns)
                             {
+                                if (aliasedAllColumn && allColumnNode.SequentialColumns.Length < i + 1)
+                                    throw new QsiException(QsiError.DifferentColumnsCount);
+
+                                var seqentialColumn = aliasedAllColumn ? allColumnNode?.SequentialColumns[i++] : null;
                                 var declaredColumn = declaredTable.NewColumn();
 
-                                declaredColumn.Name = ResolveCompoundColumnName(context, table, column, c);
+                                declaredColumn.Name = seqentialColumn is null
+                                    ? ResolveCompoundColumnName(context, table, column, c)
+                                    : seqentialColumn.Alias.Name;
+
                                 declaredColumn.References.Add(c);
+                                declaredColumn.ImplicitTableWildcardTarget = implicitTableWildcard;
 
                                 if (keepVisible)
                                     declaredColumn.IsVisible = c.IsVisible;
                             }
+
+                            if (aliasedAllColumn && allColumnNode.SequentialColumns.Length != i)
+                                throw new QsiException(QsiError.DifferentColumnsCount);
 
                             break;
                         }
@@ -440,6 +456,7 @@ namespace Qsi.Analyzers.Table
                                 .ToArray(),
                             compositeTableNode.Order,
                             compositeTableNode.Limit,
+                            compositeTableNode.CompositeType,
                             compositeTableNode.UserData);
                     }
 
@@ -618,6 +635,8 @@ namespace Qsi.Analyzers.Table
                 Type = QsiTableType.Union
             };
 
+            compositeSource.References.AddRange(sources);
+
             for (int i = 0; i < columnCount; i++)
             {
                 var baseColumn = sources[0].Columns[i];
@@ -681,20 +700,21 @@ namespace Qsi.Analyzers.Table
         #endregion
 
         #region Column
-        protected IEnumerable<QsiTableColumn> ResolveColumns(TableCompileContext context, IQsiColumnNode column)
+        protected QsiTableColumn[] ResolveColumns(TableCompileContext context, IQsiColumnNode column, /* TODO: remove */ out QsiQualifiedIdentifier implicitTableWildcardTarget)
         {
             context.ThrowIfCancellationRequested();
+            implicitTableWildcardTarget = default;
 
             switch (column)
             {
                 case IQsiAllColumnNode allColumn:
-                    return ResolveAllColumns(context, allColumn, false);
+                    return ResolveAllColumns(context, allColumn, false).ToArray();
 
                 case IQsiColumnReferenceNode columnReference:
-                    return new[] { ResolveColumnReference(context, columnReference) };
+                    return ResolveColumnReference(context, columnReference, out implicitTableWildcardTarget);
 
                 case IQsiDerivedColumnNode derivedColumn:
-                    return ResolveDerivedColumns(context, derivedColumn);
+                    return ResolveDerivedColumns(context, derivedColumn).ToArray();
 
                 case IQsiSequentialColumnNode _:
                     throw new QsiException(QsiError.SyntaxError, "You cannot define sequential column in a compound column definition.");
@@ -730,7 +750,7 @@ namespace Qsi.Analyzers.Table
             return tables.SelectMany(t => includeInvisible ? t.Columns : t.VisibleColumns);
         }
 
-        protected virtual QsiTableColumn ResolveColumnReference(TableCompileContext context, IQsiColumnReferenceNode column)
+        protected virtual QsiTableColumn[] ResolveColumnReference(TableCompileContext context, IQsiColumnReferenceNode column, out QsiQualifiedIdentifier implicitTableWildcardTarget)
         {
             context.ThrowIfCancellationRequested();
 
@@ -742,7 +762,12 @@ namespace Qsi.Analyzers.Table
                 sources = LookupDataTableStructuresInExpression(context, identifier).ToArray();
 
                 if (!sources.Any())
+                {
+                    if (context.Options.UseImplicitTableWildcardInSelect)
+                        return ImplicitlyResolveColumnReference(context, column, out implicitTableWildcardTarget);
+
                     throw new QsiException(QsiError.UnknownTableIn, identifier, scopeFieldList);
+                }
             }
             else if (column.Name.Level == 0)
             {
@@ -760,13 +785,32 @@ namespace Qsi.Analyzers.Table
                 .Take(2)
                 .ToArray();
 
-            if (columns.Length == 0)
-                throw new QsiException(QsiError.UnknownColumnIn, lastName.Value, scopeFieldList);
+            switch (columns.Length)
+            {
+                case 0 when context.Options.UseImplicitTableWildcardInSelect:
+                    return ImplicitlyResolveColumnReference(context, column, out implicitTableWildcardTarget);
 
-            if (columns.Length > 1)
-                throw new QsiException(QsiError.AmbiguousColumnIn, column.Name, scopeFieldList);
+                case 0:
+                    throw new QsiException(QsiError.UnknownColumnIn, lastName.Value, scopeFieldList);
 
-            return columns[0];
+                case > 1:
+                    throw new QsiException(QsiError.AmbiguousColumnIn, column.Name, scopeFieldList);
+
+                default:
+                    implicitTableWildcardTarget = default;
+                    return new[] { columns[0] };
+            }
+        }
+
+        private QsiTableColumn[] ImplicitlyResolveColumnReference(TableCompileContext context, IQsiColumnReferenceNode column, out QsiQualifiedIdentifier implicitTableWildcardTarget)
+        {
+            QsiTableStructure[] implicitSources = LookupDataTableStructuresInExpression(context, column.Name).ToArray();
+
+            if (implicitSources.Length != 1)
+                throw new QsiException(QsiError.UnknownColumnIn, column.Name[^1], scopeFieldList);
+
+            implicitTableWildcardTarget = column.Name;
+            return implicitSources[0].Columns.ToArray();
         }
 
         protected virtual IEnumerable<QsiTableColumn> ResolveDerivedColumns(TableCompileContext context, IQsiDerivedColumnNode column)
@@ -776,7 +820,7 @@ namespace Qsi.Analyzers.Table
             if (column.IsExpression)
                 return ResolveColumnsInExpression(context, column.Expression);
 
-            return ResolveColumns(context, column.Column);
+            return ResolveColumns(context, column.Column, out _);
         }
 
         protected virtual IEnumerable<QsiTableColumn> ResolveColumnsInExpression(TableCompileContext context, IQsiExpressionNode expression)
@@ -911,7 +955,8 @@ namespace Qsi.Analyzers.Table
                         }
 
                         case IQsiColumnReferenceNode columnReferenceNode:
-                            yield return ResolveColumnReference(context, columnReferenceNode);
+                            foreach (var column in ResolveColumnReference(context, columnReferenceNode, out _))
+                                yield return column;
 
                             break;
 
@@ -969,7 +1014,7 @@ namespace Qsi.Analyzers.Table
         #endregion
 
         #region Table Lookup
-        private QsiQualifiedIdentifier ResolveQualifiedIdentifier(TableCompileContext context, QsiQualifiedIdentifier identifier)
+        protected QsiQualifiedIdentifier ResolveQualifiedIdentifier(TableCompileContext context, QsiQualifiedIdentifier identifier)
         {
             context.ThrowIfCancellationRequested();
 
@@ -1002,7 +1047,7 @@ namespace Qsi.Analyzers.Table
 
             return
                 context.Directives.FirstOrDefault(d => Match(d.Identifier, identifier)) ??
-                context.Engine.RepositoryProvider.LookupTable(ResolveQualifiedIdentifier(context, identifier));
+                context.Engine.RepositoryProvider.LookupTable(ResolveQualifiedIdentifier(context, identifier))?.Clone();
         }
 
         private IEnumerable<QsiTableStructure> LookupDataTableStructuresInExpression(TableCompileContext context, QsiQualifiedIdentifier identifier)

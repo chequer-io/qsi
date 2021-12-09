@@ -147,17 +147,17 @@ namespace Qsi.Oracle.Analyzers
                 }
             }
 
-            return ResolveDataManipulationTargets(sourceTable)
+            return ResolveDataManipulationTargets(context, sourceTable)
                 .Select(target =>
                 {
                     foreach (var row in dataTable.Rows)
                     {
-                        var oldRow = target.UpdateBeforeRows.NewRow();
-                        var newRow = target.UpdateAfterRows.NewRow();
+                        var oldRow = new QsiDataRow(target.UpdateBeforeRows.ColumnCount);
+                        var newRow = new QsiDataRow(target.UpdateAfterRows.ColumnCount);
 
                         foreach (var pivot in target.ColumnPivots)
                         {
-                            if (pivot.DeclaredColumn != null)
+                            if (pivot.DeclaredColumn is not null)
                             {
                                 var value = row.Items[pivot.DeclaredOrder];
 
@@ -170,10 +170,13 @@ namespace Qsi.Oracle.Analyzers
                                 newRow.Items[pivot.TargetOrder] = QsiDataValue.Unknown;
                             }
                         }
+                        
+                        target.UpdateBeforeRows.Add(oldRow);
+                        target.UpdateAfterRows.Add(newRow);
                     }
 
                     QsiTableColumn[] affectedColumns = target.ColumnPivots
-                        .Where(p => p.DeclaredColumn != null && affectedColumnMap[p.DeclaredOrder])
+                        .Where(p => p.DeclaredColumn is not null && affectedColumnMap[p.DeclaredOrder])
                         .Select(p => p.DeclaredColumn)
                         .ToArray();
 

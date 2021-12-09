@@ -2,14 +2,13 @@ Param (
     [Parameter(Mandatory = $true)]
     [Version] $Version,
 
-    [ValidateSet('Archive', 'Local', 'Publish')]
+    [ValidateSet('Archive', 'Publish')]
     [string] $Mode = 'Publish'
 )
 
 Enum PublishMode {
     Archive = 0
-    Local = 1
-    Publish = 2
+    Publish = 1
 }
 
 $_Mode = [PublishMode]$Mode
@@ -25,7 +24,6 @@ if (Get-Module Antlr) {
 }
 
 Import-Module ".\Build\Common.ps1"
-Import-Module ".\Build\Antlr.ps1"
 
 if ($_Mode -eq [PublishMode]::Publish) {
     # git rev-parse HEAD
@@ -48,6 +46,12 @@ if ($_Mode -eq [PublishMode]::Publish) {
 
     if ($GitTagVersion -ge $Version) {
         throw "The version is lower than the git tag. ($GitTagVersion >= $Version)"
+    }
+
+    $NugetApiKey = $Env:QSI_NUGET_API_KEY
+
+    if ($NugetApiKey.Length -eq 0) {
+        throw "QSI_NUGET_API_KEY environment variable not found."
     }
 }
 
@@ -73,7 +77,8 @@ $Tasks =
 [Task]::new("Qsi.Cql", $true),
 [Task]::new("Qsi.PrimarSql", $false),
 [Task]::new("Qsi.Hana", $true),
-[Task]::new("Qsi.Impala", $true)
+[Task]::new("Qsi.Impala", $true),
+[Task]::new("Qsi.Trino", $true)
 
 Function DotNet-Pack {
     Param (
@@ -101,11 +106,15 @@ Function NuGet-Push {
         [System.IO.FileInfo] $PackageFile,
 
         [Parameter(Mandatory = $true)]
-        [string] $Source
+        [string] $Source,
+
+        [Parameter(Mandatory = $true)]
+        [string] $ApiKey
     )
 
     Write-Host "[NuGet] '$($PackageFile.Name)' Push to '$Source'" -ForegroundColor Cyan
-    dotnet nuget push $PackageFile -s $Source
+
+    dotnet nuget push $PackageFile --source $Source --api-key $ApiKey
 }
 
 # Clean publish
@@ -113,7 +122,7 @@ Remove-Directory-Safe $PublishDirectory
 
 $Tasks | ForEach-Object {
     if ($PSItem.Antlr) {
-        Antlr-Generate $PSItem.Project
+        & "$PSScriptRoot\Setup.ps1" $PSItem.Project
     }
 
     DotNet-Pack $PSItem.Project
@@ -121,16 +130,10 @@ $Tasks | ForEach-Object {
 
 Write-Host "Done pack." -ForegroundColor Green
 
-if ($_Mode -ne [PublishMode]::Archive) {
+if ($_Mode -eq [PublishMode]::Publish) {
     # Publish
     Get-ChildItem -Path $PublishDirectory/*.nupkg | ForEach-Object {
-        if ($_Mode -eq [PublishMode]::Publish) {
-            NuGet-Push $PSItem "github"
-            NuGet-Push $PSItem "nuget.org"
-        }
-        else {
-            NuGet-Push $PSItem "local"
-        }
+        NuGet-Push $PSItem "https://api.nuget.org/v3/index.json" $NugetApiKey
     }
 
     # Tag

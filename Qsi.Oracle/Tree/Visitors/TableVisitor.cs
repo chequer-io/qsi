@@ -62,16 +62,16 @@ namespace Qsi.Oracle.Tree.Visitors
                 var leftContext = subqueryItems[i - 1];
                 var rightContext = subqueryItems[i];
 
-                var joinedTable = OracleTree.CreateWithSpan<OracleBinaryTableNode>(leftContext.Start, rightContext.Stop);
+                var compositeNode = OracleTree.CreateWithSpan<QsiCompositeTableNode>(leftContext.Start, rightContext.Stop);
 
-                joinedTable.Left.Value = source;
-                joinedTable.BinaryTableType = VisitSubqueryCompositeType(context.subqueryCompositeType(i - 1));
-                joinedTable.Right.Value = VisitSubquery(rightContext);
+                compositeNode.Sources.Add(source);
+                compositeNode.Sources.Add(VisitSubquery(rightContext));
+                compositeNode.CompositeType = VisitSubqueryCompositeType(context.subqueryCompositeType(i - 1));
 
-                source = joinedTable;
+                source = compositeNode;
             }
 
-            if (source is OracleBinaryTableNode binaryTableNode)
+            if (source is QsiCompositeTableNode binaryTableNode)
             {
                 var orderByClause = context.orderByClause();
                 var rowOffset = context.rowOffset();
@@ -83,7 +83,7 @@ namespace Qsi.Oracle.Tree.Visitors
                 if (rowOffset is not null || rowFetchOption is not null)
                     binaryTableNode.Limit.Value = ExpressionVisitor.VisitRowlimitingContexts(rowOffset, rowFetchOption);
 
-                source = ExtractDirectivesToBinaryTableNode(binaryTableNode);
+                source = ExtractDirectivesFromCompositeTableNode(binaryTableNode);
             }
 
             return source;
@@ -102,46 +102,31 @@ namespace Qsi.Oracle.Tree.Visitors
         //            │ (Directives: 2) │  BinaryTable │ UNION ALL                                        │
         //            │                 └              └ Derived    ─ SELECT * FROM B                     │
         //            └───────────────────────────────────────────────────────────────────────────────────┘
-        public static QsiTableNode ExtractDirectivesToBinaryTableNode(OracleBinaryTableNode node)
+        public static QsiTableNode ExtractDirectivesFromCompositeTableNode(QsiCompositeTableNode node)
         {
-            IEnumerable<QsiDerivedTableNode> leftItems = null;
-            IEnumerable<QsiDerivedTableNode> rightItems = null;
+            List<QsiDerivedTableNode> directives = new();
 
-            if (node.Left.Value is QsiDerivedTableNode left)
+            foreach (var item in node.Sources)
             {
-                if (!left.Directives.IsEmpty)
+                if (item is QsiDerivedTableNode derivedTable)
                 {
-                    leftItems = left.Directives.Value.Tables.ToArray();
-                    left.Directives.Value.Tables.Clear();
+                    if (!derivedTable.Directives.IsEmpty)
+                    {
+                        directives.AddRange(derivedTable.Directives.Value.Tables);
+                        derivedTable.Directives.Value.Tables.Clear();
+                    }
                 }
             }
 
-            if (node.Right.Value is QsiDerivedTableNode right)
-            {
-                if (!right.Directives.IsEmpty)
-                {
-                    rightItems = right.Directives.Value.Tables.ToArray();
-                    right.Directives.Value.Tables.Clear();
-                }
-            }
-
-            if (leftItems is null && rightItems is null)
+            if (directives.Count == 0)
                 return node;
 
-            var directivesNode = new QsiTableDirectivesNode();
-            directivesNode.IsRecursive = true;
-
-            if (leftItems is not null)
+            var directivesNode = new QsiTableDirectivesNode
             {
-                foreach (var item in leftItems)
-                    directivesNode.Tables.Add(item);
-            }
+                IsRecursive = true
+            };
 
-            if (rightItems is not null)
-            {
-                foreach (var item in rightItems)
-                    directivesNode.Tables.Add(item);
-            }
+            directivesNode.Tables.AddRange(directives);
 
             var derivedTableNode = new QsiDerivedTableNode();
             derivedTableNode.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
@@ -151,23 +136,21 @@ namespace Qsi.Oracle.Tree.Visitors
             return derivedTableNode;
         }
 
-        public static OracleBinaryTableType VisitSubqueryCompositeType(SubqueryCompositeTypeContext context)
+        public static string VisitSubqueryCompositeType(SubqueryCompositeTypeContext context)
         {
             switch (context.children[0])
             {
                 case ITerminalNode { Symbol: { Type: UNION } }:
-                    return context.ALL() != null
-                        ? OracleBinaryTableType.UnionAll
-                        : OracleBinaryTableType.Union;
+                    return context.ALL() is not null ? "UNION ALL" : "UNION";
 
                 case ITerminalNode { Symbol: { Type: INTERSECT } }:
-                    return OracleBinaryTableType.Intersect;
+                    return "INTERSECT";
 
                 case ITerminalNode { Symbol: { Type: MINUS } }:
-                    return OracleBinaryTableType.Minus;
+                    return "MINUS";
 
                 case ITerminalNode { Symbol: { Type: EXCEPT } }:
-                    return OracleBinaryTableType.Except;
+                    return "EXCEPT";
 
                 default:
                     throw TreeHelper.NotSupportedTree(context);

@@ -133,7 +133,7 @@ namespace Qsi.PhoenixSql.Tree
             {
                 Identifiers = new[]
                 {
-                    identifier
+                    new QsiQualifiedIdentifier(identifier)
                 }
             };
 

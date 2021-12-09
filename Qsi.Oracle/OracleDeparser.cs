@@ -62,48 +62,6 @@ namespace Qsi.Oracle
             });
         }
 
-        protected override void DeparseCompositeTableNode(ScriptWriter writer, IQsiCompositeTableNode node, QsiScript script)
-        {
-            if (node is OracleBinaryTableNode oracleBinaryTableNode)
-            {
-                string binaryTableType;
-
-                switch (oracleBinaryTableNode.BinaryTableType)
-                {
-                    case OracleBinaryTableType.Except:
-                        binaryTableType = " EXCEPT ";
-                        break;
-
-                    case OracleBinaryTableType.Intersect:
-                        binaryTableType = " INTERSECT ";
-                        break;
-
-                    case OracleBinaryTableType.Minus:
-                        binaryTableType = " MINUS ";
-                        break;
-
-                    case OracleBinaryTableType.Union:
-                        binaryTableType = " UNION ";
-                        break;
-
-                    case OracleBinaryTableType.UnionAll:
-                        binaryTableType = " UNION ALL ";
-                        break;
-
-                    default:
-                        throw new NotSupportedException(oracleBinaryTableNode.BinaryTableType.ToString());
-                }
-
-                DeparseTreeNode(writer, oracleBinaryTableNode.Left.Value, script);
-                writer.Write(binaryTableType);
-                DeparseTreeNode(writer, oracleBinaryTableNode.Right.Value, script);
-            }
-            else
-            {
-                base.DeparseCompositeTableNode(writer, node, script);
-            }
-        }
-
         protected override void DeparseDerivedTableNode(ScriptWriter writer, IQsiDerivedTableNode node, QsiScript script)
         {
             var oracleNode = node as OracleDerivedTableNode;
@@ -189,7 +147,7 @@ namespace Qsi.Oracle
                 base.DeparseDerivedTableNode(writer, node, script);
             }
 
-            if (oracleNode != null)
+            if (oracleNode is not null)
             {
                 if (!oracleNode.FlashbackQueryClause.IsEmpty)
                 {
