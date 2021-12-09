@@ -21,19 +21,5 @@ namespace Qsi.SqlServer
 
             writer.Write(script.Script[range]);
         }
-
-        protected override void DeparseJoinedTableNode(ScriptWriter writer, IQsiJoinedTableNode node, QsiScript script)
-        {
-            base.DeparseJoinedTableNode(writer, node, script);
-
-            if (node is SqlServerJoinedTableNode sqlServerJoinedTableNode)
-            {
-                if (!sqlServerJoinedTableNode.Expression.IsEmpty)
-                {
-                    writer.Write(" ON ");
-                    DeparseTreeNode(writer, sqlServerJoinedTableNode.Expression.Value, script);
-                }
-            }
-        }
     }
 }

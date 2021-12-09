@@ -21,6 +21,9 @@ namespace Qsi.PostgreSql.Tree.PG10
 
                 case VariableSetStmt variableSetStmt:
                     return VisitVariableSetStmt(variableSetStmt);
+
+                case InsertStmt insertStmt:
+                    return VisitInsertStmt(insertStmt);
             }
 
             throw TreeHelper.NotSupportedTree(node);
@@ -48,6 +51,97 @@ namespace Qsi.PostgreSql.Tree.PG10
             }
 
             throw TreeHelper.NotSupportedTree(variableSetStmt);
+        }
+
+        public QsiDataInsertActionNode VisitInsertStmt(InsertStmt insertStmt)
+        {
+            QsiDataInsertActionNode actionNode = TreeHelper.Create<QsiDataInsertActionNode>(n =>
+            {
+                n.Target.Value = new QsiTableReferenceNode
+                {
+                    Identifier = IdentifierVisitor.VisitRangeVar(insertStmt.relation[0])
+                };
+
+                if (insertStmt.cols is not null)
+                {
+                    n.Columns = insertStmt.cols
+                        .Cast<ResTarget>()
+                        .Select(col => ((QsiColumnReferenceNode)TableVisitor.VisitResTarget(col)).Name)
+                        .ToArray();
+                }
+
+                if (insertStmt.onConflictClause is not null)
+                {
+                    switch (insertStmt.onConflictClause[0].action)
+                    {
+                        case OnConflictAction.ONCONFLICT_NONE:
+                        case OnConflictAction.ONCONFLICT_NOTHING:
+                            n.ConflictBehavior = QsiDataConflictBehavior.None;
+                            break;
+
+                        case OnConflictAction.ONCONFLICT_UPDATE:
+                            n.ConflictBehavior = QsiDataConflictBehavior.Update;
+                            n.ConflictAction.Value = VisitConflictAction(insertStmt.onConflictClause[0]);
+                            break;
+                    }
+                }
+            });
+
+            if (ListUtility.IsNullOrEmpty(insertStmt.withClause))
+                return actionNode;
+
+            actionNode.Directives.SetValue(TableVisitor.VisitWithClause(insertStmt.withClause[0]));
+
+            return actionNode;
+        }
+
+        public QsiDataUpdateActionNode VisitUpdateStmt(UpdateStmt updateStmt)
+        {
+            QsiDataUpdateActionNode actionNode = TreeHelper.Create<QsiDataUpdateActionNode>(n =>
+            {
+                n.Target.Value = new QsiDerivedTableNode
+                {
+                    Source =
+                    {
+                        Value = new QsiTableReferenceNode
+                        {
+                            Identifier = IdentifierVisitor.VisitRangeVar(updateStmt.relation[0])
+                        }
+                    }
+                };
+
+                if (updateStmt.whereClause is not null)
+                {
+                    ((QsiDerivedTableNode)n.Target.Value).Where.Value = new QsiWhereExpressionNode
+                    {
+                        Expression =
+                        {
+                            Value = ExpressionVisitor.Visit(updateStmt.whereClause[0])
+                        }
+                    };
+                }
+
+                if (updateStmt.targetList is not null)
+                {
+                    n.SetValues.AddRange(updateStmt.targetList
+                        .Cast<ResTarget>()
+                        .Select(col => TableVisitor.VisitSetColumn(col))
+                        .ToArray()
+                    );
+                }
+            });
+
+            if (ListUtility.IsNullOrEmpty(updateStmt.withClause))
+                return actionNode;
+
+            actionNode.Directives.SetValue(TableVisitor.VisitWithClause(updateStmt.withClause[0]));
+
+            return actionNode;
+        }
+
+        public QsiDataConflictActionNode VisitConflictAction(OnConflictClause onConflictClause)
+        {
+            throw TreeHelper.NotSupportedTree(onConflictClause);
         }
     }
 }

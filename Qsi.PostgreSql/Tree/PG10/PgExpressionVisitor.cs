@@ -30,6 +30,12 @@ namespace Qsi.PostgreSql.Tree.PG10
                 case A_ArrayExpr arrayExpr:
                     return VisitAtomicArrayExpression(arrayExpr);
 
+                case A_Indirection indirection:
+                    return VisitAtomicIndirection(indirection);
+
+                case A_Indices indices:
+                    return VisitAtomicIndices(indices);
+
                 case FuncCall funcCall:
                     return VisitFunctionCall(funcCall);
 
@@ -68,9 +74,53 @@ namespace Qsi.PostgreSql.Tree.PG10
 
                 case ParamRef paramRef:
                     return VisitParamRef(paramRef);
+
+                case SQLValueFunction sqlValueFunction:
+                    return VisitSqlValueFunction(sqlValueFunction);
+
+                case MinMaxExpr minMaxExpr:
+                    return VisitMinMaxExpr(minMaxExpr);
             }
 
             throw TreeHelper.NotSupportedTree(node);
+        }
+
+        public QsiExpressionNode VisitMinMaxExpr(MinMaxExpr minMaxExpr)
+        {
+            return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+            {
+                n.Member.Value = new QsiFunctionExpressionNode
+                {
+                    Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(minMaxExpr.op.ToString()![3..], false))
+                };
+
+                n.Parameters.AddRange(minMaxExpr.args.Select(Visit));
+            });
+        }
+
+        public QsiExpressionNode VisitAtomicIndices(A_Indices indices)
+        {
+            if (indices.uidx is { Length: 1 })
+                return Visit(indices.uidx[0]);
+
+            throw TreeHelper.NotSupportedTree(indices);
+        }
+
+        public QsiExpressionNode VisitAtomicIndirection(A_Indirection indirection)
+        {
+            return TreeHelper.Create<QsiMemberAccessExpressionNode>(n =>
+            {
+                n.Target.Value = Visit(indirection.arg[0]);
+                n.Member.Value = Visit(indirection.indirection[0]);
+            });
+        }
+
+        public QsiExpressionNode VisitSqlValueFunction(SQLValueFunction context)
+        {
+            return new QsiLiteralExpressionNode
+            {
+                Value = context.op.ToString()?[6..]
+            };
         }
 
         private QsiExpressionNode VisitExpressions(IPg10Node[] expressions)
@@ -270,7 +320,7 @@ namespace Qsi.PostgreSql.Tree.PG10
             return node;
         }
 
-        private QsiExpressionNode VisitTypeCast(TypeCast typeCast)
+        public QsiInvokeExpressionNode VisitTypeCast(TypeCast typeCast)
         {
             return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
             {
