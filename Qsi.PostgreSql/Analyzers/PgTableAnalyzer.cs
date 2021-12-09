@@ -81,33 +81,45 @@ namespace Qsi.PostgreSql.Analyzers
             }
         }
 
-        protected override QsiTableColumn ResolveColumnReference(TableCompileContext context, IQsiColumnReferenceNode column)
+        protected override QsiTableColumn[] ResolveColumnReference(TableCompileContext context, IQsiColumnReferenceNode column, out QsiQualifiedIdentifier implicitTableWildcardTarget)
         {
             try
             {
-                return base.ResolveColumnReference(context, column);
+                return base.ResolveColumnReference(context, column, out implicitTableWildcardTarget);
             }
             catch (QsiException e)
             {
                 if (e.Error is QsiError.UnknownColumnIn)
                 {
                     if (context.SourceTable.Columns.Count == 0)
-                        return new QsiTableColumn
+                    {
+                        implicitTableWildcardTarget = default;
+                        return new[]
                         {
-                            Name = column.Name[^1],
-                            IsVisible = true,
-                            Parent = context.SourceTable
+                            new QsiTableColumn
+                            {
+                                Name = column.Name[^1],
+                                IsVisible = true,
+                                Parent = context.SourceTable
+                            }
                         };
+                    }
 
                     var table = context.SourceTables.FirstOrDefault(s => s.Columns.Count == 0);
 
                     if (table is not null)
-                        return new QsiTableColumn
+                    {
+                        implicitTableWildcardTarget = default;
+                        return new[]
                         {
-                            Name = column.Name[^1],
-                            IsVisible = true,
-                            Parent = table
+                            new QsiTableColumn
+                            {
+                                Name = column.Name[^1],
+                                IsVisible = true,
+                                Parent = table
+                            }
                         };
+                    }
                 }
 
                 throw;
