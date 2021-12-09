@@ -35,6 +35,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\Qsi.Athena\Qsi.Athena.csproj" />
         <ProjectReference Include="..\Qsi.Cql\Qsi.Cql.csproj" />
         <ProjectReference Include="..\Qsi.Hana\Qsi.Hana.csproj" />
         <ProjectReference Include="..\Qsi.Impala\Qsi.Impala.csproj" />
