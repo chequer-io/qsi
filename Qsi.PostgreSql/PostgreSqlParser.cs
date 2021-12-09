@@ -42,6 +42,12 @@ namespace Qsi.PostgreSql
                 case SelectStmt selectStmt:
                     return visitorSet.TableVisitor.VisitSelectStmt(selectStmt);
 
+                case InsertStmt insertStmt:
+                    return visitorSet.ActionVisitor.VisitInsertStmt(insertStmt);
+
+                case UpdateStmt updateStmt:
+                    return visitorSet.ActionVisitor.VisitUpdateStmt(updateStmt);
+
                 case ViewStmt viewStmt:
                     return visitorSet.DefinitionVisitor.VisitViewStmt(viewStmt);
 

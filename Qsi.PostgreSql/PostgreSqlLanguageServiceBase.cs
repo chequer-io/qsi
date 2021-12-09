@@ -1,5 +1,9 @@
-﻿using Qsi.Analyzers;
+﻿using System.Collections.Generic;
+using Qsi.Analyzers;
+using Qsi.Analyzers.Action;
+using Qsi.Engines;
 using Qsi.Parsing;
+using Qsi.PostgreSql.Analyzers;
 using Qsi.Services;
 
 namespace Qsi.PostgreSql
@@ -13,7 +17,7 @@ namespace Qsi.PostgreSql
 
         public override IQsiTreeDeparser CreateTreeDeparser()
         {
-            throw new System.NotImplementedException();
+            return new PostgreSqlDeparser();
         }
 
         public override IQsiScriptParser CreateScriptParser()
@@ -25,8 +29,16 @@ namespace Qsi.PostgreSql
         {
             return new()
             {
-                AllowEmptyColumnsInSelect = true
+                AllowEmptyColumnsInSelect = true,
+                AllowEmptyColumnsInInline = true,
+                AllowNoAliasInDerivedTable = true
             };
+        }
+
+        public override IEnumerable<IQsiAnalyzer> CreateAnalyzers(QsiEngine engine)
+        {
+            yield return new QsiActionAnalyzer(engine);
+            yield return new PgTableAnalyzer(engine);
         }
     }
 }

@@ -5,6 +5,7 @@ using System.Linq;
 using Qsi.Data;
 using Qsi.PostgreSql.Internal;
 using Qsi.PostgreSql.Internal.PG10.Types;
+using Qsi.PostgreSql.Tree.PG10.Nodes;
 using Qsi.Tree;
 using Qsi.Utilities;
 
@@ -198,6 +199,15 @@ namespace Qsi.PostgreSql.Tree.PG10
             });
         }
 
+        public QsiSetColumnExpressionNode VisitSetColumn(ResTarget target)
+        {
+            return TreeHelper.Create<QsiSetColumnExpressionNode>(n =>
+            {
+                n.Target = new QsiQualifiedIdentifier(new QsiIdentifier(target.name, false));
+                n.Value.Value = ExpressionVisitor.Visit(target.val[0]);
+            });
+        }
+
         public QsiColumnNode VisitResTarget(ResTarget target)
         {
             Debug.Assert(target.val.Length == 1);
@@ -211,12 +221,37 @@ namespace Qsi.PostgreSql.Tree.PG10
                     columnNode = VisitColumnRef((ColumnRef)value);
                     break;
 
+                case NodeTag.T_TypeCast:
+                    columnNode = TreeHelper.Create<QsiDerivedColumnNode>(n =>
+                    {
+                        var node = ExpressionVisitor.VisitTypeCast((TypeCast)value);
+                        n.Expression.SetValue(node);
+
+                        var columnExpression = node.Parameters[0];
+
+                        // for nested typeCast
+                        while (columnExpression is not QsiColumnExpressionNode)
+                        {
+                            if (columnExpression is QsiInvokeExpressionNode invokeExpressionNode)
+                                columnExpression = invokeExpressionNode.Parameters[0];
+                            else
+                                break;
+                        }
+
+                        if (columnExpression is QsiColumnExpressionNode columnExpressionNode)
+                            n.Alias.Value = new QsiAliasNode
+                            {
+                                Name = ((QsiColumnReferenceNode)columnExpressionNode.Column.Value).Name[^1]
+                            };
+                    });
+
+                    break;
+
                 case NodeTag.T_A_Expr:
                 case NodeTag.T_A_ArrayExpr:
                 case NodeTag.T_A_Const:
                 case NodeTag.T_FuncCall:
                 case NodeTag.T_SubLink:
-                case NodeTag.T_TypeCast:
                 case NodeTag.T_TypeName:
                 case NodeTag.T_Value:
                 case NodeTag.T_CaseExpr:
@@ -226,12 +261,21 @@ namespace Qsi.PostgreSql.Tree.PG10
                 case NodeTag.T_BooleanTest:
                 case NodeTag.T_CoalesceExpr:
                 case NodeTag.T_ParamRef:
+                case NodeTag.T_SQLValueFunction:
+                case NodeTag.T_A_Indirection:
+                case NodeTag.T_MinMaxExpr:
                     columnNode = TreeHelper.Create<QsiDerivedColumnNode>(n =>
                     {
                         n.Expression.SetValue(ExpressionVisitor.Visit(value));
                     });
 
                     break;
+
+                case NodeTag.T_ResTarget:
+                    return TreeHelper.Create<QsiColumnReferenceNode>(n =>
+                    {
+                        n.Name = new QsiQualifiedIdentifier(new QsiIdentifier(target.name, false));
+                    });
 
                 default:
                     throw TreeHelper.NotSupportedTree(value);
@@ -431,10 +475,45 @@ namespace Qsi.PostgreSql.Tree.PG10
             });
         }
 
-        private QsiTableNode VisitRangeFunction(RangeFunction function)
+        private QsiTableNode VisitRangeFunction(RangeFunction rangeFunction)
         {
-            // TODO: Implement table function
-            throw TreeHelper.NotSupportedFeature("Table function");
+            var func = rangeFunction.functions[0].Cast<FuncCall>().First();
+            var source = ExpressionVisitor.VisitFunctionCall(func);
+
+            QsiAliasNode alias = null;
+
+            if (rangeFunction.alias is { Length: >=1 })
+                alias = new QsiAliasNode
+                {
+                    Name = new QsiIdentifier(rangeFunction.alias[0].aliasname, false)
+                };
+
+            PgString[] columns = rangeFunction.alias?[0].colnames?
+                .Cast<PgString>()
+                .ToArray();
+
+            if (ListUtility.IsNullOrEmpty(columns))
+            {
+                return TreeHelper.Create<PgRoutineNode>(n =>
+                {
+                    n.Member.Value = source.Member.Value;
+                    n.Parameters.AddRange(source.Parameters);
+                });
+            }
+
+            var columsDeclaration = TreeHelper.Create<QsiColumnsDeclarationNode>(cn =>
+            {
+                cn.Columns.AddRange(CreateSequentialColumnNodes(columns));
+            });
+
+            return TreeHelper.Create<PgRangeFunctionNode>(n =>
+            {
+                n.Columns.Value = columsDeclaration;
+                n.Source.Value = source;
+
+                if (alias is not null)
+                    n.Alias.Value = alias;
+            });
         }
 
         public QsiJoinedTableNode VisitJoinExpression(JoinExpr joinExpr)
