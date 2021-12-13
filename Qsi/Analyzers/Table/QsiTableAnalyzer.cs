@@ -137,7 +137,6 @@ namespace Qsi.Analyzers.Table
             context.ThrowIfCancellationRequested();
 
             using var scopedContext = new TableCompileContext(context);
-            scopedContext.SourceTables.AddRange(context.SourceTables);
 
             // Directives
 
@@ -793,10 +792,14 @@ namespace Qsi.Analyzers.Table
 
                 if (context.Options.UseOuterQueryColumn)
                 {
-                    columns = context.SourceTables
-                        .SelectMany(s => s.Columns.Where(c => Match(c.Name, lastName)))
-                        .Take(2)
-                        .ToArray();
+                    try
+                    {
+                        columns = ResolveColumnReference(context.Parent, column, out implicitTableWildcardTarget);
+                    }
+                    catch (QsiException e) when (e.Error is QsiError.UnknownColumnIn)
+                    {
+                        // ignored
+                    }
                 }
             }
 
@@ -931,7 +934,6 @@ namespace Qsi.Analyzers.Table
                 case IQsiTableExpressionNode e:
                 {
                     using var scopedContext = new TableCompileContext(context);
-                    scopedContext.SourceTables.AddRange(context.SourceTables);
                     var structure = BuildTableStructure(scopedContext, e.Table).Result;
 
                     foreach (var c in structure.Columns)
