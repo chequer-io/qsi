@@ -48,6 +48,10 @@ statement
          (WITH properties)?                                            #createTable
     | DROP TABLE (IF EXISTS)? qualifiedName                            #dropTable
     | INSERT INTO qualifiedName columnAliases? query                   #insertInto
+    | UNLOAD querySpecification 
+        TO string WITH 
+        '(' identifier '=' expression 
+        (',' identifier '=' expression)* ')'                           #unload
     | DELETE FROM qualifiedName (WHERE booleanExpression)?             #delete
     | ALTER TABLE (IF EXISTS)? from=qualifiedName
         RENAME TO to=qualifiedName                                     #renameTable
@@ -61,9 +65,11 @@ statement
     | CREATE TYPE qualifiedName AS (
         '(' sqlParameterDeclaration (',' sqlParameterDeclaration)* ')'
         | type)                                                        #createType
-    | CREATE (OR REPLACE)? VIEW qualifiedName
-            (SECURITY (DEFINER | INVOKER))? AS query                   #createView
+    | CREATE (OR REPLACE)? VIEW qualifiedName AS query                 #createView
+    | DROP (DATABASE | SCHEMA) (IF EXISTS)?
+        identifier (RESTRICT | CASCADE)?                               #dropDatabase
     | DROP VIEW (IF EXISTS)? qualifiedName                             #dropView
+    | DROP TABLE (IF EXISTS)? qualifiedName                            #dropTable
     | CREATE MATERIALIZED VIEW (IF NOT EXISTS)? qualifiedName
         (COMMENT string)?
         (WITH properties)? AS (query | '('query')')                    #createMaterializedView
@@ -74,6 +80,24 @@ statement
         RETURNS returnType=type
         (COMMENT string)?
         routineCharacteristics routineBody                             #createFunction
+    | CREATE (DATABASE | SCHEMA) (IF NOT EXISTS)? identifier
+        (COMMENT comment=string)?
+        (LOCATION location=string)?
+        (WITH DBPROPERTIES stringProperties)?                          #createDatabase
+    | CREATE EXTERNAL TABLE (IF NOT EXISTS)? qualifiedName
+        ('(' columnDefinition (',' columnDefinition)* ')')?
+        (COMMENT comment=string)?
+        (PARTITIONED BY '(' columnDefinition (',' columnDefinition)* ')')?
+        (CLUSTERED BY '(' identifier (',' identifier)* ')' INTO number BUCKETS)?
+        (ROW FORMAT rowFormat)?
+        (STORED AS fileFormat)?
+        (WITH SERDEPROPERTIES stringProperties)?
+        (LOCATION location=string)?
+        (TBLPROPERTIES stringProperties)?                              #createExternalTable
+    | CREATE TABLE qualifiedName
+        (WITH properties)?
+        AS query
+        (WITH NO? DATA)?                                               #createTableAs
     | ALTER FUNCTION qualifiedName types?
       alterRoutineCharacteristics                                      #alterFunction
     | DROP TEMPORARY? FUNCTION (IF EXISTS)? qualifiedName types?       #dropFunction
@@ -99,27 +123,32 @@ statement
     | REVOKE
         (GRANT OPTION FOR)?
         (privilege (',' privilege)* | ALL PRIVILEGES)
-        ON TABLE? qualifiedName FROM grantee=principal                #revoke
+        ON TABLE? qualifiedName FROM grantee=principal                 #revoke
     | SHOW GRANTS
         (ON TABLE? qualifiedName)?                                     #showGrants
-    | EXPLAIN ANALYZE? VERBOSE?
+    | EXPLAIN VERBOSE?
         ('(' explainOption (',' explainOption)* ')')? statement        #explain
+    | SHOW TBLPROPERTIES qualifiedName ('(' string ')')?               #showTblproperties
+    | SHOW (DATABASES | SCHEMAS) (LIKE string)?                        #showDatabases
+    | SHOW PARTITIONS qualifiedName                                    #showPartitions
     | SHOW CREATE TABLE qualifiedName                                  #showCreateTable
     | SHOW CREATE VIEW qualifiedName                                   #showCreateView
     | SHOW CREATE MATERIALIZED VIEW qualifiedName                      #showCreateMaterializedView
     | SHOW CREATE FUNCTION qualifiedName types?                        #showCreateFunction
-    | SHOW TABLES ((FROM | IN) qualifiedName)?
-        (LIKE pattern=string (ESCAPE escape=string)?)?                 #showTables
-    | SHOW SCHEMAS ((FROM | IN) identifier)?
-        (LIKE pattern=string (ESCAPE escape=string)?)?                 #showSchemas
+    | SHOW TABLES ((FROM | IN) qualifiedName)? (pattern=string)?       #showTables
+    | SHOW VIEWS (IN database=identifier)? (LIKE pattern=string)?      #showViews
     | SHOW CATALOGS (LIKE pattern=string)?                             #showCatalogs
-    | SHOW COLUMNS (FROM | IN) qualifiedName                           #showColumns
+    | SHOW COLUMNS (FROM | IN) 
+      ( qualifiedName 
+      | table=identifier (FROM | IN) database=identifier)              #showColumns
     | SHOW STATS FOR qualifiedName                                     #showStats
     | SHOW STATS FOR '(' querySpecification ')'                        #showStatsForQuery
     | SHOW CURRENT? ROLES ((FROM | IN) identifier)?                    #showRoles
     | SHOW ROLE GRANTS ((FROM | IN) identifier)?                       #showRoleGrants
-    | DESCRIBE qualifiedName                                           #showColumns
-    | DESC qualifiedName                                               #showColumns
+    | (DESC | DESCRIBE) (EXTENDED | FORMATTED)? qualifiedName
+        (PARTITION properties)?
+        (qualifiedName)?                                               #describeTable
+    | (DESC | DESCRIBE) qualifiedName                                  #describeView
     | SHOW FUNCTIONS
         (LIKE pattern=string (ESCAPE escape=string)?)?                 #showFunctions
     | SHOW SESSION                                                     #showSession
@@ -133,6 +162,7 @@ statement
     | EXECUTE identifier (USING expression (',' expression)*)?         #execute
     | DESCRIBE INPUT identifier                                        #describeInput
     | DESCRIBE OUTPUT identifier                                       #describeOutput
+    | MSCK REPAIR TABLE qualifiedName                                  #msckRepairTable
     ;
 
 query
@@ -140,7 +170,7 @@ query
     ;
 
 with
-    : WITH RECURSIVE? namedQuery (',' namedQuery)*
+    : WITH namedQuery (',' namedQuery)*
     ;
 
 tableElement
@@ -154,6 +184,33 @@ columnDefinition
 
 likeClause
     : LIKE qualifiedName (optionType=(INCLUDING | EXCLUDING) PROPERTIES)?
+    ;
+
+rowFormat
+    : DELIMITED FIELDS TERMINATED BY string (ESCAPED BY string)?
+    | DELIMITED COLLECTION ITEMS TERMINATED BY string
+    | MAP KEYS TERMINATED BY string
+    | LINES TERMINATED BY string
+    | NULL DEFINED AS string
+    | SERDE string (WITH SERDEPROPERTIES stringProperties)?
+    ;
+
+fileFormat
+    : SEQUENCEFILE
+    | TEXTFILE
+    | RCFILE
+    | ORC
+    | PARQUET
+    | AVRO
+    | INPUTFORMAT string OUTPUTFORMAT string
+    ;
+
+stringProperties
+    : '(' stringProperty (',' stringProperty)* ')'
+    ;
+
+stringProperty
+    : string EQ string
     ;
 
 properties
@@ -388,7 +445,7 @@ primaryExpression
     | ARRAY '[' (expression (',' expression)*)? ']'                                       #arrayConstructor
     | value=primaryExpression '[' index=valueExpression ']'                               #subscript
     | identifier                                                                          #columnReference
-    | base=primaryExpression '.' fieldName=identifier                                     #dereference
+    | expr=primaryExpression '.' fieldName=identifier                                     #dereference
     | name=CURRENT_DATE                                                                   #specialDateTimeFunction
     | name=CURRENT_TIME ('(' precision=INTEGER_VALUE ')')?                                #specialDateTimeFunction
     | name=CURRENT_TIMESTAMP ('(' precision=INTEGER_VALUE ')')?                           #specialDateTimeFunction
@@ -620,8 +677,10 @@ CURRENT_TIME: 'CURRENT_TIME';
 CURRENT_TIMESTAMP: 'CURRENT_TIMESTAMP';
 CURRENT_USER: 'CURRENT_USER';
 DATA: 'DATA';
+DATABASE: 'DATABASE';
 DATE: 'DATE';
 DAY: 'DAY';
+DBPROPERTIES: 'DBPROPERTIES';
 DEALLOCATE: 'DEALLOCATE';
 DEFINER: 'DEFINER';
 DELETE: 'DELETE';
@@ -682,6 +741,7 @@ LEFT: 'LEFT';
 LEVEL: 'LEVEL';
 LIKE: 'LIKE';
 LIMIT: 'LIMIT';
+LOCATION: 'LOCATION';
 LOCALTIME: 'LOCALTIME';
 LOCALTIMESTAMP: 'LOCALTIMESTAMP';
 LOGICAL: 'LOGICAL';
@@ -773,6 +833,7 @@ UNBOUNDED: 'UNBOUNDED';
 UNCOMMITTED: 'UNCOMMITTED';
 UNION: 'UNION';
 UNNEST: 'UNNEST';
+UNLOAD: 'UNLOAD';
 USE: 'USE';
 USER: 'USER';
 USING: 'USING';
@@ -787,6 +848,36 @@ WORK: 'WORK';
 WRITE: 'WRITE';
 YEAR: 'YEAR';
 ZONE: 'ZONE';
+PARTITIONED: 'PARTITIONED';
+CLUSTERED: 'CLUSTERED';
+BUCKETS: 'BUCKETS';
+STORED: 'STORED';
+SERDEPROPERTIES: 'SERDEPROPERTIES';
+TBLPROPERTIES: 'TBLPROPERTIES';
+DELIMITED: 'DELIMITED';
+FIELDS: 'FIELDS';
+TERMINATED: 'TERMINATED';
+ESCAPED: 'ESCAPED';
+COLLECTION: 'COLLECTION';
+ITEMS: 'ITEMS';
+KEYS: 'KEYS';
+LINES: 'LINES';
+DEFINED: 'DEFINED';
+SERDE: 'SERDE';
+SEQUENCEFILE: 'SEQUENCEFILE';
+TEXTFILE: 'TEXTFILE';
+RCFILE: 'RCFILE';
+ORC: 'ORC';
+PARQUET: 'PARQUET';
+AVRO: 'AVRO';
+INPUTFORMAT: 'INPUTFORMAT';
+OUTPUTFORMAT: 'OUTPUTFORMAT';
+EXTENDED: 'EXTENDED';
+FORMATTED: 'FORMATTED';
+MSCK: 'MSCK';
+REPAIR: 'REPAIR';
+DATABASES: 'DATABASES';
+VIEWS: 'VIEWS';
 
 EQ  : '=';
 NEQ : '<>' | '!=';
