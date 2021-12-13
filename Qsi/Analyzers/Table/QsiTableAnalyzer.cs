@@ -785,11 +785,26 @@ namespace Qsi.Analyzers.Table
                 .Take(2)
                 .ToArray();
 
-            switch (columns.Length)
+            if (columns.Length == 0)
             {
-                case 0 when context.Options.UseImplicitTableWildcardInSelect:
+                if (context.Options.UseImplicitTableWildcardInSelect)
                     return ImplicitlyResolveColumnReference(context, column, out implicitTableWildcardTarget);
 
+                if (context.Options.UseOuterQueryColumn)
+                {
+                    try
+                    {
+                        columns = ResolveColumnReference(context.Parent, column, out implicitTableWildcardTarget);
+                    }
+                    catch (QsiException e) when (e.Error is QsiError.UnknownColumnIn)
+                    {
+                        // ignored
+                    }
+                }
+            }
+
+            switch (columns.Length)
+            {
                 case 0:
                     throw new QsiException(QsiError.UnknownColumnIn, lastName.Value, scopeFieldList);
 
@@ -919,7 +934,6 @@ namespace Qsi.Analyzers.Table
                 case IQsiTableExpressionNode e:
                 {
                     using var scopedContext = new TableCompileContext(context);
-                    scopedContext.SourceTables.AddRange(context.SourceTables);
                     var structure = BuildTableStructure(scopedContext, e.Table).Result;
 
                     foreach (var c in structure.Columns)

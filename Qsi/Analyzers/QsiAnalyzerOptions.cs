@@ -33,8 +33,13 @@
         public bool UseViewTracing { get; set; } = true;
 
         /// <summary>
-        /// Use view tracing
+        /// Use implicit table wildcard in select
         /// </summary>
         public bool UseImplicitTableWildcardInSelect { get; set; }
+
+        /// <summary>
+        /// Use outer query column
+        /// </summary>
+        public bool UseOuterQueryColumn { get; set; } = true;
     }
 }
