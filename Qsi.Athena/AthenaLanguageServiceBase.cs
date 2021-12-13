@@ -1,10 +1,26 @@
-﻿using Qsi.Parsing;
+﻿using System;
+using System.Collections.Generic;
+using Qsi.Analyzers;
+using Qsi.Collections;
+using Qsi.Data;
+using Qsi.Engines;
+using Qsi.Parsing;
 using Qsi.Services;
 
 namespace Qsi.Athena
 {
-    public abstract class AthenaLanguageSerivceBase : QsiLanguageServiceBase
+    public abstract class AthenaLanguageServiceBase : QsiLanguageServiceBase
     {
+        protected override IEqualityComparer<QsiIdentifier> GetIdentifierComparer()
+        {
+            return new QsiIdentifierEqualityComparer(StringComparison.OrdinalIgnoreCase);
+        }
+        
+        public override QsiAnalyzerOptions CreateAnalyzerOptions()
+        {
+            return new();
+        }
+
         public override IQsiTreeParser CreateTreeParser()
         {
             return new AthenaParser();
@@ -18,6 +34,13 @@ namespace Qsi.Athena
         public override IQsiTreeDeparser CreateTreeDeparser()
         {
             return new AthenaDeparser();
+        }
+        
+        
+        public override IEnumerable<IQsiAnalyzer> CreateAnalyzers(QsiEngine engine)
+        {
+            // TODO: Override
+            return base.CreateAnalyzers(engine);
         }
     }
 }
