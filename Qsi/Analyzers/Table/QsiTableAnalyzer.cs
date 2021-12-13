@@ -137,6 +137,7 @@ namespace Qsi.Analyzers.Table
             context.ThrowIfCancellationRequested();
 
             using var scopedContext = new TableCompileContext(context);
+            scopedContext.SourceTables.AddRange(context.SourceTables);
 
             // Directives
 
@@ -785,11 +786,22 @@ namespace Qsi.Analyzers.Table
                 .Take(2)
                 .ToArray();
 
-            switch (columns.Length)
+            if (columns.Length == 0)
             {
-                case 0 when context.Options.UseImplicitTableWildcardInSelect:
+                if (context.Options.UseImplicitTableWildcardInSelect)
                     return ImplicitlyResolveColumnReference(context, column, out implicitTableWildcardTarget);
 
+                if (context.Options.UseOuterQueryColumn)
+                {
+                    columns = context.SourceTables
+                        .SelectMany(s => s.Columns.Where(c => Match(c.Name, lastName)))
+                        .Take(2)
+                        .ToArray();
+                }
+            }
+
+            switch (columns.Length)
+            {
                 case 0:
                     throw new QsiException(QsiError.UnknownColumnIn, lastName.Value, scopeFieldList);
 
