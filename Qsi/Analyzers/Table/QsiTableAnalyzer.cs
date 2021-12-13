@@ -919,6 +919,7 @@ namespace Qsi.Analyzers.Table
                 case IQsiTableExpressionNode e:
                 {
                     using var scopedContext = new TableCompileContext(context);
+                    scopedContext.SourceTables.AddRange(context.SourceTables);
                     var structure = BuildTableStructure(scopedContext, e.Table).Result;
 
                     foreach (var c in structure.Columns)
