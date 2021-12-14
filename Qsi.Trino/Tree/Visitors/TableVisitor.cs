@@ -154,6 +154,9 @@ namespace Qsi.Trino.Tree.Visitors
                 case InlineTableContext inlineTable:
                     return VisitInlineTable(inlineTable);
 
+                case SubqueryContext subquery:
+                    return VisitQueryNoWith(subquery.queryNoWith());
+
                 default:
                     throw TreeHelper.NotSupportedTree(context);
             }
