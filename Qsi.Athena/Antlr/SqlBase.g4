@@ -295,7 +295,7 @@ statement
     ;
 
 query
-    :  with? queryNoWith
+    : with? queryNoWith
     ;
 
 with
@@ -406,7 +406,7 @@ externalRoutineName
 queryNoWith:
       queryTerm
       (ORDER BY sortItem (',' sortItem)*)?
-      (OFFSET offset=INTEGER_VALUE (ROW | ROWS)?)?
+      (OFFSET offset=INTEGER_VALUE offsetRow=(ROW | ROWS)?)?
       (LIMIT limit=(INTEGER_VALUE | ALL))?
     ;
 
@@ -462,8 +462,8 @@ setQuantifier
 
 selectItem
     : expression (AS? identifier[null])?  #selectSingle
-    | qualifiedName '.' ASTERISK    #selectAll
-    | ASTERISK                      #selectAll
+    | qualifiedName '.' ASTERISK          #selectAll
+    | ASTERISK                            #selectAll
     ;
 
 relation
