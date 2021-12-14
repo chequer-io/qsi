@@ -7,6 +7,8 @@ using Qsi.Tree;
 
 namespace Qsi.Athena
 {
+    using static SqlBaseParser;
+
     public class AthenaParser : IQsiTreeParser
     {
         public IQsiTreeNode Parse(QsiScript script, CancellationToken cancellationToken = default)

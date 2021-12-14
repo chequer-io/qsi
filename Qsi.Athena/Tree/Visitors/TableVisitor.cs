@@ -564,5 +564,82 @@ namespace Qsi.Athena.Tree.Visitors
 
             return node;
         }
+        private static QsiTableNode CreateSource(RelationContext[] relations)
+        {
+            var source = VisitRelation(relations[0]);
+
+            if (relations.Length != 1)
+            {
+                for (int i = 1; i < relations.Length; i++)
+                {
+                    var leftContext = relations[i - 1];
+                    var rightContext = relations[i];
+
+                    var joinedTable = AthenaTree.CreateWithSpan<QsiJoinedTableNode>(
+                        leftContext.Start,
+                        rightContext.Stop
+                    );
+
+                    joinedTable.IsComma = true;
+                    joinedTable.Left.Value = source;
+                    joinedTable.Right.Value = VisitRelation(rightContext);
+
+                    source = joinedTable;
+                }
+            }
+
+            return source;
+        }
+
+        #region private extension methods
+        private static QsiColumnNode ToColumn(this QsiExpressionNode node)
+        {
+            QsiColumnNode columnNode;
+
+            if (node is QsiColumnExpressionNode derivedColumn)
+            {
+                columnNode = derivedColumn.Column.Value;
+            }
+            else
+            {
+                var derivedColumnNode = new QsiDerivedColumnNode();
+                derivedColumnNode.Expression.Value = node;
+                columnNode = derivedColumnNode;
+            }
+
+            return columnNode;
+        }
+
+        private static QsiDerivedColumnNode ToDerivedColumn(this QsiColumnNode node, ParserRuleContext context)
+        {
+            if (node is not QsiDerivedColumnNode derivedColumn)
+            {
+                derivedColumn = new QsiDerivedColumnNode();
+                derivedColumn.Column.Value = node;
+            }
+            else
+            {
+                AthenaTree.PutContextSpan(node, context);
+            }
+
+            return derivedColumn;
+        }
+
+        private static QsiDerivedTableNode ToDerivedTable(this QsiTableNode node, ParserRuleContext context)
+        {
+            if (node is not QsiDerivedTableNode derivedTable)
+            {
+                derivedTable = new QsiDerivedTableNode();
+                derivedTable.Source.Value = node;
+                derivedTable.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+            }
+            else
+            {
+                AthenaTree.PutContextSpan(node, context);
+            }
+
+            return derivedTable;
+        }
+        #endregion
     }
 }
