@@ -38,12 +38,12 @@ standaloneRoutineBody
 
 statement
     : query                                                            #statementDefault
-    | USE schema=identifier[null]                                            #use
-    | USE catalog=identifier[null] '.' schema=identifier[null]                     #use
+    | USE schema=identifier[null]                                      #use
+    | USE catalog=identifier[null] '.' schema=identifier[null]         #use
     | CREATE SCHEMA (IF NOT EXISTS)? qualifiedName
         (WITH properties)?                                             #createSchema
     | DROP SCHEMA (IF EXISTS)? qualifiedName (CASCADE | RESTRICT)?     #dropSchema
-    | ALTER SCHEMA qualifiedName RENAME TO identifier[null]                  #renameSchema
+    | ALTER SCHEMA qualifiedName RENAME TO identifier[null]            #renameSchema
     | CREATE TABLE (IF NOT EXISTS)? qualifiedName columnAliases?
         (COMMENT string)?
         (WITH properties)? AS (query | '('query')')
@@ -55,14 +55,13 @@ statement
     | DROP TABLE (IF EXISTS)? qualifiedName                            #dropTable
     | INSERT INTO qualifiedName columnAliases? query                   #insertInto
     | UNLOAD querySpecification 
-        TO string WITH 
-        '(' identifier[null] '=' expression 
-        (',' identifier[null] '=' expression)* ')'                           #unload
+        TO string WITH properties                                      #unload
     | DELETE FROM qualifiedName (WHERE booleanExpression)?             #delete
     | ALTER TABLE (IF EXISTS)? from=qualifiedName
         RENAME TO to=qualifiedName                                     #renameTable
     | ALTER TABLE (IF EXISTS)? tableName=qualifiedName
-        RENAME COLUMN (IF EXISTS)? from=identifier[null] TO to=identifier[null]    #renameColumn
+        RENAME COLUMN (IF EXISTS)? 
+        from=identifier[null] TO to=identifier[null]                   #renameColumn
     | ALTER TABLE (IF EXISTS)? tableName=qualifiedName
         DROP COLUMN (IF EXISTS)? column=qualifiedName                  #dropColumn
     | ALTER TABLE (IF EXISTS)? tableName=qualifiedName
@@ -73,7 +72,7 @@ statement
         | type)                                                        #createType
     | CREATE (OR REPLACE)? VIEW qualifiedName AS query                 #createView
     | DROP (DATABASE | SCHEMA) (IF EXISTS)?
-        identifier[null] (RESTRICT | CASCADE)?                               #dropDatabase
+        identifier[null] (RESTRICT | CASCADE)?                         #dropDatabase
     | DROP VIEW (IF EXISTS)? qualifiedName                             #dropView
     | DROP TABLE (IF EXISTS)? qualifiedName                            #dropTable
     | CREATE MATERIALIZED VIEW (IF NOT EXISTS)? qualifiedName
@@ -110,7 +109,7 @@ statement
     | CALL qualifiedName '(' (callArgument (',' callArgument)*)? ')'   #call
     | CREATE ROLE name=identifier[null]
         (WITH ADMIN grantor)?                                          #createRole
-    | DROP ROLE name=identifier[null]                                        #dropRole
+    | DROP ROLE name=identifier[null]                                  #dropRole
     | GRANT
         roles
         TO principal (',' principal)*
@@ -121,7 +120,7 @@ statement
         roles
         FROM principal (',' principal)*
         (GRANTED BY grantor)?                                          #revokeRoles
-    | SET ROLE (ALL | NONE | role=identifier[null])                          #setRole
+    | SET ROLE (ALL | NONE | role=identifier[null])                    #setRole
     | GRANT
         (privilege (',' privilege)* | ALL PRIVILEGES)
         ON TABLE? qualifiedName TO grantee=principal
@@ -142,15 +141,16 @@ statement
     | SHOW CREATE MATERIALIZED VIEW qualifiedName                      #showCreateMaterializedView
     | SHOW CREATE FUNCTION qualifiedName types?                        #showCreateFunction
     | SHOW TABLES ((FROM | IN) qualifiedName)? (pattern=string)?       #showTables
-    | SHOW VIEWS (IN database=identifier[null])? (LIKE pattern=string)?      #showViews
+    | SHOW VIEWS 
+        (IN database=identifier[null])? (LIKE pattern=string)?         #showViews
     | SHOW CATALOGS (LIKE pattern=string)?                             #showCatalogs
     | SHOW COLUMNS (FROM | IN) 
       ( qualifiedName 
-      | table=identifier[null] (FROM | IN) database=identifier[null])              #showColumns
+      | table=identifier[null] (FROM | IN) database=identifier[null])  #showColumns
     | SHOW STATS FOR qualifiedName                                     #showStats
     | SHOW STATS FOR '(' querySpecification ')'                        #showStatsForQuery
-    | SHOW CURRENT? ROLES ((FROM | IN) identifier[null])?                    #showRoles
-    | SHOW ROLE GRANTS ((FROM | IN) identifier[null])?                       #showRoleGrants
+    | SHOW CURRENT? ROLES ((FROM | IN) identifier[null])?              #showRoles
+    | SHOW ROLE GRANTS ((FROM | IN) identifier[null])?                 #showRoleGrants
     | (DESC | DESCRIBE) (EXTENDED | FORMATTED)? qualifiedName
         (PARTITION properties)?
         (qualifiedName)?                                               #describeTable
@@ -163,11 +163,11 @@ statement
     | START TRANSACTION (transactionMode (',' transactionMode)*)?      #startTransaction
     | COMMIT WORK?                                                     #commit
     | ROLLBACK WORK?                                                   #rollback
-    | PREPARE identifier[null] FROM statement                                #prepare
-    | DEALLOCATE PREPARE identifier[null]                                    #deallocate
-    | EXECUTE identifier[null] (USING expression (',' expression)*)?         #execute
-    | DESCRIBE INPUT identifier[null]                                        #describeInput
-    | DESCRIBE OUTPUT identifier[null]                                       #describeOutput
+    | PREPARE identifier[null] FROM statement                          #prepare
+    | DEALLOCATE PREPARE identifier[null]                              #deallocate
+    | EXECUTE identifier[null] (USING expression (',' expression)*)?   #execute
+    | DESCRIBE INPUT identifier[null]                                  #describeInput
+    | DESCRIBE OUTPUT identifier[null]                                 #describeOutput
     | MSCK REPAIR TABLE qualifiedName                                  #msckRepairTable
     ;
 
@@ -426,7 +426,7 @@ valueExpression
 primaryExpression
     : NULL                                                                                #nullLiteral
     | interval                                                                            #intervalLiteral
-    | identifier[null] string                                                                   #typeConstructor
+    | identifier[null] string                                                             #typeConstructor
     | DOUBLE_PRECISION string                                                             #typeConstructor
     | number                                                                              #numericLiteral
     | booleanValue                                                                        #booleanLiteral
@@ -439,8 +439,8 @@ primaryExpression
     | qualifiedName '(' ASTERISK ')' filter? over?                                        #functionCall
     | qualifiedName '(' (setQuantifier? expression (',' expression)*)?
         (ORDER BY sortItem (',' sortItem)*)? ')' filter? (nullTreatment? over)?           #functionCall
-    | identifier[null] '->' expression                                                          #lambda
-    | '(' (identifier[null] (',' identifier[null])*)? ')' '->' expression                             #lambda
+    | identifier[null] '->' expression                                                    #lambda
+    | '(' (identifier[null] (',' identifier[null])*)? ')' '->' expression                 #lambda
     | '(' query ')'                                                                       #subqueryExpression
     // This is an extension to ANSI SQL, which considers EXISTS to be a <boolean expression>
     | EXISTS '(' query ')'                                                                #exists
@@ -450,8 +450,8 @@ primaryExpression
     | TRY_CAST '(' expression AS type ')'                                                 #cast
     | ARRAY '[' (expression (',' expression)*)? ']'                                       #arrayConstructor
     | value=primaryExpression '[' index=valueExpression ']'                               #subscript
-    | identifier[null]                                                                          #columnReference
-    | expr=primaryExpression '.' fieldName=identifier[null]                                     #dereference
+    | identifier[null]                                                                    #columnReference
+    | expr=primaryExpression '.' fieldName=identifier[null]                               #dereference
     | name=CURRENT_DATE                                                                   #specialDateTimeFunction
     | name=CURRENT_TIME ('(' precision=INTEGER_VALUE ')')?                                #specialDateTimeFunction
     | name=CURRENT_TIMESTAMP ('(' precision=INTEGER_VALUE ')')?                           #specialDateTimeFunction
@@ -460,7 +460,7 @@ primaryExpression
     | name=CURRENT_USER                                                                   #currentUser
     | SUBSTRING '(' valueExpression FROM valueExpression (FOR valueExpression)? ')'       #substring
     | NORMALIZE '(' valueExpression (',' normalForm)? ')'                                 #normalize
-    | EXTRACT '(' identifier[null] FROM valueExpression ')'                                     #extract
+    | EXTRACT '(' identifier[null] FROM valueExpression ')'                               #extract
     | '(' expression ')'                                                                  #parenthesizedExpression
     | GROUPING '(' (qualifiedName (',' qualifiedName)*)? ')'                              #groupingOperation
     ;
@@ -577,7 +577,7 @@ levelOfIsolation
     ;
 
 callArgument
-    : expression                    #positionalArgument
+    : expression                          #positionalArgument
     | identifier[null] '=>' expression    #namedArgument
     ;
 
