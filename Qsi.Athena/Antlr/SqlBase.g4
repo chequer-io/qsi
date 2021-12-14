@@ -57,15 +57,57 @@ statement
     | UNLOAD querySpecification 
         TO string WITH properties                                      #unload
     | DELETE FROM qualifiedName (WHERE booleanExpression)?             #delete
+    
+    
+    
+    | ALTER (DATABASE | SCHEMA) databaseName=qualifiedName
+        SET DBPROPERTIES stringProperties                              #setDatabaseProperties
+    
+    | ALTER TABLE tableName=qualifiedName
+        (PARTITION partitionSpec=properties)?
+        ADD COLUMNS
+        '(' columnDefinition (',' columnDefinition)* ')'               #addColumns
+
+    | ALTER TABLE tableName=qualifiedName ADD (IF NOT EXISTS)?
+        (
+            PARTITION properties
+            (LOCATION string)?
+        )+                                                             #addPartition
+
+    | ALTER TABLE tableName=qualifiedName DROP (IF EXISTS)?
+        PARTITION properties (',' PARTITION properties)*               #dropPartition
+
+    | ALTER TABLE tableName=qualifiedName
+        PARTITION properties
+        RENAME TO PARTITION properties                                 #renamePartition
+
+    | ALTER TABLE tableName=qualifiedName
+        (PARTITION properties)?
+        REPLACE COLUMNS
+            '(' columnDefinition (',' columnDefinition)* ')'           #replaceColumns
+
+    | ALTER TABLE tableName=qualifiedName
+        (PARTITION properties)?
+        SET LOCATION string                                            #setPartitionLocation
+    
+    | ALTER TABLE tableName=qualifiedName
+        SET TBLPROPERTIES stringProperties                             #setTableProperties
+    
+    
+    
+//    Notice: "ALTER TABLE table_name RENAME TO" is not supported in Athena
     | ALTER TABLE (IF EXISTS)? from=qualifiedName
         RENAME TO to=qualifiedName                                     #renameTable
+        
+        
     | ALTER TABLE (IF EXISTS)? tableName=qualifiedName
         RENAME COLUMN (IF EXISTS)? 
         from=identifier[null] TO to=identifier[null]                   #renameColumn
     | ALTER TABLE (IF EXISTS)? tableName=qualifiedName
         DROP COLUMN (IF EXISTS)? column=qualifiedName                  #dropColumn
-    | ALTER TABLE (IF EXISTS)? tableName=qualifiedName
-        ADD COLUMN (IF NOT EXISTS)? column=columnDefinition            #addColumn
+        
+    
+    
     | ANALYZE qualifiedName (WITH properties)?                         #analyze
     | CREATE TYPE qualifiedName AS (
         '(' sqlParameterDeclaration (',' sqlParameterDeclaration)* ')'
@@ -185,7 +227,7 @@ tableElement
     ;
 
 columnDefinition
-    : identifier[null] type (NOT NULL)? (COMMENT string)? (WITH properties)?
+    : identifier[null] type (COMMENT string)?
     ;
 
 likeClause
@@ -611,7 +653,7 @@ identifier[List<QsiIdentifier> buffer] returns [QsiIdentifier qi]
     @after { $buffer?.Add($qi); }
     : i=IDENTIFIER { $qi = new QsiIdentifier($i.text.ToUpper(), false); }             #unquotedIdentifier
     | i=QUOTED_IDENTIFIER { $qi = new QsiIdentifier($i.text, true); }                 #quotedIdentifier
-    | ki=nonReserved { $qi = new QsiIdentifier($ki.text.ToUpper(), false); }           #unquotedIdentifier
+    | ki=nonReserved { $qi = new QsiIdentifier($ki.text.ToUpper(), false); }          #unquotedIdentifier
     | i=BACKQUOTED_IDENTIFIER { $qi = new QsiIdentifier($i.text, true); }             #backQuotedIdentifier
     | i=DIGIT_IDENTIFIER { $qi = new QsiIdentifier($i.text.ToUpper(), false); }       #digitIdentifier
     ;
