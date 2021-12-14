@@ -18,6 +18,12 @@ tokens {
     DELIMITER
 }
 
+@header {
+    using Qsi.Data;
+    using Qsi.Tree;
+    using Qsi.Utilities;
+}
+
 singleStatement
     : statement EOF
     ;
@@ -32,12 +38,12 @@ standaloneRoutineBody
 
 statement
     : query                                                            #statementDefault
-    | USE schema=identifier                                            #use
-    | USE catalog=identifier '.' schema=identifier                     #use
+    | USE schema=identifier[null]                                            #use
+    | USE catalog=identifier[null] '.' schema=identifier[null]                     #use
     | CREATE SCHEMA (IF NOT EXISTS)? qualifiedName
         (WITH properties)?                                             #createSchema
     | DROP SCHEMA (IF EXISTS)? qualifiedName (CASCADE | RESTRICT)?     #dropSchema
-    | ALTER SCHEMA qualifiedName RENAME TO identifier                  #renameSchema
+    | ALTER SCHEMA qualifiedName RENAME TO identifier[null]                  #renameSchema
     | CREATE TABLE (IF NOT EXISTS)? qualifiedName columnAliases?
         (COMMENT string)?
         (WITH properties)? AS (query | '('query')')
@@ -50,13 +56,13 @@ statement
     | INSERT INTO qualifiedName columnAliases? query                   #insertInto
     | UNLOAD querySpecification 
         TO string WITH 
-        '(' identifier '=' expression 
-        (',' identifier '=' expression)* ')'                           #unload
+        '(' identifier[null] '=' expression 
+        (',' identifier[null] '=' expression)* ')'                           #unload
     | DELETE FROM qualifiedName (WHERE booleanExpression)?             #delete
     | ALTER TABLE (IF EXISTS)? from=qualifiedName
         RENAME TO to=qualifiedName                                     #renameTable
     | ALTER TABLE (IF EXISTS)? tableName=qualifiedName
-        RENAME COLUMN (IF EXISTS)? from=identifier TO to=identifier    #renameColumn
+        RENAME COLUMN (IF EXISTS)? from=identifier[null] TO to=identifier[null]    #renameColumn
     | ALTER TABLE (IF EXISTS)? tableName=qualifiedName
         DROP COLUMN (IF EXISTS)? column=qualifiedName                  #dropColumn
     | ALTER TABLE (IF EXISTS)? tableName=qualifiedName
@@ -67,7 +73,7 @@ statement
         | type)                                                        #createType
     | CREATE (OR REPLACE)? VIEW qualifiedName AS query                 #createView
     | DROP (DATABASE | SCHEMA) (IF EXISTS)?
-        identifier (RESTRICT | CASCADE)?                               #dropDatabase
+        identifier[null] (RESTRICT | CASCADE)?                               #dropDatabase
     | DROP VIEW (IF EXISTS)? qualifiedName                             #dropView
     | DROP TABLE (IF EXISTS)? qualifiedName                            #dropTable
     | CREATE MATERIALIZED VIEW (IF NOT EXISTS)? qualifiedName
@@ -80,7 +86,7 @@ statement
         RETURNS returnType=type
         (COMMENT string)?
         routineCharacteristics routineBody                             #createFunction
-    | CREATE (DATABASE | SCHEMA) (IF NOT EXISTS)? identifier
+    | CREATE (DATABASE | SCHEMA) (IF NOT EXISTS)? identifier[null]
         (COMMENT comment=string)?
         (LOCATION location=string)?
         (WITH DBPROPERTIES stringProperties)?                          #createDatabase
@@ -88,7 +94,7 @@ statement
         ('(' columnDefinition (',' columnDefinition)* ')')?
         (COMMENT comment=string)?
         (PARTITIONED BY '(' columnDefinition (',' columnDefinition)* ')')?
-        (CLUSTERED BY '(' identifier (',' identifier)* ')' INTO number BUCKETS)?
+        (CLUSTERED BY '(' identifier[null] (',' identifier[null])* ')' INTO number BUCKETS)?
         (ROW FORMAT rowFormat)?
         (STORED AS fileFormat)?
         (WITH SERDEPROPERTIES stringProperties)?
@@ -102,9 +108,9 @@ statement
       alterRoutineCharacteristics                                      #alterFunction
     | DROP TEMPORARY? FUNCTION (IF EXISTS)? qualifiedName types?       #dropFunction
     | CALL qualifiedName '(' (callArgument (',' callArgument)*)? ')'   #call
-    | CREATE ROLE name=identifier
+    | CREATE ROLE name=identifier[null]
         (WITH ADMIN grantor)?                                          #createRole
-    | DROP ROLE name=identifier                                        #dropRole
+    | DROP ROLE name=identifier[null]                                        #dropRole
     | GRANT
         roles
         TO principal (',' principal)*
@@ -115,7 +121,7 @@ statement
         roles
         FROM principal (',' principal)*
         (GRANTED BY grantor)?                                          #revokeRoles
-    | SET ROLE (ALL | NONE | role=identifier)                          #setRole
+    | SET ROLE (ALL | NONE | role=identifier[null])                          #setRole
     | GRANT
         (privilege (',' privilege)* | ALL PRIVILEGES)
         ON TABLE? qualifiedName TO grantee=principal
@@ -136,15 +142,15 @@ statement
     | SHOW CREATE MATERIALIZED VIEW qualifiedName                      #showCreateMaterializedView
     | SHOW CREATE FUNCTION qualifiedName types?                        #showCreateFunction
     | SHOW TABLES ((FROM | IN) qualifiedName)? (pattern=string)?       #showTables
-    | SHOW VIEWS (IN database=identifier)? (LIKE pattern=string)?      #showViews
+    | SHOW VIEWS (IN database=identifier[null])? (LIKE pattern=string)?      #showViews
     | SHOW CATALOGS (LIKE pattern=string)?                             #showCatalogs
     | SHOW COLUMNS (FROM | IN) 
       ( qualifiedName 
-      | table=identifier (FROM | IN) database=identifier)              #showColumns
+      | table=identifier[null] (FROM | IN) database=identifier[null])              #showColumns
     | SHOW STATS FOR qualifiedName                                     #showStats
     | SHOW STATS FOR '(' querySpecification ')'                        #showStatsForQuery
-    | SHOW CURRENT? ROLES ((FROM | IN) identifier)?                    #showRoles
-    | SHOW ROLE GRANTS ((FROM | IN) identifier)?                       #showRoleGrants
+    | SHOW CURRENT? ROLES ((FROM | IN) identifier[null])?                    #showRoles
+    | SHOW ROLE GRANTS ((FROM | IN) identifier[null])?                       #showRoleGrants
     | (DESC | DESCRIBE) (EXTENDED | FORMATTED)? qualifiedName
         (PARTITION properties)?
         (qualifiedName)?                                               #describeTable
@@ -157,11 +163,11 @@ statement
     | START TRANSACTION (transactionMode (',' transactionMode)*)?      #startTransaction
     | COMMIT WORK?                                                     #commit
     | ROLLBACK WORK?                                                   #rollback
-    | PREPARE identifier FROM statement                                #prepare
-    | DEALLOCATE PREPARE identifier                                    #deallocate
-    | EXECUTE identifier (USING expression (',' expression)*)?         #execute
-    | DESCRIBE INPUT identifier                                        #describeInput
-    | DESCRIBE OUTPUT identifier                                       #describeOutput
+    | PREPARE identifier[null] FROM statement                                #prepare
+    | DEALLOCATE PREPARE identifier[null]                                    #deallocate
+    | EXECUTE identifier[null] (USING expression (',' expression)*)?         #execute
+    | DESCRIBE INPUT identifier[null]                                        #describeInput
+    | DESCRIBE OUTPUT identifier[null]                                       #describeOutput
     | MSCK REPAIR TABLE qualifiedName                                  #msckRepairTable
     ;
 
@@ -179,7 +185,7 @@ tableElement
     ;
 
 columnDefinition
-    : identifier type (NOT NULL)? (COMMENT string)? (WITH properties)?
+    : identifier[null] type (NOT NULL)? (COMMENT string)? (WITH properties)?
     ;
 
 likeClause
@@ -218,11 +224,11 @@ properties
     ;
 
 property
-    : identifier EQ expression
+    : identifier[null] EQ expression
     ;
 
 sqlParameterDeclaration
-    : identifier type
+    : identifier[null] type
     ;
 
 routineCharacteristics
@@ -258,7 +264,7 @@ externalBodyReference
 
 language
     : SQL
-    | identifier
+    | identifier[null]
     ;
 
 determinism
@@ -271,7 +277,7 @@ nullCallClause
     ;
 
 externalRoutineName
-    : identifier
+    : identifier[null]
     ;
 
 queryNoWith:
@@ -323,7 +329,7 @@ groupingSet
     ;
 
 namedQuery
-    : name=identifier (columnAliases)? AS '(' query ')'
+    : name=identifier[null] (columnAliases)? AS '(' query ')'
     ;
 
 setQuantifier
@@ -332,7 +338,7 @@ setQuantifier
     ;
 
 selectItem
-    : expression (AS? identifier)?  #selectSingle
+    : expression (AS? identifier[null])?  #selectSingle
     | qualifiedName '.' ASTERISK    #selectAll
     | ASTERISK                      #selectAll
     ;
@@ -355,7 +361,7 @@ joinType
 
 joinCriteria
     : ON booleanExpression
-    | USING '(' identifier (',' identifier)* ')'
+    | USING '(' identifier[null] (',' identifier[null])* ')'
     ;
 
 sampledRelation
@@ -370,11 +376,11 @@ sampleType
     ;
 
 aliasedRelation
-    : relationPrimary (AS? identifier columnAliases?)?
+    : relationPrimary (AS? identifier[null] columnAliases?)?
     ;
 
 columnAliases
-    : '(' identifier (',' identifier)* ')'
+    : '(' identifier[null] (',' identifier[null])* ')'
     ;
 
 relationPrimary
@@ -420,7 +426,7 @@ valueExpression
 primaryExpression
     : NULL                                                                                #nullLiteral
     | interval                                                                            #intervalLiteral
-    | identifier string                                                                   #typeConstructor
+    | identifier[null] string                                                                   #typeConstructor
     | DOUBLE_PRECISION string                                                             #typeConstructor
     | number                                                                              #numericLiteral
     | booleanValue                                                                        #booleanLiteral
@@ -433,8 +439,8 @@ primaryExpression
     | qualifiedName '(' ASTERISK ')' filter? over?                                        #functionCall
     | qualifiedName '(' (setQuantifier? expression (',' expression)*)?
         (ORDER BY sortItem (',' sortItem)*)? ')' filter? (nullTreatment? over)?           #functionCall
-    | identifier '->' expression                                                          #lambda
-    | '(' (identifier (',' identifier)*)? ')' '->' expression                             #lambda
+    | identifier[null] '->' expression                                                          #lambda
+    | '(' (identifier[null] (',' identifier[null])*)? ')' '->' expression                             #lambda
     | '(' query ')'                                                                       #subqueryExpression
     // This is an extension to ANSI SQL, which considers EXISTS to be a <boolean expression>
     | EXISTS '(' query ')'                                                                #exists
@@ -444,8 +450,8 @@ primaryExpression
     | TRY_CAST '(' expression AS type ')'                                                 #cast
     | ARRAY '[' (expression (',' expression)*)? ']'                                       #arrayConstructor
     | value=primaryExpression '[' index=valueExpression ']'                               #subscript
-    | identifier                                                                          #columnReference
-    | expr=primaryExpression '.' fieldName=identifier                                     #dereference
+    | identifier[null]                                                                          #columnReference
+    | expr=primaryExpression '.' fieldName=identifier[null]                                     #dereference
     | name=CURRENT_DATE                                                                   #specialDateTimeFunction
     | name=CURRENT_TIME ('(' precision=INTEGER_VALUE ')')?                                #specialDateTimeFunction
     | name=CURRENT_TIMESTAMP ('(' precision=INTEGER_VALUE ')')?                           #specialDateTimeFunction
@@ -454,7 +460,7 @@ primaryExpression
     | name=CURRENT_USER                                                                   #currentUser
     | SUBSTRING '(' valueExpression FROM valueExpression (FOR valueExpression)? ')'       #substring
     | NORMALIZE '(' valueExpression (',' normalForm)? ')'                                 #normalize
-    | EXTRACT '(' identifier FROM valueExpression ')'                                     #extract
+    | EXTRACT '(' identifier[null] FROM valueExpression ')'                                     #extract
     | '(' expression ')'                                                                  #parenthesizedExpression
     | GROUPING '(' (qualifiedName (',' qualifiedName)*)? ')'                              #groupingOperation
     ;
@@ -506,7 +512,7 @@ type
     : type ARRAY
     | ARRAY '<' type '>'
     | MAP '<' type ',' type '>'
-    | ROW '(' identifier type (',' identifier type)* ')'
+    | ROW '(' identifier[null] type (',' identifier[null] type)* ')'
     | baseType ('(' typeParameter (',' typeParameter)* ')')?
     | INTERVAL from=intervalField TO to=intervalField
     ;
@@ -572,15 +578,17 @@ levelOfIsolation
 
 callArgument
     : expression                    #positionalArgument
-    | identifier '=>' expression    #namedArgument
+    | identifier[null] '=>' expression    #namedArgument
     ;
 
 privilege
-    : SELECT | DELETE | INSERT | identifier
+    : SELECT | DELETE | INSERT | identifier[null]
     ;
 
-qualifiedName
-    : identifier ('.' identifier)*
+qualifiedName returns [QsiQualifiedIdentifier qqi] locals [List<QsiIdentifier> buffer]
+    @init { $buffer = new List<QsiIdentifier>(); }
+    @after { $qqi = new QsiQualifiedIdentifier($buffer); }
+    : identifier[$buffer] ('.' identifier[$buffer] )*
     ;
 
 grantor
@@ -590,21 +598,22 @@ grantor
     ;
 
 principal
-    : USER identifier       #userPrincipal
-    | ROLE identifier       #rolePrincipal
-    | identifier            #unspecifiedPrincipal
+    : USER identifier[null]       #userPrincipal
+    | ROLE identifier[null]       #rolePrincipal
+    | identifier[null]            #unspecifiedPrincipal
     ;
 
 roles
-    : identifier (',' identifier)*
+    : identifier[null] (',' identifier[null])*
     ;
 
-identifier
-    : IDENTIFIER             #unquotedIdentifier
-    | QUOTED_IDENTIFIER      #quotedIdentifier
-    | nonReserved            #unquotedIdentifier
-    | BACKQUOTED_IDENTIFIER  #backQuotedIdentifier
-    | DIGIT_IDENTIFIER       #digitIdentifier
+identifier[List<QsiIdentifier> buffer] returns [QsiIdentifier qi]
+    @after { $buffer?.Add($qi); }
+    : i=IDENTIFIER { $qi = new QsiIdentifier($i.text.ToUpper(), false); }             #unquotedIdentifier
+    | i=QUOTED_IDENTIFIER { $qi = new QsiIdentifier($i.text, true); }                 #quotedIdentifier
+    | ki=nonReserved { $qi = new QsiIdentifier($ki.text.ToUpper(), false); }           #unquotedIdentifier
+    | i=BACKQUOTED_IDENTIFIER { $qi = new QsiIdentifier($i.text, true); }             #backQuotedIdentifier
+    | i=DIGIT_IDENTIFIER { $qi = new QsiIdentifier($i.text.ToUpper(), false); }       #digitIdentifier
     ;
 
 number

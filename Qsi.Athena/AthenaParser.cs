@@ -1,10 +1,9 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using Qsi.Athena.Internal;
 using Qsi.Data;
 using Qsi.Parsing;
-using Qsi.Services;
 using Qsi.Tree;
+using Qsi.Utilities;
 
 namespace Qsi.Athena
 {
@@ -15,13 +14,11 @@ namespace Qsi.Athena
             var (_, result) = SqlParser.Parse(script.Script, parser => parser.singleStatement());
 
             var statement = result.statement();
+
             switch (statement)
             {
-                
-                
                 default:
-                    // TODO: Change exception to specific
-                    throw new Exception("Not supported");
+                    throw TreeHelper.NotSupportedTree(statement);
             }
         }
     }
