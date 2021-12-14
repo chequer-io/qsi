@@ -59,55 +59,136 @@ statement
     | DELETE FROM qualifiedName (WHERE booleanExpression)?             #delete
     
     
+    //region ALTER DATABASE
+        
+    // SET OWNER: Not supported in Athena
+    // SET LOCATION: Not supported in Athena
+    // SET MANAGEDLOCATION: Not supported in Athena
     
+    // SET DBPROPERTIES
+    // Reference1: https://docs.aws.amazon.com/athena/latest/ug/alter-database-set-dbproperties.html
+    // Reference2: https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-AlterDatabase
     | ALTER (DATABASE | SCHEMA) databaseName=qualifiedName
-        SET DBPROPERTIES stringProperties                              #setDatabaseProperties
+        SET DBPROPERTIES dbProperties=stringProperties                 #setDbProperties
+
+    //endregion  
     
+    //region ALTER TABLE
+  
+    // SET SERDE: Not supported in Athena, tested at 2021. 12. 14.
+    // SET SERDEPROPERTIES: Not supported in Athena, tested at 2021. 12. 14.
+    // UNSET SERDEPROPERTIES: Not supported in Athena, tested at 2021. 12. 14.
+    // ADD CONSTRAINT: Not supported in Athena, tested at 2021. 12. 14.
+    
+    // RENAME TO: Not supported in Athena (https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html)
+    // CLUSTERED BY: Not supported in Athena (https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html)
+    // NOT CLUSTERED: Not supported in Athena (https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html)
+    // SKEWED BY: Not supported in Athena (https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html)
+    // NOT SKEWED: Not supported in Athena (https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html)
+    // NOT STORED: Not supported in Athena (https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html)
+    // NOT STORED AS DIRECTORIES: Not supported in Athena (https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html)
+    // SET SKEWED LOCATION : Not supported in Athena (https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html)
+
+    // SET TBLPROPERTIES
+    // Reference: https://docs.aws.amazon.com/athena/latest/ug/alter-table-set-tblproperties.html 
+    // Reference: https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-AlterTableProperties
+    | ALTER TABLE tableName=qualifiedName
+        SET TBLPROPERTIES tblProperties=stringProperties               #setTblProperties
+    
+    //endregion
+    
+    //region ALTER TABLE/PARTITION
+
+    // SET FILEFORMAT: Not supported in Athena (https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html)
+    // TOUCH: Not supported in Athena (https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html)
+    // COMPACT: Not supported in Athena (https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html)
+    // CONCATENATE: Not supported in Athena (https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html)
+    
+    // ENABLE/DISABLE NO_DROP: Not supported in Athena, tested at 2021. 12. 14.
+    // ENABLE/DISABLE OFFLINE: Not supported in Athena, tested at 2021. 12. 14.
+    // UPDATE COLUMNS: Not supprted in Athena, test at 2021. 12. 14.
+    
+    // SET LOCATION
+    // Reference: https://docs.aws.amazon.com/athena/latest/ug/alter-table-set-location.html
+    // Reference: https://cwiki.apache.org/confluence/pages/viewpage.action?pageId=82706445#LanguageManualDDL-AlterTable/PartitionLocation
+    | ALTER TABLE tableName=qualifiedName
+        (PARTITION partitionSpec=properties)?
+        SET LOCATION location=string                                   #setLocation
+        
+    //endregion
+    
+    //region ALTER PARTITION
+    
+    // ARCHIVE PARTITION: Not supported in Athena (https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html)
+    // UNARCHIVE PARTITION: Not supported in Athena (https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html)
+    
+    // ADD PARTITIONS
+    // Reference1: https://docs.aws.amazon.com/athena/latest/ug/alter-table-add-partition.html
+    // Reference2: https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-AddPartitions
+    | ALTER TABLE tableName=qualifiedName ADD (IF NOT EXISTS)?
+        (
+            PARTITION partitionSpec=properties
+            (LOCATION location=string)?
+        )+                                                             #addPartitions
+    
+    // RENAME PARTITION
+    // Reference1: https://docs.aws.amazon.com/athena/latest/ug/alter-table-rename-partition.html
+    // Reference2: https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-RenamePartition
+    | ALTER TABLE tableName=qualifiedName
+        PARTITION from=properties
+        RENAME TO PARTITION to=properties                              #renamePartition
+
+    // EXCHANGE PARTITION: Not supported in Athena (https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html)
+
+    // MSCK REPAIR TABLE
+    // Reference1: https://docs.aws.amazon.com/athena/latest/ug/msck-repair-table.html
+    // Reference2: https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-RecoverPartitions(MSCKREPAIRTABLE)
+    | MSCK (REPAIR)? TABLE tableName=qualifiedName
+        (ADD | DROP | SYNC PARTITIONS)                                 #repairTable
+
+    // DROP PARTITION
+    // Reference1: https://docs.aws.amazon.com/athena/latest/ug/alter-table-drop-partition.html
+    // Reference2: https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-DropPartitions
+    | ALTER TABLE tableName=qualifiedName DROP (IF EXISTS)?
+        PARTITION partitionSpec=properties (',' PARTITION partitionSpec=properties)*
+        (IGNORE PROTECTION)?
+        (PURGE)?                                                       #dropPartition
+    
+    // endregion
+
+    // region ALTER COLUMNS
+    
+    // CHANGE COLUMN
+    // According to Reference1(AWS), CHANGE COLUMN is not supported in Athena, but works in test (tested at 2021. 12. 14.)
+    //      test query: "ALTER TABLE table_name CHANGE original_column changed_column int"
+    // Reference1: https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
+    // Reference2: https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-ChangeColumnName/Type/Position/Comment
+    | ALTER TABLE tableName=qualifiedName
+        (PARTITION properties)?
+        CHANGE (COLUMN)? identifier[null] columnDefinition
+        (FIRST | AFTER identifier[null])?
+        (CASCADE | RESTRICT)?                                            #changeColumn
+
+    // ADD COLUMNS
+    // Reference1: https://docs.aws.amazon.com/athena/latest/ug/alter-table-add-columns.html
+    // Reference2: https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-Add/ReplaceColumns
     | ALTER TABLE tableName=qualifiedName
         (PARTITION partitionSpec=properties)?
         ADD COLUMNS
-        '(' columnDefinition (',' columnDefinition)* ')'               #addColumns
+        '(' columnDefinition (',' columnDefinition)* ')'
+        (CASCADE|RESTRICT)?                                              #addColumns
 
-    | ALTER TABLE tableName=qualifiedName ADD (IF NOT EXISTS)?
-        (
-            PARTITION properties
-            (LOCATION string)?
-        )+                                                             #addPartition
-
-    | ALTER TABLE tableName=qualifiedName DROP (IF EXISTS)?
-        PARTITION properties (',' PARTITION properties)*               #dropPartition
-
+    // REPLACE COLUMNS
+    // Reference1: https://docs.aws.amazon.com/athena/latest/ug/alter-table-replace-columns.html
+    // Reference2: https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-Add/ReplaceColumns
     | ALTER TABLE tableName=qualifiedName
-        PARTITION properties
-        RENAME TO PARTITION properties                                 #renamePartition
-
-    | ALTER TABLE tableName=qualifiedName
-        (PARTITION properties)?
+        (PARTITION partitionSpec=properties)?
         REPLACE COLUMNS
-            '(' columnDefinition (',' columnDefinition)* ')'           #replaceColumns
+        '(' columnDefinition (',' columnDefinition)* ')'
+        (CASCADE|RESTRICT)?                                              #replaceColumns
+    
+    // endregion
 
-    | ALTER TABLE tableName=qualifiedName
-        (PARTITION properties)?
-        SET LOCATION string                                            #setPartitionLocation
-    
-    | ALTER TABLE tableName=qualifiedName
-        SET TBLPROPERTIES stringProperties                             #setTableProperties
-    
-    
-    
-//    Notice: "ALTER TABLE table_name RENAME TO" is not supported in Athena
-    | ALTER TABLE (IF EXISTS)? from=qualifiedName
-        RENAME TO to=qualifiedName                                     #renameTable
-        
-        
-    | ALTER TABLE (IF EXISTS)? tableName=qualifiedName
-        RENAME COLUMN (IF EXISTS)? 
-        from=identifier[null] TO to=identifier[null]                   #renameColumn
-    | ALTER TABLE (IF EXISTS)? tableName=qualifiedName
-        DROP COLUMN (IF EXISTS)? column=qualifiedName                  #dropColumn
-        
-    
-    
     | ANALYZE qualifiedName (WITH properties)?                         #analyze
     | CREATE TYPE qualifiedName AS (
         '(' sqlParameterDeclaration (',' sqlParameterDeclaration)* ')'
@@ -666,9 +747,9 @@ number
 
 nonReserved
     // IMPORTANT: this rule must only contain tokens. Nested rules are not supported. See SqlParser.exitNonReserved
-    : ADD | ADMIN | ALL | ANALYZE | ANY | ARRAY | ASC | AT
+    : ADD | AFTER | ADMIN | ALL | ANALYZE | ANY | ARRAY | ASC | AT
     | BERNOULLI
-    | CALL | CALLED | CASCADE | CATALOGS | COLUMN | COLUMNS | COMMENT | COMMIT | COMMITTED | CURRENT | CURRENT_ROLE
+    | CALL | CALLED | CASCADE | CATALOGS | CHANGE | COLUMN | COLUMNS | COMMENT | COMMIT | COMMITTED | CURRENT | CURRENT_ROLE
     | DATA | DATE | DAY | DEFINER | DESC | DETERMINISTIC | DISTRIBUTED
     | EXCLUDING | EXPLAIN | EXTERNAL
     | FILTER | FIRST | FOLLOWING | FORMAT | FUNCTION | FUNCTIONS
@@ -690,10 +771,11 @@ nonReserved
     | WORK | WRITE
     | YEAR
     | ZONE
-    ;
+    | SYNC | PROTECTION | PURGE;
 
 ADD: 'ADD';
 ADMIN: 'ADMIN';
+AFTER: 'AFTER';
 ALL: 'ALL';
 ALTER: 'ALTER';
 ANALYZE: 'ANALYZE';
@@ -712,6 +794,7 @@ CASCADE: 'CASCADE';
 CASE: 'CASE';
 CAST: 'CAST';
 CATALOGS: 'CATALOGS';
+CHANGE: 'CHANGE';
 COLUMN: 'COLUMN';
 COLUMNS: 'COLUMNS';
 COMMENT: 'COMMENT';
@@ -929,6 +1012,9 @@ MSCK: 'MSCK';
 REPAIR: 'REPAIR';
 DATABASES: 'DATABASES';
 VIEWS: 'VIEWS';
+SYNC: 'SYNC';
+PROTECTION: 'PROTECTION';
+PURGE: 'PURGE';
 
 EQ  : '=';
 NEQ : '<>' | '!=';
