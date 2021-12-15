@@ -298,10 +298,7 @@ namespace Qsi.Athena.Tree.Visitors
         {
             var node = AthenaTree.CreateWithSpan<QsiDerivedTableNode>(context);
 
-            node.Alias.Value = new QsiAliasNode
-            {
-                Name = context.name.qi
-            };
+            node.Alias.Value = new QsiAliasNode { Name = context.name.qi };
 
             var columnAliases = context.columnAliases();
 
