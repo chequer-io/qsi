@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
 using Qsi.Athena.Internal;
@@ -239,7 +240,9 @@ namespace Qsi.Athena.Tree.Visitors
 
         public static AthenaSetQuantifier VisitSetQuantifier(SetQuantifierContext context)
         {
-            return context.HasToken(ALL) ? AthenaSetQuantifier.All : AthenaSetQuantifier.Distinct;
+            return context.HasToken(ALL)
+                ? AthenaSetQuantifier.All
+                : AthenaSetQuantifier.Distinct;
         }
 
         #region Select Item
@@ -261,17 +264,17 @@ namespace Qsi.Athena.Tree.Visitors
         public static QsiColumnNode VisitSelectSingle(SelectSingleContext context)
         {
             var exprNode = ExpressionVisitor.VisitExpression(context.expression());
-            var columnNode = exprNode.ToColumn();
+            var node = exprNode.ToColumn();
 
             if (context.TryGetRuleContext<IdentifierContext>(out var identifierContext))
             {
-                var derivedColumnNode = columnNode.ToDerivedColumn(context);
-                derivedColumnNode.Alias.Value = new QsiAliasNode { Name = identifierContext.qi };
+                var derivedNode = node.ToDerivedColumn(context);
+                derivedNode.Alias.Value = new QsiAliasNode { Name = identifierContext.qi };
 
-                columnNode = derivedColumnNode;
+                node = derivedNode;
             }
 
-            return columnNode;
+            return node;
         }
 
         public static QsiColumnNode VisitSelectAll(SelectAllContext context)
@@ -340,10 +343,10 @@ namespace Qsi.Athena.Tree.Visitors
             var node = AthenaTree.CreateWithSpan<QsiJoinedTableNode>(context);
             node.Left.Value = VisitRelation(context.left);
 
-            string joinType = string.Join(
-                " ",
-                (context.joinType()?.children ?? Enumerable.Empty<IParseTree>()).Select(c => c.GetText())
-            );
+            IEnumerable<IParseTree> joinTypeTrees = context.joinType()?.children ??
+                                                    Enumerable.Empty<IParseTree>();
+
+            string joinType = string.Join(" ", joinTypeTrees.Select(c => c.GetText()));
 
             bool hasJoinType = string.IsNullOrEmpty(joinType);
 
