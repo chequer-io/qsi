@@ -1339,6 +1339,14 @@ namespace Qsi.Athena.Tree.Visitors
             throw TreeHelper.NotSupportedTree(context);
         }
 
+        public static QsiWhereExpressionNode VisitWhere(BooleanExpressionContext context, ITerminalNode whereNode)
+        {
+            var node = AthenaTree.CreateWithSpan<QsiWhereExpressionNode>(whereNode.Symbol, context.Stop);
+            node.Expression.Value = VisitBooleanExpression(context);
+
+            return node;
+        }
+
         public static QsiMultipleOrderExpressionNode CreateMultipleOrderExpression(SortItemContext[] items, ITerminalNode orderNode)
         {
             var node = AthenaTree.CreateWithSpan<QsiMultipleOrderExpressionNode>(orderNode.Symbol, items[^1].Stop);
