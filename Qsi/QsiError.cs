@@ -32,7 +32,8 @@
         DifferentColumnValueCount,
         ParameterIndexOutOfRange,
         ParameterNotFound,
-        InvalidNestedExplain
+        InvalidNestedExplain,
+        SubqueryReturnsMoreThanRow
     }
 
     internal static class SR
@@ -68,6 +69,7 @@
         public const string ParameterIndexOutOfRange = "Parameter index {0} was out of range";
         public const string ParameterNotFound = "Parameter '{0}' not found";
         public const string InvalidNestedExplain = "Invalid nested explain for '{0}'";
+        public const string SubqueryReturnsMoreThanRow = "Subquery returns more than {0} row";
 
         public static string GetResource(QsiError error)
         {
@@ -104,6 +106,7 @@
                 QsiError.ParameterIndexOutOfRange => ParameterIndexOutOfRange,
                 QsiError.ParameterNotFound => ParameterNotFound,
                 QsiError.InvalidNestedExplain => InvalidNestedExplain,
+                QsiError.SubqueryReturnsMoreThanRow => SubqueryReturnsMoreThanRow,
                 _ => null
             };
         }
