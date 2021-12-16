@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using Qsi.Analyzers;
+using Qsi.Analyzers.Action;
+using Qsi.Athena.Analyzers;
 using Qsi.Collections;
 using Qsi.Data;
 using Qsi.Engines;
@@ -15,7 +17,7 @@ namespace Qsi.Athena
         {
             return new QsiIdentifierEqualityComparer(StringComparison.OrdinalIgnoreCase);
         }
-        
+
         public override QsiAnalyzerOptions CreateAnalyzerOptions()
         {
             return new();
@@ -35,12 +37,11 @@ namespace Qsi.Athena
         {
             return new AthenaDeparser();
         }
-        
-        
+
         public override IEnumerable<IQsiAnalyzer> CreateAnalyzers(QsiEngine engine)
         {
-            // TODO: Override
-            return base.CreateAnalyzers(engine);
+            yield return new QsiActionAnalyzer(engine);
+            yield return new AthenaTableAnalyzer(engine);
         }
     }
 }
