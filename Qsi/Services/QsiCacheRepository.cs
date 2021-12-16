@@ -23,14 +23,7 @@ namespace Qsi.Services
 
         public void SetTable(QsiQualifiedIdentifier identifier, QsiTableStructure tableStructure)
         {
-            if (tableStructure is null)
-            {
-                _lookupCache.TryRemove(identifier, out _);
-            }
-            else
-            {
-                _lookupCache[identifier] = tableStructure;
-            }
+            _lookupCache[identifier] = tableStructure;
         }
 
         public bool TryGetDefinition(QsiQualifiedIdentifier identifier, out QsiScript script)
@@ -40,14 +33,7 @@ namespace Qsi.Services
 
         public void SetDefinition(QsiQualifiedIdentifier identifier, QsiScript script)
         {
-            if (script is null)
-            {
-                _lookupDefinitionCache.TryRemove(identifier, out _);
-            }
-            else
-            {
-                _lookupDefinitionCache[identifier] = script;
-            }
+            _lookupDefinitionCache[identifier] = script;
         }
 
         public void Clear()
