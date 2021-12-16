@@ -37,162 +37,1035 @@ standaloneRoutineBody
     ;
 
 statement
-    : query                                                            #statementDefault
-    | USE schema=identifier[null]                                      #use
-    | USE catalog=identifier[null] '.' schema=identifier[null]         #use
-    | CREATE SCHEMA (IF NOT EXISTS)? qualifiedName
-        (WITH properties)?                                             #createSchema
-    | DROP SCHEMA (IF EXISTS)? qualifiedName (CASCADE | RESTRICT)?     #dropSchema
-    | ALTER SCHEMA qualifiedName RENAME TO identifier[null]            #renameSchema
-    | CREATE TABLE (IF NOT EXISTS)? qualifiedName columnAliases?
-        (COMMENT string)?
-        (WITH properties)? AS (query | '('query')')
-        (WITH (NO)? DATA)?                                             #createTableAsSelect
-    | CREATE TABLE (IF NOT EXISTS)? qualifiedName
-        '(' tableElement (',' tableElement)* ')'
-         (COMMENT string)?
-         (WITH properties)?                                            #createTable
-    | DROP TABLE (IF EXISTS)? qualifiedName                            #dropTable
-    | INSERT INTO qualifiedName columnAliases? query                   #insertInto
-    | UNLOAD querySpecification 
-        TO string WITH properties                                      #unload
-    | DELETE FROM qualifiedName (WHERE booleanExpression)?             #delete
+    : query                                                                                                             #statementDefault
     
     
-    //region ALTER DATABASE
-        
-    // SET OWNER: Not supported in Athena
-    // SET LOCATION: Not supported in Athena
-    // SET MANAGEDLOCATION: Not supported in Athena
+    /***
+     * ATHENA DDL
+     *
+     * @athena (Amazon Athena DDL Reference)[https://docs.aws.amazon.com/athena/latest/ug/language-reference.html]
+     * @hive (HiveQL DDL Reference)[https://cwiki.apache.org/confluence/display/Hive/LanguageManual+DDL]
+     */
+     
+    /**********************
+     *                    *
+     *                    *
+     *    Database DDL    *
+     *                    *
+     *                    *
+     **********************/
+     
+    /**
+     * Create Database
+     *
+     * @athena https://docs.aws.amazon.com/athena/latest/ug/create-database.html
+     * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-CreateDatabaseCreateDatabase
+     */
+    | CREATE
+        (REMOTE)?
+        (DATABASE | SCHEMA) (IF NOT EXISTS)? databaseName=identifier[null]
+        (COMMENT comment=string)?
+        (LOCATION location=string)?
+        (MANAGEDLOCATION managedLocation=string)?
+        (WITH DBPROPERTIES dbProperties=stringProperties)?                                                              #createDatabase
+
+    /**
+     * Drop Database
+     *
+     * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-DropDatabase
+     */
+    | DROP
+        (DATABASE | SCHEMA)
+        (IF EXISTS)?
+        databaseName=qualifiedName
+        (RESTRICT | CASCADE)?                                                                                           #dropDatabase
     
-    // SET DBPROPERTIES
-    // Reference1: https://docs.aws.amazon.com/athena/latest/ug/alter-database-set-dbproperties.html
-    // Reference2: https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-AlterDatabase
+    /**
+     * Database Set DB Properties 
+     *
+     * @athena https://docs.aws.amazon.com/athena/latest/ug/alter-database-set-dbproperties.html
+     * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-AlterDatabase
+     */
     | ALTER (DATABASE | SCHEMA) databaseName=qualifiedName
-        SET DBPROPERTIES dbProperties=stringProperties                 #setDbProperties
+        SET DBPROPERTIES dbProperties=stringProperties                                                                  #setDbProperties
 
-    //endregion  
-    
-    //region ALTER TABLE
-  
-    // SET SERDE: Not supported in Athena, tested at 2021. 12. 14.
-    // SET SERDEPROPERTIES: Not supported in Athena, tested at 2021. 12. 14.
-    // UNSET SERDEPROPERTIES: Not supported in Athena, tested at 2021. 12. 14.
-    // ADD CONSTRAINT: Not supported in Athena, tested at 2021. 12. 14.
-    
-    // RENAME TO: Not supported in Athena (https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html)
-    // CLUSTERED BY: Not supported in Athena (https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html)
-    // NOT CLUSTERED: Not supported in Athena (https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html)
-    // SKEWED BY: Not supported in Athena (https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html)
-    // NOT SKEWED: Not supported in Athena (https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html)
-    // NOT STORED: Not supported in Athena (https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html)
-    // NOT STORED AS DIRECTORIES: Not supported in Athena (https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html)
-    // SET SKEWED LOCATION : Not supported in Athena (https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html)
+    /**
+     * Database Set Owner
+     *
+     * @notsupport Tested at 2021. 12. 14.
+     */
+    // Not Implemented
 
-    // SET TBLPROPERTIES
-    // Reference: https://docs.aws.amazon.com/athena/latest/ug/alter-table-set-tblproperties.html 
-    // Reference: https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-AlterTableProperties
+    /**
+     * Database Set Location
+     *
+     * @notsupport Tested at 2021. 12. 14.
+     */
+    // Not Implemented
+    
+    /**
+     * Database Set Managed Location
+     *
+     * @notsupport Tested at 2021. 12. 14.
+     */
+    // Not Implemented
+    
+    /**
+     * Use Database
+     *
+     * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-UseDatabase
+     */
+    | USE
+        databaseName=identifier[null]                                                                                   #useDatabase
+//    | USE schema=identifier[null]                                      #useDatabase
+//    | USE catalog=identifier[null] '.' schema=identifier[null]         #useDatabase
+        
+        
+        
+        
+        
+        
+        
+    /**********************
+     *                    *
+     *                    *
+     * Data Connector DDL *
+     *                    *
+     *                    *
+     **********************/
+    /**
+     * Create Connector
+     *
+     * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-CreateDataConnectorCreateConnector
+     * @notsupport Not tested
+     */
+    // Not Implemented
+    
+    /**
+     * Drop Connector
+     *
+     * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-DropConnector
+     * @notsupport Not tested
+     */
+    // Not Implemented
+    
+    /**
+     * Connector Set DC Properties
+     *
+     * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-AlterConnector
+     * @notsupport Not tested
+     */
+    // Not Implemented
+    
+    /**
+     * Connector Set URL
+     *
+     * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-AlterConnector
+     * @notsupport Not tested
+     */
+    // Not Implemented
+    
+    /**
+     * Connector Set Owner
+     *
+     * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-AlterConnector
+     * @notsupport Not tested
+     */
+    // Not Implemented
+    
+    
+    
+    
+    
+    
+    /**********************
+     *                    *
+     *                    *
+     *     Table DDL      *
+     *                    *
+     *                    *
+     **********************/
+    /**
+      * Create Table
+      *
+      * @athena https://docs.aws.amazon.com/athena/latest/ug/create-table.html
+      * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-CreateTable
+      */
+    | CREATE
+        (TEMPORARY)?
+        (EXTERNAL)?
+        TABLE
+        (IF NOT EXISTS)?
+        tableName=qualifiedName
+        ( '(' columnDefinition (',' columnDefinition)* ')' )?
+        (COMMENT tableComment=string)?
+        (PARTITIONED BY '(' columnDefinition (',' columnDefinition)* ')' )?
+        (
+            CLUSTERED BY '(' identifier[null] (',' identifier[null])* ')'
+            (SORTED BY (columnName=identifier[null] (ASC | DESC)? (',' columnName=identifier[null] (ASC | DESC)? )* ) )?
+            INTO numBuckets=number BUCKETS
+        )?
+        (
+            SKEWED BY '(' columnName=identifier[null] (',' columnName=identifier[null])* ')'
+            ON '(' '(' columnValue=string (',' columnValue=string)* ')' ( ',' '(' columnValue=string (',' columnValue=string)* ')' )*  ')'
+            (STORED AS DIRECTORIES)?
+        )?
+        (
+            (ROW FORMAT rowFormat)?
+            (STORED AS fileFormat)?
+            | STORED BY storageHandlerClassName=string
+                (WITH SERDEPROPERTIES serDeProperties=stringProperties)?
+        )?
+        (LOCATION location=string)?
+        (TBLPROPERTIES tblProperties=stringProperties)?
+        AS query
+        (WITH NO? DATA)?                                                                                                #createTable
+       
+    /**
+     * Create TABLE LIKE
+     *
+     * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-CreateTable
+     */
+    | CREATE
+        (TEMPORARY)?
+        (EXTERNAL)?
+        TABLE
+        (IF NOT EXISTS)?
+        tableName=qualifiedName
+        LIKE likeTableName=qualifiedName
+        (LOCATION location=string)                                                                                      #createTableLike
+
+    /**
+     * Drop Table
+     *
+     * @athena https://docs.aws.amazon.com/athena/latest/ug/drop-table.html
+     * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-DropTable
+     */
+    | DROP TABLE
+        (IF EXISTS)?
+        tableName=qualifiedName
+        (PURGE)?                                                                                                        #dropTable
+
+    /**
+     * Truncate Table
+     *
+     * @notsupport Tested at 2021. 12. 16.
+     */
+    // Not Implemented
+     
+    /**
+     * Table Rename to
+     *
+     * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
+     */
+    // Not Implemented
+    
+    /**
+     * Table Set Tbl Properties
+     *
+     * @athena https://docs.aws.amazon.com/athena/latest/ug/alter-table-set-tblproperties.html
+     * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-AlterTableProperties
+     */
     | ALTER TABLE tableName=qualifiedName
-        SET TBLPROPERTIES tblProperties=stringProperties               #setTblProperties
+        SET TBLPROPERTIES tblProperties=stringProperties                                                                #setTblProperties
+     
+    /**
+     * Table Set Serde
+     *
+     * @notsupport Tested at 2021. 12. 14.
+     */
+    // Not Implemented
+   
+    /**
+     * Table Set Serde Properties
+     *
+     * @notsupport Tested at 2021. 12. 14.
+     */
+    // Not Implemented
     
-    //endregion
+    /**
+     * Table Unset Serde Properties
+     *
+     * @notsupport Tested at 2021. 12. 14.
+     */
+    // Not Implemented
+     
+    /**
+     * Table Add Constraint
+     *
+     * @notsupport Tested at 2021. 12. 14.
+     */
+    // Not Implemented
+     
+    /**
+     * Table Clustered by
+     *
+     * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
+     */
+    // Not Implemented
+     
+    /**
+     * Table Not Clustered
+     *
+     * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
+     */
+    // Not Implemented
+     
+    /**
+     * Table Skewed by
+     *
+     * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
+     */
+    // Not Implemented
+     
+    /**
+     * Table Set Skewed Location
+     *
+     * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
+     */
+    // Not Implemented
+     
+    /**
+     * Table Not Skewed
+     *
+     * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
+     */
+    // Not Implemented
+     
+    /**
+     * Table Not Stored
+     *
+     * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
+     */
+    // Not Implemented
+     
+    /**
+     * Table Not Stored as Directories
+     *
+     * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
+     */
+    // Not Implemented
     
-    //region ALTER TABLE/PARTITION
-
-    // SET FILEFORMAT: Not supported in Athena (https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html)
-    // TOUCH: Not supported in Athena (https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html)
-    // COMPACT: Not supported in Athena (https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html)
-    // CONCATENATE: Not supported in Athena (https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html)
+    /**
+     * Msck Repair Table
+     *
+     * @athena https://docs.aws.amazon.com/athena/latest/ug/msck-repair-table.html
+     * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-RecoverPartitions(MSCKREPAIRTABLE)
+     */
+    | MSCK (REPAIR)? TABLE tableName=qualifiedName
+        (ADD | DROP | SYNC PARTITIONS)                                                                                  #repairTable
     
-    // ENABLE/DISABLE NO_DROP: Not supported in Athena, tested at 2021. 12. 14.
-    // ENABLE/DISABLE OFFLINE: Not supported in Athena, tested at 2021. 12. 14.
-    // UPDATE COLUMNS: Not supprted in Athena, test at 2021. 12. 14.
     
-    // SET LOCATION
-    // Reference: https://docs.aws.amazon.com/athena/latest/ug/alter-table-set-location.html
-    // Reference: https://cwiki.apache.org/confluence/pages/viewpage.action?pageId=82706445#LanguageManualDDL-AlterTable/PartitionLocation
+    
+    
+    
+    /***************************
+     *                         *
+     *                         *
+     *   Table/Partition DDL   *
+     *                         *
+     *                         *
+     ***************************/
+    /**
+     * Table/Partition Set File Format
+     *
+     * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
+     */
+    // Not Implemented
+     
+    /**
+     * Table/Partition Touch
+     *
+     * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
+     */
+    // Not Implemented
+     
+    /**
+     * Table/Partition Compact
+     *
+     * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
+     */
+    // Not Implemented
+     
+    /**
+     * Table/Partition Concatenate
+     *
+     * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
+     */
+    // Not Implemented
+    
+    /**
+     * Table/Partition Enable/Disable No Drop
+     *
+     * @notsupport Tested at 2021. 12. 14.
+     */
+    // Not Implemented
+    
+    /**
+     * Table/Partition Enable/Disable Offline
+     *
+     * @notsupport Tested at 2021. 12. 14.
+     */
+    // Not Implemented
+    
+    /**
+     * Table/Partition Update Columns
+     *
+     * @notsupport Tested at 2021. 12. 14.
+     */
+    // Not Implemented
+    
+    /**
+     * Table/Partition Set Location
+     *
+     * @athena https://docs.aws.amazon.com/athena/latest/ug/alter-table-set-location.html
+     * @hive https://cwiki.apache.org/confluence/pages/viewpage.action?pageId=82706445#LanguageManualDDL-AlterTable/PartitionLocation
+     */
     | ALTER TABLE tableName=qualifiedName
         (PARTITION partitionSpec=properties)?
-        SET LOCATION location=string                                   #setLocation
+        SET LOCATION location=string                                                                                    #setLocation
         
-    //endregion
+        
+        
+        
+        
+    /**********************
+     *                    *
+     *                    *
+     *   Partition DDL    *
+     *                    *
+     *                    *
+     **********************/
+    /**
+     * Archive Partition
+     *
+     * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
+     */
+    // Not Implemented
     
-    //region ALTER PARTITION
+    /**
+     * Unarchive Partition
+     *
+     * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
+     */
+    // Not Implemented
     
-    // ARCHIVE PARTITION: Not supported in Athena (https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html)
-    // UNARCHIVE PARTITION: Not supported in Athena (https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html)
-    
-    // ADD PARTITIONS
-    // Reference1: https://docs.aws.amazon.com/athena/latest/ug/alter-table-add-partition.html
-    // Reference2: https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-AddPartitions
+    /**
+     * Add Partitions
+     *
+     * @athena https://docs.aws.amazon.com/athena/latest/ug/alter-table-add-partition.html
+     * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-AddPartitions
+     */
     | ALTER TABLE tableName=qualifiedName ADD (IF NOT EXISTS)?
         (
             PARTITION partitionSpec=properties
             (LOCATION location=string)?
-        )+                                                             #addPartitions
+        )+                                                                                                              #addPartitions
     
-    // RENAME PARTITION
-    // Reference1: https://docs.aws.amazon.com/athena/latest/ug/alter-table-rename-partition.html
-    // Reference2: https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-RenamePartition
+    /**
+     * Rename Partition
+     *
+     * @athena https://docs.aws.amazon.com/athena/latest/ug/alter-table-rename-partition.html
+     * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-RenamePartition
+     */
     | ALTER TABLE tableName=qualifiedName
         PARTITION from=properties
-        RENAME TO PARTITION to=properties                              #renamePartition
+        RENAME TO PARTITION to=properties                                                                               #renamePartition
 
-    // EXCHANGE PARTITION: Not supported in Athena (https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html)
+    /**
+     * Exchange Partition
+     *
+     * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
+     */
+    // Not Implemented
 
-    // MSCK REPAIR TABLE
-    // Reference1: https://docs.aws.amazon.com/athena/latest/ug/msck-repair-table.html
-    // Reference2: https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-RecoverPartitions(MSCKREPAIRTABLE)
-    | MSCK (REPAIR)? TABLE tableName=qualifiedName
-        (ADD | DROP | SYNC PARTITIONS)                                 #repairTable
-
-    // DROP PARTITION
-    // Reference1: https://docs.aws.amazon.com/athena/latest/ug/alter-table-drop-partition.html
-    // Reference2: https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-DropPartitions
+    /**
+     * Drop Partition
+     *
+     * @athena https://docs.aws.amazon.com/athena/latest/ug/alter-table-drop-partition.html
+     * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-DropPartitions
+     */
     | ALTER TABLE tableName=qualifiedName DROP (IF EXISTS)?
         PARTITION partitionSpec=properties (',' PARTITION partitionSpec=properties)*
         (IGNORE PROTECTION)?
-        (PURGE)?                                                       #dropPartition
+        (PURGE)?                                                                                                        #dropPartition
     
     // endregion
 
-    // region ALTER COLUMNS
-    
-    // CHANGE COLUMN
-    // According to Reference1(AWS), CHANGE COLUMN is not supported in Athena, but works in test (tested at 2021. 12. 14.)
-    //      test query: "ALTER TABLE table_name CHANGE original_column changed_column int"
-    // Reference1: https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
-    // Reference2: https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-ChangeColumnName/Type/Position/Comment
+
+
+
+
+    /**********************
+     *                    *
+     *                    *
+     *     Column DDL     *
+     *                    *
+     *                    *
+     **********************/
+    /**
+     * Change Column
+     * @comment According to Reference1(AWS), CHANGE COLUMN is not supported in Athena, but works in test
+     *          test query: "ALTER TABLE table_name CHANGE original_column changed_column int"
+     * @athena https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
+     * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-ChangeColumnName/Type/Position/Comment
+     */
     | ALTER TABLE tableName=qualifiedName
         (PARTITION properties)?
         CHANGE (COLUMN)? identifier[null] columnDefinition
         (FIRST | AFTER identifier[null])?
-        (CASCADE | RESTRICT)?                                            #changeColumn
+        (CASCADE | RESTRICT)?                                                                                           #changeColumn
 
-    // ADD COLUMNS
-    // Reference1: https://docs.aws.amazon.com/athena/latest/ug/alter-table-add-columns.html
-    // Reference2: https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-Add/ReplaceColumns
+    /**
+     * Add Columns
+     *
+     * @athena https://docs.aws.amazon.com/athena/latest/ug/alter-table-add-columns.html
+     * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-Add/ReplaceColumns
+     */
     | ALTER TABLE tableName=qualifiedName
         (PARTITION partitionSpec=properties)?
         ADD COLUMNS
         '(' columnDefinition (',' columnDefinition)* ')'
-        (CASCADE|RESTRICT)?                                              #addColumns
+        (CASCADE|RESTRICT)?                                                                                             #addColumns
 
-    // REPLACE COLUMNS
-    // Reference1: https://docs.aws.amazon.com/athena/latest/ug/alter-table-replace-columns.html
-    // Reference2: https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-Add/ReplaceColumns
+    /**
+     * Replace Columns
+     *
+     * @athena https://docs.aws.amazon.com/athena/latest/ug/alter-table-replace-columns.html
+     * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-Add/ReplaceColumns
+     */
     | ALTER TABLE tableName=qualifiedName
         (PARTITION partitionSpec=properties)?
         REPLACE COLUMNS
         '(' columnDefinition (',' columnDefinition)* ')'
-        (CASCADE|RESTRICT)?                                              #replaceColumns
+        (CASCADE|RESTRICT)?                                                                                             #replaceColumns
     
-    // endregion
+    
+    
+    
+    
+    
+    
+    /**********************
+     *                    *
+     *                    *
+     *      View DDL      *
+     *                    *
+     *                    *
+     **********************/
+    /**
+     * Create View
+     *
+     * @athena https://docs.aws.amazon.com/athena/latest/ug/create-view.html
+     * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-CreateView
+     */
+    | CREATE
+        (OR REPLACE)?
+        VIEW
+        (IF NOT EXISTS)?
+        viewName=qualifiedName
+        (
+            columnName=identifier[null] (COMMENT columnComment=string)?
+            (',' columnName=identifier[null] (COMMENT columnComment=string)? )*
+        )?
+        (COMMENT viewComment=string)?
+        (TBLPROPERTIES tblProperties=stringProperties)?
+        AS SELECT query                                                                                                 #createView
+    
+    /**
+     * Drop View
+     *
+     * @athena https://docs.aws.amazon.com/athena/latest/ug/drop-view.html
+     * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-DropView
+     */
+    | DROP VIEW (IF EXISTS)? viewName=qualifiedName                                                                     #dropView
+     
+    /**
+     * Set View Tbl Properties
+     *
+     * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-AlterViewProperties
+     */
+    | ALTER VIEW viewName=qualifiedName
+        SET TBLPROPERTIES tblProperties=stringProperties                                                                #setViewTblProperties
+    
+    /**
+     * Alter View As Select
+     *
+     * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-AlterViewAsSelect
+     */
+    | ALTER VIEW viewName=qualifiedName AS query                                                                        #alterViewAsSelect
+
+
+
+
+
+    
+    /*************************
+     *                       *
+     *                       *
+     * Materialized View DDL *
+     *                       *
+     *                       *
+     *************************/
+    /**
+     * Create Materialized View
+     *
+     * @notsupport Not tested
+     */
+    // Not Implemented
+     
+    /**
+     * Drop Materialized View
+     *
+     * @notsupport Not tested
+     */
+    // Not Implemented
+     
+    /**
+     * Alter Materialized View
+     *
+     * @notsupport Not tested
+     */
+    // Not Implemented
+    
+    
+    
+    
+    
+    
+    
+    
+    /*************************
+     *                       *
+     *                       *
+     *       Index DDL       *
+     *                       *
+     *                       *
+     *************************/
+    /**
+     * Create Index
+     *
+     * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
+     */
+    // Not Implemented
+     
+    /**
+     * Drop Index
+     *
+     * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
+     */
+    // Not Implemented
+     
+    /**
+     * Alter Index
+     *
+     * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
+     */
+    // Not Implemented
+    
+    
+    
+    
+    
+    
+    /*************************
+     *                       *
+     *                       *
+     *       Macro DDL       *
+     *                       *
+     *                       *
+     *************************/
+    /**
+     * Create Temporary Macro
+     *
+     * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
+     */
+    // Not Implemented
+     
+    /**
+     * Drop Temporary Macro
+     *
+     * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
+     */
+    // Not Implemented
+     
+     
+     
+     
+     
+     
+    /*************************
+     *                       *
+     *                       *
+     *     Function DDL      *
+     *                       *
+     *                       *
+     *************************/
+    /**
+     * Create Function
+     *
+     * @notsupport Tested at 2021. 12. 16.
+     */
+    // Not Implemented
+     
+    /**
+     * Drop Function
+     *
+     * @notsupport Tested at 2021. 12. 16.
+     */
+    // Not Implemented
+     
+    /**
+     * Reload Function
+     *
+     * @notsupport Tested at 2021. 12. 16.
+     */
+    // Not Implemented
+    
+    
+    
+    
+    
+    
+    
+    
+    /*************************
+     *                       *
+     *                       *
+     *       Role DDL        *
+     *                       *
+     *                       *
+     *************************/
+    /**
+     * Create Role
+     *
+     * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
+     */
+    // Not Implemented
+     
+    /**
+     * Grant Role
+     *
+     * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
+     */
+    // Not Implemented
+     
+    /**
+     * Revoke Role
+     *
+     * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
+     */
+    // Not Implemented
+     
+    /**
+     * Drop Role
+     *
+     * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
+     */
+    // Not Implemented
+    
+    /**
+     * Show Roles
+     *
+     * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
+     */
+    // Not Implemented
+     
+    /**
+     * Show Role Grant
+     *
+     * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
+     */
+    // Not Implemented
+     
+    /**
+     * Show Current Roles
+     *
+     * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
+     */
+    // Not Implemented
+     
+    /**
+     * Set Role
+     *
+     * @notsupport Not tested
+     */
+    // Not Implemented
+     
+    /**
+     * Show Principals
+     *
+     * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
+     */
+    // Not Implemented
+     
+    /**
+     * Grant privilege_type
+     *
+     * @notsupport Not tested
+     */
+    // Not Implemented
+     
+    /**
+     * Revoke privilege_type
+     *
+     * @notsupport Not tested
+     */
+    // Not Implemented
+     
+    /**
+     * Show Grant
+     *
+     * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
+     */
+    // Not Implemented
+     
+
+
+
+
+
+
+    
+    /*************************
+     *                       *
+     *                       *
+     *       Show DDL        *
+     *                       *
+     *                       *
+     *************************/
+    /**
+     * Show Databases
+     *
+     * @athena https://docs.aws.amazon.com/athena/latest/ug/show-databases.html
+     * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-ShowDatabases
+     */
+    | SHOW (DATABASES | SCHEMAS)
+        (LIKE string)?                                                                                                  #showDatabases
+
+    /**
+     * Show Connectors
+     *
+     * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-ShowConnectors
+     * @notsupport Not tested
+     */
+    // Not Implemented
+    
+    /**
+     * Show Tables
+     *
+     * @athena https://docs.aws.amazon.com/athena/latest/ug/show-tables.html
+     * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-ShowTables
+     */
+    | SHOW TABLES
+        (IN databaseName=identifier[null])?
+        (string)?                                                                                                       #showTables
+    
+    /**
+     * Show Views
+     *
+     * @athena https://docs.aws.amazon.com/athena/latest/ug/show-views.html
+     * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-ShowViews
+     */
+    | SHOW VIEWS
+        ( (IN | FROM) databaseName=identifier[null])?
+        (LIKE string)                                                                                                   #showViews
+        
+    /**
+     * Show Materialized Views
+     *
+     * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-ShowMaterializedViews
+     * @notsupport Not tested
+     */
+    // Not Implemented
+    
+    /**
+     * Show Partitions
+     *
+     * @athena https://docs.aws.amazon.com/athena/latest/ug/show-partitions.html
+     * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-ShowPartitions
+     */
+    | SHOW PARTITIONS
+        tableName=qualifiedName
+        (PARTITION properties)?
+        (WHERE where=booleanExpression)?
+        (ORDER BY sortItem (',' sortItem)*)?
+        (LIMIT limit=INTEGER_VALUE)?                                                                                    #showPartitions
+    
+    /**
+     * Show Table/Partition Extended
+     *
+     * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-ShowTable/PartitionExtended
+     */
+    | SHOW TABLE EXTENDED
+        ((IN | FROM) databaseName=qualifiedName)?
+        LIKE string
+        (PARTITION properties)?                                                                                         #showTableExtended
+    
+    /**
+     * Show Table Properties
+     *
+     * @athena https://docs.aws.amazon.com/athena/latest/ug/show-tblproperties.html
+     * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-ShowTableProperties
+     */
+    | SHOW TBLPROPERTIES
+        tableName=qualifiedName
+        ( '(' string ')' )?                                                                                             #showTableProperties
+        
+    /**
+     * Show Create Table
+     *
+     * @athena https://docs.aws.amazon.com/athena/latest/ug/show-create-table.html
+     * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-ShowCreateTable
+     */
+    | SHOW CREATE TABLE
+        tableName=qualifiedName                                                                                         #showCreateTable
+    
+    /**
+     * Show Indexes
+     *
+     * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-ShowIndexes
+     * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
+     */
+    // Not Implemented
+    
+    /**
+     * Show Columns
+     *
+     * @athena https://docs.aws.amazon.com/athena/latest/ug/show-columns.html
+     * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-ShowColumns
+     */
+    | SHOW COLUMNS
+        (FROM | IN)
+        tableName=qualifiedName
+        ( (FROM | IN) databaseName=qualifiedName?)
+        (LIKE string)?                                                                                                  #showColumns
+    
+    /**
+     * Show Functions
+     *
+     * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-ShowFunctions
+     * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
+     */
+    // Not Implemented
+    
+    /**
+     * Show Locks
+     *
+     * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-ShowLocks
+     * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
+     */
+    // Not Implemented
+    
+    /**
+     * Show Conf
+     *
+     * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-ShowConf
+     * @notsupport Tested at 2021. 12. 16.
+     */
+    // Not Implemented
+    
+    /**
+     * Show Transactions
+     *
+     * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-ShowTransactions
+     * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
+     */
+    // Not Implemented
+    
+    /**
+     * Show Compactions
+     *
+     * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-ShowCompactions
+     * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
+     */
+    // Not Implemented
+
+    
+
+
+
+
+
+
+    /*************************
+     *                       *
+     *                       *
+     *     Describe DDL      *
+     *                       *
+     *                       *
+     *************************/
+    /**
+     * Describe Database
+     *
+     * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-DescribeDatabase
+     * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
+     */
+    // Not Implemented
+    
+    /**
+     * Describe Data Connector
+     *
+     * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-DescribeDataconnector
+     * @notsupport Not tested
+     */
+    // Not Implemented
+    
+    /**
+     * Describe Table / View / MaterializedView / Column
+     *
+     * @athena https://docs.aws.amazon.com/athena/latest/ug/describe-table.html
+     * @athena https://docs.aws.amazon.com/athena/latest/ug/describe-view.html
+     * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-DescribeTable/View/MaterializedView/Column
+     */
+    | DESCRIBE
+        (EXTENDED | FORMATTED)?
+        tableName=qualifiedName
+        (PARTITION partitionSpec=properties)?
+        (
+            columnName=identifier[null]
+            ( '.' (fieldName=identifier[null] | '$elem$' | '$key$' | '$value$') )*
+        )?                                                                                                              #describeTable
+    
+    
+    
+    
+    
+
+    /*************************
+     *                       *
+     *                       *
+     *       Abort DDL       *
+     *                       *
+     *                       *
+     *************************/
+    /**
+     * Abort Transactions
+     *
+     * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-AbortTransactions
+     * @notsupport Not tested
+     */
+
+
+
+
+
+
+
+
+
+
+
+
+    | INSERT INTO qualifiedName columnAliases? query                   #insertInto
+    | UNLOAD querySpecification 
+        TO string WITH properties                                      #unload
+    | DELETE FROM qualifiedName (WHERE booleanExpression)?             #delete
 
     | ANALYZE qualifiedName (WITH properties)?                         #analyze
-    | CREATE TYPE qualifiedName AS (
-        '(' sqlParameterDeclaration (',' sqlParameterDeclaration)* ')'
-        | type)                                                        #createType
+//    | CREATE TYPE qualifiedName AS (
+//        '(' sqlParameterDeclaration (',' sqlParameterDeclaration)* ')'
+//        | type)                                                        #createType
     | CREATE (OR REPLACE)? VIEW qualifiedName AS query                 #createView
     | DROP (DATABASE | SCHEMA) (IF EXISTS)?
         identifier[null] (RESTRICT | CASCADE)?                         #dropDatabase
@@ -203,32 +1076,15 @@ statement
         (WITH properties)? AS (query | '('query')')                    #createMaterializedView
     | DROP MATERIALIZED VIEW (IF EXISTS)? qualifiedName                #dropMaterializedView
     | REFRESH MATERIALIZED VIEW qualifiedName WHERE booleanExpression  #refreshMaterializedView
-    | CREATE (OR REPLACE)? TEMPORARY? FUNCTION functionName=qualifiedName
-        '(' (sqlParameterDeclaration (',' sqlParameterDeclaration)*)? ')'
-        RETURNS returnType=type
-        (COMMENT string)?
-        routineCharacteristics routineBody                             #createFunction
-    | CREATE (DATABASE | SCHEMA) (IF NOT EXISTS)? identifier[null]
-        (COMMENT comment=string)?
-        (LOCATION location=string)?
-        (WITH DBPROPERTIES stringProperties)?                          #createDatabase
-    | CREATE EXTERNAL TABLE (IF NOT EXISTS)? qualifiedName
-        ('(' columnDefinition (',' columnDefinition)* ')')?
-        (COMMENT comment=string)?
-        (PARTITIONED BY '(' columnDefinition (',' columnDefinition)* ')')?
-        (CLUSTERED BY '(' identifier[null] (',' identifier[null])* ')' INTO number BUCKETS)?
-        (ROW FORMAT rowFormat)?
-        (STORED AS fileFormat)?
-        (WITH SERDEPROPERTIES stringProperties)?
-        (LOCATION location=string)?
-        (TBLPROPERTIES stringProperties)?                              #createExternalTable
-    | CREATE TABLE qualifiedName
-        (WITH properties)?
-        AS query
-        (WITH NO? DATA)?                                               #createTableAs
-    | ALTER FUNCTION qualifiedName types?
+//    | CREATE (OR REPLACE)? TEMPORARY? FUNCTION functionName=qualifiedName
+//        '(' (sqlParameterDeclaration (',' sqlParameterDeclaration)*)? ')'
+//        RETURNS returnType=type
+//        (COMMENT string)?
+//        routineCharacteristics routineBody                             #createFunction
+
+    | ALTER FUNCTION qualifiedName dataTypes?
       alterRoutineCharacteristics                                      #alterFunction
-    | DROP TEMPORARY? FUNCTION (IF EXISTS)? qualifiedName types?       #dropFunction
+    | DROP TEMPORARY? FUNCTION (IF EXISTS)? qualifiedName dataTypes?       #dropFunction
     | CALL qualifiedName '(' (callArgument (',' callArgument)*)? ')'   #call
     | CREATE ROLE name=identifier[null]
         (WITH ADMIN grantor)?                                          #createRole
@@ -262,7 +1118,7 @@ statement
     | SHOW CREATE TABLE qualifiedName                                  #showCreateTable
     | SHOW CREATE VIEW qualifiedName                                   #showCreateView
     | SHOW CREATE MATERIALIZED VIEW qualifiedName                      #showCreateMaterializedView
-    | SHOW CREATE FUNCTION qualifiedName types?                        #showCreateFunction
+    | SHOW CREATE FUNCTION qualifiedName dataTypes?                        #showCreateFunction
     | SHOW TABLES ((FROM | IN) qualifiedName)? (pattern=string)?       #showTables
     | SHOW VIEWS 
         (IN database=identifier[null])? (LIKE pattern=string)?         #showViews
@@ -295,7 +1151,7 @@ statement
     ;
 
 query
-    :  with? queryNoWith
+    : with? queryNoWith
     ;
 
 with
@@ -308,7 +1164,7 @@ tableElement
     ;
 
 columnDefinition
-    : identifier[null] type (COMMENT string)?
+    : identifier[null] dataType (COMMENT string)?
     ;
 
 likeClause
@@ -316,12 +1172,14 @@ likeClause
     ;
 
 rowFormat
-    : DELIMITED FIELDS TERMINATED BY string (ESCAPED BY string)?
-    | DELIMITED COLLECTION ITEMS TERMINATED BY string
-    | MAP KEYS TERMINATED BY string
-    | LINES TERMINATED BY string
-    | NULL DEFINED AS string
-    | SERDE string (WITH SERDEPROPERTIES stringProperties)?
+    : DELIMITED
+        (FIELDS TERMINATED BY string (ESCAPED BY string)?)?
+        (COLLECTION ITEMS TERMINATED BY string)?
+        (MAP KEYS TERMINATED BY string)?
+        (LINES TERMINATED BY string)?
+        (NULL DEFINED AS string)?
+    | SERDE string
+        (WITH SERDEPROPERTIES stringProperties)?
     ;
 
 fileFormat
@@ -331,6 +1189,7 @@ fileFormat
     | ORC
     | PARQUET
     | AVRO
+    | JSONFILE
     | INPUTFORMAT string OUTPUTFORMAT string
     ;
 
@@ -350,9 +1209,9 @@ property
     : identifier[null] EQ expression
     ;
 
-sqlParameterDeclaration
-    : identifier[null] type
-    ;
+//sqlParameterDeclaration
+//    : identifier[null] type
+//    ;
 
 routineCharacteristics
     : routineCharacteristic*
@@ -406,7 +1265,7 @@ externalRoutineName
 queryNoWith:
       queryTerm
       (ORDER BY sortItem (',' sortItem)*)?
-      (OFFSET offset=INTEGER_VALUE (ROW | ROWS)?)?
+      (OFFSET offset=INTEGER_VALUE offsetRow=(ROW | ROWS)?)?
       (LIMIT limit=(INTEGER_VALUE | ALL))?
     ;
 
@@ -462,8 +1321,8 @@ setQuantifier
 
 selectItem
     : expression (AS? identifier[null])?  #selectSingle
-    | qualifiedName '.' ASTERISK    #selectAll
-    | ASTERISK                      #selectAll
+    | qualifiedName '.' ASTERISK          #selectAll
+    | ASTERISK                            #selectAll
     ;
 
 relation
@@ -569,8 +1428,8 @@ primaryExpression
     | EXISTS '(' query ')'                                                                #exists
     | CASE valueExpression whenClause+ (ELSE elseExpression=expression)? END              #simpleCase
     | CASE whenClause+ (ELSE elseExpression=expression)? END                              #searchedCase
-    | CAST '(' expression AS type ')'                                                     #cast
-    | TRY_CAST '(' expression AS type ')'                                                 #cast
+    | CAST '(' expression AS dataType ')'                                                 #cast
+    | TRY_CAST '(' expression AS dataType ')'                                             #cast
     | ARRAY '[' (expression (',' expression)*)? ']'                                       #arrayConstructor
     | value=primaryExpression '[' index=valueExpression ']'                               #subscript
     | identifier[null]                                                                    #columnReference
@@ -627,29 +1486,78 @@ normalForm
     : NFD | NFC | NFKD | NFKC
     ;
 
-types
-    : '(' (type (',' type)*)? ')'
+dataTypes
+    : '(' (dataType (',' dataType)*)? ')'
     ;
 
-type
-    : type ARRAY
-    | ARRAY '<' type '>'
-    | MAP '<' type ',' type '>'
-    | ROW '(' identifier[null] type (',' identifier[null] type)* ')'
-    | baseType ('(' typeParameter (',' typeParameter)* ')')?
-    | INTERVAL from=intervalField TO to=intervalField
+dataType
+    : primitiveType
+    | arrayType
+    | mapType
+    | structType
+    | unionType
     ;
 
-typeParameter
-    : INTEGER_VALUE | type
+primitiveType
+    : TINYINT
+    | SMALLINT
+    | INT
+    | BIGINT
+    | BOOLEAN
+    | FLOAT
+    | DOUBLE
+    | DOUBLE PRECISION
+    | STRING
+    | BINARY
+    | TIMESTAMP
+    | DECIMAL
+    | DECIMAL '(' INTEGER_VALUE ',' INTEGER_VALUE ')'
+    | DATE
+    | VARCHAR
+    | CHAR
     ;
 
-baseType
-    : TIME_WITH_TIME_ZONE
-    | TIMESTAMP_WITH_TIME_ZONE
-    | DOUBLE_PRECISION
-    | qualifiedName
+
+arrayType
+    :  ARRAY '<' dataType '>'
     ;
+    
+mapType
+    : MAP < primitiveType, dataType >
+    ;
+    
+structType
+    : STRUCT
+        '<'
+            columnName=identifier[null] ':' dataType (COMMENT comment=string)?
+            (',' columnName=identifier[null] ':' dataType (COMMENT comment=string)? )*
+        '>'
+    ;
+    
+unionType
+    : UNIONTYPE
+        '<' dataType (',' dataType)* '>'
+    ;
+
+//type
+//    : type ARRAY
+//    | ARRAY '<' type '>'
+//    | MAP '<' type ',' type '>'
+//    | ROW '(' identifier[null] type (',' identifier[null] type)* ')'
+//    | baseType ('(' typeParameter (',' typeParameter)* ')')?
+//    | INTERVAL from=intervalField TO to=intervalField
+//    ;
+
+//typeParameter
+//    : INTEGER_VALUE | type
+//    ;
+//
+//baseType
+//    : TIME_WITH_TIME_ZONE
+//    | TIMESTAMP_WITH_TIME_ZONE
+//    | DOUBLE_PRECISION
+//    | qualifiedName
+//    ;
 
 whenClause
     : WHEN condition=expression THEN result=expression
@@ -771,7 +1679,7 @@ nonReserved
     | WORK | WRITE
     | YEAR
     | ZONE
-    | SYNC | PROTECTION | PURGE;
+    | SYNC | PROTECTION | PURGE | SKEWED | DIRECTORIES | SORTED | REMOTE | MANAGEDLOCATION;
 
 ADD: 'ADD';
 ADMIN: 'ADMIN';
@@ -1015,6 +1923,27 @@ VIEWS: 'VIEWS';
 SYNC: 'SYNC';
 PROTECTION: 'PROTECTION';
 PURGE: 'PURGE';
+SKEWED: 'SKEWED';
+DIRECTORIES: 'DIRECTORIES';
+SORTED: 'SORTED';
+JSONFILE: 'JSONFILE';
+REMOTE: 'REMOTE';
+MANAGEDLOCATION: 'MANAGEDLOCATION';
+
+TINYINT: 'TINYINT';
+BIGINT: 'BIGINT';
+INT: 'INT';
+SMALLINT: 'SMALLINT';
+BOOLEAN: 'BOOLEAN';
+FLOAT: 'FLOAT';
+DOUBLE: 'DOUBLE';
+PRECISION: 'PRECISION';
+BINARY: 'BINARY';
+DECIMAL: 'DECIMAL';
+VARCHAR: 'VARCHAR';
+CHAR: 'CHAR';
+STRUCT: 'STRUCT';
+UNIONTYPE: 'UNIONTYPE';
 
 EQ  : '=';
 NEQ : '<>' | '!=';
