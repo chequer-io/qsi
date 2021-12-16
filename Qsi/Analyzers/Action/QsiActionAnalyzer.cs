@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Qsi.Analyzers.Action.Context;
 using Qsi.Analyzers.Action.Models;
@@ -134,16 +136,118 @@ namespace Qsi.Analyzers.Action
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected virtual QsiDataValue ResolveColumnValue(IAnalyzerContext context, IQsiExpressionNode expression)
+        protected QsiDataValue ResolveColumnValue(IAnalyzerContext context, IQsiExpressionNode expression)
         {
             if (expression is IQsiLiteralExpressionNode literal)
-            {
                 return new QsiDataValue(literal.Value, literal.Type);
+
+            return ResolveRawColumnValue(context, expression);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        protected virtual QsiDataValue ResolveRawColumnValue(IAnalyzerContext context, IQsiExpressionNode expression)
+        {
+            IQsiTableExpressionNode[] subqueries = CollectSubqueries(expression).ToArray();
+
+            if (subqueries.Length == 0)
+            {
+                var value = context.Engine.TreeDeparser.Deparse(expression, context.Script);
+                return new QsiDataValue(value, QsiDataType.Raw);
             }
 
-            var value = context.Engine.TreeDeparser.Deparse(expression, context.Script);
+            // ex) PostgreSql
+            if (expression.UserData?.GetData(QsiNodeProperties.Span) is not { } span)
+                throw TreeHelper.NotSupportedFeature("subqueries value");
 
-            return new QsiDataValue(value, QsiDataType.Raw);
+            var subqueriesWithSpan = subqueries
+                .Select(x => new { Node = x, Span = x.UserData?.GetData(QsiNodeProperties.Span) })
+                .OrderBy(x => x.Span is { } s ? s.Start.GetOffset(context.Script.Script.Length) : -1)
+                .ToArray();
+
+            var builder = new StringBuilder(context.Script.Script[span]);
+            var baseOffset = span.Start.GetOffset(context.Script.Script.Length);
+            var offset = 0;
+
+            foreach (var x in subqueriesWithSpan)
+            {
+                if (x.Span is null)
+                    continue;
+
+                var (sOffset, sLength) = x.Span.Value.GetOffsetAndLength(context.Script.Script.Length);
+                var index = sOffset - baseOffset + offset;
+                string computedValue = ComputeSubqueryValue(context, x.Node);
+
+                builder.Remove(index, sLength);
+                builder.Insert(index, computedValue);
+
+                offset += computedValue.Length - sLength;
+            }
+
+            return new QsiDataValue(builder.ToString(), QsiDataType.Raw);
+
+            IEnumerable<IQsiTableExpressionNode> CollectSubqueries(IQsiExpressionNode node)
+            {
+                var queue = new Queue<IQsiTreeNode>();
+                queue.Enqueue(node);
+
+                while (queue.TryDequeue(out var item))
+                {
+                    if (item is IQsiTableExpressionNode tNode)
+                    {
+                        yield return tNode;
+                    }
+                    else
+                    {
+                        foreach (var child in item.Children ?? Enumerable.Empty<IQsiTreeNode>())
+                            queue.Enqueue(child);
+                    }
+                }
+            }
+        }
+
+        private string ComputeSubqueryValue(IAnalyzerContext context, IQsiTableExpressionNode node)
+        {
+            var query = context.Engine.TreeDeparser.Deparse(node.Table, context.Script);
+            var scriptType = context.Engine.ScriptParser.GetSuitableType(query);
+            var script = new QsiScript(query, scriptType);
+            QsiParameter[] parameters = ArrangeBindParameters(context, node.Table);
+
+            using var reader = context.Engine.RepositoryProvider.GetDataReaderAsync(script, parameters, default).Result;
+
+            if (!reader.Read())
+                return "null";
+
+            var builder = new StringBuilder();
+
+            for (int i = 0; i < reader.FieldCount; i++)
+            {
+                if (i > 0)
+                    builder.Append(',');
+
+                builder.Append(FormatValue(reader.GetValue(i)));
+            }
+
+            if (reader.Read())
+                throw new QsiException(QsiError.SubqueryReturnsMoreThanRow, 1);
+
+            // 1, 2 -> (1, 2)
+            if (reader.FieldCount > 1)
+            {
+                builder.Insert(0, '(');
+                builder.Append(')');
+            }
+
+            return builder.ToString();
+
+            static string FormatValue(object value)
+            {
+                return value switch
+                {
+                    null => "null",
+                    string str => str,
+                    _ => value.ToString()
+                };
+            }
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]

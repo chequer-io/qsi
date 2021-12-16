@@ -790,11 +790,11 @@ namespace Qsi.Analyzers.Table
                 if (context.Options.UseImplicitTableWildcardInSelect)
                     return ImplicitlyResolveColumnReference(context, column, out implicitTableWildcardTarget);
 
-                if (context.Options.UseOuterQueryColumn)
+                if (context.Options.UseOuterQueryColumn && context.Parent is { } parent)
                 {
                     try
                     {
-                        columns = ResolveColumnReference(context.Parent, column, out implicitTableWildcardTarget);
+                        columns = ResolveColumnReference(parent, column, out implicitTableWildcardTarget);
                     }
                     catch (QsiException e) when (e.Error is QsiError.UnknownColumnIn)
                     {
