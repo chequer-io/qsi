@@ -37,7 +37,6 @@ standaloneRoutineBody
     ;
 
 statement
-    :
     /***
      * ATHENA DDL
      *
@@ -59,7 +58,7 @@ statement
      * @athena https://docs.aws.amazon.com/athena/latest/ug/create-database.html
      * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-CreateDatabaseCreateDatabase
      */
-    CREATE
+    : CREATE
         (REMOTE)?
         (DATABASE | SCHEMA) (IF NOT EXISTS)? databaseName=identifier[null]
         (COMMENT comment=string)?
@@ -208,10 +207,11 @@ statement
             (STORED AS DIRECTORIES)?
         )?
         (
-            (ROW FORMAT rowFormat)?
-            (STORED AS fileFormat)?
+            ROW FORMAT rowFormat
+            | STORED AS fileFormat
+            | ROW FORMAT rowFormat STORED AS fileFormat
             | STORED BY storageHandlerClassName=string
-                (WITH SERDEPROPERTIES serDeProperties=stringProperties)?
+                (WITH SERDEPROPERTIES serDeProperties=stringProperties)? 
         )?
         (LOCATION location=string)?
         (TBLPROPERTIES tblProperties=stringProperties)?
