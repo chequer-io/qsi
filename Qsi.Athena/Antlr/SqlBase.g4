@@ -37,9 +37,7 @@ standaloneRoutineBody
     ;
 
 statement
-    : query                                                                                                             #statementDefault
-    
-    
+    :
     /***
      * ATHENA DDL
      *
@@ -61,7 +59,7 @@ statement
      * @athena https://docs.aws.amazon.com/athena/latest/ug/create-database.html
      * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-CreateDatabaseCreateDatabase
      */
-    | CREATE
+    CREATE
         (REMOTE)?
         (DATABASE | SCHEMA) (IF NOT EXISTS)? databaseName=identifier[null]
         (COMMENT comment=string)?
@@ -114,11 +112,10 @@ statement
      * Use Database
      *
      * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-UseDatabase
+     * @notsupport Tested at 2021. 12. 20.s
      */
-    | USE
-        databaseName=identifier[null]                                                                                   #useDatabase
-//    | USE schema=identifier[null]                                      #useDatabase
-//    | USE catalog=identifier[null] '.' schema=identifier[null]         #useDatabase
+//    | USE
+//        databaseName=identifier[null]                                                                                   #useDatabase
         
         
         
@@ -1018,7 +1015,7 @@ statement
      * @athena https://docs.aws.amazon.com/athena/latest/ug/describe-view.html
      * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-DescribeTable/View/MaterializedView/Column
      */
-    | DESCRIBE
+    | (DESCRIBE | DESC)
         (EXTENDED | FORMATTED)?
         tableName=qualifiedName
         (PARTITION partitionSpec=properties)?
@@ -1053,101 +1050,442 @@ statement
 
 
 
+    /***
+     * ATHENA DML
+     *
+     * @athena (Amazon Athena DML Reference)[https://docs.aws.amazon.com/athena/latest/ug/functions-operators-reference-section.html]
+     * @presto (Presto SQL Syntax Refrence)[https://prestodb.io/docs/current/sql.html]
+     */
+     
+    /**
+     * ALTER FUNCTION
+     *
+     * @presto https://prestodb.io/docs/current/sql/alter-function.html
+     * @notsupport Use hive syntax
+     */
+    // Not Implemented
 
+    /**
+     * ALTER SCHEMA
+     *
+     * @presto https://prestodb.io/docs/current/sql/alter-schema.html
+     * @notsupport Use hive syntax
+     */
+    // Not Implemented
 
+    /**
+     * ALTER TABLE
+     *
+     * @presto https://prestodb.io/docs/current/sql/alter-table.html
+     * @notsupport Use hive syntax
+     */
+    // Not Implemented
+     
+    /**
+     * Analyze
+     *
+     * @presto https://prestodb.io/docs/current/sql/analyze.html
+     * @notsupport Tested at 2021. 12. 20.
+     */
+    // Not Implemented
+    
+    /**
+     * Call
+     *
+     * @presto https://prestodb.io/docs/current/sql/call.html
+     * @notsupport Tested at 2021. 12. 20.
+     */
+    // Not Implemented
 
+    /**
+     * COMMIT
+     *
+     * @presto https://prestodb.io/docs/current/sql/commit.html
+     * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
+     */
+    // Not Implemeneted
 
-    | INSERT INTO qualifiedName columnAliases? query                   #insertInto
-    | UNLOAD querySpecification 
-        TO string WITH properties                                      #unload
-    | DELETE FROM qualifiedName (WHERE booleanExpression)?             #delete
+    /**
+     * CREATE FUNCTION
+     *
+     * @presto https://prestodb.io/docs/current/sql/create-function.html
+     * @notsupport Use hive syntax
+     */
+    // Not Implemented
 
-    | ANALYZE qualifiedName (WITH properties)?                         #analyze
-//    | CREATE TYPE qualifiedName AS (
-//        '(' sqlParameterDeclaration (',' sqlParameterDeclaration)* ')'
-//        | type)                                                        #createType
-    | CREATE (OR REPLACE)? VIEW qualifiedName AS query                 #createView
-    | DROP (DATABASE | SCHEMA) (IF EXISTS)?
-        identifier[null] (RESTRICT | CASCADE)?                         #dropDatabase
-    | DROP VIEW (IF EXISTS)? qualifiedName                             #dropView
-    | DROP TABLE (IF EXISTS)? qualifiedName                            #dropTable
-    | CREATE MATERIALIZED VIEW (IF NOT EXISTS)? qualifiedName
-        (COMMENT string)?
-        (WITH properties)? AS (query | '('query')')                    #createMaterializedView
-    | DROP MATERIALIZED VIEW (IF EXISTS)? qualifiedName                #dropMaterializedView
-    | REFRESH MATERIALIZED VIEW qualifiedName WHERE booleanExpression  #refreshMaterializedView
-//    | CREATE (OR REPLACE)? TEMPORARY? FUNCTION functionName=qualifiedName
-//        '(' (sqlParameterDeclaration (',' sqlParameterDeclaration)*)? ')'
-//        RETURNS returnType=type
-//        (COMMENT string)?
-//        routineCharacteristics routineBody                             #createFunction
+    /**
+     * CREATE ROLE
+     *
+     * @presto https://prestodb.io/docs/current/sql/create-role.html
+     * @notsupport Use hive syntax
+     */
+    // Not Implemented
 
-    | ALTER FUNCTION qualifiedName dataTypes?
-      alterRoutineCharacteristics                                      #alterFunction
-    | DROP TEMPORARY? FUNCTION (IF EXISTS)? qualifiedName dataTypes?       #dropFunction
-    | CALL qualifiedName '(' (callArgument (',' callArgument)*)? ')'   #call
-    | CREATE ROLE name=identifier[null]
-        (WITH ADMIN grantor)?                                          #createRole
-    | DROP ROLE name=identifier[null]                                  #dropRole
-    | GRANT
-        roles
-        TO principal (',' principal)*
-        (WITH ADMIN OPTION)?
-        (GRANTED BY grantor)?                                          #grantRoles
-    | REVOKE
-        (ADMIN OPTION FOR)?
-        roles
-        FROM principal (',' principal)*
-        (GRANTED BY grantor)?                                          #revokeRoles
-    | SET ROLE (ALL | NONE | role=identifier[null])                    #setRole
-    | GRANT
-        (privilege (',' privilege)* | ALL PRIVILEGES)
-        ON TABLE? qualifiedName TO grantee=principal
-        (WITH GRANT OPTION)?                                           #grant
-    | REVOKE
-        (GRANT OPTION FOR)?
-        (privilege (',' privilege)* | ALL PRIVILEGES)
-        ON TABLE? qualifiedName FROM grantee=principal                 #revoke
-    | SHOW GRANTS
-        (ON TABLE? qualifiedName)?                                     #showGrants
+    /**
+     * CREATE SCHEMA
+     *
+     * @presto https://prestodb.io/docs/current/sql/create-schema.html
+     * @notsupport Use hive syntax
+     */
+    // Not Implemented
+
+    /**
+     * CREATE TABLE
+     *
+     * @presto https://prestodb.io/docs/current/sql/create-table.html
+     * @notsupport Use hive syntax
+     */
+    // Not Implemented
+
+    /**
+     * CREATE TABLE AS
+     *
+     * @presto https://prestodb.io/docs/current/sql/create-table-as.html
+     * @notsupport Use hive syntax
+     */
+    // Not Implemented
+
+    /**
+     * CREATE VIEW
+     *
+     * @presto https://prestodb.io/docs/current/sql/create-view.html
+     * @notsupport Use hive syntax
+     */
+    // Not Implemented
+
+    /**
+     * DEALLOCATE PREPARE
+     *
+     * @athena https://docs.aws.amazon.com/athena/latest/ug/querying-with-prepared-statements.html
+     * @presto https://prestodb.io/docs/current/sql/deallocate-prepare.html
+     */
+    | DEALLOCATE PREPARE identifier[null]                                                                               #deallocate
+
+    /**
+     * DELETE
+     *
+     * @presto https://prestodb.io/docs/current/sql/delete.html
+     * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
+     */
+    // Not Implemented
+
+    /**
+     * DESCRIBE
+     *
+     * @presto https://prestodb.io/docs/current/sql/describe.html
+     * @notsupport Use hive syntax
+     */
+    // Not Implemented
+
+    /**
+     * DESCRIBE INPUT
+     *
+     * @presto https://prestodb.io/docs/current/sql/describe-input.html
+     * @notsupport Use hive syntax
+     */
+    // Not Implemented
+
+    /**
+     * DESCRIBE OUTPUT
+     *
+     * @presto https://prestodb.io/docs/current/sql/describe-output.html
+     * @notsupport Use hive syntax
+     */
+    // Not Implemented
+
+    /**
+     * DROP FUNCTION
+     *
+     * @presto https://prestodb.io/docs/current/sql/drop-function.html
+     * @notsupport Use hive syntax
+     */
+    // Not Implemented
+
+    /**
+     * DROP ROLE
+     *
+     * @presto https://prestodb.io/docs/current/sql/drop-role.html
+     * @notsupport Use hive syntax
+     */
+    // Not Implemented
+
+    /**
+     * DROP SCHEMA
+     *
+     * @presto https://prestodb.io/docs/current/sql/drop-schema.html
+     * @notsupport Use hive syntax
+     */
+    // Not Implemented
+
+    /**
+     * DROP TABLE
+     *
+     * @presto https://prestodb.io/docs/current/sql/drop-table.html
+     * @notsupport Use hive syntax
+     */
+    // Not Implemented
+
+    /**
+     * DROP VIEW
+     *
+     * @presto https://prestodb.io/docs/current/sql/drop-view.html
+     * @notsupport Use hive syntax
+     */
+    // Not Implemented
+
+    /**
+     * EXECUTE
+     *
+     * @athena https://docs.aws.amazon.com/athena/latest/ug/querying-with-prepared-statements.html
+     * @presto https://prestodb.io/docs/current/sql/execute.html
+     */
+    | EXECUTE identifier[null] (USING expression (',' expression)*)?                                                    #execute
+
+    /**
+     * EXPLAIN
+     *
+     * @athena https://docs.aws.amazon.com/athena/latest/ug/athena-explain-statement.html
+     * @presto https://prestodb.io/docs/current/sql/explain.html
+     */
     | EXPLAIN VERBOSE?
-        ('(' explainOption (',' explainOption)* ')')? statement        #explain
-    | SHOW TBLPROPERTIES qualifiedName ('(' string ')')?               #showTblproperties
-    | SHOW (DATABASES | SCHEMAS) (LIKE string)?                        #showDatabases
-    | SHOW PARTITIONS qualifiedName                                    #showPartitions
-    | SHOW CREATE TABLE qualifiedName                                  #showCreateTable
-    | SHOW CREATE VIEW qualifiedName                                   #showCreateView
-    | SHOW CREATE MATERIALIZED VIEW qualifiedName                      #showCreateMaterializedView
-    | SHOW CREATE FUNCTION qualifiedName dataTypes?                        #showCreateFunction
-    | SHOW TABLES ((FROM | IN) qualifiedName)? (pattern=string)?       #showTables
-    | SHOW VIEWS 
-        (IN database=identifier[null])? (LIKE pattern=string)?         #showViews
-    | SHOW CATALOGS (LIKE pattern=string)?                             #showCatalogs
-    | SHOW COLUMNS (FROM | IN) 
-      ( qualifiedName 
-      | table=identifier[null] (FROM | IN) database=identifier[null])  #showColumns
-    | SHOW STATS FOR qualifiedName                                     #showStats
-    | SHOW STATS FOR '(' querySpecification ')'                        #showStatsForQuery
-    | SHOW CURRENT? ROLES ((FROM | IN) identifier[null])?              #showRoles
-    | SHOW ROLE GRANTS ((FROM | IN) identifier[null])?                 #showRoleGrants
-    | (DESC | DESCRIBE) (EXTENDED | FORMATTED)? qualifiedName
-        (PARTITION properties)?
-        (qualifiedName)?                                               #describeTable
-    | (DESC | DESCRIBE) qualifiedName                                  #describeView
-    | SHOW FUNCTIONS
-        (LIKE pattern=string (ESCAPE escape=string)?)?                 #showFunctions
-    | SHOW SESSION                                                     #showSession
-    | SET SESSION qualifiedName EQ expression                          #setSession
-    | RESET SESSION qualifiedName                                      #resetSession
-    | START TRANSACTION (transactionMode (',' transactionMode)*)?      #startTransaction
-    | COMMIT WORK?                                                     #commit
-    | ROLLBACK WORK?                                                   #rollback
-    | PREPARE identifier[null] FROM statement                          #prepare
-    | DEALLOCATE PREPARE identifier[null]                              #deallocate
-    | EXECUTE identifier[null] (USING expression (',' expression)*)?   #execute
-    | DESCRIBE INPUT identifier[null]                                  #describeInput
-    | DESCRIBE OUTPUT identifier[null]                                 #describeOutput
-    | MSCK REPAIR TABLE qualifiedName                                  #msckRepairTable
+        ('(' explainOption (',' explainOption)* ')')? statement                                                         #explain
+
+    /**
+     * EXPLAIN ANALYZE
+     *
+     * @athena https://docs.aws.amazon.com/athena/latest/ug/athena-explain-statement.html
+     * @presto https://prestodb.io/docs/current/sql/explain-analyze.html
+     */
+    | EXPLAIN ANALYZE VERBOSE?
+        ('(' explainOption (',' explainOption)* ')')? statement                                                         #explainAnalyze
+
+    /**
+     * GRANT
+     *
+     * @presto https://prestodb.io/docs/current/sql/grant.html
+     * @notsupport Use hive syntax
+     */
+    // Not Implemented
+
+    /**
+     * GRANT ROLES
+     *
+     * @presto https://prestodb.io/docs/current/sql/grant-roles.html
+     * @notsupport Use hive syntax
+     */
+    // Not Implemented
+
+    /**
+     * INSERT
+     *
+     * @athena https://docs.aws.amazon.com/athena/latest/ug/insert-into.html
+     * @presto https://prestodb.io/docs/current/sql/insert.html
+     */
+    | INSERT INTO qualifiedName columnAliases? query                                                                    #insertInto
+
+    /**
+     * PREPARE
+     *
+     * @athena https://docs.aws.amazon.com/athena/latest/ug/querying-with-prepared-statements.html
+     * @presto 
+     */
+    | PREPARE identifier[null] FROM statement                                                                           #prepare
+
+    /**
+     * RESET SESSION
+     *
+     * @presto https://prestodb.io/docs/current/sql/reset-session.html
+     * @notsupport Use hive syntax
+     */
+    // Not Implemented
+
+    /**
+     * REVOKE
+     *
+     * @presto https://prestodb.io/docs/current/sql/revoke.html
+     * @notsupport Use hive syntax
+     */
+    // Not Implemented
+
+    /**
+     * REVOKE ROLES
+     *
+     * @presto https://prestodb.io/docs/current/sql/revoke-roles.html
+     * @notsupport Use hive syntax
+     */
+    // Not Implemented
+
+    /**
+     * ROLLBACK
+     *
+     * @presto https://prestodb.io/docs/current/sql/rollback.html
+     * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
+     */
+    // Not Implemented
+
+    /**
+     * SELECT
+     *
+     * @athena https://docs.aws.amazon.com/athena/latest/ug/select.html
+     * @presto https://prestodb.io/docs/current/sql/select.html
+     */
+    | query                                                                                                             #statementDefault
+
+    /**
+     * SET ROLE
+     *
+     * @presto https://prestodb.io/docs/current/sql/set-role.html
+     * @notsupport Use hive syntax
+     */
+    // Not Implemented
+
+    /**
+     * SET SESSION
+     *
+     * @presto https://prestodb.io/docs/current/sql/set-session.html
+     * @notsupport Use hive syntax
+     */
+    // Not Implemented
+
+    /**
+     * SHOW CATALOGS
+     *
+     * @presto https://prestodb.io/docs/current/sql/show-catalogs.html
+     * @notsupport Use hive syntax
+     */
+    // Not Implemented
+
+    /**
+     * SHOW COLUMNS
+     *
+     * @presto https://prestodb.io/docs/current/sql/show-columns.html
+     * @notsupport Use hive syntax
+     */
+    // Not Implemented
+
+    /**
+     * SHOW CREATE FUNCTION
+     *
+     * @presto https://prestodb.io/docs/current/sql/show-create-function.html
+     * @notsupport Use hive syntax
+     */
+    // Not Implemented
+
+    /**
+     * SHOW CREATE TABLE
+     *
+     * @presto https://prestodb.io/docs/current/sql/show-create-table.html
+     * @notsupport Use hive syntax
+     */
+    // Not Implemented
+
+    /**
+     * SHOW CREATE VIEW
+     *
+     * @presto https://prestodb.io/docs/current/sql/show-create-view.html
+     * @notsupport Use hive syntax
+     */
+    // Not Implemented
+
+    /**
+     * SHOW FUNCTIONS
+     *
+     * @presto https://prestodb.io/docs/current/sql/show-functions.html
+     * @notsupport Use hive syntax
+     */
+    // Not Implemented
+
+    /**
+     * SHOW GRANTS
+     *
+     * @presto https://prestodb.io/docs/current/sql/show-grants.html
+     * @notsupport Use hive syntax
+     */
+    // Not Implemented
+
+    /**
+     * SHOW ROLE GRANTS
+     *
+     * @presto https://prestodb.io/docs/current/sql/show-role-grants.html
+     * @notsupport Use hive syntax
+     */
+    // Not Implemented
+
+    /**
+     * SHOW ROLES
+     *
+     * @presto https://prestodb.io/docs/current/sql/show-roles.html
+     * @notsupport Use hive syntax
+     */
+    // Not Implemented
+
+    /**
+     * SHOW SCHEMAS
+     *
+     * @presto https://prestodb.io/docs/current/sql/show-schemas.html
+     * @notsupport Use hive syntax
+     */
+    // Not Implemented
+
+    /**
+     * SHOW SESSION
+     *
+     * @presto https://prestodb.io/docs/current/sql/show-session.html
+     * @notsupport Use hive syntax
+     */
+    // Not Implemented
+
+    /**
+     * SHOW STATS
+     *
+     * @presto https://prestodb.io/docs/current/sql/show-stats.html
+     * @notsupport Use hive syntax
+     */
+    // Not Implemented
+
+    /**
+     * SHOW TABLES
+     *
+     * @presto https://prestodb.io/docs/current/sql/show-tables.html
+     * @notsupport Use hive syntax
+     */
+    // Not Implemented
+
+    /**
+     * START TRANSACTION
+     *
+     * @presto https://prestodb.io/docs/current/sql/start-transaction.html
+     * @notsupport Use hive syntax
+     */
+    // Not Implemented
+
+    /**
+     * USE
+     *
+     * @presto https://prestodb.io/docs/current/sql/use.html
+     * @notsupport Use hive syntax
+     */
+    // Not Implemented
+
+    /**
+     * VALUES
+     *
+     * @presto https://prestodb.io/docs/current/sql/values.html
+     */
+    // Implemented in "query"
+    
+    
+    /***
+     * Athena Only Statements
+     */
+     
+    /**
+     * UNLOAD
+     *
+     * @athena https://docs.aws.amazon.com/athena/latest/ug/unload.html
+     */
+    | UNLOAD querySpecification 
+        TO string WITH properties                                                                                       #unload
     ;
 
 query
