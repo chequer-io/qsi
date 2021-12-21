@@ -8,7 +8,7 @@ namespace Qsi.Analyzers.Action.Context
     {
         public DataManipulationTarget[] Targets { get; set; }
 
-        public QsiQualifiedIdentifier[] ColumnNames { get; set; }
+        public ColumnTarget[] ColumnTargets { get; set; }
 
         public TableDataInsertContext(IAnalyzerContext context, QsiTableStructure table) : base(context, table)
         {

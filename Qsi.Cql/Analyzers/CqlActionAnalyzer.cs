@@ -201,8 +201,8 @@ namespace Qsi.Cql.Analyzers
 
             return ResolveDataManipulationTargets(
                     context,
-                    table,
-                    columnPlans.Select(c => new QsiQualifiedIdentifier(c.Name)))
+                    ResolveColumnTargetsFromIdentifiers(context, table, columnPlans.Select(c => new QsiQualifiedIdentifier(c.Name)))
+                )
                 .Select(target =>
                 {
                     foreach (var row in dataTable.Rows)
@@ -213,7 +213,7 @@ namespace Qsi.Cql.Analyzers
 
                             foreach (var pivot in target.ColumnPivots)
                                 targetRow.Items[pivot.TargetOrder] = row.Items[pivot.TargetOrder];
-                            
+
                             target.DeleteRows.Add(targetRow);
 
                             continue;
@@ -284,7 +284,7 @@ namespace Qsi.Cql.Analyzers
                                 afterValue = value;
                             }
                         }
-                        
+
                         target.UpdateBeforeRows.Add(beforeRow);
                         target.UpdateAfterRows.Add(afterRow);
                     }

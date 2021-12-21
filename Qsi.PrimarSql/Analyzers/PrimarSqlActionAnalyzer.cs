@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Qsi.Analyzers;
 using Qsi.Analyzers.Action;
+using Qsi.Analyzers.Action.Models;
 using Qsi.Analyzers.Context;
 using Qsi.Analyzers.Table;
 using Qsi.Analyzers.Table.Context;
@@ -151,18 +152,18 @@ namespace Qsi.PrimarSql.Analyzers
 
             var insertRows = new QsiDataRowCollection(1, context.Engine.CacheProviderFactory());
 
-            QsiQualifiedIdentifier[] columns = ResolveColumnNames(table, action);
+            ColumnTarget[] columnTargets = ResolveColumnTargetsFromDataInsertAction(context, table, action);
 
             foreach (var value in action.Values)
             {
-                if (columns.Length != value.ColumnValues.Length)
+                if (columnTargets.Length != value.ColumnValues.Length)
                     throw new QsiException(QsiError.DifferentColumnsCount);
 
                 var obj = new JObject();
 
-                for (int i = 0; i < columns.Length; i++)
+                for (int i = 0; i < columnTargets.Length; i++)
                 {
-                    var column = columns[i][^1];
+                    var column = columnTargets[i].DeclaredName[^1];
                     var columnValue = value.ColumnValues[i];
 
                     obj[IdentifierUtility.Unescape(column.Value)] = ConvertToToken(columnValue, context);
@@ -185,10 +186,10 @@ namespace Qsi.PrimarSql.Analyzers
                 References = { tempTable }
             };
 
-            foreach (var column in columns)
+            foreach (var column in columnTargets)
             {
                 var newColumn = tempTable2.NewColumn();
-                newColumn.Name = column[^1];
+                newColumn.Name = column.DeclaredName[^1];
                 newColumn.References.AddRange(tempTable.Columns);
             }
 
