@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qsi.Impala", "Qsi.Impala\Qs
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qsi.Trino", "Qsi.Trino\Qsi.Trino.csproj", "{66C882CC-E664-457B-9A8A-5385E2BA7AAA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qsi.Tests", "Qsi.Tests\Qsi.Tests.csproj", "{4C7782B4-035E-47AF-ACB9-120FABF833CF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -91,6 +93,10 @@ Global
 		{66C882CC-E664-457B-9A8A-5385E2BA7AAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{66C882CC-E664-457B-9A8A-5385E2BA7AAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{66C882CC-E664-457B-9A8A-5385E2BA7AAA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4C7782B4-035E-47AF-ACB9-120FABF833CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C7782B4-035E-47AF-ACB9-120FABF833CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C7782B4-035E-47AF-ACB9-120FABF833CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C7782B4-035E-47AF-ACB9-120FABF833CF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
