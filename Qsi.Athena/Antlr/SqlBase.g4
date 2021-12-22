@@ -1496,18 +1496,18 @@ with
     : WITH namedQuery (',' namedQuery)*
     ;
 
-tableElement
-    : columnDefinition
-    | likeClause
-    ;
+//tableElement
+//    : columnDefinition
+//    | likeClause
+//    ;
 
 columnDefinition
     : identifier[null] dataType (COMMENT string)?
     ;
 
-likeClause
-    : LIKE qualifiedName (optionType=(INCLUDING | EXCLUDING) PROPERTIES)?
-    ;
+//likeClause
+//    : LIKE qualifiedName (optionType=(INCLUDING | EXCLUDING) PROPERTIES)?
+//    ;
 
 rowFormat
     : DELIMITED
@@ -1551,23 +1551,23 @@ property
 //    : identifier[null] type
 //    ;
 
-routineCharacteristics
-    : routineCharacteristic*
-    ;
+//routineCharacteristics
+//    : routineCharacteristic*
+//    ;
 
-routineCharacteristic
-    : LANGUAGE language
-    | determinism
-    | nullCallClause
-    ;
+//routineCharacteristic
+//    : LANGUAGE language
+//    | determinism
+//    | nullCallClause
+//    ;
 
-alterRoutineCharacteristics
-    : alterRoutineCharacteristic*
-    ;
+//alterRoutineCharacteristics
+//    : alterRoutineCharacteristic*
+//    ;
 
-alterRoutineCharacteristic
-    : nullCallClause
-    ;
+//alterRoutineCharacteristic
+//    : nullCallClause
+//    ;
 
 routineBody
     : returnStatement
@@ -1582,19 +1582,19 @@ externalBodyReference
     : EXTERNAL (NAME externalRoutineName)?
     ;
 
-language
-    : SQL
-    | identifier[null]
-    ;
-
-determinism
-    : DETERMINISTIC
-    | NOT DETERMINISTIC;
-
-nullCallClause
-    : RETURNS NULL ON NULL INPUT
-    | CALLED ON NULL INPUT
-    ;
+//language
+//    : SQL
+//    | identifier[null]
+//    ;
+//
+//determinism
+//    : DETERMINISTIC
+//    | NOT DETERMINISTIC;
+//
+//nullCallClause
+//    : RETURNS NULL ON NULL INPUT
+//    | CALLED ON NULL INPUT
+//    ;
 
 externalRoutineName
     : identifier[null]
@@ -1752,13 +1752,13 @@ primaryExpression
     | booleanValue                                                                        #booleanLiteral
     | string                                                                              #stringLiteral
     | BINARY_LITERAL                                                                      #binaryLiteral
-    | '?'                                                                                 #parameter
+    | parameterExpression                                                                 #parameter
     | POSITION '(' valueExpression IN valueExpression ')'                                 #position
     | '(' expression (',' expression)+ ')'                                                #rowConstructor
     | ROW '(' expression (',' expression)* ')'                                            #rowConstructor
     | qualifiedName '(' ASTERISK ')' filter? over?                                        #functionCall
     | qualifiedName '(' (setQuantifier? expression (',' expression)*)?
-        (ORDER BY sortItem (',' sortItem)*)? ')' filter? (nullTreatment? over)?           #functionCall
+        orderBy? ')' filter? (nullTreatment? over)?                                       #functionCall
     | identifier[null] '->' expression                                                    #lambda
     | '(' (identifier[null] (',' identifier[null])*)? ')' '->' expression                 #lambda
     | '(' query ')'                                                                       #subqueryExpression
@@ -1785,19 +1785,33 @@ primaryExpression
     | GROUPING '(' (qualifiedName (',' qualifiedName)*)? ')'                              #groupingOperation
     ;
 
+timeZoneSpecifier
+    : TIME ZONE interval  #timeZoneInterval
+    | TIME ZONE string    #timeZoneString
+    ;
+
+interval
+    : INTERVAL sign=(PLUS | MINUS)? string from=intervalField (TO to=intervalField)?
+    ;
+    
+orderBy
+    : ORDER BY sortItem (',' sortItem)*
+    ;
+    
 string
     : STRING                                #basicStringLiteral
     | UNICODE_STRING (UESCAPE STRING)?      #unicodeStringLiteral
     ;
 
+number
+    : DECIMAL_VALUE  #decimalLiteral
+    | DOUBLE_VALUE   #doubleLiteral
+    | INTEGER_VALUE  #integerLiteral
+    ;
+    
 nullTreatment
     : IGNORE NULLS
     | RESPECT NULLS
-    ;
-
-timeZoneSpecifier
-    : TIME ZONE interval  #timeZoneInterval
-    | TIME ZONE string    #timeZoneString
     ;
 
 comparisonOperator
@@ -1812,10 +1826,6 @@ booleanValue
     : TRUE | FALSE
     ;
 
-interval
-    : INTERVAL sign=(PLUS | MINUS)? string from=intervalField (TO to=intervalField)?
-    ;
-
 intervalField
     : YEAR | MONTH | DAY | HOUR | MINUTE | SECOND
     ;
@@ -1824,9 +1834,9 @@ normalForm
     : NFD | NFC | NFKD | NFKC
     ;
 
-dataTypes
-    : '(' (dataType (',' dataType)*)? ')'
-    ;
+//dataTypes
+//    : '(' (dataType (',' dataType)*)? ')'
+//    ;
 
 dataType
     : primitiveType
@@ -1876,6 +1886,11 @@ unionType
     : UNIONTYPE
         '<' dataType (',' dataType)* '>'
     ;
+    
+    
+parameterExpression returns [int index]
+    : '?' { $index = NextBindParameterIndex(); }
+    ;
 
 //type
 //    : type ARRAY
@@ -1906,11 +1921,17 @@ filter
     ;
 
 over
-    : OVER '('
-        (PARTITION BY partition+=expression (',' partition+=expression)*)?
-        (ORDER BY sortItem (',' sortItem)*)?
-        windowFrame?
-      ')'
+    : OVER '(' windowSpecification ')'
+    ;
+
+windowSpecification:
+    partitionBy?
+    orderBy?
+    windowFrame?
+    ;
+
+partitionBy:
+    PARTITION BY partition+=expression (',' partition+=expression)*
     ;
 
 windowFrame
@@ -1933,26 +1954,26 @@ explainOption
     | TYPE value=(LOGICAL | DISTRIBUTED | VALIDATE | IO)    #explainType
     ;
 
-transactionMode
-    : ISOLATION LEVEL levelOfIsolation    #isolationLevel
-    | READ accessMode=(ONLY | WRITE)      #transactionAccessMode
-    ;
+//transactionMode
+//    : ISOLATION LEVEL levelOfIsolation    #isolationLevel
+//    | READ accessMode=(ONLY | WRITE)      #transactionAccessMode
+//    ;
 
-levelOfIsolation
-    : READ UNCOMMITTED                    #readUncommitted
-    | READ COMMITTED                      #readCommitted
-    | REPEATABLE READ                     #repeatableRead
-    | SERIALIZABLE                        #serializable
-    ;
+//levelOfIsolation
+//    : READ UNCOMMITTED                    #readUncommitted
+//    | READ COMMITTED                      #readCommitted
+//    | REPEATABLE READ                     #repeatableRead
+//    | SERIALIZABLE                        #serializable
+//    ;
 
-callArgument
-    : expression                          #positionalArgument
-    | identifier[null] '=>' expression    #namedArgument
-    ;
+//callArgument
+//    : expression                          #positionalArgument
+//    | identifier[null] '=>' expression    #namedArgument
+//    ;
 
-privilege
-    : SELECT | DELETE | INSERT | identifier[null]
-    ;
+//privilege
+//    : SELECT | DELETE | INSERT | identifier[null]
+//    ;
 
 qualifiedName returns [QsiQualifiedIdentifier qqi] locals [List<QsiIdentifier> buffer]
     @init { $buffer = new List<QsiIdentifier>(); }
@@ -1960,21 +1981,21 @@ qualifiedName returns [QsiQualifiedIdentifier qqi] locals [List<QsiIdentifier> b
     : identifier[$buffer] ('.' identifier[$buffer] )*
     ;
 
-grantor
-    : CURRENT_USER          #currentUserGrantor
-    | CURRENT_ROLE          #currentRoleGrantor
-    | principal             #specifiedPrincipal
-    ;
+//grantor
+//    : CURRENT_USER          #currentUserGrantor
+//    | CURRENT_ROLE          #currentRoleGrantor
+//    | principal             #specifiedPrincipal
+//    ;
 
-principal
-    : USER identifier[null]       #userPrincipal
-    | ROLE identifier[null]       #rolePrincipal
-    | identifier[null]            #unspecifiedPrincipal
-    ;
+//principal
+//    : USER identifier[null]       #userPrincipal
+//    | ROLE identifier[null]       #rolePrincipal
+//    | identifier[null]            #unspecifiedPrincipal
+//    ;
 
-roles
-    : identifier[null] (',' identifier[null])*
-    ;
+//roles
+//    : identifier[null] (',' identifier[null])*
+//    ;
 
 identifier[List<QsiIdentifier> buffer] returns [QsiIdentifier qi]
     @after { $buffer?.Add($qi); }
@@ -1985,11 +2006,6 @@ identifier[List<QsiIdentifier> buffer] returns [QsiIdentifier qi]
     | i=DIGIT_IDENTIFIER { $qi = new QsiIdentifier($i.text.ToUpper(), false); }       #digitIdentifier
     ;
 
-number
-    : DECIMAL_VALUE  #decimalLiteral
-    | DOUBLE_VALUE   #doubleLiteral
-    | INTEGER_VALUE  #integerLiteral
-    ;
 
 nonReserved
     // IMPORTANT: this rule must only contain tokens. Nested rules are not supported. See SqlParser.exitNonReserved

@@ -19,7 +19,7 @@ namespace Qsi.Athena.Internal
             .SpecialRule(SqlBaseParser.RULE_identifier, "<identifier>")
             .SpecialRule(SqlBaseParser.RULE_string, "<string>")
             .SpecialRule(SqlBaseParser.RULE_query, "<query>")
-            .SpecialRule(SqlBaseParser.RULE_type, "<type>")
+            .SpecialRule(SqlBaseParser.RULE_dataType, "<type>")
             .SpecialToken(SqlBaseLexer.INTEGER_VALUE, "<integer>")
             .IgnoredRule(SqlBaseParser.RULE_nonReserved)
             .Build();

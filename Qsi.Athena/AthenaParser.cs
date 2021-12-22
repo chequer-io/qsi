@@ -1,9 +1,11 @@
 ﻿using System.Threading;
 using Qsi.Athena.Internal;
+using Qsi.Athena.Tree.Visitors;
 using Qsi.Data;
 using Qsi.Parsing;
 using Qsi.Tree;
 using Qsi.Utilities;
+using static Qsi.Athena.Internal.SqlBaseParser;
 
 namespace Qsi.Athena
 {
@@ -17,6 +19,9 @@ namespace Qsi.Athena
 
             switch (statement)
             {
+                case StatementDefaultContext statementDefault:
+                    return ActionVisitor.VisitStatementDefault(statementDefault);
+                
                 default:
                     throw TreeHelper.NotSupportedTree(statement);
             }

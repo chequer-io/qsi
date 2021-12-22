@@ -1,4 +1,5 @@
 ﻿using Qsi.Athena.Internal;
+using Qsi.Tree;
 
 namespace Qsi.Athena.Tree.Visitors
 {
@@ -6,5 +7,9 @@ namespace Qsi.Athena.Tree.Visitors
 
     internal static class ActionVisitor
     {
+        public static IQsiTreeNode VisitStatementDefault(StatementDefaultContext context)
+        {
+            return TableVisitor.VisitQuery(context.query());
+        }
     }
 }
