@@ -10,10 +10,10 @@ namespace Qsi.Analyzers.Action.Models
         public SetColumnTarget(
             int declaredOrder,
             QsiQualifiedIdentifier declaredName,
-            QsiTableColumn targetColumn,
-            QsiTableColumn affectedReferenceColumn,
+            QsiTableColumn sourceColumn,
+            QsiTableColumn affectedColumn,
             IQsiExpressionNode valueNode)
-            : base(declaredOrder, declaredName, targetColumn, affectedReferenceColumn)
+            : base(declaredOrder, declaredName, sourceColumn, affectedColumn)
         {
             ValueNode = valueNode;
         }

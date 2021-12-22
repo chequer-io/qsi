@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Transactions;
 using MySqlConnector;
 using NUnit.Framework;
 using Qsi.Analyzers;
@@ -12,12 +11,13 @@ using Qsi.Data;
 using Qsi.Engines;
 using Qsi.Tests.Drivers;
 using Qsi.Tests.Drivers.MySql;
+using Qsi.Tests.Utilities;
 
 namespace Qsi.Tests;
 
 [NonParallelizable]
 [TestFixture("localhost", 3306U, "root", "root")]
-public class QsiEngineTests_MySql
+public partial class QsiEngineTests_MySql
 {
     protected IList<QsiScript> ScriptHistories => ((RepositoryProviderDriverBase)_engine.RepositoryProvider).ScriptHistories;
 
@@ -128,7 +128,9 @@ public class QsiEngineTests_MySql
     }
 
     [TestCase("SELECT * FROM x.y", ExpectedResult = "QSI-0006: Unable to resolve table 'x.y'")]
+    [TestCase("SELECT a.* FROM actor", ExpectedResult = "QSI-0008: Unknown table 'a'")]
     [TestCase("INSERT INTO actor VALUES (1, 2, 3, 4), (5, 6, 7)", ExpectedResult = "QSI-001B: Column count doesn't match value count at row 2")]
+    [TestCase("INSERT INTO actor (aaaaaaaa) VALUES (1)", ExpectedResult = "QSI-000C: Unknown column 'aaaaaaaa'")]
     [TestCase("UPDATE actor SET actor_id = 1, actor_id = 2", ExpectedResult = "QSI-0001: 'Multiple set column' is not supported feature")]
     [TestCase("UPDATE actor SET bbb = 2", ExpectedResult = "QSI-000C: Unknown column 'bbb'")]
     [TestCase("UPDATE actor_info SET film_info = 2", ExpectedResult = "QSI-001A: Column 'film_info' is not updatable")]
@@ -136,5 +138,19 @@ public class QsiEngineTests_MySql
     public string Test_Throws(string sql)
     {
         return Assert.ThrowsAsync<QsiException>(async () => await _engine.Execute(new QsiScript(sql, QsiScriptType.Select), null))?.Message;
+    }
+
+    [TestCaseSource(nameof(Print_TestDatas))]
+    public async Task<string> Test_Print(string sql)
+    {
+        IQsiAnalysisResult[] result = await _engine.Execute(new QsiScript(sql, QsiScriptType.Select), null);
+
+        foreach (var scriptHistory in ScriptHistories)
+            Console.WriteLine(scriptHistory.Script);
+
+        var print = DebugUtility.Print(result.OfType<QsiDataManipulationResult>());
+        Console.WriteLine(print);
+
+        return print;
     }
 }
