@@ -22,7 +22,7 @@ namespace Qsi.Analyzers.Action
 {
     public class QsiActionAnalyzer : QsiAnalyzerBase
     {
-        protected delegate QsiDataValue DataValueSelector(DataManipulationTargetColumnPivot pivot);
+        protected delegate QsiDataValue DataValueSelector(DataManipulationTargetDataPivot pivot);
 
         public QsiActionAnalyzer(QsiEngine engine) : base(engine)
         {
@@ -126,10 +126,10 @@ namespace Qsi.Analyzers.Action
 
         #region Table Data
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected virtual QsiDataValue ResolveDefaultColumnValue(DataManipulationTargetColumnPivot pivot)
+        protected virtual QsiDataValue ResolveDefaultColumnValue(DataManipulationTargetDataPivot pivot)
         {
-            if (pivot.TargetColumn.Default != null)
-                return new QsiDataValue(pivot.TargetColumn.Default, QsiDataType.Raw);
+            if (pivot.DestinationColumn.Default != null)
+                return new QsiDataValue(pivot.DestinationColumn.Default, QsiDataType.Raw);
 
             return QsiDataValue.Default;
         }
@@ -207,6 +207,19 @@ namespace Qsi.Analyzers.Action
         private string ComputeSubqueryValue(IAnalyzerContext context, IQsiTableExpressionNode node)
         {
             var query = context.Engine.TreeDeparser.Deparse(node.Table, context.Script);
+
+            // TODO: bind parameters in directives
+            var directivesNode = context.Tree switch
+            {
+                IQsiDataUpdateActionNode { Target: IQsiDerivedTableNode updateDerivedTableNode } => updateDerivedTableNode.Directives,
+                IQsiDataDeleteActionNode { Target: IQsiDerivedTableNode deleteDerivedTableNode } => deleteDerivedTableNode.Directives,
+                IQsiDataInsertActionNode { Directives: { } insertDirectives } => insertDirectives,
+                _ => null
+            };
+
+            if (directivesNode is not null)
+                query = $"{context.Engine.TreeDeparser.Deparse(directivesNode, context.Script)}\n{query}";
+
             var scriptType = context.Engine.ScriptParser.GetSuitableType(query);
             var script = new QsiScript(query, scriptType);
             QsiParameter[] parameters = ArrangeBindParameters(context, node.Table);
@@ -256,29 +269,27 @@ namespace Qsi.Analyzers.Action
 
         protected virtual IEnumerable<DataManipulationTarget> ResolveDataManipulationTargets(IAnalyzerContext context, IEnumerable<ColumnTarget> columnTargets)
         {
-            IEnumerable<DataManipulationTargetColumnPivot> rawPivots = columnTargets
+            IEnumerable<DataManipulationTargetDataPivot> rawPivots = columnTargets
                 .Select(ResolveDataManipulationTargetColumn);
 
             return ResolveDataManipulationTargetsCore(context, rawPivots);
         }
 
-        protected virtual IEnumerable<DataManipulationTarget> ResolveDataManipulationTargetsCore(IAnalyzerContext context, IEnumerable<DataManipulationTargetColumnPivot> rawPivots)
+        protected virtual IEnumerable<DataManipulationTarget> ResolveDataManipulationTargetsCore(IAnalyzerContext context, IEnumerable<DataManipulationTargetDataPivot> rawPivots)
         {
             return rawPivots
-                .GroupBy(c => c.TargetColumn.Parent)
+                .GroupBy(c => c.DestinationColumn.Parent)
                 .Select(g =>
                 {
-                    var buffer = new DataManipulationTargetColumnPivot[g.Key.Columns.Count];
+                    var buffer = new DataManipulationTargetDataPivot[g.Key.Columns.Count];
 
                     foreach (var pivot in g)
-                        buffer[pivot.TargetOrder] = pivot;
+                        buffer[pivot.DestinationOrder] = pivot;
 
                     for (int i = 0; i < buffer.Length; i++)
                     {
-                        if (buffer[i] != default)
-                            continue;
-
-                        buffer[i] = new DataManipulationTargetColumnPivot(i, g.Key.Columns[i], -1, null);
+                        ref var dataPivot = ref buffer[i];
+                        dataPivot ??= new DataManipulationTargetDataPivot(null, i, g.Key.Columns[i], -1, null);
                     }
 
                     return new DataManipulationTarget(g.Key, buffer, context.Engine.CacheProviderFactory);
@@ -286,27 +297,28 @@ namespace Qsi.Analyzers.Action
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected virtual DataManipulationTargetColumnPivot ResolveDataManipulationTargetColumn(ColumnTarget columnTarget)
+        protected virtual DataManipulationTargetDataPivot ResolveDataManipulationTargetColumn(ColumnTarget columnTarget)
         {
-            if (columnTarget.TargetColumn.IsAnonymous)
+            if (columnTarget.SourceColumn.IsAnonymous)
                 throw new QsiException(QsiError.NotUpdatableColumn, "anonymous");
 
-            if (columnTarget.TargetColumn.IsBinding || columnTarget.TargetColumn.IsExpression || !columnTarget.TargetColumn.IsVisible)
-                throw new QsiException(QsiError.NotUpdatableColumn, columnTarget.TargetColumn.Name);
+            if (columnTarget.SourceColumn.IsBinding || columnTarget.SourceColumn.IsExpression || !columnTarget.SourceColumn.IsVisible)
+                throw new QsiException(QsiError.NotUpdatableColumn, columnTarget.SourceColumn.Name);
 
-            return new DataManipulationTargetColumnPivot(
-                columnTarget.AffectedReferenceColumn.Parent.Columns.IndexOf(columnTarget.AffectedReferenceColumn),
-                columnTarget.AffectedReferenceColumn,
-                columnTarget.DeclaredOrder,
-                columnTarget.TargetColumn
+            return new DataManipulationTargetDataPivot(
+                columnTarget,
+                columnTarget.AffectedColumn.Parent.Columns.IndexOf(columnTarget.AffectedColumn),
+                columnTarget.AffectedColumn,
+                columnTarget.SourceColumn.Parent.Columns.IndexOf(columnTarget.SourceColumn),
+                columnTarget.SourceColumn
             );
         }
 
         protected virtual QsiTableColumn[] GetAffectedColumns(DataManipulationTarget target)
         {
-            return target.ColumnPivots
-                .Where(p => p.DeclaredColumn != null)
-                .Select(p => p.TargetColumn)
+            return target.DataPivots
+                .Where(p => p.SourceColumn != null)
+                .Select(p => p.DestinationColumn)
                 .ToArray();
         }
 
@@ -506,7 +518,7 @@ namespace Qsi.Analyzers.Action
                 .ToArray();
 
             IEnumerable<int> multipleDeclaration = pivots
-                .GroupBy(x => x.AffectedReferenceColumn)
+                .GroupBy(x => x.AffectedColumn)
                 .Select(x => x.Count());
 
             if (multipleDeclaration.Any(x => x > 1))
@@ -563,22 +575,22 @@ namespace Qsi.Analyzers.Action
 
             foreach (var row in dataTable.Rows)
             {
-                PopulateInsertRow(context, pivot => row.Items[pivot.DeclaredOrder]);
+                PopulateInsertRow(context, pivot => row.Items[pivot.SourceOrder]);
             }
         }
 
-        private void ProcessValues(TableDataInsertContext context, IQsiRowValueExpressionNode[] values)
+        private void ProcessValues(TableDataInsertContext context, IQsiRowValueExpressionNode[] rows)
         {
             int columnCount = context.ColumnTargets.Length;
 
-            for (int i = 0; i < values.Length; i++)
+            for (int i = 0; i < rows.Length; i++)
             {
-                var value = values[i];
+                var row = rows[i];
 
-                if (columnCount != value.ColumnValues.Length)
+                if (columnCount != row.ColumnValues.Length)
                     throw new QsiException(QsiError.DifferentColumnValueCount, i + 1);
 
-                PopulateInsertRow(context, pivot => ResolveColumnValue(context, value.ColumnValues[pivot.DeclaredOrder]));
+                PopulateInsertRow(context, pivot => ResolveColumnValue(context, row.ColumnValues[pivot.DeclaredColumnTarget.DeclaredOrder]));
             }
         }
 
@@ -586,8 +598,8 @@ namespace Qsi.Analyzers.Action
         {
             PopulateInsertRow(context, pivot =>
             {
-                var setValue = setValues[pivot.DeclaredOrder];
-                return ResolveColumnValue(context, setValue.Value);
+                var declaredColumnTarget = (SetColumnTarget)pivot.DeclaredColumnTarget;
+                return ResolveColumnValue(context, declaredColumnTarget.ValueNode);
             });
         }
 
@@ -614,17 +626,13 @@ namespace Qsi.Analyzers.Action
 
                 var targetRow = new QsiDataRow(target.DuplicateRows.ColumnCount);
 
-                foreach (var pivot in updateTarget.ColumnPivots)
+                foreach (var pivot in updateTarget.DataPivots)
                 {
-                    if (pivot.DeclaredColumn != null)
-                    {
-                        var setValue = action.SetValues[pivot.DeclaredOrder];
-                        targetRow.Items[pivot.TargetOrder] = ResolveColumnValue(context, setValue.Value);
-                    }
-                    else
-                    {
-                        targetRow.Items[pivot.TargetOrder] = QsiDataValue.Unset;
-                    }
+                    ref var item = ref targetRow.Items[pivot.DestinationOrder];
+
+                    item = pivot.SourceColumn is not null
+                        ? ResolveColumnValue(context, ((SetColumnTarget)pivot.DeclaredColumnTarget).ValueNode)
+                        : QsiDataValue.Unset;
                 }
 
                 target.DuplicateRows.Add(targetRow);
@@ -638,16 +646,13 @@ namespace Qsi.Analyzers.Action
             {
                 var targetRow = new QsiDataRow(target.InsertRows.ColumnCount);
 
-                foreach (var pivot in target.ColumnPivots)
+                foreach (var pivot in target.DataPivots)
                 {
-                    if (pivot.DeclaredColumn != null)
-                    {
-                        targetRow.Items[pivot.TargetOrder] = valueSelector(pivot);
-                    }
-                    else
-                    {
-                        targetRow.Items[pivot.TargetOrder] = ResolveDefaultColumnValue(pivot);
-                    }
+                    ref var item = ref targetRow.Items[pivot.DestinationOrder];
+
+                    item = pivot.SourceColumn is not null
+                        ? valueSelector(pivot)
+                        : ResolveDefaultColumnValue(pivot);
                 }
 
                 target.InsertRows.Add(targetRow);
@@ -741,16 +746,13 @@ namespace Qsi.Analyzers.Action
                     {
                         var targetRow = new QsiDataRow(target.DeleteRows.ColumnCount);
 
-                        foreach (var pivot in target.ColumnPivots)
+                        foreach (var pivot in target.DataPivots)
                         {
-                            if (pivot.DeclaredColumn != null)
-                            {
-                                targetRow.Items[pivot.TargetOrder] = row.Items[pivot.DeclaredOrder];
-                            }
-                            else
-                            {
-                                targetRow.Items[pivot.TargetOrder] = QsiDataValue.Unset;
-                            }
+                            ref var item = ref targetRow.Items[pivot.DestinationOrder];
+
+                            item = pivot.SourceColumn is not null
+                                ? row.Items[pivot.SourceOrder]
+                                : QsiDataValue.Unset;
                         }
 
                         target.DeleteRows.Add(targetRow);
@@ -794,7 +796,7 @@ namespace Qsi.Analyzers.Action
 
                 foreach (var columnTarget in setColumnTargets)
                 {
-                    var targetIndex = columnTarget.TargetColumn.Parent.Columns.IndexOf(columnTarget.TargetColumn);
+                    var targetIndex = columnTarget.SourceColumn.Parent.Columns.IndexOf(columnTarget.SourceColumn);
                     values[targetIndex] = ResolveColumnValue(context, columnTarget.ValueNode);
                     affectedColumnMap[targetIndex] = true;
                 }
@@ -824,19 +826,22 @@ namespace Qsi.Analyzers.Action
                         var oldRow = new QsiDataRow(target.UpdateBeforeRows.ColumnCount);
                         var newRow = new QsiDataRow(target.UpdateAfterRows.ColumnCount);
 
-                        foreach (var pivot in target.ColumnPivots)
+                        foreach (var pivot in target.DataPivots)
                         {
-                            if (pivot.DeclaredColumn != null)
-                            {
-                                var value = row.Items[pivot.DeclaredOrder];
+                            ref var oldItem = ref oldRow.Items[pivot.DestinationOrder];
+                            ref var newItem = ref newRow.Items[pivot.DestinationOrder];
 
-                                oldRow.Items[pivot.TargetOrder] = value;
-                                newRow.Items[pivot.TargetOrder] = values[pivot.DeclaredOrder] ?? value;
+                            if (pivot.SourceColumn != null)
+                            {
+                                var value = row.Items[pivot.SourceOrder];
+
+                                oldItem = value;
+                                newItem = values[pivot.SourceOrder] ?? value;
                             }
                             else
                             {
-                                oldRow.Items[pivot.TargetOrder] = QsiDataValue.Unknown;
-                                newRow.Items[pivot.TargetOrder] = QsiDataValue.Unknown;
+                                oldItem = QsiDataValue.Unknown;
+                                newItem = QsiDataValue.Unset;
                             }
                         }
 
@@ -844,9 +849,9 @@ namespace Qsi.Analyzers.Action
                         target.UpdateAfterRows.Add(newRow);
                     }
 
-                    QsiTableColumn[] affectedColumns = target.ColumnPivots
-                        .Where(p => p.DeclaredColumn != null && affectedColumnMap[p.DeclaredOrder])
-                        .Select(p => p.DeclaredColumn)
+                    QsiTableColumn[] affectedColumns = target.DataPivots
+                        .Where(p => p.SourceColumn != null && affectedColumnMap[p.SourceOrder])
+                        .Select(p => p.SourceColumn)
                         .ToArray();
 
                     return new QsiDataManipulationResult

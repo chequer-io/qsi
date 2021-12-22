@@ -8,20 +8,20 @@ namespace Qsi.Analyzers.Action.Models
 
         public QsiQualifiedIdentifier DeclaredName { get; }
 
-        public QsiTableColumn TargetColumn { get; }
+        public QsiTableColumn SourceColumn { get; }
 
-        public QsiTableColumn AffectedReferenceColumn { get; }
+        public QsiTableColumn AffectedColumn { get; }
 
         public ColumnTarget(
             int declaredOrder,
             QsiQualifiedIdentifier declaredName,
-            QsiTableColumn targetColumn,
-            QsiTableColumn affectedReferenceColumn)
+            QsiTableColumn sourceColumn,
+            QsiTableColumn affectedColumn)
         {
             DeclaredOrder = declaredOrder;
             DeclaredName = declaredName;
-            TargetColumn = targetColumn;
-            AffectedReferenceColumn = affectedReferenceColumn;
+            SourceColumn = sourceColumn;
+            AffectedColumn = affectedColumn;
         }
     }
 }

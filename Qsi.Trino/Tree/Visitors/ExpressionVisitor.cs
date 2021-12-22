@@ -859,6 +859,12 @@ namespace Qsi.Trino.Tree.Visitors
             var node = TrinoTree.CreateWithSpan<TrinoInvokeExpressionNode>(context);
             node.Member.Value = new QsiFunctionExpressionNode { Identifier = context.qualifiedName().qqi };
 
+            if (context.filter() is not null)
+                node.Filter.Value = VisitFilter(context.filter());
+
+            if (context.over() is not null)
+                node.Over.Value = VisitOver(context.over());
+            
             if (context.HasToken(ASTERISK))
             {
                 var columnExpr = new QsiColumnExpressionNode();
@@ -884,11 +890,6 @@ namespace Qsi.Trino.Tree.Visitors
             if (context.nullTreatment() is not null)
                 node.NullTreatment = context.nullTreatment().HasToken(IGNORE) ? TrinoNullTreatment.IgnoreNulls : TrinoNullTreatment.RespectNulls;
 
-            if (context.filter() is not null)
-                node.Filter.Value = VisitFilter(context.filter());
-
-            if (context.over() is not null)
-                node.Over.Value = VisitOver(context.over());
 
             return node;
         }

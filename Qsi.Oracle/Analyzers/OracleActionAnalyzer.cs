@@ -155,19 +155,19 @@ namespace Qsi.Oracle.Analyzers
                         var oldRow = new QsiDataRow(target.UpdateBeforeRows.ColumnCount);
                         var newRow = new QsiDataRow(target.UpdateAfterRows.ColumnCount);
 
-                        foreach (var pivot in target.ColumnPivots)
+                        foreach (var pivot in target.DataPivots)
                         {
-                            if (pivot.DeclaredColumn is not null)
+                            if (pivot.SourceColumn is not null)
                             {
-                                var value = row.Items[pivot.DeclaredOrder];
+                                var value = row.Items[pivot.SourceOrder];
 
-                                oldRow.Items[pivot.TargetOrder] = value;
-                                newRow.Items[pivot.TargetOrder] = values[pivot.DeclaredOrder] ?? value;
+                                oldRow.Items[pivot.DestinationOrder] = value;
+                                newRow.Items[pivot.DestinationOrder] = values[pivot.SourceOrder] ?? value;
                             }
                             else
                             {
-                                oldRow.Items[pivot.TargetOrder] = QsiDataValue.Unknown;
-                                newRow.Items[pivot.TargetOrder] = QsiDataValue.Unknown;
+                                oldRow.Items[pivot.DestinationOrder] = QsiDataValue.Unknown;
+                                newRow.Items[pivot.DestinationOrder] = QsiDataValue.Unset;
                             }
                         }
                         
@@ -175,9 +175,9 @@ namespace Qsi.Oracle.Analyzers
                         target.UpdateAfterRows.Add(newRow);
                     }
 
-                    QsiTableColumn[] affectedColumns = target.ColumnPivots
-                        .Where(p => p.DeclaredColumn is not null && affectedColumnMap[p.DeclaredOrder])
-                        .Select(p => p.DeclaredColumn)
+                    QsiTableColumn[] affectedColumns = target.DataPivots
+                        .Where(p => p.SourceColumn is not null && affectedColumnMap[p.SourceOrder])
+                        .Select(p => p.SourceColumn)
                         .ToArray();
 
                     return new QsiDataManipulationResult

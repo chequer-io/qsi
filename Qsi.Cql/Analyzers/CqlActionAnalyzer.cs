@@ -211,8 +211,8 @@ namespace Qsi.Cql.Analyzers
                         {
                             var targetRow = new QsiDataRow(target.DeleteRows.ColumnCount);
 
-                            foreach (var pivot in target.ColumnPivots)
-                                targetRow.Items[pivot.TargetOrder] = row.Items[pivot.TargetOrder];
+                            foreach (var pivot in target.DataPivots)
+                                targetRow.Items[pivot.DestinationOrder] = row.Items[pivot.DestinationOrder];
 
                             target.DeleteRows.Add(targetRow);
 
@@ -222,12 +222,12 @@ namespace Qsi.Cql.Analyzers
                         var beforeRow = new QsiDataRow(target.UpdateBeforeRows.ColumnCount);
                         var afterRow = new QsiDataRow(target.UpdateAfterRows.ColumnCount);
 
-                        foreach (var pivot in target.ColumnPivots)
+                        foreach (var pivot in target.DataPivots)
                         {
-                            var value = row.Items[pivot.TargetOrder];
+                            var value = row.Items[pivot.DestinationOrder];
 
-                            beforeRow.Items[pivot.TargetOrder] = value;
-                            ref var afterValue = ref afterRow.Items[pivot.TargetOrder];
+                            beforeRow.Items[pivot.DestinationOrder] = value;
+                            ref var afterValue = ref afterRow.Items[pivot.DestinationOrder];
 
                             if (value.Type == QsiDataType.Null)
                             {
@@ -235,9 +235,9 @@ namespace Qsi.Cql.Analyzers
                                 continue;
                             }
 
-                            if (pivot.DeclaredColumn != null)
+                            if (pivot.DeclaredColumnTarget != null)
                             {
-                                var plan = columnPlans[pivot.DeclaredOrder];
+                                var plan = columnPlans[pivot.DeclaredColumnTarget.DeclaredOrder];
 
                                 if (plan.Selectors.Count == 0)
                                 {
