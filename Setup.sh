@@ -73,7 +73,7 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
 
 # Windows
 elif [ "$OSTYPE" -eq "cygwin" ] || [ "$OSTYPE" -eq "msys" ] || [ "$OSTYPE" -eq "win32" ]; then
-    ./setup.ps1 $@
+    ./Setup.ps1 $@
     exit 0
 
 # Unknown
@@ -82,4 +82,4 @@ else
 fi
 
 echo "[QSI] Redirect to pwsh"
-pwsh ./setup.ps1 $@
+pwsh ./Setup.ps1 $@

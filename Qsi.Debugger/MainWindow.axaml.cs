@@ -133,7 +133,7 @@ namespace Qsi.Debugger
             if (_vendor != null)
             {
                 var vendorRepositoryProvider = (VendorRepositoryProvider)_vendor.Engine.RepositoryProvider;
-                vendorRepositoryProvider.DataTableRequested -= VendorRepositoryProviderOnDataTableRequested;
+                vendorRepositoryProvider.DataReaderRequested -= VendorRepositoryProviderOnDataReaderRequested;
             }
 
             if (_vendors.TryGetValue(((string)_cbLanguages.SelectedItem)!, out Lazy<VendorDebugger> vendor))
@@ -141,7 +141,7 @@ namespace Qsi.Debugger
                 _vendor = vendor.Value;
 
                 var vendorRepositoryProvider = (VendorRepositoryProvider)_vendor.Engine.RepositoryProvider;
-                vendorRepositoryProvider.DataTableRequested += VendorRepositoryProviderOnDataTableRequested;
+                vendorRepositoryProvider.DataReaderRequested += VendorRepositoryProviderOnDataReaderRequested;
 
                 Update();
             }
@@ -152,7 +152,7 @@ namespace Qsi.Debugger
             }
         }
 
-        private void VendorRepositoryProviderOnDataTableRequested(object sender, DataTableRequestEventArgs e)
+        private void VendorRepositoryProviderOnDataReaderRequested(object sender, DataTableRequestEventArgs e)
         {
             var builder = new StringBuilder();
 

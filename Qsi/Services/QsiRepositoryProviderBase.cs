@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Data;
+using System.Threading;
 using System.Threading.Tasks;
 using Qsi.Data;
 using Qsi.Data.Object;
@@ -20,6 +21,8 @@ namespace Qsi.Services
         protected abstract QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier);
 
         protected abstract Task<QsiDataTable> GetDataTable(QsiScript script, QsiParameter[] parameters, CancellationToken cancellationToken);
+
+        protected abstract Task<IDataReader> GetDataReaderAsync(QsiScript script, QsiParameter[] parameters, CancellationToken cancellationToken);
 
         #region IQsiRepositoryProvider
         QsiTableStructure IQsiRepositoryProvider.LookupTable(QsiQualifiedIdentifier identifier)
@@ -68,6 +71,11 @@ namespace Qsi.Services
         Task<QsiDataTable> IQsiRepositoryProvider.GetDataTable(QsiScript script, QsiParameter[] parameters, CancellationToken cancellationToken)
         {
             return GetDataTable(script, parameters, cancellationToken);
+        }
+
+        Task<IDataReader> IQsiRepositoryProvider.GetDataReaderAsync(QsiScript script, QsiParameter[] parameters, CancellationToken cancellationToken)
+        {
+            return GetDataReaderAsync(script, parameters, cancellationToken);
         }
         #endregion
     }

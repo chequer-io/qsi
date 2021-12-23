@@ -1,4 +1,6 @@
-﻿using System.Threading;
+﻿using System;
+using System.Data;
+using System.Threading;
 using System.Threading.Tasks;
 using Qsi.Data;
 using Qsi.Data.Object;
@@ -17,6 +19,9 @@ namespace Qsi.Services
 
         QsiObject LookupObject(QsiQualifiedIdentifier identifier, QsiObjectType type);
 
+        [Obsolete("Use GetDataReader")]
         Task<QsiDataTable> GetDataTable(QsiScript script, QsiParameter[] parameters, CancellationToken cancellationToken);
+
+        Task<IDataReader> GetDataReaderAsync(QsiScript script, QsiParameter[] parameters, CancellationToken cancellationToken);
     }
 }

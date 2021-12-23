@@ -10,7 +10,7 @@ namespace Qsi.Analyzers.Action.Models
 
         public int ColumnCount => Table.Columns.Count;
 
-        public DataManipulationTargetColumnPivot[] ColumnPivots { get; }
+        public DataManipulationTargetDataPivot[] DataPivots { get; }
 
         public QsiDataRowCollection InsertRows => _insertRows ??= new QsiDataRowCollection(ColumnCount, _cacheProviderFactory());
 
@@ -30,7 +30,7 @@ namespace Qsi.Analyzers.Action.Models
         
         public readonly Func<IQsiDataTableCacheProvider> _cacheProviderFactory;
 
-        public DataManipulationTarget(QsiTableStructure table, DataManipulationTargetColumnPivot[] pivots, Func<IQsiDataTableCacheProvider> cacheProviderFactory)
+        public DataManipulationTarget(QsiTableStructure table, DataManipulationTargetDataPivot[] pivots, Func<IQsiDataTableCacheProvider> cacheProviderFactory)
         {
             if (table.Type != QsiTableType.Table)
                 throw new ArgumentException(nameof(table));
@@ -41,7 +41,7 @@ namespace Qsi.Analyzers.Action.Models
             _cacheProviderFactory = cacheProviderFactory;
 
             Table = table;
-            ColumnPivots = pivots;
+            DataPivots = pivots;
         }
     }
 }
