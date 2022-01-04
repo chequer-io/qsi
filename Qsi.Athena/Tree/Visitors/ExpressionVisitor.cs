@@ -467,7 +467,7 @@ namespace Qsi.Athena.Tree.Visitors
             node.Parameters.AddRange(expressionNodes);
 
             if (orderBy is not null)
-                node.OrderBy.Value = VisitOrderBy(orderBy);
+                node.OrderBy.Value = CommonVisitor.VisitOrderBy(orderBy);
 
             if (setQuantifier is not null)
                 node.SetQuantifier = VisitSetQuantifier(setQuantifier);
@@ -886,41 +886,6 @@ namespace Qsi.Athena.Tree.Visitors
         {
             return TreeHelper.CreateConstantLiteral(context.GetText());
         }
-
-        private static QsiMultipleOrderExpressionNode VisitOrderBy(OrderByContext context)
-        {
-            SortItemContext[] sortItems = context.sortItem();
-            IEnumerable<QsiOrderExpressionNode> sortItemNodes = sortItems.Select(VisitSortItem);
-
-            var node = AthenaTree.CreateWithSpan<QsiMultipleOrderExpressionNode>(context);
-            node.Orders.AddRange(sortItemNodes);
-
-            return node;
-        }
-
-        public static QsiOrderExpressionNode VisitSortItem(SortItemContext context)
-        {
-            var expression = context.expression();
-            var ordering = context.ordering;
-            var nullOrdering = context.nullOrdering;
-
-            var expressionNode = VisitExpression(expression);
-
-            var node = AthenaTree.CreateWithSpan<AthenaOrderExpressionNode>(context);
-            node.Expression.Value = expressionNode;
-
-            if (ordering is not null)
-                node.Order = ordering.Type == ASC
-                    ? QsiSortOrder.Ascending
-                    : QsiSortOrder.Descending;
-
-            if (context.HasToken(NULLS))
-                node.NullBehavior = nullOrdering.Type == FIRST
-                    ? AthenaOrderByNullBehavior.NullsFirst
-                    : AthenaOrderByNullBehavior.NullsLast;
-
-            return node;
-        }
         #endregion
 
         private static QsiLiteralExpressionNode VisitNumber(NumberContext context)
@@ -1033,7 +998,7 @@ namespace Qsi.Athena.Tree.Visitors
 
             if (context.HasToken(ORDER))
             {
-                var orderByNode = VisitOrderBy(orderBy);
+                var orderByNode = CommonVisitor.VisitOrderBy(orderBy);
                 node.Order.Value = orderByNode;
             }
 

@@ -114,7 +114,7 @@ statement
      * @notsupport Tested at 2021. 12. 20.s
      */
 //    | USE
-//        databaseName=identifier[null]                                                                                   #useDatabase
+//        databaseName=identifier[null]                                                                     #useDatabase
         
         
         
@@ -1602,10 +1602,16 @@ externalRoutineName
 
 queryNoWith:
       queryTerm
-      (ORDER BY sortItem (',' sortItem)*)?
-      (OFFSET offset=INTEGER_VALUE offsetRow=(ROW | ROWS)?)?
-      (LIMIT limit=(INTEGER_VALUE | ALL))?
+      orderBy?
+      limitOffsetTerm?
     ;
+
+limitOffsetTerm
+    : OFFSET offset=INTEGER_VALUE offsetRow=(ROW | ROWS)? LIMIT limit=(INTEGER_VALUE | ALL)
+    | OFFSET offset=INTEGER_VALUE offsetRow=(ROW | ROWS)? 
+    | LIMIT limit=(INTEGER_VALUE | ALL)
+    ;
+
 
 queryTerm
     : queryPrimary                                                             #queryTermDefault
