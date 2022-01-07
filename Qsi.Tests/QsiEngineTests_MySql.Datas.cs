@@ -10,7 +10,7 @@ public partial class QsiEngineTests_MySql
         {
             ExpectedResult = @"
 +-------------------------------------------------+
-|              sakila.actor - INSERT              |
+|          QSI_UNIT_TESTS.actor - INSERT          |
 +----------+------------+-----------+-------------+
 | actor_id | first_name | last_name | last_update |
 +----------+------------+-----------+-------------+
@@ -23,7 +23,7 @@ public partial class QsiEngineTests_MySql
         {
             ExpectedResult = @"
 +-------------------------------------------------+
-|              sakila.actor - INSERT              |
+|          QSI_UNIT_TESTS.actor - INSERT          |
 +----------+------------+-----------+-------------+
 | actor_id | first_name | last_name | last_update |
 +----------+------------+-----------+-------------+
@@ -36,7 +36,7 @@ public partial class QsiEngineTests_MySql
         {
             ExpectedResult = @"
 +-------------------------------------------------+
-|              sakila.actor - INSERT              |
+|          QSI_UNIT_TESTS.actor - INSERT          |
 +----------+------------+-----------+-------------+
 | actor_id | first_name | last_name | last_update |
 +----------+------------+-----------+-------------+
@@ -49,7 +49,7 @@ public partial class QsiEngineTests_MySql
         {
             ExpectedResult = @"
 +-------------------------------------------------+
-|          sakila.actor - UPDATE_BEFORE           |
+|      QSI_UNIT_TESTS.actor - UPDATE_BEFORE       |
 +----------+------------+-----------+-------------+
 | actor_id | first_name | last_name | last_update |
 +----------+------------+-----------+-------------+
@@ -57,7 +57,7 @@ public partial class QsiEngineTests_MySql
 +-------------------------------------------------+
 
 +-------------------------------------------------+
-|           sakila.actor - UPDATE_AFTER           |
+|       QSI_UNIT_TESTS.actor - UPDATE_AFTER       |
 +----------+------------+-----------+-------------+
 | actor_id | first_name | last_name | last_update |
 +----------+------------+-----------+-------------+
@@ -70,7 +70,7 @@ public partial class QsiEngineTests_MySql
         {
             ExpectedResult = @"
 +-------------------------------------------------+
-|          sakila.actor - UPDATE_BEFORE           |
+|      QSI_UNIT_TESTS.actor - UPDATE_BEFORE       |
 +----------+------------+-----------+-------------+
 | actor_id | first_name | last_name | last_update |
 +----------+------------+-----------+-------------+
@@ -78,7 +78,7 @@ public partial class QsiEngineTests_MySql
 +-------------------------------------------------+
 
 +-------------------------------------------------+
-|           sakila.actor - UPDATE_AFTER           |
+|       QSI_UNIT_TESTS.actor - UPDATE_AFTER       |
 +----------+------------+-----------+-------------+
 | actor_id | first_name | last_name | last_update |
 +----------+------------+-----------+-------------+
@@ -86,7 +86,7 @@ public partial class QsiEngineTests_MySql
 +-------------------------------------------------+
 
 +----------------------------------------------+
-|         sakila.city - UPDATE_BEFORE          |
+|     QSI_UNIT_TESTS.city - UPDATE_BEFORE      |
 +---------+---------+------------+-------------+
 | city_id |  city   | country_id | last_update |
 +---------+---------+------------+-------------+
@@ -94,7 +94,7 @@ public partial class QsiEngineTests_MySql
 +----------------------------------------------+
 
 +--------------------------------------------+
-|         sakila.city - UPDATE_AFTER         |
+|     QSI_UNIT_TESTS.city - UPDATE_AFTER     |
 +---------+-------+------------+-------------+
 | city_id | city  | country_id | last_update |
 +---------+-------+------------+-------------+
@@ -107,7 +107,7 @@ public partial class QsiEngineTests_MySql
         {
             ExpectedResult = @"
 +------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-|                                                                                     sakila.film - UPDATE_BEFORE                                                                                      |
+|                                                                                 QSI_UNIT_TESTS.film - UPDATE_BEFORE                                                                                  |
 +---------+------------------+-------------+--------------+-------------+----------------------+-----------------+-------------+---------+------------------+---------+------------------+-------------+
 | film_id |      title       | description | release_year | language_id | original_language_id | rental_duration | rental_rate | length  | replacement_cost | rating  | special_features | last_update |
 +---------+------------------+-------------+--------------+-------------+----------------------+-----------------+-------------+---------+------------------+---------+------------------+-------------+
@@ -115,7 +115,7 @@ public partial class QsiEngineTests_MySql
 +------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 +-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-|                                                                               sakila.film - UPDATE_AFTER                                                                                |
+|                                                                           QSI_UNIT_TESTS.film - UPDATE_AFTER                                                                            |
 +---------+-------+-------------+--------------+-------------+----------------------+-----------------+-------------+--------+------------------+--------+------------------+-------------+
 | film_id | title | description | release_year | language_id | original_language_id | rental_duration | rental_rate | length | replacement_cost | rating | special_features | last_update |
 +---------+-------+-------------+--------------+-------------+----------------------+-----------------+-------------+--------+------------------+--------+------------------+-------------+
@@ -123,20 +123,20 @@ public partial class QsiEngineTests_MySql
 +-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 +-----------------------------------------+
-|     sakila.category - UPDATE_BEFORE     |
+| QSI_UNIT_TESTS.category - UPDATE_BEFORE |
 +-------------+-------------+-------------+
 | category_id |    name     | last_update |
 +-------------+-------------+-------------+
 | unknown     | Documentary | unknown     |
 +-----------------------------------------+
 
-+-------------------------------------+
-|   sakila.category - UPDATE_AFTER    |
-+-------------+---------+-------------+
-| category_id |  name   | last_update |
-+-------------+---------+-------------+
-| unset       | CHEQUER | unset       |
-+-------------------------------------+
++----------------------------------------+
+| QSI_UNIT_TESTS.category - UPDATE_AFTER |
++--------------+----------+--------------+
+| category_id  |   name   | last_update  |
++--------------+----------+--------------+
+| unset        | CHEQUER  | unset        |
++----------------------------------------+
 "
         },
 
@@ -144,7 +144,7 @@ public partial class QsiEngineTests_MySql
         {
             ExpectedResult = @"
 +-------------------------------------------------+
-|          sakila.actor - UPDATE_BEFORE           |
+|      QSI_UNIT_TESTS.actor - UPDATE_BEFORE       |
 +----------+------------+-----------+-------------+
 | actor_id | first_name | last_name | last_update |
 +----------+------------+-----------+-------------+
@@ -171,7 +171,7 @@ public partial class QsiEngineTests_MySql
 +-------------------------------------------------+
 
 +---------------------------------------------------+
-|            sakila.actor - UPDATE_AFTER            |
+|        QSI_UNIT_TESTS.actor - UPDATE_AFTER        |
 +----------+--------------+-----------+-------------+
 | actor_id |  first_name  | last_name | last_update |
 +----------+--------------+-----------+-------------+
@@ -203,7 +203,7 @@ public partial class QsiEngineTests_MySql
         {
             ExpectedResult = @"
 +-------------------------------------------------+
-|              sakila.actor - DELETE              |
+|          QSI_UNIT_TESTS.actor - DELETE          |
 +----------+------------+-----------+-------------+
 | actor_id | first_name | last_name | last_update |
 +----------+------------+-----------+-------------+
@@ -216,7 +216,7 @@ public partial class QsiEngineTests_MySql
         {
             ExpectedResult = @"
 +-------------------------------------------------+
-|              sakila.actor - DELETE              |
+|          QSI_UNIT_TESTS.actor - DELETE          |
 +----------+------------+-----------+-------------+
 | actor_id | first_name | last_name | last_update |
 +----------+------------+-----------+-------------+
@@ -243,7 +243,7 @@ public partial class QsiEngineTests_MySql
 +-------------------------------------------------+
 
 +--------------------------------------------------------------------+
-|                        sakila.city - DELETE                        |
+|                    QSI_UNIT_TESTS.city - DELETE                    |
 +---------+-----------------------+------------+---------------------+
 | city_id |         city          | country_id |     last_update     |
 +---------+-----------------------+------------+---------------------+
@@ -275,7 +275,7 @@ public partial class QsiEngineTests_MySql
         {
             ExpectedResult = @"
 +----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-|                                                                                        sakila.film - DELETE                                                                                        |
+|                                                                                    QSI_UNIT_TESTS.film - DELETE                                                                                    |
 +---------+------------------+-------------+--------------+-------------+----------------------+-----------------+-------------+--------+------------------+--------+------------------+-------------+
 | film_id |      title       | description | release_year | language_id | original_language_id | rental_duration | rental_rate | length | replacement_cost | rating | special_features | last_update |
 +---------+------------------+-------------+--------------+-------------+----------------------+-----------------+-------------+--------+------------------+--------+------------------+-------------+
@@ -283,7 +283,7 @@ public partial class QsiEngineTests_MySql
 +----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 +-----------------------------------------+
-|        sakila.category - DELETE         |
+|    QSI_UNIT_TESTS.category - DELETE     |
 +-------------+-------------+-------------+
 | category_id |    name     | last_update |
 +-------------+-------------+-------------+
@@ -296,7 +296,7 @@ public partial class QsiEngineTests_MySql
         {
             ExpectedResult = @"
 +----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-|                                                                                        sakila.film - DELETE                                                                                        |
+|                                                                                    QSI_UNIT_TESTS.film - DELETE                                                                                    |
 +---------+------------------+-------------+--------------+-------------+----------------------+-----------------+-------------+--------+------------------+--------+------------------+-------------+
 | film_id |      title       | description | release_year | language_id | original_language_id | rental_duration | rental_rate | length | replacement_cost | rating | special_features | last_update |
 +---------+------------------+-------------+--------------+-------------+----------------------+-----------------+-------------+--------+------------------+--------+------------------+-------------+
@@ -304,7 +304,7 @@ public partial class QsiEngineTests_MySql
 +----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 +-----------------------------------------+
-|        sakila.category - DELETE         |
+|    QSI_UNIT_TESTS.category - DELETE     |
 +-------------+-------------+-------------+
 | category_id |    name     | last_update |
 +-------------+-------------+-------------+
