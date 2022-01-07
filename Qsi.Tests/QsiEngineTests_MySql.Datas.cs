@@ -45,9 +45,23 @@ public partial class QsiEngineTests_MySql
 "
         },
 
-        new("UPDATE actor SET first_name = 'MORRIS', last_name = 'BABO' WHERE actor_id = 1")
+        new("INSERT INTO actor (actor_id, last_name) SELECT city_id, city FROM city LIMIT 2")
         {
             ExpectedResult = @"
++----------------------------------------------------------+
+|              QSI_UNIT_TESTS.actor - INSERT               |
++----------+------------+--------------------+-------------+
+| actor_id | first_name |     last_name      | last_update |
++----------+------------+--------------------+-------------+
+| 1        | default    | A Corua (La Corua) | default     |
+| 2        | default    | Abha               | default     |
++----------------------------------------------------------+
+"
+        },
+
+        new("UPDATE actor SET first_name = 'MORRIS', last_name = 'BABO' WHERE actor_id = 1")
+        {
+        ExpectedResult = @"
 +-------------------------------------------------+
 |      QSI_UNIT_TESTS.actor - UPDATE_BEFORE       |
 +----------+------------+-----------+-------------+

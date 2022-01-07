@@ -573,6 +573,32 @@ namespace Qsi.Analyzers.Action
             if (dataTable.Rows.ColumnCount != context.ColumnTargets.Length)
                 throw new QsiException(QsiError.DifferentColumnsCount);
 
+            // Old cache hitted
+            if (dataTable.Table.Columns.Count != context.ColumnTargets.Length)
+                throw new QsiException(QsiError.DifferentColumnsCount);
+
+            // Update source pivot
+            foreach (DataManipulationTargetDataPivot[] dataPivots in context.Targets.Select(x => x.DataPivots))
+            {
+                for (int i = 0; i < dataPivots.Length; i++)
+                {
+                    var dataPivot = dataPivots[i];
+
+                    if (dataPivot.DeclaredColumnTarget is not { } declaredColumnTarget)
+                        continue;
+
+                    var sourceColumn = dataTable.Table.Columns[declaredColumnTarget.DeclaredOrder];
+
+                    dataPivots[i] = new DataManipulationTargetDataPivot(
+                        dataPivot.DeclaredColumnTarget,
+                        dataPivot.DestinationOrder,
+                        dataPivot.DestinationColumn,
+                        declaredColumnTarget.DeclaredOrder,
+                        sourceColumn
+                    );
+                }
+            }
+
             foreach (var row in dataTable.Rows)
             {
                 PopulateInsertRow(context, pivot => row.Items[pivot.SourceOrder]);
