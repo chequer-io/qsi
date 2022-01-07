@@ -148,12 +148,42 @@ namespace Qsi.Analyzers.Action
         {
             IQsiTableExpressionNode[] subqueries = CollectSubqueries(expression).ToArray();
 
-            if (subqueries.Length == 0)
+            try
             {
-                var value = context.Engine.TreeDeparser.Deparse(expression, context.Script);
-                return new QsiDataValue(value, QsiDataType.Raw);
+                if (subqueries.Length > 0)
+                    return ResolveSubqueryColumnValue(context, expression, subqueries);
+            }
+            catch
+            {
+                // The subquery does not yet support outer data source access.
+                // So when an error occurs, it ignores the exception.
             }
 
+            var value = context.Engine.TreeDeparser.Deparse(expression, context.Script);
+            return new QsiDataValue(value, QsiDataType.Raw);
+
+            IEnumerable<IQsiTableExpressionNode> CollectSubqueries(IQsiExpressionNode node)
+            {
+                var queue = new Queue<IQsiTreeNode>();
+                queue.Enqueue(node);
+
+                while (queue.TryDequeue(out var item))
+                {
+                    if (item is IQsiTableExpressionNode tNode)
+                    {
+                        yield return tNode;
+                    }
+                    else
+                    {
+                        foreach (var child in item.Children ?? Enumerable.Empty<IQsiTreeNode>())
+                            queue.Enqueue(child);
+                    }
+                }
+            }
+        }
+
+        private QsiDataValue ResolveSubqueryColumnValue(IAnalyzerContext context, IQsiExpressionNode expression, IEnumerable<IQsiTableExpressionNode> subqueries)
+        {
             // ex) PostgreSql
             if (expression.UserData?.GetData(QsiNodeProperties.Span) is not { } span)
                 throw TreeHelper.NotSupportedFeature("subqueries value");
@@ -183,25 +213,6 @@ namespace Qsi.Analyzers.Action
             }
 
             return new QsiDataValue(builder.ToString(), QsiDataType.Raw);
-
-            IEnumerable<IQsiTableExpressionNode> CollectSubqueries(IQsiExpressionNode node)
-            {
-                var queue = new Queue<IQsiTreeNode>();
-                queue.Enqueue(node);
-
-                while (queue.TryDequeue(out var item))
-                {
-                    if (item is IQsiTableExpressionNode tNode)
-                    {
-                        yield return tNode;
-                    }
-                    else
-                    {
-                        foreach (var child in item.Children ?? Enumerable.Empty<IQsiTreeNode>())
-                            queue.Enqueue(child);
-                    }
-                }
-            }
         }
 
         private string ComputeSubqueryValue(IAnalyzerContext context, IQsiTableExpressionNode node)
@@ -572,6 +583,32 @@ namespace Qsi.Analyzers.Action
 
             if (dataTable.Rows.ColumnCount != context.ColumnTargets.Length)
                 throw new QsiException(QsiError.DifferentColumnsCount);
+
+            // Old cache hitted
+            if (dataTable.Table.Columns.Count != context.ColumnTargets.Length)
+                throw new QsiException(QsiError.DifferentColumnsCount);
+
+            // Update source pivot
+            foreach (DataManipulationTargetDataPivot[] dataPivots in context.Targets.Select(x => x.DataPivots))
+            {
+                for (int i = 0; i < dataPivots.Length; i++)
+                {
+                    var dataPivot = dataPivots[i];
+
+                    if (dataPivot.DeclaredColumnTarget is not { } declaredColumnTarget)
+                        continue;
+
+                    var sourceColumn = dataTable.Table.Columns[declaredColumnTarget.DeclaredOrder];
+
+                    dataPivots[i] = new DataManipulationTargetDataPivot(
+                        dataPivot.DeclaredColumnTarget,
+                        dataPivot.DestinationOrder,
+                        dataPivot.DestinationColumn,
+                        declaredColumnTarget.DeclaredOrder,
+                        sourceColumn
+                    );
+                }
+            }
 
             foreach (var row in dataTable.Rows)
             {
