@@ -10,7 +10,6 @@ namespace Qsi.Athena.Tree.Visitors
     {
         public static IQsiTreeNode VisitCreateDatabase(CreateDatabaseContext context)
         {
-            // TODO: Question: How to create node of CreateDatabase?, Other vendors(Mysql, Trino, Oracle) isn't support?
             throw TreeHelper.NotSupportedTree(context);
         }
 

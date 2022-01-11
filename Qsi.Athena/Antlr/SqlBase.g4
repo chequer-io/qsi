@@ -1487,7 +1487,7 @@ statement
     | UNLOAD querySpecification 
         TO string WITH properties                                                                                       #unload
     ;
-
+    
 query
     : with? queryNoWith
     ;
@@ -1600,30 +1600,43 @@ externalRoutineName
     : identifier[null]
     ;
 
-queryNoWith:
-      queryTerm
-      orderBy?
-      limitOffsetTerm?
+queryNoWith
+    : queryTerm
+        orderBy?
+        limitOffsetTerm?
     ;
 
 limitOffsetTerm
-    : OFFSET offset=INTEGER_VALUE offsetRow=(ROW | ROWS)? LIMIT limit=(INTEGER_VALUE | ALL)
-    | OFFSET offset=INTEGER_VALUE offsetRow=(ROW | ROWS)? 
-    | LIMIT limit=(INTEGER_VALUE | ALL)
+    : offsetTerm limitTerm
+    | offsetTerm 
+    | limitTerm
     ;
 
+offsetTerm
+    : OFFSET rowCountTerm ROW?
+    | OFFSET rowCountTerm ROWS
+    ;
+    
+limitTerm
+    : LIMIT rowCountTerm
+    | LIMIT ALL
+    ;
+
+rowCountTerm
+    : INTEGER_VALUE
+    | parameterExpression
+    ;
 
 queryTerm
-    : queryPrimary                                                             #queryTermDefault
-    | left=queryTerm operator=INTERSECT setQuantifier? right=queryTerm         #setOperation
-    | left=queryTerm operator=(UNION | EXCEPT) setQuantifier? right=queryTerm  #setOperation
+    : queryPrimary                                                                                                      #queryTermDefault
+    | left=queryTerm operator=(UNION | EXCEPT | INTERSECT) setQuantifier? right=queryTerm                               #setOperation
     ;
 
 queryPrimary
-    : querySpecification                   #queryPrimaryDefault
-    | TABLE qualifiedName                  #table
-    | VALUES expression (',' expression)*  #inlineTable
-    | '(' queryNoWith  ')'                 #subquery
+    : querySpecification                                                                                                #queryPrimaryDefault
+    | TABLE qualifiedName                                                                                               #table
+    | VALUES expression (',' expression)*                                                                               #inlineTable
+    | '(' queryNoWith  ')'                                                                                              #subquery
     ;
 
 sortItem
@@ -1631,16 +1644,32 @@ sortItem
     ;
 
 querySpecification
-    : SELECT setQuantifier? selectItem (',' selectItem)*
-      (FROM relation (',' relation)*)?
-      (WHERE where=booleanExpression)?
-      (GROUP BY groupBy)?
-      (HAVING having=booleanExpression)?
+    : SELECT
+        setQuantifier?
+        selectItem (',' selectItem)*
+        fromTerm?
+        whereTerm?
+        groupByHavingTerm?
+    ;
+    
+fromTerm
+    : FROM relation (',' relation)*
+    ;
+    
+whereTerm
+    : WHERE where=booleanExpression
     ;
 
-groupBy
-    : setQuantifier? groupingElement (',' groupingElement)*
+groupByHavingTerm
+    : GROUP BY setQuantifier? groupingElement (',' groupingElement)*
+        HAVING having=booleanExpression
+    | GROUP BY setQuantifier? groupingElement (',' groupingElement)*
+    | HAVING having=booleanExpression
     ;
+
+//groupBy
+//    : setQuantifier? groupingElement (',' groupingElement)*
+//    ;
 
 groupingElement
     : groupingSet                                            #singleGroupingSet
@@ -1650,8 +1679,8 @@ groupingElement
     ;
 
 groupingSet
-    : '(' (expression (',' expression)*)? ')'
-    | expression
+    : '(' (expression (',' expression)*)? ')'                #multipleExpressionGroupingSet
+    | expression                                             #singleExpressionGroupingSet
     ;
 
 namedQuery
@@ -1671,9 +1700,10 @@ selectItem
 
 relation
     : left=relation
-      ( CROSS JOIN right=sampledRelation
-      | joinType JOIN rightRelation=relation joinCriteria
-      | NATURAL joinType JOIN right=sampledRelation
+      (
+        CROSS JOIN right=sampledRelation
+        | joinType JOIN rightRelation=relation joinCriteria
+        | NATURAL joinType JOIN right=sampledRelation
       )                                           #joinRelation
     | sampledRelation                             #relationDefault
     ;

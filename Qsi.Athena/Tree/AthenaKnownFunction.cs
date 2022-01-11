@@ -2,6 +2,8 @@ namespace Qsi.Athena.Tree
 {
     public static class AthenaKnownFunction
     {
+        public const string GroupingSets = "GROUPING_SETS";
+        
         public const string Between = "BETWEEN";
         public const string NotBetween = "NOT_BETWEEN";
         public const string In = "IN";

@@ -467,7 +467,7 @@ namespace Qsi.Athena.Tree.Visitors
             node.Parameters.AddRange(expressionNodes);
 
             if (orderBy is not null)
-                node.OrderBy.Value = CommonVisitor.VisitOrderBy(orderBy);
+                node.OrderBy.Value = VisitOrderBy(orderBy);
 
             if (setQuantifier is not null)
                 node.SetQuantifier = VisitSetQuantifier(setQuantifier);
@@ -758,6 +758,7 @@ namespace Qsi.Athena.Tree.Visitors
         #endregion
 
         #region Literals
+        
         #region String
         private static QsiExpressionNode VisitString(StringContext context)
         {
@@ -796,98 +797,7 @@ namespace Qsi.Athena.Tree.Visitors
         }
         #endregion
 
-        private static AthenaNullTreatment VisitNullTreatment(NullTreatmentContext context)
-        {
-            return context.HasToken(IGNORE)
-                ? AthenaNullTreatment.IgnoreNulls
-                : AthenaNullTreatment.RespectNulls;
-        }
-
-        #region TimeZoneSpecifier
-        private static QsiExpressionNode VisitTimeZoneSpecifier(TimeZoneSpecifierContext context)
-        {
-            return context switch
-            {
-                TimeZoneIntervalContext timeZoneInterval => VisitTimeZoneInterval(timeZoneInterval),
-                TimeZoneStringContext timeZoneString => VisitTimeZoneString(timeZoneString),
-                _ => throw TreeHelper.NotSupportedTree(context)
-            };
-        }
-
-        private static QsiExpressionNode VisitTimeZoneInterval(TimeZoneIntervalContext context)
-        {
-            return VisitInterval(context.interval());
-        }
-
-        private static QsiExpressionNode VisitTimeZoneString(TimeZoneStringContext context)
-        {
-            return VisitString(context.@string());
-        }
-        #endregion
-
-        #region Comparison Literals
-        private static string VisitComparisonOperator(ComparisonOperatorContext context)
-        {
-            return context.GetText();
-        }
-
-        private static string VisitComparisonQuantifier(ComparisonQuantifierContext context)
-        {
-            return context.GetText();
-        }
-        #endregion
-
-        private static QsiLiteralExpressionNode VisitBooleanValue(BooleanValueContext context)
-        {
-            var node = AthenaTree.CreateWithSpan<QsiLiteralExpressionNode>(context);
-            node.Type = QsiDataType.Boolean;
-            node.Value = context.HasToken(TRUE);
-
-            return node;
-        }
-
-        private static QsiExpressionNode VisitInterval(IntervalContext context)
-        {
-            var sign = context.sign;
-            var time = context.@string();
-            var from = context.from;
-            var to = context.to;
-
-            var timeNode = VisitString(time);
-
-            var node = AthenaTree.CreateWithSpan<AthenaIntervalExpressionNode>(context);
-
-            if (sign is not null)
-                timeNode = TreeHelper.CreateUnary(sign.Text, timeNode);
-
-            node.Time.Value = timeNode;
-
-            node.From = VisitIntervalField(from);
-
-            if (context.HasToken(TO))
-                node.To = VisitIntervalField(to);
-
-            return node;
-        }
-
-        private static AthenaIntervalField VisitIntervalField(IntervalFieldContext context)
-        {
-            if (context.HasToken(YEAR)) return AthenaIntervalField.Year;
-            if (context.HasToken(MONTH)) return AthenaIntervalField.Month;
-            if (context.HasToken(DAY)) return AthenaIntervalField.Day;
-            if (context.HasToken(HOUR)) return AthenaIntervalField.Hour;
-            if (context.HasToken(MINUTE)) return AthenaIntervalField.Minute;
-            if (context.HasToken(SECOND)) return AthenaIntervalField.Second;
-
-            throw TreeHelper.NotSupportedFeature($"Interval Field '{context.GetText()}'");
-        }
-
-        private static QsiExpressionNode VisitNormalForm(NormalFormContext context)
-        {
-            return TreeHelper.CreateConstantLiteral(context.GetText());
-        }
-        #endregion
-
+        #region Number
         private static QsiLiteralExpressionNode VisitNumber(NumberContext context)
         {
             return context switch
@@ -898,7 +808,6 @@ namespace Qsi.Athena.Tree.Visitors
                 _ => throw TreeHelper.NotSupportedTree(context),
             };
         }
-
         private static QsiLiteralExpressionNode VisitDecimalLiteral(DecimalLiteralContext context)
         {
             var text = context.GetText();
@@ -958,7 +867,110 @@ namespace Qsi.Athena.Tree.Visitors
 
             return node;
         }
+        #endregion
 
+        #region Boolean
+        private static QsiLiteralExpressionNode VisitBooleanValue(BooleanValueContext context)
+        {
+            var node = AthenaTree.CreateWithSpan<QsiLiteralExpressionNode>(context);
+            node.Type = QsiDataType.Boolean;
+            node.Value = context.HasToken(TRUE);
+
+            return node;
+        }
+        #endregion
+
+        #region NullTreatment
+        private static AthenaNullTreatment VisitNullTreatment(NullTreatmentContext context)
+        {
+            return context.HasToken(IGNORE)
+                ? AthenaNullTreatment.IgnoreNulls
+                : AthenaNullTreatment.RespectNulls;
+        }
+        #endregion
+
+        #region TimeZoneSpecifier
+        private static QsiExpressionNode VisitTimeZoneSpecifier(TimeZoneSpecifierContext context)
+        {
+            return context switch
+            {
+                TimeZoneIntervalContext timeZoneInterval => VisitTimeZoneInterval(timeZoneInterval),
+                TimeZoneStringContext timeZoneString => VisitTimeZoneString(timeZoneString),
+                _ => throw TreeHelper.NotSupportedTree(context)
+            };
+        }
+
+        private static QsiExpressionNode VisitTimeZoneInterval(TimeZoneIntervalContext context)
+        {
+            return VisitInterval(context.interval());
+        }
+
+        private static QsiExpressionNode VisitTimeZoneString(TimeZoneStringContext context)
+        {
+            return VisitString(context.@string());
+        }
+        #endregion
+
+        #region Comparison Literals
+        private static string VisitComparisonOperator(ComparisonOperatorContext context)
+        {
+            return context.GetText();
+        }
+
+        private static string VisitComparisonQuantifier(ComparisonQuantifierContext context)
+        {
+            return context.GetText();
+        }
+        #endregion
+
+        #region Interval
+        private static QsiExpressionNode VisitInterval(IntervalContext context)
+        {
+            var sign = context.sign;
+            var time = context.@string();
+            var from = context.from;
+            var to = context.to;
+
+            var timeNode = VisitString(time);
+
+            var node = AthenaTree.CreateWithSpan<AthenaIntervalExpressionNode>(context);
+
+            if (sign is not null)
+                timeNode = TreeHelper.CreateUnary(sign.Text, timeNode);
+
+            node.Time.Value = timeNode;
+
+            node.From = VisitIntervalField(@from);
+
+            if (context.HasToken(TO))
+                node.To = VisitIntervalField(to);
+
+            return node;
+        }
+
+        private static AthenaIntervalField VisitIntervalField(IntervalFieldContext context)
+        {
+            if (context.HasToken(YEAR)) return AthenaIntervalField.Year;
+            if (context.HasToken(MONTH)) return AthenaIntervalField.Month;
+            if (context.HasToken(DAY)) return AthenaIntervalField.Day;
+            if (context.HasToken(HOUR)) return AthenaIntervalField.Hour;
+            if (context.HasToken(MINUTE)) return AthenaIntervalField.Minute;
+            if (context.HasToken(SECOND)) return AthenaIntervalField.Second;
+
+            throw TreeHelper.NotSupportedFeature($"Interval Field '{context.GetText()}'");
+        }
+        #endregion
+
+        #region NormalForm
+        private static QsiExpressionNode VisitNormalForm(NormalFormContext context)
+        {
+            return TreeHelper.CreateConstantLiteral(context.GetText());
+        }
+        #endregion
+
+        #endregion
+
+        #region Terms
         private static QsiExpressionNode VisitFilter(FilterContext context)
         {
             var booleanExpression = context.booleanExpression();
@@ -982,7 +994,7 @@ namespace Qsi.Athena.Tree.Visitors
 
             return node;
         }
-        
+
         private static AthenaWindowItemNode VisitWindowSpecification(WindowSpecificationContext context)
         {
             var node = AthenaTree.CreateWithSpan<AthenaWindowItemNode>(context);
@@ -998,7 +1010,7 @@ namespace Qsi.Athena.Tree.Visitors
 
             if (context.HasToken(ORDER))
             {
-                var orderByNode = CommonVisitor.VisitOrderBy(orderBy);
+                var orderByNode = VisitOrderBy(orderBy);
                 node.Order.Value = orderByNode;
             }
 
@@ -1013,7 +1025,7 @@ namespace Qsi.Athena.Tree.Visitors
 
             return node;
         }
-
+        
         private static QsiMultipleExpressionNode VisitPartitionBy(PartitionByContext context)
         {
             IList<ExpressionContext> partitions = context._partition;
@@ -1025,6 +1037,8 @@ namespace Qsi.Athena.Tree.Visitors
             
             return node;
         }
+        #endregion
+
 
         private static QsiSwitchCaseExpressionNode VisitWhenClause(WhenClauseContext context)
         {
@@ -1034,16 +1048,8 @@ namespace Qsi.Athena.Tree.Visitors
 
             return node;
         }
-        
-        private static AthenaSetQuantifier VisitSetQuantifier(SetQuantifierContext context)
-        {
-            if (context.HasToken(DISTINCT))
-                return AthenaSetQuantifier.Distinct;
 
-            return AthenaSetQuantifier.All;
-        }
-
-        private static QsiExpressionNode VisitParameterExpression(ParameterExpressionContext context)
+        internal static QsiExpressionNode VisitParameterExpression(ParameterExpressionContext context)
         {
             var node = AthenaTree.CreateWithSpan<QsiBindParameterExpressionNode>(context);
 
@@ -1061,6 +1067,218 @@ namespace Qsi.Athena.Tree.Visitors
             node.Table.Value = TableVisitor.VisitQuery(context);
 
             return node;
+        }
+
+        internal static QsiMultipleOrderExpressionNode VisitOrderBy(OrderByContext context)
+        {
+            SortItemContext[] sortItems = context.sortItem();
+            IEnumerable<QsiOrderExpressionNode> sortItemNodes = sortItems.Select(VisitSortItem);
+
+            var node = AthenaTree.CreateWithSpan<QsiMultipleOrderExpressionNode>(context);
+            node.Orders.AddRange(sortItemNodes);
+
+            return node;
+        }
+
+        internal static QsiOrderExpressionNode VisitSortItem(SortItemContext context)
+        {
+            var expression = context.expression();
+            var ordering = context.ordering;
+            var nullOrdering = context.nullOrdering;
+
+            var expressionNode = VisitExpression(expression);
+
+            var node = AthenaTree.CreateWithSpan<AthenaOrderExpressionNode>(context);
+            node.Expression.Value = expressionNode;
+
+            if (ordering is not null)
+                node.Order = ordering.Type == ASC
+                    ? QsiSortOrder.Ascending
+                    : QsiSortOrder.Descending;
+
+            if (context.HasToken(NULLS))
+                node.NullBehavior = nullOrdering.Type == FIRST
+                    ? AthenaOrderByNullBehavior.NullsFirst
+                    : AthenaOrderByNullBehavior.NullsLast;
+
+            return node;
+        }
+
+        internal static AthenaSetQuantifier VisitSetQuantifier(SetQuantifierContext context)
+        {
+            return context.HasToken(ALL)
+                ? AthenaSetQuantifier.All
+                : AthenaSetQuantifier.Distinct;
+        }
+
+        internal static QsiWhereExpressionNode VisitWhereTerm(WhereTermContext context)
+        {
+            var where = context.@where;
+            var whereNode = ExpressionVisitor.VisitBooleanExpression(@where);
+
+            var node = AthenaTree.CreateWithSpan<QsiWhereExpressionNode>(context);
+            node.Expression.Value = whereNode;
+
+            return node;
+        }
+
+        internal static AthenaGroupingExpressionNode VisitGroupByHavingTerm(GroupByHavingTermContext context)
+        {
+            var setQuantifier = context.setQuantifier();
+            GroupingElementContext[] groupingElements = context.groupingElement();
+            var having = context.having;
+
+            var node = AthenaTree.CreateWithSpan<AthenaGroupingExpressionNode>(context);
+
+            if (setQuantifier is not null)
+            {
+                var setQuantifierEnum = ExpressionVisitor.VisitSetQuantifier(setQuantifier);
+                node.SetQuantifier = setQuantifierEnum;
+            }
+
+            IEnumerable<QsiExpressionNode> groupingElementNodes = groupingElements.Select(VisitGroupingElement);
+            node.Items.AddRange(groupingElementNodes);
+
+            if (having is not null)
+                node.Having.Value = ExpressionVisitor.VisitBooleanExpression(having);
+
+            return node;
+        }
+
+        internal static QsiExpressionNode VisitGroupingElement(GroupingElementContext context)
+        {
+            return context switch
+            {
+                SingleGroupingSetContext singleGroupingSet => VisitSingleGroupingSet(singleGroupingSet),
+                RollupContext rollup => VisitRollup(rollup),
+                CubeContext cube => VisitCube(cube),
+                MultipleGroupingSetsContext multipleGroupingSets => VisitMultipleGroupingSets(multipleGroupingSets),
+                _ => throw TreeHelper.NotSupportedTree(context)
+            };
+        }
+
+        internal static QsiExpressionNode VisitSingleGroupingSet(SingleGroupingSetContext context)
+        {
+            return VisitGroupingSet(context.groupingSet());
+        }
+
+        internal static QsiExpressionNode VisitRollup(RollupContext context)
+        {
+            ExpressionContext[] expressions = context.expression();
+            
+            IEnumerable<QsiExpressionNode> expressionNodes = expressions.Select(ExpressionVisitor.VisitExpression);
+            
+            var node = AthenaTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction("ROLLUP");
+            node.Parameters.AddRange(expressionNodes);
+
+            return node;
+        }
+
+        internal static QsiExpressionNode VisitCube(CubeContext context)
+        {
+            ExpressionContext[] expressions = context.expression();
+            
+            IEnumerable<QsiExpressionNode> expressionNodes = expressions.Select(ExpressionVisitor.VisitExpression);
+            
+            var node = AthenaTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction("CUBE");
+            node.Parameters.AddRange(expressionNodes);
+
+            return node;
+        }
+
+        internal static QsiExpressionNode VisitMultipleGroupingSets(MultipleGroupingSetsContext context)
+        {
+            GroupingSetContext[] groupSets = context.groupingSet();
+            IEnumerable<QsiExpressionNode> groupingSetNodes = groupSets.Select(VisitGroupingSet);
+            
+            var node = AthenaTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+            node.Member.Value = TreeHelper.CreateFunction(AthenaKnownFunction.GroupingSets);
+            node.Parameters.AddRange(groupingSetNodes);
+
+            return node;
+        }
+
+        internal static QsiExpressionNode VisitGroupingSet(GroupingSetContext context)
+        {
+            return context switch
+            {
+                MultipleExpressionGroupingSetContext multipleExpressionGroupingSet => VisitMultipleExpressionGroupingSet(multipleExpressionGroupingSet),
+                SingleExpressionGroupingSetContext signSingleExpressionGroupingSet => VisitSingleExpressionGroupingSet(signSingleExpressionGroupingSet),
+                _ => throw TreeHelper.NotSupportedTree(context),
+            };
+        }
+
+        internal static QsiExpressionNode VisitMultipleExpressionGroupingSet(MultipleExpressionGroupingSetContext context)
+        {
+            ExpressionContext[] expressions = context.expression();
+            IEnumerable<QsiExpressionNode> expressionNodes = expressions.Select(ExpressionVisitor.VisitExpression);
+            
+            var node = AthenaTree.CreateWithSpan<QsiMultipleExpressionNode>(context);
+            node.Elements.AddRange(expressionNodes);
+
+            return node;
+        }
+
+        internal static QsiExpressionNode VisitSingleExpressionGroupingSet(SingleExpressionGroupingSetContext context)
+        {
+            return ExpressionVisitor.VisitExpression(context.expression());
+        }
+
+        internal static QsiLimitExpressionNode VisitLimitOffsetTerm(LimitOffsetTermContext context)
+        {
+            var offsetTerm = context.offsetTerm();
+            var limitTerm = context.limitTerm();
+
+            var node = AthenaTree.CreateWithSpan<QsiLimitExpressionNode>(context);
+
+            if (offsetTerm is not null)
+            {
+                var offsetNode = VisitOffsetTerm(offsetTerm);
+
+                node.Offset.Value = offsetNode;
+            }
+
+            if (limitTerm is not null)
+            {
+                var limitNode = VisitLimitTerm(limitTerm);
+
+                if (limitNode is not null)
+                {
+                    node.Limit.Value = limitNode;
+                }
+            }
+
+            return node;
+        }
+
+        internal static QsiExpressionNode VisitOffsetTerm(OffsetTermContext context)
+        {
+            return VisitRowCountTerm(context.rowCountTerm());
+        }
+
+        internal static QsiExpressionNode VisitLimitTerm(LimitTermContext context)
+        {
+            return context.HasToken(ALL)
+                ? null
+                : VisitRowCountTerm(context.rowCountTerm());
+        }
+
+        internal static QsiExpressionNode VisitRowCountTerm(RowCountTermContext context)
+        {
+            if (context.HasToken(INTEGER_VALUE))
+            {
+                var limitText = context.INTEGER_VALUE().GetText();
+
+                return new QsiLiteralExpressionNode
+                {
+                    Type = QsiDataType.Numeric,
+                    Value = long.Parse(limitText),
+                };
+            }
+
+            return ExpressionVisitor.VisitParameterExpression(context.parameterExpression());
         }
     }
 }
