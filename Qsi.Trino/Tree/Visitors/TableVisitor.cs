@@ -567,6 +567,10 @@ namespace Qsi.Trino.Tree.Visitors
                     })
                 );
             }
+            else
+            {
+                node.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+            }
 
             node.Source.Value = VisitQuery(context.query());
 
