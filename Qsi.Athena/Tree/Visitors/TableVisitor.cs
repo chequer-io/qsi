@@ -541,7 +541,11 @@ namespace Qsi.Athena.Tree.Visitors
             var node = AthenaTree.CreateWithSpan<QsiDerivedTableNode>(context);
             node.Alias.Value = aliasNode;
 
-            if (columnAliases is not null)
+            if (columnAliases is null)
+            {
+                node.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+            }
+            else
             {
                 IdentifierContext[] identifiers = columnAliases.identifier();
 
