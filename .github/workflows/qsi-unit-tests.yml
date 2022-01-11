@@ -3,6 +3,9 @@ name: QSI Unit Tests
 on:
   push:
     branches: [alpha, master]
+    paths:
+      - 'Qsi*/**'
+      - '!Qsi.Debugger/**'
   pull_request:
     branches: [alpha, master]
 
@@ -22,7 +25,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Set up MySQL
+    - name: Setup MySQL
       run: sudo /etc/init.d/mysql start
 
     - name: Setup .NET 6
