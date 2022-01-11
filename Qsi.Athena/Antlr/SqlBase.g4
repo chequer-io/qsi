@@ -214,9 +214,45 @@ statement
                 (WITH SERDEPROPERTIES serDeProperties=stringProperties)? 
         )?
         (LOCATION location=string)?
+        (TBLPROPERTIES tblProperties=stringProperties)?                                                                 #createTable
+        
+    /**
+      * Create Table As
+      *
+      * @athena https://docs.aws.amazon.com/athena/latest/ug/create-table.html
+      * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-CreateTable
+      */
+    | CREATE
+        (TEMPORARY)?
+        (EXTERNAL)?
+        TABLE
+        (IF NOT EXISTS)?
+        tableName=qualifiedName
+        ( '(' columnDefinition (',' columnDefinition)* ')' )?
+        (COMMENT tableComment=string)?
+        (PARTITIONED BY '(' columnDefinition (',' columnDefinition)* ')' )?
+        (
+            CLUSTERED BY '(' identifier[null] (',' identifier[null])* ')'
+            (SORTED BY (columnName=identifier[null] (ASC | DESC)? (',' columnName=identifier[null] (ASC | DESC)? )* ) )?
+            INTO numBuckets=number BUCKETS
+        )?
+        (
+            SKEWED BY '(' columnName=identifier[null] (',' columnName=identifier[null])* ')'
+            ON '(' '(' columnValue=string (',' columnValue=string)* ')' ( ',' '(' columnValue=string (',' columnValue=string)* ')' )*  ')'
+            (STORED AS DIRECTORIES)?
+        )?
+        (
+            ROW FORMAT rowFormat
+            | STORED AS fileFormat
+            | ROW FORMAT rowFormat STORED AS fileFormat
+            | STORED BY storageHandlerClassName=string
+                (WITH SERDEPROPERTIES serDeProperties=stringProperties)? 
+        )?
+        (LOCATION location=string)?
         (TBLPROPERTIES tblProperties=stringProperties)?
         AS query
-        (WITH NO? DATA)?                                                                                                #createTable
+        (WITH NO? DATA)?                                                                                                #createTableAs
+        
        
     /**
      * Create TABLE LIKE
@@ -239,7 +275,7 @@ statement
      * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-DropTable
      */
     | DROP TABLE
-        (IF EXISTS)?
+        (IF NOT EXISTS)?
         tableName=qualifiedName
         (PURGE)?                                                                                                        #dropTable
 
@@ -567,7 +603,7 @@ statement
         )?
         (COMMENT viewComment=string)?
         (TBLPROPERTIES tblProperties=stringProperties)?
-        AS SELECT query                                                                                                 #createView
+        AS query                                                                                                        #createView
     
     /**
      * Drop View
@@ -1484,8 +1520,8 @@ statement
      *
      * @athena https://docs.aws.amazon.com/athena/latest/ug/unload.html
      */
-    | UNLOAD querySpecification 
-        TO string WITH properties                                                                                       #unload
+    | UNLOAD query 
+        TO location=string WITH properties                                                                              #unload
     ;
     
 query
@@ -1502,7 +1538,7 @@ with
 //    ;
 
 columnDefinition
-    : identifier[null] dataType (COMMENT string)?
+    : identifier[null] dataType (COMMENT comment=string)?
     ;
 
 //likeClause

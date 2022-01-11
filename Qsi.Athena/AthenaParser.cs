@@ -31,6 +31,9 @@ namespace Qsi.Athena
                 case CreateTableContext createTable:
                     return ActionVisitor.VisitCreateTable(createTable);
 
+                case CreateTableAsContext createTableAs:
+                    return ActionVisitor.VisitCreateTableAs(createTableAs);
+
                 case CreateTableLikeContext createTableLike:
                     return ActionVisitor.VisitCreateTableLike(createTableLike);
 
