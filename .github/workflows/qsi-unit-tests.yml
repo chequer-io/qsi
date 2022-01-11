@@ -1,0 +1,41 @@
+name: QSI Unit Tests
+
+on:
+  push:
+    branches: [alpha, master]
+  pull_request:
+    branches: [alpha, master]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    services:
+      mysql:
+        image: mysql:8.0.27
+        env:
+          MYSQL_USER: root
+          MYSQL_PASSWORD: root
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup .NET 6
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.x
+
+    - name: Setup QSI
+      shell: pwsh
+      run: ./Setup.ps1
+
+    - name: Restore dependencies
+      run: dotnet restore Qsi.Tests
+
+    - name: Build
+      run: dotnet build Qsi.Tests --no-restore
+
+    - name: Test
+      run: dotnet test --no-build --verbosity normal Qsi.Tests
