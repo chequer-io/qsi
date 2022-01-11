@@ -89,11 +89,14 @@ namespace Qsi.Athena.Internal
             {
                 var token = context.BACKQUOTED_IDENTIFIER().Symbol;
 
-                throw new ParsingException(
-                    "backquoted identifiers are not supported; use double quotes to quote identifiers",
-                    token.Line,
-                    token.Column + 1
-                );
+                if (token.Text.Length == 2)
+                {
+                    throw new ParsingException(
+                        "Zero-length delimited identifier not allowed",
+                        token.Line,
+                        token.Column + 1
+                    );
+                }
             }
 
             public override void ExitDigitIdentifier(SqlBaseParser.DigitIdentifierContext context)
@@ -101,7 +104,7 @@ namespace Qsi.Athena.Internal
                 var token = context.DIGIT_IDENTIFIER().Symbol;
 
                 throw new ParsingException(
-                    "identifiers must not start with a digit; surround the identifier with double quotes",
+                    "identifiers must not start with a digit; surround the identifier with double or back quotes",
                     token.Line,
                     token.Column + 1
                 );
