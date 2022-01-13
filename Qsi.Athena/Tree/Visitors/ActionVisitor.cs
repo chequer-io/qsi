@@ -325,8 +325,10 @@ namespace Qsi.Athena.Tree.Visitors
             var node = AthenaTree.CreateWithSpan<QsiPrepareActionNode>(context);
             node.Identifier = new QsiQualifiedIdentifier(identifier.qi);
 
-            var queryNode = AthenaTree.CreateWithSpan<AthenaStatementExpressionNode>(statement);
-            queryNode.Expression.Value = VisitStatement(statement); 
+            var queryNode = AthenaTree.CreateWithSpan<QsiLiteralExpressionNode>(statement);
+            queryNode.Type = QsiDataType.String;
+            queryNode.Value = statement.GetInputText(); 
+            
             node.Query.Value = queryNode;
 
             return node;
@@ -341,8 +343,6 @@ namespace Qsi.Athena.Tree.Visitors
         {
             var location = context.location;
             var query = context.query();
-
-            // ignore properties
 
             var node = AthenaTree.CreateWithSpan<AthenaUnloadActionNode>(context);
             node.Query.Value = TableVisitor.VisitQuery(query);
