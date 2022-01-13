@@ -273,13 +273,17 @@ namespace Qsi.Athena.Tree.Visitors
         {
             var identifier = context.identifier();
             ExpressionContext[] expressions = context.expression();
-
-            var variablesNode = AthenaTree.CreateWithSpan<QsiMultipleExpressionNode>(context.USING().Symbol, context.Stop);
-            variablesNode.Elements.AddRange(expressions.Select(ExpressionVisitor.VisitExpression));
             
             var node = AthenaTree.CreateWithSpan<QsiExecutePrepareActionNode>(context);
             node.Identifier = new QsiQualifiedIdentifier(identifier.qi);
-            node.Variables.Value = variablesNode;
+
+            if (context.HasToken(USING))
+            {
+                var variablesNode = AthenaTree.CreateWithSpan<QsiMultipleExpressionNode>(context.USING().Symbol, context.Stop);
+                variablesNode.Elements.AddRange(expressions.Select(ExpressionVisitor.VisitExpression));   
+
+                node.Variables.Value = variablesNode;
+            }
 
             return node;
         }
