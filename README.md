@@ -1,3 +1,5 @@
+[![QSI Unit Tests](https://github.com/chequer-io/qsi/actions/workflows/qsi-unit-tests.yml/badge.svg)](https://github.com/chequer-io/qsi/actions/workflows/qsi-unit-tests.yml)
+
 ![Logo](https://github.com/chequer-io/qsi/blob/master/Resources/logo-256.png?raw=true)
 
 The QSI is the pure C# Query Structure Interface.

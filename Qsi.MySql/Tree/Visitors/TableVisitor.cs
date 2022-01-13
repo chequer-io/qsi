@@ -256,7 +256,7 @@ namespace Qsi.MySql.Tree
                         stringValue = name;
                         break;
 
-                    case MySqlString { CollateName: null, Kind: MySqlStringKind.National } mySqlString:
+                    case MySqlString { CollateName: null, Kind: MySqlStringKind.National or MySqlStringKind.Default } mySqlString:
                     {
                         stringValue = mySqlString.Value;
                         break;

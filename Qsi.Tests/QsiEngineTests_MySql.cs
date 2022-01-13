@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
-using MySqlConnector;
+using System.Transactions;
+using MySql.Data.MySqlClient;
 using NUnit.Framework;
 using Qsi.Analyzers;
 using Qsi.Analyzers.Table;
@@ -21,7 +22,8 @@ public partial class QsiEngineTests_MySql
 {
     protected IList<QsiScript> ScriptHistories => ((RepositoryProviderDriverBase)_engine.RepositoryProvider).ScriptHistories;
 
-    private readonly DbConnection _connection;
+    private readonly MySqlConnection _connection;
+    private readonly TransactionScope _transactionScope;
     private readonly QsiEngine _engine;
 
     public QsiEngineTests_MySql(string host, uint port, string username, string password)
@@ -32,12 +34,27 @@ public partial class QsiEngineTests_MySql
             Port = port,
             UserID = username,
             Password = password,
-            Database = "sakila",
-            Pooling = false
+            Pooling = false,
+            AllowUserVariables = true
         };
+
+        _transactionScope = new TransactionScope();
 
         _connection = new MySqlConnection(connectionString.ToString());
         _connection.Open();
+        _connection.EnlistTransaction(Transaction.Current);
+
+        new MySqlScript(
+            _connection,
+            ResourceUtility.GetResourceContent("mysql-sakila-schema.sql").Replace("<DB>", "QSI_UNIT_TESTS")
+        ).Execute();
+
+        new MySqlScript(
+            _connection,
+            ResourceUtility.GetResourceContent("mysql-sakila-data.sql").Replace("<DB>", "QSI_UNIT_TESTS")
+        ).Execute();
+
+        _connection.ChangeDatabase("QSI_UNIT_TESTS");
 
         _engine = new QsiEngine(new MySqlLanguageService(_connection));
     }
@@ -48,12 +65,20 @@ public partial class QsiEngineTests_MySql
         ScriptHistories.Clear();
     }
 
-    [TestCase("SELECT * FROM actor", ExpectedResult = "sakila.actor")]
-    [TestCase("SELECT * FROM city", ExpectedResult = "sakila.city")]
-    [TestCase("SELECT * FROM actor a JOIN city c", ExpectedResult = "(a { sakila.actor }, c { sakila.city })")]
-    [TestCase("SELECT * FROM actor UNION SELECT * FROM city", ExpectedResult = "sakila.actor + sakila.city")]
-    [TestCase("SELECT * FROM (SELECT actor_id FROM actor) a", ExpectedResult = "a { sakila.actor }")]
-    [TestCase("SELECT * FROM (SELECT actor_id FROM actor, city) ac", ExpectedResult = "ac { (sakila.actor, sakila.city) }")]
+    [OneTimeTearDown]
+    public void TearDown()
+    {
+        _transactionScope.Dispose();
+        _connection.Close();
+        _connection.Dispose();
+    }
+
+    [TestCase("SELECT * FROM actor", ExpectedResult = "QSI_UNIT_TESTS.actor")]
+    [TestCase("SELECT * FROM city", ExpectedResult = "QSI_UNIT_TESTS.city")]
+    [TestCase("SELECT * FROM actor a JOIN city c", ExpectedResult = "(a { QSI_UNIT_TESTS.actor }, c { QSI_UNIT_TESTS.city })")]
+    [TestCase("SELECT * FROM actor UNION SELECT * FROM city", ExpectedResult = "QSI_UNIT_TESTS.actor + QSI_UNIT_TESTS.city")]
+    [TestCase("SELECT * FROM (SELECT actor_id FROM actor) a", ExpectedResult = "a { QSI_UNIT_TESTS.actor }")]
+    [TestCase("SELECT * FROM (SELECT actor_id FROM actor, city) ac", ExpectedResult = "ac { (QSI_UNIT_TESTS.actor, QSI_UNIT_TESTS.city) }")]
     public async Task<string> Test_SELECT(string sql)
     {
         IQsiAnalysisResult[] result = await _engine.Execute(new QsiScript(sql, QsiScriptType.Select), null);
@@ -62,8 +87,8 @@ public partial class QsiEngineTests_MySql
         return QsiTableStructureHelper.GetPseudoName(((QsiTableResult)result[0]).Table);
     }
 
-    [TestCase("TABLE actor", ExpectedResult = "sakila.actor")]
-    [TestCase("TABLE city", ExpectedResult = "sakila.city")]
+    [TestCase("TABLE actor", ExpectedResult = "QSI_UNIT_TESTS.actor")]
+    [TestCase("TABLE city", ExpectedResult = "QSI_UNIT_TESTS.city")]
     public async Task<string> Test_TABLE(string sql)
     {
         if (_connection.ServerVersion![0] == '5')
@@ -75,8 +100,39 @@ public partial class QsiEngineTests_MySql
         return QsiTableStructureHelper.GetPseudoName(((QsiTableResult)result[0]).Table);
     }
 
+    [TestCase("SELECT 1, .2, 0.3, 0.4E+5", ExpectedResult = new[] { "1", ".2", "0.3", "0.4E+5" })]
+    [TestCase("SELECT 1 + 2, 3 +/*cmt*/ 4", ExpectedResult = new[] { "1 + 2", "3 +/*cmt*/ 4" })]
+    [TestCase("SELECT 'Test'", ExpectedResult = new[] { "Test" })]
+    [TestCase("SELECT _utf8mb4 'Test'", ExpectedResult = new[] { "Test" })]
+    [TestCase("SELECT _utf8mb4 'Test' collate utf8mb4_unicode_ci", ExpectedResult = new[] { "_utf8mb4 'Test' collate utf8mb4_unicode_ci" })]
+    [TestCase("SELECT N'National'", ExpectedResult = new[] { "National" })]
+    [TestCase("SELECT X'0F', 0x0F", ExpectedResult = new[] { "X'0F'", "0x0F" })]
+    [TestCase("SELECT B'0101', 0b0101", ExpectedResult = new[] { "B'0101'", "0b0101" })]
+    [TestCase("SELECT NOW(), NOW(/*hi*/)", ExpectedResult = new[] { "NOW()", "NOW(/*hi*/)" })]
+    [TestCase("SELECT * FROM actor", ExpectedResult = new[] { "actor_id", "first_name", "last_name", "last_update" })]
+    [TestCase("SELECT * FROM actor a", ExpectedResult = new[] { "actor_id", "first_name", "last_name", "last_update" })]
+    [TestCase("SELECT a.* FROM actor a", ExpectedResult = new[] { "actor_id", "first_name", "last_name", "last_update" })]
+    [TestCase("SELECT a.actor_id AS `hey~` FROM actor a", ExpectedResult = new[] { "`hey~`" })]
+    [TestCase("SELECT * FROM actor JOIN film_actor USING (actor_id) LIMIT 0", ExpectedResult = new[] { "actor_id", "first_name", "last_name", "last_update", "film_id", "last_update" })]
+    [TestCase("SELECT a.* FROM actor a JOIN film_actor f USING (actor_id) LIMIT 0", ExpectedResult = new[] { "actor_id", "first_name", "last_name", "last_update" })]
+    [TestCase("SELECT f.* FROM actor a JOIN film_actor f USING (actor_id) LIMIT 0", ExpectedResult = new[] { "actor_id", "film_id", "last_update" })]
+    [TestCase("SELECT * FROM actor JOIN film_actor USING (actor_id, last_update) LIMIT 0", ExpectedResult = new[] { "actor_id", "last_update", "first_name", "last_name", "film_id" })]
+    [TestCase("(SELECT 1) UNION (SELECT 2)", ExpectedResult = new[] { "1" })]
+    public async Task<string[]> Test_SELECT_ColumnNames(string sql)
+    {
+        IQsiAnalysisResult[] result = await _engine.Execute(new QsiScript(sql, QsiScriptType.Select), null);
+        CollectionAssert.IsNotEmpty(result);
+        Assert.AreEqual(1, result.Length);
+        Assert.IsInstanceOf<QsiTableResult>(result[0]);
+
+        return ((QsiTableResult)result[0]).Table.Columns
+            .Select(x => x.Name.ToString())
+            .ToArray();
+    }
+
     [TestCase("INSERT INTO actor VALUES (1, 2, 3, 4), (5, 6, 7, 8)", new string[0], 1)]
     [TestCase("INSERT INTO actor (actor_id) VALUES (1)", new string[0], 1)]
+    [TestCase("INSERT INTO actor (actor_id, last_name) SELECT city_id, city FROM city", new[] { "SELECT city_id, city FROM city" }, 1)]
     [TestCase("INSERT INTO actor SELECT * FROM actor LIMIT 0", new[] { "SELECT * FROM actor LIMIT 0" }, 1)]
     [TestCase("INSERT INTO actor SELECT * FROM actor LIMIT 1", new[] { "SELECT * FROM actor LIMIT 1" }, 1)]
     [TestCase("INSERT INTO actor SELECT * FROM actor LIMIT 2", new[] { "SELECT * FROM actor LIMIT 2" }, 1)]

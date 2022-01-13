@@ -8,7 +8,7 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
-        <PackageReference Include="MySqlConnector" Version="2.1.0" />
+        <PackageReference Include="MySql.Data" Version="8.0.27" />
         <PackageReference Include="NUnit" Version="3.13.2" />
         <PackageReference Include="NUnit3TestAdapter" Version="4.0.0" />
         <PackageReference Include="coverlet.collector" Version="3.1.0" />
@@ -17,6 +17,13 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Qsi.MySql\Qsi.MySql.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="Resources\mysql-sakila-data.sql" />
+      <EmbeddedResource Include="Resources\mysql-sakila-data.sql" />
+      <None Remove="Resources\mysql-sakila-schema.sql" />
+      <EmbeddedResource Include="Resources\mysql-sakila-schema.sql" />
     </ItemGroup>
 
 </Project>
