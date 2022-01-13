@@ -1,4 +1,4 @@
-$AntlrJar = Resolve-Path ".\Build\antlr-4.8-complete.jar"
+$AntlrJar = Resolve-Path ".\Build\antlr-4.9.3-complete.jar"
 
 Function Antlr-Generate {
     Param (

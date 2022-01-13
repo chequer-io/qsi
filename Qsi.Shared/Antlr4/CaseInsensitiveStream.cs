@@ -3,7 +3,7 @@ using Antlr4.Runtime.Misc;
 
 namespace Qsi.Shared.Antlr4
 {
-    public class CaseInsensitiveStream : ICharStream
+    internal sealed class CaseInsensitiveStream : ICharStream
     {
         public int Index => _stream.Index;
 
