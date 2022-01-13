@@ -578,7 +578,7 @@ namespace Qsi.Athena.Tree.Visitors
             var dataType = context.dataType();
 
             var expressionNode = VisitExpression(expression);
-            var dataTypeNode = TreeHelper.CreateConstantLiteral(dataType.GetText());
+            var dataTypeNode = TreeHelper.CreateConstantLiteral(dataType.GetInputText());
 
             var node = AthenaTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
             node.Member.Value = TreeHelper.CreateFunction(AthenaKnownFunction.Cast);
