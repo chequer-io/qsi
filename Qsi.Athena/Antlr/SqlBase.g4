@@ -1520,7 +1520,7 @@ statement
      *
      * @athena https://docs.aws.amazon.com/athena/latest/ug/unload.html
      */
-    | UNLOAD query 
+    | UNLOAD '(' query ')' 
         TO location=string WITH properties                                                                              #unload
     ;
     
