@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net5.0</TargetFramework>
+        <TargetFramework>net6.0</TargetFramework>
     </PropertyGroup>
 
     <PropertyGroup Label="Nuspec">
@@ -23,7 +23,7 @@
     <ItemGroup>
         <_PackageFiles Include="lib\Microsoft.SqlServer.TransactSql.ScriptDom.dll">
             <BuildAction>None</BuildAction>
-            <PackagePath>lib\net5.0</PackagePath>
+            <PackagePath>lib\net6.0</PackagePath>
         </_PackageFiles>
     </ItemGroup>
 
