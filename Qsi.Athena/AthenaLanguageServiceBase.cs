@@ -16,7 +16,7 @@ namespace Qsi.Athena
         {
             return new QsiIdentifierEqualityComparer(StringComparison.OrdinalIgnoreCase);
         }
-        
+
         public override QsiAnalyzerOptions CreateAnalyzerOptions()
         {
             return new QsiAnalyzerOptions();
@@ -36,8 +36,7 @@ namespace Qsi.Athena
         {
             return new AthenaDeparser();
         }
-        
-        
+
         public override IEnumerable<IQsiAnalyzer> CreateAnalyzers(QsiEngine engine)
         {
             yield return new AthenaActionAnalyzer(engine);

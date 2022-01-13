@@ -758,7 +758,6 @@ namespace Qsi.Athena.Tree.Visitors
         #endregion
 
         #region Literals
-        
         #region String
         private static QsiExpressionNode VisitString(StringContext context)
         {
@@ -808,6 +807,7 @@ namespace Qsi.Athena.Tree.Visitors
                 _ => throw TreeHelper.NotSupportedTree(context),
             };
         }
+
         private static QsiLiteralExpressionNode VisitDecimalLiteral(DecimalLiteralContext context)
         {
             var text = context.GetText();
@@ -967,7 +967,6 @@ namespace Qsi.Athena.Tree.Visitors
             return TreeHelper.CreateConstantLiteral(context.GetText());
         }
         #endregion
-
         #endregion
 
         #region Terms
@@ -988,7 +987,7 @@ namespace Qsi.Athena.Tree.Visitors
         {
             var windowSpecification = context.windowSpecification();
             var windowSpecificationNode = VisitWindowSpecification(windowSpecification);
-            
+
             var node = AthenaTree.CreateWithSpan<AthenaWindowExpressionNode>(context);
             node.Items.Add(windowSpecificationNode);
 
@@ -1025,20 +1024,19 @@ namespace Qsi.Athena.Tree.Visitors
 
             return node;
         }
-        
+
         private static QsiMultipleExpressionNode VisitPartitionBy(PartitionByContext context)
         {
             IList<ExpressionContext> partitions = context._partition;
-            
+
             IEnumerable<QsiExpressionNode> partitionNodes = partitions.Select(VisitExpression);
-            
+
             var node = AthenaTree.CreateWithSpan<QsiMultipleExpressionNode>(context);
             node.Elements.AddRange(partitionNodes);
-            
+
             return node;
         }
         #endregion
-
 
         private static QsiSwitchCaseExpressionNode VisitWhenClause(WhenClauseContext context)
         {
@@ -1165,9 +1163,9 @@ namespace Qsi.Athena.Tree.Visitors
         internal static QsiExpressionNode VisitRollup(RollupContext context)
         {
             ExpressionContext[] expressions = context.expression();
-            
+
             IEnumerable<QsiExpressionNode> expressionNodes = expressions.Select(ExpressionVisitor.VisitExpression);
-            
+
             var node = AthenaTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
             node.Member.Value = TreeHelper.CreateFunction("ROLLUP");
             node.Parameters.AddRange(expressionNodes);
@@ -1178,9 +1176,9 @@ namespace Qsi.Athena.Tree.Visitors
         internal static QsiExpressionNode VisitCube(CubeContext context)
         {
             ExpressionContext[] expressions = context.expression();
-            
+
             IEnumerable<QsiExpressionNode> expressionNodes = expressions.Select(ExpressionVisitor.VisitExpression);
-            
+
             var node = AthenaTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
             node.Member.Value = TreeHelper.CreateFunction("CUBE");
             node.Parameters.AddRange(expressionNodes);
@@ -1192,7 +1190,7 @@ namespace Qsi.Athena.Tree.Visitors
         {
             GroupingSetContext[] groupSets = context.groupingSet();
             IEnumerable<QsiExpressionNode> groupingSetNodes = groupSets.Select(VisitGroupingSet);
-            
+
             var node = AthenaTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
             node.Member.Value = TreeHelper.CreateFunction(AthenaKnownFunction.GroupingSets);
             node.Parameters.AddRange(groupingSetNodes);
@@ -1214,7 +1212,7 @@ namespace Qsi.Athena.Tree.Visitors
         {
             ExpressionContext[] expressions = context.expression();
             IEnumerable<QsiExpressionNode> expressionNodes = expressions.Select(ExpressionVisitor.VisitExpression);
-            
+
             var node = AthenaTree.CreateWithSpan<QsiMultipleExpressionNode>(context);
             node.Elements.AddRange(expressionNodes);
 

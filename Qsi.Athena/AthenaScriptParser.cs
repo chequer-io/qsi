@@ -6,6 +6,5 @@ namespace Qsi.Athena
 {
     public class AthenaScriptParser : CommonScriptParser
     {
-        
     }
 }
