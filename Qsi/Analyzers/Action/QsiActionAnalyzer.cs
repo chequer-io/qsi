@@ -412,7 +412,7 @@ namespace Qsi.Analyzers.Action
             var script = new QsiScript(query, scriptType);
             QsiParameter[] parameters = ArrangeBindParameters(context, commonTableNode);
 
-            return await context.Engine.RepositoryProvider.GetDataTable(script, parameters, context.CancellationToken);
+            return (await context.Engine.RepositoryProvider.GetDataTable(script, parameters, context.CancellationToken)).CloneVisibleOnly();
         }
         #endregion
 
@@ -424,7 +424,7 @@ namespace Qsi.Analyzers.Action
 
             using (var tableContext = new TableCompileContext(context))
             {
-                table = await tableAnalyzer.BuildTableStructure(tableContext, action.Target);
+                table = (await tableAnalyzer.BuildTableStructure(tableContext, action.Target)).CloneVisibleOnly();
             }
 
             ColumnTarget[] columnTargets = ResolveColumnTargetsFromDataInsertAction(context, table, action);
@@ -579,7 +579,7 @@ namespace Qsi.Analyzers.Action
 
             var scriptType = engine.ScriptParser.GetSuitableType(script);
             QsiParameter[] parameters = ArrangeBindParameters(context, valueTable);
-            var dataTable = await engine.RepositoryProvider.GetDataTable(new QsiScript(script, scriptType), parameters, context.CancellationToken);
+            var dataTable = (await engine.RepositoryProvider.GetDataTable(new QsiScript(script, scriptType), parameters, context.CancellationToken)).CloneVisibleOnly();
 
             if (dataTable.Rows.ColumnCount != context.ColumnTargets.Length)
                 throw new QsiException(QsiError.DifferentColumnsCount);
@@ -713,7 +713,7 @@ namespace Qsi.Analyzers.Action
 
             using (var tableContext = new TableCompileContext(context, options))
             {
-                table = await tableAnalyzer.BuildTableStructure(tableContext, actionTarget);
+                table = (await tableAnalyzer.BuildTableStructure(tableContext, actionTarget)).CloneVisibleOnly();
                 tableColumnCount = table.Columns.Count;
 
                 // TODO: How to compile without IsImplicitTableWildcard options
@@ -813,7 +813,7 @@ namespace Qsi.Analyzers.Action
             var tableAnalyzer = context.Engine.GetAnalyzer<QsiTableAnalyzer>();
             using var tableContext = new TableCompileContext(context);
 
-            var sourceTable = await tableAnalyzer.BuildTableStructure(tableContext, action.Target);
+            var sourceTable = (await tableAnalyzer.BuildTableStructure(tableContext, action.Target)).CloneVisibleOnly();
 
             // update data (rows)
             var commonTableNode = ReassembleCommonTableNode(action.Target);
