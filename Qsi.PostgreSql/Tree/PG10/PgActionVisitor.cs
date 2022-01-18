@@ -70,6 +70,27 @@ namespace Qsi.PostgreSql.Tree.PG10
                         .ToArray();
                 }
 
+                if (insertStmt.selectStmt is not null)
+                {
+                    var node = insertStmt.selectStmt.Cast<SelectStmt>().First();
+
+                    if (node.valuesLists is not null)
+                    {
+                        foreach (IPg10Node[] valuesList in node.valuesLists)
+                        {
+                            var rowValueNode = new QsiRowValueExpressionNode();
+
+                            rowValueNode.ColumnValues.AddRange(valuesList.Select(ExpressionVisitor.Visit));
+
+                            n.Values.Add(rowValueNode);
+                        }
+                    }
+                    else
+                    {
+                        n.ValueTable.Value = TableVisitor.Visit(node);
+                    }
+                }
+
                 if (insertStmt.onConflictClause is not null)
                 {
                     switch (insertStmt.onConflictClause[0].action)
@@ -91,7 +112,6 @@ namespace Qsi.PostgreSql.Tree.PG10
                 return actionNode;
 
             actionNode.Directives.SetValue(TableVisitor.VisitWithClause(insertStmt.withClause[0]));
-
             return actionNode;
         }
 
