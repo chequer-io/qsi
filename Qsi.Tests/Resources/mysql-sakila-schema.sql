@@ -33,9 +33,9 @@ SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL';
 
-DROP SCHEMA IF EXISTS <DB>;
-CREATE SCHEMA <DB>;
-USE <DB>;
+DROP SCHEMA IF EXISTS qsi_unit_tests;
+CREATE SCHEMA qsi_unit_tests;
+USE qsi_unit_tests;
 
 --
 -- Table structure for table `actor`
@@ -448,10 +448,10 @@ a.first_name,
 a.last_name,
 GROUP_CONCAT(DISTINCT CONCAT(c.name, ': ',
 		(SELECT GROUP_CONCAT(f.title ORDER BY f.title SEPARATOR ', ')
-                    FROM <DB>.film f
-                    INNER JOIN <DB>.film_category fc
+                    FROM qsi_unit_tests.film f
+                    INNER JOIN qsi_unit_tests.film_category fc
                       ON f.film_id = fc.film_id
-                    INNER JOIN <DB>.film_actor fa
+                    INNER JOIN qsi_unit_tests.film_actor fa
                       ON f.film_id = fa.film_id
                     WHERE fc.category_id = c.category_id
                     AND fa.actor_id = a.actor_id
@@ -459,12 +459,12 @@ GROUP_CONCAT(DISTINCT CONCAT(c.name, ': ',
              )
              ORDER BY c.name SEPARATOR '; ')
 AS film_info
-FROM <DB>.actor a
-LEFT JOIN <DB>.film_actor fa
+FROM qsi_unit_tests.actor a
+LEFT JOIN qsi_unit_tests.film_actor fa
   ON a.actor_id = fa.actor_id
-LEFT JOIN <DB>.film_category fc
+LEFT JOIN qsi_unit_tests.film_category fc
   ON fa.film_id = fc.film_id
-LEFT JOIN <DB>.category c
+LEFT JOIN qsi_unit_tests.category c
   ON fc.category_id = c.category_id
 GROUP BY a.actor_id, a.first_name, a.last_name;
 

@@ -3,7 +3,7 @@ using System.Data.Common;
 using Qsi.MySql;
 using Qsi.Services;
 
-namespace Qsi.Tests.Drivers.MySql;
+namespace Qsi.Tests.Vendor.MySql.Driver;
 
 public class MySqlLanguageService : MySqlLanguageServiceBase
 {
