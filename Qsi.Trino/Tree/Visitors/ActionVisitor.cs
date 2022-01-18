@@ -223,7 +223,11 @@ namespace Qsi.Trino.Tree.Visitors
             node.Target.Value = targetNode;
 
             if (columnAliases is not null)
-                node.Columns.AddRange(columnAliases.identifier().Select(identifierContext => new QsiQualifiedIdentifier(identifierContext.qi)));
+            {
+                node.Columns = columnAliases.identifier()
+                    .Select(i => new QsiQualifiedIdentifier(i.qi))
+                    .ToArray();
+            }
 
             node.ValueTable.Value = TableVisitor.VisitQuery(query);
 
@@ -277,7 +281,7 @@ namespace Qsi.Trino.Tree.Visitors
             var node = TrinoTree.CreateWithSpan<QsiChangeSearchPathActionNode>(context);
 
             node.Identifiers = new[] { path };
-            
+
             return node;
         }
 
