@@ -482,15 +482,22 @@ namespace Qsi.PostgreSql.Tree.PG10
 
             QsiAliasNode alias = null;
 
-            if (rangeFunction.alias is { Length: >=1 })
+            if (rangeFunction.alias is { Length: >= 1 })
                 alias = new QsiAliasNode
                 {
                     Name = new QsiIdentifier(rangeFunction.alias[0].aliasname, false)
                 };
 
             PgString[] columns = rangeFunction.alias?[0].colnames?
-                .Cast<PgString>()
-                .ToArray();
+                                     .Cast<PgString>()
+                                     .ToArray() ??
+                                 rangeFunction.coldeflist?
+                                     .Cast<ColumnDef>()
+                                     .Select(s => new PgString
+                                     {
+                                         str = s.colname
+                                     })
+                                     .ToArray();
 
             if (ListUtility.IsNullOrEmpty(columns))
             {
