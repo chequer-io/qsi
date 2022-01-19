@@ -5,7 +5,7 @@ using Qsi.Data;
 using Qsi.Data.Object;
 using Qsi.Utilities;
 
-namespace Qsi.Tests.Drivers.MySql;
+namespace Qsi.Tests.Vendor.MySql.Driver;
 
 public class MySqlRepositoryProvider : RepositoryProviderDriverBase
 {

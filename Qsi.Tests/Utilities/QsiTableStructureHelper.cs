@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Qsi.Data;
 
-namespace Qsi.Tests.Drivers
+namespace Qsi.Tests.Utilities
 {
     public static class QsiTableStructureHelper
     {

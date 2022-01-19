@@ -1,8 +1,8 @@
 using NUnit.Framework;
 
-namespace Qsi.Tests;
+namespace Qsi.Tests.Vendor.MySql;
 
-public partial class QsiEngineTests_MySql
+public partial class MySqlTest
 {
     private static readonly TestCaseData[] Print_TestDatas =
     {
@@ -10,7 +10,7 @@ public partial class QsiEngineTests_MySql
         {
             ExpectedResult = @"
 +-------------------------------------------------+
-|          QSI_UNIT_TESTS.actor - INSERT          |
+|          qsi_unit_tests.actor - INSERT          |
 +----------+------------+-----------+-------------+
 | actor_id | first_name | last_name | last_update |
 +----------+------------+-----------+-------------+
@@ -23,7 +23,7 @@ public partial class QsiEngineTests_MySql
         {
             ExpectedResult = @"
 +-------------------------------------------------+
-|          QSI_UNIT_TESTS.actor - INSERT          |
+|          qsi_unit_tests.actor - INSERT          |
 +----------+------------+-----------+-------------+
 | actor_id | first_name | last_name | last_update |
 +----------+------------+-----------+-------------+
@@ -36,7 +36,7 @@ public partial class QsiEngineTests_MySql
         {
             ExpectedResult = @"
 +-------------------------------------------------+
-|          QSI_UNIT_TESTS.actor - INSERT          |
+|          qsi_unit_tests.actor - INSERT          |
 +----------+------------+-----------+-------------+
 | actor_id | first_name | last_name | last_update |
 +----------+------------+-----------+-------------+
@@ -49,7 +49,7 @@ public partial class QsiEngineTests_MySql
         {
             ExpectedResult = @"
 +----------------------------------------------------------+
-|              QSI_UNIT_TESTS.actor - INSERT               |
+|              qsi_unit_tests.actor - INSERT               |
 +----------+------------+--------------------+-------------+
 | actor_id | first_name |     last_name      | last_update |
 +----------+------------+--------------------+-------------+
@@ -63,7 +63,7 @@ public partial class QsiEngineTests_MySql
         {
         ExpectedResult = @"
 +-------------------------------------------------+
-|      QSI_UNIT_TESTS.actor - UPDATE_BEFORE       |
+|      qsi_unit_tests.actor - UPDATE_BEFORE       |
 +----------+------------+-----------+-------------+
 | actor_id | first_name | last_name | last_update |
 +----------+------------+-----------+-------------+
@@ -71,7 +71,7 @@ public partial class QsiEngineTests_MySql
 +-------------------------------------------------+
 
 +-------------------------------------------------+
-|       QSI_UNIT_TESTS.actor - UPDATE_AFTER       |
+|       qsi_unit_tests.actor - UPDATE_AFTER       |
 +----------+------------+-----------+-------------+
 | actor_id | first_name | last_name | last_update |
 +----------+------------+-----------+-------------+
@@ -84,7 +84,7 @@ public partial class QsiEngineTests_MySql
         {
             ExpectedResult = @"
 +-------------------------------------------------+
-|      QSI_UNIT_TESTS.actor - UPDATE_BEFORE       |
+|      qsi_unit_tests.actor - UPDATE_BEFORE       |
 +----------+------------+-----------+-------------+
 | actor_id | first_name | last_name | last_update |
 +----------+------------+-----------+-------------+
@@ -92,7 +92,7 @@ public partial class QsiEngineTests_MySql
 +-------------------------------------------------+
 
 +-------------------------------------------------+
-|       QSI_UNIT_TESTS.actor - UPDATE_AFTER       |
+|       qsi_unit_tests.actor - UPDATE_AFTER       |
 +----------+------------+-----------+-------------+
 | actor_id | first_name | last_name | last_update |
 +----------+------------+-----------+-------------+
@@ -100,7 +100,7 @@ public partial class QsiEngineTests_MySql
 +-------------------------------------------------+
 
 +----------------------------------------------+
-|     QSI_UNIT_TESTS.city - UPDATE_BEFORE      |
+|     qsi_unit_tests.city - UPDATE_BEFORE      |
 +---------+---------+------------+-------------+
 | city_id |  city   | country_id | last_update |
 +---------+---------+------------+-------------+
@@ -108,7 +108,7 @@ public partial class QsiEngineTests_MySql
 +----------------------------------------------+
 
 +--------------------------------------------+
-|     QSI_UNIT_TESTS.city - UPDATE_AFTER     |
+|     qsi_unit_tests.city - UPDATE_AFTER     |
 +---------+-------+------------+-------------+
 | city_id | city  | country_id | last_update |
 +---------+-------+------------+-------------+
@@ -121,7 +121,7 @@ public partial class QsiEngineTests_MySql
         {
             ExpectedResult = @"
 +------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-|                                                                                 QSI_UNIT_TESTS.film - UPDATE_BEFORE                                                                                  |
+|                                                                                 qsi_unit_tests.film - UPDATE_BEFORE                                                                                  |
 +---------+------------------+-------------+--------------+-------------+----------------------+-----------------+-------------+---------+------------------+---------+------------------+-------------+
 | film_id |      title       | description | release_year | language_id | original_language_id | rental_duration | rental_rate | length  | replacement_cost | rating  | special_features | last_update |
 +---------+------------------+-------------+--------------+-------------+----------------------+-----------------+-------------+---------+------------------+---------+------------------+-------------+
@@ -129,7 +129,7 @@ public partial class QsiEngineTests_MySql
 +------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 +-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-|                                                                           QSI_UNIT_TESTS.film - UPDATE_AFTER                                                                            |
+|                                                                           qsi_unit_tests.film - UPDATE_AFTER                                                                            |
 +---------+-------+-------------+--------------+-------------+----------------------+-----------------+-------------+--------+------------------+--------+------------------+-------------+
 | film_id | title | description | release_year | language_id | original_language_id | rental_duration | rental_rate | length | replacement_cost | rating | special_features | last_update |
 +---------+-------+-------------+--------------+-------------+----------------------+-----------------+-------------+--------+------------------+--------+------------------+-------------+
@@ -137,7 +137,7 @@ public partial class QsiEngineTests_MySql
 +-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 +-----------------------------------------+
-| QSI_UNIT_TESTS.category - UPDATE_BEFORE |
+| qsi_unit_tests.category - UPDATE_BEFORE |
 +-------------+-------------+-------------+
 | category_id |    name     | last_update |
 +-------------+-------------+-------------+
@@ -145,7 +145,7 @@ public partial class QsiEngineTests_MySql
 +-----------------------------------------+
 
 +----------------------------------------+
-| QSI_UNIT_TESTS.category - UPDATE_AFTER |
+| qsi_unit_tests.category - UPDATE_AFTER |
 +--------------+----------+--------------+
 | category_id  |   name   | last_update  |
 +--------------+----------+--------------+
@@ -158,7 +158,7 @@ public partial class QsiEngineTests_MySql
         {
             ExpectedResult = @"
 +-------------------------------------------------+
-|      QSI_UNIT_TESTS.actor - UPDATE_BEFORE       |
+|      qsi_unit_tests.actor - UPDATE_BEFORE       |
 +----------+------------+-----------+-------------+
 | actor_id | first_name | last_name | last_update |
 +----------+------------+-----------+-------------+
@@ -185,7 +185,7 @@ public partial class QsiEngineTests_MySql
 +-------------------------------------------------+
 
 +---------------------------------------------------+
-|        QSI_UNIT_TESTS.actor - UPDATE_AFTER        |
+|        qsi_unit_tests.actor - UPDATE_AFTER        |
 +----------+--------------+-----------+-------------+
 | actor_id |  first_name  | last_name | last_update |
 +----------+--------------+-----------+-------------+
@@ -217,7 +217,7 @@ public partial class QsiEngineTests_MySql
         {
             ExpectedResult = @"
 +-------------------------------------------------+
-|          QSI_UNIT_TESTS.actor - DELETE          |
+|          qsi_unit_tests.actor - DELETE          |
 +----------+------------+-----------+-------------+
 | actor_id | first_name | last_name | last_update |
 +----------+------------+-----------+-------------+
@@ -230,7 +230,7 @@ public partial class QsiEngineTests_MySql
         {
             ExpectedResult = @"
 +-------------------------------------------------+
-|          QSI_UNIT_TESTS.actor - DELETE          |
+|          qsi_unit_tests.actor - DELETE          |
 +----------+------------+-----------+-------------+
 | actor_id | first_name | last_name | last_update |
 +----------+------------+-----------+-------------+
@@ -257,7 +257,7 @@ public partial class QsiEngineTests_MySql
 +-------------------------------------------------+
 
 +--------------------------------------------------------------------+
-|                    QSI_UNIT_TESTS.city - DELETE                    |
+|                    qsi_unit_tests.city - DELETE                    |
 +---------+-----------------------+------------+---------------------+
 | city_id |         city          | country_id |     last_update     |
 +---------+-----------------------+------------+---------------------+
@@ -289,7 +289,7 @@ public partial class QsiEngineTests_MySql
         {
             ExpectedResult = @"
 +----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-|                                                                                    QSI_UNIT_TESTS.film - DELETE                                                                                    |
+|                                                                                    qsi_unit_tests.film - DELETE                                                                                    |
 +---------+------------------+-------------+--------------+-------------+----------------------+-----------------+-------------+--------+------------------+--------+------------------+-------------+
 | film_id |      title       | description | release_year | language_id | original_language_id | rental_duration | rental_rate | length | replacement_cost | rating | special_features | last_update |
 +---------+------------------+-------------+--------------+-------------+----------------------+-----------------+-------------+--------+------------------+--------+------------------+-------------+
@@ -297,7 +297,7 @@ public partial class QsiEngineTests_MySql
 +----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 +-----------------------------------------+
-|    QSI_UNIT_TESTS.category - DELETE     |
+|    qsi_unit_tests.category - DELETE     |
 +-------------+-------------+-------------+
 | category_id |    name     | last_update |
 +-------------+-------------+-------------+
@@ -310,7 +310,7 @@ public partial class QsiEngineTests_MySql
         {
             ExpectedResult = @"
 +----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-|                                                                                    QSI_UNIT_TESTS.film - DELETE                                                                                    |
+|                                                                                    qsi_unit_tests.film - DELETE                                                                                    |
 +---------+------------------+-------------+--------------+-------------+----------------------+-----------------+-------------+--------+------------------+--------+------------------+-------------+
 | film_id |      title       | description | release_year | language_id | original_language_id | rental_duration | rental_rate | length | replacement_cost | rating | special_features | last_update |
 +---------+------------------+-------------+--------------+-------------+----------------------+-----------------+-------------+--------+------------------+--------+------------------+-------------+
@@ -318,7 +318,7 @@ public partial class QsiEngineTests_MySql
 +----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 +-----------------------------------------+
-|    QSI_UNIT_TESTS.category - DELETE     |
+|    qsi_unit_tests.category - DELETE     |
 +-------------+-------------+-------------+
 | category_id |    name     | last_update |
 +-------------+-------------+-------------+

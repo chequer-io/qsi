@@ -8,7 +8,7 @@ using Qsi.Data;
 using Qsi.Services;
 using Qsi.Utilities;
 
-namespace Qsi.Tests.Drivers;
+namespace Qsi.Tests;
 
 public abstract class RepositoryProviderDriverBase : QsiRepositoryProviderBase
 {
