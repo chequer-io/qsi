@@ -1,5 +1,6 @@
-DROP DATABASE IF EXISTS qsi_unit_tests;
-CREATE DATABASE qsi_unit_tests;
+DROP SCHEMA IF EXISTS qsi_unit_tests CASCADE;
+CREATE SCHEMA qsi_unit_tests;
+
 SET search_path TO qsi_unit_tests;
 
 CREATE TABLE J1_TBL (

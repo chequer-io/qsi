@@ -17,19 +17,22 @@ public abstract class VendorTestBase
 
     protected QsiEngine Engine { get; private set; }
 
-    private readonly TransactionScope _transactionScope;
-    private readonly string _connectionString;
+    protected string ConnectionString { get; }
+
+    private TransactionScope _transactionScope;
 
     protected VendorTestBase(string connectionString)
     {
-        _transactionScope = new TransactionScope();
-        _connectionString = connectionString;
+        ConnectionString = connectionString;
     }
 
     [OneTimeSetUp]
     public void OneTimeSetUp()
     {
-        Connection = OpenConnection(_connectionString);
+        PrepareConnectionPreview();
+
+        _transactionScope = new TransactionScope();
+        Connection = OpenConnection(ConnectionString);
         Connection.Open();
         Connection.EnlistTransaction(Transaction.Current);
 
@@ -52,9 +55,15 @@ public abstract class VendorTestBase
         Connection.Dispose();
     }
 
+    protected virtual void PrepareConnectionPreview()
+    {
+    }
+
     protected abstract DbConnection OpenConnection(string connectionString);
 
-    protected abstract void PrepareConnection(DbConnection connection);
+    protected virtual void PrepareConnection(DbConnection connection)
+    {
+    }
 
     protected abstract IQsiLanguageService CreateLanguageService(DbConnection connection);
 }

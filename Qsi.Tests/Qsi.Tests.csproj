@@ -9,6 +9,7 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
         <PackageReference Include="MySql.Data" Version="8.0.27" />
+        <PackageReference Include="Npgsql" Version="6.0.2" />
         <PackageReference Include="NUnit" Version="3.13.2" />
         <PackageReference Include="NUnit3TestAdapter" Version="4.0.0" />
         <PackageReference Include="coverlet.collector" Version="3.1.0" />
@@ -17,13 +18,46 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Qsi.MySql\Qsi.MySql.csproj" />
+      <ProjectReference Include="..\Qsi.PostgreSql\Qsi.PostgreSql.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <None Remove="Resources\mysql-sakila-data.sql" />
-      <EmbeddedResource Include="Resources\mysql-sakila-data.sql" />
-      <None Remove="Resources\mysql-sakila-schema.sql" />
-      <EmbeddedResource Include="Resources\mysql-sakila-schema.sql" />
+      <EmbeddedResource Include="Resources/**/*.sql" />
     </ItemGroup>
+
+    <PropertyGroup>
+        <OSPlatform Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))' == 'true'">OSX</OSPlatform>
+        <OSPlatform Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))' == 'true'">Linux</OSPlatform>
+        <OSPlatform Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' == 'true'">Windows</OSPlatform>
+        <OSArchitecture>$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)</OSArchitecture>
+    </PropertyGroup>
+
+    <Choose>
+        <When Condition=" '$(OSPlatform)' == 'Linux' And '$(OSArchitecture)' == 'X64' ">
+            <ItemGroup Label="Linux">
+                <PackageReference Include="JavaScriptEngineSwitcher.ChakraCore.Native.linux-x64" Version="3.5.6" />
+            </ItemGroup>
+        </When>
+        <When Condition=" '$(OSPlatform)' == 'OSX' And '$(OSArchitecture)' == 'X64' ">
+            <ItemGroup Label="OSX">
+                <PackageReference Include="JavaScriptEngineSwitcher.ChakraCore.Native.osx-x64" Version="3.5.6" />
+            </ItemGroup>
+        </When>
+        <When Condition=" '$(OSPlatform)' == 'Windows' And '$(OSArchitecture)' == 'X64' ">
+            <ItemGroup Label="Windows x64">
+                <PackageReference Include="JavaScriptEngineSwitcher.ChakraCore.Native.win-x64" Version="3.5.6" />
+            </ItemGroup>
+        </When>
+        <When Condition=" '$(OSPlatform)' == 'Windows' And '$(OSArchitecture)' == 'X86' ">
+            <ItemGroup Label="Windows x86">
+                <PackageReference Include="JavaScriptEngineSwitcher.ChakraCore.Native.win-x86" Version="3.5.6" />
+            </ItemGroup>
+        </When>
+        <When Condition=" '$(OSPlatform)' == 'Windows' And '$(OSArchitecture)' == 'Arm' ">
+            <ItemGroup Label="Windows ARM">
+                <PackageReference Include="JavaScriptEngineSwitcher.ChakraCore.Native.win-arm" Version="3.5.6" />
+            </ItemGroup>
+        </When>
+    </Choose>
 
 </Project>
