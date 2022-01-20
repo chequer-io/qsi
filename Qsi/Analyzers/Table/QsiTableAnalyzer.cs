@@ -37,7 +37,7 @@ namespace Qsi.Analyzers.Table
                 throw new InvalidOperationException();
 
             using var scope = new TableCompileContext(context);
-            var table = (await BuildTableStructure(scope, tableNode)).CloneVisibleOnly();
+            var table = await BuildTableStructure(scope, tableNode);
 
             return new QsiTableResult(table).ToSingleArray();
         }
