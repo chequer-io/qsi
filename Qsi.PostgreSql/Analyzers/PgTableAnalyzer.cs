@@ -91,7 +91,7 @@ namespace Qsi.PostgreSql.Analyzers
             {
                 if (e.Error is QsiError.UnknownColumnIn)
                 {
-                    if (context.SourceTable.Columns.Count == 0)
+                    if (context.SourceTable?.Columns.Count == 0)
                     {
                         implicitTableWildcardTarget = default;
                         return new[]
