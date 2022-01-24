@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Qsi.Data;
@@ -210,7 +209,18 @@ namespace Qsi.PostgreSql.Tree.PG10
 
         public QsiColumnNode VisitResTarget(ResTarget target)
         {
-            Debug.Assert(target.val.Length == 1);
+            if (target.val is null or { Length: 0 })
+            {
+                Debug.Assert(!string.IsNullOrEmpty(target.name));
+
+                return TreeHelper.Create<QsiColumnReferenceNode>(n =>
+                {
+                    var identifier = new QsiIdentifier(target.name, false);
+                    n.Name = new QsiQualifiedIdentifier(identifier);
+                });
+            }
+
+            Debug.Assert(target.val.Length is 1);
 
             var value = target.val[0];
             QsiColumnNode columnNode;
