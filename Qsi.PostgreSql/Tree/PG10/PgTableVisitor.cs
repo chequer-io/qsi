@@ -242,7 +242,10 @@ namespace Qsi.PostgreSql.Tree.PG10
                         // for nested typeCast
                         while (columnExpression is not QsiColumnExpressionNode)
                         {
-                            if (columnExpression is QsiInvokeExpressionNode { Parameters.Count: > 0 } invokeExpressionNode)
+                            if (columnExpression is QsiInvokeExpressionNode { Parameters.Count: > 0 } invokeExpressionNode &&
+                                invokeExpressionNode.Parameters[0] is QsiInvokeExpressionNode { Member.Value.Identifier: { } identifier } &&
+                                identifier.GetHashCode() == new QsiQualifiedIdentifier(new QsiIdentifier("CAST", false)).GetHashCode()
+                               )
                                 columnExpression = invokeExpressionNode.Parameters[0];
                             else
                                 break;
