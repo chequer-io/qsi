@@ -4,8 +4,6 @@ using Qsi.Athena.Tree.Visitors;
 using Qsi.Data;
 using Qsi.Parsing;
 using Qsi.Tree;
-using Qsi.Utilities;
-using static Qsi.Athena.Internal.SqlBaseParser;
 
 namespace Qsi.Athena
 {
