@@ -49,5 +49,21 @@ namespace Qsi.Data
 
             return table;
         }
+
+        // TODO: Refactor to VisibleColumns
+        public QsiTableStructure CloneVisibleOnly()
+        {
+            var table = new QsiTableStructure
+            {
+                Type = Type,
+                Identifier = Identifier,
+                IsSystem = IsSystem
+            };
+
+            table.References.AddRange(References);
+            table._columns.AddRange(VisibleColumns.Select(c => c.CloneInternal()));
+
+            return table;
+        }
     }
 }

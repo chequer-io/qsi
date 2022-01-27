@@ -20,5 +20,18 @@ namespace Qsi.Data
             Table = table ?? throw new ArgumentNullException(nameof(table));
             Rows = new QsiDataRowCollection(table.Columns.Count, cacheProviderFactory());
         }
+
+        private QsiDataTable(QsiTableStructure table, QsiDataRowCollection rows)
+        {
+            Table = table;
+            Rows = rows;
+        }
+
+        public QsiDataTable CloneVisibleOnly()
+        {
+            var table = new QsiDataTable(Table.CloneVisibleOnly(), Rows);
+
+            return table;
+        } 
     }
 }

@@ -8,7 +8,7 @@ using Qsi.Data;
 using Qsi.Services;
 using Qsi.Utilities;
 
-namespace Qsi.Tests.Drivers;
+namespace Qsi.Tests;
 
 public abstract class RepositoryProviderDriverBase : QsiRepositoryProviderBase
 {
@@ -134,7 +134,7 @@ public abstract class RepositoryProviderDriverBase : QsiRepositoryProviderBase
             return _reader.GetByte(i);
         }
 
-        public long GetBytes(int i, long fieldOffset, byte[]? buffer, int bufferoffset, int length)
+        public long GetBytes(int i, long fieldOffset, byte[] buffer, int bufferoffset, int length)
         {
             return _reader.GetBytes(i, fieldOffset, buffer, bufferoffset, length);
         }
@@ -144,7 +144,7 @@ public abstract class RepositoryProviderDriverBase : QsiRepositoryProviderBase
             return _reader.GetChar(i);
         }
 
-        public long GetChars(int i, long fieldoffset, char[]? buffer, int bufferoffset, int length)
+        public long GetChars(int i, long fieldoffset, char[] buffer, int bufferoffset, int length)
         {
             return _reader.GetChars(i, fieldoffset, buffer, bufferoffset, length);
         }

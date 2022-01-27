@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Qsi.Data;
@@ -210,7 +209,18 @@ namespace Qsi.PostgreSql.Tree.PG10
 
         public QsiColumnNode VisitResTarget(ResTarget target)
         {
-            Debug.Assert(target.val.Length == 1);
+            if (target.val is null or { Length: 0 })
+            {
+                Debug.Assert(!string.IsNullOrEmpty(target.name));
+
+                return TreeHelper.Create<QsiColumnReferenceNode>(n =>
+                {
+                    var identifier = new QsiIdentifier(target.name, false);
+                    n.Name = new QsiQualifiedIdentifier(identifier);
+                });
+            }
+
+            Debug.Assert(target.val.Length is 1);
 
             var value = target.val[0];
             QsiColumnNode columnNode;
@@ -232,7 +242,10 @@ namespace Qsi.PostgreSql.Tree.PG10
                         // for nested typeCast
                         while (columnExpression is not QsiColumnExpressionNode)
                         {
-                            if (columnExpression is QsiInvokeExpressionNode invokeExpressionNode)
+                            if (columnExpression is QsiInvokeExpressionNode { Parameters.Count: > 0 } invokeExpressionNode &&
+                                invokeExpressionNode.Parameters[0] is QsiInvokeExpressionNode { Member.Value.Identifier: { } identifier } &&
+                                identifier.GetHashCode() == new QsiQualifiedIdentifier(new QsiIdentifier("CAST", false)).GetHashCode()
+                               )
                                 columnExpression = invokeExpressionNode.Parameters[0];
                             else
                                 break;
@@ -482,15 +495,22 @@ namespace Qsi.PostgreSql.Tree.PG10
 
             QsiAliasNode alias = null;
 
-            if (rangeFunction.alias is { Length: >=1 })
+            if (rangeFunction.alias is { Length: >= 1 })
                 alias = new QsiAliasNode
                 {
                     Name = new QsiIdentifier(rangeFunction.alias[0].aliasname, false)
                 };
 
             PgString[] columns = rangeFunction.alias?[0].colnames?
-                .Cast<PgString>()
-                .ToArray();
+                                     .Cast<PgString>()
+                                     .ToArray() ??
+                                 rangeFunction.coldeflist?
+                                     .Cast<ColumnDef>()
+                                     .Select(s => new PgString
+                                     {
+                                         str = s.colname
+                                     })
+                                     .ToArray();
 
             if (ListUtility.IsNullOrEmpty(columns))
             {
