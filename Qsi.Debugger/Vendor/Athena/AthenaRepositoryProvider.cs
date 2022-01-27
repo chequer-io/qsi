@@ -157,17 +157,42 @@ WHERE (user_agent LIKE '%Edge/%')
                 return new QsiScript(script, QsiScriptType.Select);
             }
 
+            if (identifier.Compare("prepared_stmt_unload_1") && type == QsiTableType.Prepared)
+            {
+                const string script = @"UNLOAD (SELECT * FROM elb_logs WHERE user_agent LIKE ?)
+TO 's3://my_output_bucket/'
+WITH (format='JSON')";
+                
+                return new QsiScript(script, QsiScriptType.Unknown);
+            }
+
             return null;
         }
 
         protected override QsiVariable LookupVariable(QsiQualifiedIdentifier identifier)
         {
-            if (identifier.Compare("AwsDataCatalog", "default", "prepared_stmt_select_1")) {
+            if (identifier.Compare("prepared_stmt_select_1")) {
+                const string script = @"SELECT * FROM elb_logs WHERE user_agent LIKE ?";
+                
                 return new QsiVariable
                 {
                     Identifier = CreateIdentifier("prepared_stmt_select_1"),
                     Type = QsiDataType.String,
-                    Value = @"SELECT * FROM elb_logs WHERE user_agent LIKE ?"
+                    Value = script
+                };
+            }
+            
+            if (identifier.Compare("prepared_stmt_unload_1"))
+            {
+                const string script = @"UNLOAD (SELECT * FROM elb_logs WHERE user_agent LIKE ?)
+TO 's3://my_output_bucket/'
+WITH (format='JSON')";
+                
+                return new QsiVariable
+                {
+                    Identifier = CreateIdentifier("prepared_stmt_unload_1"),
+                    Type = QsiDataType.String,
+                    Value = script
                 };
             }
 
