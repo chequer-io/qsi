@@ -4,7 +4,7 @@ using Qsi.Data.Object;
 
 namespace Qsi.Debugger.Vendor.Athena
 {
-   internal class AthenaRepositoryProvider : VendorRepositoryProvider
+    internal class AthenaRepositoryProvider : VendorRepositoryProvider
     {
         protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier)
         {
@@ -31,17 +31,51 @@ namespace Qsi.Debugger.Vendor.Athena
 
         protected override QsiTableStructure LookupTable(QsiQualifiedIdentifier identifier)
         {
-            if (identifier.Level < 1) return null;
+            if (identifier.Level <= 0) return null;
 
+            if (identifier[0].Compare("chequer")) return LookUpTableInChequer(identifier);
             if (identifier[0].Compare("AwsDataCatalog")) return LookUpTableInAwsDataCatalog(identifier);
+
+            return null;
+        }
+
+        private QsiTableStructure LookUpTableInChequer(QsiQualifiedIdentifier identifier)
+        {
+            if (identifier.Level <= 1) return null;
+
+            if (identifier[1].Compare("sakila")) return LookUpTableInChequerSakila(identifier);
+
+            return null;
+        }
+
+        private QsiTableStructure LookUpTableInChequerSakila(QsiQualifiedIdentifier identifier)
+        {
+            if (identifier.Level <= 2) return null;
+
+            if (identifier[2].Compare("actor"))
+            {
+                var table = CreateTable("chequer", "sakila", "actor");
+                AddColumns(table, "actor_id", "first_name", "last_name", "last_update");
+
+                return table;
+            }
+
+            if (identifier[2].Compare("actor_view"))
+            {
+                var view = CreateTable("chequer", "sakila", "actor_view");
+                view.Type = QsiTableType.View;
+                AddColumns(view, "actor_id", "first_name", "last_name", "last_update", "first_name || last_name");
+
+                return view;
+            }
 
             return null;
         }
 
         private QsiTableStructure LookUpTableInAwsDataCatalog(QsiQualifiedIdentifier identifier)
         {
-            if (identifier.Level < 2) return null;
-            
+            if (identifier.Level <= 1) return null;
+
             if (identifier[1].Compare("default")) return LookUpTableInAwsDataCatalogDefault(identifier);
 
             return null;
@@ -49,7 +83,7 @@ namespace Qsi.Debugger.Vendor.Athena
 
         private QsiTableStructure LookUpTableInAwsDataCatalogDefault(QsiQualifiedIdentifier identifier)
         {
-            if (identifier.Level < 3) return null;
+            if (identifier.Level <= 2) return null;
 
             if (identifier[2].Compare("elb_logs"))
             {
@@ -83,6 +117,7 @@ namespace Qsi.Debugger.Vendor.Athena
         protected override QsiScript LookupDefinition(QsiQualifiedIdentifier identifier, QsiTableType type)
         {
             Console.WriteLine($"{type.ToString()} {identifier}");
+
             if (identifier.Compare("AwsDataCatalog", "default", "elb_logs"))
             {
                 const string script = @"CREATE EXTERNAL TABLE `elb_logs`(
@@ -139,7 +174,7 @@ WHERE (user_agent LIKE '%Chrome/%')
 
                 return new QsiScript(script, QsiScriptType.Create);
             }
-            
+
             if (identifier.Compare("AwsDataCatalog", "default", "elb_logs_from_edge"))
             {
                 const string script = @"CREATE VIEW sampledb.elb_logs_from_edge AS
@@ -148,13 +183,14 @@ FROM
   sampledb.elb_logs
 WHERE (user_agent LIKE '%Edge/%')
 ";
+
                 return new QsiScript(script, QsiScriptType.Create);
             }
 
             if (identifier.Compare("prepared_stmt_select_1") && type == QsiTableType.Prepared)
             {
                 const string script = @"SELECT * FROM elb_logs WHERE user_agent LIKE ?";
-                
+
                 return new QsiScript(script, QsiScriptType.Select);
             }
 
@@ -163,7 +199,7 @@ WHERE (user_agent LIKE '%Edge/%')
                 const string script = @"UNLOAD (SELECT * FROM elb_logs WHERE user_agent LIKE ?)
 TO 's3://my_output_bucket/'
 WITH (format='JSON')";
-                
+
                 return new QsiScript(script, QsiScriptType.Unknown);
             }
 
@@ -172,9 +208,10 @@ WITH (format='JSON')";
 
         protected override QsiVariable LookupVariable(QsiQualifiedIdentifier identifier)
         {
-            if (identifier.Compare("prepared_stmt_select_1")) {
+            if (identifier.Compare("prepared_stmt_select_1"))
+            {
                 const string script = @"SELECT * FROM elb_logs WHERE user_agent LIKE ?";
-                
+
                 return new QsiVariable
                 {
                     Identifier = CreateIdentifier("prepared_stmt_select_1"),
@@ -182,13 +219,13 @@ WITH (format='JSON')";
                     Value = script
                 };
             }
-            
+
             if (identifier.Compare("prepared_stmt_unload_1"))
             {
                 const string script = @"UNLOAD (SELECT * FROM elb_logs WHERE user_agent LIKE ?)
 TO 's3://my_output_bucket/'
 WITH (format='JSON')";
-                
+
                 return new QsiVariable
                 {
                     Identifier = CreateIdentifier("prepared_stmt_unload_1"),
