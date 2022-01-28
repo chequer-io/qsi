@@ -29,15 +29,8 @@ if ($_Mode -eq [PublishMode]::Publish) {
     # git rev-parse HEAD
     $GitTagVersion = [Version]$(git describe --tags $(git rev-list --tags --max-count=1)).trimstart('v')
 
-    if ($(git rev-parse --abbrev-ref HEAD) -ne "master") {
+    if ($(git rev-parse HEAD) -ne $(git rev-parse origin/master)) {
         throw "Publish is only allow in 'master' branch."
-    }
-
-    $GitCurrentCommitId = git rev-parse HEAD
-    $GitLatestCommitId = git rev-parse origin/master
-
-    if ($GitCurrentCommitId -ne $GitLatestCommitId) {
-        throw "Not in the latest commit. (latest: $GitLatestCommitId)"
     }
 
     if ($(git diff --name-only).Length -gt 0) {
