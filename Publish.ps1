@@ -110,6 +110,14 @@ Function NuGet-Push {
     dotnet nuget push $PackageFile --source $Source --api-key $ApiKey
 }
 
+Function Get-Nuget-Package-Version {
+    Param (
+        [Parameter(Mandatory = $true)][string] $PackageName
+    )
+
+    return [Version](Invoke-WebRequest https://api.nuget.org/v3-flatcontainer/$PackageName/index.json | ConvertFrom-Json).versions[-1]
+}
+
 # Clean publish
 Remove-Directory-Safe $PublishDirectory
 
@@ -135,6 +143,30 @@ if ($_Mode -eq [PublishMode]::Publish) {
         git tag $GitTag
         git push origin $GitTag
     }
+
+    # Waiting for NuGet Indexing
+    $Packages = @()
+    $Tasks | ForEach { $Packages += $_.Project }
+
+    while ($Packages.Length -gt 0) {
+        $PackageVersion = Get-Nuget-Package-Version $Packages[0]
+
+        Write-Host "$($Packages[0]): $PackageVersion"
+        if ($PackageVersion -eq $Version) {
+            Write-Host "NuGet package $($Packages[0]) $Version has been indexed"
+
+            if ($Packages.Length -eq 1) {
+                break
+            }
+
+            $Packages = $Packages[1..($Packages.Length - 1)]
+            continue
+        }
+
+        sleep 15
+    }
+
+    Write-Host "All NuGet packages has been indexed"
 
     Write-Host "Done $Version publish." -ForegroundColor Green
 }
