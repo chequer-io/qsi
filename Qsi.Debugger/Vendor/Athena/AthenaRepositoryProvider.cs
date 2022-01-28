@@ -11,12 +11,12 @@ namespace Qsi.Debugger.Vendor.Athena
             identifier = identifier.Level switch
             {
                 1 => new QsiQualifiedIdentifier(
-                    new QsiIdentifier("AwsDataCatalog", false),
-                    new QsiIdentifier("default", false),
+                    new QsiIdentifier("chequer", false),
+                    new QsiIdentifier("sakila", false),
                     identifier[0]
                 ),
                 2 => new QsiQualifiedIdentifier(
-                    new QsiIdentifier("AwsDataCatalog", false),
+                    new QsiIdentifier("chequer", false),
                     identifier[0],
                     identifier[1]
                 ),
