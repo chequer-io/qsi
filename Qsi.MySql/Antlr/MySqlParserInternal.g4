@@ -2601,7 +2601,7 @@ runtimeFunctionCall:
     | name = CURTIME_SYMBOL timeFunctionParameters?
     | name = (DATE_ADD_SYMBOL | DATE_SUB_SYMBOL) OPEN_PAR_SYMBOL expr COMMA_SYMBOL INTERVAL_SYMBOL expr interval CLOSE_PAR_SYMBOL
     | name = EXTRACT_SYMBOL OPEN_PAR_SYMBOL interval FROM_SYMBOL expr CLOSE_PAR_SYMBOL
-    | name = GET_FORMAT_SYMBOL OPEN_PAR_SYMBOL dateTimeTtype COMMA_SYMBOL expr CLOSE_PAR_SYMBOL
+    | name = GET_FORMAT_SYMBOL OPEN_PAR_SYMBOL dateTimeType COMMA_SYMBOL expr CLOSE_PAR_SYMBOL
     | name = NOW_SYMBOL timeFunctionParameters?
     | name = POSITION_SYMBOL OPEN_PAR_SYMBOL bitExpr IN_SYMBOL expr CLOSE_PAR_SYMBOL
     | substringFunction
@@ -2671,11 +2671,11 @@ weightStringLevelListItem:
     real_ulong_number ((ASC_SYMBOL | DESC_SYMBOL) REVERSE_SYMBOL? | REVERSE_SYMBOL)?
 ;
 
-dateTimeTtype:
+dateTimeType:
     DATE_SYMBOL
     | TIME_SYMBOL
-    | DATETIME_SYMBOL
     | TIMESTAMP_SYMBOL
+    | DATETIME_SYMBOL
 ;
 
 trimFunction:
@@ -2778,31 +2778,29 @@ not2Rule:
 // None of the microsecond variants can be used in schedules (e.g. events).
 interval:
     intervalTimeStamp
-    | (
-        SECOND_MICROSECOND_SYMBOL
-        | MINUTE_MICROSECOND_SYMBOL
-        | MINUTE_SECOND_SYMBOL
-        | HOUR_MICROSECOND_SYMBOL
-        | HOUR_SECOND_SYMBOL
-        | HOUR_MINUTE_SYMBOL
-        | DAY_MICROSECOND_SYMBOL
-        | DAY_SECOND_SYMBOL
-        | DAY_MINUTE_SYMBOL
-        | DAY_HOUR_SYMBOL
-        | YEAR_MONTH_SYMBOL
-    )
+    | DAY_HOUR_SYMBOL
+    | DAY_MICROSECOND_SYMBOL
+    | DAY_MINUTE_SYMBOL
+    | DAY_SECOND_SYMBOL
+    | HOUR_MICROSECOND_SYMBOL
+    | HOUR_MINUTE_SYMBOL
+    | HOUR_SECOND_SYMBOL
+    | MINUTE_MICROSECOND_SYMBOL
+    | MINUTE_SECOND_SYMBOL
+    | SECOND_MICROSECOND_SYMBOL
+    | YEAR_MONTH_SYMBOL
 ;
 
 // Support for SQL_TSI_* units is added by mapping those to tokens without SQL_TSI_ prefix.
 intervalTimeStamp:
-    MICROSECOND_SYMBOL
-    | SECOND_SYMBOL
-    | MINUTE_SYMBOL
-    | HOUR_SYMBOL
-    | DAY_SYMBOL
+    DAY_SYMBOL
     | WEEK_SYMBOL
+    | HOUR_SYMBOL
+    | MINUTE_SYMBOL
     | MONTH_SYMBOL
     | QUARTER_SYMBOL
+    | SECOND_SYMBOL
+    | MICROSECOND_SYMBOL
     | YEAR_SYMBOL
 ;
 

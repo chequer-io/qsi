@@ -961,7 +961,7 @@ namespace Qsi.MySql.Tree
                     {
                         n.Member.SetValue(member);
 
-                        n.Parameters.Add(VisitDateTimeTtype(context.dateTimeTtype()));
+                        n.Parameters.Add(VisitDateTimeType(context.dateTimeType()));
                         n.Parameters.Add(VisitExpr(context.expr(0)));
 
                         MySqlTree.PutContextSpan(n, context);
@@ -1541,7 +1541,7 @@ namespace Qsi.MySql.Tree
             });
         }
 
-        public static QsiTypeExpressionNode VisitDateTimeTtype(DateTimeTtypeContext context)
+        public static QsiTypeExpressionNode VisitDateTimeType(DateTimeTypeContext context)
         {
             var node = new QsiTypeExpressionNode
             {

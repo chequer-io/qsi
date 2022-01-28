@@ -487,6 +487,7 @@ GET_SYMBOL:                      G E T                                       {se
 GENERAL_SYMBOL:                  G E N E R A L;
 GENERATED_SYMBOL:                G E N E R A T E D                           {serverVersion >= 50707}?;
 GROUP_REPLICATION_SYMBOL:        G R O U P '_' R E P L I C A T I O N         {serverVersion >= 50707}?;
+GEOMCOLLECTION_SYMBOL:           G E O M C O L L E C T I O N                 -> type(GEOMETRYCOLLECTION_SYMBOL);
 GEOMETRYCOLLECTION_SYMBOL:       G E O M E T R Y C O L L E C T I O N;        // MYSQL
 GEOMETRY_SYMBOL:                 G E O M E T R Y;
 GET_FORMAT_SYMBOL:               G E T '_' F O R M A T;                      // MYSQL-FUNC
@@ -880,8 +881,8 @@ TEXT_SYMBOL:                     T E X T;
 THAN_SYMBOL:                     T H A N;
 THEN_SYMBOL:                     T H E N;                                    // SQL-2003-R
 TIMESTAMP_SYMBOL:                T I M E S T A M P;                          // SQL-2003-R
-TIMESTAMP_ADD_SYMBOL:            T I M E S T A M P '_' A D D;
-TIMESTAMP_DIFF_SYMBOL:           T I M E S T A M P '_' D I F F;
+TIMESTAMP_ADD_SYMBOL:            T I M E S T A M P A D D;
+TIMESTAMP_DIFF_SYMBOL:           T I M E S T A M P D I F F;
 TIME_SYMBOL:                     T I M E;                                    // SQL-2003-R
 TINYBLOB_SYMBOL:                 T I N Y B L O B;                            // MYSQL
 TINYINT_SYMBOL:                  T I N Y I N T;                              // MYSQL
@@ -1046,7 +1047,7 @@ MEMBER_SYMBOL:                   M E M B E R                                 {se
 
 RANDOM_SYMBOL:                   R A N D O M                                 {serverVersion >= 80018}?; // MYSQL
 MASTER_COMPRESSION_ALGORITHM_SYMBOL:
-    M A S T E R '_' C O M P R E S S I O N '_' A L G O R I T H M              {serverVersion >= 80018}?
+    M A S T E R '_' C O M P R E S S I O N '_' A L G O R I T H M S            {serverVersion >= 80018}?
 ;                                                                            // MYSQL
 MASTER_ZSTD_COMPRESSION_LEVEL_SYMBOL:
     M A S T E R '_' Z S T D '_' C O M P R E S S I O N '_' L E V E L          {serverVersion >= 80018}?
