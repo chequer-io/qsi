@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Antlr4.Runtime.Tree;
 using Qsi.Athena.Common;
 using Qsi.Athena.Internal;
 using Qsi.Athena.Tree.Nodes;
@@ -1276,67 +1277,7 @@ namespace Qsi.Athena.Tree.Visitors
                 };
             }
 
-            return ExpressionVisitor.VisitParameterExpression(context.parameterExpression());
-        }
-
-        public static QsiExpressionNode VisitGroupingElement(GroupingElementContext context)
-        {
-            switch (context)
-            {
-                case SingleGroupingSetContext singleGroupingSet:
-                {
-                    return VisitGroupingSet(singleGroupingSet.groupingSet());
-                }
-
-                case RollupContext rollup:
-                {
-                    var invokeNode = AthenaTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
-                    invokeNode.Member.Value = TreeHelper.CreateFunction("ROLLUP");
-                    invokeNode.Parameters.AddRange(rollup.expression().Select(VisitExpression));
-
-                    return invokeNode;
-                }
-
-                case CubeContext cube:
-                {
-                    var invokeNode = AthenaTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
-                    invokeNode.Member.Value = TreeHelper.CreateFunction("CUBE");
-                    invokeNode.Parameters.AddRange(cube.expression().Select(VisitExpression));
-
-                    return invokeNode;
-                }
-
-                case MultipleGroupingSetsContext multipleGroupingSets:
-                {
-                    var invokeNode = AthenaTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
-                    invokeNode.Member.Value = TreeHelper.CreateFunction(AthenaKnownFunction.GroupingSets);
-                    invokeNode.Parameters.AddRange(multipleGroupingSets.groupingSet().Select(VisitGroupingSet));
-
-                    return invokeNode;
-                }
-
-                default:
-                    throw TreeHelper.NotSupportedTree(context);
-            }
-        }
-
-        public static QsiExpressionNode VisitGroupingSet(GroupingSetContext context)
-        {
-            if (context.GetText()[0] == '(')
-            {
-                var multipleExpressionNode = AthenaTree.CreateWithSpan<QsiMultipleExpressionNode>(context);
-                multipleExpressionNode.Elements.AddRange(context.expression().Select(VisitExpression));
-
-                return multipleExpressionNode;
-            }
-
-            return VisitExpression(context.expression(0));
-        }
-
-        public static QsiOrderExpressionNode VisitSortItem(SortItemContext context)
-        {
-            // TODO: Implement
-            throw TreeHelper.NotSupportedTree(context);
+            return VisitParameterExpression(context.parameterExpression());
         }
 
         public static QsiWhereExpressionNode VisitWhere(BooleanExpressionContext context, ITerminalNode whereNode)
