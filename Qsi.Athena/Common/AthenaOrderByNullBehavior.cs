@@ -1,8 +1,7 @@
-namespace Qsi.Athena.Common
+namespace Qsi.Athena.Common;
+
+public enum AthenaOrderByNullBehavior
 {
-    public enum AthenaOrderByNullBehavior
-    {
-        NullsFirst,
-        NullsLast
-    }
+    NullsFirst,
+    NullsLast
 }

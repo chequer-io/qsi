@@ -5,9 +5,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Qsi\Qsi.csproj" />
+        <ProjectReference Include="..\Qsi\Qsi.csproj"/>
     </ItemGroup>
 
-    <Import Project="..\Qsi.Shared\Qsi.Shared.projitems" Label="Shared" />
+    <Import Project="..\Qsi.Shared\Qsi.Shared.projitems" Label="Shared"/>
 
 </Project>

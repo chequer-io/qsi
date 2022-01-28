@@ -1,9 +1,8 @@
 using Qsi.Tree;
 
-namespace Qsi.Athena.Common
+namespace Qsi.Athena.Common;
+
+public class AthenaOrderExpressionNode : QsiOrderExpressionNode
 {
-    public class AthenaOrderExpressionNode : QsiOrderExpressionNode
-    {
-        public AthenaOrderByNullBehavior? NullBehavior { get; set; }
-    }
+    public AthenaOrderByNullBehavior? NullBehavior { get; set; }
 }

@@ -5,19 +5,16 @@ using Qsi.Data;
 using Qsi.Parsing;
 using Qsi.Tree;
 
-namespace Qsi.Athena
+namespace Qsi.Athena;
+
+public class AthenaParser : IQsiTreeParser
 {
-    using static SqlBaseParser;
-
-    public class AthenaParser : IQsiTreeParser
+    public IQsiTreeNode Parse(QsiScript script, CancellationToken cancellationToken = default)
     {
-        public IQsiTreeNode Parse(QsiScript script, CancellationToken cancellationToken = default)
-        {
-            var (_, result) = SqlParser.Parse(script.Script, parser => parser.singleStatement());
+        var (_, result) = SqlParser.Parse(script.Script, parser => parser.singleStatement());
 
-            var statement = result.statement();
+        var statement = result.statement();
 
-            return ActionVisitor.VisitStatement(statement);
-        }
+        return ActionVisitor.VisitStatement(statement);
     }
 }

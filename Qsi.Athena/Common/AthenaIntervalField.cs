@@ -1,12 +1,11 @@
-namespace Qsi.Athena.Common
+namespace Qsi.Athena.Common;
+
+public enum AthenaIntervalField
 {
-    public enum AthenaIntervalField
-    {
-        Year,
-        Month,
-        Day,
-        Hour,
-        Minute,
-        Second
-    }
+    Year,
+    Month,
+    Day,
+    Hour,
+    Minute,
+    Second
 }

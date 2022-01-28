@@ -1,8 +1,7 @@
-namespace Qsi.Athena.Common
+namespace Qsi.Athena.Common;
+
+public enum AthenaProcessingMode
 {
-    public enum AthenaProcessingMode
-    {
-        Running,
-        Final
-    }
+    Running,
+    Final
 }

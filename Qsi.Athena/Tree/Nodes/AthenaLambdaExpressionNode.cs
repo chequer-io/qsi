@@ -3,19 +3,18 @@ using Qsi.Data;
 using Qsi.Tree;
 using Qsi.Utilities;
 
-namespace Qsi.Athena.Tree.Nodes
+namespace Qsi.Athena.Tree.Nodes;
+
+public class AthenaLambdaExpressionNode : QsiExpressionNode
 {
-    public class AthenaLambdaExpressionNode: QsiExpressionNode
+    public AthenaLambdaExpressionNode()
     {
-        public QsiIdentifier[] Identifiers { get; set; }
-
-        public QsiTreeNodeProperty<QsiExpressionNode> Expression { get; }
-
-        public override IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Expression);
-
-        public AthenaLambdaExpressionNode()
-        {
-            Expression = new QsiTreeNodeProperty<QsiExpressionNode>(this);
-        }
+        Expression = new QsiTreeNodeProperty<QsiExpressionNode>(this);
     }
+
+    public QsiIdentifier[] Identifiers { get; set; }
+
+    public QsiTreeNodeProperty<QsiExpressionNode> Expression { get; }
+
+    public override IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Expression);
 }

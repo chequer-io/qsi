@@ -1,12 +1,11 @@
 using Qsi.Analyzers.Table;
 using Qsi.Data;
 
-namespace Qsi.Athena.Analyzers
+namespace Qsi.Athena.Analyzers;
+
+public sealed class AthenaUnloadTableResult : QsiTableResult
 {
-    public sealed class AthenaUnloadTableResult : QsiTableResult
+    public AthenaUnloadTableResult(QsiTableStructure table) : base(table)
     {
-        public AthenaUnloadTableResult(QsiTableStructure table) : base(table)
-        {
-        }
     }
 }

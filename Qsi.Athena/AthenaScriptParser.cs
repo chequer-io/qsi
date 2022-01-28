@@ -3,21 +3,20 @@ using Qsi.Data;
 using Qsi.Parsing.Common;
 using Qsi.Shared.Extensions;
 
-namespace Qsi.Athena
-{
-    public class AthenaScriptParser : CommonScriptParser
-    {
-        private const string table = "TABLE";
-        private const string values = "VALUES";
+namespace Qsi.Athena;
 
-        protected override QsiScriptType GetSuitableType(CommonScriptCursor cursor, IReadOnlyList<Token> tokens, Token[] leadingTokens)
+public class AthenaScriptParser : CommonScriptParser
+{
+    private const string table = "TABLE";
+    private const string values = "VALUES";
+
+    protected override QsiScriptType GetSuitableType(CommonScriptCursor cursor, IReadOnlyList<Token> tokens, Token[] leadingTokens)
+    {
+        return leadingTokens.Length switch
         {
-            return leadingTokens.Length switch
-            {
-                >= 1 when table.EqualsIgnoreCase(cursor.Value[leadingTokens[0].Span]) ||
-                          values.EqualsIgnoreCase(cursor.Value[leadingTokens[0].Span]) => QsiScriptType.Select,
-                _ => base.GetSuitableType(cursor, tokens, leadingTokens)
-            };
-        }
+            >= 1 when table.EqualsIgnoreCase(cursor.Value[leadingTokens[0].Span]) ||
+                      values.EqualsIgnoreCase(cursor.Value[leadingTokens[0].Span]) => QsiScriptType.Select,
+            _ => base.GetSuitableType(cursor, tokens, leadingTokens)
+        };
     }
 }

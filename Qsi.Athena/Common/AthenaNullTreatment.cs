@@ -1,8 +1,7 @@
-namespace Qsi.Athena.Common
+namespace Qsi.Athena.Common;
+
+public enum AthenaNullTreatment
 {
-    public enum AthenaNullTreatment
-    {
-        IgnoreNulls,
-        RespectNulls
-    }
+    IgnoreNulls,
+    RespectNulls
 }

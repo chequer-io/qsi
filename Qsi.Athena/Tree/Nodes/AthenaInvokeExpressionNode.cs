@@ -3,46 +3,45 @@ using System.Linq;
 using Qsi.Athena.Common;
 using Qsi.Tree;
 
-namespace Qsi.Athena.Tree.Nodes
+namespace Qsi.Athena.Tree.Nodes;
+
+public class AthenaInvokeExpressionNode : QsiInvokeExpressionNode
 {
-    public class AthenaInvokeExpressionNode : QsiInvokeExpressionNode
+    public AthenaInvokeExpressionNode()
     {
-        public AthenaSetQuantifier? SetQuantifier { get; set; }
+        OrderBy = new QsiTreeNodeProperty<QsiMultipleOrderExpressionNode>(this);
+        Filter = new QsiTreeNodeProperty<QsiExpressionNode>(this);
+        Over = new QsiTreeNodeProperty<AthenaWindowExpressionNode>(this);
+    }
 
-        public AthenaProcessingMode? ProcessingMode { get; set; }
+    public AthenaSetQuantifier? SetQuantifier { get; set; }
 
-        public AthenaNullTreatment? NullTreatment { get; set; }
+    public AthenaProcessingMode? ProcessingMode { get; set; }
 
-        public QsiTreeNodeProperty<QsiMultipleOrderExpressionNode> OrderBy { get; }
+    public AthenaNullTreatment? NullTreatment { get; set; }
 
-        public QsiTreeNodeProperty<QsiExpressionNode> Filter { get; }
+    public QsiTreeNodeProperty<QsiMultipleOrderExpressionNode> OrderBy { get; }
 
-        public QsiTreeNodeProperty<AthenaWindowExpressionNode> Over { get; }
+    public QsiTreeNodeProperty<QsiExpressionNode> Filter { get; }
 
-        public override IEnumerable<IQsiTreeNode> Children
+    public QsiTreeNodeProperty<AthenaWindowExpressionNode> Over { get; }
+
+    public override IEnumerable<IQsiTreeNode> Children
+    {
+        get
         {
-            get
-            {
-                IEnumerable<IQsiTreeNode> enumerable = base.Children;
+            IEnumerable<IQsiTreeNode> enumerable = base.Children;
 
-                if (!OrderBy.IsEmpty)
-                    enumerable = enumerable.Append(OrderBy.Value);
+            if (!OrderBy.IsEmpty)
+                enumerable = enumerable.Append(OrderBy.Value);
 
-                if (!Filter.IsEmpty)
-                    enumerable = enumerable.Append(Filter.Value);
+            if (!Filter.IsEmpty)
+                enumerable = enumerable.Append(Filter.Value);
 
-                if (!Over.IsEmpty)
-                    enumerable = enumerable.Append(Over.Value);
+            if (!Over.IsEmpty)
+                enumerable = enumerable.Append(Over.Value);
 
-                return enumerable;
-            }
-        }
-
-        public AthenaInvokeExpressionNode()
-        {
-            OrderBy = new QsiTreeNodeProperty<QsiMultipleOrderExpressionNode>(this);
-            Filter = new QsiTreeNodeProperty<QsiExpressionNode>(this);
-            Over = new QsiTreeNodeProperty<AthenaWindowExpressionNode>(this);
+            return enumerable;
         }
     }
 }

@@ -1,9 +1,8 @@
 using Qsi.Tree;
 
-namespace Qsi.Athena.Common
+namespace Qsi.Athena.Common;
+
+public class AthenaGroupingExpressionNode : QsiGroupingExpressionNode
 {
-    public class AthenaGroupingExpressionNode : QsiGroupingExpressionNode
-    {
-        public AthenaSetQuantifier? SetQuantifier { get; set; }
-    }
+    public AthenaSetQuantifier? SetQuantifier { get; set; }
 }

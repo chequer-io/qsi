@@ -1,8 +1,7 @@
-﻿namespace Qsi.Athena.Tree
+﻿namespace Qsi.Athena.Tree;
+
+public enum AthenaSetQuantifier
 {
-    public enum AthenaSetQuantifier
-    {
-        All,
-        Distinct
-    }
+    All,
+    Distinct
 }

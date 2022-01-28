@@ -2,17 +2,16 @@
 using Qsi.Tree;
 using Qsi.Utilities;
 
-namespace Qsi.Athena.Tree
+namespace Qsi.Athena.Tree;
+
+public sealed class AthenaLateralTableNode : QsiTableNode
 {
-    public sealed class AthenaLateralTableNode : QsiTableNode
+    public AthenaLateralTableNode()
     {
-        public QsiTreeNodeProperty<QsiTableNode> Source { get; }
-
-        public override IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Source);
-
-        public AthenaLateralTableNode()
-        {
-            Source = new QsiTreeNodeProperty<QsiTableNode>(this);
-        }
+        Source = new QsiTreeNodeProperty<QsiTableNode>(this);
     }
+
+    public QsiTreeNodeProperty<QsiTableNode> Source { get; }
+
+    public override IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Source);
 }
