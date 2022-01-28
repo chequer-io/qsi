@@ -35,6 +35,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qsi.Trino", "Qsi.Trino\Qsi.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qsi.Tests", "Qsi.Tests\Qsi.Tests.csproj", "{4C7782B4-035E-47AF-ACB9-120FABF833CF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qsi.Athena", "Qsi.Athena\Qsi.Athena.csproj", "{CBA2D064-7DEB-427A-B26B-41179F60205F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -97,6 +99,10 @@ Global
 		{4C7782B4-035E-47AF-ACB9-120FABF833CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4C7782B4-035E-47AF-ACB9-120FABF833CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4C7782B4-035E-47AF-ACB9-120FABF833CF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CBA2D064-7DEB-427A-B26B-41179F60205F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CBA2D064-7DEB-427A-B26B-41179F60205F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CBA2D064-7DEB-427A-B26B-41179F60205F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CBA2D064-7DEB-427A-B26B-41179F60205F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -113,6 +119,7 @@ Global
 		{C872980C-93A6-458E-8281-962C5191C479} = {97493A14-DF8A-4A8A-A521-5900DFAC1CDA}
 		{79C206A2-2A70-4AA2-B705-858E5B145336} = {97493A14-DF8A-4A8A-A521-5900DFAC1CDA}
 		{66C882CC-E664-457B-9A8A-5385E2BA7AAA} = {97493A14-DF8A-4A8A-A521-5900DFAC1CDA}
+		{CBA2D064-7DEB-427A-B26B-41179F60205F} = {97493A14-DF8A-4A8A-A521-5900DFAC1CDA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A12491D7-EB7D-4F23-A7B6-6B4AB1DD08D9}

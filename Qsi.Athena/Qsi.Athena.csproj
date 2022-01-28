@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Qsi\Qsi.csproj"/>
+    </ItemGroup>
+
+    <Import Project="..\Qsi.Shared\Qsi.Shared.projitems" Label="Shared"/>
+
+</Project>

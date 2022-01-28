@@ -1,6 +1,5 @@
 ﻿using Qsi.Diagnostics;
 using Qsi.Services;
-using Qsi.Trino;
 using Qsi.Trino.Diagnostics;
 
 namespace Qsi.Debugger.Vendor.Trino

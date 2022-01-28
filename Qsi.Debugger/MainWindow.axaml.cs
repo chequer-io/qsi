@@ -22,6 +22,7 @@ using Qsi.Debugger.Controls;
 using Qsi.Debugger.Models;
 using Qsi.Debugger.Utilities;
 using Qsi.Debugger.Vendor;
+using Qsi.Debugger.Vendor.Athena;
 using Qsi.Debugger.Vendor.Cql;
 using Qsi.Debugger.Vendor.Hana;
 using Qsi.Debugger.Vendor.Impala;
@@ -78,7 +79,8 @@ namespace Qsi.Debugger
                 ["Impala 2.11.x"] = new(() => new ImpalaDebugger(new Version(2, 11, 0))),
                 ["Impala 3.x"] = new(() => new ImpalaDebugger(new Version(3, 0, 0))),
                 ["Trino"] = new(() => new TrinoDebugger()),
-                ["Oracle"] = new(() => new OracleDebugger())
+                ["Oracle"] = new(() => new OracleDebugger()),
+                ["Athena"] = new(() => new AthenaDebugger())
             };
 
             _cbLanguages = this.Find<ComboBox>("cbLanguages");

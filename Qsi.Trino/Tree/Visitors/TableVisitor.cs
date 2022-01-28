@@ -196,10 +196,9 @@ namespace Qsi.Trino.Tree.Visitors
                 {
                     for (int i = 1; i < relations.Length; i++)
                     {
-                        var leftContext = relations[i - 1];
                         var rightContext = relations[i];
 
-                        var joinedTable = TrinoTree.CreateWithSpan<QsiJoinedTableNode>(leftContext.Start, rightContext.Stop);
+                        var joinedTable = TrinoTree.CreateWithSpan<QsiJoinedTableNode>(relations[0].Start, rightContext.Stop);
 
                         joinedTable.IsComma = true;
                         joinedTable.Left.Value = source;
