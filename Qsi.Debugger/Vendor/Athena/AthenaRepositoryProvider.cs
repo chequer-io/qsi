@@ -64,15 +64,16 @@ namespace Qsi.Debugger.Vendor.Athena
                 var view = CreateTable("AwsDataCatalog", "default", "elb_logs_from_chrome");
                 view.Type = QsiTableType.View;
                 AddColumns(view, "request_timestamp", "elb_name", "request_ip", "request_port", "backend_ip", "backend_port", "request_processing_time", "backend_processing_time", "client_response_time", "elb_response_code", "backend_response_code", "received_bytes", "sent_bytes", "request_verb", "url", "protocol", "user_agent", "ssl_cipher", "ssl_protocol");
-                
+
                 return view;
             }
 
-            if (identifier[3].Compare("elb_logs_from_edge")) {
-                var view = CreateTable("AwsDataCatalog", "default", "elb_logs_from_chrome");
+            if (identifier[2].Compare("elb_logs_from_edge"))
+            {
+                var view = CreateTable("AwsDataCatalog", "default", "elb_logs_from_edge");
                 view.Type = QsiTableType.View;
                 AddColumns(view, "request_timestamp", "elb_name", "request_ip", "request_port", "backend_ip", "backend_port", "request_processing_time", "backend_processing_time", "client_response_time", "elb_response_code", "backend_response_code", "received_bytes", "sent_bytes", "request_verb", "url", "protocol", "user_agent", "ssl_cipher", "ssl_protocol");
-                
+
                 return view;
             }
 
