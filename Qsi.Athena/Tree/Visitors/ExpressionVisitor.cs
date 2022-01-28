@@ -506,10 +506,14 @@ namespace Qsi.Athena.Tree.Visitors
         private static AthenaExistsExpressionNode VisitExists(ExistsContext context)
         {
             var query = context.query();
-            var queryNode = TableVisitor.VisitQuery(query);
 
+            var queryNode = TableVisitor.VisitQuery(query);
+            
+            var tableNode = AthenaTree.CreateWithSpan<QsiTableExpressionNode>(query);
+            tableNode.Table.Value = queryNode;
+            
             var node = AthenaTree.CreateWithSpan<AthenaExistsExpressionNode>(context);
-            node.Query.Value = queryNode;
+            node.Query.Value = tableNode;
 
             return node;
         }
