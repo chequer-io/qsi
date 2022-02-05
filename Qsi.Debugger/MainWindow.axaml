@@ -141,7 +141,7 @@
         <!--  Result  -->
 
         <Grid Grid.Row="2" Grid.Column="6" RowDefinitions="2*,6,1*">
-            <TreeView x:Name="tvResult" IsEnabled="False">
+            <TreeView x:Name="tvResult">
                 <TreeView.DataTemplates>
                     <TreeDataTemplate DataType="md:QsiSplitTreeItem">
                         <Rectangle Margin="0,6" Fill="{DynamicResource ThemeBackgroundBrush}" Height="2" />
