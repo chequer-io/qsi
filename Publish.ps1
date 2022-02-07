@@ -149,6 +149,8 @@ if ($_Mode -eq [PublishMode]::Publish) {
     $Packages = @()
     $Tasks | ForEach { $Packages += $_.Project }
 
+    Write-Host "Waiting for indexing NuGet packages"
+
     while ($Packages.Length -gt 0) {
         $PackageVersion = Get-Nuget-Package-Version $Packages[0]
 
