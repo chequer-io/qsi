@@ -777,22 +777,14 @@ namespace Qsi.Trino.Tree.Visitors
             return node;
         }
 
+        // EXTRACT( <field> FROM <expression> )
         public static QsiExpressionNode VisitExtract(ExtractContext context)
         {
             var node = TrinoTree.CreateWithSpan<QsiInvokeExpressionNode>(context);
+
+            // field ignored
+
             node.Member.Value = TreeHelper.CreateFunction("EXTRACT");
-
-            node.Parameters.Add(new QsiColumnExpressionNode
-            {
-                Column =
-                {
-                    Value = new QsiColumnReferenceNode
-                    {
-                        Name = new QsiQualifiedIdentifier(context.identifier().qi)
-                    }
-                }
-            });
-
             node.Parameters.Add(VisitValueExpression(context.valueExpression()));
 
             return node;
@@ -863,7 +855,7 @@ namespace Qsi.Trino.Tree.Visitors
 
             if (context.over() is not null)
                 node.Over.Value = VisitOver(context.over());
-            
+
             if (context.HasToken(ASTERISK))
             {
                 var columnExpr = new QsiColumnExpressionNode();
@@ -888,7 +880,6 @@ namespace Qsi.Trino.Tree.Visitors
 
             if (context.nullTreatment() is not null)
                 node.NullTreatment = context.nullTreatment().HasToken(IGNORE) ? TrinoNullTreatment.IgnoreNulls : TrinoNullTreatment.RespectNulls;
-
 
             return node;
         }

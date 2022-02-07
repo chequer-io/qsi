@@ -32,6 +32,19 @@ public partial class MySqlTest
 "
         },
 
+        new("INSERT INTO actor SET actor.first_name = 'MORRIS', actor.last_name = 'BABO'")
+        {
+            ExpectedResult = @"
++-------------------------------------------------+
+|          qsi_unit_tests.actor - INSERT          |
++----------+------------+-----------+-------------+
+| actor_id | first_name | last_name | last_update |
++----------+------------+-----------+-------------+
+| default  | MORRIS     | BABO      | default     |
++-------------------------------------------------+
+"
+        },
+
         new("INSERT INTO actor SELECT 1, 'MORRIS', 'BABO', null")
         {
             ExpectedResult = @"
@@ -61,7 +74,7 @@ public partial class MySqlTest
 
         new("UPDATE actor SET first_name = 'MORRIS', last_name = 'BABO' WHERE actor_id = 1")
         {
-        ExpectedResult = @"
+            ExpectedResult = @"
 +-------------------------------------------------+
 |      qsi_unit_tests.actor - UPDATE_BEFORE       |
 +----------+------------+-----------+-------------+
@@ -80,7 +93,28 @@ public partial class MySqlTest
 "
         },
 
-        new("UPDATE city, actor SET first_name = 'MORRIS', last_name = 'BABO', city_id = 2 WHERE actor_id = 1 LIMIT 1")
+        new("UPDATE actor SET actor.first_name = 'MORRIS', actor.last_name = 'BABO' WHERE actor.actor_id = 1")
+        {
+            ExpectedResult = @"
++-------------------------------------------------+
+|      qsi_unit_tests.actor - UPDATE_BEFORE       |
++----------+------------+-----------+-------------+
+| actor_id | first_name | last_name | last_update |
++----------+------------+-----------+-------------+
+| unknown  | PENELOPE   | GUINESS   | unknown     |
++-------------------------------------------------+
+
++-------------------------------------------------+
+|       qsi_unit_tests.actor - UPDATE_AFTER       |
++----------+------------+-----------+-------------+
+| actor_id | first_name | last_name | last_update |
++----------+------------+-----------+-------------+
+| unset    | MORRIS     | BABO      | unset       |
++-------------------------------------------------+
+"
+        },
+
+        new("UPDATE city, actor SET actor.first_name = 'MORRIS', actor.last_name = 'BABO', city.city_id = 2 WHERE actor_id = 1 LIMIT 1")
         {
             ExpectedResult = @"
 +-------------------------------------------------+

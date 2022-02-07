@@ -927,30 +927,8 @@ namespace Qsi.Analyzers.Action
                 {
                     recursiveTracker.Add(column);
 
-                    if (column.Parent.HasIdentifier)
-                    {
-                        // * case - Explicit access
-                        if (QualifiedIdentifierComparer.Equals(column.Parent.Identifier, alias))
-                            return i;
-
-                        // * case - N Level implicit access
-                        if (context.Options.UseExplicitRelationAccess)
-                            break;
-
-                        if (!QsiUtility.IsReferenceType(column.Parent.Type))
-                            continue;
-
-                        if (column.Parent.Identifier.Level <= identifier.Level)
-                            break;
-
-                        QsiIdentifier[] partialIdentifiers = column.Parent.Identifier[^identifier.Level..];
-                        var partialIdentifier = new QsiQualifiedIdentifier(partialIdentifiers);
-
-                        if (QualifiedIdentifierComparer.Equals(partialIdentifier, alias))
-                            return i;
-
-                        break;
-                    }
+                    if (Match(context, column.Parent, alias))
+                        return i;
 
                     foreach (var refColumn in column.References.Where(refColumn => !recursiveTracker.Contains(refColumn)))
                     {
