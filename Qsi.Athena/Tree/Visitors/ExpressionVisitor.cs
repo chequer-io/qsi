@@ -1295,4 +1295,25 @@ internal static class ExpressionVisitor
         return node;
     }
     #endregion
+
+    internal static QsiColumnsDeclarationNode VisitViewColumnAliases(ViewColumnAliasesContext context)
+    {
+        IList<IdentifierContext> columnNames = context._columnName;
+
+        IEnumerable<QsiSequentialColumnNode> columnNodes = columnNames.Select(columnName =>
+        {
+            var aliasNode = AthenaTree.CreateWithSpan<QsiAliasNode>(columnName);
+            aliasNode.Name = columnName.qi;
+
+            var node = AthenaTree.CreateWithSpan<QsiSequentialColumnNode>(columnName);
+            node.Alias.Value = aliasNode;
+            
+            return node;
+        });
+
+        var node = AthenaTree.CreateWithSpan<QsiColumnsDeclarationNode>(context);
+        node.Columns.AddRange(columnNodes);
+
+        return node;
+    }
 }

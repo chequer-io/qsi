@@ -183,8 +183,37 @@ internal static class ActionVisitor
 
     public static QsiTreeNode VisitCreateView(CreateViewContext context)
     {
-        // Ignore CreateView Action
-        throw TreeHelper.NotSupportedTree(context);
+        var viewName = context.viewName;
+        var query = context.query();
+        
+        var queryNode = TableVisitor.VisitQuery(query);
+            
+        var node = AthenaTree.CreateWithSpan<QsiViewDefinitionNode>(context);
+        node.Identifier = viewName.qqi;
+        node.Source.Value = queryNode;
+        
+        node.Columns.Value = context.viewColumnAliases() is {} viewColumnAliases
+            ? ExpressionVisitor.VisitViewColumnAliases(viewColumnAliases)
+            : TreeHelper.CreateAllColumnsDeclaration();
+            
+        // TODO: [Question] What is Directives?
+        // node.Directives = ?
+
+        // TODO: [Question] Is HasToken OK? if REPLACE or EXISTS token in subquery
+        if (context.HasToken(REPLACE))
+        {
+            node.ConflictBehavior = QsiDefinitionConflictBehavior.Replace;
+        }
+        else if (context.HasToken(EXISTS))
+        {
+            node.ConflictBehavior = QsiDefinitionConflictBehavior.Ignore;   
+        }
+        else
+        {
+            node.ConflictBehavior = QsiDefinitionConflictBehavior.None;
+        }
+
+        return node;
     }
 
     public static QsiTreeNode VisitDropView(DropViewContext context)

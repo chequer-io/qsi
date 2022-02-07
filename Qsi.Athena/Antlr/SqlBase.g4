@@ -601,6 +601,7 @@ statement
             columnName=identifier[null] (COMMENT columnComment=string)?
             (',' columnName=identifier[null] (COMMENT columnComment=string)? )*
         )?
+        viewColumnAliases?
         (COMMENT viewComment=string)?
         (TBLPROPERTIES tblProperties=stringProperties)?
         AS query                                                                                                        #createView
@@ -1769,6 +1770,13 @@ sampleType
 
 aliasedRelation
     : relationPrimary (AS? identifier[null] columnAliases?)?
+    ;
+    
+viewColumnAliases
+    : '('
+        columnName+=identifier[null] (COMMENT string)?
+        (',' columnName+=identifier[null] (COMMENT string)? )*
+      ')'
     ;
 
 columnAliases

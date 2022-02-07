@@ -165,10 +165,10 @@ TBLPROPERTIES (
 
             if (identifier.Compare("AwsDataCatalog", "default", "elb_logs_from_chrome"))
             {
-                const string script = @"CREATE VIEW sampledb.elb_logs_from_chrome AS
+                const string script = @"CREATE VIEW AwsDataCatalog.default.elb_logs_from_chrome AS
 SELECT *
 FROM
-  sampledb.elb_logs
+  AwsDataCatalog.default.elb_logs
 WHERE (user_agent LIKE '%Chrome/%')
 ";
 
@@ -177,10 +177,10 @@ WHERE (user_agent LIKE '%Chrome/%')
 
             if (identifier.Compare("AwsDataCatalog", "default", "elb_logs_from_edge"))
             {
-                const string script = @"CREATE VIEW sampledb.elb_logs_from_edge AS
+                const string script = @"CREATE VIEW AwsDataCatalog.default.elb_logs_from_edge AS
 SELECT *
 FROM
-  sampledb.elb_logs
+  AwsDataCatalog.default.elb_logs
 WHERE (user_agent LIKE '%Edge/%')
 ";
 
@@ -189,14 +189,14 @@ WHERE (user_agent LIKE '%Edge/%')
 
             if (identifier.Compare("prepared_stmt_select_1") && type == QsiTableType.Prepared)
             {
-                const string script = @"SELECT * FROM elb_logs WHERE user_agent LIKE ?";
+                const string script = @"SELECT * FROM AwsDataCatalog.default.elb_logs WHERE user_agent LIKE ?";
 
                 return new QsiScript(script, QsiScriptType.Select);
             }
 
             if (identifier.Compare("prepared_stmt_unload_1") && type == QsiTableType.Prepared)
             {
-                const string script = @"UNLOAD (SELECT * FROM elb_logs WHERE user_agent LIKE ?)
+                const string script = @"UNLOAD (SELECT * FROM AwsDataCatalog.default.elb_logs WHERE user_agent LIKE ?)
 TO 's3://my_output_bucket/'
 WITH (format='JSON')";
 
@@ -210,7 +210,7 @@ WITH (format='JSON')";
         {
             if (identifier.Compare("prepared_stmt_select_1"))
             {
-                const string script = @"SELECT * FROM elb_logs WHERE user_agent LIKE ?";
+                const string script = @"SELECT * FROM AwsDataCatalog.default.elb_logs WHERE user_agent LIKE ?";
 
                 return new QsiVariable
                 {
@@ -222,7 +222,7 @@ WITH (format='JSON')";
 
             if (identifier.Compare("prepared_stmt_unload_1"))
             {
-                const string script = @"UNLOAD (SELECT * FROM elb_logs WHERE user_agent LIKE ?)
+                const string script = @"UNLOAD (SELECT * FROM AwsDataCatalog.default.elb_logs WHERE user_agent LIKE ?)
 TO 's3://my_output_bucket/'
 WITH (format='JSON')";
 
