@@ -108,6 +108,7 @@ public partial class MySqlTest : VendorTestBase
     [TestCase("INSERT INTO actor SELECT * FROM actor LIMIT 1", new[] { "SELECT * FROM actor LIMIT 1" }, 1)]
     [TestCase("INSERT INTO actor SELECT * FROM actor LIMIT 2", new[] { "SELECT * FROM actor LIMIT 2" }, 1)]
     [TestCase("INSERT INTO actor SET actor_id = 1", new string[0], 1)]
+    [TestCase("INSERT INTO actor SET actor.actor_id = 1", new string[0], 1)]
     [TestCase("INSERT INTO actor VALUES (1, 2, 3, 4) ON DUPLICATE KEY UPDATE last_update = now()", new string[0], 1)]
     public async Task Test_INSERT(string sql, string[] expectedSqls, int expectedResultCount)
     {
@@ -139,10 +140,12 @@ public partial class MySqlTest : VendorTestBase
     }
 
     [TestCase("UPDATE actor SET actor_id = 1", new[] { "SELECT * FROM actor" }, 1)]
+    [TestCase("UPDATE actor SET actor.actor_id = 1", new[] { "SELECT * FROM actor" }, 1)]
     [TestCase("UPDATE actor SET actor_id = (SELECT city_id FROM city LIMIT 1)", new[] { "SELECT * FROM actor", "(SELECT city_id FROM city LIMIT 1)" }, 1)]
     [TestCase("UPDATE actor SET actor_id = 1 WHERE false", new[] { "SELECT * FROM actor WHERE false" }, 1)]
     [TestCase("UPDATE actor AS a SET a.actor_id = 1 WHERE false", new[] { "SELECT * FROM actor AS a WHERE false" }, 1)]
     [TestCase("UPDATE actor, city SET city_id = 2, actor_id = 1 WHERE false", new[] { "SELECT * FROM actor, city WHERE false" }, 2)]
+    [TestCase("UPDATE actor, city SET city.city_id = 2, actor.actor_id = 1 WHERE false", new[] { "SELECT * FROM actor, city WHERE false" }, 2)]
     [TestCase("UPDATE actor a JOIN city c ON false JOIN film f ON false SET a.last_update = null, c.last_update = null, f.last_update = null", new[] { "SELECT * FROM actor a JOIN city c ON false JOIN film f ON false" }, 3)]
     [TestCase("UPDATE address a JOIN city c USING (city_id) SET c.city = 1, a.address_id = 2 WHERE false", new[] { "SELECT * FROM address a JOIN city c USING (city_id) WHERE false" }, 2)]
     [TestCase("UPDATE address a JOIN city c USING (city_id) SET c.last_update = 1, a.last_update = 2 WHERE false", new[] { "SELECT * FROM address a JOIN city c USING (city_id) WHERE false" }, 2)]
