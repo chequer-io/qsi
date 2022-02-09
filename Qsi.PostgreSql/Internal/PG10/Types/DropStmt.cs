@@ -15,7 +15,7 @@ namespace Qsi.PostgreSql.Internal.PG10.Types
     {
         public virtual NodeTag Type => NodeTag.T_DropStmt;
 
-        public IPg10Node[] objects { get; set; }
+        public IPg10Node[][] objects { get; set; }
 
         public ObjectType? removeType { get; set; }
 
