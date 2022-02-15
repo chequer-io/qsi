@@ -48,7 +48,7 @@ namespace Qsi.SqlServer
         public override IEnumerable<QsiAnalyzerBase> CreateAnalyzers(QsiEngine engine)
         {
             yield return new SqlServerActionAnalyzer(engine);
-            yield return new QsiTableAnalyzer(engine);
+            yield return new SqlServerTableAnalyzer(engine);
             yield return new QsiDefinitionAnalyzer(engine);
         }
 

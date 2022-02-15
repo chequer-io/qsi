@@ -10,6 +10,8 @@ namespace Qsi.SqlServer.Tree
 {
     internal sealed class ExpressionVisitor : VisitorBase
     {
+        public List<Range> PhyslocRanges { get; } = new();
+
         public ExpressionVisitor(IVisitorContext visitorContext) : base(visitorContext)
         {
         }
@@ -446,7 +448,7 @@ namespace Qsi.SqlServer.Tree
             {
                 case ParenthesisExpression parentesis:
                     return VisitScalarExpression(parentesis.Expression);
- 
+
                 // inputdate AT TIME ZONE timezone
                 case AtTimeZoneCall atTimeZoneCall:
                     return CreateInvokeExpression(atTimeZoneCall, SqlServerKnownFunction.AtTimeZone, atTimeZoneCall.DateValue, atTimeZoneCall.TimeZone);
@@ -712,8 +714,28 @@ namespace Qsi.SqlServer.Tree
         }
 
         #region Literal
-        public QsiLiteralExpressionNode VisitLiteral(Literal literal)
+        public QsiExpressionNode VisitLiteral(Literal literal)
         {
+            if (PhyslocRanges.Count > 0)
+            {
+                var first = literal.ScriptTokenStream[literal.FirstTokenIndex];
+                var last = literal.ScriptTokenStream[literal.LastTokenIndex];
+                int start = first.Offset;
+                int end = last.Offset + last.Text.Length;
+
+                var range = PhyslocRanges.FirstOrDefault(r => r.Start.Value == start && r.End.Value == end);
+
+                if (!Equals(range, default(Range)))
+                {
+                    PhyslocRanges.Remove(range);
+
+                    return TreeHelper.Create<SqlServerPhyslocExpressionNode>(n =>
+                    {
+                        SqlServerTree.PutFragmentSpan(n, literal);
+                    });
+                }
+            }
+
             return TreeHelper.Create<QsiLiteralExpressionNode>(n =>
             {
                 n.Type = literal.LiteralType switch

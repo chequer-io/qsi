@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading;
+using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
 using Microsoft.SqlServer.TransactSql.ScriptDom;
 using Qsi.Data;
 using Qsi.Parsing;
@@ -8,6 +11,7 @@ using Qsi.SqlServer.Common;
 using Qsi.SqlServer.Internal;
 using Qsi.SqlServer.Tree;
 using Qsi.Tree;
+using ManagementTransactSqlVersion = Microsoft.SqlServer.Management.SqlParser.Common.TransactSqlVersion;
 
 namespace Qsi.SqlServer
 {
@@ -32,10 +36,13 @@ namespace Qsi.SqlServer
         #endregion
 
         private readonly TSqlParserInternal _parser;
+        private readonly AlternativeParserInternal _alternativeParser;
 
         public SqlServerParser(TransactSqlVersion transactSqlVersion)
         {
             _parser = new TSqlParserInternal(transactSqlVersion, false);
+            _alternativeParser = new AlternativeParserInternal(transactSqlVersion);
+
             _tableVisitor = CreateTableVisitor();
             _expressionVisitor = CreateExpressionVisitor();
             _identifierVisitor = CreateIdentifierVisitor();
@@ -68,9 +75,56 @@ namespace Qsi.SqlServer
             return new(this);
         }
 
+        private void PatchPhysloc(IEnumerable<SqlCodeObject> nodes, StringBuilder builder)
+        {
+            IEnumerable<Range> physlocRanges = nodes
+                .OfType<SqlNullScalarExpression>()
+                .Where(n =>
+                {
+                    string sql = string.Concat(n.Sql.Where(c => !char.IsWhiteSpace(c)));
+
+                    return sql.Equals("%%physloc%%", StringComparison.InvariantCultureIgnoreCase);
+                })
+                .Select(n => new Range(n.StartLocation.Offset, n.EndLocation.Offset));
+
+            _expressionVisitor.PhyslocRanges.AddRange(physlocRanges);
+
+            foreach (var range in physlocRanges)
+            {
+                int offset = range.Start.Value;
+                int length = range.End.Value - range.Start.Value;
+
+                builder.Remove(offset, length);
+                builder.Insert(offset, $@"""{new string(' ', length - 2)}""");
+            }
+        }
+
         public IQsiTreeNode Parse(QsiScript script, CancellationToken cancellationToken = default)
         {
-            var result = _parser.Parse(script.Script);
+            TSqlFragment result;
+
+            _expressionVisitor.PhyslocRanges.Clear();
+
+            try
+            {
+                result = _parser.Parse(script.Script);
+            }
+            catch (Exception)
+            {
+                // ISSUE: %%physloc%% cannot parsed in Microsoft.SqlServer.TransactSql.ScriptDom Parser
+                if (!script.Script.Contains("physloc", StringComparison.InvariantCultureIgnoreCase))
+                    throw;
+
+                if (!_alternativeParser.TryParse(script.Script, out var alternativeResult))
+                    throw;
+
+                IEnumerable<SqlCodeObject> nodes = FlattenNode(alternativeResult);
+                var builder = new StringBuilder(script.Script);
+
+                PatchPhysloc(nodes, builder);
+
+                result = _parser.Parse(builder.ToString());
+            }
 
             if (result is TSqlScript sqlScript)
             {
@@ -108,6 +162,24 @@ namespace Qsi.SqlServer
             }
 
             throw new InvalidOperationException();
+        }
+
+        private IEnumerable<SqlCodeObject> FlattenNode(SqlCodeObject rootNode)
+        {
+            var queue = new Queue<SqlCodeObject>();
+
+            foreach (var child in rootNode.Children)
+            {
+                queue.Enqueue(child);
+
+                while (queue.TryDequeue(out var node))
+                {
+                    foreach (var childNode in node.Children)
+                        queue.Enqueue(childNode);
+
+                    yield return node;
+                }
+            }
         }
     }
 }
