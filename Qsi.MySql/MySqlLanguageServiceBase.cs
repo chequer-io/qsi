@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Qsi.Analyzers;
 using Qsi.Analyzers.Action;
+using Qsi.Analyzers.Definition;
 using Qsi.Collections;
 using Qsi.Data;
 using Qsi.Engines;
@@ -47,6 +48,7 @@ namespace Qsi.MySql
         {
             yield return new QsiActionAnalyzer(engine);
             yield return new MySqlTableAnalyzer(engine);
+            yield return new QsiDefinitionAnalyzer(engine);
         }
     }
 }

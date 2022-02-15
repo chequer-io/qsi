@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Qsi.Analyzers;
+using Qsi.Analyzers.Definition;
 using Qsi.Analyzers.Table;
 using Qsi.Data;
 using Qsi.Engines;
@@ -48,6 +49,7 @@ namespace Qsi.SqlServer
         {
             yield return new SqlServerActionAnalyzer(engine);
             yield return new QsiTableAnalyzer(engine);
+            yield return new QsiDefinitionAnalyzer(engine);
         }
 
         public override QsiAnalyzerOptions CreateAnalyzerOptions()

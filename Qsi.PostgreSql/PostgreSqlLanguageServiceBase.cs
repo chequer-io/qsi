@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Qsi.Analyzers;
 using Qsi.Analyzers.Action;
+using Qsi.Analyzers.Definition;
 using Qsi.Engines;
 using Qsi.Parsing;
 using Qsi.PostgreSql.Analyzers;
@@ -39,6 +40,7 @@ namespace Qsi.PostgreSql
         {
             yield return new QsiActionAnalyzer(engine);
             yield return new PgTableAnalyzer(engine);
+            yield return new QsiDefinitionAnalyzer(engine);
         }
     }
 }

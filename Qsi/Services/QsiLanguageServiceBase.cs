@@ -2,6 +2,7 @@
 using System.Linq;
 using Qsi.Analyzers;
 using Qsi.Analyzers.Action;
+using Qsi.Analyzers.Definition;
 using Qsi.Analyzers.Table;
 using Qsi.Collections;
 using Qsi.Data;
@@ -19,6 +20,7 @@ namespace Qsi.Services
         {
             yield return new QsiActionAnalyzer(engine);
             yield return new QsiTableAnalyzer(engine);
+            yield return new QsiDefinitionAnalyzer(engine);
         }
 
         public abstract IQsiTreeParser CreateTreeParser();

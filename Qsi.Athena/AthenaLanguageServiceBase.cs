@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Qsi.Analyzers;
+using Qsi.Analyzers.Definition;
 using Qsi.Athena.Analyzers;
 using Qsi.Collections;
 using Qsi.Data;
@@ -41,5 +42,6 @@ public abstract class AthenaLanguageServiceBase : QsiLanguageServiceBase
     {
         yield return new AthenaActionAnalyzer(engine);
         yield return new AthenaTableAnalyzer(engine);
+        yield return new QsiDefinitionAnalyzer(engine);
     }
 }

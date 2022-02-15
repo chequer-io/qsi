@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Qsi.Analyzers;
+using Qsi.Analyzers.Definition;
 using Qsi.Cql.Analyzers;
 using Qsi.Engines;
 using Qsi.Parsing;
@@ -33,6 +34,7 @@ namespace Qsi.Cql
         {
             yield return new CqlTableAnalyzer(engine);
             yield return new CqlActionAnalyzer(engine);
+            yield return new QsiDefinitionAnalyzer(engine);
         }
     }
 }

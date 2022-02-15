@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Qsi.Analyzers;
+using Qsi.Analyzers.Definition;
 using Qsi.Engines;
 using Qsi.Parsing;
 using Qsi.PrimarSql.Analyzers;
@@ -36,6 +37,7 @@ namespace Qsi.PrimarSql
         {
             yield return new PrimarSqlTableAnalyzer(engine);
             yield return new PrimarSqlActionAnalyzer(engine);
+            yield return new QsiDefinitionAnalyzer(engine);
         }
     }
 }

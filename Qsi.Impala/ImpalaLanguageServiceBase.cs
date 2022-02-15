@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Qsi.Analyzers;
 using Qsi.Analyzers.Action;
+using Qsi.Analyzers.Definition;
 using Qsi.Engines;
 using Qsi.Impala.Analyzers;
 using Qsi.Parsing;
@@ -37,6 +38,7 @@ namespace Qsi.Impala
         {
             yield return new QsiActionAnalyzer(engine);
             yield return new ImpalaTableAnalyzer(engine);
+            yield return new QsiDefinitionAnalyzer(engine);
         }
     }
 }

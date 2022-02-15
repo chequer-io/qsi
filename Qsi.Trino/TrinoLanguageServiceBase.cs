@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Qsi.Analyzers;
+using Qsi.Analyzers.Definition;
 using Qsi.Collections;
 using Qsi.Data;
 using Qsi.Engines;
@@ -41,6 +42,7 @@ namespace Qsi.Trino
         {
             yield return new TrinoActionAnalyzer(engine);
             yield return new TrinoTableAnalyzer(engine);
+            yield return new QsiDefinitionAnalyzer(engine);
         }
     }
 }

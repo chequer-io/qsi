@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Qsi.Analyzers;
+using Qsi.Analyzers.Definition;
 using Qsi.Data;
 using Qsi.Engines;
 using Qsi.Hana.Analyzers;
@@ -36,6 +37,7 @@ namespace Qsi.Hana
         {
             yield return new HanaActionAnalyzer(engine);
             yield return new HanaTableAnalyzer(engine);
+            yield return new QsiDefinitionAnalyzer(engine);
         }
 
         public override QsiParameter FindParameter(QsiParameter[] parameters, IQsiBindParameterExpressionNode node)

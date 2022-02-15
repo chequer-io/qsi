@@ -665,7 +665,7 @@ namespace Qsi.Analyzers.Table
             }
         }
 
-        protected virtual async ValueTask<QsiTableStructure> BuildViewDefinitionStructure(TableCompileContext context, IQsiViewDefinitionNode viewDefinition)
+        protected internal virtual async ValueTask<QsiTableStructure> BuildViewDefinitionStructure(TableCompileContext context, IQsiViewDefinitionNode viewDefinition)
         {
             context.ThrowIfCancellationRequested();
 

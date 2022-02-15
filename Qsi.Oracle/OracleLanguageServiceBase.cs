@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Qsi.Analyzers;
+using Qsi.Analyzers.Definition;
 using Qsi.Engines;
 using Qsi.Oracle.Analyzers;
 using Qsi.Parsing;
@@ -33,6 +34,7 @@ namespace Qsi.Oracle
         {
             yield return new OracleActionAnalyzer(engine);
             yield return new OracleTableAnalyzer(engine);
+            yield return new QsiDefinitionAnalyzer(engine);
         }
     }
 }
