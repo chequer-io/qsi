@@ -143,6 +143,8 @@ namespace Qsi.SqlServer
             return tokenType
                 is TSqlTokenType.WhiteSpace
                 or TSqlTokenType.Semicolon
+                or TSqlTokenType.MultilineComment
+                or TSqlTokenType.SingleLineComment
                 or TSqlTokenType.EndOfFile;
         }
 
