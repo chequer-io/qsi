@@ -55,8 +55,8 @@ namespace Qsi.SqlServer
             if (result is not TSqlScript script)
                 return Enumerable.Empty<QsiScript>();
 
-            IList<TSqlParserToken> tokenStream = script.ScriptTokenStream;
-            var list = new List<QsiScript>();
+            IList<TSqlParserToken> tokens = script.ScriptTokenStream;
+            var scripts = new List<QsiScript>();
 
             var index = -1;
             int start, end;
@@ -70,7 +70,6 @@ namespace Qsi.SqlServer
                         start = index + 1;
                         end = statement.FirstTokenIndex - 1;
 
-                        TrimTrivia();
                         AddScript();
                     }
 
@@ -83,24 +82,23 @@ namespace Qsi.SqlServer
                 }
             }
 
-            if (index < tokenStream.Count - 1)
+            if (index < tokens.Count - 1)
             {
                 start = index + 1;
-                end = tokenStream.Count - 1;
+                end = tokens.Count - 1;
 
-                TrimTrivia();
                 AddScript();
             }
 
-            return list;
+            return scripts;
 
-            void TrimTrivia()
+            void AddScript()
             {
                 bool trim = false;
 
                 for (; start <= end; start++)
                 {
-                    if (IsTrivia(tokenStream[start].TokenType))
+                    if (IsTrivia(tokens[start].TokenType))
                         continue;
 
                     trim = true;
@@ -108,35 +106,21 @@ namespace Qsi.SqlServer
                 }
 
                 if (!trim)
-                {
-                    start = -1;
-                    end = -1;
-                }
+                    return;
 
                 for (; end > start; end--)
                 {
-                    if (IsTrivia(tokenStream[end].TokenType))
+                    if (IsTrivia(tokens[end].TokenType))
                         continue;
 
                     break;
                 }
-            }
-
-            void AddScript()
-            {
-                if (end == -1 || start == -1)
-                    return;
 
                 var count = end - start + 1;
-                var listSegment = new ListSegment<TSqlParserToken>(tokenStream, start, count);
+                var listSegment = new ListSegment<TSqlParserToken>(tokens, start, count);
 
-                if (listSegment.All(s =>
-                    s.TokenType == TSqlTokenType.WhiteSpace ||
-                    s.TokenType == TSqlTokenType.Go ||
-                    s.TokenType == TSqlTokenType.Semicolon))
-                {
+                if (listSegment.All(s => s.TokenType is TSqlTokenType.WhiteSpace or TSqlTokenType.Go or TSqlTokenType.Semicolon))
                     return;
-                }
 
                 var first = listSegment[0];
                 var last = listSegment[^1];
@@ -144,7 +128,7 @@ namespace Qsi.SqlServer
 
                 var text = input[first.Offset..(last.Offset + last.Text.Length)];
 
-                list.Add(new QsiScript(
+                scripts.Add(new QsiScript(
                     in text,
                     GetScriptType(ref listSegment),
                     startPosition,
@@ -154,7 +138,7 @@ namespace Qsi.SqlServer
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool IsTrivia(TSqlTokenType tokenType)
+        private static bool IsTrivia(TSqlTokenType tokenType)
         {
             return tokenType
                 is TSqlTokenType.WhiteSpace
@@ -162,7 +146,7 @@ namespace Qsi.SqlServer
                 or TSqlTokenType.EndOfFile;
         }
 
-        private QsiScriptType GetScriptType(ref ListSegment<TSqlParserToken> tokens)
+        private static QsiScriptType GetScriptType(ref ListSegment<TSqlParserToken> tokens)
         {
             TSqlParserToken[] leadingTokens = tokens.AsEnumerable()
                 .Where(t => t.TokenType is > TSqlTokenType.EndOfFile and < TSqlTokenType.Bang)
@@ -195,10 +179,10 @@ namespace Qsi.SqlServer
                     return QsiScriptType.Execute;
             }
 
-            if (tokens.All(t => t.TokenType 
-                is TSqlTokenType.MultilineComment 
-                or TSqlTokenType.SingleLineComment
-                or TSqlTokenType.WhiteSpace))
+            if (tokens.All(t => t.TokenType
+                    is TSqlTokenType.MultilineComment
+                    or TSqlTokenType.SingleLineComment
+                    or TSqlTokenType.WhiteSpace))
             {
                 return QsiScriptType.Trivia;
             }
