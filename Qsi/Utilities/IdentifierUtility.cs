@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Qsi.Data;
+using Qsi.Shared;
 using Qsi.Shared.Extensions;
 
 namespace Qsi.Utilities
@@ -43,45 +44,69 @@ namespace Qsi.Utilities
             return Unescape(value.AsSpan()[openParen.Length..^closeParen.Length], openParen, closeParen);
         }
 
-        private static string Unescape(in ReadOnlySpan<char> value, string open, string close)
+        private static string Unescape(ReadOnlySpan<char> value, string open, string close)
         {
-            Span<char> buffer = stackalloc char[value.Length];
-            int index = 0;
+            if (value.IsEmpty)
+                return string.Empty;
 
-            for (int i = 0; i < buffer.Length; i++)
+            ReadOnlySpan<char> transition = new string(new[] { close[0], '\\' });
+
+            var index = value.IndexOfAny(transition);
+
+            if (index == -1)
+                return value.ToString();
+
+            var builder = StringBuilderCache.Acquire(value.Length);
+
+            do
             {
-                char c = value[i];
-                bool end = i == buffer.Length - 1;
+                bool end = index == value.Length - 1;
 
-                if (c == '\\')
+                if (index > 0)
                 {
-                    int escapeIndex = end ? -1 : Array.IndexOf(_escapedChars, value[i + 1]);
+                    builder.Append(value[..index]);
+                    value = value[index..];
+                }
+
+                if (value[0] is '\\')
+                {
+                    // ignore
+                    if (end)
+                        continue;
+
+                    int escapeIndex = Array.IndexOf(_escapedChars, value[1]);
 
                     // ignore
                     if (escapeIndex == -1)
-                        continue;
-
-                    i++;
-                    c = _escapeChars[escapeIndex];
-                }
-                else if (value[i..].StartsWith(close))
-                {
-                    if (end || !value[(i + close.Length)..].StartsWith(close))
                     {
-#if DEBUG
-                        throw new Exception($"Invalid identifier format: {open}{value.ToString()}{close}");
-#else
+                        value = value[1..];
                         continue;
-#endif
                     }
 
-                    i++;
+                    value = value[2..];
+                    builder.Append(_escapeChars[escapeIndex]);
                 }
+                else if (close.Length == 1 || value.StartsWith(close))
+                {
+                    // ignore
+                    if (end)
+                        continue;
 
-                buffer[index++] = c;
-            }
+                    if (!value[close.Length..].StartsWith(close))
+                    {
+                        value = value[close.Length..];
+                        continue;
+                    }
 
-            return new string(buffer[..index]);
+                    value = value[(close.Length * 2)..];
+                    builder.Append(close);
+                }
+            } while (!value.IsEmpty && (index = value.IndexOfAny(transition)) >= 0);
+
+            if (!value.IsEmpty)
+                builder.Append(value);
+
+            return StringBuilderCache.GetStringAndRelease(builder);
         }
 
         public static string Escape(in ReadOnlySpan<char> value, EscapeQuotes quotes, EscapeBehavior behavior)
