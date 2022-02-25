@@ -74,7 +74,7 @@ public class RedshiftTableAnalyzer : PgTableAnalyzer
         }
 
         string functionName = funcNode.Member.Identifier.ToString().ToLowerInvariant();
-        string parameterName = column.Name.ToString();
+        string parameter = column.Name.ToString().ToLowerInvariant();
 
         switch (functionName)
         {
@@ -84,7 +84,7 @@ public class RedshiftTableAnalyzer : PgTableAnalyzer
             case "date_trunc":
             case "extract":
             {
-                if (_redshiftDateFuncParameter.Contains(parameterName))
+                if (_redshiftDateFuncParameter.Contains(parameter))
                     return true;
 
                 break;
