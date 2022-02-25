@@ -1,7 +1,6 @@
-﻿namespace Qsi.MongoDB.Internal.Nodes
+﻿namespace Qsi.MongoDB.Internal.Nodes;
+
+public class IdentifierNode : BaseNode, IExpressionNode, IPatternNode
 {
-    public class IdentifierNode : BaseNode, IExpressionNode, IPatternNode
-    {
-        public string Name { get; set; }
-    }
+    public string Name { get; set; }
 }

@@ -1,7 +1,6 @@
-﻿namespace Qsi.MongoDB.Internal.Nodes
+﻿namespace Qsi.MongoDB.Internal.Nodes;
+
+public class AssignmentPropertyNode : PropertyNode
 {
-    public class AssignmentPropertyNode : PropertyNode
-    {
-        public new IPatternNode Value { get; set; }
-    }
+    public new IPatternNode Value { get; set; }
 }

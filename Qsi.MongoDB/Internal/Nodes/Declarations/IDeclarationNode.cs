@@ -1,6 +1,5 @@
-﻿namespace Qsi.MongoDB.Internal.Nodes
+﻿namespace Qsi.MongoDB.Internal.Nodes;
+
+public interface IDeclarationNode : IStatementNode
 {
-    public interface IDeclarationNode : IStatementNode
-    {
-    }
 }

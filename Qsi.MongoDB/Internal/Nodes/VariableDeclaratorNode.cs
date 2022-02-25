@@ -1,20 +1,19 @@
 ﻿using System.Collections.Generic;
 
-namespace Qsi.MongoDB.Internal.Nodes
-{
-    public class VariableDeclaratorNode : BaseNode, INode
-    {
-        public IPatternNode Id { get; set; }
-        
-        public IExpressionNode Init { get; set; }
+namespace Qsi.MongoDB.Internal.Nodes;
 
-        public override IEnumerable<INode> Children
+public class VariableDeclaratorNode : BaseNode, INode
+{
+    public IPatternNode Id { get; set; }
+
+    public IExpressionNode Init { get; set; }
+
+    public override IEnumerable<INode> Children
+    {
+        get
         {
-            get
-            {
-                yield return Id;
-                yield return Init;
-            }
+            yield return Id;
+            yield return Init;
         }
     }
 }

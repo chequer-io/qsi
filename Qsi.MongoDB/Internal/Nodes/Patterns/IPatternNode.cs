@@ -1,6 +1,5 @@
-﻿namespace Qsi.MongoDB.Internal.Nodes
+﻿namespace Qsi.MongoDB.Internal.Nodes;
+
+public interface IPatternNode : INode
 {
-    public interface IPatternNode : INode
-    {
-    }
 }

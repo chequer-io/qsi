@@ -1,7 +1,5 @@
-﻿namespace Qsi.MongoDB.Internal.Nodes
+﻿namespace Qsi.MongoDB.Internal.Nodes;
+
+public class ThisExpressionNode : BaseNode, IExpressionNode
 {
-    public class ThisExpressionNode : BaseNode, IExpressionNode
-    {
-        
-    }
 }

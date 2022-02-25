@@ -1,31 +1,30 @@
 ﻿using System;
 using JavaScriptEngineSwitcher.ChakraCore;
 
-namespace Qsi.MongoDB.Internal
+namespace Qsi.MongoDB.Internal;
+
+internal class JavascriptContext : IDisposable
 {
-    internal class JavascriptContext : IDisposable
+    private ChakraCoreJsEngine _jsEngine;
+
+    void IDisposable.Dispose()
     {
-        private ChakraCoreJsEngine _jsEngine;
-        
-        public void InitializeEngine()
-        {
-            _jsEngine = new ChakraCoreJsEngine();
-        }
+        _jsEngine?.Dispose();
+        _jsEngine = null;
+    }
 
-        public string Evaluate(string expression)
-        {
-            return _jsEngine.Evaluate<string>(expression);
-        }
+    public void InitializeEngine()
+    {
+        _jsEngine = new ChakraCoreJsEngine();
+    }
 
-        public void Execute(string expression)
-        {
-            _jsEngine.Execute(expression);
-        }
-        
-        void IDisposable.Dispose()
-        {
-            _jsEngine?.Dispose();
-            _jsEngine = null;
-        }
+    public string Evaluate(string expression)
+    {
+        return _jsEngine.Evaluate<string>(expression);
+    }
+
+    public void Execute(string expression)
+    {
+        _jsEngine.Execute(expression);
     }
 }

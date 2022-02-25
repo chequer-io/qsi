@@ -1,6 +1,5 @@
-﻿namespace Qsi.MongoDB.Internal.Nodes
+﻿namespace Qsi.MongoDB.Internal.Nodes;
+
+public class SuperNode : BaseNode, INode
 {
-    public class SuperNode : BaseNode, INode
-    {
-    }
 }

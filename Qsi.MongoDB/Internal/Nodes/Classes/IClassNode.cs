@@ -1,9 +1,8 @@
-﻿namespace Qsi.MongoDB.Internal.Nodes
+﻿namespace Qsi.MongoDB.Internal.Nodes;
+
+public interface IClassNode : INode
 {
-    public interface IClassNode : INode
-    {
-        IExpressionNode SuperClass { get; set; }
-        
-        ClassBodyNode Body { get; set; }
-    }
+    IExpressionNode SuperClass { get; set; }
+
+    ClassBodyNode Body { get; set; }
 }

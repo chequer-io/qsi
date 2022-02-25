@@ -1,7 +1,6 @@
-﻿namespace Qsi.MongoDB.Internal.Nodes
+﻿namespace Qsi.MongoDB.Internal.Nodes;
+
+public class SimpleCallExpression : CallExpressionNode
 {
-    public class SimpleCallExpression : CallExpressionNode
-    {
-        public bool Optional { get; set; }
-    }
+    public bool Optional { get; set; }
 }

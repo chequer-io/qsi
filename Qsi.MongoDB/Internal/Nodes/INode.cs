@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace Qsi.MongoDB.Internal.Nodes
+namespace Qsi.MongoDB.Internal.Nodes;
+
+public interface INode
 {
-    public interface INode
-    {
-        IEnumerable<INode> Children { get; }
-    }
+    IEnumerable<INode> Children { get; }
 }

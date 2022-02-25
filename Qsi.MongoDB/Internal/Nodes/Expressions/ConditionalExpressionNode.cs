@@ -1,23 +1,22 @@
 ﻿using System.Collections.Generic;
 
-namespace Qsi.MongoDB.Internal.Nodes
-{
-    public class ConditionalExpressionNode : BaseNode, IExpressionNode
-    {
-        public IExpressionNode Test { get; set; }
-        
-        public IExpressionNode Alternate { get; set; }
-        
-        public IExpressionNode Consequent { get; set; }
+namespace Qsi.MongoDB.Internal.Nodes;
 
-        public override IEnumerable<INode> Children
+public class ConditionalExpressionNode : BaseNode, IExpressionNode
+{
+    public IExpressionNode Test { get; set; }
+
+    public IExpressionNode Alternate { get; set; }
+
+    public IExpressionNode Consequent { get; set; }
+
+    public override IEnumerable<INode> Children
+    {
+        get
         {
-            get
-            {
-                yield return Test;
-                yield return Alternate;
-                yield return Consequent;
-            }
+            yield return Test;
+            yield return Alternate;
+            yield return Consequent;
         }
     }
 }

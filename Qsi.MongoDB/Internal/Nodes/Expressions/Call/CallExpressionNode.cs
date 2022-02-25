@@ -1,24 +1,23 @@
 ﻿using System.Collections.Generic;
 
-namespace Qsi.MongoDB.Internal.Nodes
+namespace Qsi.MongoDB.Internal.Nodes;
+
+public class CallExpressionNode : BaseNode, IExpressionNode
 {
-    public class CallExpressionNode : BaseNode, IExpressionNode
+    // BaseExpression, Super
+    public INode Callee { get; set; }
+
+    // BaseExpression, SpreadElement
+    public INode[] Arguments { get; set; }
+
+    public override IEnumerable<INode> Children
     {
-        // BaseExpression, Super
-        public INode Callee { get; set; }
-        
-        // BaseExpression, SpreadElement
-        public INode[] Arguments { get; set; }
-
-        public override IEnumerable<INode> Children
+        get
         {
-            get
-            {
-                yield return Callee;
+            yield return Callee;
 
-                foreach (var argument in Arguments)
-                    yield return argument;
-            }
+            foreach (var argument in Arguments)
+                yield return argument;
         }
     }
 }

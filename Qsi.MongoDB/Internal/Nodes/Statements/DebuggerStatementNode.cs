@@ -1,6 +1,5 @@
-﻿namespace Qsi.MongoDB.Internal.Nodes
+﻿namespace Qsi.MongoDB.Internal.Nodes;
+
+public class DebuggerStatementNode : BaseNode, IStatementNode
 {
-    public class DebuggerStatementNode : BaseNode, IStatementNode
-    {
-    }
 }

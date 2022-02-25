@@ -1,22 +1,21 @@
 ﻿using System.Collections.Generic;
 
-namespace Qsi.MongoDB.Internal.Nodes
+namespace Qsi.MongoDB.Internal.Nodes;
+
+public class SwitchStatementNode : BaseNode, IStatementNode
 {
-    public class SwitchStatementNode : BaseNode, IStatementNode
+    public IExpressionNode Discriminant { get; set; }
+
+    public SwitchCaseNode[] Cases { get; set; }
+
+    public override IEnumerable<INode> Children
     {
-        public IExpressionNode Discriminant { get; set; }
-        
-        public SwitchCaseNode[] Cases { get; set; }
-
-        public override IEnumerable<INode> Children
+        get
         {
-            get
-            {
-                yield return Discriminant;
+            yield return Discriminant;
 
-                foreach (var @case in Cases)
-                    yield return @case;
-            }
+            foreach (var @case in Cases)
+                yield return @case;
         }
     }
 }

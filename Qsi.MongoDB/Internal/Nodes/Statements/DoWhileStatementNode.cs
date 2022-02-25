@@ -1,20 +1,19 @@
 ﻿using System.Collections.Generic;
 
-namespace Qsi.MongoDB.Internal.Nodes
-{
-    public class DoWhileStatementNode : BaseNode, IStatementNode
-    {
-        public IStatementNode Body { get; set; }
-        
-        public IExpressionNode Test { get; set; }
+namespace Qsi.MongoDB.Internal.Nodes;
 
-        public override IEnumerable<INode> Children
+public class DoWhileStatementNode : BaseNode, IStatementNode
+{
+    public IStatementNode Body { get; set; }
+
+    public IExpressionNode Test { get; set; }
+
+    public override IEnumerable<INode> Children
+    {
+        get
         {
-            get
-            {
-                yield return Body;
-                yield return Test;
-            }
+            yield return Body;
+            yield return Test;
         }
     }
 }
