@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Linq;
+using System.Collections.Generic;
 using Qsi.Analyzers.Table.Context;
 using Qsi.Data;
 using Qsi.Engines;
@@ -12,7 +12,7 @@ namespace Qsi.Redshift.Analyzers;
 public class RedshiftTableAnalyzer : PgTableAnalyzer
 {
     // As defined in https://docs.aws.amazon.com/en_us/redshift/latest/dg/r_Dateparts_for_datetime_functions.html
-    private readonly string[] _redshiftDateFuncParameter =
+    private readonly HashSet<string> _redshiftDateFuncParameter = new()
     {
         "millennium", "millennia", "mil", "mils",
         "century", "centuries c", "cent", "cents",
