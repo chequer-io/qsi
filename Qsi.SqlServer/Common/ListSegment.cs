@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 public readonly ref struct ListSegment<T>
 {
@@ -42,6 +43,6 @@ public readonly ref struct ListSegment<T>
 
     public IEnumerable<T> AsEnumerable()
     {
-        return _list;
+        return _list.Take(Offset..(Offset + Count));
     }
 }
