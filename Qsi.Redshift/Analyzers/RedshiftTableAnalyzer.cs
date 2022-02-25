@@ -46,7 +46,7 @@ public class RedshiftTableAnalyzer : PgTableAnalyzer
         }
         catch (QsiException e) when (e.Error is QsiError.UnknownColumn or QsiError.UnknownColumnIn)
         {
-            if (RedshiftPseudoColumn.TryGetColumn(column.Name[^1].Value, out var tableColumn))
+            if (column.Name.Level == 1 && RedshiftPseudoColumn.TryGetColumn(column.Name[0].Value, out var tableColumn))
                 return new[] { tableColumn };
 
             if (IsEnumParameterInFunction(column))
