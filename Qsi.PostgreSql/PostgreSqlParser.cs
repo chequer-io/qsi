@@ -11,7 +11,7 @@ using Qsi.Utilities;
 
 namespace Qsi.PostgreSql
 {
-    public sealed class PostgreSqlParser : IQsiTreeParser, IDisposable
+    public class PostgreSqlParser : IQsiTreeParser, IDisposable
     {
         private IPgParser _pgParser;
 

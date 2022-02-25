@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+    </PropertyGroup>
+
+    <PropertyGroup Label="Nuspec">
+        <Title>Query Structure Interface of Redshift</Title>
+        <Description>$(Title)</Description>
+        <PackageTags>$(PackageTags);phostgresql;yacc</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Qsi.PostgreSql\Qsi.PostgreSql.csproj" />
+    </ItemGroup>
+
+</Project>
