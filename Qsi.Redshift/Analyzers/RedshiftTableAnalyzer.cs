@@ -45,9 +45,12 @@ public class RedshiftTableAnalyzer : PgTableAnalyzer
         {
             return base.ResolveColumnReference(context, column, out implicitTableWildcardTarget);
         }
-        catch (QsiException e) when (e.Error is QsiError.UnknownColumn or QsiError.UnknownColumnIn)
+        catch (QsiException e) when (
+            column.Name.Level == 1 &&
+            e.Error is QsiError.UnknownColumn or QsiError.UnknownColumnIn
+        )
         {
-            if (column.Name.Level == 1 && RedshiftPseudoColumn.TryGetColumn(column.Name[0].Value, out var tableColumn))
+            if (RedshiftPseudoColumn.TryGetColumn(column.Name[0].Value, out var tableColumn))
                 return new[] { tableColumn };
 
             if (IsEnumParameterInFunction(column))
