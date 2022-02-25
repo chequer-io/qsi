@@ -31,6 +31,7 @@ using Qsi.Debugger.Vendor.Oracle;
 using Qsi.Debugger.Vendor.PhoenixSql;
 using Qsi.Debugger.Vendor.PostgreSql;
 using Qsi.Debugger.Vendor.PrimarSql;
+using Qsi.Debugger.Vendor.Redshift;
 using Qsi.Debugger.Vendor.SqlServer;
 using Qsi.Debugger.Vendor.Trino;
 using Qsi.SqlServer.Common;
@@ -80,7 +81,8 @@ namespace Qsi.Debugger
                 ["Impala 3.x"] = new(() => new ImpalaDebugger(new Version(3, 0, 0))),
                 ["Trino"] = new(() => new TrinoDebugger()),
                 ["Oracle"] = new(() => new OracleDebugger()),
-                ["Athena"] = new(() => new AthenaDebugger())
+                ["Athena"] = new(() => new AthenaDebugger()),
+                ["Redshift"] = new(() => new RedshiftDebugger())
             };
 
             _cbLanguages = this.Find<ComboBox>("cbLanguages");
