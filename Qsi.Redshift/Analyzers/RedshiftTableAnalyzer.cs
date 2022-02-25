@@ -11,7 +11,7 @@ namespace Qsi.Redshift.Analyzers;
 
 public class RedshiftTableAnalyzer : PgTableAnalyzer
 {
-    private readonly string[] _redshiftTimeFuncParameter =
+    private readonly string[] _redshiftDateFuncParameter =
     {
         "millennium", "millennia", "mil", "mils",
         "century", "centuries c", "cent", "cents",
@@ -49,14 +49,14 @@ public class RedshiftTableAnalyzer : PgTableAnalyzer
             if (RedshiftPseudoColumn.TryGetColumn(column.Name[^1].Value, out var tableColumn))
                 return new[] { tableColumn };
 
-            if (IsEnumInFunction(column))
+            if (IsEnumParameterInFunction(column))
                 return Array.Empty<QsiTableColumn>();
 
             throw;
         }
     }
 
-    private bool IsEnumInFunction(IQsiColumnReferenceNode column)
+    private bool IsEnumParameterInFunction(IQsiColumnReferenceNode column)
     {
         if (column.Parent is not IQsiColumnExpressionNode
             {
@@ -74,9 +74,12 @@ public class RedshiftTableAnalyzer : PgTableAnalyzer
 
         switch (functionName)
         {
+            case "dateadd":
+            case "date_part":
+            case "date_trunc":
             case "datediff":
             {
-                if (_redshiftTimeFuncParameter.Contains(parameterName))
+                if (_redshiftDateFuncParameter.Contains(parameterName))
                     return true;
 
                 break;
