@@ -75,9 +75,10 @@ public class RedshiftTableAnalyzer : PgTableAnalyzer
         switch (functionName)
         {
             case "dateadd":
+            case "datediff":
             case "date_part":
             case "date_trunc":
-            case "datediff":
+            case "extract":
             {
                 if (_redshiftDateFuncParameter.Contains(parameterName))
                     return true;
