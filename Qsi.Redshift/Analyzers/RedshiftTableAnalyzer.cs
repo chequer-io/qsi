@@ -11,6 +11,7 @@ namespace Qsi.Redshift.Analyzers;
 
 public class RedshiftTableAnalyzer : PgTableAnalyzer
 {
+    // As defined in https://docs.aws.amazon.com/en_us/redshift/latest/dg/r_Dateparts_for_datetime_functions.html
     private readonly string[] _redshiftDateFuncParameter =
     {
         "millennium", "millennia", "mil", "mils",
