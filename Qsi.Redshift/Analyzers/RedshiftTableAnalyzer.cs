@@ -24,7 +24,7 @@ public class RedshiftTableAnalyzer : PgTableAnalyzer
         "yearday", "day", "days", "d",
         "hour", "hours", "h", "hr", "hrs",
         "minute", "minutes", "m", "min", "mins",
-        "second", "seconds	s", "sec", "secs",
+        "second", "seconds", "s", "sec", "secs",
         "millisecond", "milliseconds", "ms", "msec",
         "msecs", "msecond", "mseconds", "millisec", "millisecs", "millisecon",
         "microsecond", "microseconds", "microsec", "microsecs", "microsecond",
