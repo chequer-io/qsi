@@ -4,7 +4,6 @@ using Qsi.Analyzers.Table.Context;
 using Qsi.Data;
 using Qsi.Engines;
 using Qsi.PostgreSql.Analyzers;
-using Qsi.Redshift.Internal;
 using Qsi.Tree;
 
 namespace Qsi.Redshift.Analyzers;
@@ -12,7 +11,7 @@ namespace Qsi.Redshift.Analyzers;
 public class RedshiftTableAnalyzer : PgTableAnalyzer
 {
     // As defined in https://docs.aws.amazon.com/en_us/redshift/latest/dg/r_Dateparts_for_datetime_functions.html
-    private readonly HashSet<string> _redshiftDateFuncParameter = new()
+    private readonly HashSet<string> _dateFuncParameter = new()
     {
         "millennium", "millennia", "mil", "mils",
         "century", "centuries c", "cent", "cents",
@@ -33,6 +32,18 @@ public class RedshiftTableAnalyzer : PgTableAnalyzer
         "timezone", "timezone_hour", "timezone_minute"
     };
 
+    private readonly HashSet<string> _withoutBracketFunctions = new()
+    {
+        "localtime",
+        "localtimestamp",
+        "sysdate",
+        "current_date",
+        "current_time",
+        "current_timestamp",
+        "user",
+        "current_user_id",
+    };
+
     public RedshiftTableAnalyzer(QsiEngine engine) : base(engine)
     {
     }
@@ -50,14 +61,16 @@ public class RedshiftTableAnalyzer : PgTableAnalyzer
             e.Error is QsiError.UnknownColumn or QsiError.UnknownColumnIn
         )
         {
-            if (RedshiftPseudoColumn.TryGetColumn(column.Name[0].Value, out var tableColumn))
-                return new[] { tableColumn };
-
-            if (IsEnumParameterInFunction(column))
+            if (IsEnumParameterInFunction(column) || IsBuiltInFunction(column))
                 return Array.Empty<QsiTableColumn>();
 
             throw;
         }
+    }
+
+    private bool IsBuiltInFunction(IQsiColumnReferenceNode column)
+    {
+        return _withoutBracketFunctions.Contains(column.Name[0].Value.ToLowerInvariant());
     }
 
     private bool IsEnumParameterInFunction(IQsiColumnReferenceNode column)
@@ -84,7 +97,7 @@ public class RedshiftTableAnalyzer : PgTableAnalyzer
             case "date_trunc":
             case "extract":
             {
-                if (_redshiftDateFuncParameter.Contains(parameter))
+                if (_dateFuncParameter.Contains(parameter))
                     return true;
 
                 break;
