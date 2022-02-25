@@ -23,6 +23,11 @@ internal class JavascriptContext : IDisposable
         return _jsEngine.Evaluate<string>(expression);
     }
 
+    public void SetVariable(string name, object value)
+    {
+        _jsEngine.SetVariableValue(name, value);
+    }
+
     public void Execute(string expression)
     {
         _jsEngine.Execute(expression);

@@ -108,25 +108,14 @@ namespace Qsi.MongoDB.Acorn
 
         internal static string ParseStrict(string code)
         {
-            code = NormalizeCode(code);
-
-            return _javascriptContext.Evaluate($"JSON.stringify(acorn.parse('{code}', {{locations: true}}))");
+            _javascriptContext.SetVariable("code", code);
+            return _javascriptContext.Evaluate($"JSON.stringify(acorn.parse(code, {{locations: true}}))");
         }
 
         internal static string ParseLoose(string code)
         {
-            code = NormalizeCode(code);
-
-            return _javascriptContext.Evaluate($"JSON.stringify(acorn.loose.LooseParser.parse('{code}', {{locations: true}}))");
-        }
-
-        private static string NormalizeCode(string code)
-        {
-            code = code?.Replace("'", "\\'") ?? "";
-            code = code.Replace("\n", "\\n");
-            code = code.Replace("\r", "\\r");
-
-            return code;
+            _javascriptContext.SetVariable("code", code);
+            return _javascriptContext.Evaluate($"JSON.stringify(acorn.loose.LooseParser.parse(code, {{locations: true}}))");
         }
     }
 }

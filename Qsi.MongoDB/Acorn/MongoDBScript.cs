@@ -46,7 +46,7 @@ namespace Qsi.MongoDB.Acorn
             int capturedLine = -1, capturedColumn = -1;
             var sb = new StringBuilder(Script);
             var statements = new List<MongoDBStatement>();
-            
+
             for (int i = 0; i < Script.Length; i++)
             {
                 column++;
@@ -71,7 +71,7 @@ namespace Qsi.MongoDB.Acorn
 
                 if (singlelineRemark)
                 {
-                    if (ch == '\r' || ch == '\n')
+                    if (ch is '\r' or '\n')
                     {
                         var length = i - capturedIndex;
                         sb.Remove(capturedIndex, length);
@@ -94,6 +94,7 @@ namespace Qsi.MongoDB.Acorn
                         line++;
                         column = 0;
                         break;
+
                     case '\n':
                     case '\r':
                         if (isKeywordMatched && isPatternMatched)
@@ -103,6 +104,7 @@ namespace Qsi.MongoDB.Acorn
                         line++;
                         column = 0;
                         break;
+
                     case 's':
                         if (isLineStart && remainLength >= 4 && Script[i..].StartsWith("show"))
                         {
@@ -189,7 +191,7 @@ namespace Qsi.MongoDB.Acorn
                 isPatternMatched = false;
                 isLineStart = true;
             }
-            
+
             void AddItem(int index, Range range)
             {
                 var length = range.End.Value - range.Start.Value;
