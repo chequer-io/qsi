@@ -533,18 +533,18 @@ namespace Qsi.Analyzers.Table
                 .Cast<IQsiColumnReferenceNode>()
                 .ToArray();
 
-            HashSet<QsiTableColumn> leftColumns = left.Columns.ToHashSet();
-            HashSet<QsiTableColumn> rightColumns = right.Columns.ToHashSet();
+            HashSet<QsiTableColumn> leftColumns = left.VisibleColumns.ToHashSet();
+            HashSet<QsiTableColumn> rightColumns = right.VisibleColumns.ToHashSet();
             var pivotColumns = new List<PivotColumnPair>();
 
             if (table.IsNatural)
             {
-                QsiIdentifier[] leftColumnNames = left.Columns
+                QsiIdentifier[] leftColumnNames = left.VisibleColumns
                     .Where(c => c.Name != null)
                     .Select(c => c.Name)
                     .ToArray();
 
-                QsiIdentifier[] rightColumnNames = right.Columns
+                QsiIdentifier[] rightColumnNames = right.VisibleColumns
                     .Where(c => c.Name != null)
                     .Select(c => c.Name)
                     .ToArray();
@@ -561,8 +561,8 @@ namespace Qsi.Analyzers.Table
             foreach (var pivot in pivots ?? Enumerable.Empty<IQsiColumnReferenceNode>())
             {
                 var pivotColumnName = pivot.Name[^1];
-                var leftColumnIndexes = left.Columns.AllIndexOf(c => Match(c.Name, pivotColumnName)).Take(2).ToArray();
-                var rightColumnIndexes = right.Columns.AllIndexOf(c => Match(c.Name, pivotColumnName)).Take(2).ToArray();
+                var leftColumnIndexes = left.Columns.AllIndexOf(c => c.IsVisible && Match(c.Name, pivotColumnName)).Take(2).ToArray();
+                var rightColumnIndexes = right.Columns.AllIndexOf(c => c.IsVisible && Match(c.Name, pivotColumnName)).Take(2).ToArray();
 
                 if (leftColumnIndexes.Length == 0 || rightColumnIndexes.Length == 0)
                 {
@@ -625,9 +625,9 @@ namespace Qsi.Analyzers.Table
                 sources[i] = await BuildTableStructure(tempContext, table.Sources[i]);
             }
 
-            int columnCount = sources[0].Columns.Count;
+            QsiTableColumn[] baseVisibleColumns = sources[0].VisibleColumns.ToArray();
 
-            if (sources.Skip(1).Any(s => s.Columns.Count != columnCount))
+            if (sources.Skip(1).Any(s => s.VisibleColumns.Count() != baseVisibleColumns.Length))
                 throw new QsiException(QsiError.DifferentColumnsCount);
 
             var compositeSource = new QsiTableStructure
@@ -637,13 +637,16 @@ namespace Qsi.Analyzers.Table
 
             compositeSource.References.AddRange(sources);
 
-            for (int i = 0; i < columnCount; i++)
+            for (int i = 0; i < baseVisibleColumns.Length; i++)
             {
-                var baseColumn = sources[0].Columns[i];
+                var baseColumn = baseVisibleColumns[i];
                 var compositeColumn = compositeSource.NewColumn();
 
                 compositeColumn.Name = baseColumn.Name;
-                compositeColumn.References.AddRange(sources.Select(s => s.Columns[i]));
+
+                compositeColumn.References.AddRange(
+                    sources.Select(s => s.VisibleColumns.ElementAt(i))
+                );
             }
 
             return compositeSource;
