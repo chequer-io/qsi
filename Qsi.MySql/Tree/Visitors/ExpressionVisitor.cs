@@ -559,7 +559,16 @@ namespace Qsi.MySql.Tree
 
         private static QsiBindParameterExpressionNode VisitParamMarker(ITerminalNode context)
         {
-            throw new QsiException(QsiError.Syntax);
+            var node = TreeHelper.Create<QsiBindParameterExpressionNode>(n =>
+            {
+                n.Prefix = "?";
+                n.NoSuffix = true;
+                n.Type = QsiParameterType.Index;
+            });
+
+            MySqlTree.PutContextSpan(node, context.Symbol);
+
+            return node;
         }
 
         public static QsiInvokeExpressionNode VisitSimpleExprSum(SimpleExprSumContext context)
