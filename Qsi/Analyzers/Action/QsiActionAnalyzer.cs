@@ -137,10 +137,25 @@ namespace Qsi.Analyzers.Action
         [MethodImpl(MethodImplOptions.NoInlining)]
         protected QsiDataValue ResolveColumnValue(IAnalyzerContext context, IQsiExpressionNode expression)
         {
-            if (expression is IQsiLiteralExpressionNode literal)
-                return new QsiDataValue(literal.Value, literal.Type);
+            switch (expression)
+            {
+                case IQsiLiteralExpressionNode literal:
+                    return new QsiDataValue(literal.Value, literal.Type);
 
-            return ResolveRawColumnValue(context, expression);
+                case IQsiBindParameterExpressionNode bindParameter:
+                {
+                    if (!context.Parameters.TryGetValue(bindParameter, out var parameter))
+                    {
+                        var parameterName = context.Engine.TreeDeparser.Deparse(bindParameter, context.Script);
+                        throw new QsiException(QsiError.ParameterNotFound, parameterName);
+                    }
+
+                    return new QsiDataValue(parameter.Value, QsiDataType.Object);
+                }
+
+                default:
+                    return ResolveRawColumnValue(context, expression);
+            }
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -228,14 +243,19 @@ namespace Qsi.Analyzers.Action
                 _ => null
             };
 
+            var parameters = new List<QsiParameter>();
+
             if (directivesNode is not null)
+            {
                 query = $"{context.Engine.TreeDeparser.Deparse(directivesNode, context.Script)}\n{query}";
+                parameters.AddRange(ArrangeBindParameters(context, directivesNode));
+            }
 
             var scriptType = context.Engine.ScriptParser.GetSuitableType(query);
             var script = new QsiScript(query, scriptType);
-            QsiParameter[] parameters = ArrangeBindParameters(context, node.Table);
+            parameters.AddRange(ArrangeBindParameters(context, node.Table));
 
-            using var reader = context.Engine.RepositoryProvider.GetDataReaderAsync(script, parameters, default).Result;
+            using var reader = context.Engine.RepositoryProvider.GetDataReaderAsync(script, parameters.ToArray(), default).Result;
 
             if (!reader.Read())
                 return "null";
@@ -394,10 +414,6 @@ namespace Qsi.Analyzers.Action
                     var parameterName = context.Engine.TreeDeparser.Deparse(parameterNode, context.Script);
                     throw new QsiException(QsiError.ParameterNotFound, parameterName);
                 }
-
-                // TODO: index bind parameter arrangement not implemented
-                if (parameterNode.Type == QsiParameterType.Index)
-                    return context.Parameters.Values.ToArray();
 
                 result[index++] = parameter;
             }

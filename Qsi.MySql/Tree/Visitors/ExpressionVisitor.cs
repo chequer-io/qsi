@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Antlr4.Runtime;
@@ -554,19 +555,20 @@ namespace Qsi.MySql.Tree
 
         public static QsiBindParameterExpressionNode VisitSimpleExprParamMarker(SimpleExprParamMarkerContext context)
         {
-            return VisitParamMarker(context.PARAM_MARKER());
+            return VisitParamMarker(context.paramMarker());
         }
 
-        private static QsiBindParameterExpressionNode VisitParamMarker(ITerminalNode context)
+        private static QsiBindParameterExpressionNode VisitParamMarker(ParamMarkerContext context)
         {
             var node = TreeHelper.Create<QsiBindParameterExpressionNode>(n =>
             {
                 n.Prefix = "?";
                 n.NoSuffix = true;
+                n.Index = context.paramNumber;
                 n.Type = QsiParameterType.Index;
             });
 
-            MySqlTree.PutContextSpan(node, context.Symbol);
+            MySqlTree.PutContextSpan(node, context);
 
             return node;
         }
@@ -1658,10 +1660,10 @@ namespace Qsi.MySql.Tree
 
                     return node;
 
-                case ITerminalNode terminalNode:
-                    if (terminalNode is { Symbol: { Type: PARAM_MARKER } })
-                        return VisitParamMarker(terminalNode);
+                case ParamMarkerContext paramMarker:
+                    return VisitParamMarker(paramMarker);
 
+                case ITerminalNode terminalNode:
                     return VisitLiteralFromToken(terminalNode.Symbol);
 
                 default:

@@ -1,6 +1,7 @@
 using System;
 using System.Data.Common;
 using System.Linq;
+using MySql.Data.MySqlClient;
 using Qsi.Data;
 using Qsi.Data.Object;
 using Qsi.Utilities;
@@ -92,5 +93,10 @@ order by ORDINAL_POSITION";
     protected override QsiObject LookupObject(QsiQualifiedIdentifier identifier, QsiObjectType type)
     {
         throw new NotImplementedException();
+    }
+
+    protected override void AddParameterValue(DbCommand command, QsiParameter parameter)
+    {
+        ((MySqlCommand)command).Parameters.AddWithValue(parameter.Name, parameter.Value);
     }
 }
