@@ -74,20 +74,114 @@ alter_statement:
         | alterUser
         | alterView
     );
-   
-alterForeign:
-    FOREIGN (
+
+// TODO: Implement alter statement
+alterAggregate
+    :;
+    
+alterCollation
+    :;
+
+alterConversion
+    :;
+
+alterDatabase
+    :;
+
+alterDefaultPrivileges
+    :;
+    
+alterDomain
+    :;
+
+alterEventTrigger
+    :;
+
+alterExtension
+    :;
+
+alterForeign
+    : FOREIGN (
         alterForeignDataWrapper
         | alterForeignTable
     );
+    
+alterForeignDataWrapper
+    :;
 
-alterOperator:
-    OPERATOR (
+alterForeignTable
+    :;
+
+alterFunction
+    :;
+
+alterGroup
+    :;
+
+alterIndex
+    :;
+
+alterLanguage
+    :;
+
+alterLargeObject
+    :;
+
+alterMaterializedView
+    :;
+
+alterOperator
+    : OPERATOR (
         // TODO: Implement ALTER OPERATOR clause.
         alterOperatorClass
         | alterOperatorFamily
     );
     
+alterOperatorClass
+    :;
+
+alterOperatorFamily
+    :;
+
+alterPolicy
+    :;
+
+alterProcedure
+    :;
+
+alterPublication
+    :;
+
+alterRole
+    :;
+
+alterRoutine
+    :;
+
+alterRule
+    :;
+
+alterSchema
+    :;
+
+alterSequence
+    :;
+
+alterServer
+    :;
+
+alterStatistics
+    :;
+
+alterSubscription
+    :;
+
+alterTable
+    :;
+
+alterTableSpace
+    :;
+
 alterTextSearch:
     TEXT SEARCH (
         alterTextSearchConfiguration
@@ -95,13 +189,39 @@ alterTextSearch:
         | alterTextSearchParser
         | alterTextSearchTemplate
     );
-    
-alterUser:
-    USER (
+
+alterTextSearchConfiguration
+    :;
+
+alterTextSearchDictionary
+    :;
+
+alterTextSearchParser
+    :;
+
+alterTextSearchTemplate
+    :;
+
+
+alterTrigger
+    :;
+
+alterType
+    :;
+
+alterUser
+    : USER (
         // TODO: Implement ALTER USER clause.
         alterUserMapping
     ); 
+    
+alterUserMapping
+    :;
 
+alterView
+    :;
+
+// TODO: Implement create statement.
 create_statement:
     CREATE (
         createAccessMethod
@@ -137,19 +257,103 @@ create_statement:
         | createUser
         | createView
     );
-    
+
+createAccessMethod
+    :;
+
+createAggregate
+    :;
+
+createCast
+    :;
+
+createCollation
+    :;
+
+createConversion
+    :;
+
+createDatabase
+    :;
+
+createDomain
+    :;
+
+createEventTrigger
+    :;
+
+createExtension
+    :;
+
 createForeign:
     FOREIGN (
         createForeignDataWrapper
         | createForeignTable
     );
-    
+
+createForeignDataWrapper
+    :;
+
+createForeignTable
+    :;
+
+createFunction
+    :;
+
+createGroup
+    :;
+
+createIndex
+    :;
+
+createLanguage
+    :;
+
+createMaterializedView
+    :;
+
 createOperator:
     OPERATOR (
         // TODO: Implement CREATE OPERATOR clause.
         | createOperatorClass
         | createOperatorFamily
     );
+    
+createOperatorClass
+    :;
+
+createOperatorFamily
+    :;
+
+createPolicy
+    :;
+
+createProcedure
+    :;
+
+createPublication
+    :;
+
+createRole
+    :;
+
+createRule
+    :;
+
+createSchema
+    :;
+
+createSequence
+    :;
+
+createServer
+    :;
+
+createTable
+    :;
+
+createTablespace
+    :;
 
 createTextSearch:
     TEXT SEARCH (
@@ -158,12 +362,40 @@ createTextSearch:
         | createTextSearchParser
         | createTextSearchTemplate
     );
-    
+
+createTextSearchConfiguration
+    :;
+
+createTextSearchDictionary
+    :;
+
+createTextSearchParser
+    :;
+
+createTextSearchTemplate
+    :;
+
+
+createTransform
+    :;
+
+createTrigger
+    :;
+
+createType
+    :;
+
 createUser:
     USER (
         // TODO: Implement CREATE USER clause.
         createUserMapping
     );
+    
+createUserMapping
+    :;
+
+createView
+    :;
     
 drop_statement:
     DROP (
@@ -204,13 +436,61 @@ drop_statement:
         | dropUser
         | dropView
     );
-    
+
+dropAccessMethod
+    :;
+
+dropAggregate
+    :;
+
+dropCast
+    :;
+
+dropCollation
+    :;
+
+dropConversion
+    :;
+
+dropDatabase
+    :;
+
+dropDomain
+    :;
+
+dropEventTrigger
+    :;
+
+dropExtension
+    :;
+
 dropForeign:
     FOREIGN (
         dropForeignDataWrapper
         | dropForeignTable
     );
     
+dropForeignDataWrapper
+    :;
+    
+dropForeignTable
+    :;
+
+dropFunction
+    :;
+
+dropGroup
+    :;
+
+dropIndex
+    :;
+
+dropLanguage
+    :;
+
+dropMaterializedView
+    :;
+
 dropOperator:
     OPERATOR (
         // TODO: Implement CREATE OPERATOR clause.
@@ -218,6 +498,54 @@ dropOperator:
         | dropOperatorFamily
     );
     
+dropOperatorClass
+    :;
+
+dropOperatorFamily
+    :;
+
+dropOwned
+    :;
+
+dropPolicy
+    :;
+
+dropProcedure
+    :;
+
+dropPublication
+    :;
+
+dropRole
+    :;
+
+dropRoutine
+    :;
+
+dropRule
+    :;
+
+dropSchema
+    :;
+
+dropSequence
+    :;
+
+dropServer
+    :;
+
+dropStatistics
+    :;
+
+dropSubscription
+    :;
+
+dropTable
+    :;
+
+dropTablespace
+    :;
+
 dropTextSearch:
     TEXT SEARCH (
         dropTextSearchConfiguration
@@ -225,12 +553,40 @@ dropTextSearch:
         | dropTextSearchParser
         | dropTextSearchTemplate
     );
-    
+
+dropTextSearchConfiguration
+    :;
+
+dropTextSearchDictionary
+    :;
+
+dropTextSearchParser
+    :;
+
+dropTextSearchTemplate
+    :;
+
+
+dropTransform
+    :;
+
+dropTrigger
+    :;
+
+dropType
+    :;
+
 dropUser:
     USER (
         // TODO: Implement DROP USER clause.
         dropUserMappings
     );
+    
+dropUserMappings
+    :;
+
+dropView
+    :;
 
 //----------------- DML statements -------------------------------------------------------------------------------------
 
@@ -284,11 +640,35 @@ query_primary:
 select_item_list:
     // TODO: Create select item
     (select_item | STAR) (COMMA select_item)*;
+    
+select_item
+    :;
 
 // Options for select statement.
 select_option
     : ALL
     | DISTINCT;
+
+/**
+ * UPDATE
+ */
+// TODO: Implement update statement.
+update_statement
+    :;
+    
+/**
+ * INSERT
+ */
+// TODO: Implement insert statement.
+insert_statement
+    :;
+
+/**
+ * DELETE
+ */
+// TODO: Implement delete statement.
+delete_statement
+    :;
 
 /**
  * VALUES
@@ -297,11 +677,17 @@ values_statement:
     // TODO: Create expression list
     VALUES OPEN_PAREN expression_list CLOSE_PAREN (COMMA OPEN_PAREN expression_list CLOSE_PAREN)*;
 
+expression_list
+    :;
+
 /**
  * TABLES (explicitly)
  */
 explicit_table_statement:
     TABLE table_ref; // TODO: Create table reference identifier
+    
+table_ref
+    :;
 
 //----------------- CLAUSES --------------------------------------------------------------------------------------------
 
@@ -314,16 +700,22 @@ alias_clause
     
 alias_clause_body
     : column_name (OPEN_PAREN name_list CLOSE_PAREN)?;  // TODO: Create column name.
+
+column_name
+    :;
     
 name_list
     : name (COMMA name)*;   // TODO: Create name.
+
+name
+    :;
 
 /**
  * FOR .. (OF ..);
  */
 for_clause
     // TODO: Implement table name expression.
-    : FOR lock_strength_option (OF temp_expr (COMMA temp_expr)*)? (NOWAIT | SKIP LOCKED)?;
+    : FOR lock_strength_option (OF table_ref (COMMA table_ref)*)? (NOWAIT | SKIP LOCKED)?;
 
 lock_strength_option
     : UPDATE
@@ -341,13 +733,16 @@ from_clause
 from_item_list
     : from_item (COMMA from_item)*;
 
-// Item that can be an element of the from clause.
 from_item
+    : from_item_inner
+    | join_from_item;
+
+// Item that can be an element of the from clause.
+from_item_inner
     : table_from_item                       // FROM schema.table
     | ONLY table_from_item                  // FROM ONLY schema.table
     // TODO: Create with query name.
     | with_query_name alias_clause?         // FROM query (AS foo)
-    | join_from_item                        // FROM schema.table JOIN schema.otherTable
     | function_from_item                    // FROM function()
     | subquery_from_item                    // FROM (SELECT * FROM schema.table)
     | LATERAL (
@@ -355,10 +750,16 @@ from_item
         | subquery_from_item                // FROM LATERAL (SELECT * FROM schema.table)
     );
 
+with_query_name
+    :;
+
 // Table item.
 table_from_item
     // TODO: Create table name.
     : tableName STAR? alias_clause? tablesample_clause?;
+
+tableName
+    :;
 
 // Function item.
 function_from_item
@@ -375,10 +776,19 @@ function_from_item
         | WITH ORDINALITY alias_clause?                                 // ROWS FROM function() WITH ORDINALITY AS foo
     );
 
+alias
+    :;
+
+column_definition_list
+    :;
+
 // Function item.
 function_primary
     // TODO: Create function.
     : function OPEN_PAREN argument_list? CLOSE_PAREN;
+    
+function
+    :;
 
 // Function item that has a ROWS FROM block.
 rows_from_function_primary
@@ -392,25 +802,31 @@ subquery_from_item
 column_list
     // TODO: Create column.
     : column (COMMA column)*;
+    
+column
+    :;
 
 // List of arguments.
 argument_list
     // TODO: Create argument.
-    : arguement (COMMA argument)*;
+    : argument (COMMA argument)*;
+
+argument
+    :;
 
 // Join item.
 join_from_item
-    : from_item join (join)*;
+    : from_item_inner join (join)*;
 
 // Join
 join
-    : CROSS JOIN from_item
+    : CROSS JOIN from_item_inner
     | natural_joinable
     | NATURAL natural_joinable;
 
 // Natural joinable joins.
 natural_joinable
-    : join_type? JOIN from_item;
+    : join_type? JOIN from_item_inner;
     
 join_type
     : (FULL | LEFT | RIGHT | INNER_P) OUTER_P?;
@@ -425,6 +841,9 @@ grouping_element_list
     // TODO: Implement grouping element expression.
     : grouping_element (COMMA grouping_element)*;
 
+grouping_element
+    :;
+
 /**
  * HAVING
  */
@@ -432,12 +851,18 @@ having_clause
     // TODO: Create condition expression.
     : HAVING condition_expression;
 
+condition_expression
+    :;
+
 /**
  * INTO
  */
 into_clause
     // TODO: Create table name
     : INTO into_clause_options? TABLE? table_name;
+
+table_name
+    :;
 
 // Table options for into clause.
 into_clause_options
@@ -456,6 +881,9 @@ limit
     : LIMIT limit_value
     // TODO: Create value expression.
     | FETCH (FIRST | NEXT) value (ROW | ROWS) (ONLY | WITH TIES);
+
+value
+    :;
 
 offset
     : OFFSET (
@@ -482,12 +910,21 @@ order_list
 order_expression
     : temp_expr (ASC | DESC)?;
 
+temp_expr
+    :;
+
 /**
  * TABLESAMPLE
  */
 tablesample_clause
     // TODO: Create sampling_method and seed.
     : TABLESAMPLE sampling_method OPEN_PAREN argument_list CLOSE_PAREN (REPRESENTABLE OPEN_PAREN seed CLOSE_PAREN)?;
+
+sampling_method
+    :;
+
+seed
+    :;
 
 /**
  * WHERE
@@ -514,6 +951,9 @@ common_table_expression
     : identifier OPEN_PAREN name_list CLOSE_PAREN 
     AS common_table_expression_option 
     OPEN_PAREN common_table_expression_statements CLOSE_PAREN;
+
+identifier
+    :;
 
 common_table_expression_option
     : MATERIALIZED
