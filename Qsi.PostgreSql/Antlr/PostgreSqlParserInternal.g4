@@ -183,7 +183,7 @@ alterTableSpace
     :;
 
 alterTextSearch:
-    TEXT SEARCH (
+    TEXT_P SEARCH (
         alterTextSearchConfiguration
         | alterTextSearchDictionary
         | alterTextSearchParser
@@ -356,7 +356,7 @@ createTablespace
     :;
 
 createTextSearch:
-    TEXT SEARCH (
+    TEXT_P SEARCH (
         createTextSearchConfiguration
         | createTextSearchDictionary
         | createTextSearchParser
@@ -547,7 +547,7 @@ dropTablespace
     :;
 
 dropTextSearch:
-    TEXT SEARCH (
+    TEXT_P SEARCH (
         dropTextSearchConfiguration
         | dropTextSearchDictionary
         | dropTextSearchParser
@@ -715,7 +715,7 @@ name
  */
 for_clause
     // TODO: Implement table name expression.
-    : FOR lock_strength_option (OF table_ref (COMMA table_ref)*)? (NOWAIT | SKIP LOCKED)?;
+    : FOR lock_strength_option (OF table_ref (COMMA table_ref)*)? (NOWAIT | SKIP_P LOCKED)?;
 
 lock_strength_option
     : UPDATE
@@ -745,7 +745,7 @@ from_item_inner
     | with_query_name alias_clause?         // FROM query (AS foo)
     | function_from_item                    // FROM function()
     | subquery_from_item                    // FROM (SELECT * FROM schema.table)
-    | LATERAL (
+    | LATERAL_P (
         function_from_item                  // FROM LATERAL function()
         | subquery_from_item                // FROM LATERAL (SELECT * FROM schema.table)
     );
@@ -880,7 +880,7 @@ limit_clause
 limit
     : LIMIT limit_value
     // TODO: Create value expression.
-    | FETCH (FIRST | NEXT) value (ROW | ROWS) (ONLY | WITH TIES);
+    | FETCH (FIRST_P | NEXT) value (ROW | ROWS) (ONLY | WITH TIES);
 
 value
     :;
@@ -918,7 +918,7 @@ temp_expr
  */
 tablesample_clause
     // TODO: Create sampling_method and seed.
-    : TABLESAMPLE sampling_method OPEN_PAREN argument_list CLOSE_PAREN (REPRESENTABLE OPEN_PAREN seed CLOSE_PAREN)?;
+    : TABLESAMPLE sampling_method OPEN_PAREN argument_list CLOSE_PAREN (REPEATABLE OPEN_PAREN seed CLOSE_PAREN)?;
 
 sampling_method
     :;
