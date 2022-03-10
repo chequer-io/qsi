@@ -29,7 +29,6 @@ statement
    | insertStatement
    | updateStatement
    | deleteStatement
-   | valuesStatement
    ;
 
 //----------------- DDL statements -------------------------------------------------------------------------------------
@@ -594,8 +593,8 @@ dropView
  * SELECT
  */
 selectStatement
-    : queryExpression                                       // SELECT ...
-    | queryExpressionParens                                 // (SELECT ...)
+    : queryExpressionParens                                 // (SELECT ...)
+    | queryExpression                                       // SELECT ...
     ;
 
 // Expression without parantheses.
@@ -605,6 +604,7 @@ queryExpression
     ;
 
 // Expression without with clause.
+// TODO: Optimize; extremely slow when intake many brackets.
 queryExpressionNoWith
     : (queryExpressionBody | queryExpressionParens)         // SELECT ...
     orderByClause?                                          // ORDER BY ...
@@ -614,7 +614,7 @@ queryExpressionNoWith
 
 // Expression with parantheses.
 queryExpressionParens
-    : OPEN_PAREN (queryExpression | queryExpressionParens) CLOSE_PAREN
+    : OPEN_PAREN (queryExpressionParens | queryExpression) CLOSE_PAREN
     ;
 
 // Simpler query expression.
@@ -623,24 +623,34 @@ queryExpressionBody
 
 // Query expression with set expressions(union, intersect, except).
 queryExpressionSet
-    : setOperator setOperatorOption? (queryPrimary | queryExpressionParens);
+    : setOperator setOperatorOption? (queryPrimary | queryExpressionParens)
+    ;
 
 // Primary query.
-queryPrimary:
-    SELECT selectOption* selectItemList
+queryPrimary
+    : SELECT selectOption* selectItemList
     intoClause?
     fromClause?
     whereClause?
     groupByClause?
     havingClause?
-    windowClause?
-    | valuesStatement
-    | explicitTableStatement;
+    windowClause?                               # selectQueryPrimary
+    | VALUES valueStatementItemList             # valuesQueryPrimary
+    | TABLE tableName                           # tableQueryPrimary
+    ;
+
+valueStatementItemList
+    : valueStatementItem (COMMA valueStatementItem)*
+    ;
+
+valueStatementItem
+    : OPEN_PAREN expressionList CLOSE_PAREN
+    ;
 
 // Columns of the select statement.
 // TODO: Create select item
 selectItemList
-    : (selectItem | STAR) (COMMA selectItem)*
+    : (columnName | STAR) (COMMA columnName)*
     ;
 
 // Options for select statement.
@@ -654,44 +664,101 @@ selectOption
  */
 updateStatement
     : updateStatementNoWith
-    | withClause updateStatementNoWith;
+    | withClause updateStatementNoWith
+    ;
     
 updateStatementNoWith
     : UPDATE ONLY? tableName STAR? aliasClause? SET updateSetList
     fromClause?
     (whereClause | WHERE CURRENT_P OF cursorName)?
-    updateReturning?;
+    returningClause?
+    ;
 
 updateSetList
-    : updateSet (COMMA updateSet)*;
+    : updateSet (COMMA updateSet)*
+    ;
 
 updateSet
-    : columnName EQUAL (expression | DEFAULT)                   #columnUpdateSet
-    | columnList EQUAL ROW? updateSetExpressionList             #columnListUpdateSet
-    | columnList EQUAL OPEN_PAREN queryPrimary CLOSE_PAREN      #subqueryUpdateSet
+    : columnName EQUAL (expression | DEFAULT)                                                       #columnUpdateSet
+    | OPEN_PAREN columnList CLOSE_PAREN EQUAL ROW? OPEN_PAREN updateSetExpressionList CLOSE_PAREN   #columnListUpdateSet
+    | OPEN_PAREN columnList CLOSE_PAREN EQUAL OPEN_PAREN queryPrimary CLOSE_PAREN                   #subqueryUpdateSet
     ;
     
 updateSetExpressionList
-    : updateSetExpression (COMMA updateSetExpression)*;
+    : updateSetExpression (COMMA updateSetExpression)*
+    ;
 
 updateSetExpression
     : expression
-    | DEFAULT;
-
-// NOTE: The syntax of the RETURNING list is identical to that of the output list of SELECT.
-// see: https://www.postgresql.org/docs/14/sql-update.html
-updateReturning
-    : RETURNING returningItemList;
-
-returningItemList
-    : selectItemList;
+    | DEFAULT
+    ;
 
 /**
  * INSERT
  */
 // TODO: Implement insert statement.
 insertStatement
-    :;
+    : insertStatementNoWith
+    | withClause insertStatementNoWith
+    ;
+
+insertStatementNoWith
+    : INSERT INTO tableName aliasClause? (OPEN_PAREN columnList CLOSE_PAREN)?
+    overridingOption?
+    (DEFAULT VALUES | queryPrimary)
+    onConflictClause?
+    returningClause?
+    ;
+    
+overridingOption
+    : OVERRIDING (SYSTEM_P | USER) VALUE_P
+    ;
+    
+onConflictClause
+    : ON CONFLICT conflictTarget? conflictAction
+    ;
+    
+conflictTarget
+    : OPEN_PAREN conflictTargetItemList CLOSE_PAREN (WHERE indexPredicate)?
+    | ON CONSTRAINT identifier
+    ;
+    
+conflictTargetItemList
+    : conflictTargetItem (COMMA conflictTargetItem)*
+    ;
+
+conflictTargetItem
+    : (columnName | OPEN_PAREN expression CLOSE_PAREN) collate? opClass?
+    ;
+
+collate
+    : COLLATE collation
+    ;
+
+// TODO: Implement collation.
+// see: collation section at https://www.postgresql.org/docs/14/sql-insert.html
+collation
+    : TEMP
+    ;
+
+// TODO: Implement opClass.
+// see: opclass section at https://www.postgresql.org/docs/14/sql-insert.html
+opClass
+    : TEMP
+    ;
+
+// TODO: Implement indexPredicate.
+// see: index_predicate section at https://www.postgresql.org/docs/14/sql-insert.html
+indexPredicate
+    : TEMP
+    ;
+
+conflictAction
+    : DO (NOTHING | updateConflictAction)
+    ;
+
+updateConflictAction
+    : UPDATE SET updateSetList whereClause?;
 
 /**
  * DELETE
@@ -699,27 +766,6 @@ insertStatement
 // TODO: Implement delete statement.
 deleteStatement
     :;
-
-/**
- * VALUES
- */
-valuesStatement
-    : VALUES valueStatementItemList
-    ;
-
-valueStatementItemList
-    : valueStatementItem (COMMA valueStatementItem)*
-    ;
-
-valueStatementItem
-    : OPEN_PAREN expressionList CLOSE_PAREN
-    ;
-
-/**
- * TABLES (explicitly)
- */
-explicitTableStatement:
-    TABLE tableName;
 
 //----------------- CLAUSES --------------------------------------------------------------------------------------------
 
@@ -768,9 +814,9 @@ fromItem
 
 // Item that can be an element of the from clause.
 fromItemPrimary
-    : ONLY? tableFromItem               # tableFromItemPrimary
-    | LATERAL_P? functionFromItem       # functionFromItemPrimary
-    | LATERAL_P? subqueryFromItem       # subqueryFromItemPrimary
+    : ONLY? tableFromItem
+    | LATERAL_P? functionFromItem
+    | LATERAL_P? subqueryFromItem
     ;
 
 // Table item.
@@ -862,11 +908,24 @@ orderExpression
     ;
 
 /**
+ * RETURNING
+ */
+// NOTE: The syntax of the RETURNING list is identical to that of the output list of SELECT.
+// see: https://www.postgresql.org/docs/14/sql-update.html
+// also: https://www.postgresql.org/docs/14/sql-insert.html
+returningClause
+    : RETURNING returningItemList
+    ;
+
+returningItemList
+    : selectItemList
+    ;
+
+/**
  * TABLESAMPLE
  */
 tableSampleClause
-    : TABLESAMPLE samplingMethodName OPEN_PAREN argumentList CLOSE_PAREN
-    (REPEATABLE OPEN_PAREN seed CLOSE_PAREN)?
+    : TABLESAMPLE samplingMethodName OPEN_PAREN argumentList CLOSE_PAREN (REPEATABLE OPEN_PAREN seed CLOSE_PAREN)?
     ;
 
 /**
@@ -884,17 +943,17 @@ windowClause
 windowDefinitionList
     : windowDefinition (COMMA windowDefinition)*;
 
-// NOTE: Same structure as the OVER clause.    
+// NOTE: Same structure as the OVER clause.
 windowDefinition
     : columnName AS windowSpecification;
 
 windowSpecification
-    : OPEN_PAREN (
-        windowName?
-        (PARTITION BY expressionList)?
-        (ORDER BY windowOrderByExpressionList)?
-        frameClause?
-    ) CLOSE_PAREN;
+    : OPEN_PAREN 
+    windowName?
+    (PARTITION BY expressionList)?
+    (ORDER BY windowOrderByExpressionList)? 
+    frameClause?
+    CLOSE_PAREN;
 
 windowOrderByExpressionList
     : windowOrderByExpression (COMMA windowOrderByExpression)*;
@@ -972,6 +1031,9 @@ columnName
     : identifier
     ;
 
+cursorName
+    : identifier;
+
 samplingMethodName
     : identifier
     ;
@@ -1026,9 +1088,6 @@ condition
     : expression
     ;
 
-operator
-    : TEMP;
-
 /**
  * value
  */
@@ -1043,11 +1102,8 @@ offsetValue
 seed
     : value
     ;
- 
-selectItem
-    : TEMP;
 
-cursorName
+operator
     : TEMP;
 
 columnDefinitionList
