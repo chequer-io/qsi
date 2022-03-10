@@ -932,9 +932,9 @@ with_clause
 
 // CTE(Common Table Expression).
 common_table_expression
-    // TODO: Create identifier.
-    : identifier OPEN_PAREN name_list CLOSE_PAREN 
-    AS common_table_expression_option 
+    // TODO: Create an identifier.
+    : identifier (OPEN_PAREN name_list CLOSE_PAREN)? 
+    AS common_table_expression_option? 
     OPEN_PAREN common_table_expression_statements CLOSE_PAREN;
 
 common_table_expression_option
