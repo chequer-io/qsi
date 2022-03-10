@@ -934,7 +934,46 @@ where_clause
  * WINDOW
  */
 window_clause
-    :;
+    : WINDOW window_definition_list;
+    
+window_definition_list
+    : window_definition (COMMA window_definition)*;
+
+// NOTE: Same structure as the OVER clause.    
+window_definition
+    : column AS window_specification;
+
+window_specification
+    : OPEN_PAREN (
+        window_name?
+        (PARTITION BY expression_list)?
+        (ORDER BY window_order_by_expression_list)?
+        frame_clause?
+    ) CLOSE_PAREN;
+
+window_order_by_expression_list
+    : window_order_by_expression (COMMA window_order_by_expression)*;
+
+window_order_by_expression
+    : expression (ASC | DESC | USING operator) (NULLS_P (FIRST_P | LAST_P))?;
+
+frame_clause
+    : (RANGE | ROWS | GROUPS) (
+        frame_bound
+        | BETWEEN frame_bound AND frame_bound
+    ) (frame_exclusion)?;
+    
+frame_bound
+    : UNBOUNDED frame_bound_option
+    | offset frame_bound_option
+    | CURRENT_P ROW;
+    
+frame_bound_option
+    : PRECEDING
+    | FOLLOWING;
+
+frame_exclusion
+    : EXCLUDE (CURRENT_P ROW | GROUP_P | TIES | NO OTHERS);
 
 /**
  * WITH
@@ -976,5 +1015,13 @@ set_operator_option
 identifier
     :;
 
+window_name
+    :;
+
 expression_list
     :;
+
+expression
+    :;
+
+operator:;
