@@ -20,16 +20,16 @@ root
 
 statement
     // DDL
-   : alter_statement
-   | create_statement
-   | drop_statement
+   : alterStatement
+   | createStatement
+   | dropStatement
    
    // DML
-   | select_statement
-   | insert_statement
-   | update_statement
-   | delete_statement
-   | values_statement
+   | selectStatement
+   | insertStatement
+   | updateStatement
+   | deleteStatement
+   | valuesStatement
    ;
 
 //----------------- DDL statements -------------------------------------------------------------------------------------
@@ -37,7 +37,7 @@ statement
 /**
 * ALTER STATEMENT
 */
-alter_statement:
+alterStatement:
     ALTER (
         alterAggregate
         | alterCollation
@@ -222,7 +222,7 @@ alterView
     :;
 
 // TODO: Implement create statement.
-create_statement:
+createStatement:
     CREATE (
         createAccessMethod
         | createAggregate
@@ -397,7 +397,7 @@ createUserMapping
 createView
     :;
     
-drop_statement:
+dropStatement:
     DROP (
         dropAccessMethod
         | dropAggregate
@@ -593,239 +593,242 @@ dropView
 /**
  * SELECT
  */
-select_statement
-    : query_expression                                      // SELECT ...
-    | query_expression_parens;                              // (SELECT ...)
+selectStatement
+    : queryExpression                                       // SELECT ...
+    | queryExpressionParens                                 // (SELECT ...)
+    ;
 
 // Expression without parantheses.
-query_expression
-    : query_expression_without_with                         // SELECT ...
-    | with_clause query_expression_without_with;            // WITH ... SELECT ...
+queryExpression
+    : queryExpressionNoWith                                 // SELECT ...
+    | withClause queryExpressionNoWith                      // WITH ... SELECT ...
+    ;
 
 // Expression without with clause.
-query_expression_without_with
-    : (query_expression_body | query_expression_parens)     // SELECT ...
-    order_by_clause?                                        // ORDER BY ...
-    limit_clause?                                           // LIMIT ... (OFFSET ...)
-    for_clause?;                                            // FOR ... (OF ...)
+queryExpressionNoWith
+    : (queryExpressionBody | queryExpressionParens)         // SELECT ...
+    orderByClause?                                          // ORDER BY ...
+    limitClause?                                            // LIMIT ... (OFFSET ...)
+    forClause?                                              // FOR ... (OF ...)
+    ;
 
 // Expression with parantheses.
-query_expression_parens:
-    OPEN_PAREN (
-        query_expression
-        | query_expression_parens
-    ) CLOSE_PAREN;
+queryExpressionParens
+    : OPEN_PAREN (queryExpression | queryExpressionParens) CLOSE_PAREN
+    ;
 
 // Simpler query expression.
-query_expression_body
-    : (query_primary | query_expression_parens) query_expression_set*;
+queryExpressionBody
+    : (queryPrimary | queryExpressionParens) queryExpressionSet*;
 
 // Query expression with set expressions(union, intersect, except).
-query_expression_set
-    : set_operator set_operator_option? (query_primary | query_expression_parens);
+queryExpressionSet
+    : setOperator setOperatorOption? (queryPrimary | queryExpressionParens);
 
 // Primary query.
-query_primary:
-    SELECT select_option* select_item_list
-    into_clause?
-    from_clause?
-    where_clause?
-    group_by_clause?
-    having_clause?
-    window_clause?
-    | values_statement
-    | explicit_table_statement;
+queryPrimary:
+    SELECT selectOption* selectItemList
+    intoClause?
+    fromClause?
+    whereClause?
+    groupByClause?
+    havingClause?
+    windowClause?
+    | valuesStatement
+    | explicitTableStatement;
 
 // Columns of the select statement.
-select_item_list:
-    // TODO: Create select item
-    (select_item | STAR) (COMMA select_item)*;
+// TODO: Create select item
+selectItemList
+    : (selectItem | STAR) (COMMA selectItem)*
+    ;
 
 // Options for select statement.
-select_option
+selectOption
     : ALL
-    | DISTINCT;
+    | DISTINCT
+    ;
 
 /**
  * UPDATE
  */
-// TODO: Implement update statement.
-update_statement
-    :;
+updateStatement
+    : updateStatementNoWith
+    | withClause updateStatementNoWith;
     
+updateStatementNoWith
+    : UPDATE ONLY? tableName STAR? aliasClause? SET updateSetList
+    fromClause?
+    (whereClause | WHERE CURRENT_P OF cursorName)?
+    updateReturning?;
+
+updateSetList
+    : updateSet (COMMA updateSet)*;
+
+updateSet
+    : columnName EQUAL (expression | DEFAULT)                   #columnUpdateSet
+    | columnList EQUAL ROW? updateSetExpressionList             #columnListUpdateSet
+    | columnList EQUAL OPEN_PAREN queryPrimary CLOSE_PAREN      #subqueryUpdateSet
+    ;
+    
+updateSetExpressionList
+    : updateSetExpression (COMMA updateSetExpression)*;
+
+updateSetExpression
+    : expression
+    | DEFAULT;
+
+// NOTE: The syntax of the RETURNING list is identical to that of the output list of SELECT.
+// see: https://www.postgresql.org/docs/14/sql-update.html
+updateReturning
+    : RETURNING returningItemList;
+
+returningItemList
+    : selectItemList;
+
 /**
  * INSERT
  */
 // TODO: Implement insert statement.
-insert_statement
+insertStatement
     :;
 
 /**
  * DELETE
  */
 // TODO: Implement delete statement.
-delete_statement
+deleteStatement
     :;
 
 /**
  * VALUES
  */
-values_statement:
-    // TODO: Create expression list
-    VALUES OPEN_PAREN expression_list CLOSE_PAREN (COMMA OPEN_PAREN expression_list CLOSE_PAREN)*;
+valuesStatement
+    : VALUES valueStatementItemList
+    ;
+
+valueStatementItemList
+    : valueStatementItem (COMMA valueStatementItem)*
+    ;
+
+valueStatementItem
+    : OPEN_PAREN expressionList CLOSE_PAREN
+    ;
 
 /**
  * TABLES (explicitly)
  */
-explicit_table_statement:
-    TABLE table_ref; // TODO: Create table reference identifier
-    
-table_ref
-    :;
+explicitTableStatement:
+    TABLE tableName;
 
 //----------------- CLAUSES --------------------------------------------------------------------------------------------
 
 /**
  * ALIAS
  */
-alias_clause
-    : alias_clause_body
-    | AS alias_clause_body;
+aliasClause
+    : AS? aliasClauseBody
+    ;
     
-alias_clause_body
-    : column_name (OPEN_PAREN name_list CLOSE_PAREN)?;  // TODO: Create column name.
-
-name_list
-    : name (COMMA name)*;   // TODO: Create name.
+aliasClauseBody
+    : identifier (OPEN_PAREN columnList CLOSE_PAREN)?
+    ;
 
 /**
  * FOR .. (OF ..);
  */
-for_clause
+forClause
     // TODO: Implement table name expression.
-    : FOR lock_strength_option (OF table_ref (COMMA table_ref)*)? (NOWAIT | SKIP_P LOCKED)?;
+    : FOR lockStrengthOption (OF tableList)? (NOWAIT | SKIP_P LOCKED)?
+    ;
 
-lock_strength_option
+lockStrengthOption
     : UPDATE
     | NO KEY UPDATE
     | SHARE
-    | KEY SHARE;
+    | KEY SHARE
+    ;
 
 /**
  * FROM
  */
-from_clause
-    : FROM from_item_list;
+fromClause
+    : FROM fromItemList
+    ;
 
 // List of from item.
-from_item_list
-    : from_item (COMMA from_item)*;
+fromItemList
+    : fromItem (COMMA fromItem)*
+    ;
 
-from_item
-    : from_item_inner
-    | join_from_item;
+fromItem
+    : fromItemPrimary
+    | fromItemJoin
+    ;
 
 // Item that can be an element of the from clause.
-// TODO: Fix high ambiguity.
-// TODO: Fix naming. (Inner stands for what? Too broad definition.)
-from_item_inner
-    : table_from_item                       // FROM schema.table
-    | ONLY table_from_item                  // FROM ONLY schema.table
-    // TODO: Create with query name.
-    | with_query_name alias_clause?         // FROM query (AS foo)
-    | function_from_item                    // FROM function()
-    | subquery_from_item                    // FROM (SELECT * FROM schema.table)
-    | LATERAL_P (
-        function_from_item                  // FROM LATERAL function()
-        | subquery_from_item                // FROM LATERAL (SELECT * FROM schema.table)
-    );
+fromItemPrimary
+    : ONLY? tableFromItem               # tableFromItemPrimary
+    | LATERAL_P? functionFromItem       # functionFromItemPrimary
+    | LATERAL_P? subqueryFromItem       # subqueryFromItemPrimary
+    ;
 
 // Table item.
-table_from_item
-    // TODO: Create table name.
-    : table_name STAR? alias_clause? tablesample_clause?;
+tableFromItem
+    : tableName STAR? aliasClause? tableSampleClause?
+    ;
 
 // Function item.
-function_from_item
-    : function_primary                                                  // function()
-    | function_primary (
-        alias_clause                                                    // function() AS foo
-        | WITH ORDINALITY alias_clause?                                 // function() WITH ORDINALITY AS foo
-        // TODO: Create alias and column definition list.
-        | AS alias OPEN_PAREN column_definition_list CLOSE_PAREN        // function() AS foo (bar, baz)
-    )
-    | rows_from_function_primary                                        // ROWS FROM function()
-    | rows_from_function_primary (
-        alias_clause                                                    // ROWS FROM function() AS foo
-        | WITH ORDINALITY alias_clause?                                 // ROWS FROM function() WITH ORDINALITY AS foo
-    );
+functionFromItem
+    : functionPrimary (WITH ORDINALITY)? aliasClause?                               # functionFromItemDefault
+    | functionPrimary AS aliasName OPEN_PAREN columnDefinitionList CLOSE_PAREN      # functionFromItemWithAs
+    | rowsFromFunctionPrimary (WITH ORDINALITY)? aliasClause?                       # functionFromItemWithRows
+    ;
 
 // Function item.
-function_primary
-    // TODO: Create function.
-    : function OPEN_PAREN argument_list? CLOSE_PAREN;
+functionPrimary
+    : identifier OPEN_PAREN argumentList CLOSE_PAREN;
 
 // Function item that has a ROWS FROM block.
-rows_from_function_primary
-    : ROWS FROM OPEN_PAREN function_primary CLOSE_PAREN;
+rowsFromFunctionPrimary
+    : ROWS FROM OPEN_PAREN functionPrimary CLOSE_PAREN;
 
 // Subquery item.
-subquery_from_item
-    : query_expression_parens alias_clause?;
-
-// List of columns.
-column_list
-    // TODO: Create column.
-    : column (COMMA column)*;
-
-// List of arguments.
-argument_list
-    // TODO: Create argument.
-    : argument (COMMA argument)*;
+subqueryFromItem
+    : queryExpressionParens aliasClause?;
 
 // Join item.
-join_from_item
-    : from_item_inner join (join)*;
+fromItemJoin
+    : fromItemPrimary join+;
 
 // Join
 join
-    : CROSS JOIN from_item_inner
-    | natural_joinable
-    | NATURAL natural_joinable;
-
-// Natural joinable joins.
-natural_joinable
-    : join_type? JOIN from_item_inner;
+    : CROSS JOIN fromItemPrimary
+    | NATURAL? joinType? JOIN fromItemPrimary;
     
-join_type
+joinType
     : (FULL | LEFT | RIGHT | INNER_P) OUTER_P?;
 
 /**
  * GROUP BY
  */
-group_by_clause
-    : GROUP_P BY (ALL | DISTINCT)? grouping_element_list;
-
-grouping_element_list
-    // TODO: Implement grouping element expression.
-    : grouping_element (COMMA grouping_element)*;
+groupByClause
+    : GROUP_P BY (ALL | DISTINCT)? groupByItemList;
 
 /**
  * HAVING
  */
-having_clause
-    // TODO: Create condition expression.
-    : HAVING condition_expression;
+havingClause
+    : HAVING condition;
 
 /**
  * INTO
  */
-into_clause
-    // TODO: Create table name
-    : INTO into_clause_options? TABLE? table_name;
+intoClause
+    : INTO intoClauseOptions? TABLE? tableName;
 
 // Table options for into clause.
-into_clause_options
+intoClauseOptions
     : TEMPORARY
     | TEMP
     | UNLOGGED;
@@ -833,118 +836,108 @@ into_clause_options
 /**
  * LIMIT, FETCH, OFFSET
  */
-limit_clause
+limitClause
     : limit (offset)?
     | offset (limit)?;
  
 limit
-    : LIMIT limit_value
-    // TODO: Create value expression.
+    : LIMIT value | ALL
     | FETCH (FIRST_P | NEXT) value (ROW | ROWS) (ONLY | WITH TIES);
 
 offset
-    : OFFSET (
-        limit_value
-        // TODO: Create value expression.
-        | value (ROW | ROWS)
-    );
-    
-limit_value
-    // TODO: Create value expression.
-    : value
-    | ALL;
+    : OFFSET (value (ROW | ROWS)? | ALL);
 
 /**
  * ORDER BY
  */
-order_by_clause
-    : ORDER BY order_list;
+orderByClause
+    : ORDER BY orderList;
 
-order_list
-    : // TODO: Implement orderExpression.
-    order_expression (COMMA order_expression)*;
+orderList
+    : orderExpression (COMMA orderExpression)*
+    ;
 
-order_expression
-    : expression (ASC | DESC)?;
+orderExpression
+    : expression (ASC | DESC)?
+    ;
 
 /**
  * TABLESAMPLE
  */
-tablesample_clause
-    // TODO: Create sampling_method and seed.
-    : TABLESAMPLE sampling_method OPEN_PAREN argument_list CLOSE_PAREN (REPEATABLE OPEN_PAREN seed CLOSE_PAREN)?;
+tableSampleClause
+    : TABLESAMPLE samplingMethodName OPEN_PAREN argumentList CLOSE_PAREN
+    (REPEATABLE OPEN_PAREN seed CLOSE_PAREN)?
+    ;
 
 /**
  * WHERE
  */
-where_clause
-    // TODO: Create condition_expression.
-    : WHERE condition_expression;
+whereClause
+    : WHERE condition;
 
 /**
  * WINDOW
  */
-window_clause
-    : WINDOW window_definition_list;
+windowClause
+    : WINDOW windowDefinitionList;
     
-window_definition_list
-    : window_definition (COMMA window_definition)*;
+windowDefinitionList
+    : windowDefinition (COMMA windowDefinition)*;
 
 // NOTE: Same structure as the OVER clause.    
-window_definition
-    : column AS window_specification;
+windowDefinition
+    : columnName AS windowSpecification;
 
-window_specification
+windowSpecification
     : OPEN_PAREN (
-        window_name?
-        (PARTITION BY expression_list)?
-        (ORDER BY window_order_by_expression_list)?
-        frame_clause?
+        windowName?
+        (PARTITION BY expressionList)?
+        (ORDER BY windowOrderByExpressionList)?
+        frameClause?
     ) CLOSE_PAREN;
 
-window_order_by_expression_list
-    : window_order_by_expression (COMMA window_order_by_expression)*;
+windowOrderByExpressionList
+    : windowOrderByExpression (COMMA windowOrderByExpression)*;
 
-window_order_by_expression
+windowOrderByExpression
     : expression (ASC | DESC | USING operator) (NULLS_P (FIRST_P | LAST_P))?;
 
-frame_clause
+frameClause
     : (RANGE | ROWS | GROUPS) (
-        frame_bound
-        | BETWEEN frame_bound AND frame_bound
-    ) (frame_exclusion)?;
+        frameBound
+        | BETWEEN frameBound AND frameBound
+    ) (frameExclusion)?;
     
-frame_bound
-    : UNBOUNDED frame_bound_option
-    | offset frame_bound_option
+frameBound
+    : UNBOUNDED frameBoundOption
+    | offsetValue frameBoundOption
     | CURRENT_P ROW;
     
-frame_bound_option
+frameBoundOption
     : PRECEDING
     | FOLLOWING;
 
-frame_exclusion
+frameExclusion
     : EXCLUDE (CURRENT_P ROW | GROUP_P | TIES | NO OTHERS);
 
 /**
  * WITH
  */
-with_clause
-    : WITH RECURSIVE? common_table_expression (COMMA common_table_expression)*;
+withClause
+    : WITH RECURSIVE? commonTableExpression (COMMA commonTableExpression)*;
 
 // CTE(Common Table Expression).
-common_table_expression
-    // TODO: Create an identifier.
-    : identifier (OPEN_PAREN name_list CLOSE_PAREN)? 
-    AS common_table_expression_option? 
-    OPEN_PAREN common_table_expression_statements CLOSE_PAREN;
+commonTableExpression
+    : subqueryName (OPEN_PAREN argumentList CLOSE_PAREN)? 
+    AS commonTableExpressionOption? 
+    OPEN_PAREN commonTableExpressionStatements CLOSE_PAREN;
 
-common_table_expression_option
+commonTableExpressionOption
     : MATERIALIZED
     | NOT MATERIALIZED;
 
-common_table_expression_statements
-    : select_statement;
+commonTableExpressionStatements
+    : selectStatement;
 // TODO: Activate statements after implementation.
 //    | update_statement
 //    | insert_statement
@@ -952,74 +945,116 @@ common_table_expression_statements
 
 //----------------- OPERATORS ------------------------------------------------------------------------------------------
 
-set_operator
+setOperator
     : UNION
     | INTERSECT
     | EXCEPT;
 
-set_operator_option
+setOperatorOption
     : ALL
     | DISTINCT;
     
 //----------------- TEMPORARY NODES ------------------------------------------------------------------------------------
 // Nodes that are not implemented yet, but required to implement other nodes.
 
+/**
+ * Identifier
+ */
 identifier
-    : TEMP;
+    : TEMP
+    ;
 
-window_name
-    : TEMP;
+aliasName
+    : identifier
+    ;
 
-expression_list
-    : TEMP;
+columnName
+    : identifier
+    ;
+
+samplingMethodName
+    : identifier
+    ;
+
+subqueryName
+    : identifier
+    ;
+
+tableName
+    : identifier
+    ;
+
+windowName
+    : identifier
+    ;
+
+/**
+ * Identifier List
+ */
+identifierList
+    : identifier (COMMA identifier)*
+    ;
+
+argumentList
+    : identifierList
+    ;
+
+columnList
+    : identifierList
+    ;
+
+groupByItemList
+    : identifierList
+    ;
+
+tableList
+    : identifierList
+    ;
+
+/**
+ * Expressions
+ */
+expressionList
+    : expression (COMMA expression)*
+    ;
 
 expression
-    : TEMP;
+    : TEMP
+    ;
+
+condition
+    : expression
+    ;
 
 operator
     : TEMP;
 
-with_query_name
-    : TEMP;
+/**
+ * value
+ */
+value
+    : TEMP
+    ;
 
-sampling_method
-    : TEMP;
+offsetValue
+    : value
+    ;
 
 seed
+    : value
+    ;
+ 
+selectItem
     : TEMP;
 
-table_name
+cursorName
     : TEMP;
 
-alias
-    : TEMP;
-
-column_definition_list
-    : TEMP;
+columnDefinitionList
+    : columnDefinition (COMMA columnDefinition)*;
     
-column_name
-    : TEMP;
+columnDefinition
+    : columnName dataType;
 
-name
-    : TEMP;
-
-function
-    : TEMP;
-
-column
-    : TEMP;
-
-argument
-    : TEMP;
-
-grouping_element
-    : TEMP;
-    
-condition_expression
-    : TEMP;
-
-value
-    : TEMP;
-    
-select_item
+dataType
     : TEMP;
