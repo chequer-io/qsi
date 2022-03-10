@@ -640,9 +640,6 @@ query_primary:
 select_item_list:
     // TODO: Create select item
     (select_item | STAR) (COMMA select_item)*;
-    
-select_item
-    :;
 
 // Options for select statement.
 select_option
@@ -698,14 +695,8 @@ alias_clause
 alias_clause_body
     : column_name (OPEN_PAREN name_list CLOSE_PAREN)?;  // TODO: Create column name.
 
-column_name
-    :;
-    
 name_list
     : name (COMMA name)*;   // TODO: Create name.
-
-name
-    :;
 
 /**
  * FOR .. (OF ..);
@@ -747,16 +738,10 @@ from_item_inner
         | subquery_from_item                // FROM LATERAL (SELECT * FROM schema.table)
     );
 
-with_query_name
-    :;
-
 // Table item.
 table_from_item
     // TODO: Create table name.
-    : tableName STAR? alias_clause? tablesample_clause?;
-
-tableName
-    :;
+    : table_name STAR? alias_clause? tablesample_clause?;
 
 // Function item.
 function_from_item
@@ -773,19 +758,10 @@ function_from_item
         | WITH ORDINALITY alias_clause?                                 // ROWS FROM function() WITH ORDINALITY AS foo
     );
 
-alias
-    :;
-
-column_definition_list
-    :;
-
 // Function item.
 function_primary
     // TODO: Create function.
     : function OPEN_PAREN argument_list? CLOSE_PAREN;
-    
-function
-    :;
 
 // Function item that has a ROWS FROM block.
 rows_from_function_primary
@@ -799,17 +775,11 @@ subquery_from_item
 column_list
     // TODO: Create column.
     : column (COMMA column)*;
-    
-column
-    :;
 
 // List of arguments.
 argument_list
     // TODO: Create argument.
     : argument (COMMA argument)*;
-
-argument
-    :;
 
 // Join item.
 join_from_item
@@ -838,9 +808,6 @@ grouping_element_list
     // TODO: Implement grouping element expression.
     : grouping_element (COMMA grouping_element)*;
 
-grouping_element
-    :;
-
 /**
  * HAVING
  */
@@ -848,18 +815,12 @@ having_clause
     // TODO: Create condition expression.
     : HAVING condition_expression;
 
-condition_expression
-    :;
-
 /**
  * INTO
  */
 into_clause
     // TODO: Create table name
     : INTO into_clause_options? TABLE? table_name;
-
-table_name
-    :;
 
 // Table options for into clause.
 into_clause_options
@@ -878,9 +839,6 @@ limit
     : LIMIT limit_value
     // TODO: Create value expression.
     | FETCH (FIRST_P | NEXT) value (ROW | ROWS) (ONLY | WITH TIES);
-
-value
-    :;
 
 offset
     : OFFSET (
@@ -905,10 +863,7 @@ order_list
     order_expression (COMMA order_expression)*;
 
 order_expression
-    : temp_expr (ASC | DESC)?;
-
-temp_expr
-    :;
+    : expression (ASC | DESC)?;
 
 /**
  * TABLESAMPLE
@@ -916,12 +871,6 @@ temp_expr
 tablesample_clause
     // TODO: Create sampling_method and seed.
     : TABLESAMPLE sampling_method OPEN_PAREN argument_list CLOSE_PAREN (REPEATABLE OPEN_PAREN seed CLOSE_PAREN)?;
-
-sampling_method
-    :;
-
-seed
-    :;
 
 /**
  * WHERE
@@ -1013,15 +962,61 @@ set_operator_option
 // Nodes that are not implemented yet, but required to implement other nodes.
 
 identifier
-    :;
+    : TEMP;
 
 window_name
-    :;
+    : TEMP;
 
 expression_list
-    :;
+    : TEMP;
 
 expression
-    :;
+    : TEMP;
 
-operator:;
+operator
+    : TEMP;
+
+with_query_name
+    : TEMP;
+
+sampling_method
+    : TEMP;
+
+seed
+    : TEMP;
+
+table_name
+    : TEMP;
+
+alias
+    : TEMP;
+
+column_definition_list
+    : TEMP;
+    
+column_name
+    : TEMP;
+
+name
+    : TEMP;
+
+function
+    : TEMP;
+
+column
+    : TEMP;
+
+argument
+    : TEMP;
+
+grouping_element
+    : TEMP;
+    
+condition_expression
+    : TEMP;
+
+value
+    : TEMP;
+    
+select_item
+    : TEMP;
