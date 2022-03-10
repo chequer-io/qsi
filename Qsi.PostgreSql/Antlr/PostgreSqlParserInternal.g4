@@ -942,10 +942,11 @@ common_table_expression_option
     | NOT MATERIALIZED;
 
 common_table_expression_statements
-    : select_statement
-    | update_statement
-    | insert_statement
-    | delete_statement;
+    : select_statement;
+// TODO: Activate statements after implementation.
+//    | update_statement
+//    | insert_statement
+//    | delete_statement;
 
 //----------------- OPERATORS ------------------------------------------------------------------------------------------
 
