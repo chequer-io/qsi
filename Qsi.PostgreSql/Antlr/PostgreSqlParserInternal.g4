@@ -726,6 +726,8 @@ from_item
     | join_from_item;
 
 // Item that can be an element of the from clause.
+// TODO: Fix high ambiguity.
+// TODO: Fix naming. (Inner stands for what? Too broad definition.)
 from_item_inner
     : table_from_item                       // FROM schema.table
     | ONLY table_from_item                  // FROM ONLY schema.table
