@@ -677,9 +677,6 @@ values_statement:
     // TODO: Create expression list
     VALUES OPEN_PAREN expression_list CLOSE_PAREN (COMMA OPEN_PAREN expression_list CLOSE_PAREN)*;
 
-expression_list
-    :;
-
 /**
  * TABLES (explicitly)
  */
@@ -952,9 +949,6 @@ common_table_expression
     AS common_table_expression_option 
     OPEN_PAREN common_table_expression_statements CLOSE_PAREN;
 
-identifier
-    :;
-
 common_table_expression_option
     : MATERIALIZED
     | NOT MATERIALIZED;
@@ -975,3 +969,12 @@ set_operator
 set_operator_option
     : ALL
     | DISTINCT;
+    
+//----------------- TEMPORARY NODES ------------------------------------------------------------------------------------
+// Nodes that are not implemented yet, but required to implement other nodes.
+
+identifier
+    :;
+
+expression_list
+    :;
