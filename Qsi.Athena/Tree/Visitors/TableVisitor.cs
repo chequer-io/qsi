@@ -425,9 +425,11 @@ internal static class TableVisitor
         }
         else
         {
-            node = new QsiDerivedTableNode();
-            node.Source.Value = node;
-            node.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+            var derivedTableNode = AthenaTree.CreateWithSpan<QsiDerivedTableNode>(context);
+            derivedTableNode.Source.Value = relationPrimaryNode;
+            derivedTableNode.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+
+            node = derivedTableNode;
         }
 
         node.Alias.Value = new QsiAliasNode { Name = identifier.qi };
