@@ -183,4 +183,22 @@ public partial class MySqlTest : VendorTestBase
 
         return print;
     }
+
+    [TestCaseSource(nameof(Print_BindParam_TestDatas))]
+    public async Task<string> Test_Print_BindParam(string sql, object[] parameters)
+    {
+        QsiParameter[] qsiParameters = parameters
+            .Select(x => new QsiParameter(QsiParameterType.Index, null, x))
+            .ToArray();
+
+        IQsiAnalysisResult[] result = await Engine.Execute(new QsiScript(sql, QsiScriptType.Select), qsiParameters);
+
+        foreach (var scriptHistory in ScriptHistories)
+            Console.WriteLine(scriptHistory.Script);
+
+        var print = DebugUtility.Print(result.OfType<QsiDataManipulationResult>());
+        Console.WriteLine(print);
+
+        return print;
+    }
 }

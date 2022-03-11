@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using Antlr4.Runtime;
+using Antlr4.Runtime.Tree;
 
 namespace Qsi.MySql.Internal
 {
@@ -15,6 +16,8 @@ namespace Qsi.MySql.Internal
         #endregion
 
         public int serverVersion { get; init; }
+
+        public int ParamIndex { get; set; }
 
         protected MySqlBaseRecognizer(ITokenStream input) : base(input)
         {

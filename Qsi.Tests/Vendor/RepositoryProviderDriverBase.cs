@@ -106,12 +106,17 @@ public abstract class RepositoryProviderDriverBase : QsiRepositoryProviderBase
         command.CommandText = script.Script;
 
         if (!ListUtility.IsNullOrEmpty(parameters))
-            throw new NotImplementedException();
+        {
+            foreach (var qsiParameter in parameters)
+                AddParameterValue(command, qsiParameter);
+        }
 
         var dataReader = await command.ExecuteReaderAsync(cancellationToken);
 
         return new DataReaderDriver(dataReader, command);
     }
+
+    protected abstract void AddParameterValue(DbCommand command, QsiParameter parameter);
 
     private sealed class DataReaderDriver : IDataReader
     {

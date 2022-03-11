@@ -87,9 +87,10 @@ query:
     | ((simpleStatement | beginWork) (SEMICOLON_SYMBOL EOF? | EOF))+
 ;
 
-simpleStatement:
+simpleStatement
+    @before { ParamIndex = 0; }
     // DDL
-    alterStatement
+    : alterStatement
     | createStatement
     | dropStatement
     | renameTableStatement
@@ -1094,7 +1095,7 @@ limitOptions:
 
 limitOption:
     identifier
-    | (PARAM_MARKER | ULONGLONG_NUMBER | LONG_NUMBER | INT_NUMBER)
+    | (paramMarker | ULONGLONG_NUMBER | LONG_NUMBER | INT_NUMBER)
 ;
 
 intoClause:
@@ -1151,7 +1152,7 @@ windowFrameExtent:
 windowFrameStart:
     UNBOUNDED_SYMBOL PRECEDING_SYMBOL
     | ulonglong_number PRECEDING_SYMBOL
-    | PARAM_MARKER PRECEDING_SYMBOL
+    | paramMarker PRECEDING_SYMBOL
     | INTERVAL_SYMBOL expr interval PRECEDING_SYMBOL
     | CURRENT_SYMBOL ROW_SYMBOL
 ;
@@ -1164,7 +1165,7 @@ windowFrameBound:
     windowFrameStart
     | UNBOUNDED_SYMBOL FOLLOWING_SYMBOL
     | ulonglong_number FOLLOWING_SYMBOL
-    | PARAM_MARKER FOLLOWING_SYMBOL
+    | paramMarker FOLLOWING_SYMBOL
     | INTERVAL_SYMBOL expr interval FOLLOWING_SYMBOL
 ;
 
@@ -2441,7 +2442,7 @@ simpleExpr:
     | functionCall                                                                                       # simpleExprFunction
     | simpleExpr COLLATE_SYMBOL textOrIdentifier                                                         # simpleExprCollate
     | literal                                                                                            # simpleExprLiteral
-    | PARAM_MARKER                                                                                       # simpleExprParamMarker
+    | paramMarker                                                                                        # simpleExprParamMarker
     | sumExpr                                                                                            # simpleExprSum
     | {serverVersion >= 80000}? groupingOperation                                                        # simpleExprGroupingOperation
     | {serverVersion >= 80000}? windowFunctionCall                                                       # simpleExprWindowingFunction
@@ -2538,7 +2539,7 @@ windowingClause:
 ;
 
 leadLagInfo:
-    COMMA_SYMBOL (ulonglong_number | PARAM_MARKER) (COMMA_SYMBOL expr)?
+    COMMA_SYMBOL (ulonglong_number | paramMarker) (COMMA_SYMBOL expr)?
 ;
 
 nullTreatment:
@@ -5017,3 +5018,10 @@ roleOrLabelKeyword:
     )
     | {serverVersion >= 80014}? ADMIN_SYMBOL
 ;
+
+// by Evan
+
+paramMarker returns [int paramNumber]
+    @after { $paramNumber = ParamIndex++; }
+    : PARAM_MARKER
+    ;

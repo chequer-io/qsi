@@ -4,6 +4,303 @@ namespace Qsi.Tests.Vendor.MySql;
 
 public partial class MySqlTest
 {
+    private static readonly TestCaseData[] Print_BindParam_TestDatas =
+    {
+        new("INSERT INTO actor (first_name, last_name) VALUES (?, ?)",
+            new object[] { "MORRIS", "BABO" })
+        {
+            ExpectedResult = @"
++-------------------------------------------------+
+|          qsi_unit_tests.actor - INSERT          |
++----------+------------+-----------+-------------+
+| actor_id | first_name | last_name | last_update |
++----------+------------+-----------+-------------+
+| default  | MORRIS     | BABO      | default     |
++-------------------------------------------------+
+"
+        },
+
+        new("INSERT INTO actor SET first_name = ?, last_name = ?",
+            new object[] { "MORRIS", "BABO" })
+        {
+            ExpectedResult = @"
++-------------------------------------------------+
+|          qsi_unit_tests.actor - INSERT          |
++----------+------------+-----------+-------------+
+| actor_id | first_name | last_name | last_update |
++----------+------------+-----------+-------------+
+| default  | MORRIS     | BABO      | default     |
++-------------------------------------------------+
+"
+        },
+
+        new("INSERT INTO actor SET actor.first_name = ?, actor.last_name = ?",
+            new object[] { "MORRIS", "BABO" })
+        {
+            ExpectedResult = @"
++-------------------------------------------------+
+|          qsi_unit_tests.actor - INSERT          |
++----------+------------+-----------+-------------+
+| actor_id | first_name | last_name | last_update |
++----------+------------+-----------+-------------+
+| default  | MORRIS     | BABO      | default     |
++-------------------------------------------------+
+"
+        },
+
+        new("INSERT INTO actor SELECT ?, ?, ?, ?",
+            new object[] { 1, "MORRIS", "BABO", null })
+        {
+            ExpectedResult = @"
++-------------------------------------------------+
+|          qsi_unit_tests.actor - INSERT          |
++----------+------------+-----------+-------------+
+| actor_id | first_name | last_name | last_update |
++----------+------------+-----------+-------------+
+| 1        | MORRIS     | BABO      | null        |
++-------------------------------------------------+
+"
+        },
+
+        new("UPDATE actor SET first_name = ?, last_name = ? WHERE actor_id = ?",
+            new object[] { "MORRIS", "BABO", 1 })
+        {
+            ExpectedResult = @"
++-------------------------------------------------+
+|      qsi_unit_tests.actor - UPDATE_BEFORE       |
++----------+------------+-----------+-------------+
+| actor_id | first_name | last_name | last_update |
++----------+------------+-----------+-------------+
+| unknown  | PENELOPE   | GUINESS   | unknown     |
++-------------------------------------------------+
+
++-------------------------------------------------+
+|       qsi_unit_tests.actor - UPDATE_AFTER       |
++----------+------------+-----------+-------------+
+| actor_id | first_name | last_name | last_update |
++----------+------------+-----------+-------------+
+| unset    | MORRIS     | BABO      | unset       |
++-------------------------------------------------+
+"
+        },
+
+        new("UPDATE actor SET actor.first_name = ?, actor.last_name = ? WHERE actor.actor_id = ?",
+            new object[] { "MORRIS", "BABO", 1 })
+        {
+            ExpectedResult = @"
++-------------------------------------------------+
+|      qsi_unit_tests.actor - UPDATE_BEFORE       |
++----------+------------+-----------+-------------+
+| actor_id | first_name | last_name | last_update |
++----------+------------+-----------+-------------+
+| unknown  | PENELOPE   | GUINESS   | unknown     |
++-------------------------------------------------+
+
++-------------------------------------------------+
+|       qsi_unit_tests.actor - UPDATE_AFTER       |
++----------+------------+-----------+-------------+
+| actor_id | first_name | last_name | last_update |
++----------+------------+-----------+-------------+
+| unset    | MORRIS     | BABO      | unset       |
++-------------------------------------------------+
+"
+        },
+
+        new("UPDATE city, actor SET actor.first_name = ?, actor.last_name = ?, city.city_id = ? WHERE actor_id = ? LIMIT ?",
+            new object[] { "MORRIS", "BABO", 2, 1, 1 })
+        {
+            ExpectedResult = @"
++-------------------------------------------------+
+|      qsi_unit_tests.actor - UPDATE_BEFORE       |
++----------+------------+-----------+-------------+
+| actor_id | first_name | last_name | last_update |
++----------+------------+-----------+-------------+
+| unknown  | PENELOPE   | GUINESS   | unknown     |
++-------------------------------------------------+
+
++-------------------------------------------------+
+|       qsi_unit_tests.actor - UPDATE_AFTER       |
++----------+------------+-----------+-------------+
+| actor_id | first_name | last_name | last_update |
++----------+------------+-----------+-------------+
+| unset    | MORRIS     | BABO      | unset       |
++-------------------------------------------------+
+
++----------------------------------------------+
+|     qsi_unit_tests.city - UPDATE_BEFORE      |
++---------+---------+------------+-------------+
+| city_id |  city   | country_id | last_update |
++---------+---------+------------+-------------+
+| 1       | unknown | unknown    | unknown     |
++----------------------------------------------+
+
++--------------------------------------------+
+|     qsi_unit_tests.city - UPDATE_AFTER     |
++---------+-------+------------+-------------+
+| city_id | city  | country_id | last_update |
++---------+-------+------------+-------------+
+| 2       | unset | unset      | unset       |
++--------------------------------------------+
+"
+        },
+
+        new("UPDATE film_list SET title = ?, category = ? WHERE FID = ?",
+            new object[] { "EVAN", "CHEQUER", 1 })
+        {
+            ExpectedResult = @"
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|                                                                                 qsi_unit_tests.film - UPDATE_BEFORE                                                                                  |
++---------+------------------+-------------+--------------+-------------+----------------------+-----------------+-------------+---------+------------------+---------+------------------+-------------+
+| film_id |      title       | description | release_year | language_id | original_language_id | rental_duration | rental_rate | length  | replacement_cost | rating  | special_features | last_update |
++---------+------------------+-------------+--------------+-------------+----------------------+-----------------+-------------+---------+------------------+---------+------------------+-------------+
+| unknown | ACADEMY DINOSAUR | unknown     | unknown      | unknown     | unknown              | unknown         | unknown     | unknown | unknown          | unknown | unknown          | unknown     |
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|                                                                           qsi_unit_tests.film - UPDATE_AFTER                                                                            |
++---------+-------+-------------+--------------+-------------+----------------------+-----------------+-------------+--------+------------------+--------+------------------+-------------+
+| film_id | title | description | release_year | language_id | original_language_id | rental_duration | rental_rate | length | replacement_cost | rating | special_features | last_update |
++---------+-------+-------------+--------------+-------------+----------------------+-----------------+-------------+--------+------------------+--------+------------------+-------------+
+| unset   | EVAN  | unset       | unset        | unset       | unset                | unset           | unset       | unset  | unset            | unset  | unset            | unset       |
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
++-----------------------------------------+
+| qsi_unit_tests.category - UPDATE_BEFORE |
++-------------+-------------+-------------+
+| category_id |    name     | last_update |
++-------------+-------------+-------------+
+| unknown     | Documentary | unknown     |
++-----------------------------------------+
+
++----------------------------------------+
+| qsi_unit_tests.category - UPDATE_AFTER |
++--------------+----------+--------------+
+| category_id  |   name   | last_update  |
++--------------+----------+--------------+
+| unset        | CHEQUER  | unset        |
++----------------------------------------+
+"
+        },
+
+        new("WITH CTE AS (SELECT ? a, ? b) UPDATE actor SET first_name = (SELECT a FROM CTE) + '!'",
+            new object[] { "MORRIS", "BABO" })
+        {
+            ExpectedResult = @"
++-------------------------------------------------+
+|      qsi_unit_tests.actor - UPDATE_BEFORE       |
++----------+------------+-----------+-------------+
+| actor_id | first_name | last_name | last_update |
++----------+------------+-----------+-------------+
+| unknown  | PENELOPE   | unknown   | unknown     |
+| unknown  | NICK       | unknown   | unknown     |
+| unknown  | ED         | unknown   | unknown     |
+| unknown  | JENNIFER   | unknown   | unknown     |
+| unknown  | JOHNNY     | unknown   | unknown     |
+| unknown  | BETTE      | unknown   | unknown     |
+| unknown  | GRACE      | unknown   | unknown     |
+| unknown  | MATTHEW    | unknown   | unknown     |
+| unknown  | JOE        | unknown   | unknown     |
+| unknown  | CHRISTIAN  | unknown   | unknown     |
+| unknown  | ZERO       | unknown   | unknown     |
+| unknown  | KARL       | unknown   | unknown     |
+| unknown  | UMA        | unknown   | unknown     |
+| unknown  | VIVIEN     | unknown   | unknown     |
+| unknown  | CUBA       | unknown   | unknown     |
+| unknown  | FRED       | unknown   | unknown     |
+| unknown  | HELEN      | unknown   | unknown     |
+| unknown  | DAN        | unknown   | unknown     |
+| unknown  | BOB        | unknown   | unknown     |
+| unknown  | LUCILLE    | unknown   | unknown     |
++-------------------------------------------------+
+
++---------------------------------------------------+
+|        qsi_unit_tests.actor - UPDATE_AFTER        |
++----------+--------------+-----------+-------------+
+| actor_id |  first_name  | last_name | last_update |
++----------+--------------+-----------+-------------+
+| unset    | MORRIS + '!' | unset     | unset       |
+| unset    | MORRIS + '!' | unset     | unset       |
+| unset    | MORRIS + '!' | unset     | unset       |
+| unset    | MORRIS + '!' | unset     | unset       |
+| unset    | MORRIS + '!' | unset     | unset       |
+| unset    | MORRIS + '!' | unset     | unset       |
+| unset    | MORRIS + '!' | unset     | unset       |
+| unset    | MORRIS + '!' | unset     | unset       |
+| unset    | MORRIS + '!' | unset     | unset       |
+| unset    | MORRIS + '!' | unset     | unset       |
+| unset    | MORRIS + '!' | unset     | unset       |
+| unset    | MORRIS + '!' | unset     | unset       |
+| unset    | MORRIS + '!' | unset     | unset       |
+| unset    | MORRIS + '!' | unset     | unset       |
+| unset    | MORRIS + '!' | unset     | unset       |
+| unset    | MORRIS + '!' | unset     | unset       |
+| unset    | MORRIS + '!' | unset     | unset       |
+| unset    | MORRIS + '!' | unset     | unset       |
+| unset    | MORRIS + '!' | unset     | unset       |
+| unset    | MORRIS + '!' | unset     | unset       |
++---------------------------------------------------+
+"
+        },
+
+        new("DELETE first_name FROM actor_info a WHERE actor_id = ?",
+            new object[] { 1 })
+        {
+            ExpectedResult = @"
++-------------------------------------------------+
+|          qsi_unit_tests.actor - DELETE          |
++----------+------------+-----------+-------------+
+| actor_id | first_name | last_name | last_update |
++----------+------------+-----------+-------------+
+| unset    | PENELOPE   | unset     | unset       |
++-------------------------------------------------+
+"
+        },
+
+        new("DELETE title, category FROM film_list WHERE FID = ?",
+            new object[] { 1 })
+        {
+            ExpectedResult = @"
++----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|                                                                                    qsi_unit_tests.film - DELETE                                                                                    |
++---------+------------------+-------------+--------------+-------------+----------------------+-----------------+-------------+--------+------------------+--------+------------------+-------------+
+| film_id |      title       | description | release_year | language_id | original_language_id | rental_duration | rental_rate | length | replacement_cost | rating | special_features | last_update |
++---------+------------------+-------------+--------------+-------------+----------------------+-----------------+-------------+--------+------------------+--------+------------------+-------------+
+| unset   | ACADEMY DINOSAUR | unset       | unset        | unset       | unset                | unset           | unset       | unset  | unset            | unset  | unset            | unset       |
++----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
++-----------------------------------------+
+|    qsi_unit_tests.category - DELETE     |
++-------------+-------------+-------------+
+| category_id |    name     | last_update |
++-------------+-------------+-------------+
+| unset       | Documentary | unset       |
++-----------------------------------------+
+"
+        },
+
+        new("WITH CTE AS (SELECT ?) DELETE title, category FROM film_list WHERE FID = ? AND (SELECT `1` FROM CTE) = ?",
+            new object[] { 1, 1, 1 })
+        {
+            ExpectedResult = @"
++----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|                                                                                    qsi_unit_tests.film - DELETE                                                                                    |
++---------+------------------+-------------+--------------+-------------+----------------------+-----------------+-------------+--------+------------------+--------+------------------+-------------+
+| film_id |      title       | description | release_year | language_id | original_language_id | rental_duration | rental_rate | length | replacement_cost | rating | special_features | last_update |
++---------+------------------+-------------+--------------+-------------+----------------------+-----------------+-------------+--------+------------------+--------+------------------+-------------+
+| unset   | ACADEMY DINOSAUR | unset       | unset        | unset       | unset                | unset           | unset       | unset  | unset            | unset  | unset            | unset       |
++----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
++-----------------------------------------+
+|    qsi_unit_tests.category - DELETE     |
++-------------+-------------+-------------+
+| category_id |    name     | last_update |
++-------------+-------------+-------------+
+| unset       | Documentary | unset       |
++-----------------------------------------+
+"
+        },
+    };
+
     private static readonly TestCaseData[] Print_TestDatas =
     {
         new("INSERT INTO actor (first_name, last_name) VALUES ('MORRIS', 'BABO')")
