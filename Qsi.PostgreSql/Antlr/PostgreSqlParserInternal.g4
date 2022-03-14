@@ -660,40 +660,6 @@ selectOption
     ;
 
 /**
- * UPDATE
- */
-updateStatement
-    : updateStatementNoWith
-    | withClause updateStatementNoWith
-    ;
-    
-updateStatementNoWith
-    : UPDATE ONLY? tableName STAR? aliasClause? SET updateSetList
-    fromClause?
-    (whereClause | WHERE CURRENT_P OF cursorName)?
-    returningClause?
-    ;
-
-updateSetList
-    : updateSet (COMMA updateSet)*
-    ;
-
-updateSet
-    : columnName EQUAL (expression | DEFAULT)                                                       #columnUpdateSet
-    | OPEN_PAREN columnList CLOSE_PAREN EQUAL ROW? OPEN_PAREN updateSetExpressionList CLOSE_PAREN   #columnListUpdateSet
-    | OPEN_PAREN columnList CLOSE_PAREN EQUAL OPEN_PAREN queryPrimary CLOSE_PAREN                   #subqueryUpdateSet
-    ;
-    
-updateSetExpressionList
-    : updateSetExpression (COMMA updateSetExpression)*
-    ;
-
-updateSetExpression
-    : expression
-    | DEFAULT
-    ;
-
-/**
  * INSERT
  */
 // TODO: Implement insert statement.
@@ -759,6 +725,40 @@ conflictAction
 
 updateConflictAction
     : UPDATE SET updateSetList whereClause?;
+
+/**
+ * UPDATE
+ */
+updateStatement
+    : updateStatementNoWith
+    | withClause updateStatementNoWith
+    ;
+    
+updateStatementNoWith
+    : UPDATE ONLY? tableName STAR? aliasClause? SET updateSetList
+    fromClause?
+    (whereClause | WHERE CURRENT_P OF cursorName)?
+    returningClause?
+    ;
+
+updateSetList
+    : updateSet (COMMA updateSet)*
+    ;
+
+updateSet
+    : columnName EQUAL (expression | DEFAULT)                                                       #columnUpdateSet
+    | OPEN_PAREN columnList CLOSE_PAREN EQUAL ROW? OPEN_PAREN updateSetExpressionList CLOSE_PAREN   #columnListUpdateSet
+    | OPEN_PAREN columnList CLOSE_PAREN EQUAL OPEN_PAREN queryPrimary CLOSE_PAREN                   #subqueryUpdateSet
+    ;
+    
+updateSetExpressionList
+    : updateSetExpression (COMMA updateSetExpression)*
+    ;
+
+updateSetExpression
+    : expression
+    | DEFAULT
+    ;
 
 /**
  * DELETE
