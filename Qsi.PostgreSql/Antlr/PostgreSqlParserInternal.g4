@@ -763,9 +763,17 @@ updateSetExpression
 /**
  * DELETE
  */
-// TODO: Implement delete statement.
 deleteStatement
-    :;
+    : deleteStatementNoWith
+    | withClause deleteStatementNoWith
+    ;
+
+deleteStatementNoWith
+    : DELETE_P FROM ONLY? tableName STAR? aliasClause?
+    (USING fromItemList)
+    (whereClause | WHERE CURRENT_P OF cursorName)
+    returningClause?
+    ;
 
 //----------------- CLAUSES --------------------------------------------------------------------------------------------
 
