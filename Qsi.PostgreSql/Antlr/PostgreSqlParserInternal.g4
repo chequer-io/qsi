@@ -29,6 +29,7 @@ statement
    | insertStatement
    | updateStatement
    | deleteStatement
+   | truncateStatement
    ;
 
 //----------------- DDL statements -------------------------------------------------------------------------------------
@@ -773,6 +774,16 @@ deleteStatementNoWith
     (USING fromItemList)
     (whereClause | WHERE CURRENT_P OF cursorName)
     returningClause?
+    ;
+
+/**
+ * TRUNCATE
+ */
+// NOTE: Asterisk may be included at relation expresion.
+truncateStatement
+    : TRUNCATE TABLE? ONLY? tableList
+    (RESTART IDENTITY_P | CONTINUE_P IDENTITY_P)?
+    (CASCADE | RESTRICT)
     ;
 
 //----------------- CLAUSES --------------------------------------------------------------------------------------------
