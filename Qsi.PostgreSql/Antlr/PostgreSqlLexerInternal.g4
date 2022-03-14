@@ -736,6 +736,10 @@ SIMILAR
    : S I M I L A R
    ;
 
+TABLESAMPLE
+   : T A B L E S A M P L E
+   ;
+
 VERBOSE
    : V E R B O S E
    ;
@@ -2093,10 +2097,6 @@ GROUPING
 
 SETS
    : S E T S
-   ;
-
-TABLESAMPLE
-   : T A B L E S A M P L E
    ;
 
 ORDINALITY
