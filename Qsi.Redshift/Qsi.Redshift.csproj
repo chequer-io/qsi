@@ -10,7 +10,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Qsi.PostgreSql\Qsi.PostgreSql.csproj" />
+        <ProjectReference Include="..\Qsi.PostgreSql\Qsi.PostgreSql.csproj"/>
     </ItemGroup>
+
+    <Import Project="..\Qsi.Shared\Qsi.Shared.projitems" Label="Shared"/>
 
 </Project>
