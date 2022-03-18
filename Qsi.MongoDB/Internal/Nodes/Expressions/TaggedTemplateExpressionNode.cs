@@ -2,7 +2,7 @@
 
 namespace Qsi.MongoDB.Internal.Nodes;
 
-public class TaggedTemplateExpressionNode : BaseNode, IExpressionNode
+internal class TaggedTemplateExpressionNode : BaseNode, IExpressionNode
 {
     public IExpressionNode Tag { get; set; }
 

@@ -2,7 +2,7 @@
 
 namespace Qsi.MongoDB.Internal.Nodes;
 
-public interface INode
+internal interface INode
 {
     IEnumerable<INode> Children { get; }
 }

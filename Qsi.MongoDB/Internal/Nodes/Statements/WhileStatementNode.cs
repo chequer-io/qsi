@@ -2,7 +2,7 @@
 
 namespace Qsi.MongoDB.Internal.Nodes;
 
-public class WhileStatementNode : BaseNode, IStatementNode
+internal class WhileStatementNode : BaseNode, IStatementNode
 {
     public IExpressionNode Test { get; set; }
 

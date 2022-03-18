@@ -2,7 +2,7 @@
 
 namespace Qsi.MongoDB.Internal.Nodes;
 
-public class VariableDeclarationNode : BaseNode, IDeclarationNode
+internal class VariableDeclarationNode : BaseNode, IDeclarationNode
 {
     public VariableDeclaratorNode[] Declarations { get; set; }
 

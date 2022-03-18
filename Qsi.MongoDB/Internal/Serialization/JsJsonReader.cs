@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 namespace Qsi.MongoDB.Internal.Serialization;
 
-public class JsJsonReader : JsonReader
+internal class JsJsonReader : JsonReader
 {
     private readonly JsonReader _reader;
     private bool _read;

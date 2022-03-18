@@ -2,7 +2,7 @@
 
 namespace Qsi.MongoDB.Internal.Nodes;
 
-public class MemberExpressionNode : BaseNode, IExpressionNode, IPatternNode
+internal class MemberExpressionNode : BaseNode, IExpressionNode, IPatternNode
 {
     // TODO: MultiType (BaseExpression, Super)
     public INode Object { get; set; }

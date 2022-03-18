@@ -2,7 +2,7 @@
 
 namespace Qsi.MongoDB.Internal.Nodes;
 
-public class FunctionExpressionNode : BaseNode, IFunctionNode, IExpressionNode
+internal class FunctionExpressionNode : BaseNode, IFunctionNode, IExpressionNode
 {
     public IPatternNode[] Params { get; set; }
 

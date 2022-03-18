@@ -2,7 +2,7 @@
 
 namespace Qsi.MongoDB.Internal.Nodes;
 
-public class AssignmentPatternNode : BaseNode, IPatternNode
+internal class AssignmentPatternNode : BaseNode, IPatternNode
 {
     public IPatternNode Left { get; set; }
 

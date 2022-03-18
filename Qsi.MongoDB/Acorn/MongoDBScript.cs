@@ -6,7 +6,7 @@ using Qsi.MongoDB.Internal.Nodes.Location;
 
 namespace Qsi.MongoDB.Acorn
 {
-    public sealed class MongoDBScript
+    internal sealed class MongoDBScript
     {
         public string Script { get; private set; }
 

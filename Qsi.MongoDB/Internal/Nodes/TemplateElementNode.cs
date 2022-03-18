@@ -1,6 +1,6 @@
 ﻿namespace Qsi.MongoDB.Internal.Nodes;
 
-public class TemplateElementNode : BaseNode, INode
+internal class TemplateElementNode : BaseNode, INode
 {
     public bool Tail { get; set; }
 
@@ -8,7 +8,7 @@ public class TemplateElementNode : BaseNode, INode
 }
 
 // TODO: Implicit casting
-public class TemplateElementValue
+internal class TemplateElementValue
 {
     public string Cooked { get; set; }
 

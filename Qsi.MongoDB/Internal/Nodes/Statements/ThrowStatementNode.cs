@@ -2,7 +2,7 @@
 
 namespace Qsi.MongoDB.Internal.Nodes;
 
-public class ThrowStatementNode : BaseNode, IStatementNode
+internal class ThrowStatementNode : BaseNode, IStatementNode
 {
     public IExpressionNode Argument { get; set; }
 

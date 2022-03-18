@@ -6,7 +6,7 @@ using Qsi.MongoDB.Internal.Nodes;
 
 namespace Qsi.MongoDB.Internal.Serialization;
 
-public class JsNodeConverter : JsonConverter
+internal class JsNodeConverter : JsonConverter
 {
     public override object ReadJson(
         JsonReader reader,

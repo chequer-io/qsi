@@ -2,7 +2,7 @@
 
 namespace Qsi.MongoDB.Internal.Nodes;
 
-public class ObjectPatternNode : BaseNode, IPatternNode
+internal class ObjectPatternNode : BaseNode, IPatternNode
 {
     // TODO: Multi Type AssignmentProperty, RestElement
     public INode[] Properties { get; set; }

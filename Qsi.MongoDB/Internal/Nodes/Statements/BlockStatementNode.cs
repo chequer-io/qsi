@@ -2,7 +2,7 @@
 
 namespace Qsi.MongoDB.Internal.Nodes;
 
-public class BlockStatementNode : BaseNode, IStatementNode
+internal class BlockStatementNode : BaseNode, IStatementNode
 {
     public IStatementNode[] Body { get; set; }
 

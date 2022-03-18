@@ -2,7 +2,7 @@
 
 namespace Qsi.MongoDB.Internal.Nodes;
 
-public class DoWhileStatementNode : BaseNode, IStatementNode
+internal class DoWhileStatementNode : BaseNode, IStatementNode
 {
     public IStatementNode Body { get; set; }
 

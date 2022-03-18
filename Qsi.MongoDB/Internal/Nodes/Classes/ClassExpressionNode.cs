@@ -2,7 +2,7 @@
 
 namespace Qsi.MongoDB.Internal.Nodes;
 
-public class ClassExpressionNode : BaseNode, IClassNode, IExpressionNode
+internal class ClassExpressionNode : BaseNode, IClassNode, IExpressionNode
 {
     public IdentifierNode Id { get; set; }
 

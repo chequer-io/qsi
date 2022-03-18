@@ -2,7 +2,7 @@
 
 namespace Qsi.MongoDB.Internal.Nodes;
 
-public class ForStatementNode : BaseNode, IStatementNode
+internal class ForStatementNode : BaseNode, IStatementNode
 {
     // VariableDeclaration, BaseExpression
     public INode Init { get; set; }
