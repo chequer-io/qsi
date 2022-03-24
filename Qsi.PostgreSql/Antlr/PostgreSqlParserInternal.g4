@@ -605,7 +605,7 @@ queryExpression
     ;
 
 // Expression without with clause.
-// TODO: Optimize; extremely slow when intake many brackets.
+// TODO: Optimize; extremely slow when intaking many brackets.
 queryExpressionNoWith
     : (queryExpressionBody | queryExpressionParens)         // SELECT ...
     orderByClause?                                          // ORDER BY ...
@@ -640,6 +640,7 @@ queryPrimary
     | TABLE tableName                           # tableQueryPrimary
     ;
 
+// Values
 valueStatementItemList
     : valueStatementItem (COMMA valueStatementItem)*
     ;
@@ -802,7 +803,6 @@ aliasClauseBody
  * FOR .. (OF ..);
  */
 forClause
-    // TODO: Implement table name expression.
     : FOR lockStrengthOption (OF tableList)? (NOWAIT | SKIP_P LOCKED)?
     ;
 
