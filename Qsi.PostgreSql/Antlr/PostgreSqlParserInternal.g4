@@ -665,16 +665,16 @@ selectOption
  */
 // TODO: Implement insert statement.
 insertStatement
-    : insertStatementNoWith
-    | withClause insertStatementNoWith
+    : withClause insertStatementNoWith
+    | insertStatementNoWith
     ;
 
 insertStatementNoWith
     : INSERT INTO tableName aliasClause? (OPEN_PAREN columnList CLOSE_PAREN)?
-    overridingOption?
-    (DEFAULT VALUES | queryPrimary)
-    onConflictClause?
-    returningClause?
+        overridingOption?
+        (DEFAULT VALUES | queryPrimary)
+        onConflictClause?
+        returningClause?
     ;
     
 overridingOption
@@ -737,9 +737,9 @@ updateStatement
     
 updateStatementNoWith
     : UPDATE ONLY? tableName STAR? aliasClause? SET updateSetList
-    fromClause?
-    (whereClause | WHERE CURRENT_P OF cursorName)?
-    returningClause?
+        fromClause?
+        (whereClause | WHERE CURRENT_P OF cursorName)?
+        returningClause?
     ;
 
 updateSetList
@@ -770,10 +770,9 @@ deleteStatement
     ;
 
 deleteStatementNoWith
-    : DELETE_P FROM ONLY? tableName STAR? aliasClause?
-    (USING fromItemList)
-    (whereClause | WHERE CURRENT_P OF cursorName)
-    returningClause?
+    : DELETE_P FROM ONLY? tableName STAR? aliasClause? USING fromItemList
+        (whereClause | WHERE CURRENT_P OF cursorName)
+        returningClause?
     ;
 
 /**
