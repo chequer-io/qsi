@@ -9,13 +9,15 @@ options {
 
 @header
 {
+    using Qsi.Data;
+    using Qsi.Tree;
 }
 @members
 {
 }
 
 root
-   : statement EOF
+   : statement (SEMI EOF? | EOF)
    ;
 
 statement
@@ -25,6 +27,8 @@ statement
    | dropStatement
    
    // DML
+   // TODO: Only SELECT, INSERT, UPDATE, and DELETE statement have with clause.
+   //       Should I group these 4 statements and use with in front of the group, not seperately?
    | selectStatement
    | insertStatement
    | updateStatement
@@ -630,12 +634,12 @@ queryExpressionSet
 // Primary query.
 queryPrimary
     : SELECT selectOption* selectItemList
-    intoClause?
-    fromClause?
-    whereClause?
-    groupByClause?
-    havingClause?
-    windowClause?                               # selectQueryPrimary
+        intoClause?
+        fromClause?
+        whereClause?
+        groupByClause?
+        havingClause?
+        windowClause?                           # selectQueryPrimary
     | VALUES valueStatementItemList             # valuesQueryPrimary
     | TABLE tableName                           # tableQueryPrimary
     ;
@@ -650,9 +654,12 @@ valueStatementItem
     ;
 
 // Columns of the select statement.
-// TODO: Create select item
 selectItemList
-    : (columnName | STAR) (COMMA columnName)*
+    : (selectItem) (COMMA selectItem)*
+    ;
+
+selectItem
+    : (expression | STAR) aliasClause?
     ;
 
 // Options for select statement.
@@ -688,7 +695,7 @@ onConflictClause
     
 conflictTarget
     : OPEN_PAREN conflictTargetItemList CLOSE_PAREN (WHERE indexPredicate)?
-    | ON CONSTRAINT identifier
+    | ON CONSTRAINT columnIdentifier
     ;
     
 conflictTargetItemList
@@ -696,7 +703,7 @@ conflictTargetItemList
     ;
 
 conflictTargetItem
-    : (columnName | OPEN_PAREN expression CLOSE_PAREN) collate? opClass?
+    : (columnIdentifier | OPEN_PAREN expression CLOSE_PAREN) collate? opClass?
     ;
 
 collate
@@ -748,7 +755,7 @@ updateSetList
     ;
 
 updateSet
-    : columnName EQUAL (expression | DEFAULT)                                                       #columnUpdateSet
+    : columnIdentifier EQUAL (expression | DEFAULT)                                                       #columnUpdateSet
     | OPEN_PAREN columnList CLOSE_PAREN EQUAL ROW? OPEN_PAREN updateSetExpressionList CLOSE_PAREN   #columnListUpdateSet
     | OPEN_PAREN columnList CLOSE_PAREN EQUAL OPEN_PAREN queryPrimary CLOSE_PAREN                   #subqueryUpdateSet
     ;
@@ -796,7 +803,7 @@ aliasClause
     ;
     
 aliasClauseBody
-    : identifier (OPEN_PAREN columnList CLOSE_PAREN)?
+    : columnIdentifier (OPEN_PAREN columnList CLOSE_PAREN)?
     ;
 
 /**
@@ -826,8 +833,7 @@ fromItemList
     ;
 
 fromItem
-    : fromItemPrimary
-    | fromItemJoin
+    : fromItemPrimary joinClause*
     ;
 
 // Item that can be an element of the from clause.
@@ -844,82 +850,85 @@ tableFromItem
 
 // Function item.
 functionFromItem
-    : functionPrimary (WITH ORDINALITY)? aliasClause?                               # functionFromItemDefault
-    | functionPrimary AS aliasName OPEN_PAREN columnDefinitionList CLOSE_PAREN      # functionFromItemWithAs
+    : windowlessFunctionExpression (WITH ORDINALITY)? aliasClause?                               # functionFromItemDefault
+    | functionExpression AS aliasName OPEN_PAREN columnDefinitionList CLOSE_PAREN      # functionFromItemWithAs
     | rowsFromFunctionPrimary (WITH ORDINALITY)? aliasClause?                       # functionFromItemWithRows
     ;
 
-// Function item.
-//
-// NOTE: This node is kinda similar to functionExpression.
-// Maybe using expression would be work too.
-// Should use distinct node or existing expression?
-functionPrimary
-    : identifier OPEN_PAREN argumentList CLOSE_PAREN;
-
 // Function item that has a ROWS FROM block.
 rowsFromFunctionPrimary
-    : ROWS FROM OPEN_PAREN functionPrimary CLOSE_PAREN;
+    : ROWS FROM OPEN_PAREN functionExpression CLOSE_PAREN;
 
 // Subquery item.
 subqueryFromItem
     : queryExpressionParens aliasClause?;
 
 // Join item.
-fromItemJoin
-    : fromItemPrimary join+;
+joinClause
+    : join (ON expression | USING OPEN_PAREN columnIdentifier (COMMA columnIdentifier)* CLOSE_PAREN)? aliasClause?
+    ;
 
 // Join
 join
     : CROSS JOIN fromItemPrimary
-    | NATURAL? joinType? JOIN fromItemPrimary;
+    | NATURAL? joinType? JOIN fromItemPrimary
+    ;
     
 joinType
-    : (FULL | LEFT | RIGHT | INNER_P) OUTER_P?;
+    : (FULL | LEFT | RIGHT | INNER_P) OUTER_P?
+    ;
 
 /**
  * GROUP BY
  */
 groupByClause
-    : GROUP_P BY (ALL | DISTINCT)? groupByItemList;
+    : GROUP_P BY (ALL | DISTINCT)? groupByItemList
+    ;
 
 /**
  * HAVING
  */
 havingClause
-    : HAVING expression;
+    : HAVING expression
+    ;
 
 /**
  * INTO
  */
 intoClause
-    : INTO intoClauseOptions? TABLE? tableName;
+    : INTO intoClauseOptions? TABLE? tableName
+    ;
 
 // Table options for into clause.
 intoClauseOptions
     : TEMPORARY
     | TEMP
-    | UNLOGGED;
+    | UNLOGGED
+    ;
 
 /**
  * LIMIT, FETCH, OFFSET
  */
 limitClause
     : limit (offset)?
-    | offset (limit)?;
+    | offset (limit)?
+    ;
  
 limit
     : LIMIT expression | ALL
-    | FETCH (FIRST_P | NEXT) expression (ROW | ROWS) (ONLY | WITH TIES);
+    | FETCH (FIRST_P | NEXT) expression (ROW | ROWS) (ONLY | WITH TIES)
+    ;
 
 offset
-    : OFFSET (expression (ROW | ROWS)? | ALL);
+    : OFFSET (expression (ROW | ROWS)? | ALL)
+    ;
 
 /**
  * ORDER BY
  */
 orderByClause
-    : ORDER BY orderList;
+    : ORDER BY orderList
+    ;
 
 orderList
     : orderExpression (COMMA orderExpression)*
@@ -947,7 +956,7 @@ returningItemList
  * TABLESAMPLE
  */
 tableSampleClause
-    : TABLESAMPLE samplingMethodName OPEN_PAREN argumentList CLOSE_PAREN (REPEATABLE OPEN_PAREN seed CLOSE_PAREN)?
+    : TABLESAMPLE functionName OPEN_PAREN argumentList CLOSE_PAREN (REPEATABLE OPEN_PAREN seed CLOSE_PAREN)?
     ;
 
 seed
@@ -971,7 +980,7 @@ windowDefinitionList
 
 // NOTE: Same structure as the OVER clause.
 windowDefinition
-    : columnName AS windowSpecification;
+    : columnIdentifier AS windowSpecification;
 
 windowSpecification
     : OPEN_PAREN 
@@ -1026,7 +1035,8 @@ commonTableExpressionOption
     | NOT MATERIALIZED;
 
 commonTableExpressionStatements
-    : selectStatement;
+    : selectStatement
+    ;
 // TODO: Activate statements after implementation.
 //    | update_statement
 //    | insert_statement
@@ -1048,10 +1058,14 @@ expressionList
  * for operator precedences.
  */
 expression
-    : booleanExpression
-    | NOT expression
-    | expression AND expression
+    : andExpression
     | expression OR expression
+    ;
+
+andExpression
+    : booleanExpression
+    | NOT andExpression
+    | andExpression AND andExpression
     ;
 
 /**
@@ -1059,8 +1073,8 @@ expression
  */
 booleanExpression
     : comparisonExpression
-    | booleanExpression IS NOT? NULL_P
     | booleanExpression (ISNULL | NOTNULL)
+    | booleanExpression IS NOT? NULL_P
     | booleanExpression IS NOT? TRUE_P
     | booleanExpression IS NOT? FALSE_P
     | booleanExpression IS NOT? UNKNOWN
@@ -1070,31 +1084,31 @@ booleanExpression
 /**
  * Comparison Expression - with comparison operators, subqueries
  */
+// TODO: likeExpressionOptions and subqueryOperator have same operators.
+//       Lookahead increases because of that (k = 5). Should we fix this?
 comparisonExpression
-    : likeExpression
+    : qualifiedOperatorExpression (likeExpressionOptions qualifiedOperatorExpression (ESCAPE expression)?)?
     | comparisonExpression comparisonOperator comparisonExpression
     | comparisonExpression subqueryOperator subqueryType (queryExpressionParens | OPEN_PAREN expression CLOSE_PAREN)
     ;
+
+likeExpressionOptions
+    : NOT? (LIKE | ILIKE | IN_P)
+    | SIMILAR TO
+    | BETWEEN SYMMETRIC?
+    ;
+
+subqueryOperator
+    : allOperator
+    | OPERATOR OPEN_PAREN anyOperator CLOSE_PAREN
+    | NOT? (LIKE | ILIKE)
+    ;
+
 
 subqueryType
     : ANY
     | SOME
     | ALL
-    ;
-
-/**
- * Like expression - with LIKE, ILIKE, SIMILAR TO, BETWEEN keywords
- */
-likeExpression
-    : qualifiedOperatorExpression likeExpressionOptions qualifiedOperatorExpression (ESCAPE expression)?
-    | qualifiedOperatorExpression
-    ;
-
-likeExpressionOptions
-    : NOT? LIKE
-    | NOT? ILIKE
-    | SIMILAR TO
-    | BETWEEN SYMMETRIC?
     ;
 
 /**
@@ -1112,7 +1126,7 @@ unaryQualifiedOperatorExpression
  * Arithmetic Expression - with basic mathematical operators
  */
 arithmeticExpression
-    : fooExpression
+    : collateExpression
     | (PLUS | MINUS) arithmeticExpression
     | arithmeticExpression CARET arithmeticExpression
     | arithmeticExpression (STAR | SLASH | PERCENT) arithmeticExpression
@@ -1120,60 +1134,43 @@ arithmeticExpression
     ;
 
 /**
- * UNNAMED Expression.
- * TODO: Should be named; though not yet grouped by sth
+ * Collate Expression - with COLLATE keyword.
  */
-fooExpression
-    // NOTE: Implementation of [] operator?
-    : typecastExpression (COLLATE identifier)?
+collateExpression
+    : typecastExpression (COLLATE indirectionExpression)?
     ;
 
 /**
  * Typecast Expression - with :: keyword.
  */
 typecastExpression
-    : valueExpression (TYPECAST identifier)*
+    : indirectionExpression (TYPECAST typeName)*
+    ;
+
+/**
+ * Array Expression - with [](brackets).
+ */
+indirectionExpression
+    : valueExpression indirection*
     ;
 
 /**
  * Value Expression
  * See: https://www.postgresql.org/docs/14/sql-expressions.html
  */
+// TODO: Check lookahead
 valueExpression
-    : EXISTS queryExpressionParens
-    | ARRAY (queryExpressionParens | arrayExpression)
-    | PARAM indirection?
-    | GROUPING OPEN_PAREN expressionList CLOSE_PAREN
-    | UNIQUE queryExpressionParens
-    | columnReference
+    : (EXISTS | UNIQUE | ARRAY)? queryExpressionParens                              // Subquery
+    | ARRAY OPEN_BRACKET expressionList CLOSE_BRACKET                               // ARRAY Constructor
+    | GROUPING OPEN_PAREN expressionList CLOSE_PAREN                  // GROUPING
+    | OPEN_PAREN expression CLOSE_PAREN
+    | columnIdentifier                                                              // identifier TODO: reduce max k
     | constant
-    | OPEN_PAREN expression CLOSE_PAREN indirection?
-    | caseExpression
-    | functionExpression
-    | queryExpressionParens indirection?
-    | explicitRow
-    | implicitRow
-    | row OVERLAPS row
-    ;
-
-/**
- * Array Expression
- */
-arrayExpression
-    : OPEN_BRACKET expressionList CLOSE_BRACKET
-    ;
-
-/**
- * Indirection
- * TODO: Get the definition of Indirection.
- */
-indirection
-    : indirectionElement+
-    ;
-
-indirectionElement
-    : DOT (identifier | STAR)
-    | OPEN_PAREN (expression | expression? COLON expression?) CLOSE_PAREN
+    | caseExpression                                                                // CASE ~ END
+    | functionExpression                                                            // function call TODO: reduce max k
+    | row
+    | row OVERLAPS row // TODO: reduce max k
+    | PARAM                                                                         // PARAM
     ;
 
 /**
@@ -1196,7 +1193,7 @@ defaultCase
     ;
 
 /**
- * ROW clause
+ * ROW Expression
  */
 row
     : explicitRow
@@ -1218,8 +1215,12 @@ implicit_row: OPEN_PAREN expr_list  CLOSE_PAREN;
 while looks like they are almost the same, except v2 requieres at least 2 items in list
 while v1 allows single item in list
 */
+
+// NOTE: This node may cause a large amount of lookahead,
+//       because the parser must check whether there is a comma or not.
+//       Would there be a better solution?
 implicitRow
-    : OPEN_PAREN expressionList COMMA expression CLOSE_PAREN
+    : OPEN_PAREN expression COMMA expressionList CLOSE_PAREN
     ;
 
 /**
@@ -1228,23 +1229,157 @@ implicitRow
  * See 4.2.6, 4.2.7, 4.2.8 of: 
  * https://www.postgresql.org/docs/14/sql-expressions.html#SQL-EXPRESSIONS-FUNCTION-CALLS
  */
+ // TODO: Resolve ambiguity
 functionExpression
-    : functionApplication withinGroupClause? filterClause? overClause?
-// NOTE: func_expr_common_subexpr has been used in the open-source version of PG parser.
-// Guess it's been used for commonly used function format.
-// Ignoring it since creating a generic grammar of the function expression would cover it's definition.
-//    | func_expr_common_subexpr
+    : functionCall withinGroupClause? filterClause? overClause?
+    | commonFunctionExpression
     ;
 
-functionApplication
-    : identifier OPEN_PAREN functionApplicationArgument? CLOSE_PAREN
+windowlessFunctionExpression
+    : commonFunctionExpression
+    | functionCall
     ;
 
-functionApplicationArgument
+functionCall
+    : functionName OPEN_PAREN functionCallArgument? CLOSE_PAREN
+    ;
+
+// TODO: Resolve ambiguity
+// TODO: Filter names of common function expression
+functionName
+    : typeFunctionIdentifier
+    | columnIdentifier indirection
+    ;
+
+functionCallArgument
     : complexArgumentList (COMMA VARIADIC argumentExpression)? orderByClause?
     | VARIADIC argumentExpression orderByClause?
     | (ALL | DISTINCT) complexArgumentList orderByClause?
     | STAR
+    ;
+
+commonFunctionExpression
+    : COLLATION FOR OPEN_PAREN expression CLOSE_PAREN
+    | CURRENT_DATE
+    | CURRENT_TIME (OPEN_PAREN int CLOSE_PAREN)?
+    | CURRENT_TIMESTAMP (OPEN_PAREN int CLOSE_PAREN)?
+    | LOCALTIME (OPEN_PAREN int CLOSE_PAREN)?
+    | LOCALTIMESTAMP (OPEN_PAREN int CLOSE_PAREN)?
+    | CURRENT_ROLE
+    | CURRENT_USER
+    | SESSION_USER
+    | USER
+    | CURRENT_CATALOG
+    | CURRENT_SCHEMA
+    | CAST OPEN_PAREN expression AS typeName CLOSE_PAREN
+    | EXTRACT OPEN_PAREN extractList? CLOSE_PAREN
+    | NORMALIZE OPEN_PAREN expression (COMMA unicodeNormalForm)? CLOSE_PAREN
+    | OVERLAY OPEN_PAREN overlayList CLOSE_PAREN
+    | POSITION OPEN_PAREN positionList CLOSE_PAREN
+    | SUBSTRING OPEN_PAREN substringList CLOSE_PAREN
+    | TREAT OPEN_PAREN expression AS typeName CLOSE_PAREN
+    | TRIM OPEN_PAREN (BOTH | LEADING | TRAILING)? trimList CLOSE_PAREN
+    | NULLIF OPEN_PAREN expression COMMA expression CLOSE_PAREN
+    | COALESCE OPEN_PAREN expressionList CLOSE_PAREN
+    | GREATEST OPEN_PAREN expressionList CLOSE_PAREN
+    | LEAST OPEN_PAREN expressionList CLOSE_PAREN
+    | XMLCONCAT OPEN_PAREN expressionList CLOSE_PAREN
+    | XMLELEMENT OPEN_PAREN NAME_P columnLabelIdentifier (COMMA (xmlAttributes | expressionList))? CLOSE_PAREN
+    | XMLEXISTS OPEN_PAREN expression xmlExistsArgument CLOSE_PAREN
+    | XMLFOREST OPEN_PAREN xmlAttributeList CLOSE_PAREN
+    | XMLPARSE OPEN_PAREN documentOrContent expression xmlWhitespaceOption CLOSE_PAREN
+    | XMLPI OPEN_PAREN NAME_P columnLabelIdentifier (COMMA expression)? CLOSE_PAREN
+    | XMLROOT OPEN_PAREN XML_P expression COMMA xmlRootVersion xmlRootStandalone? CLOSE_PAREN
+    | XMLSERIALIZE OPEN_PAREN documentOrContent expression AS simpleTypeName CLOSE_PAREN
+    ;
+
+// EXTRACT
+extractList
+    : extractArgument FROM expression
+    ;
+
+extractArgument
+    : identifier
+    | YEAR_P
+    | MONTH_P
+    | DAY_P
+    | HOUR_P
+    | MINUTE_P
+    | SECOND_P
+    | string
+    ;
+
+// NORMALIZE
+unicodeNormalForm
+    : NFC
+    | NFD
+    | NFKC
+    | NFKD
+    ;
+
+// OVERLAY
+overlayList
+    : expression PLACING expression FROM expression (FOR expression)?
+    ;
+
+// POSITION
+positionList
+    : FROM FROM FROM //expression IN_P expression // TODO: Should we consider binary calculation only expression such as b_expr?
+    ;
+
+// SUBSTRING
+substringList
+    : expression FROM expression FOR expression
+    | expression FOR expression FROM expression
+    | expression FROM expression
+    | expression FOR expression
+    | expression SIMILAR expression ESCAPE expression
+    | expressionList
+    ;
+
+// TRIM
+trimList
+    : expression FROM expressionList
+    | FROM expressionList
+    | expressionList
+    ;
+
+// XML Functions
+xmlAttributes
+    : XMLATTRIBUTES OPEN_PAREN xmlAttributeList CLOSE_PAREN
+    ;
+
+xmlAttributeList
+    : xmlAttribute (COMMA xmlAttribute)*
+    ;
+
+xmlAttribute
+    : expression (AS columnLabelIdentifier)?
+    ;
+
+xmlExistsArgument
+    : PASSING xmlPassingMech? valueExpression xmlPassingMech?
+    ;
+
+xmlPassingMech
+    : BY (REF | VALUE_P)
+    ;
+
+xmlWhitespaceOption
+    : (PRESERVE | STRIP_P) WHITESPACE_P
+    ;
+
+xmlRootVersion
+    : VERSION_P (expression | NO VALUE_P)
+    ;
+
+xmlRootStandalone
+    : COMMA STANDALONE_P (YES_P | NO VALUE_P?)
+    ;
+
+documentOrContent
+    : DOCUMENT_P
+    | CONTENT_P
     ;
 
 /**
@@ -1265,7 +1400,7 @@ filterClause
  * OVER clause
  */
 overClause
-    : OVER (windowSpecification | identifier)
+    : OVER (windowSpecification | columnIdentifier)
     ;
 
 //----------------- OPERATORS ------------------------------------------------------------------------------------------
@@ -1274,14 +1409,14 @@ operator
     : TEMP;
 
 mathOperator
-   : PLUS
-   | MINUS
-   | STAR
-   | SLASH
-   | PERCENT
-   | CARET
-   | comparisonOperator
-   ;
+    : PLUS
+    | MINUS
+    | STAR
+    | SLASH
+    | PERCENT
+    | CARET
+    | comparisonOperator
+    ;
 
 comparisonOperator
     : EQUAL
@@ -1301,20 +1436,13 @@ setOperatorOption
     : ALL
     | DISTINCT;
 
-subqueryOperator
-    : allOperator
-    | OPERATOR OPEN_PAREN anyOperator CLOSE_PAREN
-    | NOT? LIKE
-    | NOT? ILIKE
-    ;
-
 qualifiedOperator
     : Operator
     | OPERATOR OPEN_PAREN anyOperator CLOSE_PAREN
     ;
 
 anyOperator
-    : (columnName DOT)* allOperator
+    : (columnIdentifier DOT)* allOperator
     ;
 
 allOperator
@@ -1328,52 +1456,73 @@ allOperator
 /**
  * Identifier
  */
-identifier
-    : pureIdentifier
-    | nonReservedKeyword
-    // Added temporarily
-    | noTypeOrFunctionNonReservedKeyword
-    | reservedKeyword
-    | typeOrFunctionReservedKeyword
+identifier returns [QsiIdentifier id]
+    : t=Identifier              { $id = new QsiIdentifier($t.text, false); }
+    | t=QuotedIdentifier        { $id = new QsiIdentifier($t.text, true); }
+    | t=UnicodeQuotedIdentifier { $id = new QsiIdentifier($t.text, true); }
     ;
 
-pureIdentifier
-    : Identifier
-    | QuotedIdentifier
+aliasName returns [QsiIdentifier id]
+    : i=identifier { $id = $i.id; }
     ;
 
-aliasName
-    : identifier
+columnLabelIdentifier returns [QsiIdentifier id]
+    : i=identifier { $id = $i.id; }
+    | rKey=reservedKeyword { $id = new QsiIdentifier($rKey.text, false); }
+    | nrKey=nonReservedKeyword { $id = new QsiIdentifier($nrKey.text, false); }
+    | cKey=columnKeyword { $id = new QsiIdentifier($cKey.text, false); }
+    | tKey=typeFunctionKeyword { $id = new QsiIdentifier($tKey.text, false); }
     ;
 
-columnName
-    : identifier
+columnIdentifier returns [QsiIdentifier id]
+    : i=identifier { $id = $i.id; }
+    | nrKey=nonReservedKeyword { $id = new QsiIdentifier($nrKey.text, false); }
+    | cKey=columnKeyword { $id = new QsiIdentifier($cKey.text, false); }
+    ;
+
+typeFunctionIdentifier returns [QsiIdentifier id]
+    : i=identifier { $id = $i.id; }
+    | nrKey=nonReservedKeyword { $id = new QsiIdentifier($nrKey.text, false); }
+    | tKey=typeFunctionKeyword { $id = new QsiIdentifier($tKey.text, false); }
     ;
 
 cursorName
-    : identifier;
-
-samplingMethodName
-    : identifier
+    : columnIdentifier
     ;
 
 subqueryName
-    : identifier
+    : columnIdentifier
+    ;
+
+qualifiedIdentifier
+    : columnIdentifier (DOT (columnIdentifier | STAR))*
     ;
 
 tableName
-    : identifier
+    : qualifiedIdentifier STAR?
+    | ONLY (qualifiedIdentifier | OPEN_PAREN qualifiedIdentifier CLOSE_PAREN)
     ;
 
 windowName
-    : identifier
+    : columnIdentifier
     ;
+
+indirection
+    : (DOT columnLabelIdentifier | STAR)
+    | arraySubscript
+    ;
+
+arraySubscript
+    : OPEN_BRACKET (expression | expression? COLON expression?) CLOSE_BRACKET
+    ;
+
 
 /**
  * Identifier List
  */
-identifierList
-    : identifier (COMMA identifier)*
+identifierList returns [List<QsiIdentifier> list]
+    @init { $list = new List<QsiIdentifier>(); }
+    : i=identifier { $list.Add($i.id); } ( COMMA i=identifier { $list.Add($i.id); } )*
     ;
 
 argumentList
@@ -1388,7 +1537,7 @@ complexArgumentList
 
 argumentExpression
     : expression
-    | identifier (COLON_EQUALS | EQUALS_GREATER) expression
+    | typeFunctionIdentifier (COLON_EQUALS | EQUALS_GREATER) expression
     ;
 
 columnList
@@ -1396,7 +1545,14 @@ columnList
     ;
 
 groupByItemList
-    : identifierList
+    : groupByItem (COMMA groupByItem)*
+    ;
+
+groupByItem
+    : expression
+    | (CUBE | ROLLUP) OPEN_PAREN expressionList CLOSE_PAREN
+    | GROUPING SETS OPEN_PAREN groupByItemList CLOSE_PAREN
+    | OPEN_PAREN CLOSE_PAREN
     ;
 
 tableList
@@ -1406,15 +1562,40 @@ tableList
 /**
  * value
  */
-columnReference
-    : identifier (DOT identifier)*
-    ;
 
 columnDefinitionList
-    : columnDefinition (COMMA columnDefinition)*;
+    : columnDefinition (COMMA columnDefinition)*
+    ;
     
 columnDefinition
-    : columnName dataType;
+    : columnIdentifier dataType
+    ;
+
+/**
+ * Types
+ */
+typeName
+    : SETOF? simpleTypeName typeNameOptions?
+    | qualifiedIdentifier PERCENT (ROWTYPE | TYPE_P)
+    ;
+
+typeNameOptions
+    : (OPEN_BRACKET int? CLOSE_BRACKET)+
+    | ARRAY (OPEN_BRACKET int CLOSE_BRACKET)*
+    ;
+
+simpleTypeName
+    : genericType
+    | numericType
+    | bitType
+    | characterType
+    | dateTimeType
+    | intervalType
+    ;
+
+genericType
+    : typeFunctionIdentifier (OPEN_PAREN expressionList CLOSE_PAREN)?
+    ;
 
 dataType
     : TEMP;
@@ -1441,9 +1622,9 @@ numericType
     | REAL
     | FLOAT_P (OPEN_PAREN unsignedInt CLOSE_PAREN)?
     | DOUBLE_P PRECISION
-    | DECIMAL_P typeModifier
-    | DEC typeModifier
-    | NUMERIC typeModifier
+    | DECIMAL_P typeModifier?
+    | DEC typeModifier?
+    | NUMERIC typeModifier?
     | BOOLEAN_P
     ;
 
@@ -1453,6 +1634,15 @@ typeModifier
 
 dateTimeType
     : (TIMESTAMP | TIME) (OPEN_PAREN int CLOSE_PAREN)? timezoneOption
+    ;
+
+/**
+ * Copied from the open-source PG parser:
+ *
+ * TODO with_la was used
+ */ 
+intervalType
+    : INTERVAL (intervalOption | OPEN_PAREN int CLOSE_PAREN)
     ;
 
 timezoneOption
@@ -1467,12 +1657,16 @@ constant
     | hex
     | bin
     | string
-    | identifier indirection? (OPEN_PAREN complexArgumentList orderByClause CLOSE_PAREN) string
+//    | identifier indirectionList? (OPEN_PAREN complexArgumentList orderByClause CLOSE_PAREN) string
     | constType string
-    | INTERVAL (string intervalOption? | OPEN_PAREN int CLOSE_PAREN string)
+    | interval
     | TRUE_P
     | FALSE_P
     | NULL_P
+    ;
+
+interval
+    : INTERVAL (string intervalOption | OPEN_PAREN int CLOSE_PAREN string)
     ;
 
 intervalOption
@@ -1631,7 +1825,7 @@ reservedKeyword
     | WITH
     ;
 
-typeOrFunctionReservedKeyword
+typeFunctionKeyword
    : AUTHORIZATION
    | BINARY
    | COLLATION
@@ -1959,9 +2153,8 @@ nonReservedKeyword
     | ZONE
     ;
 
-noTypeOrFunctionNonReservedKeyword
+columnKeyword
    : BETWEEN
-   | BIGINT
    | bitType
    | BOOLEAN_P
    | CHAR_P
@@ -1971,12 +2164,9 @@ noTypeOrFunctionNonReservedKeyword
    | DECIMAL_P
    | EXISTS
    | EXTRACT
-   | FLOAT_P
    | GREATEST
    | GROUPING
    | INOUT
-   | INT_P
-   | INTEGER
    | INTERVAL
    | LEAST
    | NATIONAL
@@ -1992,7 +2182,6 @@ noTypeOrFunctionNonReservedKeyword
    | REAL
    | ROW
    | SETOF
-   | SMALLINT
    | SUBSTRING
    | TIME
    | TIMESTAMP
