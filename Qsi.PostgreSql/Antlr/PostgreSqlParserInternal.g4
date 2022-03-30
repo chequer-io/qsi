@@ -307,8 +307,25 @@ createFunction
 createGroup
     :;
 
+/**
+ * CREATE INDEX
+ */
 createIndex
-    :;
+    : CREATE UNIQUE? INDEX CONCURRENTLY? (IF_P NOT EXISTS)? columnIdentifier
+        ON tableName (USING columnIdentifier)? OPEN_PAREN indexList CLOSE_PAREN
+        includeClause?
+        withStorageParamClause?
+        tableSpaceClause?
+        whereClause?
+    ;
+
+includeClause
+    : INCLUDE OPEN_PAREN indexList CLOSE_PAREN
+    ;
+
+withStorageParamClause
+    : WITH OPEN_PAREN /*relOptionList*/ CLOSE_PAREN // TODO: Find out what is relOptionList and implement it.
+    ;
 
 createLanguage
     :;
@@ -959,6 +976,13 @@ seed
     ;
 
 /**
+ * TABLESPACE
+ */
+tableSpaceClause
+    : TABLESPACE columnIdentifier
+    ;
+
+/**
  * WHERE
  */
 whereClause
@@ -1565,6 +1589,56 @@ columnDefinitionList
 columnDefinition
     : columnIdentifier dataType
     ;
+
+/**
+ * Index Parameters
+ */
+indexList
+    : index (COMMA index)*
+    ;
+
+index
+    : columnIdentifier indexOptions
+    | windowlessFunctionExpression indexOptions
+    | OPEN_PAREN expression CLOSE_PAREN indexOptions
+    ;
+
+indexOptions
+    : (COLLATE qualifiedIdentifier)? qualifiedIdentifier? (ASC | DESC)? (NULLS_P (FIRST_P | LAST_P))?
+    | (COLLATE qualifiedIdentifier)? qualifiedIdentifier 
+    ;
+
+///**
+// * Relation Options
+// */
+//relationOptionClause
+//    : WITH OPEN_PAREN relationOptionList CLOSE_PAREN
+//    ;
+//
+//relationOptionList
+//    : relationOption (COMMA relationOption)*
+//    ;
+//
+//relationOption
+//    : columnLabelIdentifier (EQUAL definitionArgument | DOT columnLabelIdentifier (EQUAL definitionArgument)?)?
+//    ;
+//
+///**
+// * Definitions
+// */
+//definitionArgument
+//    : functionType
+//    | reservedKeyword
+//    | qual_all_op
+//    | numericOnly
+//    | string
+//    | NONE
+//    ;
+//
+//functionType
+//    : typeName
+//    | SETOF? typeFunctionIdentifier (DOT columnLabelIdentifier)+ PERCENT TYPE_P
+//    ;
 
 /**
  * Types
