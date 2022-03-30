@@ -1514,7 +1514,7 @@ subqueryName
     ;
 
 qualifiedIdentifier
-    : columnIdentifier (DOT (columnIdentifier | STAR))*
+    : columnIdentifier (DOT (columnLabelIdentifier | STAR))*
     ;
 
 tableName
