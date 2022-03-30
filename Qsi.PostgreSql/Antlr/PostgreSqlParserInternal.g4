@@ -640,17 +640,26 @@ queryPrimary
         groupByClause?
         havingClause?
         windowClause?                           # selectQueryPrimary
-    | VALUES valueStatementItemList             # valuesQueryPrimary
+    | VALUES valueList                          # valuesQueryPrimary
     | TABLE tableName                           # tableQueryPrimary
     ;
 
 // Values
-valueStatementItemList
-    : valueStatementItem (COMMA valueStatementItem)*
+valueList
+    : valueItem (COMMA valueItem)*
     ;
 
-valueStatementItem
-    : OPEN_PAREN expressionList CLOSE_PAREN
+valueItem
+    : OPEN_PAREN valueColumnList CLOSE_PAREN
+    ;
+
+valueColumnList
+    : valueColumn (COMMA valueColumn)*
+    ;
+
+valueColumn
+    : expression
+    | DEFAULT
     ;
 
 // Columns of the select statement.
@@ -694,7 +703,7 @@ onConflictClause
     ;
     
 conflictTarget
-    : OPEN_PAREN conflictTargetItemList CLOSE_PAREN (WHERE indexPredicate)?
+    : OPEN_PAREN conflictTargetItemList CLOSE_PAREN whereClause?
     | ON CONSTRAINT columnIdentifier
     ;
     
@@ -707,25 +716,11 @@ conflictTargetItem
     ;
 
 collate
-    : COLLATE collation
+    : COLLATE expression
     ;
 
-// TODO: Implement collation.
-// see: collation section at https://www.postgresql.org/docs/14/sql-insert.html
-collation
-    : TEMP
-    ;
-
-// TODO: Implement opClass.
-// see: opclass section at https://www.postgresql.org/docs/14/sql-insert.html
 opClass
-    : TEMP
-    ;
-
-// TODO: Implement indexPredicate.
-// see: index_predicate section at https://www.postgresql.org/docs/14/sql-insert.html
-indexPredicate
-    : TEMP
+    : expression
     ;
 
 conflictAction
