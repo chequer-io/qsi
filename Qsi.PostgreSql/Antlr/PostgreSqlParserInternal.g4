@@ -269,8 +269,34 @@ createAccessMethod
     : CREATE ACCESS METHOD columnIdentifier TYPE_P (INDEX | TABLE) HANDLER qualifiedIdentifier
     ;
 
+/**
+ * CREATE AGGREGATE METHOD
+ */
 createAggregate
-    :;
+    : CREATE (OR REPLACE)? AGGREGATE functionName createAggregateArgumentOption
+    ;
+
+// TODO: Implement definition list.
+createAggregateArgumentOption
+    : OPEN_PAREN aggregateArguments CLOSE_PAREN OPEN_PAREN /*definitionList*/ CLOSE_PAREN
+    | OPEN_PAREN aggregateArgumentListOldSyntax CLOSE_PAREN
+    ;
+
+aggregateArguments
+    : STAR
+    | functionArgumentList
+    | ORDER BY functionArgumentList
+    | functionArgumentList ORDER BY functionArgumentList
+    ;
+
+aggregateArgumentListOldSyntax
+    : aggregateArgumentsOldSyntax (COMMA aggregateArgumentsOldSyntax)*
+    ;
+
+// TODO: Implement definition argument.
+aggregateArgumentsOldSyntax
+    : identifier EQUAL /*definitionArgument*/
+    ;
 
 createCast
     :;
@@ -1279,6 +1305,33 @@ functionCallArgument
     | VARIADIC argumentExpression orderByClause?
     | (ALL | DISTINCT) complexArgumentList orderByClause?
     | STAR
+    ;
+
+/**
+ * Function Argument
+ *
+ * TODO: Move node to a proper place
+ */
+functionArgumentList
+    : functionArgument (COMMA functionArgument)*
+    ;
+
+functionArgument
+    : argumentClass typeFunctionIdentifier? functionType
+    | typeFunctionIdentifier argumentClass? functionType
+    | functionType
+    ;
+
+argumentClass
+    : IN_P OUT_P?
+    | OUT_P
+    | INOUT
+    | VARIADIC
+    ;
+
+functionType
+    : typeName
+    | SETOF? typeFunctionIdentifier (DOT columnLabelIdentifier)* PERCENT TYPE_P
     ;
 
 commonFunctionExpression
