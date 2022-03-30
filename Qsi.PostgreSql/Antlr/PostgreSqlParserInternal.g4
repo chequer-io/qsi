@@ -262,8 +262,12 @@ createStatement:
         | createView
     );
 
+/**
+ * CREATE ACCESS METHOD
+ */
 createAccessMethod
-    :;
+    : CREATE ACCESS METHOD columnIdentifier TYPE_P (INDEX | TABLE) HANDLER qualifiedIdentifier
+    ;
 
 createAggregate
     :;
