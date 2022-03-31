@@ -358,8 +358,14 @@ createDatabaseItemName
     | TEMPLATE
     ;
 
+/**
+ * CREATE DOMAIN
+ *
+ * See: https://www.postgresql.org/docs/14/sql-createdomain.html
+ */
 createDomain
-    :;
+    : DOMAIN_P qualifiedIdentifier AS? type columnConstraint*
+    ;
 
 createEventTrigger
     :;
