@@ -385,8 +385,25 @@ eventTriggerItem
     : columnIdentifier IN_P '(' string (COMMA string)* ')'
     ;
 
+/**
+ * CREATE EXTENSION
+ *
+ * See: https://www.postgresql.org/docs/14/sql-createextension.html
+ */ 
 createExtension
-    :;
+    : EXTENSION (IF_P NOT EXISTS)? columnIdentifier WITH? createExtensionOptionList?
+    ;
+
+createExtensionOptionList
+    : createExtensionOption+
+    ;
+
+createExtensionOption
+    : SCHEMA columnIdentifier
+    | VERSION_P noReservedWordOrString
+    | FROM noReservedWordOrString
+    | CASCADE
+    ;
 
 createForeign:
     FOREIGN (
