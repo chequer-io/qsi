@@ -317,8 +317,14 @@ castContext
     : AS (IMPLICIT_P | ASSIGNMENT)
     ;
 
+/**
+ * CREATE COLLATION
+ *
+ * See: https://www.postgresql.org/docs/14/sql-createcollation.html
+ */
 createCollation
-    :;
+    : CREATE COLLATION (IF_P NOT EXISTS)? qualifiedIdentifier OPEN_PAREN definitionList CLOSE_PAREN
+    ;
 
 createConversion
     :;
