@@ -892,6 +892,13 @@ collateClause
     ;
 
 /**
+ * DefinitionlistClause
+ */
+definitionListClause
+    : WITH OPEN_PAREN definitionList CLOSE_PAREN
+    ;
+
+/**
  * FOR .. (OF ..);
  */
 forClause
@@ -1060,6 +1067,27 @@ seed
  */
 tableSpaceClause
     : TABLESPACE columnIdentifier
+    ;
+
+/**
+ * USING
+ */
+usingClause
+    : USING columnIdentifier
+    ;
+
+/**
+ * USING INDEX
+ */
+usingIndexClause
+    : USING INDEX columnIdentifier
+    ;
+
+/**
+ * USING INDEX TABLESPACE
+ */
+usingIndexTablespaceClause
+    : USING INDEX TABLESPACE columnIdentifier
     ;
 
 /**
@@ -1893,6 +1921,116 @@ columnDefinitionList
     
 columnDefinition
     : columnIdentifier type collateClause?
+    ;
+
+/**
+ * Constraints
+ *
+ * https://www.postgresql.org/docs/current/ddl-constraints.html
+ */
+
+// Constraint for a table.
+tableConstraint
+    : CONSTRAINT columnIdentifier tableConstraintElement constraintAttributeList?
+    | tableConstraintElement constraintAttributeList?
+    ;
+
+tableConstraintElement
+    : CHECK '(' expression ')'
+    | (UNIQUE | PRIMARY KEY) '(' columnIdentifierList ')' 
+        includeClause?
+        definitionListClause?
+        usingIndexTablespaceClause?
+    | (UNIQUE | PRIMARY KEY) usingIndexClause
+    | EXCLUDE usingClause? '(' excludeIndexList ')'
+        includeClause?
+        definitionListClause?
+        usingIndexTablespaceClause?
+        exclusionWhereClause?
+    | FOREIGN KEY '(' columnIdentifierList ')' REFERENCES qualifiedIdentifier
+        ('(' columnIdentifierList ')')?
+        keyMatch?
+        keyActions?
+    ;
+
+excludeIndexList
+    : excludeIndex (COMMA excludeIndex)*
+    ;
+
+excludeIndex
+    : index WITH (simpleOperator | OPERATOR '(' simpleOperator ')')
+    ;
+
+exclusionWhereClause
+    : WHERE '(' expression ')'
+    ;
+ 
+columnConstraint
+    : CONSTRAINT columnIdentifier columnConstraintElement
+    | columnConstraintElement
+    | constraintAttribute
+    | COLLATE qualifiedIdentifier
+    ;
+
+columnConstraintElement
+    : NOT? NULL_P
+    | (UNIQUE | PRIMARY KEY) definitionListClause?
+    | CHECK '(' expression ')' (NO INHERIT)?
+    | DEFAULT expression
+    | GENERATED generatedOption AS (IDENTITY_P ('(' sequenceOptionList ')')? | '(' expression ')' STORED)
+    | REFERENCES qualifiedIdentifier ('(' columnIdentifierList ')')? keyMatch? keyActions?
+    ;
+
+constraintAttributeList
+    : constraintAttribute+
+    ;
+
+constraintAttribute
+    : NOT? DEFERRABLE
+    | INITIALLY (IMMEDIATE | DEFERRED)
+    | NOT VALID
+    | NO INHERIT
+    ;
+
+// TODO: Move to proper place; this is related to column.
+generatedOption
+    : ALWAYS
+    | BY DEFAULT
+    ;
+
+sequenceOptionList
+    : sequenceOptionElement+
+    ;
+
+sequenceOptionElement
+    : AS simpleType
+    | (CACHE | MAXVALUE | MINVALUE) numericOnly
+    | CYCLE
+    | INCREMENT BY? numericOnly
+    | NO (MAXVALUE | MINVALUE | CYCLE)
+    | OWNED BY qualifiedIdentifier
+    | SEQUENCE NAME_P qualifiedIdentifier
+    | START WITH? numericOnly
+    | RESTART WITH? numericOnly?
+    ;
+
+keyMatch
+    : MATCH (FULL | PARTIAL | SIMPLE)
+    ;
+
+keyActions
+    : keyAction+
+    ;
+
+keyAction
+    : ON (UPDATE | DELETE_P) keyActionOptions
+    ;
+
+keyActionOptions
+    : NO ACTION
+    | RESTRICT
+    | CASCADE
+    | SET (NULL_P | DEFAULT)
     ;
 
 /**
