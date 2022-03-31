@@ -1525,9 +1525,8 @@ allOperator
     : Operator
     | mathOperator
     ;
-    
-//----------------- TEMPORARY NODES ------------------------------------------------------------------------------------
-// Nodes that are not implemented yet, but required to implement other nodes.
+
+//----------------- IDENTIFIERS ----------------------------------------------------------------------------------------
 
 /**
  * Identifier
@@ -1536,10 +1535,6 @@ identifier returns [QsiIdentifier id]
     : t=Identifier              { $id = new QsiIdentifier($t.text, false); }
     | t=QuotedIdentifier        { $id = new QsiIdentifier($t.text, true); }
     | t=UnicodeQuotedIdentifier { $id = new QsiIdentifier($t.text, true); }
-    ;
-
-aliasName returns [QsiIdentifier id]
-    : i=identifier { $id = $i.id; }
     ;
 
 columnLabelIdentifier returns [QsiIdentifier id]
@@ -1560,6 +1555,11 @@ typeFunctionIdentifier returns [QsiIdentifier id]
     : i=identifier { $id = $i.id; }
     | nrKey=nonReservedKeyword { $id = new QsiIdentifier($nrKey.text, false); }
     | tKey=typeFunctionKeyword { $id = new QsiIdentifier($tKey.text, false); }
+    ;
+
+// TODO: Check names are correctly using identifiers.
+aliasName returns [QsiIdentifier id]
+    : i=identifier { $id = $i.id; }
     ;
 
 cursorName
@@ -1583,6 +1583,12 @@ windowName
     : columnIdentifier
     ;
 
+/**
+ * Indirection
+ * 
+ * Nodes that are able to come right after the column identifier.
+ * Consists of dot attribute and subscript. 
+ */
 indirection
     : (DOT columnLabelIdentifier | STAR)
     | arraySubscript
@@ -1635,71 +1641,8 @@ tableList
     : identifierList
     ;
 
-/**
- * value
- */
+//----------------- Types ----------------------------------------------------------------------------------------------
 
-columnDefinitionList
-    : columnDefinition (COMMA columnDefinition)*
-    ;
-    
-columnDefinition
-    : columnIdentifier dataType
-    ;
-
-/**
- * Index Parameters
- */
-indexList
-    : index (COMMA index)*
-    ;
-
-index
-    : columnIdentifier indexOptions
-    | windowlessFunctionExpression indexOptions
-    | OPEN_PAREN expression CLOSE_PAREN indexOptions
-    ;
-
-indexOptions
-    : (COLLATE qualifiedIdentifier)? qualifiedIdentifier? (ASC | DESC)? (NULLS_P (FIRST_P | LAST_P))?
-    | (COLLATE qualifiedIdentifier)? qualifiedIdentifier 
-    ;
-
-///**
-// * Relation Options
-// */
-//relationOptionClause
-//    : WITH OPEN_PAREN relationOptionList CLOSE_PAREN
-//    ;
-//
-//relationOptionList
-//    : relationOption (COMMA relationOption)*
-//    ;
-//
-//relationOption
-//    : columnLabelIdentifier (EQUAL definitionArgument | DOT columnLabelIdentifier (EQUAL definitionArgument)?)?
-//    ;
-//
-///**
-// * Definitions
-// */
-//definitionArgument
-//    : functionType
-//    | reservedKeyword
-//    | qual_all_op
-//    | numericOnly
-//    | string
-//    | NONE
-//    ;
-//
-//functionType
-//    : typeName
-//    | SETOF? typeFunctionIdentifier (DOT columnLabelIdentifier)+ PERCENT TYPE_P
-//    ;
-
-/**
- * Types
- */
 typeName
     : SETOF? simpleTypeName typeNameOptions?
     | qualifiedIdentifier PERCENT (ROWTYPE | TYPE_P)
@@ -1850,6 +1793,71 @@ stringBody
     | BeginDollarStringConstant DollarText* EndDollarStringConstant
     | EscapeStringConstant
     ;
+
+//----------------- TEMPORARY NODES ------------------------------------------------------------------------------------
+// Nodes that are not implemented yet, but required to implement other nodes.
+
+/**
+ * value
+ */
+
+columnDefinitionList
+    : columnDefinition (COMMA columnDefinition)*
+    ;
+    
+columnDefinition
+    : columnIdentifier dataType
+    ;
+
+/**
+ * Index Parameters
+ */
+indexList
+    : index (COMMA index)*
+    ;
+
+index
+    : columnIdentifier indexOptions
+    | windowlessFunctionExpression indexOptions
+    | OPEN_PAREN expression CLOSE_PAREN indexOptions
+    ;
+
+indexOptions
+    : (COLLATE qualifiedIdentifier)? qualifiedIdentifier? (ASC | DESC)? (NULLS_P (FIRST_P | LAST_P))?
+    | (COLLATE qualifiedIdentifier)? qualifiedIdentifier 
+    ;
+
+///**
+// * Relation Options
+// */
+//relationOptionClause
+//    : WITH OPEN_PAREN relationOptionList CLOSE_PAREN
+//    ;
+//
+//relationOptionList
+//    : relationOption (COMMA relationOption)*
+//    ;
+//
+//relationOption
+//    : columnLabelIdentifier (EQUAL definitionArgument | DOT columnLabelIdentifier (EQUAL definitionArgument)?)?
+//    ;
+//
+///**
+// * Definitions
+// */
+//definitionArgument
+//    : functionType
+//    | reservedKeyword
+//    | qual_all_op
+//    | numericOnly
+//    | string
+//    | NONE
+//    ;
+//
+//functionType
+//    : typeName
+//    | SETOF? typeFunctionIdentifier (DOT columnLabelIdentifier)+ PERCENT TYPE_P
+//    ;
 
 //----------------- KETWORDS -------------------------------------------------------------------------------------------
 // In PostgreSQL, reserved keywords are keywords that are being used by sql itself; cannot be used for identifier.
