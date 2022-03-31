@@ -271,14 +271,15 @@ createAccessMethod
 
 /**
  * CREATE AGGREGATE METHOD
+ *
+ * See: https://www.postgresql.org/docs/14/sql-createaggregate.html
  */
 createAggregate
     : CREATE (OR REPLACE)? AGGREGATE functionName createAggregateArgumentOption
     ;
 
-// TODO: Implement definition list.
 createAggregateArgumentOption
-    : OPEN_PAREN aggregateArguments CLOSE_PAREN OPEN_PAREN /*definitionList*/ CLOSE_PAREN
+    : OPEN_PAREN aggregateArguments CLOSE_PAREN OPEN_PAREN definitionList CLOSE_PAREN
     | OPEN_PAREN aggregateArgumentListOldSyntax CLOSE_PAREN
     ;
 
@@ -293,9 +294,8 @@ aggregateArgumentListOldSyntax
     : aggregateArgumentsOldSyntax (COMMA aggregateArgumentsOldSyntax)*
     ;
 
-// TODO: Implement definition argument.
 aggregateArgumentsOldSyntax
-    : identifier EQUAL /*definitionArgument*/
+    : identifier EQUAL definitionArgument
     ;
 
 createCast
@@ -1810,6 +1810,37 @@ columnDefinition
     ;
 
 /**
+ * Definitions - Clauses such as foo = bar.
+ *
+ * TODO: I think this node is duplicated - we have Expression node!
+ *       Guess open-source one made this because of the execution speed; its expression node is DAMN slow.
+ *       Maybe I could replace definition as expression and check the time difference.
+ */
+
+definitionList
+    : definition (COMMA definition)*
+    ;
+
+definition
+    : columnLabelIdentifier (EQUAL definitionArgument)?
+    ;
+
+definitionArgument
+    : functionType
+    | reservedKeyword
+    | qualifiedOperator
+    | numericOnly
+    | string
+    | NONE
+    ;
+
+numericOnly
+    : (PLUS | MINUS) float      #withSignFloat
+    | float                     #noSignFloat
+    | int                       #withSignInt
+    ;
+
+/**
  * Index Parameters
  */
 indexList
@@ -1842,22 +1873,6 @@ indexOptions
 //    : columnLabelIdentifier (EQUAL definitionArgument | DOT columnLabelIdentifier (EQUAL definitionArgument)?)?
 //    ;
 //
-///**
-// * Definitions
-// */
-//definitionArgument
-//    : functionType
-//    | reservedKeyword
-//    | qual_all_op
-//    | numericOnly
-//    | string
-//    | NONE
-//    ;
-//
-//functionType
-//    : typeName
-//    | SETOF? typeFunctionIdentifier (DOT columnLabelIdentifier)+ PERCENT TYPE_P
-//    ;
 
 //----------------- KETWORDS -------------------------------------------------------------------------------------------
 // In PostgreSQL, reserved keywords are keywords that are being used by sql itself; cannot be used for identifier.
