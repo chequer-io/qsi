@@ -1038,15 +1038,9 @@ windowSpecification
     : OPEN_PAREN 
     windowName?
     (PARTITION BY expressionList)?
-    (ORDER BY windowOrderByExpressionList)? 
+    orderByClause? 
     frameClause?
     CLOSE_PAREN;
-
-windowOrderByExpressionList
-    : windowOrderByExpression (COMMA windowOrderByExpression)*;
-
-windowOrderByExpression
-    : expression (ASC | DESC | USING operator) (NULLS_P (FIRST_P | LAST_P))?;
 
 frameClause
     : (RANGE | ROWS | GROUPS) (
