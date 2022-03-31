@@ -326,8 +326,14 @@ createCollation
     : CREATE COLLATION (IF_P NOT EXISTS)? qualifiedIdentifier OPEN_PAREN definitionList CLOSE_PAREN
     ;
 
+/**
+ * CREATE CONVERSION
+ *
+ * See: https://www.postgresql.org/docs/14/sql-createconversion.html
+ */
 createConversion
-    :;
+    : CREATE DEFAULT? CONVERSION_P qualifiedIdentifier FOR string TO string FROM qualifiedIdentifier
+    ;
 
 createDatabase
     :;
