@@ -1801,9 +1801,8 @@ stringBody
 // Nodes that are not implemented yet, but required to implement other nodes.
 
 /**
- * value
+ * Column Definition
  */
-
 columnDefinitionList
     : columnDefinition (COMMA columnDefinition)*
     ;
