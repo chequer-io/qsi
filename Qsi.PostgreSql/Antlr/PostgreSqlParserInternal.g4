@@ -1190,7 +1190,7 @@ collateExpression
  * Typecast Expression - with :: keyword.
  */
 typecastExpression
-    : indirectionExpression (TYPECAST typeName)*
+    : indirectionExpression (TYPECAST type)*
     ;
 
 /**
@@ -1327,7 +1327,7 @@ argumentClass
     ;
 
 functionType
-    : typeName
+    : type
     | SETOF? typeFunctionIdentifier (DOT columnLabelIdentifier)* PERCENT TYPE_P
     ;
 
@@ -1344,13 +1344,13 @@ commonFunctionExpression
     | USER
     | CURRENT_CATALOG
     | CURRENT_SCHEMA
-    | CAST OPEN_PAREN expression AS typeName CLOSE_PAREN
+    | CAST OPEN_PAREN expression AS type CLOSE_PAREN
     | EXTRACT OPEN_PAREN extractList? CLOSE_PAREN
     | NORMALIZE OPEN_PAREN expression (COMMA unicodeNormalForm)? CLOSE_PAREN
     | OVERLAY OPEN_PAREN overlayList CLOSE_PAREN
     | POSITION OPEN_PAREN positionList CLOSE_PAREN
     | SUBSTRING OPEN_PAREN substringList CLOSE_PAREN
-    | TREAT OPEN_PAREN expression AS typeName CLOSE_PAREN
+    | TREAT OPEN_PAREN expression AS type CLOSE_PAREN
     | TRIM OPEN_PAREN (BOTH | LEADING | TRAILING)? trimList CLOSE_PAREN
     | NULLIF OPEN_PAREN expression COMMA expression CLOSE_PAREN
     | COALESCE OPEN_PAREN expressionList CLOSE_PAREN
@@ -1363,7 +1363,7 @@ commonFunctionExpression
     | XMLPARSE OPEN_PAREN documentOrContent expression xmlWhitespaceOption CLOSE_PAREN
     | XMLPI OPEN_PAREN NAME_P columnLabelIdentifier (COMMA expression)? CLOSE_PAREN
     | XMLROOT OPEN_PAREN XML_P expression COMMA xmlRootVersion xmlRootStandalone? CLOSE_PAREN
-    | XMLSERIALIZE OPEN_PAREN documentOrContent expression AS simpleTypeName CLOSE_PAREN
+    | XMLSERIALIZE OPEN_PAREN documentOrContent expression AS simpleType CLOSE_PAREN
     ;
 
 // EXTRACT
@@ -1642,17 +1642,23 @@ tableList
 
 //----------------- Types ----------------------------------------------------------------------------------------------
 
-typeName
-    : SETOF? simpleTypeName typeNameOptions?
+/**
+ * PostgreSQL type.
+ *
+ * See: https://www.postgresql.org/docs/14/datatype.html
+ * and also: https://www.postgresql.org/docs/14/extend-type-system.html
+ */
+type
+    : SETOF? simpleType typeOption?
     | qualifiedIdentifier PERCENT (ROWTYPE | TYPE_P)
     ;
 
-typeNameOptions
+typeOption
     : (OPEN_BRACKET int? CLOSE_BRACKET)+
     | ARRAY (OPEN_BRACKET int CLOSE_BRACKET)*
     ;
 
-simpleTypeName
+simpleType
     : genericType
     | numericType
     | bitType
@@ -1660,18 +1666,32 @@ simpleTypeName
     | dateTimeType
     | intervalType
     ;
-
+/**
+ * Generic Type
+ *
+ * This type includes user-defined types and other built-in types.
+ * For more info about user-defined types, see: https://www.postgresql.org/docs/14/xtypes.html
+ * For more info about built-in types, see: https://www.postgresql.org/docs/14/datatype.html
+ */
 genericType
     : typeFunctionIdentifier (OPEN_PAREN expressionList CLOSE_PAREN)?
     ;
 
-dataType
-    : TEMP;
-
+/**
+ * Bit Type
+ *
+ * See: https://www.postgresql.org/docs/14/datatype-bit.html
+ * https://www.postgresql.org/docs/14/datatype-binary.html
+ */
 bitType
     : BIT VARYING? (OPEN_PAREN unsignedInt CLOSE_PAREN)?
     ;
 
+/**
+ * Character Type
+ *
+ * See: https://www.postgresql.org/docs/14/datatype-character.html
+ */
 characterType
     : characterPrefix (OPEN_PAREN unsignedInt CLOSE_PAREN)?
     ;
@@ -1682,17 +1702,23 @@ characterPrefix
     | NATIONAL (CHARACTER | CHAR_P) VARYING?
     ;
 
+/**
+ * Numeric type
+ *
+ * See: https://www.postgresql.org/docs/14/datatype-numeric.html
+ * Note that serial types are not true types, therefore not implemented.
+ */
 numericType
-    : INT_P
+    : SMALLINT
     | INTEGER
-    | SMALLINT
+    | INT_P
     | BIGINT
-    | REAL
-    | FLOAT_P (OPEN_PAREN unsignedInt CLOSE_PAREN)?
-    | DOUBLE_P PRECISION
     | DECIMAL_P typeModifier?
     | DEC typeModifier?
     | NUMERIC typeModifier?
+    | REAL
+    | DOUBLE_P PRECISION
+    | FLOAT_P (OPEN_PAREN unsignedInt CLOSE_PAREN)?
     | BOOLEAN_P
     ;
 
@@ -1700,13 +1726,21 @@ typeModifier
     : OPEN_PAREN expressionList CLOSE_PAREN
     ;
 
+/**
+ * Date/Time Type
+ *
+ * See: https://www.postgresql.org/docs/14/datatype-datetime.html
+ */
 dateTimeType
     : (TIMESTAMP | TIME) (OPEN_PAREN int CLOSE_PAREN)? timezoneOption
     ;
 
 /**
- * Copied from the open-source PG parser:
+ * Interval Type (subset of Date/Time Type)
  *
+ * See: https://www.postgresql.org/docs/14/datatype-datetime.html
+ *
+ * Copied from the open-source PG parser:
  * TODO with_la was used
  */ 
 intervalType
