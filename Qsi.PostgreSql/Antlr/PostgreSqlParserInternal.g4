@@ -1145,8 +1145,8 @@ likeExpressionOptions
     ;
 
 subqueryOperator
-    : allOperator
-    | OPERATOR OPEN_PAREN anyOperator CLOSE_PAREN
+    : operator
+    | OPERATOR OPEN_PAREN simpleOperator CLOSE_PAREN
     | NOT? (LIKE | ILIKE)
     ;
 
@@ -1161,11 +1161,11 @@ subqueryType
  * Qualified Operator Expression - with user defined operators
  */
 qualifiedOperatorExpression
-    : unaryQualifiedOperatorExpression (qualifiedOperator unaryQualifiedOperatorExpression)*
+    : unaryQualifiedOperatorExpression (qualifiedWithoutMathOperator unaryQualifiedOperatorExpression)*
     ;
 
 unaryQualifiedOperatorExpression
-    : qualifiedOperator? arithmeticExpression
+    : qualifiedWithoutMathOperator? arithmeticExpression
     ;
 
 /**
@@ -1478,9 +1478,6 @@ overClause
 
 //----------------- OPERATORS ------------------------------------------------------------------------------------------
 
-operator
-    : TEMP;
-
 mathOperator
     : PLUS
     | MINUS
@@ -1509,16 +1506,21 @@ setOperatorOption
     : ALL
     | DISTINCT;
 
-qualifiedOperator
+qualifiedWithoutMathOperator
     : Operator
-    | OPERATOR OPEN_PAREN anyOperator CLOSE_PAREN
+    | OPERATOR OPEN_PAREN simpleOperator CLOSE_PAREN
     ;
 
-anyOperator
-    : (columnIdentifier DOT)* allOperator
+qualifiedOperator
+    : operator
+    | OPERATOR OPEN_PAREN simpleOperator CLOSE_PAREN
     ;
 
-allOperator
+simpleOperator
+    : (columnIdentifier DOT)* operator
+    ;
+
+operator
     : Operator
     | mathOperator
     ;
