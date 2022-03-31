@@ -1001,7 +1001,7 @@ returningItemList
  * TABLESAMPLE
  */
 tableSampleClause
-    : TABLESAMPLE functionName OPEN_PAREN argumentList CLOSE_PAREN (REPEATABLE OPEN_PAREN seed CLOSE_PAREN)?
+    : TABLESAMPLE functionName OPEN_PAREN expressionList CLOSE_PAREN (REPEATABLE OPEN_PAREN seed CLOSE_PAREN)?
     ;
 
 seed
@@ -1072,7 +1072,7 @@ withClause
 
 // CTE(Common Table Expression).
 commonTableExpression
-    : subqueryName (OPEN_PAREN argumentList CLOSE_PAREN)? 
+    : subqueryName (OPEN_PAREN columnIdentifierList CLOSE_PAREN)? 
     AS commonTableExpressionOption? 
     OPEN_PAREN commonTableExpressionStatements CLOSE_PAREN;
 
@@ -1623,6 +1623,10 @@ argumentExpression
 
 columnList
     : identifierList
+    ;
+
+columnIdentifierList
+    : columnIdentifier (COMMA columnIdentifier)*
     ;
 
 groupByItemList
