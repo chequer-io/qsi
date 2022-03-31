@@ -1844,8 +1844,14 @@ numericOnly
     ;
 
 /**
- * Function Argument Definition
+ * Function Definition
  */
+functionDefinition
+    : functionName OPEN_PAREN argumentDefinitionList? CLOSE_PAREN
+    | typeFunctionKeyword
+    | columnIdentifier indirection*
+    ;
+
 argumentDefinitionList
     : argumentDefinition (COMMA argumentDefinition)*
     ;
