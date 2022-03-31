@@ -389,7 +389,7 @@ createGroup
  * CREATE INDEX
  */
 createIndex
-    : CREATE UNIQUE? INDEX CONCURRENTLY? (IF_P NOT EXISTS)? columnIdentifier
+    : UNIQUE? INDEX CONCURRENTLY? (IF_P NOT EXISTS)? columnIdentifier
         ON tableName (USING columnIdentifier)? OPEN_PAREN indexList CLOSE_PAREN
         includeClause?
         withStorageParamClause?
