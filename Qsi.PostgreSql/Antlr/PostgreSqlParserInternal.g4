@@ -298,8 +298,24 @@ aggregateArgumentsOldSyntax
     : identifier EQUAL definitionArgument
     ;
 
+/**
+ * CREATE CAST
+ *
+ * See: https://www.postgresql.org/docs/14/sql-createcast.html
+ */
 createCast
-    :;
+    : CREATE CAST OPEN_PAREN type AS type CLOSE_PAREN createCastOption castContext?
+    ;
+
+createCastOption
+    : WITH FUNCTION functionDefinition
+    | WITHOUT FUNCTION
+    | WITH INOUT
+    ;
+
+castContext
+    : AS (IMPLICIT_P | ASSIGNMENT)
+    ;
 
 createCollation
     :;
