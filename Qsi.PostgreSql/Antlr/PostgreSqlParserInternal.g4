@@ -397,14 +397,6 @@ createIndex
         whereClause?
     ;
 
-includeClause
-    : INCLUDE OPEN_PAREN indexList CLOSE_PAREN
-    ;
-
-withStorageParamClause
-    : WITH OPEN_PAREN /*relOptionList*/ CLOSE_PAREN // TODO: Find out what is relOptionList and implement it.
-    ;
-
 createLanguage
     :;
 
@@ -986,6 +978,13 @@ havingClause
     ;
 
 /**
+ * INCLUDE
+ */
+includeClause
+    : INCLUDE OPEN_PAREN indexList CLOSE_PAREN
+    ;
+
+/**
  * INTO
  */
 intoClause
@@ -1113,7 +1112,16 @@ frameExclusion
     : EXCLUDE (CURRENT_P ROW | GROUP_P | TIES | NO OTHERS);
 
 /**
- * WITH
+ * WITH (Options...)
+ *
+ * TODO: Difference between DefinitionlistClause?
+ */ 
+withStorageParamClause
+    : WITH OPEN_PAREN /*relOptionList*/ CLOSE_PAREN // TODO: Find out what is relOptionList and implement it.
+    ;
+
+/**
+ * WITH (Query)
  */
 withClause
     : WITH RECURSIVE? commonTableExpression (COMMA commonTableExpression)*;
