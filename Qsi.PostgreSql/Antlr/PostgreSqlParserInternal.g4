@@ -1653,7 +1653,7 @@ argument
     ;
 
 columnList
-    : identifierList
+    : qualifiedIdentifier (COMMA qualifiedIdentifier)*
     ;
 
 columnIdentifierList
