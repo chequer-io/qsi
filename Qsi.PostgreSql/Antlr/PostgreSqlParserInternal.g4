@@ -279,15 +279,15 @@ createAggregate
     ;
 
 createAggregateArgumentOption
-    : OPEN_PAREN aggregateArguments CLOSE_PAREN OPEN_PAREN definitionList CLOSE_PAREN
+    : OPEN_PAREN aggregateArgumentDefinitions CLOSE_PAREN OPEN_PAREN definitionList CLOSE_PAREN
     | OPEN_PAREN aggregateArgumentListOldSyntax CLOSE_PAREN
     ;
 
-aggregateArguments
+aggregateArgumentDefinitions
     : STAR
-    | functionArgumentList
-    | ORDER BY functionArgumentList
-    | functionArgumentList ORDER BY functionArgumentList
+    | argumentDefinitionList
+    | ORDER BY argumentDefinitionList
+    | argumentDefinitionList ORDER BY argumentDefinitionList
     ;
 
 aggregateArgumentListOldSyntax
@@ -1298,37 +1298,10 @@ functionName
     ;
 
 functionCallArgument
-    : complexArgumentList (COMMA VARIADIC argumentExpression)? orderByClause?
-    | VARIADIC argumentExpression orderByClause?
-    | (ALL | DISTINCT) complexArgumentList orderByClause?
+    : argumentList (COMMA VARIADIC argument)? orderByClause?
+    | VARIADIC argument orderByClause?
+    | (ALL | DISTINCT) argumentList orderByClause?
     | STAR
-    ;
-
-/**
- * Function Argument
- *
- * TODO: Move node to a proper place
- */
-functionArgumentList
-    : functionArgument (COMMA functionArgument)*
-    ;
-
-functionArgument
-    : argumentClass typeFunctionIdentifier? functionType
-    | typeFunctionIdentifier argumentClass? functionType
-    | functionType
-    ;
-
-argumentClass
-    : IN_P OUT_P?
-    | OUT_P
-    | INOUT
-    | VARIADIC
-    ;
-
-functionType
-    : type
-    | SETOF? typeFunctionIdentifier (DOT columnLabelIdentifier)* PERCENT TYPE_P
     ;
 
 commonFunctionExpression
@@ -1607,16 +1580,10 @@ identifierList returns [List<QsiIdentifier> list]
     ;
 
 argumentList
-    : identifierList
+    : argument (COMMA argument)*
     ;
 
-// NOTE: Is argument above and below same?
-
-complexArgumentList
-    : argumentExpression (COMMA argumentExpression)*
-    ;
-
-argumentExpression
+argument
     : expression
     | typeFunctionIdentifier (COLON_EQUALS | EQUALS_GREATER) expression
     ;
@@ -1874,6 +1841,31 @@ numericOnly
     : (PLUS | MINUS) float      #withSignFloat
     | float                     #noSignFloat
     | int                       #withSignInt
+    ;
+
+/**
+ * Function Argument Definition
+ */
+argumentDefinitionList
+    : argumentDefinition (COMMA argumentDefinition)*
+    ;
+
+argumentDefinition
+    : argumentClass typeFunctionIdentifier? functionType
+    | typeFunctionIdentifier argumentClass? functionType
+    | functionType
+    ;
+
+argumentClass
+    : IN_P OUT_P?
+    | OUT_P
+    | INOUT
+    | VARIADIC
+    ;
+
+functionType
+    : type
+    | SETOF? typeFunctionIdentifier (DOT columnLabelIdentifier)* PERCENT TYPE_P
     ;
 
 /**
