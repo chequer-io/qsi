@@ -266,7 +266,7 @@ createStatement:
  * CREATE ACCESS METHOD
  */
 createAccessMethod
-    : CREATE ACCESS METHOD columnIdentifier TYPE_P (INDEX | TABLE) HANDLER qualifiedIdentifier
+    : ACCESS METHOD columnIdentifier TYPE_P (INDEX | TABLE) HANDLER qualifiedIdentifier
     ;
 
 /**
@@ -275,7 +275,7 @@ createAccessMethod
  * See: https://www.postgresql.org/docs/14/sql-createaggregate.html
  */
 createAggregate
-    : CREATE (OR REPLACE)? AGGREGATE functionName createAggregateArgumentOption
+    : (OR REPLACE)? AGGREGATE functionName createAggregateArgumentOption
     ;
 
 createAggregateArgumentOption
@@ -304,7 +304,7 @@ aggregateArgumentsOldSyntax
  * See: https://www.postgresql.org/docs/14/sql-createcast.html
  */
 createCast
-    : CREATE CAST OPEN_PAREN type AS type CLOSE_PAREN createCastOption castContext?
+    : CAST OPEN_PAREN type AS type CLOSE_PAREN createCastOption castContext?
     ;
 
 createCastOption
@@ -323,7 +323,7 @@ castContext
  * See: https://www.postgresql.org/docs/14/sql-createcollation.html
  */
 createCollation
-    : CREATE COLLATION (IF_P NOT EXISTS)? qualifiedIdentifier OPEN_PAREN definitionList CLOSE_PAREN
+    : COLLATION (IF_P NOT EXISTS)? qualifiedIdentifier OPEN_PAREN definitionList CLOSE_PAREN
     ;
 
 /**
@@ -332,7 +332,7 @@ createCollation
  * See: https://www.postgresql.org/docs/14/sql-createconversion.html
  */
 createConversion
-    : CREATE DEFAULT? CONVERSION_P qualifiedIdentifier FOR string TO string FROM qualifiedIdentifier
+    : DEFAULT? CONVERSION_P qualifiedIdentifier FOR string TO string FROM qualifiedIdentifier
     ;
 
 createDatabase
