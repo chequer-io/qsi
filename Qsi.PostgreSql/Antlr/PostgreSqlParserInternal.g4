@@ -335,8 +335,28 @@ createConversion
     : DEFAULT? CONVERSION_P qualifiedIdentifier FOR string TO string FROM qualifiedIdentifier
     ;
 
+/**
+ * CREATE DATABASE
+ *
+ * See: https://www.postgresql.org/docs/14/sql-createdatabase.html
+ */
 createDatabase
-    :;
+    : DATABASE columnIdentifier WITH? createDatabaseItem*
+    ;
+
+createDatabaseItem
+    : createDatabaseItemName EQUAL? (int | booleanOrString | DEFAULT)
+    ;
+
+createDatabaseItemName
+    : identifier
+    | CONNECTION LIMIT
+    | ENCODING
+    | LOCATION
+    | OWNER
+    | TABLESPACE
+    | TEMPLATE
+    ;
 
 createDomain
     :;
@@ -1583,6 +1603,14 @@ windowName
     : columnIdentifier
     ;
 
+noReservedKeywords
+    : identifier
+    | nonReservedKeyword
+    | columnKeyword
+    | typeFunctionKeyword
+    ;
+
+
 /**
  * Indirection
  * 
@@ -1824,6 +1852,25 @@ stringBody
     | UnicodeEscapeStringConstant
     | BeginDollarStringConstant DollarText* EndDollarStringConstant
     | EscapeStringConstant
+    ;
+
+/**
+ * Boolean or string
+ * In PostgreSQL, you can represent boolean value without TRUE and FALSE.
+ * e.g. ON, OFF, YES, 0 and so on.
+ * 
+ * FMI, see: https://www.postgresql.org/docs/14/datatype-boolean.html
+ */
+booleanOrString
+    : TRUE_P
+    | FALSE_P
+    | ON
+    | noReservedWordOrString
+    ;
+
+noReservedWordOrString
+    : noReservedKeywords
+    | string
     ;
 
 //----------------- TEMPORARY NODES ------------------------------------------------------------------------------------
