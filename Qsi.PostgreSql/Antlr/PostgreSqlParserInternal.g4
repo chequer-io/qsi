@@ -279,8 +279,8 @@ createAggregate
     ;
 
 createAggregateArgumentOption
-    : OPEN_PAREN aggregateArgumentDefinitions CLOSE_PAREN OPEN_PAREN definitionList CLOSE_PAREN
-    | OPEN_PAREN aggregateArgumentListOldSyntax CLOSE_PAREN
+    : '(' aggregateArgumentDefinitions ')' '(' definitionList ')'
+    | '(' aggregateArgumentListOldSyntax ')'
     ;
 
 aggregateArgumentDefinitions
@@ -304,7 +304,7 @@ aggregateArgumentsOldSyntax
  * See: https://www.postgresql.org/docs/14/sql-createcast.html
  */
 createCast
-    : CAST OPEN_PAREN type AS type CLOSE_PAREN createCastOption castContext?
+    : CAST '(' type AS type ')' createCastOption castContext?
     ;
 
 createCastOption
@@ -323,7 +323,7 @@ castContext
  * See: https://www.postgresql.org/docs/14/sql-createcollation.html
  */
 createCollation
-    : COLLATION (IF_P NOT EXISTS)? qualifiedIdentifier OPEN_PAREN definitionList CLOSE_PAREN
+    : COLLATION (IF_P NOT EXISTS)? qualifiedIdentifier '(' definitionList ')'
     ;
 
 /**
@@ -428,7 +428,7 @@ createGroup
  */
 createIndex
     : UNIQUE? INDEX CONCURRENTLY? (IF_P NOT EXISTS)? columnIdentifier
-        ON tableName (USING columnIdentifier)? OPEN_PAREN indexList CLOSE_PAREN
+        ON tableName (USING columnIdentifier)? '(' indexList ')'
         includeClause?
         withStorageParamClause?
         tableSpaceClause?
@@ -744,7 +744,7 @@ queryExpressionNoWith
 
 // Expression with parantheses.
 queryExpressionParens
-    : OPEN_PAREN (queryExpressionParens | queryExpression) CLOSE_PAREN
+    : '(' (queryExpressionParens | queryExpression) ')'
     ;
 
 // Simpler query expression.
@@ -775,7 +775,7 @@ valueList
     ;
 
 valueItem
-    : OPEN_PAREN valueColumnList CLOSE_PAREN
+    : '(' valueColumnList ')'
     ;
 
 valueColumnList
@@ -812,7 +812,7 @@ insertStatement
     ;
 
 insertStatementNoWith
-    : INSERT INTO tableName aliasClause? (OPEN_PAREN columnList CLOSE_PAREN)?
+    : INSERT INTO tableName aliasClause? ('(' columnList ')')?
         overridingOption?
         (DEFAULT VALUES | queryPrimary)
         onConflictClause?
@@ -828,7 +828,7 @@ onConflictClause
     ;
     
 conflictTarget
-    : OPEN_PAREN conflictTargetItemList CLOSE_PAREN whereClause?
+    : '(' conflictTargetItemList ')' whereClause?
     | ON CONSTRAINT columnIdentifier
     ;
     
@@ -837,7 +837,7 @@ conflictTargetItemList
     ;
 
 conflictTargetItem
-    : (columnIdentifier | OPEN_PAREN expression CLOSE_PAREN) collateClause? opClass?
+    : (columnIdentifier | '(' expression ')') collateClause? opClass?
     ;
 
 opClass
@@ -872,8 +872,8 @@ updateSetList
 
 updateSet
     : columnIdentifier EQUAL (expression | DEFAULT)                                                       #columnUpdateSet
-    | OPEN_PAREN columnList CLOSE_PAREN EQUAL ROW? OPEN_PAREN updateSetExpressionList CLOSE_PAREN   #columnListUpdateSet
-    | OPEN_PAREN columnList CLOSE_PAREN EQUAL OPEN_PAREN queryPrimary CLOSE_PAREN                   #subqueryUpdateSet
+    | '(' columnList ')' EQUAL ROW? '(' updateSetExpressionList ')'   #columnListUpdateSet
+    | '(' columnList ')' EQUAL '(' queryPrimary ')'                   #subqueryUpdateSet
     ;
     
 updateSetExpressionList
@@ -919,7 +919,7 @@ aliasClause
     ;
     
 aliasClauseBody
-    : columnIdentifier (OPEN_PAREN columnList CLOSE_PAREN)?
+    : columnIdentifier ('(' columnList ')')?
     ;
 
 /**
@@ -933,7 +933,7 @@ collateClause
  * DefinitionlistClause
  */
 definitionListClause
-    : WITH OPEN_PAREN definitionList CLOSE_PAREN
+    : WITH '(' definitionList ')'
     ;
 
 /**
@@ -981,13 +981,13 @@ tableFromItem
 // Function item.
 functionFromItem
     : windowlessFunctionExpression (WITH ORDINALITY)? aliasClause?                               # functionFromItemDefault
-    | functionExpression AS aliasName OPEN_PAREN columnDefinitionList CLOSE_PAREN      # functionFromItemWithAs
+    | functionExpression AS aliasName '(' columnDefinitionList ')'      # functionFromItemWithAs
     | rowsFromFunctionPrimary (WITH ORDINALITY)? aliasClause?                       # functionFromItemWithRows
     ;
 
 // Function item that has a ROWS FROM block.
 rowsFromFunctionPrimary
-    : ROWS FROM OPEN_PAREN functionExpression CLOSE_PAREN;
+    : ROWS FROM '(' functionExpression ')';
 
 // Subquery item.
 subqueryFromItem
@@ -995,7 +995,7 @@ subqueryFromItem
 
 // Join item.
 joinClause
-    : join (ON expression | USING OPEN_PAREN columnIdentifier (COMMA columnIdentifier)* CLOSE_PAREN)? aliasClause?
+    : join (ON expression | USING '(' columnIdentifier (COMMA columnIdentifier)* ')')? aliasClause?
     ;
 
 // Join
@@ -1026,7 +1026,7 @@ havingClause
  * INCLUDE
  */
 includeClause
-    : INCLUDE OPEN_PAREN indexList CLOSE_PAREN
+    : INCLUDE '(' indexList ')'
     ;
 
 /**
@@ -1093,7 +1093,7 @@ returningItemList
  * TABLESAMPLE
  */
 tableSampleClause
-    : TABLESAMPLE functionName OPEN_PAREN expressionList CLOSE_PAREN (REPEATABLE OPEN_PAREN seed CLOSE_PAREN)?
+    : TABLESAMPLE functionName '(' expressionList ')' (REPEATABLE '(' seed ')')?
     ;
 
 seed
@@ -1148,12 +1148,12 @@ windowDefinition
     : columnIdentifier AS windowSpecification;
 
 windowSpecification
-    : OPEN_PAREN 
+    : '(' 
     windowName?
     (PARTITION BY expressionList)?
     orderByClause? 
     frameClause?
-    CLOSE_PAREN;
+    ')';
 
 frameClause
     : (RANGE | ROWS | GROUPS) (
@@ -1183,7 +1183,7 @@ frameExclusion
  * TODO: Difference between DefinitionlistClause?
  */ 
 withStorageParamClause
-    : WITH OPEN_PAREN /*relOptionList*/ CLOSE_PAREN // TODO: Find out what is relOptionList and implement it.
+    : WITH '(' /*relOptionList*/ ')' // TODO: Find out what is relOptionList and implement it.
     ;
 
 /**
@@ -1194,9 +1194,9 @@ withClause
 
 // CTE(Common Table Expression).
 commonTableExpression
-    : subqueryName (OPEN_PAREN columnIdentifierList CLOSE_PAREN)? 
+    : subqueryName ('(' columnIdentifierList ')')? 
     AS commonTableExpressionOption? 
-    OPEN_PAREN commonTableExpressionStatements CLOSE_PAREN;
+    '(' commonTableExpressionStatements ')';
 
 commonTableExpressionOption
     : MATERIALIZED
@@ -1257,7 +1257,7 @@ booleanExpression
 comparisonExpression
     : qualifiedOperatorExpression (likeExpressionOptions qualifiedOperatorExpression (ESCAPE expression)?)?
     | comparisonExpression comparisonOperator comparisonExpression
-    | comparisonExpression subqueryOperator subqueryType (queryExpressionParens | OPEN_PAREN expression CLOSE_PAREN)
+    | comparisonExpression subqueryOperator subqueryType (queryExpressionParens | '(' expression ')')
     ;
 
 likeExpressionOptions
@@ -1268,7 +1268,7 @@ likeExpressionOptions
 
 subqueryOperator
     : operator
-    | OPERATOR OPEN_PAREN simpleOperator CLOSE_PAREN
+    | OPERATOR '(' simpleOperator ')'
     | NOT? (LIKE | ILIKE)
     ;
 
@@ -1330,8 +1330,8 @@ indirectionExpression
 valueExpression
     : (EXISTS | UNIQUE | ARRAY)? queryExpressionParens                              // Subquery
     | ARRAY OPEN_BRACKET expressionList CLOSE_BRACKET                               // ARRAY Constructor
-    | GROUPING OPEN_PAREN expressionList CLOSE_PAREN                  // GROUPING
-    | OPEN_PAREN expression CLOSE_PAREN
+    | GROUPING '(' expressionList ')'                  // GROUPING
+    | '(' expression ')'
     | columnIdentifier                                                              // identifier TODO: reduce max k
     | constant
     | caseExpression                                                                // CASE ~ END
@@ -1369,7 +1369,7 @@ row
     ;
 
 explicitRow
-    : ROW OPEN_PAREN expressionList? CLOSE_PAREN
+    : ROW '(' expressionList? ')'
     ;
 
 /*
@@ -1388,7 +1388,7 @@ while v1 allows single item in list
 //       because the parser must check whether there is a comma or not.
 //       Would there be a better solution?
 implicitRow
-    : OPEN_PAREN expression COMMA expressionList CLOSE_PAREN
+    : '(' expression COMMA expressionList ')'
     ;
 
 /**
@@ -1409,7 +1409,7 @@ windowlessFunctionExpression
     ;
 
 functionCall
-    : functionName OPEN_PAREN functionCallArgument? CLOSE_PAREN
+    : functionName '(' functionCallArgument? ')'
     ;
 
 // TODO: Resolve ambiguity
@@ -1427,38 +1427,38 @@ functionCallArgument
     ;
 
 commonFunctionExpression
-    : COLLATION FOR OPEN_PAREN expression CLOSE_PAREN
+    : COLLATION FOR '(' expression ')'
     | CURRENT_DATE
-    | CURRENT_TIME (OPEN_PAREN int CLOSE_PAREN)?
-    | CURRENT_TIMESTAMP (OPEN_PAREN int CLOSE_PAREN)?
-    | LOCALTIME (OPEN_PAREN int CLOSE_PAREN)?
-    | LOCALTIMESTAMP (OPEN_PAREN int CLOSE_PAREN)?
+    | CURRENT_TIME ('(' int ')')?
+    | CURRENT_TIMESTAMP ('(' int ')')?
+    | LOCALTIME ('(' int ')')?
+    | LOCALTIMESTAMP ('(' int ')')?
     | CURRENT_ROLE
     | CURRENT_USER
     | SESSION_USER
     | USER
     | CURRENT_CATALOG
     | CURRENT_SCHEMA
-    | CAST OPEN_PAREN expression AS type CLOSE_PAREN
-    | EXTRACT OPEN_PAREN extractList? CLOSE_PAREN
-    | NORMALIZE OPEN_PAREN expression (COMMA unicodeNormalForm)? CLOSE_PAREN
-    | OVERLAY OPEN_PAREN overlayList CLOSE_PAREN
-    | POSITION OPEN_PAREN positionList CLOSE_PAREN
-    | SUBSTRING OPEN_PAREN substringList CLOSE_PAREN
-    | TREAT OPEN_PAREN expression AS type CLOSE_PAREN
-    | TRIM OPEN_PAREN (BOTH | LEADING | TRAILING)? trimList CLOSE_PAREN
-    | NULLIF OPEN_PAREN expression COMMA expression CLOSE_PAREN
-    | COALESCE OPEN_PAREN expressionList CLOSE_PAREN
-    | GREATEST OPEN_PAREN expressionList CLOSE_PAREN
-    | LEAST OPEN_PAREN expressionList CLOSE_PAREN
-    | XMLCONCAT OPEN_PAREN expressionList CLOSE_PAREN
-    | XMLELEMENT OPEN_PAREN NAME_P columnLabelIdentifier (COMMA (xmlAttributes | expressionList))? CLOSE_PAREN
-    | XMLEXISTS OPEN_PAREN expression xmlExistsArgument CLOSE_PAREN
-    | XMLFOREST OPEN_PAREN xmlAttributeList CLOSE_PAREN
-    | XMLPARSE OPEN_PAREN documentOrContent expression xmlWhitespaceOption CLOSE_PAREN
-    | XMLPI OPEN_PAREN NAME_P columnLabelIdentifier (COMMA expression)? CLOSE_PAREN
-    | XMLROOT OPEN_PAREN XML_P expression COMMA xmlRootVersion xmlRootStandalone? CLOSE_PAREN
-    | XMLSERIALIZE OPEN_PAREN documentOrContent expression AS simpleType CLOSE_PAREN
+    | CAST '(' expression AS type ')'
+    | EXTRACT '(' extractList? ')'
+    | NORMALIZE '(' expression (COMMA unicodeNormalForm)? ')'
+    | OVERLAY '(' overlayList ')'
+    | POSITION '(' positionList ')'
+    | SUBSTRING '(' substringList ')'
+    | TREAT '(' expression AS type ')'
+    | TRIM '(' (BOTH | LEADING | TRAILING)? trimList ')'
+    | NULLIF '(' expression COMMA expression ')'
+    | COALESCE '(' expressionList ')'
+    | GREATEST '(' expressionList ')'
+    | LEAST '(' expressionList ')'
+    | XMLCONCAT '(' expressionList ')'
+    | XMLELEMENT '(' NAME_P columnLabelIdentifier (COMMA (xmlAttributes | expressionList))? ')'
+    | XMLEXISTS '(' expression xmlExistsArgument ')'
+    | XMLFOREST '(' xmlAttributeList ')'
+    | XMLPARSE '(' documentOrContent expression xmlWhitespaceOption ')'
+    | XMLPI '(' NAME_P columnLabelIdentifier (COMMA expression)? ')'
+    | XMLROOT '(' XML_P expression COMMA xmlRootVersion xmlRootStandalone? ')'
+    | XMLSERIALIZE '(' documentOrContent expression AS simpleType ')'
     ;
 
 // EXTRACT
@@ -1514,7 +1514,7 @@ trimList
 
 // XML Functions
 xmlAttributes
-    : XMLATTRIBUTES OPEN_PAREN xmlAttributeList CLOSE_PAREN
+    : XMLATTRIBUTES '(' xmlAttributeList ')'
     ;
 
 xmlAttributeList
@@ -1554,14 +1554,14 @@ documentOrContent
  * WITHIN GROUP Clause
  */
 withinGroupClause
-    : WITHIN GROUP_P OPEN_PAREN orderByClause CLOSE_PAREN
+    : WITHIN GROUP_P '(' orderByClause ')'
     ;
 
 /**
  * FILTER clause
  */
 filterClause
-    : FILTER OPEN_PAREN WHERE expression CLOSE_PAREN
+    : FILTER '(' WHERE expression ')'
     ;
 
 /**
@@ -1603,12 +1603,12 @@ setOperatorOption
 
 qualifiedWithoutMathOperator
     : Operator
-    | OPERATOR OPEN_PAREN simpleOperator CLOSE_PAREN
+    | OPERATOR '(' simpleOperator ')'
     ;
 
 qualifiedOperator
     : operator
-    | OPERATOR OPEN_PAREN simpleOperator CLOSE_PAREN
+    | OPERATOR '(' simpleOperator ')'
     ;
 
 simpleOperator
@@ -1670,7 +1670,7 @@ qualifiedIdentifier
 
 tableName
     : qualifiedIdentifier STAR?
-    | ONLY (qualifiedIdentifier | OPEN_PAREN qualifiedIdentifier CLOSE_PAREN)
+    | ONLY (qualifiedIdentifier | '(' qualifiedIdentifier ')')
     ;
 
 windowName
@@ -1732,9 +1732,9 @@ groupByItemList
 
 groupByItem
     : expression
-    | (CUBE | ROLLUP) OPEN_PAREN expressionList CLOSE_PAREN
-    | GROUPING SETS OPEN_PAREN groupByItemList CLOSE_PAREN
-    | OPEN_PAREN CLOSE_PAREN
+    | (CUBE | ROLLUP) '(' expressionList ')'
+    | GROUPING SETS '(' groupByItemList ')'
+    | '(' ')'
     ;
 
 tableList
@@ -1775,7 +1775,7 @@ simpleType
  * For more info about built-in types, see: https://www.postgresql.org/docs/14/datatype.html
  */
 genericType
-    : typeFunctionIdentifier (OPEN_PAREN expressionList CLOSE_PAREN)?
+    : typeFunctionIdentifier ('(' expressionList ')')?
     ;
 
 /**
@@ -1785,7 +1785,7 @@ genericType
  * https://www.postgresql.org/docs/14/datatype-binary.html
  */
 bitType
-    : BIT VARYING? (OPEN_PAREN unsignedInt CLOSE_PAREN)?
+    : BIT VARYING? ('(' unsignedInt ')')?
     ;
 
 /**
@@ -1794,7 +1794,7 @@ bitType
  * See: https://www.postgresql.org/docs/14/datatype-character.html
  */
 characterType
-    : characterPrefix (OPEN_PAREN unsignedInt CLOSE_PAREN)?
+    : characterPrefix ('(' unsignedInt ')')?
     ;
 
 characterPrefix
@@ -1819,12 +1819,12 @@ numericType
     | NUMERIC typeModifier?
     | REAL
     | DOUBLE_P PRECISION
-    | FLOAT_P (OPEN_PAREN unsignedInt CLOSE_PAREN)?
+    | FLOAT_P ('(' unsignedInt ')')?
     | BOOLEAN_P
     ;
 
 typeModifier
-    : OPEN_PAREN expressionList CLOSE_PAREN
+    : '(' expressionList ')'
     ;
 
 /**
@@ -1833,7 +1833,7 @@ typeModifier
  * See: https://www.postgresql.org/docs/14/datatype-datetime.html
  */
 dateTimeType
-    : (TIMESTAMP | TIME) (OPEN_PAREN int CLOSE_PAREN)? timezoneOption
+    : (TIMESTAMP | TIME) ('(' int ')')? timezoneOption
     ;
 
 /**
@@ -1845,7 +1845,7 @@ dateTimeType
  * TODO with_la was used
  */ 
 intervalType
-    : INTERVAL (intervalOption | OPEN_PAREN int CLOSE_PAREN)
+    : INTERVAL (intervalOption | '(' int ')')
     ;
 
 timezoneOption
@@ -2106,7 +2106,7 @@ numericOnly
  * Function Definition
  */
 functionDefinition
-    : functionName OPEN_PAREN argumentDefinitionList? CLOSE_PAREN
+    : functionName '(' argumentDefinitionList? ')'
     | typeFunctionKeyword
     | columnIdentifier indirection*
     ;
@@ -2143,7 +2143,7 @@ indexList
 index
     : columnIdentifier indexOptions
     | windowlessFunctionExpression indexOptions
-    | OPEN_PAREN expression CLOSE_PAREN indexOptions
+    | '(' expression ')' indexOptions
     ;
 
 indexOptions
@@ -2155,7 +2155,7 @@ indexOptions
 // * Relation Options
 // */
 //relationOptionClause
-//    : WITH OPEN_PAREN relationOptionList CLOSE_PAREN
+//    : WITH '(' relationOptionList ')'
 //    ;
 //
 //relationOptionList
