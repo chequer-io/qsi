@@ -367,8 +367,23 @@ createDomain
     : DOMAIN_P qualifiedIdentifier AS? type columnConstraint*
     ;
 
+/**
+ * CREATE EVENT TRIGGER
+ *
+ * See: https://www.postgresql.org/docs/14/sql-createeventtrigger.html
+ */
 createEventTrigger
-    :;
+    : EVENT TRIGGER columnIdentifier ON columnLabelIdentifier (WHEN eventTriggerWhenList)?
+        EXECUTE (FUNCTION | PROCEDURE) functionName '(' ')'
+    ;
+
+eventTriggerWhenList
+    : eventTriggerItem (COMMA eventTriggerItem)*
+    ;
+
+eventTriggerItem
+    : columnIdentifier IN_P '(' string (COMMA string)* ')'
+    ;
 
 createExtension
     :;
