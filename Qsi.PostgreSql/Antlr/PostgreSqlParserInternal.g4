@@ -759,11 +759,7 @@ conflictTargetItemList
     ;
 
 conflictTargetItem
-    : (columnIdentifier | OPEN_PAREN expression CLOSE_PAREN) collate? opClass?
-    ;
-
-collate
-    : COLLATE expression
+    : (columnIdentifier | OPEN_PAREN expression CLOSE_PAREN) collateClause? opClass?
     ;
 
 opClass
@@ -846,6 +842,13 @@ aliasClause
     
 aliasClauseBody
     : columnIdentifier (OPEN_PAREN columnList CLOSE_PAREN)?
+    ;
+
+/**
+ * COLLATE
+ */
+collateClause
+    : COLLATE expression
     ;
 
 /**
@@ -1806,7 +1809,7 @@ columnDefinitionList
     ;
     
 columnDefinition
-    : columnIdentifier dataType
+    : columnIdentifier type collateClause?
     ;
 
 /**
