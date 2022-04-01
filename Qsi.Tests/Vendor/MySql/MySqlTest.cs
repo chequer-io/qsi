@@ -66,14 +66,12 @@ public partial class MySqlTest : VendorTestBase
 
         QsiTableStructureView[] views = QsiTableStructureView.From(((QsiTableResult)result[0]).Table);
 
-        await Verifier
-            .Verify(views)
-            .UseDirectory("verified");
+        await Verifier.Verify(views).UseDirectory("verified");
     }
 
-    [TestCase("TABLE actor", ExpectedResult = "qsi_unit_tests.actor")]
-    [TestCase("TABLE city", ExpectedResult = "qsi_unit_tests.city")]
-    public async Task<string> Test_TABLE(string sql)
+    [TestCase("TABLE actor")]
+    [TestCase("TABLE city")]
+    public async Task Test_TABLE(string sql)
     {
         if (Connection.ServerVersion![0] == '5')
             Assert.Pass();
@@ -81,7 +79,10 @@ public partial class MySqlTest : VendorTestBase
         IQsiAnalysisResult[] result = await Engine.Execute(new QsiScript(sql, QsiScriptType.Select), null);
         CollectionAssert.IsNotEmpty(result);
         Assert.AreEqual(1, result.Length);
-        return QsiTableStructureHelper.GetPseudoName(((QsiTableResult)result[0]).Table);
+
+        QsiTableStructureView[] views = QsiTableStructureView.From(((QsiTableResult)result[0]).Table);
+
+        await Verifier.Verify(views).UseDirectory("verified");
     }
 
     [TestCase("SELECT 1, .2, 0.3, 0.4E+5", ExpectedResult = new[] { "1", ".2", "0.3", "0.4E+5" })]
