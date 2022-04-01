@@ -1,0 +1,54 @@
+﻿
++-------------------------------------------------+
+|          qsi_unit_tests.actor - DELETE          |
++----------+------------+-----------+-------------+
+| actor_id | first_name | last_name | last_update |
++----------+------------+-----------+-------------+
+| unset    | PENELOPE   | unset     | unset       |
+| unset    | NICK       | unset     | unset       |
+| unset    | ED         | unset     | unset       |
+| unset    | JENNIFER   | unset     | unset       |
+| unset    | JOHNNY     | unset     | unset       |
+| unset    | BETTE      | unset     | unset       |
+| unset    | GRACE      | unset     | unset       |
+| unset    | MATTHEW    | unset     | unset       |
+| unset    | JOE        | unset     | unset       |
+| unset    | CHRISTIAN  | unset     | unset       |
+| unset    | ZERO       | unset     | unset       |
+| unset    | KARL       | unset     | unset       |
+| unset    | UMA        | unset     | unset       |
+| unset    | VIVIEN     | unset     | unset       |
+| unset    | CUBA       | unset     | unset       |
+| unset    | FRED       | unset     | unset       |
+| unset    | HELEN      | unset     | unset       |
+| unset    | DAN        | unset     | unset       |
+| unset    | BOB        | unset     | unset       |
+| unset    | LUCILLE    | unset     | unset       |
++-------------------------------------------------+
+
++--------------------------------------------------------------------+
+|                    qsi_unit_tests.city - DELETE                    |
++---------+-----------------------+------------+---------------------+
+| city_id |         city          | country_id |     last_update     |
++---------+-----------------------+------------+---------------------+
+| 1       | A Corua (La Corua)    | 87         | 02/15/2006 04:45:25 |
+| 2       | Abha                  | 82         | 02/15/2006 04:45:25 |
+| 3       | Abu Dhabi             | 101        | 02/15/2006 04:45:25 |
+| 4       | Acua                  | 60         | 02/15/2006 04:45:25 |
+| 5       | Adana                 | 97         | 02/15/2006 04:45:25 |
+| 6       | Addis Abeba           | 31         | 02/15/2006 04:45:25 |
+| 7       | Aden                  | 107        | 02/15/2006 04:45:25 |
+| 8       | Adoni                 | 44         | 02/15/2006 04:45:25 |
+| 9       | Ahmadnagar            | 44         | 02/15/2006 04:45:25 |
+| 10      | Akishima              | 50         | 02/15/2006 04:45:25 |
+| 11      | Akron                 | 103        | 02/15/2006 04:45:25 |
+| 12      | al-Ayn                | 101        | 02/15/2006 04:45:25 |
+| 13      | al-Hawiya             | 82         | 02/15/2006 04:45:25 |
+| 14      | al-Manama             | 11         | 02/15/2006 04:45:25 |
+| 15      | al-Qadarif            | 89         | 02/15/2006 04:45:25 |
+| 16      | al-Qatif              | 82         | 02/15/2006 04:45:25 |
+| 17      | Alessandria           | 49         | 02/15/2006 04:45:25 |
+| 18      | Allappuzha (Alleppey) | 44         | 02/15/2006 04:45:25 |
+| 19      | Allende               | 60         | 02/15/2006 04:45:25 |
+| 20      | Almirante Brown       | 6          | 02/15/2006 04:45:25 |
++--------------------------------------------------------------------+

@@ -185,7 +185,7 @@ public partial class MySqlTest : VendorTestBase
     }
 
     [TestCaseSource(nameof(Print_TestDatas))]
-    public async Task<string> Test_Print(string sql)
+    public async Task Test_Print(string sql)
     {
         IQsiAnalysisResult[] result = await Engine.Execute(new QsiScript(sql, QsiScriptType.Select), null);
 
@@ -195,11 +195,11 @@ public partial class MySqlTest : VendorTestBase
         var print = DebugUtility.Print(result.OfType<QsiDataManipulationResult>());
         Console.WriteLine(print);
 
-        return print;
+        await Verifier.Verify(print).UseDirectory("verified");
     }
 
     [TestCaseSource(nameof(Print_BindParam_TestDatas))]
-    public async Task<string> Test_Print_BindParam(string sql, object[] parameters)
+    public async Task Test_Print_BindParam(string sql, object[] parameters)
     {
         QsiParameter[] qsiParameters = parameters
             .Select(x => new QsiParameter(QsiParameterType.Index, null, x))
@@ -213,6 +213,6 @@ public partial class MySqlTest : VendorTestBase
         var print = DebugUtility.Print(result.OfType<QsiDataManipulationResult>());
         Console.WriteLine(print);
 
-        return print;
+        await Verifier.Verify(print).UseDirectory("verified");
     }
 }
