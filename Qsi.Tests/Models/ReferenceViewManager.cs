@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -10,7 +9,7 @@ public sealed class ReferenceViewManager<TView> where TView : ReferenceView
 {
     public IEnumerable<TView> Views => _table.Values.Select(x => x.Value).OrderBy(x => x.RefId);
 
-    private readonly ConcurrentDictionary<object, DeferredReferenceView<TView>> _table = new();
+    private readonly Dictionary<object, DeferredReferenceView<TView>> _table = new();
 
     private int _id;
     private readonly string _prefix;
@@ -36,18 +35,22 @@ public sealed class ReferenceViewManager<TView> where TView : ReferenceView
 
     public void Freeze()
     {
-        int version;
-        
-
-        do
+        while (_id > 0)
         {
-            version = _id;
+            var version = _id;
+            using var valueEnumerator = _table.Values.GetEnumerator();
 
-            foreach (DeferredReferenceView<TView> deferredReferenceView in _table.Values)
+            while (version == _id && valueEnumerator.MoveNext())
             {
-                var _ = deferredReferenceView.LazyValue.Value;
+                if (!valueEnumerator.Current!.LazyValue.IsValueCreated)
+                {
+                    var _ = valueEnumerator.Current.LazyValue.Value;
+                }
             }
-        } while (_id != version);
+
+            if (version == _id)
+                break;
+        }
     }
 }
 

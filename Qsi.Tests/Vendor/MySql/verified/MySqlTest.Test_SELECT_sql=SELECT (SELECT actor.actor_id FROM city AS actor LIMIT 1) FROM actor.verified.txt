@@ -52,17 +52,17 @@
   {
     Type: Derived,
     References: [
-      tbl_5
+      tbl_4
     ],
     Columns: [
       {
         Parent: tbl_3,
         Name: actor_id,
         References: [
-          col_4
+          col_3
         ],
         IsVisible: true,
-        RefId: col_3
+        RefId: col_2
       }
     ],
     RefId: tbl_3
@@ -70,17 +70,17 @@
   {
     Type: Derived,
     References: [
-      tbl_3
+      tbl_5
     ],
     Columns: [
       {
         Parent: tbl_4,
         Name: actor_id,
         References: [
-          col_3
+          col_4
         ],
         IsVisible: true,
-        RefId: col_2
+        RefId: col_3
       }
     ],
     RefId: tbl_4
