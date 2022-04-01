@@ -1,0 +1,165 @@
+﻿[
+  {
+    Type: Derived,
+    References: [
+      tbl_2
+    ],
+    Columns: [
+      {
+        Parent: tbl_1,
+        Name: (SELECT a.actor_id FROM actor LIMIT 1),
+        References: [
+          col_2
+        ],
+        IsVisible: true,
+        IsExpression: true,
+        RefId: col_1
+      }
+    ],
+    RefId: tbl_1
+  },
+  {
+    Type: Derived,
+    Identifier: a,
+    References: [
+      tbl_3
+    ],
+    Columns: [
+      {
+        Parent: tbl_2,
+        Name: actor_id,
+        References: [
+          col_5
+        ],
+        IsVisible: true,
+        RefId: col_4
+      },
+      {
+        Parent: tbl_2,
+        Name: first_name,
+        References: [
+          col_6
+        ],
+        IsVisible: true,
+        RefId: col_9
+      },
+      {
+        Parent: tbl_2,
+        Name: last_name,
+        References: [
+          col_7
+        ],
+        IsVisible: true,
+        RefId: col_10
+      },
+      {
+        Parent: tbl_2,
+        Name: last_update,
+        References: [
+          col_8
+        ],
+        IsVisible: true,
+        RefId: col_11
+      }
+    ],
+    RefId: tbl_2
+  },
+  {
+    Type: Table,
+    Identifier: qsi_unit_tests.actor,
+    Columns: [
+      {
+        Parent: tbl_3,
+        Name: actor_id,
+        IsVisible: true,
+        RefId: col_5
+      },
+      {
+        Parent: tbl_3,
+        Name: first_name,
+        IsVisible: true,
+        RefId: col_6
+      },
+      {
+        Parent: tbl_3,
+        Name: last_name,
+        IsVisible: true,
+        RefId: col_7
+      },
+      {
+        Parent: tbl_3,
+        Name: last_update,
+        IsVisible: true,
+        RefId: col_8
+      }
+    ],
+    RefId: tbl_3
+  },
+  {
+    Type: Derived,
+    References: [
+      tbl_6
+    ],
+    Columns: [
+      {
+        Parent: tbl_4,
+        Name: actor_id,
+        References: [
+          col_4
+        ],
+        IsVisible: true,
+        RefId: col_3
+      }
+    ],
+    RefId: tbl_4
+  },
+  {
+    Type: Derived,
+    References: [
+      tbl_4
+    ],
+    Columns: [
+      {
+        Parent: tbl_5,
+        Name: actor_id,
+        References: [
+          col_3
+        ],
+        IsVisible: true,
+        RefId: col_2
+      }
+    ],
+    RefId: tbl_5
+  },
+  {
+    Type: Table,
+    Identifier: qsi_unit_tests.actor,
+    Columns: [
+      {
+        Parent: tbl_6,
+        Name: actor_id,
+        IsVisible: true,
+        RefId: col_12
+      },
+      {
+        Parent: tbl_6,
+        Name: first_name,
+        IsVisible: true,
+        RefId: col_13
+      },
+      {
+        Parent: tbl_6,
+        Name: last_name,
+        IsVisible: true,
+        RefId: col_14
+      },
+      {
+        Parent: tbl_6,
+        Name: last_update,
+        IsVisible: true,
+        RefId: col_15
+      }
+    ],
+    RefId: tbl_6
+  }
+]

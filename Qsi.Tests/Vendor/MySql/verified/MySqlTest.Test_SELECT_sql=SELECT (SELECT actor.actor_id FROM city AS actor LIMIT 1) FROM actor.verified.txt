@@ -1,0 +1,165 @@
+﻿[
+  {
+    Type: Derived,
+    References: [
+      tbl_2
+    ],
+    Columns: [
+      {
+        Parent: tbl_1,
+        Name: (SELECT actor.actor_id FROM city AS actor LIMIT 1),
+        References: [
+          col_2
+        ],
+        IsVisible: true,
+        IsExpression: true,
+        RefId: col_1
+      }
+    ],
+    RefId: tbl_1
+  },
+  {
+    Type: Table,
+    Identifier: qsi_unit_tests.actor,
+    Columns: [
+      {
+        Parent: tbl_2,
+        Name: actor_id,
+        IsVisible: true,
+        RefId: col_4
+      },
+      {
+        Parent: tbl_2,
+        Name: first_name,
+        IsVisible: true,
+        RefId: col_5
+      },
+      {
+        Parent: tbl_2,
+        Name: last_name,
+        IsVisible: true,
+        RefId: col_6
+      },
+      {
+        Parent: tbl_2,
+        Name: last_update,
+        IsVisible: true,
+        RefId: col_7
+      }
+    ],
+    RefId: tbl_2
+  },
+  {
+    Type: Derived,
+    References: [
+      tbl_5
+    ],
+    Columns: [
+      {
+        Parent: tbl_3,
+        Name: actor_id,
+        References: [
+          col_4
+        ],
+        IsVisible: true,
+        RefId: col_3
+      }
+    ],
+    RefId: tbl_3
+  },
+  {
+    Type: Derived,
+    References: [
+      tbl_3
+    ],
+    Columns: [
+      {
+        Parent: tbl_4,
+        Name: actor_id,
+        References: [
+          col_3
+        ],
+        IsVisible: true,
+        RefId: col_2
+      }
+    ],
+    RefId: tbl_4
+  },
+  {
+    Type: Derived,
+    Identifier: actor,
+    References: [
+      tbl_6
+    ],
+    Columns: [
+      {
+        Parent: tbl_5,
+        Name: city_id,
+        References: [
+          col_9
+        ],
+        IsVisible: true,
+        RefId: col_8
+      },
+      {
+        Parent: tbl_5,
+        Name: city,
+        References: [
+          col_11
+        ],
+        IsVisible: true,
+        RefId: col_10
+      },
+      {
+        Parent: tbl_5,
+        Name: country_id,
+        References: [
+          col_13
+        ],
+        IsVisible: true,
+        RefId: col_12
+      },
+      {
+        Parent: tbl_5,
+        Name: last_update,
+        References: [
+          col_15
+        ],
+        IsVisible: true,
+        RefId: col_14
+      }
+    ],
+    RefId: tbl_5
+  },
+  {
+    Type: Table,
+    Identifier: qsi_unit_tests.city,
+    Columns: [
+      {
+        Parent: tbl_6,
+        Name: city_id,
+        IsVisible: true,
+        RefId: col_9
+      },
+      {
+        Parent: tbl_6,
+        Name: city,
+        IsVisible: true,
+        RefId: col_11
+      },
+      {
+        Parent: tbl_6,
+        Name: country_id,
+        IsVisible: true,
+        RefId: col_13
+      },
+      {
+        Parent: tbl_6,
+        Name: last_update,
+        IsVisible: true,
+        RefId: col_15
+      }
+    ],
+    RefId: tbl_6
+  }
+]

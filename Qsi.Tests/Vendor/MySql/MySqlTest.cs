@@ -8,7 +8,9 @@ using Qsi.Analyzers;
 using Qsi.Analyzers.Table;
 using Qsi.Data;
 using Qsi.Services;
+using Qsi.Tests.Models;
 using Qsi.Tests.Utilities;
+using VerifyNUnit;
 
 namespace Qsi.Tests.Vendor.MySql;
 
@@ -44,18 +46,29 @@ public partial class MySqlTest : VendorTestBase
         return new Driver.MySqlLanguageService(connection);
     }
 
-    [TestCase("SELECT * FROM actor", ExpectedResult = "qsi_unit_tests.actor")]
-    [TestCase("SELECT * FROM city", ExpectedResult = "qsi_unit_tests.city")]
-    [TestCase("SELECT * FROM actor a JOIN city c", ExpectedResult = "(a { qsi_unit_tests.actor }, c { qsi_unit_tests.city })")]
-    [TestCase("SELECT * FROM actor UNION SELECT * FROM city", ExpectedResult = "qsi_unit_tests.actor + qsi_unit_tests.city")]
-    [TestCase("SELECT * FROM (SELECT actor_id FROM actor) a", ExpectedResult = "a { qsi_unit_tests.actor }")]
-    [TestCase("SELECT * FROM (SELECT actor_id FROM actor, city) ac", ExpectedResult = "ac { (qsi_unit_tests.actor, qsi_unit_tests.city) }")]
-    public async Task<string> Test_SELECT(string sql)
+    [TestCase("SELECT * FROM actor")]
+    [TestCase("SELECT * FROM city")]
+    [TestCase("SELECT * FROM actor a JOIN city c")]
+    [TestCase("SELECT * FROM actor UNION SELECT * FROM city")]
+    [TestCase("SELECT * FROM (SELECT actor_id FROM actor) a")]
+    [TestCase("SELECT * FROM (SELECT actor_id FROM actor, city) ac")]
+    [TestCase("SELECT (SELECT actor_id) FROM actor")]
+    [TestCase("SELECT (SELECT actor_id FROM city LIMIT 1) FROM actor")]
+    [TestCase("SELECT (SELECT a.actor_id FROM actor LIMIT 1) from actor a")]
+    [TestCase("SELECT (SELECT actor.actor_id FROM city AS actor LIMIT 1) FROM actor")]
+    [TestCase("SELECT (SELECT actor_id, city_id) FROM actor, city")]
+    [TestCase("WITH RECURSIVE CTE AS (SELECT 1 N UNION ALL SELECT N + 1 FROM CTE WHERE N < 10) SELECT * FROM CTE")]
+    public async Task Test_SELECT(string sql)
     {
         IQsiAnalysisResult[] result = await Engine.Execute(new QsiScript(sql, QsiScriptType.Select), null);
         CollectionAssert.IsNotEmpty(result);
         Assert.AreEqual(1, result.Length);
-        return QsiTableStructureHelper.GetPseudoName(((QsiTableResult)result[0]).Table);
+
+        QsiTableStructureView[] views = QsiTableStructureView.From(((QsiTableResult)result[0]).Table);
+
+        await Verifier
+            .Verify(views)
+            .UseDirectory("verified");
     }
 
     [TestCase("TABLE actor", ExpectedResult = "qsi_unit_tests.actor")]
