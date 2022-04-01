@@ -1,78 +1,78 @@
 ﻿[
   {
-    Type: Derived,
-    References: [
-      tbl_2
-    ],
-    Columns: [
-      {
-        Parent: tbl_1,
-        Name: city_id,
-        References: [
-          col_2
-        ],
-        IsVisible: true,
-        RefId: col_1
-      },
-      {
-        Parent: tbl_1,
-        Name: city,
-        References: [
-          col_4
-        ],
-        IsVisible: true,
-        RefId: col_3
-      },
-      {
-        Parent: tbl_1,
-        Name: country_id,
-        References: [
-          col_6
-        ],
-        IsVisible: true,
-        RefId: col_5
-      },
-      {
-        Parent: tbl_1,
-        Name: last_update,
-        References: [
-          col_8
-        ],
-        IsVisible: true,
-        RefId: col_7
-      }
-    ],
-    RefId: tbl_1
-  },
-  {
     Type: Table,
     Identifier: qsi_unit_tests.city,
     Columns: [
       {
-        Parent: tbl_2,
+        Parent: $tbl_10,
         Name: city_id,
         IsVisible: true,
-        RefId: col_2
+        RefId: $col_2
       },
       {
-        Parent: tbl_2,
+        Parent: $tbl_10,
         Name: city,
         IsVisible: true,
-        RefId: col_4
+        RefId: $col_4
       },
       {
-        Parent: tbl_2,
+        Parent: $tbl_10,
         Name: country_id,
         IsVisible: true,
-        RefId: col_6
+        RefId: $col_6
       },
       {
-        Parent: tbl_2,
+        Parent: $tbl_10,
         Name: last_update,
         IsVisible: true,
-        RefId: col_8
+        RefId: $col_8
       }
     ],
-    RefId: tbl_2
+    RefId: $tbl_10
+  },
+  {
+    Type: Derived,
+    References: [
+      $tbl_10
+    ],
+    Columns: [
+      {
+        Parent: $tbl_9,
+        Name: city_id,
+        References: [
+          $col_2
+        ],
+        IsVisible: true,
+        RefId: $col_1
+      },
+      {
+        Parent: $tbl_9,
+        Name: city,
+        References: [
+          $col_4
+        ],
+        IsVisible: true,
+        RefId: $col_3
+      },
+      {
+        Parent: $tbl_9,
+        Name: country_id,
+        References: [
+          $col_6
+        ],
+        IsVisible: true,
+        RefId: $col_5
+      },
+      {
+        Parent: $tbl_9,
+        Name: last_update,
+        References: [
+          $col_8
+        ],
+        IsVisible: true,
+        RefId: $col_7
+      }
+    ],
+    RefId: $tbl_9
   }
 ]

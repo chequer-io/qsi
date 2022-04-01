@@ -2,66 +2,66 @@
   {
     Type: Derived,
     References: [
-      tbl_2
+      $tbl_5
     ],
     Columns: [
       {
-        Parent: tbl_1,
+        Parent: $tbl_4,
         Name: (SELECT actor_id),
         References: [
-          col_2
+          $col_2
         ],
         IsVisible: true,
         IsExpression: true,
-        RefId: col_1
+        RefId: $col_1
       }
     ],
-    RefId: tbl_1
+    RefId: $tbl_4
   },
   {
     Type: Table,
     Identifier: qsi_unit_tests.actor,
     Columns: [
       {
-        Parent: tbl_2,
+        Parent: $tbl_5,
         Name: actor_id,
         IsVisible: true,
-        RefId: col_3
+        RefId: $col_3
       },
       {
-        Parent: tbl_2,
+        Parent: $tbl_5,
         Name: first_name,
         IsVisible: true,
-        RefId: col_4
+        RefId: $col_7
       },
       {
-        Parent: tbl_2,
+        Parent: $tbl_5,
         Name: last_name,
         IsVisible: true,
-        RefId: col_5
+        RefId: $col_8
       },
       {
-        Parent: tbl_2,
+        Parent: $tbl_5,
         Name: last_update,
         IsVisible: true,
-        RefId: col_6
+        RefId: $col_9
       }
     ],
-    RefId: tbl_2
+    RefId: $tbl_5
   },
   {
     Type: Derived,
     Columns: [
       {
-        Parent: tbl_3,
+        Parent: $tbl_6,
         Name: actor_id,
         References: [
-          col_3
+          $col_3
         ],
         IsVisible: true,
-        RefId: col_2
+        RefId: $col_2
       }
     ],
-    RefId: tbl_3
+    RefId: $tbl_6
   }
 ]

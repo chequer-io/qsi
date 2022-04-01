@@ -1,165 +1,165 @@
 ﻿[
   {
     Type: Derived,
-    References: [
-      tbl_2
-    ],
-    Columns: [
-      {
-        Parent: tbl_1,
-        Name: (SELECT actor.actor_id FROM city AS actor LIMIT 1),
-        References: [
-          col_2
-        ],
-        IsVisible: true,
-        IsExpression: true,
-        RefId: col_1
-      }
-    ],
-    RefId: tbl_1
-  },
-  {
-    Type: Table,
-    Identifier: qsi_unit_tests.actor,
-    Columns: [
-      {
-        Parent: tbl_2,
-        Name: actor_id,
-        IsVisible: true,
-        RefId: col_4
-      },
-      {
-        Parent: tbl_2,
-        Name: first_name,
-        IsVisible: true,
-        RefId: col_5
-      },
-      {
-        Parent: tbl_2,
-        Name: last_name,
-        IsVisible: true,
-        RefId: col_6
-      },
-      {
-        Parent: tbl_2,
-        Name: last_update,
-        IsVisible: true,
-        RefId: col_7
-      }
-    ],
-    RefId: tbl_2
-  },
-  {
-    Type: Derived,
-    References: [
-      tbl_4
-    ],
-    Columns: [
-      {
-        Parent: tbl_3,
-        Name: actor_id,
-        References: [
-          col_3
-        ],
-        IsVisible: true,
-        RefId: col_2
-      }
-    ],
-    RefId: tbl_3
-  },
-  {
-    Type: Derived,
-    References: [
-      tbl_5
-    ],
-    Columns: [
-      {
-        Parent: tbl_4,
-        Name: actor_id,
-        References: [
-          col_4
-        ],
-        IsVisible: true,
-        RefId: col_3
-      }
-    ],
-    RefId: tbl_4
-  },
-  {
-    Type: Derived,
     Identifier: actor,
     References: [
-      tbl_6
+      $tbl_13
     ],
     Columns: [
       {
-        Parent: tbl_5,
+        Parent: $tbl_12,
         Name: city_id,
         References: [
-          col_9
+          $col_15
         ],
         IsVisible: true,
-        RefId: col_8
+        RefId: $col_14
       },
       {
-        Parent: tbl_5,
+        Parent: $tbl_12,
         Name: city,
         References: [
-          col_11
+          $col_17
         ],
         IsVisible: true,
-        RefId: col_10
+        RefId: $col_16
       },
       {
-        Parent: tbl_5,
+        Parent: $tbl_12,
         Name: country_id,
         References: [
-          col_13
+          $col_19
         ],
         IsVisible: true,
-        RefId: col_12
+        RefId: $col_18
       },
       {
-        Parent: tbl_5,
+        Parent: $tbl_12,
         Name: last_update,
         References: [
-          col_15
+          $col_21
         ],
         IsVisible: true,
-        RefId: col_14
+        RefId: $col_20
       }
     ],
-    RefId: tbl_5
+    RefId: $tbl_12
   },
   {
     Type: Table,
     Identifier: qsi_unit_tests.city,
     Columns: [
       {
-        Parent: tbl_6,
+        Parent: $tbl_13,
         Name: city_id,
         IsVisible: true,
-        RefId: col_9
+        RefId: $col_15
       },
       {
-        Parent: tbl_6,
+        Parent: $tbl_13,
         Name: city,
         IsVisible: true,
-        RefId: col_11
+        RefId: $col_17
       },
       {
-        Parent: tbl_6,
+        Parent: $tbl_13,
         Name: country_id,
         IsVisible: true,
-        RefId: col_13
+        RefId: $col_19
       },
       {
-        Parent: tbl_6,
+        Parent: $tbl_13,
         Name: last_update,
         IsVisible: true,
-        RefId: col_15
+        RefId: $col_21
       }
     ],
-    RefId: tbl_6
+    RefId: $tbl_13
+  },
+  {
+    Type: Derived,
+    References: [
+      $tbl_6
+    ],
+    Columns: [
+      {
+        Parent: $tbl_5,
+        Name: (SELECT actor.actor_id FROM city AS actor LIMIT 1),
+        References: [
+          $col_2
+        ],
+        IsVisible: true,
+        IsExpression: true,
+        RefId: $col_1
+      }
+    ],
+    RefId: $tbl_5
+  },
+  {
+    Type: Table,
+    Identifier: qsi_unit_tests.actor,
+    Columns: [
+      {
+        Parent: $tbl_6,
+        Name: actor_id,
+        IsVisible: true,
+        RefId: $col_4
+      },
+      {
+        Parent: $tbl_6,
+        Name: first_name,
+        IsVisible: true,
+        RefId: $col_9
+      },
+      {
+        Parent: $tbl_6,
+        Name: last_name,
+        IsVisible: true,
+        RefId: $col_10
+      },
+      {
+        Parent: $tbl_6,
+        Name: last_update,
+        IsVisible: true,
+        RefId: $col_11
+      }
+    ],
+    RefId: $tbl_6
+  },
+  {
+    Type: Derived,
+    References: [
+      $tbl_8
+    ],
+    Columns: [
+      {
+        Parent: $tbl_7,
+        Name: actor_id,
+        References: [
+          $col_3
+        ],
+        IsVisible: true,
+        RefId: $col_2
+      }
+    ],
+    RefId: $tbl_7
+  },
+  {
+    Type: Derived,
+    References: [
+      $tbl_12
+    ],
+    Columns: [
+      {
+        Parent: $tbl_8,
+        Name: actor_id,
+        References: [
+          $col_4
+        ],
+        IsVisible: true,
+        RefId: $col_3
+      }
+    ],
+    RefId: $tbl_8
   }
 ]

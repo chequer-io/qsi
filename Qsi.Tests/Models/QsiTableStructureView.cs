@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Linq;
 using Qsi.Data;
 using Qsi.Utilities;
@@ -28,67 +27,65 @@ public sealed class QsiTableStructureView : ReferenceView
 
     public static QsiTableStructureView[] From(QsiTableStructure table)
     {
-        var tableRefs = new ReferenceViewManager<QsiTableStructureView>("tbl_", null);
-        var columnRefs = new ReferenceViewManager<QsiTableColumnView>("col_", null);
+        var collector = new ReferenceViewCollector();
 
         foreach (var c in table.Columns.SelectMany(QsiUtility.FlattenColumns))
-            Collect(c, tableRefs, columnRefs);
+            Collect(c, collector);
 
         foreach (var t in QsiUtility.FlattenTables(table))
-            Collect(t, tableRefs, columnRefs);
+            Collect(t, collector);
 
-        columnRefs.Freeze();
-        tableRefs.Freeze();
-
-        return tableRefs.Views.ToArray();
+        return collector
+            .Collect<QsiTableStructureView>()
+            .ToArray();
     }
 
-    private static DeferredReferenceView<QsiTableStructureView> Collect(
-        QsiTableStructure table,
-        ReferenceViewManager<QsiTableStructureView> tableRefs,
-        ReferenceViewManager<QsiTableColumnView> columnRefs)
+    private static DeferredReferenceView Collect(QsiTableStructure table, ReferenceViewCollector collector)
     {
         if (table is null)
             return null;
 
-        return tableRefs.GetOrCreateView(table, refId =>
-        {
-            return new QsiTableStructureView(
-                refId,
-                table.Type,
-                table.Identifier?.ToString(),
-                table.IsSystem,
-                table.References
-                    .Select(x => Collect(x, tableRefs, columnRefs)?.RefId)
-                    .ToArray(),
-                table.Columns
-                    .Select(x => Collect(x, tableRefs, columnRefs).Value)
-                    .ToArray()
-            );
-        });
+        return collector.GetOrCreateView(
+            table,
+            seq => $"$tbl_{seq}",
+            refId =>
+            {
+                return new QsiTableStructureView(
+                    refId,
+                    table.Type,
+                    table.Identifier?.ToString(),
+                    table.IsSystem,
+                    table.References
+                        .Select(x => Collect(x, collector)?.RefId)
+                        .ToArray(),
+                    table.Columns
+                        .Select(x => (QsiTableColumnView)Collect(x, collector).Value)
+                        .ToArray()
+                );
+            });
     }
 
-    private static DeferredReferenceView<QsiTableColumnView> Collect(
-        QsiTableColumn column,
-        ReferenceViewManager<QsiTableStructureView> tableRefs,
-        ReferenceViewManager<QsiTableColumnView> columnRefs)
+    private static DeferredReferenceView Collect(QsiTableColumn column, ReferenceViewCollector collector)
     {
-        return columnRefs.GetOrCreateView(column, refId =>
-        {
-            return new QsiTableColumnView(
-                refId,
-                Collect(column.Parent, tableRefs, columnRefs)?.RefId,
-                column.Name?.ToString(),
-                column.References
-                    .Select(x => Collect(x, tableRefs, columnRefs)?.RefId)
-                    .ToArray(),
-                column.ObjectReferences.ToArray(),
-                column.IsVisible,
-                column.IsBinding,
-                column.IsDynamic,
-                column.Default,
-                column.IsExpression
-            );
-        });
+        return collector.GetOrCreateView(
+            column,
+            seq => $"$col_{seq}",
+            refId =>
+            {
+                return new QsiTableColumnView(
+                    refId,
+                    Collect(column.Parent, collector)?.RefId,
+                    column.Name?.ToString(),
+                    column.References
+                        .Select(x => Collect(x, collector)?.RefId)
+                        .ToArray(),
+                    column.ObjectReferences.ToArray(),
+                    column.IsVisible,
+                    column.IsBinding,
+                    column.IsDynamic,
+                    column.Default,
+                    column.IsExpression
+                );
+            });
     }
 }
