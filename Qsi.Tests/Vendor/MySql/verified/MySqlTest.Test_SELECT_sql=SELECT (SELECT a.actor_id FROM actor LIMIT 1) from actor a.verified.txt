@@ -38,28 +38,28 @@
         Parent: tbl_2,
         Name: first_name,
         References: [
-          col_6
+          col_7
         ],
         IsVisible: true,
-        RefId: col_9
+        RefId: col_6
       },
       {
         Parent: tbl_2,
         Name: last_name,
         References: [
-          col_7
+          col_9
         ],
         IsVisible: true,
-        RefId: col_10
+        RefId: col_8
       },
       {
         Parent: tbl_2,
         Name: last_update,
         References: [
-          col_8
+          col_11
         ],
         IsVisible: true,
-        RefId: col_11
+        RefId: col_10
       }
     ],
     RefId: tbl_2
@@ -78,22 +78,40 @@
         Parent: tbl_3,
         Name: first_name,
         IsVisible: true,
-        RefId: col_6
+        RefId: col_7
       },
       {
         Parent: tbl_3,
         Name: last_name,
         IsVisible: true,
-        RefId: col_7
+        RefId: col_9
       },
       {
         Parent: tbl_3,
         Name: last_update,
         IsVisible: true,
-        RefId: col_8
+        RefId: col_11
       }
     ],
     RefId: tbl_3
+  },
+  {
+    Type: Derived,
+    References: [
+      tbl_5
+    ],
+    Columns: [
+      {
+        Parent: tbl_4,
+        Name: actor_id,
+        References: [
+          col_3
+        ],
+        IsVisible: true,
+        RefId: col_2
+      }
+    ],
+    RefId: tbl_4
   },
   {
     Type: Derived,
@@ -102,31 +120,13 @@
     ],
     Columns: [
       {
-        Parent: tbl_4,
+        Parent: tbl_5,
         Name: actor_id,
         References: [
           col_4
         ],
         IsVisible: true,
         RefId: col_3
-      }
-    ],
-    RefId: tbl_4
-  },
-  {
-    Type: Derived,
-    References: [
-      tbl_4
-    ],
-    Columns: [
-      {
-        Parent: tbl_5,
-        Name: actor_id,
-        References: [
-          col_3
-        ],
-        IsVisible: true,
-        RefId: col_2
       }
     ],
     RefId: tbl_5
