@@ -405,6 +405,9 @@ createExtensionOption
     | CASCADE
     ;
 
+/**
+ * CREATE FOREIGN ~
+ */
 createForeign:
     FOREIGN (
         createForeignDataWrapper
@@ -414,8 +417,16 @@ createForeign:
 createForeignDataWrapper
     :;
 
+/**
+ * CREATE FOREIGN TABLE
+ *
+ * See: https://www.postgresql.org/docs/14/sql-createforeigntable.html
+ */
+// TODO: Cleanup codes
+// TODO: Implement CREATE TABLE keyword first
 createForeignTable
-    :;
+    : TABLE (IF_P NOT EXISTS)? qualifiedIdentifier createTableOptions SERVER columnIdentifier genericOptions?
+    ;
 
 createFunction
     :;
@@ -478,8 +489,63 @@ createSequence
 createServer
     :;
 
+/**
+ * CREATE TABLE
+ *
+ * See: https://www.postgresql.org/docs/14/sql-createtable.html
+ */
 createTable
-    :;
+    : createTablePrefix TABLE (IF_P NOT EXISTS)? qualifiedIdentifier createTableOptions
+        partitionByClause?
+        usingClause?
+        withOptionsClause?
+        onCommitClause?
+        tableSpaceClause?
+    ;
+
+createTablePrefix
+    : TEMPORARY
+    | TEMP
+    | LOCAL (TEMPORARY | TEMP)
+    | GLOBAL (TEMPORARY | TEMP)
+    | UNLOGGED
+    ;
+
+createTableOptions
+    : '(' tableElementList? ')' inheritsClause? 
+    | OF qualifiedIdentifier typedTableElementList?
+    | partitionOfClause
+    ;
+
+tableElementList
+    : tableElement (COMMA tableElement)*
+    ;
+
+tableElement
+    : columnDefinition
+    | tableLikeClause
+    | tableConstraint
+    ;
+
+tableLikeClause
+    : LIKE qualifiedIdentifier tableLikeOption*
+    ;
+
+tableLikeOption
+    : (INCLUDING | EXCLUDING) simpleTableLikeOption
+    ;
+
+simpleTableLikeOption
+    : COMMENTS
+    | CONSTRAINTS
+    | DEFAULTS
+    | IDENTITY_P
+    | GENERATED
+    | INDEXES
+    | STATISTICS
+    | STORAGE
+    | ALL
+    ;
 
 createTablespace
     :;
@@ -1030,6 +1096,13 @@ includeClause
     ;
 
 /**
+ * INHERITS
+ */
+inheritsClause
+    : INHERITS '(' qualifiedIdentifierList ')'
+    ;
+
+/**
  * INTO
  */
 intoClause
@@ -1061,6 +1134,13 @@ offset
     ;
 
 /**
+ * ON COMMIT
+ */
+onCommitClause
+    : ON COMMIT (DROP | DELETE_P ROWS | PRESERVE ROWS)
+    ;
+
+/**
  * ORDER BY
  */
 orderByClause
@@ -1073,6 +1153,50 @@ orderList
 
 orderExpression
     : expression (ASC | DESC)?
+    ;
+
+/**
+ * PARTITION BY
+ */
+partitionByClause
+    : PARTITION BY qualifiedIdentifier '(' partitionParam (COMMA partitionParam)* ')'
+    ;
+
+partitionParam
+    : columnIdentifier collateClause? qualifiedIdentifier?
+    | windowlessFunctionExpression collateClause? qualifiedIdentifier?
+    | '(' expression ')' collateClause? qualifiedIdentifier?
+    ;
+
+/**
+ * PARTITION OF
+ */
+partitionOfClause
+    : PARTITION OF qualifiedIdentifier typedTableElementList? partitionBoundOptions
+    ;
+
+typedTableElementList
+    : typedTableElement (COMMA typedTableElement)*
+    ;
+
+typedTableElement
+    : columnOptions
+    | tableConstraint
+    ;
+
+columnOptions
+    : columnIdentifier (WITH OPTIONS)? columnConstraint*
+    ;
+
+partitionBoundOptions
+    : FOR VALUES WITH '(' hashBound (COMMA hashBound)* ')'
+    | FOR VALUES IN_P '(' expressionList ')'
+    | FOR VALUES FROM '(' expressionList ')' TO '(' expressionList ')'
+    | DEFAULT
+    ;
+
+hashBound
+    : noReservedKeywords unsignedInt
     ;
 
 /**
@@ -2132,6 +2256,17 @@ functionType
     ;
 
 /**
+ * General options for the statement
+ */
+genericOptions
+    : OPTIONS '(' genericOption (COMMA genericOption)* ')'
+    ;
+
+genericOption
+    : columnLabelIdentifier string
+    ;
+
+/**
  * Index Parameters
  */
 indexList
@@ -2149,21 +2284,16 @@ indexOptions
     | (COLLATE qualifiedIdentifier)? qualifiedIdentifier 
     ;
 
-///**
-// * Relation Options
-// */
-//relationOptionClause
-//    : WITH '(' relationOptionList ')'
-//    ;
-//
-//relationOptionList
-//    : relationOption (COMMA relationOption)*
-//    ;
-//
-//relationOption
-//    : columnLabelIdentifier (EQUAL definitionArgument | DOT columnLabelIdentifier (EQUAL definitionArgument)?)?
-//    ;
-//
+// TODO: Find out what is relOptionList and implement it.
+//       Still dunno what the hell it is but needs to be implemented (What does 'rel' stand for?), so implemented it.
+//       Probably for option definition.
+relOptionList
+    : relOption (COMMA relOption)*
+    ;
+
+relOption
+    : columnLabelIdentifier (EQUAL definitionArgument | DOT columnLabelIdentifier (EQUAL definitionArgument)?)?
+    ;
 
 //----------------- KETWORDS -------------------------------------------------------------------------------------------
 // In PostgreSQL, reserved keywords are keywords that are being used by sql itself; cannot be used for identifier.
