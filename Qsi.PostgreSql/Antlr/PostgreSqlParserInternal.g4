@@ -812,7 +812,7 @@ insertStatement
     ;
 
 insertStatementNoWith
-    : INSERT INTO tableName aliasClause? ('(' columnList ')')?
+    : INSERT INTO tableName aliasClause? ('(' qualifiedIdentifierList ')')?
         overridingOption?
         (DEFAULT VALUES | queryPrimary)
         onConflictClause?
@@ -872,8 +872,8 @@ updateSetList
 
 updateSet
     : columnIdentifier EQUAL (expression | DEFAULT)                                                       #columnUpdateSet
-    | '(' columnList ')' EQUAL ROW? '(' updateSetExpressionList ')'   #columnListUpdateSet
-    | '(' columnList ')' EQUAL '(' queryPrimary ')'                   #subqueryUpdateSet
+    | '(' qualifiedIdentifierList ')' EQUAL ROW? '(' updateSetExpressionList ')'   #columnListUpdateSet
+    | '(' qualifiedIdentifierList ')' EQUAL '(' queryPrimary ')'                   #subqueryUpdateSet
     ;
     
 updateSetExpressionList
@@ -919,7 +919,7 @@ aliasClause
     ;
     
 aliasClauseBody
-    : columnIdentifier ('(' columnList ')')?
+    : columnIdentifier ('(' qualifiedIdentifierList ')')?
     ;
 
 /**
@@ -1716,7 +1716,7 @@ argument
     | typeFunctionIdentifier (COLON_EQUALS | EQUALS_GREATER) expression
     ;
 
-columnList
+qualifiedIdentifierList
     : qualifiedIdentifier (COMMA qualifiedIdentifier)*
     ;
 
