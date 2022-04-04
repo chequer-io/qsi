@@ -1375,9 +1375,9 @@ Copied from the open-source PG parser:
 
 TODO:
 for some reason v1
-implicit_row: OPEN_PAREN expr_list COMMA a_expr CLOSE_PAREN;
+implicit_row: '(' expr_list COMMA a_expr ')';
 works better than v2
-implicit_row: OPEN_PAREN expr_list  CLOSE_PAREN;
+implicit_row: '(' expr_list  ')';
 while looks like they are almost the same, except v2 requieres at least 2 items in list
 while v1 allows single item in list
 */
@@ -1858,7 +1858,7 @@ constant
     | hex
     | bin
     | string
-//    | identifier indirectionList? (OPEN_PAREN complexArgumentList orderByClause CLOSE_PAREN) string
+//    | functionName (string | '(' /* TODO: Implement functionArgumentList on constants */ orderByClause ')' string)
     | constType string
     | interval
     | TRUE_P
@@ -1867,7 +1867,7 @@ constant
     ;
 
 interval
-    : INTERVAL (string intervalOption | OPEN_PAREN int CLOSE_PAREN string)
+    : INTERVAL (string intervalOption | '(' int ')' string)
     ;
 
 intervalOption
@@ -1884,7 +1884,7 @@ intervalOption
     ;
 
 intervalSecond
-    : SECOND_P (OPEN_PAREN int CLOSE_PAREN)?
+    : SECOND_P ('(' int ')')?
     ;
 
 constType
