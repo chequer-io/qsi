@@ -430,7 +430,7 @@ createIndex
     : UNIQUE? INDEX CONCURRENTLY? (IF_P NOT EXISTS)? columnIdentifier
         ON tableName (USING columnIdentifier)? '(' indexList ')'
         includeClause?
-        withStorageParamClause?
+        withOptionsClause?
         tableSpaceClause?
         whereClause?
     ;
@@ -1178,19 +1178,17 @@ frameExclusion
     : EXCLUDE (CURRENT_P ROW | GROUP_P | TIES | NO OTHERS);
 
 /**
- * WITH (Options...)
- *
- * TODO: Difference between DefinitionlistClause?
- */ 
-withStorageParamClause
-    : WITH '(' /*relOptionList*/ ')' // TODO: Find out what is relOptionList and implement it.
-    ;
-
-/**
  * WITH (Query)
  */
 withClause
     : WITH RECURSIVE? commonTableExpression (COMMA commonTableExpression)*;
+
+/**
+ * WITH (Options...)
+ */
+withOptionsClause
+    : WITH '(' relOptionList ')'
+    ;
 
 // CTE(Common Table Expression).
 commonTableExpression
