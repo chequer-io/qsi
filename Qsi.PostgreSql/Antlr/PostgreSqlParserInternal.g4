@@ -264,13 +264,15 @@ createStatement:
 
 /**
  * CREATE ACCESS METHOD
+ *
+ * See: https://www.postgresql.org/docs/14/sql-create-access-method.html
  */
 createAccessMethod
     : ACCESS METHOD columnIdentifier TYPE_P (INDEX | TABLE) HANDLER qualifiedIdentifier
     ;
 
 /**
- * CREATE AGGREGATE METHOD
+ * CREATE AGGREGATE
  *
  * See: https://www.postgresql.org/docs/14/sql-createaggregate.html
  */
@@ -422,8 +424,6 @@ createForeignDataWrapper
  *
  * See: https://www.postgresql.org/docs/14/sql-createforeigntable.html
  */
-// TODO: Cleanup codes
-// TODO: Implement CREATE TABLE keyword first
 createForeignTable
     : TABLE (IF_P NOT EXISTS)? qualifiedIdentifier createTableOptions SERVER columnIdentifier genericOptions?
     ;
