@@ -2080,7 +2080,7 @@ columnDefinitionList
     ;
     
 columnDefinition
-    : columnIdentifier type collateClause?
+    : columnIdentifier type genericOptions? columnConstraint* 
     ;
 
 /**
