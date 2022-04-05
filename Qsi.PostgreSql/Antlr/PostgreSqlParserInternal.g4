@@ -1261,12 +1261,7 @@ windowDefinition
     : columnIdentifier AS windowSpecification;
 
 windowSpecification
-    : '(' 
-    windowName?
-    (PARTITION BY expressionList)?
-    orderByClause? 
-    frameClause?
-    ')';
+    : '(' windowName? (PARTITION BY expressionList)? orderByClause? frameClause? ')';
 
 frameClause
     : (RANGE | ROWS | GROUPS) (
