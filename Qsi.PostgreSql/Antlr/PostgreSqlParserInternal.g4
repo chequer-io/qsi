@@ -2731,26 +2731,30 @@ nonReservedKeyword
 
 columnKeyword
    : BETWEEN
-   | bitType
+   | BIGINT
+   | BIT
    | BOOLEAN_P
+   | CHARACTER
    | CHAR_P
-   | characterType
    | COALESCE
    | DEC
    | DECIMAL_P
    | EXISTS
    | EXTRACT
+   | FLOAT_P
    | GREATEST
    | GROUPING
    | INOUT
+   | INTEGER
    | INTERVAL
+   | INT_P
    | LEAST
    | NATIONAL
    | NCHAR
    | NONE
    | NORMALIZE
    | NULLIF
-   | numericType
+   | NUMERIC
    | OUT_P
    | OVERLAY
    | POSITION
@@ -2758,6 +2762,7 @@ columnKeyword
    | REAL
    | ROW
    | SETOF
+   | SMALLINT
    | SUBSTRING
    | TIME
    | TIMESTAMP
