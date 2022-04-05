@@ -878,7 +878,8 @@ insertStatement
     ;
 
 insertStatementNoWith
-    : INSERT INTO tableName aliasClause? ('(' qualifiedIdentifierList ')')?
+    : INSERT INTO tableName (AS columnIdentifier)?
+        ('(' qualifiedIdentifierList ')')?
         overridingOption?
         (DEFAULT VALUES | queryPrimary)
         onConflictClause?
@@ -894,20 +895,8 @@ onConflictClause
     ;
     
 conflictTarget
-    : '(' conflictTargetItemList ')' whereClause?
+    : '(' indexList ')' whereClause?
     | ON CONSTRAINT columnIdentifier
-    ;
-    
-conflictTargetItemList
-    : conflictTargetItem (COMMA conflictTargetItem)*
-    ;
-
-conflictTargetItem
-    : (columnIdentifier | '(' expression ')') collateClause? opClass?
-    ;
-
-opClass
-    : expression
     ;
 
 conflictAction
