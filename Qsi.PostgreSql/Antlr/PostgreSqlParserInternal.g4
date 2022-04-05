@@ -2280,8 +2280,7 @@ index
     ;
 
 indexOptions
-    : (COLLATE qualifiedIdentifier)? qualifiedIdentifier? (ASC | DESC)? (NULLS_P (FIRST_P | LAST_P))?
-    | (COLLATE qualifiedIdentifier)? qualifiedIdentifier 
+    : collateClause? qualifiedIdentifier? ('(' relOptionList ')')? (ASC | DESC)? (NULLS_P (FIRST_P | LAST_P))?
     ;
 
 // TODO: Find out what is relOptionList and implement it.
