@@ -1332,8 +1332,17 @@ expressionList
  * for operator precedences.
  */
 expression
+    : expressionParens
+    | expressionNoParens
+    ;
+
+expressionParens
+    : '(' (expressionParens | expression) ')'
+    ;
+
+expressionNoParens
     : andExpression
-    | expression OR expression
+    | expressionNoParens OR expressionNoParens
     ;
 
 andExpression
@@ -1437,7 +1446,6 @@ valueExpression
     : (EXISTS | UNIQUE | ARRAY)? queryExpressionParens                              // Subquery
     | ARRAY OPEN_BRACKET expressionList CLOSE_BRACKET                               // ARRAY Constructor
     | GROUPING '(' expressionList ')'                  // GROUPING
-    | '(' expression ')'
     | columnIdentifier                                                              // identifier TODO: reduce max k
     | constant
     | caseExpression                                                                // CASE ~ END
