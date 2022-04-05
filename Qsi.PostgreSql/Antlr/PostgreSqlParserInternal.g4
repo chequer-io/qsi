@@ -1928,17 +1928,13 @@ numericType
     | INTEGER
     | INT_P
     | BIGINT
-    | DECIMAL_P typeModifier?
-    | DEC typeModifier?
-    | NUMERIC typeModifier?
+    | DECIMAL_P ('(' expressionList ')')?
+    | DEC ('(' expressionList ')')?
+    | NUMERIC ('(' expressionList ')')?
     | REAL
     | DOUBLE_P PRECISION
     | FLOAT_P ('(' unsignedInt ')')?
     | BOOLEAN_P
-    ;
-
-typeModifier
-    : '(' expressionList ')'
     ;
 
 /**
