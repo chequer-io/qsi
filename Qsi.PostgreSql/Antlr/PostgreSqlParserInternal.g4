@@ -992,7 +992,7 @@ aliasClauseBody
  * COLLATE
  */
 collateClause
-    : COLLATE expression
+    : COLLATE qualifiedIdentifier
     ;
 
 /**
