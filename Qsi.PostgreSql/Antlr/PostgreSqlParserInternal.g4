@@ -1964,6 +1964,11 @@ timezoneOption
 
 //----------------- CONSTANTS ------------------------------------------------------------------------------------------
 
+/**
+ * PostgreSQL Constant.
+ *
+ * See: https://www.postgresql.org/docs/14/sql-syntax-lexical.html#SQL-SYNTAX-CONSTANTS
+ */
 constant
     : int
     | float
@@ -1978,6 +1983,11 @@ constant
     | NULL_P
     ;
 
+/**
+ * Interval Constant
+ *
+ * See: https://www.postgresql.org/docs/14/datatype-datetime.html
+ */
 interval
     : INTERVAL (string intervalOption | '(' int ')' string)
     ;
@@ -2006,27 +2016,33 @@ constType
     | dateTimeType
     ;
 
+// unsigned
 unsignedInt
     : Integral
     ;
 
+// signed
 int
     : PLUS? unsignedInt
     | MINUS unsignedInt
     ;
 
+// float
 float
     : Numeric
     ;
 
+// hexadecimal
 hex
     : HexadecimalStringConstant
     ;
 
+// binary
 bin
     : BinaryStringConstant
     ;
 
+// string
 string
     : stringBody (UESCAPE stringBody)?
     ;
@@ -2271,8 +2287,11 @@ indexOptions
     : collateClause? qualifiedIdentifier? ('(' relOptionList ')')? (ASC | DESC)? (NULLS_P (FIRST_P | LAST_P))?
     ;
 
+/**
+ * relOption
+ */
 // TODO: Find out what is relOptionList and implement it.
-//       Still dunno what the hell it is but needs to be implemented (What does 'rel' stand for?), so implemented it.
+//       Still dunno what the hell it is ('rel' stand for wut) but needs to be implemented, so I did.
 //       Probably for option definition.
 relOptionList
     : relOption (COMMA relOption)*
