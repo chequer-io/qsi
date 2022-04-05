@@ -495,7 +495,7 @@ createServer
  * See: https://www.postgresql.org/docs/14/sql-createtable.html
  */
 createTable
-    : createTablePrefix TABLE (IF_P NOT EXISTS)? qualifiedIdentifier createTableOptions
+    : createTablePrefix? TABLE (IF_P NOT EXISTS)? qualifiedIdentifier createTableOptions
         partitionByClause?
         usingClause?
         withOptionsClause?
