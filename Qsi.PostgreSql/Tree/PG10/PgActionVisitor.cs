@@ -127,6 +127,10 @@ namespace Qsi.PostgreSql.Tree.PG10
                         {
                             Identifier = IdentifierVisitor.VisitRangeVar(updateStmt.relation[0])
                         }
+                    },
+                    Columns =
+                    {
+                        Value = TreeHelper.CreateAllColumnsDeclaration()
                     }
                 };
 
@@ -171,6 +175,10 @@ namespace Qsi.PostgreSql.Tree.PG10
                         {
                             Identifier = IdentifierVisitor.VisitRangeVar(deleteStmt.relation[0])
                         }
+                    },
+                    Columns =
+                    {
+                        Value = TreeHelper.CreateAllColumnsDeclaration()
                     }
                 };
 
