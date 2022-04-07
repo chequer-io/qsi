@@ -13,13 +13,18 @@ public class PostgreSqlUnicodeUtilityTest
     [TestCase("U&\"d\\0061t\\0061\"", ExpectedResult = "\"data\"")]
     [TestCase("U&\"d!0061 t!+000061\" UESCAPE '!'", ExpectedResult = "\"da ta\"")]
     
-    // TODO: Seperate test cases with errors.
-    [TestCase("u&\"da0061taa a+000061 a aa aa\" UESCAPE 'a'", ExpectedResult = "")]
     public string Test_GetString(string input)
     {
         var result = PostgreSqlUnicodeUtility.GetString(input);
 
         return result;
+    }
+
+    [Timeout(1000)]
+    [TestCase("u&\"da0061taa a+000061 a aa aa\" UESCAPE 'a'")]
+    public void Error_Test_Getstring(string input)
+    {
+        Assert.Catch(() => PostgreSqlUnicodeUtility.GetString(input));
     }
     
     [Timeout(1000)]
@@ -36,15 +41,19 @@ public class PostgreSqlUnicodeUtilityTest
     [TestCase("d\\0061t\\0061", '\\', ExpectedResult = "data")]
     [TestCase("d!0061t!+000061", '!', ExpectedResult = "data")]
     [TestCase("d!0061t!+000061!!", '!', ExpectedResult = "data!")]
-    [TestCase("d\\0061t\\+000061 y\\y", '\\', ExpectedResult = "data y\\y")]
-    
-    // TODO: Seperate test cases with errors.
-    [TestCase("d\\", '\\', ExpectedResult = "")]
-    [TestCase("\\\\ \\        ", '\\', ExpectedResult = "")]
-    [TestCase("da0061taa a+000061 a aa aa", 'a', ExpectedResult = "")]
     public string Test_Parse(string input, char escape)
     {
         var result = PostgreSqlUnicodeUtility.Parse(input, escape, 0);
         return result;
+    }
+
+    [Timeout(1000)]
+    [TestCase("d\\", '\\')]
+    [TestCase("\\\\ \\        ", '\\')]
+    [TestCase("da0061taa a+000061 a aa aa", 'a')]
+    [TestCase("d\\0061t\\+000061 y\\y", '\\')]
+    public void Error_Test_Parse(string input, char escape)
+    {
+        Assert.Catch(() => PostgreSqlUnicodeUtility.Parse(input, escape));
     }
 }
