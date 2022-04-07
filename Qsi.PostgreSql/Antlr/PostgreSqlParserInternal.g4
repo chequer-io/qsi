@@ -227,41 +227,41 @@ alterView
     :;
 
 // TODO: Implement create statement.
-createStatement:
-    CREATE (
-        createAccessMethod
-        | createAggregate
-        | createCast
-        | createCollation
-        | createConversion
-        | createDatabase
-        | createDomain
-        | createEventTrigger
-        | createExtension
-        | createForeign
-        | createFunction
-        | createGroup
-        | createIndex
-        | createLanguage
-        | createMaterializedView
-        | createOperator
-        | createPolicy
-        | createProcedure
-        | createPublication
-        | createRole
-        | createRule
-        | createSchema
-        | createSequence
-        | createServer
-        | createTable
-        | createTablespace
-        | createTextSearch
-        | createTransform
-        | createTrigger
-        | createType
-        | createUser
-        | createView
-    );
+createStatement
+    : createAccessMethod
+    | createAggregate
+    | createCast
+    | createCollation
+    | createConversion
+    | createDatabase
+    | createDomain
+    | createEventTrigger
+    | createExtension
+    | createForeignDataWrapper
+    | createForeignTable
+    | createFunction
+    | createGroup
+    | createIndex
+    | createLanguage
+    | createMaterializedView
+    | createOperator
+    | createPolicy
+    | createProcedure
+    | createPublication
+    | createRole
+    | createRule
+    | createSchema
+    | createSequence
+    | createServer
+    | createTable
+    | createTablespace
+    | createTextSearch
+    | createTransform
+    | createTrigger
+    | createType
+    | createUser
+    | createView
+    ;
 
 /**
  * CREATE ACCESS METHOD
@@ -269,7 +269,7 @@ createStatement:
  * See: https://www.postgresql.org/docs/14/sql-create-access-method.html
  */
 createAccessMethod
-    : ACCESS METHOD columnIdentifier TYPE_P (INDEX | TABLE) HANDLER qualifiedIdentifier
+    : CREATE ACCESS METHOD columnIdentifier TYPE_P (INDEX | TABLE) HANDLER qualifiedIdentifier
     ;
 
 /**
@@ -278,7 +278,7 @@ createAccessMethod
  * See: https://www.postgresql.org/docs/14/sql-createaggregate.html
  */
 createAggregate
-    : (OR REPLACE)? AGGREGATE functionName createAggregateArgumentOption
+    : CREATE (OR REPLACE)? AGGREGATE functionName createAggregateArgumentOption
     ;
 
 createAggregateArgumentOption
@@ -307,7 +307,7 @@ aggregateArgumentsOldSyntax
  * See: https://www.postgresql.org/docs/14/sql-createcast.html
  */
 createCast
-    : CAST '(' type AS type ')' createCastOption castContext?
+    : CREATE CAST '(' type AS type ')' createCastOption castContext?
     ;
 
 createCastOption
@@ -326,7 +326,7 @@ castContext
  * See: https://www.postgresql.org/docs/14/sql-createcollation.html
  */
 createCollation
-    : COLLATION (IF_P NOT EXISTS)? qualifiedIdentifier '(' definitionList ')'
+    : CREATE COLLATION (IF_P NOT EXISTS)? qualifiedIdentifier '(' definitionList ')'
     ;
 
 /**
@@ -335,7 +335,7 @@ createCollation
  * See: https://www.postgresql.org/docs/14/sql-createconversion.html
  */
 createConversion
-    : DEFAULT? CONVERSION_P qualifiedIdentifier FOR string TO string FROM qualifiedIdentifier
+    : CREATE DEFAULT? CONVERSION_P qualifiedIdentifier FOR string TO string FROM qualifiedIdentifier
     ;
 
 /**
@@ -344,7 +344,7 @@ createConversion
  * See: https://www.postgresql.org/docs/14/sql-createdatabase.html
  */
 createDatabase
-    : DATABASE columnIdentifier WITH? createDatabaseItem*
+    : CREATE DATABASE columnIdentifier WITH? createDatabaseItem*
     ;
 
 createDatabaseItem
@@ -367,7 +367,7 @@ createDatabaseItemName
  * See: https://www.postgresql.org/docs/14/sql-createdomain.html
  */
 createDomain
-    : DOMAIN_P qualifiedIdentifier AS? type columnConstraint*
+    : CREATE DOMAIN_P qualifiedIdentifier AS? type columnConstraint*
     ;
 
 /**
@@ -376,7 +376,7 @@ createDomain
  * See: https://www.postgresql.org/docs/14/sql-createeventtrigger.html
  */
 createEventTrigger
-    : EVENT TRIGGER columnIdentifier ON columnLabelIdentifier (WHEN eventTriggerWhenList)?
+    : CREATE EVENT TRIGGER columnIdentifier ON columnLabelIdentifier (WHEN eventTriggerWhenList)?
         EXECUTE (FUNCTION | PROCEDURE) functionName '(' ')'
     ;
 
@@ -394,7 +394,7 @@ eventTriggerItem
  * See: https://www.postgresql.org/docs/14/sql-createextension.html
  */ 
 createExtension
-    : EXTENSION (IF_P NOT EXISTS)? columnIdentifier WITH? createExtensionOptionList?
+    : CREATE EXTENSION (IF_P NOT EXISTS)? columnIdentifier WITH? createExtensionOptionList?
     ;
 
 createExtensionOptionList
@@ -409,16 +409,24 @@ createExtensionOption
     ;
 
 /**
- * CREATE FOREIGN ~
+ * CREATE FOREIGN DATA WRAPPER
+ *
+ * See: https://www.postgresql.org/docs/14/sql-createforeigndatawrapper.html
  */
-createForeign:
-    FOREIGN (
-        createForeignDataWrapper
-        | createForeignTable
-    );
-
 createForeignDataWrapper
-    :;
+    : CREATE FOREIGN DATA_P WRAPPER qualifiedIdentifier foreignDataWrapperOptions? genericOptions?
+    ;
+
+foreignDataWrapperOptions
+    : foreignDataWrapperOption (COMMA foreignDataWrapperOption)*
+    ;
+
+foreignDataWrapperOption
+    : HANDLER qualifiedIdentifier
+    | NO HANDLER
+    | VALIDATOR qualifiedIdentifier
+    | VALIDATOR
+    ;
 
 /**
  * CREATE FOREIGN TABLE
@@ -426,7 +434,7 @@ createForeignDataWrapper
  * See: https://www.postgresql.org/docs/14/sql-createforeigntable.html
  */
 createForeignTable
-    : TABLE (IF_P NOT EXISTS)? qualifiedIdentifier createTableOptions SERVER columnIdentifier genericOptions?
+    : CREATE FOREIGN TABLE (IF_P NOT EXISTS)? qualifiedIdentifier createTableOptions SERVER columnIdentifier genericOptions?
     ;
 
 createFunction
@@ -439,7 +447,7 @@ createGroup
  * CREATE INDEX
  */
 createIndex
-    : UNIQUE? INDEX CONCURRENTLY? (IF_P NOT EXISTS)? columnIdentifier
+    : CREATE UNIQUE? INDEX CONCURRENTLY? (IF_P NOT EXISTS)? columnIdentifier
         ON tableName (USING columnIdentifier)? '(' indexList ')'
         includeClause?
         withOptionsClause?
