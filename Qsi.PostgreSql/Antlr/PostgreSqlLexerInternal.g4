@@ -41,6 +41,7 @@ superClass = PostgreSqlLexerBase;
 
 @ header
 {
+using Qsi.PostgreSql.Internal;
 }
 @ members
 {
@@ -2360,10 +2361,14 @@ InvalidUnterminatedQuotedIdentifier
  * TODO: these rules assume "" is still a valid escape sequence within a Unicode quoted identifier.
  */
 
-
-UnicodeQuotedIdentifier
-   : U '&' QuotedIdentifier
+EscapedUnicodeQuotedIdentifier
+   : U '&' QuotedIdentifier ((Whitespace | Newline)* UESCAPE (Whitespace | Newline)* StringConstant)?
+       { Text = PostgreSqlUnicodeUtility.GetString(Text); } -> type(QuotedIdentifier)
    ;
+
+//UnicodeQuotedIdentifier
+//   : U '&' QuotedIdentifier
+//   ;
    // This is a Unicode quoted identifier which only contains valid characters but is not terminated
 
 UnterminatedUnicodeQuotedIdentifier
