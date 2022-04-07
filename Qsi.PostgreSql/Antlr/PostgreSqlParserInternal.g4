@@ -9,8 +9,9 @@ options {
 
 @header
 {
-    using Qsi.Data;
-    using Qsi.Tree;
+using Qsi.Data;
+using Qsi.Tree;
+using Qsi.PostgreSql.Internal;
 }
 @members
 {
@@ -1740,9 +1741,8 @@ operator
  * Identifier
  */
 identifier returns [QsiIdentifier id]
-    : t=Identifier              { $id = new QsiIdentifier($t.text, false); }
-    | t=QuotedIdentifier        { $id = new QsiIdentifier($t.text, true); }
-    | t=UnicodeQuotedIdentifier { $id = new QsiIdentifier($t.text, true); }
+    : t=Identifier { $id = new QsiIdentifier($t.text, false); }
+    | t=QuotedIdentifier { $id = new QsiIdentifier($t.text, true); }
     ;
 
 columnLabelIdentifier returns [QsiIdentifier id]
