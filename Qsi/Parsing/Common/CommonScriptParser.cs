@@ -428,7 +428,7 @@ namespace Qsi.Parsing.Common
                         continue;
                 }
 
-                if (token.Type != tokenType)
+                if (!tokenType.HasFlag(token.Type))
                     break;
 
                 result[resultIndex++] = token;
