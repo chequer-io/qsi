@@ -28,8 +28,6 @@ statement
    | dropStatement
    
    // DML
-   // TODO: Only SELECT, INSERT, UPDATE, and DELETE statement have with clause.
-   //       Should I group these 4 statements and use with in front of the group, not seperately?
    | selectStatement
    | insertStatement
    | updateStatement
@@ -928,7 +926,6 @@ selectOption
 /**
  * INSERT
  */
-// TODO: Implement insert statement.
 insertStatement
     : withClause insertStatementNoWith
     | insertStatementNoWith
@@ -1448,11 +1445,10 @@ commonTableExpressionOption
 
 commonTableExpressionStatements
     : selectStatement
+    | updateStatement
+    | insertStatement
+    | deleteStatement
     ;
-// TODO: Activate statements after implementation.
-//    | update_statement
-//    | insert_statement
-//    | delete_statement;
 
 //----------------- EXPRESSIONS ----------------------------------------------------------------------------------------
 
@@ -1627,7 +1623,7 @@ explicitRow
 /*
 Copied from the open-source PG parser:
 
-TODO:
+TO DO:
 for some reason v1
 implicit_row: '(' expr_list COMMA a_expr ')';
 works better than v2
@@ -1744,7 +1740,7 @@ overlayList
 
 // POSITION
 positionList
-    : FROM FROM FROM //expression IN_P expression // TODO: Should we consider binary calculation only expression such as b_expr?
+    : expression IN_P expression // TODO: Should we consider binary calculation only expression such as b_expr?
     ;
 
 // SUBSTRING
@@ -1938,7 +1934,6 @@ noReservedKeywords
     | typeFunctionKeyword
     ;
 
-
 /**
  * Indirection
  * 
@@ -2092,7 +2087,7 @@ dateTimeType
  * See: https://www.postgresql.org/docs/14/datatype-datetime.html
  *
  * Copied from the open-source PG parser:
- * TODO with_la was used
+ * TO DO with_la was used
  */ 
 intervalType
     : INTERVAL (intervalOption | '(' int ')')
@@ -2296,7 +2291,6 @@ constraintAttribute
     | NO INHERIT
     ;
 
-// TODO: Move to proper place; this is related to column.
 generatedOption
     : ALWAYS
     | BY DEFAULT
