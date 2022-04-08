@@ -1759,18 +1759,21 @@ columnLabelIdentifier returns [QsiIdentifier id]
     | nrKey=nonReservedKeyword { $id = new QsiIdentifier($nrKey.text, false); }
     | cKey=columnKeyword { $id = new QsiIdentifier($cKey.text, false); }
     | tKey=typeFunctionKeyword { $id = new QsiIdentifier($tKey.text, false); }
+    | plKey=plsqlNonreservedKeyword { $id = new QsiIdentifier($plKey.text, false); }
     ;
 
 columnIdentifier returns [QsiIdentifier id]
     : i=identifier { $id = $i.id; }
     | nrKey=nonReservedKeyword { $id = new QsiIdentifier($nrKey.text, false); }
     | cKey=columnKeyword { $id = new QsiIdentifier($cKey.text, false); }
+    | plKey=plsqlNonreservedKeyword { $id = new QsiIdentifier($plKey.text, false); }
     ;
 
 typeFunctionIdentifier returns [QsiIdentifier id]
     : i=identifier { $id = $i.id; }
     | nrKey=nonReservedKeyword { $id = new QsiIdentifier($nrKey.text, false); }
     | tKey=typeFunctionKeyword { $id = new QsiIdentifier($tKey.text, false); }
+    | plKey=plsqlNonreservedKeyword { $id = new QsiIdentifier($plKey.text, false); }
     ;
 
 // TODO: Check names are correctly using identifiers.
@@ -2410,30 +2413,30 @@ reservedKeyword
     ;
 
 typeFunctionKeyword
-   : AUTHORIZATION
-   | BINARY
-   | COLLATION
-   | CONCURRENTLY
-   | CROSS
-   | CURRENT_SCHEMA
-   | FREEZE
-   | FULL
-   | ILIKE
-   | INNER_P
-   | IS
-   | ISNULL
-   | JOIN
-   | LEFT
-   | LIKE
-   | NATURAL
-   | NOTNULL
-   | OUTER_P
-   | OVERLAPS
-   | RIGHT
-   | SIMILAR
-   | TABLESAMPLE
-   | VERBOSE
-   ;
+    : AUTHORIZATION
+    | BINARY
+    | COLLATION
+    | CONCURRENTLY
+    | CROSS
+    | CURRENT_SCHEMA
+    | FREEZE
+    | FULL
+    | ILIKE
+    | INNER_P
+    | IS
+    | ISNULL
+    | JOIN
+    | LEFT
+    | LIKE
+    | NATURAL
+    | NOTNULL
+    | OUTER_P
+    | OVERLAPS
+    | RIGHT
+    | SIMILAR
+    | TABLESAMPLE
+    | VERBOSE
+    ;
 
 nonReservedKeyword
     : ABORT_P
@@ -2738,55 +2741,218 @@ nonReservedKeyword
     ;
 
 columnKeyword
-   : BETWEEN
-   | BIGINT
-   | BIT
-   | BOOLEAN_P
-   | CHARACTER
-   | CHAR_P
-   | COALESCE
-   | DEC
-   | DECIMAL_P
-   | EXISTS
-   | EXTRACT
-   | FLOAT_P
-   | GREATEST
-   | GROUPING
-   | INOUT
-   | INTEGER
-   | INTERVAL
-   | INT_P
-   | LEAST
-   | NATIONAL
-   | NCHAR
-   | NONE
-   | NORMALIZE
-   | NULLIF
-   | NUMERIC
-   | OUT_P
-   | OVERLAY
-   | POSITION
-   | PRECISION
-   | REAL
-   | ROW
-   | SETOF
-   | SMALLINT
-   | SUBSTRING
-   | TIME
-   | TIMESTAMP
-   | TREAT
-   | TRIM
-   | VALUES
-   | VARCHAR
-   | XMLATTRIBUTES
-   | XMLCONCAT
-   | XMLELEMENT
-   | XMLEXISTS
-   | XMLFOREST
-   | XMLNAMESPACES
-   | XMLPARSE
-   | XMLPI
-   | XMLROOT
-   | XMLSERIALIZE
-   | XMLTABLE
-   ;
+    : BETWEEN
+    | BIGINT
+    | BIT
+    | BOOLEAN_P
+    | CHARACTER
+    | CHAR_P
+    | COALESCE
+    | DEC
+    | DECIMAL_P
+    | EXISTS
+    | EXTRACT
+    | FLOAT_P
+    | GREATEST
+    | GROUPING
+    | INOUT
+    | INTEGER
+    | INTERVAL
+    | INT_P
+    | LEAST
+    | NATIONAL
+    | NCHAR
+    | NONE
+    | NORMALIZE
+    | NULLIF
+    | NUMERIC
+    | OUT_P
+    | OVERLAY
+    | POSITION
+    | PRECISION
+    | REAL
+    | ROW
+    | SETOF
+    | SMALLINT
+    | SUBSTRING
+    | TIME
+    | TIMESTAMP
+    | TREAT
+    | TRIM
+    | VALUES
+    | VARCHAR
+    | XMLATTRIBUTES
+    | XMLCONCAT
+    | XMLELEMENT
+    | XMLEXISTS
+    | XMLFOREST
+    | XMLNAMESPACES
+    | XMLPARSE
+    | XMLPI
+    | XMLROOT
+    | XMLSERIALIZE
+    | XMLTABLE
+    ;
+
+/**
+ * PL/SQL Keywords
+ *
+ * NOTE: These keywords are treated as identiifer in non PL/SQL.
+ *       Nonetheless they are seperated because the lexer does.
+ */
+plsqlNonreservedKeyword
+    : ABSOLUTE_P
+    | ALIAS
+    | AND
+    | ARRAY
+    | ASSERT
+    | BACKWARD
+    | CALL
+    | CHAIN
+    | CLOSE
+    | COLLATE
+    | COLUMN
+    //| COLUMN_NAME
+    | COMMIT
+    | CONSTANT
+    | CONSTRAINT
+    //| CONSTRAINT_NAME
+    | CONTINUE_P
+    | CURRENT_P
+    | CURSOR
+    //| DATATYPE
+    | DEBUG
+    | DEFAULT
+    //| DETAIL
+    | DIAGNOSTICS
+    | DO
+    | DUMP
+    | ELSIF
+    //| ERRCODE
+    | ERROR
+    | EXCEPTION
+    | EXIT
+    | FETCH
+    | FIRST_P
+    | FORWARD
+    | GET
+    //| HINT
+    
+    //| IMPORT
+    | INFO
+    | INSERT
+    | IS
+    | LAST_P
+    | LOG
+    //| MESSAGE
+    
+    //| MESSAGE_TEXT
+    | MOVE
+    | NEXT
+    | NO
+    | NOTICE
+    | OPEN
+    | OPTION
+    | PERFORM
+    //| PG_CONTEXT
+    
+    //| PG_DATATYPE_NAME
+    
+    //| PG_EXCEPTION_CONTEXT
+    
+    //| PG_EXCEPTION_DETAIL
+    
+    //| PG_EXCEPTION_HINT
+    | PRINT_STRICT_PARAMS
+    | PRIOR
+    | QUERY
+    | RAISE
+    | RELATIVE_P
+    | RESET
+    | RETURN
+    //| RETURNED_SQLSTATE
+    | REVERSE
+    | ROLLBACK
+    //| ROW_COUNT
+    | ROWTYPE
+    | SCHEMA
+    //| SCHEMA_NAME
+    | SCROLL
+    | SET
+    | SLICE
+    | SQLSTATE
+    | STACKED
+    | TABLE
+    //| TABLE_NAME
+    | TYPE_P
+    | USE_COLUMN
+    | USE_VARIABLE
+    | VARIABLE_CONFLICT
+    | WARNING
+    | OUTER_P
+    ;
+
+// Temp PL/SQL Keywords
+
+//rk
+//    : AND
+//    | ARRAY
+//    | COLLATE
+//    | COLUMN
+//    | CONSTRAINT
+//    | DEFAULT
+//    | DO
+//    | FETCH
+//    ;
+//
+//rk_cbfot
+//    : IS
+//    ;
+//
+//nrk
+//    : ABSOLUTE_P
+//    | BACKWARD
+//    | CHAIN
+//    | CLOSE
+//    | COMMIT
+//    | CURRENT_P
+//    | CURSOR
+//    | FIRST_P
+//    | FORWARD
+//    | INSERT
+//    | LAST_P
+//    | MOVE
+//    | NEXT
+//    | NO
+//    | OPTION
+//    | PRIOR
+//    | RELATIVE_P
+//    | RESET
+//    | ROLLBACK
+//    ;
+//
+//nrk_cnbfot
+//    : ALIAS
+//    | ASSERT
+//    | CALL
+//    | CONSTANT
+//    | CONTINUE_P
+//    | DEBUG
+//    | DIAGNOSTICS
+//    | DUMP
+//    | ELSIF
+//    | ERROR
+//    | EXCEPTION
+//    | EXIT
+//    | GET
+//    | INFO
+//    | LOG
+//    | NOTICE
+//    | OPEN
+//    | PERFORM
+//    | PRINT_STRICT_PARAMS
+//    | QUERY
+//    | RAISE
+//    | RETURN
+//    | REVERSE
+//    ;
