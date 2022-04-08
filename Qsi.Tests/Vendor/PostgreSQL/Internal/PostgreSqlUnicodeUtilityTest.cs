@@ -1,6 +1,3 @@
-using System;
-using System.Text;
-using System.Threading.Tasks;
 using NUnit.Framework;
 using Qsi.PostgreSql.Internal;
 
@@ -43,7 +40,7 @@ public class PostgreSqlUnicodeUtilityTest
     [TestCase("d!0061t!+000061!!", '!', ExpectedResult = "data!")]
     public string Test_Parse(string input, char escape)
     {
-        var result = PostgreSqlUnicodeUtility.Parse(input, escape, 0);
+        var result = PostgreSqlUnicodeUtility.Parse(input, escape);
         return result;
     }
 
