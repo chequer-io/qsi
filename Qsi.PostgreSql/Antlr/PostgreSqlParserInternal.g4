@@ -250,7 +250,6 @@ createStatement
     | createMaterializedView
     | createOperator
     | createPolicy
-    | createProcedure
     | createPublication
     | createRole
     | createRule
@@ -441,8 +440,56 @@ createForeignTable
     : CREATE FOREIGN TABLE (IF_P NOT EXISTS)? qualifiedIdentifier createTableOptions SERVER columnIdentifier genericOptions?
     ;
 
+/**
+ * CREATE FUNCTION, CREATE PROCEDURE
+ *
+ * See: https://www.postgresql.org/docs/14/sql-createfunction.html
+ * See also: https://www.postgresql.org/docs/14/sql-createprocedure.html
+ */
 createFunction
-    :;
+    : CREATE (OR REPLACE)? (FUNCTION | PROCEDURE) functionName '(' argumentDefinitionWithDefaultList ')'
+        (RETURNS (functionType | TABLE '(' functionColumnDefinitionList ')'))?
+        createFunctionOptionList
+    ;
+
+functionColumnDefinitionList
+    : functionColumnDefinition (COMMA functionColumnDefinition)*
+    ;
+
+functionColumnDefinition
+    : typeFunctionIdentifier functionType
+    ;
+
+createFunctionOptionList
+    : createFunctionOption+ /*{ ParseRoutineBody(_localctx); }*/ // From open-source PG parser, dunno why it's here.
+    ;
+
+createFunctionOption
+    : AS string (',' string)? /* locals[ParserRuleContext definition] */ // From open-source PG parser, dunno why it's here.
+    | LANGUAGE noReservedWordOrString
+    | TRANSFORM transformTypeList
+    | WINDOW
+    | functionStatementOption
+    ;
+
+transformTypeList
+    : FOR TYPE_P type (COMMA FOR TYPE_P type)*
+    ;
+
+functionStatementOption
+    : (CALLED | RETURNS NULL_P) ON NULL_P INPUT_P
+    | STRICT_P
+    | IMMUTABLE
+    | STABLE
+    | VOLATILE
+    | EXTERNAL? SECURITY (DEFINER | INVOKER)
+    | NOT? LEAKPROOF
+    | (COST | ROWS) numericOnly
+    | SUPPORT qualifiedIdentifier
+    | SET setTarget
+    | resetStatement
+    | PARALLEL columnIdentifier
+    ;
 
 createGroup
     :;
@@ -479,9 +526,6 @@ createOperatorFamily
     :;
 
 createPolicy
-    :;
-
-createProcedure
     :;
 
 createPublication
@@ -2331,6 +2375,14 @@ functionDefinition
     : functionName '(' argumentDefinitionList? ')'
     | typeFunctionKeyword
     | columnIdentifier indirection*
+    ;
+
+argumentDefinitionWithDefaultList
+    : argumentDefinitionWithDefault (COMMA argumentDefinitionWithDefault)*
+    ;
+
+argumentDefinitionWithDefault
+    : argumentDefinition ((DEFAULT | EQUAL) expression)?
     ;
 
 argumentDefinitionList
