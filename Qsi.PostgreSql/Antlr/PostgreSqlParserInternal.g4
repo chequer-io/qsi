@@ -35,6 +35,10 @@ statement
    | updateStatement
    | deleteStatement
    | truncateStatement
+   
+   // Uncategorized
+   | setStatement
+   | resetStatement
    ;
 
 //----------------- DDL statements -------------------------------------------------------------------------------------
@@ -971,6 +975,87 @@ truncateStatement
     : TRUNCATE TABLE? ONLY? tableList
     (RESTART IDENTITY_P | CONTINUE_P IDENTITY_P)?
     (CASCADE | RESTRICT)
+    ;
+
+//----------------- Uncategorized Statements ---------------------------------------------------------------------------
+
+/**
+ * RESET
+ *
+ * See: https://www.postgresql.org/docs/14/sql-reset.html
+ */
+resetStatement
+    : RESET resetTarget
+    ;
+
+resetTarget
+    : genericReset
+    | TIME ZONE
+    | TRANSACTION ISOLATION LEVEL
+    | SESSION AUTHORIZATION
+    ;
+
+genericReset
+    : qualifiedIdentifier
+    | ALL
+    ;
+
+/**
+ * SET
+ *
+ * See: https://www.postgresql.org/docs/14/sql-set.html
+ */
+setStatement
+    : SET (SESSION | LOCAL)? setStatementTarget
+    ;
+
+setStatementTarget
+    : TRANSACTION transactionModeList
+    | SESSION CHARACTERISTICS AS TRANSACTION transactionModeList
+    | setTarget
+    ;
+
+setTarget
+    : genericSet
+    | qualifiedIdentifierList FROM CURRENT_P
+    | TIME ZONE timezone
+    | (CATALOG_P | SCHEMA | TRANSACTION SNAPSHOT) string
+    | NAMES (string | DEFAULT)?
+    | (ROLE | SESSION AUTHORIZATION) noReservedWordOrString
+    | SESSION AUTHORIZATION noReservedWordOrString
+    | XML_P OPTION documentOrContent
+    ;
+
+genericSet
+    : qualifiedIdentifier (TO | EQUAL) qualifiedIdentifierList
+    ;
+
+transactionModeList
+    : transactionMode (',' transactionMode)*
+    ;
+
+transactionMode
+    : ISOLATION LEVEL isoLevel
+    | READ ONLY
+    | READ WRITE
+    | DEFERRABLE
+    | NOT DEFERRABLE
+    ;
+
+isoLevel
+    : READ (UNCOMMITTED | COMMITTED)
+    | REPEATABLE READ
+    | SERIALIZABLE
+    ;
+
+timezone
+    : string
+    | identifier
+    | interval string intervalOption?
+    | interval '(' unsignedInt ')' string
+    | numericOnly
+    | DEFAULT
+    | LOCAL
     ;
 
 //----------------- CLAUSES --------------------------------------------------------------------------------------------
