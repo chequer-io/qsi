@@ -518,8 +518,20 @@ createIndex
         whereClause?
     ;
 
+/**
+ * CREATE LANGUAGE
+ *
+ * See: https://www.postgresql.org/docs/14/sql-createlanguage.html
+ */
 createLanguage
-    :;
+    : CREATE (OR REPLACE)? TRUSTED? PROCEDURAL? LANGUAGE columnIdentifier
+        (HANDLER qualifiedIdentifier (INLINE_P qualifiedIdentifier)? validatorClause?)?
+    ;
+
+validatorClause
+    : VALIDATOR qualifiedIdentifier
+    | NO VALIDATOR
+    ;
 
 createMaterializedView
     :;
