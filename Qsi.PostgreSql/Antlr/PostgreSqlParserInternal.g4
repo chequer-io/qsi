@@ -776,8 +776,17 @@ simpleTableLikeOption
     | ALL
     ;
 
+/**
+ * CREATE TABLESPACE
+ *
+ * See: https://www.postgresql.org/docs/14/sql-createstatistics.html
+ */
 createTablespaceStatement
-    :;
+    : CREATE STATISTICS (IF_P NOT EXISTS)? qualifiedIdentifier
+        ('(' columnIdentifierList ')')?
+        ON expressionList
+        FROM fromItemList
+    ;
 
 createTextSearchStatement:
     TEXT_P SEARCH (
