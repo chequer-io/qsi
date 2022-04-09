@@ -44,43 +44,42 @@ statement
 /**
 * ALTER STATEMENT
 */
-alterStatement:
-    ALTER (
-        alterAggregate
-        | alterCollation
-        | alterConversion
-        | alterDatabase
-        | alterDefaultPrivileges
-        | alterDomain
-        | alterEventTrigger
-        | alterExtension
-        | alterForeign
-        | alterFunction
-        | alterGroup
-        | alterIndex
-        | alterLanguage
-        | alterLargeObject
-        | alterMaterializedView
-        | alterOperator
-        | alterPolicy
-        | alterProcedure
-        | alterPublication
-        | alterRole
-        | alterRoutine
-        | alterRule
-        | alterSchema
-        | alterSequence
-        | alterServer
-        | alterStatistics
-        | alterSubscription
-        | alterTable
-        | alterTableSpace
-        | alterTextSearch
-        | alterTrigger
-        | alterType
-        | alterUser
-        | alterView
-    );
+alterStatement
+    : alterAggregate
+    | alterCollation
+    | alterConversion
+    | alterDatabase
+    | alterDefaultPrivileges
+    | alterDomain
+    | alterEventTrigger
+    | alterExtension
+    | alterForeign
+    | alterFunction
+    | alterGroup
+    | alterIndex
+    | alterLanguage
+    | alterLargeObject
+    | alterMaterializedView
+    | alterOperator
+    | alterPolicy
+    | alterProcedure
+    | alterPublication
+    | alterRole
+    | alterRoutine
+    | alterRule
+    | alterSchema
+    | alterSequence
+    | alterServer
+    | alterStatistics
+    | alterSubscription
+    | alterTable
+    | alterTableSpace
+    | alterTextSearch
+    | alterTrigger
+    | alterType
+    | alterUserMapping
+    | alterView
+    ;
 
 // TODO: Implement alter statement
 alterAggregate
@@ -159,8 +158,33 @@ alterProcedure
 alterPublication
     :;
 
+/**
+ * ALTER ROLE, ALTER USER
+ *
+ * ALTER USER is an alias for ALTER ROLE.
+ *
+ * See: https://www.postgresql.org/docs/14/sql-alterrole.html
+ * See also: https://www.postgresql.org/docs/14/sql-alteruser.html
+ */
 alterRole
-    :;
+    : ALTER (ROLE | USER) ALL? role alterRolePostfix?
+    ;
+
+alterRolePostfix
+    : WITH? alterRoleOption+
+    | (IN_P DATABASE columnIdentifier)? (SET setTarget | resetStatement)
+    | RENAME TO role
+    ;
+
+alterRoleOption
+    : PASSWORD (string | NULL_P)
+    | (ENCRYPTED | UNENCRYPTED) PASSWORD string
+    | INHERIT
+    | CONNECTION LIMIT int
+    | VALID UNTIL string
+    | USER role (',' role)*
+    | identifier
+    ;
 
 alterRoutine
     :;
@@ -215,12 +239,6 @@ alterTrigger
 
 alterType
     :;
-
-alterUser
-    : USER (
-        // TODO: Implement ALTER USER clause.
-        alterUserMapping
-    ); 
     
 alterUserMapping
     :;
@@ -2441,6 +2459,15 @@ relOptionList
 
 relOption
     : columnLabelIdentifier (EQUAL definitionArgument | DOT columnLabelIdentifier (EQUAL definitionArgument)?)?
+    ;
+
+/**
+ * Roles
+ */
+role
+    : noReservedKeywords
+    | CURRENT_USER
+    | SESSION_USER
     ;
 
 //----------------- KETWORDS -------------------------------------------------------------------------------------------
