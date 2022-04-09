@@ -827,9 +827,21 @@ createTextSearchTemplateStatement
     : CREATE TEXT_P SEARCH TEMPLATE qualifiedIdentifier '(' definitionList ')'
     ;
 
-
+/**
+ * CREATE TRANSFORM
+ *
+ * See: https://www.postgresql.org/docs/14/sql-createtransform.html
+ */
 createTransformStatement
-    :;
+    : CREATE (OR REPLACE)? TRANSFORM FOR type LANGUAGE columnIdentifier '(' transformElementList ')'
+    ;
+
+transformElementList
+    : FROM SQL_P WITH FUNCTION functionDefinition ',' TO SQL_P WITH FUNCTION functionDefinition
+    | TO SQL_P WITH FUNCTION functionDefinition ',' FROM SQL_P WITH FUNCTION functionDefinition
+    | FROM SQL_P WITH FUNCTION functionDefinition
+    | TO SQL_P WITH FUNCTION functionDefinition
+    ;
 
 createTriggerStatement
     :;
