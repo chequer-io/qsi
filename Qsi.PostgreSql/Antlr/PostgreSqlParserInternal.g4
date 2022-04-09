@@ -593,8 +593,14 @@ operatorArgumentTypes
     | '(' type ',' NONE ')'
     ;
 
+/**
+ * CREATE OPERATOR FAMILY
+ *
+ * See: https://www.postgresql.org/docs/14/sql-createopfamily.html
+ */
 createOperatorFamily
-    :;
+    : CREATE OPERATOR FAMILY qualifiedIdentifier USING columnIdentifier
+    ;
 
 createPolicy
     :;
