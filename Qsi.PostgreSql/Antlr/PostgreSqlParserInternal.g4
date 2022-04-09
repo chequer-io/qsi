@@ -1068,7 +1068,7 @@ setTarget
     ;
 
 genericSet
-    : qualifiedIdentifier (TO | EQUAL) qualifiedIdentifierList
+    : qualifiedIdentifier (TO | EQUAL) (booleanOrString | numericOnly)
     ;
 
 transactionModeList
