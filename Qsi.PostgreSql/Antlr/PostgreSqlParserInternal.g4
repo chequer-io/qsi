@@ -46,68 +46,68 @@ statement
 * ALTER STATEMENT
 */
 alterStatement
-    : alterAggregate
-    | alterCollation
-    | alterConversion
-    | alterDatabase
-    | alterDefaultPrivileges
-    | alterDomain
-    | alterEventTrigger
-    | alterExtension
-    | alterForeign
-    | alterFunction
-    | alterGroup
-    | alterIndex
-    | alterLanguage
-    | alterLargeObject
-    | alterMaterializedView
-    | alterOperator
-    | alterPolicy
-    | alterProcedure
-    | alterPublication
-    | alterRole
-    | alterRoutine
-    | alterRule
-    | alterSchema
-    | alterSequence
-    | alterServer
-    | alterStatistics
-    | alterSubscription
-    | alterTable
-    | alterTableSpace
-    | alterTextSearch
-    | alterTrigger
-    | alterType
-    | alterUserMapping
-    | alterView
+    : alterAggregateStatement
+    | alterCollationStatement
+    | alterConversionStatement
+    | alterDatabaseStatement
+    | alterDefaultPrivilegesStatement
+    | alterDomainStatement
+    | alterEventTriggerStatement
+    | alterExtensionStatement
+    | alterForeignStatement
+    | alterFunctionStatement
+    | alterGroupStatement
+    | alterIndexStatement
+    | alterLanguageStatement
+    | alterLargeObjectStatement
+    | alterMaterializedViewStatement
+    | alterOperatorStatement
+    | alterPolicyStatement
+    | alterProcedureStatement
+    | alterPublicationStatement
+    | alterRoleStatement
+    | alterRoutineStatement
+    | alterRuleStatement
+    | alterSchemaStatement
+    | alterSequenceStatement
+    | alterServerStatement
+    | alterStatisticsStatement
+    | alterSubscriptionStatement
+    | alterTableStatement
+    | alterTableSpaceStatement
+    | alterTextSearchStatement
+    | alterTriggerStatement
+    | alterTypeStatement
+    | alterUserMappingStatement
+    | alterViewStatement
     ;
 
 // TODO: Implement alter statement
-alterAggregate
+alterAggregateStatement
     :;
     
-alterCollation
+alterCollationStatement
     :;
 
-alterConversion
+alterConversionStatement
     :;
 
-alterDatabase
+alterDatabaseStatement
     :;
 
-alterDefaultPrivileges
+alterDefaultPrivilegesStatement
     :;
     
-alterDomain
+alterDomainStatement
     :;
 
-alterEventTrigger
+alterEventTriggerStatement
     :;
 
-alterExtension
+alterExtensionStatement
     :;
 
-alterForeign
+alterForeignStatement
     : FOREIGN (
         alterForeignDataWrapper
         | alterForeignTable
@@ -119,25 +119,25 @@ alterForeignDataWrapper
 alterForeignTable
     :;
 
-alterFunction
+alterFunctionStatement
     :;
 
-alterGroup
+alterGroupStatement
     :;
 
-alterIndex
+alterIndexStatement
     :;
 
-alterLanguage
+alterLanguageStatement
     :;
 
-alterLargeObject
+alterLargeObjectStatement
     :;
 
-alterMaterializedView
+alterMaterializedViewStatement
     :;
 
-alterOperator
+alterOperatorStatement
     : OPERATOR (
         // TODO: Implement ALTER OPERATOR clause.
         alterOperatorClass
@@ -150,13 +150,13 @@ alterOperatorClass
 alterOperatorFamily
     :;
 
-alterPolicy
+alterPolicyStatement
     :;
 
-alterProcedure
+alterProcedureStatement
     :;
 
-alterPublication
+alterPublicationStatement
     :;
 
 /**
@@ -167,7 +167,7 @@ alterPublication
  * See: https://www.postgresql.org/docs/14/sql-alterrole.html
  * See also: https://www.postgresql.org/docs/14/sql-alteruser.html
  */
-alterRole
+alterRoleStatement
     : ALTER (ROLE | USER) ALL? role alterRolePostfix?
     ;
 
@@ -187,34 +187,34 @@ alterRoleOption
     | identifier
     ;
 
-alterRoutine
+alterRoutineStatement
     :;
 
-alterRule
+alterRuleStatement
     :;
 
-alterSchema
+alterSchemaStatement
     :;
 
-alterSequence
+alterSequenceStatement
     :;
 
-alterServer
+alterServerStatement
     :;
 
-alterStatistics
+alterStatisticsStatement
     :;
 
-alterSubscription
+alterSubscriptionStatement
     :;
 
-alterTable
+alterTableStatement
     :;
 
-alterTableSpace
+alterTableSpaceStatement
     :;
 
-alterTextSearch:
+alterTextSearchStatement:
     TEXT_P SEARCH (
         alterTextSearchConfiguration
         | alterTextSearchDictionary
@@ -235,53 +235,53 @@ alterTextSearchTemplate
     :;
 
 
-alterTrigger
+alterTriggerStatement
     :;
 
-alterType
+alterTypeStatement
     :;
     
-alterUserMapping
+alterUserMappingStatement
     :;
 
-alterView
+alterViewStatement
     :;
 
 // TODO: Implement create statement.
 createStatement
-    : createAccessMethod
-    | createAggregate
-    | createCast
-    | createCollation
-    | createConversion
-    | createDatabase
-    | createDomain
-    | createEventTrigger
-    | createExtension
-    | createForeignDataWrapper
-    | createForeignTable
-    | createFunction
-    | createIndex
-    | createLanguage
-    | createMaterializedView
-    | createOperator
-    | createOperatorClass
-    | createOperatorFamily
-    | createPolicy
-    | createPublication
-    | createRole
-    | createRule
-    | createSchema
-    | createSequence
-    | createServer
-    | createTable
-    | createTablespace
-    | createTextSearch
-    | createTransform
-    | createTrigger
-    | createType
-    | createUserMapping
-    | createView
+    : createAccessMethodStatement
+    | createAggregateStatement
+    | createCastStatement
+    | createCollationStatement
+    | createConversionStatement
+    | createDatabaseStatement
+    | createDomainStatement
+    | createEventTriggerStatement
+    | createExtensionStatement
+    | createForeignDataWrapperStatement
+    | createForeignTableStatement
+    | createFunctionStatement
+    | createIndexStatement
+    | createLanguageStatement
+    | createMaterializedViewStatement
+    | createOperatorStatement
+    | createOperatorClassStatement
+    | createOperatorFamilyStatement
+    | createPolicyStatement
+    | createPublicationStatement
+    | createRoleStatement
+    | createRuleStatement
+    | createSchemaStatement
+    | createSequenceStatement
+    | createServerStatement
+    | createTableStatement
+    | createTablespaceStatement
+    | createTextSearchStatement
+    | createTransformStatement
+    | createTriggerStatement
+    | createTypeStatement
+    | createUserMappingStatement
+    | createViewStatement
     ;
 
 /**
@@ -289,7 +289,7 @@ createStatement
  *
  * See: https://www.postgresql.org/docs/14/sql-create-access-method.html
  */
-createAccessMethod
+createAccessMethodStatement
     : CREATE ACCESS METHOD columnIdentifier TYPE_P (INDEX | TABLE) HANDLER qualifiedIdentifier
     ;
 
@@ -298,7 +298,7 @@ createAccessMethod
  *
  * See: https://www.postgresql.org/docs/14/sql-createaggregate.html
  */
-createAggregate
+createAggregateStatement
     : CREATE (OR REPLACE)? AGGREGATE functionName createAggregateArgumentOption
     ;
 
@@ -327,7 +327,7 @@ aggregateArgumentsOldSyntax
  *
  * See: https://www.postgresql.org/docs/14/sql-createcast.html
  */
-createCast
+createCastStatement
     : CREATE CAST '(' type AS type ')' createCastOption castContext?
     ;
 
@@ -346,7 +346,7 @@ castContext
  *
  * See: https://www.postgresql.org/docs/14/sql-createcollation.html
  */
-createCollation
+createCollationStatement
     : CREATE COLLATION (IF_P NOT EXISTS)? qualifiedIdentifier '(' definitionList ')'
     ;
 
@@ -355,7 +355,7 @@ createCollation
  *
  * See: https://www.postgresql.org/docs/14/sql-createconversion.html
  */
-createConversion
+createConversionStatement
     : CREATE DEFAULT? CONVERSION_P qualifiedIdentifier FOR string TO string FROM qualifiedIdentifier
     ;
 
@@ -364,7 +364,7 @@ createConversion
  *
  * See: https://www.postgresql.org/docs/14/sql-createdatabase.html
  */
-createDatabase
+createDatabaseStatement
     : CREATE DATABASE columnIdentifier WITH? createDatabaseItem*
     ;
 
@@ -387,7 +387,7 @@ createDatabaseItemName
  *
  * See: https://www.postgresql.org/docs/14/sql-createdomain.html
  */
-createDomain
+createDomainStatement
     : CREATE DOMAIN_P qualifiedIdentifier AS? type columnConstraint*
     ;
 
@@ -396,7 +396,7 @@ createDomain
  *
  * See: https://www.postgresql.org/docs/14/sql-createeventtrigger.html
  */
-createEventTrigger
+createEventTriggerStatement
     : CREATE EVENT TRIGGER columnIdentifier ON columnLabelIdentifier (WHEN eventTriggerWhenList)?
         EXECUTE (FUNCTION | PROCEDURE) functionName '(' ')'
     ;
@@ -414,7 +414,7 @@ eventTriggerItem
  *
  * See: https://www.postgresql.org/docs/14/sql-createextension.html
  */ 
-createExtension
+createExtensionStatement
     : CREATE EXTENSION (IF_P NOT EXISTS)? columnIdentifier WITH? createExtensionOptionList?
     ;
 
@@ -434,7 +434,7 @@ createExtensionOption
  *
  * See: https://www.postgresql.org/docs/14/sql-createforeigndatawrapper.html
  */
-createForeignDataWrapper
+createForeignDataWrapperStatement
     : CREATE FOREIGN DATA_P WRAPPER qualifiedIdentifier foreignDataWrapperOptions? genericOptions?
     ;
 
@@ -454,7 +454,7 @@ foreignDataWrapperOption
  *
  * See: https://www.postgresql.org/docs/14/sql-createforeigntable.html
  */
-createForeignTable
+createForeignTableStatement
     : CREATE FOREIGN TABLE (IF_P NOT EXISTS)? qualifiedIdentifier createTableOptions SERVER columnIdentifier genericOptions?
     ;
 
@@ -464,7 +464,7 @@ createForeignTable
  * See: https://www.postgresql.org/docs/14/sql-createfunction.html
  * See also: https://www.postgresql.org/docs/14/sql-createprocedure.html
  */
-createFunction
+createFunctionStatement
     : CREATE (OR REPLACE)? (FUNCTION | PROCEDURE) functionName '(' argumentDefinitionWithDefaultList ')'
         (RETURNS (functionType | TABLE '(' functionColumnDefinitionList ')'))?
         createFunctionOptionList
@@ -512,7 +512,7 @@ functionStatementOption
 /**
  * CREATE INDEX
  */
-createIndex
+createIndexStatement
     : CREATE UNIQUE? INDEX CONCURRENTLY? (IF_P NOT EXISTS)? columnIdentifier
         ON tableName (USING columnIdentifier)? '(' indexList ')'
         includeClause?
@@ -526,7 +526,7 @@ createIndex
  *
  * See: https://www.postgresql.org/docs/14/sql-createlanguage.html
  */
-createLanguage
+createLanguageStatement
     : CREATE (OR REPLACE)? TRUSTED? PROCEDURAL? LANGUAGE columnIdentifier
         (HANDLER qualifiedIdentifier (INLINE_P qualifiedIdentifier)? validatorClause?)?
     ;
@@ -541,7 +541,7 @@ validatorClause
  *
  * See: https://www.postgresql.org/docs/14/sql-creatematerializedview.html
  */
-createMaterializedView
+createMaterializedViewStatement
     : CREATE UNLOGGED? MATERIALIZED VIEW (IF_P NOT EXISTS)? createMatViewTarget
         AS selectStatement (WITH (DATA_P | NO DATA_P))?
     ;
@@ -558,7 +558,7 @@ createMatViewTarget
  *
  * See: https://www.postgresql.org/docs/14/sql-createoperator.html
  */
-createOperator
+createOperatorStatement
     : CREATE OPERATOR operator '(' definitionList ')'
     ;
 
@@ -567,7 +567,7 @@ createOperator
  *
  * See: https://www.postgresql.org/docs/14/sql-createopclass.html
  */
-createOperatorClass
+createOperatorClassStatement
     : CREATE OPERATOR CLASS qualifiedIdentifier DEFAULT?
         FOR TYPE_P type USING columnIdentifier
         (FAMILY qualifiedIdentifier)? AS createOperatorClassItemList
@@ -599,7 +599,7 @@ operatorArgumentTypes
  *
  * See: https://www.postgresql.org/docs/14/sql-createopfamily.html
  */
-createOperatorFamily
+createOperatorFamilyStatement
     : CREATE OPERATOR FAMILY qualifiedIdentifier USING columnIdentifier
     ;
 
@@ -608,7 +608,7 @@ createOperatorFamily
  *
  * See: https://www.postgresql.org/docs/14/sql-createpolicy.html
  */
-createPolicy
+createPolicyStatement
     : CREATE POLICY columnIdentifier ON qualifiedIdentifier
         (AS identifier)?
         (FOR (ALL | SELECT | INSERT | UPDATE | DELETE_P))?
@@ -622,7 +622,7 @@ createPolicy
  *
  * See: https://www.postgresql.org/docs/14/sql-createpublication.html
  */
-createPublication
+createPublicationStatement
     : CREATE PUBLICATION qualifiedIdentifier forTableClause? definitionListClause?
     ;
 
@@ -639,7 +639,7 @@ forTableClause
  * See also: https://www.postgresql.org/docs/14/sql-createuser.html
  * See also: https://www.postgresql.org/docs/14/sql-creategroup.html
  */
-createRole
+createRoleStatement
     : CREATE (ROLE | USER | GROUP_P) role WITH? createRoleOption*
     ;
 
@@ -654,7 +654,7 @@ createRoleOption
  *
  * See: https://www.postgresql.org/docs/14/sql-createrule.html
  */
-createRule
+createRuleStatement
     : CREATE (OR REPLACE)? RULE columnIdentifier
         AS ON (SELECT | UPDATE | INSERT | DELETE_P)
         TO qualifiedIdentifier whereClause?
@@ -684,13 +684,13 @@ ruleActionStatement
  *
  * See: https://www.postgresql.org/docs/14/sql-createschema.html
  */
-createSchema
+createSchemaStatement
     : CREATE SCHEMA (IF_P NOT EXISTS)? (columnIdentifier? AUTHORIZATION role | columnIdentifier) schemaStatement*
     ;
 
 schemaStatement
-    : createTable
-    | createIndex
+    : createTableStatement
+    | createIndexStatement
 //    | createSequence // TODO: Implement later.
 //    | createTrigger
 //    | grantStatement
@@ -700,7 +700,7 @@ schemaStatement
 createSequence
     :;
 
-createServer
+createServerStatement
     :;
 
 /**
@@ -708,8 +708,8 @@ createServer
  *
  * See: https://www.postgresql.org/docs/14/sql-createtable.html
  */
-createTable
-    : createTablePrefix? TABLE (IF_P NOT EXISTS)? qualifiedIdentifier createTableOptions
+createTableStatement
+    : CREATE tempOption? TABLE (IF_P NOT EXISTS)? qualifiedIdentifier createTableOptions
         partitionByClause?
         usingClause?
         withOptionsClause?
@@ -717,7 +717,7 @@ createTable
         tableSpaceClause?
     ;
 
-createTablePrefix
+tempOption
     : TEMPORARY
     | TEMP
     | LOCAL (TEMPORARY | TEMP)
@@ -761,10 +761,10 @@ simpleTableLikeOption
     | ALL
     ;
 
-createTablespace
+createTablespaceStatement
     :;
 
-createTextSearch:
+createTextSearchStatement:
     TEXT_P SEARCH (
         createTextSearchConfiguration
         | createTextSearchDictionary
@@ -785,19 +785,19 @@ createTextSearchTemplate
     :;
 
 
-createTransform
+createTransformStatement
     :;
 
-createTrigger
+createTriggerStatement
     :;
 
-createType
+createTypeStatement
     :;
     
-createUserMapping
+createUserMappingStatement
     :;
 
-createView
+createViewStatement
     :;
     
 dropStatement:
