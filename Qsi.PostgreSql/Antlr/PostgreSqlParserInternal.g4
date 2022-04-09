@@ -616,8 +616,18 @@ createPolicy
         (WITH CHECK expressionParens)?
     ;
 
+/**
+ * CREATE PUBLICATION
+ *
+ * See: https://www.postgresql.org/docs/14/sql-createpublication.html
+ */
 createPublication
-    :;
+    : CREATE PUBLICATION qualifiedIdentifier forTableClause? definitionListClause?
+    ;
+
+forTableClause
+    : FOR (TABLE tableName (',' tableName)* | ALL TABLES)
+    ;
 
 /**
  * CREATE ROLE, CREATE USER, CREATE GROUP
