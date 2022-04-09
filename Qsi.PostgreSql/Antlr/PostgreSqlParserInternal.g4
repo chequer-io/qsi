@@ -1559,8 +1559,8 @@ likeExpressionOptions
     ;
 
 subqueryOperator
-    : operator
-    | OPERATOR '(' simpleOperator ')'
+    : simpleOperator
+    | OPERATOR '(' operator ')'
     | NOT? (LIKE | ILIKE)
     ;
 
@@ -1894,19 +1894,19 @@ setOperatorOption
 
 qualifiedWithoutMathOperator
     : Operator
-    | OPERATOR '(' simpleOperator ')'
+    | OPERATOR '(' operator ')'
     ;
 
 qualifiedOperator
-    : operator
-    | OPERATOR '(' simpleOperator ')'
-    ;
-
-simpleOperator
-    : (columnIdentifier DOT)* operator
+    : simpleOperator
+    | OPERATOR '(' operator ')'
     ;
 
 operator
+    : (columnIdentifier DOT)* simpleOperator
+    ;
+
+simpleOperator
     : Operator
     | mathOperator
     ;
@@ -2300,7 +2300,7 @@ excludeIndexList
     ;
 
 excludeIndex
-    : index WITH (simpleOperator | OPERATOR '(' simpleOperator ')')
+    : index WITH (operator | OPERATOR '(' operator ')')
     ;
 
 exclusionWhereClause
