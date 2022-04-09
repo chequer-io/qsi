@@ -264,6 +264,8 @@ createStatement
     | createLanguage
     | createMaterializedView
     | createOperator
+    | createOperatorClass
+    | createOperatorFamily
     | createPolicy
     | createPublication
     | createRole
@@ -559,8 +561,37 @@ createOperator
     : CREATE OPERATOR operator '(' definitionList ')'
     ;
 
+/**
+ * CREATE OPERATOR CLASS
+ *
+ * See: https://www.postgresql.org/docs/14/sql-createopclass.html
+ */
 createOperatorClass
-    :;
+    : CREATE OPERATOR CLASS qualifiedIdentifier DEFAULT?
+        FOR TYPE_P type USING columnIdentifier
+        (FAMILY qualifiedIdentifier)? AS createOperatorClassItemList
+    ;
+
+createOperatorClassItemList
+    : createOperatorClassItem (',' createOperatorClassItem)*
+    ;
+
+createOperatorClassItem
+    : OPERATOR unsignedInt operator operatorArgumentTypes? createOperatorClassPurpose? RECHECK?
+    | FUNCTION unsignedInt ('(' type (',' type)* ')')? argumentDefinitionList
+    | STORAGE type
+    ;
+
+createOperatorClassPurpose
+    : FOR (SEARCH | ORDER BY qualifiedIdentifier)
+    ;
+
+operatorArgumentTypes
+    : '(' type ')'
+    | '(' type ',' type ')'
+    | '(' NONE ',' type ')'
+    | '(' type ',' NONE ')'
+    ;
 
 createOperatorFamily
     :;
