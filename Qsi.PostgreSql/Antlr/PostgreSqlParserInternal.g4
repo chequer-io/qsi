@@ -550,6 +550,15 @@ createMatViewTarget
         tableSpaceClause?
     ;
 
+/**
+ * CREATE OPERATOR
+ *
+ * See: https://www.postgresql.org/docs/14/sql-createoperator.html
+ */
+createOperator
+    : CREATE OPERATOR operator '(' definitionList ')'
+    ;
+
 createOperatorClass
     :;
 
