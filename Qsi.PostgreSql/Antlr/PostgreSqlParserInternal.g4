@@ -260,7 +260,6 @@ createStatement
     | createForeignDataWrapper
     | createForeignTable
     | createFunction
-    | createGroup
     | createIndex
     | createLanguage
     | createMaterializedView
@@ -278,7 +277,7 @@ createStatement
     | createTransform
     | createTrigger
     | createType
-    | createUser
+    | createUserMapping
     | createView
     ;
 
@@ -507,9 +506,6 @@ functionStatementOption
     | PARALLEL columnIdentifier
     ;
 
-createGroup
-    :;
-
 /**
  * CREATE INDEX
  */
@@ -547,8 +543,24 @@ createPolicy
 createPublication
     :;
 
+/**
+ * CREATE ROLE, CREATE USER, CREATE GROUP
+ *
+ * CREATE USER, CREATE GROUP is an alias for CREATE ROLE.
+ *
+ * See: https://www.postgresql.org/docs/14/sql-createrole.html
+ * See also: https://www.postgresql.org/docs/14/sql-createuser.html
+ * See also: https://www.postgresql.org/docs/14/sql-creategroup.html
+ */
 createRole
-    :;
+    : CREATE (ROLE | USER | GROUP_P) role WITH? createRoleOption*
+    ;
+
+createRoleOption
+    : alterRoleOption
+    | SYSID unsignedInt
+    | (ADMIN | ROLE | IN_P (ROLE | GROUP_P)) role (',' role)*
+    ;
 
 createRule
     :;
@@ -652,12 +664,6 @@ createTrigger
 
 createType
     :;
-
-createUser:
-    USER (
-        // TODO: Implement CREATE USER clause.
-        createUserMapping
-    );
     
 createUserMapping
     :;
