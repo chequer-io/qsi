@@ -679,8 +679,23 @@ ruleActionStatement
     | notifyStatement
     ;
 
+/**
+ * CREATE SCHEMA
+ *
+ * See: https://www.postgresql.org/docs/14/sql-createschema.html
+ */
 createSchema
-    :;
+    : CREATE SCHEMA (IF_P NOT EXISTS)? (columnIdentifier? AUTHORIZATION role | columnIdentifier) schemaStatement*
+    ;
+
+schemaStatement
+    : createTable
+    | createIndex
+//    | createSequence // TODO: Implement later.
+//    | createTrigger
+//    | grantStatement
+//    | viewStatement
+    ;
 
 createSequence
     :;
