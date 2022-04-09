@@ -691,8 +691,8 @@ createSchemaStatement
 schemaStatement
     : createTableStatement
     | createIndexStatement
-//    | createSequence // TODO: Implement later.
-//    | createTrigger
+    | createSequenceStatement
+//    | createTrigger // TODO: Implement later.
 //    | grantStatement
 //    | viewStatement
     ;
@@ -706,8 +706,17 @@ createSequenceStatement
     : CREATE tempOption? SEQUENCE (IF_P NOT EXISTS)? qualifiedIdentifier ('(' sequenceOptionList ')')?
     ;
 
+/**
+ * CREATE SERVER
+ *
+ * See: https://www.postgresql.org/docs/14/sql-createserver.html
+ */
 createServerStatement
-    :;
+    : CREATE SERVER (IF_P NOT EXISTS)? columnIdentifier
+        (TYPE_P string)?
+        (VERSION_P (string | NULL_P))?
+        FOREIGN DATA_P WRAPPER columnIdentifier genericOptions?
+    ;
 
 /**
  * CREATE TABLE
