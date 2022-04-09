@@ -649,8 +649,35 @@ createRoleOption
     | (ADMIN | ROLE | IN_P (ROLE | GROUP_P)) role (',' role)*
     ;
 
+/**
+ * CREATE RULE
+ *
+ * See: https://www.postgresql.org/docs/14/sql-createrule.html
+ */
 createRule
-    :;
+    : CREATE (OR REPLACE)? RULE columnIdentifier
+        AS ON (SELECT | UPDATE | INSERT | DELETE_P)
+        TO qualifiedIdentifier whereClause?
+        DO (INSTEAD | ALSO)? ruleAction
+    ;
+
+ruleAction
+    : NOTHING
+    | ruleActionStatement
+    | '(' ruleActionStatementList ')'
+    ;
+
+ruleActionStatementList
+    : ruleActionStatement (';' ruleActionStatement)*
+    ;
+
+ruleActionStatement
+    : selectStatement
+    | insertStatement
+    | updateStatement
+    | deleteStatement
+    | notifyStatement
+    ;
 
 createSchema
     :;
