@@ -697,8 +697,14 @@ schemaStatement
 //    | viewStatement
     ;
 
-createSequence
-    :;
+/**
+ * CREATE SEQUENCE
+ *
+ * See: https://www.postgresql.org/docs/14/sql-createsequence.html
+ */
+createSequenceStatement
+    : CREATE tempOption? SEQUENCE (IF_P NOT EXISTS)? qualifiedIdentifier ('(' sequenceOptionList ')')?
+    ;
 
 createServerStatement
     :;
