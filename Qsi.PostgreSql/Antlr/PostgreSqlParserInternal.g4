@@ -602,8 +602,19 @@ createOperatorFamily
     : CREATE OPERATOR FAMILY qualifiedIdentifier USING columnIdentifier
     ;
 
+/**
+ * CREATE POLICY
+ *
+ * See: https://www.postgresql.org/docs/14/sql-createpolicy.html
+ */
 createPolicy
-    :;
+    : CREATE POLICY columnIdentifier ON qualifiedIdentifier
+        (AS identifier)?
+        (FOR (ALL | SELECT | INSERT | UPDATE | DELETE_P))?
+        (TO role (',' role)*)?
+        (USING expressionParens)?
+        (WITH CHECK expressionParens)?
+    ;
 
 createPublication
     :;
