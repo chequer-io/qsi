@@ -35,8 +35,9 @@ statement
    | truncateStatement
    
    // Uncategorized
-   | setStatement
+   | notifyStatement
    | resetStatement
+   | setStatement
    ;
 
 //----------------- DDL statements -------------------------------------------------------------------------------------
@@ -1129,6 +1130,15 @@ truncateStatement
     ;
 
 //----------------- Uncategorized Statements ---------------------------------------------------------------------------
+
+/**
+ * NOTIFY
+ *
+ * See: https://www.postgresql.org/docs/14/sql-notify.html
+ */
+notifyStatement
+    : NOTIFY columnIdentifier (',' string)?
+    ;
 
 /**
  * RESET
