@@ -533,16 +533,23 @@ validatorClause
     | NO VALIDATOR
     ;
 
+/**
+ * CREATE MATERIALIZED VIEW
+ *
+ * See: https://www.postgresql.org/docs/14/sql-creatematerializedview.html
+ */
 createMaterializedView
-    :;
+    : CREATE UNLOGGED? MATERIALIZED VIEW (IF_P NOT EXISTS)? createMatViewTarget
+        AS selectStatement (WITH (DATA_P | NO DATA_P))?
+    ;
 
-createOperator:
-    OPERATOR (
-        // TODO: Implement CREATE OPERATOR clause.
-        | createOperatorClass
-        | createOperatorFamily
-    );
-    
+createMatViewTarget
+    : qualifiedIdentifier ('(' columnIdentifierList ')')?
+        usingClause?
+        withOptionsClause?
+        tableSpaceClause?
+    ;
+
 createOperatorClass
     :;
 
