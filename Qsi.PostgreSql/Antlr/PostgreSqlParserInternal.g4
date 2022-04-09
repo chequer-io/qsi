@@ -276,7 +276,10 @@ createStatement
     | createServerStatement
     | createTableStatement
     | createTablespaceStatement
-    | createTextSearchStatement
+    | createTextSearchConfigurationStatement
+    | createTextSearchDictionaryStatement
+    | createTextSearchParserStatement
+    | createTextSearchTemplateStatement
     | createTransformStatement
     | createTriggerStatement
     | createTypeStatement
@@ -788,25 +791,41 @@ createTablespaceStatement
         FROM fromItemList
     ;
 
-createTextSearchStatement:
-    TEXT_P SEARCH (
-        createTextSearchConfiguration
-        | createTextSearchDictionary
-        | createTextSearchParser
-        | createTextSearchTemplate
-    );
+/**
+ * CREATE TEXT SEARCH CONFIGURATION
+ *
+ * See: https://www.postgresql.org/docs/14/sql-createtsconfig.html
+ */
+createTextSearchConfigurationStatement
+    : CREATE TEXT_P SEARCH CONFIGURATION qualifiedIdentifier '(' definitionList ')'
+    ;
 
-createTextSearchConfiguration
-    :;
+/**
+ * CREATE TEXT SEARCH DICTIONARY
+ *
+ * See: https://www.postgresql.org/docs/14/sql-createtsdictionary.html
+ */
+createTextSearchDictionaryStatement
+    : CREATE TEXT_P SEARCH DICTIONARY qualifiedIdentifier '(' definitionList ')'
+    ;
 
-createTextSearchDictionary
-    :;
+/**
+ * CREATE TEXT SEARCH PARSER
+ *
+ * See: https://www.postgresql.org/docs/14/sql-createtsparser.html
+ */
+createTextSearchParserStatement
+    : CREATE TEXT_P SEARCH PARSER qualifiedIdentifier '(' definitionList ')'
+    ;
 
-createTextSearchParser
-    :;
-
-createTextSearchTemplate
-    :;
+/**
+ * CREATE TEXT SEARCH TEMPLATE
+ *
+ * See: https://www.postgresql.org/docs/14/sql-createtsparser.html
+ */
+createTextSearchTemplateStatement
+    : CREATE TEXT_P SEARCH TEMPLATE qualifiedIdentifier '(' definitionList ')'
+    ;
 
 
 createTransformStatement
