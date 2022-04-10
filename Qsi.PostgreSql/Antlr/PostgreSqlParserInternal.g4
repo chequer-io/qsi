@@ -934,8 +934,17 @@ createUserMappingStatement
     : CREATE USER MAPPING (IF_P NOT EXISTS)? FOR (role | USER) SERVER columnIdentifier genericOptions
     ;
 
+/**
+ * CREATE VIEW
+ *
+ * See: https://www.postgresql.org/docs/14/sql-createview.html
+ */
 createViewStatement
-    :;
+    : CREATE (OR REPLACE)? tempOption? RECURSIVE? VIEW qualifiedIdentifier
+        (columnIdentifierList | '(' columnIdentifierList ')')?
+        withOptionsClause?
+        AS selectStatement (WITH (CASCADED | LOCAL)? CHECK OPTION)?
+    ;
     
 dropStatement:
     DROP (
