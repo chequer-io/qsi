@@ -925,8 +925,14 @@ enumList
     : string (',' string)*
     ;
 
+/**
+ * CREATE USER MAPPING
+ *
+ * See: https://www.postgresql.org/docs/14/sql-createusermapping.html
+ */
 createUserMappingStatement
-    :;
+    : CREATE USER MAPPING (IF_P NOT EXISTS)? FOR (role | USER) SERVER columnIdentifier genericOptions
+    ;
 
 createViewStatement
     :;
