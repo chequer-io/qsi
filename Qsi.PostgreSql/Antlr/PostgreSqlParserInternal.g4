@@ -2327,7 +2327,7 @@ constant
     | hex
     | bin
     | string
-//    | functionName (string | '(' /* TODO: Implement functionArgumentList on constants */ orderByClause ')' string)
+    | functionName (string | '(' argumentList orderByClause ')' string)
     | constType string
     | interval
     | TRUE_P
