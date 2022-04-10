@@ -1712,7 +1712,7 @@ booleanExpression
     | booleanExpression IS NOT? TRUE_P
     | booleanExpression IS NOT? FALSE_P
     | booleanExpression IS NOT? UNKNOWN
-    | booleanExpression IS NOT? DISTINCT FROM
+    | booleanExpression IS NOT? DISTINCT FROM booleanExpression
     ;
 
 /**
