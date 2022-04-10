@@ -843,8 +843,67 @@ transformElementList
     | TO SQL_P WITH FUNCTION functionDefinition
     ;
 
+/**
+ * CREATE TRIGGER
+ *
+ * See: https://www.postgresql.org/docs/14/sql-createtrigger.html
+ */
 createTriggerStatement
-    :;
+    : CREATE (OR REPLACE)? TRIGGER columnIdentifier triggeractiontime triggerEvents
+        ON qualifiedIdentifier triggerReferencing? triggerFor triggerWhen?
+        triggerExecuteClause
+    | CREATE (OR REPLACE)? CONSTRAINT TRIGGER columnIdentifier AFTER triggerEvents
+        ON qualifiedIdentifier ((FROM qualifiedIdentifier)? constraintAttribute* FOR EACH ROW) triggerWhen?
+        triggerExecuteClause
+    ;
+
+triggerExecuteClause
+    : EXECUTE (FUNCTION | PROCEDURE) functionName '(' triggerFunctionArguments? ')'
+    ;
+
+triggeractiontime
+    : BEFORE
+    | AFTER
+    | INSTEAD OF
+    ;
+
+triggerEvents
+    : triggerEvent (OR triggerEvent)*
+    ;
+
+triggerEvent
+    : INSERT
+    | DELETE_P
+    | UPDATE (OF columnIdentifierList)?
+    | TRUNCATE
+    ;
+
+triggerReferencing
+    : REFERENCING triggerTranslation+
+    ;
+
+triggerTranslation
+    : (NEW | OLD) (TABLE | ROW) AS? columnIdentifier
+    ;
+
+triggerFor
+    : FOR EACH? (ROW | STATEMENT)
+    ;
+
+triggerWhen
+    : WHEN expressionParens
+    ;
+
+triggerFunctionArguments
+    : triggerFunctionArgument (',' triggerFunctionArgument)*
+    ;
+
+triggerFunctionArgument
+    : unsignedInt
+    | float
+    | string
+    | columnLabelIdentifier
+    ;
 
 createTypeStatement
     :;
