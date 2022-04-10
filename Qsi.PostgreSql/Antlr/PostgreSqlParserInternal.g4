@@ -2158,7 +2158,7 @@ noReservedKeywords
  * Consists of dot attribute and subscript. 
  */
 indirection
-    : (DOT columnLabelIdentifier | STAR)
+    : DOT (columnLabelIdentifier | STAR)
     | arraySubscript
     ;
 
