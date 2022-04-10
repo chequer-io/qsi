@@ -905,9 +905,26 @@ triggerFunctionArgument
     | columnLabelIdentifier
     ;
 
+/**
+ * CREATE TYPE
+ *
+ * See: https://www.postgresql.org/docs/14/sql-createtype.html
+ */
 createTypeStatement
-    :;
-    
+    : CREATE TYPE_P qualifiedIdentifier createTypeOption?
+    ;
+
+createTypeOption
+    : '(' definitionList ')'
+    | AS '(' columnDefinitionList? ')'
+    | AS ENUM_P '(' enumList? ')'
+    | AS RANGE '(' definitionList ')'
+    ;
+
+enumList
+    : string (',' string)*
+    ;
+
 createUserMappingStatement
     :;
 
