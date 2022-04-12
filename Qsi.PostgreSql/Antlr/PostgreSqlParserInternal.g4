@@ -54,7 +54,8 @@ alterStatement
     | alterDomainStatement
     | alterEventTriggerStatement
     | alterExtensionStatement
-    | alterForeignStatement
+    | alterForeignDataWrapperStatement
+    | alterForeignTableStatement
     | alterFunctionStatement
     | alterGroupStatement
     | alterIndexStatement
@@ -62,8 +63,9 @@ alterStatement
     | alterLargeObjectStatement
     | alterMaterializedViewStatement
     | alterOperatorStatement
+    | alterOperatorClassStatement
+    | alterOperatorFamilyStatement
     | alterPolicyStatement
-    | alterProcedureStatement
     | alterPublicationStatement
     | alterRoleStatement
     | alterRoutineStatement
@@ -74,90 +76,363 @@ alterStatement
     | alterStatisticsStatement
     | alterSubscriptionStatement
     | alterTableStatement
-    | alterTableSpaceStatement
-    | alterTextSearchStatement
+    | alterTablespaceStatement
+    | alterTextSearchConfigurationStatement
+    | alterTextSearchDictionaryStatement
+    | alterTextSearchParserStatement
+    | alterTextSearchTemplateStatement
     | alterTriggerStatement
     | alterTypeStatement
     | alterUserMappingStatement
     | alterViewStatement
     ;
 
-// TODO: Implement alter statement
+// TODO: Move this script to a proper place.
+// General postfix for alter statement
+alterGenericPostfix
+    : RENAME TO columnIdentifier
+    | SET SCHEMA columnIdentifier
+    | OWNER TO role
+    ;
+
+/**
+ * ALTER AGGREGATE
+ *
+ * See: https://www.postgresql.org/docs/14/sql-alteraggregate.html
+ */
 alterAggregateStatement
-    :;
-    
+    : ALTER AGGREGATE aggregateDefinition alterGenericPostfix
+    ;
+
+/**
+ * ALTER COLLATION
+ *
+ * See: https://www.postgresql.org/docs/14/sql-altercollation.html
+ */
 alterCollationStatement
-    :;
+    : ALTER COLLATION qualifiedIdentifier (alterGenericPostfix | REFRESH VERSION_P)
+    ;
 
+/**
+ * ALTER CONVERSION
+ *
+ * See: https://www.postgresql.org/docs/14/sql-alterconversion.html
+ */
 alterConversionStatement
-    :;
+    : ALTER CONVERSION_P qualifiedIdentifier alterGenericPostfix
+    ;
 
+/**
+ * ALTER DATABASE
+ *
+ * See: https://www.postgresql.org/docs/14/sql-alterdatabase.html
+ */
 alterDatabaseStatement
-    :;
+    : ALTER DATABASE columnIdentifier alterDatabasePostfix
+    ;
 
+alterDatabasePostfix
+    : alterGenericPostfix
+    | WITH? createDatabaseItem+
+    | SET TABLESPACE columnIdentifier
+    | SET setStatementTarget
+    | resetStatement
+    ;
+
+/**
+ * ALTER DEFAULT PRIVILEGES
+ *
+ * See: https://www.postgresql.org/docs/14/sql-alterdefaultprivileges.html
+ */
 alterDefaultPrivilegesStatement
-    :;
-    
+    : ALTER DEFAULT PRIVILEGES alterDefaultPrivilegesOption+ alterDefaultPrivilegesAction
+    ;
+
+alterDefaultPrivilegesOption    
+    : IN_P SCHEMA columnIdentifierList
+    | FOR (ROLE | USER) roleList
+    ;
+
+alterDefaultPrivilegesAction
+    : GRANT privileges ON alterDefaultPrivilegesTarget TO granteeList (WITH GRANT OPTION)?
+    | REVOKE (GRANT OPTION FOR)? privileges ON alterDefaultPrivilegesTarget FROM granteeList (CASCADE | RESTRICT)?
+    ;
+
+alterDefaultPrivilegesTarget
+    : TABLES
+    | FUNCTIONS
+    | ROUTINES
+    | SEQUENCES
+    | TYPES_P
+    | SCHEMAS
+    ;
+
+/**
+ * ALTER DOMAIN
+ *
+ * See: https://www.postgresql.org/docs/14/sql-alterdomain.html
+ */
 alterDomainStatement
-    :;
+    : ALTER DOMAIN_P qualifiedIdentifier alterDomainPostfix
+    ;
 
+alterDomainPostfix
+    : alterGenericPostfix
+    | RENAME CONSTRAINT columnIdentifier TO columnIdentifier
+    | alter_column_default
+    | (SET | DROP) NOT NULL_P
+    | ADD_P tableConstraint
+    | DROP CONSTRAINT (IF_P EXISTS)? columnIdentifier (CASCADE | RESTRICT)?
+    | VALIDATE CONSTRAINT columnIdentifier
+    ;
+
+alter_column_default
+    : SET DEFAULT expression
+    | DROP DEFAULT
+    ;
+
+/**
+ * ALTER EVENT TRIGGER
+ *
+ * See: https://www.postgresql.org/docs/14/sql-altereventtrigger.html
+ */
 alterEventTriggerStatement
-    :;
+    : ALTER EVENT TRIGGER columnIdentifier alterEventTriggerPostfix
+    ;
 
+alterEventTriggerPostfix
+    : alterGenericPostfix
+    | ENABLE_P (REPLICA | ALWAYS)?
+    | DISABLE_P
+    ;
+
+/**
+ * ALTER EXTENSION
+ *
+ * See: https://www.postgresql.org/docs/14/sql-alterextension.html
+ */
 alterExtensionStatement
-    :;
+    : ALTER EXTENSION columnIdentifier alterExtensionPostfix
+    ;
 
-alterForeignStatement
-    : FOREIGN (
-        alterForeignDataWrapper
-        | alterForeignTable
-    );
-    
-alterForeignDataWrapper
-    :;
+alterExtensionPostfix
+    : alterGenericPostfix
+    | UPDATE alterExtensionUpdateItem*
+    | (ADD_P | DROP) alterExtensionTarget
+    ;
 
-alterForeignTable
-    :;
+alterExtensionUpdateItem
+    : TO noReservedWordOrString
+    ;
 
+alterExtensionTarget
+    : object_type_name columnIdentifier
+    | object_type_any_name qualifiedIdentifier
+    | AGGREGATE aggregateDefinition
+    | CAST '(' type AS type ')'
+    | (DOMAIN_P | TYPE_P) type
+    | (FUNCTION | PROCEDURE | ROUTINE) functionDefinition
+    | OPERATOR operatorDefinition
+    | OPERATOR (CLASS | FAMILY) qualifiedIdentifier USING columnIdentifier
+    | TRANSFORM FOR type LANGUAGE columnIdentifier
+    ;
+
+/**
+ * ALTER FOREIGN DATA WRAPPER
+ *
+ * See: https://www.postgresql.org/docs/14/sql-alterforeigndatawrapper.html
+ */
+alterForeignDataWrapperStatement
+    : ALTER FOREIGN DATA_P WRAPPER columnIdentifier alterForeignDataWrapperOptions
+    ;
+
+alterForeignDataWrapperOptions
+    : alterGenericPostfix
+    | foreignDataWrapperOptions? alterGenericOptions
+    | foreignDataWrapperOptions
+    ;
+
+/**
+ * ALTER FOREIGN TABLE
+ *
+ * See: https://www.postgresql.org/docs/14/sql-alterforeigntable.html
+ */
+alterForeignTableStatement
+    : ALTER FOREIGN TABLE (IF_P EXISTS)? tableName alterForeignTablePostfix
+    ;
+
+alterForeignTablePostfix
+    : alterGenericOptions
+    | alterTableCommandList
+    | RENAME COLUMN? columnIdentifier TO columnIdentifier
+    ;
+
+/**
+ * ALTER FUNCTION, ALTER PROCEDURE
+ *
+ * See: https://www.postgresql.org/docs/14/sql-alterfunction.html
+ * See also: https://www.postgresql.org/docs/14/sql-alterprocedure.html
+ */
 alterFunctionStatement
-    :;
+    : ALTER (FUNCTION | PROCEDURE) functionDefinition alterFunctionPostfix
+    ;
 
+alterFunctionPostfix
+    : alterGenericPostfix
+    | NO? DEPENDS ON EXTENSION columnIdentifier
+    ;
+
+/**
+ * ALTER GROUP
+ *
+ * See: https://www.postgresql.org/docs/14/sql-altergroup.html
+ */
 alterGroupStatement
-    :;
+    : ALTER GROUP_P role alterGroupPostfix
+    ;
 
+alterGroupPostfix
+    : RENAME TO role
+    | (ADD_P | DROP) USER roleList
+    ;
+
+/**
+ * ALTER INDEX
+ *
+ * See: https://www.postgresql.org/docs/14/sql-alterindex.html
+ */
 alterIndexStatement
-    :;
+    : ALTER INDEX (IF_P EXISTS)? qualifiedIdentifier alterIndexPostfix
+    | ALTER INDEX ALL IN_P TABLESPACE columnIdentifier (OWNED BY roleList)? SET TABLESPACE columnIdentifier NOWAIT?
+    | ALTER INDEX qualifiedIdentifier NO? DEPENDS ON EXTENSION columnIdentifier
+    ;
 
+alterIndexPostfix
+    : alterTableCommandList
+    | indexPartitionCommand
+    | RENAME TO columnIdentifier
+    ;
+
+indexPartitionCommand
+    : ATTACH PARTITION qualifiedIdentifier
+    ;
+
+/**
+ * ALTER LANGUAGE
+ *
+ * See: https://www.postgresql.org/docs/14/sql-alterlanguage.html
+ */
 alterLanguageStatement
-    :;
+    : ALTER PROCEDURAL? LANGUAGE columnIdentifier alterGenericPostfix
+    ;
 
+/**
+ * ALTER LARGE OBJECT
+ *
+ * See: https://www.postgresql.org/docs/14/sql-alterlargeobject.html
+ */
 alterLargeObjectStatement
-    :;
+    : ALTER LARGE_P OBJECT_P numericOnly OWNER TO role 
+    ;
 
+/**
+ * ALTER MATERIALIZED VIEW
+ *
+ * See: https://www.postgresql.org/docs/14/sql-altermaterializedview.html
+ */
 alterMaterializedViewStatement
-    :;
+    : ALTER MATERIALIZED VIEW (IF_P EXISTS)? qualifiedIdentifier alterGenericPostfix
+    | ALTER MATERIALIZED VIEW (IF_P EXISTS)? qualifiedIdentifier RENAME COLUMN? columnIdentifier TO columnIdentifier
+    | ALTER MATERIALIZED VIEW (IF_P EXISTS)? qualifiedIdentifier alterTableCommandList
+    | ALTER MATERIALIZED VIEW qualifiedIdentifier NO? DEPENDS ON EXTENSION columnIdentifier
+    | ALTER MATERIALIZED VIEW ALL IN_P TABLESPACE columnIdentifier (OWNED BY roleList)? SET TABLESPACE columnIdentifier NOWAIT?
+    ;
 
+/**
+ * ALTER OPERATOR
+ *
+ * See: https://www.postgresql.org/docs/14/sql-alteroperator.html
+ */
 alterOperatorStatement
-    : OPERATOR (
-        // TODO: Implement ALTER OPERATOR clause.
-        alterOperatorClass
-        | alterOperatorFamily
-    );
-    
-alterOperatorClass
-    :;
+    : ALTER OPERATOR operatorDefinition alterGenericPostfix
+    | ALTER OPERATOR operatorDefinition SET '(' alterOperatorOptionList ')'
+    ;
 
-alterOperatorFamily
-    :;
+alterOperatorOptionList
+    : alterOperatorOption (',' alterOperatorOption)*
+    ;
 
+alterOperatorOption
+    : columnLabelIdentifier '=' (NONE | alterOperatorArgument)
+    ;
+
+alterOperatorArgument
+    : functionType
+    | reservedKeyword
+    | qualifiedOperator
+    | numericOnly
+    | string
+    ;
+
+/**
+ * ALTER OPERATOR CLASS
+ *
+ * See: https://www.postgresql.org/docs/14/sql-alteropclass.html
+ */
+alterOperatorClassStatement
+    : ALTER OPERATOR CLASS qualifiedIdentifier alterGenericPostfix
+    ;
+
+/**
+ * ALTER OPERATOR FAMILY
+ *
+ * See: https://www.postgresql.org/docs/14/sql-alteropfamily.html
+ */
+alterOperatorFamilyStatement
+    : ALTER OPERATOR FAMILY qualifiedIdentifier USING columnIdentifier alterOperatorFamilyPostfix
+    ;
+
+alterOperatorFamilyPostfix
+    : alterGenericPostfix
+    | ADD_P createOperatorClassItemList
+    | DROP dropOperatorClassItemList
+    ;
+
+dropOperatorClassItemList
+    : dropOperatorClassItem (',' dropOperatorClassItem)*
+    ;
+
+dropOperatorClassItem
+    : (OPERATOR | FUNCTION) unsignedInt '(' type (',' type)* ')'
+    ;
+
+/**
+ * ALTER POLICY
+ *
+ * See: https://www.postgresql.org/docs/14/sql-alterpolicy.html
+ */
 alterPolicyStatement
-    :;
+    : ALTER POLICY (IF_P EXISTS)? columnIdentifier ON qualifiedIdentifier RENAME TO columnIdentifier
+    | ALTER POLICY columnIdentifier ON qualifiedIdentifier
+        (TO roleList)?
+        (USING '(' expression ')')?
+        (WITH CHECK '(' expression ')')?
+    ;
 
-alterProcedureStatement
-    :;
-
+/**
+ * ALTER PUBLICATION
+ *
+ * See: https://www.postgresql.org/docs/14/sql-alterpublication.html
+ */
 alterPublicationStatement
-    :;
+    : ALTER PUBLICATION columnIdentifier alterPublicationPostfix
+    ;
+
+alterPublicationPostfix
+    : alterGenericPostfix
+    | SET '(' definitionList ')'
+    | (ADD_P | SET | DROP) TABLE tableName (',' tableName)*
+    ;
 
 /**
  * ALTER ROLE, ALTER USER
@@ -183,71 +458,301 @@ alterRoleOption
     | INHERIT
     | CONNECTION LIMIT int
     | VALID UNTIL string
-    | USER role (',' role)*
+    | USER roleList
     | identifier
     ;
 
+/**
+ * ALTER ROUTINE
+ *
+ * See: https://www.postgresql.org/docs/14/sql-alterroutine.html
+ */
 alterRoutineStatement
-    :;
+    : ALTER ROUTINE functionDefinition alterRoutinePostfix
+    ;
 
+alterRoutinePostfix
+    : alterGenericPostfix
+    | NO? DEPENDS ON EXTENSION columnIdentifier
+    ;
+
+/**
+ * ALTER RULE
+ *
+ * See: https://www.postgresql.org/docs/14/sql-alterrule.html
+ */
 alterRuleStatement
-    :;
+    : ALTER RULE columnIdentifier ON qualifiedIdentifier RENAME TO columnIdentifier 
+    ;
 
+/**
+ * ALTER SCHEMA
+ *
+ * See: https://www.postgresql.org/docs/14/sql-alterschema.html
+ */
 alterSchemaStatement
-    :;
+    : ALTER SCHEMA columnIdentifier alterGenericPostfix
+    ;
 
+/**
+ * ALTER SEQUENCE
+ *
+ * See: https://www.postgresql.org/docs/14/sql-altersequence.html
+ */
 alterSequenceStatement
-    :;
+    : ALTER SEQUENCE (IF_P EXISTS)? qualifiedIdentifier alterSequencePostfix
+    ;
 
+alterSequencePostfix
+    : alterGenericPostfix
+    | alterTableCommandList
+    | sequenceOptionList
+    ;
+
+/**
+ * ALTER SERVER
+ *
+ * See: https://www.postgresql.org/docs/14/sql-alterserver.html
+ */
 alterServerStatement
-    :;
+    : ALTER SERVER columnIdentifier alterServerPostfix
+    ;
 
+alterServerPostfix
+    : alterGenericPostfix
+    | alterGenericOptions
+    | (VERSION_P (string | NULL_P)) alterGenericOptions?
+    ;
+
+/**
+ * ALTER STATISTICS
+ *
+ * See: https://www.postgresql.org/docs/14/sql-alterstatistics.html
+ */
 alterStatisticsStatement
-    :;
+    : ALTER STATISTICS columnIdentifier (SET STATISTICS unsignedInt | alterGenericPostfix)
+    ;
 
+/**
+ * ALTER SUBSCRIPTION
+ *
+ * See: https://www.postgresql.org/docs/14/sql-altersubscription.html
+ */
 alterSubscriptionStatement
-    :;
+    : ALTER SUBSCRIPTION columnIdentifier alterSubscriptionPostfix
+    ;
 
+alterSubscriptionPostfix
+    : alterGenericPostfix
+    | SET '(' definitionList ')'
+    | CONNECTION string
+    | REFRESH PUBLICATION definitionListClause?
+    | (SET | ADD_P | DROP) PUBLICATION columnLabelIdentifierList definitionListClause?
+    | ENABLE_P
+    | DISABLE_P
+    ;
+
+/**
+ * ALTER TABLE
+ *
+ * See: https://www.postgresql.org/docs/14/sql-altertable.html
+ */
 alterTableStatement
-    :;
+    : ALTER TABLE (IF_P EXISTS)? alterTablePostfix
+    ;
 
-alterTableSpaceStatement
-    :;
+alterTablePostfix
+    : tableName alterGenericPostfix
+    | tableName RENAME (COLUMN | CONSTRAINT)? columnIdentifier TO columnIdentifier
+    | tableName (alterTableCommandList | partitionCommand)
+    | columnIdentifier (OWNED BY roleList)? SET TABLESPACE columnIdentifier NOWAIT?
+    ;
 
-alterTextSearchStatement:
-    TEXT_P SEARCH (
-        alterTextSearchConfiguration
-        | alterTextSearchDictionary
-        | alterTextSearchParser
-        | alterTextSearchTemplate
-    );
+alterTableCommandList
+    : alterTableCommand (',' alterTableCommand)*
+    ;
 
-alterTextSearchConfiguration
-    :;
+alterTableCommand
+    : ADD_P COLUMN? (IF_P NOT EXISTS)? columnDefinition
+    | ALTER COLUMN? columnIdentifier alter_column_default
+    | ALTER COLUMN? columnIdentifier (SET | DROP) NOT NULL_P
+    | ALTER COLUMN? columnIdentifier DROP EXPRESSION (IF_P EXISTS)?
+    | ALTER COLUMN? columnIdentifier DROP IDENTITY_P (IF_P EXISTS)?
+    | ALTER COLUMN? columnIdentifier (SET | RESET) '(' relOptionList ')'
+    | ALTER COLUMN? columnIdentifier SET STORAGE columnIdentifier
+    | ALTER COLUMN? columnIdentifier ADD_P GENERATED (ALWAYS | BY DEFAULT) AS IDENTITY_P ('(' sequenceOptionList ')')?
+    | ALTER COLUMN? columnIdentifier alterIdentitiyColumnOption+
+    | ALTER COLUMN? (columnIdentifier | unsignedInt) SET STATISTICS int
+    | ALTER COLUMN? columnIdentifier (SET DATA_P)? TYPE_P type collateClause? (USING expression)?
+    | ALTER COLUMN? columnIdentifier alterGenericOptions
+    | DROP COLUMN? (IF_P EXISTS)? columnIdentifier (CASCADE | RESTRICT)?
+    | ADD_P tableConstraint
+    | ALTER CONSTRAINT columnIdentifier constraintAttribute*
+    | VALIDATE CONSTRAINT columnIdentifier
+    | DROP CONSTRAINT (IF_P EXISTS)? columnIdentifier (CASCADE | RESTRICT)?
+    | CLUSTER ON columnIdentifier
+    | SET (WITHOUT (OIDS | CLUSTER) | LOGGED | UNLOGGED)
+    | ENABLE_P (ALWAYS | REPLICA)? TRIGGER (columnIdentifier | ALL | USER)
+    | DISABLE_P TRIGGER (columnIdentifier | ALL | USER)
+    | ENABLE_P (ALWAYS | REPLICA)? RULE columnIdentifier
+    | DISABLE_P RULE columnIdentifier
+    | NO? INHERIT qualifiedIdentifier
+    | OF qualifiedIdentifier
+    | NOT OF
+    | OWNER TO role
+    | SET TABLESPACE columnIdentifier
+    | SET '(' relOptionList ')'
+    | RESET '(' relOptionList ')'
+    | REPLICA IDENTITY_P replicaIdentity
+    | (ENABLE_P | DISABLE_P | NO? FORCE) ROW LEVEL SECURITY
+    | alterGenericOptions
+    ;
 
-alterTextSearchDictionary
-    :;
+alterIdentitiyColumnOption
+    : RESTART (WITH numericOnly)?
+    | SET (sequenceOptionElement | GENERATED (ALWAYS | BY DEFAULT))
+    ;
 
-alterTextSearchParser
-    :;
+replicaIdentity
+    : NOTHING
+    | FULL
+    | DEFAULT
+    | USING INDEX columnIdentifier
+    ;
 
-alterTextSearchTemplate
-    :;
+partitionCommand
+    : ATTACH PARTITION qualifiedIdentifier partitionBoundOptions
+    | DETACH PARTITION qualifiedIdentifier
+    ;
 
+/**
+ * ALTER TABLESPACE
+ *
+ * See: https://www.postgresql.org/docs/14/sql-altertablespace.html
+ */
+alterTablespaceStatement
+    : ALTER TABLESPACE columnIdentifier alterTablespacePostfix
+    ;
 
+alterTablespacePostfix
+    : (SET | RESET) '(' relOptionList ')'
+    | alterGenericPostfix
+    ;
+
+/**
+ * ALTER TEXT SEARCH CONFIGURATION
+ *
+ * See: https://www.postgresql.org/docs/14/sql-altertsconfig.html
+ */
+alterTextSearchConfigurationStatement
+    : ALTER TEXT_P SEARCH CONFIGURATION qualifiedIdentifier alterTextSearchConfigurationPostfix
+    ;
+
+alterTextSearchConfigurationPostfix
+    : alterGenericPostfix
+    | ADD_P MAPPING FOR columnIdentifierList WITH qualifiedIdentifierList
+    | ALTER MAPPING FOR columnIdentifierList WITH qualifiedIdentifierList
+    | ALTER MAPPING REPLACE qualifiedIdentifier WITH qualifiedIdentifier
+    | ALTER MAPPING FOR columnIdentifierList REPLACE qualifiedIdentifier WITH qualifiedIdentifier
+    | DROP MAPPING FOR columnIdentifierList
+    | DROP MAPPING IF_P EXISTS FOR columnIdentifierList
+    ;
+
+/**
+ * ALTER TEXT SEARCH DICTIONARY
+ *
+ * See: https://www.postgresql.org/docs/14/sql-altertsdictionary.html
+ */
+alterTextSearchDictionaryStatement
+    : ALTER TEXT_P SEARCH DICTIONARY qualifiedIdentifier ('(' definitionList ')' | alterGenericPostfix)
+    ;
+
+/**
+ * ALTER TEXT SEARCH PARSER
+ *
+ * See: https://www.postgresql.org/docs/14/sql-altertsparser.html
+ */
+alterTextSearchParserStatement
+    : ALTER TEXT_P SEARCH PARSER qualifiedIdentifier alterGenericPostfix
+    ;
+
+/**
+ * ALTER TEXT SEARCH TEMPLATE
+ *
+ * See: https://www.postgresql.org/docs/14/sql-altertstemplate.html
+ */
+alterTextSearchTemplateStatement
+    : ALTER TEXT_P SEARCH TEMPLATE qualifiedIdentifier alterGenericPostfix
+    ;
+
+/**
+ * ALTER TRIGGER
+ *
+ * See: https://www.postgresql.org/docs/14/sql-altertrigger.html
+ */
 alterTriggerStatement
-    :;
+    : ALTER TRIGGER columnIdentifier ON qualifiedIdentifier alterTriggerPostfix
+    ;
 
+alterTriggerPostfix
+    : RENAME TO columnIdentifier
+    | NO? DEPENDS ON EXTENSION columnIdentifier
+    ;
+
+/**
+ * ALTER TYPE
+ *
+ * See: https://www.postgresql.org/docs/14/sql-altertype.html
+ */
 alterTypeStatement
-    :;
-    
+    : ALTER TYPE_P qualifiedIdentifier alterTypePostfix
+    ;
+
+alterTypePostfix
+    : alterGenericPostfix
+    | alterTypeCommandList
+    | SET '(' alterOperatorOptionList ')'
+    | ADD_P VALUE_P (IF_P NOT EXISTS)? string ((BEFORE | AFTER) string)?
+    | RENAME VALUE_P string TO string
+    | RENAME ATTRIBUTE columnIdentifier TO columnIdentifier (CASCADE | RESTRICT)?
+    ;
+
+alterTypeCommandList
+    : alterTypeCommand (',' alterTypeCommand)*
+    ;
+
+alterTypeCommand
+    : ADD_P ATTRIBUTE columnDefinitionList (CASCADE | RESTRICT)?
+    | DROP ATTRIBUTE (IF_P EXISTS)? columnIdentifier (CASCADE | RESTRICT)?
+    | ALTER ATTRIBUTE columnIdentifier (SET DATA_P)? TYPE_P type collateClause? (CASCADE | RESTRICT)?
+    ;
+
+/**
+ * ALTER USER MAPPING
+ *
+ * See: https://www.postgresql.org/docs/14/sql-alterusermapping.html
+ */
 alterUserMappingStatement
-    :;
+    : ALTER USER MAPPING FOR (role | USER) SERVER columnIdentifier alterGenericOptions
+    ;
 
+/**
+ * ALTER VIEW
+ *
+ * See: https://www.postgresql.org/docs/14/sql-alterview.html
+ */
 alterViewStatement
-    :;
+    : ALTER VIEW (IF_P EXISTS)? columnIdentifier alterViewPostfix
+    ;
 
-// TODO: Implement create statement.
+alterViewPostfix
+    : alterGenericPostfix
+    | alterTableCommandList
+    ;
+
+/**
+ * CREATE STATEMENT
+ */
 createStatement
     : createAccessMethodStatement
     | createAggregateStatement
@@ -308,21 +813,6 @@ createAggregateStatement
 createAggregateArgumentOption
     : '(' aggregateArgumentDefinitions ')' '(' definitionList ')'
     | '(' aggregateArgumentListOldSyntax ')'
-    ;
-
-aggregateArgumentDefinitions
-    : STAR
-    | argumentDefinitionList
-    | ORDER BY argumentDefinitionList
-    | argumentDefinitionList ORDER BY argumentDefinitionList
-    ;
-
-aggregateArgumentListOldSyntax
-    : aggregateArgumentsOldSyntax (COMMA aggregateArgumentsOldSyntax)*
-    ;
-
-aggregateArgumentsOldSyntax
-    : identifier EQUAL definitionArgument
     ;
 
 /**
@@ -581,20 +1071,13 @@ createOperatorClassItemList
     ;
 
 createOperatorClassItem
-    : OPERATOR unsignedInt operator operatorArgumentTypes? createOperatorClassPurpose? RECHECK?
+    : OPERATOR unsignedInt operatorDefinition createOperatorClassPurpose? RECHECK?
     | FUNCTION unsignedInt ('(' type (',' type)* ')')? argumentDefinitionList
     | STORAGE type
     ;
 
 createOperatorClassPurpose
     : FOR (SEARCH | ORDER BY qualifiedIdentifier)
-    ;
-
-operatorArgumentTypes
-    : '(' type ')'
-    | '(' type ',' type ')'
-    | '(' NONE ',' type ')'
-    | '(' type ',' NONE ')'
     ;
 
 /**
@@ -615,7 +1098,7 @@ createPolicyStatement
     : CREATE POLICY columnIdentifier ON qualifiedIdentifier
         (AS identifier)?
         (FOR (ALL | SELECT | INSERT | UPDATE | DELETE_P))?
-        (TO role (',' role)*)?
+        (TO roleList)?
         (USING expressionParens)?
         (WITH CHECK expressionParens)?
     ;
@@ -649,7 +1132,7 @@ createRoleStatement
 createRoleOption
     : alterRoleOption
     | SYSID unsignedInt
-    | (ADMIN | ROLE | IN_P (ROLE | GROUP_P)) role (',' role)*
+    | (ADMIN | ROLE | IN_P (ROLE | GROUP_P)) roleList
     ;
 
 /**
@@ -2176,6 +2659,17 @@ simpleOperator
     | mathOperator
     ;
 
+operatorDefinition
+    : operator operatorArgumentTypes
+    ;
+
+operatorArgumentTypes
+    : '(' type ')'
+    | '(' type ',' type ')'
+    | '(' NONE ',' type ')'
+    | '(' type ',' NONE ')'
+    ;
+
 //----------------- IDENTIFIERS ----------------------------------------------------------------------------------------
 
 /**
@@ -2281,6 +2775,10 @@ qualifiedIdentifierList
 
 columnIdentifierList
     : columnIdentifier (COMMA columnIdentifier)*
+    ;
+
+columnLabelIdentifierList
+    : columnLabelIdentifier (',' columnLabelIdentifier)*
     ;
 
 groupByItemList
@@ -2432,7 +2930,7 @@ constant
  * See: https://www.postgresql.org/docs/14/datatype-datetime.html
  */
 interval
-    : INTERVAL (string intervalOption | '(' int ')' string)
+    : INTERVAL (string intervalOption? | '(' int ')' string)
     ;
 
 intervalOption
@@ -2517,7 +3015,29 @@ noReservedWordOrString
     ;
 
 //----------------- TEMPORARY NODES ------------------------------------------------------------------------------------
-// Nodes that are not implemented yet, but required to implement other nodes.
+// Nodes that are not grouped, but required to implement other nodes.
+
+/**
+ * Aggregate Definition
+ */
+aggregateDefinition
+    : functionName '(' aggregateArgumentDefinitions ')'
+    ;
+
+aggregateArgumentDefinitions
+    : STAR
+    | argumentDefinitionList
+    | ORDER BY argumentDefinitionList
+    | argumentDefinitionList ORDER BY argumentDefinitionList
+    ;
+
+aggregateArgumentListOldSyntax
+    : aggregateArgumentsOldSyntax (COMMA aggregateArgumentsOldSyntax)*
+    ;
+
+aggregateArgumentsOldSyntax
+    : identifier EQUAL definitionArgument
+    ;
 
 /**
  * Column Definition
@@ -2720,6 +3240,25 @@ genericOption
     : columnLabelIdentifier string
     ;
 
+alterGenericOptions
+    : OPTIONS '(' alterGenericOption (',' alterGenericOption)* ')'
+    ;
+
+alterGenericOption
+    : (SET | ADD_P | DROP)? genericOption
+    ;
+
+/**
+ * Grantee
+ */
+granteeList
+    : grantee (',' grantee)*
+    ;
+
+grantee
+    : GROUP_P? role
+    ;
+
 /**
  * Index Parameters
  */
@@ -2735,6 +3274,67 @@ index
 
 indexOptions
     : collateClause? qualifiedIdentifier? ('(' relOptionList ')')? (ASC | DESC)? (NULLS_P (FIRST_P | LAST_P))?
+    ;
+
+/**
+ * Names
+ */
+// TODO: Find out what are those for.
+object_type_any_name
+   : TABLE
+   | SEQUENCE
+   | VIEW
+   | MATERIALIZED VIEW
+   | INDEX
+   | FOREIGN TABLE
+   | COLLATION
+   | CONVERSION_P
+   | STATISTICS
+   | TEXT_P SEARCH PARSER
+   | TEXT_P SEARCH DICTIONARY
+   | TEXT_P SEARCH TEMPLATE
+   | TEXT_P SEARCH CONFIGURATION
+   ;
+
+object_type_name
+   : drop_type_name
+   | DATABASE
+   | ROLE
+   | SUBSCRIPTION
+   | TABLESPACE
+   ;
+
+drop_type_name
+   : ACCESS METHOD
+   | EVENT TRIGGER
+   | EXTENSION
+   | FOREIGN DATA_P WRAPPER
+   | PROCEDURAL? LANGUAGE
+   | PUBLICATION
+   | SCHEMA
+   | SERVER
+   ;
+
+object_type_name_on_any_name
+   : POLICY
+   | RULE
+   | TRIGGER
+   ;
+
+/**
+ * Privileges
+ */
+privileges
+    : privilegeList
+    | ALL (PRIVILEGES)? ('(' columnIdentifierList ')')?
+    ;
+
+privilegeList
+    : privilege (',' privilege)*
+    ;
+
+privilege
+    : (SELECT | REFERENCES | CREATE | columnIdentifier) ('(' columnIdentifierList ')')?
     ;
 
 /**
@@ -2754,6 +3354,10 @@ relOption
 /**
  * Roles
  */
+roleList
+    : role (',' role)*
+    ;
+
 role
     : noReservedKeywords
     | CURRENT_USER
