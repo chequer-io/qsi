@@ -26,6 +26,13 @@ namespace Qsi.PrimarSql.Analyzers
         {
         }
 
+        protected override ColumnTarget[] ResolveColumnTargetsFromIdentifiers(IAnalyzerContext context, QsiTableStructure table, IEnumerable<QsiQualifiedIdentifier> identifiers)
+        {
+            return identifiers
+                .Select((x, i) => new ColumnTarget(i, x, null, null))
+                .ToArray();
+        }
+
         #region Delete
         protected override async ValueTask<IQsiAnalysisResult[]> ExecuteDataDeleteAction(IAnalyzerContext context, IQsiDataDeleteActionNode action)
         {
@@ -114,7 +121,7 @@ namespace Qsi.PrimarSql.Analyzers
 
                 oldRow.Items[0] = beforeValue;
                 newRow.Items[0] = new QsiDataValue(afterValue.ToString(Formatting.None), QsiDataType.Object);
-                
+
                 updateBeforeRows.Add(oldRow);
                 updateAfterRows.Add(newRow);
             }
@@ -150,31 +157,20 @@ namespace Qsi.PrimarSql.Analyzers
             var table = await tableAnalyzer.BuildTableStructure(tableContext, action.Target);
             var tempTable = CreateTemporaryTable(table.Identifier);
 
-            var insertRows = new QsiDataRowCollection(1, context.Engine.CacheProviderFactory());
-
             ColumnTarget[] columnTargets = ResolveColumnTargetsFromDataInsertAction(context, table, action);
+            var insertRows = new QsiDataRowCollection(columnTargets.Length, context.Engine.CacheProviderFactory());
 
             foreach (var value in action.Values)
             {
                 if (columnTargets.Length != value.ColumnValues.Length)
                     throw new QsiException(QsiError.DifferentColumnsCount);
 
-                var obj = new JObject();
-
-                for (int i = 0; i < columnTargets.Length; i++)
-                {
-                    var column = columnTargets[i].DeclaredName[^1];
-                    var columnValue = value.ColumnValues[i];
-
-                    obj[IdentifierUtility.Unescape(column.Value)] = ConvertToToken(columnValue, context);
-                }
-
                 var row = new QsiDataRow(insertRows.ColumnCount)
                 {
-                    Items =
-                    {
-                        [0] = new QsiDataValue(obj.ToString(Formatting.None), QsiDataType.Object)
-                    }
+                    Items = Enumerable
+                        .Range(0, columnTargets.Length)
+                        .Select(i => new QsiDataValue(ConvertToToken(value.ColumnValues[i], context).ToString(Formatting.None), QsiDataType.Object))
+                        .ToArray()
                 };
 
                 insertRows.Add(row);
