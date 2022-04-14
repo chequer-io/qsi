@@ -106,43 +106,49 @@ namespace Qsi.PrimarSql.Analyzers
                 var newRow = new QsiDataRow(updateAfterRows.ColumnCount);
 
                 var beforeValue = row.Items[0];
-                var afterValue = JObject.Parse(beforeValue.Value.ToString() ?? throw new InvalidOperationException());
 
-                foreach ((object[] part, var value, bool deleteProperty) in setValues)
+                if (beforeValue.Value is null)
                 {
-                    if (!SetValueToToken(afterValue, part, ConvertToToken(value, context), deleteProperty))
+                    oldRow.Items[0] = new QsiDataValue("{}", QsiDataType.Object);
+
+                    var obj = new JObject();
+
+                    foreach ((object[] part, var value, bool deleteProperty) in setValues)
                     {
-                        if (!deleteProperty)
+                        if (!SetValueToToken(obj, part, ConvertToToken(value, context), deleteProperty))
                         {
-                            throw new InvalidOperationException("Invalid path for update value.");
+                            if (!deleteProperty)
+                                throw new InvalidOperationException("Invalid path for update value.");
                         }
                     }
+
+                    newRow.Items[0] = new QsiDataValue(obj.ToString(Formatting.None), QsiDataType.Object);
                 }
+                else
+                {
+                    var afterValue = JObject.Parse(beforeValue.Value.ToString() ?? throw new InvalidOperationException());
 
-                oldRow.Items[0] = beforeValue;
-                newRow.Items[0] = new QsiDataValue(afterValue.ToString(Formatting.None), QsiDataType.Object);
+                    foreach ((object[] part, var value, bool deleteProperty) in setValues)
+                    {
+                        if (!SetValueToToken(afterValue, part, ConvertToToken(value, context), deleteProperty))
+                        {
+                            if (!deleteProperty)
+                                throw new InvalidOperationException("Invalid path for update value.");
+                        }
+                    }
 
-                updateBeforeRows.Add(oldRow);
-                updateAfterRows.Add(newRow);
-            }
+                    oldRow.Items[0] = beforeValue;
+                    newRow.Items[0] = new QsiDataValue(afterValue.ToString(Formatting.None), QsiDataType.Object);
 
-            var tempTable2 = new QsiTableStructure
-            {
-                Type = QsiTableType.Derived,
-                References = { tempTable }
-            };
-
-            foreach (var parts in setValues.Select(v => v.Item1))
-            {
-                var column = tempTable2.NewColumn();
-                column.Name = new QsiIdentifier(FormatParts(parts), false);
-                column.References.AddRange(tempTable.Columns);
+                    updateBeforeRows.Add(oldRow);
+                    updateAfterRows.Add(newRow);
+                }
             }
 
             return new QsiDataManipulationResult
             {
-                Table = tempTable2,
-                AffectedColumns = tempTable2.Columns.ToArray(),
+                Table = tempTable,
+                AffectedColumns = tempTable.Columns.ToArray(),
                 UpdateBeforeRows = updateBeforeRows.ToNullIfEmpty(),
                 UpdateAfterRows = updateAfterRows.ToNullIfEmpty()
             }.ToSingleArray();
