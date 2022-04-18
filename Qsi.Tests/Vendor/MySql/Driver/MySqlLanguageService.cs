@@ -18,14 +18,11 @@ public class MySqlLanguageService : MySqlLanguageServiceBase
 
         if (match.Success)
         {
-            if (!Version.TryParse(match.Value, out var version))
-                throw new Exception($"Invalid server version '{connection.ServerVersion}'");
-
-            Version = version;
+            Version = Version.Parse(match.Value);
         }
         else
         {
-            Version = new Version(5, 7, 13);
+            throw new Exception($"Invalid server version '{connection.ServerVersion}'");
         }
 
         _connection = connection;
