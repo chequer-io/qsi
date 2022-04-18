@@ -1,5 +1,6 @@
 using System;
 using System.Data.Common;
+using System.Text.RegularExpressions;
 using Qsi.MySql;
 using Qsi.Services;
 
@@ -13,7 +14,20 @@ public class MySqlLanguageService : MySqlLanguageServiceBase
 
     public MySqlLanguageService(DbConnection connection)
     {
-        Version = Version.Parse(connection.ServerVersion!);
+        var match = Regex.Match(connection.ServerVersion ?? string.Empty, @"\d+(?:\.\d+){1,3}");
+
+        if (match.Success)
+        {
+            if (!Version.TryParse(match.Value, out var version))
+                throw new Exception($"Invalid server version '{connection.ServerVersion}'");
+
+            Version = version;
+        }
+        else
+        {
+            Version = new Version(5, 7, 13);
+        }
+
         _connection = connection;
     }
 
