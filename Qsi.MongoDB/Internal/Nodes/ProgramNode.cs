@@ -2,7 +2,7 @@
 
 namespace Qsi.MongoDB.Internal.Nodes;
 
-public class ProgramNode : BaseNode, INode
+internal class ProgramNode : BaseNode, INode
 {
     public string SourceType { get; set; }
 

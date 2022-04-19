@@ -5,7 +5,7 @@ using Qsi.MongoDB.Internal.Nodes.Location;
 
 namespace Qsi.MongoDB.Internal.Nodes;
 
-public abstract class BaseNode : INode
+internal abstract class BaseNode : INode
 {
     public int Start { get; set; }
 

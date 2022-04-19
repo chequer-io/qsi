@@ -741,7 +741,7 @@ internal static class ExpressionVisitor
         var expressionNode = VisitExpression(expression);
 
         var node = AthenaTree.CreateWithSpan<AthenaLambdaExpressionNode>(context);
-        node.Identifiers.AddRange(identifiers);
+        node.Identifiers = identifiers.ToArray();
         node.Expression.Value = expressionNode;
 
         return node;

@@ -105,7 +105,7 @@ namespace Qsi.PostgreSql.Analyzers
                         };
                     }
 
-                    var table = context.SourceTables.FirstOrDefault(s => s.Columns.Count == 0);
+                    var table = context.JoinedSouceTables.FirstOrDefault(s => s.Columns.Count == 0);
 
                     if (table is not null)
                     {

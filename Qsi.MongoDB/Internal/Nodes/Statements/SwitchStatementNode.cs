@@ -2,7 +2,7 @@
 
 namespace Qsi.MongoDB.Internal.Nodes;
 
-public class SwitchStatementNode : BaseNode, IStatementNode
+internal class SwitchStatementNode : BaseNode, IStatementNode
 {
     public IExpressionNode Discriminant { get; set; }
 

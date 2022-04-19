@@ -48,6 +48,9 @@ namespace Qsi.PostgreSql
                 case UpdateStmt updateStmt:
                     return visitorSet.ActionVisitor.VisitUpdateStmt(updateStmt);
 
+                case DeleteStmt deleteStmt:
+                    return visitorSet.ActionVisitor.VisitDeleteStmt(deleteStmt);
+
                 case ViewStmt viewStmt:
                     return visitorSet.DefinitionVisitor.VisitViewStmt(viewStmt);
 

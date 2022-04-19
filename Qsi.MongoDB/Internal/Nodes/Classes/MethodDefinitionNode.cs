@@ -2,7 +2,7 @@
 
 namespace Qsi.MongoDB.Internal.Nodes;
 
-public class MethodDefinitionNode : BaseNode
+internal class MethodDefinitionNode : BaseNode
 {
     public IExpressionNode Key { get; set; }
 

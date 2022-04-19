@@ -2,7 +2,7 @@
 
 namespace Qsi.MongoDB.Internal.Nodes;
 
-public class ImportDeclarationNode : BaseNode, IModuleDeclarationNode
+internal class ImportDeclarationNode : BaseNode, IModuleDeclarationNode
 {
     public INode[] Specifiers { get; set; }
 

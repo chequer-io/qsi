@@ -1,6 +1,6 @@
 ﻿namespace Qsi.MongoDB.Internal.Nodes;
 
-public interface IForXStatementNode : IStatementNode
+internal interface IForXStatementNode : IStatementNode
 {
     public INode Left { get; set; }
 

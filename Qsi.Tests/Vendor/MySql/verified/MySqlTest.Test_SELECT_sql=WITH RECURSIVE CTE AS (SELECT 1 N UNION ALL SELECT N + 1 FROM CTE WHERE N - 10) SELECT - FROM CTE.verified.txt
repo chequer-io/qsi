@@ -1,0 +1,90 @@
+﻿[
+  {
+    Type: Derived,
+    References: [
+      $tbl_8
+    ],
+    Columns: [
+      {
+        Parent: $tbl_10,
+        Name: N + 1,
+        References: [
+          $col_3
+        ],
+        IsVisible: true,
+        IsExpression: true,
+        RefId: $col_5
+      }
+    ],
+    RefId: $tbl_10
+  },
+  {
+    Type: Derived,
+    References: [
+      $tbl_7
+    ],
+    Columns: [
+      {
+        Parent: $tbl_6,
+        Name: N,
+        References: [
+          $col_2
+        ],
+        IsVisible: true,
+        IsExpression: true,
+        RefId: $col_1
+      }
+    ],
+    RefId: $tbl_6
+  },
+  {
+    Type: Derived,
+    References: [
+      $tbl_8
+    ],
+    Columns: [
+      {
+        Parent: $tbl_7,
+        Name: N,
+        References: [
+          $col_3
+        ],
+        IsVisible: true,
+        IsExpression: true,
+        RefId: $col_2
+      }
+    ],
+    RefId: $tbl_7
+  },
+  {
+    Type: Derived,
+    Identifier: CTE,
+    Columns: [
+      {
+        Parent: $tbl_8,
+        Name: N,
+        References: [
+          $col_4,
+          $col_5
+        ],
+        IsVisible: true,
+        IsExpression: true,
+        RefId: $col_3
+      }
+    ],
+    RefId: $tbl_8
+  },
+  {
+    Type: Derived,
+    Columns: [
+      {
+        Parent: $tbl_9,
+        Name: N,
+        IsVisible: true,
+        IsExpression: true,
+        RefId: $col_4
+      }
+    ],
+    RefId: $tbl_9
+  }
+]

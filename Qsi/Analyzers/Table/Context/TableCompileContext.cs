@@ -16,7 +16,7 @@ namespace Qsi.Analyzers.Table.Context
 
         public QsiTableStructure SourceTable { get; set; }
 
-        public List<QsiTableStructure> SourceTables { get; }
+        public List<QsiTableStructure> JoinedSouceTables { get; }
 
         private readonly List<QsiTableStructure> _directives;
         private Stack<QsiQualifiedIdentifier> _identifierScope;
@@ -30,7 +30,7 @@ namespace Qsi.Analyzers.Table.Context
             _directives = new List<QsiTableStructure>();
             Directives = _directives;
 
-            SourceTables = new List<QsiTableStructure>();
+            JoinedSouceTables = new List<QsiTableStructure>();
         }
 
         public TableCompileContext(TableCompileContext context) : this(context, context.Options)
@@ -74,11 +74,40 @@ namespace Qsi.Analyzers.Table.Context
             _identifierScope.Push(identifier);
         }
 
+        public IEnumerable<TableCompileContext> Ancestors()
+        {
+            var node = Parent;
+
+            while (node is not null)
+            {
+                yield return node;
+
+                node = node.Parent;
+            }
+        }
+
+        public IEnumerable<TableCompileContext> AncestorsAndSelf()
+        {
+            yield return this;
+
+            foreach (var node in Ancestors())
+                yield return node;
+        }
+
+        public IEnumerable<QsiTableStructure> GetAllSourceTables()
+        {
+            if (SourceTable is not null)
+                yield return SourceTable;
+
+            foreach (var joinedSouceTable in JoinedSouceTables)
+                yield return joinedSouceTable;
+        }
+
         void IDisposable.Dispose()
         {
             _directives.Clear();
             _identifierScope?.Clear();
-            SourceTables.Clear();
+            JoinedSouceTables.Clear();
         }
     }
 }

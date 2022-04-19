@@ -2,7 +2,7 @@
 
 namespace Qsi.MongoDB.Internal.Nodes;
 
-public class ChainExpressionNode : BaseNode, IExpressionNode
+internal class ChainExpressionNode : BaseNode, IExpressionNode
 {
     // SimpleCallExpression, MemberExpression
     public INode Expression { get; set; }

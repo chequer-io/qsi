@@ -118,6 +118,13 @@ namespace Qsi.Debugger.Vendor.Athena
         {
             Console.WriteLine($"{type.ToString()} {identifier}");
 
+            if (identifier.Compare("chequer", "sakila", "actor_view"))
+            {
+                const string script = @"CREATE VIEW actor_view AS SELECT *, CONCAT(first_name, last_name) as full_name FROM actor";
+
+                return new QsiScript(script, QsiScriptType.Create);
+            }
+
             if (identifier.Compare("AwsDataCatalog", "default", "elb_logs"))
             {
                 const string script = @"CREATE EXTERNAL TABLE `elb_logs`(

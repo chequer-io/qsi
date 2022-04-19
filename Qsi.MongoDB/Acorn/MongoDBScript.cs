@@ -6,7 +6,7 @@ using Qsi.MongoDB.Internal.Nodes.Location;
 
 namespace Qsi.MongoDB.Acorn
 {
-    public sealed class MongoDBScript
+    internal sealed class MongoDBScript
     {
         public string Script { get; private set; }
 
@@ -106,7 +106,10 @@ namespace Qsi.MongoDB.Acorn
                         break;
 
                     case 's':
-                        if (isLineStart && remainLength >= 4 && Script[i..].StartsWith("show"))
+                        if (isLineStart &&
+                            remainLength >= 4 &&
+                            Script[i..].StartsWith("show") &&
+                            Script[i + 4] is ' ' or '\t')
                         {
                             isKeywordMatched = true;
                             Capture(i);
@@ -118,7 +121,10 @@ namespace Qsi.MongoDB.Acorn
                         break;
 
                     case 'u':
-                        if (isLineStart && remainLength >= 3 && Script[i..].StartsWith("use"))
+                        if (isLineStart &&
+                            remainLength >= 3 &&
+                            Script[i..].StartsWith("use") &&
+                            Script[i + 3] is ' ' or '\t')
                         {
                             isKeywordMatched = true;
                             Capture(i);

@@ -3,7 +3,7 @@ using Qsi.MongoDB.Internal.Nodes.Location;
 
 namespace Qsi.MongoDB.Acorn
 {
-    public struct MongoDBStatement
+    internal struct MongoDBStatement
     {
         public Range Range { get; set; }
         

@@ -1,6 +1,6 @@
 ﻿namespace Qsi.MongoDB.Internal.Nodes;
 
-public interface IFunctionNode : INode
+internal interface IFunctionNode : INode
 {
     IPatternNode[] Params { get; set; }
 

@@ -2,7 +2,7 @@
 
 namespace Qsi.MongoDB.Internal.Nodes;
 
-public class ArrayExpressionNode : BaseNode, IExpressionNode
+internal class ArrayExpressionNode : BaseNode, IExpressionNode
 {
     // BaseExpression, SpreadElement
     public INode[] Elements { get; set; }

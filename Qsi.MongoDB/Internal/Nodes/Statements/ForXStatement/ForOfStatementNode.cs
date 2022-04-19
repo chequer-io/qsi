@@ -2,7 +2,7 @@
 
 namespace Qsi.MongoDB.Internal.Nodes;
 
-public class ForOfStatementNode : BaseNode, IForXStatementNode
+internal class ForOfStatementNode : BaseNode, IForXStatementNode
 {
     public bool Await { get; set; }
 

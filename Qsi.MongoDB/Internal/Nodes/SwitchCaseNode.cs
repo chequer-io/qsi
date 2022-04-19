@@ -2,7 +2,7 @@
 
 namespace Qsi.MongoDB.Internal.Nodes;
 
-public class SwitchCaseNode : BaseNode, INode
+internal class SwitchCaseNode : BaseNode, INode
 {
     public IExpressionNode Test { get; set; }
 

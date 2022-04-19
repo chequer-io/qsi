@@ -12,7 +12,7 @@ using Qsi.Parsing;
 
 namespace Qsi.MongoDB.Acorn
 {
-    public static class AcornParser
+    internal static class AcornParser
     {
         private static readonly JavascriptContext _javascriptContext;
         private static readonly JsonSerializerSettings _serializerSettings;

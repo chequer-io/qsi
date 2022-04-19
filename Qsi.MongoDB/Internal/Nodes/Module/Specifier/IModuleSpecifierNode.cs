@@ -1,5 +1,5 @@
 ﻿namespace Qsi.MongoDB.Internal.Nodes;
 
-public interface IModuleSpecifierNode : INode
+internal interface IModuleSpecifierNode : INode
 {
 }

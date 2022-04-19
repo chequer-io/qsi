@@ -2079,11 +2079,11 @@ qualifiedName returns [QsiQualifiedIdentifier qqi] locals [List<QsiIdentifier> b
 
 identifier[List<QsiIdentifier> buffer] returns [QsiIdentifier qi]
     @after { $buffer?.Add($qi); }
-    : i=IDENTIFIER { $qi = new QsiIdentifier($i.text.ToUpper(), false); }             #unquotedIdentifier
+    : i=IDENTIFIER { $qi = new QsiIdentifier($i.text, false); }             #unquotedIdentifier
     | i=QUOTED_IDENTIFIER { $qi = new QsiIdentifier($i.text, true); }                 #quotedIdentifier
-    | ki=nonReserved { $qi = new QsiIdentifier($ki.text.ToUpper(), false); }          #unquotedIdentifier
+    | ki=nonReserved { $qi = new QsiIdentifier($ki.text, false); }          #unquotedIdentifier
     | i=BACKQUOTED_IDENTIFIER { $qi = new QsiIdentifier($i.text, true); }             #backQuotedIdentifier
-    | i=DIGIT_IDENTIFIER { $qi = new QsiIdentifier($i.text.ToUpper(), false); }       #digitIdentifier
+    | i=DIGIT_IDENTIFIER { $qi = new QsiIdentifier($i.text, false); }       #digitIdentifier
     ;
 
 

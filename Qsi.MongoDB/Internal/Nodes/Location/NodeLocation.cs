@@ -1,6 +1,6 @@
 ﻿namespace Qsi.MongoDB.Internal.Nodes.Location;
 
-public struct NodeLocation
+internal struct NodeLocation
 {
     public Location Start { get; set; }
 
@@ -18,7 +18,7 @@ public struct NodeLocation
     }
 }
 
-public struct Location
+internal struct Location
 {
     public int Line { get; set; }
 

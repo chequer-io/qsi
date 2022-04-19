@@ -2,7 +2,7 @@
 
 namespace Qsi.MongoDB.Internal.Nodes;
 
-public class TemplateLiteralNode : BaseNode, IExpressionNode
+internal class TemplateLiteralNode : BaseNode, IExpressionNode
 {
     public TemplateElementNode[] Quasis { get; set; }
 

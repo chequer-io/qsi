@@ -2,7 +2,7 @@
 
 namespace Qsi.MongoDB.Internal.Nodes;
 
-public class LogicalExpressionNode : BaseNode, IExpressionNode
+internal class LogicalExpressionNode : BaseNode, IExpressionNode
 {
     public string Operator { get; set; }
 

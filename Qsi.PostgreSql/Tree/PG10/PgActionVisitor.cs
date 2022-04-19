@@ -127,6 +127,10 @@ namespace Qsi.PostgreSql.Tree.PG10
                         {
                             Identifier = IdentifierVisitor.VisitRangeVar(updateStmt.relation[0])
                         }
+                    },
+                    Columns =
+                    {
+                        Value = TreeHelper.CreateAllColumnsDeclaration()
                     }
                 };
 
@@ -155,6 +159,48 @@ namespace Qsi.PostgreSql.Tree.PG10
                 return actionNode;
 
             actionNode.Directives.SetValue(TableVisitor.VisitWithClause(updateStmt.withClause[0]));
+
+            return actionNode;
+        }
+
+        public QsiDataDeleteActionNode VisitDeleteStmt(DeleteStmt deleteStmt)
+        {
+            var actionNode = TreeHelper.Create<QsiDataDeleteActionNode>(n =>
+            {
+                n.Target.Value = new QsiDerivedTableNode
+                {
+                    Source =
+                    {
+                        Value = new QsiTableReferenceNode
+                        {
+                            Identifier = IdentifierVisitor.VisitRangeVar(deleteStmt.relation[0])
+                        }
+                    },
+                    Columns =
+                    {
+                        Value = TreeHelper.CreateAllColumnsDeclaration()
+                    }
+                };
+
+                if (deleteStmt.whereClause is not null)
+                {
+                    ((QsiDerivedTableNode)n.Target.Value).Where.Value = new QsiWhereExpressionNode
+                    {
+                        Expression =
+                        {
+                            Value = ExpressionVisitor.Visit(deleteStmt.whereClause[0])
+                        }
+                    };
+                }
+            });
+
+            if (ListUtility.IsNullOrEmpty(deleteStmt.withClause))
+                return actionNode;
+
+            ((QsiDerivedTableNode)actionNode.Target.Value).Directives
+                .SetValue(TableVisitor.VisitWithClause(deleteStmt.withClause[0]));
+
+            // Ignored usingClause, returningList
 
             return actionNode;
         }

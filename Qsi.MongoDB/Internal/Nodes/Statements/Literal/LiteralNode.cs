@@ -1,6 +1,6 @@
 ﻿namespace Qsi.MongoDB.Internal.Nodes;
 
-public class LiteralNode : BaseNode, ILiteralNode
+internal class LiteralNode : BaseNode, ILiteralNode
 {
     // MultiType: string, boolean, number
     public object Value { get; set; }

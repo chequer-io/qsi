@@ -2,7 +2,7 @@
 
 namespace Qsi.MongoDB.Internal.Nodes;
 
-public class VariableDeclaratorNode : BaseNode, INode
+internal class VariableDeclaratorNode : BaseNode, INode
 {
     public IPatternNode Id { get; set; }
 

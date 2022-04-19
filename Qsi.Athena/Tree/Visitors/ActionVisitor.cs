@@ -339,9 +339,7 @@ internal static class ActionVisitor
         node.Target.Value = TableVisitor.VisitQualifiedName(qualifiedName);
 
         if (columnAliases is not null)
-            node.Columns.AddRange(
-                columnAliases.identifier().Select(identifier => new QsiQualifiedIdentifier(identifier.qi))
-            );
+            node.Columns = columnAliases.identifier().Select(identifier => new QsiQualifiedIdentifier(identifier.qi)).ToArray();
 
         node.ValueTable.Value = TableVisitor.VisitQuery(query);
 

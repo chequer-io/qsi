@@ -2,7 +2,7 @@
 
 namespace Qsi.MongoDB.Internal.Nodes;
 
-public class ArrowFunctionExpressionNode : BaseNode, IExpressionNode, IFunctionNode
+internal class ArrowFunctionExpressionNode : BaseNode, IExpressionNode, IFunctionNode
 {
     public bool Expression { get; set; }
 

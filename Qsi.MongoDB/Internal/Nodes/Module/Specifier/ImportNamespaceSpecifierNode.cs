@@ -1,5 +1,5 @@
 ﻿namespace Qsi.MongoDB.Internal.Nodes;
 
-public class ImportNamespaceSpecifierNode : BaseNode, IModuleSpecifierNode
+internal class ImportNamespaceSpecifierNode : BaseNode, IModuleSpecifierNode
 {
 }

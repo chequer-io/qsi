@@ -2,7 +2,7 @@
 
 namespace Qsi.MongoDB.Internal.Nodes;
 
-public class FunctionDeclarationNode : BaseNode, IFunctionNode, IDeclarationNode
+internal class FunctionDeclarationNode : BaseNode, IFunctionNode, IDeclarationNode
 {
     public IdentifierNode Id { get; set; }
 
