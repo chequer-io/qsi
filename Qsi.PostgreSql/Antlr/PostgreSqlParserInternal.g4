@@ -1428,197 +1428,407 @@ createViewStatement
         withOptionsClause?
         AS selectStatement (WITH (CASCADED | LOCAL)? CHECK OPTION)?
     ;
-    
-dropStatement:
-    DROP (
-        dropAccessMethod
-        | dropAggregate
-        | dropCast
-        | dropCollation
-        | dropConversion
-        | dropDatabase
-        | dropDomain
-        | dropEventTrigger
-        | dropExtension
-        | dropForeign
-        | dropFunction
-        | dropGroup
-        | dropIndex
-        | dropLanguage
-        | dropMaterializedView
-        | dropOperator
-        | dropOwned
-        | dropPolicy
-        | dropProcedure
-        | dropPublication
-        | dropRole
-        | dropRoutine
-        | dropRule
-        | dropSchema
-        | dropSequence
-        | dropServer
-        | dropStatistics
-        | dropSubscription
-        | dropTable
-        | dropTablespace
-        | dropTextSearch
-        | dropTransform
-        | dropTrigger
-        | dropType
-        | dropUser
-        | dropView
-    );
 
-dropAccessMethod
-    :;
+/**
+ * DROP STATEMENT
+ */
+dropStatement
+    : dropAccessMethodStatement
+    | dropAggregateStatement
+    | dropCastStatement
+    | dropCollationStatement
+    | dropConversionStatement
+    | dropDatabaseStatement
+    | dropDomainStatement
+    | dropEventTriggerStatement
+    | dropExtensionStatement
+    | dropForeignDataWrapperStatement
+    | dropForeignTableStatement
+    | dropFunctionStatement
+    | dropIndexStatement
+    | dropLanguageStatement
+    | dropMaterializedViewStatement
+    | dropOperatorStatement
+    | dropOperatorClassStatement
+    | dropOperatorFamilyStatement
+    | dropOwnedStatement
+    | dropPolicyStatement
+    | dropPublicationStatement
+    | dropRoleStatement
+    | dropRuleStatement
+    | dropSchemaStatement
+    | dropSequenceStatement
+    | dropServerStatement
+    | dropStatisticsStatement
+    | dropSubscriptionStatement
+    | dropTableStatement
+    | dropTablespaceStatement
+    | dropTextSearchConfigurationStatement
+    | dropTextSearchDictionaryStatement
+    | dropTextSearchParserStatement
+    | dropTextSearchTemplateStatement
+    | dropTransformStatement
+    | dropTriggerStatement
+    | dropTypeStatement
+    | dropUserMappingsStatement
+    | dropViewStatement
+;
 
-dropAggregate
-    :;
+/**
+ * DROP ACCESS METHOD
+ *
+ * See: https://www.postgresql.org/docs/14/sql-drop-access-method.html
+ */
+dropAccessMethodStatement
+    : DROP ACCESS METHOD (IF_P EXISTS)? columnIdentifierList (CASCADE | RESTRICT)?
+    ;
 
-dropCast
-    :;
+/**
+ * DROP AGGREGATE
+ *
+ * See: https://www.postgresql.org/docs/14/sql-dropaggregate.html
+ */
+dropAggregateStatement
+    : DROP AGGREGATE (IF_P EXISTS)? aggregateDefinition (',' aggregateDefinition)* (CASCADE | RESTRICT)?
+    ;
 
-dropCollation
-    :;
+/**
+ * DROP CAST
+ *
+ * See: https://www.postgresql.org/docs/14/sql-dropcast.html
+ */
+dropCastStatement
+    : DROP CAST (IF_P EXISTS)? '(' type AS type ')' (CASCADE | RESTRICT)?
+    ;
 
-dropConversion
-    :;
+/**
+ * DROP COLLATION
+ *
+ * See: https://www.postgresql.org/docs/14/sql-dropcollation.html
+ */
+dropCollationStatement
+    : DROP COLLATION (IF_P EXISTS)? qualifiedIdentifierList (CASCADE | RESTRICT)?
+    ;
 
-dropDatabase
-    :;
+/**
+ * DROP CONVERSION
+ *
+ * See: https://www.postgresql.org/docs/14/sql-dropconversion.html
+ */
+dropConversionStatement
+    : DROP CONVERSION_P (IF_P EXISTS)? qualifiedIdentifierList (CASCADE | RESTRICT)?
+    ;
 
-dropDomain
-    :;
+/**
+ * DROP DATABASE
+ *
+ * See: https://www.postgresql.org/docs/14/sql-dropdatabase.html
+ */
+dropDatabaseStatement
+    : DROP DATABASE (IF_P EXISTS)? columnIdentifier (WITH? '(' FORCE? ')')?
+    ;
 
-dropEventTrigger
-    :;
+/**
+ * DROP DOMAIN
+ *
+ * See: https://www.postgresql.org/docs/14/sql-dropdomain.html
+ */
+dropDomainStatement
+    : DROP DOMAIN_P (IF_P EXISTS)? type (',' type)* (CASCADE | RESTRICT)?
+    ;
 
-dropExtension
-    :;
+/**
+ * DROP EVENT TRIGGER
+ *
+ * See: https://www.postgresql.org/docs/14/sql-dropeventtrigger.html
+ */
+dropEventTriggerStatement
+    : DROP EVENT TRIGGER (IF_P EXISTS)? columnIdentifierList (CASCADE | RESTRICT)?
+    ;
 
-dropForeign:
-    FOREIGN (
-        dropForeignDataWrapper
-        | dropForeignTable
-    );
-    
-dropForeignDataWrapper
-    :;
-    
-dropForeignTable
-    :;
+/**
+ * DROP EXTENSION
+ *
+ * See: https://www.postgresql.org/docs/14/sql-dropextension.html
+ */
+dropExtensionStatement
+    : DROP EXTENSION (IF_P EXISTS)? columnIdentifierList (CASCADE | RESTRICT)?
+    ;
 
-dropFunction
-    :;
+/**
+ * DROP FOREIGN DATA WRAPPER
+ *
+ * See: https://www.postgresql.org/docs/14/sql-dropforeigndatawrapper.html
+ */
+dropForeignDataWrapperStatement
+    : DROP FOREIGN DATA_P WRAPPER (IF_P EXISTS)? columnIdentifierList (CASCADE | RESTRICT)?
+    ;
 
-dropGroup
-    :;
+/**
+ * DROP FOREIGN TABLE
+ *
+ * See: https://www.postgresql.org/docs/14/sql-dropforeigntable.html
+ */
+dropForeignTableStatement
+    : DROP FOREIGN TABLE (IF_P EXISTS)? qualifiedIdentifierList (CASCADE | RESTRICT)?
+    ;
 
-dropIndex
-    :;
+/**
+ * DROP FUNCTION, DROP PROCEDURE, DROP ROUTINE
+ *
+ * See: https://www.postgresql.org/docs/14/sql-dropfunction.html
+ * See also: https://www.postgresql.org/docs/14/sql-dropprocedure.html
+ * See also: https://www.postgresql.org/docs/14/sql-droproutine.html
+ */
+dropFunctionStatement
+    : DROP (FUNCTION | PROCEDURE | ROUTINE) (IF_P EXISTS)? functionDefinitionList (CASCADE | RESTRICT)?
+    ;
 
-dropLanguage
-    :;
+/**
+ * DROP INDEX
+ *
+ * See: https://www.postgresql.org/docs/14/sql-dropindex.html
+ */
+dropIndexStatement
+    : DROP INDEX CONCURRENTLY? (IF_P EXISTS)? qualifiedIdentifierList (CASCADE | RESTRICT)?
+    ;
 
-dropMaterializedView
-    :;
+/**
+ * DROP LANGUAGE
+ *
+ * See: https://www.postgresql.org/docs/14/sql-droplanguage.html
+ */
+dropLanguageStatement
+    : DROP PROCEDURAL? LANGUAGE (IF_P EXISTS)? columnIdentifier (CASCADE | RESTRICT)?
+    ;
 
-dropOperator:
-    OPERATOR (
-        // TODO: Implement CREATE OPERATOR clause.
-        dropOperatorClass
-        | dropOperatorFamily
-    );
-    
-dropOperatorClass
-    :;
+/**
+ * DROP MATERIALIZED VIEW
+ *
+ * See: https://www.postgresql.org/docs/14/sql-dropmaterializedview.html
+ */
+dropMaterializedViewStatement
+    : DROP MATERIALIZED VIEW (IF_P EXISTS)? qualifiedIdentifierList (CASCADE | RESTRICT)?
+    ;
 
-dropOperatorFamily
-    :;
+/**
+ * DROP OPERATOR
+ *
+ * See: https://www.postgresql.org/docs/14/sql-dropoperator.html
+ */
+dropOperatorStatement
+    : DROP OPERATOR (IF_P EXISTS)? operatorDefinitionList (CASCADE | RESTRICT)?
+    ;
 
-dropOwned
-    :;
+/**
+ * DROP OPERATOR CLASS
+ *
+ * See: https://www.postgresql.org/docs/14/sql-dropopclass.html
+ */
+dropOperatorClassStatement
+    : DROP OPERATOR CLASS (IF_P EXISTS)? qualifiedIdentifier USING columnIdentifier (CASCADE | RESTRICT)?
+    ;
 
-dropPolicy
-    :;
+/**
+ * DROP OPERATOR FAMILY
+ *
+ * See: https://www.postgresql.org/docs/14/sql-dropopfamily.html
+ */
+dropOperatorFamilyStatement
+    : DROP OPERATOR FAMILY (IF_P EXISTS)? qualifiedIdentifier USING columnIdentifier (CASCADE | RESTRICT)?
+    ;
 
-dropProcedure
-    :;
+/**
+ * DROP OWNED
+ *
+ * See: https://www.postgresql.org/docs/14/sql-drop-owned.html
+ */
+dropOwnedStatement
+    : DROP OWNED BY roleList (CASCADE | RESTRICT)?
+    ;
 
-dropPublication
-    :;
+/**
+ * DROP POLICY
+ *
+ * See: https://www.postgresql.org/docs/14/sql-droppolicy.html
+ */
+dropPolicyStatement
+    : DROP POLICY (IF_P EXISTS)? columnIdentifier ON qualifiedIdentifier (CASCADE | RESTRICT)?
+    ;
 
-dropRole
-    :;
+/**
+ * DROP PUBLICATION
+ *
+ * See: https://www.postgresql.org/docs/14/sql-droppublication.html
+ */
+dropPublicationStatement
+    : DROP PUBLICATION (IF_P EXISTS)? qualifiedIdentifierList (CASCADE | RESTRICT)?
+    ;
+/**
+ * DROP ROLE, DROP GROUP, DROP USER
+ *
+ * DROP GROUP and DROP USER are an alias for DROP ROLE.
+ *
+ * See: https://www.postgresql.org/docs/14/sql-droprole.html
+ * See also: https://www.postgresql.org/docs/14/sql-dropgroup.html
+ * See also: https://www.postgresql.org/docs/14/sql-dropuser.html
+ */
+dropRoleStatement
+    : DROP (ROLE | GROUP_P | USER) (IF_P EXISTS)? roleList 
+    ;
 
-dropRoutine
-    :;
+/**
+ * DROP RULE
+ *
+ * See: https://www.postgresql.org/docs/14/sql-droprule.html
+ */
+dropRuleStatement
+    : DROP RULE (IF_P EXISTS)? columnIdentifier ON qualifiedIdentifier (CASCADE | RESTRICT)?
+    ;
 
-dropRule
-    :;
+/**
+ * DROP SCHEMA
+ *
+ * See: https://www.postgresql.org/docs/14/sql-dropschema.html
+ */
+dropSchemaStatement
+    : DROP SCHEMA (IF_P EXISTS)? columnIdentifierList (CASCADE | RESTRICT)?
+    ;
 
-dropSchema
-    :;
+/**
+ * DROP SEQUENCE
+ *
+ * See: https://www.postgresql.org/docs/14/sql-dropsequence.html
+ */
+dropSequenceStatement
+    : DROP SEQUENCE (IF_P EXISTS)? qualifiedIdentifierList (CASCADE | RESTRICT)?
+    ;
 
-dropSequence
-    :;
+/**
+ * DROP SERVER
+ *
+ * See: https://www.postgresql.org/docs/14/sql-dropserver.html
+ */
+dropServerStatement
+    : DROP SERVER (IF_P EXISTS)? columnIdentifierList (CASCADE | RESTRICT)?
+    ;
 
-dropServer
-    :;
+/**
+ * DROP STATISTICS
+ *
+ * See: https://www.postgresql.org/docs/14/sql-dropstatistics.html
+ */
+dropStatisticsStatement
+    : DROP STATISTICS (IF_P EXISTS)? qualifiedIdentifierList (CASCADE | RESTRICT)?
+    ;
 
-dropStatistics
-    :;
+/**
+ * DROP SUBSCRIPTION
+ *
+ * See: https://www.postgresql.org/docs/14/sql-dropsubscription.html
+ */
+dropSubscriptionStatement
+    : DROP SUBSCRIPTION (IF_P EXISTS)? columnIdentifier (CASCADE | RESTRICT)?
+    ;
 
-dropSubscription
-    :;
+/**
+ * DROP TABLE
+ *
+ * See: https://www.postgresql.org/docs/14/sql-droptable.html
+ */
+dropTableStatement
+    : DROP TABLE (IF_P EXISTS)? qualifiedIdentifierList (CASCADE | RESTRICT)?
+    ;
 
-dropTable
-    :;
+/**
+ * DROP TABLESPACE
+ *
+ * See: https://www.postgresql.org/docs/14/sql-droptablespace.html
+ */
+dropTablespaceStatement
+    : DROP TABLESPACE (IF_P EXISTS)? columnIdentifier
+    ;
 
-dropTablespace
-    :;
+/**
+ * DROP TEXT SEARCH CONFIGURATION
+ *
+ * See: https://www.postgresql.org/docs/14/sql-droptsconfig.html
+ */
+dropTextSearchConfigurationStatement
+    : DROP TEXT_P SEARCH CONFIGURATION (IF_P EXISTS)? qualifiedIdentifier (CASCADE | RESTRICT)?
+    ;
 
-dropTextSearch:
-    TEXT_P SEARCH (
-        dropTextSearchConfiguration
-        | dropTextSearchDictionary
-        | dropTextSearchParser
-        | dropTextSearchTemplate
-    );
+/**
+ * DROP TEXT SEARCH DICTIONARY
+ *
+ * See: https://www.postgresql.org/docs/14/sql-droptsdictionary.html
+ */
+dropTextSearchDictionaryStatement
+    : DROP TEXT_P SEARCH DICTIONARY (IF_P EXISTS)? qualifiedIdentifier (CASCADE | RESTRICT)?
+    ;
 
-dropTextSearchConfiguration
-    :;
+/**
+ * DROP TEXT SEARCH PARSER
+ *
+ * See: https://www.postgresql.org/docs/14/sql-droptsparser.html
+ */
+dropTextSearchParserStatement
+    : DROP TEXT_P SEARCH PARSER (IF_P EXISTS)? qualifiedIdentifier (CASCADE | RESTRICT)?
+    ;
 
-dropTextSearchDictionary
-    :;
+/**
+ * DROP TEXT SEARCH TEMPLATE
+ *
+ * See: https://www.postgresql.org/docs/14/sql-droptstemplate.html
+ */
+dropTextSearchTemplateStatement
+    : DROP TEXT_P SEARCH TEMPLATE (IF_P EXISTS)? qualifiedIdentifier (CASCADE | RESTRICT)?
+    ;
 
-dropTextSearchParser
-    :;
+/**
+ * DROP TRANSFORM
+ *
+ * See: https://www.postgresql.org/docs/14/sql-droptransform.html
+ */
+dropTransformStatement
+    : DROP TRANSFORM (IF_P EXISTS)? FOR type LANGUAGE columnIdentifier (CASCADE | RESTRICT)?
+    ;
 
-dropTextSearchTemplate
-    :;
+/**
+ * DROP TRIGGER
+ *
+ * See: https://www.postgresql.org/docs/14/sql-droptrigger.html
+ */
+dropTriggerStatement
+    : DROP TRIGGER (IF_P EXISTS)? columnIdentifier ON qualifiedIdentifier (CASCADE | RESTRICT)?
+    ;
 
+/**
+ * DROP TYPE
+ *
+ * See: https://www.postgresql.org/docs/14/sql-droptype.html
+ */
+dropTypeStatement
+    : DROP TYPE_P (IF_P EXISTS)? type (',' type)* (CASCADE | RESTRICT)?
+    ;
 
-dropTransform
-    :;
+/**
+ * DROP USER MAPPING
+ *
+ * See: https://www.postgresql.org/docs/14/sql-dropusermapping.html
+ */
+dropUserMappingsStatement
+    : DROP USER MAPPING (IF_P EXISTS)? FOR (role | USER) SERVER columnIdentifier
+    ;
 
-dropTrigger
-    :;
-
-dropType
-    :;
-
-dropUser:
-    USER (
-        // TODO: Implement DROP USER clause.
-        dropUserMappings
-    );
-    
-dropUserMappings
-    :;
-
-dropView
-    :;
+/**
+ * DROP VIEW
+ *
+ * See: https://www.postgresql.org/docs/14/sql-dropview.html
+ */
+dropViewStatement
+    : DROP VIEW (IF_P EXISTS)? qualifiedIdentifierList (CASCADE | RESTRICT)?
+    ;
 
 //----------------- DML statements -------------------------------------------------------------------------------------
 
@@ -2659,6 +2869,10 @@ simpleOperator
     | mathOperator
     ;
 
+operatorDefinitionList
+    : operatorDefinition (',' operatorDefinition)*
+    ;
+
 operatorDefinition
     : operator operatorArgumentTypes
     ;
@@ -3193,6 +3407,10 @@ numericOnly
 /**
  * Function Definition
  */
+functionDefinitionList
+    : functionDefinition (',' functionDefinition)*
+    ;
+ 
 functionDefinition
     : functionName '(' argumentDefinitionList? ')'
     | typeFunctionKeyword
@@ -3313,12 +3531,6 @@ drop_type_name
    | PUBLICATION
    | SCHEMA
    | SERVER
-   ;
-
-object_type_name_on_any_name
-   : POLICY
-   | RULE
-   | TRIGGER
    ;
 
 /**
