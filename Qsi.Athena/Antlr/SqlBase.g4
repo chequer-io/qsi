@@ -36,9 +36,18 @@ standaloneRoutineBody
     : routineBody EOF
     ;
 
+
+/***
+ * Athena SQL statements follows Hive and Presto SQL statements.
+ 
+ * 1. View DDL statements follow Presto.
+ * 2. Other DDL statements follow Hive.
+ * 3. DML statements follow Presto.
+ */
+
 statement
     /***
-     * ATHENA DDL
+     * Athena DDL
      *
      * @athena (Amazon Athena DDL Reference)[https://docs.aws.amazon.com/athena/latest/ug/language-reference.html]
      * @hive (HiveQL DDL Reference)[https://cwiki.apache.org/confluence/display/Hive/LanguageManual+DDL]
@@ -60,7 +69,9 @@ statement
      */
     : CREATE
         (REMOTE)?
-        (DATABASE | SCHEMA) (IF NOT EXISTS)? databaseName=identifier[null]
+        (DATABASE | SCHEMA)
+        (IF NOT EXISTS)?
+        databaseName=identifier[null]
         (COMMENT comment=string)?
         (LOCATION location=string)?
         (MANAGEDLOCATION managedLocation=string)?
@@ -83,7 +94,9 @@ statement
      * @athena https://docs.aws.amazon.com/athena/latest/ug/alter-database-set-dbproperties.html
      * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-AlterDatabase
      */
-    | ALTER (DATABASE | SCHEMA) databaseName=qualifiedName
+    | ALTER
+        (DATABASE | SCHEMA)
+        databaseName=qualifiedName
         SET DBPROPERTIES dbProperties=stringProperties                                                                  #setDbProperties
 
     /**
@@ -111,12 +124,10 @@ statement
      * Use Database
      *
      * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-UseDatabase
-     * @notsupport Tested at 2021. 12. 20.s
+     * @notsupport Tested at 2021. 12. 20.
      */
 //    | USE
 //        databaseName=identifier[null]                                                                     #useDatabase
-        
-        
         
         
         
@@ -133,7 +144,7 @@ statement
      * Create Connector
      *
      * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-CreateDataConnectorCreateConnector
-     * @notsupport Not tested
+     * @notsupport
      */
     // Not Implemented
     
@@ -141,7 +152,7 @@ statement
      * Drop Connector
      *
      * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-DropConnector
-     * @notsupport Not tested
+     * @notsupport
      */
     // Not Implemented
     
@@ -149,7 +160,7 @@ statement
      * Connector Set DC Properties
      *
      * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-AlterConnector
-     * @notsupport Not tested
+     * @notsupport
      */
     // Not Implemented
     
@@ -157,7 +168,7 @@ statement
      * Connector Set URL
      *
      * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-AlterConnector
-     * @notsupport Not tested
+     * @notsupport
      */
     // Not Implemented
     
@@ -165,10 +176,9 @@ statement
      * Connector Set Owner
      *
      * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-AlterConnector
-     * @notsupport Not tested
+     * @notsupport
      */
     // Not Implemented
-    
     
     
     
@@ -274,7 +284,8 @@ statement
      * @athena https://docs.aws.amazon.com/athena/latest/ug/drop-table.html
      * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-DropTable
      */
-    | DROP TABLE
+    | DROP
+        TABLE
         (IF NOT EXISTS)?
         tableName=qualifiedName
         (PURGE)?                                                                                                        #dropTable
@@ -299,7 +310,8 @@ statement
      * @athena https://docs.aws.amazon.com/athena/latest/ug/alter-table-set-tblproperties.html
      * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-AlterTableProperties
      */
-    | ALTER TABLE tableName=qualifiedName
+    | ALTER
+        TABLE tableName=qualifiedName
         SET TBLPROPERTIES tblProperties=stringProperties                                                                #setTblProperties
      
     /**
@@ -457,11 +469,11 @@ statement
     | ALTER TABLE tableName=qualifiedName
         (PARTITION partitionSpec=properties)?
         SET LOCATION location=string                                                                                    #setLocation
-        
-        
-        
-        
-        
+
+
+
+
+
     /**********************
      *                    *
      *                    *
@@ -494,7 +506,7 @@ statement
             PARTITION partitionSpec=properties
             (LOCATION location=string)?
         )+                                                                                                              #addPartitions
-    
+
     /**
      * Rename Partition
      *
@@ -522,8 +534,6 @@ statement
         PARTITION partitionSpec=properties (',' PARTITION partitionSpec=properties)*
         (IGNORE PROTECTION)?
         (PURGE)?                                                                                                        #dropPartition
-    
-    // endregion
 
 
 
@@ -538,8 +548,9 @@ statement
      **********************/
     /**
      * Change Column
-     * @comment According to Reference1(AWS), CHANGE COLUMN is not supported in Athena, but works in test
+     * @comment According to Reference 1(AWS), CHANGE COLUMN is not supported in Athena, but works in test
      *          test query: "ALTER TABLE table_name CHANGE original_column changed_column int"
+     *
      * @athena https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
      * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-ChangeColumnName/Type/Position/Comment
      */
@@ -572,12 +583,10 @@ statement
         REPLACE COLUMNS
         '(' columnDefinition (',' columnDefinition)* ')'
         (CASCADE|RESTRICT)?                                                                                             #replaceColumns
-    
-    
-    
-    
-    
-    
+
+
+
+
     
     /**********************
      *                    *
@@ -590,6 +599,7 @@ statement
      * Create View
      *
      * @athena https://docs.aws.amazon.com/athena/latest/ug/create-view.html
+     * @presto https://prestodb.io/docs/current/sql/create-view.html
      * @hive https://cwiki.apache.org/confluence/display/hive/languagemanual+ddl#LanguageManualDDL-CreateView
      */
     | CREATE
@@ -602,6 +612,7 @@ statement
             (',' columnName=identifier[null] (COMMENT columnComment=string)? )*
         )?
         viewColumnAliases?
+        (SECURITY (DEFINER | INVOKER))?
         (COMMENT viewComment=string)?
         (TBLPROPERTIES tblProperties=stringProperties)?
         AS query                                                                                                        #createView
@@ -633,7 +644,6 @@ statement
 
 
 
-    
     /*************************
      *                       *
      *                       *
@@ -661,14 +671,11 @@ statement
      * @notsupport Not tested
      */
     // Not Implemented
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
     /*************************
      *                       *
      *                       *
@@ -682,26 +689,25 @@ statement
      * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
      */
     // Not Implemented
-     
+
     /**
      * Drop Index
      *
      * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
      */
     // Not Implemented
-     
+
     /**
      * Alter Index
      *
      * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
      */
     // Not Implemented
-    
-    
-    
-    
-    
-    
+
+
+
+
+
     /*************************
      *                       *
      *                       *
@@ -715,19 +721,18 @@ statement
      * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
      */
     // Not Implemented
-     
+
     /**
      * Drop Temporary Macro
      *
      * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
      */
     // Not Implemented
-     
-     
-     
-     
-     
-     
+
+
+
+
+
     /*************************
      *                       *
      *                       *
@@ -741,28 +746,25 @@ statement
      * @notsupport Tested at 2021. 12. 16.
      */
     // Not Implemented
-     
+
     /**
      * Drop Function
      *
      * @notsupport Tested at 2021. 12. 16.
      */
     // Not Implemented
-     
+
     /**
      * Reload Function
      *
      * @notsupport Tested at 2021. 12. 16.
      */
     // Not Implemented
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
     /*************************
      *                       *
      *                       *
@@ -853,14 +855,11 @@ statement
      * @notsupport https://docs.aws.amazon.com/athena/latest/ug/unsupported-ddl.html
      */
     // Not Implemented
-     
 
 
 
 
 
-
-    
     /*************************
      *                       *
      *                       *
@@ -1015,9 +1014,6 @@ statement
      */
     // Not Implemented
 
-    
-
-
 
 
 
@@ -1060,11 +1056,10 @@ statement
             columnName=identifier[null]
             ( '.' (fieldName=identifier[null] | '$elem$' | '$key$' | '$value$') )*
         )?                                                                                                              #describeTable
-    
-    
-    
-    
-    
+
+
+
+
 
     /*************************
      *                       *
@@ -1082,13 +1077,11 @@ statement
 
 
 
+    /******************************************************************************************************************/
 
 
-
-
-
-    /***
-     * ATHENA DML
+    /**
+     * Athena DML
      *
      * @athena (Amazon Athena DML Reference)[https://docs.aws.amazon.com/athena/latest/ug/functions-operators-reference-section.html]
      * @presto (Presto SQL Syntax Refrence)[https://prestodb.io/docs/current/sql.html]
@@ -1511,8 +1504,9 @@ statement
      */
     // Implemented in "query"
     
+    /******************************************************************************************************************/
     
-    /***
+    /**
      * Athena Only Statements
      */
      
@@ -1524,7 +1518,7 @@ statement
     | UNLOAD '(' query ')' 
         TO location=string WITH properties                                                                              #unload
     ;
-    
+
 query
     : with? queryNoWith
     ;
