@@ -2473,7 +2473,7 @@ expression
     ;
 
 expressionParens
-    : '(' (expressionParens | expression) ')'
+    : '(' expression ')'
     ;
 
 expressionNoParens
