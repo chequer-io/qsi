@@ -3009,7 +3009,7 @@ groupByItem
     ;
 
 tableList
-    : identifierList
+    : qualifiedIdentifierList
     ;
 
 //----------------- Types ----------------------------------------------------------------------------------------------
