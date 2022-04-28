@@ -1906,7 +1906,8 @@ selectItemList
     ;
 
 selectItem
-    : (expression | STAR) aliasClause?
+    : expression aliasClause? 
+    | STAR
     ;
 
 // Options for select statement.
