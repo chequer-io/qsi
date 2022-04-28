@@ -2506,9 +2506,9 @@ booleanExpression
 // TODO: likeExpressionOptions and subqueryOperator have same operators.
 //       Lookahead increases because of that (k = 5). Should we fix this?
 comparisonExpression
-    : qualifiedOperatorExpression (likeExpressionOptions qualifiedOperatorExpression (ESCAPE expression)?)?
-    | comparisonExpression comparisonOperator comparisonExpression
-    | comparisonExpression subqueryOperator subqueryType (queryExpressionParens | '(' expression ')')
+    : qualifiedOperatorExpression (likeExpressionOptions qualifiedOperatorExpression (ESCAPE expression)?)? # comparisonExpressionLike
+    | comparisonExpression comparisonOperator comparisonExpression                                          # comparisonExpressionBase
+    | comparisonExpression subqueryOperator subqueryType (queryExpressionParens | '(' expression ')')       # comparisonExpressionSubquery
     ;
 
 likeExpressionOptions
@@ -2579,16 +2579,17 @@ indirectionExpression
  */
 // TODO: Check lookahead
 valueExpression
-    : (EXISTS | UNIQUE | ARRAY)? queryExpressionParens                              // Subquery
-    | ARRAY OPEN_BRACKET expressionList CLOSE_BRACKET                               // ARRAY Constructor
-    | GROUPING '(' expressionList ')'                  // GROUPING
-    | columnIdentifier                                                              // identifier TODO: reduce max k
-    | constant
-    | caseExpression                                                                // CASE ~ END
-    | functionExpression                                                            // function call TODO: reduce max k
-    | row
-    | row OVERLAPS row // TODO: reduce max k
-    | PARAM                                                                         // PARAM
+    : (EXISTS | UNIQUE | ARRAY)? queryExpressionParens  # valueExpressionSubquery
+    | ARRAY OPEN_BRACKET expressionList CLOSE_BRACKET   # valueExpressionArray
+    | GROUPING '(' expressionList ')'                   # valueExpressionGrouping
+    | qualifiedIdentifier                               # valueExpressionColumn // TODO: reduce max k
+    | constant                                          # valueExpressionConstant
+    | caseExpression                                    # valueExpressionCase
+    | functionExpression                                # valueExpressionFunction // TODO: reduce max k
+    | row                                               # valueExpressionRow
+    | row OVERLAPS row                                  # valueExpressionRowOverlaps // TODO: reduce max k            
+    | PARAM                                             # valueExpressionParam
+//    | expression indirection                            # valueIndirection
     ;
 
 /**
