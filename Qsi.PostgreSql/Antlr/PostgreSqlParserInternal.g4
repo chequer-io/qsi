@@ -3201,12 +3201,7 @@ bin
 
 // string
 string
-    : stringBody (UESCAPE stringBody)?
-    ;
-
-stringBody
     : StringConstant
-    | UnicodeEscapeStringConstant
     | BeginDollarStringConstant DollarText* EndDollarStringConstant
     | EscapeStringConstant
     ;
