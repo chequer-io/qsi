@@ -2556,7 +2556,7 @@ arithmeticExpression
  * Collate Expression - with COLLATE keyword.
  */
 collateExpression
-    : typecastExpression (COLLATE indirectionExpression)?
+    : typecastExpression (COLLATE qualifiedIdentifier)?
     ;
 
 /**
