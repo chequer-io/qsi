@@ -1913,7 +1913,7 @@ selectItem
 // Options for select statement.
 selectOption
     : ALL
-    | DISTINCT
+    | DISTINCT (ON '(' expressionList ')')?
     ;
 
 /**
