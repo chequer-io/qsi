@@ -456,7 +456,7 @@ alterRoleOption
     : PASSWORD (string | NULL_P)
     | (ENCRYPTED | UNENCRYPTED) PASSWORD string
     | INHERIT
-    | CONNECTION LIMIT int
+    | CONNECTION LIMIT signedInt
     | VALID UNTIL string
     | USER roleList
     | identifier
@@ -582,7 +582,7 @@ alterTableCommand
     | ALTER COLUMN? columnIdentifier SET STORAGE columnIdentifier
     | ALTER COLUMN? columnIdentifier ADD_P GENERATED (ALWAYS | BY DEFAULT) AS IDENTITY_P ('(' sequenceOptionList ')')?
     | ALTER COLUMN? columnIdentifier alterIdentitiyColumnOption+
-    | ALTER COLUMN? (columnIdentifier | unsignedInt) SET STATISTICS int
+    | ALTER COLUMN? (columnIdentifier | unsignedInt) SET STATISTICS signedInt
     | ALTER COLUMN? columnIdentifier (SET DATA_P)? TYPE_P type collateClause? (USING expression)?
     | ALTER COLUMN? columnIdentifier alterGenericOptions
     | DROP COLUMN? (IF_P EXISTS)? columnIdentifier (CASCADE | RESTRICT)?
@@ -862,7 +862,7 @@ createDatabaseStatement
     ;
 
 createDatabaseItem
-    : createDatabaseItemName EQUAL? (int | booleanOrString | DEFAULT)
+    : createDatabaseItemName EQUAL? (signedInt | booleanOrString | DEFAULT)
     ;
 
 createDatabaseItemName
@@ -2678,10 +2678,10 @@ functionCallArgument
 commonFunctionExpression
     : COLLATION FOR '(' expression ')'
     | CURRENT_DATE
-    | CURRENT_TIME ('(' int ')')?
-    | CURRENT_TIMESTAMP ('(' int ')')?
-    | LOCALTIME ('(' int ')')?
-    | LOCALTIMESTAMP ('(' int ')')?
+    | CURRENT_TIME ('(' signedInt ')')?
+    | CURRENT_TIMESTAMP ('(' signedInt ')')?
+    | LOCALTIME ('(' signedInt ')')?
+    | LOCALTIMESTAMP ('(' signedInt ')')?
     | CURRENT_ROLE
     | CURRENT_USER
     | SESSION_USER
@@ -3024,8 +3024,8 @@ type
     ;
 
 typeOption
-    : (OPEN_BRACKET int? CLOSE_BRACKET)+
-    | ARRAY (OPEN_BRACKET int CLOSE_BRACKET)*
+    : (OPEN_BRACKET signedInt? CLOSE_BRACKET)+
+    | ARRAY (OPEN_BRACKET signedInt CLOSE_BRACKET)*
     ;
 
 simpleType
@@ -3098,7 +3098,7 @@ numericType
  * See: https://www.postgresql.org/docs/14/datatype-datetime.html
  */
 dateTimeType
-    : (TIMESTAMP | TIME) ('(' int ')')? timezoneOption
+    : (TIMESTAMP | TIME) ('(' signedInt ')')? timezoneOption
     ;
 
 /**
@@ -3110,7 +3110,7 @@ dateTimeType
  * TO DO with_la was used
  */ 
 intervalType
-    : INTERVAL (intervalOption | '(' int ')')
+    : INTERVAL (intervalOption | '(' signedInt ')')
     ;
 
 timezoneOption
@@ -3125,7 +3125,7 @@ timezoneOption
  * See: https://www.postgresql.org/docs/14/sql-syntax-lexical.html#SQL-SYNTAX-CONSTANTS
  */
 constant
-    : int
+    : signedInt
     | float
     | hex
     | bin
@@ -3144,7 +3144,7 @@ constant
  * See: https://www.postgresql.org/docs/14/datatype-datetime.html
  */
 interval
-    : INTERVAL (string intervalOption? | '(' int ')' string)
+    : INTERVAL (string intervalOption? | '(' signedInt ')' string)
     ;
 
 intervalOption
@@ -3161,7 +3161,7 @@ intervalOption
     ;
 
 intervalSecond
-    : SECOND_P ('(' int ')')?
+    : SECOND_P ('(' signedInt ')')?
     ;
 
 constType
@@ -3177,7 +3177,7 @@ unsignedInt
     ;
 
 // signed
-int
+signedInt
     : PLUS? unsignedInt
     | MINUS unsignedInt
     ;
@@ -3401,7 +3401,7 @@ definitionArgument
 numericOnly
     : (PLUS | MINUS) float      #withSignFloat
     | float                     #noSignFloat
-    | int                       #withSignInt
+    | signedInt                       #withSignInt
     ;
 
 /**
