@@ -2111,7 +2111,7 @@ aliasClause
     ;
     
 aliasClauseBody
-    : columnIdentifier ('(' qualifiedIdentifierList ')')?
+    : columnIdentifier ('(' columnIdentifierList ')')?
     ;
 
 /**
@@ -2187,7 +2187,7 @@ subqueryFromItem
 
 // Join item.
 joinClause
-    : join (ON expression | USING '(' columnIdentifier (COMMA columnIdentifier)* ')')? aliasClause?
+    : join (ON expression | USING '(' columnIdentifierList ')')? aliasClause?
     ;
 
 // Join
