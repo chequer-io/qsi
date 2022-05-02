@@ -2467,18 +2467,29 @@ expressionList
  * See: https://www.postgresql.org/docs/14/sql-syntax-lexical.html#SQL-PRECEDENCE
  * for operator precedences.
  */
-expression
-    : expressionParens
-    | expressionNoParens
-    ;
+
+//exp:
+//expNoParen
+//expNoParen subscript+ field*
+//expParen (subscript | field)*
+
+//expression
+//    : expressionParens
+//    | expressionNoParens
+//    ;
+
+//expression
+//    : expressionNoParens //arraySubscript+ ((DOT columnLabelIdentifier)+)* arraySubscript*
+//    | expressionParens //(arraySubscript | DOT columnLabelIdentifier)*
+//    ;
 
 expressionParens
     : '(' expression ')'
     ;
 
-expressionNoParens
+expression
     : andExpression
-    | expressionNoParens OR expressionNoParens
+    | expression OR expression
     ;
 
 andExpression
@@ -2563,14 +2574,7 @@ collateExpression
  * Typecast Expression - with :: keyword.
  */
 typecastExpression
-    : indirectionExpression (TYPECAST type)*
-    ;
-
-/**
- * Array Expression - with [](brackets).
- */
-indirectionExpression
-    : valueExpression indirection*
+    : valueExpression (TYPECAST type)*
     ;
 
 /**
@@ -2582,15 +2586,43 @@ valueExpression
     : (EXISTS | UNIQUE | ARRAY)? queryExpressionParens  # valueExpressionSubquery
     | ARRAY OPEN_BRACKET expressionList CLOSE_BRACKET   # valueExpressionArray
     | GROUPING '(' expressionList ')'                   # valueExpressionGrouping
-    | qualifiedIdentifier                               # valueExpressionColumn // TODO: reduce max k
+//    | qualifiedIdentifier                               # valueExpressionColumn // TODO: reduce max k
     | constant                                          # valueExpressionConstant
     | caseExpression                                    # valueExpressionCase
     | functionExpression                                # valueExpressionFunction // TODO: reduce max k
     | row                                               # valueExpressionRow
     | row OVERLAPS row                                  # valueExpressionRowOverlaps // TODO: reduce max k            
-    | PARAM                                             # valueExpressionParam
-//    | expression indirection                            # valueIndirection
+//    | PARAM                                             # valueExpressionParam
+    | starIdentifier                                    # valueExpressionStar
+    | subscriptExpression                               # valueExpressionSubscript
     ;
+
+subscriptExpression
+//    : expressionParens DOT columnLabelIdentifier
+//    | expressionParens subscriptIndirection
+    : expressionParens indirection?
+    | parameterMarker indirection?
+    | qualifiedIdentifier
+    | subscriptExpression subscriptIndirection
+    ;
+
+parameterMarker
+    : PARAM
+    ;
+
+subscriptIndirection
+    : subscript indirection?
+    ;
+
+//exp:
+//  expNoParen
+//  expParen
+//expNoParen:
+//  expValue
+//expValue:
+//  expParen field
+//  exp subscript
+//  exp subscript field?
 
 /**
  * Case Expression
@@ -2667,7 +2699,7 @@ functionCall
 // TODO: Filter names of common function expression
 functionName
     : typeFunctionIdentifier
-    | columnIdentifier indirection
+    | qualifiedIdentifier
     ;
 
 functionCallArgument
@@ -2933,7 +2965,15 @@ subqueryName
     ;
 
 qualifiedIdentifier
-    : columnIdentifier (DOT (columnLabelIdentifier | STAR))*
+    : columnIdentifier indirection?
+    ;
+
+indirection
+    : (DOT columnLabelIdentifier)+
+    ;
+
+starIdentifier
+    : columnIdentifier DOT STAR
     ;
 
 tableName
@@ -2958,12 +2998,12 @@ noReservedKeywords
  * Nodes that are able to come right after the column identifier.
  * Consists of dot attribute and subscript. 
  */
-indirection
-    : DOT (columnLabelIdentifier | STAR)
-    | arraySubscript
-    ;
+//indirection
+//    : DOT (columnLabelIdentifier | STAR)
+////    | arraySubscript
+//    ;
 
-arraySubscript
+subscript
     : OPEN_BRACKET (expression | expression? COLON expression?) CLOSE_BRACKET
     ;
 
@@ -3411,7 +3451,7 @@ functionDefinitionList
 functionDefinition
     : functionName '(' argumentDefinitionList? ')'
     | typeFunctionKeyword
-    | columnIdentifier indirection*
+    | qualifiedIdentifier
     ;
 
 argumentDefinitionWithDefaultList
