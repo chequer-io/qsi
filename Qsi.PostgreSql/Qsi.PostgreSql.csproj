@@ -31,8 +31,4 @@
         <EmbeddedResource Include="Resources/*.js" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Data" />
-    </ItemGroup>
-
 </Project>
