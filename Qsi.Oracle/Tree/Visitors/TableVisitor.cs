@@ -42,11 +42,11 @@ namespace Qsi.Oracle.Tree.Visitors
 
         public static QsiTableNode VisitSubqueryItem(SubqueryItemContext context)
         {
-            var node = VisitQueryBlockOrParens(context.queryBlockOrParens(), out var rootIsParens);
+            var node = VisitQueryBlockOrParens(context.queryBlockOrParens(), out var isParens);
 
             if (IsQueryOptionNotNull(context.queryOption()))
             {
-                var rootDerivedNode = WrapTableNodeParens(node, context.queryBlockOrParens().Start, context.queryOption().Stop, rootIsParens);
+                var rootDerivedNode = WrapTableNodeParens(node, context.queryBlockOrParens().Start, context.queryOption().Stop, isParens);
                 SetQueryOption(rootDerivedNode, context.queryOption());
             }
 
@@ -54,28 +54,46 @@ namespace Qsi.Oracle.Tree.Visitors
 
             if (subqueryItems.Length > 0)
             {
+                var compositeNode = new QsiCompositeTableNode
+                {
+                    CompositeType = VisitSubqueryCompositeType(subqueryItems[0].subqueryCompositeType())
+                };
+
+                compositeNode.Sources.Add(node);
+                var start = context.Start;
+
                 for (int i = 0; i < subqueryItems.Length; i++)
                 {
                     ParserRuleContext leftContext = i == 0 ? context : subqueryItems[i - 1];
                     var rightContext = subqueryItems[i];
 
-                    var compositeNode = OracleTree.CreateWithSpan<QsiCompositeTableNode>(leftContext.Start, rightContext.Stop);
+                    string compositeType = VisitSubqueryCompositeType(rightContext.subqueryCompositeType());
 
-                    compositeNode.Sources.Add(node);
-                    compositeNode.Sources.Add(VisitQueryBlockOrParens(rightContext.queryBlockOrParens(), out _));
-                    compositeNode.CompositeType = VisitSubqueryCompositeType(rightContext.subqueryCompositeType());
+                    if (compositeNode.CompositeType != compositeType)
+                    {
+                        OracleTree.PutContextSpan(compositeNode, start, leftContext.Stop);
+
+                        var newCompositeNode = new QsiCompositeTableNode();
+                        newCompositeNode.Sources.Add(compositeNode);
+
+                        compositeNode = newCompositeNode;
+                        compositeNode.CompositeType = compositeType;
+                    }
+
+                    var rightNode = VisitQueryBlockOrParens(rightContext.queryBlockOrParens(), out _);
 
                     if (IsQueryOptionNotNull(rightContext.queryOption()))
                     {
-                        var derivedNode = WrapTableNode(compositeNode, leftContext.Start, rightContext.Stop);
+                        var derivedNode = WrapTableNode(rightNode, rightContext.queryBlockOrParens().Start, rightContext.queryOption().Stop);
                         SetQueryOption(derivedNode, rightContext.queryOption());
-                        node = derivedNode;
+
+                        rightNode = derivedNode;
                     }
-                    else
-                    {
-                        node = compositeNode;
-                    }
+
+                    compositeNode.Sources.Add(rightNode);
                 }
+
+                node = compositeNode;
             }
 
             return node;
@@ -101,14 +119,21 @@ namespace Qsi.Oracle.Tree.Visitors
 
         public static QsiTableNode VisitQueryBlockOrParens(QueryBlockOrParensContext context, out bool isParens)
         {
+            QsiTableNode node;
+
             if (context.queryBlockParens() is { } queryBlockParens)
             {
                 isParens = true;
-                return VisitQueryBlockParens(queryBlockParens);
+                node = VisitQueryBlockParens(queryBlockParens);
+            }
+            else
+            {
+                isParens = false;
+                node = VisitQueryBlock(context.queryBlock());
             }
 
-            isParens = false;
-            return VisitQueryBlock(context.queryBlock());
+            OracleTree.PutContextSpan(node, context);
+            return node;
         }
 
         private static bool IsQueryOptionNotNull(QueryOptionContext option)
