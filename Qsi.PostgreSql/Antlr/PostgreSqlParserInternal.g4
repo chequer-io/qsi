@@ -18,7 +18,8 @@ using Qsi.PostgreSql.Internal;
 }
 
 root
-   : statement (SEMI EOF? | EOF)
+   : EOF 
+   | statement (SEMI EOF? | EOF)
    ;
 
 statement
