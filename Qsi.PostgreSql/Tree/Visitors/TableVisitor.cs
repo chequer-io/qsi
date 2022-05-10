@@ -241,7 +241,7 @@ internal static class TableVisitor
             ?.Select(c => VisitQueryExpressionSet(c))
             .ToArray();
 
-        if (expressionSetNodes == null)
+        if (expressionSetNodes == null || expressionSetNodes.Length == 0)
         {
             return primary;
         }
