@@ -16,7 +16,11 @@ public class PostgreSqlDataUpdateActionNode : QsiDataUpdateActionNode, IQsiTable
                 yield return node;
             }
 
-            yield return Returning.Value;
+            if (!Returning.IsEmpty)
+            {
+                yield return Returning.Value;    
+            }
+            
         }
     }
 

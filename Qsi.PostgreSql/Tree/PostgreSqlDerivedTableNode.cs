@@ -18,7 +18,15 @@ public sealed class PostgreSqlDerivedTableNode : QsiDerivedTableNode
                 yield return child;
             }
 
-            yield return Locking.Value;
+            if (!SelectOptions.IsEmpty)
+            {
+                yield return SelectOptions.Value;   
+            }
+            
+            if (!Locking.IsEmpty)
+            {
+                yield return Locking.Value;
+            }
         }
     }
 

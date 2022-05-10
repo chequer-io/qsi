@@ -22,10 +22,20 @@ public class PostgreSqlSubscriptExpressionNode : QsiExpressionNode
     {
         get
         {
-            yield return Index.Value;
-            
-            yield return Start.Value;
-            yield return End.Value;
+            if (!Index.IsEmpty)
+            {
+                yield return Index.Value;   
+            }
+
+            if (!Start.IsEmpty)
+            {
+                yield return Start.Value;
+            }
+
+            if (!End.IsEmpty)
+            {
+                yield return End.Value;    
+            }
         }
     }
 }
