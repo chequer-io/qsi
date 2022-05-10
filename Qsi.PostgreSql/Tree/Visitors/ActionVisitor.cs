@@ -13,8 +13,14 @@ internal static class ActionVisitor
     public static QsiActionNode VisitDeleteStatement(DeleteStatementContext context)
     {
         var nowith = context.deleteStatementNoWith();
+
+        var allColumnDeclaration = new QsiColumnsDeclarationNode();
+        allColumnDeclaration.Columns.Add(new QsiAllColumnNode());
         
-        var derived = new QsiDerivedTableNode();
+        var derived = new QsiDerivedTableNode
+        {
+            Columns = { Value = allColumnDeclaration }
+        };
 
         var withClause = context.withClause();
         var whereClause = nowith.whereClause();
