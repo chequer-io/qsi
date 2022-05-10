@@ -53,7 +53,7 @@ internal static class ActionVisitor
 
         if (nowith.fromItemList() != null)
         {
-            derived.Source.SetValue(VisitUsingFromItemListClause(nowith.fromItemList(), derived.Source.Value));
+            derived.Source.SetValue(VisitFromItemListClause(nowith.fromItemList(), derived.Source.Value));
         }
 
         var node = new QsiDataDeleteActionNode();
@@ -268,7 +268,7 @@ internal static class ActionVisitor
         return TableVisitor.VisitSelectItemList(selectItemList);
     }
 
-    public static QsiTableNode VisitUsingFromItemListClause(FromItemListContext context, QsiTableNode origin)
+    public static QsiTableNode VisitFromItemListClause(FromItemListContext context, QsiTableNode origin)
     {
         var tables = context.fromItem().Select(TableVisitor.VisitFromItem);
 
