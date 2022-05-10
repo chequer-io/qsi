@@ -1,11 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Qsi.Analyzers;
 using Qsi.Analyzers.Action;
 using Qsi.Analyzers.Definition;
+using Qsi.Data;
 using Qsi.Engines;
 using Qsi.Parsing;
 using Qsi.PostgreSql.Analyzers;
 using Qsi.Services;
+using Qsi.Tree;
 
 namespace Qsi.PostgreSql
 {
@@ -39,7 +42,9 @@ namespace Qsi.PostgreSql
         public override IEnumerable<IQsiAnalyzer> CreateAnalyzers(QsiEngine engine)
         {
             yield return new QsiActionAnalyzer(engine);
-            yield return new PgTableAnalyzer(engine);
+            // TODO: Check table analyzer.
+            // yield return new PgTableAnalyzer(engine);
+            yield return new PostgreSqlTableAnalyzer(engine);
             yield return new QsiDefinitionAnalyzer(engine);
         }
     }
