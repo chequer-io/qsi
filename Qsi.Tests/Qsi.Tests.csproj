@@ -29,6 +29,19 @@
         <EmbeddedResource Include="Resources\mysql-sakila-data.sql" />
         <None Remove="Resources\mysql-sakila-schema.sql" />
         <EmbeddedResource Include="Resources\mysql-sakila-schema.sql" />
+        
+        <None Remove="Resources\postgres-sakila-delete-data.sql" />
+        <EmbeddedResource Include="Resources\postgres-sakila-delete-data.sql" />
+        <None Remove="Resources\postgres-sakila-drop-objects.sql" />
+        <EmbeddedResource Include="Resources\postgres-sakila-drop-objects.sql" />
+        <None Remove="Resources\postgres-sakila-insert-data.sql" />
+        <EmbeddedResource Include="Resources\postgres-sakila-insert-data.sql" />
+        <None Remove="Resources\postgres-sakila-schema.sql" />
+        <EmbeddedResource Include="Resources\postgres-sakila-schema.sql" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Vendor\PostgreSQL\verified" />
     </ItemGroup>
 
 </Project>
