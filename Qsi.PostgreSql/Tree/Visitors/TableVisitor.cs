@@ -55,13 +55,26 @@ internal static class TableVisitor
         var source = nowith.queryExpressionBody() != null ?
             VisitQueryExpressionBody(nowith.queryExpressionBody()) :
             VisitQueryExpressionParens(nowith.queryExpressionParens());
-        
+
+        var with = context.withClause();
+        var orderByClause = nowith.orderByClause();
+        var limitClause = nowith.limitClause();
+        var lockingClause = nowith.forClause();
+
+        if (with == null &&
+            orderByClause == null &&
+            limitClause == null &&
+            lockingClause == null)
+        {
+            return source;
+        }
+
         var node = new PostgreSqlDerivedTableNode();
         
         // Visit WITH clause
-        if (context.withClause() != null)
+        if (with != null)
         {
-            node.Directives.SetValue(VisitWithClause(context.withClause()));
+            node.Directives.SetValue(VisitWithClause(with));
         }
         
         node.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
@@ -69,19 +82,19 @@ internal static class TableVisitor
         // Set source
         node.Source.SetValue(source);
 
-        if (nowith.orderByClause() != null)
+        if (orderByClause != null)
         {
-            node.Order.SetValue(ExpressionVisitor.VisitOrderByClause(nowith.orderByClause()));
+            node.Order.SetValue(ExpressionVisitor.VisitOrderByClause(orderByClause));
         }
 
-        if (nowith.limitClause() != null)
+        if (limitClause != null)
         {
-            node.Limit.SetValue(ExpressionVisitor.VisitLimitClause(nowith.limitClause()));
+            node.Limit.SetValue(ExpressionVisitor.VisitLimitClause(limitClause));
         }
 
-        if (nowith.forClause() != null)
+        if (lockingClause != null)
         {
-            node.Locking.SetValue(VisitLockingClause(nowith.forClause()));
+            node.Locking.SetValue(VisitLockingClause(lockingClause));
         }
         
         PostgreSqlTree.PutContextSpan(node, context);
@@ -376,13 +389,19 @@ internal static class TableVisitor
             return allColumnNode;
         }
 
-        var node = new QsiDerivedColumnNode();
-        node.Column.SetValue(VisitColumnExpression(context.expression())); 
+        var columnNode = VisitColumnExpression(context.expression());
+        var aliasClause = context.aliasClause();
 
-        if (context.aliasClause() != null)
+        if (aliasClause == null)
         {
-            node.Alias.SetValue(VisitAliasClause(context.aliasClause()));
+            return columnNode;
         }
+        
+        var node = new QsiDerivedColumnNode
+        {
+            Column = { Value = VisitColumnExpression(context.expression()) },
+            Alias = { Value = VisitAliasClause(context.aliasClause()) }
+        };
 
         PostgreSqlTree.PutContextSpan(node, context);
 
@@ -486,12 +505,17 @@ internal static class TableVisitor
     {
         var tableNode = VisitTableReference(context.tableName());
 
+        if (context.aliasClause() == null)
+        {
+            return tableNode;
+        }
+        
         var node = new QsiDerivedTableNode();
 
         node.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
         node.Source.SetValue(tableNode);
-        node.Alias.SetValue(VisitAliasClause(context.aliasClause()));
-        
+        node.Alias.SetValue(VisitAliasClause(context.aliasClause())); 
+
         PostgreSqlTree.PutContextSpan(node, context);
 
         return node;
