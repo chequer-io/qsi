@@ -540,7 +540,7 @@ internal static class TableVisitor
         node.IsNatural = join.NATURAL() == null;
         node.JoinType = join.joinType()?.GetInputText()
                         ?? join.CROSS()?.GetText()
-                        ?? throw new QsiException(QsiError.Syntax);
+                        ?? "OUTER";
         node.Right.SetValue(VisitFromItemPrimary(join.fromItemPrimary()));
         
         if (context.expression() != null)
