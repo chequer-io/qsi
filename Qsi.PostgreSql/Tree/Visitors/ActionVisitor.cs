@@ -100,9 +100,18 @@ internal static class ActionVisitor
                 .ToArray();
         }
 
-        if (nowith.queryPrimary() != null)
+        if (nowith.selectStatement() != null)
         {
-            node.ValueTable.SetValue(TableVisitor.VisitQueryPrimary(nowith.queryPrimary()));
+            var valueNode = TableVisitor.VisitSelectStatement(nowith.selectStatement());
+
+            if (valueNode is QsiInlineDerivedTableNode inlineDerived)
+            {
+                node.Values.AddRange(inlineDerived.Rows);
+            }
+            else
+            {
+                node.ValueTable.Value = valueNode;
+            }
         }
         else
         {

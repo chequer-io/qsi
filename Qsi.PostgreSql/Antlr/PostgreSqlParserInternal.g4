@@ -1929,7 +1929,7 @@ insertStatementNoWith
     : INSERT INTO tableName (AS columnIdentifier)?
         ('(' qualifiedIdentifierList ')')?
         overridingOption?
-        (DEFAULT VALUES | queryPrimary)
+        (DEFAULT VALUES | selectStatement)
         onConflictClause?
         returningClause?
     ;
