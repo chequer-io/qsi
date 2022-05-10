@@ -31,8 +31,6 @@ internal static class TableVisitor
     {
         var queryExpression = UnwrapQueryExpressionParens(context);
         var node = VisitQueryExpression(queryExpression);
-        
-        PostgreSqlTree.PutContextSpan(node, context);
 
         return node;
     }
