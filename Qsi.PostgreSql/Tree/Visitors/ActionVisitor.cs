@@ -210,12 +210,19 @@ internal static class ActionVisitor
         var nowith = context.updateStatementNoWith();
         
         var withClause = context.withClause();
+        var fromClause = nowith.fromClause();
         var aliasClause = nowith.aliasClause();
         var whereClause = nowith.whereClause();
 
         var source = TableVisitor.VisitTableReference(nowith.tableName());
         var derived = new QsiDerivedTableNode();
         derived.Source.SetValue(source);
+
+        if (fromClause != null)
+        {
+            var table = VisitFromItemListClause(fromClause.fromItemList(), derived.Source.Value);
+            derived.Source.Value = table;
+        }
         
         if (aliasClause != null)
         {
