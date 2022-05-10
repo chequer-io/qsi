@@ -1872,7 +1872,7 @@ queryExpressionSet
 
 // Primary query.
 queryPrimary
-    : SELECT selectOption* selectItemList
+    : SELECT selectOption? selectItemList
         intoClause?
         fromClause?
         whereClause?

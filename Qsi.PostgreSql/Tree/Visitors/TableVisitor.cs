@@ -267,52 +267,49 @@ internal static class TableVisitor
     {
         var node = new PostgreSqlDerivedTableNode();
 
-        // TODO: Ask why used switch-case with foreach? -> one by one.
-        foreach (var child in context.children)
+        var option = context.selectOption();
+        var itemList = context.selectItemList();
+        var fromClause = context.fromClause();
+        var whereClause = context.whereClause();
+        var groupByClause = context.groupByClause();
+        var havingClause = context.havingClause();
+
+        if (option != null)
         {
-            switch (child)
+            node.SelectOptions.SetValue(VisitSelectOption(option));
+        }
+
+        if (itemList != null)
+        {
+            node.Columns.SetValue(VisitSelectItemList(itemList));
+        }
+
+        if (fromClause != null)
+        {
+            var source = VisitFromClause(fromClause);
+
+            if (source != null)
             {
-                case SelectOptionContext selectOption:
-                    node.SelectOptions.SetValue(VisitSelectOption(selectOption));
-                    break;
-                
-                case SelectItemListContext selectItemList:
-                    node.Columns.SetValue(VisitSelectItemList(selectItemList));
-                    break;
-                
-                case FromClauseContext fromClause:
-                    var source = VisitFromClause(fromClause);
-
-                    if (source != null)
-                    {
-                        node.Source.SetValue(source);
-                    }
-
-                    break;
-                
-                case WhereClauseContext whereClause:
-                    node.Where.SetValue(ExpressionVisitor.VisitWhereClause(whereClause));
-                    break;
-                
-                case GroupByClauseContext groupByClause:
-                    node.Grouping.SetValue(ExpressionVisitor.VisitGroupByClause(groupByClause));
-                    break;
-                
-                case HavingClauseContext havingClause when !node.Grouping.IsEmpty:
-                    node.Grouping.Value.Having.SetValue(ExpressionVisitor.VisitExpression(havingClause.expression()));
-                    break;
-                
-                case IntoClauseContext:
-                case WindowClauseContext:
-                case ITerminalNode:
-                    // Skip
-                    break;
-                
-                default:
-                    throw new QsiException(QsiError.Syntax);
+                node.Source.SetValue(source);
             }
         }
-        
+
+        if (whereClause != null)
+        {
+            node.Where.SetValue(ExpressionVisitor.VisitWhereClause(whereClause));
+        }
+
+        if (groupByClause != null)
+        {
+
+            node.Grouping.SetValue(ExpressionVisitor.VisitGroupByClause(groupByClause));
+            
+            if (havingClause != null)
+            {
+                node.Grouping.Value.Having.Value = ExpressionVisitor.VisitExpression(havingClause.expression());
+            }
+        }
+
         PostgreSqlTree.PutContextSpan(node, context);
 
         return node;
