@@ -379,7 +379,6 @@ internal static class TableVisitor
     {
         if (context.STAR() != null)
         {
-            // TODO: Ask whether I should put PutContextSpan method here.
             var allColumnNode = new QsiAllColumnNode();
             
             PostgreSqlTree.PutContextSpan(allColumnNode, context);
