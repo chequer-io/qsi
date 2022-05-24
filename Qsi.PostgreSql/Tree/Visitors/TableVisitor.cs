@@ -151,13 +151,15 @@ internal static class TableVisitor
 
     public static QsiSequentialColumnNode VisitSequentialColumn(ColumnIdentifierContext context)
     {
-        var node = new QsiSequentialColumnNode();
-        
-        node.Alias.SetValue(new QsiAliasNode
+        var identifier = IdentifierVisitor.VisitIdentifier(context);
+        var alias = new QsiAliasNode { Name = identifier };
+
+        var node = new QsiSequentialColumnNode
         {
-            Name = IdentifierVisitor.VisitIdentifier(context)
-        });
-        
+            ColumnType = QsiSequentialColumnType.Overwrite,
+            Alias = { Value = alias }
+        };
+
         PostgreSqlTree.PutContextSpan(node, context);
 
         return node;
