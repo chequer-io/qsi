@@ -398,15 +398,19 @@ internal static class TableVisitor
             return columnNode;
         }
         
-        var node = new QsiDerivedColumnNode
+        if (columnNode is not QsiDerivedColumnNode derivedColumnNode)
         {
-            Column = { Value = VisitColumnExpression(context.expression()) },
-            Alias = { Value = VisitAliasClause(context.aliasClause()) }
-        };
+            derivedColumnNode = new QsiDerivedColumnNode
+            {
+                Column = { Value = columnNode }
+            };
+        }
 
-        PostgreSqlTree.PutContextSpan(node, context);
+        derivedColumnNode.Alias.Value = VisitAliasClause(aliasClause);
+            
+        PostgreSqlTree.PutContextSpan(derivedColumnNode, context);
 
-        return node;
+        return derivedColumnNode;
     }
     
     public static QsiColumnNode VisitColumnExpression(ExpressionContext context)
@@ -510,14 +514,21 @@ internal static class TableVisitor
         {
             return tableNode;
         }
-        
-        var node = new QsiDerivedTableNode();
 
-        node.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
-        node.Source.SetValue(tableNode);
-        node.Alias.SetValue(VisitAliasClause(context.aliasClause())); 
+        var aliasClause = context.aliasClause();
 
-        PostgreSqlTree.PutContextSpan(node, context);
+        var node = new QsiDerivedTableNode
+        {
+            Columns = { Value = TreeHelper.CreateAllColumnsDeclaration() },
+            Source = { Value = tableNode },
+            Alias = { Value = VisitAliasClause(aliasClause) }
+        };
+
+        var columnList = aliasClause.aliasClauseBody().columnIdentifierList();
+
+        node.Columns.Value = columnList == null ?
+            TreeHelper.CreateAllColumnsDeclaration() :
+            CreateSequentialColumns(columnList);
 
         return node;
     }
