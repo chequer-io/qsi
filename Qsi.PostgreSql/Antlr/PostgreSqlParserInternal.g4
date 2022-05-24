@@ -372,7 +372,7 @@ alterOperatorArgument
     | reservedKeyword
     | qualifiedOperator
     | numericOnly
-    | string
+    | str
     ;
 
 /**
@@ -454,11 +454,11 @@ alterRolePostfix
     ;
 
 alterRoleOption
-    : PASSWORD (string | NULL_P)
-    | (ENCRYPTED | UNENCRYPTED) PASSWORD string
+    : PASSWORD (str | NULL_P)
+    | (ENCRYPTED | UNENCRYPTED) PASSWORD str
     | INHERIT
     | CONNECTION LIMIT signedInt
-    | VALID UNTIL string
+    | VALID UNTIL str
     | USER roleList
     | identifier
     ;
@@ -522,7 +522,7 @@ alterServerStatement
 alterServerPostfix
     : alterGenericPostfix
     | alterGenericOptions
-    | (VERSION_P (string | NULL_P)) alterGenericOptions?
+    | (VERSION_P (str | NULL_P)) alterGenericOptions?
     ;
 
 /**
@@ -546,7 +546,7 @@ alterSubscriptionStatement
 alterSubscriptionPostfix
     : alterGenericPostfix
     | SET '(' definitionList ')'
-    | CONNECTION string
+    | CONNECTION str
     | REFRESH PUBLICATION definitionListClause?
     | (SET | ADD_P | DROP) PUBLICATION columnLabelIdentifierList definitionListClause?
     | ENABLE_P
@@ -713,8 +713,8 @@ alterTypePostfix
     : alterGenericPostfix
     | alterTypeCommandList
     | SET '(' alterOperatorOptionList ')'
-    | ADD_P VALUE_P (IF_P NOT EXISTS)? string ((BEFORE | AFTER) string)?
-    | RENAME VALUE_P string TO string
+    | ADD_P VALUE_P (IF_P NOT EXISTS)? str ((BEFORE | AFTER) str)?
+    | RENAME VALUE_P str TO str
     | RENAME ATTRIBUTE columnIdentifier TO columnIdentifier (CASCADE | RESTRICT)?
     ;
 
@@ -850,7 +850,7 @@ createCollationStatement
  * See: https://www.postgresql.org/docs/14/sql-createconversion.html
  */
 createConversionStatement
-    : CREATE DEFAULT? CONVERSION_P qualifiedIdentifier FOR string TO string FROM qualifiedIdentifier
+    : CREATE DEFAULT? CONVERSION_P qualifiedIdentifier FOR str TO str FROM qualifiedIdentifier
     ;
 
 /**
@@ -900,7 +900,7 @@ eventTriggerWhenList
     ;
 
 eventTriggerItem
-    : columnIdentifier IN_P '(' string (COMMA string)* ')'
+    : columnIdentifier IN_P '(' str (COMMA str)* ')'
     ;
 
 /**
@@ -977,7 +977,7 @@ createFunctionOptionList
     ;
 
 createFunctionOption
-    : AS string (',' string)? /* locals[ParserRuleContext definition] */ // From open-source PG parser, dunno why it's here.
+    : AS str (',' str)? /* locals[ParserRuleContext definition] */ // From open-source PG parser, dunno why it's here.
     | LANGUAGE noReservedWordOrString
     | TRANSFORM transformTypeList
     | WINDOW
@@ -1200,8 +1200,8 @@ createSequenceStatement
  */
 createServerStatement
     : CREATE SERVER (IF_P NOT EXISTS)? columnIdentifier
-        (TYPE_P string)?
-        (VERSION_P (string | NULL_P))?
+        (TYPE_P str)?
+        (VERSION_P (str | NULL_P))?
         FOREIGN DATA_P WRAPPER columnIdentifier genericOptions?
     ;
 
@@ -1385,7 +1385,7 @@ triggerFunctionArguments
 triggerFunctionArgument
     : unsignedInt
     | float
-    | string
+    | str
     | columnLabelIdentifier
     ;
 
@@ -1406,7 +1406,7 @@ createTypeOption
     ;
 
 enumList
-    : string (',' string)*
+    : str (',' str)*
     ;
 
 /**
@@ -2021,7 +2021,7 @@ truncateStatement
  * See: https://www.postgresql.org/docs/14/sql-notify.html
  */
 notifyStatement
-    : NOTIFY columnIdentifier (',' string)?
+    : NOTIFY columnIdentifier (',' str)?
     ;
 
 /**
@@ -2064,8 +2064,8 @@ setTarget
     : genericSet
     | qualifiedIdentifierList FROM CURRENT_P
     | TIME ZONE timezone
-    | (CATALOG_P | SCHEMA | TRANSACTION SNAPSHOT) string
-    | NAMES (string | DEFAULT)?
+    | (CATALOG_P | SCHEMA | TRANSACTION SNAPSHOT) str
+    | NAMES (str | DEFAULT)?
     | (ROLE | SESSION AUTHORIZATION) noReservedWordOrString
     | SESSION AUTHORIZATION noReservedWordOrString
     | XML_P OPTION documentOrContent
@@ -2094,10 +2094,10 @@ isoLevel
     ;
 
 timezone
-    : string
+    : str
     | identifier
-    | interval string intervalOption?
-    | interval '(' unsignedInt ')' string
+    | interval str intervalOption?
+    | interval '(' unsignedInt ')' str
     | numericOnly
     | DEFAULT
     | LOCAL
@@ -2759,7 +2759,7 @@ extractArgument
     | HOUR_P
     | MINUTE_P
     | SECOND_P
-    | string
+    | str
     ;
 
 // NORMALIZE
@@ -3173,9 +3173,9 @@ constant
     | float
     | hex
     | bin
-    | string
-    | functionName (string | '(' argumentList orderByClause ')' string)
-    | constType string
+    | str
+    | functionName (str | '(' argumentList orderByClause ')' str)
+    | constType str
     | interval
     | TRUE_P
     | FALSE_P
@@ -3188,7 +3188,7 @@ constant
  * See: https://www.postgresql.org/docs/14/datatype-datetime.html
  */
 interval
-    : INTERVAL (string intervalOption? | '(' signedInt ')' string)
+    : INTERVAL (str intervalOption? | '(' signedInt ')' str)
     ;
 
 intervalOption
@@ -3242,7 +3242,7 @@ bin
     ;
 
 // string
-string
+str
     : StringConstant
     | BeginDollarStringConstant DollarText* EndDollarStringConstant
     | EscapeStringConstant
@@ -3264,7 +3264,7 @@ booleanOrString
 
 noReservedWordOrString
     : noReservedKeywords
-    | string
+    | str
     ;
 
 //----------------- TEMPORARY NODES ------------------------------------------------------------------------------------
@@ -3433,7 +3433,7 @@ definitionArgument
     | reservedKeyword
     | qualifiedOperator
     | numericOnly
-    | string
+    | str
     | NONE
     ;
 
@@ -3494,7 +3494,7 @@ genericOptions
     ;
 
 genericOption
-    : columnLabelIdentifier string
+    : columnLabelIdentifier str
     ;
 
 alterGenericOptions
