@@ -106,6 +106,18 @@ public partial class PostgreSqlTest : VendorTestBase
         var tableResult = (QsiTableResult)result[0];
         var table = tableResult.Table;
         Print(table);
+
+        if (table.Columns.Count > 0)
+        {
+            Console.WriteLine("COLUMNS");
+            Console.WriteLine(table.Columns
+                .Select(c => c.Name == null ? "NONAME" : c.Name.Value)
+                .Aggregate((a, b) => $"{a} {b}"));
+        }
+        else
+        {
+            Console.WriteLine("NO COLUMNS!");
+        }
         
         // TODO: Remove null exception on x.Name when table does not have columns.
         return ((QsiTableResult)result[0]).Table.Columns
@@ -121,6 +133,7 @@ public partial class PostgreSqlTest : VendorTestBase
 
             if (structure.Columns?.Count > 0)
             {
+                Console.WriteLine("COLUMNS: ");
                 Console.WriteLine(structure.Columns
                     .Select(c =>
                     {
@@ -139,6 +152,10 @@ public partial class PostgreSqlTest : VendorTestBase
                                $"OBJ_REF: {reference}";
                     })
                     .Aggregate((a, b) => $"{a}\n{b}"));
+            }
+            else
+            {
+                Console.WriteLine("NO_COLUMNS");
             }
             
             Console.WriteLine("---- END LOG ----");
