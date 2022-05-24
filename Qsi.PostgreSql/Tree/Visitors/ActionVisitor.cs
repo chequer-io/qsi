@@ -43,17 +43,47 @@ internal static class ActionVisitor
         
         var table = nowith.tableName();
         var alias = nowith.aliasClause();
-        
-        derived.Source.SetValue(TableVisitor.VisitTableReference(table));
 
-        if (alias != null)
-        {
-            derived.Alias.SetValue(TableVisitor.VisitAliasClause(nowith.aliasClause()));
-        }
+        var source = TableVisitor.VisitTableReference(table);
+        derived.Source.SetValue(TableVisitor.VisitTableReference(table));
 
         if (nowith.fromItemList() != null)
         {
+            QsiAliasNode aliasNode = null;
+            
+            if (alias != null)
+            {
+                aliasNode = TableVisitor.VisitAliasClause(nowith.aliasClause());
+
+                var aliasDeclaration = new QsiColumnsDeclarationNode
+                {
+                    Columns = { new QsiAllColumnNode() }
+                };
+                
+                var aliasTableNode = new QsiDerivedTableNode
+                {
+                    Columns = { Value = aliasDeclaration },
+                    Source = { Value = derived.Source.Value },
+                    Alias = { Value = aliasNode }
+                };
+            
+                PostgreSqlTree.PutContextSpan(aliasTableNode, nowith.tableName().Start, nowith.aliasClause().Stop);
+            
+                derived.Source.Value = aliasTableNode;
+            }
+            
             derived.Source.SetValue(VisitFromItemListClause(nowith.fromItemList(), derived.Source.Value));
+
+            var newAllColumn = new QsiAllColumnNode
+            {
+                Path = aliasNode != null ?
+                    new QsiQualifiedIdentifier(aliasNode.Name) :
+                    source.Identifier
+            };
+            
+            var newColumnsDeclaration = new QsiColumnsDeclarationNode();
+            newColumnsDeclaration.Columns.Add(newAllColumn);
+            derived.Columns.Value = newColumnsDeclaration;
         }
 
         var node = new QsiDataDeleteActionNode();
@@ -83,13 +113,13 @@ internal static class ActionVisitor
 
         if (nowith.columnIdentifier() != null)
         {
-            var tableNode = new QsiDerivedTableNode();
-            tableNode.Source.SetValue(TableVisitor.VisitTableReference(nowith.tableName()));
-            tableNode.Alias.SetValue(new QsiAliasNode
+            var tableNode = new QsiDerivedTableNode
             {
-                Name = IdentifierVisitor.VisitIdentifier(nowith.columnIdentifier())
-            });
-            
+                Columns = { Value = new QsiColumnsDeclarationNode { Columns = { new QsiAllColumnNode() } } },
+                Source = { Value = TableVisitor.VisitTableReference(nowith.tableName()) },
+                Alias = { Value = new QsiAliasNode { Name = IdentifierVisitor.VisitIdentifier(nowith.columnIdentifier()) } }
+            };
+
             PostgreSqlTree.PutContextSpan(tableNode, nowith.tableName().Start, nowith.columnIdentifier().Stop);
         }
         else
@@ -194,7 +224,7 @@ internal static class ActionVisitor
         var identifier = IdentifierVisitor.VisitIdentifier(context.columnIdentifier());
         var qualified = new QsiQualifiedIdentifier(identifier);
 
-        var node = new QsiSetColumnExpressionNode()
+        var node = new QsiSetColumnExpressionNode
         {
             Target = qualified,
             Value = { Value = ExpressionVisitor.VisitExpression(context.expression()) }
@@ -208,25 +238,78 @@ internal static class ActionVisitor
     public static QsiActionNode VisitUpdateStatement(UpdateStatementContext context)
     {
         var nowith = context.updateStatementNoWith();
+
+        var node = new QsiDataUpdateActionNode();
+        
+        if (nowith.returningClause() != null)
+        {
+            var returning = VisitReturningClause(nowith.returningClause());
+
+            node = new PostgreSqlDataUpdateActionNode
+            {
+                Returning = { Value = returning }
+            };
+        }
+        
+        node.SetValues.AddRange(ExpressionVisitor.VisitUpdateSetList(nowith.updateSetList()));
+        PostgreSqlTree.PutContextSpan(node, context);
+        
+        var source = TableVisitor.VisitTableReference(nowith.tableName());
         
         var withClause = context.withClause();
         var fromClause = nowith.fromClause();
         var aliasClause = nowith.aliasClause();
         var whereClause = nowith.whereClause();
+        
+        if (withClause == null &&
+            fromClause == null &&
+            whereClause == null)
+        {
+            node.Target.SetValue(source);
+            return node;
+        }
 
-        var source = TableVisitor.VisitTableReference(nowith.tableName());
-        var derived = new QsiDerivedTableNode();
-        derived.Source.SetValue(source);
+        var columnsDeclaration = new QsiColumnsDeclarationNode { Columns = { new QsiAllColumnNode() } };
+        
+        var derived = new QsiDerivedTableNode
+        {
+            Columns = { Value = columnsDeclaration},
+            Source = { Value = source }
+        };
 
         if (fromClause != null)
         {
+            QsiAliasNode alias = null;
+            
+            if (aliasClause != null)
+            {
+                alias = TableVisitor.VisitAliasClause(aliasClause);
+
+                var aliasTable = new QsiDerivedTableNode
+                {
+                    Columns = { Value = new QsiColumnsDeclarationNode { Columns = { new QsiAllColumnNode() } } },
+                    Source = { Value = derived.Source.Value },
+                    Alias = { Value = alias }
+                };
+            
+                PostgreSqlTree.PutContextSpan(aliasTable, nowith.tableName().Start, nowith.aliasClause().Stop);
+
+                derived.Source.Value = aliasTable;
+            }
+            
             var table = VisitFromItemListClause(fromClause.fromItemList(), derived.Source.Value);
             derived.Source.Value = table;
-        }
-        
-        if (aliasClause != null)
-        {
-            derived.Alias.SetValue(TableVisitor.VisitAliasClause(aliasClause));
+            
+            var newAllColumn = new QsiAllColumnNode
+            {
+                Path = alias != null ?
+                    new QsiQualifiedIdentifier(alias.Name) :
+                    source.Identifier
+            };
+            
+            var newColumnsDeclaration = new QsiColumnsDeclarationNode();
+            newColumnsDeclaration.Columns.Add(newAllColumn);
+            derived.Columns.Value = newColumnsDeclaration;
         }
 
         if (withClause != null)
@@ -238,24 +321,8 @@ internal static class ActionVisitor
         {
             derived.Where.SetValue(ExpressionVisitor.VisitWhereClause(whereClause));
         }
-        
-        var node = new QsiDataUpdateActionNode();
 
-        if (nowith.returningClause() != null)
-        {
-            var returning = VisitReturningClause(nowith.returningClause());
-
-            node = new PostgreSqlDataUpdateActionNode
-            {
-                Returning = { Value = returning }
-            };
-        }
-        
         node.Target.Value = derived;
-        node.SetValues.AddRange(ExpressionVisitor.VisitUpdateSetList(nowith.updateSetList()));
-
-        PostgreSqlTree.PutContextSpan(node, context);
-
         return node;
     }
 
