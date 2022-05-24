@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Qsi.Analyzers.Table.Context;
 using Qsi.Data;
 using Qsi.Engines;
@@ -21,140 +23,140 @@ public class PostgreSqlTableAnalyzer : PgTableAnalyzer
     {
         switch (expression)
         {
-            case PostgreSqlUndefinedExpressionNode e:
-                var identifier = ResolveQualifiedIdentifier(context, e.Name);
-                var lastName = identifier[^1];
-
-                // TODO: Remove console logs used for debugging
-                System.Console.WriteLine($"IDENTIFIER: {identifier}");
-                System.Console.WriteLine($"IDENTIFIER_LAST: {lastName.Value}");
-                
-                PrintContext(context);
-
-                // TODO: Make the logic strictly.
-                //       It could be a value even if there is a column which has a same name as the identifier.
-                var cursor = context;
-                var tableStructures = new List<QsiTableStructure>();
-
-                tableStructures.AddRange(cursor.GetAllSourceTables());
-                
-                // TODO: Remove nasty while codes; cleanup.
-                while(cursor.Parent != null)
-                {
-                    tableStructures.AddRange(cursor.GetAllSourceTables());
-                    cursor = cursor.Parent;
-                }
-
-                var columnTuples = tableStructures
-                    .Where(t => t.HasIdentifier)
-                    .SelectMany(t => t.Columns.Select(c => (table: t, column: c)));
-
-                var tuple = columnTuples.Where(tuple => tuple.column.Name.Value == lastName.Value);
-
-                if (tuple.Any())
-                {
-                    // TODO: Remove console logs used for debugging
-                    System.Console.WriteLine("TUPLE_FIND");
-                    System.Console.WriteLine(tuple
-                        .Select(t => $"{t.table.Identifier}:${t.column.Name.Value}")
-                        .Aggregate((a, b) => $"{a} {b}"));
-                    
-                    // TODO: Dividing resolved identifier is required due to an error while executing ResolveColumnReference.
-                    //       If not divide, unknown column error occurs because it contains database name.
-                    //       If divide and contain only column name, ambiguous error occurs because there's two table:
-                    //       postgres.public.actor and a (table alias).
-                    //       Need to consider resolving identifier without database name.
-                    //       (public.actor not postgres.public.actor)
-                    var columnNode = new QsiColumnReferenceNode
-                    {
-                        Name = new QsiQualifiedIdentifier(tuple.First().table.Identifier.Append(lastName))
-                    }; // TODO: Bad approach.
-                    
-                    var tableColumn = ResolveColumnReference(context, columnNode, out _);
-
-                    foreach (var column in tableColumn)
-                    {
-                        System.Console.WriteLine(column.Name.Value);
-                        System.Console.WriteLine(column.Parent.Identifier.ToString());
-                        yield return column;
-                    }
-
-                    break;
-                }
-
-                // TODO: Implement case of non-columns (such as row values)
-                // throw new System.Exception("Error!");
-                foreach (var column in base.ResolveColumnsInExpression(context, expression))
-                {
-                    yield return column;
-                }
-                
+            // TODO: Remove
+            // case PostgreSqlUndefinedExpressionNode undefinedExpression:
+            //     yield return GetColumn(context, undefinedExpression);
+            //     break;
+            
+            case PostgreSqlSubscriptExpressionNode:
                 break;
             
             default:
-                foreach (var column in base.ResolveColumnsInExpression(context, expression))
-                {
-                    yield return column;
-                }
+                foreach (var tableColumn in base.ResolveColumnsInExpression(context, expression))
+                    yield return tableColumn;
 
                 break;
         }
     }
 
-    private void PrintContext(TableCompileContext context)
+    protected override async ValueTask<QsiTableStructure> BuildInlineDerivedTableStructure(TableCompileContext context, IQsiInlineDerivedTableNode table)
     {
-        System.Console.WriteLine($"----CONTEXT INFORMATION FOR: {context}----");
-        
-        if (context.Directives?.Count() > 0)
+        var structure = await base.BuildInlineDerivedTableStructure(context, table);
+
+        for (var i = 0; i < structure.Columns.Count; i++)
         {
-            System.Console.WriteLine("DIRECTIVES");
-            System.Console.WriteLine(context.Directives
-                .Select(d => d.HasIdentifier ?
-                    d.Identifier.ToString() : 
-                    d.Columns
-                        .Select(c => c.Name.Value)
-                        .Aggregate((a, b) => $"{a}, {b}"))
-                .Aggregate((a, b) => $"{a} {b}"));
+            var column = structure.Columns[i];
+            column.Name = new QsiIdentifier($"column{i + 1}", false);
         }
 
-        // TODO: Typo; should be 'JoinedSourceTables'.
-        if (context.JoinedSouceTables?.Count > 0)
+        return structure;
+    }
+
+    protected override QsiIdentifier ResolveDerivedColumnName(TableCompileContext context, IQsiDerivedTableNode table, IQsiDerivedColumnNode column)
+    {
+        if (column.Alias is not null || !column.IsExpression)
         {
-            System.Console.WriteLine("JOINED_SOURCE_TABLES");
-            System.Console.WriteLine(context.JoinedSouceTables?
-                .Select(t => t.Identifier.ToString())
-                .Aggregate((a, b) => $"{a} {b}"));   
+            return base.ResolveDerivedColumnName(context, table, column);
         }
 
-        if (context.GetAllSourceTables()?.Count() > 0)
+        var identifier = column.Expression switch
         {
-            System.Console.WriteLine("ALL_SOURCE_TABLES");
+            IQsiFunctionExpressionNode functionExpression => GetFunctionColumnName(functionExpression),
+            IQsiInvokeExpressionNode invokeExpression => GetFunctionColumnName(invokeExpression.Member),
+            IQsiLiteralExpressionNode literalExpression => GetLiteralColumnName(literalExpression),
+            IQsiMultipleExpressionNode multipleExpression => GetRowColumnName(multipleExpression),
+            IQsiTableExpressionNode tableExpression => GetTableColumnName(context, tableExpression, column),
+            IQsiMemberAccessExpressionNode memberAccessExpression => GetMemberAccessColumnName(context, memberAccessExpression),
+            // TODO: Implement cases such as "1::int2", "actor_id::int2".
+            IQsiBinaryExpressionNode => new QsiIdentifier("?column?", false),
+            _ => base.ResolveDerivedColumnName(context, table, column)
+        };
 
-            System.Console.WriteLine(context.GetAllSourceTables()
-                .Select(t => t.HasIdentifier ?
-                    t.Identifier.ToString() :
-                    t.Columns
-                        .Select(c => c.Name.Value)
-                        .Aggregate((a, b) => $"{a}, {b}"))
-                .Aggregate((a, b) => $"{a} {b}"));
-        }
+        return identifier;
+    }
 
-        if (context.SourceTable != null)
+    private QsiIdentifier GetFunctionColumnName(IQsiFunctionExpressionNode node)
+    {
+        var name = node.Identifier[^1].ToString().ToLower();
+        var identifier = new QsiIdentifier(name, false);
+
+        return identifier;
+    }
+
+    private QsiIdentifier GetLiteralColumnName(IQsiLiteralExpressionNode node)
+    {
+        var name = node.Type switch
         {
-            System.Console.WriteLine($"SOURCE_TABLE_IDENTIFIER: {context.SourceTable.Identifier}");
-            System.Console.WriteLine("SOURCE_TABLE_COLUMNS");
-            System.Console.WriteLine(context.SourceTable.Columns
-                .Select(c => c.Name.Value)
-                .Aggregate((a, b) => $"{a} {b}"));
-        }
-        
-        System.Console.WriteLine("---- END CONTEXT INFORMATION ----");
-        
-        if (context.Parent != null)
+            QsiDataType.Boolean => "bool",
+            _ => "?column?"
+        };
+
+        var identifier = new QsiIdentifier(name, false);
+
+        return identifier;
+    }
+
+    private QsiIdentifier GetRowColumnName(IQsiMultipleExpressionNode node)
+    {
+        return new QsiIdentifier("row", false);
+    }
+
+    private QsiIdentifier GetTableColumnName(TableCompileContext context, IQsiTableExpressionNode tableExpression, IQsiDerivedColumnNode derivedColumn)
+    {
+        var innerTable = tableExpression.Table;
+
+        switch (innerTable)
         {
-            System.Console.WriteLine(">>>> PARENT CONTEXT >>>>");
+            case QsiInlineDerivedTableNode inlineTable:
+            {
+                using var scopedContext = new TableCompileContext(context);
+                
+                var scopedTable = BuildInlineDerivedTableStructure(scopedContext, inlineTable).AsTask().Result;
+                    
+                IList<QsiTableColumn> columns = scopedTable.Columns;
+                    
+                if (columns.Count != 1)
+                    throw new QsiException(QsiError.Syntax);
+
+                return columns[0].Name;
+            }
+
+            case IQsiDerivedTableNode derivedTable:
+            {
+                using var scopedContext = new TableCompileContext(context);
+
+                var scopedTable = BuildDerivedTableStructure(scopedContext, derivedTable).AsTask().Result;
             
-            PrintContext(context.Parent);
+                IList<QsiTableColumn> columns = scopedTable.Columns;
+            
+                if (columns.Count != 1)
+                    throw new QsiException(QsiError.Syntax);
+
+                return columns[0].Name;
+            }
+
+            default:
+                throw new NotSupportedException("Not supported node");
+        }
+    }
+
+    private QsiIdentifier GetMemberAccessColumnName(TableCompileContext context, IQsiMemberAccessExpressionNode node)
+    {
+        switch (node.Member)
+        {
+            case IQsiFieldExpressionNode fieldExpression:
+                return fieldExpression.Identifier[^1];
+
+            case PostgreSqlSubscriptExpressionNode:
+                var columns = ResolveColumnsInExpression(context, node.Target);
+
+                if (columns.Count() != 1)
+                    throw new Exception("Member should not have multiple columns");
+
+                return columns.First().Name;
+                
+            default:
+                throw new NotSupportedException($"Node {node.Member.GetType()} is not supported");
         }
     }
 }
