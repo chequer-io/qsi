@@ -588,11 +588,11 @@ internal static class TableVisitor
         var join = context.join();
 
         node.Left.SetValue(left);
-        node.IsNatural = join.NATURAL() == null;
-        node.JoinType = join.joinType()?.GetInputText()
-                        ?? join.CROSS()?.GetText()
-                        ?? "OUTER";
-        node.Right.SetValue(VisitFromItemPrimary(join.fromItemPrimary()));
+        node.IsNatural = join.NATURAL() != null;
+        node.JoinType = join.joinType()?.GetInputText();
+        node.IsComma = join.CROSS() != null ||
+                       join.CROSS() == null && join.joinType() == null;
+        node.Right.SetValue(VisitFromItem(join.fromItem()));
         
         if (context.expression() != null)
         {
