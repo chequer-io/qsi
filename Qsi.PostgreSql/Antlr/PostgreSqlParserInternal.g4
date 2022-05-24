@@ -2157,7 +2157,12 @@ fromItemList
     ;
 
 fromItem
-    : fromItemPrimary joinClause*
+    : fromItemParens joinClause*
+    | fromItemPrimary joinClause*
+    ;
+
+fromItemParens
+    : '(' (fromItemParens | fromItem) ')'
     ;
 
 // Item that can be an element of the from clause.
@@ -2194,8 +2199,8 @@ joinClause
 
 // Join
 join
-    : CROSS JOIN fromItemPrimary
-    | NATURAL? joinType? JOIN fromItemPrimary
+    : CROSS JOIN fromItem
+    | NATURAL? joinType? JOIN fromItem
     ;
     
 joinType
