@@ -1425,7 +1425,7 @@ createUserMappingStatement
  */
 createViewStatement
     : CREATE (OR REPLACE)? tempOption? RECURSIVE? VIEW qualifiedIdentifier
-        (columnIdentifierList | '(' columnIdentifierList ')')?
+        ('(' columnIdentifierList ')')?
         withOptionsClause?
         AS selectStatement (WITH (CASCADED | LOCAL)? CHECK OPTION)?
     ;
