@@ -216,27 +216,31 @@ internal static class ExpressionVisitor
 
     public static QsiExpressionNode VisitComparisonExpressionSubquery(ComparisonExpressionSubqueryContext context)
     {
-        return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
+        var node = new QsiBinaryExpressionNode
         {
-            n.Left.Value = VisitComparisonExpression(context.comparisonExpression());
-            n.Operator = context.subqueryOperator().GetText() + " " + context.subqueryType().GetText();
-
-            if (context.expression() != null)
+            Left = { Value = VisitComparisonExpression(context.comparisonExpression()) },
+            Operator = context.subqueryOperator().GetText() + " " + context.subqueryType().GetText(),
+        };
+        
+        if (context.expression() != null)
+        {
+            node.Right.Value = VisitExpression(context.expression());
+        }
+        else
+        {
+            var tableExpression = new QsiTableExpressionNode
             {
-                n.Right.Value = VisitExpression(context.expression());
-            }
-            else
-            {
-                n.Right.Value =TreeHelper.Create<QsiTableExpressionNode>(tn =>
-                {
-                    tn.Table.Value =TableVisitor.VisitQueryExpressionParens(context.queryExpressionParens());
+                Table = { Value = TableVisitor.VisitQueryExpressionParens(context.queryExpressionParens()) }
+            };
                 
-                    PostgreSqlTree.PutContextSpan(tn, context.queryExpressionParens());
-                });
-            }
+            PostgreSqlTree.PutContextSpan(tableExpression, context.queryExpressionParens());
+
+            node.Right.Value = tableExpression;
+        }
             
-            PostgreSqlTree.PutContextSpan(n, context);
-        });
+        PostgreSqlTree.PutContextSpan(node, context);
+
+        return node;
     }
 
     public static QsiExpressionNode VisitQualifiedOperatorExpression(QualifiedOperatorExpressionContext context)
@@ -520,9 +524,14 @@ internal static class ExpressionVisitor
     {
         var table = TableVisitor.VisitQueryExpressionParens(context.queryExpressionParens());
         
-        var node = new QsiTableExpressionNode();
-        node.Table.Value =table;
-        
+        var node = new QsiTableExpressionNode
+        {
+            Table =
+            {
+                Value = table
+            }
+        };
+
         PostgreSqlTree.PutContextSpan(node, context);
         return node;
     }
