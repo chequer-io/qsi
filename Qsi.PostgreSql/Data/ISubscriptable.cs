@@ -1,4 +1,4 @@
-namespace Qsi.PostgreSql.Data;
+namespace Qsi.PostgreSql.Tree;
 
 public interface ISubscriptable
 {
