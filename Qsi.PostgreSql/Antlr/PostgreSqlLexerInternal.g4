@@ -2471,6 +2471,7 @@ InvalidUnterminatedHexadecimalStringConstant
    : X UnterminatedStringConstant
    ;
    // Numeric Constants (4.1.2.6)
+   // TODO: Support hexadecimal and binary format (0x0f, 0b01...)
 
 Integral
    : Digits
