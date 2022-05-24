@@ -35,7 +35,8 @@ namespace Qsi.PostgreSql
             {
                 AllowEmptyColumnsInSelect = true,
                 AllowEmptyColumnsInInline = true,
-                AllowNoAliasInDerivedTable = true
+                AllowNoAliasInDerivedTable = true,
+                AllowPartialColumnInDataInsert = true,
             };
         }
 
