@@ -36,6 +36,8 @@ internal static class ExpressionVisitor
             Operator = context.OR().GetText(),
             Right = { Value = VisitExpression(context.expression(1)) }
         };
+        
+        PostgreSqlTree.PutContextSpan(node, context);
 
         return node;
     }
