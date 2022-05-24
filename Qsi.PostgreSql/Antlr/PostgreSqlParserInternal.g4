@@ -1999,7 +1999,7 @@ deleteStatement
 deleteStatementNoWith
     : DELETE_P FROM tableName aliasClause? 
         (USING fromItemList)?
-        (whereClause | WHERE CURRENT_P OF cursorName)
+        (whereClause | WHERE CURRENT_P OF cursorName)?
         returningClause?
     ;
 
