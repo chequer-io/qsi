@@ -124,7 +124,7 @@ internal static class ActionVisitor
         }
         else
         {
-            node.Target.SetValue(TableVisitor.VisitTableReference(nowith.tableName()));   
+            node.Target.SetValue(TableVisitor.VisitTableReference(nowith.tableName()));
         }
 
         if (nowith.qualifiedIdentifierList() != null)
