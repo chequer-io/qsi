@@ -558,8 +558,14 @@ internal static class ExpressionVisitor
         if (context.qualifiedIdentifier() != null)
         {
             var qualified = IdentifierVisitor.VisitQualifiedIdentifier(context.qualifiedIdentifier());
+            
+            var column = new QsiColumnReferenceNode { Name = qualified };
+            PostgreSqlTree.PutContextSpan(column, context);
 
-            return new PostgreSqlUndefinedExpressionNode { Name = qualified };
+            var expressionNode = new QsiColumnExpressionNode { Column = { Value = column } };
+            PostgreSqlTree.PutContextSpan(expressionNode, context);
+
+            return expressionNode;
         }
 
         if (context.subscriptExpression() != null)
@@ -781,7 +787,7 @@ internal static class ExpressionVisitor
         var firstIdentifier = IdentifierVisitor.VisitIdentifier(context.columnLabelIdentifier(0));
         var firstQualified = new QsiQualifiedIdentifier(firstIdentifier);
         
-        QsiExpressionNode anchor = new PostgreSqlUndefinedExpressionNode { Name = firstQualified };
+        QsiExpressionNode anchor = new QsiFieldExpressionNode { Identifier = firstQualified };
 
         ColumnLabelIdentifierContext[] labels = context.columnLabelIdentifier();
 
@@ -790,7 +796,9 @@ internal static class ExpressionVisitor
             var label = labels[i];
             var identifier = IdentifierVisitor.VisitIdentifier(label);
             var qualified = new QsiQualifiedIdentifier(identifier);
-            var name = new PostgreSqlUndefinedExpressionNode { Name = qualified };
+            
+            var name = new QsiFieldExpressionNode { Identifier = qualified };
+            PostgreSqlTree.PutContextSpan(name, label);
 
             var node = new QsiMemberAccessExpressionNode
             {
