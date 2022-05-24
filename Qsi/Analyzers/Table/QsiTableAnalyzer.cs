@@ -764,53 +764,54 @@ public class QsiTableAnalyzer : QsiAnalyzerBase
         IEnumerable<TableCompileContext> candidateContexts =
             context.Options.UseOuterQueryColumn ? context.AncestorsAndSelf() : new[] { context };
 
-        IEnumerable<QsiTableStructure> candidateSourceTables;
-
-        if (column.Name.Level > 1)
-        {
-            var identifier = new QsiQualifiedIdentifier(column.Name[..^1]);
-
-            candidateSourceTables = candidateContexts.SelectMany(x => LookupDataTableStructuresInExpression(x, identifier));
-
-            if (!candidateSourceTables.Any())
-            {
-                // NOTE: 'SELECT actor FROM actor' same as
-                //       'SELECT actor.* FROM actor'
-                if (context.Options.UseImplicitTableWildcardInSelect)
-                    return ImplicitlyResolveColumnReference(context, column, out implicitTableWildcardTarget);
-
-                throw new QsiException(QsiError.UnknownTableIn, identifier, scopeFieldList);
-            }
-        }
-        else
-        {
-            candidateSourceTables = candidateContexts
-                .Select(x => x.SourceTable)
-                .Where(x => x is not null);
-        }
-
         var lastName = column.Name[^1];
 
-        QsiTableColumn[] columns = candidateSourceTables
-            .SelectMany(s => s.Columns.Where(c => Match(c.Name, lastName)))
-            .Take(2)
-            .ToArray();
-
-        switch (columns.Length)
+        foreach (var candidateContext in candidateContexts)
         {
-            case 0 when context.Options.UseImplicitTableWildcardInSelect:
-                return ImplicitlyResolveColumnReference(context, column, out implicitTableWildcardTarget);
+            if (candidateContext.SourceTable == null)
+                continue;
 
-            case 0:
-                throw new QsiException(QsiError.UnknownColumnIn, lastName.Value, scopeFieldList);
+            IEnumerable<QsiTableStructure> candidateSourceTables;
 
-            case > 1:
-                throw new QsiException(QsiError.AmbiguousColumnIn, column.Name, scopeFieldList);
+            if (column.Name.Level > 1)
+            {
+                var identifier = new QsiQualifiedIdentifier(column.Name[..^1]);
 
-            default:
-                implicitTableWildcardTarget = default;
-                return new[] { columns[0] };
+                candidateSourceTables = LookupDataTableStructuresInExpression(candidateContext, identifier);
+
+                if (!candidateSourceTables.Any())
+                    continue;
+            }
+            else
+            {
+                candidateSourceTables = new[] { candidateContext.SourceTable };
+            }
+
+            QsiTableColumn[] columns = candidateSourceTables
+                .SelectMany(s => s.Columns.Where(c => Match(c.Name, lastName)))
+                .Take(2)
+                .ToArray();
+
+            switch (columns.Length)
+            {
+                case 0:
+                    break;
+
+                case > 1:
+                    throw new QsiException(QsiError.AmbiguousColumnIn, column.Name, scopeFieldList);
+
+                default:
+                    implicitTableWildcardTarget = default;
+                    return new[] { columns[0] };
+            }
         }
+
+        // NOTE: 'SELECT actor FROM actor' same as
+        //       'SELECT actor.* FROM actor'
+        if (context.Options.UseImplicitTableWildcardInSelect)
+            return ImplicitlyResolveColumnReference(context, column, out implicitTableWildcardTarget);
+
+        throw new QsiException(QsiError.UnknownColumnIn, lastName.Value, scopeFieldList);
     }
 
     private QsiTableColumn[] ImplicitlyResolveColumnReference(TableCompileContext context, IQsiColumnReferenceNode column, out QsiQualifiedIdentifier implicitTableWildcardTarget)
