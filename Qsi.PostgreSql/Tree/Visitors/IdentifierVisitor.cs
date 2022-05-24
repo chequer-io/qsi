@@ -34,7 +34,9 @@ internal static class IdentifierVisitor
             return new QsiQualifiedIdentifier(identifier);
         }
 
-        return VisitQualifiedIdentifier(context.qualifiedIdentifier());
+        var lastName = context.indirection().columnLabelIdentifier()[^1];
+        var name = VisitIdentifier(lastName);
+        return new QsiQualifiedIdentifier(name);
     }
     
     public static QsiQualifiedIdentifier VisitQualifiedIdentifier(QualifiedIdentifierContext context)
