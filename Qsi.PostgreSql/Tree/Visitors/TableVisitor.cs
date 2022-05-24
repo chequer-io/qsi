@@ -476,7 +476,9 @@ internal static class TableVisitor
 
     public static QsiTableNode VisitFromItem(FromItemContext context)
     {
-        var source = VisitFromItemPrimary(context.fromItemPrimary());
+        var source =context.fromItemParens() != null 
+            ? VisitFromItemParens(context.fromItemParens())
+            : VisitFromItemPrimary(context.fromItemPrimary());
 
         foreach (var joinClause in context.joinClause())
         {
@@ -484,6 +486,22 @@ internal static class TableVisitor
         }
 
         return source;
+    }
+
+    public static QsiTableNode VisitFromItemParens(FromItemParensContext context)
+    {
+        var nested = context;
+        
+        while (nested.fromItemParens() != null)
+        {
+            nested = context.fromItemParens();
+        }
+        
+        var node = VisitFromItem(nested.fromItem());
+
+        PostgreSqlTree.Span[node] = new Range(context.Start.StartIndex, context.Stop.StopIndex + 1);
+
+        return node;
     }
 
     public static QsiTableNode VisitFromItemPrimary(FromItemPrimaryContext context)
