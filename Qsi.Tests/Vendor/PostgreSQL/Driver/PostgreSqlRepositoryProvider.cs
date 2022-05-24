@@ -1,9 +1,15 @@
 using System;
+using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Npgsql;
+using Org.BouncyCastle.Asn1.Ocsp;
 using Qsi.Data;
 using Qsi.Data.Object;
+using Qsi.Parsing.Common;
 using Qsi.Utilities;
 
 namespace Qsi.Tests.Vendor.PostgreSQL.Driver;
@@ -78,16 +84,32 @@ public class PostgreSqlRepositoryProvider : RepositoryProviderDriverBase
 
     protected override QsiScript LookupDefinition(QsiQualifiedIdentifier identifier, QsiTableType type)
     {
-        var sql = $@"SHOW CREATE VIEW {identifier}";
+        var oidSql = $@"select oid from pg_catalog.pg_class where relname = '{identifier[^1]}'";
 
-        using var reader = GetDataReaderCoreAsync(new QsiScript(sql, QsiScriptType.Show), null, default).Result;
+        string oid;
+        
+        using (var oidReader = GetDataReaderCoreAsync(new QsiScript(oidSql, default), null, default).Result)
+        {
+            if (!oidReader.Read())
+                return null;
+
+            oid = oidReader.GetString(0);
+        }
+        
+        var viewSql = $@"SELECT pg_catalog.pg_get_viewdef({oid})";
+
+        using var reader = GetDataReaderCoreAsync(new QsiScript(viewSql, QsiScriptType.Show), null, default).Result;
 
         if (!reader.Read())
-        {
             return null;
-        }
 
-        return new QsiScript(reader.GetString(1), QsiScriptType.Create);
+        var selectSql = reader.GetString(0).TrimEnd(';');
+
+        Console.WriteLine(selectSql);
+        
+        var createSql = $@"CREATE VIEW {identifier} AS ({selectSql})";
+
+        return new QsiScript(createSql, QsiScriptType.Create);
     }
 
     protected override QsiVariable LookupVariable(QsiQualifiedIdentifier identifier)
