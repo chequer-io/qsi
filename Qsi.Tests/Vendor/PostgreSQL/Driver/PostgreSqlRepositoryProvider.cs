@@ -126,6 +126,63 @@ public class PostgreSqlRepositoryProvider : RepositoryProviderDriverBase
     {
         var pgCommand = (NpgsqlCommand)command;
         // pgCommand.AllResultTypesAreUnknown = true;
-        pgCommand.Parameters.AddWithValue(parameter.Name, parameter.Value);
+        pgCommand.Parameters.Add(new NpgsqlParameter { Value = parameter.Value });
+        // pgCommand.Parameters.AddWithValue(parameter.Name, parameter.Value);
+    }
+
+    protected override Task<QsiDataTable> GetDataTable(QsiScript script, QsiParameter[] parameters, CancellationToken cancellationToken)
+    {
+        var csc = new CommonScriptCursor(script.Script);
+        var csp = new CommonScriptParser();
+        IEnumerable<CommonScriptParser.Token> tokens = csp.ParseTokens(csc);
+        ReadOnlySpan<char> scriptSpan = script.Script.AsSpan();
+        
+        var index = 1;
+        var scriptIndex = 0;
+        var builder = new StringBuilder(script.Script.Length);
+
+        foreach (var token in tokens)
+        {
+            ReadOnlySpan<char> str = scriptSpan[token.Span];
+
+            if (str.Length < 2 || str[0] != '$')
+                continue;
+
+            var endIndex = GetNumberEndIndex(str[1..]) + 1;
+            
+            if (endIndex == 1)
+                continue;
+
+            var (offset, length) = token.Span.GetOffsetAndLength(script.Script.Length);
+            builder.Append(script.Script, scriptIndex, offset + length - scriptIndex - str.Length);
+            scriptIndex = offset + length;
+            
+            builder.Append('$').Append(index++);
+
+            if (str.Length < endIndex)
+                continue;
+            
+            builder.Append(str[(endIndex)..]);
+        }
+
+        if (scriptIndex > 0)
+        {
+            builder.Append(script.Script, scriptIndex, script.Script.Length - scriptIndex);
+            script = new QsiScript(builder.ToString(), script.ScriptType, script.Start, script.End);
+        }
+
+        return base.GetDataTable(script, parameters, cancellationToken);
+
+        static int GetNumberEndIndex(ReadOnlySpan<char> span)
+        {
+            var index = 0;
+
+            while (span.Length > index && char.IsNumber(span[index]))
+            {
+                index++;
+            }
+
+            return index;
+        }
     }
 }
