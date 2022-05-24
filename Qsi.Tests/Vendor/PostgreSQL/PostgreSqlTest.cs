@@ -26,15 +26,15 @@ public partial class PostgreSqlTest : VendorTestBase
         var connection = new NpgsqlConnection(connectionString);
         var wrapper = new NpgsqlConnectionWrapper(connection);
 
-        return connection;
+        return wrapper;
     }
 
     protected override void PrepareConnection(DbConnection connection)
     {
         connection.ChangeDatabase("postgres");
 
-        // var pgConn = ((NpgsqlConnectionWrapper)connection)._connection;
-        var pgConn = (NpgsqlConnection)connection;
+        var pgConn = ((NpgsqlConnectionWrapper)connection)._connection;
+        // var pgConn = (NpgsqlConnection)connection;
         
         new NpgsqlCommand("SET SCHEMA 'public'", pgConn).ExecuteNonQuery();
 
