@@ -1963,7 +1963,7 @@ updateStatement
     ;
     
 updateStatementNoWith
-    : UPDATE ONLY? tableName STAR? aliasClause? SET updateSetList
+    : UPDATE tableName aliasClause? SET updateSetList
         fromClause?
         (whereClause | WHERE CURRENT_P OF cursorName)?
         returningClause?
@@ -1997,7 +1997,7 @@ deleteStatement
     ;
 
 deleteStatementNoWith
-    : DELETE_P FROM ONLY? tableName STAR? aliasClause? 
+    : DELETE_P FROM tableName aliasClause? 
         (USING fromItemList)?
         (whereClause | WHERE CURRENT_P OF cursorName)
         returningClause?
