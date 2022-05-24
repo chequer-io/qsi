@@ -32,6 +32,8 @@ internal static class TableVisitor
         var queryExpression = UnwrapQueryExpressionParens(context);
         var node = VisitQueryExpression(queryExpression);
 
+        PostgreSqlTree.Span[node] = new Range(context.Start.StartIndex, context.Stop.StopIndex + 1);
+
         return node;
     }
 
