@@ -21,7 +21,9 @@ internal static class FunctionVisitor
         var functionCall = context.functionCall();
         
         var identifier = IdentifierVisitor.VisitFunctionName(functionCall.functionName());
+        
         var functionNode = new QsiFunctionExpressionNode { Identifier = identifier };
+        PostgreSqlTree.PutContextSpan(functionNode, functionCall.functionName());
         
         var node = new QsiInvokeExpressionNode();
         node.Member.SetValue(functionNode);
