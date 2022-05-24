@@ -178,7 +178,7 @@ public partial class PostgreSqlTest : VendorTestBase
         var result = await Engine.Execute(new QsiScript(sql, QsiScriptType.Select), null);
         CollectionAssert.AreEqual(expectedSqls, ScriptHistories.Select(x => x.Script));
         CollectionAssert.IsNotEmpty(result);
-        Assert.AreEqual(result.Length, expectedResultCount);
+        Assert.AreEqual(expectedResultCount, result.Length);
     }
 
     [TestCaseSource(nameof(Delete_TestDatas))]
@@ -187,7 +187,7 @@ public partial class PostgreSqlTest : VendorTestBase
         var result = await Engine.Execute(new QsiScript(sql, QsiScriptType.Select), null);
         CollectionAssert.AreEqual(expectedSqls, ScriptHistories.Select(x => x.Script));
         CollectionAssert.IsNotEmpty(result);
-        Assert.AreEqual(result.Length, expectedResultCount);
+        Assert.AreEqual(expectedResultCount, result.Length);
     }
 
     [TestCaseSource(nameof(Update_TestDatas))]
@@ -196,7 +196,7 @@ public partial class PostgreSqlTest : VendorTestBase
         var result = await Engine.Execute(new QsiScript(sql, QsiScriptType.Select), null);
         CollectionAssert.AreEqual(expectedSqls, ScriptHistories.Select(x => x.Script));
         CollectionAssert.IsNotEmpty(result);
-        Assert.AreEqual(result.Length, expectedResultCount);
+        Assert.AreEqual(expectedResultCount, result.Length);
     }
 
     [TestCaseSource(nameof(Throw_TestDatas))]
