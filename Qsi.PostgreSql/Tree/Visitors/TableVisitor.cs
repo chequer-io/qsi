@@ -653,6 +653,11 @@ internal static class TableVisitor
     
     public static QsiTableReferenceNode VisitTableReference(TableNameContext context)
     {
+        if (context.ONLY() != null)
+        {
+            // TODO: Implement case for only       
+        }
+        
         var node = new QsiTableReferenceNode
         {
             Identifier = IdentifierVisitor.VisitQualifiedIdentifier(context.qualifiedIdentifier())
