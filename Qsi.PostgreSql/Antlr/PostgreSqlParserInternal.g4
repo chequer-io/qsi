@@ -2706,7 +2706,7 @@ functionCall
 // TODO: Filter names of common function expression
 functionName
     : typeFunctionIdentifier
-    | qualifiedIdentifier
+    | columnIdentifier indirection
     ;
 
 functionCallArgument
