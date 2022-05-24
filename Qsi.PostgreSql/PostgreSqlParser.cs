@@ -28,6 +28,7 @@ namespace Qsi.PostgreSql
                 InsertStatementContext insert => ActionVisitor.VisitInsertStatement(insert),
                 UpdateStatementContext update => ActionVisitor.VisitUpdateStatement(update),
                 DeleteStatementContext delete => ActionVisitor.VisitDeleteStatement(delete),
+                CreateStatementContext create => DefinitionVisitor.VisitCreateStatement(create),
                 _ => throw TreeHelper.NotSupportedTree(statement.children[0])
             };
         }
