@@ -28,7 +28,7 @@ internal static class ActionVisitor
         // Cursor feature on DELETE statement is not supported.
         if (nowith.cursorName() != null)
         {
-            throw TreeHelper.NotSupportedFeature("Cursor feature on DELETE statement is not supported.");
+            throw TreeHelper.NotSupportedFeature("Cursor feature on DELETE statement");
         }
 
         if (withClause != null)

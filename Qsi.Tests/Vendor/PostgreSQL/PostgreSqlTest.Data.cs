@@ -131,7 +131,6 @@ public partial class PostgreSqlTest
         // TODO: Implement expected results.
         new("SELECT public.actor.actor_id, public.actor.first_name FROM public.actor"),
         new("SELECT postgres.public.actor.actor_id, postgres.public.actor.first_name FROM postgres.public.actor"),
-        new("DELETE FROM actor USING film_actor WHERE CURRENT OF cursorname"),
         new("UPDATE actor SET actor.actor_id = 1", new[] { "SELECT * FROM actor" }, 1),
         new("UPDATE actor AS a SET a.actor_id = 1 WHERE false", new[] { "SELECT * FROM actor AS a WHERE false" }, 1),
         new("UPDATE actor, city SET city_id = 2, actor_id = 1 WHERE false", new[] { "SELECT * FROM actor, city WHERE false" }, 2),
@@ -139,6 +138,7 @@ public partial class PostgreSqlTest
         new("UPDATE actor a JOIN city c ON false JOIN film f ON false SET a.last_update = null, c.last_update = null, f.last_update = null", new[] { "SELECT * FROM actor a JOIN city c ON false JOIN film f ON false" }, 3),
         new("UPDATE address a JOIN city c USING (city_id) SET c.city = 1, a.address_id = 2 WHERE false", new[] { "SELECT * FROM address a JOIN city c USING (city_id) WHERE false" }, 2),
         new("UPDATE address a JOIN city c USING (city_id) SET c.last_update = 1, a.last_update = 2 WHERE false", new[] { "SELECT * FROM address a JOIN city c USING (city_id) WHERE false" }, 2),
+        new("DELETE FROM actor USING film_actor WHERE CURRENT OF cursorname") {ExpectedResult = "QSI-0001: 'Cursor feature on DELETE statement' is not supported feature"},
     };
 
     private static readonly TestCaseData[] Print_BindParam_TestDatas =
