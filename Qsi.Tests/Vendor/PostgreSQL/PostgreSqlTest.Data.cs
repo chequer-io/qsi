@@ -34,6 +34,8 @@ public partial class PostgreSqlTest
         new("SELECT actor_id[2][3] from actor"),
         new("SELECT (ROW(10, 'foo', 'bar')).f2"),
         new("SELECT (ROW (actor_id, first_name, last_name)).f2 from actor;"),
+        new("SELECT public.actor.actor_id, public.actor.first_name FROM public.actor"),
+        new("SELECT postgres.public.actor.actor_id, postgres.public.actor.first_name FROM postgres.public.actor"),
     };
 
     private static readonly TestCaseData[] Table_TestDatas =
@@ -49,7 +51,11 @@ public partial class PostgreSqlTest
         new("SELECT 'Test'") { ExpectedResult = new[] { "?column?" } },
         // new("SELECT _utf8mb4 'Test'") { ExpectedResult = new[] { "Test" } },
         // new("SELECT _utf8mb4 'Test' collate utf8mb4_unicode_ci") { ExpectedResult = new[] { "_utf8mb4 'Test' collate utf8mb4_unicode_ci" } },
-        new("SELECT N'national', CHAR'national', NCHAR'national', BPCHAR'national', VARCHAR'national', 'national'") { ExpectedResult = new[] { "bpchar", "bpchar", "bpchar", "bpchar", "varchar", "?column?" } },
+        new("SELECT N'national'") { ExpectedResult = new[] { "bpchar" } },
+        new("SELECT CHAR'national'") { ExpectedResult = new[] { "bpchar" } },
+        new("SELECT NCHAR'national'") { ExpectedResult = new[] { "bpchar" } },
+        new("SELECT BPCHAR'national'") { ExpectedResult = new[] { "bpchar" } },
+        new("SELECT VARCHAR'national'") { ExpectedResult = new[] { "varchar" } },
         new("SELECT X'0F', 0x0F, 0X0f") { ExpectedResult = new[] { "?column?", "x0f", "x0f" } },
         new("SELECT B'0101', 0b0101, 00B0101") { ExpectedResult = new[] { "?column?", "b0101", "b0101" } },
         new("SELECT false") { ExpectedResult = new[] { "bool" } },
@@ -72,6 +78,8 @@ public partial class PostgreSqlTest
         new("SELECT * FROM (VALUES(11, 21, 31)) AS foo") { ExpectedResult = new[] { "column1", "column2", "column3" } },
         new("SELECT * FROM (VALUES(11, 21, 31)) AS foo (a, b, c)") { ExpectedResult = new[] { "a", "b", "c" } },
         new("SELECT * FROM (VALUES(11, 21, 31)) AS foo (a, b)") { ExpectedResult = new[] { "a", "b", "column3" } },
+        new("SELECT public.actor.actor_id, public.actor.first_name FROM public.actor") { ExpectedResult = new[] { "actor_id, first_name" } },
+        new("SELECT postgres.public.actor.actor_id, postgres.public.actor.first_name FROM postgres.public.actor") { ExpectedResult = new[] { "actor_id", "first_name" } },
     };
 
     private static readonly TestCaseData[] Insert_TestDatas =
@@ -126,19 +134,22 @@ public partial class PostgreSqlTest
         new("UPDATE actor SET actor_id = 1, actor_id = 2") { ExpectedResult = "QSI-0001: 'Multiple set column' is not supported feature" },
         new("UPDATE actor SET bbb = 2") { ExpectedResult = "QSI-000C: Unknown column 'bbb'" },
         new("UPDATE actor_info SET film_info = 2") { ExpectedResult = "QSI-001A: Column 'film_info' is not updatable" },
-        new("UPDATE address a JOIN city c USING (city_id) SET c.city_id = 1, a.address_id = 2 WHERE false") { ExpectedResult = "QSI-001A: Column 'c.city_id' is not updatable" },
+        // new("UPDATE address a JOIN city c USING (city_id) SET c.city_id = 1, a.address_id = 2 WHERE false") { ExpectedResult = "QSI-001A: Column 'c.city_id' is not updatable" },
         
         // TODO: Implement expected results.
-        new("SELECT public.actor.actor_id, public.actor.first_name FROM public.actor"),
-        new("SELECT postgres.public.actor.actor_id, postgres.public.actor.first_name FROM postgres.public.actor"),
-        new("UPDATE actor SET actor.actor_id = 1", new[] { "SELECT * FROM actor" }, 1),
-        new("UPDATE actor AS a SET a.actor_id = 1 WHERE false", new[] { "SELECT * FROM actor AS a WHERE false" }, 1),
-        new("UPDATE actor, city SET city_id = 2, actor_id = 1 WHERE false", new[] { "SELECT * FROM actor, city WHERE false" }, 2),
-        new("UPDATE actor, city SET city.city_id = 2, actor.actor_id = 1 WHERE false", new[] { "SELECT * FROM actor, city WHERE false" }, 2),
-        new("UPDATE actor a JOIN city c ON false JOIN film f ON false SET a.last_update = null, c.last_update = null, f.last_update = null", new[] { "SELECT * FROM actor a JOIN city c ON false JOIN film f ON false" }, 3),
-        new("UPDATE address a JOIN city c USING (city_id) SET c.city = 1, a.address_id = 2 WHERE false", new[] { "SELECT * FROM address a JOIN city c USING (city_id) WHERE false" }, 2),
-        new("UPDATE address a JOIN city c USING (city_id) SET c.last_update = 1, a.last_update = 2 WHERE false", new[] { "SELECT * FROM address a JOIN city c USING (city_id) WHERE false" }, 2),
         new("DELETE FROM actor USING film_actor WHERE CURRENT OF cursorname") {ExpectedResult = "QSI-0001: 'Cursor feature on DELETE statement' is not supported feature"},
+        new("UPDATE actor SET actor.actor_id = 1") {ExpectedResult = "QSI-000C: Unknown column 'actor'"},
+        // new("UPDATE actor AS a SET a.actor_id = 1 WHERE false", new[] { "SELECT * FROM actor AS a WHERE false" }, 1) {ExpectedResult = "QSI-000C: Unknown column 'a'"},
+        // new("UPDATE actor, city SET city_id = 2, actor_id = 1 WHERE false", new[] { "SELECT * FROM actor, city WHERE false" }, 2),
+        // new("UPDATE actor, city SET city.city_id = 2, actor.actor_id = 1 WHERE false", new[] { "SELECT * FROM actor, city WHERE false" }, 2),
+        // new("UPDATE actor a JOIN city c ON false JOIN film f ON false SET a.last_update = null, c.last_update = null, f.last_update = null", new[] { "SELECT * FROM actor a JOIN city c ON false JOIN film f ON false" }, 3),
+        // new("UPDATE address a JOIN city c USING (city_id) SET c.city = 1, a.address_id = 2 WHERE false", new[] { "SELECT * FROM address a JOIN city c USING (city_id) WHERE false" }, 2),
+        // new("UPDATE address a JOIN city c USING (city_id) SET c.last_update = 1, a.last_update = 2 WHERE false", new[] { "SELECT * FROM address a JOIN city c USING (city_id) WHERE false" }, 2),
+        
+        // Tables with aggregate function cannot be analyzed with DELETE, due to the limitation of PG.
+        // PG cannot delete a column from a table, it must delete one entire row.
+        new("DELETE FROM public.actor_info a WHERE actor_id = 1") { ExpectedResult = "QSI-001A: Column 'film_info' is not updatable" },
+        new("DELETE FROM public.actor_info a, public.city b WHERE actor_id = city_id") { ExpectedResult = "QSI-001A: Column 'film_info' is not updatable" },
     };
 
     private static readonly TestCaseData[] Print_BindParam_TestDatas =
@@ -176,9 +187,6 @@ public partial class PostgreSqlTest
         new("WITH CTE AS (SELECT $1 a, $2 b) UPDATE public.actor SET first_name = (SELECT a FROM CTE) + '!'",
             new object[] { "MORRIS", "BABO" }),
 
-        new("DELETE FROM public.actor_info a WHERE actor_id = $1",
-            new object[] { 1 }),
-
         new("DELETE FROM public.film WHERE film_id = $1",
             new object[] { 1 }),
 
@@ -207,10 +215,6 @@ public partial class PostgreSqlTest
         new("UPDATE public.film SET title = 'EVAN', description = 'CHEQUER' WHERE film_id = 1"),
 
         new("WITH CTE AS (SELECT 'MORRIS' a, 'BABO' b) UPDATE public.actor SET first_name = (SELECT a FROM CTE) + '!'"),
-
-        new("DELETE FROM public.actor_info a WHERE actor_id = 1"),
-
-        new("DELETE FROM public.actor_info a, public.city b WHERE actor_id = city_id"),
 
         new("DELETE FROM public.film WHERE film_id = 1"),
 
