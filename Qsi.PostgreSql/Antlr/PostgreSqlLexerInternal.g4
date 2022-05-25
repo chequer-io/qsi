@@ -2494,6 +2494,18 @@ fragment Digits
    : [0-9]+
    ;
 
+HexNumeric
+   : '0x' HexDigits
+   ;
+
+fragment HexDigits
+   : [0-9a-fA-F]+
+   ;
+
+BinNumeric
+   : '0b' [01]+
+   ;
+
 PLSQLVARIABLENAME
    : ':' [a-zA-Z_] [a-zA-Z_0-9$]*
    ;
