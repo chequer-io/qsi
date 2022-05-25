@@ -29,9 +29,9 @@ jobs:
       run: sudo /etc/init.d/mysql start
 
     - name: Setup .NET 6
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v2
       with:
-        dotnet-version: 6.0.101
+        dotnet-version: '6.0.x'
 
     - name: Setup QSI
       shell: pwsh
