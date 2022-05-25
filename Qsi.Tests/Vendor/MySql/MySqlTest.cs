@@ -58,6 +58,8 @@ public partial class MySqlTest : VendorTestBase
     [TestCase("SELECT (SELECT actor.actor_id FROM city AS actor LIMIT 1) FROM actor")]
     [TestCase("SELECT (SELECT actor_id, city_id) FROM actor, city")]
     [TestCase("WITH RECURSIVE CTE AS (SELECT 1 N UNION ALL SELECT N + 1 FROM CTE WHERE N < 10) SELECT * FROM CTE")]
+    [TestCase("SELECT (SELECT actor_id from city) from actor")]
+    [TestCase("SELECT (SELECT actor_id from actor) from actor_info")]
     public async Task Test_SELECT(string sql)
     {
         IQsiAnalysisResult[] result = await Engine.Execute(new QsiScript(sql, QsiScriptType.Select), null);
