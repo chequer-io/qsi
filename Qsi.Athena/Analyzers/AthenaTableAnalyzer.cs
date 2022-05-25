@@ -114,7 +114,7 @@ public sealed class AthenaTableAnalyzer : QsiTableAnalyzer
                 break;
 
             case AthenaOrderExpressionNode order:
-                foreach (var column in base.ResolveColumnsInExpression(context, expression))
+                foreach (var column in base.ResolveColumnsInExpression(context, order.Expression.Value))
                     yield return column;
 
                 break;

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
@@ -26,67 +27,139 @@ namespace Qsi.Oracle.Tree.Visitors
 
         public static QsiTableNode VisitSubquery(SubqueryContext context)
         {
-            return context switch
+            var node = VisitSubqueryItem(context.subqueryItem());
+
+            if (IsQueryOptionNotNull(context.queryOption()))
             {
-                QueryBlockSubqueryContext queryBlocksubquery => VisitQueryBlockSubquery(queryBlocksubquery),
-                CompositeSubqueryContext joinedSubquery => VisitCompositeSubquery(joinedSubquery),
-                ParenthesisSubqueryContext parenthesisSubquery => VisitParenthesisSubquery(parenthesisSubquery),
-                _ => throw new NotSupportedException()
-            };
+                var derivedNode = WrapTableNode(node, context);
+                SetQueryOption(derivedNode, context.queryOption());
+
+                node = derivedNode;
+            }
+
+            return node;
         }
 
-        public static QsiTableNode VisitQueryBlockSubquery(QueryBlockSubqueryContext context)
+        public static QsiTableNode VisitSubqueryItem(SubqueryItemContext context)
         {
-            var node = VisitQueryBlock(context.queryBlock());
+            var node = VisitQueryBlockOrParens(context.queryBlockOrParens(), out var isParens);
 
-            var orderByClause = context.orderByClause();
-            var rowOffset = context.rowOffset();
-            var rowFetchOption = context.rowFetchOption();
+            if (IsQueryOptionNotNull(context.queryOption()))
+            {
+                var rootDerivedNode = WrapTableNodeParens(node, context.queryBlockOrParens().Start, context.queryOption().Stop, isParens);
+                SetQueryOption(rootDerivedNode, context.queryOption());
+            }
+
+            SubquerySetContext[] subqueryItems = context.subquerySet();
+
+            if (subqueryItems.Length > 0)
+            {
+                var compositeNode = new QsiCompositeTableNode
+                {
+                    CompositeType = VisitSubqueryCompositeType(subqueryItems[0].subqueryCompositeType())
+                };
+
+                compositeNode.Sources.Add(node);
+                var start = context.Start;
+
+                for (int i = 0; i < subqueryItems.Length; i++)
+                {
+                    ParserRuleContext leftContext = i == 0 ? context : subqueryItems[i - 1];
+                    var rightContext = subqueryItems[i];
+
+                    string compositeType = VisitSubqueryCompositeType(rightContext.subqueryCompositeType());
+
+                    if (compositeNode.CompositeType != compositeType)
+                    {
+                        OracleTree.PutContextSpan(compositeNode, start, leftContext.Stop);
+
+                        var newCompositeNode = new QsiCompositeTableNode();
+                        newCompositeNode.Sources.Add(compositeNode);
+
+                        compositeNode = newCompositeNode;
+                        compositeNode.CompositeType = compositeType;
+                    }
+
+                    var rightNode = VisitQueryBlockOrParens(rightContext.queryBlockOrParens(), out _);
+
+                    if (IsQueryOptionNotNull(rightContext.queryOption()))
+                    {
+                        var derivedNode = WrapTableNode(rightNode, rightContext.queryBlockOrParens().Start, rightContext.queryOption().Stop);
+                        SetQueryOption(derivedNode, rightContext.queryOption());
+
+                        rightNode = derivedNode;
+                    }
+
+                    compositeNode.Sources.Add(rightNode);
+                }
+
+                node = compositeNode;
+            }
+
+            return node;
+        }
+
+        public static OracleDerivedTableNode VisitQueryBlockParens(QueryBlockParensContext context)
+        {
+            var node = VisitQueryBlockOrParens(context.queryBlockOrParens(), out var isParens);
+
+            if (IsQueryOptionNotNull(context.queryOption()))
+            {
+                var derivedNode = WrapTableNodeParens(node, context, isParens);
+                SetQueryOption(derivedNode, context.queryOption());
+
+                node = derivedNode;
+            }
+
+            if (node is not OracleDerivedTableNode oracleDerivedNode)
+                oracleDerivedNode = WrapTableNode(node, context);
+
+            return oracleDerivedNode;
+        }
+
+        public static QsiTableNode VisitQueryBlockOrParens(QueryBlockOrParensContext context, out bool isParens)
+        {
+            QsiTableNode node;
+
+            if (context.queryBlockParens() is { } queryBlockParens)
+            {
+                isParens = true;
+                node = VisitQueryBlockParens(queryBlockParens);
+            }
+            else
+            {
+                isParens = false;
+                node = VisitQueryBlock(context.queryBlock());
+            }
+
+            OracleTree.PutContextSpan(node, context);
+            return node;
+        }
+
+        private static bool IsQueryOptionNotNull(QueryOptionContext option)
+        {
+            if (option is null)
+                return false;
+
+            return option.orderByClause() is not null
+                   || option.rowOffset() is not null
+                   || option.rowFetchOption() is not null;
+        }
+
+        private static void SetQueryOption([NotNull] OracleDerivedTableNode node, [NotNull] QueryOptionContext option)
+        {
+            var orderByClause = option.orderByClause();
+            var rowOffset = option.rowOffset();
+            var rowFetchOption = option.rowFetchOption();
+
+            if (orderByClause is null && rowOffset is null && rowFetchOption is null)
+                return;
 
             if (orderByClause is not null)
                 node.Order.Value = ExpressionVisitor.VisitOrderByClause(orderByClause);
 
             if (rowOffset is not null || rowFetchOption is not null)
                 node.Limit.Value = ExpressionVisitor.VisitRowlimitingContexts(rowOffset, rowFetchOption);
-
-            return node;
-        }
-
-        public static QsiTableNode VisitCompositeSubquery(CompositeSubqueryContext context)
-        {
-            SubqueryContext[] subqueryItems = context.subquery();
-            var source = VisitSubquery(subqueryItems[0]);
-
-            for (int i = 1; i < subqueryItems.Length; i++)
-            {
-                var leftContext = subqueryItems[i - 1];
-                var rightContext = subqueryItems[i];
-
-                var compositeNode = OracleTree.CreateWithSpan<QsiCompositeTableNode>(leftContext.Start, rightContext.Stop);
-
-                compositeNode.Sources.Add(source);
-                compositeNode.Sources.Add(VisitSubquery(rightContext));
-                compositeNode.CompositeType = VisitSubqueryCompositeType(context.subqueryCompositeType(i - 1));
-
-                source = compositeNode;
-            }
-
-            if (source is QsiCompositeTableNode binaryTableNode)
-            {
-                var orderByClause = context.orderByClause();
-                var rowOffset = context.rowOffset();
-                var rowFetchOption = context.rowFetchOption();
-
-                if (orderByClause is not null)
-                    binaryTableNode.Order.Value = ExpressionVisitor.VisitOrderByClause(orderByClause);
-
-                if (rowOffset is not null || rowFetchOption is not null)
-                    binaryTableNode.Limit.Value = ExpressionVisitor.VisitRowlimitingContexts(rowOffset, rowFetchOption);
-
-                source = ExtractDirectivesFromCompositeTableNode(binaryTableNode);
-            }
-
-            return source;
         }
 
         // ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -155,26 +228,6 @@ namespace Qsi.Oracle.Tree.Visitors
                 default:
                     throw TreeHelper.NotSupportedTree(context);
             }
-        }
-
-        public static QsiTableNode VisitParenthesisSubquery(ParenthesisSubqueryContext context)
-        {
-            var node = OracleTree.CreateWithSpan<OracleDerivedTableNode>(context);
-
-            node.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
-            node.Source.Value = VisitSubquery(context.subquery());
-
-            var orderByClause = context.orderByClause();
-            var rowOffset = context.rowOffset();
-            var rowFetchOption = context.rowFetchOption();
-
-            if (orderByClause is not null)
-                node.Order.Value = ExpressionVisitor.VisitOrderByClause(orderByClause);
-
-            if (rowOffset is not null)
-                node.Limit.Value = ExpressionVisitor.VisitRowlimitingContexts(rowOffset, rowFetchOption);
-
-            return node;
         }
 
         public static OracleDerivedTableNode VisitQueryBlock(QueryBlockContext context)
@@ -682,6 +735,38 @@ namespace Qsi.Oracle.Tree.Visitors
             }
 
             throw new NotSupportedException();
+        }
+
+        private static OracleDerivedTableNode WrapTableNodeParens(QsiTableNode node, ParserRuleContext context, bool isParens)
+        {
+            return WrapTableNodeParens(node, context.Start, context.Stop, isParens);
+        }
+
+        private static OracleDerivedTableNode WrapTableNodeParens(QsiTableNode node, IToken start, IToken stop, bool isParens)
+        {
+            if (isParens)
+            {
+                if (node is OracleDerivedTableNode originalDerivedNode)
+                    return originalDerivedNode;
+
+                return WrapTableNode(node, start, stop);
+            }
+
+            return WrapTableNode(node, start, stop);
+        }
+
+        private static OracleDerivedTableNode WrapTableNode(QsiTableNode node, IToken start, IToken stop)
+        {
+            var derivedNode = OracleTree.CreateWithSpan<OracleDerivedTableNode>(start, stop);
+            derivedNode.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+            derivedNode.Source.Value = node;
+
+            return derivedNode;
+        }
+
+        private static OracleDerivedTableNode WrapTableNode(QsiTableNode node, ParserRuleContext context)
+        {
+            return WrapTableNode(node, context.Start, context.Stop);
         }
     }
 }

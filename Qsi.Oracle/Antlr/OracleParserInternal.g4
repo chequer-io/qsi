@@ -12,7 +12,6 @@ root
 block
     : plsqlBlock
     | sqlplusCommand
-    | statement
     | oracleStatement
     ;
 
@@ -7810,10 +7809,29 @@ granteeClauseItem
     ;
 
 subquery
-    : queryBlock orderByClause? rowOffset? rowFetchOption?        #queryBlockSubquery
-    | subquery (subqueryCompositeType subquery)+
-      orderByClause? rowOffset? rowFetchOption?                   #compositeSubquery
-    | '(' subquery ')' orderByClause? rowOffset? rowFetchOption?  #parenthesisSubquery
+    : subqueryItem
+    | '(' subqueryItem ')' queryOption
+    ;
+
+subqueryItem
+    : queryBlockOrParens queryOption subquerySet*
+    ;
+
+subquerySet
+    : subqueryCompositeType queryBlockOrParens queryOption
+    ;
+
+queryBlockParens
+    : '(' queryBlockOrParens queryOption ')'
+    ;
+
+queryOption
+    : orderByClause? rowOffset? rowFetchOption?
+    ;
+
+queryBlockOrParens
+    : queryBlock
+    | queryBlockParens
     ;
 
 subqueryCompositeType

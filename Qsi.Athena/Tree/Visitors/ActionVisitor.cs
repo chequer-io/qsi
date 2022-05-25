@@ -195,11 +195,10 @@ internal static class ActionVisitor
         node.Columns.Value = context.viewColumnAliases() is {} viewColumnAliases
             ? ExpressionVisitor.VisitViewColumnAliases(viewColumnAliases)
             : TreeHelper.CreateAllColumnsDeclaration();
-            
+        
         // TODO: [Question] What is Directives?
         // node.Directives = ?
 
-        // TODO: [Question] Is HasToken OK? if REPLACE or EXISTS token in subquery
         if (context.HasToken(REPLACE))
         {
             node.ConflictBehavior = QsiDefinitionConflictBehavior.Replace;

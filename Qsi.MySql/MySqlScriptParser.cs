@@ -16,6 +16,7 @@ namespace Qsi.MySql
         private const string delimiter = "DELIMITER";
         private const string deallocate = "DEALLOCATE";
         private const string prepare = "PREPARE";
+        private const string desc = "DESC";
 
         private const string XA = "XA";
         private const string BEGIN = "BEGIN";
@@ -460,6 +461,7 @@ namespace Qsi.MySql
             return leadingTokens.Length switch
             {
                 >= 1 when table.EqualsIgnoreCase(cursor.Value[leadingTokens[0].Span]) => QsiScriptType.Select,
+                >= 1 when desc.EqualsIgnoreCase(cursor.Value[leadingTokens[0].Span]) => QsiScriptType.Describe,
                 >= 2 when deallocate.EqualsIgnoreCase(cursor.Value[leadingTokens[0].Span]) &&
                           prepare.EqualsIgnoreCase(cursor.Value[leadingTokens[1].Span]) => QsiScriptType.DropPrepare,
                 _ => base.GetSuitableType(cursor, tokens, leadingTokens)
