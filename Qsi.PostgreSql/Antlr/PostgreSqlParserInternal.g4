@@ -3239,13 +3239,11 @@ float
 // hexadecimal
 hex
     : HexadecimalStringConstant
-    | HexNumeric
     ;
 
 // binary
 bin
     : BinaryStringConstant
-    | BinNumeric
     ;
 
 // string
