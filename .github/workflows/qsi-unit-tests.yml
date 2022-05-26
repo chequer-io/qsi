@@ -4,6 +4,7 @@ on:
   push:
     branches: [alpha, master, feature/pg-workflow]
     paths:
+      - '.github/workflows/**'
       - 'Qsi*/**'
       - '!Qsi.Debugger/**'
   pull_request:
