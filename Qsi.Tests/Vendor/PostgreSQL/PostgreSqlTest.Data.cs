@@ -35,7 +35,6 @@ public partial class PostgreSqlTest
         new("SELECT (ROW(10, 'foo', 'bar')).f2"),
         new("SELECT (ROW (actor_id, first_name, last_name)).f2 from actor;"),
         new("SELECT public.actor.actor_id, public.actor.first_name FROM public.actor"),
-        new("SELECT postgres.public.actor.actor_id, postgres.public.actor.first_name FROM postgres.public.actor"),
     };
 
     private static readonly TestCaseData[] Table_TestDatas =
@@ -51,13 +50,13 @@ public partial class PostgreSqlTest
         new("SELECT 'Test'") { ExpectedResult = new[] { "?column?" } },
         // new("SELECT _utf8mb4 'Test'") { ExpectedResult = new[] { "Test" } },
         // new("SELECT _utf8mb4 'Test' collate utf8mb4_unicode_ci") { ExpectedResult = new[] { "_utf8mb4 'Test' collate utf8mb4_unicode_ci" } },
-        new("SELECT N'national'") { ExpectedResult = new[] { "bpchar" } },
         new("SELECT CHAR'national'") { ExpectedResult = new[] { "bpchar" } },
         new("SELECT NCHAR'national'") { ExpectedResult = new[] { "bpchar" } },
         new("SELECT BPCHAR'national'") { ExpectedResult = new[] { "bpchar" } },
         new("SELECT VARCHAR'national'") { ExpectedResult = new[] { "varchar" } },
-        new("SELECT X'0F', 0x0F, 0X0f") { ExpectedResult = new[] { "?column?", "x0f", "x0f" } },
-        new("SELECT B'0101', 0b0101, 00B0101") { ExpectedResult = new[] { "?column?", "b0101", "b0101" } },
+        new("SELECT N'national'") { ExpectedResult = new[] { "bpchar" } },
+        new("SELECT X'0F'") { ExpectedResult = new[] { "?column?" } },
+        new("SELECT B'0101'") { ExpectedResult = new[] { "?column?" } },
         new("SELECT false") { ExpectedResult = new[] { "bool" } },
         new("SELECT NOW(), NOW(/*hi*/)") { ExpectedResult = new[] { "now", "now" } },
         new("SELECT actor_id FROM actor") { ExpectedResult = new[] { "actor_id" } },
@@ -78,8 +77,7 @@ public partial class PostgreSqlTest
         new("SELECT * FROM (VALUES(11, 21, 31)) AS foo") { ExpectedResult = new[] { "column1", "column2", "column3" } },
         new("SELECT * FROM (VALUES(11, 21, 31)) AS foo (a, b, c)") { ExpectedResult = new[] { "a", "b", "c" } },
         new("SELECT * FROM (VALUES(11, 21, 31)) AS foo (a, b)") { ExpectedResult = new[] { "a", "b", "column3" } },
-        new("SELECT public.actor.actor_id, public.actor.first_name FROM public.actor") { ExpectedResult = new[] { "actor_id, first_name" } },
-        new("SELECT postgres.public.actor.actor_id, postgres.public.actor.first_name FROM postgres.public.actor") { ExpectedResult = new[] { "actor_id", "first_name" } },
+        new("SELECT public.actor.actor_id, public.actor.first_name FROM public.actor") { ExpectedResult = new[] { "actor_id", "first_name" } },
     };
 
     private static readonly TestCaseData[] Insert_TestDatas =
