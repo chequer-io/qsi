@@ -2,7 +2,7 @@ name: QSI Unit Tests
 
 on:
   push:
-    branches: [alpha, master, feature/pg-workflow]
+    branches: [alpha, master]
     paths:
       - '.github/workflows/**'
       - 'Qsi*/**'
