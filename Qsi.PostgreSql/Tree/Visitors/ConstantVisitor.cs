@@ -108,35 +108,46 @@ internal static class ConstantVisitor
     {
         var qualified = IdentifierVisitor.VisitFunctionName(context.functionName());
         var functionName = qualified[^1].ToString().ToLower();
-        
-        if (functionName is "n" or "char" or "nchar" or "bpchar" or "varchar")
+
+        return GetPostgreSqlStringNode(context, functionName);
+    }
+
+    private static QsiExpressionNode GetPostgreSqlStringNode(ConstantContext context, string name)
+    {
+        var value = context.str().GetText();
+        var kind = name switch
         {
-            var value = context.str().GetText();
-            var kind = functionName switch
-            {
-                "n" => PostgreSqlStringKind.National,
-                "char" => PostgreSqlStringKind.CharString,
-                "nchar" => PostgreSqlStringKind.NCharString,
-                "bpchar" => PostgreSqlStringKind.BpCharString,
-                "varchar" => PostgreSqlStringKind.VarcharString,
-                _ => throw new QsiException(QsiError.Syntax)
-            };
+            "n" => PostgreSqlStringKind.National,
+            "char" => PostgreSqlStringKind.CharString,
+            "nchar" => PostgreSqlStringKind.NCharString,
+            "bpchar" => PostgreSqlStringKind.BpCharString,
+            "varchar" => PostgreSqlStringKind.VarcharString,
+            _ => throw TreeHelper.NotSupportedTree(context)
+        };
 
-            return new QsiLiteralExpressionNode
-            {
-                Value = new PostgreSqlString(kind, value),
-                Type = QsiDataType.String
-            };
-        }
-
-        throw TreeHelper.NotSupportedTree(context);
+        return new QsiLiteralExpressionNode
+        {
+            Value = new PostgreSqlString(kind, value),
+            Type = QsiDataType.String
+        };
     }
     
-    public static QsiTypeExpressionNode VisitType(ConstantContext context)
+    public static QsiExpressionNode VisitType(ConstantContext context)
     {
-        throw TreeHelper.NotSupportedTree(context);
-        // var node = new QsiTypeExpressionNode();
-        // node.Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(context.children[1].GetText(), false));
+        var type = context.constType();
+
+        if (type.characterType() != null)
+        {
+            var characterName = type
+                .characterType()
+                .characterPrefix()
+                .GetText()
+                .ToLower();
+
+            return GetPostgreSqlStringNode(context, characterName);   
+        }
+
+        throw TreeHelper.NotSupportedFeature("Non-string constant type");
     }
 
     public static QsiLiteralExpressionNode VisitInterval(IntervalContext context)

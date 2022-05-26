@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Qsi.Analyzers.Table.Context;
 using Qsi.Data;
 using Qsi.Engines;
+using Qsi.PostgreSql.Data;
 using Qsi.PostgreSql.Tree;
 using Qsi.Tree;
 
@@ -85,12 +86,38 @@ public class PostgreSqlTableAnalyzer : PgTableAnalyzer
 
     private QsiIdentifier GetLiteralColumnName(IQsiLiteralExpressionNode node)
     {
-        var name = node.Type switch
-        {
-            QsiDataType.Boolean => "bool",
-            _ => "?column?"
-        };
+        string name;
 
+        switch (node.Type)
+        {
+            case QsiDataType.String:
+            {
+                if (node.Value is not PostgreSqlString str)
+                {
+                    name = "?column?";
+                    break;
+                }
+
+                name = str.Kind switch
+                {
+                    PostgreSqlStringKind.CharString => "bpchar",
+                    PostgreSqlStringKind.National => "bpchar",
+                    PostgreSqlStringKind.BpCharString => "bpchar",
+                    PostgreSqlStringKind.NCharString => "bpchar",
+                    PostgreSqlStringKind.VarcharString => "varchar",
+                    _ => "?column?"
+                };
+                
+                break;
+            }
+            case QsiDataType.Boolean:
+                name = "bool";
+                break;
+            default:
+                name = "?column?";
+                break;
+        }
+        
         var identifier = new QsiIdentifier(name, false);
 
         return identifier;
