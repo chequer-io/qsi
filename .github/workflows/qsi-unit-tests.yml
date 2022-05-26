@@ -2,7 +2,7 @@ name: QSI Unit Tests
 
 on:
   push:
-    branches: [alpha, master]
+    branches: [alpha, master, feature/pg-workflow]
     paths:
       - 'Qsi*/**'
       - '!Qsi.Debugger/**'
