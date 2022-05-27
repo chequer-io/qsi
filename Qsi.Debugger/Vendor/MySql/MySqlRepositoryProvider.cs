@@ -25,7 +25,7 @@ namespace Qsi.Debugger.Vendor.MySql
                     return actorView;
 
                 case "film_actor":
-                    var filmActor = CreateTable("postgres", "public", "film");
+                    var filmActor = CreateTable("sakila", "film_actor");
                     AddColumns(filmActor, "actor_id", "film_id", "last_update");
                     return filmActor;
                 
