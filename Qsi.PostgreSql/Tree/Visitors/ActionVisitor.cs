@@ -90,6 +90,9 @@ internal static class ActionVisitor
         
         if (nowith.returningClause() != null)
         {
+            // TODO: Implement returning clause
+            throw TreeHelper.NotSupportedFeature("Returning Clause");
+            
             var returning = VisitReturningClause(nowith.returningClause());
 
             node = new PostgreSqlDataDeleteActionNode
@@ -173,6 +176,9 @@ internal static class ActionVisitor
 
         if (nowith.returningClause() != null)
         {
+            // TODO: Implement returning clause
+            throw TreeHelper.NotSupportedFeature("Returning Clause");
+            
             node.Returning.Value = VisitReturningClause(nowith.returningClause());
         }
         
@@ -243,6 +249,9 @@ internal static class ActionVisitor
         
         if (nowith.returningClause() != null)
         {
+            // TODO: Implement returning clause
+            throw TreeHelper.NotSupportedFeature("Returning Clause");
+            
             var returning = VisitReturningClause(nowith.returningClause());
 
             node = new PostgreSqlDataUpdateActionNode
