@@ -1,0 +1,26 @@
+name: "HCL AppScan CodeSweep"
+on:
+  pull_request:
+    branches: [ "master" ]
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Run AppScan CodeSweep
+        uses: HCL-TECH-SOFTWARE/appscan-codesweep-action@v1
+        with:
+          status: failure
+          asoc_key: ${{secrets.ASOC_KEY}}
+          asoc_secret: ${{secrets.ASOC_SECRET}}
+      - name: API Request
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: 'https://secapi.chequer.io/sast'
+          method: 'POST'
+          customHeaders: '{"Content-Type": "application/json"}'
+          data: '{"name": "${{github.repository}}", "actor": "${{ github.actor }}"}'
+          preventFailureOnNoResponse: true
+    env:
+      GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
