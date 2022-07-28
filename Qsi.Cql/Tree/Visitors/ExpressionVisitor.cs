@@ -960,7 +960,7 @@ namespace Qsi.Cql.Tree
 
                 case LiteralIntegerContext _:
                 {
-                    node = TreeHelper.CreateLiteral(int.Parse(text));
+                    node = TreeHelper.CreateLiteral(long.Parse(text));
                     break;
                 }
 
