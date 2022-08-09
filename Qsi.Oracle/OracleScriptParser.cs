@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Qsi.Data;
 using Qsi.Parsing.Common;
@@ -22,8 +23,12 @@ namespace Qsi.Oracle
         private const string Begin = "BEGIN";
         private const string End = "END";
 
+        private const string Loop = "LOOP";
+        private const string Close = "CLOSE";
+
         private const string Case = "CASE";
         private const string If = "IF";
+        private const string Null = "NULL";
 
         private const string Exec = "EXEC";
         private const string Execute = "EXECUTE";
@@ -46,6 +51,17 @@ namespace Qsi.Oracle
             return base.GetSuitableType(cursor, tokens, leadingTokens);
         }
 
+        protected override bool TryParseToken(CommonScriptCursor cursor, out Token token)
+        {
+            if (cursor.Current == ';')
+            {
+                token = new Token(TokenType.Fragment, new Range(cursor.Index, cursor.Index + 1));
+                return true;
+            }
+
+            return base.TryParseToken(cursor, out token);
+        }
+
         protected override bool IsEndOfScript(ParseContext context)
         {
             var block = context.GetUserData<Block>(BlockKey);
@@ -57,11 +73,8 @@ namespace Qsi.Oracle
                 if (!block.EndOfBlock)
                     return false;
 
-                if (block.BlockType == BlockType.Begin)
-                {
-                    context.SetUserData<Block>(BlockKey, null);
-                    return true;
-                }
+                context.SetUserData<Block>(BlockKey, null);
+                return true;
             }
 
             if (!base.IsEndOfScript(context))
@@ -81,6 +94,7 @@ namespace Qsi.Oracle
                 if (transition >= 0)
                 {
                     block.LastTokenCount = transition + 1;
+                    block.ExpectedToken.Push(SemiColon);
                     block.ExpectedToken.Push(End);
                     block.BodyOpened = true;
 
@@ -121,7 +135,7 @@ namespace Qsi.Oracle
             if (context.Tokens.Count == block.LastTokenCount)
                 return false;
 
-            using var t = new TokenEnumerator(context, TokenType.Keyword, block.LastTokenCount);
+            using var t = new TokenEnumerator(context, TokenType.Keyword | TokenType.Fragment, block.LastTokenCount);
             block.LastTokenCount = context.Tokens.Count;
 
             while (!block.BodyOpened && t.MoveNext())
@@ -163,6 +177,16 @@ namespace Qsi.Oracle
                 }
                 else if (Exec.EqualsIgnoreCase(t.Current) ||
                          Execute.EqualsIgnoreCase(t.Current))
+                {
+                    block.ExpectedToken.Push(SemiColon);
+                }
+                else if (Loop.EqualsIgnoreCase(t.Current))
+                {
+                    block.ExpectedToken.Push(SemiColon);
+                    block.ExpectedToken.Push(Loop);
+                    block.ExpectedToken.Push(End);
+                }
+                else if (Null.EqualsIgnoreCase(t.Current))
                 {
                     block.ExpectedToken.Push(SemiColon);
                 }
@@ -208,7 +232,7 @@ namespace Qsi.Oracle
                 type = BlockType.Execute;
                 return true;
             }
-            
+
             // CREATE
             if (!Create.EqualsIgnoreCase(k.Current) || !k.MoveNext())
                 return false;
