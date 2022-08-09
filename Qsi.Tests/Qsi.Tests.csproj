@@ -21,6 +21,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Qsi.MySql\Qsi.MySql.csproj" />
+      <ProjectReference Include="..\Qsi.Oracle\Qsi.Oracle.csproj" />
     </ItemGroup>
 
     <ItemGroup>
