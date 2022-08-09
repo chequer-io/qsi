@@ -7,9 +7,9 @@ public partial class OracleScriptParserTest
     private static readonly TestCaseData[] Parse_TestDatas =
     {
         // SELECT
-        new("SELECT 1 FROM DUAL;;") { ExpectedResult = "SELECT 1 FROM DUAL" },
+        new("SELECT 1 FROM DUAL;;") { ExpectedResult = new[] { "SELECT 1 FROM DUAL" } },
         // CREATE TABLE
-        new("CREATE TABLE a(id NUMBER);") { ExpectedResult = "CREATE TABLE a(id NUMBER)" },
+        new("CREATE TABLE a(id NUMBER);") { ExpectedResult = new[] { "CREATE TABLE a(id NUMBER)" } },
         // CREATE [OR REPLACE] PROCEDURE
         new(@"
 CREATE OR REPLACE PROCEDURE studentInsert(
@@ -28,7 +28,9 @@ BEGIN
 END;
 ")
         {
-            ExpectedResult = @"CREATE OR REPLACE PROCEDURE studentInsert(
+            ExpectedResult = new[]
+            {
+                @"CREATE OR REPLACE PROCEDURE studentInsert(
     pName pl_student.name%TYPE,
     pKor pl_student.kor%TYPE,
     pEng pl_student.eng%TYPE,
@@ -42,6 +44,7 @@ BEGIN
     );
     COMMIT;
 END;"
+            }
         },
         // CREATE [OR REPLACE] FUNCTION
         new(@"
@@ -62,7 +65,9 @@ END get_complete_address;
 
 ")
         {
-            ExpectedResult = @"CREATE OR REPLACE FUNCTION get_complete_address(in_person_id IN NUMBER) 
+            ExpectedResult = new[]
+            {
+                @"CREATE OR REPLACE FUNCTION get_complete_address(in_person_id IN NUMBER) 
     RETURN VARCHAR2
     IS person_details VARCHAR2(130);
 
@@ -76,6 +81,7 @@ BEGIN
     RETURN(person_details); 
 
 END get_complete_address;"
+            }
         },
         // CREATE [OR REPLACE] PACKAGE
         new(@"
@@ -94,7 +100,9 @@ CREATE OR REPLACE PACKAGE emp_mgmt AS
    no_sal EXCEPTION; 
 END emp_mgmt;  ")
         {
-            ExpectedResult = @"CREATE OR REPLACE PACKAGE emp_mgmt AS 
+            ExpectedResult = new[]
+            {
+                @"CREATE OR REPLACE PACKAGE emp_mgmt AS 
    FUNCTION hire (last_name VARCHAR2, job_id VARCHAR2, 
       manager_id NUMBER, salary NUMBER, 
       commission_pct NUMBER, department_id NUMBER) 
@@ -108,6 +116,7 @@ END emp_mgmt;  ")
    no_comm EXCEPTION; 
    no_sal EXCEPTION; 
 END emp_mgmt;"
+            }
         },
         // CREATE [OR REPLACE] TRIGGER
         new(@"
@@ -131,7 +140,9 @@ BEGIN
 END;
 ")
         {
-            ExpectedResult = @"CREATE OR REPLACE TRIGGER customers_audit_trg
+            ExpectedResult = new[]
+            {
+                @"CREATE OR REPLACE TRIGGER customers_audit_trg
     AFTER 
     UPDATE OR DELETE 
     ON customers
@@ -149,6 +160,7 @@ BEGIN
    INSERT INTO audits (table_name, transaction_name, by_user, transaction_date)
    VALUES('CUSTOMERS', l_transaction, USER, SYSDATE);
 END;"
+            }
         },
         // CREATE [OR REPLACE] TYPE
         new(@"CREATE TYPE customer_typ_demo AS OBJECT
@@ -165,7 +177,9 @@ END;"
     ) ;
 ")
         {
-            ExpectedResult = @"CREATE TYPE customer_typ_demo AS OBJECT
+            ExpectedResult = new[]
+            {
+                @"CREATE TYPE customer_typ_demo AS OBJECT
     ( customer_id        NUMBER(6)
     , cust_first_name    VARCHAR2(20)
     , cust_last_name     VARCHAR2(20)
@@ -177,6 +191,7 @@ END;"
     , cust_email         VARCHAR2(30)
     , cust_orders        ORDER_LIST_TYP
     )"
+            }
         }
     };
 }
