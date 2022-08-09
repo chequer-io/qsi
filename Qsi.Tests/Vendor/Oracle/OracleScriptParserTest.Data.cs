@@ -10,6 +10,467 @@ public partial class OracleScriptParserTest
         new("SELECT 1 FROM DUAL;;") { ExpectedResult = new[] { "SELECT 1 FROM DUAL" } },
         // CREATE TABLE
         new("CREATE TABLE a(id NUMBER);") { ExpectedResult = new[] { "CREATE TABLE a(id NUMBER)" } },
+
+        // BLOCK (BEGIN ~ END)
+        new(@"
+BEGIN
+    DBMS_OUTPUT.put_line ('Hello World!');
+END;
+
+BEGIN
+    DBMS_OUTPUT.put_line ('Hello World!');
+END;
+
+BEGIN
+    DBMS_OUTPUT.put_line ('Hello World!');
+END;")
+        {
+            ExpectedResult = new[]
+            {
+                @"BEGIN
+    DBMS_OUTPUT.put_line ('Hello World!');
+END;",
+                @"BEGIN
+    DBMS_OUTPUT.put_line ('Hello World!');
+END;",
+                @"BEGIN
+    DBMS_OUTPUT.put_line ('Hello World!');
+END;"
+            }
+        },
+
+        // BLOCK WITH CASE (CASE ~ END CASE)
+        new(@"DECLARE
+  c_grade CHAR( 1 );
+  c_rank  VARCHAR2( 20 );
+BEGIN
+  c_grade := 'B';
+  CASE c_grade
+  WHEN 'A' THEN
+    c_rank := 'Excellent' ;
+  WHEN 'B' THEN
+    c_rank := 'Very Good' ;
+  WHEN 'C' THEN
+    c_rank := 'Good' ;
+  WHEN 'D' THEN
+    c_rank := 'Fair' ;
+  WHEN 'F' THEN
+    c_rank := 'Poor' ;
+  ELSE
+    c_rank := 'No such grade' ;
+  END CASE;
+  DBMS_OUTPUT.PUT_LINE( c_rank );
+END;
+DECLARE
+  c_grade CHAR( 1 );
+  c_rank  VARCHAR2( 20 );
+BEGIN
+  c_grade := 'B';
+  CASE c_grade
+  WHEN 'A' THEN
+    c_rank := 'Excellent' ;
+  WHEN 'B' THEN
+    c_rank := 'Very Good' ;
+  WHEN 'C' THEN
+    c_rank := 'Good' ;
+  WHEN 'D' THEN
+    c_rank := 'Fair' ;
+  WHEN 'F' THEN
+    c_rank := 'Poor' ;
+  ELSE
+    c_rank := 'No such grade' ;
+  END CASE;
+  DBMS_OUTPUT.PUT_LINE( c_rank );
+END;")
+        {
+            ExpectedResult = new[]
+            {
+                @"DECLARE
+  c_grade CHAR( 1 );
+  c_rank  VARCHAR2( 20 );
+BEGIN
+  c_grade := 'B';
+  CASE c_grade
+  WHEN 'A' THEN
+    c_rank := 'Excellent' ;
+  WHEN 'B' THEN
+    c_rank := 'Very Good' ;
+  WHEN 'C' THEN
+    c_rank := 'Good' ;
+  WHEN 'D' THEN
+    c_rank := 'Fair' ;
+  WHEN 'F' THEN
+    c_rank := 'Poor' ;
+  ELSE
+    c_rank := 'No such grade' ;
+  END CASE;
+  DBMS_OUTPUT.PUT_LINE( c_rank );
+END;",
+                @"DECLARE
+  c_grade CHAR( 1 );
+  c_rank  VARCHAR2( 20 );
+BEGIN
+  c_grade := 'B';
+  CASE c_grade
+  WHEN 'A' THEN
+    c_rank := 'Excellent' ;
+  WHEN 'B' THEN
+    c_rank := 'Very Good' ;
+  WHEN 'C' THEN
+    c_rank := 'Good' ;
+  WHEN 'D' THEN
+    c_rank := 'Fair' ;
+  WHEN 'F' THEN
+    c_rank := 'Poor' ;
+  ELSE
+    c_rank := 'No such grade' ;
+  END CASE;
+  DBMS_OUTPUT.PUT_LINE( c_rank );
+END;"
+            }
+        },
+
+        // BLOCK WITH NULL (NULL;)
+        new(@"BEGIN
+    NULL;
+END;
+
+BEGIN
+    NULL;
+END;")
+        {
+            ExpectedResult = new[]
+            {
+                @"BEGIN
+    NULL;
+END;",
+                @"BEGIN
+    NULL;
+END;"
+            }
+        },
+
+        // BLOCK WITH IF (IF ~ END IF)
+        new(@"DECLARE
+  b_profitable BOOLEAN;
+  n_sales      NUMBER;
+  n_costs      NUMBER;
+BEGIN
+  b_profitable := false;   
+  IF n_sales > n_costs THEN
+    b_profitable := true;
+  END IF;
+END;
+DECLARE
+  b_profitable BOOLEAN;
+  n_sales      NUMBER;
+  n_costs      NUMBER;
+BEGIN
+  b_profitable := false;   
+  IF n_sales > n_costs THEN
+    b_profitable := true;
+  END IF;
+END;")
+        {
+            ExpectedResult = new[]
+            {
+                @"DECLARE
+  b_profitable BOOLEAN;
+  n_sales      NUMBER;
+  n_costs      NUMBER;
+BEGIN
+  b_profitable := false;   
+  IF n_sales > n_costs THEN
+    b_profitable := true;
+  END IF;
+END;",
+                @"DECLARE
+  b_profitable BOOLEAN;
+  n_sales      NUMBER;
+  n_costs      NUMBER;
+BEGIN
+  b_profitable := false;   
+  IF n_sales > n_costs THEN
+    b_profitable := true;
+  END IF;
+END;"
+            }
+        },
+
+        // BLOCK WITH LOOP (LOOP ~ END LOOP)
+        new(@"DECLARE
+NUM1 NUMBER :=1;
+
+BEGIN
+    LOOP
+    DBMS_OUTPUT.PUT_LINE(NUM1);
+    NUM1 := NUM1+1; --NUM = NUM +1
+    EXIT WHEN NUM1 >10;
+    END LOOP;
+END;
+
+DECLARE
+NUM1 NUMBER :=1;
+
+BEGIN
+    LOOP
+    DBMS_OUTPUT.PUT_LINE(NUM1);
+    NUM1 := NUM1+1; --NUM = NUM +1
+    EXIT WHEN NUM1 >10;
+    END LOOP;
+END;")
+        {
+            ExpectedResult = new[]
+            {
+                @"DECLARE
+NUM1 NUMBER :=1;
+
+BEGIN
+    LOOP
+    DBMS_OUTPUT.PUT_LINE(NUM1);
+    NUM1 := NUM1+1; --NUM = NUM +1
+    EXIT WHEN NUM1 >10;
+    END LOOP;
+END;",
+                @"DECLARE
+NUM1 NUMBER :=1;
+
+BEGIN
+    LOOP
+    DBMS_OUTPUT.PUT_LINE(NUM1);
+    NUM1 := NUM1+1; --NUM = NUM +1
+    EXIT WHEN NUM1 >10;
+    END LOOP;
+END;"
+            }
+        },
+
+        // BEGIN ~ { BEGIN ~ END } ~ END
+        new(@"begin
+  -- Make GC_NAB field for Next Action By Dropdown 
+  begin 
+  if 'VARCHAR2' = 'NUMBER' and length('VARCHAR2')>0 and length('')>0 then 
+    execute immediate 'alter table ""SERVICEMAIL6"".""ETD_GUESTCARE"" add(GC_NAB VARCHAR2(10, ))'; 
+  elsif ('VARCHAR2' = 'NUMBER' and length('VARCHAR2')>0 and length('')=0) or 
+    'VARCHAR2' = 'VARCHAR2' then 
+    execute immediate 'alter table ""SERVICEMAIL6"".""ETD_GUESTCARE"" add(GC_NAB VARCHAR2(10))'; 
+  else 
+    execute immediate 'alter table ""SERVICEMAIL6"".""ETD_GUESTCARE"" add(GC_NAB VARCHAR2)'; 
+  end if; 
+  commit; 
+  end; 
+  -- Make GC_NABID field for Next Action By Dropdown 
+  begin 
+  if 'NUMBER' = 'NUMBER' and length('NUMBER')>0 and length('')>0 then 
+    execute immediate 'alter table ""SERVICEMAIL6"".""ETD_GUESTCARE"" add(GC_NABID NUMBER(, ))'; 
+  elsif ('NUMBER' = 'NUMBER' and length('NUMBER')>0 and length('')=0) or 
+    'NUMBER' = 'VARCHAR2' then 
+    execute immediate 'alter table ""SERVICEMAIL6"".""ETD_GUESTCARE"" add(GC_NABID NUMBER())'; 
+  else 
+    execute immediate 'alter table ""SERVICEMAIL6"".""ETD_GUESTCARE"" add(GC_NABID NUMBER)'; 
+  end if; 
+  commit; 
+  end;
+end;
+
+
+begin
+  -- Make GC_NAB field for Next Action By Dropdown 
+  begin 
+  if 'VARCHAR2' = 'NUMBER' and length('VARCHAR2')>0 and length('')>0 then 
+    execute immediate 'alter table ""SERVICEMAIL6"".""ETD_GUESTCARE"" add(GC_NAB VARCHAR2(10, ))'; 
+  elsif ('VARCHAR2' = 'NUMBER' and length('VARCHAR2')>0 and length('')=0) or 
+    'VARCHAR2' = 'VARCHAR2' then 
+    execute immediate 'alter table ""SERVICEMAIL6"".""ETD_GUESTCARE"" add(GC_NAB VARCHAR2(10))'; 
+  else 
+    execute immediate 'alter table ""SERVICEMAIL6"".""ETD_GUESTCARE"" add(GC_NAB VARCHAR2)'; 
+  end if; 
+  commit; 
+  end; 
+  -- Make GC_NABID field for Next Action By Dropdown 
+  begin 
+  if 'NUMBER' = 'NUMBER' and length('NUMBER')>0 and length('')>0 then 
+    execute immediate 'alter table ""SERVICEMAIL6"".""ETD_GUESTCARE"" add(GC_NABID NUMBER(, ))'; 
+  elsif ('NUMBER' = 'NUMBER' and length('NUMBER')>0 and length('')=0) or 
+    'NUMBER' = 'VARCHAR2' then 
+    execute immediate 'alter table ""SERVICEMAIL6"".""ETD_GUESTCARE"" add(GC_NABID NUMBER())'; 
+  else 
+    execute immediate 'alter table ""SERVICEMAIL6"".""ETD_GUESTCARE"" add(GC_NABID NUMBER)'; 
+  end if; 
+  commit; 
+  end;
+end;
+")
+        {
+            ExpectedResult = new[]
+            {
+                @"begin
+  -- Make GC_NAB field for Next Action By Dropdown 
+  begin 
+  if 'VARCHAR2' = 'NUMBER' and length('VARCHAR2')>0 and length('')>0 then 
+    execute immediate 'alter table ""SERVICEMAIL6"".""ETD_GUESTCARE"" add(GC_NAB VARCHAR2(10, ))'; 
+  elsif ('VARCHAR2' = 'NUMBER' and length('VARCHAR2')>0 and length('')=0) or 
+    'VARCHAR2' = 'VARCHAR2' then 
+    execute immediate 'alter table ""SERVICEMAIL6"".""ETD_GUESTCARE"" add(GC_NAB VARCHAR2(10))'; 
+  else 
+    execute immediate 'alter table ""SERVICEMAIL6"".""ETD_GUESTCARE"" add(GC_NAB VARCHAR2)'; 
+  end if; 
+  commit; 
+  end; 
+  -- Make GC_NABID field for Next Action By Dropdown 
+  begin 
+  if 'NUMBER' = 'NUMBER' and length('NUMBER')>0 and length('')>0 then 
+    execute immediate 'alter table ""SERVICEMAIL6"".""ETD_GUESTCARE"" add(GC_NABID NUMBER(, ))'; 
+  elsif ('NUMBER' = 'NUMBER' and length('NUMBER')>0 and length('')=0) or 
+    'NUMBER' = 'VARCHAR2' then 
+    execute immediate 'alter table ""SERVICEMAIL6"".""ETD_GUESTCARE"" add(GC_NABID NUMBER())'; 
+  else 
+    execute immediate 'alter table ""SERVICEMAIL6"".""ETD_GUESTCARE"" add(GC_NABID NUMBER)'; 
+  end if; 
+  commit; 
+  end;
+end;",
+                @"begin
+  -- Make GC_NAB field for Next Action By Dropdown 
+  begin 
+  if 'VARCHAR2' = 'NUMBER' and length('VARCHAR2')>0 and length('')>0 then 
+    execute immediate 'alter table ""SERVICEMAIL6"".""ETD_GUESTCARE"" add(GC_NAB VARCHAR2(10, ))'; 
+  elsif ('VARCHAR2' = 'NUMBER' and length('VARCHAR2')>0 and length('')=0) or 
+    'VARCHAR2' = 'VARCHAR2' then 
+    execute immediate 'alter table ""SERVICEMAIL6"".""ETD_GUESTCARE"" add(GC_NAB VARCHAR2(10))'; 
+  else 
+    execute immediate 'alter table ""SERVICEMAIL6"".""ETD_GUESTCARE"" add(GC_NAB VARCHAR2)'; 
+  end if; 
+  commit; 
+  end; 
+  -- Make GC_NABID field for Next Action By Dropdown 
+  begin 
+  if 'NUMBER' = 'NUMBER' and length('NUMBER')>0 and length('')>0 then 
+    execute immediate 'alter table ""SERVICEMAIL6"".""ETD_GUESTCARE"" add(GC_NABID NUMBER(, ))'; 
+  elsif ('NUMBER' = 'NUMBER' and length('NUMBER')>0 and length('')=0) or 
+    'NUMBER' = 'VARCHAR2' then 
+    execute immediate 'alter table ""SERVICEMAIL6"".""ETD_GUESTCARE"" add(GC_NABID NUMBER())'; 
+  else 
+    execute immediate 'alter table ""SERVICEMAIL6"".""ETD_GUESTCARE"" add(GC_NABID NUMBER)'; 
+  end if; 
+  commit; 
+  end;
+end;"
+            }
+        },
+
+        // BLOCK WITH CLOSE CURSOR (CLOSE <CURSOR>)
+        new(@"CREATE OR REPLACE Function FindCourse
+   ( name_in IN varchar2 )
+   RETURN number
+IS
+   cnumber number;
+
+   CURSOR c1
+   IS
+     SELECT course_number
+     FROM courses_tbl
+     WHERE course_name = name_in;
+
+BEGIN
+
+   OPEN c1;
+   FETCH c1 INTO cnumber;
+
+   if c1%notfound then
+      cnumber := 9999;
+   end if;
+
+   CLOSE c1;
+
+RETURN cnumber;
+
+END;
+
+CREATE OR REPLACE Function FindCourse
+   ( name_in IN varchar2 )
+   RETURN number
+IS
+   cnumber number;
+
+   CURSOR c1
+   IS
+     SELECT course_number
+     FROM courses_tbl
+     WHERE course_name = name_in;
+
+BEGIN
+
+   OPEN c1;
+   FETCH c1 INTO cnumber;
+
+   if c1%notfound then
+      cnumber := 9999;
+   end if;
+
+   CLOSE c1;
+
+RETURN cnumber;
+
+END;")
+        {
+            ExpectedResult = new[]
+            {
+                @"CREATE OR REPLACE Function FindCourse
+   ( name_in IN varchar2 )
+   RETURN number
+IS
+   cnumber number;
+
+   CURSOR c1
+   IS
+     SELECT course_number
+     FROM courses_tbl
+     WHERE course_name = name_in;
+
+BEGIN
+
+   OPEN c1;
+   FETCH c1 INTO cnumber;
+
+   if c1%notfound then
+      cnumber := 9999;
+   end if;
+
+   CLOSE c1;
+
+RETURN cnumber;
+
+END;",
+                @"CREATE OR REPLACE Function FindCourse
+   ( name_in IN varchar2 )
+   RETURN number
+IS
+   cnumber number;
+
+   CURSOR c1
+   IS
+     SELECT course_number
+     FROM courses_tbl
+     WHERE course_name = name_in;
+
+BEGIN
+
+   OPEN c1;
+   FETCH c1 INTO cnumber;
+
+   if c1%notfound then
+      cnumber := 9999;
+   end if;
+
+   CLOSE c1;
+
+RETURN cnumber;
+
+END;"
+            },
+        },
+
         // CREATE [OR REPLACE] PROCEDURE
         new(@"
 CREATE OR REPLACE PROCEDURE studentInsert(
@@ -46,6 +507,7 @@ BEGIN
 END;"
             }
         },
+
         // CREATE [OR REPLACE] FUNCTION
         new(@"
 CREATE OR REPLACE FUNCTION get_complete_address(in_person_id IN NUMBER) 
@@ -83,6 +545,7 @@ BEGIN
 END get_complete_address;"
             }
         },
+
         // CREATE [OR REPLACE] PACKAGE
         new(@"
 CREATE OR REPLACE PACKAGE emp_mgmt AS 
@@ -118,6 +581,7 @@ END emp_mgmt;  ")
 END emp_mgmt;"
             }
         },
+
         // CREATE [OR REPLACE] TRIGGER
         new(@"
 CREATE OR REPLACE TRIGGER customers_audit_trg
@@ -162,6 +626,7 @@ BEGIN
 END;"
             }
         },
+
         // CREATE [OR REPLACE] TYPE
         new(@"CREATE TYPE customer_typ_demo AS OBJECT
     ( customer_id        NUMBER(6)
