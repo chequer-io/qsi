@@ -23,8 +23,12 @@ namespace Qsi.Oracle
         private const string Begin = "BEGIN";
         private const string End = "END";
 
+        private const string Loop = "LOOP";
+        private const string Close = "CLOSE";
+
         private const string Case = "CASE";
         private const string If = "IF";
+        private const string Null = "NULL";
 
         private const string Exec = "EXEC";
         private const string Execute = "EXECUTE";
@@ -173,6 +177,16 @@ namespace Qsi.Oracle
                 }
                 else if (Exec.EqualsIgnoreCase(t.Current) ||
                          Execute.EqualsIgnoreCase(t.Current))
+                {
+                    block.ExpectedToken.Push(SemiColon);
+                }
+                else if (Loop.EqualsIgnoreCase(t.Current))
+                {
+                    block.ExpectedToken.Push(SemiColon);
+                    block.ExpectedToken.Push(Loop);
+                    block.ExpectedToken.Push(End);
+                }
+                else if (Null.EqualsIgnoreCase(t.Current))
                 {
                     block.ExpectedToken.Push(SemiColon);
                 }
