@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
@@ -226,8 +227,6 @@ public partial class MySqlTest : VendorTestBase
         IQsiAnalysisResult[] result = await Engine.Execute(new QsiScript(sql, QsiScriptType.Select), null);
         var table = result.OfType<QsiTableResult>().Single().Table;
         IEnumerable<string> columnNames = table.Columns.Select(x => x.Name.Value);
-
-        IEnumerable<string> scripts = ScriptHistories.Select(x => x.Script);
 
         Assert.AreEqual(expects, columnNames);
     }

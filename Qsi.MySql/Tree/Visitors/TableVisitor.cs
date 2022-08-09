@@ -272,30 +272,24 @@ namespace Qsi.MySql.Tree
                     break;
                 }
                 
-                // TODO: need to remove single()
                 case IQsiMultipleExpressionNode multipleExpressionNode:
                     if (MySqlTree.IsSimpleParExpr[multipleExpressionNode])
                     {
-                        IQsiTreeNode single = multipleExpressionNode;
-                        while (single is IQsiMultipleExpressionNode)
+                        IQsiTreeNode treeNode = multipleExpressionNode;
+                        while (treeNode is IQsiMultipleExpressionNode)
                         {
-                            single = single.Children.Single();
+                            treeNode = treeNode.Children.SingleOrDefault();
                         }
  
-                        switch (single)
+                        switch (treeNode)
                         {
                             case QsiLiteralExpressionNode literalExpressionNode:
                                 return literalExpressionNode.Value.ToString();
                             case QsiColumnExpressionNode columnExpressionNode:
                                 var qsiQualifiedIdentifier = ((QsiColumnReferenceNode)columnExpressionNode.Column.Value).Name;
                                 return IdentifierUtility.Unescape(qsiQualifiedIdentifier.Last().Value);
-                            case BitExprContext:
-                                throw new NotImplementedException();
                         }
-                         
                     }
-                    var element = multipleExpressionNode.Elements[0];
-                    Console.WriteLine(element);
 
                     break;
             }
