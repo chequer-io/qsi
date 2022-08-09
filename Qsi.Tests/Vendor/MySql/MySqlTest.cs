@@ -220,11 +220,14 @@ public partial class MySqlTest : VendorTestBase
     }
 
     [TestCaseSource(nameof(Test_InferredName_TestDatas))]
-    public async Task Test_DISTINCT_InferredName(string sql, string[] expects)
+    public async Task Test_InferredName(string sql, string[] expects)
     {
+        // TODO: Use real connection's expects
         IQsiAnalysisResult[] result = await Engine.Execute(new QsiScript(sql, QsiScriptType.Select), null);
-        IList<QsiTableColumn> columns = ((QsiTableResult)result[0]).Table.Columns;
-        IEnumerable<string> columnNames = columns.Select(x => x.Name.Value);
+        var table = result.OfType<QsiTableResult>().Single().Table;
+        IEnumerable<string> columnNames = table.Columns.Select(x => x.Name.Value);
+
+        IEnumerable<string> scripts = ScriptHistories.Select(x => x.Script);
 
         Assert.AreEqual(expects, columnNames);
     }

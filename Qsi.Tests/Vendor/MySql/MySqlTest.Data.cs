@@ -76,12 +76,12 @@ public partial class MySqlTest
 
     private static readonly TestCaseData[] Test_InferredName_TestDatas = {
         
-        // IQsiMultipleExpressionNode.Elements.Length == 1
         new("SELECT DISTINCT first_name FROM actor LIMIT 1;", new[] { "first_name" }),
         new("SELECT DISTINCT `first_name` FROM actor LIMIT 1;", new[] { "first_name" }),
         new("SELECT DISTINCT (first_name) FROM actor LIMIT 1;", new[] { "first_name" }),
         new("SELECT DISTINCT`first_name` FROM actor LIMIT 1;", new[] { "first_name" }),
         new("SELECT DISTINCT(first_name) FROM actor LIMIT 1;", new[] { "first_name" }),
+        new("SELECT DISTINCT(`first_name`) FROM actor LIMIT 1;", new[] { "first_name" }),
         new("SELECT DISTINCT (`first_name`) FROM actor LIMIT 1;", new[] { "first_name" }),
         new("SELECT DISTINCT ((first_name)) FROM actor LIMIT 1;", new[] { "first_name" }),
         new("SELECT DISTINCT ((`first_name`)) FROM actor LIMIT 1;", new[] { "first_name" }),
@@ -89,18 +89,16 @@ public partial class MySqlTest
         new("SELECT DISTINCT ((`actor`.`first_name`)) AS A FROM actor LIMIT 1;", new [] { "A" }),
         new("SELECT DISTINCT DISTINCT DISTINCT ((`actor`.`first_name`)) FROM actor LIMIT 1;", new[] { "first_name" }),
         new("SELECT DISTINCT (actor_id) FROM actor WHERE first_name = ANY(SELECT DISTINCT first_name FROM actor);", new[] { "actor_id" }),
-
-        // IQsiMultipleExpressionNode.Elements.Length > 1
         new("SELECT actor_id IN (1, 2, 3) FROM actor LIMIT 1", new[] { "actor_id IN (1, 2, 3)" }),
         new("SELECT `actor_id` IN (1, 2, 3) FROM actor LIMIT 1", new[] { "`actor_id` IN (1, 2, 3)" }),
         new("SELECT (`actor_id`) IN (1, 2, 3) FROM actor LIMIT 1", new[] { "(`actor_id`) IN (1, 2, 3)" }),
         new("SELECT actor_id IN (`actor_id`) FROM actor LIMIT 1", new[] { "actor_id IN (`actor_id`)" }),
         
-        // Not related but just test
         new("SELECT actor_id, first_name FROM actor LIMIT 1;", new[] { "actor_id", "first_name" }),
         new("SELECT `actor_id`, `first_name` FROM actor LIMIT 1;", new[] { "actor_id", "first_name" }),
         new("SELECT (actor_id), (first_name) FROM actor LIMIT 1;", new[] { "actor_id", "first_name" }),
         new("SELECT (`actor_id`), (`first_name`) FROM actor LIMIT 1;", new[] { "actor_id", "first_name" }),
+        new("SELECT (`actor`.`actor_id`), (`actor`.first_name) FROM actor LIMIT 1", new[] { "actor_id", "first_name" }),
         
         new("SELECT SUM(DISTINCT first_name) FROM actor LIMIT 1;", new[] { "SUM(DISTINCT first_name)" }),
         new("SELECT SUM(DISTINCT `first_name`) FROM actor LIMIT 1;", new[] { "SUM(DISTINCT `first_name`)" }),
@@ -111,5 +109,56 @@ public partial class MySqlTest
         new("SELECT SUM(DISTINCT ((first_name))) FROM actor LIMIT 1;", new[] { "SUM(DISTINCT ((first_name)))" }),
         new("SELECT SUM(DISTINCT ((`first_name`))) FROM actor LIMIT 1;", new[] { "SUM(DISTINCT ((`first_name`)))" }),
         new("SELECT SUM(actor_id) FROM actor WHERE first_name = ANY(select DISTINCT first_name FROM actor);", new[] { "SUM(actor_id)" }),
+        
+        new("SELECT @actor_id:=@actor_ID+1 FROM actor;", new[] { "@actor_id:=@actor_ID+1" }),
+        new("SELECT ABS(LAG(rental_id, 1, rental_id) OVER (ORDER BY rental_id) - rental_id) FROM payment LIMIT 1;",
+            new[] { "ABS(LAG(rental_id, 1, rental_id) OVER (ORDER BY rental_id) - rental_id)" }),
+        
+        new("SELECT ('A' | 'B');", new[] { "('A' | 'B')" }),
+        new("SELECT ('A' || 'B');", new[] { "('A' || 'B')" }),
+        new("SELECT ('A' xor 'B');", new[] { "('A' xor 'B')" }),
+        new("SELECT (('A') | ('B'));", new[] { "(('A') | ('B'))" }),
+        new("SELECT actor_id IN (('A') | ('B')) FROM actor LIMIT 1;", new[] { "actor_id IN (('A') | ('B'))" }),
+        new("SELECT 1 + 2;", new[] { "1 + 2" }),
+        new("SELECT 1 + (2);", new[] { "1 + (2)" }),
+        new("SELECT 1 + (2) IN (2);", new[] { "1 + (2) IN (2)" }),
+        new("SELECT 1 + (2) IN (2, 3);", new[] { "1 + (2) IN (2, 3)" }),
+        new("SELECT 1 + (2) IN (2, (3));", new[] { "1 + (2) IN (2, (3))" }),
+        new("SELECT (2 * 3) | (1 & 7);", new[] { "(2 * 3) | (1 & 7)" }),
+
+
+        // PredicateExprIn:         IN_SYMBOL (subquery | OPEN_PAR_SYMBOL exprList CLOSE_PAR_SYMBOL)
+        new("SELECT actor_id IN (SELECT actor_id from actor) FROM actor LIMIT 1;", new[] { "actor_id IN (SELECT actor_id from actor)" }),
+        new("SELECT actor_id IN (1, 2, 3) FROM actor LIMIT 1;", new[] { "actor_id IN (1, 2, 3)" }),
+        
+        // PredicateExprBetween:    BETWEEN_SYMBOL bitExpr AND_SYMBOL predicate
+        new("SELECT actor_id BETWEEN 1 AND 3 FROM actor LIMIT 1;", new[] { "actor_id BETWEEN 1 AND 3" }),
+        new("SELECT actor_id BETWEEN (1) AND (3) FROM actor LIMIT 1;", new[] { "actor_id BETWEEN (1) AND (3)" }),
+        new("SELECT actor_id BETWEEN (SELECT actor_id FROM actor LIMIT 1) AND (3) FROM actor LIMIT 1;", new[] { "actor_id BETWEEN (SELECT actor_id FROM actor LIMIT 1) AND (3)" }),
+        
+        // PredicateExprLike:       LIKE_SYMBOL simpleExpr (ESCAPE_SYMBOL simpleExpr)?
+        new("SELECT first_name LIKE '%A%' FROM actor LIMIT 1;", new[] { "first_name LIKE '%A%'" }),
+        new("SELECT first_name LIKE ('%A%' OR '%B%') FROM actor LIMIT 1;", new[] { "first_name LIKE ('%A%' OR '%B%')" }),
+
+        // BinaryExpr
+        new("SELECT 1 IN (2);", new[] { "1 IN (2)" }),
+
+        // BitExpr(INTERVAL): <bitExpr> operator INTERVAL <expr> <interval>
+        new("SELECT NOW();", new[] { "NOW()" }),
+        new("SELECT DATE_ADD(NOW(), INTERVAL 1 YEAR);", new[] { "DATE_ADD(NOW(), INTERVAL 1 YEAR)" }),
+        new("SELECT DATE_ADD(NOW(), INTERVAL 1 YEAR);", new[] { "DATE_ADD(NOW(), INTERVAL 1 YEAR)" }),
+        new("SELECT DATE_ADD(NOW(), INTERVAL 1 YEAR_MONTH);", new[] { "DATE_ADD(NOW(), INTERVAL 1 YEAR_MONTH)" }),
+        new("SELECT NOW() + INTERVAL 1 YEAR_MONTH;", new[] { "NOW() + INTERVAL 1 YEAR_MONTH" }),
+        new("SELECT (NOW()) + INTERVAL 1 YEAR_MONTH;", new[] { "(NOW()) + INTERVAL 1 YEAR_MONTH" }),
+
+        // SimpleExprList:          ROW_SYMBOL? OPEN_PAR_SYMBOL exprList CLOSE_PAR_SYMBOL
+        new("SELECT (1) FROM actor LIMIT 1;", new[] { "1" }),
+        new("SELECT (1), (2) FROM actor LIMIT 1;", new[] { "1", "2" }),
+        new("SELECT (1), (2) FROM actor LIMIT 1;", new[] { "1", "2" }),
+
+        // SimpleExprMatch:         MATCH_SYMBOL identListArg AGAINST_SYMBOL OPEN_PAR_SYMBOL bitExpr fulltextOptions? CLOSE_PAR_SYMBOL
+        // NOTE: Table must descript FULLTEXT indexing.
+        // FULLTEXT SEARCH do not affect to search result columns naming.
+        // new("SELECT * FROM actor WHERE MATCH(last_name) AGAINST('GUINESS');", new[] { "" }),
     };
 }
