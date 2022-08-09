@@ -246,25 +246,49 @@ namespace Qsi.MySql.Tree
 
         private static string DeduceColumnName(SelectItemContext context, QsiExpressionNode node)
         {
-            if (node is IQsiLiteralExpressionNode literal)
+            switch (node)
             {
-                string stringValue = null;
-
-                switch (literal.Value)
+                case IQsiLiteralExpressionNode literal:
                 {
-                    case string name:
-                        stringValue = name;
-                        break;
+                    string stringValue = null;
 
-                    case MySqlString { CollateName: null, Kind: MySqlStringKind.National or MySqlStringKind.Default } mySqlString:
+                    switch (literal.Value)
                     {
-                        stringValue = mySqlString.Value;
-                        break;
+                        case string name:
+                            stringValue = name;
+                            break;
+
+                        case MySqlString { CollateName: null, Kind: MySqlStringKind.National or MySqlStringKind.Default } mySqlString:
+                        {
+                            stringValue = mySqlString.Value;
+                            break;
+                        }
                     }
+
+                    if (stringValue != null)
+                        return stringValue.TrimStart('\r', '\n', '\t', '\f', '\v', ' ');
+
+                    break;
                 }
 
-                if (stringValue != null)
-                    return stringValue.TrimStart('\r', '\n', '\t', '\f', '\v', ' ');
+                case IQsiMultipleExpressionNode { Elements.Length: 1 } multipleExpressionNode:
+                {
+                    var element = multipleExpressionNode.Elements[0];
+
+                    while (element.Children.Last() is IQsiExpressionNode)
+                    {
+                        element = (IQsiExpressionNode)element.Children.Last();
+                    }
+
+                    var columnExpressionNode = element.Children.Last();
+
+                    if (columnExpressionNode is QsiColumnReferenceNode qsiColumnReferenceNode)
+                    {
+                        return IdentifierUtility.Unescape(qsiColumnReferenceNode.Name.Last().Value);
+                    }
+
+                    break;
+                }
             }
 
             return context.GetInputText();
