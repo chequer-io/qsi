@@ -8,6 +8,7 @@ using Qsi.MySql.Data;
 using Qsi.MySql.Tree.Common;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
+using Qsi.Tree.Data;
 using Qsi.Utilities;
 using static Qsi.MySql.Internal.MySqlParserInternal;
 
@@ -270,25 +271,33 @@ namespace Qsi.MySql.Tree
 
                     break;
                 }
-
-                case IQsiMultipleExpressionNode { Elements.Length: 1 } multipleExpressionNode:
-                {
+                
+                // TODO: need to remove single()
+                case IQsiMultipleExpressionNode multipleExpressionNode:
+                    if (MySqlTree.IsSimpleParExpr[multipleExpressionNode])
+                    {
+                        IQsiTreeNode single = multipleExpressionNode;
+                        while (single is IQsiMultipleExpressionNode)
+                        {
+                            single = single.Children.Single();
+                        }
+ 
+                        switch (single)
+                        {
+                            case QsiLiteralExpressionNode literalExpressionNode:
+                                return literalExpressionNode.Value.ToString();
+                            case QsiColumnExpressionNode columnExpressionNode:
+                                var qsiQualifiedIdentifier = ((QsiColumnReferenceNode)columnExpressionNode.Column.Value).Name;
+                                return IdentifierUtility.Unescape(qsiQualifiedIdentifier.Last().Value);
+                            case BitExprContext:
+                                throw new NotImplementedException();
+                        }
+                         
+                    }
                     var element = multipleExpressionNode.Elements[0];
-
-                    while (element.Children.Last() is IQsiExpressionNode)
-                    {
-                        element = (IQsiExpressionNode)element.Children.Last();
-                    }
-
-                    var columnExpressionNode = element.Children.Last();
-
-                    if (columnExpressionNode is QsiColumnReferenceNode qsiColumnReferenceNode)
-                    {
-                        return IdentifierUtility.Unescape(qsiColumnReferenceNode.Name.Last().Value);
-                    }
+                    Console.WriteLine(element);
 
                     break;
-                }
             }
 
             return context.GetInputText();
@@ -325,7 +334,9 @@ namespace Qsi.MySql.Tree
             var expressionNode = ExpressionVisitor.VisitExpr(context);
 
             if (expressionNode is QsiColumnExpressionNode columnExpression)
+            {
                 return columnExpression.Column.Value;
+            }
 
             var node = new QsiDerivedColumnNode();
 

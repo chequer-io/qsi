@@ -8,6 +8,7 @@ using Qsi.Data;
 using Qsi.MySql.Data;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
+using Qsi.Tree.Data;
 using Qsi.Utilities;
 using static Qsi.MySql.Internal.MySqlParserInternal;
 
@@ -263,7 +264,7 @@ namespace Qsi.MySql.Tree
                     });
 
                     break;
-
+                
                 case PredicateExprBetweenContext exprBetween:
                     node = TreeHelper.Create<QsiBinaryExpressionNode>(n =>
                     {
@@ -279,7 +280,7 @@ namespace Qsi.MySql.Tree
                     });
 
                     break;
-
+                
                 case PredicateExprLikeContext exprLike:
                     node = TreeHelper.Create<QsiBinaryExpressionNode>(n =>
                     {
@@ -363,7 +364,7 @@ namespace Qsi.MySql.Tree
                 {
                     n.Left.SetValue(VisitBitExpr(context.bitExpr(0)));
                     n.Operator = context.op.Text + " " + context.INTERVAL_SYMBOL().GetText();
-
+                    
                     n.Right.SetValue(TreeHelper.Create<QsiMultipleExpressionNode>(mn =>
                     {
                         mn.Elements.Add(VisitExpr(context.expr()));
@@ -434,7 +435,7 @@ namespace Qsi.MySql.Tree
 
                 case SimpleExprNotContext simpleExprNot:
                     return VisitSimpleExprNot(simpleExprNot);
-
+                
                 case SimpleExprListContext simpleExprList:
                     return VisitSimpleExprList(simpleExprList);
 
@@ -501,6 +502,8 @@ namespace Qsi.MySql.Tree
 
                 MySqlTree.PutContextSpan(n, context.columnRef());
             });
+
+            MySqlTree.IsSimpleParExpr[columnNode] = true;
 
             if (context.jsonOperator() == null)
                 return columnNode;
@@ -645,6 +648,8 @@ namespace Qsi.MySql.Tree
                 {
                     n.Elements.AddRange(parameters);
                 });
+
+                MySqlTree.IsSimpleParExpr[node] = true;
             }
 
             MySqlTree.PutContextSpan(node, context);
