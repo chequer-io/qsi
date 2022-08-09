@@ -73,4 +73,43 @@ public partial class MySqlTest
 
         new("WITH CTE AS (SELECT 1) DELETE title, category FROM film_list WHERE FID = 1 AND (SELECT `1` FROM CTE) = 1")
     };
+
+    private static readonly TestCaseData[] Test_InferredName_TestDatas = {
+        
+        // IQsiMultipleExpressionNode.Elements.Length == 1
+        new("SELECT DISTINCT first_name FROM actor LIMIT 1;", new[] { "first_name" }),
+        new("SELECT DISTINCT `first_name` FROM actor LIMIT 1;", new[] { "first_name" }),
+        new("SELECT DISTINCT (first_name) FROM actor LIMIT 1;", new[] { "first_name" }),
+        new("SELECT DISTINCT`first_name` FROM actor LIMIT 1;", new[] { "first_name" }),
+        new("SELECT DISTINCT(first_name) FROM actor LIMIT 1;", new[] { "first_name" }),
+        new("SELECT DISTINCT (`first_name`) FROM actor LIMIT 1;", new[] { "first_name" }),
+        new("SELECT DISTINCT ((first_name)) FROM actor LIMIT 1;", new[] { "first_name" }),
+        new("SELECT DISTINCT ((`first_name`)) FROM actor LIMIT 1;", new[] { "first_name" }),
+        new("SELECT DISTINCT ((`actor`.`first_name`)) FROM actor LIMIT 1;", new[] { "first_name" }),
+        new("SELECT DISTINCT ((`actor`.`first_name`)) AS A FROM actor LIMIT 1;", new [] { "A" }),
+        new("SELECT DISTINCT DISTINCT DISTINCT ((`actor`.`first_name`)) FROM actor LIMIT 1;", new[] { "first_name" }),
+        new("SELECT DISTINCT (actor_id) FROM actor WHERE first_name = ANY(SELECT DISTINCT first_name FROM actor);", new[] { "actor_id" }),
+
+        // IQsiMultipleExpressionNode.Elements.Length > 1
+        new("SELECT actor_id IN (1, 2, 3) FROM actor LIMIT 1", new[] { "actor_id IN (1, 2, 3)" }),
+        new("SELECT `actor_id` IN (1, 2, 3) FROM actor LIMIT 1", new[] { "`actor_id` IN (1, 2, 3)" }),
+        new("SELECT (`actor_id`) IN (1, 2, 3) FROM actor LIMIT 1", new[] { "(`actor_id`) IN (1, 2, 3)" }),
+        new("SELECT actor_id IN (`actor_id`) FROM actor LIMIT 1", new[] { "actor_id IN (`actor_id`)" }),
+        
+        // Not related but just test
+        new("SELECT actor_id, first_name FROM actor LIMIT 1;", new[] { "actor_id", "first_name" }),
+        new("SELECT `actor_id`, `first_name` FROM actor LIMIT 1;", new[] { "actor_id", "first_name" }),
+        new("SELECT (actor_id), (first_name) FROM actor LIMIT 1;", new[] { "actor_id", "first_name" }),
+        new("SELECT (`actor_id`), (`first_name`) FROM actor LIMIT 1;", new[] { "actor_id", "first_name" }),
+        
+        new("SELECT SUM(DISTINCT first_name) FROM actor LIMIT 1;", new[] { "SUM(DISTINCT first_name)" }),
+        new("SELECT SUM(DISTINCT `first_name`) FROM actor LIMIT 1;", new[] { "SUM(DISTINCT `first_name`)" }),
+        new("SELECT SUM(DISTINCT (first_name)) FROM actor LIMIT 1;", new[] { "SUM(DISTINCT (first_name))" }),
+        new("SELECT SUM(DISTINCT`first_name`) FROM actor LIMIT 1;", new[] { "SUM(DISTINCT`first_name`)" }),
+        new("SELECT SUM(DISTINCT(first_name)) FROM actor LIMIT 1;", new[] { "SUM(DISTINCT(first_name))" }),
+        new("SELECT SUM(DISTINCT (`first_name`)) FROM actor LIMIT 1;", new[] { "SUM(DISTINCT (`first_name`))" }),
+        new("SELECT SUM(DISTINCT ((first_name))) FROM actor LIMIT 1;", new[] { "SUM(DISTINCT ((first_name)))" }),
+        new("SELECT SUM(DISTINCT ((`first_name`))) FROM actor LIMIT 1;", new[] { "SUM(DISTINCT ((`first_name`)))" }),
+        new("SELECT SUM(actor_id) FROM actor WHERE first_name = ANY(select DISTINCT first_name FROM actor);", new[] { "SUM(actor_id)" }),
+    };
 }
