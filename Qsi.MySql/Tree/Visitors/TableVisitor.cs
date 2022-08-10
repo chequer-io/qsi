@@ -323,9 +323,7 @@ namespace Qsi.MySql.Tree
             var expressionNode = ExpressionVisitor.VisitExpr(context);
 
             if (expressionNode is QsiColumnExpressionNode columnExpression)
-            {
                 return columnExpression.Column.Value;
-            }
 
             var node = new QsiDerivedColumnNode();
 

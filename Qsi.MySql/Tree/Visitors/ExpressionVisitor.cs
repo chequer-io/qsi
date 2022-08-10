@@ -500,8 +500,7 @@ namespace Qsi.MySql.Tree
 
                 MySqlTree.PutContextSpan(n, context.columnRef());
             });
-
-
+            
             if (context.jsonOperator() == null)
                 return columnNode;
 
