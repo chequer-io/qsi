@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
@@ -223,11 +222,15 @@ public partial class MySqlTest : VendorTestBase
     [TestCaseSource(nameof(Test_InferredName_TestDatas))]
     public async Task Test_InferredName(string sql, string[] expects)
     {
-        // TODO: Use real connection's expects
-        IQsiAnalysisResult[] result = await Engine.Execute(new QsiScript(sql, QsiScriptType.Select), null);
-        var table = result.OfType<QsiTableResult>().Single().Table;
-        IEnumerable<string> columnNames = table.Columns.Select(x => x.Name.Value);
+        IQsiAnalysisResult[] qsiAnalysisResults = await Engine.Execute(new QsiScript(sql, QsiScriptType.Select), null);
+        var qsiTableStructure = qsiAnalysisResults.OfType<QsiTableResult>().Single().Table;
+        IEnumerable<string> qsiIdentifierColumnNames = qsiTableStructure.Columns.Select(x => x.Name.Value);
 
-        Assert.AreEqual(expects, columnNames);
+        var sqlCommand = new MySqlCommand(sql, (MySqlConnection)Connection);
+        await using var dataReader = sqlCommand.ExecuteReader();
+
+        IEnumerable<string> expectColumnNames = Enumerable.Range(0, dataReader.FieldCount).Select(i => dataReader.GetName(i));
+
+        Assert.AreEqual(expectColumnNames, qsiIdentifierColumnNames);
     }
 }

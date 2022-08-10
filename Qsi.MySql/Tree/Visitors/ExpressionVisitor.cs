@@ -644,9 +644,8 @@ namespace Qsi.MySql.Tree
                 node = TreeHelper.Create<QsiMultipleExpressionNode>(n =>
                 {
                     n.Elements.AddRange(parameters);
+                    MySqlTree.IsSimpleParExpr[n] = true;
                 });
-
-                MySqlTree.IsSimpleParExpr[node] = true;
             }
 
             MySqlTree.PutContextSpan(node, context);

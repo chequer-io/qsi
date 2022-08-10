@@ -246,16 +246,29 @@ namespace Qsi.MySql.Tree
 
         private static string DeduceColumnName(SelectItemContext context, QsiExpressionNode node)
         {
-            switch (node)
+            IQsiTreeNode treeNode = node;
+            
+            // Break parentheses while it is not SimpleParExpr
+            while (treeNode.Children is not null &&
+                   treeNode.Children.Take(2).Count() == 1 &&
+                   MySqlTree.IsSimpleParExpr[treeNode])
+            {
+                treeNode = treeNode.Children.First();
+            }
+
+            switch (treeNode)
             {
                 case IQsiLiteralExpressionNode literal:
-                {
                     string stringValue = null;
 
                     switch (literal.Value)
                     {
                         case string name:
                             stringValue = name;
+                            break;
+                        
+                        case int number:
+                            stringValue = number.ToString();
                             break;
 
                         case MySqlString { CollateName: null, Kind: MySqlStringKind.National or MySqlStringKind.Default } mySqlString:
@@ -267,32 +280,15 @@ namespace Qsi.MySql.Tree
 
                     if (stringValue != null)
                         return stringValue.TrimStart('\r', '\n', '\t', '\f', '\v', ' ');
-
+                    
                     break;
-                }
-                
-                case IQsiMultipleExpressionNode multipleExpressionNode:
-                    IQsiTreeNode treeNode = multipleExpressionNode;
 
-                    while (treeNode is not null && MySqlTree.IsSimpleParExpr[treeNode])
-                        treeNode = treeNode.Children.SingleOrDefault();
-
-                    switch (treeNode)
-                    {
-                        case QsiLiteralExpressionNode literalExpressionNode:
-                            return literalExpressionNode.Value.ToString();
-
-                        case QsiColumnExpressionNode columnExpressionNode
-                            when columnExpressionNode.Column.Value is QsiColumnReferenceNode columnReferenceNode:
-                        {
-                            var qsiQualifiedIdentifier = columnReferenceNode.Name;
-                            return IdentifierUtility.Unescape(qsiQualifiedIdentifier.Last().Value);
-                        }
-                    }
-
-                    break;
+                case QsiColumnExpressionNode columnExpression
+                    when columnExpression.Column.Value is QsiColumnReferenceNode columnReferenceNode:
+                    var qualifiedIdentifier = columnReferenceNode.Name;
+                    return IdentifierUtility.Unescape(qualifiedIdentifier.Last().Value);
             }
-            
+
             return context.GetInputText();
         }
 
