@@ -75,7 +75,6 @@ public partial class MySqlTest
     };
 
     private static readonly TestCaseData[] Test_InferredName_TestDatas = {
-        
         new("SELECT DISTINCT first_name FROM actor LIMIT 1;", new[] { "first_name" }),
         new("SELECT DISTINCT `first_name` FROM actor LIMIT 1;", new[] { "first_name" }),
         new("SELECT DISTINCT (first_name) FROM actor LIMIT 1;", new[] { "first_name" }),
@@ -93,6 +92,8 @@ public partial class MySqlTest
         new("SELECT `actor_id` IN (1, 2, 3) FROM actor LIMIT 1", new[] { "`actor_id` IN (1, 2, 3)" }),
         new("SELECT (`actor_id`) IN (1, 2, 3) FROM actor LIMIT 1", new[] { "(`actor_id`) IN (1, 2, 3)" }),
         new("SELECT actor_id IN (`actor_id`) FROM actor LIMIT 1", new[] { "actor_id IN (`actor_id`)" }),
+        new("SELECT (actor_id IN (`actor_id`)) FROM actor LIMIT 1", new[] { "(actor_id IN (`actor_id`))" }),
+        
         
         new("SELECT actor_id, first_name FROM actor LIMIT 1;", new[] { "actor_id", "first_name" }),
         new("SELECT `actor_id`, `first_name` FROM actor LIMIT 1;", new[] { "actor_id", "first_name" }),
@@ -120,11 +121,13 @@ public partial class MySqlTest
         new("SELECT (('A') | ('B'));", new[] { "(('A') | ('B'))" }),
         new("SELECT actor_id IN (('A') | ('B')) FROM actor LIMIT 1;", new[] { "actor_id IN (('A') | ('B'))" }),
         new("SELECT 1 + 2;", new[] { "1 + 2" }),
+        new("SELECT (('1 + 2'));", new[] { "1 + 2" }),
         new("SELECT 1 + (2);", new[] { "1 + (2)" }),
         new("SELECT 1 + (2) IN (2);", new[] { "1 + (2) IN (2)" }),
         new("SELECT 1 + (2) IN (2, 3);", new[] { "1 + (2) IN (2, 3)" }),
         new("SELECT 1 + (2) IN (2, (3));", new[] { "1 + (2) IN (2, (3))" }),
         new("SELECT (2 * 3) | (1 & 7);", new[] { "(2 * 3) | (1 & 7)" }),
+        new("SELECT (('A' | 'B') | (1 + 7));", new[] { "(('A' | 'B') | (1 + 7))" }),
 
 
         // PredicateExprIn:         IN_SYMBOL (subquery | OPEN_PAR_SYMBOL exprList CLOSE_PAR_SYMBOL)
@@ -160,5 +163,13 @@ public partial class MySqlTest
         // NOTE: Table must descript FULLTEXT indexing.
         // FULLTEXT SEARCH do not affect to search result columns naming.
         // new("SELECT * FROM actor WHERE MATCH(last_name) AGAINST('GUINESS');", new[] { "" }),
+        
+        new("SELECT * FROM actor LIMIT 1;", new[] { "actor_id", "first_name", "last_name", "last_update" }),
+        new("SELECT * FROM actor a INNER JOIN actor_info ai USING (actor_id) LIMIT 1;", new[] { "actor_id", "first_name", "last_name", "last_update", "first_name", "last_name", "film_info" }),
+        new("SELECT actor_id FROM actor a INNER JOIN actor_info ai USING (actor_id) LIMIT 1;", new[] { "actor_id" }),
+        new("SELECT actor_id, a.first_name, ai.film_info FROM actor a INNER JOIN actor_info ai USING (actor_id) LIMIT 1;", new[] { "actor_id", "first_name", "film_info" }),
+        new("SELECT f.title, fl.title FROM film AS f JOIN film_list AS fl LIMIT 1;", new[] { "title", "title" }),
+        new("SELECT (f.title), (fl.title) FROM film AS f JOIN film_list AS fl LIMIT 1;", new[] { "title", "title" }),
+        new("SELECT DISTINCT (f.title), (fl.title) FROM film AS f JOIN film_list AS fl LIMIT 1;", new[] { "title", "title" }),
     };
 }

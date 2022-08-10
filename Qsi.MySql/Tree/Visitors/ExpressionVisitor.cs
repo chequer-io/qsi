@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Antlr4.Runtime;
@@ -8,7 +7,6 @@ using Qsi.Data;
 using Qsi.MySql.Data;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
-using Qsi.Tree.Data;
 using Qsi.Utilities;
 using static Qsi.MySql.Internal.MySqlParserInternal;
 
@@ -503,7 +501,6 @@ namespace Qsi.MySql.Tree
                 MySqlTree.PutContextSpan(n, context.columnRef());
             });
 
-            MySqlTree.IsSimpleParExpr[columnNode] = true;
 
             if (context.jsonOperator() == null)
                 return columnNode;

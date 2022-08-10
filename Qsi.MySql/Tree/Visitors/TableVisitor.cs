@@ -8,7 +8,6 @@ using Qsi.MySql.Data;
 using Qsi.MySql.Tree.Common;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
-using Qsi.Tree.Data;
 using Qsi.Utilities;
 using static Qsi.MySql.Internal.MySqlParserInternal;
 
@@ -273,27 +272,27 @@ namespace Qsi.MySql.Tree
                 }
                 
                 case IQsiMultipleExpressionNode multipleExpressionNode:
-                    if (MySqlTree.IsSimpleParExpr[multipleExpressionNode])
+                    IQsiTreeNode treeNode = multipleExpressionNode;
+
+                    while (treeNode is not null && MySqlTree.IsSimpleParExpr[treeNode])
+                        treeNode = treeNode.Children.SingleOrDefault();
+
+                    switch (treeNode)
                     {
-                        IQsiTreeNode treeNode = multipleExpressionNode;
-                        while (treeNode is IQsiMultipleExpressionNode)
+                        case QsiLiteralExpressionNode literalExpressionNode:
+                            return literalExpressionNode.Value.ToString();
+
+                        case QsiColumnExpressionNode columnExpressionNode
+                            when columnExpressionNode.Column.Value is QsiColumnReferenceNode columnReferenceNode:
                         {
-                            treeNode = treeNode.Children.SingleOrDefault();
-                        }
- 
-                        switch (treeNode)
-                        {
-                            case QsiLiteralExpressionNode literalExpressionNode:
-                                return literalExpressionNode.Value.ToString();
-                            case QsiColumnExpressionNode columnExpressionNode:
-                                var qsiQualifiedIdentifier = ((QsiColumnReferenceNode)columnExpressionNode.Column.Value).Name;
-                                return IdentifierUtility.Unescape(qsiQualifiedIdentifier.Last().Value);
+                            var qsiQualifiedIdentifier = columnReferenceNode.Name;
+                            return IdentifierUtility.Unescape(qsiQualifiedIdentifier.Last().Value);
                         }
                     }
 
                     break;
             }
-
+            
             return context.GetInputText();
         }
 
