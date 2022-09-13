@@ -1,0 +1,4 @@
+name: "QSI CodeQL Config"
+
+paths-ignore:
+  - Qsi.*/Antlr
