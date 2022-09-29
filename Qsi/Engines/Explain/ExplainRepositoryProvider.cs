@@ -21,9 +21,9 @@ namespace Qsi.Engines.Explain
             _repositoryProvider = repositoryProvider ?? throw new ArgumentNullException(nameof(repositoryProvider));
         }
 
-        public QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier)
+        public QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier, ExecuteOption executeOption)
         {
-            return _repositoryProvider.ResolveQualifiedIdentifier(identifier);
+            return _repositoryProvider.ResolveQualifiedIdentifier(identifier, executeOption ?? _engine.ExecuteOption);
         }
 
         public QsiTableStructure LookupTable(QsiQualifiedIdentifier identifier)

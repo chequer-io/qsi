@@ -19,6 +19,8 @@ namespace Qsi.Analyzers
 
         protected IEqualityComparer<QsiQualifiedIdentifier> QualifiedIdentifierComparer => _qualifiedIdentifierComparer.Value;
 
+        protected ExecuteOption ExecuteOption => _engine.ExecuteOption;
+
         private readonly QsiEngine _engine;
         private readonly Lazy<IEqualityComparer<QsiIdentifier>> _identifierComparer;
         private readonly Lazy<IEqualityComparer<QsiQualifiedIdentifier>> _qualifiedIdentifierComparer;

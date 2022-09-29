@@ -25,6 +25,8 @@ namespace Qsi.Engines
 
         public IQsiLanguageService LanguageService { get; }
 
+        public ExecuteOption ExecuteOption { get; }
+
         internal bool IsExplainEngine => LanguageService is ExplainLanguageService;
 
         private readonly Lazy<IQsiTreeParser> _treeParser;
@@ -33,11 +35,15 @@ namespace Qsi.Engines
         private readonly Lazy<IQsiRepositoryProvider> _repositoryProvider;
         private readonly Lazy<IQsiAnalyzer[]> _analyzers;
 
-        public QsiEngine(IQsiLanguageService languageService) : this(languageService, () => new QsiDataTableMemoryCacheProvider())
+        public QsiEngine(IQsiLanguageService languageService) : this(languageService, new ExecuteOption(), () => new QsiDataTableMemoryCacheProvider())
         {
         }
 
-        public QsiEngine(IQsiLanguageService languageService, Func<IQsiDataTableCacheProvider> cacheProviderFactory)
+        public QsiEngine(IQsiLanguageService languageService, ExecuteOption option) : this(languageService, option, () => new QsiDataTableMemoryCacheProvider())
+        {
+        }
+
+        public QsiEngine(IQsiLanguageService languageService, ExecuteOption option, Func<IQsiDataTableCacheProvider> cacheProviderFactory)
         {
             CacheProviderFactory = cacheProviderFactory;
 
@@ -48,6 +54,8 @@ namespace Qsi.Engines
             _scriptParser = new Lazy<IQsiScriptParser>(LanguageService.CreateScriptParser);
             _repositoryProvider = new Lazy<IQsiRepositoryProvider>(LanguageService.CreateRepositoryProvider);
             _analyzers = new Lazy<IQsiAnalyzer[]>(() => LanguageService.CreateAnalyzers(this).ToArray());
+
+            ExecuteOption = option ?? throw new ArgumentNullException(nameof(option));
         }
 
         public T GetAnalyzer<T>() where T : QsiAnalyzerBase

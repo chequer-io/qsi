@@ -1044,7 +1044,7 @@ public class QsiTableAnalyzer : QsiAnalyzerBase
             identifier = new QsiQualifiedIdentifier(identifiers.ToArray());
         }
 
-        return context.Engine.RepositoryProvider.ResolveQualifiedIdentifier(identifier);
+        return context.Engine.RepositoryProvider.ResolveQualifiedIdentifier(identifier, ExecuteOption);
     }
 
     private QsiTableStructure ResolveTableStructure(TableCompileContext context, QsiQualifiedIdentifier identifier)

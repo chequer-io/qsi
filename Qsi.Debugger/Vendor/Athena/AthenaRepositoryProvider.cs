@@ -1,12 +1,13 @@
 using System;
 using Qsi.Data;
 using Qsi.Data.Object;
+using Qsi.Engines;
 
 namespace Qsi.Debugger.Vendor.Athena
 {
     internal class AthenaRepositoryProvider : VendorRepositoryProvider
     {
-        protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier)
+        protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier, ExecuteOption executeOption)
         {
             identifier = identifier.Level switch
             {

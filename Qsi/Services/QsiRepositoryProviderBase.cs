@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Qsi.Data;
 using Qsi.Data.Object;
+using Qsi.Engines;
 
 namespace Qsi.Services
 {
@@ -18,7 +19,7 @@ namespace Qsi.Services
 
         protected abstract QsiObject LookupObject(QsiQualifiedIdentifier identifier, QsiObjectType type);
 
-        protected abstract QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier);
+        protected abstract QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier, ExecuteOption executeOption);
 
         protected abstract Task<QsiDataTable> GetDataTable(QsiScript script, QsiParameter[] parameters, CancellationToken cancellationToken);
 
@@ -63,9 +64,9 @@ namespace Qsi.Services
             return LookupObject(identifier, type);
         }
 
-        QsiQualifiedIdentifier IQsiRepositoryProvider.ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier)
+        QsiQualifiedIdentifier IQsiRepositoryProvider.ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier, ExecuteOption executeOption)
         {
-            return ResolveQualifiedIdentifier(identifier);
+            return ResolveQualifiedIdentifier(identifier, executeOption);
         }
 
         Task<QsiDataTable> IQsiRepositoryProvider.GetDataTable(QsiScript script, QsiParameter[] parameters, CancellationToken cancellationToken)

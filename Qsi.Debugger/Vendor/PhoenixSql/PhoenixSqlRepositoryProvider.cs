@@ -1,5 +1,6 @@
 ﻿using Qsi.Data;
 using Qsi.Data.Object;
+using Qsi.Engines;
 using Qsi.Utilities;
 
 namespace Qsi.Debugger.Vendor.PhoenixSql
@@ -63,7 +64,7 @@ namespace Qsi.Debugger.Vendor.PhoenixSql
             return null;
         }
 
-        protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier)
+        protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier, ExecuteOption executeOption)
         {
             return identifier;
         }

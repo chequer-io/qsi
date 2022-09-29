@@ -4,12 +4,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Qsi.Data;
 using Qsi.Data.Object;
+using Qsi.Engines;
 
 namespace Qsi.Services
 {
     public interface IQsiRepositoryProvider
     {
-        QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier);
+        QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier, ExecuteOption executeOption);
 
         QsiTableStructure LookupTable(QsiQualifiedIdentifier identifier);
 

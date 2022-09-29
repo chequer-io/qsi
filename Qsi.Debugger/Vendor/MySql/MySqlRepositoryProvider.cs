@@ -1,6 +1,7 @@
 ﻿using Qsi.Data;
 using System;
 using Qsi.Data.Object;
+using Qsi.Engines;
 using Qsi.Utilities;
 
 namespace Qsi.Debugger.Vendor.MySql
@@ -96,7 +97,7 @@ namespace Qsi.Debugger.Vendor.MySql
             return null;
         }
 
-        protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier)
+        protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier, ExecuteOption executeOption)
         {
             if (identifier.Level == 1)
             {

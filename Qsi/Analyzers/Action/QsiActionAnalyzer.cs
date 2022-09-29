@@ -966,7 +966,7 @@ namespace Qsi.Analyzers.Action
                 .Select(identifier =>
                 {
                     var qualifiedIdentifier = new QsiQualifiedIdentifier(identifier.Append(fakeRefIdentifier));
-                    qualifiedIdentifier = context.Engine.RepositoryProvider.ResolveQualifiedIdentifier(qualifiedIdentifier);
+                    qualifiedIdentifier = context.Engine.RepositoryProvider.ResolveQualifiedIdentifier(qualifiedIdentifier, ExecuteOption);
                     return new QsiQualifiedIdentifier(qualifiedIdentifier[..^1]);
                 })
                 .ToArray();
