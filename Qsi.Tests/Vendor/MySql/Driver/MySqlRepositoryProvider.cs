@@ -15,7 +15,7 @@ public class MySqlRepositoryProvider : RepositoryProviderDriverBase
     {
     }
 
-    protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier, ExecuteOption executeOption)
+    protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier, ExecuteOptions executeOptions)
     {
         if (identifier.Level == 2 || string.IsNullOrEmpty(Connection.Database))
             return identifier;

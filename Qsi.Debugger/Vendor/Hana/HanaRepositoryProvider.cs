@@ -8,7 +8,7 @@ namespace Qsi.Debugger.Vendor.Hana
 {
     internal class HanaRepositoryProvider : VendorRepositoryProvider
     {
-        protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier, ExecuteOption executeOption)
+        protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier, ExecuteOptions executeOptions)
         {
             // TODO: has search path ?
             return identifier;

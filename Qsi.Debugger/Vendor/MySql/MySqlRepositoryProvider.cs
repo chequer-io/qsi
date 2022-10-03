@@ -97,7 +97,7 @@ namespace Qsi.Debugger.Vendor.MySql
             return null;
         }
 
-        protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier, ExecuteOption executeOption)
+        protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier, ExecuteOptions executeOptions)
         {
             if (identifier.Level == 1)
             {

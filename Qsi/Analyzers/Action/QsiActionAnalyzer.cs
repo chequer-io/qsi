@@ -120,7 +120,7 @@ namespace Qsi.Analyzers.Action
             var definition = context.Engine.RepositoryProvider.LookupDefinition(action.Identifier, QsiTableType.Prepared) ??
                              throw new QsiException(QsiError.UnableResolveDefinition, action.Identifier);
 
-            return context.Engine.Execute(definition, null);
+            return context.Engine.Execute(definition, null, context.ExecuteOptions);
         }
         #endregion
 
@@ -255,7 +255,12 @@ namespace Qsi.Analyzers.Action
             var script = new QsiScript(query, scriptType);
             parameters.AddRange(ArrangeBindParameters(context, node.Table));
 
-            using var reader = context.Engine.RepositoryProvider.GetDataReaderAsync(script, parameters.ToArray(), default).Result;
+            using var reader = context.Engine.RepositoryProvider.GetDataReaderAsync(
+                script,
+                parameters.ToArray(),
+                context.ExecuteOptions,
+                default
+            ).Result;
 
             if (!reader.Read())
                 return "null";
@@ -428,7 +433,12 @@ namespace Qsi.Analyzers.Action
             var script = new QsiScript(query, scriptType);
             QsiParameter[] parameters = ArrangeBindParameters(context, commonTableNode);
 
-            return (await context.Engine.RepositoryProvider.GetDataTable(script, parameters, context.CancellationToken)).CloneVisibleOnly();
+            return (await context.Engine.RepositoryProvider.GetDataTable(
+                script,
+                parameters,
+                context.ExecuteOptions,
+                context.CancellationToken
+            )).CloneVisibleOnly();
         }
         #endregion
 
@@ -595,7 +605,13 @@ namespace Qsi.Analyzers.Action
 
             var scriptType = engine.ScriptParser.GetSuitableType(script);
             QsiParameter[] parameters = ArrangeBindParameters(context, valueTable);
-            var dataTable = (await engine.RepositoryProvider.GetDataTable(new QsiScript(script, scriptType), parameters, context.CancellationToken)).CloneVisibleOnly();
+
+            var dataTable = (await engine.RepositoryProvider.GetDataTable(
+                new QsiScript(script, scriptType),
+                parameters,
+                context.ExecuteOptions,
+                context.CancellationToken
+            )).CloneVisibleOnly();
 
             if (dataTable.Rows.ColumnCount != context.ColumnTargets.Length)
                 throw new QsiException(QsiError.DifferentColumnsCount);
@@ -722,7 +738,7 @@ namespace Qsi.Analyzers.Action
 
             var actionTarget = action.Target;
 
-            var options = context.Options with
+            var options = context.AnalyzerOptions with
             {
                 UseImplicitTableWildcardInSelect = actionTarget is IQsiDerivedTableNode
             };
@@ -966,7 +982,7 @@ namespace Qsi.Analyzers.Action
                 .Select(identifier =>
                 {
                     var qualifiedIdentifier = new QsiQualifiedIdentifier(identifier.Append(fakeRefIdentifier));
-                    qualifiedIdentifier = context.Engine.RepositoryProvider.ResolveQualifiedIdentifier(qualifiedIdentifier, ExecuteOption);
+                    qualifiedIdentifier = context.Engine.RepositoryProvider.ResolveQualifiedIdentifier(qualifiedIdentifier, context.ExecuteOptions);
                     return new QsiQualifiedIdentifier(qualifiedIdentifier[..^1]);
                 })
                 .ToArray();

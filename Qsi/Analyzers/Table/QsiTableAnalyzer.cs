@@ -80,7 +80,7 @@ public class QsiTableAnalyzer : QsiAnalyzerBase
         var lookup = ResolveTableStructure(context, table.Identifier);
 
         // view
-        if (context.Options.UseViewTracing &&
+        if (context.AnalyzerOptions.UseViewTracing &&
             !lookup.IsSystem &&
             lookup.Type is QsiTableType.View or QsiTableType.MaterializedView)
         {
@@ -152,7 +152,7 @@ public class QsiTableAnalyzer : QsiAnalyzerBase
 
         if (alias == null &&
             table.Parent is IQsiDerivedColumnNode &&
-            !context.Options.AllowNoAliasInDerivedTable)
+            !context.AnalyzerOptions.AllowNoAliasInDerivedTable)
         {
             throw new QsiException(QsiError.NoAlias);
         }
@@ -180,7 +180,7 @@ public class QsiTableAnalyzer : QsiAnalyzerBase
 
         if (columns == null || columns.Count == 0)
         {
-            if (!context.Options.AllowEmptyColumnsInSelect)
+            if (!context.AnalyzerOptions.AllowEmptyColumnsInSelect)
             {
                 throw new QsiException(QsiError.Syntax);
             }
@@ -294,7 +294,7 @@ public class QsiTableAnalyzer : QsiAnalyzerBase
 
         if (alias == null &&
             table.Parent is IQsiDerivedColumnNode &&
-            !context.Options.AllowNoAliasInDerivedTable)
+            !context.AnalyzerOptions.AllowNoAliasInDerivedTable)
         {
             throw new QsiException(QsiError.NoAlias);
         }
@@ -345,7 +345,7 @@ public class QsiTableAnalyzer : QsiAnalyzerBase
 
         if ((columnCount ?? 0) == 0)
         {
-            if (!context.Options.AllowEmptyColumnsInInline)
+            if (!context.AnalyzerOptions.AllowEmptyColumnsInInline)
                 throw new QsiException(QsiError.NoColumnsSpecified, alias);
 
             columnCount = 0;
@@ -435,7 +435,7 @@ public class QsiTableAnalyzer : QsiAnalyzerBase
 
                 if (ContainsRecursiveQuery(compositeTableNode.Sources[0], cteName))
                 {
-                    if (!context.Options.UseAutoFixRecursiveQuery || compositeTableNode.Sources.Length < 2)
+                    if (!context.AnalyzerOptions.UseAutoFixRecursiveQuery || compositeTableNode.Sources.Length < 2)
                         throw new QsiException(QsiError.NoAnchorInRecursiveQuery, cteName);
 
                     var fixedSources = compositeTableNode.Sources
@@ -762,7 +762,7 @@ public class QsiTableAnalyzer : QsiAnalyzerBase
             throw new QsiException(QsiError.UnknownColumnIn, "null", scopeFieldList);
 
         IEnumerable<TableCompileContext> candidateContexts =
-            context.Options.UseOuterQueryColumn ? context.AncestorsAndSelf() : new[] { context };
+            context.AnalyzerOptions.UseOuterQueryColumn ? context.AncestorsAndSelf() : new[] { context };
 
         var lastName = column.Name[^1];
 
@@ -808,7 +808,7 @@ public class QsiTableAnalyzer : QsiAnalyzerBase
 
         // NOTE: 'SELECT actor FROM actor' same as
         //       'SELECT actor.* FROM actor'
-        if (context.Options.UseImplicitTableWildcardInSelect)
+        if (context.AnalyzerOptions.UseImplicitTableWildcardInSelect)
             return ImplicitlyResolveColumnReference(context, column, out implicitTableWildcardTarget);
 
         throw new QsiException(QsiError.UnknownColumnIn, lastName.Value, scopeFieldList);
@@ -1044,7 +1044,7 @@ public class QsiTableAnalyzer : QsiAnalyzerBase
             identifier = new QsiQualifiedIdentifier(identifiers.ToArray());
         }
 
-        return context.Engine.RepositoryProvider.ResolveQualifiedIdentifier(identifier, ExecuteOption);
+        return context.Engine.RepositoryProvider.ResolveQualifiedIdentifier(identifier, context.ExecuteOptions);
     }
 
     private QsiTableStructure ResolveTableStructure(TableCompileContext context, QsiQualifiedIdentifier identifier)

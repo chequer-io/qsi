@@ -19,11 +19,11 @@ namespace Qsi.Services
 
         protected abstract QsiObject LookupObject(QsiQualifiedIdentifier identifier, QsiObjectType type);
 
-        protected abstract QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier, ExecuteOption executeOption);
+        protected abstract QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier, ExecuteOptions options);
 
-        protected abstract Task<QsiDataTable> GetDataTable(QsiScript script, QsiParameter[] parameters, CancellationToken cancellationToken);
+        protected abstract Task<QsiDataTable> GetDataTable(QsiScript script, QsiParameter[] parameters, ExecuteOptions options, CancellationToken cancellationToken);
 
-        protected abstract Task<IDataReader> GetDataReaderAsync(QsiScript script, QsiParameter[] parameters, CancellationToken cancellationToken);
+        protected abstract Task<IDataReader> GetDataReaderAsync(QsiScript script, QsiParameter[] parameters, ExecuteOptions options, CancellationToken cancellationToken);
 
         #region IQsiRepositoryProvider
         QsiTableStructure IQsiRepositoryProvider.LookupTable(QsiQualifiedIdentifier identifier)
@@ -64,19 +64,19 @@ namespace Qsi.Services
             return LookupObject(identifier, type);
         }
 
-        QsiQualifiedIdentifier IQsiRepositoryProvider.ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier, ExecuteOption executeOption)
+        QsiQualifiedIdentifier IQsiRepositoryProvider.ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier, ExecuteOptions executeOptions)
         {
-            return ResolveQualifiedIdentifier(identifier, executeOption);
+            return ResolveQualifiedIdentifier(identifier, executeOptions);
         }
 
-        Task<QsiDataTable> IQsiRepositoryProvider.GetDataTable(QsiScript script, QsiParameter[] parameters, CancellationToken cancellationToken)
+        Task<QsiDataTable> IQsiRepositoryProvider.GetDataTable(QsiScript script, QsiParameter[] parameters, ExecuteOptions executeOptions, CancellationToken cancellationToken)
         {
-            return GetDataTable(script, parameters, cancellationToken);
+            return GetDataTable(script, parameters, executeOptions, cancellationToken);
         }
 
-        Task<IDataReader> IQsiRepositoryProvider.GetDataReaderAsync(QsiScript script, QsiParameter[] parameters, CancellationToken cancellationToken)
+        Task<IDataReader> IQsiRepositoryProvider.GetDataReaderAsync(QsiScript script, QsiParameter[] parameters, ExecuteOptions executeOptions, CancellationToken cancellationToken)
         {
-            return GetDataReaderAsync(script, parameters, cancellationToken);
+            return GetDataReaderAsync(script, parameters, executeOptions, cancellationToken);
         }
         #endregion
     }

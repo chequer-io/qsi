@@ -21,9 +21,9 @@ namespace Qsi.Engines.Explain
             _repositoryProvider = repositoryProvider ?? throw new ArgumentNullException(nameof(repositoryProvider));
         }
 
-        public QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier, ExecuteOption executeOption)
+        public QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier, ExecuteOptions executeOptions)
         {
-            return _repositoryProvider.ResolveQualifiedIdentifier(identifier, executeOption ?? _engine.ExecuteOption);
+            return _repositoryProvider.ResolveQualifiedIdentifier(identifier, executeOptions);
         }
 
         public QsiTableStructure LookupTable(QsiQualifiedIdentifier identifier)
@@ -46,9 +46,13 @@ namespace Qsi.Engines.Explain
             return _repositoryProvider.LookupObject(identifier, type);
         }
 
-        public async Task<QsiDataTable> GetDataTable(QsiScript script, QsiParameter[] parameters, CancellationToken cancellationToken)
+        public async Task<QsiDataTable> GetDataTable(
+            QsiScript script,
+            QsiParameter[] parameters,
+            ExecuteOptions executeOptions,
+            CancellationToken cancellationToken)
         {
-            IQsiAnalysisResult[] results = await _engine.Explain(script, cancellationToken);
+            IQsiAnalysisResult[] results = await _engine.Explain(script, executeOptions, cancellationToken);
 
             if (results.Length != 1 || results[0] is not QsiTableResult tableResult)
                 throw new QsiException(QsiError.InvalidNestedExplain, script.Script);
@@ -64,9 +68,13 @@ namespace Qsi.Engines.Explain
             return dataTable;
         }
 
-        public async Task<IDataReader> GetDataReaderAsync(QsiScript script, QsiParameter[] parameters, CancellationToken cancellationToken)
+        public async Task<IDataReader> GetDataReaderAsync(
+            QsiScript script,
+            QsiParameter[] parameters,
+            ExecuteOptions executeOptions,
+            CancellationToken cancellationToken)
         {
-            IQsiAnalysisResult[] results = await _engine.Explain(script, cancellationToken);
+            IQsiAnalysisResult[] results = await _engine.Explain(script, executeOptions, cancellationToken);
 
             if (results.Length != 1 || results[0] is not QsiTableResult tableResult)
                 throw new QsiException(QsiError.InvalidNestedExplain, script.Script);

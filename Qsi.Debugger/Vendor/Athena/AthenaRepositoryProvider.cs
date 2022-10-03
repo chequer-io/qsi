@@ -7,7 +7,7 @@ namespace Qsi.Debugger.Vendor.Athena
 {
     internal class AthenaRepositoryProvider : VendorRepositoryProvider
     {
-        protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier, ExecuteOption executeOption)
+        protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier, ExecuteOptions executeOptions)
         {
             identifier = identifier.Level switch
             {

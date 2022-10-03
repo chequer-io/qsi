@@ -7,7 +7,7 @@ namespace Qsi.Debugger.Vendor.Cql
 {
     internal class CqlRepositoryProvider : VendorRepositoryProvider
     {
-        protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier, ExecuteOption executeOption)
+        protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier, ExecuteOptions executeOptions)
         {
             // TODO: has search path ?
             return identifier;

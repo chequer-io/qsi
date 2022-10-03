@@ -9,7 +9,7 @@ namespace Qsi.Debugger.Vendor.Oracle
 {
     internal class OracleRepositoryProvider : VendorRepositoryProvider
     {
-        protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier, ExecuteOption executeOption)
+        protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier, ExecuteOptions executeOptions)
         {
             identifier = identifier.Level switch
             {

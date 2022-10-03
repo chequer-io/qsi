@@ -8,7 +8,7 @@ namespace Qsi.Debugger.Vendor.SqlServer
 {
     internal class SqlServerRepositoryProvider : VendorRepositoryProvider
     {
-        protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier, ExecuteOption executeOption)
+        protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier, ExecuteOptions executeOptions)
         {
             identifier = identifier.Level switch
             {

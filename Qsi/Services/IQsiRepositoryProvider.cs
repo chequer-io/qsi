@@ -10,7 +10,7 @@ namespace Qsi.Services
 {
     public interface IQsiRepositoryProvider
     {
-        QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier, ExecuteOption executeOption);
+        QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier, ExecuteOptions executeOptions);
 
         QsiTableStructure LookupTable(QsiQualifiedIdentifier identifier);
 
@@ -21,8 +21,8 @@ namespace Qsi.Services
         QsiObject LookupObject(QsiQualifiedIdentifier identifier, QsiObjectType type);
 
         [Obsolete("Use GetDataReader")]
-        Task<QsiDataTable> GetDataTable(QsiScript script, QsiParameter[] parameters, CancellationToken cancellationToken);
+        Task<QsiDataTable> GetDataTable(QsiScript script, QsiParameter[] parameters, ExecuteOptions executeOptions, CancellationToken cancellationToken);
 
-        Task<IDataReader> GetDataReaderAsync(QsiScript script, QsiParameter[] parameters, CancellationToken cancellationToken);
+        Task<IDataReader> GetDataReaderAsync(QsiScript script, QsiParameter[] parameters, ExecuteOptions executeOptions, CancellationToken cancellationToken);
     }
 }

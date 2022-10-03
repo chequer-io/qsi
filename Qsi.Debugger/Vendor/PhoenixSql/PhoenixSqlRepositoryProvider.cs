@@ -64,7 +64,7 @@ namespace Qsi.Debugger.Vendor.PhoenixSql
             return null;
         }
 
-        protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier, ExecuteOption executeOption)
+        protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier, ExecuteOptions executeOptions)
         {
             return identifier;
         }

@@ -8,7 +8,7 @@ namespace Qsi.Debugger.Vendor.Impala
 {
     internal class ImpalaRepositoryProvider : VendorRepositoryProvider
     {
-        protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier, ExecuteOption executeOption)
+        protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier, ExecuteOptions executeOptions)
         {
             if (identifier.Level == 1)
             {

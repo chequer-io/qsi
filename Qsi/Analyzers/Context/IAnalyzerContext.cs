@@ -16,7 +16,9 @@ namespace Qsi.Analyzers.Context
 
         IQsiTreeNode Tree { get; }
 
-        QsiAnalyzerOptions Options { get; }
+        QsiAnalyzerOptions AnalyzerOptions { get; }
+
+        ExecuteOptions ExecuteOptions { get; }
 
         CancellationToken CancellationToken { get; }
     }
