@@ -21,7 +21,7 @@ namespace Qsi.Analyzers.Table.Context
         private readonly List<QsiTableStructure> _directives;
         private Stack<QsiQualifiedIdentifier> _identifierScope;
 
-        public TableCompileContext(IAnalyzerContext context) : this(context, context.Options)
+        public TableCompileContext(IAnalyzerContext context) : this(context, context.AnalyzerOptions)
         {
         }
 
@@ -33,7 +33,7 @@ namespace Qsi.Analyzers.Table.Context
             JoinedSouceTables = new List<QsiTableStructure>();
         }
 
-        public TableCompileContext(TableCompileContext context) : this(context, context.Options)
+        public TableCompileContext(TableCompileContext context) : this(context, context.AnalyzerOptions)
         {
             Parent = context;
             Depth = context.Depth + 1;

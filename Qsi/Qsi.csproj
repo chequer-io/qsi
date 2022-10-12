@@ -14,6 +14,12 @@
         <PackageReference Include="Antlr4.Runtime.Standard" Version="4.9.3" />
     </ItemGroup>
 
+    <ItemGroup>
+        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+            <_Parameter1>Qsi.Tests</_Parameter1>
+        </AssemblyAttribute>
+    </ItemGroup>
+
     <Import Project="..\Qsi.Shared\Qsi.Shared.projitems" Label="Shared" />
 
 </Project>

@@ -5,6 +5,7 @@ using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 using Qsi.Data;
+using Qsi.Engines;
 using Qsi.Services;
 using Qsi.Utilities;
 
@@ -44,10 +45,10 @@ public abstract class RepositoryProviderDriverBase : QsiRepositoryProviderBase
         Connection = connection;
     }
 
-    protected override async Task<QsiDataTable> GetDataTable(QsiScript script, QsiParameter[] parameters, CancellationToken cancellationToken)
+    protected override async Task<QsiDataTable> GetDataTable(QsiScript script, QsiParameter[] parameters, ExecuteOptions executeOptions, CancellationToken cancellationToken)
     {
         var structure = new QsiTableStructure();
-        using var reader = await GetDataReaderAsync(script, parameters, cancellationToken);
+        using var reader = await GetDataReaderAsync(script, parameters, executeOptions, cancellationToken);
 
         for (int i = 0; i < reader.FieldCount; i++)
         {
@@ -94,7 +95,7 @@ public abstract class RepositoryProviderDriverBase : QsiRepositoryProviderBase
         return QsiDataType.Unknown;
     }
 
-    protected override Task<IDataReader> GetDataReaderAsync(QsiScript script, QsiParameter[] parameters, CancellationToken cancellationToken)
+    protected override Task<IDataReader> GetDataReaderAsync(QsiScript script, QsiParameter[] parameters, ExecuteOptions executeOptions, CancellationToken cancellationToken)
     {
         ScriptHistories.Add(script);
         return GetDataReaderCoreAsync(script, parameters, cancellationToken);
