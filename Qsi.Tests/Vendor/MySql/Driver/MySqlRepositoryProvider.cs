@@ -4,6 +4,7 @@ using System.Linq;
 using MySql.Data.MySqlClient;
 using Qsi.Data;
 using Qsi.Data.Object;
+using Qsi.Engines;
 using Qsi.Utilities;
 
 namespace Qsi.Tests.Vendor.MySql.Driver;
@@ -14,7 +15,7 @@ public class MySqlRepositoryProvider : RepositoryProviderDriverBase
     {
     }
 
-    protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier)
+    protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier, ExecuteOptions executeOptions)
     {
         if (identifier.Level == 2 || string.IsNullOrEmpty(Connection.Database))
             return identifier;

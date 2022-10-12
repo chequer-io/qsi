@@ -2,13 +2,14 @@
 using Qsi.Data;
 using Qsi.Data.Object;
 using Qsi.Data.Object.Sequence;
+using Qsi.Engines;
 using Qsi.Utilities;
 
 namespace Qsi.Debugger.Vendor.Oracle
 {
     internal class OracleRepositoryProvider : VendorRepositoryProvider
     {
-        protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier)
+        protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier, ExecuteOptions executeOptions)
         {
             identifier = identifier.Level switch
             {

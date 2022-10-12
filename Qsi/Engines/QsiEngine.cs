@@ -55,7 +55,7 @@ namespace Qsi.Engines
             return _analyzers.Value.OfType<T>().First();
         }
 
-        public async ValueTask<IQsiAnalysisResult[]> Execute(QsiScript script, QsiParameter[] parameters, CancellationToken cancellationToken = default)
+        public async ValueTask<IQsiAnalysisResult[]> Execute(QsiScript script, QsiParameter[] parameters, ExecuteOptions executeOptions = null, CancellationToken cancellationToken = default)
         {
             var tree = TreeParser.Parse(script, cancellationToken);
 
@@ -70,22 +70,22 @@ namespace Qsi.Engines
                 throw new QsiException(QsiError.NotSupportedScript, script.ScriptType);
             }
 
-            return await analyzer.Execute(script, parameters, tree, options, cancellationToken);
+            return await analyzer.Execute(script, parameters, tree, options, executeOptions, cancellationToken);
         }
 
-        public ValueTask<IQsiAnalysisResult[]> Explain(QsiScript script, CancellationToken cancellationToken = default)
+        public ValueTask<IQsiAnalysisResult[]> Explain(QsiScript script, ExecuteOptions executeOptions = null, CancellationToken cancellationToken = default)
         {
             var parameters = new[] { new QsiParameter(QsiParameterType.Name, string.Empty, QsiDataValue.Explain) };
 
             if (IsExplainEngine)
-                return Execute(script, parameters, cancellationToken);
+                return Execute(script, parameters, executeOptions, cancellationToken);
 
             var explainLanguageService = new ExplainLanguageService(LanguageService);
             var explainEngine = new QsiEngine(explainLanguageService);
 
             explainLanguageService.ExplainEngine = explainEngine;
 
-            return explainEngine.Execute(script, parameters, cancellationToken);
+            return explainEngine.Execute(script, parameters, executeOptions, cancellationToken);
         }
     }
 }

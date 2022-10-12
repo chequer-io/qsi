@@ -320,7 +320,7 @@ namespace Qsi.Cql.Analyzers
             var script = new QsiScript(sql, QsiScriptType.Select);
 
             // TODO: Bind parameter in selector
-            var table = await context.Engine.RepositoryProvider.GetDataTable(script, null, context.CancellationToken);
+            var table = await context.Engine.RepositoryProvider.GetDataTable(script, null, context.ExecuteOptions, context.CancellationToken);
             QsiDataValue[] values = table.Rows[0].Items;
 
             for (int i = 0; i < values.Length; i++)
