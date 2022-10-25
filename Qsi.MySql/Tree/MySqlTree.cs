@@ -11,9 +11,12 @@ namespace Qsi.MySql.Tree
     {
         public static KeyIndexer<Range> Span { get; }
 
+        public static KeyIndexer<bool> IsSimpleParExpr { get; }
+
         static MySqlTree()
         {
             Span = new KeyIndexer<Range>(QsiNodeProperties.Span);
+            IsSimpleParExpr = new KeyIndexer<bool>(new Key<bool>("node::simple_par_expr"));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

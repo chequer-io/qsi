@@ -246,25 +246,47 @@ namespace Qsi.MySql.Tree
 
         private static string DeduceColumnName(SelectItemContext context, QsiExpressionNode node)
         {
-            if (node is IQsiLiteralExpressionNode literal)
+            IQsiTreeNode treeNode = node;
+            
+            // Break parentheses while it is not SimpleParExpr
+            while (treeNode.Children is not null &&
+                   treeNode.Children.Take(2).Count() == 1 &&
+                   MySqlTree.IsSimpleParExpr[treeNode])
             {
-                string stringValue = null;
+                treeNode = treeNode.Children.First();
+            }
 
-                switch (literal.Value)
-                {
-                    case string name:
-                        stringValue = name;
-                        break;
+            switch (treeNode)
+            {
+                case IQsiLiteralExpressionNode literal:
+                    string stringValue = null;
 
-                    case MySqlString { CollateName: null, Kind: MySqlStringKind.National or MySqlStringKind.Default } mySqlString:
+                    switch (literal.Value)
                     {
-                        stringValue = mySqlString.Value;
-                        break;
-                    }
-                }
+                        case string name:
+                            stringValue = name;
+                            break;
+                        
+                        case int number:
+                            stringValue = number.ToString();
+                            break;
 
-                if (stringValue != null)
-                    return stringValue.TrimStart('\r', '\n', '\t', '\f', '\v', ' ');
+                        case MySqlString { CollateName: null, Kind: MySqlStringKind.National or MySqlStringKind.Default } mySqlString:
+                        {
+                            stringValue = mySqlString.Value;
+                            break;
+                        }
+                    }
+
+                    if (stringValue != null)
+                        return stringValue.TrimStart('\r', '\n', '\t', '\f', '\v', ' ');
+                    
+                    break;
+
+                case QsiColumnExpressionNode columnExpression
+                    when columnExpression.Column.Value is QsiColumnReferenceNode columnReferenceNode:
+                    var qualifiedIdentifier = columnReferenceNode.Name;
+                    return IdentifierUtility.Unescape(qualifiedIdentifier.Last().Value);
             }
 
             return context.GetInputText();
