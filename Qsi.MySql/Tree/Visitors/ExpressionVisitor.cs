@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Antlr4.Runtime;
@@ -263,7 +262,7 @@ namespace Qsi.MySql.Tree
                     });
 
                     break;
-
+                
                 case PredicateExprBetweenContext exprBetween:
                     node = TreeHelper.Create<QsiBinaryExpressionNode>(n =>
                     {
@@ -279,7 +278,7 @@ namespace Qsi.MySql.Tree
                     });
 
                     break;
-
+                
                 case PredicateExprLikeContext exprLike:
                     node = TreeHelper.Create<QsiBinaryExpressionNode>(n =>
                     {
@@ -363,7 +362,7 @@ namespace Qsi.MySql.Tree
                 {
                     n.Left.SetValue(VisitBitExpr(context.bitExpr(0)));
                     n.Operator = context.op.Text + " " + context.INTERVAL_SYMBOL().GetText();
-
+                    
                     n.Right.SetValue(TreeHelper.Create<QsiMultipleExpressionNode>(mn =>
                     {
                         mn.Elements.Add(VisitExpr(context.expr()));
@@ -434,7 +433,7 @@ namespace Qsi.MySql.Tree
 
                 case SimpleExprNotContext simpleExprNot:
                     return VisitSimpleExprNot(simpleExprNot);
-
+                
                 case SimpleExprListContext simpleExprList:
                     return VisitSimpleExprList(simpleExprList);
 
@@ -501,7 +500,7 @@ namespace Qsi.MySql.Tree
 
                 MySqlTree.PutContextSpan(n, context.columnRef());
             });
-
+            
             if (context.jsonOperator() == null)
                 return columnNode;
 
@@ -644,6 +643,7 @@ namespace Qsi.MySql.Tree
                 node = TreeHelper.Create<QsiMultipleExpressionNode>(n =>
                 {
                     n.Elements.AddRange(parameters);
+                    MySqlTree.IsSimpleParExpr[n] = true;
                 });
             }
 
