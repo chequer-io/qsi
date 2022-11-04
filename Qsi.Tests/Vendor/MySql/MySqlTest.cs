@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
@@ -216,5 +217,20 @@ public partial class MySqlTest : VendorTestBase
         Console.WriteLine(print);
 
         await Verifier.Verify(print).UseDirectory("verified");
+    }
+
+    [TestCaseSource(nameof(Test_InferredName_TestDatas))]
+    public async Task Test_InferredName(string sql, string[] expects)
+    {
+        IQsiAnalysisResult[] qsiAnalysisResults = await Engine.Execute(new QsiScript(sql, QsiScriptType.Select), null);
+        var qsiTableStructure = qsiAnalysisResults.OfType<QsiTableResult>().Single().Table;
+        IEnumerable<string> qsiIdentifierColumnNames = qsiTableStructure.Columns.Select(x => x.Name.Value);
+
+        var sqlCommand = new MySqlCommand(sql, (MySqlConnection)Connection);
+        await using var dataReader = sqlCommand.ExecuteReader();
+
+        IEnumerable<string> expectColumnNames = Enumerable.Range(0, dataReader.FieldCount).Select(i => dataReader.GetName(i));
+
+        Assert.AreEqual(expectColumnNames, qsiIdentifierColumnNames);
     }
 }

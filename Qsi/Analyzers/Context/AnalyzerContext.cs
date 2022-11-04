@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Qsi.Data;
 using Qsi.Engines;
@@ -17,7 +18,9 @@ namespace Qsi.Analyzers.Context
 
         public IQsiTreeNode Tree { get; }
 
-        public QsiAnalyzerOptions Options { get; }
+        public QsiAnalyzerOptions AnalyzerOptions { get; }
+
+        public ExecuteOptions ExecuteOptions { get; }
 
         public CancellationToken CancellationToken { get; }
 
@@ -26,14 +29,16 @@ namespace Qsi.Analyzers.Context
             QsiScript script,
             IReadOnlyDictionary<IQsiBindParameterExpressionNode, QsiParameter> parameters,
             IQsiTreeNode tree,
-            QsiAnalyzerOptions options,
+            QsiAnalyzerOptions analyzerOptions,
+            ExecuteOptions executeOptions,
             CancellationToken cancellationToken)
         {
             Engine = engine;
             Script = script;
             Parameters = parameters;
             Tree = tree;
-            Options = options ?? throw new ArgumentNullException(nameof(options));
+            AnalyzerOptions = analyzerOptions ?? throw new ArgumentNullException(nameof(analyzerOptions));
+            ExecuteOptions = executeOptions ?? new ExecuteOptions();
             CancellationToken = cancellationToken;
         }
     }

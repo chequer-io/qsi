@@ -34,7 +34,8 @@ namespace Qsi.Analyzers
             QsiScript script,
             QsiParameter[] parameters,
             IQsiTreeNode tree,
-            QsiAnalyzerOptions options,
+            QsiAnalyzerOptions analyzerOptions,
+            ExecuteOptions executeOptions,
             CancellationToken cancellationToken = default)
         {
             if (!CanExecute(script, tree))
@@ -46,7 +47,8 @@ namespace Qsi.Analyzers
                     script,
                     BindParameters(tree, parameters),
                     tree,
-                    options,
+                    analyzerOptions,
+                    executeOptions,
                     cancellationToken
                 )
             );
@@ -105,7 +107,7 @@ namespace Qsi.Analyzers
             // │         └-> identifier(2)        └-> table.Identifier(3) │
             // └──────────────────────────────────────────────────────────┘ 
 
-            if (context.Options.UseExplicitRelationAccess)
+            if (context.AnalyzerOptions.UseExplicitRelationAccess)
                 return false;
 
             if (!QsiUtility.IsReferenceType(table.Type))

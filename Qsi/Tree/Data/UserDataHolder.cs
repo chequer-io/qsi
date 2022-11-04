@@ -53,7 +53,7 @@
                 {
                     Key = key,
                     Value = value,
-                    Next = _head?.Next
+                    Next = _head
                 };
             }
         }

@@ -16,20 +16,22 @@ namespace Qsi.Analyzers.Context
 
         public IQsiTreeNode Tree => _context.Tree;
 
-        public QsiAnalyzerOptions Options { get; }
+        public QsiAnalyzerOptions AnalyzerOptions { get; }
+
+        public ExecuteOptions ExecuteOptions => _context.ExecuteOptions;
 
         public CancellationToken CancellationToken => _context.CancellationToken;
 
         private readonly IAnalyzerContext _context;
 
-        protected AnalyzerContextWrapper(IAnalyzerContext context) : this(context, context.Options)
+        protected AnalyzerContextWrapper(IAnalyzerContext context) : this(context, context.AnalyzerOptions)
         {
         }
 
         protected AnalyzerContextWrapper(IAnalyzerContext context, QsiAnalyzerOptions options)
         {
             _context = context;
-            Options = options;
+            AnalyzerOptions = options;
         }
     }
 }

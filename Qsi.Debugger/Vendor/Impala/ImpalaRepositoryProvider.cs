@@ -1,13 +1,14 @@
 ﻿using System;
 using Qsi.Data;
 using Qsi.Data.Object;
+using Qsi.Engines;
 using Qsi.Utilities;
 
 namespace Qsi.Debugger.Vendor.Impala
 {
     internal class ImpalaRepositoryProvider : VendorRepositoryProvider
     {
-        protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier)
+        protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier, ExecuteOptions executeOptions)
         {
             if (identifier.Level == 1)
             {

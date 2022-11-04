@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Qsi.Analyzers;
@@ -27,10 +26,11 @@ namespace Qsi.Engines.Explain
             QsiScript script,
             QsiParameter[] parameters,
             IQsiTreeNode tree,
-            QsiAnalyzerOptions options,
+            QsiAnalyzerOptions analyzerOptions,
+            ExecuteOptions executeOptions,
             CancellationToken cancellationToken = default)
         {
-            IQsiAnalysisResult[] results = await _analyzer.Execute(script, parameters, tree, options, cancellationToken);
+            IQsiAnalysisResult[] results = await _analyzer.Execute(script, parameters, tree, analyzerOptions, executeOptions, cancellationToken);
 
             for (int i = 0; i < results.Length; i++)
             {

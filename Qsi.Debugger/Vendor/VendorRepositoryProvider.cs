@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Qsi.Data;
+using Qsi.Engines;
 using Qsi.Services;
 using Qsi.Utilities;
 
@@ -26,13 +27,13 @@ namespace Qsi.Debugger.Vendor
     {
         public event EventHandler<DataTableRequestEventArgs> DataReaderRequested;
 
-        protected sealed override Task<QsiDataTable> GetDataTable(QsiScript script, QsiParameter[] parameters, CancellationToken cancellationToken)
+        protected sealed override Task<QsiDataTable> GetDataTable(QsiScript script, QsiParameter[] parameters, ExecuteOptions executeOptions, CancellationToken cancellationToken)
         {
             DataReaderRequested?.Invoke(this, new DataTableRequestEventArgs(script, parameters));
             throw new NotImplementedException();
         }
 
-        protected override Task<IDataReader> GetDataReaderAsync(QsiScript script, QsiParameter[] parameters, CancellationToken cancellationToken)
+        protected override Task<IDataReader> GetDataReaderAsync(QsiScript script, QsiParameter[] parameters, ExecuteOptions executeOptions, CancellationToken cancellationToken)
         {
             DataReaderRequested?.Invoke(this, new DataTableRequestEventArgs(script, parameters));
             throw new NotImplementedException();
