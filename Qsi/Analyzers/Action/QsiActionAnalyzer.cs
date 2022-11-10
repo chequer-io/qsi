@@ -613,7 +613,7 @@ namespace Qsi.Analyzers.Action
                 context.CancellationToken
             )).CloneVisibleOnly();
 
-            if (!context.Options.AllowPartialColumnInDataInsert)
+            if (!context.AnalyzerOptions.AllowPartialColumnInDataInsert)
             {
                 if (dataTable.Rows.ColumnCount != context.ColumnTargets.Length)
                     throw new QsiException(QsiError.DifferentColumnsCount);
@@ -661,7 +661,7 @@ namespace Qsi.Analyzers.Action
 
         private void ProcessValues(TableDataInsertContext context, IQsiRowValueExpressionNode[] rows)
         {
-            if (context.Options.AllowPartialColumnInDataInsert)
+            if (context.AnalyzerOptions.AllowPartialColumnInDataInsert)
             {
                 ProcessValuesLoose(context, rows);
             }
