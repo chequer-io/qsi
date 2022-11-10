@@ -41,5 +41,10 @@
         /// Use outer query column
         /// </summary>
         public bool UseOuterQueryColumn { get; set; } = true;
+        
+        /// <summary>
+        /// Allow partial column in <c>data insert statement</c>
+        /// </summary>
+        public bool AllowPartialColumnInDataInsert { get; set; }
     }
 }

@@ -1,25 +1,15 @@
-﻿using System;
-using Qsi.Diagnostics;
+﻿using Antlr4.Runtime.Tree;
+using Qsi.Diagnostics.Antlr;
 using Qsi.PostgreSql.Internal;
-using Qsi.PostgreSql.Internal.PG10;
 
 namespace Qsi.PostgreSql.Diagnostics
 {
-    public class PostgreSqlRawParser : IRawTreeParser, IDisposable
+    public class PostgreSqlRawParser : AntlrRawParserBase
     {
-        private IPgParser _pgParser;
-
-        public IRawTree Parse(string input)
+        protected override (ITree Tree, string[] RuleNames) ParseAntlrTree(string input)
         {
-            _pgParser ??= new PgQuery10();
-            var result = _pgParser.Parse(input);
-
-            return new PostgreSqlRawTree(result);
-        }
-
-        void IDisposable.Dispose()
-        {
-            _pgParser?.Dispose();
+            var parser = PostgreSqlUtility.CreateParser(input);
+            return (parser.root(), parser.RuleNames);
         }
     }
 }

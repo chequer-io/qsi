@@ -1,0 +1,60 @@
+[
+  {
+    Type: Derived,
+    References: [
+      $tbl_6
+    ],
+    Columns: [
+      {
+        Parent: $tbl_5,
+        Name: actor_id,
+        References: [
+          $col_2
+        ],
+        IsVisible: true,
+        RefId: $col_1
+      },
+      {
+        Parent: $tbl_5,
+        Name: first_name,
+        References: [
+          $col_4
+        ],
+        IsVisible: true,
+        RefId: $col_3
+      }
+    ],
+    RefId: $tbl_5
+  },
+  {
+    Type: Table,
+    Identifier: public.actor,
+    Columns: [
+      {
+        Parent: $tbl_6,
+        Name: actor_id,
+        IsVisible: true,
+        RefId: $col_2
+      },
+      {
+        Parent: $tbl_6,
+        Name: first_name,
+        IsVisible: true,
+        RefId: $col_4
+      },
+      {
+        Parent: $tbl_6,
+        Name: last_name,
+        IsVisible: true,
+        RefId: $col_7
+      },
+      {
+        Parent: $tbl_6,
+        Name: last_update,
+        IsVisible: true,
+        RefId: $col_8
+      }
+    ],
+    RefId: $tbl_6
+  }
+]

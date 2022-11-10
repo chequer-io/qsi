@@ -1,0 +1,15 @@
+﻿[
+  {
+    Type: Derived,
+    Columns: [
+      {
+        Parent: $tbl_2,
+        Name: f2,
+        IsVisible: true,
+        IsExpression: true,
+        RefId: $col_1
+      }
+    ],
+    RefId: $tbl_2
+  }
+]

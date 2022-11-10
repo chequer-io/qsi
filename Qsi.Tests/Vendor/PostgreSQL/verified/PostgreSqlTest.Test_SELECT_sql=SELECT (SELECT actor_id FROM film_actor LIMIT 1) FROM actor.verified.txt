@@ -1,0 +1,113 @@
+[
+  {
+    Type: Derived,
+    References: [
+      $tbl_6
+    ],
+    Columns: [
+      {
+        Parent: $tbl_5,
+        Name: ?column?,
+        References: [
+          $col_2
+        ],
+        IsVisible: true,
+        IsExpression: true,
+        RefId: $col_1
+      }
+    ],
+    RefId: $tbl_5
+  },
+  {
+    Type: Table,
+    Identifier: public.actor,
+    Columns: [
+      {
+        Parent: $tbl_6,
+        Name: actor_id,
+        IsVisible: true,
+        RefId: $col_10
+      },
+      {
+        Parent: $tbl_6,
+        Name: first_name,
+        IsVisible: true,
+        RefId: $col_11
+      },
+      {
+        Parent: $tbl_6,
+        Name: last_name,
+        IsVisible: true,
+        RefId: $col_12
+      },
+      {
+        Parent: $tbl_6,
+        Name: last_update,
+        IsVisible: true,
+        RefId: $col_13
+      }
+    ],
+    RefId: $tbl_6
+  },
+  {
+    Type: Derived,
+    References: [
+      $tbl_8
+    ],
+    Columns: [
+      {
+        Parent: $tbl_7,
+        References: [
+          $col_3
+        ],
+        IsVisible: true,
+        IsExpression: true,
+        RefId: $col_2
+      }
+    ],
+    RefId: $tbl_7
+  },
+  {
+    Type: Derived,
+    References: [
+      $tbl_9
+    ],
+    Columns: [
+      {
+        Parent: $tbl_8,
+        References: [
+          $col_4
+        ],
+        IsVisible: true,
+        IsExpression: true,
+        RefId: $col_3
+      }
+    ],
+    RefId: $tbl_8
+  },
+  {
+    Type: Table,
+    Identifier: public.film_actor,
+    Columns: [
+      {
+        Parent: $tbl_9,
+        Name: actor_id,
+        IsVisible: true,
+        RefId: $col_4
+      },
+      {
+        Parent: $tbl_9,
+        Name: film_id,
+        IsVisible: true,
+        RefId: $col_14
+      },
+      {
+        Parent: $tbl_9,
+        Name: last_update,
+        IsVisible: true,
+        RefId: $col_15
+      }
+    ],
+    RefId: $tbl_9
+  }
+]
