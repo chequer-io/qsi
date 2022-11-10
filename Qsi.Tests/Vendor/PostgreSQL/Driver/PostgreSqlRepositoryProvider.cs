@@ -9,6 +9,7 @@ using Npgsql;
 using Org.BouncyCastle.Asn1.Ocsp;
 using Qsi.Data;
 using Qsi.Data.Object;
+using Qsi.Engines;
 using Qsi.Parsing.Common;
 using Qsi.Utilities;
 
@@ -22,7 +23,7 @@ public class PostgreSqlRepositoryProvider : RepositoryProviderDriverBase
     {
     }
 
-    protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier)
+    protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier, ExecuteOptions options)
     {
         if (identifier.Level == 2 || string.IsNullOrEmpty(Connection.Database))
         {
@@ -130,7 +131,7 @@ public class PostgreSqlRepositoryProvider : RepositoryProviderDriverBase
         // pgCommand.Parameters.AddWithValue(parameter.Name, parameter.Value);
     }
 
-    protected override Task<QsiDataTable> GetDataTable(QsiScript script, QsiParameter[] parameters, CancellationToken cancellationToken)
+    protected override Task<QsiDataTable> GetDataTable(QsiScript script, QsiParameter[] parameters, ExecuteOptions options, CancellationToken cancellationToken)
     {
         var csc = new CommonScriptCursor(script.Script);
         var csp = new CommonScriptParser();
@@ -171,7 +172,7 @@ public class PostgreSqlRepositoryProvider : RepositoryProviderDriverBase
             script = new QsiScript(builder.ToString(), script.ScriptType, script.Start, script.End);
         }
 
-        return base.GetDataTable(script, parameters, cancellationToken);
+        return base.GetDataTable(script, parameters, options, cancellationToken);
 
         static int GetNumberEndIndex(ReadOnlySpan<char> span)
         {
