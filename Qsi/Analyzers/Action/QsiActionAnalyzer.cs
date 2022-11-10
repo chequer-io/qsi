@@ -613,12 +613,15 @@ namespace Qsi.Analyzers.Action
                 context.CancellationToken
             )).CloneVisibleOnly();
 
-            if (dataTable.Rows.ColumnCount != context.ColumnTargets.Length)
-                throw new QsiException(QsiError.DifferentColumnsCount);
+            if (!context.AnalyzerOptions.AllowPartialColumnInDataInsert)
+            {
+                if (dataTable.Rows.ColumnCount != context.ColumnTargets.Length)
+                    throw new QsiException(QsiError.DifferentColumnsCount);
 
-            // Old cache hitted
-            if (dataTable.Table.Columns.Count != context.ColumnTargets.Length)
-                throw new QsiException(QsiError.DifferentColumnsCount);
+                // Old cache hitted
+                if (dataTable.Table.Columns.Count != context.ColumnTargets.Length)
+                    throw new QsiException(QsiError.DifferentColumnsCount);
+            }
 
             // Update source pivot
             foreach (DataManipulationTargetDataPivot[] dataPivots in context.Targets.Select(x => x.DataPivots))
@@ -630,13 +633,21 @@ namespace Qsi.Analyzers.Action
                     if (dataPivot.DeclaredColumnTarget is not { } declaredColumnTarget)
                         continue;
 
-                    var sourceColumn = dataTable.Table.Columns[declaredColumnTarget.DeclaredOrder];
+                    var order = declaredColumnTarget.DeclaredOrder;
+                    var sourceOrder = -1;
+                    QsiTableColumn sourceColumn = null;
+
+                    if (order < dataTable.Table.Columns.Count)
+                    {
+                        sourceOrder = declaredColumnTarget.DeclaredOrder;
+                        sourceColumn = dataTable.Table.Columns[order];   
+                    }
 
                     dataPivots[i] = new DataManipulationTargetDataPivot(
                         dataPivot.DeclaredColumnTarget,
                         dataPivot.DestinationOrder,
                         dataPivot.DestinationColumn,
-                        declaredColumnTarget.DeclaredOrder,
+                        sourceOrder,
                         sourceColumn
                     );
                 }
@@ -649,6 +660,43 @@ namespace Qsi.Analyzers.Action
         }
 
         private void ProcessValues(TableDataInsertContext context, IQsiRowValueExpressionNode[] rows)
+        {
+            if (context.AnalyzerOptions.AllowPartialColumnInDataInsert)
+            {
+                ProcessValuesLoose(context, rows);
+            }
+            else
+            {
+                ProcessValuesStrict(context, rows);
+            }
+        }
+
+        private void ProcessValuesLoose(TableDataInsertContext context, IQsiRowValueExpressionNode[] rows)
+        {
+            if (ListUtility.IsNullOrEmpty(rows))
+                return;
+
+            var length = rows[0].ColumnValues.Length;
+
+            for (int i = 0; i < rows.Length; i++)
+            {
+                var row = rows[i];
+
+                if (row.ColumnValues.Length != length)
+                    throw new QsiException(QsiError.DifferentColumnValueCount, i + 1);
+
+                PopulateInsertRow(context, pivot =>
+                {
+                    var index = pivot.DeclaredColumnTarget.DeclaredOrder;
+
+                    return index < row.ColumnValues.Length
+                        ? ResolveColumnValue(context, row.ColumnValues[index])
+                        : QsiDataValue.Default;
+                });
+            }
+        }
+
+        private void ProcessValuesStrict(TableDataInsertContext context, IQsiRowValueExpressionNode[] rows)
         {
             int columnCount = context.ColumnTargets.Length;
 

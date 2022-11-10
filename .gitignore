@@ -347,3 +347,6 @@ Qsi.*/Antlr/generated/
 
 # Build
 Build/Archive/
+
+# Mac
+.DS_Store

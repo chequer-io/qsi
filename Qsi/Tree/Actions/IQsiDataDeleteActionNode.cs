@@ -1,4 +1,5 @@
-﻿using Qsi.Data;
+﻿using System;
+using Qsi.Data;
 
 namespace Qsi.Tree
 {
@@ -6,6 +7,7 @@ namespace Qsi.Tree
     {
         IQsiTableNode Target { get; }
 
+        [Obsolete]
         QsiQualifiedIdentifier[] Columns { get; }
     }
 }

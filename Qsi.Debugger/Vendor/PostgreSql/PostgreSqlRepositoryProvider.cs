@@ -40,6 +40,11 @@ namespace Qsi.Debugger.Vendor.PostgreSql
                     var city = CreateTable("postgres", "public", "city");
                     AddColumns(city, "city_id", "city", "country_id", "last_update", "test");
                     return city;
+                
+                case "film_actor":
+                    var filmActor = CreateTable("postgres", "public", "film");
+                    AddColumns(filmActor, "actor_id", "film_id", "last_update");
+                    return filmActor;
 
                 case "test 1":
                     var test1 = CreateTable("postgres", "public", "\"test 1\"");
