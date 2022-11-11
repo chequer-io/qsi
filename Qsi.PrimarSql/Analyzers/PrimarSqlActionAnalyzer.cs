@@ -40,7 +40,7 @@ namespace Qsi.PrimarSql.Analyzers
             using var tableContext = new TableCompileContext(context);
 
             var table = (await tableAnalyzer.BuildTableStructure(tableContext, action.Target)).References[0];
-            var tempTable = CreateTemporaryTable(table.Identifier);
+            var tempTable = CreateDocumentTable(table.Identifier);
 
             var commonTableNode = ReassembleCommonTableNode(action.Target);
             var dataTable = await GetDataTableByCommonTableNode(context, commonTableNode);
@@ -78,7 +78,7 @@ namespace Qsi.PrimarSql.Analyzers
             using var tableContext = new TableCompileContext(context);
 
             var table = (await tableAnalyzer.BuildTableStructure(tableContext, action.Target)).References[0];
-            var tempTable = CreateTemporaryTable(table.Identifier);
+            var tempTable = CreateDocumentTable(table.Identifier);
 
             var commonTableNode = ReassembleCommonTableNode(action.Target);
             var dataTable = await GetDataTableByCommonTableNode(context, commonTableNode);
@@ -161,7 +161,6 @@ namespace Qsi.PrimarSql.Analyzers
             using var tableContext = new TableCompileContext(context);
 
             var table = await tableAnalyzer.BuildTableStructure(tableContext, action.Target);
-            var tempTable = CreateTemporaryTable(table.Identifier);
 
             ColumnTarget[] columnTargets = ResolveColumnTargetsFromDataInsertAction(context, table, action);
             var insertRows = new QsiDataRowCollection(columnTargets.Length, context.Engine.CacheProviderFactory());
@@ -182,25 +181,92 @@ namespace Qsi.PrimarSql.Analyzers
                 insertRows.Add(row);
             }
 
-            var tempTable2 = new QsiTableStructure
-            {
-                Type = QsiTableType.Derived,
-                References = { tempTable }
-            };
-
-            foreach (var column in columnTargets)
-            {
-                var newColumn = tempTable2.NewColumn();
-                newColumn.Name = column.DeclaredName[^1];
-                newColumn.References.AddRange(tempTable.Columns);
-            }
-
             return new QsiDataManipulationResult
             {
-                Table = tempTable2,
-                AffectedColumns = tempTable2.Columns.ToArray(),
+                Table = columnTargets[0].AffectedColumn.Parent,
+                AffectedColumns = columnTargets.Select(x => x.AffectedColumn).ToArray(),
                 InsertRows = insertRows.ToNullIfEmpty(),
             }.ToSingleArray();
+        }
+
+        protected override ColumnTarget[] ResolveColumnTargetsFromDataInsertAction(IAnalyzerContext context, QsiTableStructure table, IQsiDataInsertActionNode action)
+        {
+            // table.Columns[0] : hash (required)
+            // table.Columns[1] : sort (optional)
+
+            ColumnTarget[] targets;
+
+            var documentTable = CreateDocumentTable(table.Identifier);
+
+            if (action.Columns is { Length: > 0 } declaredColumnNames)
+            {
+                // { 'a': 1, 'b': 2 }, { 'b': 2, 'a': 1, 'c': 3 }
+
+                var columnMap = declaredColumnNames
+                    .Select(x => FindColumnIndex(context, table, x))
+                    .ToArray();
+
+                IEnumerable<QsiTableColumn> declaredColumns = columnMap
+                    .Where(i => i >= 0)
+                    .Select(i => table.Columns[i]);
+
+                IEnumerable<QsiTableColumn> notSpecifiedColumns = table.Columns.Except(declaredColumns);
+
+                if (notSpecifiedColumns.Any())
+                {
+                    IEnumerable<string> expectedColumnNames = notSpecifiedColumns.Select(x => x.Name.ToString());
+                    var message = string.Join(", ", expectedColumnNames);
+
+                    throw new QsiException(QsiError.SyntaxError, $"{message} columns not specified");
+                }
+
+                targets = new ColumnTarget[declaredColumnNames.Length];
+
+                var documentFlattenTable = new QsiTableStructure
+                {
+                    Type = QsiTableType.Table,
+                    Identifier = documentTable.Identifier,
+                    References = { documentTable }
+                };
+
+                for (int i = 0; i < targets.Length; i++)
+                {
+                    var flattenColumn = documentFlattenTable.NewColumn();
+                    flattenColumn.Name = declaredColumnNames[i][^1];
+                    flattenColumn.References.AddRange(documentTable.Columns);
+
+                    targets[i] = new ColumnTarget(i, declaredColumnNames[i], flattenColumn, flattenColumn);
+                }
+            }
+            else
+            {
+                // Support only hash & sort
+
+                var declaredColumnCount = action.Values[0].ColumnValues.Length;
+
+                if (table.Columns.Count != declaredColumnCount)
+                    throw new QsiException(QsiError.DifferentColumnsCount);
+
+                targets = new ColumnTarget[declaredColumnCount];
+
+                var documentFlattenTable = new QsiTableStructure
+                {
+                    Type = QsiTableType.Table,
+                    Identifier = documentTable.Identifier,
+                    References = { documentTable }
+                };
+
+                for (int i = 0; i < targets.Length; i++)
+                {
+                    var flattenColumn = documentFlattenTable.NewColumn();
+                    flattenColumn.Name = table.Columns[i].Name;
+                    flattenColumn.References.AddRange(documentTable.Columns);
+
+                    targets[i] = new ColumnTarget(i, new QsiQualifiedIdentifier(flattenColumn.Name), flattenColumn, flattenColumn);
+                }
+            }
+
+            return targets;
         }
         #endregion
 
@@ -328,11 +394,12 @@ namespace Qsi.PrimarSql.Analyzers
             return true;
         }
 
-        private QsiTableStructure CreateTemporaryTable(QsiQualifiedIdentifier identifier)
+        private QsiTableStructure CreateDocumentTable(QsiQualifiedIdentifier identifier)
         {
             var table = new QsiTableStructure
             {
-                Identifier = identifier
+                Identifier = identifier,
+                Type = QsiTableType.Table
             };
 
             var column = table.NewColumn();
