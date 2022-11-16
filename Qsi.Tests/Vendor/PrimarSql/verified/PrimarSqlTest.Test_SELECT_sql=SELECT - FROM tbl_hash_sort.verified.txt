@@ -1,0 +1,15 @@
+﻿[
+  {
+    Type: Table,
+    Identifier: tbl_hash_sort,
+    Columns: [
+      {
+        Parent: $tbl_2,
+        Name: Document,
+        IsVisible: true,
+        RefId: $col_1
+      }
+    ],
+    RefId: $tbl_2
+  }
+]

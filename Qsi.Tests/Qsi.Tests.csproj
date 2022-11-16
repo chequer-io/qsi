@@ -17,6 +17,7 @@
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="EastAsianWidth" Version="1.2.0" />
+        <PackageReference Include="PrimarSql.Data" Version="1.3.0" />
         <PackageReference Include="Verify.NUnit" Version="16.5.2" />
     </ItemGroup>
 
@@ -24,6 +25,7 @@
         <ProjectReference Include="..\Qsi.MySql\Qsi.MySql.csproj" />
         <ProjectReference Include="..\Qsi.PostgreSql\Qsi.PostgreSql.csproj" />
    		<ProjectReference Include="..\Qsi.Oracle\Qsi.Oracle.csproj" />
+   		<ProjectReference Include="..\Qsi.PrimarSql\Qsi.PrimarSql.csproj" />
     </ItemGroup>
 
     <ItemGroup>

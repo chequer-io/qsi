@@ -29,7 +29,7 @@ public abstract class VendorTestBase
     {
         Connection = OpenConnection(_connectionString);
         Connection.Open();
-        
+
         PrepareConnection(Connection);
 
         Engine = new QsiEngine(CreateLanguageService(Connection));

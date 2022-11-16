@@ -174,7 +174,15 @@ namespace Qsi.PrimarSql.Analyzers
                 {
                     Items = Enumerable
                         .Range(0, columnTargets.Length)
-                        .Select(i => new QsiDataValue(ConvertToToken(value.ColumnValues[i], context).ToString(Formatting.None), QsiDataType.Object))
+                        .Select(i =>
+                        {
+                            var valueToken = ConvertToToken(value.ColumnValues[i], context);
+
+                            if (valueToken is null)
+                                return QsiDataValue.Null;
+
+                            return new QsiDataValue(valueToken.ToString(Formatting.None), QsiDataType.Object);
+                        })
                         .ToArray()
                 };
 
@@ -210,15 +218,12 @@ namespace Qsi.PrimarSql.Analyzers
                     .Where(i => i >= 0)
                     .Select(i => table.Columns[i]);
 
-                IEnumerable<QsiTableColumn> notSpecifiedColumns = table.Columns.Except(declaredColumns);
+                QsiTableColumn[] notSpecifiedColumns = table.Columns
+                    .Except(declaredColumns)
+                    .ToArray();
 
-                if (notSpecifiedColumns.Any())
-                {
-                    IEnumerable<string> expectedColumnNames = notSpecifiedColumns.Select(x => x.Name.ToString());
-                    var message = string.Join(", ", expectedColumnNames);
-
-                    throw new QsiException(QsiError.SyntaxError, $"{message} columns not specified");
-                }
+                if (notSpecifiedColumns.Length > 0)
+                    throw CreateColumnsNotSpecifiedError(notSpecifiedColumns);
 
                 targets = new ColumnTarget[declaredColumnNames.Length];
 
@@ -267,6 +272,18 @@ namespace Qsi.PrimarSql.Analyzers
             }
 
             return targets;
+        }
+
+        private Exception CreateColumnsNotSpecifiedError(IReadOnlyList<QsiTableColumn> notSpecifiedColumns)
+        {
+            var builder = new StringBuilder();
+
+            builder.AppendJoin(", ", notSpecifiedColumns.Select(x => x.Name));
+            builder.Append(' ');
+            builder.Append(notSpecifiedColumns.Count > 1 ? "columns" : "column");
+            builder.Append(" not specified");
+
+            throw new QsiException(QsiError.SyntaxError, builder.ToString());
         }
         #endregion
 
