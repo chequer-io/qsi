@@ -98,7 +98,7 @@ namespace Qsi.Cql.Tree
         public static QsiColumnsDeclarationNode VisitSelectors(SelectorsContext context)
         {
             if (ListUtility.IsNullOrEmpty(context.selector()))
-                return TreeHelper.CreateAllColumnsDeclaration();
+                return TreeHelper.CreateAllVisibleColumnsDeclaration();
 
             return TreeHelper.Create<QsiColumnsDeclarationNode>(n =>
             {

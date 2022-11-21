@@ -1,0 +1,744 @@
+﻿{
+  Sql:
+
+select N.oid::bigint as id,
+datname as name,
+D.description,
+datistemplate as is_template,
+datallowconn as allow_connections,
+pg_catalog.pg_get_userbyid(N.datdba) as "owner"
+from pg_catalog.pg_database N
+left join pg_catalog.pg_shdescription D on N.oid = D.objoid
+order by case when datname = pg_catalog.current_database() then -1::bigint else N.oid::bigint end,
+  Result: [
+    {
+      Type: Derived,
+      References: [
+        $tbl_29
+      ],
+      Columns: [
+        {
+          Parent: $tbl_28,
+          Name: id,
+          References: [
+            $col_2
+          ],
+          IsVisible: true,
+          IsExpression: true,
+          RefId: $col_1
+        },
+        {
+          Parent: $tbl_28,
+          Name: name,
+          References: [
+            $col_6
+          ],
+          IsVisible: true,
+          RefId: $col_5
+        },
+        {
+          Parent: $tbl_28,
+          Name: description,
+          References: [
+            $col_11
+          ],
+          IsVisible: true,
+          RefId: $col_10
+        },
+        {
+          Parent: $tbl_28,
+          Name: is_template,
+          References: [
+            $col_15
+          ],
+          IsVisible: true,
+          RefId: $col_14
+        },
+        {
+          Parent: $tbl_28,
+          Name: allow_connections,
+          References: [
+            $col_20
+          ],
+          IsVisible: true,
+          RefId: $col_19
+        },
+        {
+          Parent: $tbl_28,
+          Name: "owner",
+          References: [
+            $col_25
+          ],
+          IsVisible: true,
+          IsExpression: true,
+          RefId: $col_24
+        }
+      ],
+      RefId: $tbl_28
+    },
+    {
+      Type: Derived,
+      References: [
+        $tbl_30
+      ],
+      Columns: [
+        {
+          Parent: $tbl_29,
+          Name: id,
+          References: [
+            $col_3
+          ],
+          IsVisible: true,
+          IsExpression: true,
+          RefId: $col_2
+        },
+        {
+          Parent: $tbl_29,
+          Name: name,
+          References: [
+            $col_7
+          ],
+          IsVisible: true,
+          RefId: $col_6
+        },
+        {
+          Parent: $tbl_29,
+          Name: description,
+          References: [
+            $col_12
+          ],
+          IsVisible: true,
+          RefId: $col_11
+        },
+        {
+          Parent: $tbl_29,
+          Name: is_template,
+          References: [
+            $col_16
+          ],
+          IsVisible: true,
+          RefId: $col_15
+        },
+        {
+          Parent: $tbl_29,
+          Name: allow_connections,
+          References: [
+            $col_21
+          ],
+          IsVisible: true,
+          RefId: $col_20
+        },
+        {
+          Parent: $tbl_29,
+          Name: "owner",
+          References: [
+            $col_26
+          ],
+          IsVisible: true,
+          IsExpression: true,
+          RefId: $col_25
+        }
+      ],
+      RefId: $tbl_29
+    },
+    {
+      Type: Join,
+      References: [
+        $tbl_31,
+        $tbl_33
+      ],
+      Columns: [
+        {
+          Parent: $tbl_30,
+          Name: datname,
+          References: [
+            $col_8
+          ],
+          IsVisible: true,
+          RefId: $col_7
+        },
+        {
+          Parent: $tbl_30,
+          Name: datdba,
+          References: [
+            $col_26
+          ],
+          IsVisible: true,
+          RefId: $col_35
+        },
+        {
+          Parent: $tbl_30,
+          Name: encoding,
+          References: [
+            $col_37
+          ],
+          IsVisible: true,
+          RefId: $col_36
+        },
+        {
+          Parent: $tbl_30,
+          Name: datcollate,
+          References: [
+            $col_39
+          ],
+          IsVisible: true,
+          RefId: $col_38
+        },
+        {
+          Parent: $tbl_30,
+          Name: datctype,
+          References: [
+            $col_41
+          ],
+          IsVisible: true,
+          RefId: $col_40
+        },
+        {
+          Parent: $tbl_30,
+          Name: datistemplate,
+          References: [
+            $col_17
+          ],
+          IsVisible: true,
+          RefId: $col_16
+        },
+        {
+          Parent: $tbl_30,
+          Name: datallowconn,
+          References: [
+            $col_22
+          ],
+          IsVisible: true,
+          RefId: $col_21
+        },
+        {
+          Parent: $tbl_30,
+          Name: datconnlimit,
+          References: [
+            $col_43
+          ],
+          IsVisible: true,
+          RefId: $col_42
+        },
+        {
+          Parent: $tbl_30,
+          Name: datlastsysoid,
+          References: [
+            $col_45
+          ],
+          IsVisible: true,
+          RefId: $col_44
+        },
+        {
+          Parent: $tbl_30,
+          Name: datfrozenxid,
+          References: [
+            $col_47
+          ],
+          IsVisible: true,
+          RefId: $col_46
+        },
+        {
+          Parent: $tbl_30,
+          Name: datminmxid,
+          References: [
+            $col_49
+          ],
+          IsVisible: true,
+          RefId: $col_48
+        },
+        {
+          Parent: $tbl_30,
+          Name: dattablespace,
+          References: [
+            $col_51
+          ],
+          IsVisible: true,
+          RefId: $col_50
+        },
+        {
+          Parent: $tbl_30,
+          Name: datacl,
+          References: [
+            $col_53
+          ],
+          IsVisible: true,
+          RefId: $col_52
+        },
+        {
+          Parent: $tbl_30,
+          Name: objoid,
+          References: [
+            $col_55
+          ],
+          IsVisible: true,
+          RefId: $col_54
+        },
+        {
+          Parent: $tbl_30,
+          Name: classoid,
+          References: [
+            $col_57
+          ],
+          IsVisible: true,
+          RefId: $col_56
+        },
+        {
+          Parent: $tbl_30,
+          Name: description,
+          References: [
+            $col_12
+          ],
+          IsVisible: true,
+          RefId: $col_58
+        }
+      ],
+      RefId: $tbl_30
+    },
+    {
+      Type: Derived,
+      Identifier: N,
+      References: [
+        $tbl_32
+      ],
+      Columns: [
+        {
+          Parent: $tbl_31,
+          Name: tableoid,
+          References: [
+            $col_60
+          ],
+          RefId: $col_59
+        },
+        {
+          Parent: $tbl_31,
+          Name: cmax,
+          References: [
+            $col_62
+          ],
+          RefId: $col_61
+        },
+        {
+          Parent: $tbl_31,
+          Name: xmax,
+          References: [
+            $col_64
+          ],
+          RefId: $col_63
+        },
+        {
+          Parent: $tbl_31,
+          Name: cmin,
+          References: [
+            $col_66
+          ],
+          RefId: $col_65
+        },
+        {
+          Parent: $tbl_31,
+          Name: xmin,
+          References: [
+            $col_68
+          ],
+          RefId: $col_67
+        },
+        {
+          Parent: $tbl_31,
+          Name: oid,
+          References: [
+            $col_4
+          ],
+          RefId: $col_3
+        },
+        {
+          Parent: $tbl_31,
+          Name: ctid,
+          References: [
+            $col_70
+          ],
+          RefId: $col_69
+        },
+        {
+          Parent: $tbl_31,
+          Name: datname,
+          References: [
+            $col_9
+          ],
+          IsVisible: true,
+          RefId: $col_8
+        },
+        {
+          Parent: $tbl_31,
+          Name: datdba,
+          References: [
+            $col_27
+          ],
+          IsVisible: true,
+          RefId: $col_26
+        },
+        {
+          Parent: $tbl_31,
+          Name: encoding,
+          References: [
+            $col_71
+          ],
+          IsVisible: true,
+          RefId: $col_37
+        },
+        {
+          Parent: $tbl_31,
+          Name: datcollate,
+          References: [
+            $col_72
+          ],
+          IsVisible: true,
+          RefId: $col_39
+        },
+        {
+          Parent: $tbl_31,
+          Name: datctype,
+          References: [
+            $col_73
+          ],
+          IsVisible: true,
+          RefId: $col_41
+        },
+        {
+          Parent: $tbl_31,
+          Name: datistemplate,
+          References: [
+            $col_18
+          ],
+          IsVisible: true,
+          RefId: $col_17
+        },
+        {
+          Parent: $tbl_31,
+          Name: datallowconn,
+          References: [
+            $col_23
+          ],
+          IsVisible: true,
+          RefId: $col_22
+        },
+        {
+          Parent: $tbl_31,
+          Name: datconnlimit,
+          References: [
+            $col_74
+          ],
+          IsVisible: true,
+          RefId: $col_43
+        },
+        {
+          Parent: $tbl_31,
+          Name: datlastsysoid,
+          References: [
+            $col_75
+          ],
+          IsVisible: true,
+          RefId: $col_45
+        },
+        {
+          Parent: $tbl_31,
+          Name: datfrozenxid,
+          References: [
+            $col_76
+          ],
+          IsVisible: true,
+          RefId: $col_47
+        },
+        {
+          Parent: $tbl_31,
+          Name: datminmxid,
+          References: [
+            $col_77
+          ],
+          IsVisible: true,
+          RefId: $col_49
+        },
+        {
+          Parent: $tbl_31,
+          Name: dattablespace,
+          References: [
+            $col_78
+          ],
+          IsVisible: true,
+          RefId: $col_51
+        },
+        {
+          Parent: $tbl_31,
+          Name: datacl,
+          References: [
+            $col_79
+          ],
+          IsVisible: true,
+          RefId: $col_53
+        }
+      ],
+      RefId: $tbl_31
+    },
+    {
+      Type: Table,
+      Identifier: pg_catalog.pg_database,
+      IsSystem: true,
+      Columns: [
+        {
+          Parent: $tbl_32,
+          Name: tableoid,
+          RefId: $col_60
+        },
+        {
+          Parent: $tbl_32,
+          Name: cmax,
+          RefId: $col_62
+        },
+        {
+          Parent: $tbl_32,
+          Name: xmax,
+          RefId: $col_64
+        },
+        {
+          Parent: $tbl_32,
+          Name: cmin,
+          RefId: $col_66
+        },
+        {
+          Parent: $tbl_32,
+          Name: xmin,
+          RefId: $col_68
+        },
+        {
+          Parent: $tbl_32,
+          Name: oid,
+          RefId: $col_4
+        },
+        {
+          Parent: $tbl_32,
+          Name: ctid,
+          RefId: $col_70
+        },
+        {
+          Parent: $tbl_32,
+          Name: datname,
+          IsVisible: true,
+          RefId: $col_9
+        },
+        {
+          Parent: $tbl_32,
+          Name: datdba,
+          IsVisible: true,
+          RefId: $col_27
+        },
+        {
+          Parent: $tbl_32,
+          Name: encoding,
+          IsVisible: true,
+          RefId: $col_71
+        },
+        {
+          Parent: $tbl_32,
+          Name: datcollate,
+          IsVisible: true,
+          RefId: $col_72
+        },
+        {
+          Parent: $tbl_32,
+          Name: datctype,
+          IsVisible: true,
+          RefId: $col_73
+        },
+        {
+          Parent: $tbl_32,
+          Name: datistemplate,
+          IsVisible: true,
+          RefId: $col_18
+        },
+        {
+          Parent: $tbl_32,
+          Name: datallowconn,
+          IsVisible: true,
+          RefId: $col_23
+        },
+        {
+          Parent: $tbl_32,
+          Name: datconnlimit,
+          IsVisible: true,
+          RefId: $col_74
+        },
+        {
+          Parent: $tbl_32,
+          Name: datlastsysoid,
+          IsVisible: true,
+          RefId: $col_75
+        },
+        {
+          Parent: $tbl_32,
+          Name: datfrozenxid,
+          IsVisible: true,
+          RefId: $col_76
+        },
+        {
+          Parent: $tbl_32,
+          Name: datminmxid,
+          IsVisible: true,
+          RefId: $col_77
+        },
+        {
+          Parent: $tbl_32,
+          Name: dattablespace,
+          IsVisible: true,
+          RefId: $col_78
+        },
+        {
+          Parent: $tbl_32,
+          Name: datacl,
+          IsVisible: true,
+          RefId: $col_79
+        }
+      ],
+      RefId: $tbl_32
+    },
+    {
+      Type: Derived,
+      Identifier: D,
+      References: [
+        $tbl_34
+      ],
+      Columns: [
+        {
+          Parent: $tbl_33,
+          Name: tableoid,
+          References: [
+            $col_81
+          ],
+          RefId: $col_80
+        },
+        {
+          Parent: $tbl_33,
+          Name: cmax,
+          References: [
+            $col_83
+          ],
+          RefId: $col_82
+        },
+        {
+          Parent: $tbl_33,
+          Name: xmax,
+          References: [
+            $col_85
+          ],
+          RefId: $col_84
+        },
+        {
+          Parent: $tbl_33,
+          Name: cmin,
+          References: [
+            $col_87
+          ],
+          RefId: $col_86
+        },
+        {
+          Parent: $tbl_33,
+          Name: xmin,
+          References: [
+            $col_89
+          ],
+          RefId: $col_88
+        },
+        {
+          Parent: $tbl_33,
+          Name: ctid,
+          References: [
+            $col_91
+          ],
+          RefId: $col_90
+        },
+        {
+          Parent: $tbl_33,
+          Name: objoid,
+          References: [
+            $col_92
+          ],
+          IsVisible: true,
+          RefId: $col_55
+        },
+        {
+          Parent: $tbl_33,
+          Name: classoid,
+          References: [
+            $col_93
+          ],
+          IsVisible: true,
+          RefId: $col_57
+        },
+        {
+          Parent: $tbl_33,
+          Name: description,
+          References: [
+            $col_13
+          ],
+          IsVisible: true,
+          RefId: $col_12
+        }
+      ],
+      RefId: $tbl_33
+    },
+    {
+      Type: Table,
+      Identifier: pg_catalog.pg_shdescription,
+      IsSystem: true,
+      Columns: [
+        {
+          Parent: $tbl_34,
+          Name: tableoid,
+          RefId: $col_81
+        },
+        {
+          Parent: $tbl_34,
+          Name: cmax,
+          RefId: $col_83
+        },
+        {
+          Parent: $tbl_34,
+          Name: xmax,
+          RefId: $col_85
+        },
+        {
+          Parent: $tbl_34,
+          Name: cmin,
+          RefId: $col_87
+        },
+        {
+          Parent: $tbl_34,
+          Name: xmin,
+          RefId: $col_89
+        },
+        {
+          Parent: $tbl_34,
+          Name: ctid,
+          RefId: $col_91
+        },
+        {
+          Parent: $tbl_34,
+          Name: objoid,
+          IsVisible: true,
+          RefId: $col_92
+        },
+        {
+          Parent: $tbl_34,
+          Name: classoid,
+          IsVisible: true,
+          RefId: $col_93
+        },
+        {
+          Parent: $tbl_34,
+          Name: description,
+          IsVisible: true,
+          RefId: $col_13
+        }
+      ],
+      RefId: $tbl_34
+    }
+  ]
+}

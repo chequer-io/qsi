@@ -81,7 +81,7 @@ namespace Qsi.Trino.Tree.Visitors
 
             var deleteTarget = new TrinoDerivedTableNode();
             deleteTarget.Source.Value = joinedTable;
-            deleteTarget.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+            deleteTarget.Columns.Value = TreeHelper.CreateAllVisibleColumnsDeclaration();
 
             var where = new QsiWhereExpressionNode();
             where.Expression.Value = ExpressionVisitor.VisitExpression(mergeDeleteContext.condition);
@@ -106,7 +106,7 @@ namespace Qsi.Trino.Tree.Visitors
             {
                 var derivedTable = new TrinoDerivedTableNode();
                 derivedTable.Source.Value = updateTarget;
-                derivedTable.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+                derivedTable.Columns.Value = TreeHelper.CreateAllVisibleColumnsDeclaration();
                 var where = new QsiWhereExpressionNode();
                 where.Expression.Value = ExpressionVisitor.VisitExpression(mergeUpdateContext.condition);
                 derivedTable.Where.Value = where;
@@ -244,7 +244,7 @@ namespace Qsi.Trino.Tree.Visitors
 
             var tableNode = TrinoTree.CreateWithSpan<QsiDerivedTableNode>(context);
             tableNode.Source.Value = TableVisitor.VisitQualifiedName(name);
-            tableNode.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+            tableNode.Columns.Value = TreeHelper.CreateAllVisibleColumnsDeclaration();
 
             if (where is not null)
                 tableNode.Where.Value = ExpressionVisitor.VisitWhere(where, context.WHERE().Symbol);
@@ -262,7 +262,7 @@ namespace Qsi.Trino.Tree.Visitors
 
             var tableNode = TrinoTree.CreateWithSpan<QsiDerivedTableNode>(context);
             tableNode.Source.Value = TableVisitor.VisitQualifiedName(context.qualifiedName());
-            tableNode.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+            tableNode.Columns.Value = TreeHelper.CreateAllVisibleColumnsDeclaration();
 
             if (context.HasToken(WHERE))
                 tableNode.Where.Value = ExpressionVisitor.VisitWhere(context.booleanExpression(), context.WHERE().Symbol);
@@ -292,7 +292,7 @@ namespace Qsi.Trino.Tree.Visitors
             var aliasNode = new QsiAliasNode { Name = alias };
 
             node.Alias.Value = aliasNode;
-            node.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+            node.Columns.Value = TreeHelper.CreateAllVisibleColumnsDeclaration();
             node.Source.Value = tableNode;
 
             directives.Tables.Add(node);

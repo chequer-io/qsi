@@ -1,0 +1,18 @@
+﻿{
+  Sql: SELECT timestamp with time zone '2005-04-02 12:00:00-07' + interval '1 day',
+  Result: [
+    {
+      Type: Derived,
+      Columns: [
+        {
+          Parent: $tbl_2,
+          Name: ?column?,
+          IsVisible: true,
+          IsExpression: true,
+          RefId: $col_1
+        }
+      ],
+      RefId: $tbl_2
+    }
+  ]
+}

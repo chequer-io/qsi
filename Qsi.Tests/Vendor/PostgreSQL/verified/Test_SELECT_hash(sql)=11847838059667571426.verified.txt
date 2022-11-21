@@ -1,0 +1,87 @@
+﻿{
+  Sql: SELECT (ROW (actor_id, first_name, last_name)).f2 from actor;,
+  Result: [
+    {
+      Type: Derived,
+      References: [
+        $tbl_6
+      ],
+      Columns: [
+        {
+          Parent: $tbl_5,
+          Name: f2,
+          References: [
+            $col_2,
+            $col_3,
+            $col_4
+          ],
+          IsVisible: true,
+          IsExpression: true,
+          RefId: $col_1
+        }
+      ],
+      RefId: $tbl_5
+    },
+    {
+      Type: Table,
+      Identifier: public.actor,
+      Columns: [
+        {
+          Parent: $tbl_6,
+          Name: tableoid,
+          RefId: $col_7
+        },
+        {
+          Parent: $tbl_6,
+          Name: cmax,
+          RefId: $col_8
+        },
+        {
+          Parent: $tbl_6,
+          Name: xmax,
+          RefId: $col_9
+        },
+        {
+          Parent: $tbl_6,
+          Name: cmin,
+          RefId: $col_10
+        },
+        {
+          Parent: $tbl_6,
+          Name: xmin,
+          RefId: $col_11
+        },
+        {
+          Parent: $tbl_6,
+          Name: ctid,
+          RefId: $col_12
+        },
+        {
+          Parent: $tbl_6,
+          Name: actor_id,
+          IsVisible: true,
+          RefId: $col_2
+        },
+        {
+          Parent: $tbl_6,
+          Name: first_name,
+          IsVisible: true,
+          RefId: $col_3
+        },
+        {
+          Parent: $tbl_6,
+          Name: last_name,
+          IsVisible: true,
+          RefId: $col_4
+        },
+        {
+          Parent: $tbl_6,
+          Name: last_update,
+          IsVisible: true,
+          RefId: $col_13
+        }
+      ],
+      RefId: $tbl_6
+    }
+  ]
+}

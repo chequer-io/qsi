@@ -14,7 +14,8 @@ using VerifyNUnit;
 
 namespace Qsi.Tests.Vendor.PostgreSQL;
 
-[TestFixture("server=localhost;port=5432;user id=postgres;password=password;", Category = "PostgreSql")]
+[TestFixture("server=pg.querypie.io;port=5432;user id=postgres;password=1234;", Category = "PostgreSql")]
+// [TestFixture("server=localhost;port=5432;user id=postgres;password=password;", Category = "PostgreSql")]
 public partial class PostgreSqlTest : VendorTestBase
 {
     public PostgreSqlTest(string connectionString) : base(connectionString)
@@ -35,14 +36,14 @@ public partial class PostgreSqlTest : VendorTestBase
 
         var pgConn = ((NpgsqlConnectionWrapper)connection)._connection;
         // var pgConn = (NpgsqlConnection)connection;
-        
+
         new NpgsqlCommand("SET SCHEMA 'public'", pgConn).ExecuteNonQuery();
 
         var drop = ResourceUtility.GetResourceContent("postgres-sakila-drop-objects.sql");
         var dropCommand = new NpgsqlCommand(drop, pgConn);
         dropCommand.AllResultTypesAreUnknown = true;
         dropCommand.ExecuteNonQuery();
-        
+
         var delete = ResourceUtility.GetResourceContent("postgres-sakila-delete-data.sql");
         var deleteCommand = new NpgsqlCommand(delete, pgConn);
         deleteCommand.AllResultTypesAreUnknown = true;
@@ -52,7 +53,7 @@ public partial class PostgreSqlTest : VendorTestBase
         var schemaCommand = new NpgsqlCommand(schema, pgConn);
         schemaCommand.AllResultTypesAreUnknown = true;
         schemaCommand.ExecuteNonQuery();
-        
+
         var data = ResourceUtility.GetResourceContent("postgres-sakila-insert-data.sql");
         var dataCommand = new NpgsqlCommand(data, pgConn);
         dataCommand.AllResultTypesAreUnknown = true;
@@ -63,11 +64,11 @@ public partial class PostgreSqlTest : VendorTestBase
     {
         return new Driver.PostgreSqlLanguageService(connection);
     }
-    
+
     //
     // TESTS
     //
-    
+
     [Timeout(10000)]
     [TestCaseSource(nameof(Select_TestDatas))]
     public async Task Test_SELECT(string sql)
@@ -79,7 +80,10 @@ public partial class PostgreSqlTest : VendorTestBase
 
         var views = QsiTableStructureView.From(((QsiTableResult)result[0]).Table);
 
-        await Verifier.Verify(views).UseDirectory("verified");
+        await Verifier
+            .Verify(new { Sql = sql, Result = views })
+            .UseFileName($"{nameof(Test_SELECT)}_hash(sql)={StringUtility.CalculateHash(sql)}")
+            .UseDirectory("verified");
     }
 
     [TestCaseSource(nameof(Table_TestDatas))]
@@ -101,7 +105,7 @@ public partial class PostgreSqlTest : VendorTestBase
         CollectionAssert.IsNotEmpty(result);
         Assert.AreEqual(1, result.Length);
         Assert.IsInstanceOf<QsiTableResult>(result[0]);
-        
+
         // TODO: Remove debugging logs.
         var tableResult = (QsiTableResult)result[0];
         var table = tableResult.Table;
@@ -110,6 +114,7 @@ public partial class PostgreSqlTest : VendorTestBase
         if (table.Columns.Count > 0)
         {
             Console.WriteLine("COLUMNS");
+
             Console.WriteLine(table.Columns
                 .Select(c => c.Name == null ? "NONAME" : c.Name.Value)
                 .Aggregate((a, b) => $"{a} {b}"));
@@ -118,7 +123,7 @@ public partial class PostgreSqlTest : VendorTestBase
         {
             Console.WriteLine("NO COLUMNS!");
         }
-        
+
         // TODO: Remove null exception on x.Name when table does not have columns.
         return ((QsiTableResult)result[0]).Table.Columns
             .Select(x => x.Name.ToString())
@@ -127,13 +132,14 @@ public partial class PostgreSqlTest : VendorTestBase
         void Print(QsiTableStructure structure)
         {
             Console.WriteLine($"---- LOG FOR {structure} ----");
-            
+
             Console.WriteLine($"TABLE_IDENTIFIER: {structure.Identifier}");
             Console.WriteLine($"TABLE_TYPE: {structure.Type}");
 
             if (structure.Columns?.Count > 0)
             {
                 Console.WriteLine("COLUMNS: ");
+
                 Console.WriteLine(structure.Columns
                     .Select(c =>
                     {
@@ -143,10 +149,10 @@ public partial class PostgreSqlTest : VendorTestBase
                         var dynamic = c.IsDynamic;
                         var expr = c.IsExpression;
                         var visible = c.IsVisible;
-                        
+
                         var reference = c.ObjectReferences?.Count > 0 ? c.ObjectReferences
-                             .Select(o => o.Identifier.ToString())
-                             .Aggregate((a, b) => $"{a} {b}") : "";
+                            .Select(o => o.Identifier.ToString())
+                            .Aggregate((a, b) => $"{a} {b}") : "";
 
                         return $"NAME: {name}, DEFAULT: {def}, B: {binding}, D: {dynamic}, E: {expr}, V: {visible}\n" +
                                $"OBJ_REF: {reference}";
@@ -157,9 +163,9 @@ public partial class PostgreSqlTest : VendorTestBase
             {
                 Console.WriteLine("NO_COLUMNS");
             }
-            
+
             Console.WriteLine("---- END LOG ----");
-            
+
             if (structure.References?.Count > 0)
             {
                 Console.WriteLine(">>>> REFERENCES >>>>");
@@ -202,7 +208,7 @@ public partial class PostgreSqlTest : VendorTestBase
     [TestCaseSource(nameof(Throw_TestDatas))]
     public string Test_Throws(string sql)
     {
-        return Assert.ThrowsAsync<QsiException>(async () => 
+        return Assert.ThrowsAsync<QsiException>(async () =>
             await Engine.Execute(new QsiScript(sql, QsiScriptType.Select), null))?.Message;
     }
 
@@ -241,7 +247,7 @@ public partial class PostgreSqlTest : VendorTestBase
 
         await Verifier.Verify(print).UseDirectory("verified");
     }
-    
+
     protected class NpgsqlConnectionWrapper : DbConnection
     {
         internal readonly NpgsqlConnection _connection;

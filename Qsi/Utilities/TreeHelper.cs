@@ -45,7 +45,7 @@ namespace Qsi.Utilities
                 },
                 Columns =
                 {
-                    Value = CreateAllColumnsDeclaration()
+                    Value = CreateAllVisibleColumnsDeclaration()
                 }
             };
         }
@@ -102,10 +102,18 @@ namespace Qsi.Utilities
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static QsiColumnsDeclarationNode CreateAllColumnsDeclaration()
+        public static QsiColumnsDeclarationNode CreateAllVisibleColumnsDeclaration()
         {
             var columns = new QsiColumnsDeclarationNode();
             columns.Columns.Add(new QsiAllColumnNode());
+            return columns;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static QsiColumnsDeclarationNode CreateAllColumnsDeclaration()
+        {
+            var columns = new QsiColumnsDeclarationNode();
+            columns.Columns.Add(new QsiAllColumnNode { IncludeInvisibleColumns = true });
             return columns;
         }
 

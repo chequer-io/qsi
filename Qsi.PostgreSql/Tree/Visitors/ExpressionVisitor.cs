@@ -19,27 +19,25 @@ internal static class ExpressionVisitor
         node.Elements.AddRange(context.expression().Select(VisitExpression));
 
         PostgreSqlTree.PutContextSpan(node, context);
-        
+
         return node;
     }
 
     public static QsiExpressionNode VisitExpression(ExpressionContext context)
     {
-        if (context.andExpression() != null)
+        switch (context)
         {
-            return VisitAndExpression(context.andExpression());
+            case AndExprContext andExpr:
+                return VisitAndExpression(andExpr.andExpression());
+
+            case OrExprContext orExpr:
+                return VisitOrExpr(orExpr);
+
+            case AtTimeZoneExprContext atTimeZoneExpr:
+                return VisitAtTimeZoneExpr(atTimeZoneExpr);
         }
 
-        var node = new QsiBinaryExpressionNode
-        {
-            Left = { Value = VisitExpression(context.expression(0)) },
-            Operator = context.OR().GetText(),
-            Right = { Value = VisitExpression(context.expression(1)) }
-        };
-        
-        PostgreSqlTree.PutContextSpan(node, context);
-
-        return node;
+        throw TreeHelper.NotSupportedTree(context);
     }
 
     // public static QsiExpressionNode VisitExpressionNoParens(ExpressionNoParensContext context)
@@ -62,12 +60,12 @@ internal static class ExpressionVisitor
     public static QsiExpressionNode VisitExpressionParens(ExpressionParensContext context)
     {
         var node = VisitExpression(context.expression());
-        
+
         PostgreSqlTree.PutContextSpan(node, context);
 
         return node;
     }
-    
+
     // public static ExpressionContext UnwrapExpressionParens(ExpressionParensContext context)
     // {
     //     var nested = context;
@@ -86,14 +84,14 @@ internal static class ExpressionVisitor
         {
             return VisitBooleanExpression(context.booleanExpression());
         }
-        
+
         if (context.NOT() != null)
         {
             return TreeHelper.Create<QsiUnaryExpressionNode>(n =>
             {
                 n.Expression.Value = VisitAndExpression(context.andExpression(0));
                 n.Operator = context.NOT().GetText();
-                
+
                 PostgreSqlTree.PutContextSpan(n, context);
             });
         }
@@ -113,6 +111,32 @@ internal static class ExpressionVisitor
         throw TreeHelper.NotSupportedTree(context);
     }
 
+    public static QsiExpressionNode VisitOrExpr(OrExprContext context)
+    {
+        var node = new QsiBinaryExpressionNode
+        {
+            Left = { Value = VisitExpression(context.expression(0)) },
+            Operator = context.OR().GetText(),
+            Right = { Value = VisitExpression(context.expression(1)) }
+        };
+
+        PostgreSqlTree.PutContextSpan(node, context);
+
+        return node;
+    }
+
+    public static QsiExpressionNode VisitAtTimeZoneExpr(AtTimeZoneExprContext context)
+    {
+        return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+        {
+            n.Member.SetValue(TreeHelper.CreateFunction("AT_TIME_ZONE"));
+            n.Parameters.Add(VisitExpression(context.expression()));
+            n.Parameters.Add(ConstantVisitor.VisitString(context.str()));
+
+            PostgreSqlTree.PutContextSpan(n, context);
+        });
+    }
+
     public static QsiExpressionNode VisitBooleanExpression(BooleanExpressionContext context)
     {
         if (context.comparisonExpression() != null)
@@ -130,11 +154,11 @@ internal static class ExpressionVisitor
                 var operatorName = context.children
                     .Select(c => c.GetText())
                     .ToArray()[1..^2];
-                
+
                 var operatorBuilder = new StringBuilder().AppendJoin(' ', operatorName);
 
                 n.Operator = operatorBuilder.ToString();
-                
+
                 PostgreSqlTree.PutContextSpan(n, context);
             });
         }
@@ -191,7 +215,7 @@ internal static class ExpressionVisitor
                 PostgreSqlTree.PutContextSpan(mn, context.qualifiedOperatorExpression(1));
                 return;
             }
-            
+
             mn.Elements.Add(VisitExpression(context.expression()));
             PostgreSqlTree.PutContextSpan(mn, context.qualifiedOperatorExpression(1).Start, context.expression().Stop);
         });
@@ -200,7 +224,7 @@ internal static class ExpressionVisitor
         {
             n.Left.Value = VisitQualifiedOperatorExpression(context.qualifiedOperatorExpression(0));
             n.Operator = context.likeExpressionOptions().GetText();
-            n.Right.Value =rightExpressions;
+            n.Right.Value = rightExpressions;
         });
     }
 
@@ -221,7 +245,7 @@ internal static class ExpressionVisitor
             Left = { Value = VisitComparisonExpression(context.comparisonExpression()) },
             Operator = context.subqueryOperator().GetText() + " " + context.subqueryType().GetText(),
         };
-        
+
         if (context.expression() != null)
         {
             node.Right.Value = VisitExpression(context.expression());
@@ -232,12 +256,12 @@ internal static class ExpressionVisitor
             {
                 Table = { Value = TableVisitor.VisitQueryExpressionParens(context.queryExpressionParens()) }
             };
-                
+
             PostgreSqlTree.PutContextSpan(tableExpression, context.queryExpressionParens());
 
             node.Right.Value = tableExpression;
         }
-            
+
         PostgreSqlTree.PutContextSpan(node, context);
 
         return node;
@@ -248,23 +272,23 @@ internal static class ExpressionVisitor
         var expressions = context.unaryQualifiedOperatorExpression();
 
         var anchorNode = VisitUnaryQualifiedOperatorExpression(expressions[0]);
-        
+
         if (expressions.Length == 1)
         {
             return anchorNode;
         }
 
         var operators = context.qualifiedWithoutMathOperator();
-        
+
         for (var i = 1; i < expressions.Length; ++i)
         {
             var binaryNode = new QsiBinaryExpressionNode();
-            binaryNode.Left.Value =anchorNode;
+            binaryNode.Left.Value = anchorNode;
             binaryNode.Operator = operators[i - 1].GetText();
             binaryNode.Right.Value = VisitUnaryQualifiedOperatorExpression(expressions[i]);
 
             PostgreSqlTree.PutContextSpan(binaryNode, context.Start, expressions[i].Stop);
-            
+
             anchorNode = binaryNode;
         }
 
@@ -274,18 +298,18 @@ internal static class ExpressionVisitor
     public static QsiExpressionNode VisitUnaryQualifiedOperatorExpression(UnaryQualifiedOperatorExpressionContext context)
     {
         var expression = VisitArithmeticExpression(context.arithmeticExpression());
-        
+
         if (context.qualifiedWithoutMathOperator() == null)
         {
             return expression;
         }
 
         var node = new QsiUnaryExpressionNode();
-        node.Expression.Value =expression;
+        node.Expression.Value = expression;
         node.Operator = context.qualifiedWithoutMathOperator().GetText();
 
         PostgreSqlTree.PutContextSpan(node, context);
-        
+
         return node;
     }
 
@@ -301,9 +325,9 @@ internal static class ExpressionVisitor
             var unary = new QsiUnaryExpressionNode();
             unary.Expression.Value = VisitArithmeticExpression(context.arithmeticExpression(0));
             unary.Operator = context.children[0].GetText();
-            
+
             PostgreSqlTree.PutContextSpan(unary, context);
-            
+
             return unary;
         }
 
@@ -313,14 +337,14 @@ internal static class ExpressionVisitor
         binary.Right.Value = VisitArithmeticExpression(context.arithmeticExpression(1));
 
         PostgreSqlTree.PutContextSpan(binary, context);
-        
+
         return binary;
     }
 
     public static QsiExpressionNode VisitCollateExpression(CollateExpressionContext context)
     {
         var typecastNode = VisitTypecastExpression(context.typecastExpression());
-        
+
         if (context.COLLATE() == null)
         {
             return typecastNode;
@@ -332,12 +356,12 @@ internal static class ExpressionVisitor
         };
 
         PostgreSqlTree.PutContextSpan(collate, context.qualifiedIdentifier());
-        
+
         var node = new QsiBinaryExpressionNode();
-        node.Left.Value =typecastNode;
+        node.Left.Value = typecastNode;
         node.Operator = context.COLLATE().GetText();
-        node.Right.Value =collate;
-        
+        node.Right.Value = collate;
+
         PostgreSqlTree.PutContextSpan(node, context);
 
         return node;
@@ -346,7 +370,7 @@ internal static class ExpressionVisitor
     public static QsiExpressionNode VisitTypecastExpression(TypecastExpressionContext context)
     {
         var anchor = VisitValueExpression(context.valueExpression());
-        
+
         if (context.TYPECAST() == null || context.TYPECAST().Length == 0)
         {
             return anchor;
@@ -357,15 +381,15 @@ internal static class ExpressionVisitor
         foreach (var t in types)
         {
             var binary = new QsiBinaryExpressionNode();
-            binary.Left.Value =anchor;
+            binary.Left.Value = anchor;
             binary.Operator = context.TYPECAST(0).GetText();
             binary.Right.Value = VisitType(t);
 
             PostgreSqlTree.PutContextSpan(binary, context.Start, t.Stop);
-            
+
             anchor = binary;
         }
-        
+
         return anchor;
     }
 
@@ -397,7 +421,7 @@ internal static class ExpressionVisitor
     public static QsiExpressionNode VisitValueExpressionCase(ValueExpressionCaseContext context)
     {
         var caseContext = context.caseExpression();
-        
+
         var node = new QsiSwitchExpressionNode();
 
         if (caseContext.expression() != null)
@@ -409,13 +433,14 @@ internal static class ExpressionVisitor
         {
             var defaultNode = new QsiSwitchCaseExpressionNode();
             defaultNode.Consequent.Value = VisitExpression(caseContext.defaultCase().expression());
-            
+
             PostgreSqlTree.PutContextSpan(defaultNode, caseContext.defaultCase());
-            
+
             node.Cases.Add(defaultNode);
         }
 
         var caseList = caseContext.whenClauseList().whenClause();
+
         var caseNodes = caseList.Select(c =>
         {
             var when = c.expression(0);
@@ -424,19 +449,18 @@ internal static class ExpressionVisitor
             var caseNode = new QsiSwitchCaseExpressionNode();
             caseNode.Condition.Value = VisitExpression(when);
             caseNode.Consequent.Value = VisitExpression(then);
-            
+
             PostgreSqlTree.PutContextSpan(caseNode, c);
 
             return caseNode;
         });
 
         node.Cases.AddRange(caseNodes);
-        
+
         PostgreSqlTree.PutContextSpan(node, caseContext);
-        
+
         return node;
     }
-
 
     // public static QsiExpressionNode VisitValueExpressionColumn(ValueExpressionColumnContext context)
     // {
@@ -474,7 +498,7 @@ internal static class ExpressionVisitor
     {
         var text = context.GetText()[1..];
         var index = int.Parse(text);
-    
+
         var node = new QsiBindParameterExpressionNode
         {
             Prefix = "$",
@@ -482,16 +506,16 @@ internal static class ExpressionVisitor
             Index = index,
             Type = QsiParameterType.Index
         };
-        
+
         PostgreSqlTree.PutContextSpan(node, context);
-    
+
         return node;
     }
-    
+
     public static QsiExpressionNode VisitRow(RowContext context)
     {
         var node = new QsiMultipleExpressionNode();
-        
+
         PostgreSqlTree.PutContextSpan(node, context);
 
         var explicitRow = context.explicitRow();
@@ -502,8 +526,8 @@ internal static class ExpressionVisitor
             node.Elements.AddRange(explicitRow.expressionList().expression().Select(VisitExpression));
             return node;
         }
-        
-        node.Elements.Add( VisitExpression(implicitRow.expression()));
+
+        node.Elements.Add(VisitExpression(implicitRow.expression()));
         node.Elements.AddRange(implicitRow.expressionList().expression().Select(VisitExpression));
         return node;
     }
@@ -514,16 +538,16 @@ internal static class ExpressionVisitor
         node.Left.Value = VisitRow(context.row(0));
         node.Operator = context.OVERLAPS().GetText();
         node.Right.Value = VisitRow(context.row(1));
-        
+
         PostgreSqlTree.PutContextSpan(node, context);
 
         return node;
     }
-    
+
     public static QsiExpressionNode VisitValueExpressionSubquery(ValueExpressionSubqueryContext context)
     {
         var table = TableVisitor.VisitQueryExpressionParens(context.queryExpressionParens());
-        
+
         var node = new QsiTableExpressionNode
         {
             Table =
@@ -540,14 +564,14 @@ internal static class ExpressionVisitor
     {
         var tableIdentifier = IdentifierVisitor.VisitIdentifier(context.starIdentifier().columnIdentifier());
         var qualified = new QsiQualifiedIdentifier(tableIdentifier);
-        
+
         var columnNode = new QsiAllColumnNode { Path = qualified };
 
         var node = new QsiColumnExpressionNode
         {
             Column = { Value = columnNode }
         };
-        
+
         PostgreSqlTree.PutContextSpan(node, context);
 
         return node;
@@ -558,7 +582,7 @@ internal static class ExpressionVisitor
         if (context.qualifiedIdentifier() != null)
         {
             var qualified = IdentifierVisitor.VisitQualifiedIdentifier(context.qualifiedIdentifier());
-            
+
             var column = new QsiColumnReferenceNode { Name = qualified };
             PostgreSqlTree.PutContextSpan(column, context);
 
@@ -578,7 +602,7 @@ internal static class ExpressionVisitor
                 Target = { Value = expression },
                 Member = { Value = subscriptIndirection }
             };
-            
+
             PostgreSqlTree.PutContextSpan(expressionNode, context);
 
             return expressionNode;
@@ -592,7 +616,7 @@ internal static class ExpressionVisitor
         {
             return target;
         }
-        
+
         var indirection = VisitIndirection(context.indirection());
 
         var node = new QsiMemberAccessExpressionNode
@@ -600,7 +624,7 @@ internal static class ExpressionVisitor
             Target = { Value = target },
             Member = { Value = indirection }
         };
-            
+
         PostgreSqlTree.PutContextSpan(node, context);
 
         return node;
@@ -640,19 +664,19 @@ internal static class ExpressionVisitor
             node.Start.Value = VisitExpression(context.expression(0));
             node.End.Value = VisitExpression(context.expression(1));
         }
-        
+
         PostgreSqlTree.PutContextSpan(node, context);
-        
+
         return node;
     }
-    
+
     public static QsiMultipleOrderExpressionNode VisitOrderByClause(OrderByClauseContext context)
     {
         var orders = context.orderList().orderExpression();
-        
+
         var node = new QsiMultipleOrderExpressionNode();
         node.Orders.AddRange(orders.Select(VisitOrderExpression));
-        
+
         PostgreSqlTree.PutContextSpan(node, context);
         return node;
     }
@@ -667,7 +691,7 @@ internal static class ExpressionVisitor
         node.Expression.Value = VisitExpression(context.expression());
 
         PostgreSqlTree.PutContextSpan(node, context);
-        
+
         return node;
     }
 
@@ -684,7 +708,7 @@ internal static class ExpressionVisitor
         {
             node.Offset.Value = VisitExpression(context.offset().expression());
         }
-        
+
         PostgreSqlTree.PutContextSpan(node, context);
 
         return node;
@@ -694,7 +718,7 @@ internal static class ExpressionVisitor
     {
         var node = new QsiWhereExpressionNode();
         node.Expression.Value = VisitExpression(context.expression());
-        
+
         PostgreSqlTree.PutContextSpan(node, context);
 
         return node;
@@ -703,14 +727,14 @@ internal static class ExpressionVisitor
     public static QsiGroupingExpressionNode VisitGroupByClause(GroupByClauseContext context)
     {
         var groups = context.groupByItemList().groupByItem();
-        
+
         var node = new QsiGroupingExpressionNode();
         node.Items.AddRange(groups.Select(VisitGroupByItem).Where(i => i != null));
-        
+
         PostgreSqlTree.PutContextSpan(node, context);
         return node;
     }
-    
+
     public static QsiExpressionNode VisitGroupByItem(GroupByItemContext context)
     {
         if (context.expression() != null)
@@ -728,7 +752,7 @@ internal static class ExpressionVisitor
             var groups = context.groupByItemList().groupByItem();
             var node = new QsiGroupingExpressionNode();
             node.Items.AddRange(groups.Select(VisitGroupByItem));
-        
+
             PostgreSqlTree.PutContextSpan(node, context);
             return node;
         }
@@ -776,7 +800,7 @@ internal static class ExpressionVisitor
             TreeHelper.CreateDefaultLiteral();
 
         node.Value.Value = value;
-        
+
         PostgreSqlTree.PutContextSpan(node, context);
 
         return node;
@@ -786,7 +810,7 @@ internal static class ExpressionVisitor
     {
         var firstIdentifier = IdentifierVisitor.VisitIdentifier(context.columnLabelIdentifier(0));
         var firstQualified = new QsiQualifiedIdentifier(firstIdentifier);
-        
+
         QsiExpressionNode anchor = new QsiFieldExpressionNode { Identifier = firstQualified };
 
         ColumnLabelIdentifierContext[] labels = context.columnLabelIdentifier();
@@ -796,7 +820,7 @@ internal static class ExpressionVisitor
             var label = labels[i];
             var identifier = IdentifierVisitor.VisitIdentifier(label);
             var qualified = new QsiQualifiedIdentifier(identifier);
-            
+
             var name = new QsiFieldExpressionNode { Identifier = qualified };
             PostgreSqlTree.PutContextSpan(name, label);
 

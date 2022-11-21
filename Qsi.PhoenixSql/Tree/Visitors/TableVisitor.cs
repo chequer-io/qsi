@@ -256,7 +256,7 @@ namespace Qsi.PhoenixSql.Tree
 
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
-                n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+                n.Columns.SetValue(TreeHelper.CreateAllVisibleColumnsDeclaration());
                 n.Source.SetValue(tableNode);
 
                 n.Alias.SetValue(new QsiAliasNode
@@ -307,7 +307,7 @@ namespace Qsi.PhoenixSql.Tree
         {
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
-                n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+                n.Columns.SetValue(TreeHelper.CreateAllVisibleColumnsDeclaration());
                 n.Source.SetValue(VisitSelectStatement(node.Select));
 
                 if (!string.IsNullOrEmpty(node.Alias))

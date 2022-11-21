@@ -81,7 +81,7 @@ namespace Qsi.PrimarSql.Tree
 
             var derivedTable = new QsiDerivedTableNode();
 
-            derivedTable.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+            derivedTable.Columns.SetValue(TreeHelper.CreateAllVisibleColumnsDeclaration());
             derivedTable.Source.SetValue(table);
 
             if (where != null)
@@ -119,7 +119,7 @@ namespace Qsi.PrimarSql.Tree
 
             var derivedTable = new QsiDerivedTableNode();
 
-            derivedTable.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+            derivedTable.Columns.SetValue(TreeHelper.CreateAllVisibleColumnsDeclaration());
             derivedTable.Source.SetValue(table);
 
             if (where != null)

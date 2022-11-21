@@ -29,7 +29,7 @@ namespace Qsi.PhoenixSql.Tree
             if (statement.WhereClause != null)
             {
                 var derivedTableNode = new QsiDerivedTableNode();
-                derivedTableNode.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+                derivedTableNode.Columns.Value = TreeHelper.CreateAllVisibleColumnsDeclaration();
                 derivedTableNode.Where.Value = ExpressionVisitor.VisitWhere(statement.WhereClause);
                 derivedTableNode.Source.Value = tableNode;
 

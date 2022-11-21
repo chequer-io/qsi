@@ -1,0 +1,18 @@
+﻿{
+  Sql: SELECT (EXTRACT(EPOCH FROM timestamptz '2013-07-01 12:00:00') - EXTRACT(EPOCH FROM timestamptz '2013-03-01 12:00:00')) / 60 / 60 / 24,
+  Result: [
+    {
+      Type: Derived,
+      Columns: [
+        {
+          Parent: $tbl_2,
+          Name: ?column?,
+          IsVisible: true,
+          IsExpression: true,
+          RefId: $col_1
+        }
+      ],
+      RefId: $tbl_2
+    }
+  ]
+}

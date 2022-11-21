@@ -148,7 +148,7 @@ namespace Qsi.Cql.Tree
                     AllowFiltering = true
                 };
 
-                derivedTableNode.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+                derivedTableNode.Columns.SetValue(TreeHelper.CreateAllVisibleColumnsDeclaration());
                 derivedTableNode.Source.SetValue(tableNode);
 
                 var whereContext = new ParserRuleContextWrapper<WhereClauseContext>
@@ -192,7 +192,7 @@ namespace Qsi.Cql.Tree
             (
                 context.dels != null ?
                     VisitDeleteSelection(context.dels) :
-                    TreeHelper.CreateAllColumnsDeclaration()
+                    TreeHelper.CreateAllVisibleColumnsDeclaration()
             );
 
             tableNode.Source.SetValue(TableVisitor.VisitColumnFamilyName(context.cf));

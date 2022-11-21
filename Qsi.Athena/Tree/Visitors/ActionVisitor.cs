@@ -194,7 +194,7 @@ internal static class ActionVisitor
         
         node.Columns.Value = context.viewColumnAliases() is {} viewColumnAliases
             ? ExpressionVisitor.VisitViewColumnAliases(viewColumnAliases)
-            : TreeHelper.CreateAllColumnsDeclaration();
+            : TreeHelper.CreateAllVisibleColumnsDeclaration();
         
         // TODO: [Question] What is Directives?
         // node.Directives = ?

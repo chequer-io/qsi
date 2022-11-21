@@ -27,7 +27,7 @@ namespace Qsi.Trino.Tree
         {
             var node = new QsiDerivedTableNode();
             node.Source.Value = source;
-            node.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+            node.Columns.Value = TreeHelper.CreateAllVisibleColumnsDeclaration();
 
             if (alias is not null)
                 node.Alias.Value = alias;

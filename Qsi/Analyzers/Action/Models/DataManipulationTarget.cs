@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Qsi.Data;
 using Qsi.Data.Cache;
 
@@ -35,7 +36,7 @@ namespace Qsi.Analyzers.Action.Models
             if (table.Type != QsiTableType.Table)
                 throw new ArgumentException(nameof(table));
 
-            if (pivots.Length != table.Columns.Count)
+            if (pivots.Length != table.VisibleColumns.Count())
                 throw new ArgumentException(nameof(pivots));
 
             _cacheProviderFactory = cacheProviderFactory;

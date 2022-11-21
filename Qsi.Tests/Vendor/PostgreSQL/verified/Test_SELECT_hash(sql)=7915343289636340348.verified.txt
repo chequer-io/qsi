@@ -1,0 +1,261 @@
+﻿{
+  Sql: SELECT (SELECT city.actor_id FROM film_actor AS city LIMIT 1) FROM city,
+  Result: [
+    {
+      Type: Derived,
+      Identifier: city,
+      References: [
+        $tbl_11
+      ],
+      Columns: [
+        {
+          Parent: $tbl_10,
+          Name: tableoid,
+          References: [
+            $col_23
+          ],
+          RefId: $col_22
+        },
+        {
+          Parent: $tbl_10,
+          Name: cmax,
+          References: [
+            $col_25
+          ],
+          RefId: $col_24
+        },
+        {
+          Parent: $tbl_10,
+          Name: xmax,
+          References: [
+            $col_27
+          ],
+          RefId: $col_26
+        },
+        {
+          Parent: $tbl_10,
+          Name: cmin,
+          References: [
+            $col_29
+          ],
+          RefId: $col_28
+        },
+        {
+          Parent: $tbl_10,
+          Name: xmin,
+          References: [
+            $col_31
+          ],
+          RefId: $col_30
+        },
+        {
+          Parent: $tbl_10,
+          Name: ctid,
+          References: [
+            $col_33
+          ],
+          RefId: $col_32
+        },
+        {
+          Parent: $tbl_10,
+          Name: actor_id,
+          References: [
+            $col_5
+          ],
+          IsVisible: true,
+          RefId: $col_4
+        },
+        {
+          Parent: $tbl_10,
+          Name: film_id,
+          References: [
+            $col_35
+          ],
+          IsVisible: true,
+          RefId: $col_34
+        },
+        {
+          Parent: $tbl_10,
+          Name: last_update,
+          References: [
+            $col_37
+          ],
+          IsVisible: true,
+          RefId: $col_36
+        }
+      ],
+      RefId: $tbl_10
+    },
+    {
+      Type: Table,
+      Identifier: public.film_actor,
+      Columns: [
+        {
+          Parent: $tbl_11,
+          Name: tableoid,
+          RefId: $col_23
+        },
+        {
+          Parent: $tbl_11,
+          Name: cmax,
+          RefId: $col_25
+        },
+        {
+          Parent: $tbl_11,
+          Name: xmax,
+          RefId: $col_27
+        },
+        {
+          Parent: $tbl_11,
+          Name: cmin,
+          RefId: $col_29
+        },
+        {
+          Parent: $tbl_11,
+          Name: xmin,
+          RefId: $col_31
+        },
+        {
+          Parent: $tbl_11,
+          Name: ctid,
+          RefId: $col_33
+        },
+        {
+          Parent: $tbl_11,
+          Name: actor_id,
+          IsVisible: true,
+          RefId: $col_5
+        },
+        {
+          Parent: $tbl_11,
+          Name: film_id,
+          IsVisible: true,
+          RefId: $col_35
+        },
+        {
+          Parent: $tbl_11,
+          Name: last_update,
+          IsVisible: true,
+          RefId: $col_37
+        }
+      ],
+      RefId: $tbl_11
+    },
+    {
+      Type: Derived,
+      References: [
+        $tbl_7
+      ],
+      Columns: [
+        {
+          Parent: $tbl_6,
+          Name: actor_id,
+          References: [
+            $col_2
+          ],
+          IsVisible: true,
+          IsExpression: true,
+          RefId: $col_1
+        }
+      ],
+      RefId: $tbl_6
+    },
+    {
+      Type: Table,
+      Identifier: public.city,
+      Columns: [
+        {
+          Parent: $tbl_7,
+          Name: tableoid,
+          RefId: $col_12
+        },
+        {
+          Parent: $tbl_7,
+          Name: cmax,
+          RefId: $col_13
+        },
+        {
+          Parent: $tbl_7,
+          Name: xmax,
+          RefId: $col_14
+        },
+        {
+          Parent: $tbl_7,
+          Name: cmin,
+          RefId: $col_15
+        },
+        {
+          Parent: $tbl_7,
+          Name: xmin,
+          RefId: $col_16
+        },
+        {
+          Parent: $tbl_7,
+          Name: ctid,
+          RefId: $col_17
+        },
+        {
+          Parent: $tbl_7,
+          Name: city_id,
+          IsVisible: true,
+          RefId: $col_18
+        },
+        {
+          Parent: $tbl_7,
+          Name: city,
+          IsVisible: true,
+          RefId: $col_19
+        },
+        {
+          Parent: $tbl_7,
+          Name: country_id,
+          IsVisible: true,
+          RefId: $col_20
+        },
+        {
+          Parent: $tbl_7,
+          Name: last_update,
+          IsVisible: true,
+          RefId: $col_21
+        }
+      ],
+      RefId: $tbl_7
+    },
+    {
+      Type: Derived,
+      References: [
+        $tbl_9
+      ],
+      Columns: [
+        {
+          Parent: $tbl_8,
+          Name: actor_id,
+          References: [
+            $col_3
+          ],
+          IsVisible: true,
+          RefId: $col_2
+        }
+      ],
+      RefId: $tbl_8
+    },
+    {
+      Type: Derived,
+      References: [
+        $tbl_10
+      ],
+      Columns: [
+        {
+          Parent: $tbl_9,
+          Name: actor_id,
+          References: [
+            $col_4
+          ],
+          IsVisible: true,
+          RefId: $col_3
+        }
+      ],
+      RefId: $tbl_9
+    }
+  ]
+}

@@ -1,0 +1,93 @@
+﻿{
+  Sql: SELECT public.actor.actor_id, public.actor.first_name FROM public.actor,
+  Result: [
+    {
+      Type: Derived,
+      References: [
+        $tbl_6
+      ],
+      Columns: [
+        {
+          Parent: $tbl_5,
+          Name: actor_id,
+          References: [
+            $col_2
+          ],
+          IsVisible: true,
+          RefId: $col_1
+        },
+        {
+          Parent: $tbl_5,
+          Name: first_name,
+          References: [
+            $col_4
+          ],
+          IsVisible: true,
+          RefId: $col_3
+        }
+      ],
+      RefId: $tbl_5
+    },
+    {
+      Type: Table,
+      Identifier: public.actor,
+      Columns: [
+        {
+          Parent: $tbl_6,
+          Name: tableoid,
+          RefId: $col_7
+        },
+        {
+          Parent: $tbl_6,
+          Name: cmax,
+          RefId: $col_8
+        },
+        {
+          Parent: $tbl_6,
+          Name: xmax,
+          RefId: $col_9
+        },
+        {
+          Parent: $tbl_6,
+          Name: cmin,
+          RefId: $col_10
+        },
+        {
+          Parent: $tbl_6,
+          Name: xmin,
+          RefId: $col_11
+        },
+        {
+          Parent: $tbl_6,
+          Name: ctid,
+          RefId: $col_12
+        },
+        {
+          Parent: $tbl_6,
+          Name: actor_id,
+          IsVisible: true,
+          RefId: $col_2
+        },
+        {
+          Parent: $tbl_6,
+          Name: first_name,
+          IsVisible: true,
+          RefId: $col_4
+        },
+        {
+          Parent: $tbl_6,
+          Name: last_name,
+          IsVisible: true,
+          RefId: $col_13
+        },
+        {
+          Parent: $tbl_6,
+          Name: last_update,
+          IsVisible: true,
+          RefId: $col_14
+        }
+      ],
+      RefId: $tbl_6
+    }
+  ]
+}

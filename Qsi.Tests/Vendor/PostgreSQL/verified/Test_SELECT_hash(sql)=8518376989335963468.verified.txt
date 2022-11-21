@@ -1,0 +1,202 @@
+﻿{
+  Sql: SELECT * FROM (SELECT * FROM actor) a,
+  Result: [
+    {
+      Type: Derived,
+      References: [
+        $tbl_18
+      ],
+      Columns: [
+        {
+          Parent: $tbl_17,
+          Name: actor_id,
+          References: [
+            $col_2
+          ],
+          IsVisible: true,
+          RefId: $col_1
+        },
+        {
+          Parent: $tbl_17,
+          Name: first_name,
+          References: [
+            $col_6
+          ],
+          IsVisible: true,
+          RefId: $col_5
+        },
+        {
+          Parent: $tbl_17,
+          Name: last_name,
+          References: [
+            $col_10
+          ],
+          IsVisible: true,
+          RefId: $col_9
+        },
+        {
+          Parent: $tbl_17,
+          Name: last_update,
+          References: [
+            $col_14
+          ],
+          IsVisible: true,
+          RefId: $col_13
+        }
+      ],
+      RefId: $tbl_17
+    },
+    {
+      Type: Derived,
+      Identifier: a,
+      References: [
+        $tbl_19
+      ],
+      Columns: [
+        {
+          Parent: $tbl_18,
+          Name: actor_id,
+          References: [
+            $col_3
+          ],
+          IsVisible: true,
+          RefId: $col_2
+        },
+        {
+          Parent: $tbl_18,
+          Name: first_name,
+          References: [
+            $col_7
+          ],
+          IsVisible: true,
+          RefId: $col_6
+        },
+        {
+          Parent: $tbl_18,
+          Name: last_name,
+          References: [
+            $col_11
+          ],
+          IsVisible: true,
+          RefId: $col_10
+        },
+        {
+          Parent: $tbl_18,
+          Name: last_update,
+          References: [
+            $col_15
+          ],
+          IsVisible: true,
+          RefId: $col_14
+        }
+      ],
+      RefId: $tbl_18
+    },
+    {
+      Type: Derived,
+      References: [
+        $tbl_20
+      ],
+      Columns: [
+        {
+          Parent: $tbl_19,
+          Name: actor_id,
+          References: [
+            $col_4
+          ],
+          IsVisible: true,
+          RefId: $col_3
+        },
+        {
+          Parent: $tbl_19,
+          Name: first_name,
+          References: [
+            $col_8
+          ],
+          IsVisible: true,
+          RefId: $col_7
+        },
+        {
+          Parent: $tbl_19,
+          Name: last_name,
+          References: [
+            $col_12
+          ],
+          IsVisible: true,
+          RefId: $col_11
+        },
+        {
+          Parent: $tbl_19,
+          Name: last_update,
+          References: [
+            $col_16
+          ],
+          IsVisible: true,
+          RefId: $col_15
+        }
+      ],
+      RefId: $tbl_19
+    },
+    {
+      Type: Table,
+      Identifier: public.actor,
+      Columns: [
+        {
+          Parent: $tbl_20,
+          Name: tableoid,
+          RefId: $col_21
+        },
+        {
+          Parent: $tbl_20,
+          Name: cmax,
+          RefId: $col_22
+        },
+        {
+          Parent: $tbl_20,
+          Name: xmax,
+          RefId: $col_23
+        },
+        {
+          Parent: $tbl_20,
+          Name: cmin,
+          RefId: $col_24
+        },
+        {
+          Parent: $tbl_20,
+          Name: xmin,
+          RefId: $col_25
+        },
+        {
+          Parent: $tbl_20,
+          Name: ctid,
+          RefId: $col_26
+        },
+        {
+          Parent: $tbl_20,
+          Name: actor_id,
+          IsVisible: true,
+          RefId: $col_4
+        },
+        {
+          Parent: $tbl_20,
+          Name: first_name,
+          IsVisible: true,
+          RefId: $col_8
+        },
+        {
+          Parent: $tbl_20,
+          Name: last_name,
+          IsVisible: true,
+          RefId: $col_12
+        },
+        {
+          Parent: $tbl_20,
+          Name: last_update,
+          IsVisible: true,
+          RefId: $col_16
+        }
+      ],
+      RefId: $tbl_20
+    }
+  ]
+}

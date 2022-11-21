@@ -43,16 +43,17 @@ internal static class DebugUtility
     public static void Print(StringWriter writer, QsiDataManipulationResult result, QsiDataRowCollection collection, string summary)
     {
         int rows = Math.Min(collection.Count, 20) + 1;
-        var table = new string[rows, result.Table.Columns.Count];
+        QsiTableColumn[] visibleColumns = result.Table.VisibleColumns.ToArray();
+        var table = new string[rows, visibleColumns.Length];
 
-        for (int c = 0; c < result.Table.Columns.Count; c++)
+        for (int c = 0; c < visibleColumns.Length; c++)
         {
-            table[0, c] = result.Table.Columns[c].Name.ToString();
+            table[0, c] = visibleColumns[c].Name.ToString();
         }
 
         for (int r = 1; r < rows; r++)
         {
-            for (int c = 0; c < result.Table.Columns.Count; c++)
+            for (int c = 0; c < visibleColumns.Length; c++)
             {
                 var item = collection[r - 1].Items[c];
                 ref var cell = ref table[r, c];

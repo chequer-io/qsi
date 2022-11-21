@@ -30,7 +30,7 @@ internal static class TableVisitor
             derivedTable = new QsiDerivedTableNode
             {
                 Source = { Value = queryNoWithNode },
-                Columns = { Value = TreeHelper.CreateAllColumnsDeclaration() }
+                Columns = { Value = TreeHelper.CreateAllVisibleColumnsDeclaration() }
             };
 
             queryNoWithNode = derivedTable;
@@ -61,7 +61,7 @@ internal static class TableVisitor
         else
         {
             var derivedTableNode = AthenaTree.CreateWithSpan<QsiDerivedTableNode>(context);
-            derivedTableNode.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+            derivedTableNode.Columns.Value = TreeHelper.CreateAllVisibleColumnsDeclaration();
             derivedTableNode.Source.Value = queryNode;
 
             node = derivedTableNode;
@@ -152,7 +152,7 @@ internal static class TableVisitor
 
         var node = AthenaTree.CreateWithSpan<QsiDerivedTableNode>(context);
 
-        node.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+        node.Columns.Value = TreeHelper.CreateAllVisibleColumnsDeclaration();
         node.Source.Value = qualifiedNameNode;
 
         return node;
@@ -427,7 +427,7 @@ internal static class TableVisitor
         {
             var derivedTableNode = AthenaTree.CreateWithSpan<QsiDerivedTableNode>(context);
             derivedTableNode.Source.Value = relationPrimaryNode;
-            derivedTableNode.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+            derivedTableNode.Columns.Value = TreeHelper.CreateAllVisibleColumnsDeclaration();
 
             node = derivedTableNode;
         }
@@ -536,7 +536,7 @@ internal static class TableVisitor
 
         if (columnAliases is null)
         {
-            node.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+            node.Columns.Value = TreeHelper.CreateAllVisibleColumnsDeclaration();
         }
         else
         {
@@ -623,7 +623,7 @@ internal static class TableVisitor
         {
             derivedTable = new QsiDerivedTableNode();
             derivedTable.Source.Value = node;
-            derivedTable.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+            derivedTable.Columns.Value = TreeHelper.CreateAllVisibleColumnsDeclaration();
         }
         else
         {

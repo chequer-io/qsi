@@ -26,7 +26,7 @@ namespace Qsi.Impala.Tree.Visitors
                 if (node is not QsiDerivedTableNode { Directives: { IsEmpty: true } } derivedTableNode)
                 {
                     derivedTableNode = ImpalaTree.CreateWithSpan<QsiDerivedTableNode>(context);
-                    derivedTableNode.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+                    derivedTableNode.Columns.Value = TreeHelper.CreateAllVisibleColumnsDeclaration();
                     derivedTableNode.Source.Value = node;
 
                     node = derivedTableNode;
@@ -231,7 +231,7 @@ namespace Qsi.Impala.Tree.Visitors
             else
             {
                 var derivedTableNode = ImpalaTree.CreateWithSpan<ImpalaDerivedTableNode>(context);
-                derivedTableNode.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+                derivedTableNode.Columns.Value = TreeHelper.CreateAllVisibleColumnsDeclaration();
                 derivedTableNode.Source.Value = VisitQueryStmt(context.query);
 
                 node = derivedTableNode;
@@ -242,7 +242,7 @@ namespace Qsi.Impala.Tree.Visitors
                 if (node is not ImpalaDerivedTableNode derivedTableNode)
                 {
                     derivedTableNode = ImpalaTree.CreateWithSpan<ImpalaDerivedTableNode>(context);
-                    derivedTableNode.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+                    derivedTableNode.Columns.Value = TreeHelper.CreateAllVisibleColumnsDeclaration();
                     derivedTableNode.Source.Value = node;
 
                     node = derivedTableNode;
@@ -374,7 +374,7 @@ namespace Qsi.Impala.Tree.Visitors
             }
             else
             {
-                node.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+                node.Columns.Value = TreeHelper.CreateAllVisibleColumnsDeclaration();
             }
 
             node.Source.SetValue(VisitQueryStmt(context.query_stmt()));

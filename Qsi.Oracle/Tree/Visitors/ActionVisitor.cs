@@ -111,7 +111,7 @@ namespace Qsi.Oracle.Tree.Visitors
             {
                 var derivedTableNode = new OracleDerivedTableNode();
 
-                derivedTableNode.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+                derivedTableNode.Columns.Value = TreeHelper.CreateAllVisibleColumnsDeclaration();
                 derivedTableNode.Source.Value = targetNode;
 
                 if (context.whereClause() is not null)
@@ -148,7 +148,7 @@ namespace Qsi.Oracle.Tree.Visitors
             {
                 var derivedTableNode = new OracleDerivedTableNode();
 
-                derivedTableNode.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+                derivedTableNode.Columns.Value = TreeHelper.CreateAllVisibleColumnsDeclaration();
                 derivedTableNode.Source.Value = targetNode;
 
                 if (context.whereClause() is not null)
@@ -326,7 +326,7 @@ namespace Qsi.Oracle.Tree.Visitors
             {
                 var derivedTable = new OracleDerivedTableNode();
                 derivedTable.Source.Value = updateTarget;
-                derivedTable.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+                derivedTable.Columns.Value = TreeHelper.CreateAllVisibleColumnsDeclaration();
                 derivedTable.Where.Value = ExpressionVisitor.VisitWhereClause(mergeUpdateClause.where);
 
                 updateTarget = derivedTable;
@@ -337,7 +337,7 @@ namespace Qsi.Oracle.Tree.Visitors
             {
                 var deleteTarget = new OracleDerivedTableNode();
                 deleteTarget.Source.Value = joinedTable;
-                deleteTarget.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+                deleteTarget.Columns.Value = TreeHelper.CreateAllVisibleColumnsDeclaration();
                 deleteTarget.Where.Value = ExpressionVisitor.VisitWhereClause(mergeUpdateClause.deleteWhere);
 
                 var deleteActionNode = new OracleDataDeleteActionNode();
@@ -512,7 +512,7 @@ namespace Qsi.Oracle.Tree.Visitors
             var aliasNode = new QsiAliasNode { Name = alias };
 
             node.Alias.Value = aliasNode;
-            node.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+            node.Columns.Value = TreeHelper.CreateAllVisibleColumnsDeclaration();
             node.Source.Value = tableNode;
 
             directives.Tables.Add(node);

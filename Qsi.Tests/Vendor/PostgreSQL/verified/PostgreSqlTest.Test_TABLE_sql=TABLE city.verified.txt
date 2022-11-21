@@ -4,30 +4,60 @@
     Identifier: public.city,
     Columns: [
       {
-        Parent: $tbl_5,
-        Name: city_id,
-        IsVisible: true,
+        Parent: $tbl_11,
+        Name: tableoid,
         RefId: $col_1
       },
       {
-        Parent: $tbl_5,
-        Name: city,
-        IsVisible: true,
+        Parent: $tbl_11,
+        Name: cmax,
         RefId: $col_2
       },
       {
-        Parent: $tbl_5,
-        Name: country_id,
-        IsVisible: true,
+        Parent: $tbl_11,
+        Name: xmax,
         RefId: $col_3
       },
       {
-        Parent: $tbl_5,
+        Parent: $tbl_11,
+        Name: cmin,
+        RefId: $col_4
+      },
+      {
+        Parent: $tbl_11,
+        Name: xmin,
+        RefId: $col_5
+      },
+      {
+        Parent: $tbl_11,
+        Name: ctid,
+        RefId: $col_6
+      },
+      {
+        Parent: $tbl_11,
+        Name: city_id,
+        IsVisible: true,
+        RefId: $col_7
+      },
+      {
+        Parent: $tbl_11,
+        Name: city,
+        IsVisible: true,
+        RefId: $col_8
+      },
+      {
+        Parent: $tbl_11,
+        Name: country_id,
+        IsVisible: true,
+        RefId: $col_9
+      },
+      {
+        Parent: $tbl_11,
         Name: last_update,
         IsVisible: true,
-        RefId: $col_4
+        RefId: $col_10
       }
     ],
-    RefId: $tbl_5
+    RefId: $tbl_11
   }
 ]

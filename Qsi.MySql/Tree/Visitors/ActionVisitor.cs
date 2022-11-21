@@ -70,7 +70,7 @@ namespace Qsi.MySql.Tree
                 var orderClause = context.orderClause();
                 var simpleLimitClause = context.simpleLimitClause();
 
-                derivedNode.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+                derivedNode.Columns.SetValue(TreeHelper.CreateAllVisibleColumnsDeclaration());
                 derivedNode.Source.SetValue(TableVisitor.VisitTableRef(new CommonTableRefContext(tableRef, partitionDelete)));
 
                 if (orderClause != null)
@@ -171,7 +171,7 @@ namespace Qsi.MySql.Tree
                 if (tableNode is not QsiDerivedTableNode derivedTableNode || !derivedTableNode.Alias.IsEmpty)
                 {
                     derivedTableNode = new QsiDerivedTableNode();
-                    derivedTableNode.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+                    derivedTableNode.Columns.SetValue(TreeHelper.CreateAllVisibleColumnsDeclaration());
                     derivedTableNode.Source.SetValue(tableNode);
                 }
 

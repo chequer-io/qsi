@@ -36,7 +36,7 @@ namespace Qsi.Impala.Tree.Visitors
 
             node.Columns.Value = context.TryGetRuleContext<View_column_defsContext>(out var viewColumnDefs) ?
                 VisitViewColumnDefs(viewColumnDefs) :
-                TreeHelper.CreateAllColumnsDeclaration();
+                TreeHelper.CreateAllVisibleColumnsDeclaration();
 
             node.Source.Value = TableVisitor.VisitQueryStmt(context.query_stmt());
 

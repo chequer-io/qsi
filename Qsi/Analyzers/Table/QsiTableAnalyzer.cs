@@ -185,95 +185,136 @@ public class QsiTableAnalyzer : QsiAnalyzerBase
                 throw new QsiException(QsiError.Syntax);
             }
         }
+        // deprecated
         else if (columns.TryCast(out IQsiSequentialColumnNode[] sequentialColumns))
         {
-            // Sequential columns definition
-
-            if (scopedContext.SourceTable == null)
-                throw new QsiException(QsiError.NoTablesUsed);
-
-            var columnType = sequentialColumns[0].ColumnType;
-            QsiTableColumn[] allColumns = scopedContext.SourceTable.VisibleColumns.ToArray();
-            int columnLength = allColumns.Length;
-
-            if (sequentialColumns.Length > allColumns.Length)
-            {
-                throw new QsiException(QsiError.SpecifiesMoreColumnNames);
-            }
-
-            if (columnType == QsiSequentialColumnType.Default)
-            {
-                if (sequentialColumns.Length != allColumns.Length)
-                    throw new QsiException(QsiError.DifferentColumnsCount);
-
-                columnLength = sequentialColumns.Length;
-            }
-
-            for (int i = 0; i < columnLength; i++)
-            {
-                var column = allColumns[i];
-                var declaredColumn = declaredTable.NewColumn();
-
-                declaredColumn.Name = i < sequentialColumns.Length ? sequentialColumns[i].Alias?.Name : column.Name;
-                declaredColumn.References.Add(column);
-            }
+            ProcessSequentialColumns(
+                scopedContext,
+                declaredTable,
+                sequentialColumns,
+                false);
+        }
+        else if (columns.Count == 1 &&
+                 columns.Columns[0] is IQsiAllColumnNode { SequentialColumns.Length: > 0 } allColumnNode)
+        {
+            ProcessSequentialColumns(
+                scopedContext,
+                declaredTable,
+                allColumnNode.SequentialColumns,
+                allColumnNode.IncludeInvisibleColumns);
         }
         else
         {
-            // Compound columns definition
-
-            foreach (var column in columns)
-            {
-                IEnumerable<QsiTableColumn> resolvedColumns = ResolveColumns(scopedContext, column, out var implicitTableWildcard);
-                bool keepVisible = column is IQsiAllColumnNode;
-
-                switch (column)
-                {
-                    case IQsiDerivedColumnNode derivedColum:
-                    {
-                        var declaredColumn = declaredTable.NewColumn();
-
-                        declaredColumn.Name = ResolveDerivedColumnName(scopedContext, table, derivedColum);
-                        declaredColumn.IsExpression = derivedColum.IsExpression;
-                        declaredColumn.References.AddRange(resolvedColumns);
-                        break;
-                    }
-
-                    default:
-                    {
-                        var allColumnNode = column as IQsiAllColumnNode;
-                        var aliasedAllColumn = !ListUtility.IsNullOrEmpty(allColumnNode?.SequentialColumns);
-                        int i = 0;
-
-                        foreach (var c in resolvedColumns)
-                        {
-                            if (aliasedAllColumn && allColumnNode.SequentialColumns.Length < i + 1)
-                                throw new QsiException(QsiError.DifferentColumnsCount);
-
-                            var seqentialColumn = aliasedAllColumn ? allColumnNode?.SequentialColumns[i++] : null;
-                            var declaredColumn = declaredTable.NewColumn();
-
-                            declaredColumn.Name = seqentialColumn is null
-                                ? ResolveCompoundColumnName(context, table, column, c)
-                                : seqentialColumn.Alias.Name;
-
-                            declaredColumn.References.Add(c);
-                            declaredColumn.ImplicitTableWildcardTarget = implicitTableWildcard;
-
-                            if (keepVisible)
-                                declaredColumn.IsVisible = c.IsVisible;
-                        }
-
-                        if (aliasedAllColumn && allColumnNode.SequentialColumns.Length != i)
-                            throw new QsiException(QsiError.DifferentColumnsCount);
-
-                        break;
-                    }
-                }
-            }
+            ProcessCompoundColumns(scopedContext, declaredTable, table);
         }
 
         return declaredTable;
+    }
+
+    private void ProcessSequentialColumns(
+        TableCompileContext context,
+        QsiTableStructure targetTable,
+        IQsiSequentialColumnNode[] sequentialColumns,
+        bool includeInvisibleColumns)
+    {
+        // Sequential columns definition
+
+        if (context.SourceTable == null)
+            throw new QsiException(QsiError.NoTablesUsed);
+
+        var columnType = sequentialColumns[0].ColumnType;
+        var visibleColumnCount = context.SourceTable.VisibleColumns.Count();
+
+        if (sequentialColumns.Length > visibleColumnCount)
+            throw new QsiException(QsiError.SpecifiesMoreColumnNames);
+
+        if (columnType == QsiSequentialColumnType.Default)
+        {
+            if (sequentialColumns.Length != visibleColumnCount)
+                throw new QsiException(QsiError.DifferentColumnsCount);
+        }
+
+        using IEnumerator<IQsiSequentialColumnNode> sequentialColumnEnumerator =
+            sequentialColumns
+                .Cast<IQsiSequentialColumnNode>()
+                .GetEnumerator();
+
+        foreach (var column in context.SourceTable.Columns)
+        {
+            if (!column.IsVisible && !includeInvisibleColumns)
+                continue;
+
+            var declaredColumn = targetTable.NewColumn();
+            declaredColumn.Name = column.Name;
+            declaredColumn.References.Add(column);
+
+            if (!column.IsVisible)
+                continue;
+
+            if (!sequentialColumnEnumerator.MoveNext())
+                continue;
+
+            if (sequentialColumnEnumerator.Current is { Alias.Name: { } sequentialColumnName })
+                declaredColumn.Name = sequentialColumnName;
+        }
+    }
+
+    private void ProcessCompoundColumns(
+        TableCompileContext context,
+        QsiTableStructure targetTable,
+        IQsiDerivedTableNode table)
+    {
+        // Compound columns definition
+
+        foreach (var column in table.Columns)
+        {
+            IEnumerable<QsiTableColumn> resolvedColumns = ResolveColumns(context, column, out var implicitTableWildcard);
+            bool keepVisible = column is IQsiAllColumnNode;
+
+            switch (column)
+            {
+                case IQsiDerivedColumnNode derivedColum:
+                {
+                    var declaredColumn = targetTable.NewColumn();
+
+                    declaredColumn.Name = ResolveDerivedColumnName(context, table, derivedColum);
+                    declaredColumn.IsExpression = derivedColum.IsExpression;
+                    declaredColumn.References.AddRange(resolvedColumns);
+                    break;
+                }
+
+                default:
+                {
+                    var allColumnNode = column as IQsiAllColumnNode;
+                    var aliasedAllColumn = !ListUtility.IsNullOrEmpty(allColumnNode?.SequentialColumns);
+                    int i = 0;
+
+                    foreach (var c in resolvedColumns)
+                    {
+                        if (aliasedAllColumn && allColumnNode.SequentialColumns.Length < i + 1)
+                            throw new QsiException(QsiError.DifferentColumnsCount);
+
+                        var seqentialColumn = aliasedAllColumn ? allColumnNode?.SequentialColumns[i++] : null;
+                        var declaredColumn = targetTable.NewColumn();
+
+                        declaredColumn.Name = seqentialColumn is null
+                            ? ResolveCompoundColumnName(context, table, column, c)
+                            : seqentialColumn.Alias.Name;
+
+                        declaredColumn.References.Add(c);
+                        declaredColumn.ImplicitTableWildcardTarget = implicitTableWildcard;
+
+                        if (keepVisible)
+                            declaredColumn.IsVisible = c.IsVisible;
+                    }
+
+                    if (aliasedAllColumn && allColumnNode.SequentialColumns.Length != i)
+                        throw new QsiException(QsiError.DifferentColumnsCount);
+
+                    break;
+                }
+            }
+        }
     }
 
     protected virtual QsiIdentifier ResolveCompoundColumnName(TableCompileContext context, IQsiDerivedTableNode table, IQsiColumnNode column, QsiTableColumn refColumn)
@@ -704,7 +745,10 @@ public class QsiTableAnalyzer : QsiAnalyzerBase
     #endregion
 
     #region Column
-    protected QsiTableColumn[] ResolveColumns(TableCompileContext context, IQsiColumnNode column, /* TODO: remove */ out QsiQualifiedIdentifier implicitTableWildcardTarget)
+    protected QsiTableColumn[] ResolveColumns(
+        TableCompileContext context,
+        IQsiColumnNode column,
+        /* TODO: remove */ out QsiQualifiedIdentifier implicitTableWildcardTarget)
     {
         context.ThrowIfCancellationRequested();
         implicitTableWildcardTarget = default;
@@ -727,7 +771,10 @@ public class QsiTableAnalyzer : QsiAnalyzerBase
         throw new InvalidOperationException();
     }
 
-    protected virtual IEnumerable<QsiTableColumn> ResolveAllColumns(TableCompileContext context, IQsiAllColumnNode column, bool includeInvisible)
+    protected virtual IEnumerable<QsiTableColumn> ResolveAllColumns(
+        TableCompileContext context,
+        IQsiAllColumnNode column,
+        bool includeInvisible)
     {
         context.ThrowIfCancellationRequested();
 

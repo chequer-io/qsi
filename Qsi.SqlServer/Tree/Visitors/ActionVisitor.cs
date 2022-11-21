@@ -131,7 +131,7 @@ namespace Qsi.SqlServer.Tree
             {
                 var derivedTable = new QsiDerivedTableNode();
 
-                derivedTable.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+                derivedTable.Columns.SetValue(TreeHelper.CreateAllVisibleColumnsDeclaration());
                 derivedTable.Source.SetValue(table);
 
                 if (where != null)
@@ -175,7 +175,7 @@ namespace Qsi.SqlServer.Tree
             {
                 var derivedTable = new QsiDerivedTableNode();
 
-                derivedTable.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+                derivedTable.Columns.SetValue(TreeHelper.CreateAllVisibleColumnsDeclaration());
                 derivedTable.Source.SetValue(table);
 
                 if (where != null)
@@ -230,7 +230,7 @@ namespace Qsi.SqlServer.Tree
                 {
                     var alias = IdentifierVisitor.CreateIdentifier(mergeSpecification.TableAlias);
 
-                    n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+                    n.Columns.SetValue(TreeHelper.CreateAllVisibleColumnsDeclaration());
 
                     n.Alias.SetValue(new QsiAliasNode
                     {
@@ -297,7 +297,7 @@ namespace Qsi.SqlServer.Tree
                             {
                                 btn.Sources.Add(TreeHelper.Create<QsiDerivedTableNode>(ln =>
                                 {
-                                    ln.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+                                    ln.Columns.SetValue(TreeHelper.CreateAllVisibleColumnsDeclaration());
                                     ln.Source.SetValue(accessNode);
                                 }));
 
@@ -314,12 +314,12 @@ namespace Qsi.SqlServer.Tree
                             {
                                 target = TreeHelper.Create<QsiDerivedTableNode>(dtn =>
                                 {
-                                    dtn.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+                                    dtn.Columns.SetValue(TreeHelper.CreateAllVisibleColumnsDeclaration());
 
                                     dtn.Source.SetValue(TreeHelper.Create<QsiDerivedTableNode>(dtn2 =>
                                     {
                                         dtn2.Source.SetValue(exceptTable);
-                                        dtn2.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+                                        dtn2.Columns.SetValue(TreeHelper.CreateAllVisibleColumnsDeclaration());
 
                                         dtn2.Alias.SetValue(new QsiAliasNode
                                         {

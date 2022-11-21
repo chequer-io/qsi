@@ -2495,8 +2495,10 @@ expressionParens
     ;
 
 expression
-    : andExpression
-    | expression OR expression
+    : andExpression               # andExpr
+    // left-recursion
+    | expression OR expression    # orExpr
+    | expression AT TIME ZONE str # atTimeZoneExpr
     ;
 
 andExpression
@@ -2758,12 +2760,27 @@ extractList
 
 extractArgument
     : identifier
-    | YEAR_P
-    | MONTH_P
+    | CENTURY_P
     | DAY_P
+    | DECADE_P
+    | DOW_P
+    | DOY_P
+    | EPOCH_P
     | HOUR_P
+    | ISODOW_P
+    | ISOYEAR_P
+    | MICROSECONDS_P
+    | MILLENNIUM_P
+    | MILLISECONDS_P
     | MINUTE_P
+    | MONTH_P
+    | QUARTER_P
     | SECOND_P
+    | TIMEZONE_P
+    | TIMEZONE_HOUR_P
+    | TIMEZONE_MINUTE_P
+    | WEEK_P
+    | YEAR_P
     | str
     ;
 
@@ -3147,7 +3164,7 @@ numericType
  * See: https://www.postgresql.org/docs/14/datatype-datetime.html
  */
 dateTimeType
-    : (TIMESTAMP | TIME) ('(' signedInt ')')? timezoneOption
+    : (TIMESTAMP | TIME) ('(' signedInt ')')? timezoneOption?
     ;
 
 /**
@@ -4046,6 +4063,21 @@ nonReservedKeyword
     | YEAR_P
     | YES_P
     | ZONE
+    | CENTURY_P
+    | DECADE_P
+    | DOW_P
+    | DOY_P
+    | EPOCH_P
+    | ISODOW_P
+    | ISOYEAR_P
+    | MICROSECONDS_P
+    | MILLENNIUM_P
+    | MILLISECONDS_P
+    | QUARTER_P
+    | TIMEZONE_P
+    | TIMEZONE_HOUR_P
+    | TIMEZONE_MINUTE_P
+    | WEEK_P
     ;
 
 columnKeyword

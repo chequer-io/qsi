@@ -317,7 +317,8 @@ namespace Qsi.Analyzers.Action
                 .GroupBy(c => c.DestinationColumn.Parent)
                 .Select(g =>
                 {
-                    var buffer = new DataManipulationTargetDataPivot[g.Key.Columns.Count];
+                    QsiTableColumn[] visibleColumns = g.Key.VisibleColumns.ToArray();
+                    var buffer = new DataManipulationTargetDataPivot[visibleColumns.Length];
 
                     foreach (var pivot in g)
                         buffer[pivot.DestinationOrder] = pivot;
@@ -325,7 +326,7 @@ namespace Qsi.Analyzers.Action
                     for (int i = 0; i < buffer.Length; i++)
                     {
                         ref var dataPivot = ref buffer[i];
-                        dataPivot ??= new DataManipulationTargetDataPivot(null, i, g.Key.Columns[i], -1, null);
+                        dataPivot ??= new DataManipulationTargetDataPivot(null, i, visibleColumns[i], -1, null);
                     }
 
                     return new DataManipulationTarget(g.Key, buffer, context.Engine.CacheProviderFactory);
@@ -343,9 +344,9 @@ namespace Qsi.Analyzers.Action
 
             return new DataManipulationTargetDataPivot(
                 columnTarget,
-                columnTarget.AffectedColumn.Parent.Columns.IndexOf(columnTarget.AffectedColumn),
+                columnTarget.AffectedColumn.Parent.VisibleColumns.IndexOf(columnTarget.AffectedColumn),
                 columnTarget.AffectedColumn,
-                columnTarget.SourceColumn.Parent.Columns.IndexOf(columnTarget.SourceColumn),
+                columnTarget.SourceColumn.Parent.VisibleColumns.IndexOf(columnTarget.SourceColumn),
                 columnTarget.SourceColumn
             );
         }
@@ -397,7 +398,7 @@ namespace Qsi.Analyzers.Action
                     return new ImmutableDerivedTableNode(
                         node.Parent,
                         null,
-                        TreeHelper.CreateAllColumnsDeclaration(),
+                        TreeHelper.CreateAllVisibleColumnsDeclaration(),
                         node,
                         null, null, null, null, null, null);
             }

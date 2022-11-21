@@ -202,7 +202,7 @@ namespace Qsi.Oracle.Tree.Visitors
             directivesNode.Tables.AddRange(directives);
 
             var derivedTableNode = new QsiDerivedTableNode();
-            derivedTableNode.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+            derivedTableNode.Columns.Value = TreeHelper.CreateAllVisibleColumnsDeclaration();
             derivedTableNode.Source.Value = node;
             derivedTableNode.Directives.Value = directivesNode;
 
@@ -502,7 +502,7 @@ namespace Qsi.Oracle.Tree.Visitors
                 if (node is not OracleDerivedTableNode derivedTableNode)
                 {
                     derivedTableNode = OracleTree.CreateWithSpan<OracleDerivedTableNode>(context);
-                    derivedTableNode.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+                    derivedTableNode.Columns.Value = TreeHelper.CreateAllVisibleColumnsDeclaration();
                     derivedTableNode.Source.Value = node;
                 }
                 else
@@ -519,7 +519,7 @@ namespace Qsi.Oracle.Tree.Visitors
                 if (node is not OracleDerivedTableNode derivedTableNode)
                 {
                     derivedTableNode = OracleTree.CreateWithSpan<OracleDerivedTableNode>(context);
-                    derivedTableNode.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+                    derivedTableNode.Columns.Value = TreeHelper.CreateAllVisibleColumnsDeclaration();
                     derivedTableNode.Source.Value = node;
                 }
                 else
@@ -535,7 +535,7 @@ namespace Qsi.Oracle.Tree.Visitors
                 if (node is not OracleDerivedTableNode derivedTableNode)
                 {
                     derivedTableNode = OracleTree.CreateWithSpan<OracleDerivedTableNode>(context);
-                    derivedTableNode.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+                    derivedTableNode.Columns.Value = TreeHelper.CreateAllVisibleColumnsDeclaration();
                     derivedTableNode.Source.Value = node;
                 }
                 else
@@ -551,7 +551,7 @@ namespace Qsi.Oracle.Tree.Visitors
                 if (node is not OracleDerivedTableNode derivedTableNode)
                 {
                     derivedTableNode = OracleTree.CreateWithSpan<OracleDerivedTableNode>(context);
-                    derivedTableNode.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+                    derivedTableNode.Columns.Value = TreeHelper.CreateAllVisibleColumnsDeclaration();
                     derivedTableNode.Source.Value = node;
                 }
                 else
@@ -568,7 +568,7 @@ namespace Qsi.Oracle.Tree.Visitors
                 if (node is not OracleDerivedTableNode derivedTableNode)
                 {
                     derivedTableNode = OracleTree.CreateWithSpan<OracleDerivedTableNode>(context);
-                    derivedTableNode.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+                    derivedTableNode.Columns.Value = TreeHelper.CreateAllVisibleColumnsDeclaration();
                     derivedTableNode.Source.Value = node;
                     node = derivedTableNode;
                 }
@@ -635,7 +635,7 @@ namespace Qsi.Oracle.Tree.Visitors
             {
                 var derivedTable = OracleTree.CreateWithSpan<OracleDerivedTableNode>(context);
                 derivedTable.Source.Value = VisitSubquery(context.subquery());
-                derivedTable.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+                derivedTable.Columns.Value = TreeHelper.CreateAllVisibleColumnsDeclaration();
                 node = derivedTable;
             }
 
@@ -667,7 +667,7 @@ namespace Qsi.Oracle.Tree.Visitors
                 {
                     var node = OracleTree.CreateWithSpan<OracleDerivedTableNode>(context2);
 
-                    node.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+                    node.Columns.Value = TreeHelper.CreateAllVisibleColumnsDeclaration();
                     node.Source.Value = VisitSubquery(context2.subquery());
 
                     // subqueryRestrictionClause ignored
@@ -722,7 +722,7 @@ namespace Qsi.Oracle.Tree.Visitors
                     }
                     else
                     {
-                        node.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+                        node.Columns.Value = TreeHelper.CreateAllVisibleColumnsDeclaration();
                     }
 
                     node.Source.Value = VisitSubquery(subqueryFactoringClause.subquery());
@@ -758,7 +758,7 @@ namespace Qsi.Oracle.Tree.Visitors
         private static OracleDerivedTableNode WrapTableNode(QsiTableNode node, IToken start, IToken stop)
         {
             var derivedNode = OracleTree.CreateWithSpan<OracleDerivedTableNode>(start, stop);
-            derivedNode.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+            derivedNode.Columns.Value = TreeHelper.CreateAllVisibleColumnsDeclaration();
             derivedNode.Source.Value = node;
 
             return derivedNode;

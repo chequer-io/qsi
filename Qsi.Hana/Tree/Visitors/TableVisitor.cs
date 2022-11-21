@@ -32,7 +32,7 @@ namespace Qsi.Hana.Tree.Visitors
             {
                 derivedTableNode = new HanaDerivedTableNode
                 {
-                    Columns = { Value = TreeHelper.CreateAllColumnsDeclaration() },
+                    Columns = { Value = TreeHelper.CreateAllVisibleColumnsDeclaration() },
                     Source = { Value = subqueryNode }
                 };
             }
@@ -77,7 +77,7 @@ namespace Qsi.Hana.Tree.Visitors
             node.Columns.SetValue(
                 columnListClause != null ?
                     VisitColumnListClause(columnListClause, QsiSequentialColumnType.Default) :
-                    TreeHelper.CreateAllColumnsDeclaration()
+                    TreeHelper.CreateAllVisibleColumnsDeclaration()
             );
 
             node.Source.SetValue(VisitSubquery(context.subquery()));
@@ -498,7 +498,7 @@ namespace Qsi.Hana.Tree.Visitors
 
             var derivedNode = new HanaDerivedTableNode();
 
-            derivedNode.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+            derivedNode.Columns.SetValue(TreeHelper.CreateAllVisibleColumnsDeclaration());
             derivedNode.Source.SetValue(node);
             derivedNode.Alias.SetValue(alias.node);
 
@@ -518,7 +518,7 @@ namespace Qsi.Hana.Tree.Visitors
             {
                 derivedTableNode = new HanaDerivedTableNode
                 {
-                    Columns = { Value = TreeHelper.CreateAllColumnsDeclaration() },
+                    Columns = { Value = TreeHelper.CreateAllVisibleColumnsDeclaration() },
                     Source = { Value = node }
                 };
             }
@@ -663,7 +663,7 @@ namespace Qsi.Hana.Tree.Visitors
                     {
                         var derivedNode = new HanaDerivedTableNode
                         {
-                            Columns = { Value = TreeHelper.CreateAllColumnsDeclaration() },
+                            Columns = { Value = TreeHelper.CreateAllVisibleColumnsDeclaration() },
                             Source = { Value = node },
                             Alias = { Value = alias }
                         };

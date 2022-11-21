@@ -3,7 +3,6 @@ using Qsi.Data;
 using Qsi.Tree;
 using Qsi.Tree.Definition;
 using Qsi.Utilities;
-
 using static Qsi.PostgreSql.Internal.PostgreSqlParserInternal;
 
 namespace Qsi.PostgreSql.Tree.Visitors;
@@ -17,7 +16,7 @@ internal static class DefinitionVisitor
             CreateViewStatementContext createViewContext => VisitCreateViewStatement(createViewContext),
             _ => throw TreeHelper.NotSupportedTree(context.children[0])
         };
-        
+
         PostgreSqlTree.PutContextSpan(node, context);
 
         return node;
@@ -31,7 +30,7 @@ internal static class DefinitionVisitor
         var conflictBehavior = context.REPLACE() != null
             ? QsiDefinitionConflictBehavior.Replace
             : QsiDefinitionConflictBehavior.None;
-        
+
         var node = new QsiViewDefinitionNode
         {
             Identifier = viewIdentifier,
@@ -41,11 +40,11 @@ internal static class DefinitionVisitor
         var sequentialList = context.columnIdentifierList();
 
         node.Columns.Value = sequentialList != null
-            ? TableVisitor.CreateSequentialColumns(sequentialList)
-            : TreeHelper.CreateAllColumnsDeclaration();
-        
+            ? TableVisitor.CreateSequentialColumns(sequentialList, false)
+            : TreeHelper.CreateAllVisibleColumnsDeclaration();
+
         node.Source.Value = TableVisitor.VisitSelectStatement(context.selectStatement());
-        
+
         PostgreSqlTree.PutContextSpan(node, context);
 
         return node;

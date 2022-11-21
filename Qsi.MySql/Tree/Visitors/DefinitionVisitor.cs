@@ -57,7 +57,7 @@ namespace Qsi.MySql.Tree
                 node.ViewSuid.SetValue(TreeHelper.Fragment(context.viewSuid().GetInputText()));
 
             node.Columns.SetValue(columnInternalRefList == null ?
-                TreeHelper.CreateAllColumnsDeclaration() :
+                TreeHelper.CreateAllVisibleColumnsDeclaration() :
                 TableVisitor.CreateSequentialColumns(columnInternalRefList));
 
             node.Source.SetValue(TableVisitor.VisitViewSelect(viewTail.viewSelect()));

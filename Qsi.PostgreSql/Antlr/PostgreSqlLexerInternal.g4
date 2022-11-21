@@ -2291,6 +2291,67 @@ LOOP
 OPEN
    : O P E N
    ;
+
+CENTURY_P
+    : C E N T U R Y
+    ;
+
+DECADE_P
+    : D E C A D E
+    ;
+
+DOW_P
+    : D O W
+    ;
+
+DOY_P
+    : D O Y
+    ;
+
+EPOCH_P
+    : E P O C H
+    ;
+
+ISODOW_P
+    : I S O D O W
+    ;
+
+ISOYEAR_P
+    : I S O Y E A R
+    ;
+
+MICROSECONDS_P
+    : M I C R O S E C O N D S
+    ;
+
+MILLENNIUM_P
+    : M I L L E N N I U M
+    ;
+
+MILLISECONDS_P
+    : M I L L I S E C O N D S
+    ;
+
+QUARTER_P
+    : Q U A R T E R
+    ;
+
+TIMEZONE_P
+    : T I M E Z O N E
+    ;
+
+TIMEZONE_HOUR_P
+    : T I M E Z O N E '_' H O U R
+    ;
+
+TIMEZONE_MINUTE_P
+    : T I M E Z O N E '_' M I N U T E
+    ;
+
+WEEK_P
+    : W E E K
+    ;
+
    //
 
    // IDENTIFIERS (4.1.1)

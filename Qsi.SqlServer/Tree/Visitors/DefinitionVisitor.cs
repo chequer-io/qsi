@@ -27,7 +27,7 @@ namespace Qsi.SqlServer.Tree
 
             if (ListUtility.IsNullOrEmpty(viewStatementBody.Columns))
             {
-                node.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+                node.Columns.SetValue(TreeHelper.CreateAllVisibleColumnsDeclaration());
             }
             else
             {

@@ -55,7 +55,7 @@ namespace Qsi.SqlServer.Tree
                     default:
                         return TreeHelper.Create<QsiDerivedTableNode>(n =>
                         {
-                            n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+                            n.Columns.SetValue(TreeHelper.CreateAllVisibleColumnsDeclaration());
                             n.Source.SetValue(tableNode);
                             n.Directives.SetValue(tableDirectivesNode);
 
@@ -162,7 +162,7 @@ namespace Qsi.SqlServer.Tree
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
                 // Ignored ForClause, OffsetClause, OrderByClause
-                n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+                n.Columns.SetValue(TreeHelper.CreateAllVisibleColumnsDeclaration());
                 n.Source.SetValue(VisitQueryExpression(queryParenthesisExpression.QueryExpression));
 
                 SqlServerTree.PutFragmentSpan(n, queryParenthesisExpression);
@@ -501,7 +501,7 @@ namespace Qsi.SqlServer.Tree
         {
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
-                n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+                n.Columns.SetValue(TreeHelper.CreateAllVisibleColumnsDeclaration());
                 n.Source.SetValue(VisitTableReference(joinParenthesisTableReference.Join));
 
                 SqlServerTree.PutFragmentSpan(n, joinParenthesisTableReference);
@@ -565,7 +565,7 @@ namespace Qsi.SqlServer.Tree
         {
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
-                n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+                n.Columns.SetValue(TreeHelper.CreateAllVisibleColumnsDeclaration());
                 n.Source.SetValue(VisitTableReference(odbcQualifiedJoinTableReference.TableReference));
 
                 SqlServerTree.PutFragmentSpan(n, odbcQualifiedJoinTableReference);
@@ -668,7 +668,7 @@ namespace Qsi.SqlServer.Tree
 
             return TreeHelper.Create<QsiDerivedTableNode>(n =>
             {
-                n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+                n.Columns.SetValue(TreeHelper.CreateAllVisibleColumnsDeclaration());
                 n.Source.SetValue(tableNode);
 
                 n.Alias.SetValue(CreateAliasNode(namedTableReference.Alias));
@@ -816,7 +816,7 @@ namespace Qsi.SqlServer.Tree
                     n.Alias.SetValue(CreateAliasNode(queryDerivedTable.Alias));
                 }
 
-                n.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+                n.Columns.SetValue(TreeHelper.CreateAllVisibleColumnsDeclaration());
                 n.Source.SetValue(VisitQueryExpression(queryDerivedTable.QueryExpression));
 
                 SqlServerTree.PutFragmentSpan(n, queryDerivedTable);

@@ -191,7 +191,7 @@ namespace Qsi.Cql.Analyzers
             await ResolveColumnPlan(context, columnPlans, tableReferenceNode);
 
             var targetNode = (CqlDerivedTableNode)ReassembleCommonTableNode(tableNode);
-            targetNode.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+            targetNode.Columns.SetValue(TreeHelper.CreateAllVisibleColumnsDeclaration());
 
             var partialDelete =
                 columnPlans.Any(p => p.Selectors.Count > 0) ||

@@ -26,7 +26,7 @@ namespace Qsi.Trino.Tree.Visitors
             {
                 derivedTable = new QsiDerivedTableNode();
                 derivedTable.Source.Value = node;
-                derivedTable.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+                derivedTable.Columns.Value = TreeHelper.CreateAllVisibleColumnsDeclaration();
 
                 node = derivedTable;
             }
@@ -50,7 +50,7 @@ namespace Qsi.Trino.Tree.Visitors
             if (table is not QsiDerivedTableNode node)
             {
                 var derivedTableNode = TrinoTree.CreateWithSpan<QsiDerivedTableNode>(context);
-                derivedTableNode.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+                derivedTableNode.Columns.Value = TreeHelper.CreateAllVisibleColumnsDeclaration();
                 derivedTableNode.Source.Value = table;
 
                 node = derivedTableNode;
@@ -265,7 +265,7 @@ namespace Qsi.Trino.Tree.Visitors
         {
             var node = TrinoTree.CreateWithSpan<QsiDerivedTableNode>(context);
 
-            node.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+            node.Columns.Value = TreeHelper.CreateAllVisibleColumnsDeclaration();
             node.Source.Value = VisitQualifiedName(context.qualifiedName());
 
             return node;
@@ -472,7 +472,7 @@ namespace Qsi.Trino.Tree.Visitors
             {
                 derivedTableNode = new QsiDerivedTableNode();
                 derivedTableNode.Source.Value = node;
-                derivedTableNode.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+                derivedTableNode.Columns.Value = TreeHelper.CreateAllVisibleColumnsDeclaration();
             }
             else
             {
@@ -568,7 +568,7 @@ namespace Qsi.Trino.Tree.Visitors
             }
             else
             {
-                node.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+                node.Columns.Value = TreeHelper.CreateAllVisibleColumnsDeclaration();
             }
 
             node.Source.Value = VisitQuery(context.query());

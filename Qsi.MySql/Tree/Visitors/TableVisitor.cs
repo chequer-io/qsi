@@ -59,7 +59,7 @@ namespace Qsi.MySql.Tree
             if (context.WithClause != null)
                 node.Directives.SetValue(VisitWithClause(context.WithClause));
 
-            node.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+            node.Columns.SetValue(TreeHelper.CreateAllVisibleColumnsDeclaration());
 
             node.Source.SetValue(source);
 
@@ -445,7 +445,7 @@ namespace Qsi.MySql.Tree
 
             var derivedTableNode = new QsiDerivedTableNode();
 
-            derivedTableNode.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+            derivedTableNode.Columns.SetValue(TreeHelper.CreateAllVisibleColumnsDeclaration());
             derivedTableNode.Source.SetValue(tableReferenceNode);
             derivedTableNode.Alias.SetValue(VisitTableAlias(alias));
 
@@ -521,7 +521,7 @@ namespace Qsi.MySql.Tree
             node.Alias.SetValue(VisitTableAlias(tableAlias));
 
             node.Columns.SetValue(columnInternalRefList == null ?
-                TreeHelper.CreateAllColumnsDeclaration() :
+                TreeHelper.CreateAllVisibleColumnsDeclaration() :
                 CreateSequentialColumns(columnInternalRefList));
 
             MySqlTree.PutContextSpan(node, context);
@@ -832,7 +832,7 @@ namespace Qsi.MySql.Tree
             });
 
             node.Columns.SetValue(columnInternalRefList == null ?
-                TreeHelper.CreateAllColumnsDeclaration() :
+                TreeHelper.CreateAllVisibleColumnsDeclaration() :
                 CreateSequentialColumns(columnInternalRefList));
 
             node.Source.SetValue(VisitSubquery(context.subquery()));

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Qsi.Analyzers.Table.Context;
 using Qsi.Data;
 using Qsi.Engines;
+using Qsi.Extensions;
 using Qsi.PostgreSql.Data;
 using Qsi.PostgreSql.Tree;
 using Qsi.Tree;
@@ -28,10 +29,10 @@ public class PostgreSqlTableAnalyzer : PgTableAnalyzer
             // case PostgreSqlUndefinedExpressionNode undefinedExpression:
             //     yield return GetColumn(context, undefinedExpression);
             //     break;
-            
+
             case PostgreSqlSubscriptExpressionNode:
                 break;
-            
+
             default:
                 foreach (var tableColumn in base.ResolveColumnsInExpression(context, expression))
                     yield return tableColumn;
@@ -107,17 +108,19 @@ public class PostgreSqlTableAnalyzer : PgTableAnalyzer
                     PostgreSqlStringKind.VarcharString => "varchar",
                     _ => "?column?"
                 };
-                
+
                 break;
             }
+
             case QsiDataType.Boolean:
                 name = "bool";
                 break;
+
             default:
                 name = "?column?";
                 break;
         }
-        
+
         var identifier = new QsiIdentifier(name, false);
 
         return identifier;
@@ -137,11 +140,11 @@ public class PostgreSqlTableAnalyzer : PgTableAnalyzer
             case QsiInlineDerivedTableNode inlineTable:
             {
                 using var scopedContext = new TableCompileContext(context);
-                
+
                 var scopedTable = BuildInlineDerivedTableStructure(scopedContext, inlineTable).AsTask().Result;
-                    
+
                 IList<QsiTableColumn> columns = scopedTable.Columns;
-                    
+
                 if (columns.Count != 1)
                     throw new QsiException(QsiError.Syntax);
 
@@ -153,9 +156,9 @@ public class PostgreSqlTableAnalyzer : PgTableAnalyzer
                 using var scopedContext = new TableCompileContext(context);
 
                 var scopedTable = BuildDerivedTableStructure(scopedContext, derivedTable).AsTask().Result;
-            
+
                 IList<QsiTableColumn> columns = scopedTable.Columns;
-            
+
                 if (columns.Count != 1)
                     throw new QsiException(QsiError.Syntax);
 
@@ -181,7 +184,7 @@ public class PostgreSqlTableAnalyzer : PgTableAnalyzer
                     throw new Exception("Member should not have multiple columns");
 
                 return columns.First().Name;
-                
+
             default:
                 throw new NotSupportedException($"Node {node.Member.GetType()} is not supported");
         }

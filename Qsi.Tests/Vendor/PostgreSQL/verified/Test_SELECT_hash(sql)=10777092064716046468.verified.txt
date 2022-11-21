@@ -1,0 +1,18 @@
+﻿{
+  Sql: SELECT timestamptz '2013-07-01 12:00:00' - timestamptz '2013-03-01 12:00:00',
+  Result: [
+    {
+      Type: Derived,
+      Columns: [
+        {
+          Parent: $tbl_2,
+          Name: ?column?,
+          IsVisible: true,
+          IsExpression: true,
+          RefId: $col_1
+        }
+      ],
+      RefId: $tbl_2
+    }
+  ]
+}

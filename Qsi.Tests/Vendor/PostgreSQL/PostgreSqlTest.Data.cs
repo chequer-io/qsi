@@ -35,6 +35,33 @@ public partial class PostgreSqlTest
         new("SELECT (ROW(10, 'foo', 'bar')).f2"),
         new("SELECT (ROW (actor_id, first_name, last_name)).f2 from actor;"),
         new("SELECT public.actor.actor_id, public.actor.first_name FROM public.actor"),
+        new(@"
+select L.transactionid::varchar::bigint as transaction_id
+from pg_catalog.pg_locks L
+where L.transactionid is not null
+order by pg_catalog.age(L.transactionid) desc
+limit 1"),
+        new(@"
+select N.oid::bigint as id,
+datname as name,
+D.description,
+datistemplate as is_template,
+datallowconn as allow_connections,
+pg_catalog.pg_get_userbyid(N.datdba) as ""owner""
+from pg_catalog.pg_database N
+left join pg_catalog.pg_shdescription D on N.oid = D.objoid
+order by case when datname = pg_catalog.current_database() then -1::bigint else N.oid::bigint end"),
+        new("SELECT oid FROM pg_catalog.pg_database"),
+        new("SELECT a.oid FROM pg_catalog.pg_database a"),
+        new("SELECT a.oid FROM pg_catalog.pg_database a (b, c)"),
+        new("SELECT a.oid, b.oid FROM pg_catalog.pg_database a JOIN pg_catalog.pg_database b ON a.oid = b.oid"),
+        new("select round(extract(epoch from pg_postmaster_start_time() at time zone 'UTC')) as startup_time"),
+        new("SELECT (timestamp without time zone '2000-11-27', interval '12 hours') OVERLAPS (timestamp without time zone '2000-11-27 12:00', timestamp without time zone '2000-11-30')"),
+        new("SELECT timestamp with time zone '2005-04-02 12:00:00-07' + interval '1 day'"),
+        new("SELECT timestamptz '2013-07-01 12:00:00' - timestamptz '2013-03-01 12:00:00'"),
+        new("SELECT age(timestamptz '2013-07-01 12:00:00', timestamptz '2013-03-01 12:00:00')"),
+        new("SELECT (EXTRACT(EPOCH FROM timestamptz '2013-07-01 12:00:00') - EXTRACT(EPOCH FROM timestamptz '2013-03-01 12:00:00')) / 60 / 60 / 24"),
+        new("SELECT EXTRACT(DAY FROM TIMESTAMP '2001-02-16 20:38:40')"),
     };
 
     private static readonly TestCaseData[] Table_TestDatas =
@@ -78,6 +105,20 @@ public partial class PostgreSqlTest
         new("SELECT * FROM (VALUES(11, 21, 31)) AS foo (a, b, c)") { ExpectedResult = new[] { "a", "b", "c" } },
         new("SELECT * FROM (VALUES(11, 21, 31)) AS foo (a, b)") { ExpectedResult = new[] { "a", "b", "column3" } },
         new("SELECT public.actor.actor_id, public.actor.first_name FROM public.actor") { ExpectedResult = new[] { "actor_id", "first_name" } },
+
+        new("SELECT EXTRACT(MICROSECOND FROM TIME WITH TIME ZONE '2020-05-26 13:30:25.575401-04')") { ExpectedResult = new[] { "date_part" } },
+        new("SELECT EXTRACT(MILLISECOND FROM TIME WITH TIME ZONE '2020-05-26 13:30:25.575401-04')") { ExpectedResult = new[] { "date_part" } },
+        new("SELECT EXTRACT(SECOND      FROM TIME WITH TIME ZONE '2020-05-26 13:30:25.575401-04')") { ExpectedResult = new[] { "date_part" } },
+        new("SELECT EXTRACT(MINUTE      FROM TIME WITH TIME ZONE '2020-05-26 13:30:25.575401-04')") { ExpectedResult = new[] { "date_part" } },
+        new("SELECT EXTRACT(HOUR        FROM TIME WITH TIME ZONE '2020-05-26 13:30:25.575401-04')") { ExpectedResult = new[] { "date_part" } },
+        new("SELECT EXTRACT(TIMEZONE    FROM TIME WITH TIME ZONE '2020-05-26 13:30:25.575401-04:30')") { ExpectedResult = new[] { "date_part" } },
+        new("SELECT EXTRACT(TIMEZONE_HOUR   FROM TIME WITH TIME ZONE '2020-05-26 13:30:25.575401-04:30')") { ExpectedResult = new[] { "date_part" } },
+        new("SELECT EXTRACT(TIMEZONE_MINUTE FROM TIME WITH TIME ZONE '2020-05-26 13:30:25.575401-04:30')") { ExpectedResult = new[] { "date_part" } },
+        new("SELECT EXTRACT(EPOCH       FROM TIME WITH TIME ZONE '2020-05-26 13:30:25.575401-04')") { ExpectedResult = new[] { "date_part" } },
+        new("SELECT date_part('microsecond', TIME WITH TIME ZONE '2020-05-26 13:30:25.575401-04')") { ExpectedResult = new[] { "date_part" } },
+        new("SELECT date_part('millisecond', TIME WITH TIME ZONE '2020-05-26 13:30:25.575401-04')") { ExpectedResult = new[] { "date_part" } },
+        new("SELECT date_part('second',      TIME WITH TIME ZONE '2020-05-26 13:30:25.575401-04')") { ExpectedResult = new[] { "date_part" } },
+        new("SELECT date_part('epoch',       TIME WITH TIME ZONE '2020-05-26 13:30:25.575401-04')") { ExpectedResult = new[] { "date_part" } },
     };
 
     private static readonly TestCaseData[] Insert_TestDatas =
@@ -100,10 +141,10 @@ public partial class PostgreSqlTest
         new("DELETE FROM actor* WHERE 1=2", new[] { "SELECT * FROM actor* WHERE 1=2" }, 1),
         new("DELETE FROM ONLY actor WHERE 1=2", new[] { "SELECT * FROM ONLY actor WHERE 1=2" }, 1),
         new("DELETE FROM actor AS a", new[] { "SELECT * FROM actor" }, 1),
-        new("DELETE FROM actor USING film_actor", new[] {"SELECT actor.* FROM actor, film_actor"}, 1),
+        new("DELETE FROM actor USING film_actor", new[] { "SELECT actor.* FROM actor, film_actor" }, 1),
         new("DELETE FROM actor USING film_actor WHERE 2=3", new[] { "SELECT actor.* FROM actor, film_actor WHERE 2=3" }, 1),
         new("DELETE FROM actor a USING film_actor b WHERE 2=3", new[] { "SELECT a.* FROM actor a, film_actor b WHERE 2=3" }, 1),
-        
+
         // TODO: Enable test cases for returning clause after implementing it
         // new("DELETE FROM actor USING film_actor WHERE 2=3 RETURNING *", new[] { "SELECT actor.* FROM actor, film_actor WHERE 2=3" }, 1),
         // new("DELETE FROM actor USING film_actor WHERE 2=3 RETURNING actor_id", new[] { "SELECT actor.* FROM actor, film_actor WHERE 2=3" }, 1)
@@ -113,7 +154,7 @@ public partial class PostgreSqlTest
     {
         new("UPDATE actor SET actor_id = 1", new[] { "SELECT * FROM actor" }, 1),
         new("UPDATE actor* SET actor_id = 1", new[] { "SELECT * FROM actor*" }, 1),
-        new("UPDATE ONLY actor SET actor_id = 1", new[] {"SELECT * FROM ONLY actor"}, 1),
+        new("UPDATE ONLY actor SET actor_id = 1", new[] { "SELECT * FROM ONLY actor" }, 1),
         new("UPDATE actor SET actor_id = (SELECT city_id FROM city LIMIT 1)", new[] { "SELECT * FROM actor", "(SELECT city_id FROM city LIMIT 1)" }, 1),
         new("UPDATE actor SET actor_id = 1 WHERE false", new[] { "SELECT * FROM actor WHERE false" }, 1),
         new("UPDATE actor SET actor_id = 1 FROM city WHERE 1=2", new[] { "SELECT actor.* FROM actor, city WHERE 1=2" }, 1),
@@ -135,17 +176,17 @@ public partial class PostgreSqlTest
         new("UPDATE actor SET bbb = 2") { ExpectedResult = "QSI-000C: Unknown column 'bbb'" },
         new("UPDATE actor_info SET film_info = 2") { ExpectedResult = "QSI-001A: Column 'film_info' is not updatable" },
         // new("UPDATE address a JOIN city c USING (city_id) SET c.city_id = 1, a.address_id = 2 WHERE false") { ExpectedResult = "QSI-001A: Column 'c.city_id' is not updatable" },
-        
+
         // TODO: Implement expected results.
-        new("DELETE FROM actor USING film_actor WHERE CURRENT OF cursorname") {ExpectedResult = "QSI-0001: 'Cursor feature on DELETE statement' is not supported feature"},
-        new("UPDATE actor SET actor.actor_id = 1") {ExpectedResult = "QSI-000C: Unknown column 'actor'"},
+        new("DELETE FROM actor USING film_actor WHERE CURRENT OF cursorname") { ExpectedResult = "QSI-0001: 'Cursor feature on DELETE statement' is not supported feature" },
+        new("UPDATE actor SET actor.actor_id = 1") { ExpectedResult = "QSI-000C: Unknown column 'actor'" },
         // new("UPDATE actor AS a SET a.actor_id = 1 WHERE false", new[] { "SELECT * FROM actor AS a WHERE false" }, 1) {ExpectedResult = "QSI-000C: Unknown column 'a'"},
         // new("UPDATE actor, city SET city_id = 2, actor_id = 1 WHERE false", new[] { "SELECT * FROM actor, city WHERE false" }, 2),
         // new("UPDATE actor, city SET city.city_id = 2, actor.actor_id = 1 WHERE false", new[] { "SELECT * FROM actor, city WHERE false" }, 2),
         // new("UPDATE actor a JOIN city c ON false JOIN film f ON false SET a.last_update = null, c.last_update = null, f.last_update = null", new[] { "SELECT * FROM actor a JOIN city c ON false JOIN film f ON false" }, 3),
         // new("UPDATE address a JOIN city c USING (city_id) SET c.city = 1, a.address_id = 2 WHERE false", new[] { "SELECT * FROM address a JOIN city c USING (city_id) WHERE false" }, 2),
         // new("UPDATE address a JOIN city c USING (city_id) SET c.last_update = 1, a.last_update = 2 WHERE false", new[] { "SELECT * FROM address a JOIN city c USING (city_id) WHERE false" }, 2),
-        
+
         // Tables with aggregate function cannot be analyzed with DELETE, due to the limitation of PG.
         // PG cannot delete a column from a table, it must delete one entire row.
         new("DELETE FROM public.actor_info a WHERE actor_id = 1") { ExpectedResult = "QSI-001A: Column 'film_info' is not updatable" },
@@ -174,7 +215,7 @@ public partial class PostgreSqlTest
 
         new("UPDATE public.actor SET first_name = $1, last_name = $2 WHERE actor.actor_id = $3",
             new object[] { "MORRIS", "BABO", 3 }),
-        
+
         new("UPDATE public.actor SET first_name = $1, last_name = $2 WHERE actor.actor_id = $3 AND actor.first_name = $4",
             new object[] { "MORRIS", "BABO", 3, "ED" }),
 

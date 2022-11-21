@@ -1,0 +1,85 @@
+﻿{
+  Sql: SELECT actor.actor_id[2] from actor,
+  Result: [
+    {
+      Type: Derived,
+      References: [
+        $tbl_4
+      ],
+      Columns: [
+        {
+          Parent: $tbl_3,
+          Name: actor_id,
+          References: [
+            $col_2
+          ],
+          IsVisible: true,
+          IsExpression: true,
+          RefId: $col_1
+        }
+      ],
+      RefId: $tbl_3
+    },
+    {
+      Type: Table,
+      Identifier: public.actor,
+      Columns: [
+        {
+          Parent: $tbl_4,
+          Name: tableoid,
+          RefId: $col_5
+        },
+        {
+          Parent: $tbl_4,
+          Name: cmax,
+          RefId: $col_6
+        },
+        {
+          Parent: $tbl_4,
+          Name: xmax,
+          RefId: $col_7
+        },
+        {
+          Parent: $tbl_4,
+          Name: cmin,
+          RefId: $col_8
+        },
+        {
+          Parent: $tbl_4,
+          Name: xmin,
+          RefId: $col_9
+        },
+        {
+          Parent: $tbl_4,
+          Name: ctid,
+          RefId: $col_10
+        },
+        {
+          Parent: $tbl_4,
+          Name: actor_id,
+          IsVisible: true,
+          RefId: $col_2
+        },
+        {
+          Parent: $tbl_4,
+          Name: first_name,
+          IsVisible: true,
+          RefId: $col_11
+        },
+        {
+          Parent: $tbl_4,
+          Name: last_name,
+          IsVisible: true,
+          RefId: $col_12
+        },
+        {
+          Parent: $tbl_4,
+          Name: last_update,
+          IsVisible: true,
+          RefId: $col_13
+        }
+      ],
+      RefId: $tbl_4
+    }
+  ]
+}

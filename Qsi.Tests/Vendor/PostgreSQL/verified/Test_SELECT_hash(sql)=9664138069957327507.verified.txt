@@ -1,0 +1,18 @@
+﻿{
+  Sql: SELECT (ROW(10, 'foo', 'bar')).f2,
+  Result: [
+    {
+      Type: Derived,
+      Columns: [
+        {
+          Parent: $tbl_2,
+          Name: f2,
+          IsVisible: true,
+          IsExpression: true,
+          RefId: $col_1
+        }
+      ],
+      RefId: $tbl_2
+    }
+  ]
+}

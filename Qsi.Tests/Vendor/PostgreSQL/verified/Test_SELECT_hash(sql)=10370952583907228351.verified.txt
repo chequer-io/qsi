@@ -1,0 +1,292 @@
+﻿{
+  Sql:
+
+select L.transactionid::varchar::bigint as transaction_id
+from pg_catalog.pg_locks L
+where L.transactionid is not null
+order by pg_catalog.age(L.transactionid) desc
+limit 1,
+  Result: [
+    {
+      Type: Derived,
+      References: [
+        $tbl_6
+      ],
+      Columns: [
+        {
+          Parent: $tbl_5,
+          Name: transaction_id,
+          References: [
+            $col_2
+          ],
+          IsVisible: true,
+          IsExpression: true,
+          RefId: $col_1
+        }
+      ],
+      RefId: $tbl_5
+    },
+    {
+      Type: Derived,
+      References: [
+        $tbl_7
+      ],
+      Columns: [
+        {
+          Parent: $tbl_6,
+          Name: transaction_id,
+          References: [
+            $col_3
+          ],
+          IsVisible: true,
+          IsExpression: true,
+          RefId: $col_2
+        }
+      ],
+      RefId: $tbl_6
+    },
+    {
+      Type: Derived,
+      Identifier: L,
+      References: [
+        $tbl_8
+      ],
+      Columns: [
+        {
+          Parent: $tbl_7,
+          Name: locktype,
+          References: [
+            $col_10
+          ],
+          IsVisible: true,
+          RefId: $col_9
+        },
+        {
+          Parent: $tbl_7,
+          Name: database,
+          References: [
+            $col_12
+          ],
+          IsVisible: true,
+          RefId: $col_11
+        },
+        {
+          Parent: $tbl_7,
+          Name: relation,
+          References: [
+            $col_14
+          ],
+          IsVisible: true,
+          RefId: $col_13
+        },
+        {
+          Parent: $tbl_7,
+          Name: page,
+          References: [
+            $col_16
+          ],
+          IsVisible: true,
+          RefId: $col_15
+        },
+        {
+          Parent: $tbl_7,
+          Name: tuple,
+          References: [
+            $col_18
+          ],
+          IsVisible: true,
+          RefId: $col_17
+        },
+        {
+          Parent: $tbl_7,
+          Name: virtualxid,
+          References: [
+            $col_20
+          ],
+          IsVisible: true,
+          RefId: $col_19
+        },
+        {
+          Parent: $tbl_7,
+          Name: transactionid,
+          References: [
+            $col_4
+          ],
+          IsVisible: true,
+          RefId: $col_3
+        },
+        {
+          Parent: $tbl_7,
+          Name: classid,
+          References: [
+            $col_22
+          ],
+          IsVisible: true,
+          RefId: $col_21
+        },
+        {
+          Parent: $tbl_7,
+          Name: objid,
+          References: [
+            $col_24
+          ],
+          IsVisible: true,
+          RefId: $col_23
+        },
+        {
+          Parent: $tbl_7,
+          Name: objsubid,
+          References: [
+            $col_26
+          ],
+          IsVisible: true,
+          RefId: $col_25
+        },
+        {
+          Parent: $tbl_7,
+          Name: virtualtransaction,
+          References: [
+            $col_28
+          ],
+          IsVisible: true,
+          RefId: $col_27
+        },
+        {
+          Parent: $tbl_7,
+          Name: pid,
+          References: [
+            $col_30
+          ],
+          IsVisible: true,
+          RefId: $col_29
+        },
+        {
+          Parent: $tbl_7,
+          Name: mode,
+          References: [
+            $col_32
+          ],
+          IsVisible: true,
+          RefId: $col_31
+        },
+        {
+          Parent: $tbl_7,
+          Name: granted,
+          References: [
+            $col_34
+          ],
+          IsVisible: true,
+          RefId: $col_33
+        },
+        {
+          Parent: $tbl_7,
+          Name: fastpath,
+          References: [
+            $col_36
+          ],
+          IsVisible: true,
+          RefId: $col_35
+        }
+      ],
+      RefId: $tbl_7
+    },
+    {
+      Type: View,
+      Identifier: pg_catalog.pg_locks,
+      IsSystem: true,
+      Columns: [
+        {
+          Parent: $tbl_8,
+          Name: locktype,
+          IsVisible: true,
+          RefId: $col_10
+        },
+        {
+          Parent: $tbl_8,
+          Name: database,
+          IsVisible: true,
+          RefId: $col_12
+        },
+        {
+          Parent: $tbl_8,
+          Name: relation,
+          IsVisible: true,
+          RefId: $col_14
+        },
+        {
+          Parent: $tbl_8,
+          Name: page,
+          IsVisible: true,
+          RefId: $col_16
+        },
+        {
+          Parent: $tbl_8,
+          Name: tuple,
+          IsVisible: true,
+          RefId: $col_18
+        },
+        {
+          Parent: $tbl_8,
+          Name: virtualxid,
+          IsVisible: true,
+          RefId: $col_20
+        },
+        {
+          Parent: $tbl_8,
+          Name: transactionid,
+          IsVisible: true,
+          RefId: $col_4
+        },
+        {
+          Parent: $tbl_8,
+          Name: classid,
+          IsVisible: true,
+          RefId: $col_22
+        },
+        {
+          Parent: $tbl_8,
+          Name: objid,
+          IsVisible: true,
+          RefId: $col_24
+        },
+        {
+          Parent: $tbl_8,
+          Name: objsubid,
+          IsVisible: true,
+          RefId: $col_26
+        },
+        {
+          Parent: $tbl_8,
+          Name: virtualtransaction,
+          IsVisible: true,
+          RefId: $col_28
+        },
+        {
+          Parent: $tbl_8,
+          Name: pid,
+          IsVisible: true,
+          RefId: $col_30
+        },
+        {
+          Parent: $tbl_8,
+          Name: mode,
+          IsVisible: true,
+          RefId: $col_32
+        },
+        {
+          Parent: $tbl_8,
+          Name: granted,
+          IsVisible: true,
+          RefId: $col_34
+        },
+        {
+          Parent: $tbl_8,
+          Name: fastpath,
+          IsVisible: true,
+          RefId: $col_36
+        }
+      ],
+      RefId: $tbl_8
+    }
+  ]
+}

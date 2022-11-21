@@ -3,6 +3,7 @@ using System.Linq;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
 using Qsi.Data;
+using Qsi.Shared.Extensions;
 using Qsi.Tree;
 using Qsi.Utilities;
 using static Qsi.PostgreSql.Internal.PostgreSqlParserInternal;
@@ -19,12 +20,12 @@ internal static class FunctionVisitor
         }
 
         var functionCall = context.functionCall();
-        
+
         var identifier = IdentifierVisitor.VisitFunctionName(functionCall.functionName());
-        
+
         var functionNode = new QsiFunctionExpressionNode { Identifier = identifier };
         PostgreSqlTree.PutContextSpan(functionNode, functionCall.functionName());
-        
+
         var node = new QsiInvokeExpressionNode();
         node.Member.SetValue(functionNode);
 
@@ -32,9 +33,7 @@ internal static class FunctionVisitor
         {
             node.Parameters.AddRange(VisitFunctionCallArgument(functionCall.functionCallArgument()));
         }
-        
-        
-        
+
         PostgreSqlTree.PutContextSpan(node, context);
 
         return node;
@@ -50,14 +49,17 @@ internal static class FunctionVisitor
             .Select(t => t.GetText())
             .Aggregate((cur, next) => cur + ' ' + next);
 
+        if ("EXTRACT".EqualsIgnoreCase(functionName))
+            functionName = "date_part";
+
         var i = new QsiIdentifier(functionName, false);
         var identifier = new QsiQualifiedIdentifier(i);
         var functionNode = new QsiFunctionExpressionNode { Identifier = identifier };
-        
+
         var node = new QsiInvokeExpressionNode();
         node.Member.SetValue(functionNode);
         node.Parameters.AddRange(GetParameters(tokens.First().Symbol, context));
-        
+
         PostgreSqlTree.PutContextSpan(node, context);
 
         return node;
@@ -71,7 +73,7 @@ internal static class FunctionVisitor
             expression.Column.SetValue(new QsiAllColumnNode());
 
             PostgreSqlTree.PutContextSpan(expression, context);
-            
+
             return new[] { expression };
         }
 
@@ -106,7 +108,7 @@ internal static class FunctionVisitor
         {
             Operator = context.COLON_EQUALS()?.GetText() ?? context.EQUALS_GREATER().GetText()
         };
-        
+
         node.Right.SetValue(ExpressionVisitor.VisitExpression(context.expression()));
 
         var identifier = IdentifierVisitor.VisitIdentifier(context.typeFunctionIdentifier());
@@ -116,11 +118,11 @@ internal static class FunctionVisitor
         {
             Identifier = qualified
         };
-        
+
         PostgreSqlTree.PutContextSpan(left, context.typeFunctionIdentifier());
-        
+
         node.Left.SetValue(left);
-        
+
         PostgreSqlTree.PutContextSpan(node, context);
 
         return node;
@@ -133,16 +135,19 @@ internal static class FunctionVisitor
             // f(x)
             case COLLATION:
                 return new[] { ExpressionVisitor.VisitExpression(context.expression(0)) };
+
             // f(x...)
             case OVERLAY:
             case NULLIF:
                 return context.expression().Select(ExpressionVisitor.VisitExpression);
+
             // f(xList)
             case COALESCE:
             case GREATEST:
             case LEAST:
             case XMLCONCAT:
                 return new[] { ExpressionVisitor.VisitExpressionList(context.expressionList()) };
+
             // f(int?)
             case CURRENT_TIME:
             case CURRENT_TIMESTAMP:
@@ -151,6 +156,7 @@ internal static class FunctionVisitor
                 return context.signedInt() != null ?
                     new[] { ConstantVisitor.VisitInt(context.signedInt()) } :
                     Enumerable.Empty<QsiExpressionNode>();
+
             // f(x as type)
             case CAST:
             case TREAT:
@@ -159,23 +165,29 @@ internal static class FunctionVisitor
                     ExpressionVisitor.VisitExpression(context.expression(0)),
                     ExpressionVisitor.VisitType(context.type())
                 };
+
             // f(extractList)
             case EXTRACT:
                 return context.extractList() != null ?
                     new[] { VisitExtractList(context.extractList()) } :
                     Enumerable.Empty<QsiExpressionNode>();
+
             // f(x (, unicodeNormalForm)?)
             case NORMALIZE:
                 return VisitNormalize(context);
+
             // f(x in x)
             case POSITION:
                 return context.positionList().expression().Select(ExpressionVisitor.VisitExpression);
+
             // substring(...)
             case SUBSTRING:
                 return context.substringList().expression().Select(ExpressionVisitor.VisitExpression);
+
             // trim(...)
             case TRIM:
                 return VisitTrimList(context.trimList());
+
             // f
             case CURRENT_DATE:
             case CURRENT_ROLE:
@@ -185,6 +197,7 @@ internal static class FunctionVisitor
             case CURRENT_CATALOG:
             case CURRENT_SCHEMA:
                 return Enumerable.Empty<QsiExpressionNode>();
+
             // XML(...)
             case XMLEXISTS:
             case XMLFOREST:
@@ -193,6 +206,7 @@ internal static class FunctionVisitor
             case XMLROOT:
             case XMLSERIALIZE:
                 throw TreeHelper.NotSupportedTree(context);
+
             default:
                 throw TreeHelper.NotSupportedTree(context);
         }
@@ -207,7 +221,7 @@ internal static class FunctionVisitor
         node.Left.SetValue(argument);
         node.Operator = context.FROM().GetText();
         node.Right.SetValue(expression);
-        
+
         PostgreSqlTree.PutContextSpan(node, context);
 
         return node;
@@ -216,7 +230,7 @@ internal static class FunctionVisitor
     public static QsiExpressionNode VisitExtractArgument(ExtractArgumentContext context)
     {
         var identifier = context.identifier() != null ?
-            IdentifierVisitor.VisitIdentifier(context.identifier()):
+            IdentifierVisitor.VisitIdentifier(context.identifier()) :
             new QsiIdentifier(context.GetText(), false);
 
         var qualified = new QsiQualifiedIdentifier(identifier);
@@ -230,7 +244,7 @@ internal static class FunctionVisitor
     public static IEnumerable<QsiExpressionNode> VisitNormalize(CommonFunctionExpressionContext context)
     {
         var expr = ExpressionVisitor.VisitExpression(context.expression(0));
-        
+
         if (context.unicodeNormalForm() == null)
         {
             return new[] { expr };
@@ -243,12 +257,12 @@ internal static class FunctionVisitor
         {
             Identifier = qualified
         };
-        
+
         PostgreSqlTree.PutContextSpan(node, context.unicodeNormalForm());
 
         return new[] { expr, node };
     }
-    
+
     public static IEnumerable<QsiExpressionNode> VisitTrimList(TrimListContext context)
     {
         return context.expression() != null ?

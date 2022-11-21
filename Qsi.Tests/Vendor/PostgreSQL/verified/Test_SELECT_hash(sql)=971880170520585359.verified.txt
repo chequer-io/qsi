@@ -1,0 +1,121 @@
+﻿{
+  Sql: SELECT * FROM (SELECT actor_id FROM actor) a,
+  Result: [
+    {
+      Type: Derived,
+      References: [
+        $tbl_6
+      ],
+      Columns: [
+        {
+          Parent: $tbl_5,
+          Name: actor_id,
+          References: [
+            $col_2
+          ],
+          IsVisible: true,
+          RefId: $col_1
+        }
+      ],
+      RefId: $tbl_5
+    },
+    {
+      Type: Derived,
+      Identifier: a,
+      References: [
+        $tbl_7
+      ],
+      Columns: [
+        {
+          Parent: $tbl_6,
+          Name: actor_id,
+          References: [
+            $col_3
+          ],
+          IsVisible: true,
+          RefId: $col_2
+        }
+      ],
+      RefId: $tbl_6
+    },
+    {
+      Type: Derived,
+      References: [
+        $tbl_8
+      ],
+      Columns: [
+        {
+          Parent: $tbl_7,
+          Name: actor_id,
+          References: [
+            $col_4
+          ],
+          IsVisible: true,
+          RefId: $col_3
+        }
+      ],
+      RefId: $tbl_7
+    },
+    {
+      Type: Table,
+      Identifier: public.actor,
+      Columns: [
+        {
+          Parent: $tbl_8,
+          Name: tableoid,
+          RefId: $col_9
+        },
+        {
+          Parent: $tbl_8,
+          Name: cmax,
+          RefId: $col_10
+        },
+        {
+          Parent: $tbl_8,
+          Name: xmax,
+          RefId: $col_11
+        },
+        {
+          Parent: $tbl_8,
+          Name: cmin,
+          RefId: $col_12
+        },
+        {
+          Parent: $tbl_8,
+          Name: xmin,
+          RefId: $col_13
+        },
+        {
+          Parent: $tbl_8,
+          Name: ctid,
+          RefId: $col_14
+        },
+        {
+          Parent: $tbl_8,
+          Name: actor_id,
+          IsVisible: true,
+          RefId: $col_4
+        },
+        {
+          Parent: $tbl_8,
+          Name: first_name,
+          IsVisible: true,
+          RefId: $col_15
+        },
+        {
+          Parent: $tbl_8,
+          Name: last_name,
+          IsVisible: true,
+          RefId: $col_16
+        },
+        {
+          Parent: $tbl_8,
+          Name: last_update,
+          IsVisible: true,
+          RefId: $col_17
+        }
+      ],
+      RefId: $tbl_8
+    }
+  ]
+}

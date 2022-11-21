@@ -157,6 +157,20 @@ namespace Qsi.Extensions
 
             return node.Columns[0] is IQsiAllColumnNode { Path: null };
         }
+
+        public static bool IsAliasedTableNode<TTableNode>(this IQsiDerivedTableNode node) where TTableNode : IQsiTableNode
+        {
+            return
+                node.Source is TTableNode &&
+                node.Alias is not null &&
+                node.Directives is null &&
+                node.Where is null &&
+                node.Grouping is null &&
+                node.Order is null &&
+                node.Limit is null &&
+                node.Columns is not null &&
+                node.Columns.IsAllColumnNode();
+        }
         #endregion
 
         #region ToImmutable

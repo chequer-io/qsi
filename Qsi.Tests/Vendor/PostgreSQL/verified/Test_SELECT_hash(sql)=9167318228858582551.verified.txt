@@ -1,0 +1,276 @@
+﻿{
+  Sql: SELECT (SELECT a.actor_id FROM actor LIMIT 1) from actor a,
+  Result: [
+    {
+      Type: Derived,
+      References: [
+        $tbl_29
+      ],
+      Columns: [
+        {
+          Parent: $tbl_10,
+          Name: actor_id,
+          References: [
+            $col_4
+          ],
+          IsVisible: true,
+          RefId: $col_3
+        }
+      ],
+      RefId: $tbl_10
+    },
+    {
+      Type: Table,
+      Identifier: public.actor,
+      Columns: [
+        {
+          Parent: $tbl_29,
+          Name: tableoid,
+          RefId: $col_30
+        },
+        {
+          Parent: $tbl_29,
+          Name: cmax,
+          RefId: $col_31
+        },
+        {
+          Parent: $tbl_29,
+          Name: xmax,
+          RefId: $col_32
+        },
+        {
+          Parent: $tbl_29,
+          Name: cmin,
+          RefId: $col_33
+        },
+        {
+          Parent: $tbl_29,
+          Name: xmin,
+          RefId: $col_34
+        },
+        {
+          Parent: $tbl_29,
+          Name: ctid,
+          RefId: $col_35
+        },
+        {
+          Parent: $tbl_29,
+          Name: actor_id,
+          IsVisible: true,
+          RefId: $col_36
+        },
+        {
+          Parent: $tbl_29,
+          Name: first_name,
+          IsVisible: true,
+          RefId: $col_37
+        },
+        {
+          Parent: $tbl_29,
+          Name: last_name,
+          IsVisible: true,
+          RefId: $col_38
+        },
+        {
+          Parent: $tbl_29,
+          Name: last_update,
+          IsVisible: true,
+          RefId: $col_39
+        }
+      ],
+      RefId: $tbl_29
+    },
+    {
+      Type: Derived,
+      References: [
+        $tbl_7
+      ],
+      Columns: [
+        {
+          Parent: $tbl_6,
+          Name: actor_id,
+          References: [
+            $col_2
+          ],
+          IsVisible: true,
+          IsExpression: true,
+          RefId: $col_1
+        }
+      ],
+      RefId: $tbl_6
+    },
+    {
+      Type: Derived,
+      Identifier: a,
+      References: [
+        $tbl_8
+      ],
+      Columns: [
+        {
+          Parent: $tbl_7,
+          Name: tableoid,
+          References: [
+            $col_12
+          ],
+          RefId: $col_11
+        },
+        {
+          Parent: $tbl_7,
+          Name: cmax,
+          References: [
+            $col_14
+          ],
+          RefId: $col_13
+        },
+        {
+          Parent: $tbl_7,
+          Name: xmax,
+          References: [
+            $col_16
+          ],
+          RefId: $col_15
+        },
+        {
+          Parent: $tbl_7,
+          Name: cmin,
+          References: [
+            $col_18
+          ],
+          RefId: $col_17
+        },
+        {
+          Parent: $tbl_7,
+          Name: xmin,
+          References: [
+            $col_20
+          ],
+          RefId: $col_19
+        },
+        {
+          Parent: $tbl_7,
+          Name: ctid,
+          References: [
+            $col_22
+          ],
+          RefId: $col_21
+        },
+        {
+          Parent: $tbl_7,
+          Name: actor_id,
+          References: [
+            $col_5
+          ],
+          IsVisible: true,
+          RefId: $col_4
+        },
+        {
+          Parent: $tbl_7,
+          Name: first_name,
+          References: [
+            $col_24
+          ],
+          IsVisible: true,
+          RefId: $col_23
+        },
+        {
+          Parent: $tbl_7,
+          Name: last_name,
+          References: [
+            $col_26
+          ],
+          IsVisible: true,
+          RefId: $col_25
+        },
+        {
+          Parent: $tbl_7,
+          Name: last_update,
+          References: [
+            $col_28
+          ],
+          IsVisible: true,
+          RefId: $col_27
+        }
+      ],
+      RefId: $tbl_7
+    },
+    {
+      Type: Table,
+      Identifier: public.actor,
+      Columns: [
+        {
+          Parent: $tbl_8,
+          Name: tableoid,
+          RefId: $col_12
+        },
+        {
+          Parent: $tbl_8,
+          Name: cmax,
+          RefId: $col_14
+        },
+        {
+          Parent: $tbl_8,
+          Name: xmax,
+          RefId: $col_16
+        },
+        {
+          Parent: $tbl_8,
+          Name: cmin,
+          RefId: $col_18
+        },
+        {
+          Parent: $tbl_8,
+          Name: xmin,
+          RefId: $col_20
+        },
+        {
+          Parent: $tbl_8,
+          Name: ctid,
+          RefId: $col_22
+        },
+        {
+          Parent: $tbl_8,
+          Name: actor_id,
+          IsVisible: true,
+          RefId: $col_5
+        },
+        {
+          Parent: $tbl_8,
+          Name: first_name,
+          IsVisible: true,
+          RefId: $col_24
+        },
+        {
+          Parent: $tbl_8,
+          Name: last_name,
+          IsVisible: true,
+          RefId: $col_26
+        },
+        {
+          Parent: $tbl_8,
+          Name: last_update,
+          IsVisible: true,
+          RefId: $col_28
+        }
+      ],
+      RefId: $tbl_8
+    },
+    {
+      Type: Derived,
+      References: [
+        $tbl_10
+      ],
+      Columns: [
+        {
+          Parent: $tbl_9,
+          Name: actor_id,
+          References: [
+            $col_3
+          ],
+          IsVisible: true,
+          RefId: $col_2
+        }
+      ],
+      RefId: $tbl_9
+    }
+  ]
+}

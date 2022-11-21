@@ -1,0 +1,18 @@
+﻿{
+  Sql: SELECT EXTRACT(DAY FROM TIMESTAMP '2001-02-16 20:38:40'),
+  Result: [
+    {
+      Type: Derived,
+      Columns: [
+        {
+          Parent: $tbl_2,
+          Name: date_part,
+          IsVisible: true,
+          IsExpression: true,
+          RefId: $col_1
+        }
+      ],
+      RefId: $tbl_2
+    }
+  ]
+}

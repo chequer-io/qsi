@@ -18,7 +18,7 @@ namespace Qsi.Tests.Vendor.PostgreSQL.Driver;
 public class PostgreSqlRepositoryProvider : RepositoryProviderDriverBase
 {
     private const string SchemaName = "public";
-    
+
     public PostgreSqlRepositoryProvider(DbConnection connection) : base(connection)
     {
     }
@@ -45,31 +45,65 @@ public class PostgreSqlRepositoryProvider : RepositoryProviderDriverBase
             .Select(x => x.IsEscaped ? IdentifierUtility.Unescape(x.Value) : x.Value)
             .ToArray();
 
+        var regclassIdentifier = identifier.ToString().Replace("'", "''");
+
         var table = new QsiTableStructure();
 
-        var sql = $@"SELECT TABLE_SCHEMA, TABLE_NAME, TABLE_TYPE from information_schema.TABLES where TABLE_SCHEMA = '{names[0]}' and TABLE_NAME = '{names[1]}' limit 1";
+        var sql = $@"
+SELECT
+    TABLE_SCHEMA,
+    TABLE_NAME,
+    TABLE_TYPE,
+    (
+        -- IsCatalogRelationOid
+        '{regclassIdentifier}'::regclass::oid < 12000 /* FirstUnpinnedObjectId */
+        -- IsToastNamespace
+        OR (
+            SELECT relnamespace::regnamespace::oid
+            FROM pg_catalog.pg_class
+            WHERE oid = '{regclassIdentifier}'::regclass::oid
+        ) = 99 /* PG_TOAST_NAMESPACE */
+    ) AS IS_SYSTEM
+FROM
+    information_schema.TABLES
+WHERE
+    TABLE_SCHEMA = '{names[0]}'
+    AND TABLE_NAME = '{names[1]}'
+LIMIT 1";
 
-        using (var reader = GetDataReaderCoreAsync(new QsiScript(sql, default), null, default).Result)
+        try
         {
-            if (!reader.Read())
+            using (var reader = GetDataReaderCoreAsync(new QsiScript(sql, default), null, default).Result)
             {
-                return null;
+                if (!reader.Read())
+                    return null;
+
+                var id0 = new QsiIdentifier(reader.GetString(0), false);
+                var id1 = new QsiIdentifier(reader.GetString(1), false);
+                table.Identifier = new QsiQualifiedIdentifier(id0, id1);
+
+                table.Type = reader.GetString(2).ToUpper() switch
+                {
+                    "BASE TABLE" => QsiTableType.Table,
+                    "SYSTEM VIEW" => QsiTableType.Table,
+                    "VIEW" => QsiTableType.View,
+                    _ => throw new Exception()
+                };
+
+                if (reader.GetChar(3) == 't')
+                    table.IsSystem = true;
             }
-
-            var id0 = new QsiIdentifier(reader.GetString(0), false);
-            var id1 = new QsiIdentifier(reader.GetString(1), false);
-            table.Identifier = new QsiQualifiedIdentifier(id0, id1);
-
-            table.Type = reader.GetString(2).ToUpper() switch
-            {
-                "BASE TABLE" => QsiTableType.Table,
-                "SYSTEM VIEW" => QsiTableType.Table,
-                "VIEW" => QsiTableType.View,
-                _ => throw new Exception()
-            };
+        }
+        catch
+        {
+            return null;
         }
 
-        sql = $@"select COLUMN_NAME from information_schema.COLUMNS where TABLE_SCHEMA = '{names[0]}' and TABLE_NAME = '{names[1]}' order by ORDINAL_POSITION";
+        sql = $@"
+SELECT attname, attnum < 1
+FROM pg_attribute 
+WHERE attrelid = '{regclassIdentifier}'::regclass
+ORDER BY attnum";
 
         using (var reader = GetDataReaderCoreAsync(new QsiScript(sql, default), null, default).Result)
         {
@@ -77,6 +111,7 @@ public class PostgreSqlRepositoryProvider : RepositoryProviderDriverBase
             {
                 var column = table.NewColumn();
                 column.Name = new QsiIdentifier(reader.GetString(0), false);
+                column.IsVisible = reader.GetChar(1) is 'f'; // t: system columns
             }
         }
 
@@ -88,7 +123,7 @@ public class PostgreSqlRepositoryProvider : RepositoryProviderDriverBase
         var oidSql = $@"select oid from pg_catalog.pg_class where relname = '{identifier[^1]}'";
 
         string oid;
-        
+
         using (var oidReader = GetDataReaderCoreAsync(new QsiScript(oidSql, default), null, default).Result)
         {
             if (!oidReader.Read())
@@ -96,7 +131,7 @@ public class PostgreSqlRepositoryProvider : RepositoryProviderDriverBase
 
             oid = oidReader.GetString(0);
         }
-        
+
         var viewSql = $@"SELECT pg_catalog.pg_get_viewdef({oid})";
 
         using var reader = GetDataReaderCoreAsync(new QsiScript(viewSql, QsiScriptType.Show), null, default).Result;
@@ -107,7 +142,7 @@ public class PostgreSqlRepositoryProvider : RepositoryProviderDriverBase
         var selectSql = reader.GetString(0).TrimEnd(';');
 
         Console.WriteLine(selectSql);
-        
+
         var createSql = $@"CREATE VIEW {identifier} AS ({selectSql})";
 
         return new QsiScript(createSql, QsiScriptType.Create);
@@ -137,7 +172,7 @@ public class PostgreSqlRepositoryProvider : RepositoryProviderDriverBase
         var csp = new CommonScriptParser();
         IEnumerable<CommonScriptParser.Token> tokens = csp.ParseTokens(csc);
         ReadOnlySpan<char> scriptSpan = script.Script.AsSpan();
-        
+
         var index = 1;
         var scriptIndex = 0;
         var builder = new StringBuilder(script.Script.Length);
@@ -150,19 +185,19 @@ public class PostgreSqlRepositoryProvider : RepositoryProviderDriverBase
                 continue;
 
             var endIndex = GetNumberEndIndex(str[1..]) + 1;
-            
+
             if (endIndex == 1)
                 continue;
 
             var (offset, length) = token.Span.GetOffsetAndLength(script.Script.Length);
             builder.Append(script.Script, scriptIndex, offset + length - scriptIndex - str.Length);
             scriptIndex = offset + length;
-            
+
             builder.Append('$').Append(index++);
 
             if (str.Length < endIndex)
                 continue;
-            
+
             builder.Append(str[(endIndex)..]);
         }
 

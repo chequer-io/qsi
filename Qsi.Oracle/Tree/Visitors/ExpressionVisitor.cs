@@ -5251,7 +5251,7 @@ namespace Qsi.Oracle.Tree.Visitors
 
             if (context.columnList() is null)
             {
-                tableNode.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+                tableNode.Columns.Value = TreeHelper.CreateAllVisibleColumnsDeclaration();
             }
             else
             {

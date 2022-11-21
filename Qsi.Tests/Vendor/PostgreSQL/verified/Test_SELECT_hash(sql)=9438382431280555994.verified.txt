@@ -1,0 +1,18 @@
+﻿{
+  Sql: select round(extract(epoch from pg_postmaster_start_time() at time zone 'UTC')) as startup_time,
+  Result: [
+    {
+      Type: Derived,
+      Columns: [
+        {
+          Parent: $tbl_2,
+          Name: startup_time,
+          IsVisible: true,
+          IsExpression: true,
+          RefId: $col_1
+        }
+      ],
+      RefId: $tbl_2
+    }
+  ]
+}

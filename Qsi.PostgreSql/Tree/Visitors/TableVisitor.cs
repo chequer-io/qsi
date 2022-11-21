@@ -18,10 +18,10 @@ internal static class TableVisitor
         {
             case QueryExpressionParensContext queryExpressionParens:
                 return VisitQueryExpressionParens(queryExpressionParens);
-            
+
             case QueryExpressionContext queryExpression:
                 return VisitQueryExpression(queryExpression);
-            
+
             default:
                 throw TreeHelper.NotSupportedTree(context.children[0]);
         }
@@ -52,6 +52,7 @@ internal static class TableVisitor
     public static QsiTableNode VisitQueryExpression(in QueryExpressionContext context)
     {
         var nowith = context.queryExpressionNoWith();
+
         var source = nowith.queryExpressionBody() != null ?
             VisitQueryExpressionBody(nowith.queryExpressionBody()) :
             VisitQueryExpressionParens(nowith.queryExpressionParens());
@@ -70,15 +71,15 @@ internal static class TableVisitor
         }
 
         var node = new PostgreSqlDerivedTableNode();
-        
+
         // Visit WITH clause
         if (with != null)
         {
             node.Directives.SetValue(VisitWithClause(with));
         }
-        
-        node.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
-        
+
+        node.Columns.SetValue(TreeHelper.CreateAllVisibleColumnsDeclaration());
+
         // Set source
         node.Source.SetValue(source);
 
@@ -96,21 +97,21 @@ internal static class TableVisitor
         {
             node.Locking.SetValue(VisitLockingClause(lockingClause));
         }
-        
+
         PostgreSqlTree.PutContextSpan(node, context);
 
         return node;
     }
-    
+
     public static QsiTableDirectivesNode VisitWithClause(in WithClauseContext context)
     {
         var node = new QsiTableDirectivesNode
         {
             IsRecursive = context.HasToken(RECURSIVE)
         };
-        
+
         node.Tables.AddRange(context.commonTableExpression().Select(VisitCommonTableExpression));
-        
+
         PostgreSqlTree.PutContextSpan(node, context);
 
         return node;
@@ -119,31 +120,41 @@ internal static class TableVisitor
     public static QsiDerivedTableNode VisitCommonTableExpression(CommonTableExpressionContext context)
     {
         var node = new QsiDerivedTableNode();
-        
+
         var columnIdentifierList = context.columnIdentifierList();
+
         node.Columns.SetValue(columnIdentifierList == null ?
-            TreeHelper.CreateAllColumnsDeclaration() :
-            CreateSequentialColumns(columnIdentifierList));
+            TreeHelper.CreateAllVisibleColumnsDeclaration() :
+            CreateSequentialColumns(columnIdentifierList, false));
 
         var subqueryName = context.subqueryName().columnIdentifier();
+
         node.Alias.SetValue(new QsiAliasNode
         {
             Name = IdentifierVisitor.VisitIdentifier(subqueryName)
         });
-        
+
         node.Source.SetValue(VisitCommonTableExpressionStatements(context.commonTableExpressionStatements()));
-        
+
         PostgreSqlTree.PutContextSpan(node, context);
 
         return node;
     }
 
-    public static QsiColumnsDeclarationNode CreateSequentialColumns(ColumnIdentifierListContext context)
+    public static QsiColumnsDeclarationNode CreateSequentialColumns(ColumnIdentifierListContext context, bool includeInvisibleColumns)
     {
-        var node = new QsiColumnsDeclarationNode();
-        
-        node.Columns.AddRange(context.columnIdentifier().Select(VisitSequentialColumn));
-        
+        var allColumnNode = new QsiAllColumnNode
+        {
+            IncludeInvisibleColumns = includeInvisibleColumns
+        };
+
+        allColumnNode.SequentialColumns.AddRange(context.columnIdentifier().Select(VisitSequentialColumn));
+
+        var node = new QsiColumnsDeclarationNode
+        {
+            Columns = { allColumnNode }
+        };
+
         PostgreSqlTree.PutContextSpan(node, context);
 
         return node;
@@ -179,7 +190,7 @@ internal static class TableVisitor
     {
         var lockStrengthOption = context.lockStrengthOption();
         var tableLockType = GetTableLockType(lockStrengthOption);
-        
+
         var rowLockType = GetRowLockType(context);
 
         var tables = context
@@ -195,7 +206,7 @@ internal static class TableVisitor
             RowLockType = rowLockType,
             Tables = tables
         };
-        
+
         PostgreSqlTree.PutContextSpan(node, context);
 
         return node;
@@ -251,15 +262,15 @@ internal static class TableVisitor
         }
 
         var node = new QsiCompositeTableNode();
-        
+
         node.Sources.Add(primary);
         node.Sources.AddRange(expressionSetNodes);
-        
+
         PostgreSqlTree.PutContextSpan(node, context);
 
         return node;
     }
-    
+
     public static QsiTableNode VisitQueryExpressionSet(in QueryExpressionSetContext context)
     {
         return context.queryPrimary() != null ?
@@ -316,9 +327,8 @@ internal static class TableVisitor
 
         if (groupByClause != null)
         {
-
             node.Grouping.SetValue(ExpressionVisitor.VisitGroupByClause(groupByClause));
-            
+
             if (havingClause != null)
             {
                 node.Grouping.Value.Having.Value = ExpressionVisitor.VisitExpression(havingClause.expression());
@@ -338,7 +348,7 @@ internal static class TableVisitor
         {
             node.Option = PostgreSqlSelectOption.All;
         }
-        
+
         if (context.DISTINCT() != null)
         {
             node.Option = PostgreSqlSelectOption.Distinct;
@@ -350,7 +360,7 @@ internal static class TableVisitor
                 node.DistinctExpressionList.AddRange(expressionNodes);
             }
         }
-        
+
         PostgreSqlTree.PutContextSpan(node, context);
 
         return node;
@@ -364,10 +374,10 @@ internal static class TableVisitor
         {
             switch (child)
             {
-                case ITerminalNode { Symbol: {Type: STAR} }:
+                case ITerminalNode { Symbol: { Type: STAR } }:
                     node.Columns.Add(new QsiAllColumnNode());
                     break;
-                
+
                 case SelectItemContext selectItem:
                     node.Columns.Add(VisitSelectItem(selectItem));
                     break;
@@ -384,7 +394,7 @@ internal static class TableVisitor
         if (context.STAR() != null)
         {
             var allColumnNode = new QsiAllColumnNode();
-            
+
             PostgreSqlTree.PutContextSpan(allColumnNode, context);
 
             return allColumnNode;
@@ -397,7 +407,7 @@ internal static class TableVisitor
         {
             return columnNode;
         }
-        
+
         if (columnNode is not QsiDerivedColumnNode derivedColumnNode)
         {
             derivedColumnNode = new QsiDerivedColumnNode
@@ -407,12 +417,12 @@ internal static class TableVisitor
         }
 
         derivedColumnNode.Alias.Value = VisitAliasClause(aliasClause);
-            
+
         PostgreSqlTree.PutContextSpan(derivedColumnNode, context);
 
         return derivedColumnNode;
     }
-    
+
     public static QsiColumnNode VisitColumnExpression(ExpressionContext context)
     {
         var expressionNode = ExpressionVisitor.VisitExpression(context);
@@ -424,7 +434,7 @@ internal static class TableVisitor
 
         var node = new QsiDerivedColumnNode();
         node.Expression.SetValue(expressionNode);
-        
+
         PostgreSqlTree.PutContextSpan(node, context);
 
         return node;
@@ -434,7 +444,7 @@ internal static class TableVisitor
     {
         var node = new QsiInlineDerivedTableNode();
         node.Rows.AddRange(context.valueList().valueItem().Select(VisitRowValueItem));
-        
+
         PostgreSqlTree.PutContextSpan(node, context);
 
         return node;
@@ -459,7 +469,7 @@ internal static class TableVisitor
             {
                 IsComma = true
             };
-            
+
             join.Left.SetValue(anchor);
             join.Right.SetValue(fromItems[i]);
 
@@ -476,7 +486,7 @@ internal static class TableVisitor
 
     public static QsiTableNode VisitFromItem(FromItemContext context)
     {
-        var source =context.fromItemParens() != null 
+        var source = context.fromItemParens() != null
             ? VisitFromItemParens(context.fromItemParens())
             : VisitFromItemPrimary(context.fromItemPrimary());
 
@@ -491,12 +501,12 @@ internal static class TableVisitor
     public static QsiTableNode VisitFromItemParens(FromItemParensContext context)
     {
         var nested = context;
-        
+
         while (nested.fromItemParens() != null)
         {
             nested = context.fromItemParens();
         }
-        
+
         var node = VisitFromItem(nested.fromItem());
 
         PostgreSqlTree.Span[node] = new Range(context.Start.StartIndex, context.Stop.StopIndex + 1);
@@ -527,39 +537,107 @@ internal static class TableVisitor
     public static QsiTableNode VisitTableFromItem(TableFromItemContext context)
     {
         var tableNode = VisitTableReference(context.tableName());
-
-        if (context.aliasClause() == null)
-        {
-            return tableNode;
-        }
-
         var aliasClause = context.aliasClause();
+
+        if (aliasClause == null)
+            return tableNode;
 
         var node = new QsiDerivedTableNode
         {
-            Columns = { Value = TreeHelper.CreateAllColumnsDeclaration() },
             Source = { Value = tableNode },
             Alias = { Value = VisitAliasClause(aliasClause) }
         };
 
         var columnList = aliasClause.aliasClauseBody().columnIdentifierList();
 
-        node.Columns.Value = columnList == null ?
-            TreeHelper.CreateAllColumnsDeclaration() :
-            CreateSequentialColumns(columnList);
+        node.Columns.Value = columnList == null
+            ? TreeHelper.CreateAllColumnsDeclaration() // with invisible columns
+            : CreateSequentialColumns(columnList, true);
 
         return node;
     }
 
     public static QsiTableNode VisitFunctionFromItem(FunctionFromItemContext context)
     {
+        if (context is FunctionFromItemDefaultContext functionFromItemDefault)
+            return VisitFunctionFromItemDefault(functionFromItemDefault);
+
         throw TreeHelper.NotSupportedFeature("Table function");
+    }
+
+    private static QsiTableNode VisitFunctionFromItemDefault(FunctionFromItemDefaultContext context)
+    {
+        if (!IsSeriesFunction(context))
+            throw TreeHelper.NotSupportedFeature("Table function");
+
+        var functionCall = (FunctionCallContext)context.windowlessFunctionExpression().children[0];
+        var functionName = functionCall.functionName();
+        var functionCallArgument = functionCall.functionCallArgument();
+        var typeFunctionIdentifier = (TypeFunctionIdentifierContext)functionName.children[0];
+        var functionIdentifier = typeFunctionIdentifier.id;
+
+        var invokeNode = TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+        {
+            n.Member.Value = new QsiFunctionExpressionNode
+            {
+                Identifier = new QsiQualifiedIdentifier(functionIdentifier)
+            };
+
+            if (functionCallArgument is not null)
+                n.Parameters.Add(TreeHelper.Fragment(functionCallArgument.GetInputText()));
+
+            PostgreSqlTree.PutContextSpan(n, functionCall);
+        });
+
+        var tableNode = TreeHelper.Create<PostgreSqlSeriesFunctionTableNode>(n =>
+        {
+            n.Source.Value = invokeNode;
+            PostgreSqlTree.PutContextSpan(n, context);
+        });
+
+        var aliasClause = context.aliasClause();
+        var aliasClauseBody = aliasClause?.aliasClauseBody();
+
+        if (aliasClauseBody is null)
+            return tableNode;
+
+        var derivedTableNode = TreeHelper.Create<QsiDerivedTableNode>(n =>
+        {
+            n.Source.Value = tableNode;
+            n.Alias.Value = VisitAliasClause(aliasClause);
+        });
+
+        var columnList = aliasClauseBody.columnIdentifierList();
+
+        derivedTableNode.Columns.Value = columnList == null
+            ? TreeHelper.CreateAllColumnsDeclaration()
+            : CreateSequentialColumns(columnList, true);
+
+        return derivedTableNode;
+
+    }
+
+    private static bool IsSeriesFunction(FunctionFromItemDefaultContext context)
+    {
+        var windowlessFunctionExpression = context.windowlessFunctionExpression();
+
+        if (windowlessFunctionExpression.children[0] is not FunctionCallContext functionCall)
+            return false;
+
+        var functionName = functionCall.functionName();
+
+        if (functionName.children[0] is not TypeFunctionIdentifierContext typeFunctionIdentifier)
+            return false;
+
+        return typeFunctionIdentifier.id.Value
+            is "generate_series"
+            or "generate_subscripts";
     }
 
     public static QsiTableNode VisitSubqueryFromItem(SubqueryFromItemContext context)
     {
         var subqueryNode = VisitQueryExpressionParens(context.queryExpressionParens());
-        
+
         var aliasBody = context.aliasClause().aliasClauseBody();
 
         if (aliasBody == null)
@@ -569,14 +647,14 @@ internal static class TableVisitor
 
         var node = new QsiDerivedTableNode();
         var columnList = aliasBody.columnIdentifierList();
-        
+
         node.Source.SetValue(subqueryNode);
         node.Alias.SetValue(VisitAliasClause(context.aliasClause()));
-        
+
         node.Columns.SetValue(columnList == null ?
-            TreeHelper.CreateAllColumnsDeclaration() :
-            CreateSequentialColumns(columnList));
-        
+            TreeHelper.CreateAllVisibleColumnsDeclaration() :
+            CreateSequentialColumns(columnList, false));
+
         PostgreSqlTree.PutContextSpan(node, context);
 
         return node;
@@ -590,10 +668,12 @@ internal static class TableVisitor
         node.Left.SetValue(left);
         node.IsNatural = join.NATURAL() != null;
         node.JoinType = join.joinType()?.GetInputText();
+
         node.IsComma = join.CROSS() != null ||
                        join.CROSS() == null && join.joinType() == null;
+
         node.Right.SetValue(VisitFromItem(join.fromItem()));
-        
+
         if (context.expression() != null)
         {
             node.PivotExpression.SetValue(ExpressionVisitor.VisitExpression(context.expression()));
@@ -602,7 +682,7 @@ internal static class TableVisitor
         {
             node.PivotColumns.SetValue(VisitIdentifierList(context.columnIdentifierList()));
         }
-        
+
         PostgreSqlTree.PutContextSpan(node, context);
 
         return node;
@@ -611,11 +691,12 @@ internal static class TableVisitor
     public static QsiColumnsDeclarationNode VisitIdentifierList(ColumnIdentifierListContext context)
     {
         var node = new QsiColumnsDeclarationNode();
-        
+
         var identifiers = context.columnIdentifier().Select(IdentifierVisitor.VisitIdentifier);
-        node.Columns.AddRange(identifiers.Select(i => 
-            new QsiColumnReferenceNode {Name = new QsiQualifiedIdentifier(i)}));
-        
+
+        node.Columns.AddRange(identifiers.Select(i =>
+            new QsiColumnReferenceNode { Name = new QsiQualifiedIdentifier(i) }));
+
         PostgreSqlTree.PutContextSpan(node, context);
 
         return node;
@@ -624,14 +705,15 @@ internal static class TableVisitor
     public static QsiRowValueExpressionNode VisitRowValueItem(ValueItemContext context)
     {
         var valueColumns = context.valueColumnList().valueColumn();
+
         var values = valueColumns
             .Select(v => v.expression() != null ?
                 ExpressionVisitor.VisitExpression(v.expression()) :
                 TreeHelper.CreateDefaultLiteral());
-        
+
         var node = new QsiRowValueExpressionNode();
         node.ColumnValues.AddRange(values);
-        
+
         PostgreSqlTree.PutContextSpan(node, context);
 
         return node;
@@ -645,19 +727,19 @@ internal static class TableVisitor
         {
             Identifier = IdentifierVisitor.VisitQualifiedIdentifier(tableName)
         };
-        
+
         PostgreSqlTree.PutContextSpan(node, context);
 
         return node;
     }
-    
+
     public static QsiTableReferenceNode VisitTableReference(TableNameContext context)
     {
         if (context.ONLY() != null)
         {
             // TODO: Implement case for only       
         }
-        
+
         var node = new QsiTableReferenceNode
         {
             Identifier = IdentifierVisitor.VisitQualifiedIdentifier(context.qualifiedIdentifier())
@@ -674,7 +756,7 @@ internal static class TableVisitor
         var aliasName = IdentifierVisitor.VisitIdentifier(aliasIdentifier);
 
         var node = new QsiAliasNode { Name = aliasName };
-        
+
         PostgreSqlTree.PutContextSpan(node, context);
 
         return node;

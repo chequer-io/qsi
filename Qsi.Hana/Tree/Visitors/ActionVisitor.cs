@@ -29,7 +29,7 @@ namespace Qsi.Hana.Tree.Visitors
             {
                 var derivedTableNode = new HanaDerivedTableNode
                 {
-                    Columns = { Value = TreeHelper.CreateAllColumnsDeclaration() },
+                    Columns = { Value = TreeHelper.CreateAllVisibleColumnsDeclaration() },
                     Source = { Value = tableNode }
                 };
 
@@ -129,7 +129,7 @@ namespace Qsi.Hana.Tree.Visitors
                 derivedTableNode.Columns.SetValue(
                     columnListClause != null ?
                         TableVisitor.VisitColumnListClause(columnListClause, null) :
-                        TreeHelper.CreateAllColumnsDeclaration()
+                        TreeHelper.CreateAllVisibleColumnsDeclaration()
                 );
 
                 var node = new HanaDataUpdateActionNode
@@ -282,7 +282,7 @@ namespace Qsi.Hana.Tree.Visitors
             {
                 var derivedTableNode = new HanaDerivedTableNode
                 {
-                    Columns = { Value = columns ?? TreeHelper.CreateAllColumnsDeclaration() },
+                    Columns = { Value = columns ?? TreeHelper.CreateAllVisibleColumnsDeclaration() },
                     Source = { Value = tableNode }
                 };
 
