@@ -11,12 +11,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-            <_Parameter1>Qsi.Tests</_Parameter1>
-        </AssemblyAttribute>
-    </ItemGroup>
-    
-    <ItemGroup>
         <ProjectReference Include="..\Qsi\Qsi.csproj" />
     </ItemGroup>
 
