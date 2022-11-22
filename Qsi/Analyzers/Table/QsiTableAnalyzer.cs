@@ -233,7 +233,7 @@ public class QsiTableAnalyzer : QsiAnalyzerBase
                     {
                         var declaredColumn = declaredTable.NewColumn();
 
-                        declaredColumn.Name = ResolveDerivedColumnName(scopedContext, table, derivedColum);
+                        declaredColumn.Name = ResolveDerivedColumnName(context, table, derivedColum);
                         declaredColumn.IsExpression = derivedColum.IsExpression;
                         declaredColumn.References.AddRange(resolvedColumns);
                         break;

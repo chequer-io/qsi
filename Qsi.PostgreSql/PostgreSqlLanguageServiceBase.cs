@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Qsi.Analyzers;
 using Qsi.Analyzers.Action;
 using Qsi.Analyzers.Definition;
-using Qsi.Data;
 using Qsi.Engines;
 using Qsi.Parsing;
 using Qsi.PostgreSql.Analyzers;
 using Qsi.Services;
-using Qsi.Tree;
 
 namespace Qsi.PostgreSql
 {
@@ -35,45 +32,15 @@ namespace Qsi.PostgreSql
             {
                 AllowEmptyColumnsInSelect = true,
                 AllowEmptyColumnsInInline = true,
-                AllowNoAliasInDerivedTable = true,
-                AllowPartialColumnInDataInsert = true,
+                AllowNoAliasInDerivedTable = true
             };
         }
 
         public override IEnumerable<IQsiAnalyzer> CreateAnalyzers(QsiEngine engine)
         {
             yield return new QsiActionAnalyzer(engine);
-            // TODO: Check table analyzer.
-            // yield return new PgTableAnalyzer(engine);
-            yield return new PostgreSqlTableAnalyzer(engine);
+            yield return new PgTableAnalyzer(engine);
             yield return new QsiDefinitionAnalyzer(engine);
-        }
-
-        public override QsiParameter FindParameter(QsiParameter[] parameters, IQsiBindParameterExpressionNode node)
-        {
-            if (parameters == null)
-                return null;
-
-            if (node.Type != QsiParameterType.Index)
-            {
-                throw new QsiException(QsiError.Syntax);
-            }
-
-            if (!node.Index.HasValue)
-            {
-                throw new QsiException(QsiError.Syntax);   
-            }
-
-            var postgresIndex = node.Index - 1;
-            
-            if (postgresIndex < 0 || postgresIndex >= parameters.Length)
-            {
-                Console.WriteLine(postgresIndex);
-                Console.WriteLine(parameters.Length);
-                throw new QsiException(QsiError.ParameterIndexOutOfRange, node.Index);   
-            }
-
-            return parameters[postgresIndex.Value];
         }
     }
 }

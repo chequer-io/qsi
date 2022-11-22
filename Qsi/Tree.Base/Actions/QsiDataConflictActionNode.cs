@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Collections.Generic;
 using Qsi.Data;
 using Qsi.Utilities;
@@ -8,7 +7,6 @@ namespace Qsi.Tree
 {
     public class QsiDataConflictActionNode : QsiActionNode, IQsiDataConflictActionNode
     {
-        [Obsolete]
         public QsiQualifiedIdentifier Target { get; set; }
 
         public QsiTreeNodeList<QsiSetColumnExpressionNode> SetValues { get; }

@@ -25,11 +25,6 @@ namespace Qsi.Debugger.Vendor.MySql
                     AddColumns(actorView, "actor_id", "first_name", "last_name", "last_update", "first_name || last_name");
                     return actorView;
 
-                case "film_actor":
-                    var filmActor = CreateTable("sakila", "film_actor");
-                    AddColumns(filmActor, "actor_id", "film_id", "last_update");
-                    return filmActor;
-                
                 case "address":
                     var address = CreateTable("sakila", "address");
                     AddColumns(address, "address_id", "address", "address2", "district", "city_id", "postal_code", "phone", "location", "last_update");

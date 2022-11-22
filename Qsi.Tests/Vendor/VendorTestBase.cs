@@ -17,10 +17,12 @@ public abstract class VendorTestBase
 
     protected QsiEngine Engine { get; private set; }
 
+    private readonly TransactionScope _transactionScope;
     private readonly string _connectionString;
 
     protected VendorTestBase(string connectionString)
     {
+        _transactionScope = new TransactionScope();
         _connectionString = connectionString;
     }
 
@@ -29,6 +31,7 @@ public abstract class VendorTestBase
     {
         Connection = OpenConnection(_connectionString);
         Connection.Open();
+        Connection.EnlistTransaction(Transaction.Current);
 
         PrepareConnection(Connection);
 
@@ -44,6 +47,7 @@ public abstract class VendorTestBase
     [OneTimeTearDown]
     public void OneTimeTearDown()
     {
+        _transactionScope.Dispose();
         Connection.Close();
         Connection.Dispose();
     }
