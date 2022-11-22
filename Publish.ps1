@@ -62,7 +62,7 @@ $PublishDirectory = $(Resolve-Path-Safe ".\Publish")
 $Tasks = 
 [Task]::new("Qsi", $false),
 [Task]::new("Qsi.MySql", $true),
-[Task]::new("Qsi.PostgreSql", $true),
+[Task]::new("Qsi.PostgreSql", $false),
 [Task]::new("Qsi.Oracle", $true),
 [Task]::new("Qsi.SqlServer", $false),
 [Task]::new("Qsi.MongoDB", $false),
@@ -73,7 +73,7 @@ $Tasks =
 [Task]::new("Qsi.Impala", $true),
 [Task]::new("Qsi.Trino", $true),
 [Task]::new("Qsi.Athena", $true),
-[Task]::new("Qsi.Redshift", $true)
+[Task]::new("Qsi.Redshift", $false)
 
 Function DotNet-Pack {
     Param (
