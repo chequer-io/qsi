@@ -1,36 +1,69 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using Qsi.Data;
 using Qsi.Parsing;
 using Qsi.PostgreSql.Internal;
-using Qsi.PostgreSql.Tree.Visitors;
+using Qsi.PostgreSql.Internal.PG10;
+using Qsi.PostgreSql.Internal.PG10.Types;
+using Qsi.PostgreSql.Tree;
 using Qsi.Tree;
 using Qsi.Utilities;
 
-using static Qsi.PostgreSql.Internal.PostgreSqlParserInternal;
-
 namespace Qsi.PostgreSql
 {
-    public class PostgreSqlParser : IQsiTreeParser
+    public class PostgreSqlParser : IQsiTreeParser, IDisposable
     {
+        private IPgParser _pgParser;
+
         public IQsiTreeNode Parse(QsiScript script, CancellationToken cancellationToken = default)
         {
-            var parser = PostgreSqlUtility.CreateParser(script.Script);
-            var root = parser.root();
+            _pgParser ??= new PgQuery10();
 
-            if (root.children[0] is not StatementContext statement)
+            var pgTree = (IPg10Node)_pgParser.Parse(script.Script) ?? throw new QsiException(QsiError.NotSupportedScript, script.ScriptType);
+            var pgVisitorSet = _pgParser.CreateVisitorSet();
+
+            switch (pgTree)
             {
-                return null;
+                case RawStmt rawStmt:
+                    return ParseRawStmt(pgVisitorSet, rawStmt);
+
+                default:
+                    throw TreeHelper.NotSupportedTree(pgTree);
+            }
+        }
+
+        private IQsiTreeNode ParseRawStmt(IPgVisitorSet visitorSet, RawStmt rawStmt)
+        {
+            switch (rawStmt.stmt[0])
+            {
+                case VariableSetStmt variableSetStmt:
+                    return visitorSet.ActionVisitor.VisitVariableSetStmt(variableSetStmt);
+
+                case SelectStmt selectStmt:
+                    return visitorSet.TableVisitor.VisitSelectStmt(selectStmt);
+
+                case InsertStmt insertStmt:
+                    return visitorSet.ActionVisitor.VisitInsertStmt(insertStmt);
+
+                case UpdateStmt updateStmt:
+                    return visitorSet.ActionVisitor.VisitUpdateStmt(updateStmt);
+
+                case DeleteStmt deleteStmt:
+                    return visitorSet.ActionVisitor.VisitDeleteStmt(deleteStmt);
+
+                case ViewStmt viewStmt:
+                    return visitorSet.DefinitionVisitor.VisitViewStmt(viewStmt);
+
+                case CreateTableAsStmt createTableAsStmt:
+                    return visitorSet.DefinitionVisitor.VisitCreateTableAsStmt(createTableAsStmt);
             }
 
-            return statement.children[0] switch
-            {
-                SelectStatementContext select => TableVisitor.VisitSelectStatement(select),
-                InsertStatementContext insert => ActionVisitor.VisitInsertStatement(insert),
-                UpdateStatementContext update => ActionVisitor.VisitUpdateStatement(update),
-                DeleteStatementContext delete => ActionVisitor.VisitDeleteStatement(delete),
-                CreateStatementContext create => DefinitionVisitor.VisitCreateStatement(create),
-                _ => throw TreeHelper.NotSupportedTree(statement.children[0])
-            };
+            throw TreeHelper.NotSupportedTree(rawStmt.stmt[0]);
+        }
+
+        void IDisposable.Dispose()
+        {
+            _pgParser?.Dispose();
         }
     }
 }
