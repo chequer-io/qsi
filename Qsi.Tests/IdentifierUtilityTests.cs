@@ -1,3 +1,4 @@
+using System;
 using NUnit.Framework;
 using Qsi.Utilities;
 
@@ -56,5 +57,14 @@ public class IdentifierUtilityTests
     public string Test_Unescape(string value)
     {
         return IdentifierUtility.Unescape(value);
+    }
+
+    [TestCase(@"'''")]
+    public void Test_Unescape_Fail(string value)
+    {
+        Assert.Throws<InvalidOperationException>(() =>
+        {
+            IdentifierUtility.Unescape(value);
+        });
     }
 }

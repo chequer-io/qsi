@@ -1536,10 +1536,14 @@ namespace Qsi.Hana.Tree.Visitors
         {
             TreeHelper.VerifyTokenType(token, STRING_LITERAL);
 
+            // NOTE: HANA DB only unescapes '
+            //       ' could be escaped with ''
+            //       Since HANA DB don't predict result's column name
+            //       Don't escape string literal exactly
             var node = new QsiLiteralExpressionNode
             {
                 Type = QsiDataType.String,
-                Value = IdentifierUtility.Unescape(token.Text)
+                Value = token.Text   
             };
 
             HanaTree.PutContextSpan(node, token);

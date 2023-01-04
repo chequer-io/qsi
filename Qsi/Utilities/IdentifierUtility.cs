@@ -60,6 +60,9 @@ namespace Qsi.Utilities
 
             do
             {
+                if (index >= value.Length - 1)
+                    throw new InvalidOperationException($"Failed to unescape string: {value}");
+                
                 bool end = index == value.Length - 1;
 
                 if (index > 0)
