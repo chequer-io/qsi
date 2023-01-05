@@ -11,7 +11,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="PhoenixSql" Version="1.0.9">
+        <PackageReference Include="PhoenixSql" Version="1.1.0">
             <IncludeAssets>all</IncludeAssets>
         </PackageReference>
     </ItemGroup>

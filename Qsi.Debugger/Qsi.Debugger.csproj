@@ -31,7 +31,7 @@
         <PackageReference Include="Avalonia" Version="0.10.12" />
         <PackageReference Include="Avalonia.AvaloniaEdit" Version="0.10.12.1" />
         <PackageReference Include="Avalonia.Desktop" Version="0.10.12" />
-        <PackageReference Include="PhoenixSql" Version="1.0.9" />
+        <PackageReference Include="PhoenixSql" Version="1.1.0" />
     </ItemGroup>
 
     <ItemGroup>
