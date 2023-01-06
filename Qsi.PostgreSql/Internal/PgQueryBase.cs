@@ -50,7 +50,7 @@ namespace Qsi.PostgreSql.Internal
 
         protected string Evaluate(string expression, TimeSpan timeout)
         {
-            var cts = new CancellationTokenSource();
+            using var cts = new CancellationTokenSource();
             cts.CancelAfter(timeout);
 
             var token = cts.Token;
@@ -72,7 +72,7 @@ namespace Qsi.PostgreSql.Internal
 
         protected void Execute(string code, TimeSpan timeout)
         {
-            var cts = new CancellationTokenSource();
+            using var cts = new CancellationTokenSource();
             cts.CancelAfter(timeout);
 
             var token = cts.Token;
