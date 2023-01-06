@@ -26,12 +26,12 @@ namespace Qsi.PostgreSql.Internal.PG10
 
         protected override void OnInitialize()
         {
-            Execute(ResourceManager.GetResourceContent("pg_query_10.js"));
+            Execute(ResourceManager.GetResourceContent("pg_query_10.js"), TimeSpan.FromSeconds(30));
         }
 
         protected override IPg10Node Parse(string input)
         {
-            var json = Evaluate($"JSON.stringify(PgQuery.parse({JsonConvert.SerializeObject(input)}))");
+            var json = Evaluate($"JSON.stringify(PgQuery.parse({JsonConvert.SerializeObject(input)}))", TimeSpan.FromSeconds(10));
             var parseResult = JsonConvert.DeserializeObject<PgParseResult<IPg10Node>>(json, _serializerSettings);
 
             if (parseResult?.Error != null)

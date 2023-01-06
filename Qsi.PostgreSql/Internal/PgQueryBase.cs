@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Threading;
 using JavaScriptEngineSwitcher.ChakraCore;
+using JavaScriptEngineSwitcher.Core;
 using Qsi.PostgreSql.Tree;
 using Qsi.PostgreSql.Tree.PG10;
 
@@ -46,14 +48,48 @@ namespace Qsi.PostgreSql.Internal
 
         protected abstract PgIdentifierVisitor CreateIdentifierVisitor(IPgVisitorSet set);
 
-        protected string Evaluate(string expression)
+        protected string Evaluate(string expression, TimeSpan timeout)
         {
-            return _jsEngine.Evaluate<string>(expression);
+            var cts = new CancellationTokenSource();
+            cts.CancelAfter(timeout);
+
+            var token = cts.Token;
+
+            try
+            {
+                using (token.Register(() => _jsEngine?.Interrupt()))
+                {
+                    return _jsEngine.Evaluate<string>(expression);
+                }
+            }
+            catch (JsInterruptedException)
+            {
+                token.ThrowIfCancellationRequested();
+
+                throw;
+            }
         }
 
-        protected void Execute(string code)
+        protected void Execute(string code, TimeSpan timeout)
         {
-            _jsEngine.Execute(code);
+            var cts = new CancellationTokenSource();
+            cts.CancelAfter(timeout);
+
+            var token = cts.Token;
+
+            try
+            {
+                using (token.Register(() => _jsEngine?.Interrupt()))
+                {
+                    _jsEngine.Execute(code);
+                }
+            }
+            catch (JsInterruptedException)
+            {
+                token.ThrowIfCancellationRequested();
+
+                throw;
+            }
         }
 
         IPgNode IPgParser.Parse(string input)
