@@ -12,7 +12,7 @@ namespace Qsi.PostgreSql.Internal
         private ChakraCoreJsEngine _jsEngine;
         private bool _initialized;
 
-        private void Initialize()
+        private void Initialize(CancellationToken token)
         {
             if (_initialized)
                 return;
@@ -20,7 +20,7 @@ namespace Qsi.PostgreSql.Internal
             try
             {
                 _jsEngine = new ChakraCoreJsEngine();
-                OnInitialize();
+                OnInitialize(token);
             }
             catch
             {
@@ -32,11 +32,11 @@ namespace Qsi.PostgreSql.Internal
             _initialized = true;
         }
 
-        protected virtual void OnInitialize()
+        protected virtual void OnInitialize(CancellationToken token)
         {
         }
 
-        protected abstract T Parse(string input);
+        protected abstract T Parse(string input, CancellationToken token);
 
         protected abstract PgActionVisitor CreateActionVisitor(IPgVisitorSet set);
 
@@ -48,13 +48,8 @@ namespace Qsi.PostgreSql.Internal
 
         protected abstract PgIdentifierVisitor CreateIdentifierVisitor(IPgVisitorSet set);
 
-        protected string Evaluate(string expression, TimeSpan timeout)
+        protected string Evaluate(string expression, CancellationToken token)
         {
-            using var cts = new CancellationTokenSource();
-            cts.CancelAfter(timeout);
-
-            var token = cts.Token;
-
             try
             {
                 using (token.Register(() => _jsEngine?.Interrupt()))
@@ -70,13 +65,8 @@ namespace Qsi.PostgreSql.Internal
             }
         }
 
-        protected void Execute(string code, TimeSpan timeout)
+        protected void Execute(string code, CancellationToken token)
         {
-            using var cts = new CancellationTokenSource();
-            cts.CancelAfter(timeout);
-
-            var token = cts.Token;
-
             try
             {
                 using (token.Register(() => _jsEngine?.Interrupt()))
@@ -92,10 +82,10 @@ namespace Qsi.PostgreSql.Internal
             }
         }
 
-        IPgNode IPgParser.Parse(string input)
+        IPgNode IPgParser.Parse(string input, CancellationToken token)
         {
-            Initialize();
-            return Parse(input);
+            Initialize(token);
+            return Parse(input, token);
         }
 
         IPgVisitorSet IPgParser.CreateVisitorSet()

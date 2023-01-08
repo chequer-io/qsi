@@ -19,7 +19,7 @@ namespace Qsi.PostgreSql
         {
             _pgParser ??= new PgQuery10();
 
-            var pgTree = (IPg10Node)_pgParser.Parse(script.Script) ?? throw new QsiException(QsiError.NotSupportedScript, script.ScriptType);
+            var pgTree = (IPg10Node)_pgParser.Parse(script.Script, cancellationToken) ?? throw new QsiException(QsiError.NotSupportedScript, script.ScriptType);
             var pgVisitorSet = _pgParser.CreateVisitorSet();
 
             switch (pgTree)

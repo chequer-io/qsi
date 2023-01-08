@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using Newtonsoft.Json;
 using Qsi.Parsing;
 using Qsi.PostgreSql.Internal.PG10.Types;
@@ -24,14 +25,14 @@ namespace Qsi.PostgreSql.Internal.PG10
             };
         }
 
-        protected override void OnInitialize()
+        protected override void OnInitialize(CancellationToken token)
         {
-            Execute(ResourceManager.GetResourceContent("pg_query_10.js"), TimeSpan.FromSeconds(30));
+            Execute(ResourceManager.GetResourceContent("pg_query_10.js"), token);
         }
 
-        protected override IPg10Node Parse(string input)
+        protected override IPg10Node Parse(string input, CancellationToken token)
         {
-            var json = Evaluate($"JSON.stringify(PgQuery.parse({JsonConvert.SerializeObject(input)}))", TimeSpan.FromSeconds(10));
+            var json = Evaluate($"JSON.stringify(PgQuery.parse({JsonConvert.SerializeObject(input)}))", token);
             var parseResult = JsonConvert.DeserializeObject<PgParseResult<IPg10Node>>(json, _serializerSettings);
 
             if (parseResult?.Error != null)
