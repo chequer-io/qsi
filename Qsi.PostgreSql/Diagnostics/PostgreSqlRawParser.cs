@@ -12,7 +12,7 @@ namespace Qsi.PostgreSql.Diagnostics
         public IRawTree Parse(string input)
         {
             _pgParser ??= new PgQuery10();
-            var result = _pgParser.Parse(input);
+            var result = _pgParser.Parse(input, default);
 
             return new PostgreSqlRawTree(result);
         }
