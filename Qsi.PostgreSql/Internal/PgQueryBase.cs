@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Threading;
 using JavaScriptEngineSwitcher.ChakraCore;
+using JavaScriptEngineSwitcher.Core;
 using Qsi.PostgreSql.Tree;
 using Qsi.PostgreSql.Tree.PG10;
 
@@ -10,7 +12,7 @@ namespace Qsi.PostgreSql.Internal
         private ChakraCoreJsEngine _jsEngine;
         private bool _initialized;
 
-        private void Initialize()
+        private void Initialize(CancellationToken token)
         {
             if (_initialized)
                 return;
@@ -18,7 +20,7 @@ namespace Qsi.PostgreSql.Internal
             try
             {
                 _jsEngine = new ChakraCoreJsEngine();
-                OnInitialize();
+                OnInitialize(token);
             }
             catch
             {
@@ -30,11 +32,11 @@ namespace Qsi.PostgreSql.Internal
             _initialized = true;
         }
 
-        protected virtual void OnInitialize()
+        protected virtual void OnInitialize(CancellationToken token)
         {
         }
 
-        protected abstract T Parse(string input);
+        protected abstract T Parse(string input, CancellationToken token);
 
         protected abstract PgActionVisitor CreateActionVisitor(IPgVisitorSet set);
 
@@ -46,20 +48,44 @@ namespace Qsi.PostgreSql.Internal
 
         protected abstract PgIdentifierVisitor CreateIdentifierVisitor(IPgVisitorSet set);
 
-        protected string Evaluate(string expression)
+        protected string Evaluate(string expression, CancellationToken token)
         {
-            return _jsEngine.Evaluate<string>(expression);
+            try
+            {
+                using (token.Register(() => _jsEngine?.Interrupt()))
+                {
+                    return _jsEngine.Evaluate<string>(expression);
+                }
+            }
+            catch (JsInterruptedException)
+            {
+                token.ThrowIfCancellationRequested();
+
+                throw;
+            }
         }
 
-        protected void Execute(string code)
+        protected void Execute(string code, CancellationToken token)
         {
-            _jsEngine.Execute(code);
+            try
+            {
+                using (token.Register(() => _jsEngine?.Interrupt()))
+                {
+                    _jsEngine.Execute(code);
+                }
+            }
+            catch (JsInterruptedException)
+            {
+                token.ThrowIfCancellationRequested();
+
+                throw;
+            }
         }
 
-        IPgNode IPgParser.Parse(string input)
+        IPgNode IPgParser.Parse(string input, CancellationToken token)
         {
-            Initialize();
-            return Parse(input);
+            Initialize(token);
+            return Parse(input, token);
         }
 
         IPgVisitorSet IPgParser.CreateVisitorSet()
@@ -77,6 +103,7 @@ namespace Qsi.PostgreSql.Internal
 
         void IDisposable.Dispose()
         {
+            _jsEngine?.Interrupt();
             _jsEngine?.Dispose();
             _jsEngine = null;
         }
