@@ -103,6 +103,7 @@ namespace Qsi.PostgreSql.Internal
 
         void IDisposable.Dispose()
         {
+            _jsEngine?.Interrupt();
             _jsEngine?.Dispose();
             _jsEngine = null;
         }
