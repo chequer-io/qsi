@@ -532,18 +532,19 @@ namespace Qsi.PostgreSql.Tree.PG10
 
         private QsiExpressionNode VisitParamRef(ParamRef paramRef)
         {
-            var node = new QsiBindParameterExpressionNode();
+            var node = new QsiBindParameterExpressionNode
+            {
+                Type = QsiParameterType.Index,
+                Prefix = "$"
+            };
 
             if (paramRef.number.HasValue)
             {
-                node.Type = QsiParameterType.Name;
-                node.Prefix = "$";
-                node.Name = paramRef.number.ToString();
+                node.Index = paramRef.number - 1;
+                _bindParamIndex = paramRef.number.Value;
             }
             else
             {
-                node.Type = QsiParameterType.Index;
-                node.Prefix = "$";
                 node.Index = _bindParamIndex++;
             }
 
