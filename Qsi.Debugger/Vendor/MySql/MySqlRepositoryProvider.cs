@@ -50,6 +50,20 @@ namespace Qsi.Debugger.Vendor.MySql
                     csMemoView.Type = QsiTableType.View;
                     AddColumns(csMemoView, "a", "b");
                     return csMemoView;
+                
+                case "hidden_test":
+                    var hiddenTest = CreateTable("sakila", "hidden_test");
+                    AddColumns(hiddenTest, "col1", "hidden1", "col2", "hidden2");
+                    hiddenTest.Columns[1].IsVisible = false;
+                    hiddenTest.Columns[3].IsVisible = false;
+                    return hiddenTest;
+                
+                case "hidden_test2":
+                    var hiddenTest2 = CreateTable("sakila", "hidden_test2");
+                    AddColumns(hiddenTest2, "col1", "col2", "hidden1", "hidden2");
+                    hiddenTest2.Columns[2].IsVisible = false;
+                    hiddenTest2.Columns[3].IsVisible = false;
+                    return hiddenTest2;
             }
 
             return null;
