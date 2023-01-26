@@ -562,8 +562,8 @@ public class QsiTableAnalyzer : QsiAnalyzerBase
         foreach (var pivot in pivots ?? Enumerable.Empty<IQsiColumnReferenceNode>())
         {
             var pivotColumnName = pivot.Name[^1];
-            var leftColumnIndexes = left.Columns.AllIndexOf(c => c.IsVisible && Match(c.Name, pivotColumnName)).Take(2).ToArray();
-            var rightColumnIndexes = right.Columns.AllIndexOf(c => c.IsVisible && Match(c.Name, pivotColumnName)).Take(2).ToArray();
+            var leftColumnIndexes = left.Columns.AllIndexOf(c => Match(c.Name, pivotColumnName)).Take(2).ToArray();
+            var rightColumnIndexes = right.Columns.AllIndexOf(c => Match(c.Name, pivotColumnName)).Take(2).ToArray();
 
             if (leftColumnIndexes.Length == 0 || rightColumnIndexes.Length == 0)
             {
