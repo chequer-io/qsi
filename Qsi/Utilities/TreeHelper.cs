@@ -102,10 +102,13 @@ namespace Qsi.Utilities
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static QsiColumnsDeclarationNode CreateAllColumnsDeclaration()
+        public static QsiColumnsDeclarationNode CreateAllColumnsDeclaration(bool includeInvisibleColumns = false)
         {
             var columns = new QsiColumnsDeclarationNode();
-            columns.Columns.Add(new QsiAllColumnNode());
+            columns.Columns.Add(new QsiAllColumnNode
+            {
+                IncludeInvisibleColumns = includeInvisibleColumns
+            });
             return columns;
         }
 
