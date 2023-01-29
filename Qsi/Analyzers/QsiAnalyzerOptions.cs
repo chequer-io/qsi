@@ -41,5 +41,10 @@
         /// Use outer query column
         /// </summary>
         public bool UseOuterQueryColumn { get; set; } = true;
+
+        /// <summary>
+        /// Analyze expressions (filter, set values etc..)
+        /// </summary>
+        public bool AnalyzeExpression { get; set; } = false;
     }
 }

@@ -20,6 +20,8 @@ namespace Qsi.Data
 
         internal IEnumerable<QsiTableColumn> VisibleColumns => _columns.Where(c => c.IsVisible);
 
+        public IQsiExpression Filter { get; set; }
+
         private readonly QsiTableColumnCollection _columns;
 
         public QsiTableStructure()

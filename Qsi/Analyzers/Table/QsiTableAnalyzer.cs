@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Qsi.Analyzers.Context;
+using Qsi.Analyzers.Expression;
 using Qsi.Analyzers.Table.Context;
 using Qsi.Data;
-using Qsi.Data.Object;
 using Qsi.Engines;
 using Qsi.Extensions;
 using Qsi.Shared.Extensions;
@@ -19,6 +18,8 @@ namespace Qsi.Analyzers.Table;
 public class QsiTableAnalyzer : QsiAnalyzerBase
 {
     private const string scopeFieldList = "field list";
+
+    public virtual QsiExpressionAnalyzer ExpressionAnalyzer => new();
 
     public QsiTableAnalyzer(QsiEngine engine) : base(engine)
     {
@@ -270,6 +271,14 @@ public class QsiTableAnalyzer : QsiAnalyzerBase
                         break;
                     }
                 }
+            }
+        }
+
+        if (context.AnalyzerOptions.AnalyzeExpression)
+        {
+            if (table.Where is { Expression: { } whereExpr })
+            {
+                declaredTable.Filter = ExpressionAnalyzer.ResolveExpression(context, whereExpr);
             }
         }
 

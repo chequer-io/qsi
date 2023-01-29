@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Qsi.Analyzers.Expression;
 using Qsi.Analyzers.Table;
 using Qsi.Analyzers.Table.Context;
 using Qsi.Data;
@@ -10,6 +11,8 @@ namespace Qsi.MySql.Analyzers
 {
     public class MySqlTableAnalyzer : QsiTableAnalyzer
     {
+        public override QsiExpressionAnalyzer ExpressionAnalyzer => new MySqlExpressionAnalyzer();
+
         public MySqlTableAnalyzer(QsiEngine engine) : base(engine)
         {
         }

@@ -40,7 +40,8 @@ namespace Qsi.MySql
         {
             return new QsiAnalyzerOptions
             {
-                AllowEmptyColumnsInSelect = false
+                AllowEmptyColumnsInSelect = false,
+                AnalyzeExpression = true
             };
         }
 
