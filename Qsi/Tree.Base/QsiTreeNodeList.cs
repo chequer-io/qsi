@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Qsi.Tree
 {
@@ -31,6 +32,11 @@ namespace Qsi.Tree
 
             for (int i = start; i < _list.Count; i++)
                 _list[i].Parent = _owner;
+        }
+
+        public void Add(IEnumerable<TNode> items)
+        {
+            AddRange(items);
         }
 
         public void Clear()

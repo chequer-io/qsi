@@ -8,10 +8,12 @@
         <Title>Query Structure Interface of PostgreSql</Title>
         <Description>$(Title)</Description>
         <PackageTags>$(PackageTags);phostgresql;yacc</PackageTags>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Qsi\Qsi.csproj" />
+        <ProjectReference Include="..\..\PgQuery.Net\PgQuery\PgQuery.csproj" />
     </ItemGroup>
 
     <Import Project="..\Qsi.Shared\Qsi.Shared.projitems" Label="Shared" />
