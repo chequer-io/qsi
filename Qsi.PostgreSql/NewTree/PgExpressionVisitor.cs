@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Text;
 using PgQuery;
 using Qsi.Data;
 using Qsi.PostgreSql.NewTree.Nodes;
@@ -53,57 +52,28 @@ internal static partial class PgNodeVisitor
     {
         var left = node.Lexpr is null ? null : VisitExpression(node.Lexpr);
         var right = node.Rexpr is null ? null : VisitExpression(node.Rexpr);
+        var op = string.Join('.', node.Name.Select(n => n.String.Sval));
 
         if (right is null)
             throw CreateInternalException("Atomic expression right expression is null");
 
         if (left is null)
         {
-            return new QsiUnaryExpressionNode
+            return new PgUnaryExpressionNode
             {
                 Expression = { Value = right },
-                Operator = GetOperator()
+                Operator = op,
+                ExprKind = node.Kind
             };
         }
 
-        return new QsiBinaryExpressionNode
+        return new PgBinaryExpressionNode
         {
             Left = { Value = left },
             Right = { Value = right },
-            Operator = GetOperator()
+            Operator = op,
+            ExprKind = node.Kind
         };
-
-        string GetOperator()
-        {
-            var kind = node.Kind;
-            var builder = new StringBuilder();
-
-            switch (kind)
-            {
-                case A_Expr_Kind.AexprOpAny:
-                    builder.Append("ANY ");
-                    break;
-
-                case A_Expr_Kind.AexprOpAll:
-                    builder.Append("ALL ");
-                    break;
-
-                default:
-                    builder.AppendJoin(' ', node.Name.Select(n => n.String.Sval));
-                    break;
-            }
-
-            if (kind is not A_Expr_Kind.AexprOp)
-            {
-                if (builder.Length != 0)
-                    builder.Append(' ');
-
-                builder.Append(kind.ToString()[5..]);
-            }
-
-            Console.WriteLine(builder.ToString());
-            return builder.ToString();
-        }
     }
 
     // GROUPING( expr[, expr].. )
@@ -113,7 +83,7 @@ internal static partial class PgNodeVisitor
         {
             Member = { Value = TreeHelper.CreateFunction("GROUPING") },
             Parameters = { node.Args.Select(VisitExpression) },
-            IsBulitIn = true
+            IsBuiltIn = true
         };
     }
 
@@ -138,25 +108,25 @@ internal static partial class PgNodeVisitor
     }
 
     // COALESCE( expr[, expr].. )
-    public static IQsiTreeNode Visit(CoalesceExpr node)
+    public static PgInvokeExpressionNode Visit(CoalesceExpr node)
     {
         return new PgInvokeExpressionNode
         {
             Member = { Value = TreeHelper.CreateFunction("COALESCE") },
             Parameters = { node.Args.Select(VisitExpression) },
-            IsBulitIn = true
+            IsBuiltIn = true
         };
     }
 
     // GREATEST ( expr[, expr].. )
     // LEAST ( expr[, expr].. )
-    public static IQsiTreeNode Visit(MinMaxExpr node)
+    public static PgInvokeExpressionNode Visit(MinMaxExpr node)
     {
         return new PgInvokeExpressionNode
         {
             Member = { Value = TreeHelper.CreateFunction(node.Op is MinMaxOp.IsGreatest ? "GREATEST" : "LEAST") },
             Parameters = { node.Args.Select(VisitExpression) },
-            IsBulitIn = true
+            IsBuiltIn = true
         };
     }
 
@@ -199,7 +169,8 @@ internal static partial class PgNodeVisitor
                         }
                     }
             },
-            IsBulitIn = true
+            FunctionOp = node.Op,
+            IsBuiltIn = true
         };
     }
 
@@ -320,8 +291,8 @@ internal static partial class PgNodeVisitor
             AggregateFilter = { Value = VisitExpression(node.AggFilter) },
             AggregateWithInGroup = node.AggWithinGroup,
             FunctionVariadic = node.FuncVariadic,
-            Over = { Value = Visit(node.Over) },
-            IsBulitIn = false
+            Over = { Value = node.Over is not null ? Visit(node.Over) : null },
+            IsBuiltIn = false
         };
     }
 
@@ -329,11 +300,11 @@ internal static partial class PgNodeVisitor
     {
         // NOTE: SubLinkId is used for PG internal optimizer.
 
-        var sublink = new PgSubLinkExpressionNode
+        return new PgSubLinkExpressionNode
         {
             Expression = { Value = VisitExpression(node.Testexpr) },
             Table = { Value = Visit<QsiTableNode>(node.Subselect) },
-            OperatorName = string.Join(' ', node.OperName.Select(v => v.String.Sval)),
+            OperatorName = CreateQualifiedIdentifier(node.OperName),
             SubLinkType = node.SubLinkType switch
             {
                 SubLinkType.ExprSublink => string.Empty, // (subselect)
@@ -344,36 +315,25 @@ internal static partial class PgNodeVisitor
                 _ => throw CreateInternalException($"Not supported SubLinkType: {node.SubLinkType}")
             }
         };
-
-        return sublink;
     }
 
     public static IQsiTreeNode Visit(BoolExpr node)
     {
-        var op = node.Boolop switch
-        {
-            BoolExprType.AndExpr => "AND",
-            BoolExprType.NotExpr => "NOT",
-            BoolExprType.OrExpr => "OR",
-            _ => throw new NotSupportedException($"Not supported BoolExprType.{node.Boolop}")
-        };
-
-        var expr = VisitExpression(node.Args[0]);
-
+        // NOT <EXPR>
         if (node.Args.Count == 1)
-            return TreeHelper.CreateUnary(op, expr);
-
-        for (int i = 1; i < node.Args.Count; i++)
         {
-            expr = new QsiBinaryExpressionNode
+            return new PgUnaryExpressionNode
             {
-                Operator = op,
-                Left = { Value = expr },
-                Right = { Value = VisitExpression(node.Args[i]) }
+                Expression = { Value = VisitExpression(node.Args[0]) },
+                BoolKind = node.Boolop
             };
         }
 
-        return expr;
+        return new PgBooleanMultipleExpressionNode
+        {
+            Elements = { node.Args.Select(VisitExpression) },
+            Type = node.Boolop
+        };
     }
 
     // <Arg> IS [NOT] NULL
@@ -447,6 +407,15 @@ internal static partial class PgNodeVisitor
             FrameOptions = (FrameOptions)node.FrameOptions,
             StartOffset = { Value = VisitExpression(node.StartOffset) },
             EndOffset = { Value = VisitExpression(node.EndOffset) }
+        };
+    }
+
+    public static PgGroupingSetExpressionNode Visit(GroupingSet node)
+    {
+        return new PgGroupingSetExpressionNode
+        {
+            Kind = node.Kind,
+            Expressions = { node.Content.Select(VisitExpression) }
         };
     }
 

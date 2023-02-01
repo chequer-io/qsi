@@ -158,6 +158,7 @@ internal static partial class PgNodeVisitor
             SortByNulls = node.SortbyNulls,
             UsingOperator = { node.UseOp.Select(VisitExpression) },
             SoryByUsing = node.SortbyDir is SortByDir.SortbyUsing,
+            IsDefault = node.SortbyDir is SortByDir.SortbyDefault
         };
     }
 
@@ -189,7 +190,8 @@ internal static partial class PgNodeVisitor
         var tableReference = new PgTableReferenceNode
         {
             Identifier = CreateQualifiedIdentifier(node.Catalogname, node.Schemaname, node.Relname),
-            Relpersistence = node.Relpersistence.ToRelpersistence()
+            Relpersistence = node.Relpersistence.ToRelpersistence(),
+            IsInherit = node.Inh
         };
 
         if (node.Alias is not { } alias)
@@ -247,9 +249,9 @@ internal static partial class PgNodeVisitor
         return table.WithAlias(node.Alias);
     }
 
-    public static QsiDerivedTableNode Visit(Alias node)
+    public static PgAliasedTableNode Visit(Alias node)
     {
-        return new QsiDerivedTableNode
+        return new PgAliasedTableNode
         {
             Alias = { Value = CreateAliasNode(node.Aliasname) },
             Columns =
@@ -268,14 +270,22 @@ internal static partial class PgNodeVisitor
             IsRecursive = node.Recursive
         };
 
-        tableDirectives.Tables.AddRange(node.Ctes.Select(Visit<QsiDerivedTableNode>));
+        tableDirectives.Tables.AddRange(node.Ctes.Select(Visit<PgCommonTableNode>));
 
         return tableDirectives;
     }
 
-    public static QsiDerivedTableNode Visit(CommonTableExpr node)
+    public static PgCommonTableNode Visit(CommonTableExpr node)
     {
-        return new QsiDerivedTableNode
+        // TODO: Impl CTE search clause
+        if (node.SearchClause is { })
+            throw TreeHelper.NotSupportedFeature("CTE Search Clause");
+
+        // TODO: Impl CTE cycle clause
+        if (node.CycleClause is { })
+            throw TreeHelper.NotSupportedFeature("CTE Cycle Clause");
+
+        return new PgCommonTableNode
         {
             Columns =
             {
@@ -284,7 +294,8 @@ internal static partial class PgNodeVisitor
                     : TreeHelper.CreateAllColumnsDeclaration()
             },
             Source = { Value = Visit<QsiTableNode>(node.Ctequery) },
-            Alias = { Value = CreateAliasNode(node.Ctename) }
+            Alias = { Value = CreateAliasNode(node.Ctename) },
+            Materialized = node.Ctematerialized
         };
     }
 
@@ -338,7 +349,7 @@ internal static partial class PgNodeVisitor
         {
             var aliasedColumn = column switch
             {
-                QsiDerivedColumnNode { Alias: not { } } derivedColumn => derivedColumn,
+                QsiDerivedColumnNode { Alias.IsEmpty: true } derivedColumn => derivedColumn,
                 _ => new QsiDerivedColumnNode { Column = { Value = column } },
             };
 

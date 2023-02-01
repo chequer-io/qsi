@@ -14,7 +14,7 @@ namespace Qsi.PostgreSql
             return PgNodeVisitor.Visit(ParseProtobuf(script).Stmt);
         }
 
-        private static RawStmt ParseProtobuf(QsiScript script)
+        private RawStmt ParseProtobuf(QsiScript script)
         {
             var parseResult = Parser.ParseProtobuf(script.Script);
 

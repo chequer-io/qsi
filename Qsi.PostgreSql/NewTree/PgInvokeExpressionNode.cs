@@ -6,7 +6,7 @@ namespace Qsi.PostgreSql.NewTree;
 
 public class PgInvokeExpressionNode : QsiInvokeExpressionNode
 {
-    public bool IsBulitIn { get; set; }
+    public bool IsBuiltIn { get; set; }
 
     public CoercionForm FunctionFormat { get; set; } = CoercionForm.Undefined;
 

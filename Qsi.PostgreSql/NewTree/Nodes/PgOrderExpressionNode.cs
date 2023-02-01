@@ -12,6 +12,8 @@ public class PgOrderExpressionNode : QsiOrderExpressionNode
 
     public bool SoryByUsing { get; set; }
 
+    public bool IsDefault { get; set; }
+
     public SortByNulls SortByNulls { get; set; }
 
     public QsiTreeNodeList<QsiExpressionNode?> UsingOperator { get; }

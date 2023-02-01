@@ -27,6 +27,7 @@ internal static partial class PgNodeVisitor
             RangeSubselect rangeSubselect => Visit(rangeSubselect),
             SortBy sortBy => Visit(sortBy),
             WindowDef windowDef => Visit(windowDef),
+            GroupingSet groupingSet => Visit(groupingSet),
             _ => throw new NotSupportedException(node.NodeCase.ToString()),
         };
     }
