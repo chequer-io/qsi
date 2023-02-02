@@ -134,15 +134,11 @@ public class PgDeparseTest
         var res = Parser.ParseProtobuf(query);
         var parser = new PostgreSqlParser();
         var result = parser.Parse(new QsiScript(query, QsiScriptType.Select));
-
         var deparser = new PostgreSqlDeparser();
 
-        for (int i = 0; i < 1; i++)
-        {
-            var a = deparser.ConvertToPgNode(result).ToString();
-            var b = res.Stmts[0].Stmt.ToString();
+        var expected = res.Stmts[0].Stmt.ToString();
+        var actual = deparser.ConvertToPgNode(result).ToString();
 
-            Assert.AreEqual(Parser.Deparse(res.Stmts[0].Stmt), deparser.Deparse(result, default!));
-        }
+        Assert.AreEqual(Parser.Deparse(res.Stmts[0].Stmt), deparser.Deparse(result, default!));
     }
 }
