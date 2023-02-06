@@ -274,11 +274,11 @@ public class QsiTableAnalyzer : QsiAnalyzerBase
             }
         }
 
-        if (context.AnalyzerOptions.AnalyzeExpression)
+        if (scopedContext.AnalyzerOptions.AnalyzeExpression)
         {
             if (table.Where is { Expression: { } whereExpr })
             {
-                declaredTable.Filter = ExpressionAnalyzer.ResolveExpression(context, whereExpr);
+                declaredTable.Filter = ExpressionAnalyzer.Resolve(scopedContext, whereExpr);
             }
         }
 
@@ -761,6 +761,12 @@ public class QsiTableAnalyzer : QsiAnalyzerBase
             throw new QsiException(QsiError.UnknownTable, column.Path);
 
         return tables.SelectMany(t => includeInvisible ? t.Columns : t.VisibleColumns);
+    }
+
+    // TODO: it can be public? (ResolveColumnReference)
+    internal QsiTableColumn[] ResolveColumnReference(TableCompileContext context, IQsiColumnReferenceNode column)
+    {
+        return ResolveColumnReference(context, column, out _);
     }
 
     protected virtual QsiTableColumn[] ResolveColumnReference(TableCompileContext context, IQsiColumnReferenceNode column, out QsiQualifiedIdentifier implicitTableWildcardTarget)

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Qsi.Analyzers.Expression.Models;
 using Qsi.Shared.Extensions;
 
 namespace Qsi.Data
@@ -20,7 +21,7 @@ namespace Qsi.Data
 
         internal IEnumerable<QsiTableColumn> VisibleColumns => _columns.Where(c => c.IsVisible);
 
-        public IQsiExpression Filter { get; set; }
+        public QsiExpression Filter { get; set; }
 
         private readonly QsiTableColumnCollection _columns;
 

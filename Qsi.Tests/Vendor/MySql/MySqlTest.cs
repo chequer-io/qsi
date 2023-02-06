@@ -72,6 +72,149 @@ public partial class MySqlTest : VendorTestBase
         await Verifier.Verify(views).UseDirectory("verified");
     }
 
+    // NOTE: Need refactor before merge
+    [TestCase("SELECT * FROM actor WHERE actor_id = 1 or actor_id = 2 or actor_id = !true or actor_id = first_name")]
+    [TestCase("SELECT * FROM actor WHERE !true = actor_id")]
+    [TestCase("SELECT * FROM actor WHERE actor_id = (SELECT * FROM actor WHERE 1 = actor_id)")]
+    public async Task Test_Expression(string sql)
+    {
+        IQsiAnalysisResult[] result = await Engine.Execute(new QsiScript(sql, QsiScriptType.Select), null);
+
+        if (result.Length > 0 && result[0] is QsiTableResult { Table: { } table })
+        {
+            var filter = table.Filter;
+            PrintFilter(filter);
+
+            // TEST MASKING
+            var targetField = new QsiQualifiedIdentifier(
+                new QsiIdentifier("qsi_unit_tests", false),
+                new QsiIdentifier("actor", false),
+                new QsiIdentifier("actor_id", false)
+            );
+
+            Console.WriteLine("=================<Binary Expressions>=================");
+
+            var sb = new StringBuilder(sql);
+            var colExprs = MergeExpression(FilterColumnExpression(FlattenExpressions(table.Filter).OfType<BinaryExpression>()));
+
+            foreach (var binExpr in colExprs)
+            {
+                PrintFilter(binExpr);
+                Console.WriteLine("==================================");
+            }
+
+            int offset = 0;
+
+            foreach (var e in colExprs)
+            {
+                var (target, value) = FindTarget(e);
+
+                // NOTE: Compare only name for concept.
+                if (QsiIdentifierEqualityComparer.Default.Equals(target.Column.Name, targetField[^1]))
+                {
+                    string updateValue;
+
+                    if (value is LiteralExpression literal)
+                    {
+                        updateValue = new string('*', literal.Value.ToString()?.Length ?? 0);
+                    }
+                    else
+                    {
+                        updateValue = "{MASKED}";
+                    }
+
+                    var length = value.EndIndex - value.StartIndex;
+                    sb.Remove(value.StartIndex + offset, length);
+                    sb.Insert(value.StartIndex + offset, updateValue);
+
+                    offset += updateValue.Length - length;
+                }
+            }
+
+            Console.WriteLine(sql);
+            Console.WriteLine(sb.ToString());
+        }
+
+        (ColumnExpression target, QsiExpression value) FindTarget(BinaryExpression expr)
+        {
+            if (expr.Left is ColumnExpression colLeft)
+                return (colLeft, expr.Right);
+
+            if (expr.Right is ColumnExpression colRight)
+                return (colRight, expr.Left);
+
+            throw new InvalidOperationException("At least one column must be Column Expression");
+        }
+
+        IEnumerable<BinaryExpression> FilterColumnExpression(IEnumerable<BinaryExpression> expr)
+        {
+            foreach (var e in expr)
+            {
+                if (e.Left is ColumnExpression ^ e.Right is ColumnExpression)
+                    yield return e;
+            }
+        }
+
+        IEnumerable<QsiExpression> FlattenExpressions(QsiExpression expr)
+        {
+            yield return expr;
+
+            foreach (var child in expr.GetChildren())
+            foreach (var c in FlattenExpressions(child))
+                yield return c;
+        }
+
+        IEnumerable<BinaryExpression> MergeExpression(IEnumerable<BinaryExpression> expressions)
+        {
+            bool isOpen = false;
+            int endIndex = 0;
+
+            foreach (var item in expressions.OrderBy(e => e.StartIndex))
+            {
+                if (!isOpen)
+                {
+                    endIndex = item.EndIndex;
+                    isOpen = true;
+
+                    yield return item;
+
+                    continue;
+                }
+
+                if (item.StartIndex < endIndex && item.EndIndex > endIndex)
+                    throw new InvalidOperationException("Item cannot be Overlapped");
+
+                if (item.EndIndex <= endIndex)
+                    continue;
+
+                yield return item;
+
+                isOpen = false;
+            }
+        }
+
+        void PrintFilter(QsiExpression expr, int level = 0)
+        {
+            Console.Write($"[{expr.StartIndex}..{expr.EndIndex}] - {expr.GetType().Name[..^10]} :: {{ {sql[expr.StartIndex..expr.EndIndex]} }}");
+
+            if (expr is ColumnExpression colExpr)
+            {
+                Console.WriteLine($" :: [{colExpr.Column.Parent.Identifier}.{colExpr.Column.Name}]");
+            }
+            else
+            {
+                Console.WriteLine();
+            }
+
+            foreach (var child in expr.GetChildren())
+            {
+                Console.Write(new string(' ', level * 2));
+                Console.Write(" ㄴ ");
+                PrintFilter(child, level + 1);
+            }
+        }
+    }
+
     [TestCase("TABLE actor")]
     [TestCase("TABLE city")]
     public async Task Test_TABLE(string sql)

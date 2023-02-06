@@ -1,7 +1,7 @@
 using System;
 using Qsi.Analyzers.Expression;
+using Qsi.Analyzers.Expression.Models;
 using Qsi.Analyzers.Table.Context;
-using Qsi.Data;
 using Qsi.MySql.Tree;
 using Qsi.Tree;
 
@@ -9,50 +9,57 @@ namespace Qsi.MySql.Analyzers;
 
 public class MySqlExpressionAnalyzer : QsiExpressionAnalyzer
 {
-    protected override IQsiExpression ResolveSetColumnExpression(TableCompileContext context, IQsiSetColumnExpressionNode node)
+    protected override QsiExpression ResolveSetColumnExpression(TableCompileContext context, IQsiSetColumnExpressionNode node)
     {
         return WithIndex(base.ResolveSetColumnExpression(context, node), node);
     }
 
-    protected override IQsiExpression ResolveSetVariableExpression(TableCompileContext context, IQsiSetVariableExpressionNode node)
+    protected override QsiExpression ResolveColumnExpression(TableCompileContext context, IQsiColumnExpressionNode node)
     {
-        return WithIndex(base.ResolveSetVariableExpression(context, node), node);
+        return WithIndex(base.ResolveColumnExpression(context, node), node);
     }
 
-    protected override IQsiExpression ResolveInvokeExpression(TableCompileContext context, IQsiInvokeExpressionNode node)
+    protected override QsiExpression ResolveColumn(TableCompileContext context, IQsiColumnNode node)
     {
-        return WithIndex(base.ResolveInvokeExpression(context, node), node);
+        return WithIndex(base.ResolveColumn(context, node), node);
     }
 
-    protected override IQsiExpression ResolveLiteralExpression(TableCompileContext context, IQsiLiteralExpressionNode node)
+    protected override QsiExpression ResolveColumnReference(TableCompileContext context, IQsiColumnReferenceNode node)
+    {
+        return WithIndex(base.ResolveColumnReference(context, node), node);
+    }
+
+    protected override QsiExpression ResolveExpressionFragment(TableCompileContext context, QsiExpressionFragmentNode node)
+    {
+        return WithIndex(base.ResolveExpressionFragment(context, node), node);
+    }
+
+    protected override QsiExpression ResolveLiteralExpression(TableCompileContext context, IQsiLiteralExpressionNode node)
     {
         return WithIndex(base.ResolveLiteralExpression(context, node), node);
     }
 
-    protected override IQsiExpression ResolveBinaryExpression(TableCompileContext context, IQsiBinaryExpressionNode node)
+    protected override QsiExpression ResolveBinaryExpression(TableCompileContext context, IQsiBinaryExpressionNode node)
     {
         return WithIndex(base.ResolveBinaryExpression(context, node), node);
     }
 
-    protected override IQsiExpression ResolveAllColumnExpression(TableCompileContext context, IQsiAllColumnNode node)
+    protected override TableExpression ResolveTableExpression(TableCompileContext context, IQsiTableExpressionNode node)
     {
-        return WithIndex(base.ResolveAllColumnExpression(context, node), node);
+        return WithIndex(base.ResolveTableExpression(context, node), node);
     }
 
-    protected override IQsiExpression ResolveColumnReferenceExpression(TableCompileContext context, IQsiColumnReferenceNode node)
+    protected override DerivedExpression ResolveUnaryExpression(TableCompileContext context, IQsiUnaryExpressionNode node)
     {
-        return WithIndex(base.ResolveColumnReferenceExpression(context, node), node);
+        return WithIndex(base.ResolveUnaryExpression(context, node), node);
     }
 
-    private static IQsiExpression WithIndex(IQsiExpression expr, IQsiTreeNode node)
+    private static T WithIndex<T>(T expr, IQsiTreeNode node) where T : QsiExpression
     {
         var span = MySqlTree.Span[node];
 
         if (!Equals(span, default(Range)))
-        {
-            expr.StartIndex = span.Start.Value;
-            expr.EndIndex = span.End.Value;
-        }
+            expr.SetIndex(span.Start.Value, span.End.Value);
 
         return expr;
     }
