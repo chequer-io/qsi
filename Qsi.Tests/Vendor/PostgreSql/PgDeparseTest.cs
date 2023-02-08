@@ -131,7 +131,7 @@ public class PgDeparseTest
     [TestCase("UPDATE actor SET actor_id = 1 WHERE actor_id = 999", TestName = "UPDATE - Simple #2")]
     public void Deparse(string query)
     {
-        var res = Parser.ParseProtobuf(query);
+        var res = Parser.Parse(query);
         var parser = new PostgreSqlParser();
         var result = parser.Parse(new QsiScript(query, QsiScriptType.Select));
         var deparser = new PostgreSqlDeparser();

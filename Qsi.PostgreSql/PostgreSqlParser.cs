@@ -16,7 +16,7 @@ namespace Qsi.PostgreSql
 
         private RawStmt ParseProtobuf(QsiScript script)
         {
-            var parseResult = Parser.ParseProtobuf(script.Script);
+            var parseResult = Parser.Parse(script.Script);
 
             if (parseResult.Stmts.Count == 0)
                 throw new QsiException(QsiError.Syntax);

@@ -25,6 +25,10 @@
 
     <ItemGroup>
         <EmbeddedResource Include="Resources/*.js" />
+
+        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+            <_Parameter1>Qsi.Tests</_Parameter1>
+        </AssemblyAttribute>
     </ItemGroup>
 
 </Project>

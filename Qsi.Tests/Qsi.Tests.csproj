@@ -22,8 +22,8 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Qsi.MySql\Qsi.MySql.csproj" />
-   		<ProjectReference Include="..\Qsi.Oracle\Qsi.Oracle.csproj" />
-   		<ProjectReference Include="..\Qsi.PrimarSql\Qsi.PrimarSql.csproj" />
+   		<ProjectReference Include="..\Qsi.PostgreSql\Qsi.PostgreSql.csproj" />
+        <ProjectReference Include="..\Qsi.PrimarSql\Qsi.PrimarSql.csproj" />
     </ItemGroup>
 
     <ItemGroup>
@@ -33,4 +33,5 @@
       <EmbeddedResource Include="Resources\mysql-sakila-schema.sql" />
     </ItemGroup>
 
+    <Import Project="Packages.props" />
 </Project>
