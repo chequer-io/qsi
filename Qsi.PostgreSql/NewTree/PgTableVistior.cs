@@ -92,7 +92,7 @@ internal static partial class PgNodeVisitor
         {
             table.Where.Value = new QsiWhereExpressionNode
             {
-                Expression = { Value = Visit<QsiExpressionNode>(filter) }
+                Expression = { Value = VisitExpression(filter) }
             };
         }
 
@@ -285,6 +285,10 @@ internal static partial class PgNodeVisitor
         if (node.CycleClause is { })
             throw TreeHelper.NotSupportedFeature("CTE Cycle Clause");
 
+        // NOTE: In CteQuery, allows SELECT, INSERT, UPDATE, DELETE, MERGE statements. but now only support SELECT.
+        if (Visit(node.Ctequery) is not QsiTableNode table)
+            throw TreeHelper.NotSupportedFeature("CTE Query not select statement");
+
         return new PgCommonTableNode
         {
             Columns =
@@ -293,7 +297,7 @@ internal static partial class PgNodeVisitor
                     ? CreateSequentialColumnsDeclaration(node.Aliascolnames)
                     : TreeHelper.CreateAllColumnsDeclaration()
             },
-            Source = { Value = Visit<QsiTableNode>(node.Ctequery) },
+            Source = { Value = table },
             Alias = { Value = CreateAliasNode(node.Ctename) },
             Materialized = node.Ctematerialized
         };

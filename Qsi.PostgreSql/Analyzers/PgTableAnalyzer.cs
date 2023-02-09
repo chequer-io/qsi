@@ -4,6 +4,7 @@ using Qsi.Analyzers.Table;
 using Qsi.Analyzers.Table.Context;
 using Qsi.Data;
 using Qsi.Engines;
+using Qsi.PostgreSql.NewTree.Nodes;
 using Qsi.Tree;
 
 namespace Qsi.PostgreSql.Analyzers
@@ -18,66 +19,144 @@ namespace Qsi.PostgreSql.Analyzers
         {
             switch (expression)
             {
-                case IQsiColumnExpressionNode e:
+                case PgBooleanTestExpressionNode e:
+                {
+                    if (e.Target.IsEmpty)
+                        break;
 
-                    switch (e.Column)
+                    foreach (var c in ResolveColumnsInExpression(context, e.Target.Value))
+                        yield return c;
+
+                    break;
+                }
+
+                case PgCastExpressionNode e:
+                {
+                    if (!e.Source.IsEmpty)
                     {
-                        case IQsiColumnReferenceNode column:
-                            IEnumerable<QsiTableStructure> sources = Enumerable.Empty<QsiTableStructure>();
+                        foreach (var c in ResolveColumnsInExpression(context, e.Source.Value))
+                            yield return c;
+                    }
 
-                            if (context.SourceTable is not null)
-                                sources = new[] { context.SourceTable };
-
-                            QsiTableStructure result = null;
-
-                            if (column.Name.Level == 1 && sources.FirstOrDefault(s => TryResolveTableNameFromColumn(s, column, out result)) is not null)
-                            {
-                                foreach (var tableColumn in ResolveAllColumns(
-                                    context,
-                                    new QsiAllColumnNode
-                                    {
-                                        Path = result.Identifier
-                                    },
-                                    false
-                                ))
-                                {
-                                    yield return tableColumn;
-                                }
-                            }
-                            else
-                            {
-                                foreach (var qsiTableColumn in base.ResolveColumnsInExpression(context, expression))
-                                    yield return qsiTableColumn;
-                            }
-
-                            break;
+                    if (!e.Type.IsEmpty)
+                    {
+                        foreach (var c in ResolveColumnsInExpression(context, e.Type.Value))
+                            yield return c;
                     }
 
                     break;
+                }
+
+                case PgCollateExpressionNode e:
+                {
+                    if (!e.Expression.IsEmpty)
+                    {
+                        foreach (var c in ResolveColumnsInExpression(context, e.Expression.Value))
+                            yield return c;
+                    }
+
+                    break;
+                }
+
+                case PgGroupingSetExpressionNode e:
+                {
+                    foreach (var c in e.Expressions.SelectMany(x => ResolveColumnsInExpression(context, x!)))
+                        yield return c;
+
+                    break;
+                }
+
+                case PgIndexExpressionNode e:
+                {
+                    if (!e.Index.IsEmpty)
+                    {
+                        foreach (var c in ResolveColumnsInExpression(context, e.Index.Value))
+                            yield return c;
+                    }
+
+                    if (!e.IndexEnd.IsEmpty)
+                    {
+                        foreach (var c in ResolveColumnsInExpression(context, e.IndexEnd.Value))
+                            yield return c;
+                    }
+
+                    break;
+                }
+
+                case PgIndirectionExpressionNode e:
+                {
+                    foreach (var c in e.Indirections.SelectMany(x => ResolveColumnsInExpression(context, x)))
+                        yield return c;
+
+                    break;
+                }
+
+                case PgNamedParameterExpressionNode e:
+                {
+                    if (!e.Expression.IsEmpty)
+                    {
+                        foreach (var c in ResolveColumnsInExpression(context, e.Expression.Value))
+                            yield return c;
+                    }
+
+                    break;
+                }
+
+                case PgNullTestExpressionNode e:
+                {
+                    if (!e.Target.IsEmpty)
+                    {
+                        foreach (var c in ResolveColumnsInExpression(context, e.Target.Value))
+                            yield return c;
+                    }
+
+                    break;
+                }
+
+                case PgSubLinkExpressionNode e:
+                {
+                    if (!e.Expression.IsEmpty)
+                    {
+                        foreach (var c in ResolveColumnsInExpression(context, e.Expression.Value))
+                            yield return c;
+                    }
+
+                    break;
+                }
+
+                case PgWindowDefExpressionNode e:
+                {
+                    foreach (var c in e.PartitionClause.SelectMany(x => ResolveColumnsInExpression(context, x!)))
+                        yield return c;
+
+                    foreach (var c in e.OrderClause.SelectMany(x => ResolveColumnsInExpression(context, x!)))
+                        yield return c;
+
+                    if (!e.StartOffset.IsEmpty)
+                    {
+                        foreach (var c in ResolveColumnsInExpression(context, e.StartOffset.Value))
+                            yield return c;
+                    }
+
+                    if (!e.EndOffset.IsEmpty)
+                    {
+                        foreach (var c in ResolveColumnsInExpression(context, e.EndOffset.Value))
+                            yield return c;
+                    }
+
+                    break;
+                }
+
+                case PgDefaultExpressionNode:
+                {
+                    break;
+                }
 
                 default:
                     foreach (var qsiTableColumn in base.ResolveColumnsInExpression(context, expression))
                         yield return qsiTableColumn;
 
                     break;
-            }
-
-            static bool TryResolveTableNameFromColumn(QsiTableStructure table, IQsiColumnReferenceNode column, out QsiTableStructure result)
-            {
-                if (table.Identifier is not null && table.Identifier[^1].Value == column.Name[0].Value)
-                {
-                    result = table;
-                    return true;
-                }
-
-                foreach (var tableStructure in table.References)
-                {
-                    if (TryResolveTableNameFromColumn(tableStructure, column, out result))
-                        return true;
-                }
-
-                result = default;
-                return false;
             }
         }
 
@@ -94,6 +173,7 @@ namespace Qsi.PostgreSql.Analyzers
                     if (context.SourceTable?.Columns.Count == 0)
                     {
                         implicitTableWildcardTarget = default;
+
                         return new[]
                         {
                             new QsiTableColumn
@@ -110,6 +190,7 @@ namespace Qsi.PostgreSql.Analyzers
                     if (table is not null)
                     {
                         implicitTableWildcardTarget = default;
+
                         return new[]
                         {
                             new QsiTableColumn

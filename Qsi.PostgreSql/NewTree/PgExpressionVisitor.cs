@@ -419,6 +419,11 @@ internal static partial class PgNodeVisitor
         };
     }
 
+    public static QsiTreeNode Visit(RangeFunction node)
+    {
+        throw TreeHelper.NotSupportedFeature("RangeFunction");
+    }
+
     private static QsiRowValueExpressionNode CreateRowValueExpression(IEnumerable<Node> items)
     {
         return new QsiRowValueExpressionNode

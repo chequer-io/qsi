@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using PgQuery;
 using Qsi.Tree;
 
@@ -15,5 +16,5 @@ public class PgGroupingSetExpressionNode : QsiExpressionNode
         Expressions = new QsiTreeNodeList<QsiExpressionNode?>(this);
     }
 
-    public override IEnumerable<IQsiTreeNode> Children => Expressions;
+    public override IEnumerable<IQsiTreeNode> Children => Expressions.Where(e => e is { }).Cast<IQsiTreeNode>();
 }

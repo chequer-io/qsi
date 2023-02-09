@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using PgQuery;
 using Qsi.Data;
 using Qsi.Parsing;
@@ -16,7 +17,16 @@ namespace Qsi.PostgreSql
 
         private RawStmt ParseProtobuf(QsiScript script)
         {
-            var parseResult = Parser.Parse(script.Script);
+            ParseResult parseResult;
+
+            try
+            {
+                parseResult = Parser.Parse(script.Script);
+            }
+            catch (Exception e)
+            {
+                throw new QsiException(QsiError.SyntaxError, e.Message);
+            }
 
             if (parseResult.Stmts.Count == 0)
                 throw new QsiException(QsiError.Syntax);

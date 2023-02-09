@@ -11,7 +11,7 @@ public class PgSubLinkExpressionNode : QsiExpressionNode
 
     public QsiTreeNodeProperty<QsiTableNode> Table { get; }
 
-    public QsiQualifiedIdentifier OperatorName { get; set; }
+    public QsiQualifiedIdentifier? OperatorName { get; set; }
 
     public string? SubLinkType { get; set; }
 
@@ -21,5 +21,5 @@ public class PgSubLinkExpressionNode : QsiExpressionNode
         Table = new QsiTreeNodeProperty<QsiTableNode>(this);
     }
 
-    public override IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Table);
+    public override IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Table, Expression);
 }

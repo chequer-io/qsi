@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using PgQuery;
 using Qsi.PostgreSql.Data;
 using Qsi.Tree;
+using Qsi.Utilities;
 
 namespace Qsi.PostgreSql.NewTree;
 
@@ -28,7 +29,8 @@ internal static partial class PgNodeVisitor
             SortBy sortBy => Visit(sortBy),
             WindowDef windowDef => Visit(windowDef),
             GroupingSet groupingSet => Visit(groupingSet),
-            _ => throw new NotSupportedException(node.NodeCase.ToString()),
+            RangeFunction rangeFunction => Visit(rangeFunction),
+            _ => throw TreeHelper.NotSupportedTree(node.Get())
         };
     }
 
@@ -45,7 +47,7 @@ internal static partial class PgNodeVisitor
             SelectStmt select => Visit(select),
             CreateStmt create => Visit(create),
             CreateTableAsStmt createTableAs => Visit(createTableAs),
-            _ => throw new NotSupportedException($"Not supported Statement node: '{node.GetType().Name}'")
+            _ => throw TreeHelper.NotSupportedTree(node)
         };
     }
 
