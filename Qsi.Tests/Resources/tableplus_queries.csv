@@ -1,0 +1,14 @@
+Query
+SELECT p.oid AS oid, p.relname AS table_name, n.nspname as table_schema FROM pg_class AS p JOIN pg_namespace AS n ON p.relnamespace=n.oid WHERE p.relkind='r'
+SELECT pg_catalog.pg_get_userbyid(p.proowner) as owner,p.oid AS oid,pg_get_function_identity_arguments(p.oid)AS args,n.nspname AS function_schema,p.proname AS function_name,CASE WHEN p.prokind = 'a'THEN'aggregate'WHEN p.prokind='w'THEN'window'WHEN p.prokind='p'THEN'procedure'ELSE'function'END AS function_type FROM pg_catalog.pg_proc p LEFT JOIN pg_catalog.pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname<>'pg_catalog'AND n.nspname<>'information_schema'
+SELECT nspname FROM pg_catalog.pg_namespace
+SELECT oid, typname FROM pg_type WHERE typname='geometry' OR typname='geography'
+SELECT datname FROM pg_database
+SELECT datname FROM pg_database
+SELECT relname as name,obj_description(relid, 'pg_class') as comment,pg_total_relation_size(relid)As total_size,pg_table_size(relid)as data_size,pg_indexes_size(relid)as index_size FROM pg_catalog.pg_statio_user_tables where schemaname='public' UNION SELECT p.proname as name,obj_description(p.oid, 'pg_proc') as comment, NULL as total_size, NULL as data_size, NULL as index_size FROM pg_catalog.pg_proc p LEFT JOIN pg_catalog.pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='public' UNION SELECT p.relname AS name,obj_description(p.oid,'pg_class')AS COMMENT,NULL AS total_size,NULL AS data_size,NULL AS index_size FROM pg_catalog.pg_class p LEFT JOIN pg_catalog.pg_namespace n ON n.oid=p.relnamespace WHERE n.nspname='public' AND p.relkind='v'
+SELECT pg_catalog.pg_get_userbyid(relowner)AS owner,relname AS name,reltuples::int8 AS estimated_row FROM pg_class c JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace WHERE nspname='public'AND relkind IN('r','v','m')
+SELECT p.oid AS oid, p.relname AS table_name, n.nspname as table_schema FROM pg_class AS p JOIN pg_namespace AS n ON p.relnamespace=n.oid WHERE p.relkind='r'
+SELECT pg_catalog.pg_get_userbyid(p.proowner) as owner,p.oid AS oid,pg_get_function_identity_arguments(p.oid)AS args,n.nspname AS function_schema,p.proname AS function_name,CASE WHEN p.prokind = 'a'THEN'aggregate'WHEN p.prokind='w'THEN'window'WHEN p.prokind='p'THEN'procedure'ELSE'function'END AS function_type FROM pg_catalog.pg_proc p LEFT JOIN pg_catalog.pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname<>'pg_catalog'AND n.nspname<>'information_schema'
+SELECT nspname FROM pg_catalog.pg_namespace
+SELECT oid, typname FROM pg_type WHERE typname='geometry' OR typname='geography'
+SELECT oid, typname FROM pg_type WHERE typname='geometry' OR typname='geography'

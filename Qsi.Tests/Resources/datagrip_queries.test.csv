@@ -1,0 +1,1215 @@
+﻿Query
+SHOW TRANSACTION ISOLATION LEVEL
+"select distinct connamespace as schema_id
+from pg_catalog.pg_constraint F,
+     pg_catalog.pg_class O
+where F.contype = 'f'
+  and F.confrelid = O.oid
+  and O.relnamespace in ($1)"
+"select D.objid as dependent_id,
+       D.refobjid as owner_id,
+       D.refobjsubid as owner_subobject_id
+from pg_depend D
+  join pg_class C_SEQ on D.objid    = C_SEQ.oid and D.classid    = 'pg_class'::regclass::oid
+  join pg_class C_TAB on D.refobjid = C_TAB.oid and D.refclassid = 'pg_class'::regclass::oid
+where C_SEQ.relkind = 'S'
+  and C_TAB.relkind = 'r'
+  and D.refobjsubid <> 0
+  and (D.deptype = 'a' or D.deptype = 'i')
+  and C_TAB.relnamespace = $1::oid
+order by owner_id"
+"with system_languages as ( select oid as lang
+                           from pg_catalog.pg_language
+                           where lanname in ('c','internal') )
+select oid as id,
+       pg_catalog.pg_get_function_arguments(oid) as arguments_def,
+       pg_catalog.pg_get_function_result(oid) as result_def,
+       /* pg_catalog.pg_get_function_sqlbody(oid) */null  as sqlbody_def,
+       prosrc as source_text
+from pg_catalog.pg_proc
+where pronamespace = $1::oid
+  --  and pg_catalog.age(xmin) <= #SRCTXAGE
+  and not (prokind = 'a') /* proisagg */
+  and prolang not in (select lang from system_languages)
+  and prosrc is not null"
+"with A as ( select oid as table_id, pg_catalog.upper(relkind) as table_kind
+            from pg_catalog.pg_class
+            where relnamespace = $1::oid
+              and relkind in ('r', 'm', 'v', 'f', 'p') )
+select table_kind,
+       table_id,
+       R.oid as rule_id,
+       pg_catalog.pg_get_ruledef(R.oid, true) as source_text
+from A join pg_catalog.pg_rewrite R
+        on A.table_id = R.ev_class
+where R.rulename != '_RETURN'::name"
+"select
+       T.relkind as view_kind,
+       T.oid as view_id,
+       pg_catalog.pg_get_viewdef(T.oid, true) as source_text
+from pg_catalog.pg_class T
+  join pg_catalog.pg_namespace N on T.relnamespace = N.oid
+where N.oid = $1::oid
+  and T.relkind in ('m','v')"
+"select T.oid as object_id,
+               A.attnum as attr_position,
+               A.attacl as acl
+        from pg_catalog.pg_attribute A join pg_catalog.pg_class T on T.oid = A.attrelid
+        where relnamespace = $1::oid
+          and attnum > 0 
+        order by object_id, attr_position"
+"SELECT typinput='array_in'::regproc as is_array, typtype, typname, pg_type.oid   FROM pg_catalog.pg_type   LEFT JOIN (select ns.oid as nspoid, ns.nspname, r.r           from pg_namespace as ns           join ( select s.r, (current_schemas(false))[s.r] as nspname                    from generate_series(1, array_upper(current_schemas(false), 1)) as s(r) ) as r          using ( nspname )        ) as sp     ON sp.nspoid = typnamespace  WHERE pg_type.oid = $1  ORDER BY sp.r, pg_type.oid DESC"
+"select T.oid as object_id,
+                 T.relacl as acl
+          from pg_catalog.pg_class T
+          where relnamespace = $1::oid 
+          union all
+          select T.oid as object_id,
+                 T.proacl as acl
+          from pg_catalog.pg_proc T
+          where pronamespace = $2::oid 
+          union all
+          select T.oid as object_id,
+                 T.typacl as acl
+          from pg_catalog.pg_type T
+          where typnamespace = $3::oid 
+          order by object_id"
+"select D.objoid id, C.relkind::char as kind, D.objsubid sub_id, D.description
+from pg_catalog.pg_description D
+  join pg_catalog.pg_class C on D.objoid = C.oid
+where C.relnamespace = $1::oid and C.relkind != 'c'
+--  and pg_catalog.age(D.xmin) <= #TXAGE
+union all
+select T.oid id, 'T'::char as kind, D.objsubid sub_id, D.description
+from pg_catalog.pg_description D
+  join pg_catalog.pg_type T on T.oid = D.objoid or T.typrelid = D.objoid
+  left join pg_catalog.pg_class C on T.typrelid = C.oid
+where T.typnamespace = $2::oid and (C.relkind = 'c' or C.relkind is null)
+--  and pg_catalog.age(D.xmin) <= #TXAGE
+union all
+select D.objoid id, pg_catalog.translate(C.contype, 'pufc', 'kkxz')::char as kind, D.objsubid sub_id, D.description
+from pg_catalog.pg_description D
+  join pg_catalog.pg_constraint C on D.objoid = C.oid
+where C.connamespace = $3::oid
+--  and pg_catalog.age(D.xmin) <= #TXAGE
+union all
+select D.objoid id, 't'::char as kind, D.objsubid sub_id, D.description
+from pg_catalog.pg_description D
+  join pg_catalog.pg_trigger T on T.oid = D.objoid
+  join pg_catalog.pg_class C on C.oid = T.tgrelid
+where C.relnamespace = $4::oid
+--  and pg_catalog.age(D.xmin) <= #TXAGE
+union all
+select D.objoid id, 'R'::char as kind, D.objsubid sub_id, D.description
+from pg_catalog.pg_description D
+  join pg_catalog.pg_rewrite R on R.oid = D.objoid
+  join pg_catalog.pg_class C on C.oid = R.ev_class
+where C.relnamespace = $5::oid
+--  and pg_catalog.age(D.xmin) <= #TXAGE
+union all
+select D.objoid id, 'F'::char as kind, D.objsubid sub_id, D.description
+from pg_catalog.pg_description D
+  join pg_catalog.pg_proc P on P.oid = D.objoid
+where P.pronamespace = $6::oid
+--  and pg_catalog.age(D.xmin) <= #TXAGE
+union all
+select D.objoid id, 'O'::char as kind, D.objsubid sub_id, D.description
+from pg_catalog.pg_description D
+  join pg_catalog.pg_operator O on O.oid = D.objoid
+where O.oprnamespace = $7::oid
+--  and pg_catalog.age(D.xmin) <= #TXAGE
+union all
+select D.objoid id, 'f'::char as kind, D.objsubid sub_id, D.description
+from pg_catalog.pg_description D
+  join pg_catalog.pg_opfamily O on O.oid = D.objoid
+where O.opfnamespace = $8::oid
+--  and pg_catalog.age(D.xmin) <= #TXAGE
+union all
+select D.objoid id, 'c'::char as kind, D.objsubid sub_id, D.description
+from pg_catalog.pg_description D
+  join pg_catalog.pg_opclass O on O.oid = D.objoid
+where O.opcnamespace = $9::oid
+--  and pg_catalog.age(D.xmin) <= #TXAGE
+union all
+select D.objoid id, 'C'::char as kind, D.objsubid sub_id, D.description
+from pg_catalog.pg_description D
+  join pg_catalog.pg_collation C on C.oid = D.objoid
+where C.collnamespace = $10::oid
+--  and pg_catalog.age(D.xmin) <= #TXAGE
+
+union all
+select D.objoid id, 'P'::char as kind, D.objsubid sub_id, D.description
+from pg_catalog.pg_description D
+       join pg_catalog.pg_policy P on P.oid = D.objoid
+       join pg_catalog.pg_class C on P.polrelid = C.oid
+where C.relnamespace = $11::oid"
+"SELECT typinput='array_in'::regproc as is_array, typtype, typname, pg_type.oid   FROM pg_catalog.pg_type   LEFT JOIN (select ns.oid as nspoid, ns.nspname, r.r           from pg_namespace as ns           join ( select s.r, (current_schemas(false))[s.r] as nspname                    from generate_series(1, array_upper(current_schemas(false), 1)) as s(r) ) as r          using ( nspname )        ) as sp     ON sp.nspoid = typnamespace  WHERE pg_type.oid = $1  ORDER BY sp.r, pg_type.oid DESC"
+"select T.tgrelid as table_id,
+       T.oid as trigger_id,
+       T.xmin as trigger_state_number,
+       T.tgname as trigger_name,
+       T.tgfoid as function_id,
+       pg_catalog.encode(T.tgargs, 'escape') as function_args,
+       T.tgtype as bits,
+       T.tgdeferrable as is_deferrable,
+       T.tginitdeferred as is_init_deferred,
+       T.tgenabled as trigger_fire_mode,
+       T.tgattr as columns,
+       T.tgconstraint != 0 as is_constraint,
+       pg_catalog.pg_get_triggerdef(T.oid, true) as source_code
+from pg_catalog.pg_trigger T
+where T.tgrelid in (select oid
+                    from pg_catalog.pg_class
+                    where relnamespace = $1::oid)
+  --  and pg_catalog.age(T.xmin) <= #TXAGE
+  and not T.tgisinternal"
+"select
+       P.oid id,
+       P.xmin as state_number,
+       polname policyname,
+       polrelid table_id,
+       polpermissive /* true */ as permissive,
+       polroles roles,
+       polcmd cmd,
+       pg_get_expr(polqual, polrelid) qual,
+       pg_get_expr(polwithcheck, polrelid) with_check
+from pg_catalog.pg_policy P
+       join pg_catalog.pg_class C on polrelid = C.oid
+where relnamespace = $1::oid
+  --  and pg_catalog.age(P.xmin) <= #TXAGE
+order by polrelid"
+"select R.ev_class as table_id,
+       R.oid as rule_id,
+       R.xmin as rule_state_number,
+       R.rulename as rule_name,
+       pg_catalog.translate(ev_type,'1234','SUID') as rule_event_code,
+       R.ev_enabled as rule_fire_mode,
+       R.is_instead as rule_is_instead
+from pg_catalog.pg_rewrite R
+where R.ev_class in (select oid
+                     from pg_catalog.pg_class
+                     where relnamespace = $1::oid)
+  --  and pg_catalog.age(R.xmin) <= #TXAGE
+  and R.rulename != '_RETURN'::name
+order by R.ev_class::bigint, ev_type"
+"select T.oid table_id,
+       relkind table_kind,
+       C.oid::bigint con_id,
+       C.xmin::varchar::bigint con_state_id,
+       conname con_name,
+       contype con_kind,
+       conkey con_columns,
+       conindid index_id,
+       confrelid ref_table_id,
+       condeferrable is_deferrable,
+       condeferred is_init_deferred,
+       confupdtype on_update,
+       confdeltype on_delete,
+      connoinherit no_inherit,
+      pg_catalog.pg_get_expr(conbin, T.oid) /* consrc */ con_expression,
+       confkey ref_columns,
+       conexclop::int[] excl_operators,
+       array(select unnest::regoper::varchar from unnest(conexclop)) excl_operators_str
+from pg_catalog.pg_constraint C
+         join pg_catalog.pg_class T
+              on C.conrelid = T.oid
+   where relkind in ('r', 'v', 'f', 'p')
+     and relnamespace = $1::oid
+     and contype in ('p', 'u', 'f', 'c', 'x')
+     and connamespace = $2::oid"
+"select ind_head.indexrelid index_id,
+       k col_idx,
+       k <= indnkeyatts /* true */ in_key,
+       ind_head.indkey[k-1] column_position,
+       ind_head.indoption[k-1] column_options,
+       ind_head.indcollation[k-1] /* null */ as collation,
+       colln.nspname /* null */ as collation_schema,
+       collname /* null */ as collation_str,
+       ind_head.indclass[k-1] as opclass,
+       case when opcdefault then null else opcn.nspname end as opclass_schema,
+       case when opcdefault then null else opcname end as opclass_str,
+       case
+           when indexprs is null then null
+           when ind_head.indkey[k-1] = 0 then chr(27) || pg_catalog.pg_get_indexdef(ind_head.indexrelid, k::int, true)
+           else pg_catalog.pg_get_indexdef(ind_head.indexrelid, k::int, true)
+       end as expression,
+       amcanorder can_order
+from pg_catalog.pg_index /* (select *, pg_catalog.generate_subscripts(indkey::int[], 1) + 1 k from pg_catalog.pg_index) */ ind_head
+         join pg_catalog.pg_class ind_stor
+              on ind_stor.oid = ind_head.indexrelid
+cross join unnest(ind_head.indkey) with ordinality u(u, k)
+left join pg_catalog.pg_collation
+on pg_collation.oid = ind_head.indcollation[k-1]
+left join pg_catalog.pg_namespace colln on collnamespace = colln.oid
+cross join pg_catalog.pg_indexam_has_property(ind_stor.relam, 'can_order') amcanorder /* left join pg_catalog.pg_am am on ind_stor.relam = am.oid*/
+         left join pg_catalog.pg_opclass
+                   on pg_opclass.oid = ind_head.indclass[k-1]
+         left join pg_catalog.pg_namespace opcn on opcnamespace = opcn.oid
+where ind_stor.relnamespace = $1::oid
+  and ind_stor.relkind in ('i', 'I')
+--  and pg_catalog.age(ind_stor.xmin) <= #TXAGE
+order by index_id, k"
+"select tab.oid               table_id,
+       tab.relkind           table_kind,
+       ind_stor.relname      index_name,
+       ind_head.indexrelid   index_id,
+       ind_stor.xmin         state_number,
+       ind_head.indisunique  is_unique,
+       ind_head.indisprimary is_primary,
+       pg_catalog.pg_get_expr(ind_head.indpred, ind_head.indrelid) as condition,
+       (select pg_catalog.array_agg(inhparent::bigint order by inhseqno)::varchar from pg_catalog.pg_inherits where ind_stor.oid = inhrelid) as ancestors,
+       ind_stor.reltablespace tablespace_id,
+       opcmethod as access_method_id
+from pg_catalog.pg_class tab
+         join pg_catalog.pg_index ind_head
+              on ind_head.indrelid = tab.oid
+         join pg_catalog.pg_class ind_stor
+              on tab.relnamespace = ind_stor.relnamespace and ind_stor.oid = ind_head.indexrelid
+         left join pg_catalog.pg_opclass on pg_opclass.oid = ANY(indclass)
+where tab.relnamespace = $1::oid
+        and tab.relkind in ('r', 'm', 'v', 'p')
+        and ind_stor.relkind in ('i', 'I')"
+"with T as ( select --  distinct
+                  T.oid as table_id, T.relname as table_name
+            from pg_catalog.pg_class T
+                 --  , pg_catalog.pg_attribute A
+            where T.relnamespace = $1::oid
+              and T.relkind in ('r', 'm', 'v', 'f', 'p')
+              --  and (pg_catalog.age(A.xmin) <= #TXAGE or pg_catalog.age(T.xmin) <= #TXAGE)
+              --  and A.attrelid = T.oid
+            )
+select T.table_id,
+       C.attnum as column_position,
+       C.attname as column_name,
+       C.xmin as column_state_number,
+       C.atttypmod as type_mod,
+       C.attndims as dimensions_number,
+       pg_catalog.format_type(C.atttypid, C.atttypmod) as type_spec,
+       C.atttypid as type_id,
+       C.attnotnull as mandatory,
+       pg_catalog.pg_get_expr(D.adbin, T.table_id) /* D.adsrc */ as column_default_expression,
+       not C.attislocal as column_is_inherited,
+       C.attfdwoptions as options,
+       C.attisdropped as column_is_dropped,
+       C.attidentity /* null */ as identity_kind,
+       C.attgenerated /* null */ as generated
+from T
+  join pg_catalog.pg_attribute C on T.table_id = C.attrelid
+  left join pg_catalog.pg_attrdef D on (C.attrelid, C.attnum) = (D.adrelid, D.adnum)
+where attnum > 0
+order by table_id, attnum"
+"with types as (select distinct T.oid as type_id
+               from pg_catalog.pg_type T
+               join pg_catalog.pg_enum E
+                 on T.oid = E.enumtypid
+               where T.typnamespace = $1::oid
+                 and T.typtype = 'e'::""char""
+               --  and pg_catalog.age(E.xmin) <= #TXAGE
+               )
+select T.type_id as enum_id,
+       pg_catalog.array_agg(E.enumlabel::varchar order by E.enumsortorder ) as enum_labels
+from types T
+join pg_catalog.pg_enum E
+  on T.type_id = E.enumtypid
+group by T.type_id"
+"select P.oid as id,
+       P.amprocnum as num,
+       P.amproc::oid as proc_id,
+       P.amproc::regprocedure::varchar as proc_sig,
+       P.amproclefttype::regtype::varchar as left_type,
+       P.amprocrighttype::regtype::varchar as right_type,
+       P.amprocfamily as family_id,
+       C.oid as class_id
+from pg_catalog.pg_amproc P
+    left join pg_opfamily F on P.amprocfamily = F.oid
+    left join pg_depend D on D.classid = 'pg_amproc'::regclass and P.oid = D.objid and D.objsubid = 0
+    left join pg_opclass C on D.refclassid = 'pg_opclass'::regclass and C.oid = D.refobjid and D.refobjsubid = 0
+where C.opcnamespace = $1::oid or C.opcnamespace is null and F.opfnamespace = $2::oid
+  --  and pg_catalog.age(P.xmin) <= #TXAGE
+order by C.oid, F.oid"
+"select O.oid as id,
+       O.amopstrategy as strategy,
+       O.amopopr as op_id,
+       O.amopopr::regoperator::varchar as op_sig,
+       O.amopsortfamily /* null */ as sort_family_id,
+       SF.opfname /* null */ as sort_family,
+       O.amopfamily as family_id,
+       C.oid as class_id
+from pg_catalog.pg_amop O
+    left join pg_opfamily F on O.amopfamily = F.oid
+    left join pg_opfamily SF on O.amopsortfamily = SF.oid
+    left join pg_depend D on D.classid = 'pg_amop'::regclass and O.oid = D.objid and D.objsubid = 0
+    left join pg_opclass C on D.refclassid = 'pg_opclass'::regclass and C.oid = D.refobjid and D.refobjsubid = 0
+where C.opcnamespace = $1::oid or C.opcnamespace is null and F.opfnamespace = $2::oid
+  --  and pg_catalog.age(O.xmin) <= #TXAGE
+order by C.oid, F.oid"
+"select O.oid as id,
+       O.xmin as state_number,
+       opfname as name,
+       opfmethod as access_method_id,
+       pg_catalog.pg_get_userbyid(O.opfowner) as ""owner""
+from pg_catalog.pg_opfamily O
+where opfnamespace = $1::oid"
+"select O.oid as id,
+       O.xmin as state_number,
+       opcname as name,
+       opcintype::regtype::varchar as in_type,
+       case when opckeytype = 0 then null else opckeytype::regtype::varchar end as key_type,
+       opcdefault as is_default,
+       opcfamily as family_id,
+       opfname as family,
+       opcmethod as access_method_id,
+       pg_catalog.pg_get_userbyid(O.opcowner) as ""owner""
+from pg_catalog.pg_opclass O join pg_catalog.pg_opfamily F on F.oid = opcfamily
+where opcnamespace = $1::oid"
+"select oid as id,
+       xmin as state_number,
+       collname as name,
+       collcollate as lc_collate,
+       collctype as lc_ctype,
+       pg_catalog.pg_get_userbyid(collowner) as ""owner""
+from pg_catalog.pg_collation
+where collnamespace = $1::oid"
+"select O.oid as op_id,
+       O.xmin as state_number,
+       oprname as op_name,
+       oprkind as op_kind,
+       oprleft as arg_left_type_id,
+       oprright as arg_right_type_id,
+       oprresult as arg_result_type_id,
+       oprcode::oid as main_id,
+       oprcode::varchar as main_name,
+       oprrest::oid as restrict_id,
+       oprrest::varchar as restrict_name,
+       oprjoin::oid as join_id,
+       oprjoin::varchar as join_name,
+       oprcom::oid as com_id,
+       oprcom::regoper::varchar as com_name,
+       oprnegate::oid as neg_id,
+       oprnegate::regoper::varchar as neg_name,
+       oprcanmerge as merges,
+       oprcanhash as hashes,
+       pg_catalog.pg_get_userbyid(O.oprowner) as ""owner""
+from pg_catalog.pg_operator O
+where oprnamespace = $1::oid"
+"select P.oid as aggregate_id,
+       P.xmin as state_number,
+       P.proname as aggregate_name,
+       P.proargnames as arg_names,
+       P.proargmodes as arg_modes,
+       P.proargtypes::int[] as in_arg_types,
+       P.proallargtypes::int[] as all_arg_types,
+       A.aggtransfn::oid as transition_function_id,
+       A.aggtransfn::regproc::text as transition_function_name,
+       A.aggtranstype as transition_type,
+       A.aggfinalfn::oid as final_function_id,
+       case when A.aggfinalfn::oid = 0 then null else A.aggfinalfn::regproc::varchar end as final_function_name,
+       case when A.aggfinalfn::oid = 0 then 0 else P.prorettype end as final_return_type,
+       A.agginitval as initial_value,
+       A.aggsortop as sort_operator_id,
+       case when A.aggsortop = 0 then null else A.aggsortop::regoper::varchar end as sort_operator_name,
+       pg_catalog.pg_get_userbyid(P.proowner) as ""owner""
+       ,
+       A.aggfinalextra as final_extra,
+       A.aggtransspace as state_size,
+       A.aggmtransfn::oid as moving_transition_id,
+       case when A.aggmtransfn::oid = 0 then null else A.aggmtransfn::regproc::varchar end as moving_transition_name,
+       A.aggminvtransfn::oid as inverse_transition_id,
+       case when A.aggminvtransfn::oid = 0 then null else A.aggminvtransfn::regproc::varchar end as inverse_transition_name,
+       A.aggmtranstype::oid as moving_state_type,
+       A.aggmtransspace as moving_state_size,
+       A.aggmfinalfn::oid as moving_final_id,
+       case when A.aggmfinalfn::oid = 0 then null else A.aggmfinalfn::regproc::varchar end as moving_final_name,
+       A.aggmfinalextra as moving_final_extra,
+       A.aggminitval as moving_initial_value,
+       A.aggkind as aggregate_kind,
+       A.aggnumdirectargs as direct_args
+       
+       ,
+       A.aggcombinefn::oid as combine_function_id,
+       case when A.aggcombinefn::oid = 0 then null else A.aggcombinefn::regproc::varchar end as combine_function_name,
+       A.aggserialfn::oid as serialization_function_id,
+       case when A.aggserialfn::oid = 0 then null else A.aggserialfn::regproc::varchar end as serialization_function_name,
+       A.aggdeserialfn::oid as deserialization_function_id,
+       case when A.aggdeserialfn::oid = 0 then null else A.aggdeserialfn::regproc::varchar end as deserialization_function_name,
+       P.proparallel as concurrency_kind
+       
+from pg_catalog.pg_aggregate A
+join pg_catalog.pg_proc P
+  on A.aggfnoid = P.oid
+where P.pronamespace = $1::oid
+--  and (pg_catalog.age(A.xmin) <= #TXAGE or pg_catalog.age(P.xmin) <= #TXAGE)
+order by P.oid"
+"with languages as (select oid as lang_oid, lanname as lang
+                   from pg_catalog.pg_language),
+     routines as (select proname as r_name,
+                         prolang as lang_oid,
+                         oid as r_id,
+                         xmin as r_state_number,
+                         proargnames as arg_names,
+                         proargmodes as arg_modes,
+                         proargtypes::int[] as in_arg_types,
+                         proallargtypes::int[] as all_arg_types,
+                         pg_catalog.pg_get_expr(proargdefaults, 0) as arg_defaults,
+                         provariadic as arg_variadic_id,
+                         prorettype as ret_type_id,
+                         proretset as ret_set,
+                         prokind /* case when proiswindow then 'w'
+                                                when proisagg then 'a'
+                                                else 'f'
+                                           end */ as kind,
+                         provolatile as volatile_kind,
+                         proisstrict as is_strict,
+                         prosecdef as is_security_definer,
+                         proconfig as configuration_parameters,
+                         procost as cost,
+                         pg_catalog.pg_get_userbyid(proowner) as ""owner"",
+                         prorows as rows ,
+                         proleakproof as is_leakproof  ,
+                         proparallel as concurrency_kind 
+                  from pg_catalog.pg_proc
+                  where pronamespace = $1::oid
+                    and not (prokind = 'a') /* proisagg */
+                    /* and pg_catalog.age(xmin) <= #TXAGE */)
+select *
+from routines natural join languages"
+"with schema_procs as (select prorettype, proargtypes, proallargtypes
+                      from pg_catalog.pg_proc
+                      where pronamespace = $1::oid
+                        /* and pg_catalog.age(xmin) <= #TXAGE */ ),
+     schema_opers as (select oprleft, oprright, oprresult
+                      from pg_catalog.pg_operator
+                      where oprnamespace = $2::oid
+                        /* and pg_catalog.age(xmin) <= #TXAGE */ ),
+     schema_aggregates as (select A.aggtranstype , A.aggmtranstype 
+                           from pg_catalog.pg_aggregate A
+                           join pg_catalog.pg_proc P
+                             on A.aggfnoid = P.oid
+                           where P.pronamespace = $3::oid
+                           /* and (pg_catalog.age(A.xmin) <= #TXAGE or pg_catalog.age(P.xmin) <= #TXAGE) */),
+     schema_arg_types as ( select prorettype as type_id
+                           from schema_procs
+                           union
+                           select distinct unnest(proargtypes) as type_id
+                           from schema_procs
+                           union
+                           select distinct unnest(proallargtypes) as type_id
+                           from schema_procs
+                           union
+                           select oprleft as type_id
+                           from schema_opers
+                           where oprleft is not null
+                           union
+                           select oprright as type_id
+                           from schema_opers
+                           where oprright is not null
+                           union
+                           select oprresult as type_id
+                           from schema_opers
+                           where oprresult is not null
+                           union
+                           select aggtranstype::oid as type_id
+                           from schema_aggregates
+                           union
+                           select aggmtranstype::oid as type_id
+                           from schema_aggregates
+                           
+                           )
+select type_id, pg_catalog.format_type(type_id, null) as type_spec
+from schema_arg_types
+where type_id <> 0"
+"select ft.ftrelid as table_id,
+       srv.srvname as table_server,
+       ft.ftoptions as table_options,
+       pg_catalog.pg_get_userbyid(cls.relowner) as ""owner""
+from pg_catalog.pg_foreign_table ft
+     left outer join pg_catalog.pg_foreign_server srv on ft.ftserver = srv.oid
+     join pg_catalog.pg_class cls on ft.ftrelid = cls.oid
+where cls.relnamespace = $1::oid
+  --  and pg_catalog.age(ft.xmin) <= #TXAGE
+order by table_id"
+"select T.relkind as table_kind,
+       T.relname as table_name,
+       T.oid as table_id,
+       T.xmin as table_state_number,
+       false /* T.relhasoids */ as table_with_oids,
+       T.reltablespace as tablespace_id,
+       T.reloptions as options,
+       T.relpersistence as persistence,
+       (select pg_catalog.array_agg(inhparent::bigint order by inhseqno)::varchar from pg_catalog.pg_inherits where T.oid = inhrelid) as ancestors,
+       (select pg_catalog.array_agg(inhrelid::bigint order by inhrelid)::varchar from pg_catalog.pg_inherits where T.oid = inhparent) as successors,
+       T.relispartition /* false */ as is_partition,
+       pg_catalog.pg_get_partkeydef(T.oid) /* null */ as partition_key,
+       pg_catalog.pg_get_expr(T.relpartbound, T.oid) /* null */ as partition_expression,
+       T.relam am_id,
+       pg_catalog.pg_get_userbyid(T.relowner) as ""owner""
+from pg_catalog.pg_class T
+where relnamespace = $1::oid
+  and relkind in ('r', 'm', 'v', 'f', 'p')
+  --  and pg_catalog.age(T.xmin) <= #TXAGE
+order by table_kind, table_id"
+"select T.oid::bigint as type_id,
+       C.oid::bigint as constraint_id,
+       C.xmin as constraint_state_number,
+       C.conname as constraint_name,
+       pg_catalog.pg_get_expr(C.conbin, 0) /* C.consrc */ as predicate
+from pg_catalog.pg_type T,
+     pg_catalog.pg_constraint C
+where T.typnamespace = $1::oid
+  and T.typtype = 'd'::""char""
+  and T.oid = C.contypid
+  --  and (pg_catalog.age(T.xmin) <= #TXAGE or pg_catalog.age(C.xmin) <= #TXAGE)
+order by constraint_name"
+"select oid
+from pg_catalog.pg_constraint
+where contypid != 0 and connamespace = $1::oid"
+"select T.oid as type_id,
+       T.xmin as type_state_number,
+       T.typname as type_name,
+       T.typtype as type_sub_kind,
+       T.typcategory as type_category,
+       T.typrelid as class_id,
+       T.typbasetype as base_type_id,
+       case when T.typtype in ('c','e') then null
+            else pg_catalog.format_type(T.typbasetype, T.typtypmod) end as type_def,
+       T.typdefault as default_expression,
+       T.typnotnull as mandatory,
+       pg_catalog.pg_get_userbyid(T.typowner) as ""owner""
+from pg_catalog.pg_type T
+         left outer join pg_catalog.pg_class C
+             on T.typrelid = C.oid
+where T.typnamespace = $1::oid
+  --  and pg_catalog.age(T.xmin) <= #TXAGE
+  and (T.typtype in ('d','e') or
+       C.relkind = 'c'::""char"" or
+       (T.typtype = 'b' and (T.typelem = 0 OR T.typcategory <> 'A')) or
+       T.typtype = 'p' and not T.typisdefined)
+order by 1"
+"select cls.xmin as sequence_state_number,
+       sq.seqrelid as sequence_id,
+       cls.relname as sequence_name,
+       pg_catalog.format_type(sq.seqtypid, null) as data_type,
+       sq.seqstart as next_value,
+       sq.seqincrement as inc_value,
+       sq.seqmin as min_value,
+       sq.seqmax as max_value,
+       sq.seqcache as cache_size,
+       sq.seqcycle as cycle_option,
+       pg_catalog.pg_get_userbyid(cls.relowner) as ""owner""
+from pg_catalog.pg_sequence sq
+    join pg_class cls on sq.seqrelid = cls.oid
+    where cls.relnamespace = $1::oid"
+"select E.oid   as extension_id,
+       D.objid as member_id
+from pg_extension E join pg_depend D
+  on E.oid = D.refobjid and
+     D.refclassid = 'pg_extension'::regclass::oid
+where D.deptype = 'e'
+order by extension_id"
+"select C.oid,
+       C.xmin as state_number,
+       C.castsource as castsource_id,
+       pg_catalog.quote_ident(SN.nspname) || '.' || pg_catalog.quote_ident(S.typname) as castsource_name,
+       C.casttarget as casttarget_id,
+       pg_catalog.quote_ident(TN.nspname) || '.' || pg_catalog.quote_ident(T.typname) as casttarget_name,
+       C.castfunc as castfunc_id,
+       pg_catalog.quote_ident(FN.nspname) || '.' || pg_catalog.quote_ident(F.proname) as castfunc_name,
+       C.castcontext,
+       C.castmethod
+from pg_cast C
+     left outer join pg_proc F on C.castfunc::oid = F.oid
+     left outer join pg_namespace FN on F.pronamespace = FN.oid
+     join pg_type S on C.castsource::oid = S.oid
+     join pg_namespace SN on S.typnamespace = SN.oid
+     join pg_type T on C.casttarget::oid = T.oid
+     join pg_namespace TN on T.typnamespace = TN.oid
+where pg_catalog.age(C.xmin) <= coalesce(nullif(greatest(pg_catalog.age($1::varchar::xid), -1), -1), 2147483647)"
+select oid from pg_catalog.pg_cast
+"select T.oid as object_id,
+                 T.fdwacl as acl
+          from pg_catalog.pg_foreign_data_wrapper T 
+            where pg_catalog.age(T.xmin) <= pg_catalog.age($1::varchar::xid)
+          union all
+          select T.oid as object_id,
+                 T.lanacl as acl
+          from pg_catalog.pg_language T 
+            where pg_catalog.age(T.xmin) <= pg_catalog.age($2::varchar::xid)
+          union all
+          select T.oid as object_id,
+                 T.nspacl as acl
+          from pg_catalog.pg_namespace T 
+            where pg_catalog.age(T.xmin) <= pg_catalog.age($3::varchar::xid)
+          union all
+          select T.oid as object_id,
+                 T.srvacl as acl
+          from pg_catalog.pg_foreign_server T 
+            where pg_catalog.age(T.xmin) <= pg_catalog.age($4::varchar::xid)"
+"select D.objoid id, case
+    when 'pg_catalog.pg_event_trigger'::regclass = classoid then 'T'
+    when 'pg_catalog.pg_am'::regclass = classoid then 'A'
+    when 'pg_catalog.pg_cast'::regclass = classoid then 'C'
+    when 'pg_catalog.pg_foreign_data_wrapper'::regclass = classoid then 'W'
+    when 'pg_catalog.pg_foreign_server'::regclass = classoid then 'S'
+    when 'pg_catalog.pg_language'::regclass = classoid then 'L'
+    when 'pg_catalog.pg_extension'::regclass = classoid then 'E'
+    
+  end as kind,
+  D.objsubid sub_id, D.description
+from pg_catalog.pg_description D
+where classoid in (
+  'pg_catalog.pg_event_trigger'::regclass,
+  'pg_catalog.pg_am'::regclass,
+  'pg_catalog.pg_cast'::regclass,
+  'pg_catalog.pg_foreign_data_wrapper'::regclass,
+  'pg_catalog.pg_foreign_server'::regclass,
+  'pg_catalog.pg_language'::regclass
+  ,
+  'pg_catalog.pg_extension'::regclass
+  
+)
+and pg_catalog.age(D.xmin) <= coalesce(nullif(greatest(pg_catalog.age($1::varchar::xid), -1), -1), 2147483647)"
+"select D.objoid id
+from pg_catalog.pg_description D
+where D.classoid in (
+  'pg_catalog.pg_event_trigger'::regclass,
+  'pg_catalog.pg_am'::regclass,
+  'pg_catalog.pg_cast'::regclass,
+  'pg_catalog.pg_foreign_data_wrapper'::regclass,
+  'pg_catalog.pg_foreign_server'::regclass,
+  'pg_catalog.pg_language'::regclass
+  ,
+  'pg_catalog.pg_extension'::regclass
+  
+)"
+"select l.oid as id, l.xmin state_number, lanname as name, lanpltrusted as trusted,
+       h.proname as handler, hs.nspname as handlerSchema,
+       i.proname as inline, isc.nspname as inlineSchema,
+       v.proname as validator, vs.nspname as validatorSchema
+from pg_catalog.pg_language l
+    left join pg_catalog.pg_proc h on h.oid = lanplcallfoid
+    left join pg_catalog.pg_namespace hs on hs.oid = h.pronamespace
+    left join pg_catalog.pg_proc i on i.oid = laninline
+    left join pg_catalog.pg_namespace isc on isc.oid = i.pronamespace
+    left join pg_catalog.pg_proc v on v.oid = lanvalidator
+    left join pg_catalog.pg_namespace vs on vs.oid = v.pronamespace
+where pg_catalog.age(l.xmin) <= coalesce(nullif(greatest(pg_catalog.age($1::varchar::xid), -1), -1), 2147483647)
+order by lanname"
+select oid from pg_catalog.pg_language
+"select E.oid        as id,
+       E.xmin       as state_number,
+       extname      as name,
+       extversion   as version,
+       extnamespace as schema_id,
+       nspname      as schema_name
+       ,
+       array(select unnest
+             from unnest(available_versions)
+             where unnest > extversion) as available_updates
+       
+from pg_catalog.pg_extension E
+       join pg_namespace N on E.extnamespace = N.oid
+       left join (select name, array_agg(version) as available_versions
+                  from pg_available_extension_versions()
+                  group by name) V on E.extname = V.name
+       
+where pg_catalog.age(E.xmin) <= coalesce(nullif(greatest(pg_catalog.age($1::varchar::xid), -1), -1), 2147483647)"
+select oid from pg_catalog.pg_extension
+"select A.oid as access_method_id,
+       A.xmin as state_number,
+       A.amname as access_method_name
+       ,
+       A.amhandler::oid as handler_id,
+       pg_catalog.quote_ident(N.nspname) || '.' || pg_catalog.quote_ident(P.proname) as handler_name,
+       A.amtype as access_method_type
+       
+from pg_am A
+  join pg_proc P on A.amhandler::oid = P.oid
+  join pg_namespace N on P.pronamespace = N.oid
+  
+where pg_catalog.age(A.xmin) <= coalesce(nullif(greatest(pg_catalog.age($1::varchar::xid), -1), -1), 2147483647)"
+select oid from pg_catalog.pg_am
+"select oid as id,
+       umserver as server_id,
+       case when umuser = 0 then null else pg_catalog.pg_get_userbyid(umuser) end as user,
+       umoptions as options
+from pg_catalog.pg_user_mapping
+where pg_catalog.age(xmin) <= coalesce(nullif(greatest(pg_catalog.age($1::varchar::xid), -1), -1), 2147483647)
+order by server_id"
+select oid from pg_catalog.pg_user_mapping
+"select srv.oid as id,
+       srv.srvfdw as fdw_id,
+       srv.xmin as state_number,
+       srv.srvname as name,
+       srv.srvtype as type,
+       srv.srvversion as version,
+       srv.srvoptions as options,
+       pg_catalog.pg_get_userbyid(srv.srvowner) as ""owner""
+from pg_catalog.pg_foreign_server srv
+  where pg_catalog.age(srv.xmin) <= coalesce(nullif(greatest(pg_catalog.age($1::varchar::xid), -1), -1), 2147483647)"
+select oid from pg_catalog.pg_foreign_server
+"select fdw.oid as id,
+       fdw.xmin as state_number,
+       fdw.fdwname as name,
+       pr.proname as handler,
+       nspc.nspname as handler_schema,
+       pr2.proname as validator,
+       nspc2.nspname as validator_schema,
+       fdw.fdwoptions as options,
+       pg_catalog.pg_get_userbyid(fdw.fdwowner) as ""owner""
+from pg_catalog.pg_foreign_data_wrapper fdw
+     left outer join pg_catalog.pg_proc pr on fdw.fdwhandler = pr.oid
+     left outer join pg_catalog.pg_namespace nspc on pr.pronamespace = nspc.oid
+     left outer join pg_catalog.pg_proc pr2 on fdw.fdwvalidator = pr2.oid
+     left outer join pg_catalog.pg_namespace nspc2 on pr2.pronamespace = nspc2.oid
+  where pg_catalog.age(fdw.xmin) <= coalesce(nullif(greatest(pg_catalog.age($1::varchar::xid), -1), -1), 2147483647)"
+select oid from pg_catalog.pg_foreign_data_wrapper
+"select t.oid as id, t.xmin state_number, t.evtname as name, t.evtevent as event,
+       t.evtfoid routine_id, pg_catalog.pg_get_userbyid(t.evtowner) as ""owner"",
+       t.evttags tags
+from pg_catalog.pg_event_trigger t
+where pg_catalog.age(t.xmin) <= coalesce(nullif(greatest(pg_catalog.age($1::varchar::xid), -1), -1), 2147483647)"
+select oid from pg_catalog.pg_event_trigger
+"select usesuper
+from pg_user
+where usename = current_user"
+"select N.oid::bigint as id,
+       N.xmin as state_number,
+       nspname as name,
+       D.description,
+       pg_catalog.pg_get_userbyid(N.nspowner) as ""owner""
+from pg_catalog.pg_namespace N
+  left join pg_catalog.pg_description D on N.oid = D.objoid
+order by case when nspname = pg_catalog.current_schema() then -1::bigint else N.oid::bigint end"
+"select N.oid::bigint as id,
+       N.xmin as state_number,
+       nspname as name,
+       D.description,
+       pg_catalog.pg_get_userbyid(N.nspowner) as ""owner""
+from pg_catalog.pg_namespace N
+  left join pg_catalog.pg_description D on N.oid = D.objoid
+order by case when nspname = pg_catalog.current_schema() then -1::bigint else N.oid::bigint end"
+"select N.oid::bigint as id,
+       N.xmin as state_number,
+       nspname as name,
+       D.description,
+       pg_catalog.pg_get_userbyid(N.nspowner) as ""owner""
+from pg_catalog.pg_namespace N
+  left join pg_catalog.pg_description D on N.oid = D.objoid
+order by case when nspname = pg_catalog.current_schema() then -1::bigint else N.oid::bigint end"
+"select N.oid::bigint as id,
+       N.xmin as state_number,
+       nspname as name,
+       D.description,
+       pg_catalog.pg_get_userbyid(N.nspowner) as ""owner""
+from pg_catalog.pg_namespace N
+  left join pg_catalog.pg_description D on N.oid = D.objoid
+order by case when nspname = pg_catalog.current_schema() then -1::bigint else N.oid::bigint end"
+"select T.oid as object_id,
+                 T.spcacl as acl
+          from pg_catalog.pg_tablespace T 
+            where pg_catalog.age(T.xmin) <= pg_catalog.age($1::varchar::xid)
+          union all
+          select T.oid as object_id,
+                 T.datacl as acl
+          from pg_catalog.pg_database T 
+            where pg_catalog.age(T.xmin) <= pg_catalog.age($2::varchar::xid)"
+"select T.oid::bigint as id, T.spcname as name,
+       T.xmin as state_number, pg_catalog.pg_get_userbyid(T.spcowner) as owner,
+       pg_catalog.pg_tablespace_location(T.oid) /* null */ as location,
+       T.spcoptions /* null */ as options,
+       D.description as comment
+from pg_catalog.pg_tablespace T
+  left join pg_catalog.pg_shdescription D on D.objoid = T.oid
+where pg_catalog.age(T.xmin) <= coalesce(nullif(greatest(pg_catalog.age($1::varchar::xid), -1), -1), 2147483647)"
+select oid::bigint from pg_catalog.pg_tablespace
+"select member id, roleid role_id, admin_option
+          from pg_catalog.pg_auth_members order by id, roleid::text"
+"select R.oid::bigint as role_id, rolname as role_name,
+  rolsuper is_super, rolinherit is_inherit,
+  rolcreaterole can_createrole, rolcreatedb can_createdb,
+  rolcanlogin can_login, rolreplication /* false */ is_replication,
+  rolconnlimit conn_limit, rolvaliduntil valid_until,
+  rolbypassrls /* false */ bypass_rls, rolconfig config,
+  D.description
+from pg_catalog.pg_roles R
+  left join pg_catalog.pg_shdescription D on D.objoid = R.oid"
+"select D.objoid id
+from pg_catalog.pg_description D
+where D.classoid in (
+  'pg_catalog.pg_event_trigger'::regclass,
+  'pg_catalog.pg_am'::regclass,
+  'pg_catalog.pg_cast'::regclass,
+  'pg_catalog.pg_foreign_data_wrapper'::regclass,
+  'pg_catalog.pg_foreign_server'::regclass,
+  'pg_catalog.pg_language'::regclass
+  ,
+  'pg_catalog.pg_extension'::regclass
+  
+)"
+"select name, is_dst from pg_catalog.pg_timezone_names
+union distinct
+select abbrev as name, is_dst from pg_catalog.pg_timezone_abbrevs"
+show DateStyle
+"SELECT typinput='array_in'::regproc as is_array, typtype, typname, pg_type.oid   FROM pg_catalog.pg_type   LEFT JOIN (select ns.oid as nspoid, ns.nspname, r.r           from pg_namespace as ns           join ( select s.r, (current_schemas(false))[s.r] as nspname                    from generate_series(1, array_upper(current_schemas(false), 1)) as s(r) ) as r          using ( nspname )        ) as sp     ON sp.nspoid = typnamespace  WHERE pg_type.oid = $1  ORDER BY sp.r, pg_type.oid DESC"
+"select N.oid::bigint as id,
+       N.xmin as state_number,
+       nspname as name,
+       D.description,
+       pg_catalog.pg_get_userbyid(N.nspowner) as ""owner""
+from pg_catalog.pg_namespace N
+  left join pg_catalog.pg_description D on N.oid = D.objoid
+order by case when nspname = pg_catalog.current_schema() then -1::bigint else N.oid::bigint end"
+"select N.oid::bigint as id,
+       datname as name,
+       D.description,
+       datistemplate as is_template,
+       datallowconn as allow_connections,
+       pg_catalog.pg_get_userbyid(N.datdba) as ""owner""
+from pg_catalog.pg_database N
+  left join pg_catalog.pg_shdescription D on N.oid = D.objoid
+order by case when datname = pg_catalog.current_database() then -1::bigint else N.oid::bigint end"
+"select case
+  when pg_catalog.pg_is_in_recovery()
+    then null
+  else
+    pg_catalog.txid_current()::varchar::bigint
+  end as current_txid"
+"select L.transactionid::varchar::bigint as transaction_id
+from pg_catalog.pg_locks L
+where L.transactionid is not null
+order by pg_catalog.age(L.transactionid) desc
+limit 1"
+select round(extract(epoch from pg_postmaster_start_time() at time zone 'UTC')) as startup_time
+"select current_database(), current_schema(), current_user"
+"select current_database() as a, current_schemas(false) as b"
+SET application_name = 'DataGrip 2022.3.3'
+select version()
+SET application_name = ''
+SET extra_float_digits = 3
+SHOW TRANSACTION ISOLATION LEVEL
+"select E.oid   as extension_id,
+       D.objid as member_id
+from pg_extension E join pg_depend D
+  on E.oid = D.refobjid and
+     D.refclassid = 'pg_extension'::regclass::oid
+where D.deptype = 'e'
+order by extension_id"
+"select C.oid,
+       C.xmin as state_number,
+       C.castsource as castsource_id,
+       pg_catalog.quote_ident(SN.nspname) || '.' || pg_catalog.quote_ident(S.typname) as castsource_name,
+       C.casttarget as casttarget_id,
+       pg_catalog.quote_ident(TN.nspname) || '.' || pg_catalog.quote_ident(T.typname) as casttarget_name,
+       C.castfunc as castfunc_id,
+       pg_catalog.quote_ident(FN.nspname) || '.' || pg_catalog.quote_ident(F.proname) as castfunc_name,
+       C.castcontext,
+       C.castmethod
+from pg_cast C
+     left outer join pg_proc F on C.castfunc::oid = F.oid
+     left outer join pg_namespace FN on F.pronamespace = FN.oid
+     join pg_type S on C.castsource::oid = S.oid
+     join pg_namespace SN on S.typnamespace = SN.oid
+     join pg_type T on C.casttarget::oid = T.oid
+     join pg_namespace TN on T.typnamespace = TN.oid"
+"SELECT typinput='array_in'::regproc as is_array, typtype, typname, pg_type.oid   FROM pg_catalog.pg_type   LEFT JOIN (select ns.oid as nspoid, ns.nspname, r.r           from pg_namespace as ns           join ( select s.r, (current_schemas(false))[s.r] as nspname                    from generate_series(1, array_upper(current_schemas(false), 1)) as s(r) ) as r          using ( nspname )        ) as sp     ON sp.nspoid = typnamespace  WHERE pg_type.oid = $1  ORDER BY sp.r, pg_type.oid DESC"
+"SELECT e.oid, n.nspname = ANY(current_schemas(true)), n.nspname, e.typname FROM pg_catalog.pg_type t JOIN pg_catalog.pg_type e ON t.typelem = e.oid JOIN pg_catalog.pg_namespace n ON t.typnamespace = n.oid WHERE t.oid = $1"
+"SELECT e.typdelim FROM pg_catalog.pg_type t, pg_catalog.pg_type e WHERE t.oid = $1 and t.typelem = e.oid"
+"SELECT typinput='array_in'::regproc as is_array, typtype, typname, pg_type.oid   FROM pg_catalog.pg_type   LEFT JOIN (select ns.oid as nspoid, ns.nspname, r.r           from pg_namespace as ns           join ( select s.r, (current_schemas(false))[s.r] as nspname                    from generate_series(1, array_upper(current_schemas(false), 1)) as s(r) ) as r          using ( nspname )        ) as sp     ON sp.nspoid = typnamespace  WHERE pg_type.oid = $1  ORDER BY sp.r, pg_type.oid DESC"
+"select T.oid as object_id,
+                 T.fdwacl as acl
+          from pg_catalog.pg_foreign_data_wrapper T 
+          union all
+          select T.oid as object_id,
+                 T.lanacl as acl
+          from pg_catalog.pg_language T 
+          union all
+          select T.oid as object_id,
+                 T.nspacl as acl
+          from pg_catalog.pg_namespace T 
+          union all
+          select T.oid as object_id,
+                 T.srvacl as acl
+          from pg_catalog.pg_foreign_server T"
+"select D.objoid id, case
+    when 'pg_catalog.pg_event_trigger'::regclass = classoid then 'T'
+    when 'pg_catalog.pg_am'::regclass = classoid then 'A'
+    when 'pg_catalog.pg_cast'::regclass = classoid then 'C'
+    when 'pg_catalog.pg_foreign_data_wrapper'::regclass = classoid then 'W'
+    when 'pg_catalog.pg_foreign_server'::regclass = classoid then 'S'
+    when 'pg_catalog.pg_language'::regclass = classoid then 'L'
+    when 'pg_catalog.pg_extension'::regclass = classoid then 'E'
+    
+  end as kind,
+  D.objsubid sub_id, D.description
+from pg_catalog.pg_description D
+where classoid in (
+  'pg_catalog.pg_event_trigger'::regclass,
+  'pg_catalog.pg_am'::regclass,
+  'pg_catalog.pg_cast'::regclass,
+  'pg_catalog.pg_foreign_data_wrapper'::regclass,
+  'pg_catalog.pg_foreign_server'::regclass,
+  'pg_catalog.pg_language'::regclass
+  ,
+  'pg_catalog.pg_extension'::regclass
+  
+)"
+"select l.oid as id, l.xmin state_number, lanname as name, lanpltrusted as trusted,
+       h.proname as handler, hs.nspname as handlerSchema,
+       i.proname as inline, isc.nspname as inlineSchema,
+       v.proname as validator, vs.nspname as validatorSchema
+from pg_catalog.pg_language l
+    left join pg_catalog.pg_proc h on h.oid = lanplcallfoid
+    left join pg_catalog.pg_namespace hs on hs.oid = h.pronamespace
+    left join pg_catalog.pg_proc i on i.oid = laninline
+    left join pg_catalog.pg_namespace isc on isc.oid = i.pronamespace
+    left join pg_catalog.pg_proc v on v.oid = lanvalidator
+    left join pg_catalog.pg_namespace vs on vs.oid = v.pronamespace
+--  where pg_catalog.age(l.xmin) <= #TXAGE
+order by lanname"
+"select E.oid        as id,
+       E.xmin       as state_number,
+       extname      as name,
+       extversion   as version,
+       extnamespace as schema_id,
+       nspname      as schema_name
+       ,
+       array(select unnest
+             from unnest(available_versions)
+             where unnest > extversion) as available_updates
+       
+from pg_catalog.pg_extension E
+       join pg_namespace N on E.extnamespace = N.oid
+       left join (select name, array_agg(version) as available_versions
+                  from pg_available_extension_versions()
+                  group by name) V on E.extname = V.name"
+"select A.oid as access_method_id,
+       A.xmin as state_number,
+       A.amname as access_method_name
+       ,
+       A.amhandler::oid as handler_id,
+       pg_catalog.quote_ident(N.nspname) || '.' || pg_catalog.quote_ident(P.proname) as handler_name,
+       A.amtype as access_method_type
+       
+from pg_am A
+  join pg_proc P on A.amhandler::oid = P.oid
+  join pg_namespace N on P.pronamespace = N.oid"
+"select oid as id,
+       umserver as server_id,
+       case when umuser = 0 then null else pg_catalog.pg_get_userbyid(umuser) end as user,
+       umoptions as options
+from pg_catalog.pg_user_mapping
+--  where pg_catalog.age(xmin) <= #TXAGE
+order by server_id"
+"select srv.oid as id,
+       srv.srvfdw as fdw_id,
+       srv.xmin as state_number,
+       srv.srvname as name,
+       srv.srvtype as type,
+       srv.srvversion as version,
+       srv.srvoptions as options,
+       pg_catalog.pg_get_userbyid(srv.srvowner) as ""owner""
+from pg_catalog.pg_foreign_server srv"
+"select fdw.oid as id,
+       fdw.xmin as state_number,
+       fdw.fdwname as name,
+       pr.proname as handler,
+       nspc.nspname as handler_schema,
+       pr2.proname as validator,
+       nspc2.nspname as validator_schema,
+       fdw.fdwoptions as options,
+       pg_catalog.pg_get_userbyid(fdw.fdwowner) as ""owner""
+from pg_catalog.pg_foreign_data_wrapper fdw
+     left outer join pg_catalog.pg_proc pr on fdw.fdwhandler = pr.oid
+     left outer join pg_catalog.pg_namespace nspc on pr.pronamespace = nspc.oid
+     left outer join pg_catalog.pg_proc pr2 on fdw.fdwvalidator = pr2.oid
+     left outer join pg_catalog.pg_namespace nspc2 on pr2.pronamespace = nspc2.oid"
+"select t.oid as id, t.xmin state_number, t.evtname as name, t.evtevent as event,
+       t.evtfoid routine_id, pg_catalog.pg_get_userbyid(t.evtowner) as ""owner"",
+       t.evttags tags
+from pg_catalog.pg_event_trigger t"
+"select usesuper
+from pg_user
+where usename = current_user"
+"select N.oid::bigint as id,
+       N.xmin as state_number,
+       nspname as name,
+       D.description,
+       pg_catalog.pg_get_userbyid(N.nspowner) as ""owner""
+from pg_catalog.pg_namespace N
+  left join pg_catalog.pg_description D on N.oid = D.objoid
+order by case when nspname = pg_catalog.current_schema() then -1::bigint else N.oid::bigint end"
+"select N.oid::bigint as id,
+       N.xmin as state_number,
+       nspname as name,
+       D.description,
+       pg_catalog.pg_get_userbyid(N.nspowner) as ""owner""
+from pg_catalog.pg_namespace N
+  left join pg_catalog.pg_description D on N.oid = D.objoid
+order by case when nspname = pg_catalog.current_schema() then -1::bigint else N.oid::bigint end"
+"select N.oid::bigint as id,
+       N.xmin as state_number,
+       nspname as name,
+       D.description,
+       pg_catalog.pg_get_userbyid(N.nspowner) as ""owner""
+from pg_catalog.pg_namespace N
+  left join pg_catalog.pg_description D on N.oid = D.objoid
+order by case when nspname = pg_catalog.current_schema() then -1::bigint else N.oid::bigint end"
+"select N.oid::bigint as id,
+       N.xmin as state_number,
+       nspname as name,
+       D.description,
+       pg_catalog.pg_get_userbyid(N.nspowner) as ""owner""
+from pg_catalog.pg_namespace N
+  left join pg_catalog.pg_description D on N.oid = D.objoid
+order by case when nspname = pg_catalog.current_schema() then -1::bigint else N.oid::bigint end"
+"select T.oid as object_id,
+                 T.spcacl as acl
+          from pg_catalog.pg_tablespace T 
+            where pg_catalog.age(T.xmin) <= pg_catalog.age($1::varchar::xid)
+          union all
+          select T.oid as object_id,
+                 T.datacl as acl
+          from pg_catalog.pg_database T 
+            where pg_catalog.age(T.xmin) <= pg_catalog.age($2::varchar::xid)"
+"select T.oid::bigint as id, T.spcname as name,
+       T.xmin as state_number, pg_catalog.pg_get_userbyid(T.spcowner) as owner,
+       pg_catalog.pg_tablespace_location(T.oid) /* null */ as location,
+       T.spcoptions /* null */ as options,
+       D.description as comment
+from pg_catalog.pg_tablespace T
+  left join pg_catalog.pg_shdescription D on D.objoid = T.oid
+where pg_catalog.age(T.xmin) <= coalesce(nullif(greatest(pg_catalog.age($1::varchar::xid), -1), -1), 2147483647)"
+select oid::bigint from pg_catalog.pg_tablespace
+"select member id, roleid role_id, admin_option
+          from pg_catalog.pg_auth_members order by id, roleid::text"
+"select R.oid::bigint as role_id, rolname as role_name,
+  rolsuper is_super, rolinherit is_inherit,
+  rolcreaterole can_createrole, rolcreatedb can_createdb,
+  rolcanlogin can_login, rolreplication /* false */ is_replication,
+  rolconnlimit conn_limit, rolvaliduntil valid_until,
+  rolbypassrls /* false */ bypass_rls, rolconfig config,
+  D.description
+from pg_catalog.pg_roles R
+  left join pg_catalog.pg_shdescription D on D.objoid = R.oid"
+"select D.objoid id
+from pg_catalog.pg_description D
+where D.classoid in (
+  'pg_catalog.pg_event_trigger'::regclass,
+  'pg_catalog.pg_am'::regclass,
+  'pg_catalog.pg_cast'::regclass,
+  'pg_catalog.pg_foreign_data_wrapper'::regclass,
+  'pg_catalog.pg_foreign_server'::regclass,
+  'pg_catalog.pg_language'::regclass
+  ,
+  'pg_catalog.pg_extension'::regclass
+  
+)"
+"select name, is_dst from pg_catalog.pg_timezone_names
+union distinct
+select abbrev as name, is_dst from pg_catalog.pg_timezone_abbrevs"
+show DateStyle
+"SELECT typinput='array_in'::regproc as is_array, typtype, typname, pg_type.oid   FROM pg_catalog.pg_type   LEFT JOIN (select ns.oid as nspoid, ns.nspname, r.r           from pg_namespace as ns           join ( select s.r, (current_schemas(false))[s.r] as nspname                    from generate_series(1, array_upper(current_schemas(false), 1)) as s(r) ) as r          using ( nspname )        ) as sp     ON sp.nspoid = typnamespace  WHERE pg_type.oid = $1  ORDER BY sp.r, pg_type.oid DESC"
+"select N.oid::bigint as id,
+       N.xmin as state_number,
+       nspname as name,
+       D.description,
+       pg_catalog.pg_get_userbyid(N.nspowner) as ""owner""
+from pg_catalog.pg_namespace N
+  left join pg_catalog.pg_description D on N.oid = D.objoid
+order by case when nspname = pg_catalog.current_schema() then -1::bigint else N.oid::bigint end"
+"select N.oid::bigint as id,
+       datname as name,
+       D.description,
+       datistemplate as is_template,
+       datallowconn as allow_connections,
+       pg_catalog.pg_get_userbyid(N.datdba) as ""owner""
+from pg_catalog.pg_database N
+  left join pg_catalog.pg_shdescription D on N.oid = D.objoid
+order by case when datname = pg_catalog.current_database() then -1::bigint else N.oid::bigint end"
+"select case
+  when pg_catalog.pg_is_in_recovery()
+    then null
+  else
+    pg_catalog.txid_current()::varchar::bigint
+  end as current_txid"
+"select L.transactionid::varchar::bigint as transaction_id
+from pg_catalog.pg_locks L
+where L.transactionid is not null
+order by pg_catalog.age(L.transactionid) desc
+limit 1"
+select round(extract(epoch from pg_postmaster_start_time() at time zone 'UTC')) as startup_time
+"select current_database(), current_schema(), current_user"
+"select current_database() as a, current_schemas(false) as b"
+SET application_name = 'DataGrip 2022.3.3'
+select version()
+SET application_name = ''
+SET extra_float_digits = 3
+SHOW TRANSACTION ISOLATION LEVEL
+"SELECT typinput='array_in'::regproc as is_array, typtype, typname, pg_type.oid   FROM pg_catalog.pg_type   LEFT JOIN (select ns.oid as nspoid, ns.nspname, r.r           from pg_namespace as ns           join ( select s.r, (current_schemas(false))[s.r] as nspname                    from generate_series(1, array_upper(current_schemas(false), 1)) as s(r) ) as r          using ( nspname )        ) as sp     ON sp.nspoid = typnamespace  WHERE pg_type.oid = $1  ORDER BY sp.r, pg_type.oid DESC"
+"SELECT e.oid, n.nspname = ANY(current_schemas(true)), n.nspname, e.typname FROM pg_catalog.pg_type t JOIN pg_catalog.pg_type e ON t.typelem = e.oid JOIN pg_catalog.pg_namespace n ON t.typnamespace = n.oid WHERE t.oid = $1"
+"SELECT e.typdelim FROM pg_catalog.pg_type t, pg_catalog.pg_type e WHERE t.oid = $1 and t.typelem = e.oid"
+"SELECT typinput='array_in'::regproc as is_array, typtype, typname, pg_type.oid   FROM pg_catalog.pg_type   LEFT JOIN (select ns.oid as nspoid, ns.nspname, r.r           from pg_namespace as ns           join ( select s.r, (current_schemas(false))[s.r] as nspname                    from generate_series(1, array_upper(current_schemas(false), 1)) as s(r) ) as r          using ( nspname )        ) as sp     ON sp.nspoid = typnamespace  WHERE pg_type.oid = $1  ORDER BY sp.r, pg_type.oid DESC"
+"select T.oid as object_id,
+                 T.spcacl as acl
+          from pg_catalog.pg_tablespace T 
+          union all
+          select T.oid as object_id,
+                 T.datacl as acl
+          from pg_catalog.pg_database T"
+"SELECT typinput='array_in'::regproc as is_array, typtype, typname, pg_type.oid   FROM pg_catalog.pg_type   LEFT JOIN (select ns.oid as nspoid, ns.nspname, r.r           from pg_namespace as ns           join ( select s.r, (current_schemas(false))[s.r] as nspname                    from generate_series(1, array_upper(current_schemas(false), 1)) as s(r) ) as r          using ( nspname )        ) as sp     ON sp.nspoid = typnamespace  WHERE pg_type.oid = $1  ORDER BY sp.r, pg_type.oid DESC"
+"select T.oid::bigint as id, T.spcname as name,
+       T.xmin as state_number, pg_catalog.pg_get_userbyid(T.spcowner) as owner,
+       pg_catalog.pg_tablespace_location(T.oid) /* null */ as location,
+       T.spcoptions /* null */ as options,
+       D.description as comment
+from pg_catalog.pg_tablespace T
+  left join pg_catalog.pg_shdescription D on D.objoid = T.oid"
+"select member id, roleid role_id, admin_option
+          from pg_catalog.pg_auth_members order by id, roleid::text"
+"select R.oid::bigint as role_id, rolname as role_name,
+  rolsuper is_super, rolinherit is_inherit,
+  rolcreaterole can_createrole, rolcreatedb can_createdb,
+  rolcanlogin can_login, rolreplication /* false */ is_replication,
+  rolconnlimit conn_limit, rolvaliduntil valid_until,
+  rolbypassrls /* false */ bypass_rls, rolconfig config,
+  D.description
+from pg_catalog.pg_roles R
+  left join pg_catalog.pg_shdescription D on D.objoid = R.oid"
+"select name, is_dst from pg_catalog.pg_timezone_names
+union distinct
+select abbrev as name, is_dst from pg_catalog.pg_timezone_abbrevs"
+show DateStyle
+"select N.oid::bigint as id,
+       datname as name,
+       D.description,
+       datistemplate as is_template,
+       datallowconn as allow_connections,
+       pg_catalog.pg_get_userbyid(N.datdba) as ""owner""
+from pg_catalog.pg_database N
+  left join pg_catalog.pg_shdescription D on N.oid = D.objoid
+order by case when datname = pg_catalog.current_database() then -1::bigint else N.oid::bigint end"
+"select case
+  when pg_catalog.pg_is_in_recovery()
+    then null
+  else
+    pg_catalog.txid_current()::varchar::bigint
+  end as current_txid"
+"select L.transactionid::varchar::bigint as transaction_id
+from pg_catalog.pg_locks L
+where L.transactionid is not null
+order by pg_catalog.age(L.transactionid) desc
+limit 1"
+"select current_database(), current_schema(), current_user"
+select round(extract(epoch from pg_postmaster_start_time() at time zone 'UTC')) as startup_time
+"select current_database(), current_schema(), current_user"
+"select current_database() as a, current_schemas(false) as b"
+SET application_name = 'DataGrip 2022.3.3'
+select version()
+SET application_name = ''
+SET extra_float_digits = 3
+select ssl from pg_stat_ssl where pid = pg_backend_pid()
+SELECT 'keep alive'
+SET application_name = 'DataGrip 2022.3.3'
+select version()
+SET application_name = ''
+SET extra_float_digits = 3
