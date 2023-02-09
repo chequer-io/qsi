@@ -1,0 +1,154 @@
+{
+  "https://www.postgresql.org/docs/10/sql-createopfamily.html": [
+    "CREATE OPERATOR FAMILY family_name USING index_method"
+  ],
+  "https://www.postgresql.org/docs/10/sql-execute.html": [
+    "EXECUTE prepared_statement",
+    "EXECUTE prepared_statement (foo)",
+    "EXECUTE prepared_statement (foo, bar, 1, 2, 3)"
+  ],
+  "https://www.postgresql.org/docs/10/sql-drop-owned.html": [
+    "DROP OWNED BY user_name",
+    "DROP OWNED BY CURRENT_USER",
+    "DROP OWNED BY SESSION_USER",
+    "DROP OWNED BY user_name, another_user_name, CURRENT_USER",
+    "DROP OWNED BY user_name CASCADE",
+    "DROP OWNED BY user_name RESTRICT"
+  ],
+  "https://www.postgresql.org/docs/10/sql-dropdatabase.html": [
+    "DROP DATABASE database_name",
+    "DROP DATABASE IF EXISTS database_name"
+  ],
+  "https://www.postgresql.org/docs/10/sql-load.html": [
+    "LOAD 'file_name'"
+  ],
+  "https://www.postgresql.org/docs/10/sql-createuser.html": [
+    "CREATE USER user_name",
+    "CREATE USER user_name SUPERUSER",
+    "CREATE USER user_name WITH SUPERUSER",
+    "CREATE USER user_name CREATEDB NOCREATEROLE INHERIT NOLOGIN REPLICATION CONNECTION LIMIT 100",
+    "CREATE USER user_name PASSWORD 'password' VALID UNTIL '2023-02-08 03:38:21.518830 +00:00'",
+    "CREATE USER user_name IN ROLE role, another_role IN GROUP group, another_group ROLE role ADMIN admin USER user SYSID 1"
+  ],
+  "https://www.postgresql.org/docs/10/sql-creategroup.html": [
+    "CREATE GROUP user_name",
+    "CREATE GROUP user_name SUPERUSER",
+    "CREATE GROUP user_name WITH SUPERUSER",
+    "CREATE GROUP user_name CREATEDB NOCREATEROLE INHERIT NOLOGIN REPLICATION CONNECTION LIMIT 100",
+    "CREATE GROUP user_name PASSWORD 'password' VALID UNTIL '2023-02-08 03:38:21.518830 +00:00'",
+    "CREATE GROUP user_name IN ROLE role, another_role IN GROUP group, another_group ROLE role ADMIN admin USER user SYSID 1"
+  ],
+  "https://www.postgresql.org/docs/10/sql-altertstemplate.html": [
+    "ALTER TEXT SEARCH TEMPLATE template_name RENAME TO new_name",
+    "ALTER TEXT SEARCH TEMPLATE template_name SET SCHEMA new_schema"
+  ],
+  "https://www.postgresql.org/docs/10/sql-alterpolicy.html": [
+    "ALTER POLICY policy_name ON table_name RENAME TO new_name",
+    "ALTER POLICY policy_name ON table_name TO role_name",
+    "ALTER POLICY policy_name ON table_name TO PUBLIC, CURRENT_USER, SESSION_USER"
+  ],
+  "https://www.postgresql.org/docs/10/sql-alterlargeobject.html": [
+    "ALTER LARGE OBJECT large_object_oid OWNER TO new_owner",
+    "ALTER LARGE OBJECT large_object_oid OWNER TO CURRENT_USER",
+    "ALTER LARGE OBJECT large_object_oid OWNER TO SESSION_USER"
+  ],
+  "https://www.postgresql.org/docs/10/sql-reset.html": [
+    "RESET ALL",
+    "RESET parameter_name"
+  ],
+  "https://www.postgresql.org/docs/10/sql-alterschema.html": [
+    "ALTER SCHEMA schema_name RENAME TO new_name",
+    "ALTER SCHEMA schema_name OWNER TO new_owner",
+    "ALTER SCHEMA schema_name OWNER TO CURRENT_USER",
+    "ALTER SCHEMA schema_name OWNER TO SESSION_USER"
+  ],
+  "https://www.postgresql.org/docs/10/sql-start-transaction.html": [
+    "START TRANSACTION",
+    "START TRANSACTION ISOLATION LEVEL SERIALIZABLE",
+    "START TRANSACTION ISOLATION LEVEL READ COMMITTED",
+    "START TRANSACTION ISOLATION LEVEL READ UNCOMMITTED READ WRITE DEFERRABLE",
+    "START TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY NOT DEFERRABLE"
+  ],
+  "https://www.postgresql.org/docs/10/sql-altereventtrigger.html": [
+    "ALTER EVENT TRIGGER trigger_name DISABLE",
+    "ALTER EVENT TRIGGER trigger_name ENABLE REPLICA",
+    "ALTER EVENT TRIGGER trigger_name OWNER TO new_owner",
+    "ALTER EVENT TRIGGER trigger_name RENAME TO new_name"
+  ],
+  "https://www.postgresql.org/docs/10/sql-analyze.html": [
+    "ANALYZE table_name",
+    "ANALYZE table_name (column1, column2)",
+    "ANALYZE VERBOSE table_name (column1)"
+  ],
+  "https://www.postgresql.org/docs/10/sql-checkpoint.html": [
+    "CHECKPOINT"
+  ],
+  "https://www.postgresql.org/docs/10/sql-alterlanguage.html": [
+    "ALTER LANGUAGE language_name RENAME TO new_name",
+    "ALTER PROCEDURAL LANGUAGE language_name OWNER TO CURRENT_USER"
+  ],
+  "https://www.postgresql.org/docs/10/sql-createtsconfig.html": [
+    "CREATE TEXT SEARCH CONFIGURATION config_name (PARSER = parser_name)",
+    "CREATE TEXT SEARCH CONFIGURATION config_name (COPY = source_config)"
+  ],
+  "https://www.postgresql.org/docs/10/sql-deallocate.html": [
+    "DEALLOCATE prepared_statement_name",
+    "DEALLOCATE PREPARE ALL"
+  ],
+  "https://www.postgresql.org/docs/10/sql-creatematerializedview.html": [
+    "CREATE MATERIALIZED VIEW table_name",
+    "CREATE MATERIALIZED VIEW IF NOT EXISTS table_name (column1, column2)",
+    "CREATE MATERIALIZED VIEW table_name WITH (storage_parameter)",
+    "CREATE MATERIALIZED VIEW table_name WITH (storage_parameter=something, another_parameter=the_thing) TABLESPACE tablespace_name",
+    "CREATE MATERIALIZED VIEW table_name AS query WITH NO DATA"
+  ],
+  "https://www.postgresql.org/docs/10/sql-dropgroup.html": [
+    "DROP GROUP",
+    "DROP GROUP IF EXISTS group_name, another_name"
+  ],
+  "https://www.postgresql.org/docs/10/sql-alteruser.html": [
+    "ALTER USER role_name SUPERUSER",
+    "ALTER USER CURRENT_USER WITH CREATEROLE INHERIT LOGIN CONNECTION LIMIT 10",
+    "ALTER USER SESSION_USER RENAME TO new_name",
+    "ALTER USER ALL IN DATABASE database_name SET config_parameter TO something",
+    "ALTER USER role_name SET config_parameter FROM CURRENT",
+    "ALTER USER role_name IN DATABASE database_name RESET ALL"
+  ],
+  "https://www.postgresql.org/docs/10/sql-createtsparser.html": [
+    "CREATE TEXT SEARCH PARSER parser_name (START = start_function , GETTOKEN = gettoken_function , END = end_function , LEXTYPES = lextypes_function)",
+    "CREATE TEXT SEARCH PARSER parser_name (START = start_function, GETTOKEN = gettoken_function, END = end_function, LEXTYPES = lextypes_function, HEADLINE = headline_function)"
+  ],
+  "https://www.postgresql.org/docs/10/sql-altertsparser.html": [
+    "ALTER TEXT SEARCH PARSER parser_name RENAME TO new_name",
+    "ALTER TEXT SEARCH PARSER parser_name SET SCHEMA new_schema"
+  ],
+  "https://www.postgresql.org/docs/10/sql-reassign-owned.html": [
+    "REASSIGN OWNED BY old_role, another_role TO new_role",
+    "REASSIGN OWNED BY old_role, CURRENT_USER TO SESSION_USER"
+  ],
+  "https://www.postgresql.org/docs/10/sql-alterstatistics.html": [
+    "ALTER STATISTICS stat_name OWNER TO new_owner",
+    "ALTER STATISTICS stat_name OWNER TO CURRENT_USER",
+    "ALTER STATISTICS stat_name RENAME TO new_name",
+    "ALTER STATISTICS stat_name SET SCHEMA new_schema"
+  ],
+  "https://www.postgresql.org/docs/10/sql-alteropclass.html": [
+    "ALTER OPERATOR CLASS class_name USING index_method RENAME TO new_name",
+    "ALTER OPERATOR CLASS class_name USING index_method OWNER TO new_owner",
+    "ALTER OPERATOR CLASS class_name USING index_method OWNER TO SESSION_USER",
+    "ALTER OPERATOR CLASS class_name USING index_method SET SCHEMA new_schema"
+  ],
+  "https://www.postgresql.org/docs/10/sql-set-constraints.html": [
+    "SET CONSTRAINTS ALL DEFERRED",
+    "SET CONSTRAINTS con1, con2 IMMEDIATE"
+  ],
+  "https://www.postgresql.org/docs/10/sql-dropuser.html": [
+    "DROP USER user_name",
+    "DROP USER IF EXISTS user_name, another_name"
+  ],
+  "https://www.postgresql.org/docs/10/unsupported-features-sql-standard.html": [],
+  "https://www.postgresql.org/docs/10/sql-createtstemplate.html": [
+    "CREATE TEXT SEARCH TEMPLATE template_name (LEXIZE = lexize_function)",
+    "CREATE TEXT SEARCH TEMPLATE template_name (INIT = init_function, LEXIZE = lexize_function)"
+  ]
+}

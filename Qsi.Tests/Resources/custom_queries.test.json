@@ -1,0 +1,14 @@
+{
+  "https://www.postgresql.org/docs/current/sql-select.html": [
+    "SELECT actor_id, first_name FROM actor",
+    "SELECT actor_id, first_name FROM public.actor"
+  ],
+  "https://www.postgresql.org/docs/15/sql-update.html": [
+    "DELETE FROM films USING producers\n  WHERE producer_id = producers.id AND producers.name = 'foo';",
+    "DELETE FROM films\n  WHERE producer_id IN (SELECT id FROM producers WHERE name = 'foo');",
+    "DELETE FROM films WHERE kind <> 'Musical';",
+    "DELETE FROM films;",
+    "DELETE FROM tasks WHERE status = 'DONE' RETURNING *;",
+    "DELETE FROM tasks WHERE CURRENT OF c_tasks;"
+  ]
+}

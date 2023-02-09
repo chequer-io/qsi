@@ -445,7 +445,7 @@ namespace Qsi.MySql.Tree
 
             var derivedTableNode = new QsiDerivedTableNode();
 
-            derivedTableNode.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+            derivedTableNode.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration(true));
             derivedTableNode.Source.SetValue(tableReferenceNode);
             derivedTableNode.Alias.SetValue(VisitTableAlias(alias));
 
