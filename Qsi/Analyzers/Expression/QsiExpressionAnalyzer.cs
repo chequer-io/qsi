@@ -10,10 +10,25 @@ namespace Qsi.Analyzers.Expression;
 
 public class QsiExpressionAnalyzer
 {
-    public virtual QsiExpression Resolve(TableCompileContext context, IQsiExpressionNode node)
+    public QsiExpression Resolve(TableCompileContext context, IQsiExpressionNode node)
+    {
+        if (ResolveCore(context, node) is { } expr)
+        {
+            expr.SetNode(node);
+            return expr;
+        }
+
+        return null;
+    }
+
+    public virtual QsiExpression ResolveCore(TableCompileContext context, IQsiExpressionNode node)
     {
         switch (node)
         {
+            case null:
+                return null;
+
+            // Expressions
             case IQsiSetColumnExpressionNode setColumn:
                 return ResolveSetColumnExpression(context, setColumn);
 
@@ -35,67 +50,42 @@ public class QsiExpressionAnalyzer
             case IQsiUnaryExpressionNode e:
                 return ResolveUnaryExpression(context, e);
 
-            //         case IQsiSetVariableExpressionNode e:
-            //             return ResolveSetVariableExpression(context, e);
-            //
-            //         case IQsiInvokeExpressionNode e:
-            //             return ResolveInvokeExpression(context, e);
+            case IQsiSetVariableExpressionNode e:
+                return ResolveSetVariableExpression(context, e);
 
-            // case IQsiParametersExpressionNode e:
-            //     return ResolveParametersExpression(context, e);
-            //
-            // case IQsiMultipleExpressionNode e:
-            //     return ResolveMultipleExpression(context, e);
-            //
-            // case IQsiSwitchExpressionNode e:
-            //     return ResolveSwitchExpression(context, e);
-            //
-            // case IQsiSwitchCaseExpressionNode e:
-            //     return ResolveSwitchCaseExpression(context, e);
+            case IQsiInvokeExpressionNode e:
+                return ResolveInvokeExpression(context, e);
 
-            //
-            //         case IQsiColumnExpressionNode e:
-            //             return ResolveColumnExpression(context, e);
-            //
-            // case IQsiMemberAccessExpressionNode e:
-            // {
-            //     foreach (var c in ResolveColumnsInExpression(context, e.Target))
-            //         yield return c;
-            //
-            //     foreach (var c in ResolveColumnsInExpression(context, e.Member))
-            //         yield return c;
-            //
-            //     break;
-            // }
-            //
-            // case IQsiOrderExpressionNode e:
-            // {
-            //     foreach (var c in ResolveColumnsInExpression(context, e.Expression))
-            //         yield return c;
-            //
-            //     break;
-            // }
-            //
-            // case IQsiVariableExpressionNode e:
-            // {
-            //     // TODO: Analyze variable
-            //     break;
-            // }
-            //
-            // case IQsiFunctionExpressionNode e:
-            // {
-            //     // TODO: Analyze function
-            //     break;
-            // }
-            //
-            // case IQsiMemberExpressionNode _:
-            // {
-            //     // Skip unknown member access
-            //     break;
-            // }
-            //
-            // case IQsiBindParameterExpressionNode:
-            //     break;
+            case IQsiParametersExpressionNode e:
+                return ResolveParametersExpression(context, e);
+
+            case IQsiMultipleExpressionNode e:
+                return ResolveMultipleExpression(context, e);
+
+            case IQsiSwitchExpressionNode e:
+                return ResolveSwitchExpression(context, e);
+
+            case IQsiSwitchCaseExpressionNode e:
+                return ResolveSwitchCaseExpression(context, e);
+
+            case IQsiMemberAccessExpressionNode e:
+                return ResolveMemberAccessExpression(context, e);
+
+            case IQsiOrderExpressionNode e:
+                return ResolveOrderExpression(context, e);
+
+            case IQsiVariableExpressionNode e:
+                return ResolveVariableExpression(context, e);
+
+            case IQsiFunctionExpressionNode e:
+                return ResolveFunctionExpression(context, e);
+
+            case IQsiMemberExpressionNode e:
+                return ResolveMemberExpression(context, e);
+
+            case IQsiBindParameterExpressionNode e:
+                return ResolveBindParameterExpression(context, e);
+
             default:
                 throw new NotSupportedException($"Not supported to resolve expression: '{node.GetType().Name}'");
         }
@@ -103,7 +93,7 @@ public class QsiExpressionAnalyzer
 
     protected virtual QsiExpression ResolveSetColumnExpression(TableCompileContext context, IQsiSetColumnExpressionNode node)
     {
-        var left = ResolveColumnReference(context, CreateColumnReferenceNode(node.Target));
+        var left = ResolveColumnReferenceAsExpression(context, CreateColumnReferenceNode(node.Target));
         var right = Resolve(context, node.Value);
 
         return new BinaryExpression(left, right, "=");
@@ -112,27 +102,31 @@ public class QsiExpressionAnalyzer
     #region Column Expression
     protected virtual QsiExpression ResolveColumnExpression(TableCompileContext context, IQsiColumnExpressionNode node)
     {
-        return ResolveColumn(context, node.Column);
+        return ResolveColumnAsExpression(context, node.Column);
     }
 
-    protected virtual QsiExpression ResolveColumn(TableCompileContext context, IQsiColumnNode node)
+    protected virtual QsiExpression ResolveColumnAsExpression(TableCompileContext context, IQsiColumnNode node)
     {
         switch (node)
         {
             case IQsiColumnReferenceNode columnReference:
-                return ResolveColumnReference(context, columnReference);
+                return ResolveColumnReferenceAsExpression(context, columnReference);
 
             case IQsiDerivedColumnNode derivedColumn:
-                return new DerivedExpression(derivedColumn.IsColumn
-                    ? ResolveColumn(context, derivedColumn.Column)
-                    : Resolve(context, derivedColumn.Expression));
+            {
+                var expr = derivedColumn.IsColumn
+                    ? ResolveColumnAsExpression(context, derivedColumn.Column)
+                    : Resolve(context, derivedColumn.Expression);
+
+                return new DerivedExpression(expr);
+            }
 
             default:
                 throw new NotSupportedException($"Not supported to resolve column expression: '{node.GetType().Name}'");
         }
     }
 
-    protected virtual QsiExpression ResolveColumnReference(TableCompileContext context, IQsiColumnReferenceNode node)
+    protected virtual QsiExpression ResolveColumnReferenceAsExpression(TableCompileContext context, IQsiColumnReferenceNode node)
     {
         var analyzer = context.Engine.GetAnalyzer<QsiTableAnalyzer>();
         QsiTableColumn[] columns = analyzer.ResolveColumnReference(context, node);
@@ -186,166 +180,65 @@ public class QsiExpressionAnalyzer
         };
     }
 
-    // ==============================================
+    protected virtual BinaryExpression ResolveSetVariableExpression(TableCompileContext context, IQsiSetVariableExpressionNode node)
+    {
+        var left = ResolveColumnAsExpression(context, new QsiColumnReferenceNode { Name = node.Target });
+        var right = Resolve(context, node.Value);
+        return new BinaryExpression(left, right, "=");
+    }
 
-    // protected virtual IQsiExpression ResolveSetColumnExpression(TableCompileContext context, IQsiSetColumnExpressionNode node)
-    // {
-    //     return new QsiBinaryExpression(
-    //         QsiExpressionType.SetColumn,
-    //         ResolveColumnReferenceExpression(context, new QsiColumnReferenceNode { Name = node.Target }),
-    //         ResolveExpression(context, node.Value)
-    //     );
-    // }
-    //
-    // protected virtual IQsiExpression ResolveSetVariableExpression(TableCompileContext context, IQsiSetVariableExpressionNode node)
-    // {
-    //     return new QsiBinaryExpression(
-    //         QsiExpressionType.SetVariable,
-    //         ResolveColumnReferenceExpression(context, new QsiColumnReferenceNode { Name = node.Target }),
-    //         ResolveExpression(context, node.Value)
-    //     );
-    // }
-    //
-    // protected virtual IQsiExpression ResolveInvokeExpression(TableCompileContext context, IQsiInvokeExpressionNode node)
-    // {
-    //     return new QsiAtomicExpression(QsiExpressionType.Invoke);
-    // }
-    //
+    protected virtual InvokeExpression ResolveInvokeExpression(TableCompileContext context, IQsiInvokeExpressionNode node)
+    {
+        return new InvokeExpression(ResolveParametersExpression(context, node.Parameters));
+    }
 
-    // protected virtual IQsiExpression ResolveBinaryExpression(TableCompileContext context, IQsiBinaryExpressionNode node)
-    // {
-    //     return new QsiBinaryExpression(
-    //         QsiExpressionType.Binary,
-    //         ResolveExpression(context, node.Left),
-    //         ResolveExpression(context, node.Right)
-    //     );
-    // }
-    //
-    // protected virtual IQsiExpression ResolveColumnExpression(TableCompileContext context, IQsiColumnExpressionNode node)
-    // {
-    //     if (node.Column is { } column)
-    //     {
-    //         if (column is IQsiColumnReferenceNode referenceNode)
-    //             return ResolveColumnReferenceExpression(context, referenceNode);
-    //     }
-    //
-    //     throw new InvalidOperationException();
-    // }
-    //
-    // protected virtual IQsiExpression ResolveAllColumnExpression(TableCompileContext context, IQsiAllColumnNode node)
-    // {
-    //     return new QsiAtomicExpression(QsiExpressionType.AllColumn);
-    // }
-    //
-    // protected virtual IQsiExpression ResolveColumnReferenceExpression(TableCompileContext context, IQsiColumnReferenceNode node)
-    // {
-    //     var analyzer = context.Engine.GetAnalyzer<QsiTableAnalyzer>();
-    //     QsiTableColumn[] columns = analyzer.ResolveColumnReference(context, node);
-    //
-    //     switch (columns.Length)
-    //     {
-    //         case 0:
-    //             throw new QsiException(QsiError.UnableResolveColumn, node.Name.ToString());
-    //
-    //         case 1:
-    //             return new QsiColumnExpression(node.Name, columns[0]);
-    //
-    //         default:
-    //             // TODO: All Columns compile
-    //             throw new NotSupportedException();
-    //     }
-    // }
-    //
-    // public virtual IQsiExpression ResolveExpression(TableCompileContext context, IQsiExpressionNode expression)
-    // {
-    //     context.ThrowIfCancellationRequested();
-    //
-    //     if (expression == null)
-    //         return null;
-    //
-    //     switch (expression)
-    //     {
-    //         case QsiExpressionFragmentNode:
-    //             return new QsiAtomicExpression(QsiExpressionType.ExpressionFragment);
-    //
-    //         case IQsiSetColumnExpressionNode e:
-    //             return ResolveSetColumnExpression(context, e);
-    //
-    //         case IQsiSetVariableExpressionNode e:
-    //             return ResolveSetVariableExpression(context, e);
-    //
-    //         case IQsiInvokeExpressionNode e:
-    //             return ResolveInvokeExpression(context, e);
-    //
-    //         case IQsiLiteralExpressionNode e:
-    //             return ResolveLiteralExpression(context, e);
-    //
-    //         case IQsiBinaryExpressionNode e:
-    //             return ResolveBinaryExpression(context, e);
-    //         //
-    //         // case IQsiParametersExpressionNode e:
-    //         //     return ResolveParametersExpression(context, e);
-    //         //
-    //         // case IQsiMultipleExpressionNode e:
-    //         //     return ResolveMultipleExpression(context, e);
-    //         //
-    //         // case IQsiSwitchExpressionNode e:
-    //         //     return ResolveSwitchExpression(context, e);
-    //         //
-    //         // case IQsiSwitchCaseExpressionNode e:
-    //         //     return ResolveSwitchCaseExpression(context, e);
-    //
-    //         case IQsiTableExpressionNode e:
-    //             return ResolveTableExpression(context, e);
-    //
-    //         case IQsiUnaryExpressionNode e:
-    //             return ResolveUnaryExpression(context, e);
-    //
-    //         case IQsiColumnExpressionNode e:
-    //             return ResolveColumnExpression(context, e);
-    //
-    //         // case IQsiMemberAccessExpressionNode e:
-    //         // {
-    //         //     foreach (var c in ResolveColumnsInExpression(context, e.Target))
-    //         //         yield return c;
-    //         //
-    //         //     foreach (var c in ResolveColumnsInExpression(context, e.Member))
-    //         //         yield return c;
-    //         //
-    //         //     break;
-    //         // }
-    //         //
-    //         // case IQsiOrderExpressionNode e:
-    //         // {
-    //         //     foreach (var c in ResolveColumnsInExpression(context, e.Expression))
-    //         //         yield return c;
-    //         //
-    //         //     break;
-    //         // }
-    //         //
-    //         // case IQsiVariableExpressionNode e:
-    //         // {
-    //         //     // TODO: Analyze variable
-    //         //     break;
-    //         // }
-    //         //
-    //         // case IQsiFunctionExpressionNode e:
-    //         // {
-    //         //     // TODO: Analyze function
-    //         //     break;
-    //         // }
-    //         //
-    //         // case IQsiMemberExpressionNode _:
-    //         // {
-    //         //     // Skip unknown member access
-    //         //     break;
-    //         // }
-    //         //
-    //         // case IQsiBindParameterExpressionNode:
-    //         //     break;
-    //
-    //         default:
-    //             throw new InvalidOperationException();
-    //     }
-    // }
+    protected virtual MultipleExpression ResolveParametersExpression(TableCompileContext context, IQsiParametersExpressionNode node)
+    {
+        return new MultipleExpression(node.Expressions.Select(e => Resolve(context, e)));
+    }
+
+    protected virtual MultipleExpression ResolveMultipleExpression(TableCompileContext context, IQsiMultipleExpressionNode node)
+    {
+        return new MultipleExpression(node.Elements.Select(e => Resolve(context, e)));
+    }
+
+    protected virtual SwitchExpression ResolveSwitchExpression(TableCompileContext context, IQsiSwitchExpressionNode node)
+    {
+        return new SwitchExpression(Resolve(context, node.Value), node.Cases.Select(c => ResolveSwitchCaseExpression(context, c)));
+    }
+
+    protected virtual SwitchCaseExpression ResolveSwitchCaseExpression(TableCompileContext context, IQsiSwitchCaseExpressionNode node)
+    {
+        return new SwitchCaseExpression(Resolve(context, node.Condition), Resolve(context, node.Consequent));
+    }
+
+    protected virtual MultipleExpression ResolveMemberAccessExpression(TableCompileContext context, IQsiMemberAccessExpressionNode node)
+    {
+        return new MultipleExpression(Resolve(context, node.Target), Resolve(context, node.Member));
+    }
+
+    protected virtual DerivedExpression ResolveOrderExpression(TableCompileContext context, IQsiOrderExpressionNode node)
+    {
+        return new DerivedExpression(Resolve(context, node.Expression));
+    }
+
+    protected virtual QsiExpression ResolveVariableExpression(TableCompileContext context, IQsiVariableExpressionNode node)
+    {
+        return new QsiExpression();
+    }
+
+    protected virtual QsiExpression ResolveFunctionExpression(TableCompileContext context, IQsiFunctionExpressionNode node)
+    {
+        return new QsiExpression();
+    }
+
+    protected virtual QsiExpression ResolveMemberExpression(TableCompileContext context, IQsiMemberExpressionNode node)
+    {
+        return new QsiExpression();
+    }
+
+    protected virtual QsiExpression ResolveBindParameterExpression(TableCompileContext context, IQsiBindParameterExpressionNode node)
+    {
+        return new QsiExpression();
+    }
 }

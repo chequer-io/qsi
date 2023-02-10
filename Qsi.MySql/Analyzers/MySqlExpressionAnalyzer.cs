@@ -9,49 +9,37 @@ namespace Qsi.MySql.Analyzers;
 
 public class MySqlExpressionAnalyzer : QsiExpressionAnalyzer
 {
-    protected override QsiExpression ResolveSetColumnExpression(TableCompileContext context, IQsiSetColumnExpressionNode node)
+    public override QsiExpression ResolveCore(TableCompileContext context, IQsiExpressionNode node)
     {
-        return WithIndex(base.ResolveSetColumnExpression(context, node), node);
+        if (ResolveInternal() is { } expr)
+            return WithIndex(expr, node);
+
+        return null;
+
+        QsiExpression ResolveInternal()
+        {
+            switch (node)
+            {
+                case MySqlAliasedExpressionNode aliasedExpressionNode:
+                    return ResolveAliasedExpression(context, aliasedExpressionNode);
+
+                case MySqlCollationExpressionNode collationExpressionNode:
+                    return ResolveCollationExpression(context, collationExpressionNode);
+
+                default:
+                    return base.ResolveCore(context, node);
+            }
+        }
     }
 
-    protected override QsiExpression ResolveColumnExpression(TableCompileContext context, IQsiColumnExpressionNode node)
+    private QsiExpression ResolveAliasedExpression(TableCompileContext context, MySqlAliasedExpressionNode node)
     {
-        return WithIndex(base.ResolveColumnExpression(context, node), node);
+        return new DerivedExpression(Resolve(context, node.Expression.Value));
     }
 
-    protected override QsiExpression ResolveColumn(TableCompileContext context, IQsiColumnNode node)
+    private QsiExpression ResolveCollationExpression(TableCompileContext context, MySqlCollationExpressionNode node)
     {
-        return WithIndex(base.ResolveColumn(context, node), node);
-    }
-
-    protected override QsiExpression ResolveColumnReference(TableCompileContext context, IQsiColumnReferenceNode node)
-    {
-        return WithIndex(base.ResolveColumnReference(context, node), node);
-    }
-
-    protected override QsiExpression ResolveExpressionFragment(TableCompileContext context, QsiExpressionFragmentNode node)
-    {
-        return WithIndex(base.ResolveExpressionFragment(context, node), node);
-    }
-
-    protected override QsiExpression ResolveLiteralExpression(TableCompileContext context, IQsiLiteralExpressionNode node)
-    {
-        return WithIndex(base.ResolveLiteralExpression(context, node), node);
-    }
-
-    protected override QsiExpression ResolveBinaryExpression(TableCompileContext context, IQsiBinaryExpressionNode node)
-    {
-        return WithIndex(base.ResolveBinaryExpression(context, node), node);
-    }
-
-    protected override TableExpression ResolveTableExpression(TableCompileContext context, IQsiTableExpressionNode node)
-    {
-        return WithIndex(base.ResolveTableExpression(context, node), node);
-    }
-
-    protected override DerivedExpression ResolveUnaryExpression(TableCompileContext context, IQsiUnaryExpressionNode node)
-    {
-        return WithIndex(base.ResolveUnaryExpression(context, node), node);
+        return new DerivedExpression(Resolve(context, node.Expression.Value));
     }
 
     private static T WithIndex<T>(T expr, IQsiTreeNode node) where T : QsiExpression
