@@ -1,4 +1,5 @@
 ﻿using Qsi.Analyzers;
+using Qsi.Analyzers.Expression.Models;
 
 namespace Qsi.Data
 {
@@ -17,5 +18,7 @@ namespace Qsi.Data
         public QsiDataRowCollection UpdateAfterRows { get; set; }
 
         public QsiDataRowCollection DeleteRows { get; set; }
+
+        public QsiTableStructure Source { get; set; }
     }
 }

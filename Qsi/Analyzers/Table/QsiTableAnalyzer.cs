@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Qsi.Analyzers.Context;
 using Qsi.Analyzers.Expression;
+using Qsi.Analyzers.Expression.Models;
 using Qsi.Analyzers.Table.Context;
 using Qsi.Data;
 using Qsi.Engines;
@@ -215,6 +216,9 @@ public class QsiTableAnalyzer : QsiAnalyzerBase
                 var column = allColumns[i];
                 var declaredColumn = declaredTable.NewColumn();
 
+                // TODO: Test :: when i < sequentialColumns.Length false? (feature/QP-1751)
+                declaredColumn.Expression = ResolveExpression(scopedContext, i < sequentialColumns.Length ? sequentialColumns[i] : null);
+
                 declaredColumn.Name = i < sequentialColumns.Length ? sequentialColumns[i].Alias?.Name : column.Name;
                 declaredColumn.References.Add(column);
             }
@@ -225,17 +229,17 @@ public class QsiTableAnalyzer : QsiAnalyzerBase
 
             foreach (var column in columns)
             {
-                IEnumerable<QsiTableColumn> resolvedColumns = ResolveColumns(scopedContext, column, out var implicitTableWildcard);
+                QsiTableColumn[] resolvedColumns = ResolveColumns(scopedContext, column, out var implicitTableWildcard);
                 bool keepVisible = column is IQsiAllColumnNode;
 
                 switch (column)
                 {
-                    case IQsiDerivedColumnNode derivedColum:
+                    case IQsiDerivedColumnNode derivedColumn:
                     {
                         var declaredColumn = declaredTable.NewColumn();
-
-                        declaredColumn.Name = ResolveDerivedColumnName(context, table, derivedColum);
-                        declaredColumn.IsExpression = derivedColum.IsExpression;
+                        declaredColumn.Expression = ResolveExpression(scopedContext, derivedColumn);
+                        declaredColumn.Name = ResolveDerivedColumnName(context, table, derivedColumn);
+                        declaredColumn.IsExpression = derivedColumn.IsExpression;
                         declaredColumn.References.AddRange(resolvedColumns);
                         break;
                     }
@@ -253,6 +257,10 @@ public class QsiTableAnalyzer : QsiAnalyzerBase
 
                             var seqentialColumn = aliasedAllColumn ? allColumnNode?.SequentialColumns[i++] : null;
                             var declaredColumn = declaredTable.NewColumn();
+
+                            // if declaredColumn targets exactly single column
+                            if (resolvedColumns.Length == 1 && allColumnNode is null)
+                                declaredColumn.Expression = ResolveExpression(scopedContext, column);
 
                             declaredColumn.Name = seqentialColumn is null
                                 ? ResolveCompoundColumnName(context, table, column, c)
@@ -274,13 +282,8 @@ public class QsiTableAnalyzer : QsiAnalyzerBase
             }
         }
 
-        if (scopedContext.AnalyzerOptions.AnalyzeExpression)
-        {
-            if (table.Where is { Expression: { } whereExpr })
-            {
-                declaredTable.Filter = ExpressionAnalyzer.Resolve(scopedContext, whereExpr);
-            }
-        }
+        if (table.Where is { Expression: { } whereExpr })
+            declaredTable.FilterExpression = ResolveExpression(scopedContext, whereExpr);
 
         return declaredTable;
     }
@@ -389,6 +392,7 @@ public class QsiTableAnalyzer : QsiAnalyzerBase
             foreach (var columnNode in table.Columns.Cast<IQsiSequentialColumnNode>())
             {
                 var column = declaredTable.NewColumn();
+                column.Expression = ResolveExpression(context, columnNode);
                 column.Name = columnNode.Alias.Name;
             }
         }
@@ -1081,6 +1085,13 @@ public class QsiTableAnalyzer : QsiAnalyzerBase
     {
         context.ThrowIfCancellationRequested();
         return context.GetAllSourceTables().Where(x => Match(context, x, identifier));
+    }
+    #endregion
+
+    #region Expression
+    protected QsiExpression ResolveExpression(TableCompileContext context, IQsiTreeNode node)
+    {
+        return ExpressionAnalyzer.Resolve(context, node);
     }
     #endregion
 

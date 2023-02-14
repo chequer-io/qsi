@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Qsi.Analyzers.Expression.Models;
 using Qsi.Data.Object;
 using Qsi.Tree;
 using Qsi.Utilities;
@@ -16,6 +17,8 @@ namespace Qsi.Data
         public List<QsiTableColumn> References { get; } = new();
 
         public List<QsiObject> ObjectReferences { get; } = new();
+
+        public QsiExpression Expression { get; set; }
 
         public bool IsVisible { get; set; } = true;
 

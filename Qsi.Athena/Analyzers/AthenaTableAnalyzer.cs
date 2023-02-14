@@ -41,6 +41,7 @@ public sealed class AthenaTableAnalyzer : QsiTableAnalyzer
         foreach (var value in table.Rows[0].ColumnValues)
         {
             var column = structure.NewColumn();
+            column.Expression = ExpressionAnalyzer.Resolve(context, value);
 
             if (value is IQsiColumnExpressionNode { Column: IQsiDerivedColumnNode { Alias: { } } derivedColumnNode })
             {

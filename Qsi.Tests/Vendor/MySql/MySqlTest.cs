@@ -14,11 +14,12 @@ using Qsi.Data;
 using Qsi.Services;
 using Qsi.Tests.Models;
 using Qsi.Tests.Utilities;
+using Qsi.Utilities;
 using VerifyNUnit;
 
 namespace Qsi.Tests.Vendor.MySql;
 
-[TestFixture("server=localhost;port=3306;user id=root;password=root;pooling=False;allowuservariables=True", Category = "MySql")]
+[TestFixture("server=localhost;port=3306;user id=root;password=tony;pooling=False;allowuservariables=True", Category = "MySql")]
 public partial class MySqlTest : VendorTestBase
 {
     public MySqlTest(string connectionString) : base(connectionString)
@@ -75,18 +76,27 @@ public partial class MySqlTest : VendorTestBase
         await Verifier.Verify(views).UseDirectory("verified");
     }
 
-    // NOTE: Need refactor before merge
+    // TODO: NOTE: Need refactor before merge (feature/QP-1751)
     [TestCase("SELECT * FROM actor WHERE actor_id = 1 or actor_id = 2 or actor_id = !true or actor_id = first_name")]
     [TestCase("SELECT * FROM actor WHERE !true = actor_id")]
     [TestCase("SELECT * FROM actor WHERE actor_id = (SELECT * FROM actor WHERE 1 = actor_id)")]
+    [TestCase("SELECT actor_id = 1 FROM actor WHERE actor_id = (SELECT * FROM actor WHERE 1 = actor_id)")]
+    [TestCase("WITH test as (select actor_id = 1 as bb from actor) select * from test where test.bb = 123")]
+    [TestCase("UPDATE actor SET actor_id = 1 WHERE actor_id = 5")]
+    [TestCase("DELETE actor, city FROM pets p JOIN pets_activities pa ON pa.id = p.pet_id WHERE p.order > 1 AND p.pet_id = 5")]
     public async Task Test_Expression(string sql)
     {
         IQsiAnalysisResult[] result = await Engine.Execute(new QsiScript(sql, QsiScriptType.Select), null);
 
         if (result.Length > 0 && result[0] is QsiTableResult { Table: { } table })
         {
-            var filter = table.Filter;
+            var filter = table.FilterExpression;
             PrintFilter(filter);
+
+            IEnumerable<BinaryExpression> expressions = GetExpressionFromTable(table)
+                .Select(FlattenExpressions)
+                .SelectMany(c => c)
+                .OfType<BinaryExpression>();
 
             // TEST MASKING
             var targetField = new QsiQualifiedIdentifier(
@@ -98,7 +108,7 @@ public partial class MySqlTest : VendorTestBase
             Console.WriteLine("=================<Binary Expressions>=================");
 
             var sb = new StringBuilder(sql);
-            var colExprs = MergeExpression(FilterColumnExpression(FlattenExpressions(table.Filter).OfType<BinaryExpression>()));
+            var colExprs = MergeExpression(FilterColumnExpression(expressions));
 
             foreach (var binExpr in colExprs)
             {
@@ -113,7 +123,11 @@ public partial class MySqlTest : VendorTestBase
                 var (target, value) = FindTarget(e);
 
                 // NOTE: Compare only name for concept.
-                if (QsiIdentifierEqualityComparer.Default.Equals(target.Column.Name, targetField[^1]))
+
+                bool isMatch = QsiUtility.FlattenReferenceColumns(target.Column)
+                    .Any(referenceColumn => QsiIdentifierEqualityComparer.Default.Equals(referenceColumn.Name, targetField[^1]));
+
+                if (isMatch)
                 {
                     string updateValue;
 
@@ -137,6 +151,10 @@ public partial class MySqlTest : VendorTestBase
             Console.WriteLine(sql);
             Console.WriteLine(sb.ToString());
         }
+        else if (result.Length > 0 && result[0] is QsiDataManipulationResult res)
+        {
+            
+        }
 
         (ColumnExpression target, QsiExpression value) FindTarget(BinaryExpression expr)
         {
@@ -158,55 +176,41 @@ public partial class MySqlTest : VendorTestBase
             }
         }
 
-        IEnumerable<QsiExpression> FlattenExpressions(QsiExpression expr)
-        {
-            yield return expr;
-
-            foreach (var child in expr.GetChildren())
-            foreach (var c in FlattenExpressions(child))
-                yield return c;
-        }
-
         IEnumerable<BinaryExpression> MergeExpression(IEnumerable<BinaryExpression> expressions)
         {
-            bool isOpen = false;
             int endIndex = 0;
 
             foreach (var item in expressions.OrderBy(e => e.StartIndex))
             {
-                if (!isOpen)
-                {
-                    endIndex = item.EndIndex;
-                    isOpen = true;
-
-                    yield return item;
-
-                    continue;
-                }
-
                 if (item.StartIndex < endIndex && item.EndIndex > endIndex)
-                    throw new InvalidOperationException("Item cannot be Overlapped");
+                    throw new InvalidOperationException("Item cannot be overlapped");
 
                 if (item.EndIndex <= endIndex)
                     continue;
 
                 yield return item;
 
-                isOpen = false;
+                endIndex = item.EndIndex;
             }
         }
 
         void PrintFilter(QsiExpression expr, int level = 0)
         {
-            Console.Write($"[{expr.StartIndex}..{expr.EndIndex}] - {expr.GetType().Name[..^10]} :: {{ {sql[expr.StartIndex..expr.EndIndex]} }}");
+            if (expr is null)
+                return;
+
+            Console.WriteLine($"[{expr.StartIndex}..{expr.EndIndex}] - {expr.GetType().Name[..^10]} :: {{ {sql[expr.StartIndex..expr.EndIndex]} }}");
 
             if (expr is ColumnExpression colExpr)
             {
-                Console.WriteLine($" :: [{colExpr.Column.Parent.Identifier}.{colExpr.Column.Name}]");
-            }
-            else
-            {
-                Console.WriteLine();
+                var col = colExpr.Column;
+
+                foreach (var referenceColumn in QsiUtility.FlattenReferenceColumns(col))
+                {
+                    Console.Write(new string(' ', level * 2));
+                    Console.Write(" ㄴ");
+                    Console.WriteLine($" Refernce -> [{referenceColumn.Parent.Identifier}.{referenceColumn.Name}]");
+                }
             }
 
             foreach (var child in expr.GetChildren())
@@ -216,6 +220,36 @@ public partial class MySqlTest : VendorTestBase
                 PrintFilter(child, level + 1);
             }
         }
+    }
+
+    private static IEnumerable<QsiExpression> GetExpressionFromTable(QsiTableStructure table)
+    {
+        if (table is null)
+            yield break;
+
+        if (table.FilterExpression is { } filter)
+            yield return filter;
+
+        foreach (var column in table.Columns)
+        {
+            if (column.Expression is { } columnExpr)
+                yield return columnExpr;
+        }
+
+        foreach (var reference in table.References)
+        {
+            foreach (var refColumns in GetExpressionFromTable(reference))
+                yield return refColumns;
+        }
+    }
+
+    private static IEnumerable<QsiExpression> FlattenExpressions(QsiExpression expr)
+    {
+        yield return expr;
+
+        foreach (var child in expr.GetChildren())
+        foreach (var c in FlattenExpressions(child))
+            yield return c;
     }
 
     [TestCase("TABLE actor")]

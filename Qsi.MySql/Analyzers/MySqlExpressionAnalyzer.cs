@@ -9,7 +9,7 @@ namespace Qsi.MySql.Analyzers;
 
 public class MySqlExpressionAnalyzer : QsiExpressionAnalyzer
 {
-    public override QsiExpression ResolveCore(TableCompileContext context, IQsiExpressionNode node)
+    protected override QsiExpression ResolveExpressionCore(TableCompileContext context, IQsiExpressionNode node)
     {
         if (ResolveInternal() is { } expr)
             return WithIndex(expr, node);
@@ -27,7 +27,7 @@ public class MySqlExpressionAnalyzer : QsiExpressionAnalyzer
                     return ResolveCollationExpression(context, collationExpressionNode);
 
                 default:
-                    return base.ResolveCore(context, node);
+                    return base.ResolveExpressionCore(context, node);
             }
         }
     }

@@ -21,7 +21,8 @@ namespace Qsi.Data
 
         internal IEnumerable<QsiTableColumn> VisibleColumns => _columns.Where(c => c.IsVisible);
 
-        public QsiExpression Filter { get; set; }
+        // .. WHERE <filter_expression>
+        public QsiExpression FilterExpression { get; set; }
 
         private readonly QsiTableColumnCollection _columns;
 
@@ -60,7 +61,8 @@ namespace Qsi.Data
             {
                 Type = Type,
                 Identifier = Identifier,
-                IsSystem = IsSystem
+                IsSystem = IsSystem,
+                FilterExpression = FilterExpression
             };
 
             table.References.AddRange(References);
