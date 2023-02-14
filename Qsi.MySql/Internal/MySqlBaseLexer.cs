@@ -191,7 +191,7 @@ namespace Qsi.MySql.Internal
                 Text[1..],
                 Channel,
                 TokenStartCharIndex + 1,
-                TokenStartCharIndex + Text.Length,
+                TokenStartCharIndex + Text.Length - 1,
                 TokenStartLine,
                 TokenStartColumn);
 
