@@ -310,7 +310,7 @@ public partial class PostgreSqlDeparser
                 AggFilter = Visit(node.AggregateFilter.Value),
                 AggWithinGroup = node.AggregateWithInGroup,
                 FuncVariadic = node.FunctionVariadic,
-                // TODO: WindowDef
+                // TODO: WindowDef (feature/pg-official-parser)
                 // Over = Visit(node.Over.Value)
             };
         }

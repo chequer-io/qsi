@@ -13,7 +13,7 @@ internal static partial class PgNodeVisitor
     {
         var target = Visit(node.Relation);
 
-        // TODO: check about spec (Example)
+        // TODO: check about spec (Example) (feature/pg-official-parser)
         // INSERT INTO distributors AS d (did, dname) VALUES (8, 'Anvil Distribution')
         if (target is not QsiTableReferenceNode targetRef)
             throw TreeHelper.NotSupportedFeature("Insert Target with alias");
@@ -62,7 +62,7 @@ internal static partial class PgNodeVisitor
 
             if (insert.ConflictBehavior is QsiDataConflictBehavior.Update)
             {
-                // TODO: ConflictClause Update
+                // TODO: ConflictClause Update (feature/pg-official-parser)
                 throw TreeHelper.NotSupportedTree(onConflict);
             }
         }
