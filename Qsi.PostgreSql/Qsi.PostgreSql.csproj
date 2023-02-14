@@ -13,7 +13,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Qsi\Qsi.csproj" />
-        <ProjectReference Include="..\..\PgQuery.Net\PgQuery\PgQuery.csproj" />
     </ItemGroup>
 
     <Import Project="..\Qsi.Shared\Qsi.Shared.projitems" Label="Shared" />
