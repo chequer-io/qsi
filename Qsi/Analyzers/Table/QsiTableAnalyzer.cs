@@ -258,16 +258,28 @@ public class QsiTableAnalyzer : QsiAnalyzerBase
                             var seqentialColumn = aliasedAllColumn ? allColumnNode?.SequentialColumns[i++] : null;
                             var declaredColumn = declaredTable.NewColumn();
 
-                            // if declaredColumn targets exactly single column
-                            if (resolvedColumns.Length == 1 && allColumnNode is null)
-                                declaredColumn.Expression = ResolveExpression(scopedContext, column);
-
                             declaredColumn.Name = seqentialColumn is null
                                 ? ResolveCompoundColumnName(context, table, column, c)
                                 : seqentialColumn.Alias.Name;
 
                             declaredColumn.References.Add(c);
                             declaredColumn.ImplicitTableWildcardTarget = implicitTableWildcard;
+
+                            if (context.AnalyzerOptions.AnalyzeExpression)
+                            {
+                                if (allColumnNode is { })
+                                {
+                                    declaredColumn.Expression = new ColumnExpression(c);
+                                }
+                                else
+                                {
+                                    // if declaredColumn targets exactly single column
+                                    if (resolvedColumns.Length == 1)
+                                    {
+                                        declaredColumn.Expression = ResolveExpression(scopedContext, column);
+                                    }
+                                }
+                            }
 
                             if (keepVisible)
                                 declaredColumn.IsVisible = c.IsVisible;

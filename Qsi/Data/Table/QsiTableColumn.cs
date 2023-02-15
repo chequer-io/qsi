@@ -52,6 +52,7 @@ namespace Qsi.Data
             column.Default = Default;
             column.ImplicitTableWildcardTarget = ImplicitTableWildcardTarget;
             column._isExpression = _isExpression;
+            column.Expression = Expression; // TODO: .Clone(); (feature/QP-1751)
 
             return column;
         }

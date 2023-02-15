@@ -140,7 +140,17 @@ namespace Qsi.Analyzers.Action
             switch (expression)
             {
                 case IQsiLiteralExpressionNode literal:
-                    return new QsiDataValue(literal.Value, literal.Type);
+                {
+                    var dataValue = new QsiDataValue(literal.Value, literal.Type);
+
+                    if (context.AnalyzerOptions.AnalyzeExpression)
+                    {
+                        var expressionAnalyzer = context.Engine.GetAnalyzer<QsiTableAnalyzer>().ExpressionAnalyzer;
+                        dataValue.Expression = expressionAnalyzer.Resolve(new TableCompileContext(context), expression);
+                    }
+
+                    return dataValue;
+                }
 
                 case IQsiBindParameterExpressionNode bindParameter:
                 {
@@ -489,7 +499,8 @@ namespace Qsi.Analyzers.Action
                     Table = t.Table,
                     AffectedColumns = GetAffectedColumns(t),
                     InsertRows = t.InsertRows.ToNullIfEmpty(),
-                    DuplicateRows = t.DuplicateRows.ToNullIfEmpty()
+                    DuplicateRows = t.DuplicateRows.ToNullIfEmpty(),
+                    Source = table
                 })
                 .ToArray<IQsiAnalysisResult>();
         }
@@ -831,7 +842,8 @@ namespace Qsi.Analyzers.Action
                     {
                         Table = target.Table,
                         AffectedColumns = GetAffectedColumns(target),
-                        DeleteRows = target.DeleteRows.ToNullIfEmpty()
+                        DeleteRows = target.DeleteRows.ToNullIfEmpty(),
+                        Source = table
                     };
                 })
                 .ToArray<IQsiAnalysisResult>();
@@ -928,7 +940,8 @@ namespace Qsi.Analyzers.Action
                         Table = target.Table,
                         AffectedColumns = affectedColumns,
                         UpdateBeforeRows = target.UpdateBeforeRows.ToNullIfEmpty(),
-                        UpdateAfterRows = target.UpdateAfterRows.ToNullIfEmpty()
+                        UpdateAfterRows = target.UpdateAfterRows.ToNullIfEmpty(),
+                        Source = sourceTable
                     };
                 })
                 .ToArray<IQsiAnalysisResult>();

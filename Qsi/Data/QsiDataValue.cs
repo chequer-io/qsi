@@ -1,4 +1,7 @@
-﻿namespace Qsi.Data
+﻿using System.Diagnostics.CodeAnalysis;
+using Qsi.Analyzers.Expression.Models;
+
+namespace Qsi.Data
 {
     public sealed class QsiDataValue
     {
@@ -23,6 +26,9 @@
         public object Value { get; }
 
         public QsiDataType Type { get; }
+
+        [AllowNull]
+        public QsiExpression Expression { get; set; }
 
         public QsiDataValue(object value, QsiDataType type)
         {
