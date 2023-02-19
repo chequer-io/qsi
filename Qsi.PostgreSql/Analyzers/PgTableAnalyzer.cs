@@ -4,7 +4,7 @@ using Qsi.Analyzers.Table;
 using Qsi.Analyzers.Table.Context;
 using Qsi.Data;
 using Qsi.Engines;
-using Qsi.PostgreSql.NewTree.Nodes;
+using Qsi.PostgreSql.Tree.Nodes;
 using Qsi.Tree;
 
 namespace Qsi.PostgreSql.Analyzers

@@ -3,7 +3,7 @@ using System.Threading;
 using PgQuery;
 using Qsi.Data;
 using Qsi.Parsing;
-using Qsi.PostgreSql.NewTree;
+using Qsi.PostgreSql.Tree;
 using Qsi.Tree;
 
 namespace Qsi.PostgreSql

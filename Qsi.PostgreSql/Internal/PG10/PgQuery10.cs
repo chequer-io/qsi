@@ -5,8 +5,8 @@ using Qsi.Parsing;
 using Qsi.PostgreSql.Internal.PG10.Types;
 using Qsi.PostgreSql.Internal.Serialization.Converters;
 using Qsi.PostgreSql.Resources;
-using Qsi.PostgreSql.Tree;
-using Qsi.PostgreSql.Tree.PG10;
+using Qsi.PostgreSql.OldTree;
+using Qsi.PostgreSql.OldTree.PG10;
 
 namespace Qsi.PostgreSql.Internal.PG10
 {

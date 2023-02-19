@@ -2,8 +2,8 @@
 using System.Threading;
 using JavaScriptEngineSwitcher.ChakraCore;
 using JavaScriptEngineSwitcher.Core;
-using Qsi.PostgreSql.Tree;
-using Qsi.PostgreSql.Tree.PG10;
+using Qsi.PostgreSql.OldTree;
+using Qsi.PostgreSql.OldTree.PG10;
 
 namespace Qsi.PostgreSql.Internal
 {

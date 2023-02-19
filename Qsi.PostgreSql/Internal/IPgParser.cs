@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading;
-using Qsi.PostgreSql.Tree;
+using Qsi.PostgreSql.OldTree;
 
 namespace Qsi.PostgreSql.Internal
 {
