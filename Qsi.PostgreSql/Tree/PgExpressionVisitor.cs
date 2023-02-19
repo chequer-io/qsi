@@ -419,6 +419,7 @@ internal static partial class PgNodeVisitor
         };
     }
 
+    // TODO: not implemented yet (feature/pg-official-parser)
     public static QsiTreeNode Visit(RangeFunction node)
     {
         throw TreeHelper.NotSupportedFeature("RangeFunction");
