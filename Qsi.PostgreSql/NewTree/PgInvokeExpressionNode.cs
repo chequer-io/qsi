@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using PgQuery;
+using Qsi.PostgreSql.NewTree.Nodes;
 using Qsi.Tree;
 
 namespace Qsi.PostgreSql.NewTree;
@@ -22,12 +23,12 @@ public class PgInvokeExpressionNode : QsiInvokeExpressionNode
 
     public QsiTreeNodeProperty<QsiExpressionNode> AggregateFilter { get; }
 
-    public QsiTreeNodeProperty<QsiExpressionNode> Over { get; }
+    public QsiTreeNodeProperty<PgWindowDefExpressionNode> Over { get; }
 
     public PgInvokeExpressionNode()
     {
         AggregateOrder = new QsiTreeNodeList<QsiExpressionNode?>(this);
         AggregateFilter = new QsiTreeNodeProperty<QsiExpressionNode>(this);
-        Over = new QsiTreeNodeProperty<QsiExpressionNode>(this);
+        Over = new QsiTreeNodeProperty<PgWindowDefExpressionNode>(this);
     }
 }

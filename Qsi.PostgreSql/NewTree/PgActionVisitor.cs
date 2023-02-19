@@ -78,6 +78,7 @@ internal static partial class PgNodeVisitor
         throw new NotImplementedException();
     }
 
+    // TODO: not all implemented yet (feature/pg-official-parser)
     public static QsiDataUpdateActionNode Visit(UpdateStmt node)
     {
         var target = Visit(node.Relation);

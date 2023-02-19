@@ -287,7 +287,7 @@ internal static partial class PgNodeVisitor
 
         // NOTE: In CteQuery, allows SELECT, INSERT, UPDATE, DELETE, MERGE statements. but now only support SELECT.
         if (Visit(node.Ctequery) is not QsiTableNode table)
-            throw TreeHelper.NotSupportedFeature("CTE Query not select statement");
+            throw TreeHelper.NotSupportedFeature("CTE Query (not select statement)");
 
         return new PgCommonTableNode
         {

@@ -30,6 +30,7 @@ internal static partial class PgNodeVisitor
             WindowDef windowDef => Visit(windowDef),
             GroupingSet groupingSet => Visit(groupingSet),
             RangeFunction rangeFunction => Visit(rangeFunction),
+            DefElem defElem => Visit(defElem),
             _ => throw TreeHelper.NotSupportedTree(node.Get())
         };
     }
@@ -47,6 +48,8 @@ internal static partial class PgNodeVisitor
             SelectStmt select => Visit(select),
             CreateStmt create => Visit(create),
             CreateTableAsStmt createTableAs => Visit(createTableAs),
+            VariableSetStmt variableSetStmt => Visit(variableSetStmt),
+            ViewStmt viewStmt => Visit(viewStmt),
             _ => throw TreeHelper.NotSupportedTree(node)
         };
     }

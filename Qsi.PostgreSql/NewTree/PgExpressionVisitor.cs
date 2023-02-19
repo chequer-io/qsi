@@ -77,7 +77,7 @@ internal static partial class PgNodeVisitor
     }
 
     // GROUPING( expr[, expr].. )
-    public static QsiInvokeExpressionNode Visit(GroupingFunc node)
+    public static PgInvokeExpressionNode Visit(GroupingFunc node)
     {
         return new PgInvokeExpressionNode
         {
@@ -422,6 +422,17 @@ internal static partial class PgNodeVisitor
     public static QsiTreeNode Visit(RangeFunction node)
     {
         throw TreeHelper.NotSupportedFeature("RangeFunction");
+    }
+
+    public static PgDefinitionElementNode Visit(DefElem node)
+    {
+        return new PgDefinitionElementNode
+        {
+            DefinitionName = node.Defname,
+            DefinitionNamespace = node.Defnamespace,
+            Action = node.Defaction,
+            Expression = { Value = VisitExpression(node.Arg) }
+        };
     }
 
     private static QsiRowValueExpressionNode CreateRowValueExpression(IEnumerable<Node> items)

@@ -21,7 +21,7 @@ namespace Qsi.PostgreSql.Tree.PG10
             {
                 Identifier = IdentifierVisitor.VisitRangeVar(stmt.view[0]),
                 Source = { Value = TableVisitor.Visit(stmt.query[0]) },
-                CheckOption = stmt.withCheckOption?.ToString()
+                CheckOptionOld = stmt.withCheckOption?.ToString()
             };
 
             if (stmt.replace ?? false)

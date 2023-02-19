@@ -1,18 +1,23 @@
 using System;
+using System.Linq;
 using PgQuery;
 using Qsi.Data;
+using Qsi.PostgreSql.Internal;
 using Qsi.PostgreSql.NewTree.Nodes;
+using Qsi.PostgreSql.Tree.PG10.Nodes;
 using Qsi.Tree;
+using Qsi.Utilities;
 
 namespace Qsi.PostgreSql.NewTree;
 
 internal static partial class PgNodeVisitor
 {
+    // TODO: not all implemented yet (feature/pg-official-parser)
     public static IQsiTreeNode Visit(CreateStmt node)
     {
         var createTable = new PgTableDefinitionNode
         {
-            IsCreateTableAs = true,
+            IsCreateTableAs = false,
             Relpersistence = node.Relation.Relpersistence.ToRelpersistence(),
             AccessMethod = node.AccessMethod,
         };
@@ -65,5 +70,57 @@ internal static partial class PgNodeVisitor
             createTable.Columns.Value = CreateSequentialColumnsDeclaration(colNames);
 
         return createTable;
+    }
+
+    private static IQsiTreeNode Visit(VariableSetStmt node)
+    {
+        switch (node.Kind)
+        {
+            case VariableSetKind.VarSetValue:
+            {
+                switch (node.Name)
+                {
+                    case "search_path":
+                    {
+                        // TODO: IsLocal not used, is it necessary? (feature/pg-official-parser)
+                        return new QsiChangeSearchPathActionNode
+                        {
+                            Identifiers = new[]
+                            {
+                                new QsiQualifiedIdentifier(node.Args
+                                    .Select(x => new QsiIdentifier(x.AConst.Sval.Sval, false)))
+                            }
+                        };
+                    }
+                }
+
+                break;
+            }
+        }
+
+        throw TreeHelper.NotSupportedTree(node);
+    }
+
+    private static PgViewDefinitionNode Visit(ViewStmt node)
+    {
+        var name = node.View;
+
+        var def = new PgViewDefinitionNode
+        {
+            Identifier = CreateQualifiedIdentifier(name.Catalogname, name.Schemaname, name.Relname),
+            Source = { Value = Visit<QsiTableNode>(node.Query) },
+            CheckOption = node.WithCheckOption,
+            Relpersistence = name.Relpersistence.ToRelpersistence(),
+            Options = { node.Options.Select(Visit<PgDefinitionElementNode>) }
+        };
+
+        if (node.Replace)
+            def.ConflictBehavior = QsiDefinitionConflictBehavior.Replace;
+
+        def.Columns.Value = node.Aliases.Count > 0
+            ? CreateSequentialColumnsDeclaration(node.Aliases)
+            : TreeHelper.CreateAllColumnsDeclaration();
+
+        return def;
     }
 }

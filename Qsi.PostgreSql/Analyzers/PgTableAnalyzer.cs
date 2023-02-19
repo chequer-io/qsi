@@ -152,6 +152,25 @@ namespace Qsi.PostgreSql.Analyzers
                     break;
                 }
 
+                case PgDefinitionElementNode e:
+                {
+                    if (!e.Expression.IsEmpty)
+                    {
+                        foreach (var c in ResolveColumnsInExpression(context, e.Expression.Value))
+                            yield return c;
+                    }
+
+                    break;
+                }
+
+                case PgRowValueExpressionNode e:
+                {
+                    foreach (var c in e.ColumnValues.SelectMany(x => ResolveColumnsInExpression(context, x!)))
+                        yield return c;
+
+                    break;
+                }
+
                 default:
                     foreach (var qsiTableColumn in base.ResolveColumnsInExpression(context, expression))
                         yield return qsiTableColumn;
