@@ -305,15 +305,7 @@ internal static partial class PgNodeVisitor
             Expression = { Value = VisitExpression(node.Testexpr) },
             Table = { Value = Visit<QsiTableNode>(node.Subselect) },
             OperatorName = CreateQualifiedIdentifier(node.OperName),
-            SubLinkType = node.SubLinkType switch
-            {
-                SubLinkType.ExprSublink => string.Empty, // (subselect)
-                SubLinkType.AllSublink => "ALL", // testexpr opername ALL (subselect)
-                SubLinkType.AnySublink => "ANY", // testexpr opername {ANY | SOME} (subselect)
-                SubLinkType.ExistsSublink => "EXISTS", // EXISTS (subselect)
-                SubLinkType.ArraySublink => "ARRAY", // ARRAY (subselect)
-                _ => throw CreateInternalException($"Not supported SubLinkType: {node.SubLinkType}")
-            }
+            SubLinkType = node.SubLinkType
         };
     }
 
@@ -433,6 +425,27 @@ internal static partial class PgNodeVisitor
             DefinitionNamespace = node.Defnamespace,
             Action = node.Defaction,
             Expression = { Value = VisitExpression(node.Arg) }
+        };
+    }
+
+    public static PgOnConflictNode Visit(OnConflictClause node)
+    {
+        return new PgOnConflictNode
+        {
+            Action = node.Action,
+            Infer = { Value = Visit(node.Infer) },
+            Where = { Value = VisitExpression(node.WhereClause) },
+            TargetList = { node.TargetList.Select(VisitExpression) }
+        };
+    }
+
+    public static PgInferExpressionNode Visit(InferClause node)
+    {
+        return new PgInferExpressionNode
+        {
+            Name = node.Conname,
+            IndexElems = { node.IndexElems.Select(VisitExpression) },
+            Where = { Value = VisitExpression(node.WhereClause) },
         };
     }
 

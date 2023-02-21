@@ -61,6 +61,8 @@ internal static partial class PgNodeVisitor
         {
             null => null,
             WithClause with => Visit(with),
+            OnConflictClause onConflict => Visit(onConflict),
+            InferClause infer => Visit(infer),
             _ => throw new NotSupportedException($"Not supported clause node: '{node.GetType().Name}'")
         };
     }
@@ -88,7 +90,53 @@ internal static partial class PgNodeVisitor
         return new QsiException(QsiError.Internal, $"Not supported Option {typeof(T).Name}.{value}");
     }
 
-    private static Relpersistence ToRelpersistence(this string value)
+    public static JoinType ToJoinType(this string value)
+    {
+        return value switch
+        {
+            "CROSS JOIN" => JoinType.JoinInner,
+            "FULL JOIN" => JoinType.JoinFull,
+            "LEFT JOIN" => JoinType.JoinLeft,
+            "RIGHT JOIN" => JoinType.JoinRight,
+            _ => JoinType.Undefined
+        };
+    }
+
+    public static string FromJoinType(this JoinType value)
+    {
+        return value switch
+        {
+            JoinType.JoinInner => "CROSS JOIN", // or INNER JOIN
+            JoinType.JoinFull => "FULL JOIN", // or FULL OUTER JOIN
+            JoinType.JoinLeft => "LEFT JOIN", // or LEFT OUTER JOIN
+            JoinType.JoinRight => "RIGHT JOIN", // or RIGHT OUTER JOIN
+            _ => throw new QsiException(QsiError.Syntax)
+        };
+    }
+
+    public static SetOperation ToSetOperation(this string value)
+    {
+        return value switch
+        {
+            "EXCEPT" => SetOperation.SetopExcept,
+            "INTERSECT" => SetOperation.SetopIntersect,
+            "UNION" => SetOperation.SetopUnion,
+            _ => SetOperation.Undefined
+        };
+    }
+
+    public static string FromSetOperation(this SetOperation value)
+    {
+        return value switch
+        {
+            SetOperation.SetopExcept => "EXCEPT",
+            SetOperation.SetopIntersect => "INTERSECT",
+            SetOperation.SetopUnion => "UNION",
+            _ => string.Empty
+        };
+    }
+
+    public static Relpersistence ToRelpersistence(this string value)
     {
         return value switch
         {

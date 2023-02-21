@@ -1,3 +1,4 @@
+using System;
 using NUnit.Framework;
 using PgQuery;
 using Qsi.Data;
@@ -124,6 +125,7 @@ public class PgDeparseTest
     [TestCase("INSERT INTO actor (c1, c2) VALUES (1,2), (3,4)", TestName = "INSERT - Simple #2")]
     [TestCase("INSERT INTO info.actor (c1, c2) VALUES (1,2), (3,4)", TestName = "INSERT - Simple #3")]
     [TestCase("INSERT INTO actor_backup (SELECT * FROM actor)", TestName = "INSERT - Subquery")]
+    [TestCase("INSERT INTO distributors AS d (did, dname) VALUES (8, 'Anvil Distribution')", TestName = "INSERT - Aliased")]
     // DELETE
     [TestCase("DELETE FROM actor WHERE actor_id BETWEEN 15 AND 30", TestName = "DELETE - Simple #1")]
     [TestCase("DELETE FROM actor", TestName = "DELETE - Simple #2")]
@@ -139,6 +141,13 @@ public class PgDeparseTest
         var expected = res.Stmts[0].Stmt.ToString();
         var actual = deparser.ConvertToPgNode(result).ToString();
 
-        Assert.AreEqual(Parser.Deparse(res.Stmts[0].Stmt), deparser.Deparse(result, default!));
+        var expectedScript = Parser.Deparse(res.Stmts[0].Stmt);
+        var actualScript = deparser.Deparse(result, default!);
+
+        Console.WriteLine($"Original : {query}");
+        Console.WriteLine($"Expected : {expectedScript}");
+        Console.WriteLine($"Actual   : {actualScript}");
+
+        Assert.AreEqual(expectedScript, actualScript);
     }
 }

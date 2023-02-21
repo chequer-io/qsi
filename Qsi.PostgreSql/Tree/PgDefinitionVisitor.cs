@@ -58,14 +58,13 @@ internal static partial class PgNodeVisitor
             OnCommit = node.Into.OnCommit,
         };
 
-        if (node.Query is { })
-            createTable.DataSource.Value = Visit<QsiTableNode>(node.Query);
+        if (node.Query is { } query)
+            createTable.DataSource.Value = Visit<QsiTableNode>(query);
 
         if (node.IfNotExists)
             createTable.ConflictBehavior = QsiDefinitionConflictBehavior.Ignore;
 
-        if (node.Into.ColNames is { Count: > 0 } colNames)
-            createTable.Columns.Value = CreateSequentialColumnsDeclaration(colNames);
+        createTable.Columns.Value = CreateAliasedColumnsDeclaration(node.Into.ColNames);
 
         return createTable;
     }
@@ -78,15 +77,17 @@ internal static partial class PgNodeVisitor
             {
                 switch (node.Name)
                 {
-                    case "search_path":
+                    case PgKnownVariable.SearchPath:
                     {
                         // TODO: IsLocal not used, is it necessary? (feature/pg-official-parser)
                         return new QsiChangeSearchPathActionNode
                         {
                             Identifiers = new[]
                             {
-                                new QsiQualifiedIdentifier(node.Args
-                                    .Select(x => new QsiIdentifier(x.AConst.Sval.Sval, false)))
+                                new QsiQualifiedIdentifier(
+                                    node.Args
+                                        .Select(x => new QsiIdentifier(x.AConst.Sval.Sval, false))
+                                )
                             }
                         };
                     }
@@ -115,9 +116,7 @@ internal static partial class PgNodeVisitor
         if (node.Replace)
             def.ConflictBehavior = QsiDefinitionConflictBehavior.Replace;
 
-        def.Columns.Value = node.Aliases.Count > 0
-            ? CreateSequentialColumnsDeclaration(node.Aliases)
-            : TreeHelper.CreateAllColumnsDeclaration();
+        def.Columns.Value = CreateAliasedColumnsDeclaration(node.Aliases);
 
         return def;
     }

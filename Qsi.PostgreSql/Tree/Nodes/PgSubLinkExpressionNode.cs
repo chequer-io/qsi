@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using PgQuery;
 using Qsi.Data;
 using Qsi.Tree;
 using Qsi.Utilities;
@@ -13,7 +14,7 @@ public class PgSubLinkExpressionNode : QsiExpressionNode
 
     public QsiQualifiedIdentifier? OperatorName { get; set; }
 
-    public string? SubLinkType { get; set; }
+    public SubLinkType SubLinkType { get; set; }
 
     public PgSubLinkExpressionNode()
     {

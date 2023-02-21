@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
+using Google.Protobuf.Collections;
 using PgQuery;
 using Qsi.Data;
 using Qsi.PostgreSql.Data;
+using Qsi.PostgreSql.Extensions;
 using Qsi.PostgreSql.Tree;
 using Qsi.PostgreSql.Tree.Nodes;
-using Qsi.PostgreSql.OldTree.PG10.Nodes;
 using Qsi.Tree;
 using Boolean = PgQuery.Boolean;
 using String = PgQuery.String;
@@ -19,12 +20,53 @@ public partial class PostgreSqlDeparser
 {
     private static class Visitor
     {
-        public static IPgNode Visit(QsiDataInsertActionNode node)
+        public static IPgNode Visit(PgDataInsertActionNode node)
         {
+            SelectStmt? selectStmt;
+
+            if (node.Values.Count > 0)
+            {
+                selectStmt = new SelectStmt
+                {
+                    ValuesLists = { node.Values.Select(Visit).ToNode() }
+                };
+            }
+            else if (!node.ValueTable.IsEmpty)
+            {
+                var valueTable = Visit(node.ValueTable.Value);
+
+                if (valueTable.NodeCase is not Node.NodeOneofCase.SelectStmt)
+                    throw new QsiException(QsiError.Internal, $"Expected type SelectStmt but was: {valueTable.NodeCase}");
+
+                selectStmt = valueTable.SelectStmt;
+            }
+            else
+            {
+                selectStmt = null;
+            }
+
+            var relation = Visit((PgTableReferenceNode)node.Target.Value);
+
+            if (!node.Alias.IsEmpty)
+            {
+                relation.Alias = new Alias
+                {
+                    Aliasname = node.Alias.Value.Name.Value
+                };
+            }
+
             return new InsertStmt
             {
-                Relation = Visit((PgTableReferenceNode)node.Target.Value),
-                Cols = { node.Columns.Select(c => new ResTarget { Name = c[0].Value }.ToNode()) }
+                Relation = relation,
+                Cols =
+                {
+                    node.Columns?.Select(c => new ResTarget { Name = c[0].Value }.ToNode()) ?? Enumerable.Empty<Node>()
+                },
+                SelectStmt = selectStmt?.ToNode(),
+                OnConflictClause = node.Conflict.InvokeWhenNotNull(Visit),
+                WithClause = node.Directives.InvokeWhenNotNull(Visit),
+                Override = node.Override,
+                // ReturningList = {  }
             };
         }
 
@@ -36,7 +78,7 @@ public partial class PostgreSqlDeparser
             if (target is QsiDerivedTableNode { Where.Value: { } whereValue } derivedTable)
             {
                 target = derivedTable.Source.Value;
-                whereExpr = Visit(whereValue.Expression.Value);
+                whereExpr = Visit(whereValue.Expression);
             }
 
             if (Visit(target) is not { RangeVar: { } rangeVar })
@@ -46,8 +88,8 @@ public partial class PostgreSqlDeparser
             {
                 Relation = rangeVar,
                 WhereClause = whereExpr,
-                WithClause = node.Directives.IsEmpty ? null : Visit(node.Directives.Value),
-                TargetList = { node.SetValues.Select(Visit) },
+                WithClause = node.Directives.InvokeWhenNotNull(Visit),
+                TargetList = { node.SetValues.Select(v => Visit(v).ToNode()) },
                 // TODO: not all implemented yet: FromClause (feature/pg-official-parser)
                 // FromClause = {  },
                 // ReturningList = {  }
@@ -60,13 +102,14 @@ public partial class PostgreSqlDeparser
             Node? whereExpr = null;
             WithClause? withClause = null;
 
+            // TODO: FIXME (QsiDerivedTableNode -> PgActionDerivedTableNode)
             if (target is QsiDerivedTableNode derivedTable and ({ Where.IsEmpty: false } or { Directives.IsEmpty: false }))
             {
                 target = derivedTable.Source.Value;
 
                 if (derivedTable.Where.Value is { } whereValue)
                 {
-                    whereExpr = Visit(whereValue.Expression.Value);
+                    whereExpr = Visit(whereValue.Expression);
                 }
 
                 if (derivedTable.Directives.Value is { } directivesValue)
@@ -96,19 +139,14 @@ public partial class PostgreSqlDeparser
                     Into = new IntoClause
                     {
                         AccessMethod = node.AccessMethod,
-                        Rel = new RangeVar
-                        {
-                            Relpersistence = ((char)node.Relpersistence).ToString()
-                        },
+                        Rel = new RangeVar { Relpersistence = ((char)node.Relpersistence).ToString() },
                         OnCommit = node.OnCommit,
                     },
-                    Query = Visit(node.DataSource.Value),
+                    Query = Visit(node.DataSource),
                     IfNotExists = node.ConflictBehavior is QsiDefinitionConflictBehavior.Ignore
                 };
 
-                if (node.Columns.Value.Columns.All(c => c is QsiSequentialColumnNode))
-                    stmt.Into.ColNames.AddRange(node.Columns.Value.Columns.Select(Visit));
-
+                AddAliasNamesIfNotEmpty(stmt.Into.ColNames, node.Columns.Value);
                 return stmt;
             }
 
@@ -122,13 +160,12 @@ public partial class PostgreSqlDeparser
         {
             var expr = new CommonTableExpr
             {
-                Ctequery = Visit(node.Source.Value),
+                Ctequery = Visit(node.Source),
                 Ctematerialized = node.Materialized,
                 Ctename = node.Alias.IsEmpty ? string.Empty : node.Alias.Value.Name.Value
             };
 
-            if (node.Columns.Value.Columns.All(c => c is QsiSequentialColumnNode))
-                expr.Aliascolnames.AddRange(node.Columns.Value.Columns.Select(Visit));
+            AddAliasNamesIfNotEmpty(expr.Aliascolnames, node.Columns.Value);
 
             return expr;
         }
@@ -140,12 +177,11 @@ public partial class PostgreSqlDeparser
                 Aliasname = node.Alias.Value.Name.Value
             };
 
-            if (node.Columns.Value.Columns.All(c => c is QsiSequentialColumnNode))
-                alias.Colnames.AddRange(node.Columns.Value.Columns.Select(Visit));
+            AddAliasNamesIfNotEmpty(alias.Colnames, node.Columns.Value);
 
-            var table = Visit(node.Source.Value);
+            var table = Visit(node.Source);
 
-            switch (table.NodeCase)
+            switch (table?.NodeCase)
             {
                 case Node.NodeOneofCase.RangeVar:
                     table.RangeVar.Alias = alias;
@@ -167,7 +203,7 @@ public partial class PostgreSqlDeparser
                     return table.JoinExpr;
 
                 default:
-                    throw new NotSupportedException($"Not supported Aliased table node: {table.NodeCase.ToString()}");
+                    throw new NotSupportedException($"Not supported Aliased table node: {table?.NodeCase.ToString() ?? "Unknown"}");
             }
         }
 
@@ -176,12 +212,9 @@ public partial class PostgreSqlDeparser
             var stmt = new SelectStmt
             {
                 LimitOption = LimitOption.Default,
-                Op = SetOperation.SetopNone
+                Op = SetOperation.SetopNone,
+                WithClause = node.Directives.InvokeWhenNotNull(Visit) // WITH <with>
             };
-
-            // WITH <with>
-            if (!node.Directives.IsEmpty)
-                stmt.WithClause = Visit(node.Directives.Value);
 
             // <target>
             if (!node.Columns.IsEmpty)
@@ -220,8 +253,8 @@ public partial class PostgreSqlDeparser
             if (node.Limit.Value is PgLimitExpressionNode limit)
             {
                 stmt.LimitOption = limit.Option;
-                stmt.LimitCount = Visit(limit.Limit.Value);
-                stmt.LimitOffset = Visit(limit.Offset.Value);
+                stmt.LimitCount = Visit(limit.Limit);
+                stmt.LimitOffset = Visit(limit.Offset);
             }
 
             // GROUP BY ~~~ HAVING ~~~
@@ -352,30 +385,11 @@ public partial class PostgreSqlDeparser
         public static IPgNode Visit(PgInvokeExpressionNode node)
         {
             if (node.IsBuiltIn)
-            {
-                string funcName = node.Member.Value.Identifier[0].Value;
-
-                return funcName switch
-                {
-                    "GROUPING" => new GroupingFunc { Args = { node.Parameters.Select(Visit) } },
-                    "COALESCE" => new CoalesceExpr { Args = { node.Parameters.Select(Visit) } },
-                    "GREATEST" => new MinMaxExpr
-                    {
-                        Op = MinMaxOp.IsGreatest,
-                        Args = { node.Parameters.Select(Visit) }
-                    },
-                    "LEAST" => new MinMaxExpr
-                    {
-                        Op = MinMaxOp.IsLeast,
-                        Args = { node.Parameters.Select(Visit) }
-                    },
-                    _ => throw new NotSupportedException($"Not supported function to create PgNode: {funcName}")
-                };
-            }
+                return VisitBuiltIn(node);
 
             return new FuncCall
             {
-                Funcname = { ToStringNodes(node.Member.Value.Identifier) },
+                Funcname = { node.Member.Value.Identifier.ToPgString().ToNode() },
                 Funcformat = node.FunctionFormat,
                 Args = { node.Parameters.Select(Visit) },
                 AggStar = node.AggregateStar,
@@ -384,7 +398,29 @@ public partial class PostgreSqlDeparser
                 AggFilter = Visit(node.AggregateFilter.Value),
                 AggWithinGroup = node.AggregateWithInGroup,
                 FuncVariadic = node.FunctionVariadic,
-                Over = Visit(node.Over.Value)
+                Over = node.Over.InvokeWhenNotNull(Visit)
+            };
+        }
+
+        private static IPgNode VisitBuiltIn(PgInvokeExpressionNode node)
+        {
+            string funcName = node.Member.Value.Identifier[0].Value;
+
+            return funcName switch
+            {
+                PgKnownFunction.Grouping => new GroupingFunc { Args = { node.Parameters.Select(Visit) } },
+                PgKnownFunction.Coalesce => new CoalesceExpr { Args = { node.Parameters.Select(Visit) } },
+                PgKnownFunction.Greatest => new MinMaxExpr
+                {
+                    Op = MinMaxOp.IsGreatest,
+                    Args = { node.Parameters.Select(Visit) }
+                },
+                PgKnownFunction.Least => new MinMaxExpr
+                {
+                    Op = MinMaxOp.IsLeast,
+                    Args = { node.Parameters.Select(Visit) }
+                },
+                _ => throw new NotSupportedException($"Not supported function to create PgNode: {funcName}")
             };
         }
 
@@ -447,7 +483,7 @@ public partial class PostgreSqlDeparser
         {
             return new CollateClause
             {
-                Collname = { ToStringNodes(node.Column) },
+                Collname = { node.Column.ToPgStringNode() },
                 Arg = Visit(node.Expression.Value)
             };
         }
@@ -465,7 +501,7 @@ public partial class PostgreSqlDeparser
         {
             return new TypeName
             {
-                Names = { ToStringNodes(node.Identifier) },
+                Names = { node.Identifier.ToPgStringNode() },
                 PctType = node.PctType,
                 Setof = node.Setof,
                 Typmods = { node.TypMods.Select(Visit) },
@@ -529,16 +565,8 @@ public partial class PostgreSqlDeparser
             {
                 Testexpr = Visit(node.Expression.Value),
                 Subselect = Visit(node.Table.Value),
-                OperName = { ToStringNodes(node.OperatorName) },
-                SubLinkType = node.SubLinkType switch
-                {
-                    "" => SubLinkType.ExprSublink,
-                    "ALL" => SubLinkType.AllSublink,
-                    "ANY" => SubLinkType.AnySublink,
-                    "EXISTS" => SubLinkType.ExistsSublink,
-                    "ARRAY" => SubLinkType.ArraySublink,
-                    _ => throw new NotSupportedException($"Not supported SubLinkType: {node.SubLinkType}")
-                }
+                OperName = { node.OperatorName.ToPgStringNode() },
+                SubLinkType = node.SubLinkType
             };
         }
 
@@ -664,7 +692,7 @@ public partial class PostgreSqlDeparser
 
             return new VariableSetStmt
             {
-                Name = "search_path",
+                Name = PgKnownVariable.SearchPath,
                 IsLocal = false,
                 Kind = VariableSetKind.VarSetValue,
                 Args = { node.Identifiers[0].Select(i => new A_Const { Sval = new String { Sval = i.Value } }.ToNode()) }
@@ -707,8 +735,7 @@ public partial class PostgreSqlDeparser
                 Replace = node.ConflictBehavior is QsiDefinitionConflictBehavior.Replace,
             };
 
-            if (node.Columns.Value.Columns.All(c => c is QsiSequentialColumnNode))
-                stmt.Aliases.AddRange(node.Columns.Value.Columns.Select(Visit));
+            AddAliasNamesIfNotEmpty(stmt.Aliases, node.Columns.Value);
 
             return stmt;
         }
@@ -728,13 +755,7 @@ public partial class PostgreSqlDeparser
             return new SelectStmt
             {
                 LimitOption = LimitOption.Default,
-                Op = node.CompositeType switch
-                {
-                    "EXCEPT" => SetOperation.SetopExcept,
-                    "INTERSECT" => SetOperation.SetopIntersect,
-                    "UNION" => SetOperation.SetopUnion,
-                    _ => throw new QsiException(QsiError.Syntax)
-                },
+                Op = node.CompositeType.ToSetOperation(),
                 All = node.IsAll,
                 Larg = Visit(node.Sources[0]).SelectStmt,
                 Rarg = Visit(node.Sources[1]).SelectStmt,
@@ -770,7 +791,7 @@ public partial class PostgreSqlDeparser
                     QsiSortOrder.Descending => SortByDir.SortbyDesc,
                     _ => throw new NotSupportedException(node.Order.ToString())
                 },
-                Node = Visit(node.Expression.Value),
+                Node = Visit(node.Expression),
                 SortbyNulls = node.SortByNulls,
                 UseOp = { node.UsingOperator.Select(Visit) }
             };
@@ -780,16 +801,9 @@ public partial class PostgreSqlDeparser
         {
             var join = new JoinExpr
             {
-                Larg = Visit(node.Left.Value),
-                Rarg = Visit(node.Right.Value),
-                Jointype = node.JoinType switch
-                {
-                    "CROSS JOIN" => JoinType.JoinInner,
-                    "FULL JOIN" => JoinType.JoinFull,
-                    "LEFT JOIN" => JoinType.JoinLeft,
-                    "RIGHT JOIN" => JoinType.JoinRight,
-                    _ => JoinType.Undefined
-                },
+                Larg = Visit(node.Left),
+                Rarg = Visit(node.Right),
+                Jointype = node.JoinType.ToJoinType(),
                 IsNatural = node.IsNatural
             };
 
@@ -817,15 +831,52 @@ public partial class PostgreSqlDeparser
                 Defname = node.DefinitionName,
                 Defnamespace = node.DefinitionNamespace,
                 Defaction = node.Action,
-                Arg = Visit(node.Expression.Value)
+                Arg = Visit(node.Expression)
             };
         }
 
-        private static IEnumerable<Node> ToStringNodes(QsiQualifiedIdentifier? identifier)
+        public static ResTarget Visit(QsiSetColumnExpressionNode node)
         {
-            return identifier is not { }
-                ? Enumerable.Empty<Node>()
-                : identifier.Select(i => new String { Sval = i.Value }.ToNode());
+            return new ResTarget
+            {
+                Name = node.Target[0].Value,
+                Val = Visit(node.Value),
+                Indirection = { node.Indirections.Select(Visit) }
+            };
+        }
+
+        public static OnConflictClause Visit(PgOnConflictNode node)
+        {
+            return new OnConflictClause
+            {
+                Action = node.Action,
+                WhereClause = Visit(node.Where),
+                Infer = node.Infer.InvokeWhenNotNull(Visit),
+                TargetList = { node.TargetList.Select(Visit) }
+            };
+        }
+
+        public static InferClause Visit(PgInferExpressionNode node)
+        {
+            return new InferClause
+            {
+                Conname = node.Name,
+                WhereClause = Visit(node.Where),
+                IndexElems = { node.IndexElems.Select(Visit) }
+            };
+        }
+
+        public static void AddAliasNamesIfNotEmpty(RepeatedField<Node?> source, QsiColumnsDeclarationNode? node)
+        {
+            if (node is not { } || node.Columns.Any(c => c is not QsiSequentialColumnNode))
+                return;
+
+            source.AddRange(node.Columns.Select(Visit));
+        }
+
+        public static Node? Visit<T>(IQsiTreeNodeProperty<T> node) where T : QsiTreeNode
+        {
+            return node.IsEmpty ? null : Visit(node.Value);
         }
 
         [return: NotNullIfNotNull("node")]
@@ -836,7 +887,7 @@ public partial class PostgreSqlDeparser
 
             return (node switch
             {
-                QsiDataInsertActionNode qsiDataInsertAction => Visit(qsiDataInsertAction),
+                PgDataInsertActionNode pgDataInsertAction => Visit(pgDataInsertAction),
                 PgCommonTableNode pgCommonTable => Visit(pgCommonTable),
                 PgAliasedTableNode pgAliasedTable => Visit(pgAliasedTable),
                 QsiDerivedTableNode qsiDerivedTable => Visit(qsiDerivedTable),
@@ -881,7 +932,10 @@ public partial class PostgreSqlDeparser
                 PgCompositeTableNode pgCompositeTable => Visit(pgCompositeTable),
                 PgGroupingSetExpressionNode pgGroupingSet => Visit(pgGroupingSet),
                 PgOrderExpressionNode pgOrder => Visit(pgOrder),
-                PgDefinitionElementNode definitionElement => Visit(definitionElement),
+                PgDefinitionElementNode pgDefinitionElement => Visit(pgDefinitionElement),
+                QsiSetColumnExpressionNode qsiSetColumnExpression => Visit(qsiSetColumnExpression),
+                PgOnConflictNode pgOnConflict => Visit(pgOnConflict),
+                PgInferExpressionNode pgInferExpression => Visit(pgInferExpression),
                 _ => throw new NotSupportedException($"Cannot Visit({node.GetType().Name})")
             }).ToNode();
         }

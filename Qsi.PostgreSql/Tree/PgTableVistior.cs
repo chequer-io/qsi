@@ -170,7 +170,7 @@ internal static partial class PgNodeVisitor
         return new PgCompositeTableNode
         {
             Sources = { Visit(node.Larg), Visit(node.Rarg) },
-            CompositeType = node.Op.ToString()[5..].ToUpper(), // SetopExcept -> EXCEPT
+            CompositeType = node.Op.FromSetOperation(),
             IsAll = node.All
         };
     }
@@ -200,7 +200,7 @@ internal static partial class PgNodeVisitor
         var aliasedTable = Visit(alias);
         aliasedTable.Source.Value = tableReference;
 
-        if (alias.Colnames.Count == 0 &&
+        if (alias.Colnames.Count is 0 &&
             aliasedTable.Columns.Value.Columns[0] is QsiAllColumnNode allColumns)
         {
             allColumns.IncludeInvisibleColumns = true;
@@ -215,14 +215,7 @@ internal static partial class PgNodeVisitor
         {
             Left = { Value = Visit<QsiTableNode>(node.Larg) },
             Right = { Value = Visit<QsiTableNode>(node.Rarg) },
-            JoinType = node.Jointype switch
-            {
-                JoinType.JoinInner => "CROSS JOIN", // or INNER JOIN
-                JoinType.JoinFull => "FULL JOIN", // or FULL OUTER JOIN
-                JoinType.JoinLeft => "LEFT JOIN", // or LEFT OUTER JOIN
-                JoinType.JoinRight => "RIGHT JOIN", // or RIGHT OUTER JOIN
-                _ => throw new QsiException(QsiError.Syntax)
-            },
+            JoinType = node.Jointype.FromJoinType(),
             IsNatural = node.IsNatural
         };
 
@@ -254,12 +247,7 @@ internal static partial class PgNodeVisitor
         return new PgAliasedTableNode
         {
             Alias = { Value = CreateAliasNode(node.Aliasname) },
-            Columns =
-            {
-                Value = node.Colnames.Count > 0
-                    ? CreateSequentialColumnsDeclaration(node.Colnames)
-                    : TreeHelper.CreateAllColumnsDeclaration()
-            }
+            Columns = { Value = CreateAliasedColumnsDeclaration(node.Colnames) }
         };
     }
 
@@ -291,12 +279,7 @@ internal static partial class PgNodeVisitor
 
         return new PgCommonTableNode
         {
-            Columns =
-            {
-                Value = node.Aliascolnames is { Count: > 0 }
-                    ? CreateSequentialColumnsDeclaration(node.Aliascolnames)
-                    : TreeHelper.CreateAllColumnsDeclaration()
-            },
+            Columns = { Value = CreateAliasedColumnsDeclaration(node.Aliascolnames) },
             Source = { Value = table },
             Alias = { Value = CreateAliasNode(node.Ctename) },
             Materialized = node.Ctematerialized
@@ -316,7 +299,8 @@ internal static partial class PgNodeVisitor
         return new QsiSetColumnExpressionNode
         {
             Target = CreateQualifiedIdentifier(node.Name),
-            Value = { Value = VisitExpression(node.Val) }
+            Value = { Value = VisitExpression(node.Val) },
+            Indirections = { node.Indirection.Select(VisitExpression) }
         };
     }
 
@@ -397,8 +381,11 @@ internal static partial class PgNodeVisitor
         return aliasedTable;
     }
 
-    private static QsiColumnsDeclarationNode CreateSequentialColumnsDeclaration(IEnumerable<Node> colNames)
+    private static QsiColumnsDeclarationNode CreateAliasedColumnsDeclaration(IList<Node> colNames)
     {
+        if (colNames.Count == 0)
+            return TreeHelper.CreateAllColumnsDeclaration();
+
         var columnsDeclaration = new QsiColumnsDeclarationNode();
 
         columnsDeclaration.Columns.AddRange(colNames.Select(n =>

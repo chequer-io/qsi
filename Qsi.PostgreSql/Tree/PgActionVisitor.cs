@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using PgQuery;
 using Qsi.Data;
+using Qsi.PostgreSql.Tree.Nodes;
 using Qsi.Tree;
 using Qsi.Utilities;
 
@@ -9,18 +10,44 @@ namespace Qsi.PostgreSql.Tree;
 
 internal static partial class PgNodeVisitor
 {
-    public static QsiDataInsertActionNode Visit(InsertStmt node)
+    public static PgDataInsertActionNode Visit(InsertStmt node)
     {
-        var target = Visit(node.Relation);
+        var relation = Visit(node.Relation);
 
-        // TODO: check about spec (Example) (feature/pg-official-parser)
-        // INSERT INTO distributors AS d (did, dname) VALUES (8, 'Anvil Distribution')
-        if (target is not QsiTableReferenceNode targetRef)
-            throw TreeHelper.NotSupportedFeature("Insert Target with alias");
+        QsiTableReferenceNode target;
+        QsiAliasNode? alias = null;
 
-        var insert = new QsiDataInsertActionNode
+        switch (relation)
         {
-            Target = { Value = targetRef }
+            case QsiTableReferenceNode tableRef:
+            {
+                target = tableRef;
+                break;
+            }
+
+            case PgAliasedTableNode aliased:
+            {
+                if (aliased.Source.Value is not QsiTableReferenceNode aliasedSource)
+                    throw CreateInternalException($"{nameof(PgAliasedTableNode)}.Source must be table reference");
+
+                if (aliased.Alias.IsEmpty)
+                    throw CreateInternalException($"{nameof(PgAliasedTableNode)}.Alias must not be null");
+
+                target = aliasedSource;
+                alias = aliased.Alias.Value;
+                break;
+            }
+
+            default:
+            {
+                throw CreateInternalException($"Not supported InsertActionNode Target: {relation.GetType().Name}");
+            }
+        }
+
+        var insert = new PgDataInsertActionNode
+        {
+            Target = { Value = target },
+            Alias = { Value = alias }
         };
 
         if (node.Cols.Count > 0)
@@ -60,16 +87,15 @@ internal static partial class PgNodeVisitor
                 _ => throw CreateInternalException($"Not supported ConflictBehavior type: {onConflict.Action}")
             };
 
-            if (insert.ConflictBehavior is QsiDataConflictBehavior.Update)
-            {
-                // TODO: ConflictClause Update (feature/pg-official-parser)
-                throw TreeHelper.NotSupportedTree(onConflict);
-            }
+            insert.Conflict.Value = Visit(onConflict);
         }
 
         if (node.WithClause is not null)
             insert.Directives.Value = Visit(node.WithClause);
 
+        insert.Override = node.Override;
+
+        // ReturningList ignored
         return insert;
     }
 

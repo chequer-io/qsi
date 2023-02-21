@@ -10,7 +10,9 @@ namespace Qsi.Tree
 
         public QsiTreeNodeProperty<QsiExpressionNode> Value { get; }
 
-        public override IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Value);
+        public QsiTreeNodeList<QsiExpressionNode> Indirections { get; }
+
+        public override IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Value, Indirections);
 
         #region Explicit
         IQsiExpressionNode IQsiSetColumnExpressionNode.Value => Value.Value;
@@ -19,6 +21,7 @@ namespace Qsi.Tree
         public QsiSetColumnExpressionNode()
         {
             Value = new QsiTreeNodeProperty<QsiExpressionNode>(this);
+            Indirections = new QsiTreeNodeList<QsiExpressionNode>(this);
         }
     }
 }
