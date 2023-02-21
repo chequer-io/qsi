@@ -189,7 +189,7 @@ internal static partial class PgNodeVisitor
     {
         var tableReference = new PgTableReferenceNode
         {
-            Identifier = CreateQualifiedIdentifier(node.Catalogname, node.Schemaname, node.Relname),
+            Identifier = CreateQualifiedIdentifier(node),
             Relpersistence = node.Relpersistence.ToRelpersistence(),
             IsInherit = node.Inh
         };

@@ -30,6 +30,11 @@ internal static partial class PgNodeVisitor
         return new QsiIdentifier(name, false);
     }
 
+    private static QsiQualifiedIdentifier CreateQualifiedIdentifier(RangeVar relation)
+    {
+        return CreateQualifiedIdentifier(relation.Catalogname, relation.Schemaname, relation.Relname);
+    }
+
     private static QsiQualifiedIdentifier CreateQualifiedIdentifier(params string?[] names)
     {
         return new QsiQualifiedIdentifier(names.Where(n => n is not null).Select(CreateIdentifier!));

@@ -20,7 +20,7 @@ public partial class PostgreSqlDeparser
 {
     private static class Visitor
     {
-        public static IPgNode Visit(PgDataInsertActionNode node)
+        public static InsertStmt Visit(PgDataInsertActionNode node)
         {
             SelectStmt? selectStmt;
 
@@ -70,7 +70,7 @@ public partial class PostgreSqlDeparser
             };
         }
 
-        public static IPgNode Visit(QsiDataUpdateActionNode node)
+        public static UpdateStmt Visit(QsiDataUpdateActionNode node)
         {
             var target = node.Target.Value;
             Node? whereExpr = null;
@@ -96,7 +96,7 @@ public partial class PostgreSqlDeparser
             };
         }
 
-        public static IPgNode Visit(QsiDataDeleteActionNode node)
+        public static DeleteStmt Visit(QsiDataDeleteActionNode node)
         {
             var target = node.Target.Value;
             Node? whereExpr = null;
@@ -150,9 +150,25 @@ public partial class PostgreSqlDeparser
                 return stmt;
             }
 
-            // TODO: not all implemented yet (feature/pg-official-parser)
+            // partbound, partspec ignored
             return new CreateStmt
             {
+                Relation =
+                {
+                    Catalogname = GetCatalogName(node.Identifier),
+                    Schemaname = GetSchemaName(node.Identifier),
+                    Relname = GetRelName(node.Identifier),
+                    Relpersistence = ((char)node.Relpersistence).ToString()
+                },
+                AccessMethod = node.AccessMethod,
+                TableElts = { node.TableElts.Select(Visit) },
+                InhRelations = { node.InheritRelations.Select(Visit) },
+                Constraints = { node.Constraints.Select(Visit) },
+                Options = { node.Options.Select(Visit) },
+                OfTypename = node.OfType.InvokeWhenNotNull(Visit),
+                IfNotExists = node.ConflictBehavior is QsiDefinitionConflictBehavior.Ignore,
+                Oncommit = node.OnCommit,
+                Tablespacename = node.TablespaceName
             };
         }
 
@@ -701,13 +717,11 @@ public partial class PostgreSqlDeparser
 
         public static RangeVar Visit(PgTableReferenceNode node)
         {
-            var id = node.Identifier;
-
             return new RangeVar
             {
-                Catalogname = id.Level >= 3 ? node.Identifier[^3].Value : string.Empty,
-                Schemaname = id.Level >= 2 ? node.Identifier[^2].Value : string.Empty,
-                Relname = id.Level >= 1 ? node.Identifier[^1].Value : string.Empty,
+                Catalogname = GetCatalogName(node.Identifier),
+                Schemaname = GetSchemaName(node.Identifier),
+                Relname = GetRelName(node.Identifier),
                 Inh = node.IsInherit,
                 Relpersistence = ((char)node.Relpersistence).ToString()
             };
@@ -715,16 +729,14 @@ public partial class PostgreSqlDeparser
 
         public static ViewStmt Visit(PgViewDefinitionNode node)
         {
-            var id = node.Identifier;
-
             var stmt = new ViewStmt
             {
                 Query = Visit(node.Source.Value),
                 View = new RangeVar
                 {
-                    Catalogname = id.Level >= 3 ? node.Identifier[^3].Value : string.Empty,
-                    Schemaname = id.Level >= 2 ? node.Identifier[^2].Value : string.Empty,
-                    Relname = id.Level >= 1 ? node.Identifier[^1].Value : string.Empty,
+                    Catalogname = GetCatalogName(node.Identifier),
+                    Schemaname = GetSchemaName(node.Identifier),
+                    Relname = GetRelName(node.Identifier),
                 },
                 Options =
                 {
@@ -872,6 +884,21 @@ public partial class PostgreSqlDeparser
                 return;
 
             source.AddRange(node.Columns.Select(Visit));
+        }
+
+        public static string GetCatalogName(QsiQualifiedIdentifier identifier)
+        {
+            return identifier.Level >= 3 ? identifier[^3].Value : string.Empty;
+        }
+
+        public static string GetSchemaName(QsiQualifiedIdentifier identifier)
+        {
+            return identifier.Level >= 2 ? identifier[^2].Value : string.Empty;
+        }
+
+        public static string GetRelName(QsiQualifiedIdentifier identifier)
+        {
+            return identifier.Level >= 1 ? identifier[^1].Value : string.Empty;
         }
 
         public static Node? Visit<T>(IQsiTreeNodeProperty<T> node) where T : QsiTreeNode

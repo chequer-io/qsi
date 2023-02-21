@@ -10,25 +10,24 @@ namespace Qsi.PostgreSql.Tree;
 
 internal static partial class PgNodeVisitor
 {
-    // TODO: not all implemented yet (feature/pg-official-parser)
-    public static IQsiTreeNode Visit(CreateStmt node)
+    public static PgTableDefinitionNode Visit(CreateStmt node)
     {
-        var createTable = new PgTableDefinitionNode
+        // partbound, partspec ignored
+        return new PgTableDefinitionNode
         {
+            Identifier = CreateQualifiedIdentifier(node.Relation),
             IsCreateTableAs = false,
             Relpersistence = node.Relation.Relpersistence.ToRelpersistence(),
             AccessMethod = node.AccessMethod,
+            TableElts = { node.TableElts.Select(VisitExpression) },
+            InheritRelations = { node.InhRelations.Select(VisitExpression) },
+            Constraints = { node.Constraints.Select(VisitExpression) },
+            Options = { node.Options.Select(VisitExpression) },
+            OfType = { Value = node.OfTypename is null ? null : Visit(node.OfTypename) },
+            ConflictBehavior = node.IfNotExists ? QsiDefinitionConflictBehavior.Ignore : QsiDefinitionConflictBehavior.None,
+            OnCommit = node.Oncommit,
+            TablespaceName = node.Tablespacename
         };
-
-        if (node.IfNotExists)
-            createTable.ConflictBehavior = QsiDefinitionConflictBehavior.Ignore;
-
-        if (node.OfTypename is { } ofTypeName)
-        {
-            // createTable.OfType = ofTypeName.Names
-        }
-
-        return createTable;
     }
 
     public static IQsiDefinitionNode Visit(CreateTableAsStmt node)
@@ -102,14 +101,12 @@ internal static partial class PgNodeVisitor
 
     private static PgViewDefinitionNode Visit(ViewStmt node)
     {
-        var name = node.View;
-
         var def = new PgViewDefinitionNode
         {
-            Identifier = CreateQualifiedIdentifier(name.Catalogname, name.Schemaname, name.Relname),
+            Identifier = CreateQualifiedIdentifier(node.View),
             Source = { Value = Visit<QsiTableNode>(node.Query) },
             CheckOption = node.WithCheckOption,
-            Relpersistence = name.Relpersistence.ToRelpersistence(),
+            Relpersistence = node.View.Relpersistence.ToRelpersistence(),
             Options = { node.Options.Select(Visit<PgDefinitionElementNode>) }
         };
 
