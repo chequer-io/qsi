@@ -104,14 +104,13 @@ internal static partial class PgNodeVisitor
         throw new NotImplementedException();
     }
 
-    // TODO: not all implemented yet (feature/pg-official-parser)
-    public static QsiDataUpdateActionNode Visit(UpdateStmt node)
+    public static PgDataUpdateActionNode Visit(UpdateStmt node)
     {
         var target = Visit(node.Relation);
 
         if (node.WhereClause is { })
         {
-            target = new QsiDerivedTableNode
+            target = new PgActionDerivedTableNode
             {
                 Source = { Value = target },
                 Columns = { Value = TreeHelper.CreateAllColumnsDeclaration() },
@@ -125,7 +124,7 @@ internal static partial class PgNodeVisitor
             };
         }
 
-        var update = new QsiDataUpdateActionNode
+        var update = new PgDataUpdateActionNode
         {
             Target = { Value = target }
         };
@@ -136,6 +135,10 @@ internal static partial class PgNodeVisitor
         if (node.TargetList is { })
             update.SetValues.AddRange(node.TargetList.Select(t => VisitSetColumn(t.ResTarget)));
 
+        if (node.FromClause is { })
+            update.FromSources.AddRange(node.FromClause.Select(Visit<QsiTableNode>));
+
+        // ignored ReturningList
         return update;
     }
 
@@ -145,7 +148,7 @@ internal static partial class PgNodeVisitor
 
         if (node.WhereClause is { } || node.WithClause is { })
         {
-            var derivedTable = new QsiDerivedTableNode
+            var derivedTable = new PgActionDerivedTableNode
             {
                 Source = { Value = target },
                 Columns = { Value = TreeHelper.CreateAllColumnsDeclaration() }

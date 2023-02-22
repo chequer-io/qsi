@@ -163,6 +163,18 @@ namespace Qsi.PostgreSql.Analyzers
                     break;
                 }
 
+                case PgInferExpressionNode e:
+                {
+                    if (!e.Where.IsEmpty)
+                        foreach (var c in ResolveColumnsInExpression(context, e.Where.Value))
+                            yield return c;
+
+                    foreach (var c in e.IndexElems.SelectMany(x => ResolveColumnsInExpression(context, x!)))
+                        yield return c;
+
+                    break;
+                }
+
                 case PgRowValueExpressionNode e:
                 {
                     foreach (var c in e.ColumnValues.SelectMany(x => ResolveColumnsInExpression(context, x!)))

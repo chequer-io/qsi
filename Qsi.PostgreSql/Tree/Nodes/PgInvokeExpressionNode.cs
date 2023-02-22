@@ -1,9 +1,7 @@
-using System.Diagnostics.CodeAnalysis;
 using PgQuery;
-using Qsi.PostgreSql.Tree.Nodes;
 using Qsi.Tree;
 
-namespace Qsi.PostgreSql.Tree;
+namespace Qsi.PostgreSql.Tree.Nodes;
 
 public class PgInvokeExpressionNode : QsiInvokeExpressionNode
 {

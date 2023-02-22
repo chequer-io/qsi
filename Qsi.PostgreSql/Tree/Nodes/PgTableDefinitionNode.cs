@@ -27,11 +27,6 @@ public class PgTableDefinitionNode : QsiTableDefinitionNode
 
     public string? AccessMethod { get; set; }
 
-    /*
-     PartitionBoundSpec partbound = 4 [json_name="partbound"];
-     PartitionSpec partspec = 5 [json_name="partspec"];
-    */
-
     public PgTableDefinitionNode()
     {
         TableElts = new QsiTreeNodeList<QsiExpressionNode?>(this);

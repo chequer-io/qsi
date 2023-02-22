@@ -55,6 +55,7 @@ public partial class PostgreSqlDeparser
                 };
             }
 
+            // ignored ReturningList
             return new InsertStmt
             {
                 Relation = relation,
@@ -65,17 +66,16 @@ public partial class PostgreSqlDeparser
                 SelectStmt = selectStmt?.ToNode(),
                 OnConflictClause = node.Conflict.InvokeWhenNotNull(Visit),
                 WithClause = node.Directives.InvokeWhenNotNull(Visit),
-                Override = node.Override,
-                // ReturningList = {  }
+                Override = node.Override
             };
         }
 
-        public static UpdateStmt Visit(QsiDataUpdateActionNode node)
+        public static UpdateStmt Visit(PgDataUpdateActionNode node)
         {
             var target = node.Target.Value;
             Node? whereExpr = null;
 
-            if (target is QsiDerivedTableNode { Where.Value: { } whereValue } derivedTable)
+            if (target is PgActionDerivedTableNode { Where.Value: { } whereValue } derivedTable)
             {
                 target = derivedTable.Source.Value;
                 whereExpr = Visit(whereValue.Expression);
@@ -84,15 +84,14 @@ public partial class PostgreSqlDeparser
             if (Visit(target) is not { RangeVar: { } rangeVar })
                 throw new InvalidOperationException("Target is not RangeVar");
 
+            // ignored ReturningList
             return new UpdateStmt
             {
                 Relation = rangeVar,
                 WhereClause = whereExpr,
                 WithClause = node.Directives.InvokeWhenNotNull(Visit),
                 TargetList = { node.SetValues.Select(v => Visit(v).ToNode()) },
-                // TODO: not all implemented yet: FromClause (feature/pg-official-parser)
-                // FromClause = {  },
-                // ReturningList = {  }
+                FromClause = { node.FromSources.Select(Visit) }
             };
         }
 
@@ -102,8 +101,7 @@ public partial class PostgreSqlDeparser
             Node? whereExpr = null;
             WithClause? withClause = null;
 
-            // TODO: FIXME (QsiDerivedTableNode -> PgActionDerivedTableNode)
-            if (target is QsiDerivedTableNode derivedTable and ({ Where.IsEmpty: false } or { Directives.IsEmpty: false }))
+            if (target is PgActionDerivedTableNode derivedTable)
             {
                 target = derivedTable.Source.Value;
 
@@ -139,7 +137,7 @@ public partial class PostgreSqlDeparser
                     Into = new IntoClause
                     {
                         AccessMethod = node.AccessMethod,
-                        Rel = new RangeVar { Relpersistence = ((char)node.Relpersistence).ToString() },
+                        Rel = new RangeVar { Relpersistence = node.Relpersistence.FromRelpersistence() },
                         OnCommit = node.OnCommit,
                     },
                     Query = Visit(node.DataSource),
@@ -158,7 +156,7 @@ public partial class PostgreSqlDeparser
                     Catalogname = GetCatalogName(node.Identifier),
                     Schemaname = GetSchemaName(node.Identifier),
                     Relname = GetRelName(node.Identifier),
-                    Relpersistence = ((char)node.Relpersistence).ToString()
+                    Relpersistence = node.Relpersistence.FromRelpersistence()
                 },
                 AccessMethod = node.AccessMethod,
                 TableElts = { node.TableElts.Select(Visit) },
@@ -652,11 +650,6 @@ public partial class PostgreSqlDeparser
             };
         }
 
-        public static SetToDefault Visit(PgDefaultExpressionNode node)
-        {
-            return new SetToDefault();
-        }
-
         public static WindowDef Visit(PgWindowDefExpressionNode node)
         {
             return new WindowDef
@@ -723,7 +716,7 @@ public partial class PostgreSqlDeparser
                 Schemaname = GetSchemaName(node.Identifier),
                 Relname = GetRelName(node.Identifier),
                 Inh = node.IsInherit,
-                Relpersistence = ((char)node.Relpersistence).ToString()
+                Relpersistence = node.Relpersistence.FromRelpersistence()
             };
         }
 
@@ -918,7 +911,7 @@ public partial class PostgreSqlDeparser
                 PgCommonTableNode pgCommonTable => Visit(pgCommonTable),
                 PgAliasedTableNode pgAliasedTable => Visit(pgAliasedTable),
                 QsiDerivedTableNode qsiDerivedTable => Visit(qsiDerivedTable),
-                QsiDataUpdateActionNode qsiDataUpdateAction => Visit(qsiDataUpdateAction),
+                PgDataUpdateActionNode pgDataUpdateAction => Visit(pgDataUpdateAction),
                 QsiDataDeleteActionNode qsiDataDeleteAction => Visit(qsiDataDeleteAction),
                 QsiLiteralExpressionNode qsiLiteralExpression => Visit(qsiLiteralExpression),
                 PgTableDefinitionNode pgTableDefinition => Visit(pgTableDefinition),
@@ -943,7 +936,6 @@ public partial class PostgreSqlDeparser
                 QsiAllColumnNode qsiAllColumn => Visit(qsiAllColumn),
                 QsiSwitchExpressionNode qsiSwitchExpression => Visit(qsiSwitchExpression),
                 QsiSwitchCaseExpressionNode qsiSwitchCaseExpression => Visit(qsiSwitchCaseExpression),
-                PgDefaultExpressionNode pgDefaultExpression => Visit(pgDefaultExpression),
                 PgWindowDefExpressionNode pgWindowDefExpression => Visit(pgWindowDefExpression),
                 QsiRowValueExpressionNode qsiRowValueExpression => Visit(qsiRowValueExpression),
                 QsiColumnExpressionNode qsiColumnExpression => Visit(qsiColumnExpression),
@@ -963,6 +955,7 @@ public partial class PostgreSqlDeparser
                 QsiSetColumnExpressionNode qsiSetColumnExpression => Visit(qsiSetColumnExpression),
                 PgOnConflictNode pgOnConflict => Visit(pgOnConflict),
                 PgInferExpressionNode pgInferExpression => Visit(pgInferExpression),
+                PgDefaultExpressionNode => new SetToDefault(),
                 _ => throw new NotSupportedException($"Cannot Visit({node.GetType().Name})")
             }).ToNode();
         }

@@ -38,10 +38,6 @@ internal static partial class PgNodeVisitor
             case ObjectType.ObjectTable:
                 return VisitCreateObjectTable(node);
 
-            // CREATE MATERIALIZED VIEW
-            case ObjectType.ObjectMatview:
-                throw new NotImplementedException();
-
             default:
                 throw NotSupportedOption(node.Objtype);
         }

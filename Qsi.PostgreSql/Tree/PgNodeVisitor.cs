@@ -146,4 +146,9 @@ internal static partial class PgNodeVisitor
             _ => Relpersistence.Unknown
         };
     }
+
+    public static string FromRelpersistence(this Relpersistence value)
+    {
+        return ((char)value).ToString();
+    }
 }
