@@ -76,7 +76,7 @@ limit 1";
         sql = $@"
 select COLUMN_NAME 
 from information_schema.COLUMNS
-where TABLE_SCHEMA = '{names[1]}' and TABLE_NAME = '{names[2]}'
+where TABLE_CATALOG = '{names[0]}' and TABLE_SCHEMA = '{names[1]}' and TABLE_NAME = '{names[2]}'
 order by ORDINAL_POSITION";
         
         using (var reader = GetDataReaderCoreAsync(new QsiScript(sql, default), null, default).Result)
