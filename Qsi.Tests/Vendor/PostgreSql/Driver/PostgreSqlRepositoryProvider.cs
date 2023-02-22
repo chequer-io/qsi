@@ -32,7 +32,7 @@ public class PostgreSqlRepositoryProvider : RepositoryProviderDriverBase
         if (!reader.Read())
             return null;
 
-        var schema = new QsiIdentifier(reader.GetString(0), false);
+        var schema = new QsiIdentifier(reader.GetValue(0) as string ?? "public", false);
 
         if (identifier.Level == 1)
             return new QsiQualifiedIdentifier(database, schema, identifier[0]);
@@ -76,7 +76,7 @@ limit 1";
         sql = $@"
 select COLUMN_NAME 
 from information_schema.COLUMNS
-where TABLE_SCHEMA = '{names[0]}' and TABLE_NAME = '{names[1]}'
+where TABLE_SCHEMA = '{names[1]}' and TABLE_NAME = '{names[2]}'
 order by ORDINAL_POSITION";
         
         using (var reader = GetDataReaderCoreAsync(new QsiScript(sql, default), null, default).Result)
