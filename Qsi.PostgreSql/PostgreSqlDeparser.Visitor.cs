@@ -148,7 +148,14 @@ public partial class PostgreSqlDeparser
                     Into = new IntoClause
                     {
                         AccessMethod = node.AccessMethod,
-                        Rel = new RangeVar { Relpersistence = node.Relpersistence.FromRelpersistence() },
+                        Rel = new RangeVar
+                        {
+                            Catalogname = GetCatalogName(node.Identifier),
+                            Schemaname = GetSchemaName(node.Identifier),
+                            Relname = GetRelName(node.Identifier),
+                            Relpersistence = node.Relpersistence.FromRelpersistence(),
+                            Inh = node.IsInherit
+                        },
                         OnCommit = node.OnCommit,
                     },
                     Query = Visit(node.DataSource),
