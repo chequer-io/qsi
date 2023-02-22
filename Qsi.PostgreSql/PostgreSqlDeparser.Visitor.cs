@@ -128,6 +128,17 @@ public partial class PostgreSqlDeparser
             };
         }
 
+        public static VariableSetStmt Visit(PgVariableSetActionNode node)
+        {
+            return new VariableSetStmt
+            {
+                Name = node.Name?.Value ?? string.Empty,
+                Args = { node.Arguments.Select(Visit) },
+                IsLocal = node.IsLocal,
+                Kind = node.Kind
+            };
+        }
+
         public static IPgNode Visit(PgTableDefinitionNode node)
         {
             if (node.IsCreateTableAs)
@@ -704,7 +715,7 @@ public partial class PostgreSqlDeparser
                 Name = PgKnownVariable.SearchPath,
                 IsLocal = false,
                 Kind = VariableSetKind.VarSetValue,
-                Args = { node.Identifiers[0].Select(i => new A_Const { Sval = new String { Sval = i.Value } }.ToNode()) }
+                Args = { node.Identifiers.Select(i => new A_Const { Sval = new String { Sval = i[0].Value } }.ToNode()) }
             };
         }
 
@@ -908,12 +919,15 @@ public partial class PostgreSqlDeparser
             return (node switch
             {
                 PgDataInsertActionNode pgDataInsertAction => Visit(pgDataInsertAction),
+                PgDataUpdateActionNode pgDataUpdateAction => Visit(pgDataUpdateAction),
+                QsiDataDeleteActionNode qsiDataDeleteAction => Visit(qsiDataDeleteAction),
+                PgVariableSetActionNode pgVariableSetAction => Visit(pgVariableSetAction),
+                QsiChangeSearchPathActionNode qsiChangeSearchPathAction => Visit(qsiChangeSearchPathAction),
+
+                QsiLiteralExpressionNode qsiLiteralExpression => Visit(qsiLiteralExpression),
                 PgCommonTableNode pgCommonTable => Visit(pgCommonTable),
                 PgAliasedTableNode pgAliasedTable => Visit(pgAliasedTable),
                 QsiDerivedTableNode qsiDerivedTable => Visit(qsiDerivedTable),
-                PgDataUpdateActionNode pgDataUpdateAction => Visit(pgDataUpdateAction),
-                QsiDataDeleteActionNode qsiDataDeleteAction => Visit(qsiDataDeleteAction),
-                QsiLiteralExpressionNode qsiLiteralExpression => Visit(qsiLiteralExpression),
                 PgTableDefinitionNode pgTableDefinition => Visit(pgTableDefinition),
                 PgUnaryExpressionNode pgUnaryExpression => Visit(pgUnaryExpression),
                 PgBinaryExpressionNode qsiBinaryExpression => Visit(qsiBinaryExpression),
@@ -940,7 +954,6 @@ public partial class PostgreSqlDeparser
                 QsiRowValueExpressionNode qsiRowValueExpression => Visit(qsiRowValueExpression),
                 QsiColumnExpressionNode qsiColumnExpression => Visit(qsiColumnExpression),
                 QsiTableExpressionNode qsiTableExpression => Visit(qsiTableExpression),
-                QsiChangeSearchPathActionNode qsiChangeSearchPathAction => Visit(qsiChangeSearchPathAction),
                 PgTableReferenceNode pgTableReference => Visit(pgTableReference),
                 PgViewDefinitionNode pgViewDefinition => Visit(pgViewDefinition),
                 QsiColumnReferenceNode qsiColumnReference => Visit(qsiColumnReference),

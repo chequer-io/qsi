@@ -51,6 +51,8 @@ internal static partial class PgNodeVisitor
             Relpersistence = node.Into.Rel.Relpersistence.ToRelpersistence(),
             AccessMethod = node.Into.AccessMethod,
             OnCommit = node.Into.OnCommit,
+            IsInherit = node.Into.Rel.Inh,
+            Identifier = CreateQualifiedIdentifier(node.Into.Rel)
         };
 
         if (node.Query is { } query)
@@ -74,16 +76,11 @@ internal static partial class PgNodeVisitor
                 {
                     case PgKnownVariable.SearchPath:
                     {
-                        // TODO: IsLocal not used, is it necessary? (feature/pg-official-parser)
                         return new QsiChangeSearchPathActionNode
                         {
-                            Identifiers = new[]
-                            {
-                                new QsiQualifiedIdentifier(
-                                    node.Args
-                                        .Select(x => new QsiIdentifier(x.AConst.Sval.Sval, false))
-                                )
-                            }
+                            Identifiers = node.Args.Select(x =>
+                                new QsiQualifiedIdentifier(new QsiIdentifier(x.AConst.Sval.Sval, false))
+                            ).ToArray()
                         };
                     }
                 }
@@ -92,7 +89,13 @@ internal static partial class PgNodeVisitor
             }
         }
 
-        throw TreeHelper.NotSupportedTree(node);
+        return new PgVariableSetActionNode
+        {
+            Name = new QsiIdentifier(node.Name, false),
+            Arguments = { node.Args.Select(VisitExpression) },
+            IsLocal = node.IsLocal,
+            Kind = node.Kind
+        };
     }
 
     private static PgViewDefinitionNode Visit(ViewStmt node)
