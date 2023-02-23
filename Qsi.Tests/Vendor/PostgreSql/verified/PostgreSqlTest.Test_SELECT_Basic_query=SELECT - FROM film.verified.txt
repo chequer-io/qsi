@@ -1,0 +1,213 @@
+﻿[
+  {
+    Type: Derived,
+    References: [
+      $tbl_28
+    ],
+    Columns: [
+      {
+        Parent: $tbl_27,
+        Name: film_id,
+        References: [
+          $col_2
+        ],
+        IsVisible: true,
+        RefId: $col_1
+      },
+      {
+        Parent: $tbl_27,
+        Name: title,
+        References: [
+          $col_4
+        ],
+        IsVisible: true,
+        RefId: $col_3
+      },
+      {
+        Parent: $tbl_27,
+        Name: description,
+        References: [
+          $col_6
+        ],
+        IsVisible: true,
+        RefId: $col_5
+      },
+      {
+        Parent: $tbl_27,
+        Name: release_year,
+        References: [
+          $col_8
+        ],
+        IsVisible: true,
+        RefId: $col_7
+      },
+      {
+        Parent: $tbl_27,
+        Name: language_id,
+        References: [
+          $col_10
+        ],
+        IsVisible: true,
+        RefId: $col_9
+      },
+      {
+        Parent: $tbl_27,
+        Name: rental_duration,
+        References: [
+          $col_12
+        ],
+        IsVisible: true,
+        RefId: $col_11
+      },
+      {
+        Parent: $tbl_27,
+        Name: rental_rate,
+        References: [
+          $col_14
+        ],
+        IsVisible: true,
+        RefId: $col_13
+      },
+      {
+        Parent: $tbl_27,
+        Name: length,
+        References: [
+          $col_16
+        ],
+        IsVisible: true,
+        RefId: $col_15
+      },
+      {
+        Parent: $tbl_27,
+        Name: replacement_cost,
+        References: [
+          $col_18
+        ],
+        IsVisible: true,
+        RefId: $col_17
+      },
+      {
+        Parent: $tbl_27,
+        Name: rating,
+        References: [
+          $col_20
+        ],
+        IsVisible: true,
+        RefId: $col_19
+      },
+      {
+        Parent: $tbl_27,
+        Name: last_update,
+        References: [
+          $col_22
+        ],
+        IsVisible: true,
+        RefId: $col_21
+      },
+      {
+        Parent: $tbl_27,
+        Name: special_features,
+        References: [
+          $col_24
+        ],
+        IsVisible: true,
+        RefId: $col_23
+      },
+      {
+        Parent: $tbl_27,
+        Name: fulltext,
+        References: [
+          $col_26
+        ],
+        IsVisible: true,
+        RefId: $col_25
+      }
+    ],
+    RefId: $tbl_27
+  },
+  {
+    Type: Table,
+    Identifier: dvdrental.public.film,
+    Columns: [
+      {
+        Parent: $tbl_28,
+        Name: film_id,
+        IsVisible: true,
+        RefId: $col_2
+      },
+      {
+        Parent: $tbl_28,
+        Name: title,
+        IsVisible: true,
+        RefId: $col_4
+      },
+      {
+        Parent: $tbl_28,
+        Name: description,
+        IsVisible: true,
+        RefId: $col_6
+      },
+      {
+        Parent: $tbl_28,
+        Name: release_year,
+        IsVisible: true,
+        RefId: $col_8
+      },
+      {
+        Parent: $tbl_28,
+        Name: language_id,
+        IsVisible: true,
+        RefId: $col_10
+      },
+      {
+        Parent: $tbl_28,
+        Name: rental_duration,
+        IsVisible: true,
+        RefId: $col_12
+      },
+      {
+        Parent: $tbl_28,
+        Name: rental_rate,
+        IsVisible: true,
+        RefId: $col_14
+      },
+      {
+        Parent: $tbl_28,
+        Name: length,
+        IsVisible: true,
+        RefId: $col_16
+      },
+      {
+        Parent: $tbl_28,
+        Name: replacement_cost,
+        IsVisible: true,
+        RefId: $col_18
+      },
+      {
+        Parent: $tbl_28,
+        Name: rating,
+        IsVisible: true,
+        RefId: $col_20
+      },
+      {
+        Parent: $tbl_28,
+        Name: last_update,
+        IsVisible: true,
+        RefId: $col_22
+      },
+      {
+        Parent: $tbl_28,
+        Name: special_features,
+        IsVisible: true,
+        RefId: $col_24
+      },
+      {
+        Parent: $tbl_28,
+        Name: fulltext,
+        IsVisible: true,
+        RefId: $col_26
+      }
+    ],
+    RefId: $tbl_28
+  }
+]

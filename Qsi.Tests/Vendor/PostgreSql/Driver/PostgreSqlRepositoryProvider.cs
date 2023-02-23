@@ -34,7 +34,7 @@ public class PostgreSqlRepositoryProvider : RepositoryProviderDriverBase
         if (!reader.Read())
             return null;
 
-        var schema = new QsiIdentifier(reader.GetString(0), false);
+        var schema = new QsiIdentifier(reader.GetValue(0) as string ?? "public", false);
 
         if (identifier.Level == 1)
             return new QsiQualifiedIdentifier(database, schema, identifier[0]);
