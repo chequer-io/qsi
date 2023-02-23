@@ -37,12 +37,12 @@ internal static partial class PgNodeVisitor
 
     private static QsiQualifiedIdentifier CreateQualifiedIdentifier(params string?[] names)
     {
-        return new QsiQualifiedIdentifier(names.Where(n => n is not null).Select(CreateIdentifier!));
+        return new QsiQualifiedIdentifier(names.Where(n => !string.IsNullOrWhiteSpace(n)).Select(CreateIdentifier!));
     }
 
     private static QsiQualifiedIdentifier CreateQualifiedIdentifier(IEnumerable<string?> names)
     {
-        return new QsiQualifiedIdentifier(names.Where(n => n is not null).Select(CreateIdentifier!));
+        return new QsiQualifiedIdentifier(names.Where(n => !string.IsNullOrWhiteSpace(n)).Select(CreateIdentifier!));
     }
 
     private static QsiQualifiedIdentifier CreateQualifiedIdentifier(params Node[] nodes)
@@ -53,13 +53,5 @@ internal static partial class PgNodeVisitor
     private static QsiQualifiedIdentifier CreateQualifiedIdentifier(IEnumerable<Node> nodes)
     {
         return new QsiQualifiedIdentifier(nodes.Select(n => new QsiIdentifier(n.String.Sval, false)));
-    }
-
-    private static QsiFunctionExpressionNode CreateFunction(IEnumerable<Node> nodes)
-    {
-        return new QsiFunctionExpressionNode
-        {
-            Identifier = CreateQualifiedIdentifier(nodes)
-        };
     }
 }

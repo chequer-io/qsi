@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
 using Npgsql;
 using Qsi.Data;
 using Qsi.Data.Object;
+using Qsi.Data.Object.Function;
 using Qsi.Engines;
 using Qsi.Utilities;
 
@@ -47,7 +49,7 @@ public class PostgreSqlRepositoryProvider : RepositoryProviderDriverBase
             .ToArray();
 
         var table = new QsiTableStructure();
-        
+
         var sql = @$"
 SELECT TABLE_CATALOG, TABLE_SCHEMA, TABLE_NAME, TABLE_TYPE
 from information_schema.TABLES
@@ -63,7 +65,7 @@ limit 1";
                 new QsiIdentifier(reader.GetString(0), false),
                 new QsiIdentifier(reader.GetString(1), false),
                 new QsiIdentifier(reader.GetString(2), false));
-            
+
             table.Type = reader.GetString(3).ToUpper() switch
             {
                 "BASE TABLE" => QsiTableType.Table,
@@ -78,7 +80,7 @@ select COLUMN_NAME
 from information_schema.COLUMNS
 where TABLE_CATALOG = '{names[0]}' and TABLE_SCHEMA = '{names[1]}' and TABLE_NAME = '{names[2]}'
 order by ORDINAL_POSITION";
-        
+
         using (var reader = GetDataReaderCoreAsync(new QsiScript(sql, default), null, default).Result)
         {
             while (reader.Read())
@@ -99,7 +101,7 @@ FROM pg_catalog.pg_class
 WHERE relname = '{identifier[^1]}'";
 
         string oid;
-        
+
         using (var oidReader = GetDataReaderCoreAsync(new QsiScript(oidSql, default), null, default).Result)
         {
             if (!oidReader.Read())
@@ -107,7 +109,7 @@ WHERE relname = '{identifier[^1]}'";
 
             oid = oidReader.GetString(0);
         }
-        
+
         var viewSql = $@"SELECT pg_catalog.pg_get_viewdef({oid})";
 
         using var reader = GetDataReaderCoreAsync(new QsiScript(viewSql, QsiScriptType.Show), null, default).Result;
@@ -118,7 +120,7 @@ WHERE relname = '{identifier[^1]}'";
         var selectSql = reader.GetString(0).TrimEnd(';');
 
         Console.WriteLine(selectSql);
-        
+
         var createSql = $@"CREATE VIEW {identifier} AS ({selectSql})";
 
         return new QsiScript(createSql, QsiScriptType.Create);
@@ -131,7 +133,32 @@ WHERE relname = '{identifier[^1]}'";
 
     protected override QsiObject LookupObject(QsiQualifiedIdentifier identifier, QsiObjectType type)
     {
-        throw new System.NotImplementedException();
+        return type switch
+        {
+            QsiObjectType.Function => LookupFunction(identifier),
+            _ => null
+        };
+    }
+
+    protected QsiObject LookupFunction(QsiQualifiedIdentifier identifier)
+    {
+        try
+        {
+            IEnumerable<string> funcName = identifier.Select(i => i.Value).Select(s => @$"""{s}""");
+            var funcDef = $@"SELECT pg_catalog.pg_get_functiondef('{string.Join(".", funcName)}'::regproc::oid)";
+
+            using var reader = GetDataReaderCoreAsync(new QsiScript(funcDef, QsiScriptType.Show), null, default).Result;
+
+            if (!reader.Read())
+                return null;
+
+            var definition = reader.GetString(0).TrimEnd(';');
+            return new QsiFunctionObject(identifier, definition);
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     protected override void AddParameterValue(DbCommand command, QsiParameter parameter)

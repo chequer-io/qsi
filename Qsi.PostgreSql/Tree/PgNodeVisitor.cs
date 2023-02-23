@@ -48,6 +48,7 @@ internal static partial class PgNodeVisitor
             SelectStmt select => Visit(select),
             CreateStmt create => Visit(create),
             CreateTableAsStmt createTableAs => Visit(createTableAs),
+            CreateFunctionStmt createFunction => Visit(createFunction),
             VariableSetStmt variableSetStmt => Visit(variableSetStmt),
             ViewStmt viewStmt => Visit(viewStmt),
             _ => throw TreeHelper.NotSupportedTree(node)

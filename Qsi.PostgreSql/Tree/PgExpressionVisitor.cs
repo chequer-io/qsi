@@ -282,7 +282,13 @@ internal static partial class PgNodeVisitor
     {
         return new PgInvokeExpressionNode
         {
-            Member = { Value = CreateFunction(node.Funcname) },
+            Member =
+            {
+                Value = new QsiFunctionExpressionNode
+                {
+                    Identifier = CreateQualifiedIdentifier(node.Funcname)
+                }
+            },
             FunctionFormat = node.Funcformat,
             Parameters = { node.Args.Select(VisitExpression) },
             AggregateStar = node.AggStar,
@@ -409,12 +415,6 @@ internal static partial class PgNodeVisitor
             Kind = node.Kind,
             Expressions = { node.Content.Select(VisitExpression) }
         };
-    }
-
-    // TODO: not implemented yet (feature/pg-official-parser)
-    public static QsiTreeNode Visit(RangeFunction node)
-    {
-        throw TreeHelper.NotSupportedFeature("RangeFunction");
     }
 
     public static PgDefinitionElementNode Visit(DefElem node)

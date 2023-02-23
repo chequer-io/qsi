@@ -1,6 +1,7 @@
 ﻿using System;
 using Qsi.Data;
 using Qsi.Data.Object;
+using Qsi.Data.Object.Function;
 using Qsi.Engines;
 using Qsi.Utilities;
 
@@ -292,6 +293,32 @@ namespace Qsi.Debugger.Vendor.PostgreSql
 
         protected override QsiObject LookupObject(QsiQualifiedIdentifier identifier, QsiObjectType type)
         {
+            var name = IdentifierUtility.Unescape(identifier[^1].Value);
+
+            switch (name)
+            {
+                case "pg_get_keywords" when type is QsiObjectType.Function:
+                {
+                    return new QsiFunctionObject(
+                        new QsiQualifiedIdentifier(
+                            new QsiIdentifier("pg_catalog", false),
+                            new QsiIdentifier("pg_get_keywords", false)
+                        ),
+                        @"CREATE OR REPLACE FUNCTION pg_catalog.pg_get_keywords
+                            (
+                                OUT word text,
+                                OUT catcode ""char"",
+                                OUT barelabel boolean,
+                                OUT catdesc text,
+                                OUT baredesc text
+                            )
+                            RETURNS SETOF record
+                            LANGUAGE internal
+                            STABLE PARALLEL SAFE STRICT COST 10 ROWS 500
+                            AS $function$pg_get_keywords$function$");
+                }
+            }
+
             return null;
         }
 

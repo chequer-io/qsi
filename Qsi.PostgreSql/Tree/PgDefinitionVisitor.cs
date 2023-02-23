@@ -116,4 +116,15 @@ internal static partial class PgNodeVisitor
 
         return def;
     }
+
+    public static PgFunctionDefinitionNode Visit(CreateFunctionStmt node)
+    {
+        return new PgFunctionDefinitionNode(CreateQualifiedIdentifier(node.Funcname))
+        {
+            Replace = node.Replace,
+            IsProcedure = node.IsProcedure,
+            ReturnType = { Value = Visit(node.ReturnType) }
+            // TODO: impl another properties
+        };
+    }
 }

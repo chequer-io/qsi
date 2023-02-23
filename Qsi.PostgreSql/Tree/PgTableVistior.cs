@@ -286,6 +286,35 @@ internal static partial class PgNodeVisitor
         };
     }
 
+    public static QsiTableNode Visit(RangeFunction node)
+    {
+        var routineTable = new PgRoutineTableNode
+        {
+            Ordinality = node.Ordinality,
+            Lateral = node.Lateral,
+            IsRowsfrom = node.IsRowsfrom
+        };
+
+        foreach (var func in node.Functions.Select(f => f.List))
+        {
+            var item = func.Items[0];
+            var alias = func.Items[1];
+
+            IQsiInvokeExpressionNode invokeExpr = item switch
+            {
+                _ when item.FuncCall is { } funcCall => Visit(funcCall),
+                _ when item.SqlvalueFunction is { } sqlValueFunc => Visit(sqlValueFunc),
+                _ => throw CreateInternalException($"RangeFunction function target not supported: {item.NodeCase}")
+            };
+
+            // TODO: Alias - ex: ... AS (column1 VARCHAR, column2 INT)
+
+            routineTable.Sources.Add(new PgTableFunctionNode(invokeExpr));
+        }
+
+        return routineTable.WithAlias(node.Alias);
+    }
+
     // UPDATE table SET (c1, c2) = (SELECT c1, c2 FROM table2 WHERE table2.c1 = table.c1)
     //                             ------------------------------------------------------
     public static PgSubLinkExpressionNode Visit(MultiAssignRef node)
