@@ -134,7 +134,7 @@ public partial class PostgreSqlTest : VendorTestBase
     [Timeout(10000)]
     [TestCaseSource(nameof(_pgTestCaseDatas))]
     [TestCaseSource(nameof(_dataGripTestDatas))]
-    public async Task Test_Syntax(string query)
+    public async Task Test_QsiEngine_Syntax(string query)
     {
         Console.WriteLine(query);
 
@@ -151,8 +151,10 @@ public partial class PostgreSqlTest : VendorTestBase
         Assert.Pass();
     }
 
-    [TestCaseSource(nameof(RuntimeTestDatas))]
-    public async Task Test_Runtime(string query)
+    [TestCaseSource(nameof(PostgresSpecificTestDatas))]
+    [TestCaseSource(nameof(LiteralTestDatas))]
+    [TestCaseSource(nameof(FunctionTestDatas))]
+    public async Task Test_QsiEngine(string query)
     {
         Console.WriteLine(query);
 
@@ -191,21 +193,6 @@ public partial class PostgreSqlTest : VendorTestBase
         Assert.IsInstanceOf<QsiTableResult>(results[0]);
 
         return ((QsiTableResult)results[0]).Table.Columns
-            .Select(c => c.Name?.ToString())
-            .ToArray();
-    }
-
-    [TestCaseSource(nameof(FunctionTestDatas))]
-    public async Task<string[]> Test_Table_Function(string query, string[] expectedColumns)
-    {
-        IQsiAnalysisResult[] results = await Engine.Execute(new QsiScript(query, QsiScriptType.Select), null);
-        
-        CollectionAssert.IsNotEmpty(results);
-        Assert.AreEqual(1, results.Length);
-
-        var tableResult = results[0] as QsiTableResult;
-
-        return tableResult.Table.Columns
             .Select(c => c.Name?.ToString())
             .ToArray();
     }

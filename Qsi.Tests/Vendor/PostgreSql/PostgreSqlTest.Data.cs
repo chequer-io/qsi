@@ -16,15 +16,12 @@ public partial class PostgreSqlTest
 
         new("SELECT * FROM actor a"),
         new("SELECT a.* FROM actor a"),
-        
-        new("SELECT a FROM actor a"),
-        
+
         new("SELECT actor_id(a) FROM actor a"),
-        
+
         new("SELECT count(a) FROM actor a"),
         new("SELECT count(a.*) FROM actor a"),
         new("SELECT count(*) FROM actor a"),
-        new("SELECT a.count FROM actor a"),
 
         new("TABLE actor"),
         new("TABLE city"),
@@ -38,10 +35,10 @@ public partial class PostgreSqlTest
         new("SELECT * FROM actor a NATURAL JOIN actor_info i WHERE length(i.film_info) < 345;"),
 
         new("SELECT * FROM actor a, LATERAL (SELECT * FROM city WHERE city.id = a.actor_id) abc"),
-        
+
         new("SELECT * FROM actor a ORDER BY a.*"),
         new("SELECT country_id, max(last_update), count(*) FROM city GROUP BY country_id ORDER BY 3 DESC;"),
-        
+
         new("SELECT * FROM film_list UNION SELECT * FROM nicer_but_slower_film_list"),
         new("(SELECT 1) UNION (SELECT 2)"),
 
@@ -60,10 +57,6 @@ public partial class PostgreSqlTest
         new("SELECT * FROM (VALUES (1, 1), (2, 2), (3, 3)) AS tbl;"),
 
         new("WITH RECURSIVE CTE AS (SELECT 1 N UNION ALL SELECT N + 1 FROM CTE WHERE N < 10) SELECT * FROM CTE"),
-        
-        // This works after PG 14.
-        new("SELECT rating, rental_duration, avg(rental_rate) FROM film GROUP BY DISTINCT ROLLUP (rating, rental_duration), ROLLUP ((rating));"),
-        new("SELECT release_year, rental_duration, GROUPING(release_year, rental_duration), avg(rental_rate) FROM film GROUP BY ROLLUP(release_year, rental_duration);"),
     };
 
     private static readonly TestCaseData[] FunctionTestDatas =
@@ -94,10 +87,10 @@ public partial class PostgreSqlTest
         new("SELECT * FROM ROWS FROM ( current_catalog, current_user, pg_get_keywords() )") { ExpectedResult = new[] { "current_catalog", "current_user", "word", "catcode", "catdesc" } },
         new("SELECT current_database.* FROM ROWS FROM ( current_database(), current_user )") { ExpectedResult = new[] { "current_database, current_user" } },
 
-        new("SELECT * FROM unnest(ARRAY [1, 2, 3], ARRAY [4, 5])"),
-        new("SELECT * FROM unnest(ARRAY[(SELECT actor_id FROM actor LIMIT 1),2], ARRAY['foo','bar','baz']);"),
-        
-        new("SELECT (pg_get_keywords()).*"),
+        new("SELECT * FROM unnest(ARRAY [1, 2, 3], ARRAY [4, 5])") { ExpectedResult = new[] { "unnest.unnest", "unnest.unnest" } },
+        new("SELECT * FROM unnest(ARRAY[(SELECT actor_id FROM actor LIMIT 1),2], ARRAY['foo','bar','baz']);") { ExpectedResult = new[] { "unnest.unnest", "unnest.unnest" } },
+
+        new("SELECT (pg_get_keywords()).*") { ExpectedResult = new[] { "word", "catcode", "catdesc" } },
     };
 
     /// <summary>
@@ -151,7 +144,16 @@ public partial class PostgreSqlTest
         // new("SELECT (SELECT actor_id from actor limit 1) from actor_info; -- This works") { ExpectedResult = new [] { "actor_id" } },
     };
 
-    private static readonly TestCaseData[] RuntimeTestDatas =
+    private static readonly TestCaseData[] PostgresSpecificTestDatas =
+    {
+        new("SELECT a FROM actor a"),
+        new("SELECT a.count FROM actor a"),
+
+        new("SELECT release_year, rental_duration, GROUPING(release_year, rental_duration), avg(rental_rate) FROM film GROUP BY ROLLUP(release_year, rental_duration);"),
+        new("SELECT rating, rental_duration, avg(rental_rate) FROM film GROUP BY DISTINCT ROLLUP (rating, rental_duration), ROLLUP ((rating));"),
+    };
+
+    private static readonly TestCaseData[] LiteralTestDatas =
     {
         // Numeric
         new("SELECT 1, .2, 0.3, 0.4E+5;"),
@@ -207,9 +209,9 @@ public partial class PostgreSqlTest
         new("SELECT 'now'::timestamp - '2023-02-15 03:38:24.074721'::timestamp;"),
         new("SELECT '0 years 0 mons 0 days 3 hours 48 mins 38.617811 secs'::interval;"),
         new("SELECT pg_typeof(now() at time zone 'zulu');"),
-        
+
         new("SELECT now()::timestamptz;"),
-        
+
         // SQL String Operators
         new("SELECT 'FOO' || 'BAR';"),
         new("SELECT 'FOO' || 123::money;"),
@@ -219,10 +221,10 @@ public partial class PostgreSqlTest
         new("SELECT 'thomas' ~* 'T.*ma';"),
         new("SELECT 'thomas' !~ 't.*max';"),
         new("SELECT 'thomas' !~* 'T.*ma';"),
-        
+
         // SQL String Predicates
         new("SELECT U&'\0061\0308bc' IS NFD NORMALIZED;"),
-        
+
         // SQL String Functions
         new("SELECT overlay('foo bar' PLACING 'baz' FROM 1);"),
         new("SELECT overlay('foo_bar' PLACING 'baz' FROM 3 FOR 0 );"),
@@ -244,7 +246,7 @@ public partial class PostgreSqlTest
         new("SELECT yeet as result FROM regexp_matches('foobarbequebaz', 'ba.', 'g') as yeet;"),
         new("SELECT regexp_split_to_table('hello world', '\\s+') || ' wut';"),
         new("SELECT string_to_table('xx~^~yy~^~zz', '~^~', 'yy') as nice;"),
-        
+
         // SQL Binary Functions
         new("SELECT overlay(B'01010101010101010' placing B'11111' from 2 for 3);"),
         new("SELECT position(B'010' in B'000001101011');"),
@@ -255,7 +257,7 @@ public partial class PostgreSqlTest
         new("SELECT cast(-44 as bit(12));"),
 
         new("SELECT '1110'::bit(4)::integer;"),
-        
+
         // SQL Datetime Functions
         new("SELECT to_char(timestamp '2002-04-20 17:31:12.66', 'HH12:MI:SS');"),
         new("SELECT extract(hour from timestamp '2001-02-16 20:38:40');"),
@@ -270,7 +272,7 @@ public partial class PostgreSqlTest
         new("SELECT timestamp '2001-02-16 20:38:40' at time zone 'America/Denver';"),
         new("SELECT timestamp with time zone '2001-02-16 20:38:40-05' at time zone 'America/Denver';"),
         new("SELECT time with time zone '05:34:17-05' at time zone 'UTC';"),
-        
+
         // Geometric Operators
         new("SELECT path '((0,0),(1,0),(1,1))' * point '(3.0,0)';"),
         new("SELECT path '((0,0),(1,0),(1,1))' * point(cosd(45), sind(45));"),
@@ -299,14 +301,14 @@ public partial class PostgreSqlTest
         new("SELECT lseg '[(0,0),(0,1)]' ?-| lseg '[(0,0),(1,0)]';"),
         new("SELECT lseg '[(-1,0),(1,0)]' ?|| lseg '[(-1,2),(1,2)]';"),
         new("SELECT polygon '((0,0),(1,1))' ~= polygon '((1,1),(0,0))';"),
-        
+
         // Network Addresss Operators
         new("SELECT inet '192.168.1.5' << inet '192.168.1/24';"),
         new("SELECT inet '192.168.1/24' <<= inet '192.168.1/24';"),
         new("SELECT inet '192.168.1/24' >> inet '192.168.1.5';"),
         new("SELECT inet '192.168.1/24' >>= inet '192.168.1/24';"),
         new("SELECT trunc(macaddr8 '12:34:56:78:90:ab:cd:ef');"),
-        
+
         // Text Search Functions
         new("SELECT ts_delete('fat:2,4 cat:3 rat:5A'::tsvector, ARRAY['fat','rat']);"),
         new("SELECT ts_filter('fat:2,4 cat:3b,7c rat:5A'::tsvector, '{a,b}');"),
@@ -314,7 +316,7 @@ public partial class PostgreSqlTest
         new("SELECT * FROM unnest('cat:3 fat:2,4 rat:5A'::tsvector);"),
         new("SELECT ts_token_type('default');"),
         new("SELECT ts_stat('SELECT fulltext FROM film');"),
-        
+
         new("SELECT xmlelement(name foo, xmlattributes('xyz' as bar));"),
         new("SELECT xmlelement(name foo, xmlattributes(current_date as bar), 'cont', 'ent');"),
 
@@ -335,7 +337,7 @@ public partial class PostgreSqlTest
         new("SELECT xpath('/my:a/text()', '<my:a xmlns:my=\"http://example.com\">test</my:a>', ARRAY[ARRAY['my', 'http://example.com']]);"),
 
         new("WITH xmldata(data) AS (VALUES ('<example xmlns=\"http://example.com/myns\" xmlns:B=\"http://example.com/b\"> <item foo=\"1\" B:bar=\"2\"/> <item foo=\"3\" B:bar=\"4\"/> <item foo=\"4\" B:bar=\"5\"/> </example>'::xml)) SELECT xmltable.* FROM XMLTABLE(XMLNAMESPACES('http://example.com/myns' AS x, 'http://example.com/b' AS \"B\"), '/x:example/x:item' PASSING (SELECT data FROM xmldata) COLUMNS foo int PATH '@foo', bar int PATH '@B:bar');"),
-        
+
         // JSON Operators
         new("SELECT '[{\"a\":\"foo\"},{\"b\":\"bar\"},{\"c\":\"baz\"}]'::json -> 2;"),
         new("SELECT '{\"a\": {\"b\":\"foo\"}}'::json -> 'a';"),
@@ -343,7 +345,7 @@ public partial class PostgreSqlTest
         new("SELECT '{\"a\":1,\"b\":2}'::json ->> 'b';"),
         new("SELECT '{\"a\": {\"b\": [\"foo\",\"bar\"]}}'::json #> '{a,b,1}';"),
         new("SELECT '{\"a\": {\"b\": [\"foo\",\"bar\"]}}'::json #>> '{a,b,1}';"),
-        
+
         // jsonb Operators
         new("SELECT '{\"a\":1, \"b\":2}'::jsonb @> '{\"b\":2}'::jsonb;"),
         new("SELECT '{\"b\":2}'::jsonb <@ '{\"a\":1, \"b\":2}'::jsonb;"),
@@ -357,7 +359,7 @@ public partial class PostgreSqlTest
         new("SELECT '[\"a\", {\"b\":1}]'::jsonb #- '{1,b}';"),
         new("SELECT '{\"a\":[1,2,3,4,5]}'::jsonb @? '$.a[*] ? (@ > 2)';"),
         new("SELECT '{\"a\":[1,2,3,4,5]}'::jsonb @@ '$.a[*] > 2';"),
-        
+
         // JSON Functions
         new("SELECT * FROM json_array_elements('[1,true, [2,false]]');"),
         new("SELECT json_each('{\"a\":\"foo\", \"b\":\"bar\"}');"),
@@ -369,27 +371,27 @@ public partial class PostgreSqlTest
         new("SELECT jsonb_path_exists('{\"a\":[1,2,3,4,5]}', '$.a[*] ? (@ >= $min && @ <= $max)', '{\"min\":2, \"max\":4}');"),
         new("SELECT * FROM jsonb_path_query('{\"a\":[1,2,3,4,5]}', '$.a[*] ? (@ >= $min && @ <= $max)', '{\"min\":2, \"max\":4}');"),
         new("SELECT jsonb_path_exists_tz('[\"2015-08-01 12:00:00-05\"]', '$[*] ? (@.datetime() < \"2015-08-02\".datetime())');"),
-        
+
         // JSON Path Functions
         new("SELECT jsonb_path_query('[\"2015-8-1\", \"2015-08-12\"]', '$[*] ? (@.datetime() < \"2015-08-2\".datetime())') ;"),
         new("SELECT jsonb_path_query_array('{\"x\": \"20\", \"y\": 32}', '$.keyvalue()');"),
         new("SELECT jsonb_path_query_array('[\"abc\", \"abd\", \"aBdC\", \"abdacb\", \"babc\"]', '$[*] ? (@ like_regex \"^ab.*c\" flag \"i\")');"),
         new("SELECT jsonb_path_query('{\"x\": [1, 2], \"y\": [2, 4]}', 'strict $.* ? (exists (@ ? (@[*] > 2)))');"),
-        
+
         // Sequence Manipulation Functions
         new("SELECT lastval();"),
-        
+
         // Conditional Expressions
         new("SELECT actor_id, CASE actor_id % 3 WHEN 0 THEN 'three' WHEN 1 THEN 'one' ELSE 'two' END FROM actor;"),
-        
+
         // Array Operators & Functions
         new("SELECT ARRAY[1,4,3] @> ARRAY[3,1,3];"),
         new("SELECT ARRAY[2,2,7] <@ ARRAY[1,7,4,2,6];"),
         new("SELECT ARRAY[1,4,3] && ARRAY[2,1];"),
-        
+
         // Range and Multirange Operators
         new("SELECT '{[1.1,2.2)}'::nummultirange -|- '{[2.2,3.3)}'::nummultirange;"),
-        
+
         // Subscripts
         new("SELECT special_features[1] FROM film;"),
         new("SELECT special_features[:2] FROM film;"),
