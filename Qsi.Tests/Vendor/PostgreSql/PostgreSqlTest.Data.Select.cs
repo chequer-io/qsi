@@ -164,6 +164,11 @@ public partial class PostgreSqlTest
         new("SELECT 'Test';"),
         new("SELECT '❤️'; -- In PG, this just works"),
 
+        // Unicode Escape
+        new("SELECT U&'d\\0061t\\+000061'"),
+        new("SELECT U&'\\0441\\043B\\043E\\043D''"),
+        new("SELECT U&'d!0061t!+000061' UESCAPE '!'"),
+        
         // C-stype Escape
         new("SELECT E'Hello,\tWorld!';"),
         new("SELECT E'\x12\x34\x56\x78';"),
@@ -223,7 +228,7 @@ public partial class PostgreSqlTest
         new("SELECT 'thomas' !~* 'T.*ma';"),
 
         // SQL String Predicates
-        new("SELECT U&'\0061\0308bc' IS NFD NORMALIZED;"),
+        new("SELECT U&'\\0061\\0308bc' IS NFD NORMALIZED;"),
 
         // SQL String Functions
         new("SELECT overlay('foo bar' PLACING 'baz' FROM 1);"),
