@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,6 +12,7 @@ using Qsi.Services;
 using Qsi.Tests.Models;
 using Qsi.Tests.PostgreSql.Driver;
 using Qsi.Tests.Utilities;
+using Qsi.Tests.Vendor.PostgreSql.Utilities;
 using VerifyNUnit;
 
 namespace Qsi.Tests.PostgreSql;
@@ -31,7 +31,7 @@ public partial class PostgreSqlTest : VendorTestBase
     {
         // Setup database first.
         SetupDatabase(connectionString);
-        
+
         var connection = new NpgsqlConnection(connectionString);
         var wrapper = new NpgsqlConnectionWrapper(connection);
 
@@ -55,7 +55,7 @@ public partial class PostgreSqlTest : VendorTestBase
         };
 
         builder.Password ??= "querypie1!";
-        
+
         var connectionString = builder.ToString();
 
         return new NpgsqlConnection(connectionString);
@@ -68,14 +68,14 @@ public partial class PostgreSqlTest : VendorTestBase
         var npgsqlConnection = wrapper._connection;
 
         PrepareQuery(npgsqlConnection, $"{_baseResourcePath}.restore.sql");
-        
+
         // Data
         PrepareData(npgsqlConnection);
-        
+
         // After copy
         PrepareQuery(npgsqlConnection, $"{_baseResourcePath}.after-copy.sql");
     }
-    
+
     private static void PrepareQuery(NpgsqlConnection connection, string resourcepath)
     {
         var query = ResourceUtility.GetResourceContent(resourcepath);
@@ -87,32 +87,32 @@ public partial class PostgreSqlTest : VendorTestBase
     private void PrepareData(NpgsqlConnection connection)
     {
         var query = ResourceUtility.GetResourceContent($"{_baseResourcePath}.copy.sql");
-        
+
         IEnumerable<string> copyStatements = query.Split('\n')
             .Where(stmt => stmt.Contains("COPY"));
 
         IEnumerator<string> statementEnumerator = copyStatements.GetEnumerator();
-        
+
         while (true)
         {
             if (!statementEnumerator.MoveNext())
                 break;
-            
+
             var copyCommand = statementEnumerator.Current;
 
             if (!statementEnumerator.MoveNext())
                 throw new Exception("COPY statement count must be even.");
 
             var copyTarget = statementEnumerator.Current;
-            
+
             var target = copyTarget
                 .Split("FROM")
-                .Last()                             // " '~/Downloads/dvdrental/3065.dat';"
-                .Trim()                             // "'~/Downloads/dvdrental/3065.dat';"
-                .TrimEnd(';')                       // "'~/Downloads/dvdrental/3065.dat'"
-                .Trim('\'')                         // "~/Downloads/dvdrental/3065.dat"
-                .Split('/')                 // [ ~, Downloads, dvdrental, 3065.dat ]  
-                .Last();                            // "3065.dat"
+                .Last() // " '~/Downloads/dvdrental/3065.dat';"
+                .Trim() // "'~/Downloads/dvdrental/3065.dat';"
+                .TrimEnd(';') // "'~/Downloads/dvdrental/3065.dat'"
+                .Trim('\'') // "~/Downloads/dvdrental/3065.dat"
+                .Split('/') // [ ~, Downloads, dvdrental, 3065.dat ]  
+                .Last(); // "3065.dat"
 
             Copy(connection, copyCommand, $"{_baseResourcePath}.{target}");
         }
@@ -154,6 +154,7 @@ public partial class PostgreSqlTest : VendorTestBase
     [TestCaseSource(nameof(PostgresSpecificTestDatas))]
     [TestCaseSource(nameof(LiteralTestDatas))]
     [TestCaseSource(nameof(FunctionTestDatas))]
+    [TestCaseSource(nameof(SystemColumnTestDatas))]
     public async Task Test_QsiEngine(string query)
     {
         Console.WriteLine(query);
@@ -176,18 +177,12 @@ public partial class PostgreSqlTest : VendorTestBase
         await Verifier.Verify(views).UseDirectory("verified");
     }
 
-    [TestCaseSource(nameof(SystemColumnTestDatas))]
-    public async Task Test_SELECT_System_Column(string query)
-    {
-        
-    }
-
     [TestCaseSource(nameof(ColumnNameSelectTestDatas))]
     [TestCaseSource(nameof(SystemTableFunctionTestDatas))]
     public async Task<string[]> Test_SELECT_Column_Name(string query)
     {
         IQsiAnalysisResult[] results = await Engine.Execute(new QsiScript(query, QsiScriptType.Select), null);
-        
+
         CollectionAssert.IsNotEmpty(results);
         Assert.AreEqual(1, results.Length);
         Assert.IsInstanceOf<QsiTableResult>(results[0]);
@@ -197,55 +192,17 @@ public partial class PostgreSqlTest : VendorTestBase
             .ToArray();
     }
 
-    protected class NpgsqlConnectionWrapper : DbConnection
+    [TestCaseSource(nameof(InsertTestDatas))]
+    [TestCaseSource(nameof(UpdateTestDatas))]
+    public async Task Test_DML(string query, string[] expectedQueries, int expectedResultCount)
     {
-        internal readonly NpgsqlConnection _connection;
+        var script = new QsiScript(query, QsiScriptType.Select);
 
-        public NpgsqlConnectionWrapper(NpgsqlConnection connection)
-        {
-            _connection = connection;
-        }
+        IQsiAnalysisResult[] results = await Engine.Execute(script, null);
 
-        protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel)
-        {
-            return _connection.BeginTransaction(isolationLevel);
-        }
+        CollectionAssert.IsNotEmpty(results);
+        CollectionAssert.AreEqual(expectedQueries, ScriptHistories.Select(x => x.Script));
 
-        public override void ChangeDatabase(string databaseName)
-        {
-            _connection.ChangeDatabase(databaseName);
-        }
-
-        public override void Close()
-        {
-            _connection.Close();
-        }
-
-        public override void Open()
-        {
-            _connection.Open();
-        }
-
-        public override string ConnectionString
-        {
-            get => _connection.ConnectionString;
-            set => _connection.ConnectionString = value;
-        }
-
-        public override string Database => _connection.Database;
-
-        public override ConnectionState State => _connection.State;
-
-        public override string DataSource => _connection.DataSource;
-
-        public override string ServerVersion => _connection.ServerVersion;
-
-        protected override DbCommand CreateDbCommand()
-        {
-            var command = _connection.CreateCommand();
-            command.AllResultTypesAreUnknown = true;
-
-            return command;
-        }
+        Assert.AreEqual(results.Length, expectedResultCount);
     }
 }
