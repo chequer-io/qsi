@@ -49,8 +49,26 @@ public partial class PostgreSqlTest
         new("WITH cte AS (SELECT * FROM actor) UPDATE actor SET actor_id = cte.actor_id FROM cte WHERE false", new[] { "SELECT * FROM actor" }, 1),
         
         // FROM Clause
-        new("UPDATE actor SET actor_id = city_id FROM city WHERE false", new[] { "SELECT * FROM actor WHERE false, SELECT * FROM city" }, 2),
-        new("UPDATE actor SET actor_id = c.city_id FROM city c WHERE false", new[] { "SELECT * FROM actor WHERE false" }, 2),
-        new("UPDATE actor SET actor_id = c.city_id FROM city c WHERE c.city_id = 2 AND false", new[] { "SELECT * FROM actor WHERE false" }, 2),
+        new("UPDATE actor SET actor_id = city_id FROM city WHERE false", new[] { "SELECT * FROM actor WHERE false, SELECT * FROM city" }, 1),
+        new("UPDATE actor SET actor_id = c.city_id FROM city c WHERE false", new[] { "SELECT * FROM actor WHERE false" }, 1),
+        new("UPDATE actor SET actor_id = c.city_id FROM city c WHERE c.city_id = 2 AND false", new[] { "SELECT * FROM actor WHERE false" }, 1),
+    };
+
+    private static readonly TestCaseData[] DeleteTestDatas =
+    {
+        new("DELETE FROM actor", new[] { "SELECT * FROM actor" }, 1),
+        new("DELETE FROM ONLY actor* AS a", new[] { "SELECT * FROM actor*" }, 1),
+        new("DELETE FROM actor AS a WHERE actor_id = 1", new[] { "SELECT * FROM actor" }, 1),
+
+        // WITH Clause
+        new("WITH cte AS (SELECT * FROM city) DELETE FROM actor WHERE actor_id = city_id", new [] { "SELECT * FROM actor", "SELECT * FROM city" }, 1),
+        
+        // FROM Clause
+        new("DELETE FROM actor AS a USING city WHERE actor_id = city_id", new[] { "SELECT * FROM actor", "SELECT * FROM city" }, 1),
+    };
+
+    private static readonly TestCaseData[] NotSupportedDmlTestDatas =
+    {
+        // DML with Returning Clause
     };
 }
