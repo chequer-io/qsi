@@ -1,0 +1,364 @@
+﻿[
+  {
+    Type: Derived,
+    References: [
+      $tbl_38
+    ],
+    Columns: [
+      {
+        Parent: $tbl_37,
+        Name: actor_id,
+        References: [
+          $col_2
+        ],
+        IsVisible: true,
+        RefId: $col_1
+      },
+      {
+        Parent: $tbl_37,
+        Name: first_name,
+        References: [
+          $col_6
+        ],
+        IsVisible: true,
+        RefId: $col_5
+      },
+      {
+        Parent: $tbl_37,
+        Name: last_name,
+        References: [
+          $col_10
+        ],
+        IsVisible: true,
+        RefId: $col_9
+      },
+      {
+        Parent: $tbl_37,
+        Name: last_update,
+        References: [
+          $col_14
+        ],
+        IsVisible: true,
+        RefId: $col_13
+      },
+      {
+        Parent: $tbl_37,
+        Name: city_id,
+        References: [
+          $col_18
+        ],
+        IsVisible: true,
+        RefId: $col_17
+      },
+      {
+        Parent: $tbl_37,
+        Name: city,
+        References: [
+          $col_23
+        ],
+        IsVisible: true,
+        RefId: $col_22
+      },
+      {
+        Parent: $tbl_37,
+        Name: country_id,
+        References: [
+          $col_28
+        ],
+        IsVisible: true,
+        RefId: $col_27
+      },
+      {
+        Parent: $tbl_37,
+        Name: last_update,
+        References: [
+          $col_33
+        ],
+        IsVisible: true,
+        RefId: $col_32
+      }
+    ],
+    RefId: $tbl_37
+  },
+  {
+    Type: Join,
+    References: [
+      $tbl_39,
+      $tbl_41
+    ],
+    Columns: [
+      {
+        Parent: $tbl_38,
+        Name: actor_id,
+        References: [
+          $col_3
+        ],
+        IsVisible: true,
+        RefId: $col_2
+      },
+      {
+        Parent: $tbl_38,
+        Name: first_name,
+        References: [
+          $col_7
+        ],
+        IsVisible: true,
+        RefId: $col_6
+      },
+      {
+        Parent: $tbl_38,
+        Name: last_name,
+        References: [
+          $col_11
+        ],
+        IsVisible: true,
+        RefId: $col_10
+      },
+      {
+        Parent: $tbl_38,
+        Name: last_update,
+        References: [
+          $col_15
+        ],
+        IsVisible: true,
+        RefId: $col_14
+      },
+      {
+        Parent: $tbl_38,
+        Name: city_id,
+        References: [
+          $col_19
+        ],
+        IsVisible: true,
+        RefId: $col_18
+      },
+      {
+        Parent: $tbl_38,
+        Name: city,
+        References: [
+          $col_24
+        ],
+        IsVisible: true,
+        RefId: $col_23
+      },
+      {
+        Parent: $tbl_38,
+        Name: country_id,
+        References: [
+          $col_29
+        ],
+        IsVisible: true,
+        RefId: $col_28
+      },
+      {
+        Parent: $tbl_38,
+        Name: last_update,
+        References: [
+          $col_34
+        ],
+        IsVisible: true,
+        RefId: $col_33
+      }
+    ],
+    RefId: $tbl_38
+  },
+  {
+    Type: Derived,
+    Identifier: a,
+    References: [
+      $tbl_40
+    ],
+    Columns: [
+      {
+        Parent: $tbl_39,
+        Name: actor_id,
+        References: [
+          $col_4
+        ],
+        IsVisible: true,
+        RefId: $col_3
+      },
+      {
+        Parent: $tbl_39,
+        Name: first_name,
+        References: [
+          $col_8
+        ],
+        IsVisible: true,
+        RefId: $col_7
+      },
+      {
+        Parent: $tbl_39,
+        Name: last_name,
+        References: [
+          $col_12
+        ],
+        IsVisible: true,
+        RefId: $col_11
+      },
+      {
+        Parent: $tbl_39,
+        Name: last_update,
+        References: [
+          $col_16
+        ],
+        IsVisible: true,
+        RefId: $col_15
+      }
+    ],
+    RefId: $tbl_39
+  },
+  {
+    Type: Table,
+    Identifier: dvdrental.public.actor,
+    Columns: [
+      {
+        Parent: $tbl_40,
+        Name: actor_id,
+        IsVisible: true,
+        RefId: $col_4
+      },
+      {
+        Parent: $tbl_40,
+        Name: first_name,
+        IsVisible: true,
+        RefId: $col_8
+      },
+      {
+        Parent: $tbl_40,
+        Name: last_name,
+        IsVisible: true,
+        RefId: $col_12
+      },
+      {
+        Parent: $tbl_40,
+        Name: last_update,
+        IsVisible: true,
+        RefId: $col_16
+      }
+    ],
+    RefId: $tbl_40
+  },
+  {
+    Type: Derived,
+    Identifier: abc,
+    References: [
+      $tbl_42
+    ],
+    Columns: [
+      {
+        Parent: $tbl_41,
+        Name: city_id,
+        References: [
+          $col_20
+        ],
+        IsVisible: true,
+        RefId: $col_19
+      },
+      {
+        Parent: $tbl_41,
+        Name: city,
+        References: [
+          $col_25
+        ],
+        IsVisible: true,
+        RefId: $col_24
+      },
+      {
+        Parent: $tbl_41,
+        Name: country_id,
+        References: [
+          $col_30
+        ],
+        IsVisible: true,
+        RefId: $col_29
+      },
+      {
+        Parent: $tbl_41,
+        Name: last_update,
+        References: [
+          $col_35
+        ],
+        IsVisible: true,
+        RefId: $col_34
+      }
+    ],
+    RefId: $tbl_41
+  },
+  {
+    Type: Derived,
+    References: [
+      $tbl_43
+    ],
+    Columns: [
+      {
+        Parent: $tbl_42,
+        Name: city_id,
+        References: [
+          $col_21
+        ],
+        IsVisible: true,
+        RefId: $col_20
+      },
+      {
+        Parent: $tbl_42,
+        Name: city,
+        References: [
+          $col_26
+        ],
+        IsVisible: true,
+        RefId: $col_25
+      },
+      {
+        Parent: $tbl_42,
+        Name: country_id,
+        References: [
+          $col_31
+        ],
+        IsVisible: true,
+        RefId: $col_30
+      },
+      {
+        Parent: $tbl_42,
+        Name: last_update,
+        References: [
+          $col_36
+        ],
+        IsVisible: true,
+        RefId: $col_35
+      }
+    ],
+    RefId: $tbl_42
+  },
+  {
+    Type: Table,
+    Identifier: dvdrental.public.city,
+    Columns: [
+      {
+        Parent: $tbl_43,
+        Name: city_id,
+        IsVisible: true,
+        RefId: $col_21
+      },
+      {
+        Parent: $tbl_43,
+        Name: city,
+        IsVisible: true,
+        RefId: $col_26
+      },
+      {
+        Parent: $tbl_43,
+        Name: country_id,
+        IsVisible: true,
+        RefId: $col_31
+      },
+      {
+        Parent: $tbl_43,
+        Name: last_update,
+        IsVisible: true,
+        RefId: $col_36
+      }
+    ],
+    RefId: $tbl_43
+  }
+]

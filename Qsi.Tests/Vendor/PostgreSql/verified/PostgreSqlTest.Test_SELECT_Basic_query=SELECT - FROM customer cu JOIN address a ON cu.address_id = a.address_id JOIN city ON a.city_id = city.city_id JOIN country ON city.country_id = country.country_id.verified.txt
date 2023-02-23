@@ -1,0 +1,1211 @@
+﻿[
+  {
+    Type: Derived,
+    References: [
+      $tbl_135
+    ],
+    Columns: [
+      {
+        Parent: $tbl_134,
+        Name: customer_id,
+        References: [
+          $col_2
+        ],
+        IsVisible: true,
+        RefId: $col_1
+      },
+      {
+        Parent: $tbl_134,
+        Name: store_id,
+        References: [
+          $col_8
+        ],
+        IsVisible: true,
+        RefId: $col_7
+      },
+      {
+        Parent: $tbl_134,
+        Name: first_name,
+        References: [
+          $col_14
+        ],
+        IsVisible: true,
+        RefId: $col_13
+      },
+      {
+        Parent: $tbl_134,
+        Name: last_name,
+        References: [
+          $col_20
+        ],
+        IsVisible: true,
+        RefId: $col_19
+      },
+      {
+        Parent: $tbl_134,
+        Name: email,
+        References: [
+          $col_26
+        ],
+        IsVisible: true,
+        RefId: $col_25
+      },
+      {
+        Parent: $tbl_134,
+        Name: address_id,
+        References: [
+          $col_32
+        ],
+        IsVisible: true,
+        RefId: $col_31
+      },
+      {
+        Parent: $tbl_134,
+        Name: activebool,
+        References: [
+          $col_38
+        ],
+        IsVisible: true,
+        RefId: $col_37
+      },
+      {
+        Parent: $tbl_134,
+        Name: create_date,
+        References: [
+          $col_44
+        ],
+        IsVisible: true,
+        RefId: $col_43
+      },
+      {
+        Parent: $tbl_134,
+        Name: last_update,
+        References: [
+          $col_50
+        ],
+        IsVisible: true,
+        RefId: $col_49
+      },
+      {
+        Parent: $tbl_134,
+        Name: active,
+        References: [
+          $col_56
+        ],
+        IsVisible: true,
+        RefId: $col_55
+      },
+      {
+        Parent: $tbl_134,
+        Name: address_id,
+        References: [
+          $col_62
+        ],
+        IsVisible: true,
+        RefId: $col_61
+      },
+      {
+        Parent: $tbl_134,
+        Name: address,
+        References: [
+          $col_68
+        ],
+        IsVisible: true,
+        RefId: $col_67
+      },
+      {
+        Parent: $tbl_134,
+        Name: address2,
+        References: [
+          $col_74
+        ],
+        IsVisible: true,
+        RefId: $col_73
+      },
+      {
+        Parent: $tbl_134,
+        Name: district,
+        References: [
+          $col_80
+        ],
+        IsVisible: true,
+        RefId: $col_79
+      },
+      {
+        Parent: $tbl_134,
+        Name: city_id,
+        References: [
+          $col_86
+        ],
+        IsVisible: true,
+        RefId: $col_85
+      },
+      {
+        Parent: $tbl_134,
+        Name: postal_code,
+        References: [
+          $col_92
+        ],
+        IsVisible: true,
+        RefId: $col_91
+      },
+      {
+        Parent: $tbl_134,
+        Name: phone,
+        References: [
+          $col_98
+        ],
+        IsVisible: true,
+        RefId: $col_97
+      },
+      {
+        Parent: $tbl_134,
+        Name: last_update,
+        References: [
+          $col_104
+        ],
+        IsVisible: true,
+        RefId: $col_103
+      },
+      {
+        Parent: $tbl_134,
+        Name: city_id,
+        References: [
+          $col_110
+        ],
+        IsVisible: true,
+        RefId: $col_109
+      },
+      {
+        Parent: $tbl_134,
+        Name: city,
+        References: [
+          $col_114
+        ],
+        IsVisible: true,
+        RefId: $col_113
+      },
+      {
+        Parent: $tbl_134,
+        Name: country_id,
+        References: [
+          $col_118
+        ],
+        IsVisible: true,
+        RefId: $col_117
+      },
+      {
+        Parent: $tbl_134,
+        Name: last_update,
+        References: [
+          $col_122
+        ],
+        IsVisible: true,
+        RefId: $col_121
+      },
+      {
+        Parent: $tbl_134,
+        Name: country_id,
+        References: [
+          $col_126
+        ],
+        IsVisible: true,
+        RefId: $col_125
+      },
+      {
+        Parent: $tbl_134,
+        Name: country,
+        References: [
+          $col_129
+        ],
+        IsVisible: true,
+        RefId: $col_128
+      },
+      {
+        Parent: $tbl_134,
+        Name: last_update,
+        References: [
+          $col_132
+        ],
+        IsVisible: true,
+        RefId: $col_131
+      }
+    ],
+    RefId: $tbl_134
+  },
+  {
+    Type: Join,
+    References: [
+      $tbl_136,
+      $tbl_143
+    ],
+    Columns: [
+      {
+        Parent: $tbl_135,
+        Name: customer_id,
+        References: [
+          $col_3
+        ],
+        IsVisible: true,
+        RefId: $col_2
+      },
+      {
+        Parent: $tbl_135,
+        Name: store_id,
+        References: [
+          $col_9
+        ],
+        IsVisible: true,
+        RefId: $col_8
+      },
+      {
+        Parent: $tbl_135,
+        Name: first_name,
+        References: [
+          $col_15
+        ],
+        IsVisible: true,
+        RefId: $col_14
+      },
+      {
+        Parent: $tbl_135,
+        Name: last_name,
+        References: [
+          $col_21
+        ],
+        IsVisible: true,
+        RefId: $col_20
+      },
+      {
+        Parent: $tbl_135,
+        Name: email,
+        References: [
+          $col_27
+        ],
+        IsVisible: true,
+        RefId: $col_26
+      },
+      {
+        Parent: $tbl_135,
+        Name: address_id,
+        References: [
+          $col_33
+        ],
+        IsVisible: true,
+        RefId: $col_32
+      },
+      {
+        Parent: $tbl_135,
+        Name: activebool,
+        References: [
+          $col_39
+        ],
+        IsVisible: true,
+        RefId: $col_38
+      },
+      {
+        Parent: $tbl_135,
+        Name: create_date,
+        References: [
+          $col_45
+        ],
+        IsVisible: true,
+        RefId: $col_44
+      },
+      {
+        Parent: $tbl_135,
+        Name: last_update,
+        References: [
+          $col_51
+        ],
+        IsVisible: true,
+        RefId: $col_50
+      },
+      {
+        Parent: $tbl_135,
+        Name: active,
+        References: [
+          $col_57
+        ],
+        IsVisible: true,
+        RefId: $col_56
+      },
+      {
+        Parent: $tbl_135,
+        Name: address_id,
+        References: [
+          $col_63
+        ],
+        IsVisible: true,
+        RefId: $col_62
+      },
+      {
+        Parent: $tbl_135,
+        Name: address,
+        References: [
+          $col_69
+        ],
+        IsVisible: true,
+        RefId: $col_68
+      },
+      {
+        Parent: $tbl_135,
+        Name: address2,
+        References: [
+          $col_75
+        ],
+        IsVisible: true,
+        RefId: $col_74
+      },
+      {
+        Parent: $tbl_135,
+        Name: district,
+        References: [
+          $col_81
+        ],
+        IsVisible: true,
+        RefId: $col_80
+      },
+      {
+        Parent: $tbl_135,
+        Name: city_id,
+        References: [
+          $col_87
+        ],
+        IsVisible: true,
+        RefId: $col_86
+      },
+      {
+        Parent: $tbl_135,
+        Name: postal_code,
+        References: [
+          $col_93
+        ],
+        IsVisible: true,
+        RefId: $col_92
+      },
+      {
+        Parent: $tbl_135,
+        Name: phone,
+        References: [
+          $col_99
+        ],
+        IsVisible: true,
+        RefId: $col_98
+      },
+      {
+        Parent: $tbl_135,
+        Name: last_update,
+        References: [
+          $col_105
+        ],
+        IsVisible: true,
+        RefId: $col_104
+      },
+      {
+        Parent: $tbl_135,
+        Name: city_id,
+        References: [
+          $col_111
+        ],
+        IsVisible: true,
+        RefId: $col_110
+      },
+      {
+        Parent: $tbl_135,
+        Name: city,
+        References: [
+          $col_115
+        ],
+        IsVisible: true,
+        RefId: $col_114
+      },
+      {
+        Parent: $tbl_135,
+        Name: country_id,
+        References: [
+          $col_119
+        ],
+        IsVisible: true,
+        RefId: $col_118
+      },
+      {
+        Parent: $tbl_135,
+        Name: last_update,
+        References: [
+          $col_123
+        ],
+        IsVisible: true,
+        RefId: $col_122
+      },
+      {
+        Parent: $tbl_135,
+        Name: country_id,
+        References: [
+          $col_127
+        ],
+        IsVisible: true,
+        RefId: $col_126
+      },
+      {
+        Parent: $tbl_135,
+        Name: country,
+        References: [
+          $col_130
+        ],
+        IsVisible: true,
+        RefId: $col_129
+      },
+      {
+        Parent: $tbl_135,
+        Name: last_update,
+        References: [
+          $col_133
+        ],
+        IsVisible: true,
+        RefId: $col_132
+      }
+    ],
+    RefId: $tbl_135
+  },
+  {
+    Type: Join,
+    References: [
+      $tbl_137,
+      $tbl_142
+    ],
+    Columns: [
+      {
+        Parent: $tbl_136,
+        Name: customer_id,
+        References: [
+          $col_4
+        ],
+        IsVisible: true,
+        RefId: $col_3
+      },
+      {
+        Parent: $tbl_136,
+        Name: store_id,
+        References: [
+          $col_10
+        ],
+        IsVisible: true,
+        RefId: $col_9
+      },
+      {
+        Parent: $tbl_136,
+        Name: first_name,
+        References: [
+          $col_16
+        ],
+        IsVisible: true,
+        RefId: $col_15
+      },
+      {
+        Parent: $tbl_136,
+        Name: last_name,
+        References: [
+          $col_22
+        ],
+        IsVisible: true,
+        RefId: $col_21
+      },
+      {
+        Parent: $tbl_136,
+        Name: email,
+        References: [
+          $col_28
+        ],
+        IsVisible: true,
+        RefId: $col_27
+      },
+      {
+        Parent: $tbl_136,
+        Name: address_id,
+        References: [
+          $col_34
+        ],
+        IsVisible: true,
+        RefId: $col_33
+      },
+      {
+        Parent: $tbl_136,
+        Name: activebool,
+        References: [
+          $col_40
+        ],
+        IsVisible: true,
+        RefId: $col_39
+      },
+      {
+        Parent: $tbl_136,
+        Name: create_date,
+        References: [
+          $col_46
+        ],
+        IsVisible: true,
+        RefId: $col_45
+      },
+      {
+        Parent: $tbl_136,
+        Name: last_update,
+        References: [
+          $col_52
+        ],
+        IsVisible: true,
+        RefId: $col_51
+      },
+      {
+        Parent: $tbl_136,
+        Name: active,
+        References: [
+          $col_58
+        ],
+        IsVisible: true,
+        RefId: $col_57
+      },
+      {
+        Parent: $tbl_136,
+        Name: address_id,
+        References: [
+          $col_64
+        ],
+        IsVisible: true,
+        RefId: $col_63
+      },
+      {
+        Parent: $tbl_136,
+        Name: address,
+        References: [
+          $col_70
+        ],
+        IsVisible: true,
+        RefId: $col_69
+      },
+      {
+        Parent: $tbl_136,
+        Name: address2,
+        References: [
+          $col_76
+        ],
+        IsVisible: true,
+        RefId: $col_75
+      },
+      {
+        Parent: $tbl_136,
+        Name: district,
+        References: [
+          $col_82
+        ],
+        IsVisible: true,
+        RefId: $col_81
+      },
+      {
+        Parent: $tbl_136,
+        Name: city_id,
+        References: [
+          $col_88
+        ],
+        IsVisible: true,
+        RefId: $col_87
+      },
+      {
+        Parent: $tbl_136,
+        Name: postal_code,
+        References: [
+          $col_94
+        ],
+        IsVisible: true,
+        RefId: $col_93
+      },
+      {
+        Parent: $tbl_136,
+        Name: phone,
+        References: [
+          $col_100
+        ],
+        IsVisible: true,
+        RefId: $col_99
+      },
+      {
+        Parent: $tbl_136,
+        Name: last_update,
+        References: [
+          $col_106
+        ],
+        IsVisible: true,
+        RefId: $col_105
+      },
+      {
+        Parent: $tbl_136,
+        Name: city_id,
+        References: [
+          $col_112
+        ],
+        IsVisible: true,
+        RefId: $col_111
+      },
+      {
+        Parent: $tbl_136,
+        Name: city,
+        References: [
+          $col_116
+        ],
+        IsVisible: true,
+        RefId: $col_115
+      },
+      {
+        Parent: $tbl_136,
+        Name: country_id,
+        References: [
+          $col_120
+        ],
+        IsVisible: true,
+        RefId: $col_119
+      },
+      {
+        Parent: $tbl_136,
+        Name: last_update,
+        References: [
+          $col_124
+        ],
+        IsVisible: true,
+        RefId: $col_123
+      }
+    ],
+    RefId: $tbl_136
+  },
+  {
+    Type: Join,
+    References: [
+      $tbl_138,
+      $tbl_140
+    ],
+    Columns: [
+      {
+        Parent: $tbl_137,
+        Name: customer_id,
+        References: [
+          $col_5
+        ],
+        IsVisible: true,
+        RefId: $col_4
+      },
+      {
+        Parent: $tbl_137,
+        Name: store_id,
+        References: [
+          $col_11
+        ],
+        IsVisible: true,
+        RefId: $col_10
+      },
+      {
+        Parent: $tbl_137,
+        Name: first_name,
+        References: [
+          $col_17
+        ],
+        IsVisible: true,
+        RefId: $col_16
+      },
+      {
+        Parent: $tbl_137,
+        Name: last_name,
+        References: [
+          $col_23
+        ],
+        IsVisible: true,
+        RefId: $col_22
+      },
+      {
+        Parent: $tbl_137,
+        Name: email,
+        References: [
+          $col_29
+        ],
+        IsVisible: true,
+        RefId: $col_28
+      },
+      {
+        Parent: $tbl_137,
+        Name: address_id,
+        References: [
+          $col_35
+        ],
+        IsVisible: true,
+        RefId: $col_34
+      },
+      {
+        Parent: $tbl_137,
+        Name: activebool,
+        References: [
+          $col_41
+        ],
+        IsVisible: true,
+        RefId: $col_40
+      },
+      {
+        Parent: $tbl_137,
+        Name: create_date,
+        References: [
+          $col_47
+        ],
+        IsVisible: true,
+        RefId: $col_46
+      },
+      {
+        Parent: $tbl_137,
+        Name: last_update,
+        References: [
+          $col_53
+        ],
+        IsVisible: true,
+        RefId: $col_52
+      },
+      {
+        Parent: $tbl_137,
+        Name: active,
+        References: [
+          $col_59
+        ],
+        IsVisible: true,
+        RefId: $col_58
+      },
+      {
+        Parent: $tbl_137,
+        Name: address_id,
+        References: [
+          $col_65
+        ],
+        IsVisible: true,
+        RefId: $col_64
+      },
+      {
+        Parent: $tbl_137,
+        Name: address,
+        References: [
+          $col_71
+        ],
+        IsVisible: true,
+        RefId: $col_70
+      },
+      {
+        Parent: $tbl_137,
+        Name: address2,
+        References: [
+          $col_77
+        ],
+        IsVisible: true,
+        RefId: $col_76
+      },
+      {
+        Parent: $tbl_137,
+        Name: district,
+        References: [
+          $col_83
+        ],
+        IsVisible: true,
+        RefId: $col_82
+      },
+      {
+        Parent: $tbl_137,
+        Name: city_id,
+        References: [
+          $col_89
+        ],
+        IsVisible: true,
+        RefId: $col_88
+      },
+      {
+        Parent: $tbl_137,
+        Name: postal_code,
+        References: [
+          $col_95
+        ],
+        IsVisible: true,
+        RefId: $col_94
+      },
+      {
+        Parent: $tbl_137,
+        Name: phone,
+        References: [
+          $col_101
+        ],
+        IsVisible: true,
+        RefId: $col_100
+      },
+      {
+        Parent: $tbl_137,
+        Name: last_update,
+        References: [
+          $col_107
+        ],
+        IsVisible: true,
+        RefId: $col_106
+      }
+    ],
+    RefId: $tbl_137
+  },
+  {
+    Type: Derived,
+    Identifier: cu,
+    References: [
+      $tbl_139
+    ],
+    Columns: [
+      {
+        Parent: $tbl_138,
+        Name: customer_id,
+        References: [
+          $col_6
+        ],
+        IsVisible: true,
+        RefId: $col_5
+      },
+      {
+        Parent: $tbl_138,
+        Name: store_id,
+        References: [
+          $col_12
+        ],
+        IsVisible: true,
+        RefId: $col_11
+      },
+      {
+        Parent: $tbl_138,
+        Name: first_name,
+        References: [
+          $col_18
+        ],
+        IsVisible: true,
+        RefId: $col_17
+      },
+      {
+        Parent: $tbl_138,
+        Name: last_name,
+        References: [
+          $col_24
+        ],
+        IsVisible: true,
+        RefId: $col_23
+      },
+      {
+        Parent: $tbl_138,
+        Name: email,
+        References: [
+          $col_30
+        ],
+        IsVisible: true,
+        RefId: $col_29
+      },
+      {
+        Parent: $tbl_138,
+        Name: address_id,
+        References: [
+          $col_36
+        ],
+        IsVisible: true,
+        RefId: $col_35
+      },
+      {
+        Parent: $tbl_138,
+        Name: activebool,
+        References: [
+          $col_42
+        ],
+        IsVisible: true,
+        RefId: $col_41
+      },
+      {
+        Parent: $tbl_138,
+        Name: create_date,
+        References: [
+          $col_48
+        ],
+        IsVisible: true,
+        RefId: $col_47
+      },
+      {
+        Parent: $tbl_138,
+        Name: last_update,
+        References: [
+          $col_54
+        ],
+        IsVisible: true,
+        RefId: $col_53
+      },
+      {
+        Parent: $tbl_138,
+        Name: active,
+        References: [
+          $col_60
+        ],
+        IsVisible: true,
+        RefId: $col_59
+      }
+    ],
+    RefId: $tbl_138
+  },
+  {
+    Type: Table,
+    Identifier: dvdrental.public.customer,
+    Columns: [
+      {
+        Parent: $tbl_139,
+        Name: customer_id,
+        IsVisible: true,
+        RefId: $col_6
+      },
+      {
+        Parent: $tbl_139,
+        Name: store_id,
+        IsVisible: true,
+        RefId: $col_12
+      },
+      {
+        Parent: $tbl_139,
+        Name: first_name,
+        IsVisible: true,
+        RefId: $col_18
+      },
+      {
+        Parent: $tbl_139,
+        Name: last_name,
+        IsVisible: true,
+        RefId: $col_24
+      },
+      {
+        Parent: $tbl_139,
+        Name: email,
+        IsVisible: true,
+        RefId: $col_30
+      },
+      {
+        Parent: $tbl_139,
+        Name: address_id,
+        IsVisible: true,
+        RefId: $col_36
+      },
+      {
+        Parent: $tbl_139,
+        Name: activebool,
+        IsVisible: true,
+        RefId: $col_42
+      },
+      {
+        Parent: $tbl_139,
+        Name: create_date,
+        IsVisible: true,
+        RefId: $col_48
+      },
+      {
+        Parent: $tbl_139,
+        Name: last_update,
+        IsVisible: true,
+        RefId: $col_54
+      },
+      {
+        Parent: $tbl_139,
+        Name: active,
+        IsVisible: true,
+        RefId: $col_60
+      }
+    ],
+    RefId: $tbl_139
+  },
+  {
+    Type: Derived,
+    Identifier: a,
+    References: [
+      $tbl_141
+    ],
+    Columns: [
+      {
+        Parent: $tbl_140,
+        Name: address_id,
+        References: [
+          $col_66
+        ],
+        IsVisible: true,
+        RefId: $col_65
+      },
+      {
+        Parent: $tbl_140,
+        Name: address,
+        References: [
+          $col_72
+        ],
+        IsVisible: true,
+        RefId: $col_71
+      },
+      {
+        Parent: $tbl_140,
+        Name: address2,
+        References: [
+          $col_78
+        ],
+        IsVisible: true,
+        RefId: $col_77
+      },
+      {
+        Parent: $tbl_140,
+        Name: district,
+        References: [
+          $col_84
+        ],
+        IsVisible: true,
+        RefId: $col_83
+      },
+      {
+        Parent: $tbl_140,
+        Name: city_id,
+        References: [
+          $col_90
+        ],
+        IsVisible: true,
+        RefId: $col_89
+      },
+      {
+        Parent: $tbl_140,
+        Name: postal_code,
+        References: [
+          $col_96
+        ],
+        IsVisible: true,
+        RefId: $col_95
+      },
+      {
+        Parent: $tbl_140,
+        Name: phone,
+        References: [
+          $col_102
+        ],
+        IsVisible: true,
+        RefId: $col_101
+      },
+      {
+        Parent: $tbl_140,
+        Name: last_update,
+        References: [
+          $col_108
+        ],
+        IsVisible: true,
+        RefId: $col_107
+      }
+    ],
+    RefId: $tbl_140
+  },
+  {
+    Type: Table,
+    Identifier: dvdrental.public.address,
+    Columns: [
+      {
+        Parent: $tbl_141,
+        Name: address_id,
+        IsVisible: true,
+        RefId: $col_66
+      },
+      {
+        Parent: $tbl_141,
+        Name: address,
+        IsVisible: true,
+        RefId: $col_72
+      },
+      {
+        Parent: $tbl_141,
+        Name: address2,
+        IsVisible: true,
+        RefId: $col_78
+      },
+      {
+        Parent: $tbl_141,
+        Name: district,
+        IsVisible: true,
+        RefId: $col_84
+      },
+      {
+        Parent: $tbl_141,
+        Name: city_id,
+        IsVisible: true,
+        RefId: $col_90
+      },
+      {
+        Parent: $tbl_141,
+        Name: postal_code,
+        IsVisible: true,
+        RefId: $col_96
+      },
+      {
+        Parent: $tbl_141,
+        Name: phone,
+        IsVisible: true,
+        RefId: $col_102
+      },
+      {
+        Parent: $tbl_141,
+        Name: last_update,
+        IsVisible: true,
+        RefId: $col_108
+      }
+    ],
+    RefId: $tbl_141
+  },
+  {
+    Type: Table,
+    Identifier: dvdrental.public.city,
+    Columns: [
+      {
+        Parent: $tbl_142,
+        Name: city_id,
+        IsVisible: true,
+        RefId: $col_112
+      },
+      {
+        Parent: $tbl_142,
+        Name: city,
+        IsVisible: true,
+        RefId: $col_116
+      },
+      {
+        Parent: $tbl_142,
+        Name: country_id,
+        IsVisible: true,
+        RefId: $col_120
+      },
+      {
+        Parent: $tbl_142,
+        Name: last_update,
+        IsVisible: true,
+        RefId: $col_124
+      }
+    ],
+    RefId: $tbl_142
+  },
+  {
+    Type: Table,
+    Identifier: dvdrental.public.country,
+    Columns: [
+      {
+        Parent: $tbl_143,
+        Name: country_id,
+        IsVisible: true,
+        RefId: $col_127
+      },
+      {
+        Parent: $tbl_143,
+        Name: country,
+        IsVisible: true,
+        RefId: $col_130
+      },
+      {
+        Parent: $tbl_143,
+        Name: last_update,
+        IsVisible: true,
+        RefId: $col_133
+      }
+    ],
+    RefId: $tbl_143
+  }
+]
