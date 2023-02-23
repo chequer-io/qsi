@@ -176,12 +176,6 @@ public partial class PostgreSqlTest : VendorTestBase
         await Verifier.Verify(views).UseDirectory("verified");
     }
 
-    [TestCaseSource(nameof(SystemColumnTestDatas))]
-    public async Task Test_SELECT_System_Column(string query)
-    {
-        
-    }
-
     [TestCaseSource(nameof(ColumnNameSelectTestDatas))]
     [TestCaseSource(nameof(SystemTableFunctionTestDatas))]
     public async Task<string[]> Test_SELECT_Column_Name(string query)
