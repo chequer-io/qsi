@@ -194,6 +194,7 @@ public partial class PostgreSqlTest : VendorTestBase
 
     [TestCaseSource(nameof(InsertTestDatas))]
     [TestCaseSource(nameof(UpdateTestDatas))]
+    [TestCaseSource(nameof(DeleteTestDatas))]
     public async Task Test_DML(string query, string[] expectedQueries, int expectedResultCount)
     {
         var script = new QsiScript(query, QsiScriptType.Select);
