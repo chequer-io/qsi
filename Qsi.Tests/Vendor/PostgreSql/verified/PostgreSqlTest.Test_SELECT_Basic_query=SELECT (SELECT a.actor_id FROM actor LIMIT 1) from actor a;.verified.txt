@@ -1,0 +1,146 @@
+﻿[
+  {
+    Type: Table,
+    Identifier: dvdrental.public.actor,
+    Columns: [
+      {
+        Parent: $tbl_15,
+        Name: actor_id,
+        IsVisible: true,
+        RefId: $col_16
+      },
+      {
+        Parent: $tbl_15,
+        Name: first_name,
+        IsVisible: true,
+        RefId: $col_17
+      },
+      {
+        Parent: $tbl_15,
+        Name: last_name,
+        IsVisible: true,
+        RefId: $col_18
+      },
+      {
+        Parent: $tbl_15,
+        Name: last_update,
+        IsVisible: true,
+        RefId: $col_19
+      }
+    ],
+    RefId: $tbl_15
+  },
+  {
+    Type: Derived,
+    References: [
+      $tbl_6
+    ],
+    Columns: [
+      {
+        Parent: $tbl_5,
+        References: [
+          $col_2
+        ],
+        IsVisible: true,
+        IsExpression: true,
+        RefId: $col_1
+      }
+    ],
+    RefId: $tbl_5
+  },
+  {
+    Type: Derived,
+    Identifier: a,
+    References: [
+      $tbl_7
+    ],
+    Columns: [
+      {
+        Parent: $tbl_6,
+        Name: actor_id,
+        References: [
+          $col_4
+        ],
+        IsVisible: true,
+        RefId: $col_3
+      },
+      {
+        Parent: $tbl_6,
+        Name: first_name,
+        References: [
+          $col_10
+        ],
+        IsVisible: true,
+        RefId: $col_9
+      },
+      {
+        Parent: $tbl_6,
+        Name: last_name,
+        References: [
+          $col_12
+        ],
+        IsVisible: true,
+        RefId: $col_11
+      },
+      {
+        Parent: $tbl_6,
+        Name: last_update,
+        References: [
+          $col_14
+        ],
+        IsVisible: true,
+        RefId: $col_13
+      }
+    ],
+    RefId: $tbl_6
+  },
+  {
+    Type: Table,
+    Identifier: dvdrental.public.actor,
+    Columns: [
+      {
+        Parent: $tbl_7,
+        Name: actor_id,
+        IsVisible: true,
+        RefId: $col_4
+      },
+      {
+        Parent: $tbl_7,
+        Name: first_name,
+        IsVisible: true,
+        RefId: $col_10
+      },
+      {
+        Parent: $tbl_7,
+        Name: last_name,
+        IsVisible: true,
+        RefId: $col_12
+      },
+      {
+        Parent: $tbl_7,
+        Name: last_update,
+        IsVisible: true,
+        RefId: $col_14
+      }
+    ],
+    RefId: $tbl_7
+  },
+  {
+    Type: Derived,
+    References: [
+      $tbl_15
+    ],
+    Columns: [
+      {
+        Parent: $tbl_8,
+        Name: actor_id,
+        References: [
+          $col_3
+        ],
+        IsVisible: true,
+        RefId: $col_2
+      }
+    ],
+    RefId: $tbl_8
+  }
+]

@@ -1,0 +1,44 @@
+﻿[
+  {
+    Type: Derived,
+    References: [
+      $tbl_6
+    ],
+    Columns: [
+      {
+        Parent: $tbl_5,
+        References: [
+          $col_2
+        ],
+        IsVisible: true,
+        RefId: $col_1
+      },
+      {
+        Parent: $tbl_5,
+        References: [
+          $col_4
+        ],
+        IsVisible: true,
+        RefId: $col_3
+      }
+    ],
+    RefId: $tbl_5
+  },
+  {
+    Type: Inline,
+    Identifier: tbl,
+    Columns: [
+      {
+        Parent: $tbl_6,
+        IsVisible: true,
+        RefId: $col_2
+      },
+      {
+        Parent: $tbl_6,
+        IsVisible: true,
+        RefId: $col_4
+      }
+    ],
+    RefId: $tbl_6
+  }
+]
