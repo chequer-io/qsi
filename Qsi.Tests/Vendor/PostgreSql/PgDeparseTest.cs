@@ -131,6 +131,11 @@ public class PgDeparseTest
     [TestCase("DELETE FROM actor", TestName = "DELETE - Simple #2")]
     [TestCase("UPDATE actor SET actor_id = 1", TestName = "UPDATE - Simple #1")]
     [TestCase("UPDATE actor SET actor_id = 1 WHERE actor_id = 999", TestName = "UPDATE - Simple #2")]
+    [TestCase("SET search_path TO myschema, public", TestName = "SET - search_path")]
+    [TestCase("SELECT * FROM CURRENT_DATE", TestName = "SELECT - Table Function #1")]
+    [TestCase("SELECT * FROM pg_typeof(1)", TestName = "SELECT - Table Function #2")]
+    [TestCase("SELECT * FROM ROWS FROM (pg_typeof(1))", TestName = "SELECT - Table Function #3")]
+    [TestCase("SELECT * FROM ROWS FROM (pg_typeof(1)) AS t (c1)", TestName = "SELECT - Table Function #4")]
     public void Deparse(string query)
     {
         var res = Parser.Parse(query);
