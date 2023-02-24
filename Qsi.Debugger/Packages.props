@@ -9,7 +9,7 @@
 
     <PropertyGroup Label="Constants">
         <ChakraCoreVersion>3.5.6</ChakraCoreVersion>
-        <PgQueryVersion>4.2.0-15</PgQueryVersion>
+        <PgQueryVersion>4.2.1-15</PgQueryVersion>
     </PropertyGroup>
 
     <Choose>
