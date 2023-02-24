@@ -433,7 +433,7 @@ internal static partial class PgNodeVisitor
         return new PgOnConflictNode
         {
             Action = node.Action,
-            Infer = { Value = Visit(node.Infer) },
+            Infer = { Value = node.Infer is null ? null : Visit(node.Infer) },
             Where = { Value = VisitExpression(node.WhereClause) },
             TargetList = { node.TargetList.Select(VisitExpression) }
         };
