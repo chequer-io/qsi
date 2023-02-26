@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Qsi.PostgreSql.Extensions;
 using Qsi.Tree;
 
 namespace Qsi.PostgreSql.Tree.Nodes;
@@ -12,5 +13,13 @@ public class PgRoutineTableNode : QsiCompositeTableNode
 
     public bool IsRowsfrom { get; set; }
 
-    public override IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
+    public QsiTreeNodeList<PgColumnDefinitionNode?> ColumnDefinitions { get; }
+
+    public override IEnumerable<IQsiTreeNode> Children => Sources.Cast<IQsiTreeNode>()
+        .ConcatWhereNotNull(ColumnDefinitions);
+
+    public PgRoutineTableNode()
+    {
+        ColumnDefinitions = new QsiTreeNodeList<PgColumnDefinitionNode?>(this);
+    }
 }

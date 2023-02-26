@@ -243,6 +243,14 @@ public partial class PostgreSqlDeparser
             }
         }
 
+        public static SelectStmt Visit(PgDerivedTableNode node)
+        {
+            var stmt = Visit((IQsiDerivedTableNode)node);
+            stmt.DistinctClause.AddRange(node.DisinictExpressions.Select(Visit));
+
+            return stmt;
+        }
+
         public static SelectStmt Visit(IQsiDerivedTableNode node)
         {
             var stmt = new SelectStmt
@@ -765,6 +773,18 @@ public partial class PostgreSqlDeparser
             return stmt;
         }
 
+        public static ColumnDef Visit(PgColumnDefinitionNode node)
+        {
+            return new ColumnDef
+            {
+                Colname = node.Name.Value,
+                TypeName = Visit(node.TypeName)?.TypeName,
+                RawDefault = Visit(node.RawDefault),
+                CollClause = node.CollClause.InvokeWhenNotNull(Visit),
+                Constraints = { node.Constraints.Select(Visit) },
+            };
+        }
+
         public static SelectStmt Visit(QsiInlineDerivedTableNode node)
         {
             return new SelectStmt
@@ -794,8 +814,8 @@ public partial class PostgreSqlDeparser
                 Functions = { node.Sources.Select(Visit) },
                 IsRowsfrom = node.IsRowsfrom,
                 Lateral = node.Lateral,
-                Ordinality = node.Ordinality
-                // Coldeflist = {  }
+                Ordinality = node.Ordinality,
+                Coldeflist = { node.ColumnDefinitions.WhereNotNull().Select(Visit).ToNode() }
             };
         }
 
@@ -915,7 +935,7 @@ public partial class PostgreSqlDeparser
             };
         }
 
-        public static void AddAliasNamesIfNotEmpty(RepeatedField<Node?> source, QsiColumnsDeclarationNode? node)
+        private static void AddAliasNamesIfNotEmpty(RepeatedField<Node?> source, QsiColumnsDeclarationNode? node)
         {
             if (node is not { } || node.Columns.Any(c => c is not QsiSequentialColumnNode))
                 return;
@@ -923,17 +943,17 @@ public partial class PostgreSqlDeparser
             source.AddRange(node.Columns.Select(Visit));
         }
 
-        public static string GetCatalogName(QsiQualifiedIdentifier identifier)
+        private static string GetCatalogName(QsiQualifiedIdentifier identifier)
         {
             return identifier.Level >= 3 ? identifier[^3].Value : string.Empty;
         }
 
-        public static string GetSchemaName(QsiQualifiedIdentifier identifier)
+        private static string GetSchemaName(QsiQualifiedIdentifier identifier)
         {
             return identifier.Level >= 2 ? identifier[^2].Value : string.Empty;
         }
 
-        public static string GetRelName(QsiQualifiedIdentifier identifier)
+        private static string GetRelName(QsiQualifiedIdentifier identifier)
         {
             return identifier.Level >= 1 ? identifier[^1].Value : string.Empty;
         }
@@ -960,6 +980,7 @@ public partial class PostgreSqlDeparser
 
                 // Table Nodes
                 PgCommonTableNode pgCommonTable => Visit(pgCommonTable),
+                PgDerivedTableNode pgDerivedTableNode => Visit(pgDerivedTableNode),
                 PgAliasedTableNode pgAliasedTable => Visit(pgAliasedTable),
                 PgJoinedTableNode pgJoinedTable => Visit(pgJoinedTable),
                 QsiInlineDerivedTableNode qsiInlineDerived => Visit(qsiInlineDerived),
@@ -968,9 +989,13 @@ public partial class PostgreSqlDeparser
                 PgTableFunctionNode tableFunction => Visit(tableFunction),
                 IQsiDerivedTableNode qsiDerivedTable => Visit(qsiDerivedTable),
 
+                // Definition Nodes
+                PgTableDefinitionNode pgTableDefinition => Visit(pgTableDefinition),
+                PgViewDefinitionNode pgViewDefinition => Visit(pgViewDefinition),
+                PgColumnDefinitionNode pgColumnDefinition => Visit(pgColumnDefinition),
+
                 // Expression Nodes
                 QsiLiteralExpressionNode qsiLiteralExpression => Visit(qsiLiteralExpression),
-                PgTableDefinitionNode pgTableDefinition => Visit(pgTableDefinition),
                 PgUnaryExpressionNode pgUnaryExpression => Visit(pgUnaryExpression),
                 PgBinaryExpressionNode qsiBinaryExpression => Visit(qsiBinaryExpression),
                 PgBooleanMultipleExpressionNode pgBooleanMultiple => Visit(pgBooleanMultiple),
@@ -997,7 +1022,6 @@ public partial class PostgreSqlDeparser
                 QsiColumnExpressionNode qsiColumnExpression => Visit(qsiColumnExpression),
                 QsiTableExpressionNode qsiTableExpression => Visit(qsiTableExpression),
                 PgTableReferenceNode pgTableReference => Visit(pgTableReference),
-                PgViewDefinitionNode pgViewDefinition => Visit(pgViewDefinition),
                 QsiColumnReferenceNode qsiColumnReference => Visit(qsiColumnReference),
                 IQsiTableDirectivesNode qsiTableDirectives => Visit(qsiTableDirectives),
                 QsiSequentialColumnNode qsiSequentialColumn => Visit(qsiSequentialColumn),
@@ -1008,6 +1032,7 @@ public partial class PostgreSqlDeparser
                 PgOnConflictNode pgOnConflict => Visit(pgOnConflict),
                 PgInferExpressionNode pgInferExpression => Visit(pgInferExpression),
                 PgDefaultExpressionNode => new SetToDefault(),
+
                 _ => throw new NotSupportedException($"Cannot Visit({node.GetType().Name})")
             }).ToNode();
         }

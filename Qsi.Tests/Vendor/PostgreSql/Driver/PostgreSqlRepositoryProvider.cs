@@ -135,29 +135,39 @@ WHERE relname = '{identifier[^1]}'";
     {
         return type switch
         {
-            QsiObjectType.Function => LookupFunction(identifier),
+            QsiObjectType.Function => new QsiFunctionList(LookupFunction(identifier)),
             _ => null
         };
     }
 
-    protected QsiObject LookupFunction(QsiQualifiedIdentifier identifier)
+    protected IEnumerable<QsiFunctionObject> LookupFunction(QsiQualifiedIdentifier identifier)
     {
-        try
+        var funcInformation = @$"select oid, pronargs from ""{identifier[0]}"".pg_catalog.pg_proc
+         where
+             proname = '{identifier[2]}' and
+             pronamespace = (select oid from pg_namespace where nspname = '{identifier[1]}' limit 1);";
+
+        var funcDefinitions = new List<(string, int)>();
+
+        using (var reader = GetDataReaderCoreAsync(new QsiScript(funcInformation, QsiScriptType.Select), null, default).Result)
         {
-            IEnumerable<string> funcName = identifier.Select(i => i.Value).Select(s => @$"""{s}""");
-            var funcDef = $@"SELECT pg_catalog.pg_get_functiondef('{string.Join(".", funcName)}'::regproc::oid)";
+            while (reader.Read())
+            {
+                var oid = reader.GetString(0);
+                var argsCount = reader.GetString(1);
 
-            using var reader = GetDataReaderCoreAsync(new QsiScript(funcDef, QsiScriptType.Show), null, default).Result;
-
-            if (!reader.Read())
-                return null;
-
-            var definition = reader.GetString(0).TrimEnd(';');
-            return new QsiFunctionObject(identifier, definition);
+                funcDefinitions.Add((oid, int.Parse(argsCount)));
+            }
         }
-        catch
+
+        foreach (var (oid, argsCount) in funcDefinitions)
         {
-            return null;
+            using var defReader = GetDataReaderCoreAsync(new QsiScript($@"SELECT pg_catalog.pg_get_functiondef({oid})", QsiScriptType.Select), null, default).Result;
+
+            if (!defReader.Read())
+                continue;
+
+            yield return new QsiFunctionObject(identifier, defReader.GetString(0), argsCount);
         }
     }
 

@@ -1,12 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using PgQuery;
 using Qsi.Analyzers.Table;
 using Qsi.Analyzers.Table.Context;
 using Qsi.Data;
 using Qsi.Data.Object;
 using Qsi.Data.Object.Function;
 using Qsi.Engines;
+using Qsi.PostgreSql.Extensions;
 using Qsi.PostgreSql.Tree.Nodes;
 using Qsi.Tree;
 using Qsi.Utilities;
@@ -43,35 +46,89 @@ namespace Qsi.PostgreSql.Analyzers
 
                 case PgInvokeExpressionNode invoke:
                 {
-                    var provider = context.Engine.RepositoryProvider;
                     var identifier = invoke.Member.Value.Identifier;
 
-                    var func = provider.LookupObject(ResolveQualifiedIdentifier(context, identifier), QsiObjectType.Function);
+                    QsiFunctionObject[] functions = LookupFunctions(context, identifier);
 
-                    // Check System Functions
-                    if (func is not { } && identifier.Level == 1)
-                        func = provider.LookupObject(
-                            new QsiQualifiedIdentifier(
-                                new QsiIdentifier("pg_catalog", false),
-                                identifier[0]
-                            ),
-                            QsiObjectType.Function
-                        );
-
-                    if (func is not QsiFunctionObject funcObj)
+                    if (functions is { Length: 0 })
                         throw new QsiException(QsiError.UnableResolveFunction, identifier);
 
-                    var node = context.Engine.TreeParser.Parse(new QsiScript(funcObj.Definition, QsiScriptType.Create));
+                    var paramMatchedFunction = functions
+                        .FirstOrDefault(f => invoke.Parameters.Count == f.ArgumentsCount);
 
-                    if (node is not PgFunctionDefinitionNode funcDef)
-                        throw TreeHelper.NotSupportedTree(node);
+                    if (paramMatchedFunction is not { })
+                        throw new QsiException(QsiError.UnableResolveFunction, identifier);
 
-                    // TODO: Analyze columns from function definition
+                    foreach (var func in functions)
+                    {
+                        var node = context.Engine.TreeParser.Parse(new QsiScript(func.Definition, QsiScriptType.Create));
+
+                        if (node is not PgFunctionDefinitionNode funcDef)
+                            throw TreeHelper.NotSupportedTree(node);
+
+                        var structure = new QsiTableStructure
+                        {
+                            Identifier = identifier,
+                            Type = QsiTableType.Inline,
+                            // IsSystem = true // NOTE: Is it System Table?
+                        };
+
+                        var outParams = funcDef.Parameters.WhereNotNull().Where(p => p.Mode is FunctionParameterMode.FuncParamOut);
+
+                        int count = 0;
+
+                        foreach (var outParam in outParams)
+                        {
+                            count++;
+
+                            var column = structure.NewColumn();
+                            column.Name = outParam.Name;
+                        }
+
+                        if (count == 0)
+                        {
+                            if (!funcDef.ReturnType.Value.Setof)
+                            {
+                                var column = structure.NewColumn();
+                                column.Name = structure.Identifier[^1];
+                            }
+                            else
+                            {
+                                throw TreeHelper.NotSupportedFeature("Table Function with unknown return count");
+                            }
+                        }
+
+                        return structure;
+                    }
+
                     break;
                 }
             }
 
             return await base.BuildTableFunctionStructure(context, table);
+        }
+
+        private QsiFunctionObject[] LookupFunctions(TableCompileContext context, QsiQualifiedIdentifier identifier)
+        {
+            var provider = context.Engine.RepositoryProvider;
+            var funcIdentifier = ResolveQualifiedIdentifier(context, identifier);
+            var func = provider.LookupObject(funcIdentifier, QsiObjectType.Function);
+
+            // Check System Functions
+            if (func is QsiFunctionList { Functions.Length: 0 } && identifier.Level == 1)
+            {
+                var fallBackIdentifier = new QsiQualifiedIdentifier(
+                    funcIdentifier[0],
+                    new QsiIdentifier("pg_catalog", false),
+                    identifier[0]
+                );
+
+                func = provider.LookupObject(fallBackIdentifier, QsiObjectType.Function);
+            }
+
+            return func is not QsiFunctionList funcList
+                ? Array.Empty<QsiFunctionObject>()
+                : funcList.Functions;
         }
 
         protected override async ValueTask<QsiTableStructure> BuildCompositeTableStructure(TableCompileContext context, IQsiCompositeTableNode table)

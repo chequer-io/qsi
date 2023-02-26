@@ -43,9 +43,9 @@ internal static partial class PgNodeVisitor
     // SELECT <target> FROM <sources> WHERE <filter> 
     // GROUP BY [ ALL | DISTINCT ] <group_by>
     // HAVING <having_condition>
-    private static QsiDerivedTableNode VisitSelectNoneSet(SelectStmt node)
+    private static PgDerivedTableNode VisitSelectNoneSet(SelectStmt node)
     {
-        var table = new QsiDerivedTableNode();
+        var table = new PgDerivedTableNode();
 
         // WITH <with>
         if (node.WithClause is { } with)
@@ -53,6 +53,11 @@ internal static partial class PgNodeVisitor
             table.Directives.Value = Visit(with);
         }
 
+        if (node.DistinctClause is { } distinctClause)
+        {
+            table.DisinictExpressions.AddRange(distinctClause.Select(VisitExpression));
+        }
+        
         // <target>
         if (node.TargetList is { Count: > 0 } target)
         {
@@ -292,9 +297,11 @@ internal static partial class PgNodeVisitor
         {
             Ordinality = node.Ordinality,
             Lateral = node.Lateral,
-            IsRowsfrom = node.IsRowsfrom
+            IsRowsfrom = node.IsRowsfrom,
+            ColumnDefinitions = { node.Coldeflist.Select(Visit<PgColumnDefinitionNode>) }
         };
 
+        // TODO: colDefList (feature/pg-official-parser)
         foreach (var func in node.Functions.Select(f => f.List))
         {
             var item = func.Items[0];
@@ -317,10 +324,10 @@ internal static partial class PgNodeVisitor
 
     // UPDATE table SET (c1, c2) = (SELECT c1, c2 FROM table2 WHERE table2.c1 = table.c1)
     //                             ------------------------------------------------------
-    public static PgSubLinkExpressionNode Visit(MultiAssignRef node)
+    public static QsiExpressionNode Visit(MultiAssignRef node)
     {
         // colno, ncolumns ignored.
-        return Visit<PgSubLinkExpressionNode>(node.Source);
+        return VisitExpression(node.Source);
     }
 
     public static QsiSetColumnExpressionNode VisitSetColumn(ResTarget node)

@@ -31,6 +31,8 @@ internal static partial class PgNodeVisitor
             GroupingSet groupingSet => Visit(groupingSet),
             RangeFunction rangeFunction => Visit(rangeFunction),
             DefElem defElem => Visit(defElem),
+            ColumnDef columnDef => Visit(columnDef),
+            FunctionParameter funcParameter => Visit(funcParameter),
             _ => throw TreeHelper.NotSupportedTree(node.Get())
         };
     }

@@ -25,7 +25,9 @@ internal static class PgNodeExtension
         return node.IsEmpty ? default : func(node.Value);
     }
 
-    public static TResult? InvokeWhenNotNull<TNode, TResult>(this TNode? node, Func<TNode, TResult> func) where TResult : IPgNode
+    public static TResult? InvokeWhenNotNull<TNode, TResult>(this TNode? node, Func<TNode, TResult> func)
+        where TNode : QsiTreeNode
+        where TResult : IPgNode
     {
         return node is null ? default : func(node);
     }

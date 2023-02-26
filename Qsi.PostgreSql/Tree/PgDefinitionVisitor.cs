@@ -1,10 +1,8 @@
-using System;
 using System.Linq;
 using PgQuery;
 using Qsi.Data;
 using Qsi.PostgreSql.Tree.Nodes;
 using Qsi.Tree;
-using Qsi.Utilities;
 
 namespace Qsi.PostgreSql.Tree;
 
@@ -121,10 +119,26 @@ internal static partial class PgNodeVisitor
     {
         return new PgFunctionDefinitionNode(CreateQualifiedIdentifier(node.Funcname))
         {
+            Name = CreateQualifiedIdentifier(node.Funcname),
             Replace = node.Replace,
             IsProcedure = node.IsProcedure,
-            ReturnType = { Value = Visit(node.ReturnType) }
-            // TODO: impl another properties
+            ReturnType = { Value = Visit(node.ReturnType) },
+            Parameters = { node.Parameters.Select(Visit<PgFunctionParameterExpressionNode>) },
+            Options = { node.Options.Select(Visit<PgDefinitionElementNode>) },
+            SqlBody = { Value = Visit<QsiTreeNode>(node.SqlBody) }
+        };
+    }
+
+    public static PgColumnDefinitionNode Visit(ColumnDef node)
+    {
+        return new PgColumnDefinitionNode
+        {
+            Name = new QsiIdentifier(node.Colname, false),
+            TypeName = { Value = node.TypeName is null ? null : Visit(node.TypeName) },
+            RawDefault = { Value = VisitExpression(node.RawDefault) },
+            CollClause = { Value = node.CollClause is null ? null : Visit(node.CollClause) },
+            Constraints = { node.Constraints.Select(VisitExpression) },
+            FdwOptions = { node.Fdwoptions.Select(VisitExpression) }
         };
     }
 }

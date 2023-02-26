@@ -6,8 +6,11 @@ public class QsiFunctionObject : QsiObject
 
     public string Definition { get; }
 
-    public QsiFunctionObject(QsiQualifiedIdentifier identifier, string definition) : base(identifier)
+    public int ArgumentsCount { get; } 
+    
+    public QsiFunctionObject(QsiQualifiedIdentifier identifier, string definition, int argumentsCount) : base(identifier)
     {
         Definition = definition;
+        ArgumentsCount = argumentsCount;
     }
 }

@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using PgQuery;
 using Qsi.Data;
+using Qsi.PostgreSql.Extensions;
 using Qsi.PostgreSql.Tree.Nodes;
 using Qsi.Tree;
 using Qsi.Utilities;
@@ -446,6 +447,17 @@ internal static partial class PgNodeVisitor
             Name = node.Conname,
             IndexElems = { node.IndexElems.Select(VisitExpression) },
             Where = { Value = VisitExpression(node.WhereClause) },
+        };
+    }
+
+    public static PgFunctionParameterExpressionNode Visit(FunctionParameter node)
+    {
+        return new PgFunctionParameterExpressionNode
+        {
+            Name = new QsiIdentifier(node.Name, false),
+            TypeName = { Value = node.ArgType is null ? null : Visit(node.ArgType) },
+            Mode = node.Mode,
+            DefinitionExpression = { Value = VisitExpression(node.Defexpr) }
         };
     }
 
