@@ -18,6 +18,7 @@ public class PgDeparseTest
     [TestCase("SELECT 1, 2, 3", TestName = "SELECT - Simple Multiple Literal")]
     [TestCase("SELECT", TestName = "SELECT - Keyword Only")]
     [TestCase("SELECT COUNT(*) FROM actor", TestName = "SELECT - Count Function")]
+    [TestCase("SELECT a.* FROM actor a", TestName = "SELECT - Table specific all column")]
     [TestCase("SELECT ROW()", TestName = "SELECT - Explicit Row Expression (Empty)")]
     [TestCase("SELECT !TRUE", TestName = "SELECT - Unary Expression (A_Expr)")]
     [TestCase("SELECT NOT TRUE", TestName = "SELECT - Unary Expression (BoolExpr)")]
@@ -120,6 +121,11 @@ public class PgDeparseTest
     [TestCase("SELECT * FROM actor WHERE a IN ($1, $2, $3)", TestName = "SELECT - Binding Parameter")]
     [TestCase("SELECT * FROM actor WHERE enabled IS TRUE", TestName = "SELECT - Bool Test #1")]
     [TestCase("SELECT * FROM actor WHERE enabled IS NOT UNKNOWN", TestName = "SELECT - Bool Test #2")]
+    [TestCase("SELECT * FROM CURRENT_DATE", TestName = "SELECT - Table Function #1")]
+    [TestCase("SELECT * FROM pg_typeof(1)", TestName = "SELECT - Table Function #2")]
+    [TestCase("SELECT * FROM ROWS FROM (pg_typeof(1))", TestName = "SELECT - Table Function #3")]
+    [TestCase("SELECT * FROM ROWS FROM (pg_typeof(1)) AS t (c1)", TestName = "SELECT - Table Function #4")]
+    [TestCase("SELECT DISTINCT ON (pronargs) oid, pronargs FROM pg_proc WHERE proname ='age'", TestName = "SELECT - Disinict On #1")]
     // INSERT
     [TestCase("INSERT INTO actor VALUES (1,2), (3,4)", TestName = "INSERT - Simple #1")]
     [TestCase("INSERT INTO actor (c1, c2) VALUES (1,2), (3,4)", TestName = "INSERT - Simple #2")]
@@ -129,13 +135,23 @@ public class PgDeparseTest
     // DELETE
     [TestCase("DELETE FROM actor WHERE actor_id BETWEEN 15 AND 30", TestName = "DELETE - Simple #1")]
     [TestCase("DELETE FROM actor", TestName = "DELETE - Simple #2")]
+    // UPDATE
     [TestCase("UPDATE actor SET actor_id = 1", TestName = "UPDATE - Simple #1")]
-    [TestCase("UPDATE actor SET actor_id = 1 WHERE actor_id = 999", TestName = "UPDATE - Simple #2")]
+    [TestCase("UPDATE actor SET actor_id = 1, actor_name = 'Actor 1'", TestName = "UPDATE - Simple #2")]
+    [TestCase("UPDATE actor SET actor_id = 1 WHERE actor_id = 999", TestName = "UPDATE - Simple #3")]
+    [TestCase("UPDATE test SET (pk, id, name) = (SELECT pk, id, name FROM test1 WHERE pk = 1)", TestName = "UPDATE - Subquery #1")]
+    [TestCase("UPDATE test SET count = test.count + a.count FROM (SELECT * FROM test1) AS a WHERE test.pk = a.pk", TestName = "UPDATE - Subquery #2")]
+    [TestCase("UPDATE PRODUCT2 A SET NET_PRICE = A.PRICE - (A.PRICE * B.DISCOUNT) FROM PRODUCT_SEGMENT B WHERE A.SEGMENT_ID = B.ID;", TestName = "UPDATE - Join #1")]
+    [TestCase(@"WITH t1 AS (
+                    SELECT Product, Max(LastEditDate) AS MaxDate FROM t GROUP BY Product
+                )
+                UPDATE t
+                SET Number=1
+                FROM t1
+                WHERE t.Product = t1.Product AND t.LastEditDate = t1.MaxDate;", TestName = "UPDATE - CTE #1")]
+    // SET
     [TestCase("SET search_path TO myschema, public", TestName = "SET - search_path")]
-    [TestCase("SELECT * FROM CURRENT_DATE", TestName = "SELECT - Table Function #1")]
-    [TestCase("SELECT * FROM pg_typeof(1)", TestName = "SELECT - Table Function #2")]
-    [TestCase("SELECT * FROM ROWS FROM (pg_typeof(1))", TestName = "SELECT - Table Function #3")]
-    [TestCase("SELECT * FROM ROWS FROM (pg_typeof(1)) AS t (c1)", TestName = "SELECT - Table Function #4")]
+    [TestCase("SET test_var TO 1", TestName = "SET - Simple #1")]
     public void Deparse(string query)
     {
         var res = Parser.Parse(query);

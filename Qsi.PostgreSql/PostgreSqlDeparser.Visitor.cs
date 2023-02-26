@@ -935,6 +935,16 @@ public partial class PostgreSqlDeparser
             };
         }
 
+        public static MultiAssignRef Visit(PgMultipleAssignExpressionNode node)
+        {
+            return new MultiAssignRef
+            {
+                Source = Visit(node.Value),
+                Colno = node.ColumnNumber,
+                Ncolumns = node.NColumns
+            };
+        }
+
         private static void AddAliasNamesIfNotEmpty(RepeatedField<Node?> source, QsiColumnsDeclarationNode? node)
         {
             if (node is not { } || node.Columns.Any(c => c is not QsiSequentialColumnNode))
@@ -1032,6 +1042,7 @@ public partial class PostgreSqlDeparser
                 PgOnConflictNode pgOnConflict => Visit(pgOnConflict),
                 PgInferExpressionNode pgInferExpression => Visit(pgInferExpression),
                 PgDefaultExpressionNode => new SetToDefault(),
+                PgMultipleAssignExpressionNode pgMultipleAssignExpression => Visit(pgMultipleAssignExpression),
 
                 _ => throw new NotSupportedException($"Cannot Visit({node.GetType().Name})")
             }).ToNode();

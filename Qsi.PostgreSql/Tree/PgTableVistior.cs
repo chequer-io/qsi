@@ -57,7 +57,7 @@ internal static partial class PgNodeVisitor
         {
             table.DisinictExpressions.AddRange(distinctClause.Select(VisitExpression));
         }
-        
+
         // <target>
         if (node.TargetList is { Count: > 0 } target)
         {
@@ -326,8 +326,12 @@ internal static partial class PgNodeVisitor
     //                             ------------------------------------------------------
     public static QsiExpressionNode Visit(MultiAssignRef node)
     {
-        // colno, ncolumns ignored.
-        return VisitExpression(node.Source);
+        return new PgMultipleAssignExpressionNode
+        {
+            Value = { Value = VisitExpression(node.Source) },
+            NColumns = node.Ncolumns,
+            ColumnNumber = node.Colno
+        };
     }
 
     public static QsiSetColumnExpressionNode VisitSetColumn(ResTarget node)
