@@ -206,4 +206,16 @@ public partial class PostgreSqlTest : VendorTestBase
 
         Assert.AreEqual(results.Length, expectedResultCount);
     }
+
+    [TestCaseSource(nameof(ParameterTestDatas))]
+    public async Task Test_Parameters(string query, object[] parameters)
+    {
+        QsiParameter[] qsiParameters = parameters
+            .Select(p => new QsiParameter(QsiParameterType.Index, null, p))
+            .ToArray();
+
+        IQsiAnalysisResult[] results = await Engine.Execute(new QsiScript(query, QsiScriptType.Select), qsiParameters);
+
+        Console.WriteLine(DebugUtility.Print(results.OfType<QsiDataManipulationResult>()));
+    }
 }
