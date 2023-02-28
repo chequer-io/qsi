@@ -238,6 +238,10 @@ public partial class PostgreSqlDeparser
                     table.RangeFunction.Alias = alias;
                     return table.RangeFunction;
 
+                case Node.NodeOneofCase.RangeTableFunc:
+                    table.RangeTableFunc.Alias = alias;
+                    return table.RangeTableFunc;
+
                 default:
                     throw new NotSupportedException($"Not supported Aliased table node: {table?.NodeCase.ToString() ?? "Unknown"}");
             }
@@ -338,6 +342,31 @@ public partial class PostgreSqlDeparser
             yield return joinedTable.Right.Value;
         }
 
+        public static RangeTableFunc Visit(PgXmlTableNode node)
+        {
+            return new RangeTableFunc
+            {
+                Docexpr = Visit(node.DocExpr),
+                Rowexpr = Visit(node.RowExpr),
+                Lateral = node.Lateral,
+                Namespaces = { node.Namespaces.Select(Visit) },
+                Columns = { node.Columns.Value.Select(Visit) }
+            };
+        }
+
+        public static RangeTableFuncCol Visit(PgXmlColumnNode node)
+        {
+            return new RangeTableFuncCol
+            {
+                Colname = node.Name.Value,
+                TypeName = node.TypeName.InvokeWhenNotNull(Visit),
+                Colexpr = Visit(node.ColumnExpression),
+                Coldefexpr = Visit(node.ColumnDefExpression),
+                ForOrdinality = node.ForOrdinality,
+                IsNotNull = node.IsNotNull
+            };
+        }
+        
         public static A_Const Visit(QsiLiteralExpressionNode node)
         {
             return node.Value switch
@@ -996,13 +1025,20 @@ public partial class PostgreSqlDeparser
                 QsiInlineDerivedTableNode qsiInlineDerived => Visit(qsiInlineDerived),
                 PgCompositeTableNode pgCompositeTable => Visit(pgCompositeTable),
                 PgRoutineTableNode routineTable => Visit(routineTable),
-                PgTableFunctionNode tableFunction => Visit(tableFunction),
+                PgTableFunctionNode pgTableFunction => Visit(pgTableFunction),
                 IQsiDerivedTableNode qsiDerivedTable => Visit(qsiDerivedTable),
+                PgXmlTableNode pgXmlTableNode => Visit(pgXmlTableNode),
 
                 // Definition Nodes
                 PgTableDefinitionNode pgTableDefinition => Visit(pgTableDefinition),
                 PgViewDefinitionNode pgViewDefinition => Visit(pgViewDefinition),
                 PgColumnDefinitionNode pgColumnDefinition => Visit(pgColumnDefinition),
+
+                // Column Nodes
+                QsiDerivedColumnNode qsiDerivedColumn => Visit(qsiDerivedColumn),
+                QsiAllColumnNode qsiAllColumn => Visit(qsiAllColumn),
+                QsiSequentialColumnNode qsiSequentialColumn => Visit(qsiSequentialColumn),
+                PgXmlColumnNode pgXmlColumn => Visit(pgXmlColumn),
 
                 // Expression Nodes
                 QsiLiteralExpressionNode qsiLiteralExpression => Visit(qsiLiteralExpression),
@@ -1019,12 +1055,10 @@ public partial class PostgreSqlDeparser
                 PgCastExpressionNode pgCastExpression => Visit(pgCastExpression),
                 PgTypeExpressionNode pgTypeExpression => Visit(pgTypeExpression),
                 PgIndirectionExpressionNode pgIndirectionExpression => Visit(pgIndirectionExpression),
-                QsiDerivedColumnNode qsiDerivedColumn => Visit(qsiDerivedColumn),
                 PgIndexExpressionNode pgIndexExpression => Visit(pgIndexExpression),
                 PgSubLinkExpressionNode pgSubLinkExpression => Visit(pgSubLinkExpression),
                 PgNullTestExpressionNode pgNullTestExpression => Visit(pgNullTestExpression),
                 QsiMultipleExpressionNode qsiMultipleExpression => Visit(qsiMultipleExpression),
-                QsiAllColumnNode qsiAllColumn => Visit(qsiAllColumn),
                 QsiSwitchExpressionNode qsiSwitchExpression => Visit(qsiSwitchExpression),
                 QsiSwitchCaseExpressionNode qsiSwitchCaseExpression => Visit(qsiSwitchCaseExpression),
                 PgWindowDefExpressionNode pgWindowDefExpression => Visit(pgWindowDefExpression),
@@ -1034,7 +1068,6 @@ public partial class PostgreSqlDeparser
                 PgTableReferenceNode pgTableReference => Visit(pgTableReference),
                 QsiColumnReferenceNode qsiColumnReference => Visit(qsiColumnReference),
                 IQsiTableDirectivesNode qsiTableDirectives => Visit(qsiTableDirectives),
-                QsiSequentialColumnNode qsiSequentialColumn => Visit(qsiSequentialColumn),
                 PgGroupingSetExpressionNode pgGroupingSet => Visit(pgGroupingSet),
                 PgOrderExpressionNode pgOrder => Visit(pgOrder),
                 PgDefinitionElementNode pgDefinitionElement => Visit(pgDefinitionElement),

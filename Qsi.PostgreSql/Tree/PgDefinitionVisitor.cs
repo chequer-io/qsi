@@ -1,6 +1,7 @@
 using System.Linq;
 using PgQuery;
 using Qsi.Data;
+using Qsi.PostgreSql.Extensions;
 using Qsi.PostgreSql.Tree.Nodes;
 using Qsi.Tree;
 
@@ -17,10 +18,10 @@ internal static partial class PgNodeVisitor
             IsCreateTableAs = false,
             Relpersistence = node.Relation.Relpersistence.ToRelpersistence(),
             AccessMethod = node.AccessMethod,
-            TableElts = { node.TableElts.Select(VisitExpression) },
-            InheritRelations = { node.InhRelations.Select(VisitExpression) },
-            Constraints = { node.Constraints.Select(VisitExpression) },
-            Options = { node.Options.Select(VisitExpression) },
+            TableElts = { node.TableElts.Select(VisitExpression).WhereNotNull() },
+            InheritRelations = { node.InhRelations.Select(VisitExpression).WhereNotNull() },
+            Constraints = { node.Constraints.Select(VisitExpression).WhereNotNull() },
+            Options = { node.Options.Select(VisitExpression).WhereNotNull() },
             OfType = { Value = node.OfTypename is null ? null : Visit(node.OfTypename) },
             ConflictBehavior = node.IfNotExists ? QsiDefinitionConflictBehavior.Ignore : QsiDefinitionConflictBehavior.None,
             OnCommit = node.Oncommit,
@@ -90,7 +91,7 @@ internal static partial class PgNodeVisitor
         return new PgVariableSetActionNode
         {
             Name = new QsiIdentifier(node.Name, false),
-            Arguments = { node.Args.Select(VisitExpression) },
+            Arguments = { node.Args.Select(VisitExpression).WhereNotNull() },
             IsLocal = node.IsLocal,
             Kind = node.Kind
         };
@@ -123,8 +124,8 @@ internal static partial class PgNodeVisitor
             Replace = node.Replace,
             IsProcedure = node.IsProcedure,
             ReturnType = { Value = Visit(node.ReturnType) },
-            Parameters = { node.Parameters.Select(Visit<PgFunctionParameterExpressionNode>) },
-            Options = { node.Options.Select(Visit<PgDefinitionElementNode>) },
+            Parameters = { node.Parameters.Select(Visit<PgFunctionParameterExpressionNode>).WhereNotNull() },
+            Options = { node.Options.Select(Visit<PgDefinitionElementNode>).WhereNotNull() },
             SqlBody = { Value = Visit<QsiTreeNode>(node.SqlBody) }
         };
     }
@@ -137,8 +138,8 @@ internal static partial class PgNodeVisitor
             TypeName = { Value = node.TypeName is null ? null : Visit(node.TypeName) },
             RawDefault = { Value = VisitExpression(node.RawDefault) },
             CollClause = { Value = node.CollClause is null ? null : Visit(node.CollClause) },
-            Constraints = { node.Constraints.Select(VisitExpression) },
-            FdwOptions = { node.Fdwoptions.Select(VisitExpression) }
+            Constraints = { node.Constraints.Select(VisitExpression).WhereNotNull() },
+            FdwOptions = { node.Fdwoptions.Select(VisitExpression).WhereNotNull() }
         };
     }
 }

@@ -22,8 +22,43 @@ namespace Qsi.PostgreSql.Analyzers
         {
         }
 
+        public override async ValueTask<QsiTableStructure> BuildTableStructure(TableCompileContext context, IQsiTableNode table)
+        {
+            context.ThrowIfCancellationRequested();
+
+            switch (table)
+            {
+                case PgXmlTableNode xmlTable:
+                    return await BuildXmlTableStructure(context, xmlTable);
+
+                default:
+                    return await base.BuildTableStructure(context, table);
+            }
+        }
+
+        protected Task<QsiTableStructure> BuildXmlTableStructure(TableCompileContext context, PgXmlTableNode node)
+        {
+            context.ThrowIfCancellationRequested();
+
+            var structure = new QsiTableStructure
+            {
+                Identifier = new QsiQualifiedIdentifier(new QsiIdentifier("xmltable", false)),
+                Type = QsiTableType.Inline,
+            };
+
+            foreach (var colNode in node.Columns.Value.OfType<PgXmlColumnNode>())
+            {
+                var column = structure.NewColumn();
+                column.Name = colNode.Name;
+            }
+
+            return Task.FromResult(structure);
+        }
+
         protected override async Task<QsiTableStructure> BuildTableFunctionStructure(TableCompileContext context, IQsiTableFunctionNode table)
         {
+            context.ThrowIfCancellationRequested();
+
             if (table is not PgTableFunctionNode pgTable)
                 return await base.BuildTableFunctionStructure(context, table);
 
@@ -133,6 +168,8 @@ namespace Qsi.PostgreSql.Analyzers
 
         protected override async ValueTask<QsiTableStructure> BuildCompositeTableStructure(TableCompileContext context, IQsiCompositeTableNode table)
         {
+            context.ThrowIfCancellationRequested();
+
             var structure = await base.BuildCompositeTableStructure(context, table);
 
             if (table is PgRoutineTableNode { Ordinality: true })
@@ -146,6 +183,8 @@ namespace Qsi.PostgreSql.Analyzers
 
         protected override IEnumerable<QsiTableColumn> ResolveColumnsInExpression(TableCompileContext context, IQsiExpressionNode expression)
         {
+            context.ThrowIfCancellationRequested();
+
             switch (expression)
             {
                 case PgBooleanTestExpressionNode e:
@@ -317,53 +356,6 @@ namespace Qsi.PostgreSql.Analyzers
                         yield return qsiTableColumn;
 
                     break;
-            }
-        }
-
-        protected override QsiTableColumn[] ResolveColumnReference(TableCompileContext context, IQsiColumnReferenceNode column, out QsiQualifiedIdentifier implicitTableWildcardTarget)
-        {
-            try
-            {
-                return base.ResolveColumnReference(context, column, out implicitTableWildcardTarget);
-            }
-            catch (QsiException e)
-            {
-                if (e.Error is QsiError.UnknownColumnIn)
-                {
-                    if (context.SourceTable?.Columns.Count == 0)
-                    {
-                        implicitTableWildcardTarget = default;
-
-                        return new[]
-                        {
-                            new QsiTableColumn
-                            {
-                                Name = column.Name[^1],
-                                IsVisible = true,
-                                Parent = context.SourceTable
-                            }
-                        };
-                    }
-
-                    var table = context.JoinedSouceTables.FirstOrDefault(s => s.Columns.Count == 0);
-
-                    if (table is not null)
-                    {
-                        implicitTableWildcardTarget = default;
-
-                        return new[]
-                        {
-                            new QsiTableColumn
-                            {
-                                Name = column.Name[^1],
-                                IsVisible = true,
-                                Parent = table
-                            }
-                        };
-                    }
-                }
-
-                throw;
             }
         }
     }

@@ -16,9 +16,9 @@ public class PgColumnDefinitionNode : QsiTreeNode, IQsiDefinitionNode
 
     public QsiTreeNodeProperty<PgCollateExpressionNode> CollClause { get; }
 
-    public QsiTreeNodeList<QsiTreeNode?> Constraints { get; }
+    public QsiTreeNodeList<QsiTreeNode> Constraints { get; }
 
-    public QsiTreeNodeList<QsiTreeNode?> FdwOptions { get; }
+    public QsiTreeNodeList<QsiTreeNode> FdwOptions { get; }
 
     public override IEnumerable<IQsiTreeNode> Children =>
         TreeHelper.YieldChildren(TypeName, RawDefault, CollClause)
@@ -30,7 +30,7 @@ public class PgColumnDefinitionNode : QsiTreeNode, IQsiDefinitionNode
         TypeName = new QsiTreeNodeProperty<QsiTypeExpressionNode>(this);
         RawDefault = new QsiTreeNodeProperty<QsiExpressionNode>(this);
         CollClause = new QsiTreeNodeProperty<PgCollateExpressionNode>(this);
-        Constraints = new QsiTreeNodeList<QsiTreeNode?>(this);
-        FdwOptions = new QsiTreeNodeList<QsiTreeNode?>(this);
+        Constraints = new QsiTreeNodeList<QsiTreeNode>(this);
+        FdwOptions = new QsiTreeNodeList<QsiTreeNode>(this);
     }
 }

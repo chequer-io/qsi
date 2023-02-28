@@ -13,11 +13,11 @@ public class PgFunctionDefinitionNode : QsiTreeNode, IQsiDefinitionNode
 
     public bool IsProcedure { get; set; }
 
-    public QsiTreeNodeList<PgFunctionParameterExpressionNode?> Parameters { get; }
+    public QsiTreeNodeList<PgFunctionParameterExpressionNode> Parameters { get; }
 
     public QsiTreeNodeProperty<PgTypeExpressionNode> ReturnType { get; }
 
-    public QsiTreeNodeList<PgDefinitionElementNode?> Options { get; }
+    public QsiTreeNodeList<PgDefinitionElementNode> Options { get; }
 
     public QsiTreeNodeProperty<QsiTreeNode> SqlBody { get; }
 
@@ -26,9 +26,9 @@ public class PgFunctionDefinitionNode : QsiTreeNode, IQsiDefinitionNode
     public PgFunctionDefinitionNode(QsiQualifiedIdentifier name)
     {
         Name = name;
-        Parameters = new QsiTreeNodeList<PgFunctionParameterExpressionNode?>(this);
+        Parameters = new QsiTreeNodeList<PgFunctionParameterExpressionNode>(this);
         ReturnType = new QsiTreeNodeProperty<PgTypeExpressionNode>(this);
-        Options = new QsiTreeNodeList<PgDefinitionElementNode?>(this);
+        Options = new QsiTreeNodeList<PgDefinitionElementNode>(this);
         SqlBody = new QsiTreeNodeProperty<QsiTreeNode>(this);
     }
 }

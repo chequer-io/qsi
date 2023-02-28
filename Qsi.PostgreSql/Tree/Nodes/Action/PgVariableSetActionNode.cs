@@ -10,7 +10,7 @@ public class PgVariableSetActionNode : QsiActionNode
 {
     public QsiIdentifier? Name { get; set; }
 
-    public QsiTreeNodeList<QsiExpressionNode?> Arguments { get; }
+    public QsiTreeNodeList<QsiExpressionNode> Arguments { get; }
 
     public bool IsLocal { get; set; }
 
@@ -20,6 +20,6 @@ public class PgVariableSetActionNode : QsiActionNode
 
     public PgVariableSetActionNode()
     {
-        Arguments = new QsiTreeNodeList<QsiExpressionNode?>(this);
+        Arguments = new QsiTreeNodeList<QsiExpressionNode>(this);
     }
 }

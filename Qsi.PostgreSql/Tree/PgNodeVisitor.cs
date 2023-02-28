@@ -33,6 +33,8 @@ internal static partial class PgNodeVisitor
             DefElem defElem => Visit(defElem),
             ColumnDef columnDef => Visit(columnDef),
             FunctionParameter funcParameter => Visit(funcParameter),
+            RangeTableFunc rangeTableFunc => Visit(rangeTableFunc),
+            RangeTableFuncCol rangeTableFuncCol => Visit(rangeTableFuncCol),
             _ => throw TreeHelper.NotSupportedTree(node.Get())
         };
     }

@@ -3,6 +3,7 @@ using System.Linq;
 using Google.Protobuf.Collections;
 using PgQuery;
 using Qsi.Data;
+using Qsi.PostgreSql.Extensions;
 using Qsi.PostgreSql.Tree.Nodes;
 using Qsi.Tree;
 using Qsi.Utilities;
@@ -55,7 +56,7 @@ internal static partial class PgNodeVisitor
 
         if (node.DistinctClause is { } distinctClause)
         {
-            table.DisinictExpressions.AddRange(distinctClause.Select(VisitExpression));
+            table.DisinictExpressions.AddRange(distinctClause.Select(VisitExpression).WhereNotNull());
         }
 
         // <target>
@@ -320,6 +321,38 @@ internal static partial class PgNodeVisitor
         }
 
         return routineTable.WithAlias(node.Alias);
+    }
+
+    public static QsiTableNode Visit(RangeTableFunc node)
+    {
+        var table = new PgXmlTableNode
+        {
+            RowExpr = { Value = VisitExpression(node.Rowexpr) },
+            DocExpr = { Value = VisitExpression(node.Docexpr) },
+            Columns =
+            {
+                Value = new QsiColumnsDeclarationNode
+                {
+                    Columns = { node.Columns.Select(Visit<PgXmlColumnNode>) }
+                }
+            },
+            Namespaces = { node.Namespaces.Select(VisitExpression).WhereNotNull() }
+        };
+
+        return table.WithAlias(node.Alias);
+    }
+
+    public static PgXmlColumnNode Visit(RangeTableFuncCol node)
+    {
+        return new PgXmlColumnNode
+        {
+            Name = new QsiIdentifier(node.Colname, false),
+            TypeName = { Value = Visit(node.TypeName) },
+            ColumnExpression = { Value = VisitExpression(node.Colexpr) },
+            ColumnDefExpression = { Value = VisitExpression(node.Coldefexpr) },
+            ForOrdinality = node.ForOrdinality,
+            IsNotNull = node.IsNotNull
+        };
     }
 
     // UPDATE table SET (c1, c2) = (SELECT c1, c2 FROM table2 WHERE table2.c1 = table.c1)

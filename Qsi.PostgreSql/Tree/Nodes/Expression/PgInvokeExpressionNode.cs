@@ -17,7 +17,7 @@ public class PgInvokeExpressionNode : QsiInvokeExpressionNode
 
     public bool FunctionVariadic { get; set; }
 
-    public QsiTreeNodeList<QsiExpressionNode?> AggregateOrder { get; }
+    public QsiTreeNodeList<QsiExpressionNode> AggregateOrder { get; }
 
     public QsiTreeNodeProperty<QsiExpressionNode> AggregateFilter { get; }
 
@@ -25,7 +25,7 @@ public class PgInvokeExpressionNode : QsiInvokeExpressionNode
 
     public PgInvokeExpressionNode()
     {
-        AggregateOrder = new QsiTreeNodeList<QsiExpressionNode?>(this);
+        AggregateOrder = new QsiTreeNodeList<QsiExpressionNode>(this);
         AggregateFilter = new QsiTreeNodeProperty<QsiExpressionNode>(this);
         Over = new QsiTreeNodeProperty<PgWindowDefExpressionNode>(this);
     }
