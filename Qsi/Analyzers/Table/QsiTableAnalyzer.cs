@@ -804,7 +804,7 @@ public class QsiTableAnalyzer : QsiAnalyzerBase
                 .Take(2)
                 .ToArray();
 
-            // If visible column is not exists get invisible columns
+            // If visible column is not exists, get invisible columns
             if (columns.Length is 0)
             {
                 columns = candidateSourceTables
