@@ -800,9 +800,18 @@ public class QsiTableAnalyzer : QsiAnalyzerBase
             }
 
             QsiTableColumn[] columns = candidateSourceTables
-                .SelectMany(s => s.Columns.Where(c => Match(c.Name, lastName)))
+                .SelectMany(s => s.Columns.Where(c => Match(c.Name, lastName) && c.IsVisible))
                 .Take(2)
                 .ToArray();
+
+            // If visible column is not exists get invisible columns
+            if (columns.Length is 0)
+            {
+                columns = candidateSourceTables
+                    .SelectMany(s => s.Columns.Where(c => Match(c.Name, lastName) && !c.IsVisible))
+                    .Take(2)
+                    .ToArray();
+            }
 
             switch (columns.Length)
             {
