@@ -69,6 +69,7 @@ namespace Qsi.Debugger
                 ["MySQL 8.0.22"] = new(() => new MySqlDebugger(new Version(8, 0, 22))),
                 ["MySQL 8.0.22 (No Delimiter)"] = new(() => new MySqlDebugger(new Version(8, 0, 22), false)),
                 ["PostgreSQL"] = new(() => new PostgreSqlDebugger()),
+                ["PostgreSQL (ChakraCore)"] = new(() => new PostgreSqlLegacyDebugger()),
                 ["SQL Server 2000"] = new(() => new SqlServerDebugger(TransactSqlVersion.Version80)),
                 ["SQL Server 2012"] = new(() => new SqlServerDebugger(TransactSqlVersion.Version110)),
                 ["SQL Server 2017"] = new(() => new SqlServerDebugger(TransactSqlVersion.Version140)),

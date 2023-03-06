@@ -9,11 +9,11 @@ using Qsi.Services;
 
 namespace Qsi.PostgreSql
 {
-    public abstract class PostgreSqlLanguageServiceBase : QsiLanguageServiceBase
+    public abstract class PostgreSqlLanguageLegacyServiceBase : QsiLanguageServiceBase
     {
         public override IQsiTreeParser CreateTreeParser()
         {
-            return new PostgreSqlParser();
+            return new PostgreSqlLegacyParser();
         }
 
         public override IQsiTreeDeparser CreateTreeDeparser()
@@ -32,8 +32,7 @@ namespace Qsi.PostgreSql
             {
                 AllowEmptyColumnsInSelect = true,
                 AllowEmptyColumnsInInline = true,
-                AllowNoAliasInDerivedTable = true,
-                IncludeInvisibleColumnsInAlias = true
+                AllowNoAliasInDerivedTable = true
             };
         }
 

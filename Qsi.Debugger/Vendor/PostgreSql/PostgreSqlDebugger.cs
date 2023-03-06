@@ -1,23 +1,18 @@
-﻿using Qsi.Diagnostics;
+using Qsi.Diagnostics;
 using Qsi.PostgreSql.Diagnostics;
 using Qsi.Services;
 
-namespace Qsi.Debugger.Vendor.PostgreSql
+namespace Qsi.Debugger.Vendor.PostgreSql;
+
+internal class PostgreSqlDebugger : VendorDebugger
 {
-    internal class PostgreSqlDebugger : VendorDebugger
+    protected override IRawTreeParser CreateRawTreeParser()
     {
-        public PostgreSqlDebugger()
-        {
-        }
+        return new PostgreSqlRawParser();
+    }
 
-        protected override IQsiLanguageService CreateLanguageService()
-        {
-            return new PostgreSqlLanguageService();
-        }
-
-        protected override IRawTreeParser CreateRawTreeParser()
-        {
-            return new PostgreSqlRawParser();
-        }
+    protected override IQsiLanguageService CreateLanguageService()
+    {
+        return new PostgreSqlLanguageService();
     }
 }

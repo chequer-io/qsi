@@ -61,5 +61,15 @@ namespace Qsi.Debugger.Vendor
                 c.Name = new QsiIdentifier(name, IdentifierUtility.IsEscaped(name));
             }
         }
+
+        protected void AddInvisibleColumns(QsiTableStructure table, params string[] names)
+        {
+            foreach (var name in names)
+            {
+                var c = table.NewColumn();
+                c.IsVisible = false;
+                c.Name = new QsiIdentifier(name, IdentifierUtility.IsEscaped(name));
+            }
+        }
     }
 }

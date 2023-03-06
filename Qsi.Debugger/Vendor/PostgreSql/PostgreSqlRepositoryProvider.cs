@@ -55,6 +55,16 @@ namespace Qsi.Debugger.Vendor.PostgreSql
                 case "pg_database":
                     var pgDatabase = CreateTable("postgres", "pg_catalog", "pg_database");
 
+                    AddInvisibleColumns(
+                        pgDatabase,
+                        "tableoid",
+                        "cmax",
+                        "xmax",
+                        "cmin",
+                        "xmin",
+                        "ctid"
+                    );
+
                     AddColumns(
                         pgDatabase,
                         "oid",
@@ -315,7 +325,7 @@ namespace Qsi.Debugger.Vendor.PostgreSql
                             RETURNS SETOF record
                             LANGUAGE internal
                             STABLE PARALLEL SAFE STRICT COST 10 ROWS 500
-                            AS $function$pg_get_keywords$function$", 
+                            AS $function$pg_get_keywords$function$",
                         5);
                 }
             }
