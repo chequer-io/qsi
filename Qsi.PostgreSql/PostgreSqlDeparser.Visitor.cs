@@ -55,7 +55,6 @@ public partial class PostgreSqlDeparser
                 };
             }
 
-            // ignored ReturningList
             return new InsertStmt
             {
                 Relation = relation,
@@ -84,7 +83,6 @@ public partial class PostgreSqlDeparser
             if (Visit(target) is not { RangeVar: { } rangeVar })
                 throw new InvalidOperationException("Target is not RangeVar");
 
-            // ignored ReturningList
             return new UpdateStmt
             {
                 Relation = rangeVar,
@@ -119,7 +117,6 @@ public partial class PostgreSqlDeparser
             if (Visit(target) is not { RangeVar: { } rangeVar })
                 throw new InvalidOperationException("Target is not RangeVar");
 
-            // Ignored usingClause, returningList
             return new DeleteStmt
             {
                 Relation = rangeVar,
@@ -366,7 +363,7 @@ public partial class PostgreSqlDeparser
                 IsNotNull = node.IsNotNull
             };
         }
-        
+
         public static A_Const Visit(QsiLiteralExpressionNode node)
         {
             return node.Value switch

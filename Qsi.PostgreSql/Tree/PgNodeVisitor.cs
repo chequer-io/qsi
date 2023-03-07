@@ -48,7 +48,6 @@ internal static partial class PgNodeVisitor
             InsertStmt insert => Visit(insert),
             DeleteStmt delete => Visit(delete),
             UpdateStmt update => Visit(update),
-            MergeStmt merge => Visit(merge),
             SelectStmt select => Visit(select),
             CreateStmt create => Visit(create),
             CreateTableAsStmt createTableAs => Visit(createTableAs),

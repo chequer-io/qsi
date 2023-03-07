@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using PgQuery;
 using Qsi.Data;
+using Qsi.PostgreSql.Extensions;
 using Qsi.PostgreSql.Tree.Nodes;
 using Qsi.Tree;
 using Qsi.Utilities;
@@ -12,6 +13,9 @@ internal static partial class PgNodeVisitor
 {
     public static PgDataInsertActionNode Visit(InsertStmt node)
     {
+        if (node.ReturningList is not null)
+            throw TreeHelper.NotSupportedFeature("returning list");
+
         var relation = Visit(node.Relation);
 
         QsiTableReferenceNode target;
@@ -63,17 +67,18 @@ internal static partial class PgNodeVisitor
         {
             var subquery = Visit(node.SelectStmt);
 
-            if (subquery is QsiInlineDerivedTableNode values)
+            switch (subquery)
             {
-                insert.Values.AddRange(values.Rows);
-            }
-            else if (subquery is QsiTableNode table)
-            {
-                insert.ValueTable.Value = table;
-            }
-            else
-            {
-                throw CreateInternalException($"Not supported INSERT Selectstmt node: {subquery.GetType().Name}");
+                case QsiInlineDerivedTableNode values:
+                    insert.Values.AddRange(values.Rows);
+                    break;
+
+                case QsiTableNode table:
+                    insert.ValueTable.Value = table;
+                    break;
+
+                default:
+                    throw CreateInternalException($"Not supported INSERT Selectstmt node: {subquery.GetType().Name}");
             }
         }
 
@@ -95,17 +100,14 @@ internal static partial class PgNodeVisitor
 
         insert.Override = node.Override;
 
-        // ReturningList ignored
         return insert;
-    }
-
-    public static IQsiTreeNode Visit(MergeStmt node)
-    {
-        throw new NotImplementedException();
     }
 
     public static PgDataUpdateActionNode Visit(UpdateStmt node)
     {
+        if (node.ReturningList is not null)
+            throw TreeHelper.NotSupportedFeature("returning list");
+
         var target = Visit(node.Relation);
 
         if (node.WhereClause is { })
@@ -136,14 +138,19 @@ internal static partial class PgNodeVisitor
             update.SetValues.AddRange(node.TargetList.Select(t => VisitSetColumn(t.ResTarget)));
 
         if (node.FromClause is { })
-            update.FromSources.AddRange(node.FromClause.Select(Visit<QsiTableNode>));
+            update.FromSources.AddRange(node.FromClause.Select(Visit<QsiTableNode>).WhereNotNull());
 
-        // ignored ReturningList
         return update;
     }
 
     public static QsiDataDeleteActionNode Visit(DeleteStmt node)
     {
+        if (node.UsingClause is not null)
+            throw TreeHelper.NotSupportedFeature("using clause");
+
+        if (node.ReturningList is not null)
+            throw TreeHelper.NotSupportedFeature("returning list");
+
         var target = Visit(node.Relation);
 
         if (node.WhereClause is { } || node.WithClause is { })
@@ -168,7 +175,6 @@ internal static partial class PgNodeVisitor
             target = derivedTable;
         }
 
-        // Ignored usingClause, returningList
         return new QsiDataDeleteActionNode
         {
             Target = { Value = target }
