@@ -347,9 +347,9 @@ internal static partial class PgNodeVisitor
         return new PgXmlColumnNode
         {
             Name = new QsiIdentifier(node.Colname, false),
-            TypeName = { Value = Visit(node.TypeName) },
-            ColumnExpression = { Value = VisitExpression(node.Colexpr) },
-            ColumnDefExpression = { Value = VisitExpression(node.Coldefexpr) },
+            TypeName = { Value = node.TypeName is null ? null : Visit(node.TypeName) },
+            ColumnExpression = { Value = node.Colexpr is null ? null : VisitExpression(node.Colexpr) },
+            ColumnDefExpression = { Value = node.Coldefexpr is null ? null : VisitExpression(node.Coldefexpr) },
             ForOrdinality = node.ForOrdinality,
             IsNotNull = node.IsNotNull
         };
