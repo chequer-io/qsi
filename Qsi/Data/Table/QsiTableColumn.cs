@@ -21,6 +21,8 @@ namespace Qsi.Data
 
         public bool IsBinding { get; set; }
 
+        public bool HasIndex { get; set; }
+
         public bool IsAnonymous => Name == null;
 
         public bool IsDynamic { get; set; }
@@ -49,6 +51,7 @@ namespace Qsi.Data
             column.Default = Default;
             column.ImplicitTableWildcardTarget = ImplicitTableWildcardTarget;
             column._isExpression = _isExpression;
+            column.HasIndex = HasIndex;
 
             return column;
         }
