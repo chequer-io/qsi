@@ -6,6 +6,8 @@ namespace Qsi.Data
     {
         public QsiQualifiedIdentifier[] Identifiers { get; }
 
+        public QsiSensitiveDataHolder SensitiveDataHolder => null;
+
         public QsiChangeSearchPathAction(QsiQualifiedIdentifier[] identifiers)
         {
             Identifiers = identifiers;

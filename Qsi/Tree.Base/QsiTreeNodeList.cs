@@ -33,6 +33,11 @@ namespace Qsi.Tree
                 _list[i].Parent = _owner;
         }
 
+        public void Add(IEnumerable<TNode> items)
+        {
+            AddRange(items);
+        }
+
         public void Clear()
         {
             foreach (var item in _list)

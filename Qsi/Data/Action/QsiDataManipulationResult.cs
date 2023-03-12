@@ -17,5 +17,7 @@ namespace Qsi.Data
         public QsiDataRowCollection UpdateAfterRows { get; set; }
 
         public QsiDataRowCollection DeleteRows { get; set; }
+
+        public QsiSensitiveDataHolder SensitiveDataHolder { get; } = new();
     }
 }

@@ -262,7 +262,7 @@ namespace Qsi.MySql.Tree
                     });
 
                     break;
-                
+
                 case PredicateExprBetweenContext exprBetween:
                     node = TreeHelper.Create<QsiBinaryExpressionNode>(n =>
                     {
@@ -278,7 +278,7 @@ namespace Qsi.MySql.Tree
                     });
 
                     break;
-                
+
                 case PredicateExprLikeContext exprLike:
                     node = TreeHelper.Create<QsiBinaryExpressionNode>(n =>
                     {
@@ -362,7 +362,7 @@ namespace Qsi.MySql.Tree
                 {
                     n.Left.SetValue(VisitBitExpr(context.bitExpr(0)));
                     n.Operator = context.op.Text + " " + context.INTERVAL_SYMBOL().GetText();
-                    
+
                     n.Right.SetValue(TreeHelper.Create<QsiMultipleExpressionNode>(mn =>
                     {
                         mn.Elements.Add(VisitExpr(context.expr()));
@@ -433,7 +433,7 @@ namespace Qsi.MySql.Tree
 
                 case SimpleExprNotContext simpleExprNot:
                     return VisitSimpleExprNot(simpleExprNot);
-                
+
                 case SimpleExprListContext simpleExprList:
                     return VisitSimpleExprList(simpleExprList);
 
@@ -500,7 +500,7 @@ namespace Qsi.MySql.Tree
 
                 MySqlTree.PutContextSpan(n, context.columnRef());
             });
-            
+
             if (context.jsonOperator() == null)
                 return columnNode;
 
@@ -865,8 +865,13 @@ namespace Qsi.MySql.Tree
                 case REVERSE_SYMBOL:
                     return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
                     {
+                        var parameter = VisitExprWithParentheses(context.exprWithParentheses());
+
                         n.Member.SetValue(member);
-                        n.Parameters.Add(VisitExprWithParentheses(context.exprWithParentheses()));
+                        n.Parameters.Add(parameter);
+
+                        if (context.name?.Type is PASSWORD_SYMBOL)
+                            MySqlTree.SensitiveType[parameter] = QsiSensitiveDataType.Password;
 
                         MySqlTree.PutContextSpan(n, context);
                     });
@@ -1015,11 +1020,13 @@ namespace Qsi.MySql.Tree
                 case OLD_PASSWORD_SYMBOL:
                     return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
                     {
-                        n.Member.SetValue(member);
+                        var parameter = VisitTextLiteral(context.textLiteral());
 
-                        n.Parameters.Add(VisitTextLiteral(context.textLiteral()));
+                        n.Member.SetValue(member);
+                        n.Parameters.Add(parameter);
 
                         MySqlTree.PutContextSpan(n, context);
+                        MySqlTree.SensitiveType[parameter] = QsiSensitiveDataType.Password;
                     });
 
                 case WEIGHT_STRING_SYMBOL:
