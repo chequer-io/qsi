@@ -13,5 +13,7 @@ namespace Qsi.Data
         public QsiReferenceIsolationLevel IsolationLevel { get; set; }
 
         public QsiScript Definition { get; set; }
+        
+        public QsiSensitiveDataCollection SensitiveDataCollection => QsiSensitiveDataCollection.Empty;
     }
 }

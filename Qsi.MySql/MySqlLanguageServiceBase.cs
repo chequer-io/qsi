@@ -46,7 +46,7 @@ namespace Qsi.MySql
 
         public override IEnumerable<QsiAnalyzerBase> CreateAnalyzers(QsiEngine engine)
         {
-            yield return new QsiActionAnalyzer(engine);
+            yield return new MySqlActionAnalyzer(engine);
             yield return new MySqlTableAnalyzer(engine);
             yield return new QsiDefinitionAnalyzer(engine);
         }
