@@ -4,6 +4,6 @@ namespace Qsi.Analyzers
 {
     public readonly struct EmptyAnalysisResult : IQsiAnalysisResult
     {
-        QsiSensitiveDataCollection IQsiAnalysisResult.SensitiveDataCollection => null;
+        QsiSensitiveDataCollection IQsiAnalysisResult.SensitiveDataCollection => QsiSensitiveDataCollection.Empty;
     }
 }
