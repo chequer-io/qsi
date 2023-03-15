@@ -6,7 +6,7 @@ namespace Qsi.Analyzers.Table
     {
         public QsiTableStructure Table { get; }
 
-        public virtual QsiSensitiveDataHolder SensitiveDataHolder => null;
+        public virtual QsiSensitiveDataCollection SensitiveDataCollection => QsiSensitiveDataCollection.Empty;
 
         public QsiTableResult(QsiTableStructure table)
         {

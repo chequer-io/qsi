@@ -29,7 +29,7 @@ public class MySqlActionAnalyzer : QsiActionAnalyzer
                 .Select(values => values.Value)
                 .Append(whereExpr.Expression);
 
-            AddSensitiveData(firstResult.SensitiveDataHolder, nodes);
+            AddSensitiveData(firstResult.SensitiveDataCollection, nodes);
         }
 
         return result;
@@ -42,7 +42,7 @@ public class MySqlActionAnalyzer : QsiActionAnalyzer
         if (result.FirstOrDefault() is { } firstResult &&
             action.Target is IQsiDerivedTableNode { Where: { } whereExpr })
         {
-            AddSensitiveData(firstResult.SensitiveDataHolder, whereExpr.Expression);
+            AddSensitiveData(firstResult.SensitiveDataCollection, whereExpr.Expression);
         }
 
         return result;
@@ -53,41 +53,39 @@ public class MySqlActionAnalyzer : QsiActionAnalyzer
         var result = base.ResolveVariableSet(context, node);
 
         if (result.Name.Value is "PASSWORD")
-            result.SensitiveDataHolder.Add(new QsiSensitiveData(QsiSensitiveDataType.Password, MySqlTree.Span[node.Expression]));
+            result.SensitiveDataCollection.Add(CreateSensitiveData(QsiSensitiveDataType.Password, node.Expression));
 
         return result;
     }
 
-    protected override QsiUserInfo ResolveUser(IAnalyzerContext context, IQsiUserNode node, QsiSensitiveDataHolder dataHolder)
+    protected override QsiUserInfo ResolveUser(IAnalyzerContext context, IQsiUserNode node, QsiSensitiveDataCollection dataCollection)
     {
-        var result = base.ResolveUser(context, node, dataHolder);
+        var result = base.ResolveUser(context, node, dataCollection);
 
         if (node.Password is { })
-            dataHolder.Add(new QsiSensitiveData(QsiSensitiveDataType.Password, MySqlTree.Span[node.Password]));
+            dataCollection.Add(CreateSensitiveData(QsiSensitiveDataType.Password, node.Password));
 
         return result;
     }
 
-    private void AddSensitiveData(QsiSensitiveDataHolder holder, IEnumerable<IQsiExpressionNode> nodes)
+    private void AddSensitiveData(QsiSensitiveDataCollection collection, IEnumerable<IQsiExpressionNode> nodes)
     {
-        AddSensitiveData(holder, nodes.ToArray());
+        AddSensitiveData(collection, nodes.ToArray());
     }
 
-    private void AddSensitiveData(QsiSensitiveDataHolder holder, params IQsiExpressionNode[] nodes)
+    private void AddSensitiveData(QsiSensitiveDataCollection collection, params IQsiExpressionNode[] nodes)
     {
-        IEnumerable<(IQsiTreeNode expr, QsiSensitiveDataType type)> sensitiveExpressions = nodes
+        IEnumerable<QsiSensitiveData> sensitiveDatas = nodes
             .SelectMany(n => n.Flatten())
             .Select(e => (e, MySqlTree.SensitiveType[e]))
-            .Where(e => e.Item2 is not QsiSensitiveDataType.None);
+            .Where(e => e.Item2 is not QsiSensitiveDataType.None)
+            .Select(e => CreateSensitiveData(e.Item2, e.e));
 
-        foreach (var sensitiveExpression in sensitiveExpressions)
-        {
-            holder.Add(
-                new QsiSensitiveData(
-                    sensitiveExpression.type,
-                    MySqlTree.Span[sensitiveExpression.expr]
-                )
-            );
-        }
+        collection.AddRange(sensitiveDatas);
+    }
+
+    protected override QsiSensitiveData CreateSensitiveData(QsiSensitiveDataType dataType, IQsiTreeNode node)
+    {
+        return new QsiSensitiveData(dataType, MySqlTree.Span[node]);
     }
 }

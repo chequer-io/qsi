@@ -6,5 +6,5 @@ public class QsiUserActionResult : IQsiAnalysisResult
 {
     public QsiUserInfo[] UserInfos { get; set; }
 
-    public QsiSensitiveDataHolder SensitiveDataHolder { get; set; }
+    public QsiSensitiveDataCollection SensitiveDataCollection { get; } = new();
 }

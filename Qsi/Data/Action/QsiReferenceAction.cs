@@ -14,6 +14,6 @@ namespace Qsi.Data
 
         public QsiScript Definition { get; set; }
         
-        public QsiSensitiveDataHolder SensitiveDataHolder => null;
+        public QsiSensitiveDataCollection SensitiveDataCollection => QsiSensitiveDataCollection.Empty;
     }
 }

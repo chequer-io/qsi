@@ -1006,15 +1006,11 @@ namespace Qsi.Analyzers.Action
         #region CreateUser
         protected virtual ValueTask<IQsiAnalysisResult[]> ExecuteCreateUserAction(IAnalyzerContext context, IQsiCreateUserActionNode node)
         {
-            var dataHolder = new QsiSensitiveDataHolder();
+            var result = new QsiUserActionResult();
 
-            var result = new QsiUserActionResult
-            {
-                UserInfos = node.Users
-                    .Select(user => ResolveUser(context, user, dataHolder))
-                    .ToArray(),
-                SensitiveDataHolder = dataHolder
-            };
+            result.UserInfos = node.Users
+                .Select(user => ResolveUser(context, user, result.SensitiveDataCollection))
+                .ToArray();
 
             return result
                 .ToSingleArray()
@@ -1025,15 +1021,11 @@ namespace Qsi.Analyzers.Action
         #region AlterUser
         protected virtual ValueTask<IQsiAnalysisResult[]> ExecuteAlterUserAction(IAnalyzerContext context, IQsiAlterUserActionNode node)
         {
-            var dataHolder = new QsiSensitiveDataHolder();
+            var result = new QsiUserActionResult();
 
-            var result = new QsiUserActionResult
-            {
-                UserInfos = node.Users
-                    .Select(user => ResolveUser(context, user, dataHolder))
-                    .ToArray(),
-                SensitiveDataHolder = dataHolder
-            };
+            result.UserInfos = node.Users
+                .Select(user => ResolveUser(context, user, result.SensitiveDataCollection))
+                .ToArray();
 
             return result
                 .ToSingleArray()
@@ -1044,16 +1036,14 @@ namespace Qsi.Analyzers.Action
         #region GrantUser
         protected virtual ValueTask<IQsiAnalysisResult[]> ExecuteGrantUserAction(IAnalyzerContext context, IQsiGrantUserActionNode node)
         {
-            var dataHolder = new QsiSensitiveDataHolder();
-
             var result = new QsiGrantUserActionResult
             {
-                TargetUsers = node.Users
-                    .Select(user => ResolveUser(context, user, dataHolder))
-                    .ToArray(),
-                Roles = node.Roles?.ToArray() ?? Array.Empty<string>(),
-                SensitiveDataHolder = dataHolder
+                Roles = node.Roles?.ToArray() ?? Array.Empty<string>()
             };
+
+            result.TargetUsers = node.Users
+                .Select(user => ResolveUser(context, user, result.SensitiveDataCollection))
+                .ToArray();
 
             return result
                 .ToSingleArray()
@@ -1080,12 +1070,17 @@ namespace Qsi.Analyzers.Action
         }
         #endregion
 
-        protected virtual QsiUserInfo ResolveUser(IAnalyzerContext context, IQsiUserNode node, QsiSensitiveDataHolder dataHolder)
+        protected virtual QsiUserInfo ResolveUser(IAnalyzerContext context, IQsiUserNode node, QsiSensitiveDataCollection dataCollection)
         {
             return new QsiUserInfo
             {
                 UserName = node.UserName
             };
+        }
+
+        protected virtual QsiSensitiveData CreateSensitiveData(QsiSensitiveDataType dataType, IQsiTreeNode node)
+        {
+            throw new NotSupportedException();
         }
     }
 }

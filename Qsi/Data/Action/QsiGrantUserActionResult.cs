@@ -8,5 +8,5 @@ public class QsiGrantUserActionResult : IQsiAnalysisResult
 
     public QsiUserInfo[] TargetUsers { get; set; }
 
-    public QsiSensitiveDataHolder SensitiveDataHolder { get; set; }
+    public QsiSensitiveDataCollection SensitiveDataCollection { get; } = new();
 }

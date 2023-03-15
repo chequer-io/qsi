@@ -11,7 +11,7 @@ namespace Qsi.Engines.Explain
 
         public QsiDataValueOperation[] Operations { get; }
 
-        public QsiSensitiveDataHolder SensitiveDataHolder => null;
+        public QsiSensitiveDataCollection SensitiveDataCollection => QsiSensitiveDataCollection.Empty;
 
         public QsiExplainDataManipulationResult(QsiTableStructure table, QsiTableColumn[] affectedColumns, QsiDataValueOperation[] operations)
         {
