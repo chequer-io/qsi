@@ -254,7 +254,7 @@ namespace Qsi.MySql.Tree
 
                 node.Users.Add(new QsiUserNode
                 {
-                    UserName = IdentifierVisitor.VisitUser(alterUserTail.user()),
+                    Username = GetUsername(alterUserTail.user()),
                     Password =
                     {
                         Value = new QsiLiteralExpressionNode
@@ -274,7 +274,7 @@ namespace Qsi.MySql.Tree
                 // ignored
                 node.Users.Add(new QsiUserNode
                 {
-                    UserName = IdentifierVisitor.VisitUser(alterUserTail.user())
+                    Username = GetUsername(alterUserTail.user())
                 });
             }
             else if (context.HasToken(DEFAULT_SYMBOL) && context.HasToken(ROLE_SYMBOL))
@@ -283,7 +283,7 @@ namespace Qsi.MySql.Tree
 
                 node.Users.Add(new QsiUserNode
                 {
-                    UserName = IdentifierVisitor.VisitUser(alterUserTail.user())
+                    Username = GetUsername(alterUserTail.user())
                 });
             }
             else if (context.HasToken(RANDOM_SYMBOL) && context.HasToken(PASSWORD_SYMBOL))
@@ -293,7 +293,7 @@ namespace Qsi.MySql.Tree
 
                 node.Users.Add(new QsiUserNode
                 {
-                    UserName = IdentifierVisitor.VisitUser(alterUserTail.user())
+                    Username = GetUsername(alterUserTail.user())
                 });
             }
             else if (context.HasToken(FAILED_LOGIN_ATTEMPTS_SYMBOL))
@@ -338,13 +338,11 @@ namespace Qsi.MySql.Tree
         private static IEnumerable<QsiUserNode> VisitUserList(UserListContext context)
         {
             return context.user()
-                .Select(u => u.userIdentifierOrText() is { } userIdentifierOrText
-                    ? IdentifierVisitor.VisitUserIdentifierOrText(userIdentifierOrText)
-                    : null)
+                .Select(u => u.userIdentifierOrText()?.GetText())
                 .Where(i => i is not null)
                 .Select(i => new QsiUserNode
                 {
-                    UserName = i
+                    Username = i
                 });
         }
 
@@ -352,7 +350,7 @@ namespace Qsi.MySql.Tree
         {
             var user = new QsiUserNode
             {
-                UserName = IdentifierVisitor.VisitUser(context.user())
+                Username = GetUsername(context.user())
             }.WithContextSpan(context);
 
             if (context.IDENTIFIED_SYMBOL() is not null)
@@ -394,7 +392,7 @@ namespace Qsi.MySql.Tree
         {
             var user = new QsiUserNode
             {
-                UserName = IdentifierVisitor.VisitUser(context.user())
+                Username = GetUsername(context.user())
             }.WithContextSpan(context);
 
             if (context.IDENTIFIED_SYMBOL() is not null)
@@ -457,6 +455,11 @@ namespace Qsi.MySql.Tree
             }
 
             throw TreeHelper.NotSupportedTree(context);
+        }
+
+        private static string GetUsername(UserContext context)
+        {
+            return context.GetText();
         }
     }
 }

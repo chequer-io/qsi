@@ -1074,7 +1074,7 @@ namespace Qsi.Analyzers.Action
         {
             return new QsiUserInfo
             {
-                UserName = node.UserName
+                Username = node.Username
             };
         }
 

@@ -1,10 +1,8 @@
-using Qsi.Data;
-
 namespace Qsi.Tree;
 
 public interface IQsiUserNode : IQsiTreeNode
 {
-    QsiQualifiedIdentifier UserName { get; }
+    string Username { get; }
 
     IQsiExpressionNode Password { get; }
 

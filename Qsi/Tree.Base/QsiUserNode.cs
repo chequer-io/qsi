@@ -1,12 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
-using Qsi.Data;
 
 namespace Qsi.Tree;
 
 public class QsiUserNode : QsiTreeNode, IQsiUserNode
 {
-    public QsiQualifiedIdentifier UserName { get; set; }
+    public string Username { get; set; }
 
     public QsiTreeNodeProperty<QsiExpressionNode> Password { get; }
 

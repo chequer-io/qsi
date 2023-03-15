@@ -164,14 +164,6 @@ namespace Qsi.MySql.Tree
             }
         }
 
-        public static QsiQualifiedIdentifier VisitUser(UserContext context)
-        {
-            if (context.HasToken(CURRENT_USER_SYMBOL))
-                return new QsiQualifiedIdentifier();
-
-            return VisitUserIdentifierOrText(context.userIdentifierOrText());
-        }
-
         public static QsiQualifiedIdentifier VisitUserIdentifierOrText(UserIdentifierOrTextContext context)
         {
             var name = VisitTextOrIdentifier(context.textOrIdentifier(0));
