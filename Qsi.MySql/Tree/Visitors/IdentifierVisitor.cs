@@ -163,5 +163,26 @@ namespace Qsi.MySql.Tree
                     throw TreeHelper.NotSupportedTree(context.children[0]);
             }
         }
+
+        public static QsiQualifiedIdentifier VisitUserIdentifierOrText(UserIdentifierOrTextContext context)
+        {
+            var name = VisitTextOrIdentifier(context.textOrIdentifier(0));
+
+            if (context.AT_SIGN_SYMBOL() is { })
+                return new QsiQualifiedIdentifier(name, VisitTextOrIdentifier(context.textOrIdentifier(1)));
+
+            if (context.AT_TEXT_SUFFIX() is { } atTextSuffix)
+                return new QsiQualifiedIdentifier(name, new QsiIdentifier(atTextSuffix.GetText()[1..], false));
+
+            return new QsiQualifiedIdentifier(name);
+        }
+
+        public static QsiIdentifier VisitTextOrIdentifier(TextOrIdentifierContext context)
+        {
+            if (context.identifier() is { } identifier)
+                return VisitIdentifier(identifier);
+
+            return ExpressionVisitor.VisitTextStringLiteralAsIdentifier(context.textStringLiteral());
+        }
     }
 }

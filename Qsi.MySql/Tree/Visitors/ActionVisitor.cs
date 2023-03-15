@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Qsi.Data;
 using Qsi.MySql.Tree.Common;
 using Qsi.Shared.Extensions;
@@ -200,7 +201,7 @@ namespace Qsi.MySql.Tree
             return node;
         }
 
-        public static IQsiTreeNode VisitUseCommand(UseCommandContext context)
+        public static QsiChangeSearchPathActionNode VisitUseCommand(UseCommandContext context)
         {
             var node = new QsiChangeSearchPathActionNode
             {
@@ -213,6 +214,252 @@ namespace Qsi.MySql.Tree
             MySqlTree.PutContextSpan(node, context);
 
             return node;
+        }
+
+        public static QsiCreateUserActionNode VisitCreateUser(CreateUserContext context)
+        {
+            return new QsiCreateUserActionNode
+            {
+                ConflictBehavior = context.HasRule<IfNotExistsContext>() ? QsiDataConflictBehavior.Ignore : QsiDataConflictBehavior.None,
+                Users = { context.createUserList().createUserEntry().Select(VisitCreateUserEntry) }
+            }.WithContextSpan(context);
+        }
+
+        public static QsiAlterUserActionNode VisitAlterUser(AlterUserContext context)
+        {
+            var node = new QsiAlterUserActionNode
+            {
+                ConflictBehavior = context.HasRule<IfExistsContext>() ? QsiDataConflictBehavior.Ignore : QsiDataConflictBehavior.None
+            }.WithContextSpan(context);
+
+            if (context.alterUserTail() is not { } alterUserTail)
+                return node;
+
+            if (alterUserTail.createUserTail() is { })
+            {
+                // ( createUserList | alterUserList ) createUserTail
+
+                if (alterUserTail.createUserList() is { } createUserList)
+                {
+                    node.Users.AddRange(createUserList.createUserEntry().Select(VisitCreateUserEntry));
+                }
+                else if (alterUserTail.alterUserList() is { } alterUserList)
+                {
+                    node.Users.AddRange(alterUserList.alterUserEntry().Select(VisitAlterUserEntry));
+                }
+            }
+            else if (alterUserTail.textString() is { } textString)
+            {
+                // user IDENTIFIED BY textString replacePassword
+
+                node.Users.Add(new QsiUserNode
+                {
+                    Username = GetUsername(alterUserTail.user()),
+                    Password =
+                    {
+                        Value = new QsiLiteralExpressionNode
+                        {
+                            Value = textString.GetText(),
+                            Type = QsiDataType.String
+                        }.WithContextSpan(textString)
+                    }
+                });
+
+                // replacePassword ignored
+            }
+            else if (alterUserTail.discardOldPassword() is { })
+            {
+                // user DISCARD OLD PASSWORD
+
+                // ignored
+                node.Users.Add(new QsiUserNode
+                {
+                    Username = GetUsername(alterUserTail.user())
+                });
+            }
+            else if (context.HasToken(DEFAULT_SYMBOL) && context.HasToken(ROLE_SYMBOL))
+            {
+                // user DEFAULT ROLE (ALL | NONE | roleList)
+
+                node.Users.Add(new QsiUserNode
+                {
+                    Username = GetUsername(alterUserTail.user())
+                });
+            }
+            else if (context.HasToken(RANDOM_SYMBOL) && context.HasToken(PASSWORD_SYMBOL))
+            {
+                // user IDENTIFIER (WITH textOrIdentifier)? BY RANDOM PASSWORD retainCurrentPassword?
+                // RANDOM PASSWORD ignored
+
+                node.Users.Add(new QsiUserNode
+                {
+                    Username = GetUsername(alterUserTail.user())
+                });
+            }
+            else if (context.HasToken(FAILED_LOGIN_ATTEMPTS_SYMBOL))
+            {
+                // FAILED_LOGIN_ATTEMPTS real_ulong_number
+            }
+            else if (context.HasToken(PASSWORD_LOCK_TIME_SYMBOL))
+            {
+                // PASSWORD_LOCK_TIME (real_ulong_number | UNBOUNDED)
+            }
+
+            return node;
+        }
+
+        public static QsiGrantUserActionNode VisitGrant(GrantContext context)
+        {
+            var node = new QsiGrantUserActionNode().WithContextSpan(context);
+
+            if (context.roleOrPrivilegesList() is { } roleOrPrivilegesList)
+            {
+                node.Roles.AddRange(roleOrPrivilegesList.roleOrPrivilege().Select(p => p.GetInputText()));
+            }
+
+            if (context.HasToken(ALL_SYMBOL))
+                node.AllPrivileges = true;
+
+            if (context.userList() is { } userList)
+                node.Users.AddRange(VisitUserList(userList));
+
+            if (context.grantTargetList() is { } grantTargetList)
+            {
+                if (grantTargetList.userList() is { } grantTargetuserList)
+                    node.Users.AddRange(VisitUserList(grantTargetuserList));
+
+                if (grantTargetList.createUserList() is { } createUserList)
+                    node.Users.AddRange(createUserList.createUserEntry().Select(VisitCreateUserEntry));
+            }
+
+            return node;
+        }
+
+        private static IEnumerable<QsiUserNode> VisitUserList(UserListContext context)
+        {
+            return context.user()
+                .Select(u => u.userIdentifierOrText()?.GetText())
+                .Where(i => i is not null)
+                .Select(i => new QsiUserNode
+                {
+                    Username = i
+                });
+        }
+
+        private static QsiUserNode VisitCreateUserEntry(CreateUserEntryContext context)
+        {
+            var user = new QsiUserNode
+            {
+                Username = GetUsername(context.user())
+            }.WithContextSpan(context);
+
+            if (context.IDENTIFIED_SYMBOL() is not null)
+            {
+                if (context.HasToken(RANDOM_SYMBOL) && context.HasToken(PASSWORD_SYMBOL))
+                {
+                    // NOTE: RANDOM PASSWORD
+                }
+                else
+                {
+                    QsiLiteralExpressionNode password = null;
+
+                    if (context.textString() is { } textString)
+                    {
+                        password = new QsiLiteralExpressionNode().WithContextSpan(textString);
+
+                        password.Value = textString.GetText();
+                        password.Type = QsiDataType.String;
+                    }
+                    else if (context.textStringHash() is { } textStringHash)
+                    {
+                        password = new QsiLiteralExpressionNode().WithContextSpan(textStringHash);
+
+                        password.Value = textStringHash.GetText();
+                        password.Type = QsiDataType.String;
+                    }
+
+                    if (password is { })
+                        user.Password.Value = password;
+
+                    // WITH <auth_plugin> ignored
+                }
+            }
+
+            return user;
+        }
+
+        public static QsiUserNode VisitAlterUserEntry(AlterUserEntryContext context)
+        {
+            var user = new QsiUserNode
+            {
+                Username = GetUsername(context.user())
+            }.WithContextSpan(context);
+
+            if (context.IDENTIFIED_SYMBOL() is not null)
+            {
+                QsiLiteralExpressionNode password = null;
+
+                if (context.textString(0) is { } textString)
+                {
+                    password = new QsiLiteralExpressionNode().WithContextSpan(textString);
+
+                    password.Value = textString.GetText();
+                    password.Type = QsiDataType.String;
+                }
+                else if (context.textStringHash() is { } textStringHash)
+                {
+                    password = new QsiLiteralExpressionNode().WithContextSpan(textStringHash);
+
+                    password.Value = textStringHash.GetText();
+                    password.Type = QsiDataType.String;
+                }
+
+                if (password is { })
+                    user.Password.Value = password;
+
+                // WITH <auth_plugin> ignored
+                // retainCurrentPassword ignored
+            }
+
+            // discardOldPassword ignored
+
+            return user;
+        }
+
+        public static QsiVariableSetActionNode VisitSetStatement(SetStatementContext context)
+        {
+            if (context.startOptionValueList() is not { } options)
+                throw TreeHelper.NotSupportedTree(context);
+
+            if (options.HasToken(PASSWORD_SYMBOL) && options.HasRule<EqualContext>())
+            {
+                // PASSWORD (FOR user) = textString 
+                return new QsiVariableSetActionNode
+                {
+                    SetItems =
+                    {
+                        new QsiVariableSetItemNode
+                        {
+                            Name = new QsiIdentifier("PASSWORD", false),
+                            Expression =
+                            {
+                                Value = new QsiLiteralExpressionNode
+                                {
+                                    Value = options.textString().GetText(),
+                                    Type = QsiDataType.String
+                                }.WithContextSpan(options.textString())
+                            }
+                        }
+                    }
+                };
+            }
+
+            throw TreeHelper.NotSupportedTree(context);
+        }
+
+        private static string GetUsername(UserContext context)
+        {
+            return context.GetText();
         }
     }
 }
