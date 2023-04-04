@@ -198,7 +198,19 @@ public partial class PostgreSqlTest : VendorTestBase
 
         return ((QsiTableResult)results[0]).Table.Columns
             .Select(c => c.Name?.ToString())
+            .Select(name =>
+            {
+                if (name.Length < 2)
+                    return name.ToLower();
+
+                if (name.StartsWith('"') && name.EndsWith('"'))
+                    return name;
+
+                return name.ToLower();
+            })
             .ToArray();
+        
+        
     }
 
     /// <summary>
