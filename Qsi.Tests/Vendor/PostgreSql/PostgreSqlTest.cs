@@ -131,6 +131,11 @@ public partial class PostgreSqlTest : VendorTestBase
         return new PostgreSqlLanguageService(connection);
     }
 
+    /// <summary>
+    /// Qsi Engine에서, 예외가 발생하지 않고 동작하는지 체크합니다.
+    /// </summary>
+    /// <remarks>이 테스트는 실제 분석 결과를 체크하지 않으며, 오직 예외 발생 여부만 확인합니다.</remarks>
+    /// <param name="query">테스트용 쿼리입니다. 이 쿼리는 문법적으로 오류가 없어야 합니다.</param>
     [Timeout(10000)]
     [TestCaseSource(nameof(_pgTestCaseDatas))]
     [TestCaseSource(nameof(_dataGripTestDatas))]
@@ -159,6 +164,10 @@ public partial class PostgreSqlTest : VendorTestBase
         Assert.Pass();
     }
 
+    /// <summary>
+    /// SELECT 문에 대한 기본적인 테스트를 수행합니다.
+    /// </summary>
+    /// <param name="query">SELECT 문 쿼리입니다.</param>
     [TestCaseSource(nameof(BasicSelectTestDatas))]
     public async Task Test_SELECT_Basic(string query)
     {
@@ -172,6 +181,11 @@ public partial class PostgreSqlTest : VendorTestBase
         await Verifier.Verify(views).UseDirectory("verified");
     }
 
+    /// <summary>
+    /// SELECT 문의 결과 중, 컬럼이 올바른지에 대한 테스트를 수행합니다.
+    /// </summary>
+    /// <param name="query">SELECT 문 쿼리입니다.</param>
+    /// <returns>컬럼 이름 목록입니다.</returns>
     [TestCaseSource(nameof(ColumnNameSelectTestDatas))]
     [TestCaseSource(nameof(SystemTableFunctionTestDatas))]
     public async Task<string[]> Test_SELECT_Column_Name(string query)
@@ -187,6 +201,12 @@ public partial class PostgreSqlTest : VendorTestBase
             .ToArray();
     }
 
+    /// <summary>
+    /// INSERT, UPDATE, DELETE 문 등 DML에 대한 테스트룰 수행합니다.
+    /// </summary>
+    /// <param name="query">DML 문입니다.</param>
+    /// <param name="expectedQueries">DML 문을 분석할 때 추가로 수행이 예상되는 쿼리의 목록입니다.</param>
+    /// <param name="expectedResultCount">Qsi 분석 결과 인스턴스의 예상 갯수입니다.</param>
     [TestCaseSource(nameof(InsertTestDatas))]
     [TestCaseSource(nameof(UpdateTestDatas))]
     [TestCaseSource(nameof(DeleteTestDatas))]
@@ -202,6 +222,11 @@ public partial class PostgreSqlTest : VendorTestBase
         Assert.AreEqual(results.Length, expectedResultCount);
     }
 
+    /// <summary>
+    /// Parameterized query에 대하여 테스트를 수행합니다.
+    /// </summary>
+    /// <param name="query">Parameterized된 쿼리입니다.</param>
+    /// <param name="arguments">쿼리에 들어갈 인자 목록입니다.</param>
     [TestCaseSource(nameof(ParameterTestDatas))]
     public async Task Test_Parameters(string query, object[] arguments)
     {
