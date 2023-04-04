@@ -83,7 +83,7 @@ public partial class PostgreSqlTest
         new("SELECT c.checkpoint_lsn, c.timeline_id FROM pg_control_checkpoint as c") { ExpectedResult = new[] { "checkpoint_lsn", "timeline_id" } },
         new("SELECT * FROM current_catalog") { ExpectedResult = new[] { "current_catalog" } },
         new("SELECT * FROM current_catalog WITH ORDINALITY") { ExpectedResult = new[] { "current_catalog", "ordinality" } },
-        new("SELECT * FROM current_dialog WITH ORDINALITY as x ( t1, t2 )") { ExpectedResult = new[] { "t1", "t2" } },
+        new("SELECT * FROM current_catalog WITH ORDINALITY as x ( t1, t2 )") { ExpectedResult = new[] { "t1", "t2" } },
         new("SELECT * FROM ROWS FROM ( current_catalog, current_user, pg_get_keywords() )") { ExpectedResult = new[] { "current_catalog", "current_user", "word", "catcode", "catdesc" } },
         new("SELECT current_database.* FROM ROWS FROM ( current_database(), current_user )") { ExpectedResult = new[] { "current_database, current_user" } },
 
@@ -166,7 +166,7 @@ public partial class PostgreSqlTest
 
         // Unicode Escape
         new("SELECT U&'d\\0061t\\+000061'"),
-        new("SELECT U&'\\0441\\043B\\043E\\043D''"),
+        new("SELECT U&'\\0441\\043B\\043E\\043D'"),
         new("SELECT U&'d!0061t!+000061' UESCAPE '!'"),
         
         // C-stype Escape

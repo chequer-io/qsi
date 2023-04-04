@@ -32,8 +32,8 @@ public partial class PostgreSqlTest
         new("INSERT INTO actor VALUES (1, 2, 3, now()) ON CONFLICT (actor_id) DO UPDATE SET first_name = actor.first_name, last_name = excluded.last_name", Array.Empty<string>(), 1),
         new("INSERT INTO actor VALUES (1, 2, 3, now()) ON CONFLICT (actor_id) WHERE actor_id > 10 DO UPDATE SET first_name = actor.first_name, last_name = excluded.last_name", Array.Empty<string>(), 1),
         new("INSERT INTO actor VALUES (1, 2, 3, now()) ON CONFLICT (actor_id) DO UPDATE SET first_name = actor.first_name, last_name = excluded.last_name WHERE actor.actor_id > 10", Array.Empty<string>(), 1),
-        new("INSERT INTO actor VALUES (1, 2, 3, now()) ON CONFLICT ON COSNTRAINT actor_pkey DO UPDATE SET first_name = actor.first_name, last_name = excluded.last_name", Array.Empty<string>(), 1),
-        new("INSERT INTO actor VALUES (1, 2, 3, now()) ON CONFLICT ON COSNTRAINT actor_pkey DO UPDATE SET (first_name, last_name) = (actor.first_name, excluded.last_name)", Array.Empty<string>(), 1),
+        new("INSERT INTO actor VALUES (1, 2, 3, now()) ON CONFLICT ON CONSTRAINT actor_pkey DO UPDATE SET first_name = actor.first_name, last_name = excluded.last_name", Array.Empty<string>(), 1),
+        new("INSERT INTO actor VALUES (1, 2, 3, now()) ON CONFLICT ON CONSTRAINT actor_pkey DO UPDATE SET (first_name, last_name) = (actor.first_name, excluded.last_name)", Array.Empty<string>(), 1),
     };
 
     private static readonly TestCaseData[] UpdateTestDatas =
@@ -74,8 +74,8 @@ public partial class PostgreSqlTest
         new("INSERT INTO city VALUES (default, $1, $2, now()) ON CONFLICT (city_id) WHERE city_id > $3 DO NOTHING", new object[] { "Mason", "Oh", 10 }),
 
         new("INSERT INTO actor VALUES (default, $1, $2, now()) ON CONFLICT (actor_id) DO UPDATE SET first_name = $3, last_name = $4", new object[] { "Mason", "Oh", "Manos", "Ho" }),
-        new("INSERT INTO actor VALUES (default, $1, $2, now()) ON CONFLICT ON COSNTRAINT actor_pkey DO UPDATE SET first_name = $3, last_name = $4", new object[] { "Mason", "Oh", "actor_pkey", "Manos", "Ho" }),
-        new("INSERT INTO actor VALUES (1, 2, 3, now()) ON CONFLICT ON COSNTRAINT actor_pkey DO UPDATE SET (first_name, last_name) = ($1, $2)", new object[] { "Mason", "Oh" }),
+        new("INSERT INTO actor VALUES (default, $1, $2, now()) ON CONFLICT ON CONSTRAINT actor_pkey DO UPDATE SET first_name = $3, last_name = $4", new object[] { "Mason", "Oh", "actor_pkey", "Manos", "Ho" }),
+        new("INSERT INTO actor VALUES (1, 2, 3, now()) ON CONFLICT ON CONSTRAINT actor_pkey DO UPDATE SET (first_name, last_name) = ($1, $2)", new object[] { "Mason", "Oh" }),
         
         new("WITH cte AS (SELECT 1, $1, $2, now()) INSERT INTO actor SELECT * FROM cte", new object[] { "Mason", "Oh" }),
         
