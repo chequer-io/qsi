@@ -203,9 +203,9 @@ public partial class PostgreSqlTest : VendorTestBase
     }
 
     [TestCaseSource(nameof(ParameterTestDatas))]
-    public async Task Test_Parameters(string query, object[] parameters)
+    public async Task Test_Parameters(string query, object[] arguments)
     {
-        QsiParameter[] qsiParameters = parameters
+        QsiParameter[] qsiParameters = arguments
             .Select(p => new QsiParameter(QsiParameterType.Index, null, p))
             .ToArray();
 
