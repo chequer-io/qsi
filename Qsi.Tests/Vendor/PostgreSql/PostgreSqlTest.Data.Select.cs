@@ -79,7 +79,7 @@ public partial class PostgreSqlTest
 
     private static readonly TestCaseData[] SystemTableFunctionTestDatas =
     {
-        new("SELECT * FROM pg_get_keywords()") { ExpectedResult = new[] { "word", "catcode", "catdesc" } },
+        new("SELECT * FROM pg_get_keywords()") { ExpectedResult = new[] { "word", "catcode", "catdesc" } }, // TODO: 버전 별로 컬럼 정보가 다른 경우가 있습니다. 이를 확인해야 합니다.
         new("SELECT c.checkpoint_lsn, c.timeline_id FROM pg_control_checkpoint() as c") { ExpectedResult = new[] { "checkpoint_lsn", "timeline_id" } },
         new("SELECT * FROM current_catalog") { ExpectedResult = new[] { "current_catalog" } },
         new("SELECT * FROM current_catalog WITH ORDINALITY") { ExpectedResult = new[] { "current_catalog", "ordinality" } },
