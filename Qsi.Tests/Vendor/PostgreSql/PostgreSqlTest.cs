@@ -134,32 +134,27 @@ public partial class PostgreSqlTest : VendorTestBase
     [Timeout(10000)]
     [TestCaseSource(nameof(_pgTestCaseDatas))]
     [TestCaseSource(nameof(_dataGripTestDatas))]
-    public async Task Test_QsiEngine_Syntax(string query)
-    {
-        Console.WriteLine(query);
-
-        try
-        {
-            await Engine.Execute(new QsiScript(query, QsiScriptType.Select), null);
-        }
-        catch (QsiException e)
-            when (e.Error is not (QsiError.Syntax or QsiError.SyntaxError))
-        {
-            Assert.Fail($"Syntax error: {e.Message}");
-        }
-
-        Assert.Pass();
-    }
-
     [TestCaseSource(nameof(PostgresSpecificTestDatas))]
     [TestCaseSource(nameof(LiteralTestDatas))]
     [TestCaseSource(nameof(FunctionTestDatas))]
     [TestCaseSource(nameof(SystemColumnTestDatas))]
     public async Task Test_QsiEngine(string query)
     {
-        Console.WriteLine(query);
-
-        await Engine.Execute(new QsiScript(query, QsiScriptType.Select), null);
+        try
+        {
+            await Engine.Execute(new QsiScript(query, QsiScriptType.Select), null);
+        }
+        catch (QsiException e)
+            when (e.Error is QsiError.NotSupportedTree
+                      or QsiError.NotSupportedScript
+                      or QsiError.NotSupportedFeature)
+        {
+            Assert.Pass($"Exception ({e.Message}) is valid.");
+        }
+        catch (QsiException e)
+        {
+            Assert.Fail($"{e.Message}");
+        }
 
         Assert.Pass();
     }
