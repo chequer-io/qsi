@@ -80,7 +80,7 @@ public partial class PostgreSqlTest
     private static readonly TestCaseData[] SystemTableFunctionTestDatas =
     {
         new("SELECT * FROM pg_get_keywords()") { ExpectedResult = new[] { "word", "catcode", "catdesc" } },
-        new("SELECT c.checkpoint_lsn, c.timeline_id FROM pg_control_checkpoint as c") { ExpectedResult = new[] { "checkpoint_lsn", "timeline_id" } },
+        new("SELECT c.checkpoint_lsn, c.timeline_id FROM pg_control_checkpoint() as c") { ExpectedResult = new[] { "checkpoint_lsn", "timeline_id" } },
         new("SELECT * FROM current_catalog") { ExpectedResult = new[] { "current_catalog" } },
         new("SELECT * FROM current_catalog WITH ORDINALITY") { ExpectedResult = new[] { "current_catalog", "ordinality" } },
         new("SELECT * FROM current_catalog WITH ORDINALITY as x ( t1, t2 )") { ExpectedResult = new[] { "t1", "t2" } },
@@ -126,7 +126,7 @@ public partial class PostgreSqlTest
         // System functions
         new("SELECT * FROM pg_get_keywords()") { ExpectedResult = new[] { "word", "catcode", "catdesc" } },
         new("SELECT checkpoint_lsn, redo_lsn, timeline_id, checkpoint_time FROM pg_control_checkpoint()") { ExpectedResult = new[] { "checkpoint_lsn", "redo_lsn", "timeline_id", "checkpoint_time" } },
-        new("SELECT * FROM pg_prepared_statement") { ExpectedResult = new[] { "name", "statement", "prepare_time", "parameter_Types", "from_sql" } },
+        new("SELECT * FROM pg_prepared_statements") { ExpectedResult = new[] { "name", "statement", "prepare_time", "parameter_Types", "from_sql" } },
 
         // System views
         new("SELECT * FROM pg_available_extensions") { ExpectedResult = new[] { "name", "default_version", "installed_version", "comment" } },
