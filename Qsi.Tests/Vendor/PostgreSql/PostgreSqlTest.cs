@@ -238,4 +238,39 @@ public partial class PostgreSqlTest : VendorTestBase
 
         Console.WriteLine(DebugUtility.Print(results.OfType<QsiDataManipulationResult>()));
     }
+
+    /// <summary>
+    /// 버전에 따라 지원 여부가 달라지는 System 함수와 연산자에 대하여 테스트를 수행합니다.
+    /// </summary>
+    /// <param name="query">테스트할 쿼리입니다.</param>
+    /// <param name="version">이후부터 실행 가능한 버전입니다. 예를 들어 14인 경우, 14 버전 이후부터 해당 쿼리는 실행 가능합니다.</param>
+    [TestCaseSource(nameof(_versionDependentSystemTestCaseDatas))]
+    public async Task Test_VersionDependent_SystemFunctionsAndOperators(string query, int version)
+    {
+        var wrapper = Connection as NpgsqlConnectionWrapper;
+        var npgsqlConnection = wrapper._connection;
+        
+        var command = new NpgsqlCommand("show server_version", npgsqlConnection);
+        var reader = command.ExecuteReader();
+
+        await reader.ReadAsync();
+        
+        var currentVersionString = reader.GetString(0).Split().First();
+
+        await reader.DisposeAsync();
+        await command.DisposeAsync();
+        
+        var currentVersion = new Version(currentVersionString);
+        
+        if(currentVersion.Major < version)
+            Assert.Pass("Current database version does not support this system function / operator.");
+        
+        var script = new QsiScript(query, QsiScriptType.Select);
+
+        IQsiAnalysisResult[] results = await Engine.Execute(script, null);
+        
+        CollectionAssert.IsNotEmpty(results);
+        
+        Assert.Pass();
+    }
 }
