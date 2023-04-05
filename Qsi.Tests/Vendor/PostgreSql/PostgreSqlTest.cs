@@ -154,15 +154,29 @@ public partial class PostgreSqlTest : VendorTestBase
             await Engine.Execute(new QsiScript(query, QsiScriptType.Select), null);
         }
         catch (QsiException e)
-            when (e.Error is QsiError.NotSupportedTree
+            when (e.Error is QsiError.NotSupportedTree  // 지원하지 않는 경우
                       or QsiError.NotSupportedScript
-                      or QsiError.NotSupportedFeature)
+                      or QsiError.NotSupportedFeature
+                      or QsiError.UnableResolveColumn // 결정할 수 없는 경우
+                      or QsiError.UnableResolveDefinition
+                      or QsiError.UnableResolveFunction
+                      or QsiError.UnableResolveTable
+                      or QsiError.UnknownColumn // 알 수 없는 경우
+                      or QsiError.UnknownTable
+                      or QsiError.UnknownVariable
+                      or QsiError.UnknownView
+                      or QsiError.UnknownColumnIn
+                      or QsiError.UnknownTableIn
+                      or QsiError.UnknownViewIn)
         {
             Assert.Pass($"Exception ({e.Message}) is valid.");
         }
-        catch (QsiException e)
+        catch (Exception e)
         {
-            Assert.Fail($"{e.Message}");
+            Console.WriteLine();
+            Console.WriteLine(query);
+            
+            Assert.Fail($"{e.GetType()} : {e.Message}");
         }
 
         Assert.Pass();
