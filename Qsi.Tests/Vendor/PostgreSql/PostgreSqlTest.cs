@@ -137,7 +137,11 @@ public partial class PostgreSqlTest : VendorTestBase
     /// <remarks>이 테스트는 실제 분석 결과를 체크하지 않으며, 오직 예외 발생 여부만 확인합니다.</remarks>
     /// <param name="query">테스트용 쿼리입니다. 이 쿼리는 문법적으로 오류가 없어야 합니다.</param>
     [Timeout(10000)]
-    [TestCaseSource(nameof(_pgTestCaseDatas))]
+    // [TestCaseSource(nameof(_pgTestCaseDatas))]
+    // [TestCaseSource(nameof(GetTestCaseDatas), new object[] { "Resources/PostgreSql/queries.12.json" })]
+    // [TestCaseSource(nameof(GetTestCaseDatas), new object[] { "Resources/PostgreSql/queries.13.json" })]
+    // [TestCaseSource(nameof(GetTestCaseDatas), new object[] { "Resources/PostgreSql/queries.14.json" })]
+    [TestCaseSource(nameof(GetTestCaseDatas), new object[] { "Resources/PostgreSql/queries.15.json" })]
     [TestCaseSource(nameof(_dataGripTestDatas))]
     [TestCaseSource(nameof(PostgresSpecificTestDatas))]
     [TestCaseSource(nameof(LiteralTestDatas))]
