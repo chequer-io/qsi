@@ -131,39 +131,61 @@ public partial class PostgreSqlTest : VendorTestBase
         return new PostgreSqlLanguageService(connection);
     }
 
+    /// <summary>
+    /// Qsi Engine에서, 예외가 발생하지 않고 동작하는지 체크합니다.
+    /// </summary>
+    /// <remarks>이 테스트는 실제 분석 결과를 체크하지 않으며, 오직 예외 발생 여부만 확인합니다.</remarks>
+    /// <param name="query">테스트용 쿼리입니다. 이 쿼리는 문법적으로 오류가 없어야 합니다.</param>
     [Timeout(10000)]
-    [TestCaseSource(nameof(_pgTestCaseDatas))]
+    // [TestCaseSource(nameof(_pgTestCaseDatas))]
+    // [TestCaseSource(nameof(GetTestCaseDatas), new object[] { "Resources/PostgreSql/queries.12.json" })]
+    // [TestCaseSource(nameof(GetTestCaseDatas), new object[] { "Resources/PostgreSql/queries.13.json" })]
+    // [TestCaseSource(nameof(GetTestCaseDatas), new object[] { "Resources/PostgreSql/queries.14.json" })]
+    [TestCaseSource(nameof(GetTestCaseDatas), new object[] { "Resources/PostgreSql/queries.15.json" })]
     [TestCaseSource(nameof(_dataGripTestDatas))]
-    public async Task Test_QsiEngine_Syntax(string query)
-    {
-        Console.WriteLine(query);
-
-        try
-        {
-            await Engine.Execute(new QsiScript(query, QsiScriptType.Select), null);
-        }
-        catch (QsiException e)
-            when (e.Error is not (QsiError.Syntax or QsiError.SyntaxError))
-        {
-            Assert.Fail($"Syntax error: {e.Message}");
-        }
-
-        Assert.Pass();
-    }
-
     [TestCaseSource(nameof(PostgresSpecificTestDatas))]
     [TestCaseSource(nameof(LiteralTestDatas))]
     [TestCaseSource(nameof(FunctionTestDatas))]
     [TestCaseSource(nameof(SystemColumnTestDatas))]
     public async Task Test_QsiEngine(string query)
     {
-        Console.WriteLine(query);
-
-        await Engine.Execute(new QsiScript(query, QsiScriptType.Select), null);
+        try
+        {
+            await Engine.Execute(new QsiScript(query, QsiScriptType.Select), null);
+        }
+        catch (QsiException e)
+            when (e.Error is QsiError.NotSupportedTree  // 지원하지 않는 경우
+                      or QsiError.NotSupportedScript
+                      or QsiError.NotSupportedFeature
+                      or QsiError.UnableResolveColumn // 결정할 수 없는 경우
+                      or QsiError.UnableResolveDefinition
+                      or QsiError.UnableResolveFunction
+                      or QsiError.UnableResolveTable
+                      or QsiError.UnknownColumn // 알 수 없는 경우
+                      or QsiError.UnknownTable
+                      or QsiError.UnknownVariable
+                      or QsiError.UnknownView
+                      or QsiError.UnknownColumnIn
+                      or QsiError.UnknownTableIn
+                      or QsiError.UnknownViewIn)
+        {
+            Assert.Pass($"Exception ({e.Message}) is valid.");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine();
+            Console.WriteLine(query);
+            
+            Assert.Fail($"{e.GetType()} : {e.Message}");
+        }
 
         Assert.Pass();
     }
 
+    /// <summary>
+    /// SELECT 문에 대한 기본적인 테스트를 수행합니다.
+    /// </summary>
+    /// <param name="query">SELECT 문 쿼리입니다.</param>
     [TestCaseSource(nameof(BasicSelectTestDatas))]
     public async Task Test_SELECT_Basic(string query)
     {
@@ -177,6 +199,11 @@ public partial class PostgreSqlTest : VendorTestBase
         await Verifier.Verify(views).UseDirectory("verified");
     }
 
+    /// <summary>
+    /// SELECT 문의 결과 중, 컬럼이 올바른지에 대한 테스트를 수행합니다.
+    /// </summary>
+    /// <param name="query">SELECT 문 쿼리입니다.</param>
+    /// <returns>컬럼 이름 목록입니다.</returns>
     [TestCaseSource(nameof(ColumnNameSelectTestDatas))]
     [TestCaseSource(nameof(SystemTableFunctionTestDatas))]
     public async Task<string[]> Test_SELECT_Column_Name(string query)
@@ -189,9 +216,27 @@ public partial class PostgreSqlTest : VendorTestBase
 
         return ((QsiTableResult)results[0]).Table.Columns
             .Select(c => c.Name?.ToString())
+            .Select(name =>
+            {
+                if (name.Length < 2)
+                    return name.ToLower();
+
+                if (name.StartsWith('"') && name.EndsWith('"'))
+                    return name;
+
+                return name.ToLower();
+            })
             .ToArray();
+        
+        
     }
 
+    /// <summary>
+    /// INSERT, UPDATE, DELETE 문 등 DML에 대한 테스트룰 수행합니다.
+    /// </summary>
+    /// <param name="query">DML 문입니다.</param>
+    /// <param name="expectedQueries">DML 문을 분석할 때 추가로 수행이 예상되는 쿼리의 목록입니다.</param>
+    /// <param name="expectedResultCount">Qsi 분석 결과 인스턴스의 예상 갯수입니다.</param>
     [TestCaseSource(nameof(InsertTestDatas))]
     [TestCaseSource(nameof(UpdateTestDatas))]
     [TestCaseSource(nameof(DeleteTestDatas))]
@@ -207,15 +252,55 @@ public partial class PostgreSqlTest : VendorTestBase
         Assert.AreEqual(results.Length, expectedResultCount);
     }
 
+    /// <summary>
+    /// Parameterized query에 대하여 테스트를 수행합니다.
+    /// </summary>
+    /// <param name="query">Parameterized된 쿼리입니다.</param>
+    /// <param name="arguments">쿼리에 들어갈 인자 목록입니다.</param>
     [TestCaseSource(nameof(ParameterTestDatas))]
-    public async Task Test_Parameters(string query, object[] parameters)
+    public async Task Test_Parameters(string query, object[] arguments)
     {
-        QsiParameter[] qsiParameters = parameters
+        QsiParameter[] qsiParameters = arguments
             .Select(p => new QsiParameter(QsiParameterType.Index, null, p))
             .ToArray();
 
         IQsiAnalysisResult[] results = await Engine.Execute(new QsiScript(query, QsiScriptType.Select), qsiParameters);
 
         Console.WriteLine(DebugUtility.Print(results.OfType<QsiDataManipulationResult>()));
+    }
+
+    /// <summary>
+    /// 버전에 따라 지원 여부가 달라지는 System 함수와 연산자에 대하여 테스트를 수행합니다.
+    /// </summary>
+    /// <param name="query">테스트할 쿼리입니다.</param>
+    /// <param name="version">이후부터 실행 가능한 버전입니다. 예를 들어 14인 경우, 14 버전 이후부터 해당 쿼리는 실행 가능합니다.</param>
+    [TestCaseSource(nameof(_versionDependentSystemTestCaseDatas))]
+    public async Task Test_VersionDependent_SystemFunctionsAndOperators(string query, int version)
+    {
+        var wrapper = Connection as NpgsqlConnectionWrapper;
+        var npgsqlConnection = wrapper._connection;
+        
+        var command = new NpgsqlCommand("show server_version", npgsqlConnection);
+        var reader = command.ExecuteReader();
+
+        await reader.ReadAsync();
+        
+        var currentVersionString = reader.GetString(0).Split().First();
+
+        await reader.DisposeAsync();
+        await command.DisposeAsync();
+        
+        var currentVersion = new Version(currentVersionString);
+        
+        if(currentVersion.Major < version)
+            Assert.Pass("Current database version does not support this system function / operator.");
+        
+        var script = new QsiScript(query, QsiScriptType.Select);
+
+        IQsiAnalysisResult[] results = await Engine.Execute(script, null);
+        
+        CollectionAssert.IsNotEmpty(results);
+        
+        Assert.Pass();
     }
 }

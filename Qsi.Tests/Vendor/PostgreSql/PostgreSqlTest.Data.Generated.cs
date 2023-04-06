@@ -21,6 +21,16 @@ public partial class PostgreSqlTest
     private static TestCaseData[] _pgTestCaseDatas = TestCaseDatas(_importer).ToArray();
     private static TestCaseData[] _dataGripTestDatas = TestCaseDatas(_csvImporter).ToArray();
 
+    public static IEnumerable<TestCaseData> GetTestCaseDatas(string path)
+    {
+        var importer = new JsonPostgreSqlTestQueryImporter(path);
+
+        var queries = importer.Import();
+        var testCaseDatas = queries.Select(q => new TestCaseData(q));
+
+        return testCaseDatas;
+    }
+    
     private static IEnumerable<TestCaseData> TestCaseDatas(IPostgreSqlTestQueryImporter importer)
     {
         var queries = importer.Import();
