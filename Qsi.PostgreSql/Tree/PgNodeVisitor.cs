@@ -12,7 +12,7 @@ internal static partial class PgNodeVisitor
     [return: NotNullIfNotNull("node")]
     public static IQsiTreeNode? Visit(Node node)
     {
-        if (node is not { } || node.Get() is not { })
+        if (node is not { } || node.NodeCase is Node.NodeOneofCase.None || node.Get() is not { })
             return null;
 
         return node.Get() switch
@@ -67,7 +67,7 @@ internal static partial class PgNodeVisitor
             WithClause with => Visit(with),
             OnConflictClause onConflict => Visit(onConflict),
             InferClause infer => Visit(infer),
-            _ => throw new NotSupportedException($"Not supported clause node: '{node.GetType().Name}'")
+            _ => throw TreeHelper.NotSupportedTree(node)
         };
     }
 
@@ -91,7 +91,7 @@ internal static partial class PgNodeVisitor
 
     public static QsiException NotSupportedOption<T>(T value) where T : Enum
     {
-        return new QsiException(QsiError.Internal, $"Not supported Option {typeof(T).Name}.{value}");
+        return new QsiException(QsiError.NotSupportedFeature, $"Not supported Option {typeof(T).Name}.{value}");
     }
 
     public static JoinType ToJoinType(this string value)

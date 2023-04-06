@@ -54,9 +54,12 @@ internal static partial class PgNodeVisitor
             table.Directives.Value = Visit(with);
         }
 
-        if (node.DistinctClause is { } distinctClause)
+        if (node.DistinctClause is { Count: not 0 } distinctClause)
         {
-            table.DisinictExpressions.AddRange(distinctClause.Select(VisitExpression).WhereNotNull());
+            table.IsDistinct = true;
+
+            if (distinctClause.Count != 1 || distinctClause.First() is not { NodeCase: NodeOneofCase.None })
+                table.DistinctExpressions.AddRange(distinctClause.Select(VisitExpression).WhereNotNull());
         }
 
         // <target>

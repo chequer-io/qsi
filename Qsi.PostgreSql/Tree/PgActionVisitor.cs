@@ -13,7 +13,7 @@ internal static partial class PgNodeVisitor
 {
     public static PgDataInsertActionNode Visit(InsertStmt node)
     {
-        if (node.ReturningList is not null)
+        if (node.ReturningList is { Count: not 0 })
             throw TreeHelper.NotSupportedFeature("returning list");
 
         var relation = Visit(node.Relation);
@@ -105,7 +105,7 @@ internal static partial class PgNodeVisitor
 
     public static PgDataUpdateActionNode Visit(UpdateStmt node)
     {
-        if (node.ReturningList is not null)
+        if (node.ReturningList is { Count: not 0 })
             throw TreeHelper.NotSupportedFeature("returning list");
 
         var target = Visit(node.Relation);
@@ -145,10 +145,10 @@ internal static partial class PgNodeVisitor
 
     public static QsiDataDeleteActionNode Visit(DeleteStmt node)
     {
-        if (node.UsingClause is not null)
+        if (node.UsingClause is { Count: not 0 })
             throw TreeHelper.NotSupportedFeature("using clause");
 
-        if (node.ReturningList is not null)
+        if (node.ReturningList is { Count: not 0 })
             throw TreeHelper.NotSupportedFeature("returning list");
 
         var target = Visit(node.Relation);

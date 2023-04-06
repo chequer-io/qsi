@@ -6,12 +6,14 @@ namespace Qsi.PostgreSql.Tree.Nodes;
 
 public class PgDerivedTableNode : QsiDerivedTableNode
 {
-    public QsiTreeNodeList<QsiExpressionNode> DisinictExpressions { get; }
+    public bool IsDistinct { get; set; }
 
-    public override IEnumerable<IQsiTreeNode> Children => base.Children.Concat(DisinictExpressions);
+    public QsiTreeNodeList<QsiExpressionNode> DistinctExpressions { get; }
+
+    public override IEnumerable<IQsiTreeNode> Children => base.Children.Concat(DistinctExpressions);
 
     public PgDerivedTableNode()
     {
-        DisinictExpressions = new QsiTreeNodeList<QsiExpressionNode>(this);
+        DistinctExpressions = new QsiTreeNodeList<QsiExpressionNode>(this);
     }
 }

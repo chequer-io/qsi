@@ -123,7 +123,7 @@ internal static partial class PgNodeVisitor
             Name = CreateQualifiedIdentifier(node.Funcname),
             Replace = node.Replace,
             IsProcedure = node.IsProcedure,
-            ReturnType = { Value = Visit(node.ReturnType) },
+            ReturnType = { Value = node.ReturnType is null ? null : Visit(node.ReturnType) },
             Parameters = { node.Parameters.Select(Visit<PgFunctionParameterExpressionNode>).WhereNotNull() },
             Options = { node.Options.Select(Visit<PgDefinitionElementNode>).WhereNotNull() },
             SqlBody = { Value = Visit<QsiTreeNode>(node.SqlBody) }

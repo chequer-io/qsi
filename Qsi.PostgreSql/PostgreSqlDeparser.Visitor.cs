@@ -247,7 +247,16 @@ public partial class PostgreSqlDeparser
         public static SelectStmt Visit(PgDerivedTableNode node)
         {
             var stmt = Visit((IQsiDerivedTableNode)node);
-            stmt.DistinctClause.AddRange(node.DisinictExpressions.Select(Visit));
+
+            if (node.DistinctExpressions.Count > 0)
+            {
+                stmt.DistinctClause.AddRange(node.DistinctExpressions.Select(Visit));
+            }
+            else
+            {
+                if (node.IsDistinct)
+                    stmt.DistinctClause.Add(new Node());
+            }
 
             return stmt;
         }
