@@ -1661,7 +1661,7 @@ slaveUntilOptions:
 ;
 
 slaveConnectionOptions:
-    {serverVersion >= 50604}? (USER_SYMBOL EQUAL_OPERATOR textString)? (
+    (USER_SYMBOL EQUAL_OPERATOR textString)? (
         PASSWORD_SYMBOL EQUAL_OPERATOR textString
     )? (DEFAULT_AUTH_SYMBOL EQUAL_OPERATOR textString)? (
         PLUGIN_DIR_SYMBOL EQUAL_OPERATOR textString
@@ -1737,9 +1737,9 @@ alterUser:
 ;
 
 alterUserTail:
-    ({serverVersion < 80014}? createUserList | {serverVersion >= 80014}? alterUserList) createUserTail
-    | {serverVersion >= 50706}? user IDENTIFIED_SYMBOL BY_SYMBOL textString (
-        {serverVersion >= 80014}? replacePassword
+    (createUserList | alterUserList) createUserTail
+    | user IDENTIFIED_SYMBOL BY_SYMBOL textString (
+      replacePassword
     )? ({serverVersion >= 80014}? retainCurrentPassword)?
     | {serverVersion >= 80014}? user discardOldPassword
     | {serverVersion >= 80000}? user DEFAULT_SYMBOL ROLE_SYMBOL (
@@ -1747,7 +1747,7 @@ alterUserTail:
         | NONE_SYMBOL
         | roleList
     )
-    | {serverVersion >= 80018}? user IDENTIFIED_SYMBOL (WITH_SYMBOL textOrIdentifier)? BY_SYMBOL RANDOM_SYMBOL
+    | user IDENTIFIED_SYMBOL (WITH_SYMBOL textOrIdentifier)? BY_SYMBOL RANDOM_SYMBOL
         PASSWORD_SYMBOL retainCurrentPassword?
     | FAILED_LOGIN_ATTEMPTS_SYMBOL real_ulong_number
     | PASSWORD_LOCK_TIME_SYMBOL (real_ulong_number | UNBOUNDED_SYMBOL)
@@ -1811,7 +1811,7 @@ dropUser:
 
 grant:
     GRANT_SYMBOL (
-        {serverVersion >= 80000}? roleOrPrivilegesList TO_SYMBOL userList (
+        roleOrPrivilegesList TO_SYMBOL userList (
             WITH_SYMBOL ADMIN_SYMBOL OPTION_SYMBOL
         )?
         | (roleOrPrivilegesList | ALL_SYMBOL PRIVILEGES_SYMBOL?) ON_SYMBOL aclType? grantIdentifier TO_SYMBOL grantTargetList
@@ -1823,8 +1823,8 @@ grant:
 ;
 
 grantTargetList:
-    {serverVersion < 80011}? createUserList
-    | {serverVersion >= 80011}? userList
+    createUserList
+    | userList
 ;
 
 grantOptions:
@@ -2016,10 +2016,10 @@ startOptionValueList:
     | PASSWORD_SYMBOL (FOR_SYMBOL user)? equal (
         textString replacePassword? retainCurrentPassword?
         | textString replacePassword? retainCurrentPassword?
-        | {serverVersion < 50706}? OLD_PASSWORD_SYMBOL OPEN_PAR_SYMBOL textString CLOSE_PAR_SYMBOL
-        | {serverVersion < 80014}? PASSWORD_SYMBOL OPEN_PAR_SYMBOL textString CLOSE_PAR_SYMBOL
+        | OLD_PASSWORD_SYMBOL OPEN_PAR_SYMBOL textString CLOSE_PAR_SYMBOL
+        | PASSWORD_SYMBOL OPEN_PAR_SYMBOL textString CLOSE_PAR_SYMBOL
     )
-    | {serverVersion >= 80018}? PASSWORD_SYMBOL (FOR_SYMBOL user)? TO_SYMBOL RANDOM_SYMBOL replacePassword? retainCurrentPassword?
+    | PASSWORD_SYMBOL (FOR_SYMBOL user)? TO_SYMBOL RANDOM_SYMBOL replacePassword? retainCurrentPassword?
 ;
 
 transactionCharacteristics:
@@ -2623,8 +2623,8 @@ runtimeFunctionCall:
     | name = FORMAT_SYMBOL OPEN_PAR_SYMBOL expr COMMA_SYMBOL expr (COMMA_SYMBOL expr)? CLOSE_PAR_SYMBOL
     | name = MICROSECOND_SYMBOL exprWithParentheses
     | name = MOD_SYMBOL OPEN_PAR_SYMBOL expr COMMA_SYMBOL expr CLOSE_PAR_SYMBOL
-    | {serverVersion < 50607}? name = OLD_PASSWORD_SYMBOL OPEN_PAR_SYMBOL textLiteral CLOSE_PAR_SYMBOL
-    | {serverVersion < 80011}? name = PASSWORD_SYMBOL exprWithParentheses
+    | name = OLD_PASSWORD_SYMBOL OPEN_PAR_SYMBOL textLiteral CLOSE_PAR_SYMBOL
+    | name = PASSWORD_SYMBOL exprWithParentheses
     | name = QUARTER_SYMBOL exprWithParentheses
     | name = REPEAT_SYMBOL OPEN_PAR_SYMBOL expr COMMA_SYMBOL expr CLOSE_PAR_SYMBOL
     | name = REPLACE_SYMBOL OPEN_PAR_SYMBOL expr COMMA_SYMBOL expr COMMA_SYMBOL expr CLOSE_PAR_SYMBOL
@@ -3552,12 +3552,12 @@ alterUserList:
 createUserEntry: // create_user in sql_yacc.yy
     user (
         IDENTIFIED_SYMBOL (
-            BY_SYMBOL ({serverVersion < 80011}? PASSWORD_SYMBOL)? textString
+            BY_SYMBOL (PASSWORD_SYMBOL)? textString
             | WITH_SYMBOL textOrIdentifier (
                 AS_SYMBOL textStringHash
-                | {serverVersion >= 50706}? BY_SYMBOL textString
+                | BY_SYMBOL textString
             )?
-            | {serverVersion >= 80018}? (WITH_SYMBOL textOrIdentifier)? BY_SYMBOL RANDOM_SYMBOL PASSWORD_SYMBOL
+            | (WITH_SYMBOL textOrIdentifier)? BY_SYMBOL RANDOM_SYMBOL PASSWORD_SYMBOL
         )
     )?
 ;
