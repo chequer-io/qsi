@@ -23,6 +23,24 @@ public partial class PostgreSqlTest : VendorTestBase
     private const string _baseResourcePath = "PostgreSql.dvdrental";
     private const string _defaultDatabase = "postgres";
 
+    private static readonly HashSet<QsiError> _acceptableQsiErrors = new()
+    {
+        QsiError.NotSupportedTree,  // 지원하지 않는 경우
+        QsiError.NotSupportedScript,
+        QsiError.NotSupportedFeature,
+        QsiError.UnableResolveColumn, // 결정할 수 없는 경우
+        QsiError.UnableResolveDefinition,
+        QsiError.UnableResolveFunction,
+        QsiError.UnableResolveTable,
+        QsiError.UnknownColumn, // 알 수 없는 경우
+        QsiError.UnknownTable,
+        QsiError.UnknownVariable,
+        QsiError.UnknownView,
+        QsiError.UnknownColumnIn,
+        QsiError.UnknownTableIn,
+        QsiError.UnknownViewIn
+    };
+
     public PostgreSqlTest(string connectionString) : base(connectionString)
     {
     }
@@ -154,20 +172,7 @@ public partial class PostgreSqlTest : VendorTestBase
             await Engine.Execute(new QsiScript(query, QsiScriptType.Select), null);
         }
         catch (QsiException e)
-            when (e.Error is QsiError.NotSupportedTree  // 지원하지 않는 경우
-                      or QsiError.NotSupportedScript
-                      or QsiError.NotSupportedFeature
-                      or QsiError.UnableResolveColumn // 결정할 수 없는 경우
-                      or QsiError.UnableResolveDefinition
-                      or QsiError.UnableResolveFunction
-                      or QsiError.UnableResolveTable
-                      or QsiError.UnknownColumn // 알 수 없는 경우
-                      or QsiError.UnknownTable
-                      or QsiError.UnknownVariable
-                      or QsiError.UnknownView
-                      or QsiError.UnknownColumnIn
-                      or QsiError.UnknownTableIn
-                      or QsiError.UnknownViewIn)
+            when (_acceptableQsiErrors.Contains(e.Error))
         {
             Assert.Pass($"Exception ({e.Message}) is valid.");
         }
@@ -270,12 +275,47 @@ public partial class PostgreSqlTest : VendorTestBase
     }
 
     /// <summary>
-    /// 버전에 따라 지원 여부가 달라지는 System 함수와 연산자에 대하여 테스트를 수행합니다.
+    /// 버전에 따라 지원 여부가 달라지는 함수와 연산자에 대하여, 파싱이 가능한지에 대해 테스트를 수행합니다.
     /// </summary>
     /// <param name="query">테스트할 쿼리입니다.</param>
-    /// <param name="version">이후부터 실행 가능한 버전입니다. 예를 들어 14인 경우, 14 버전 이후부터 해당 쿼리는 실행 가능합니다.</param>
+    /// <param name="from">이 버전부터 쿼리를 지원합니다.</param>
+    /// <param name="to">이 버전까지 쿼리를 지원합니다.</param>
+    [TestCaseSource(nameof(_versionDependentTestCaseDatas))]
     [TestCaseSource(nameof(_versionDependentSystemTestCaseDatas))]
-    public async Task Test_VersionDependent_SystemFunctionsAndOperators(string query, int version)
+    public async Task Test_Version_Dependent_Syntax(string query, int? from, int? to)
+    {
+        var script = new QsiScript(query, QsiScriptType.Select);
+
+        try
+        {
+            await Engine.Execute(script, null);
+        }
+        catch (QsiException e)
+            when (_acceptableQsiErrors.Contains(e.Error))
+        {
+            Assert.Pass($"Exception ({e.Message}) is valid.");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine();
+            Console.WriteLine($"This query is available {(from is null ? "" : $"{from}")}~{(to is null ? "" : $"{to}")}.");
+            Console.WriteLine(query);
+
+            Assert.Fail($"{e.GetType()} : {e.Message}");
+        }
+        
+        Assert.Pass();
+    }
+    
+    /// <summary>
+    /// 버전에 따라 지원 여부가 달라지는 함수와 연산자에 대하여, 현재 데이터베이스 버전에서 테스트할 수 있는 쿼리에 대해서만 테스트를 수행합니다.
+    /// </summary>
+    /// <param name="query">테스트할 쿼리입니다.</param>
+    /// <param name="from">이 버전부터 쿼리를 지원합니다.</param>
+    /// <param name="to">이 버전까지 쿼리를 지원합니다.</param>
+    [TestCaseSource(nameof(_versionDependentTestCaseDatas))]
+    [TestCaseSource(nameof(_versionDependentSystemTestCaseDatas))]
+    public async Task Test_Version_Dependent_Executable_Only(string query, int? from, int? to)
     {
         var wrapper = Connection as NpgsqlConnectionWrapper;
         var npgsqlConnection = wrapper._connection;
@@ -291,10 +331,17 @@ public partial class PostgreSqlTest : VendorTestBase
         await command.DisposeAsync();
         
         var currentVersion = new Version(currentVersionString);
-        
-        if(currentVersion.Major < version)
-            Assert.Pass("Current database version does not support this system function / operator.");
-        
+
+        if ((from is not null && currentVersion.Major < from)
+            || to is not null && currentVersion.Major > to)
+        {
+            Console.WriteLine();
+            Console.WriteLine($"This query is available {(from is null ? "" : $"{from}")}~{(to is null ? "" : $"{to}")}.");
+            Console.WriteLine($"Your database version is: {currentVersion}");
+            
+            Assert.Pass("Current database version does not support this query.");
+        }
+
         var script = new QsiScript(query, QsiScriptType.Select);
 
         IQsiAnalysisResult[] results = await Engine.Execute(script, null);
