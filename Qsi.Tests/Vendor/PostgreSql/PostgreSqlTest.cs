@@ -25,7 +25,7 @@ public partial class PostgreSqlTest : VendorTestBase
 
     private static readonly HashSet<QsiError> _acceptableQsiErrors = new()
     {
-        QsiError.NotSupportedTree,  // 지원하지 않는 경우
+        QsiError.NotSupportedTree, // 지원하지 않는 경우
         QsiError.NotSupportedScript,
         QsiError.NotSupportedFeature,
         QsiError.UnableResolveColumn, // 결정할 수 없는 경우
@@ -92,6 +92,10 @@ public partial class PostgreSqlTest : VendorTestBase
 
         // After copy
         PrepareQuery(npgsqlConnection, $"{_baseResourcePath}.after-copy.sql");
+
+        var searchPathCommand = npgsqlConnection.CreateCommand();
+        searchPathCommand.CommandText = "SET search_path = \"public\"";
+        searchPathCommand.ExecuteNonQuery();
     }
 
     private static void PrepareQuery(NpgsqlConnection connection, string resourcepath)
@@ -180,7 +184,7 @@ public partial class PostgreSqlTest : VendorTestBase
         {
             Console.WriteLine();
             Console.WriteLine(query);
-            
+
             Assert.Fail($"{e.GetType()} : {e.Message}");
         }
 
@@ -232,8 +236,6 @@ public partial class PostgreSqlTest : VendorTestBase
                 return name.ToLower();
             })
             .ToArray();
-        
-        
     }
 
     /// <summary>
@@ -303,10 +305,10 @@ public partial class PostgreSqlTest : VendorTestBase
 
             Assert.Fail($"{e.GetType()} : {e.Message}");
         }
-        
+
         Assert.Pass();
     }
-    
+
     /// <summary>
     /// 버전에 따라 지원 여부가 달라지는 함수와 연산자에 대하여, 현재 데이터베이스 버전에서 테스트할 수 있는 쿼리에 대해서만 테스트를 수행합니다.
     /// </summary>
@@ -319,17 +321,17 @@ public partial class PostgreSqlTest : VendorTestBase
     {
         var wrapper = Connection as NpgsqlConnectionWrapper;
         var npgsqlConnection = wrapper._connection;
-        
+
         var command = new NpgsqlCommand("show server_version", npgsqlConnection);
         var reader = command.ExecuteReader();
 
         await reader.ReadAsync();
-        
+
         var currentVersionString = reader.GetString(0).Split().First();
 
         await reader.DisposeAsync();
         await command.DisposeAsync();
-        
+
         var currentVersion = new Version(currentVersionString);
 
         if ((from is not null && currentVersion.Major < from)
@@ -338,16 +340,16 @@ public partial class PostgreSqlTest : VendorTestBase
             Console.WriteLine();
             Console.WriteLine($"This query is available {(from is null ? "" : $"{from}")}~{(to is null ? "" : $"{to}")}.");
             Console.WriteLine($"Your database version is: {currentVersion}");
-            
+
             Assert.Pass("Current database version does not support this query.");
         }
 
         var script = new QsiScript(query, QsiScriptType.Select);
 
         IQsiAnalysisResult[] results = await Engine.Execute(script, null);
-        
+
         CollectionAssert.IsNotEmpty(results);
-        
+
         Assert.Pass();
     }
 }

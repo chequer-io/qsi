@@ -13,12 +13,12 @@ public class PgDefinitionElementNode : QsiExpressionNode
 
     public DefElemAction Action { get; set; }
 
-    public QsiTreeNodeProperty<QsiExpressionNode> Expression { get; }
+    public QsiTreeNodeProperty<QsiTreeNode> Argument { get; }
 
     public PgDefinitionElementNode()
     {
-        Expression = new QsiTreeNodeProperty<QsiExpressionNode>(this);
+        Argument = new QsiTreeNodeProperty<QsiTreeNode>(this);
     }
 
-    public override IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Expression);
+    public override IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Argument);
 }

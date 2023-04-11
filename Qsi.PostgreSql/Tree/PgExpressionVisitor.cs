@@ -425,7 +425,7 @@ internal static partial class PgNodeVisitor
             DefinitionName = node.Defname,
             DefinitionNamespace = node.Defnamespace,
             Action = node.Defaction,
-            Expression = { Value = VisitExpression(node.Arg) }
+            Argument = { Value = Visit<QsiTreeNode>(node.Arg) }
         };
     }
 
@@ -461,6 +461,21 @@ internal static partial class PgNodeVisitor
         };
     }
 
+    public static PgIndexElementExpressionNode Visit(IndexElem node)
+    {
+        return new PgIndexElementExpressionNode
+        {
+            Name = new QsiIdentifier(node.Name, false),
+            IndexColumnName = new QsiIdentifier(node.Name, false),
+            Expression = { Value = VisitExpression(node.Expr) },
+            Collation = { node.Collation.Select(VisitExpression) },
+            OpClass = { node.Opclass.Select(VisitExpression) },
+            OpClassOptions = { node.Opclassopts.Select(VisitExpression) },
+            Ordering = node.Ordering,
+            NullsOrdering = node.NullsOrdering
+        };
+    }
+
     private static QsiRowValueExpressionNode CreateRowValueExpression(IEnumerable<Node> items)
     {
         return new QsiRowValueExpressionNode
@@ -480,6 +495,7 @@ internal static partial class PgNodeVisitor
             QsiExpressionNode qsiExprNode => qsiExprNode,
             QsiColumnNode qsiColumnNode => new QsiColumnExpressionNode { Column = { Value = qsiColumnNode } },
             QsiTableNode qsiTableNode => new QsiTableExpressionNode { Table = { Value = qsiTableNode } },
+            PgDataInsertActionNode pgDataInsertActionNode => new PgExpressionWrapNode { Item = { Value = pgDataInsertActionNode } },
             _ => throw CreateInternalException($"Cannot convert '{exprNode.NodeCase}' to expression")
         };
     }

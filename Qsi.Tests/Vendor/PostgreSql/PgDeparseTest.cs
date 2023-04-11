@@ -171,7 +171,7 @@ public class PgDeparseTest
         var actual = deparser.ConvertToPgNode(result).ToString();
 
         var expectedScript = Parser.Deparse(res.Stmts[0].Stmt);
-        var actualScript = deparser.Deparse(result, default!);
+        var actualScript = deparser.Deparse(result);
 
         Console.WriteLine($"Original : {query}");
         Console.WriteLine($"Expected : {expectedScript}");

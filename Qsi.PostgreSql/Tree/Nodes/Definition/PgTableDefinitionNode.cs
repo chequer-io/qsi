@@ -14,7 +14,7 @@ public class PgTableDefinitionNode : QsiTableDefinitionNode
 
     public Relpersistence Relpersistence { get; set; }
 
-    public QsiTreeNodeList<QsiExpressionNode> TableElts { get; }
+    public QsiTreeNodeList<QsiTreeNode> TableElts { get; }
 
     public QsiTreeNodeList<QsiExpressionNode> InheritRelations { get; }
 
@@ -41,7 +41,7 @@ public class PgTableDefinitionNode : QsiTableDefinitionNode
 
     public PgTableDefinitionNode()
     {
-        TableElts = new QsiTreeNodeList<QsiExpressionNode>(this);
+        TableElts = new QsiTreeNodeList<QsiTreeNode>(this);
         InheritRelations = new QsiTreeNodeList<QsiExpressionNode>(this);
         Constraints = new QsiTreeNodeList<QsiExpressionNode>(this);
         Options = new QsiTreeNodeList<QsiExpressionNode>(this);

@@ -18,7 +18,7 @@ internal static partial class PgNodeVisitor
             IsCreateTableAs = false,
             Relpersistence = node.Relation.Relpersistence.ToRelpersistence(),
             AccessMethod = node.AccessMethod,
-            TableElts = { node.TableElts.Select(VisitExpression).WhereNotNull() },
+            TableElts = { node.TableElts.Select(Visit<QsiTreeNode>).WhereNotNull() },
             InheritRelations = { node.InhRelations.Select(VisitExpression).WhereNotNull() },
             Constraints = { node.Constraints.Select(VisitExpression).WhereNotNull() },
             Options = { node.Options.Select(VisitExpression).WhereNotNull() },

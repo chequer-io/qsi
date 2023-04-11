@@ -935,7 +935,7 @@ public partial class PostgreSqlDeparser
                 Defname = node.DefinitionName,
                 Defnamespace = node.DefinitionNamespace,
                 Defaction = node.Action,
-                Arg = Visit(node.Expression)
+                Arg = Visit(node.Argument)
             };
         }
 
@@ -980,6 +980,21 @@ public partial class PostgreSqlDeparser
             };
         }
 
+        public static IndexElem Visit(PgIndexElementExpressionNode node)
+        {
+            return new IndexElem
+            {
+                Name = node.Name?.Value ?? string.Empty,
+                Expr = Visit(node.Expression),
+                Indexcolname = node.IndexColumnName?.Value ?? string.Empty,
+                Collation = { node.Collation.Select(Visit) },
+                Opclass = { node.OpClass.Select(Visit) },
+                Opclassopts = { node.OpClassOptions.Select(Visit) },
+                NullsOrdering = node.NullsOrdering,
+                Ordering = node.Ordering
+            };
+        }
+
         private static void AddAliasNamesIfNotEmpty(RepeatedField<Node?> source, QsiColumnsDeclarationNode? node)
         {
             if (node is not { } || node.Columns.Any(c => c is not QsiSequentialColumnNode))
@@ -1013,6 +1028,9 @@ public partial class PostgreSqlDeparser
         {
             if (node is null)
                 return null;
+
+            if (node is PgExpressionWrapNode { Item.IsEmpty: false } wrapNode)
+                return Visit(wrapNode.Item.Value);
 
             return (node switch
             {
@@ -1082,7 +1100,7 @@ public partial class PostgreSqlDeparser
                 PgInferExpressionNode pgInferExpression => Visit(pgInferExpression),
                 PgDefaultExpressionNode => new SetToDefault(),
                 PgMultipleAssignExpressionNode pgMultipleAssignExpression => Visit(pgMultipleAssignExpression),
-
+                PgIndexElementExpressionNode pgIndexElementExpression => Visit(pgIndexElementExpression),
                 _ => throw new NotSupportedException($"Cannot Visit({node.GetType().Name})")
             }).ToNode();
         }

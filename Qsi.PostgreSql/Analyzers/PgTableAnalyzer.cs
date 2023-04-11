@@ -5,12 +5,14 @@ using System.Threading.Tasks;
 using PgQuery;
 using Qsi.Analyzers.Table;
 using Qsi.Analyzers.Table.Context;
+using Qsi.Collections;
 using Qsi.Data;
 using Qsi.Data.Object;
 using Qsi.Data.Object.Function;
 using Qsi.Engines;
 using Qsi.PostgreSql.Extensions;
 using Qsi.PostgreSql.Tree.Nodes;
+using Qsi.Shared.Extensions;
 using Qsi.Tree;
 using Qsi.Utilities;
 
@@ -181,12 +183,66 @@ namespace Qsi.PostgreSql.Analyzers
             return structure;
         }
 
+        protected override QsiTableColumn[] ResolveColumnReference(TableCompileContext context, IQsiColumnReferenceNode column, out QsiQualifiedIdentifier implicitTableWildcardTarget)
+        {
+            try
+            {
+                return base.ResolveColumnReference(context, column, out implicitTableWildcardTarget);
+            }
+            catch (QsiException e) when (e.Error is QsiError.UnknownColumnIn)
+            {
+                if (column.Parent is QsiColumnExpressionNode { Parent: QsiParametersExpressionNode { Parent: PgInvokeExpressionNode invoke } })
+                {
+                    var columnNameAsTable = context.GetAllSourceTables()
+                        .FirstOrDefault(t =>
+                            t.HasIdentifier &&
+                            IdentifierComparer.Equals(t.Identifier[^1], column.Name[0])
+                        );
+
+                    if (columnNameAsTable is not { })
+                        throw;
+
+                    // column_name(table_name)
+                    if (invoke.Member.Value.Identifier is { Level: 1 } identifier)
+                    {
+                        QsiTableColumn[] matchedColumn = columnNameAsTable
+                            .Columns
+                            .Where(c => IdentifierComparer.Equals(c.Name, identifier[0]))
+                            .ToArray();
+
+                        // TODO: Change to Normal column (outside) (pg-official-parser)
+                        if (matchedColumn.Length == 1)
+                        {
+                            implicitTableWildcardTarget = default!;
+                            return matchedColumn;
+                        }
+                    }
+                    // func_name(table_name)
+                    else
+                    {
+                        implicitTableWildcardTarget = default!;
+                        return columnNameAsTable.Columns.ToArray();
+                    }
+                }
+
+                throw;
+            }
+        }
+
         protected override IEnumerable<QsiTableColumn> ResolveColumnsInExpression(TableCompileContext context, IQsiExpressionNode expression)
         {
             context.ThrowIfCancellationRequested();
 
             switch (expression)
             {
+                case IQsiInvokeExpressionNode e when
+                    e.Member.Identifier.Level is 1 &&
+                    e.Member.Identifier[0].Value.EqualsIgnoreCase("COUNT") &&
+                    e.Parameters.Expressions.Length is 1:
+                {
+                    break;
+                }
+
                 case PgBooleanTestExpressionNode e:
                 {
                     if (e.Target.IsEmpty)
@@ -251,12 +307,9 @@ namespace Qsi.PostgreSql.Analyzers
                     break;
                 }
 
-                case PgIndirectionExpressionNode e:
+                case PgIndirectionExpressionNode:
                 {
-                    foreach (var c in e.Indirections.SelectMany(x => ResolveColumnsInExpression(context, x)))
-                        yield return c;
-
-                    break;
+                    throw TreeHelper.NotSupportedFeature("Column Table Function");
                 }
 
                 case PgNamedParameterExpressionNode e:
@@ -316,20 +369,8 @@ namespace Qsi.PostgreSql.Analyzers
                 }
 
                 case PgDefaultExpressionNode:
-                {
+                case PgDefinitionElementNode:
                     break;
-                }
-
-                case PgDefinitionElementNode e:
-                {
-                    if (!e.Expression.IsEmpty)
-                    {
-                        foreach (var c in ResolveColumnsInExpression(context, e.Expression.Value))
-                            yield return c;
-                    }
-
-                    break;
-                }
 
                 case PgInferExpressionNode e:
                 {
