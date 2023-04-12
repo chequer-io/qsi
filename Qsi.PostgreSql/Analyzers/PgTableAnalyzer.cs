@@ -376,7 +376,7 @@ namespace Qsi.PostgreSql.Analyzers
                     break;
                 }
 
-                case PgRowValueExpressionNode e:
+                case QsiRowValueExpressionNode e:
                 {
                     foreach (var c in e.ColumnValues.SelectMany(x => ResolveColumnsInExpression(context, x!)))
                         yield return c;
