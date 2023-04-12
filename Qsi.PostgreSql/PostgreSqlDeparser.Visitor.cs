@@ -88,7 +88,7 @@ public partial class PostgreSqlDeparser
                 Relation = rangeVar,
                 WhereClause = whereExpr,
                 WithClause = node.Directives.InvokeWhenNotNull(Visit),
-                TargetList = { node.SetValues.Select(v => Visit(v).ToNode()) },
+                TargetList = { node.SetValues.Select(Visit) },
                 FromClause = { node.FromSources.Select(Visit) }
             };
         }
