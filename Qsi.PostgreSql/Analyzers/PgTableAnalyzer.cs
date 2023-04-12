@@ -298,9 +298,12 @@ namespace Qsi.PostgreSql.Analyzers
                     break;
                 }
 
-                case PgIndirectionExpressionNode:
+                case PgIndirectionExpressionNode e:
                 {
-                    throw TreeHelper.NotSupportedFeature("Column Table Function");
+                    foreach (var c in e.Indirections.SelectMany(x => ResolveColumnsInExpression(context, x)))
+                        yield return c;
+
+                    break;
                 }
 
                 case PgNamedParameterExpressionNode e:
