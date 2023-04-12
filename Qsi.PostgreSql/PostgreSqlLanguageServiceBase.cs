@@ -33,7 +33,8 @@ namespace Qsi.PostgreSql
                 AllowEmptyColumnsInSelect = true,
                 AllowEmptyColumnsInInline = true,
                 AllowNoAliasInDerivedTable = true,
-                IncludeInvisibleColumnsInAlias = true
+                IncludeInvisibleColumnsInAlias = true,
+                UseImplicitTableWildcardInSelect = true,
             };
         }
 

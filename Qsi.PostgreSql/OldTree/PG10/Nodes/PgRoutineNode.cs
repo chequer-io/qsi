@@ -5,7 +5,6 @@ using Qsi.Utilities;
 namespace Qsi.PostgreSql.OldTree.PG10.Nodes
 {
     public class PgRoutineNode : QsiTableNode, IQsiInlineDerivedTableNode
-
     {
         public QsiTreeNodeProperty<QsiFunctionExpressionNode> Member { get; }
 
