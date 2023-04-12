@@ -66,6 +66,9 @@ namespace Qsi.PostgreSql.Diagnostics
         {
             var nodeType = tree.NodeCase;
 
+            if (nodeType is Node.NodeOneofCase.None)
+                return Array.Empty<IRawTree>();
+
             var value = tree.GetType().GetProperties()
                 .Select(pi => (pi, pi.GetValue(tree)))
                 .Where(x => x.Item2 is not null && x.pi.Name == nodeType.ToString())
