@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using PgQuery;
 using Qsi.Analyzers.Table;
 using Qsi.Analyzers.Table.Context;
-using Qsi.Collections;
 using Qsi.Data;
 using Qsi.Data.Object;
 using Qsi.Data.Object.Function;
@@ -183,63 +182,17 @@ namespace Qsi.PostgreSql.Analyzers
             return structure;
         }
 
-        protected override QsiTableColumn[] ResolveColumnReference(TableCompileContext context, IQsiColumnReferenceNode column, out QsiQualifiedIdentifier implicitTableWildcardTarget)
-        {
-            try
-            {
-                return base.ResolveColumnReference(context, column, out implicitTableWildcardTarget);
-            }
-            catch (QsiException e) when (e.Error is QsiError.UnknownColumnIn)
-            {
-                if (column.Parent is QsiColumnExpressionNode { Parent: QsiParametersExpressionNode { Parent: PgInvokeExpressionNode invoke } })
-                {
-                    var columnNameAsTable = context.GetAllSourceTables()
-                        .FirstOrDefault(t =>
-                            t.HasIdentifier &&
-                            IdentifierComparer.Equals(t.Identifier[^1], column.Name[0])
-                        );
-
-                    if (columnNameAsTable is not { })
-                        throw;
-
-                    // column_name(table_name)
-                    if (invoke.Member.Value.Identifier is { Level: 1 } identifier)
-                    {
-                        QsiTableColumn[] matchedColumn = columnNameAsTable
-                            .Columns
-                            .Where(c => IdentifierComparer.Equals(c.Name, identifier[0]))
-                            .ToArray();
-
-                        // TODO: Change to Normal column (outside) (pg-official-parser)
-                        if (matchedColumn.Length == 1)
-                        {
-                            implicitTableWildcardTarget = default!;
-                            return matchedColumn;
-                        }
-                    }
-                    // func_name(table_name)
-                    else
-                    {
-                        implicitTableWildcardTarget = default!;
-                        return columnNameAsTable.Columns.ToArray();
-                    }
-                }
-
-                throw;
-            }
-        }
-
         protected override IEnumerable<QsiTableColumn> ResolveColumnsInExpression(TableCompileContext context, IQsiExpressionNode expression)
         {
             context.ThrowIfCancellationRequested();
 
             switch (expression)
             {
-                case IQsiInvokeExpressionNode e when
-                    e.Member.Identifier.Level is 1 &&
-                    e.Member.Identifier[0].Value.EqualsIgnoreCase("COUNT") &&
-                    e.Parameters.Expressions.Length is 1:
+                case PgInvokeExpressionNode e:
                 {
+                    foreach (var c in ResolveColumnsInPgInvokeExpression(context, e))
+                        yield return c;
+
                     break;
                 }
 
@@ -397,6 +350,53 @@ namespace Qsi.PostgreSql.Analyzers
                         yield return qsiTableColumn;
 
                     break;
+            }
+        }
+
+        protected IEnumerable<QsiTableColumn> ResolveColumnsInPgInvokeExpression(TableCompileContext context, PgInvokeExpressionNode expression)
+        {
+            var identifier = expression.Member.Value.Identifier;
+
+            // NOTE: COUNT(~~) ignore columns
+            if (identifier[0].Value.EqualsIgnoreCase("COUNT"))
+                return Enumerable.Empty<QsiTableColumn>();
+
+            if (identifier.Level is 1 && expression.Parameters.Count is 1 &&
+                expression.Parameters[0] is QsiColumnExpressionNode { Column.Value: QsiColumnReferenceNode columnNode })
+                return ResolveColumnsInColumnAsTableInvokeExpression(context, identifier[0], columnNode);
+
+            return base.ResolveColumnsInExpression(context, expression);
+        }
+
+        // check func_name(table_name) or column_name(table_name)
+        protected IEnumerable<QsiTableColumn> ResolveColumnsInColumnAsTableInvokeExpression(
+            TableCompileContext context,
+            QsiIdentifier identifier,
+            QsiColumnReferenceNode columnNode)
+        {
+            var columnAsTable = context.GetAllSourceTables()
+                .FirstOrDefault(t =>
+                    t.HasIdentifier &&
+                    IdentifierComparer.Equals(t.Identifier[^1], columnNode.Name[0])
+                );
+
+            // NOTE: column_name(table_name) is same table_name.column_name
+            // https://www.postgresql.org/docs/current/sql-expressions.html#SQL-EXPRESSIONS-FUNCTION-CALLS
+            // 4.2.6. Function Calls > Note
+            if (columnAsTable?.Columns.Any(c => IdentifierComparer.Equals(c.Name, identifier)) ?? false)
+                throw TreeHelper.NotSupportedFeature("Field selection written in functional style");
+
+            try
+            {
+                return ResolveColumnReference(context, columnNode, out _);
+            }
+            catch (QsiException ex) when (ex.Error is QsiError.UnknownColumnIn)
+            {
+                if (columnAsTable is not { })
+                    throw;
+
+                // func_name(table_name)
+                return columnAsTable.Columns.ToArray();
             }
         }
     }
