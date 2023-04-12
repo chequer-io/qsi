@@ -8,7 +8,7 @@ internal class RedshiftDebugger : VendorDebugger
 {
     protected override IRawTreeParser CreateRawTreeParser()
     {
-        return new PostgreSqlLegacyRawParser();
+        return new PostgreSqlRawParser();
     }
 
     protected override IQsiLanguageService CreateLanguageService()
