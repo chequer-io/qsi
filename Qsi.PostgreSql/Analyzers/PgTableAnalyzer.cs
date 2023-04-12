@@ -152,15 +152,13 @@ namespace Qsi.PostgreSql.Analyzers
                                         "bool" or "varbit" or "bit" or
                                         "timestamptz" or "timestamp" or "timetz" or "time" or "interval")
                                     {
-                                        var column = structure.NewColumn();
-                                        column.Name = structure.Identifier[^1];
+                                        structure.NewColumn();
                                     }
                                 }
                             }
                             else
                             {
-                                var column = structure.NewColumn();
-                                column.Name = structure.Identifier[^1];
+                                structure.NewColumn();
                             }
                         }
 
