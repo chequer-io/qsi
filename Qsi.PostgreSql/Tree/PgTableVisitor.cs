@@ -274,11 +274,9 @@ internal static partial class PgNodeVisitor
 
     public static PgCommonTableNode Visit(CommonTableExpr node)
     {
-        // TODO: Impl CTE search clause (feature/pg-official-parser)
         if (node.SearchClause is { })
             throw TreeHelper.NotSupportedFeature("CTE Search Clause");
 
-        // TODO: Impl CTE cycle clause (feature/pg-official-parser)
         if (node.CycleClause is { })
             throw TreeHelper.NotSupportedFeature("CTE Cycle Clause");
 
