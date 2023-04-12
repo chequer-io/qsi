@@ -123,14 +123,11 @@ namespace Qsi.PostgreSql.Analyzers
 
                         if (count == 0)
                         {
+                            // NOTE: If SETOF enabled, QSI doesn't know about return column counts.
                             if (!funcDef.ReturnType.Value.Setof)
                             {
                                 var column = structure.NewColumn();
                                 column.Name = structure.Identifier[^1];
-                            }
-                            else
-                            {
-                                throw TreeHelper.NotSupportedFeature("Table Function with unknown return count");
                             }
                         }
 
@@ -162,9 +159,17 @@ namespace Qsi.PostgreSql.Analyzers
                 func = provider.LookupObject(fallBackIdentifier, QsiObjectType.Function);
             }
 
-            return func is not QsiFunctionList funcList
-                ? Array.Empty<QsiFunctionObject>()
-                : funcList.Functions;
+            switch (func)
+            {
+                case QsiFunctionList funcList:
+                    return funcList.Functions;
+
+                case QsiFunctionObject funcObj:
+                    return new[] { funcObj };
+
+                default:
+                    return Array.Empty<QsiFunctionObject>();
+            }
         }
 
         protected override async ValueTask<QsiTableStructure> BuildCompositeTableStructure(TableCompileContext context, IQsiCompositeTableNode table)
