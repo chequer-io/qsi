@@ -41,5 +41,10 @@
         /// Use outer query column
         /// </summary>
         public bool UseOuterQueryColumn { get; set; } = true;
+
+        /// <summary>
+        /// Include invisible columns in <c>alias</c>.
+        /// </summary>
+        public bool IncludeInvisibleColumnsInAlias { set; get; }
     }
 }

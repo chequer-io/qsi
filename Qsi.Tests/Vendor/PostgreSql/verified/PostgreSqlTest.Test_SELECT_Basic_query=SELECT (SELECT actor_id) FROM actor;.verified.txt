@@ -1,0 +1,66 @@
+﻿[
+  {
+    Type: Derived,
+    References: [
+      $tbl_5
+    ],
+    Columns: [
+      {
+        Parent: $tbl_4,
+        References: [
+          $col_2
+        ],
+        IsVisible: true,
+        IsExpression: true,
+        RefId: $col_1
+      }
+    ],
+    RefId: $tbl_4
+  },
+  {
+    Type: Table,
+    Identifier: dvdrental.public.actor,
+    Columns: [
+      {
+        Parent: $tbl_5,
+        Name: actor_id,
+        IsVisible: true,
+        RefId: $col_3
+      },
+      {
+        Parent: $tbl_5,
+        Name: first_name,
+        IsVisible: true,
+        RefId: $col_7
+      },
+      {
+        Parent: $tbl_5,
+        Name: last_name,
+        IsVisible: true,
+        RefId: $col_8
+      },
+      {
+        Parent: $tbl_5,
+        Name: last_update,
+        IsVisible: true,
+        RefId: $col_9
+      }
+    ],
+    RefId: $tbl_5
+  },
+  {
+    Type: Derived,
+    Columns: [
+      {
+        Parent: $tbl_6,
+        Name: actor_id,
+        References: [
+          $col_3
+        ],
+        IsVisible: true,
+        RefId: $col_2
+      }
+    ],
+    RefId: $tbl_6
+  }
+]

@@ -1,14 +1,19 @@
-﻿namespace Qsi.Tree
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Qsi.Tree
 {
     public class QsiTreeNodeProperty<TNode> : IQsiTreeNodeProperty<TNode>
         where TNode : QsiTreeNode
     {
+        [AllowNull]
         public TNode Value
         {
             get => _value;
             set
             {
-                value.Parent = _owner;
+                if (value is not null)
+                    value.Parent = _owner;
+
                 _value = value;
             }
         }

@@ -1,25 +1,13 @@
-﻿using System;
 using Qsi.Diagnostics;
-using Qsi.PostgreSql.Internal;
-using Qsi.PostgreSql.Internal.PG10;
 
-namespace Qsi.PostgreSql.Diagnostics
+namespace Qsi.PostgreSql.Diagnostics;
+
+public class PostgreSqlRawParser : IRawTreeParser
 {
-    public class PostgreSqlRawParser : IRawTreeParser, IDisposable
+    public IRawTree Parse(string input)
     {
-        private IPgParser _pgParser;
+        var result = PgQuery.Parser.Parse(input);
 
-        public IRawTree Parse(string input)
-        {
-            _pgParser ??= new PgQuery10();
-            var result = _pgParser.Parse(input, default);
-
-            return new PostgreSqlRawTree(result);
-        }
-
-        void IDisposable.Dispose()
-        {
-            _pgParser?.Dispose();
-        }
+        return new PostgreSqlRawTree(result.Stmts[0].Stmt);
     }
 }

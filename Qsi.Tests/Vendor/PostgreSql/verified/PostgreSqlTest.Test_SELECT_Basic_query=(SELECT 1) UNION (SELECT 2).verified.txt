@@ -1,0 +1,46 @@
+﻿[
+  {
+    Type: Union,
+    References: [
+      $tbl_5,
+      $tbl_6
+    ],
+    Columns: [
+      {
+        Parent: $tbl_4,
+        References: [
+          $col_2,
+          $col_3
+        ],
+        IsVisible: true,
+        IsExpression: true,
+        RefId: $col_1
+      }
+    ],
+    RefId: $tbl_4
+  },
+  {
+    Type: Derived,
+    Columns: [
+      {
+        Parent: $tbl_5,
+        IsVisible: true,
+        IsExpression: true,
+        RefId: $col_2
+      }
+    ],
+    RefId: $tbl_5
+  },
+  {
+    Type: Derived,
+    Columns: [
+      {
+        Parent: $tbl_6,
+        IsVisible: true,
+        IsExpression: true,
+        RefId: $col_3
+      }
+    ],
+    RefId: $tbl_6
+  }
+]

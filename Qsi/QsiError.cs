@@ -33,7 +33,8 @@
         ParameterIndexOutOfRange,
         ParameterNotFound,
         InvalidNestedExplain,
-        SubqueryReturnsMoreThanRow
+        SubqueryReturnsMoreThanRow,
+        UnableResolveFunction
     }
 
     internal static class SR
@@ -70,6 +71,7 @@
         public const string ParameterNotFound = "Parameter '{0}' not found";
         public const string InvalidNestedExplain = "Invalid nested explain for '{0}'";
         public const string SubqueryReturnsMoreThanRow = "Subquery returns more than {0} row";
+        public const string UnableResolveFunction = "Unable to resolve function '{0}'";
 
         public static string GetResource(QsiError error)
         {
@@ -107,6 +109,7 @@
                 QsiError.ParameterNotFound => ParameterNotFound,
                 QsiError.InvalidNestedExplain => InvalidNestedExplain,
                 QsiError.SubqueryReturnsMoreThanRow => SubqueryReturnsMoreThanRow,
+                QsiError.UnableResolveFunction => UnableResolveFunction,
                 _ => null
             };
         }

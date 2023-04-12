@@ -1,6 +1,7 @@
 ﻿using System;
 using Qsi.Data;
 using Qsi.Data.Object;
+using Qsi.Data.Object.Function;
 using Qsi.Engines;
 using Qsi.Utilities;
 
@@ -53,6 +54,16 @@ namespace Qsi.Debugger.Vendor.PostgreSql
 
                 case "pg_database":
                     var pgDatabase = CreateTable("postgres", "pg_catalog", "pg_database");
+
+                    AddInvisibleColumns(
+                        pgDatabase,
+                        "tableoid",
+                        "cmax",
+                        "xmax",
+                        "cmin",
+                        "xmin",
+                        "ctid"
+                    );
 
                     AddColumns(
                         pgDatabase,
@@ -292,6 +303,78 @@ namespace Qsi.Debugger.Vendor.PostgreSql
 
         protected override QsiObject LookupObject(QsiQualifiedIdentifier identifier, QsiObjectType type)
         {
+            var name = IdentifierUtility.Unescape(identifier[^1].Value);
+
+            switch (name)
+            {
+                case "generate_series" when type is QsiObjectType.Function:
+                {
+                    return new QsiFunctionObject(
+                        new QsiQualifiedIdentifier(
+                            new QsiIdentifier("pg_catalog", false),
+                            new QsiIdentifier("generate_series", false)
+                        ),
+                        @"CREATE OR REPLACE FUNCTION pg_catalog.generate_series(integer, integer)
+                         RETURNS SETOF integer
+                         LANGUAGE internal
+                         IMMUTABLE PARALLEL SAFE STRICT
+                        AS $function$generate_series_int4$function$",
+                        2);
+                }
+
+                case "unnest" when type is QsiObjectType.Function:
+                {
+                    return new QsiFunctionObject(
+                        new QsiQualifiedIdentifier(
+                            new QsiIdentifier("pg_catalog", false),
+                            new QsiIdentifier("unnest", false)
+                        ),
+                        @"CREATE OR REPLACE FUNCTION pg_catalog.unnest(anyarray)
+                         RETURNS SETOF anyelement
+                         LANGUAGE internal
+                         IMMUTABLE PARALLEL SAFE STRICT ROWS 100
+                        AS $function$array_unnest$function$",
+                        1);
+                }
+
+                case "pg_indexam_has_property" when type is QsiObjectType.Function:
+                {
+                    return new QsiFunctionObject(
+                        new QsiQualifiedIdentifier(
+                            new QsiIdentifier("pg_catalog", false),
+                            new QsiIdentifier("pg_indexam_has_property", false)),
+                        @"CREATE OR REPLACE FUNCTION pg_catalog.pg_indexam_has_property(oid, text)
+                         RETURNS boolean
+                         LANGUAGE internal
+                         STABLE PARALLEL SAFE STRICT
+                        AS $function$pg_indexam_has_property$function$
+                        ",
+                        2);
+                }
+
+                case "pg_get_keywords" when type is QsiObjectType.Function:
+                {
+                    return new QsiFunctionObject(
+                        new QsiQualifiedIdentifier(
+                            new QsiIdentifier("pg_catalog", false),
+                            new QsiIdentifier("pg_get_keywords", false)
+                        ),
+                        @"CREATE OR REPLACE FUNCTION pg_catalog.pg_get_keywords
+                            (
+                                OUT word text,
+                                OUT catcode ""char"",
+                                OUT barelabel boolean,
+                                OUT catdesc text,
+                                OUT baredesc text
+                            )
+                            RETURNS SETOF record
+                            LANGUAGE internal
+                            STABLE PARALLEL SAFE STRICT COST 10 ROWS 500
+                            AS $function$pg_get_keywords$function$",
+                        5);
+                }
+            }
+
             return null;
         }
 
