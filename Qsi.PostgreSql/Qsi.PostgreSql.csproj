@@ -7,7 +7,7 @@
     <PropertyGroup Label="Nuspec">
         <Title>Query Structure Interface of PostgreSql</Title>
         <Description>$(Title)</Description>
-        <PackageTags>$(PackageTags);phostgresql;yacc</PackageTags>
+        <PackageTags>$(PackageTags);postgresql;yacc</PackageTags>
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
@@ -18,14 +18,11 @@
     <Import Project="..\Qsi.Shared\Qsi.Shared.projitems" Label="Shared" />
 
     <ItemGroup>
-        <PackageReference Include="JavaScriptEngineSwitcher.ChakraCore" Version="3.5.6" />
         <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
         <PackageReference Include="PgQuery.Net" Version="1.0.1" />
     </ItemGroup>
 
     <ItemGroup>
-        <EmbeddedResource Include="Resources/*.js" />
-
         <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
             <_Parameter1>Qsi.Tests</_Parameter1>
         </AssemblyAttribute>
