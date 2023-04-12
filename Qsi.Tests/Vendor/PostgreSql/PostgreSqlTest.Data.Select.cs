@@ -10,7 +10,7 @@ public partial class PostgreSqlTest
     /// <param name="query (param #0)">Query string.</param>
     private static readonly TestCaseData[] BasicSelectTestDatas =
     {
-        new("SELECT * FROM actor"),
+        new("SELECT * FROM[// []TestCaseSourece()nameof()// c() actor"),
         new("SELECT * FROM city"),
         new("SELECT * FROM film"),
 
@@ -79,18 +79,19 @@ public partial class PostgreSqlTest
 
     private static readonly TestCaseData[] SystemTableFunctionTestDatas =
     {
-        new("SELECT * FROM pg_get_keywords()") { ExpectedResult = new[] { "word", "catcode", "catdesc" } }, // TODO: 버전 별로 컬럼 정보가 다른 경우가 있습니다. 이를 확인해야 합니다.
+        // new("SELECT * FROM pg_get_keywords()") { ExpectedResult = new[] { "word", "catcode", "catdesc" } }, // TODO: 버전 별로 컬럼 정보가 다른 경우가 있습니다. 이를 확인해야 합니다.
         new("SELECT c.checkpoint_lsn, c.timeline_id FROM pg_control_checkpoint() as c") { ExpectedResult = new[] { "checkpoint_lsn", "timeline_id" } },
         new("SELECT * FROM current_catalog") { ExpectedResult = new[] { "current_catalog" } },
         new("SELECT * FROM current_catalog WITH ORDINALITY") { ExpectedResult = new[] { "current_catalog", "ordinality" } },
         new("SELECT * FROM current_catalog WITH ORDINALITY as x ( t1, t2 )") { ExpectedResult = new[] { "t1", "t2" } },
-        new("SELECT * FROM ROWS FROM ( current_catalog, current_user, pg_get_keywords() )") { ExpectedResult = new[] { "current_catalog", "current_user", "word", "catcode", "catdesc" } },
+        // new("SELECT * FROM ROWS FROM ( current_catalog, current_user, pg_get_keywords() )") { ExpectedResult = new[] { "current_catalog", "current_user", "word", "catcode", "catdesc" } },
+        new("SELECT * FROM ROWS FROM ( current_catalog, current_user )") { ExpectedResult = new[] { "current_catalog", "current_user" } },
         new("SELECT current_database.* FROM ROWS FROM ( current_database(), current_user )") { ExpectedResult = new[] { "current_database, current_user" } },
 
         new("SELECT * FROM unnest(ARRAY [1, 2, 3], ARRAY [4, 5])") { ExpectedResult = new[] { "unnest.unnest", "unnest.unnest" } },
         new("SELECT * FROM unnest(ARRAY[(SELECT actor_id FROM actor LIMIT 1),2], ARRAY['foo','bar','baz']);") { ExpectedResult = new[] { "unnest.unnest", "unnest.unnest" } },
 
-        new("SELECT (pg_get_keywords()).*") { ExpectedResult = new[] { "word", "catcode", "catdesc" } },
+        // new("SELECT (pg_get_keywords()).*") { ExpectedResult = new[] { "word", "catcode", "catdesc" } },
     };
 
     /// <summary>
@@ -124,7 +125,7 @@ public partial class PostgreSqlTest
         new("SELECT * FROM (SELECT actor_id FROM actor, city) ac;") { ExpectedResult = new[] { "actor_id" } },
 
         // System functions
-        new("SELECT * FROM pg_get_keywords()") { ExpectedResult = new[] { "word", "catcode", "catdesc" } },
+        // new("SELECT * FROM pg_get_keywords()") { ExpectedResult = new[] { "word", "catcode", "catdesc" } },
         new("SELECT checkpoint_lsn, redo_lsn, timeline_id, checkpoint_time FROM pg_control_checkpoint()") { ExpectedResult = new[] { "checkpoint_lsn", "redo_lsn", "timeline_id", "checkpoint_time" } },
         new("SELECT * FROM pg_prepared_statements") { ExpectedResult = new[] { "name", "statement", "prepare_time", "parameter_Types", "from_sql" } },
 

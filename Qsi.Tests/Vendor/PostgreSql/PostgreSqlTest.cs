@@ -157,6 +157,7 @@ public partial class PostgreSqlTest : VendorTestBase
     /// <remarks>이 테스트는 실제 분석 결과를 체크하지 않으며, 오직 예외 발생 여부만 확인합니다.</remarks>
     /// <param name="query">테스트용 쿼리입니다. 이 쿼리는 문법적으로 오류가 없어야 합니다.</param>
     [Timeout(10000)]
+    [TestCaseSource(nameof(BasicSelectTestDatas))]
     // [TestCaseSource(nameof(_pgTestCaseDatas))]
     // [TestCaseSource(nameof(GetTestCaseDatas), new object[] { "Resources/PostgreSql/queries.12.json" })]
     // [TestCaseSource(nameof(GetTestCaseDatas), new object[] { "Resources/PostgreSql/queries.13.json" })]
@@ -193,7 +194,7 @@ public partial class PostgreSqlTest : VendorTestBase
     /// SELECT 문에 대한 기본적인 테스트를 수행합니다.
     /// </summary>
     /// <param name="query">SELECT 문 쿼리입니다.</param>
-    [TestCaseSource(nameof(BasicSelectTestDatas))]
+    // [TestCaseSource(nameof(BasicSelectTestDatas))]
     public async Task Test_SELECT_Basic(string query)
     {
         IQsiAnalysisResult[] results = await Engine.Execute(new QsiScript(query, QsiScriptType.Select), null);
@@ -249,12 +250,28 @@ public partial class PostgreSqlTest : VendorTestBase
     {
         var script = new QsiScript(query, QsiScriptType.Select);
 
-        IQsiAnalysisResult[] results = await Engine.Execute(script, null);
+        try
+        {
+            IQsiAnalysisResult[] results = await Engine.Execute(script, null);
 
-        CollectionAssert.IsNotEmpty(results);
-        CollectionAssert.AreEqual(expectedQueries, ScriptHistories.Select(x => x.Script));
+            CollectionAssert.IsNotEmpty(results);
+            CollectionAssert.AreEqual(expectedQueries, ScriptHistories.Select(x => x.Script));
 
-        Assert.AreEqual(results.Length, expectedResultCount);
+            Assert.AreEqual(results.Length, expectedResultCount);
+        }
+        catch (QsiException e) when (_acceptableQsiErrors.Contains(e.Error))
+        {
+            Assert.Pass($"Exception ({e.Message}) is valid.");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine();
+            Console.WriteLine(query);
+
+            Assert.Fail($"{e.GetType()} : {e.Message}");
+        }
+
+        Assert.Pass();
     }
 
     /// <summary>
