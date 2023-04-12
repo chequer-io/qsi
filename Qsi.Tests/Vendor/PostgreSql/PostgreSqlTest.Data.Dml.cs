@@ -77,19 +77,19 @@ public partial class PostgreSqlTest
         new("INSERT INTO actor VALUES (default, $1, $2, now()) ON CONFLICT (actor_id) DO UPDATE SET first_name = $3, last_name = $4", new object[] { "Mason", "Oh", "Manos", "Ho" }),
         new("INSERT INTO actor VALUES (default, $1, $2, now()) ON CONFLICT ON CONSTRAINT actor_pkey DO UPDATE SET first_name = $3, last_name = $4", new object[] { "Mason", "Oh", "actor_pkey", "Manos", "Ho" }),
         new("INSERT INTO actor VALUES (1, 2, 3, now()) ON CONFLICT ON CONSTRAINT actor_pkey DO UPDATE SET (first_name, last_name) = ($1, $2)", new object[] { "Mason", "Oh" }),
-        
-        // 테케 문제있어요
+
+        // NOTE: QsiActionAnalyzer.ArrangeBindParameters has issue (does not contains directives)
         // new("WITH cte AS (SELECT 1, $1, $2, now()) INSERT INTO actor SELECT * FROM cte", new object[] { "Mason", "Oh" }),
-        
+
         new("UPDATE actor SET actor_id = $1", new object[] { 1 }),
         new("UPDATE actor SET actor_id = (SELECT city_id FROM city LIMIT $1)", new object[] { 1 }),
-        
+
         new("UPDATE actor AS a SET (actor_id, first_name, last_name, last_update) = (1, $1, $2, now()) WHERE false", new object[] { "Mason", "Oh" }),
         new("UPDATE actor SET actor_id = $1 FROM city c WHERE c.city_id = $2 AND false", new object[] { 1, "Mason" }),
-        
+
         new("DELETE FROM actor AS a WHERE actor_id = $1", new object[] { 1 }),
     };
-    
+
     private static readonly TestCaseData[] NotSupportedDmlTestDatas =
     {
         // DML with Returning Clause

@@ -53,7 +53,7 @@ public class PostgreSqlRepositoryProvider : RepositoryProviderDriverBase
         var sql = @$"
 SELECT TABLE_CATALOG, TABLE_SCHEMA, TABLE_NAME, TABLE_TYPE
 from information_schema.TABLES
-where TABLE_CATALOG = '{names[0]}' and TABLE_SCHEMA = '{names[1]}' and TABLE_NAME = '{names[2]}'
+where TABLE_CATALOG = '{names[0]}' and TABLE_SCHEMA IN ('{names[1]}', 'pg_catalog') and TABLE_NAME = '{names[2]}'
 limit 1";
 
         using (var reader = GetDataReaderCoreAsync(new QsiScript(sql, default), null, default).Result)
@@ -78,7 +78,7 @@ limit 1";
         sql = $@"
 select COLUMN_NAME 
 from information_schema.COLUMNS
-where TABLE_CATALOG = '{names[0]}' and TABLE_SCHEMA = '{names[1]}' and TABLE_NAME = '{names[2]}'
+where TABLE_CATALOG = '{table.Identifier[0]}' and TABLE_SCHEMA = '{table.Identifier[1].Value}' and TABLE_NAME = '{table.Identifier[2].Value}'
 order by ORDINAL_POSITION";
 
         using (var reader = GetDataReaderCoreAsync(new QsiScript(sql, default), null, default).Result)
