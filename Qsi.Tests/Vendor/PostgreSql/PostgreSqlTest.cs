@@ -93,9 +93,7 @@ public partial class PostgreSqlTest : VendorTestBase
         // After copy
         PrepareQuery(npgsqlConnection, $"{_baseResourcePath}.after-copy.sql");
 
-        var searchPathCommand = npgsqlConnection.CreateCommand();
-        searchPathCommand.CommandText = "SET search_path = \"public\"";
-        searchPathCommand.ExecuteNonQuery();
+        new NpgsqlCommand("SET search_path = \"public\"", npgsqlConnection).ExecuteNonQuery();
     }
 
     private static void PrepareQuery(NpgsqlConnection connection, string resourcepath)
