@@ -50,6 +50,12 @@ namespace Qsi.MySql
                 case UtilityStatementContext utilityStatement:
                     return ParseUtilityStatement(utilityStatement);
 
+                case AccountManagementStatementContext accountManagementStatement:
+                    return ParseAccountManagementStatement(accountManagementStatement);
+
+                case SetStatementContext setStatement:
+                    return ActionVisitor.VisitSetStatement(setStatement);
+
                 default:
                     throw TreeHelper.NotSupportedTree(simpleStatement.children[0]);
             }
@@ -61,6 +67,24 @@ namespace Qsi.MySql
             {
                 case UseCommandContext useCommand:
                     return ActionVisitor.VisitUseCommand(useCommand);
+
+                default:
+                    throw TreeHelper.NotSupportedTree(context.children[0]);
+            }
+        }
+
+        private IQsiTreeNode ParseAccountManagementStatement(AccountManagementStatementContext context)
+        {
+            switch (context.children[0])
+            {
+                case CreateUserContext createUser:
+                    return ActionVisitor.VisitCreateUser(createUser);
+
+                case AlterUserContext alterUser:
+                    return ActionVisitor.VisitAlterUser(alterUser);
+
+                case GrantContext grant:
+                    return ActionVisitor.VisitGrant(grant);
 
                 default:
                     throw TreeHelper.NotSupportedTree(context.children[0]);

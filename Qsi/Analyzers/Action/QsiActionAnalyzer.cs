@@ -58,6 +58,18 @@ namespace Qsi.Analyzers.Action
                 case IQsiChangeSearchPathActionNode searchPathAction:
                     return await ExecuteSearchPathAction(context, searchPathAction);
 
+                case IQsiCreateUserActionNode createUserAction:
+                    return await ExecuteCreateUserAction(context, createUserAction);
+
+                case IQsiAlterUserActionNode alterUserAction:
+                    return await ExecuteAlterUserAction(context, alterUserAction);
+
+                case IQsiGrantUserActionNode grantUserAction:
+                    return await ExecuteGrantUserAction(context, grantUserAction);
+
+                case IQsiVariableSetActionNode setAction:
+                    return await ExecuteVariableSetAction(context, setAction);
+
                 default:
                     throw TreeHelper.NotSupportedTree(context.Tree);
             }
@@ -990,5 +1002,85 @@ namespace Qsi.Analyzers.Action
             return new QsiChangeSearchPathAction(identifiers).ToSingleArray().AsValueTask();
         }
         #endregion
+
+        #region CreateUser
+        protected virtual ValueTask<IQsiAnalysisResult[]> ExecuteCreateUserAction(IAnalyzerContext context, IQsiCreateUserActionNode node)
+        {
+            var result = new QsiUserActionResult();
+
+            result.UserInfos = node.Users
+                .Select(user => ResolveUser(context, user, result.SensitiveDataCollection))
+                .ToArray();
+
+            return result
+                .ToSingleArray()
+                .AsValueTask();
+        }
+        #endregion
+
+        #region AlterUser
+        protected virtual ValueTask<IQsiAnalysisResult[]> ExecuteAlterUserAction(IAnalyzerContext context, IQsiAlterUserActionNode node)
+        {
+            var result = new QsiUserActionResult();
+
+            result.UserInfos = node.Users
+                .Select(user => ResolveUser(context, user, result.SensitiveDataCollection))
+                .ToArray();
+
+            return result
+                .ToSingleArray()
+                .AsValueTask();
+        }
+        #endregion
+
+        #region GrantUser
+        protected virtual ValueTask<IQsiAnalysisResult[]> ExecuteGrantUserAction(IAnalyzerContext context, IQsiGrantUserActionNode node)
+        {
+            var result = new QsiGrantUserActionResult
+            {
+                Roles = node.Roles?.ToArray() ?? Array.Empty<string>()
+            };
+
+            result.TargetUsers = node.Users
+                .Select(user => ResolveUser(context, user, result.SensitiveDataCollection))
+                .ToArray();
+
+            return result
+                .ToSingleArray()
+                .AsValueTask();
+        }
+        #endregion
+
+        #region VariableSet
+        protected virtual ValueTask<IQsiAnalysisResult[]> ExecuteVariableSetAction(IAnalyzerContext context, IQsiVariableSetActionNode node)
+        {
+            return node.SetItems.Select(setItem => ResolveVariableSet(context, setItem))
+                .OfType<IQsiAnalysisResult>()
+                .ToArray()
+                .AsValueTask();
+        }
+
+        protected virtual QsiVariableSetActionResult ResolveVariableSet(IAnalyzerContext context, IQsiVariableSetItemNode node)
+        {
+            // node.Expression ignored
+            return new QsiVariableSetActionResult
+            {
+                Name = node.Name
+            };
+        }
+        #endregion
+
+        protected virtual QsiUserInfo ResolveUser(IAnalyzerContext context, IQsiUserNode node, QsiSensitiveDataCollection dataCollection)
+        {
+            return new QsiUserInfo
+            {
+                Username = node.Username
+            };
+        }
+
+        protected virtual QsiSensitiveData CreateSensitiveData(QsiSensitiveDataType dataType, IQsiTreeNode node)
+        {
+            throw new NotSupportedException();
+        }
     }
 }

@@ -50,20 +50,43 @@ namespace Qsi.Debugger.Vendor.MySql
                     csMemoView.Type = QsiTableType.View;
                     AddColumns(csMemoView, "a", "b");
                     return csMemoView;
-                
+
                 case "hidden_test":
                     var hiddenTest = CreateTable("sakila", "hidden_test");
                     AddColumns(hiddenTest, "col1", "hidden1", "col2", "hidden2");
                     hiddenTest.Columns[1].IsVisible = false;
                     hiddenTest.Columns[3].IsVisible = false;
                     return hiddenTest;
-                
+
                 case "hidden_test2":
                     var hiddenTest2 = CreateTable("sakila", "hidden_test2");
                     AddColumns(hiddenTest2, "col1", "col2", "hidden1", "hidden2");
                     hiddenTest2.Columns[2].IsVisible = false;
                     hiddenTest2.Columns[3].IsVisible = false;
                     return hiddenTest2;
+
+                case "user":
+                    var user = CreateTable("mysql", "user");
+
+                    AddColumns(user, "Host", "User",
+                        "Select_priv", "Insert_priv", "Update_priv", "Delete_priv",
+                        "Create_priv", "Drop_priv", "Reload_priv", "Shutdown_priv",
+                        "Process_priv", "File_priv", "Grant_priv", "References_priv",
+                        "Index_priv", "Alter_priv", "Show_db_priv", "Super_priv",
+                        "Create_tmp_table_priv", "Lock_tables_priv", "Execute_priv",
+                        "Repl_slave_priv", "Repl_client_priv", "Create_view_priv",
+                        "Show_view_priv", "Create_routine_priv", "Alter_routine_priv",
+                        "Create_user_priv", "Event_priv", "Trigger_priv",
+                        "Create_tablespace_priv", "ssl_type", "ssl_cipher",
+                        "x509_issuer", "x509_subject", "max_questions", "max_updates",
+                        "max_connections", "max_user_connections", "plugin",
+                        "authentication_string", "password_expired",
+                        "password_last_changed", "password_lifetime",
+                        "account_locked", "Create_role_priv", "Drop_role_priv",
+                        "Password_reuse_history", "Password_reuse_time",
+                        "Password_require_current", "User_attributes", "password");
+
+                    return user;
             }
 
             return null;
