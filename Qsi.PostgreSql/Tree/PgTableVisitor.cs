@@ -368,9 +368,9 @@ internal static partial class PgNodeVisitor
         };
     }
 
-    public static QsiSetColumnExpressionNode VisitSetColumn(ResTarget node)
+    public static PgSetColumnExpressionNode VisitSetColumn(ResTarget node)
     {
-        return new QsiSetColumnExpressionNode
+        return new PgSetColumnExpressionNode
         {
             Target = CreateQualifiedIdentifier(node.Name),
             Value = { Value = VisitExpression(node.Val) },

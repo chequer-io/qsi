@@ -939,7 +939,7 @@ public partial class PostgreSqlDeparser
             };
         }
 
-        public static ResTarget Visit(QsiSetColumnExpressionNode node)
+        public static ResTarget Visit(PgSetColumnExpressionNode node)
         {
             return new ResTarget
             {
@@ -1095,7 +1095,7 @@ public partial class PostgreSqlDeparser
                 PgGroupingSetExpressionNode pgGroupingSet => Visit(pgGroupingSet),
                 PgOrderExpressionNode pgOrder => Visit(pgOrder),
                 PgDefinitionElementNode pgDefinitionElement => Visit(pgDefinitionElement),
-                QsiSetColumnExpressionNode qsiSetColumnExpression => Visit(qsiSetColumnExpression),
+                PgSetColumnExpressionNode pgSetColumnExpression => Visit(pgSetColumnExpression),
                 PgOnConflictNode pgOnConflict => Visit(pgOnConflict),
                 PgInferExpressionNode pgInferExpression => Visit(pgInferExpression),
                 PgDefaultExpressionNode => new SetToDefault(),
