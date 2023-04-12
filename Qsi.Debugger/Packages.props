@@ -15,7 +15,6 @@
     <Choose>
         <When Condition=" '$(OSPlatform)|$(OSArchitecture)' == 'Linux|X64' ">
             <ItemGroup Label="Linux x64">
-                <!-- TODO: Remove before merge (feature/pg-official-parser) -->
                 <PackageReference Include="JavaScriptEngineSwitcher.ChakraCore.Native.linux-x64" Version="$(ChakraCoreVersion)"/>
                 <PackageReference Include="PgQuery.Runtime.Linux-x64" Version="$(PgQueryVersion)"/>
             </ItemGroup>
@@ -27,7 +26,6 @@
         </When>
         <When Condition=" '$(OSPlatform)|$(OSArchitecture)' == 'OSX|X64' ">
             <ItemGroup Label="OSX x64">
-                <!-- TODO: Remove before merge (feature/pg-official-parser) -->
                 <PackageReference Include="JavaScriptEngineSwitcher.ChakraCore.Native.osx-x64" Version="$(ChakraCoreVersion)"/>
                 <PackageReference Include="PgQuery.Runtime.OSX-x64" Version="$(PgQueryVersion)"/>
             </ItemGroup>
@@ -39,19 +37,16 @@
         </When>
         <When Condition=" '$(OSPlatform)|$(OSArchitecture)' == 'Windows|X64">
             <ItemGroup Label="Windows x64">
-                <!-- TODO: Remove before merge (feature/pg-official-parser) -->
                 <PackageReference Include="JavaScriptEngineSwitcher.ChakraCore.Native.win-x64" Version="$(ChakraCoreVersion)"/>
             </ItemGroup>
         </When>
         <When Condition=" '$(OSPlatform)|$(OSArchitecture)' == 'Windows|X86' ">
             <ItemGroup Label="Windows x86">
-                <!-- TODO: Remove before merge (feature/pg-official-parser) -->
                 <PackageReference Include="JavaScriptEngineSwitcher.ChakraCore.Native.win-x86" Version="$(ChakraCoreVersion)"/>
             </ItemGroup>
         </When>
         <When Condition=" '$(OSPlatform)|$(OSArchitecture)' == 'Windows|Arm' ">
             <ItemGroup Label="Windows ARM">
-                <!-- TODO: Remove before merge (feature/pg-official-parser) -->
                 <PackageReference Include="JavaScriptEngineSwitcher.ChakraCore.Native.win-arm" Version="$(ChakraCoreVersion)"/>
             </ItemGroup>
         </When>
