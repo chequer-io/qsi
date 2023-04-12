@@ -1,0 +1,78 @@
+﻿[
+  {
+    Type: Table,
+    Identifier: dvdrental.public.city,
+    Columns: [
+      {
+        Parent: $tbl_10,
+        Name: city_id,
+        IsVisible: true,
+        RefId: $col_2
+      },
+      {
+        Parent: $tbl_10,
+        Name: city,
+        IsVisible: true,
+        RefId: $col_4
+      },
+      {
+        Parent: $tbl_10,
+        Name: country_id,
+        IsVisible: true,
+        RefId: $col_6
+      },
+      {
+        Parent: $tbl_10,
+        Name: last_update,
+        IsVisible: true,
+        RefId: $col_8
+      }
+    ],
+    RefId: $tbl_10
+  },
+  {
+    Type: Derived,
+    References: [
+      $tbl_10
+    ],
+    Columns: [
+      {
+        Parent: $tbl_9,
+        Name: city_id,
+        References: [
+          $col_2
+        ],
+        IsVisible: true,
+        RefId: $col_1
+      },
+      {
+        Parent: $tbl_9,
+        Name: city,
+        References: [
+          $col_4
+        ],
+        IsVisible: true,
+        RefId: $col_3
+      },
+      {
+        Parent: $tbl_9,
+        Name: country_id,
+        References: [
+          $col_6
+        ],
+        IsVisible: true,
+        RefId: $col_5
+      },
+      {
+        Parent: $tbl_9,
+        Name: last_update,
+        References: [
+          $col_8
+        ],
+        IsVisible: true,
+        RefId: $col_7
+      }
+    ],
+    RefId: $tbl_9
+  }
+]

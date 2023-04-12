@@ -1,7 +1,7 @@
-﻿namespace Qsi.Data.Object
+﻿namespace Qsi.Data.Object;
+
+public enum QsiObjectType
 {
-    public enum QsiObjectType
-    {
-        Sequence
-    }
+    Sequence,
+    Function
 }

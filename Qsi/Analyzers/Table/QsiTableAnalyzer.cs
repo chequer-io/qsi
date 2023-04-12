@@ -217,6 +217,18 @@ public class QsiTableAnalyzer : QsiAnalyzerBase
                 declaredColumn.Name = i < sequentialColumns.Length ? sequentialColumns[i].Alias?.Name : column.Name;
                 declaredColumn.References.Add(column);
             }
+
+            if (context.AnalyzerOptions.IncludeInvisibleColumnsInAlias)
+            {
+                foreach (var invisibleColumn in scopedContext.SourceTable.Columns.Where(c => !c.IsVisible))
+                {
+                    var declaredColumn = declaredTable.NewColumn();
+
+                    declaredColumn.Name = invisibleColumn.Name;
+                    declaredColumn.IsVisible = false;
+                    declaredColumn.References.Add(invisibleColumn);
+                }
+            }
         }
         else
         {
@@ -788,9 +800,18 @@ public class QsiTableAnalyzer : QsiAnalyzerBase
             }
 
             QsiTableColumn[] columns = candidateSourceTables
-                .SelectMany(s => s.Columns.Where(c => Match(c.Name, lastName)))
+                .SelectMany(s => s.Columns.Where(c => Match(c.Name, lastName) && c.IsVisible))
                 .Take(2)
                 .ToArray();
+
+            // If visible column is not exists, get invisible columns
+            if (columns.Length is 0)
+            {
+                columns = candidateSourceTables
+                    .SelectMany(s => s.Columns.Where(c => Match(c.Name, lastName) && !c.IsVisible))
+                    .Take(2)
+                    .ToArray();
+            }
 
             switch (columns.Length)
             {

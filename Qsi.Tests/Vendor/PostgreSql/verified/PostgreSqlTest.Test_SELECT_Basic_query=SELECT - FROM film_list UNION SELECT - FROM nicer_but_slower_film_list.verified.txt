@@ -1,0 +1,2369 @@
+﻿[
+  {
+    Type: Union,
+    References: [
+      $tbl_76,
+      $tbl_88
+    ],
+    Columns: [
+      {
+        Parent: $tbl_75,
+        Name: fid,
+        References: [
+          $col_2,
+          $col_6
+        ],
+        IsVisible: true,
+        RefId: $col_1
+      },
+      {
+        Parent: $tbl_75,
+        Name: title,
+        References: [
+          $col_11,
+          $col_15
+        ],
+        IsVisible: true,
+        RefId: $col_10
+      },
+      {
+        Parent: $tbl_75,
+        Name: description,
+        References: [
+          $col_20,
+          $col_24
+        ],
+        IsVisible: true,
+        RefId: $col_19
+      },
+      {
+        Parent: $tbl_75,
+        Name: category,
+        References: [
+          $col_29,
+          $col_33
+        ],
+        IsVisible: true,
+        RefId: $col_28
+      },
+      {
+        Parent: $tbl_75,
+        Name: price,
+        References: [
+          $col_38,
+          $col_42
+        ],
+        IsVisible: true,
+        RefId: $col_37
+      },
+      {
+        Parent: $tbl_75,
+        Name: length,
+        References: [
+          $col_47,
+          $col_51
+        ],
+        IsVisible: true,
+        RefId: $col_46
+      },
+      {
+        Parent: $tbl_75,
+        Name: rating,
+        References: [
+          $col_56,
+          $col_60
+        ],
+        IsVisible: true,
+        RefId: $col_55
+      },
+      {
+        Parent: $tbl_75,
+        Name: actors,
+        References: [
+          $col_65,
+          $col_70
+        ],
+        IsVisible: true,
+        IsExpression: true,
+        RefId: $col_64
+      }
+    ],
+    RefId: $tbl_75
+  },
+  {
+    Type: Derived,
+    References: [
+      $tbl_77
+    ],
+    Columns: [
+      {
+        Parent: $tbl_76,
+        Name: fid,
+        References: [
+          $col_3
+        ],
+        IsVisible: true,
+        RefId: $col_2
+      },
+      {
+        Parent: $tbl_76,
+        Name: title,
+        References: [
+          $col_12
+        ],
+        IsVisible: true,
+        RefId: $col_11
+      },
+      {
+        Parent: $tbl_76,
+        Name: description,
+        References: [
+          $col_21
+        ],
+        IsVisible: true,
+        RefId: $col_20
+      },
+      {
+        Parent: $tbl_76,
+        Name: category,
+        References: [
+          $col_30
+        ],
+        IsVisible: true,
+        RefId: $col_29
+      },
+      {
+        Parent: $tbl_76,
+        Name: price,
+        References: [
+          $col_39
+        ],
+        IsVisible: true,
+        RefId: $col_38
+      },
+      {
+        Parent: $tbl_76,
+        Name: length,
+        References: [
+          $col_48
+        ],
+        IsVisible: true,
+        RefId: $col_47
+      },
+      {
+        Parent: $tbl_76,
+        Name: rating,
+        References: [
+          $col_57
+        ],
+        IsVisible: true,
+        RefId: $col_56
+      },
+      {
+        Parent: $tbl_76,
+        Name: actors,
+        References: [
+          $col_66
+        ],
+        IsVisible: true,
+        IsExpression: true,
+        RefId: $col_65
+      }
+    ],
+    RefId: $tbl_76
+  },
+  {
+    Type: View,
+    Identifier: dvdrental.public.film_list,
+    References: [
+      $tbl_78
+    ],
+    Columns: [
+      {
+        Parent: $tbl_77,
+        Name: fid,
+        References: [
+          $col_4
+        ],
+        IsVisible: true,
+        RefId: $col_3
+      },
+      {
+        Parent: $tbl_77,
+        Name: title,
+        References: [
+          $col_13
+        ],
+        IsVisible: true,
+        RefId: $col_12
+      },
+      {
+        Parent: $tbl_77,
+        Name: description,
+        References: [
+          $col_22
+        ],
+        IsVisible: true,
+        RefId: $col_21
+      },
+      {
+        Parent: $tbl_77,
+        Name: category,
+        References: [
+          $col_31
+        ],
+        IsVisible: true,
+        RefId: $col_30
+      },
+      {
+        Parent: $tbl_77,
+        Name: price,
+        References: [
+          $col_40
+        ],
+        IsVisible: true,
+        RefId: $col_39
+      },
+      {
+        Parent: $tbl_77,
+        Name: length,
+        References: [
+          $col_49
+        ],
+        IsVisible: true,
+        RefId: $col_48
+      },
+      {
+        Parent: $tbl_77,
+        Name: rating,
+        References: [
+          $col_58
+        ],
+        IsVisible: true,
+        RefId: $col_57
+      },
+      {
+        Parent: $tbl_77,
+        Name: actors,
+        References: [
+          $col_67
+        ],
+        IsVisible: true,
+        IsExpression: true,
+        RefId: $col_66
+      }
+    ],
+    RefId: $tbl_77
+  },
+  {
+    Type: Derived,
+    Identifier: dvdrental.public.film_list,
+    References: [
+      $tbl_79
+    ],
+    Columns: [
+      {
+        Parent: $tbl_78,
+        Name: fid,
+        References: [
+          $col_5
+        ],
+        IsVisible: true,
+        RefId: $col_4
+      },
+      {
+        Parent: $tbl_78,
+        Name: title,
+        References: [
+          $col_14
+        ],
+        IsVisible: true,
+        RefId: $col_13
+      },
+      {
+        Parent: $tbl_78,
+        Name: description,
+        References: [
+          $col_23
+        ],
+        IsVisible: true,
+        RefId: $col_22
+      },
+      {
+        Parent: $tbl_78,
+        Name: category,
+        References: [
+          $col_32
+        ],
+        IsVisible: true,
+        RefId: $col_31
+      },
+      {
+        Parent: $tbl_78,
+        Name: price,
+        References: [
+          $col_41
+        ],
+        IsVisible: true,
+        RefId: $col_40
+      },
+      {
+        Parent: $tbl_78,
+        Name: length,
+        References: [
+          $col_50
+        ],
+        IsVisible: true,
+        RefId: $col_49
+      },
+      {
+        Parent: $tbl_78,
+        Name: rating,
+        References: [
+          $col_59
+        ],
+        IsVisible: true,
+        RefId: $col_58
+      },
+      {
+        Parent: $tbl_78,
+        Name: actors,
+        References: [
+          $col_68,
+          $col_69
+        ],
+        IsVisible: true,
+        IsExpression: true,
+        RefId: $col_67
+      }
+    ],
+    RefId: $tbl_78
+  },
+  {
+    Type: Join,
+    References: [
+      $tbl_80,
+      $tbl_87
+    ],
+    Columns: [
+      {
+        Parent: $tbl_79,
+        Name: category_id,
+        References: [
+          $col_101
+        ],
+        IsVisible: true,
+        RefId: $col_100
+      },
+      {
+        Parent: $tbl_79,
+        Name: name,
+        References: [
+          $col_103
+        ],
+        IsVisible: true,
+        RefId: $col_102
+      },
+      {
+        Parent: $tbl_79,
+        Name: last_update,
+        References: [
+          $col_105
+        ],
+        IsVisible: true,
+        RefId: $col_104
+      },
+      {
+        Parent: $tbl_79,
+        Name: film_id,
+        References: [
+          $col_107
+        ],
+        IsVisible: true,
+        RefId: $col_106
+      },
+      {
+        Parent: $tbl_79,
+        Name: category_id,
+        References: [
+          $col_109
+        ],
+        IsVisible: true,
+        RefId: $col_108
+      },
+      {
+        Parent: $tbl_79,
+        Name: last_update,
+        References: [
+          $col_111
+        ],
+        IsVisible: true,
+        RefId: $col_110
+      },
+      {
+        Parent: $tbl_79,
+        Name: film_id,
+        References: [
+          $col_113
+        ],
+        IsVisible: true,
+        RefId: $col_112
+      },
+      {
+        Parent: $tbl_79,
+        Name: title,
+        References: [
+          $col_115
+        ],
+        IsVisible: true,
+        RefId: $col_114
+      },
+      {
+        Parent: $tbl_79,
+        Name: description,
+        References: [
+          $col_117
+        ],
+        IsVisible: true,
+        RefId: $col_116
+      },
+      {
+        Parent: $tbl_79,
+        Name: release_year,
+        References: [
+          $col_119
+        ],
+        IsVisible: true,
+        RefId: $col_118
+      },
+      {
+        Parent: $tbl_79,
+        Name: language_id,
+        References: [
+          $col_121
+        ],
+        IsVisible: true,
+        RefId: $col_120
+      },
+      {
+        Parent: $tbl_79,
+        Name: rental_duration,
+        References: [
+          $col_123
+        ],
+        IsVisible: true,
+        RefId: $col_122
+      },
+      {
+        Parent: $tbl_79,
+        Name: rental_rate,
+        References: [
+          $col_125
+        ],
+        IsVisible: true,
+        RefId: $col_124
+      },
+      {
+        Parent: $tbl_79,
+        Name: length,
+        References: [
+          $col_127
+        ],
+        IsVisible: true,
+        RefId: $col_126
+      },
+      {
+        Parent: $tbl_79,
+        Name: replacement_cost,
+        References: [
+          $col_129
+        ],
+        IsVisible: true,
+        RefId: $col_128
+      },
+      {
+        Parent: $tbl_79,
+        Name: rating,
+        References: [
+          $col_131
+        ],
+        IsVisible: true,
+        RefId: $col_130
+      },
+      {
+        Parent: $tbl_79,
+        Name: last_update,
+        References: [
+          $col_133
+        ],
+        IsVisible: true,
+        RefId: $col_132
+      },
+      {
+        Parent: $tbl_79,
+        Name: special_features,
+        References: [
+          $col_135
+        ],
+        IsVisible: true,
+        RefId: $col_134
+      },
+      {
+        Parent: $tbl_79,
+        Name: fulltext,
+        References: [
+          $col_137
+        ],
+        IsVisible: true,
+        RefId: $col_136
+      },
+      {
+        Parent: $tbl_79,
+        Name: actor_id,
+        References: [
+          $col_139
+        ],
+        IsVisible: true,
+        RefId: $col_138
+      },
+      {
+        Parent: $tbl_79,
+        Name: film_id,
+        References: [
+          $col_141
+        ],
+        IsVisible: true,
+        RefId: $col_140
+      },
+      {
+        Parent: $tbl_79,
+        Name: last_update,
+        References: [
+          $col_143
+        ],
+        IsVisible: true,
+        RefId: $col_142
+      },
+      {
+        Parent: $tbl_79,
+        Name: actor_id,
+        References: [
+          $col_145
+        ],
+        IsVisible: true,
+        RefId: $col_144
+      },
+      {
+        Parent: $tbl_79,
+        Name: first_name,
+        References: [
+          $col_68
+        ],
+        IsVisible: true,
+        RefId: $col_146
+      },
+      {
+        Parent: $tbl_79,
+        Name: last_name,
+        References: [
+          $col_69
+        ],
+        IsVisible: true,
+        RefId: $col_147
+      },
+      {
+        Parent: $tbl_79,
+        Name: last_update,
+        References: [
+          $col_149
+        ],
+        IsVisible: true,
+        RefId: $col_148
+      }
+    ],
+    RefId: $tbl_79
+  },
+  {
+    Type: Join,
+    References: [
+      $tbl_81,
+      $tbl_86
+    ],
+    Columns: [
+      {
+        Parent: $tbl_80,
+        Name: category_id,
+        References: [
+          $col_150
+        ],
+        IsVisible: true,
+        RefId: $col_101
+      },
+      {
+        Parent: $tbl_80,
+        Name: name,
+        References: [
+          $col_151
+        ],
+        IsVisible: true,
+        RefId: $col_103
+      },
+      {
+        Parent: $tbl_80,
+        Name: last_update,
+        References: [
+          $col_152
+        ],
+        IsVisible: true,
+        RefId: $col_105
+      },
+      {
+        Parent: $tbl_80,
+        Name: film_id,
+        References: [
+          $col_153
+        ],
+        IsVisible: true,
+        RefId: $col_107
+      },
+      {
+        Parent: $tbl_80,
+        Name: category_id,
+        References: [
+          $col_154
+        ],
+        IsVisible: true,
+        RefId: $col_109
+      },
+      {
+        Parent: $tbl_80,
+        Name: last_update,
+        References: [
+          $col_155
+        ],
+        IsVisible: true,
+        RefId: $col_111
+      },
+      {
+        Parent: $tbl_80,
+        Name: film_id,
+        References: [
+          $col_156
+        ],
+        IsVisible: true,
+        RefId: $col_113
+      },
+      {
+        Parent: $tbl_80,
+        Name: title,
+        References: [
+          $col_157
+        ],
+        IsVisible: true,
+        RefId: $col_115
+      },
+      {
+        Parent: $tbl_80,
+        Name: description,
+        References: [
+          $col_158
+        ],
+        IsVisible: true,
+        RefId: $col_117
+      },
+      {
+        Parent: $tbl_80,
+        Name: release_year,
+        References: [
+          $col_159
+        ],
+        IsVisible: true,
+        RefId: $col_119
+      },
+      {
+        Parent: $tbl_80,
+        Name: language_id,
+        References: [
+          $col_160
+        ],
+        IsVisible: true,
+        RefId: $col_121
+      },
+      {
+        Parent: $tbl_80,
+        Name: rental_duration,
+        References: [
+          $col_161
+        ],
+        IsVisible: true,
+        RefId: $col_123
+      },
+      {
+        Parent: $tbl_80,
+        Name: rental_rate,
+        References: [
+          $col_162
+        ],
+        IsVisible: true,
+        RefId: $col_125
+      },
+      {
+        Parent: $tbl_80,
+        Name: length,
+        References: [
+          $col_163
+        ],
+        IsVisible: true,
+        RefId: $col_127
+      },
+      {
+        Parent: $tbl_80,
+        Name: replacement_cost,
+        References: [
+          $col_164
+        ],
+        IsVisible: true,
+        RefId: $col_129
+      },
+      {
+        Parent: $tbl_80,
+        Name: rating,
+        References: [
+          $col_165
+        ],
+        IsVisible: true,
+        RefId: $col_131
+      },
+      {
+        Parent: $tbl_80,
+        Name: last_update,
+        References: [
+          $col_166
+        ],
+        IsVisible: true,
+        RefId: $col_133
+      },
+      {
+        Parent: $tbl_80,
+        Name: special_features,
+        References: [
+          $col_167
+        ],
+        IsVisible: true,
+        RefId: $col_135
+      },
+      {
+        Parent: $tbl_80,
+        Name: fulltext,
+        References: [
+          $col_168
+        ],
+        IsVisible: true,
+        RefId: $col_137
+      },
+      {
+        Parent: $tbl_80,
+        Name: actor_id,
+        References: [
+          $col_169
+        ],
+        IsVisible: true,
+        RefId: $col_139
+      },
+      {
+        Parent: $tbl_80,
+        Name: film_id,
+        References: [
+          $col_170
+        ],
+        IsVisible: true,
+        RefId: $col_141
+      },
+      {
+        Parent: $tbl_80,
+        Name: last_update,
+        References: [
+          $col_171
+        ],
+        IsVisible: true,
+        RefId: $col_143
+      }
+    ],
+    RefId: $tbl_80
+  },
+  {
+    Type: Join,
+    References: [
+      $tbl_82,
+      $tbl_85
+    ],
+    Columns: [
+      {
+        Parent: $tbl_81,
+        Name: category_id,
+        References: [
+          $col_172
+        ],
+        IsVisible: true,
+        RefId: $col_150
+      },
+      {
+        Parent: $tbl_81,
+        Name: name,
+        References: [
+          $col_173
+        ],
+        IsVisible: true,
+        RefId: $col_151
+      },
+      {
+        Parent: $tbl_81,
+        Name: last_update,
+        References: [
+          $col_174
+        ],
+        IsVisible: true,
+        RefId: $col_152
+      },
+      {
+        Parent: $tbl_81,
+        Name: film_id,
+        References: [
+          $col_175
+        ],
+        IsVisible: true,
+        RefId: $col_153
+      },
+      {
+        Parent: $tbl_81,
+        Name: category_id,
+        References: [
+          $col_176
+        ],
+        IsVisible: true,
+        RefId: $col_154
+      },
+      {
+        Parent: $tbl_81,
+        Name: last_update,
+        References: [
+          $col_177
+        ],
+        IsVisible: true,
+        RefId: $col_155
+      },
+      {
+        Parent: $tbl_81,
+        Name: film_id,
+        References: [
+          $col_5
+        ],
+        IsVisible: true,
+        RefId: $col_156
+      },
+      {
+        Parent: $tbl_81,
+        Name: title,
+        References: [
+          $col_14
+        ],
+        IsVisible: true,
+        RefId: $col_157
+      },
+      {
+        Parent: $tbl_81,
+        Name: description,
+        References: [
+          $col_23
+        ],
+        IsVisible: true,
+        RefId: $col_158
+      },
+      {
+        Parent: $tbl_81,
+        Name: release_year,
+        References: [
+          $col_178
+        ],
+        IsVisible: true,
+        RefId: $col_159
+      },
+      {
+        Parent: $tbl_81,
+        Name: language_id,
+        References: [
+          $col_179
+        ],
+        IsVisible: true,
+        RefId: $col_160
+      },
+      {
+        Parent: $tbl_81,
+        Name: rental_duration,
+        References: [
+          $col_180
+        ],
+        IsVisible: true,
+        RefId: $col_161
+      },
+      {
+        Parent: $tbl_81,
+        Name: rental_rate,
+        References: [
+          $col_41
+        ],
+        IsVisible: true,
+        RefId: $col_162
+      },
+      {
+        Parent: $tbl_81,
+        Name: length,
+        References: [
+          $col_50
+        ],
+        IsVisible: true,
+        RefId: $col_163
+      },
+      {
+        Parent: $tbl_81,
+        Name: replacement_cost,
+        References: [
+          $col_181
+        ],
+        IsVisible: true,
+        RefId: $col_164
+      },
+      {
+        Parent: $tbl_81,
+        Name: rating,
+        References: [
+          $col_59
+        ],
+        IsVisible: true,
+        RefId: $col_165
+      },
+      {
+        Parent: $tbl_81,
+        Name: last_update,
+        References: [
+          $col_182
+        ],
+        IsVisible: true,
+        RefId: $col_166
+      },
+      {
+        Parent: $tbl_81,
+        Name: special_features,
+        References: [
+          $col_183
+        ],
+        IsVisible: true,
+        RefId: $col_167
+      },
+      {
+        Parent: $tbl_81,
+        Name: fulltext,
+        References: [
+          $col_184
+        ],
+        IsVisible: true,
+        RefId: $col_168
+      }
+    ],
+    RefId: $tbl_81
+  },
+  {
+    Type: Join,
+    References: [
+      $tbl_83,
+      $tbl_84
+    ],
+    Columns: [
+      {
+        Parent: $tbl_82,
+        Name: category_id,
+        References: [
+          $col_185
+        ],
+        IsVisible: true,
+        RefId: $col_172
+      },
+      {
+        Parent: $tbl_82,
+        Name: name,
+        References: [
+          $col_32
+        ],
+        IsVisible: true,
+        RefId: $col_173
+      },
+      {
+        Parent: $tbl_82,
+        Name: last_update,
+        References: [
+          $col_186
+        ],
+        IsVisible: true,
+        RefId: $col_174
+      },
+      {
+        Parent: $tbl_82,
+        Name: film_id,
+        References: [
+          $col_187
+        ],
+        IsVisible: true,
+        RefId: $col_175
+      },
+      {
+        Parent: $tbl_82,
+        Name: category_id,
+        References: [
+          $col_188
+        ],
+        IsVisible: true,
+        RefId: $col_176
+      },
+      {
+        Parent: $tbl_82,
+        Name: last_update,
+        References: [
+          $col_189
+        ],
+        IsVisible: true,
+        RefId: $col_177
+      }
+    ],
+    RefId: $tbl_82
+  },
+  {
+    Type: Table,
+    Identifier: dvdrental.public.category,
+    Columns: [
+      {
+        Parent: $tbl_83,
+        Name: category_id,
+        IsVisible: true,
+        RefId: $col_185
+      },
+      {
+        Parent: $tbl_83,
+        Name: name,
+        IsVisible: true,
+        RefId: $col_32
+      },
+      {
+        Parent: $tbl_83,
+        Name: last_update,
+        IsVisible: true,
+        RefId: $col_186
+      }
+    ],
+    RefId: $tbl_83
+  },
+  {
+    Type: Table,
+    Identifier: dvdrental.public.film_category,
+    Columns: [
+      {
+        Parent: $tbl_84,
+        Name: film_id,
+        IsVisible: true,
+        RefId: $col_187
+      },
+      {
+        Parent: $tbl_84,
+        Name: category_id,
+        IsVisible: true,
+        RefId: $col_188
+      },
+      {
+        Parent: $tbl_84,
+        Name: last_update,
+        IsVisible: true,
+        RefId: $col_189
+      }
+    ],
+    RefId: $tbl_84
+  },
+  {
+    Type: Table,
+    Identifier: dvdrental.public.film,
+    Columns: [
+      {
+        Parent: $tbl_85,
+        Name: film_id,
+        IsVisible: true,
+        RefId: $col_5
+      },
+      {
+        Parent: $tbl_85,
+        Name: title,
+        IsVisible: true,
+        RefId: $col_14
+      },
+      {
+        Parent: $tbl_85,
+        Name: description,
+        IsVisible: true,
+        RefId: $col_23
+      },
+      {
+        Parent: $tbl_85,
+        Name: release_year,
+        IsVisible: true,
+        RefId: $col_178
+      },
+      {
+        Parent: $tbl_85,
+        Name: language_id,
+        IsVisible: true,
+        RefId: $col_179
+      },
+      {
+        Parent: $tbl_85,
+        Name: rental_duration,
+        IsVisible: true,
+        RefId: $col_180
+      },
+      {
+        Parent: $tbl_85,
+        Name: rental_rate,
+        IsVisible: true,
+        RefId: $col_41
+      },
+      {
+        Parent: $tbl_85,
+        Name: length,
+        IsVisible: true,
+        RefId: $col_50
+      },
+      {
+        Parent: $tbl_85,
+        Name: replacement_cost,
+        IsVisible: true,
+        RefId: $col_181
+      },
+      {
+        Parent: $tbl_85,
+        Name: rating,
+        IsVisible: true,
+        RefId: $col_59
+      },
+      {
+        Parent: $tbl_85,
+        Name: last_update,
+        IsVisible: true,
+        RefId: $col_182
+      },
+      {
+        Parent: $tbl_85,
+        Name: special_features,
+        IsVisible: true,
+        RefId: $col_183
+      },
+      {
+        Parent: $tbl_85,
+        Name: fulltext,
+        IsVisible: true,
+        RefId: $col_184
+      }
+    ],
+    RefId: $tbl_85
+  },
+  {
+    Type: Table,
+    Identifier: dvdrental.public.film_actor,
+    Columns: [
+      {
+        Parent: $tbl_86,
+        Name: actor_id,
+        IsVisible: true,
+        RefId: $col_169
+      },
+      {
+        Parent: $tbl_86,
+        Name: film_id,
+        IsVisible: true,
+        RefId: $col_170
+      },
+      {
+        Parent: $tbl_86,
+        Name: last_update,
+        IsVisible: true,
+        RefId: $col_171
+      }
+    ],
+    RefId: $tbl_86
+  },
+  {
+    Type: Table,
+    Identifier: dvdrental.public.actor,
+    Columns: [
+      {
+        Parent: $tbl_87,
+        Name: actor_id,
+        IsVisible: true,
+        RefId: $col_145
+      },
+      {
+        Parent: $tbl_87,
+        Name: first_name,
+        IsVisible: true,
+        RefId: $col_68
+      },
+      {
+        Parent: $tbl_87,
+        Name: last_name,
+        IsVisible: true,
+        RefId: $col_69
+      },
+      {
+        Parent: $tbl_87,
+        Name: last_update,
+        IsVisible: true,
+        RefId: $col_149
+      }
+    ],
+    RefId: $tbl_87
+  },
+  {
+    Type: Derived,
+    References: [
+      $tbl_89
+    ],
+    Columns: [
+      {
+        Parent: $tbl_88,
+        Name: fid,
+        References: [
+          $col_7
+        ],
+        IsVisible: true,
+        RefId: $col_6
+      },
+      {
+        Parent: $tbl_88,
+        Name: title,
+        References: [
+          $col_16
+        ],
+        IsVisible: true,
+        RefId: $col_15
+      },
+      {
+        Parent: $tbl_88,
+        Name: description,
+        References: [
+          $col_25
+        ],
+        IsVisible: true,
+        RefId: $col_24
+      },
+      {
+        Parent: $tbl_88,
+        Name: category,
+        References: [
+          $col_34
+        ],
+        IsVisible: true,
+        RefId: $col_33
+      },
+      {
+        Parent: $tbl_88,
+        Name: price,
+        References: [
+          $col_43
+        ],
+        IsVisible: true,
+        RefId: $col_42
+      },
+      {
+        Parent: $tbl_88,
+        Name: length,
+        References: [
+          $col_52
+        ],
+        IsVisible: true,
+        RefId: $col_51
+      },
+      {
+        Parent: $tbl_88,
+        Name: rating,
+        References: [
+          $col_61
+        ],
+        IsVisible: true,
+        RefId: $col_60
+      },
+      {
+        Parent: $tbl_88,
+        Name: actors,
+        References: [
+          $col_71
+        ],
+        IsVisible: true,
+        IsExpression: true,
+        RefId: $col_70
+      }
+    ],
+    RefId: $tbl_88
+  },
+  {
+    Type: View,
+    Identifier: dvdrental.public.nicer_but_slower_film_list,
+    References: [
+      $tbl_90
+    ],
+    Columns: [
+      {
+        Parent: $tbl_89,
+        Name: fid,
+        References: [
+          $col_8
+        ],
+        IsVisible: true,
+        RefId: $col_7
+      },
+      {
+        Parent: $tbl_89,
+        Name: title,
+        References: [
+          $col_17
+        ],
+        IsVisible: true,
+        RefId: $col_16
+      },
+      {
+        Parent: $tbl_89,
+        Name: description,
+        References: [
+          $col_26
+        ],
+        IsVisible: true,
+        RefId: $col_25
+      },
+      {
+        Parent: $tbl_89,
+        Name: category,
+        References: [
+          $col_35
+        ],
+        IsVisible: true,
+        RefId: $col_34
+      },
+      {
+        Parent: $tbl_89,
+        Name: price,
+        References: [
+          $col_44
+        ],
+        IsVisible: true,
+        RefId: $col_43
+      },
+      {
+        Parent: $tbl_89,
+        Name: length,
+        References: [
+          $col_53
+        ],
+        IsVisible: true,
+        RefId: $col_52
+      },
+      {
+        Parent: $tbl_89,
+        Name: rating,
+        References: [
+          $col_62
+        ],
+        IsVisible: true,
+        RefId: $col_61
+      },
+      {
+        Parent: $tbl_89,
+        Name: actors,
+        References: [
+          $col_72
+        ],
+        IsVisible: true,
+        IsExpression: true,
+        RefId: $col_71
+      }
+    ],
+    RefId: $tbl_89
+  },
+  {
+    Type: Derived,
+    Identifier: dvdrental.public.nicer_but_slower_film_list,
+    References: [
+      $tbl_91
+    ],
+    Columns: [
+      {
+        Parent: $tbl_90,
+        Name: fid,
+        References: [
+          $col_9
+        ],
+        IsVisible: true,
+        RefId: $col_8
+      },
+      {
+        Parent: $tbl_90,
+        Name: title,
+        References: [
+          $col_18
+        ],
+        IsVisible: true,
+        RefId: $col_17
+      },
+      {
+        Parent: $tbl_90,
+        Name: description,
+        References: [
+          $col_27
+        ],
+        IsVisible: true,
+        RefId: $col_26
+      },
+      {
+        Parent: $tbl_90,
+        Name: category,
+        References: [
+          $col_36
+        ],
+        IsVisible: true,
+        RefId: $col_35
+      },
+      {
+        Parent: $tbl_90,
+        Name: price,
+        References: [
+          $col_45
+        ],
+        IsVisible: true,
+        RefId: $col_44
+      },
+      {
+        Parent: $tbl_90,
+        Name: length,
+        References: [
+          $col_54
+        ],
+        IsVisible: true,
+        RefId: $col_53
+      },
+      {
+        Parent: $tbl_90,
+        Name: rating,
+        References: [
+          $col_63
+        ],
+        IsVisible: true,
+        RefId: $col_62
+      },
+      {
+        Parent: $tbl_90,
+        Name: actors,
+        References: [
+          $col_73,
+          $col_73,
+          $col_74,
+          $col_74
+        ],
+        IsVisible: true,
+        IsExpression: true,
+        RefId: $col_72
+      }
+    ],
+    RefId: $tbl_90
+  },
+  {
+    Type: Join,
+    References: [
+      $tbl_92,
+      $tbl_99
+    ],
+    Columns: [
+      {
+        Parent: $tbl_91,
+        Name: category_id,
+        References: [
+          $col_191
+        ],
+        IsVisible: true,
+        RefId: $col_190
+      },
+      {
+        Parent: $tbl_91,
+        Name: name,
+        References: [
+          $col_193
+        ],
+        IsVisible: true,
+        RefId: $col_192
+      },
+      {
+        Parent: $tbl_91,
+        Name: last_update,
+        References: [
+          $col_195
+        ],
+        IsVisible: true,
+        RefId: $col_194
+      },
+      {
+        Parent: $tbl_91,
+        Name: film_id,
+        References: [
+          $col_197
+        ],
+        IsVisible: true,
+        RefId: $col_196
+      },
+      {
+        Parent: $tbl_91,
+        Name: category_id,
+        References: [
+          $col_199
+        ],
+        IsVisible: true,
+        RefId: $col_198
+      },
+      {
+        Parent: $tbl_91,
+        Name: last_update,
+        References: [
+          $col_201
+        ],
+        IsVisible: true,
+        RefId: $col_200
+      },
+      {
+        Parent: $tbl_91,
+        Name: film_id,
+        References: [
+          $col_203
+        ],
+        IsVisible: true,
+        RefId: $col_202
+      },
+      {
+        Parent: $tbl_91,
+        Name: title,
+        References: [
+          $col_205
+        ],
+        IsVisible: true,
+        RefId: $col_204
+      },
+      {
+        Parent: $tbl_91,
+        Name: description,
+        References: [
+          $col_207
+        ],
+        IsVisible: true,
+        RefId: $col_206
+      },
+      {
+        Parent: $tbl_91,
+        Name: release_year,
+        References: [
+          $col_209
+        ],
+        IsVisible: true,
+        RefId: $col_208
+      },
+      {
+        Parent: $tbl_91,
+        Name: language_id,
+        References: [
+          $col_211
+        ],
+        IsVisible: true,
+        RefId: $col_210
+      },
+      {
+        Parent: $tbl_91,
+        Name: rental_duration,
+        References: [
+          $col_213
+        ],
+        IsVisible: true,
+        RefId: $col_212
+      },
+      {
+        Parent: $tbl_91,
+        Name: rental_rate,
+        References: [
+          $col_215
+        ],
+        IsVisible: true,
+        RefId: $col_214
+      },
+      {
+        Parent: $tbl_91,
+        Name: length,
+        References: [
+          $col_217
+        ],
+        IsVisible: true,
+        RefId: $col_216
+      },
+      {
+        Parent: $tbl_91,
+        Name: replacement_cost,
+        References: [
+          $col_219
+        ],
+        IsVisible: true,
+        RefId: $col_218
+      },
+      {
+        Parent: $tbl_91,
+        Name: rating,
+        References: [
+          $col_221
+        ],
+        IsVisible: true,
+        RefId: $col_220
+      },
+      {
+        Parent: $tbl_91,
+        Name: last_update,
+        References: [
+          $col_223
+        ],
+        IsVisible: true,
+        RefId: $col_222
+      },
+      {
+        Parent: $tbl_91,
+        Name: special_features,
+        References: [
+          $col_225
+        ],
+        IsVisible: true,
+        RefId: $col_224
+      },
+      {
+        Parent: $tbl_91,
+        Name: fulltext,
+        References: [
+          $col_227
+        ],
+        IsVisible: true,
+        RefId: $col_226
+      },
+      {
+        Parent: $tbl_91,
+        Name: actor_id,
+        References: [
+          $col_229
+        ],
+        IsVisible: true,
+        RefId: $col_228
+      },
+      {
+        Parent: $tbl_91,
+        Name: film_id,
+        References: [
+          $col_231
+        ],
+        IsVisible: true,
+        RefId: $col_230
+      },
+      {
+        Parent: $tbl_91,
+        Name: last_update,
+        References: [
+          $col_233
+        ],
+        IsVisible: true,
+        RefId: $col_232
+      },
+      {
+        Parent: $tbl_91,
+        Name: actor_id,
+        References: [
+          $col_235
+        ],
+        IsVisible: true,
+        RefId: $col_234
+      },
+      {
+        Parent: $tbl_91,
+        Name: first_name,
+        References: [
+          $col_73
+        ],
+        IsVisible: true,
+        RefId: $col_236
+      },
+      {
+        Parent: $tbl_91,
+        Name: last_name,
+        References: [
+          $col_74
+        ],
+        IsVisible: true,
+        RefId: $col_237
+      },
+      {
+        Parent: $tbl_91,
+        Name: last_update,
+        References: [
+          $col_239
+        ],
+        IsVisible: true,
+        RefId: $col_238
+      }
+    ],
+    RefId: $tbl_91
+  },
+  {
+    Type: Join,
+    References: [
+      $tbl_93,
+      $tbl_98
+    ],
+    Columns: [
+      {
+        Parent: $tbl_92,
+        Name: category_id,
+        References: [
+          $col_240
+        ],
+        IsVisible: true,
+        RefId: $col_191
+      },
+      {
+        Parent: $tbl_92,
+        Name: name,
+        References: [
+          $col_241
+        ],
+        IsVisible: true,
+        RefId: $col_193
+      },
+      {
+        Parent: $tbl_92,
+        Name: last_update,
+        References: [
+          $col_242
+        ],
+        IsVisible: true,
+        RefId: $col_195
+      },
+      {
+        Parent: $tbl_92,
+        Name: film_id,
+        References: [
+          $col_243
+        ],
+        IsVisible: true,
+        RefId: $col_197
+      },
+      {
+        Parent: $tbl_92,
+        Name: category_id,
+        References: [
+          $col_244
+        ],
+        IsVisible: true,
+        RefId: $col_199
+      },
+      {
+        Parent: $tbl_92,
+        Name: last_update,
+        References: [
+          $col_245
+        ],
+        IsVisible: true,
+        RefId: $col_201
+      },
+      {
+        Parent: $tbl_92,
+        Name: film_id,
+        References: [
+          $col_246
+        ],
+        IsVisible: true,
+        RefId: $col_203
+      },
+      {
+        Parent: $tbl_92,
+        Name: title,
+        References: [
+          $col_247
+        ],
+        IsVisible: true,
+        RefId: $col_205
+      },
+      {
+        Parent: $tbl_92,
+        Name: description,
+        References: [
+          $col_248
+        ],
+        IsVisible: true,
+        RefId: $col_207
+      },
+      {
+        Parent: $tbl_92,
+        Name: release_year,
+        References: [
+          $col_249
+        ],
+        IsVisible: true,
+        RefId: $col_209
+      },
+      {
+        Parent: $tbl_92,
+        Name: language_id,
+        References: [
+          $col_250
+        ],
+        IsVisible: true,
+        RefId: $col_211
+      },
+      {
+        Parent: $tbl_92,
+        Name: rental_duration,
+        References: [
+          $col_251
+        ],
+        IsVisible: true,
+        RefId: $col_213
+      },
+      {
+        Parent: $tbl_92,
+        Name: rental_rate,
+        References: [
+          $col_252
+        ],
+        IsVisible: true,
+        RefId: $col_215
+      },
+      {
+        Parent: $tbl_92,
+        Name: length,
+        References: [
+          $col_253
+        ],
+        IsVisible: true,
+        RefId: $col_217
+      },
+      {
+        Parent: $tbl_92,
+        Name: replacement_cost,
+        References: [
+          $col_254
+        ],
+        IsVisible: true,
+        RefId: $col_219
+      },
+      {
+        Parent: $tbl_92,
+        Name: rating,
+        References: [
+          $col_255
+        ],
+        IsVisible: true,
+        RefId: $col_221
+      },
+      {
+        Parent: $tbl_92,
+        Name: last_update,
+        References: [
+          $col_256
+        ],
+        IsVisible: true,
+        RefId: $col_223
+      },
+      {
+        Parent: $tbl_92,
+        Name: special_features,
+        References: [
+          $col_257
+        ],
+        IsVisible: true,
+        RefId: $col_225
+      },
+      {
+        Parent: $tbl_92,
+        Name: fulltext,
+        References: [
+          $col_258
+        ],
+        IsVisible: true,
+        RefId: $col_227
+      },
+      {
+        Parent: $tbl_92,
+        Name: actor_id,
+        References: [
+          $col_259
+        ],
+        IsVisible: true,
+        RefId: $col_229
+      },
+      {
+        Parent: $tbl_92,
+        Name: film_id,
+        References: [
+          $col_260
+        ],
+        IsVisible: true,
+        RefId: $col_231
+      },
+      {
+        Parent: $tbl_92,
+        Name: last_update,
+        References: [
+          $col_261
+        ],
+        IsVisible: true,
+        RefId: $col_233
+      }
+    ],
+    RefId: $tbl_92
+  },
+  {
+    Type: Join,
+    References: [
+      $tbl_94,
+      $tbl_97
+    ],
+    Columns: [
+      {
+        Parent: $tbl_93,
+        Name: category_id,
+        References: [
+          $col_262
+        ],
+        IsVisible: true,
+        RefId: $col_240
+      },
+      {
+        Parent: $tbl_93,
+        Name: name,
+        References: [
+          $col_263
+        ],
+        IsVisible: true,
+        RefId: $col_241
+      },
+      {
+        Parent: $tbl_93,
+        Name: last_update,
+        References: [
+          $col_264
+        ],
+        IsVisible: true,
+        RefId: $col_242
+      },
+      {
+        Parent: $tbl_93,
+        Name: film_id,
+        References: [
+          $col_265
+        ],
+        IsVisible: true,
+        RefId: $col_243
+      },
+      {
+        Parent: $tbl_93,
+        Name: category_id,
+        References: [
+          $col_266
+        ],
+        IsVisible: true,
+        RefId: $col_244
+      },
+      {
+        Parent: $tbl_93,
+        Name: last_update,
+        References: [
+          $col_267
+        ],
+        IsVisible: true,
+        RefId: $col_245
+      },
+      {
+        Parent: $tbl_93,
+        Name: film_id,
+        References: [
+          $col_9
+        ],
+        IsVisible: true,
+        RefId: $col_246
+      },
+      {
+        Parent: $tbl_93,
+        Name: title,
+        References: [
+          $col_18
+        ],
+        IsVisible: true,
+        RefId: $col_247
+      },
+      {
+        Parent: $tbl_93,
+        Name: description,
+        References: [
+          $col_27
+        ],
+        IsVisible: true,
+        RefId: $col_248
+      },
+      {
+        Parent: $tbl_93,
+        Name: release_year,
+        References: [
+          $col_268
+        ],
+        IsVisible: true,
+        RefId: $col_249
+      },
+      {
+        Parent: $tbl_93,
+        Name: language_id,
+        References: [
+          $col_269
+        ],
+        IsVisible: true,
+        RefId: $col_250
+      },
+      {
+        Parent: $tbl_93,
+        Name: rental_duration,
+        References: [
+          $col_270
+        ],
+        IsVisible: true,
+        RefId: $col_251
+      },
+      {
+        Parent: $tbl_93,
+        Name: rental_rate,
+        References: [
+          $col_45
+        ],
+        IsVisible: true,
+        RefId: $col_252
+      },
+      {
+        Parent: $tbl_93,
+        Name: length,
+        References: [
+          $col_54
+        ],
+        IsVisible: true,
+        RefId: $col_253
+      },
+      {
+        Parent: $tbl_93,
+        Name: replacement_cost,
+        References: [
+          $col_271
+        ],
+        IsVisible: true,
+        RefId: $col_254
+      },
+      {
+        Parent: $tbl_93,
+        Name: rating,
+        References: [
+          $col_63
+        ],
+        IsVisible: true,
+        RefId: $col_255
+      },
+      {
+        Parent: $tbl_93,
+        Name: last_update,
+        References: [
+          $col_272
+        ],
+        IsVisible: true,
+        RefId: $col_256
+      },
+      {
+        Parent: $tbl_93,
+        Name: special_features,
+        References: [
+          $col_273
+        ],
+        IsVisible: true,
+        RefId: $col_257
+      },
+      {
+        Parent: $tbl_93,
+        Name: fulltext,
+        References: [
+          $col_274
+        ],
+        IsVisible: true,
+        RefId: $col_258
+      }
+    ],
+    RefId: $tbl_93
+  },
+  {
+    Type: Join,
+    References: [
+      $tbl_95,
+      $tbl_96
+    ],
+    Columns: [
+      {
+        Parent: $tbl_94,
+        Name: category_id,
+        References: [
+          $col_275
+        ],
+        IsVisible: true,
+        RefId: $col_262
+      },
+      {
+        Parent: $tbl_94,
+        Name: name,
+        References: [
+          $col_36
+        ],
+        IsVisible: true,
+        RefId: $col_263
+      },
+      {
+        Parent: $tbl_94,
+        Name: last_update,
+        References: [
+          $col_276
+        ],
+        IsVisible: true,
+        RefId: $col_264
+      },
+      {
+        Parent: $tbl_94,
+        Name: film_id,
+        References: [
+          $col_277
+        ],
+        IsVisible: true,
+        RefId: $col_265
+      },
+      {
+        Parent: $tbl_94,
+        Name: category_id,
+        References: [
+          $col_278
+        ],
+        IsVisible: true,
+        RefId: $col_266
+      },
+      {
+        Parent: $tbl_94,
+        Name: last_update,
+        References: [
+          $col_279
+        ],
+        IsVisible: true,
+        RefId: $col_267
+      }
+    ],
+    RefId: $tbl_94
+  },
+  {
+    Type: Table,
+    Identifier: dvdrental.public.category,
+    Columns: [
+      {
+        Parent: $tbl_95,
+        Name: category_id,
+        IsVisible: true,
+        RefId: $col_275
+      },
+      {
+        Parent: $tbl_95,
+        Name: name,
+        IsVisible: true,
+        RefId: $col_36
+      },
+      {
+        Parent: $tbl_95,
+        Name: last_update,
+        IsVisible: true,
+        RefId: $col_276
+      }
+    ],
+    RefId: $tbl_95
+  },
+  {
+    Type: Table,
+    Identifier: dvdrental.public.film_category,
+    Columns: [
+      {
+        Parent: $tbl_96,
+        Name: film_id,
+        IsVisible: true,
+        RefId: $col_277
+      },
+      {
+        Parent: $tbl_96,
+        Name: category_id,
+        IsVisible: true,
+        RefId: $col_278
+      },
+      {
+        Parent: $tbl_96,
+        Name: last_update,
+        IsVisible: true,
+        RefId: $col_279
+      }
+    ],
+    RefId: $tbl_96
+  },
+  {
+    Type: Table,
+    Identifier: dvdrental.public.film,
+    Columns: [
+      {
+        Parent: $tbl_97,
+        Name: film_id,
+        IsVisible: true,
+        RefId: $col_9
+      },
+      {
+        Parent: $tbl_97,
+        Name: title,
+        IsVisible: true,
+        RefId: $col_18
+      },
+      {
+        Parent: $tbl_97,
+        Name: description,
+        IsVisible: true,
+        RefId: $col_27
+      },
+      {
+        Parent: $tbl_97,
+        Name: release_year,
+        IsVisible: true,
+        RefId: $col_268
+      },
+      {
+        Parent: $tbl_97,
+        Name: language_id,
+        IsVisible: true,
+        RefId: $col_269
+      },
+      {
+        Parent: $tbl_97,
+        Name: rental_duration,
+        IsVisible: true,
+        RefId: $col_270
+      },
+      {
+        Parent: $tbl_97,
+        Name: rental_rate,
+        IsVisible: true,
+        RefId: $col_45
+      },
+      {
+        Parent: $tbl_97,
+        Name: length,
+        IsVisible: true,
+        RefId: $col_54
+      },
+      {
+        Parent: $tbl_97,
+        Name: replacement_cost,
+        IsVisible: true,
+        RefId: $col_271
+      },
+      {
+        Parent: $tbl_97,
+        Name: rating,
+        IsVisible: true,
+        RefId: $col_63
+      },
+      {
+        Parent: $tbl_97,
+        Name: last_update,
+        IsVisible: true,
+        RefId: $col_272
+      },
+      {
+        Parent: $tbl_97,
+        Name: special_features,
+        IsVisible: true,
+        RefId: $col_273
+      },
+      {
+        Parent: $tbl_97,
+        Name: fulltext,
+        IsVisible: true,
+        RefId: $col_274
+      }
+    ],
+    RefId: $tbl_97
+  },
+  {
+    Type: Table,
+    Identifier: dvdrental.public.film_actor,
+    Columns: [
+      {
+        Parent: $tbl_98,
+        Name: actor_id,
+        IsVisible: true,
+        RefId: $col_259
+      },
+      {
+        Parent: $tbl_98,
+        Name: film_id,
+        IsVisible: true,
+        RefId: $col_260
+      },
+      {
+        Parent: $tbl_98,
+        Name: last_update,
+        IsVisible: true,
+        RefId: $col_261
+      }
+    ],
+    RefId: $tbl_98
+  },
+  {
+    Type: Table,
+    Identifier: dvdrental.public.actor,
+    Columns: [
+      {
+        Parent: $tbl_99,
+        Name: actor_id,
+        IsVisible: true,
+        RefId: $col_235
+      },
+      {
+        Parent: $tbl_99,
+        Name: first_name,
+        IsVisible: true,
+        RefId: $col_73
+      },
+      {
+        Parent: $tbl_99,
+        Name: last_name,
+        IsVisible: true,
+        RefId: $col_74
+      },
+      {
+        Parent: $tbl_99,
+        Name: last_update,
+        IsVisible: true,
+        RefId: $col_239
+      }
+    ],
+    RefId: $tbl_99
+  }
+]
