@@ -89,12 +89,6 @@ namespace Qsi.PostgreSql.Analyzers
                     if (functions is { Length: 0 })
                         throw new QsiException(QsiError.UnableResolveFunction, identifier);
 
-                    var paramMatchedFunction = functions
-                        .FirstOrDefault(f => invoke.Parameters.Count == f.ArgumentsCount);
-
-                    if (paramMatchedFunction is not { })
-                        throw new QsiException(QsiError.UnableResolveFunction, identifier);
-
                     foreach (var func in functions)
                     {
                         var node = context.Engine.TreeParser.Parse(new QsiScript(func.Definition, QsiScriptType.Create));
@@ -108,6 +102,24 @@ namespace Qsi.PostgreSql.Analyzers
                             Type = QsiTableType.Inline,
                             // IsSystem = true // NOTE: Is it System Table?
                         };
+
+                        if (!funcDef.ReturnType.Value.Setof && func.ArgumentsCount != invoke.Parameters.Count)
+                            continue;
+
+                        #region Special Functions
+                        // pg_catalog.unnest: same return count with parameter count
+                        if (funcDef.Name[^2].Value.EqualsIgnoreCase("pg_catalog") &&
+                            funcDef.Name[^1].Value.EqualsIgnoreCase("unnest"))
+                        {
+                            foreach (var _ in invoke.Parameters.WhereNotNull())
+                            {
+                                var column = structure.NewColumn();
+                                column.Name = new QsiIdentifier($"{identifier[^1]}.unnest", false);
+                            }
+
+                            return structure;
+                        }
+                        #endregion
 
                         var outParams = funcDef.Parameters.WhereNotNull().Where(p => p.Mode is FunctionParameterMode.FuncParamOut);
 
@@ -123,8 +135,29 @@ namespace Qsi.PostgreSql.Analyzers
 
                         if (count == 0)
                         {
+                            var returnType = funcDef.ReturnType.Value;
+
                             // NOTE: If SETOF enabled, QSI doesn't know about return column counts.
-                            if (!funcDef.ReturnType.Value.Setof)
+                            if (returnType.Setof)
+                            {
+                                // If System Type, like int2, int4, int8.. it will returns one column. 
+                                if (returnType.Identifier.Level is 2 &&
+                                    returnType.Identifier[0].Value.EqualsIgnoreCase("pg_catalog"))
+                                {
+                                    var typeName = returnType.Identifier[1].Value;
+
+                                    if (typeName is
+                                        "int2" or "int4" or "int8" or
+                                        "float4" or "float8" or "numeric" or
+                                        "bool" or "varbit" or "bit" or
+                                        "timestamptz" or "timestamp" or "timetz" or "time" or "interval")
+                                    {
+                                        var column = structure.NewColumn();
+                                        column.Name = structure.Identifier[^1];
+                                    }
+                                }
+                            }
+                            else
                             {
                                 var column = structure.NewColumn();
                                 column.Name = structure.Identifier[^1];

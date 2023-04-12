@@ -307,6 +307,36 @@ namespace Qsi.Debugger.Vendor.PostgreSql
 
             switch (name)
             {
+                case "generate_series" when type is QsiObjectType.Function:
+                {
+                    return new QsiFunctionObject(
+                        new QsiQualifiedIdentifier(
+                            new QsiIdentifier("pg_catalog", false),
+                            new QsiIdentifier("generate_series", false)
+                        ),
+                        @"CREATE OR REPLACE FUNCTION pg_catalog.generate_series(integer, integer)
+                         RETURNS SETOF integer
+                         LANGUAGE internal
+                         IMMUTABLE PARALLEL SAFE STRICT
+                        AS $function$generate_series_int4$function$",
+                        2);
+                }
+
+                case "unnest" when type is QsiObjectType.Function:
+                {
+                    return new QsiFunctionObject(
+                        new QsiQualifiedIdentifier(
+                            new QsiIdentifier("pg_catalog", false),
+                            new QsiIdentifier("unnest", false)
+                        ),
+                        @"CREATE OR REPLACE FUNCTION pg_catalog.unnest(anyarray)
+                         RETURNS SETOF anyelement
+                         LANGUAGE internal
+                         IMMUTABLE PARALLEL SAFE STRICT ROWS 100
+                        AS $function$array_unnest$function$",
+                        1);
+                }
+
                 case "pg_get_keywords" when type is QsiObjectType.Function:
                 {
                     return new QsiFunctionObject(
