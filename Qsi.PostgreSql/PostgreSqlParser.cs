@@ -23,6 +23,10 @@ namespace Qsi.PostgreSql
             {
                 parseResult = Parser.Parse(script.Script);
             }
+            catch (Exception e) when (e is ArgumentNullException or DllNotFoundException or BadImageFormatException)
+            {
+                throw;
+            }
             catch (Exception e)
             {
                 throw new QsiException(QsiError.SyntaxError, e.Message);
