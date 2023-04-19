@@ -19,7 +19,7 @@
 
     <ItemGroup>
         <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-        <PackageReference Include="PgQuery.Net" Version="1.0.6" />
+        <PackageReference Include="PgQuery.Net" Version="1.0.7" />
     </ItemGroup>
 
     <ItemGroup>
