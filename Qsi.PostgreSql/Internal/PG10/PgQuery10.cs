@@ -12,12 +12,18 @@ namespace Qsi.PostgreSql.Internal.PG10
 {
     internal class PgQuery10 : PgQueryBase<IPg10Node>
     {
+        private readonly int _totalStack;
+        private readonly ulong _totalMemory;
         private readonly JsonSerializerSettings _serializerSettings;
 
-        public PgQuery10()
+        public PgQuery10(int totalStack, ulong totalMemory) : base(totalStack)
         {
+            _totalStack = totalStack;
+            _totalMemory = totalMemory;
+
             _serializerSettings = new JsonSerializerSettings
             {
+                MaxDepth = null,
                 Converters =
                 {
                     new PgTreeConverter()
@@ -27,7 +33,11 @@ namespace Qsi.PostgreSql.Internal.PG10
 
         protected override void OnInitialize(CancellationToken token)
         {
-            Execute(ResourceManager.GetResourceContent("pg_query_10.js"), token);
+            var js = ResourceManager.GetResourceContent("pg_query_10.js")
+                .Replace("#TOTAL_STACK#", _totalStack.ToString())
+                .Replace("#TOTAL_MEMORY#", _totalMemory.ToString());
+
+            Execute(js, token);
         }
 
         protected override IPg10Node Parse(string input, CancellationToken token)
