@@ -12,6 +12,13 @@ namespace Qsi.PostgreSql.Internal
         private ChakraCoreJsEngine _jsEngine;
         private bool _initialized;
 
+        private readonly int _maxStackSize;
+
+        protected PgQueryBase(int maxStackSize)
+        {
+            _maxStackSize = maxStackSize;
+        }
+
         private void Initialize(CancellationToken token)
         {
             if (_initialized)
@@ -19,7 +26,11 @@ namespace Qsi.PostgreSql.Internal
 
             try
             {
-                _jsEngine = new ChakraCoreJsEngine();
+                _jsEngine = new ChakraCoreJsEngine(new ChakraCoreSettings
+                {
+                    MaxStackSize = _maxStackSize
+                });
+
                 OnInitialize(token);
             }
             catch

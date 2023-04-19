@@ -14,10 +14,18 @@ namespace Qsi.PostgreSql
     public class PostgreSqlParser : IQsiTreeParser, IDisposable
     {
         private IPgParser _pgParser;
+        private readonly int _totalStack;
+        private readonly ulong _totalMemory;
+
+        public PostgreSqlParser(int totalStack, ulong totalMemory)
+        {
+            _totalStack = totalStack;
+            _totalMemory = totalMemory;
+        }
 
         public IQsiTreeNode Parse(QsiScript script, CancellationToken cancellationToken = default)
         {
-            _pgParser ??= new PgQuery10();
+            _pgParser ??= new PgQuery10(_totalStack, _totalMemory);
 
             var pgTree = (IPg10Node)_pgParser.Parse(script.Script, cancellationToken) ?? throw new QsiException(QsiError.NotSupportedScript, script.ScriptType);
             var pgVisitorSet = _pgParser.CreateVisitorSet();

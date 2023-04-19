@@ -11,9 +11,13 @@ namespace Qsi.Redshift;
 
 public abstract class RedshiftLanguageServiceBase : QsiLanguageServiceBase
 {
+    public int TotalStack { get; set; } = 1024 * 1024 * 25; // 25MB
+
+    public ulong TotalMemory { get; set; } = 1024 * 1024 * 1024; // 1GB
+
     public override IQsiTreeParser CreateTreeParser()
     {
-        return new RedshiftParser();
+        return new RedshiftParser(TotalStack, TotalMemory);
     }
 
     public override IQsiTreeDeparser CreateTreeDeparser()
