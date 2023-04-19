@@ -20,12 +20,12 @@ internal static partial class PgNodeVisitor
             FuncCall funcCall => Visit(funcCall),
             XmlExpr xmlExpr => Visit(xmlExpr),
             TypeCast typeCast => Visit(typeCast),
-            A_Const aConst => Visit(aConst),
+            AConst aConst => Visit(aConst),
             ColumnRef columnRef => Visit(columnRef),
-            A_Expr aExpr => Visit(aExpr),
+            AExpr aExpr => Visit(aExpr),
             CaseExpr caseExpr => Visit(caseExpr),
             CaseWhen caseWhen => Visit(caseWhen),
-            A_ArrayExpr aArrayExpr => Visit(aArrayExpr),
+            AArrayExpr aArrayExpr => Visit(aArrayExpr),
             NullTest nullTest => Visit(nullTest),
             XmlSerialize xmlSerialize => Visit(xmlSerialize),
             ParamRef paramRef => Visit(paramRef),
@@ -34,7 +34,7 @@ internal static partial class PgNodeVisitor
             RowExpr rowExpr => Visit(rowExpr),
             CoalesceExpr coalesceExpr => Visit(coalesceExpr),
             SetToDefault setToDefault => Visit(setToDefault),
-            A_Indirection aIndirection => Visit(aIndirection),
+            AIndirection aIndirection => Visit(aIndirection),
             CollateClause collateClause => Visit(collateClause),
             CurrentOfExpr currentOfExpr => Visit(currentOfExpr),
             SQLValueFunction sqlValueFunction => Visit(sqlValueFunction),
@@ -49,11 +49,11 @@ internal static partial class PgNodeVisitor
         };
     }
 
-    public static QsiExpressionNode Visit(A_Expr node)
+    public static QsiExpressionNode Visit(AExpr node)
     {
         var left = node.Lexpr is null ? null : VisitExpression(node.Lexpr);
         var right = node.Rexpr is null ? null : VisitExpression(node.Rexpr);
-        var op = string.Join('.', node.Name.Select(n => n.String.Sval));
+        var op = string.Join('.', node.Names.Select(n => n.String.Sval));
 
         if (right is null)
             throw CreateInternalException("Atomic expression right expression is null");
@@ -135,21 +135,21 @@ internal static partial class PgNodeVisitor
     {
         string functionName = node.Op switch
         {
-            SQLValueFunctionOp.SvfopCurrentDate => "CURRENT_DATE",
-            SQLValueFunctionOp.SvfopCurrentTime => "CURRENT_TIME",
-            SQLValueFunctionOp.SvfopCurrentTimeN => "CURRENT_TIME",
-            SQLValueFunctionOp.SvfopCurrentTimestamp => "CURRENT_TIMESTAMP",
-            SQLValueFunctionOp.SvfopCurrentTimestampN => "CURRENT_TIMESTAMP",
+            SQLValueFunctionOp.SvfopCurrentDate => "CURRENTDATE",
+            SQLValueFunctionOp.SvfopCurrentTime => "CURRENTTIME",
+            SQLValueFunctionOp.SvfopCurrentTimeN => "CURRENTTIME",
+            SQLValueFunctionOp.SvfopCurrentTimestamp => "CURRENTTIMESTAMP",
+            SQLValueFunctionOp.SvfopCurrentTimestampN => "CURRENTTIMESTAMP",
             SQLValueFunctionOp.SvfopLocaltime => "LOCALTIME",
             SQLValueFunctionOp.SvfopLocaltimeN => "LOCALTIME",
             SQLValueFunctionOp.SvfopLocaltimestamp => "LOCALTIMESTAMP",
             SQLValueFunctionOp.SvfopLocaltimestampN => "LOCALTIMESTAMP",
-            SQLValueFunctionOp.SvfopCurrentRole => "CURRENT_ROLE",
-            SQLValueFunctionOp.SvfopCurrentUser => "CURRENT_USER",
-            SQLValueFunctionOp.SvfopSessionUser => "SESSION_USER",
+            SQLValueFunctionOp.SvfopCurrentRole => "CURRENTROLE",
+            SQLValueFunctionOp.SvfopCurrentUser => "CURRENTUSER",
+            SQLValueFunctionOp.SvfopSessionUser => "SESSIONUSER",
             SQLValueFunctionOp.SvfopUser => "USER",
-            SQLValueFunctionOp.SvfopCurrentCatalog => "CURRENT_CATALOG",
-            SQLValueFunctionOp.SvfopCurrentSchema => "CURRENT_SCHEMA",
+            SQLValueFunctionOp.SvfopCurrentCatalog => "CURRENTCATALOG",
+            SQLValueFunctionOp.SvfopCurrentSchema => "CURRENTSCHEMA",
 
             _ => throw new NotSupportedException($"Not supported function operator: {node.Op}")
         };
@@ -224,7 +224,7 @@ internal static partial class PgNodeVisitor
     {
         return new PgCollateExpressionNode
         {
-            Column = CreateQualifiedIdentifier(node.Collname),
+            Column = CreateQualifiedIdentifier(node.Collnames),
             Expression = { Value = VisitExpression(node.Arg) }
         };
     }
@@ -257,16 +257,16 @@ internal static partial class PgNodeVisitor
         };
     }
 
-    public static PgIndirectionExpressionNode Visit(A_Indirection node)
+    public static PgIndirectionExpressionNode Visit(AIndirection node)
     {
         return new PgIndirectionExpressionNode
         {
             Target = { Value = new QsiDerivedColumnNode { Expression = { Value = VisitExpression(node.Arg) } } },
-            Indirections = { node.Indirection.Select(VisitExpression)! }
+            Indirections = { node.Indirections.Select(VisitExpression)! }
         };
     }
 
-    public static PgIndexExpressionNode Visit(A_Indices node)
+    public static PgIndexExpressionNode Visit(AIndices node)
     {
         var indexExpr = new PgIndexExpressionNode
         {
@@ -287,14 +287,14 @@ internal static partial class PgNodeVisitor
             {
                 Value = new QsiFunctionExpressionNode
                 {
-                    Identifier = CreateQualifiedIdentifier(node.Funcname)
+                    Identifier = CreateQualifiedIdentifier(node.Funcnames)
                 }
             },
             FunctionFormat = node.Funcformat,
             Parameters = { node.Args.Select(VisitExpression) },
             AggregateStar = node.AggStar,
             AggregateDistinct = node.AggDistinct,
-            AggregateOrder = { node.AggOrder.Select(VisitExpression) },
+            AggregateOrder = { node.AggOrders.Select(VisitExpression) },
             AggregateFilter = { Value = VisitExpression(node.AggFilter) },
             AggregateWithInGroup = node.AggWithinGroup,
             FunctionVariadic = node.FuncVariadic,
@@ -311,7 +311,7 @@ internal static partial class PgNodeVisitor
         {
             Expression = { Value = VisitExpression(node.Testexpr) },
             Table = { Value = Visit<QsiTableNode>(node.Subselect) },
-            OperatorName = CreateQualifiedIdentifier(node.OperName),
+            OperatorName = CreateQualifiedIdentifier(node.OperNames),
             SubLinkType = node.SubLinkType
         };
     }
@@ -345,7 +345,7 @@ internal static partial class PgNodeVisitor
         };
     }
 
-    public static QsiMultipleExpressionNode Visit(A_ArrayExpr node)
+    public static QsiMultipleExpressionNode Visit(AArrayExpr node)
     {
         return new QsiMultipleExpressionNode
         {
@@ -353,7 +353,7 @@ internal static partial class PgNodeVisitor
         };
     }
 
-    public static QsiAllColumnNode Visit(A_Star node)
+    public static QsiAllColumnNode Visit(AStar node)
     {
         return new QsiAllColumnNode();
     }
@@ -401,8 +401,8 @@ internal static partial class PgNodeVisitor
         {
             Name = CreateIdentifier(node.Name),
             Refname = CreateIdentifier(node.Refname),
-            PartitionClause = { node.PartitionClause.Select(VisitExpression) },
-            OrderClause = { node.OrderClause.Select(VisitExpression) },
+            PartitionClause = { node.PartitionClauses.Select(VisitExpression) },
+            OrderClause = { node.OrderClauses.Select(VisitExpression) },
             FrameOptions = (FrameOptions)node.FrameOptions,
             StartOffset = { Value = VisitExpression(node.StartOffset) },
             EndOffset = { Value = VisitExpression(node.EndOffset) }
@@ -414,7 +414,7 @@ internal static partial class PgNodeVisitor
         return new PgGroupingSetExpressionNode
         {
             Kind = node.Kind,
-            Expressions = { node.Content.Select(VisitExpression) }
+            Expressions = { node.Contents.Select(VisitExpression) }
         };
     }
 
@@ -436,7 +436,7 @@ internal static partial class PgNodeVisitor
             Action = node.Action,
             Infer = { Value = node.Infer is null ? null : Visit(node.Infer) },
             Where = { Value = VisitExpression(node.WhereClause) },
-            TargetList = { node.TargetList.Select(VisitExpression) }
+            TargetList = { node.TargetLists.Select(VisitExpression) }
         };
     }
 
@@ -468,8 +468,8 @@ internal static partial class PgNodeVisitor
             Name = new QsiIdentifier(node.Name, false),
             IndexColumnName = new QsiIdentifier(node.Name, false),
             Expression = { Value = VisitExpression(node.Expr) },
-            Collation = { node.Collation.Select(VisitExpression) },
-            OpClass = { node.Opclass.Select(VisitExpression) },
+            Collation = { node.Collations.Select(VisitExpression) },
+            OpClass = { node.Opclasses.Select(VisitExpression) },
             OpClassOptions = { node.Opclassopts.Select(VisitExpression) },
             Ordering = node.Ordering,
             NullsOrdering = node.NullsOrdering
@@ -496,7 +496,7 @@ internal static partial class PgNodeVisitor
             QsiColumnNode qsiColumnNode => new QsiColumnExpressionNode { Column = { Value = qsiColumnNode } },
             QsiTableNode qsiTableNode => new QsiTableExpressionNode { Table = { Value = qsiTableNode } },
             PgDataInsertActionNode pgDataInsertActionNode => new PgExpressionWrapNode { Item = { Value = pgDataInsertActionNode } },
-            _ => throw CreateInternalException($"Cannot convert '{exprNode.NodeCase}' to expression")
+            _ => throw CreateInternalException($"Cannot convert '{exprNode.nodeCase}' to expression")
         };
     }
 }

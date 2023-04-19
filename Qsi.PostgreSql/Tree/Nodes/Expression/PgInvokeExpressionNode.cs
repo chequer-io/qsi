@@ -7,7 +7,7 @@ public class PgInvokeExpressionNode : QsiInvokeExpressionNode
 {
     public bool IsBuiltIn { get; set; }
 
-    public CoercionForm FunctionFormat { get; set; } = CoercionForm.Undefined;
+    public CoercionForm FunctionFormat { get; set; } = CoercionForm.CoercionFormUndefined;
 
     public bool AggregateStar { get; set; }
 

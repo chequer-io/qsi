@@ -118,9 +118,9 @@ internal static partial class PgNodeVisitor
 
     public static PgFunctionDefinitionNode Visit(CreateFunctionStmt node)
     {
-        return new PgFunctionDefinitionNode(CreateQualifiedIdentifier(node.Funcname))
+        return new PgFunctionDefinitionNode(CreateQualifiedIdentifier(node.Funcnames))
         {
-            Name = CreateQualifiedIdentifier(node.Funcname),
+            Name = CreateQualifiedIdentifier(node.Funcnames),
             Replace = node.Replace,
             IsProcedure = node.IsProcedure,
             ReturnType = { Value = node.ReturnType is null ? null : Visit(node.ReturnType) },

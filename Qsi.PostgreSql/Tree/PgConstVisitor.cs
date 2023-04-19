@@ -4,7 +4,7 @@ using Qsi.Data;
 using Qsi.PostgreSql.Data;
 using Qsi.Tree;
 using Qsi.Utilities;
-using static PgQuery.A_Const;
+using static PgQuery.AConst;
 using Boolean = PgQuery.Boolean;
 using String = PgQuery.String;
 
@@ -25,7 +25,7 @@ internal partial class PgNodeVisitor
         };
     }
 
-    public static QsiLiteralExpressionNode Visit(A_Const node)
+    public static QsiLiteralExpressionNode Visit(AConst node)
     {
         if (node.Isnull)
             return TreeHelper.CreateNullLiteral();
