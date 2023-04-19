@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Google.Protobuf;
-using Google.Protobuf.Collections;
-using Google.Protobuf.Reflection;
 using PgQuery;
 using Qsi.Diagnostics;
 using Qsi.PostgreSql.Extensions;
@@ -18,7 +15,7 @@ namespace Qsi.PostgreSql.Diagnostics
 
         internal PostgreSqlRawTree(Node tree)
         {
-            DisplayName = tree.NodeCase.ToString();
+            DisplayName = tree.nodeCase.ToString();
             Children = GetChildrenByProperties(tree);
         }
 
@@ -64,9 +61,9 @@ namespace Qsi.PostgreSql.Diagnostics
 
         private static IRawTree[] GetChildrenByProperties(Node tree)
         {
-            var nodeType = tree.NodeCase;
+            var nodeType = tree.nodeCase;
 
-            if (nodeType is Node.NodeOneofCase.None)
+            if (nodeType is Node.nodeOneofCase.None)
                 return Array.Empty<IRawTree>();
 
             var value = tree.GetType().GetProperties()
@@ -76,9 +73,7 @@ namespace Qsi.PostgreSql.Diagnostics
                 .FirstOrDefault()!;
 
             return value.GetType().GetProperties()
-                .Where(x => !(x.PropertyType.IsGenericType && x.PropertyType.GetGenericTypeDefinition() == typeof(MessageParser<>)) &&
-                            x.PropertyType != typeof(MessageDescriptor) &&
-                            !x.PropertyType.Name.EndsWith("OneofCase") &&
+                .Where(x => !x.PropertyType.Name.EndsWith("OneofCase") &&
                             x.Name != "Location")
                 .Select(x => (x, x.GetValue(value)))
                 .Where(x => x.Item2 is not null)
@@ -93,7 +88,7 @@ namespace Qsi.PostgreSql.Diagnostics
                     }
                     else if (typeof(IEnumerable<IPgNode>).IsAssignableFrom(pi.PropertyType))
                     {
-                        if (v is RepeatedField<IPgNode> { Count: 0 })
+                        if (v is List<IPgNode> { Count: 0 })
                             return null;
 
                         rawTree = new PostgreSqlRawTree(pi.Name, (IEnumerable<IPgNode>)v!);
@@ -104,7 +99,7 @@ namespace Qsi.PostgreSql.Diagnostics
                     }
                     else if (typeof(IEnumerable<Node>).IsAssignableFrom(pi.PropertyType))
                     {
-                        if (v is RepeatedField<Node> { Count: 0 })
+                        if (v is List<Node> { Count: 0 })
                             return null;
 
                         rawTree = new PostgreSqlRawTree(pi.Name, (IEnumerable<Node>)v!);

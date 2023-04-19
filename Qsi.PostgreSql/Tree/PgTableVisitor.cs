@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using Google.Protobuf.Collections;
 using PgQuery;
 using Qsi.Data;
 using Qsi.PostgreSql.Extensions;
@@ -54,16 +53,16 @@ internal static partial class PgNodeVisitor
             table.Directives.Value = Visit(with);
         }
 
-        if (node.DistinctClause is { Count: not 0 } distinctClause)
+        if (node.DistinctClauses is { Count: not 0 } distinctClause)
         {
             table.IsDistinct = true;
 
-            if (distinctClause.Count != 1 || distinctClause.First() is not { NodeCase: NodeOneofCase.None })
+            if (distinctClause.Count != 1 || distinctClause.First() is not { nodeCase: nodeOneofCase.None })
                 table.DistinctExpressions.AddRange(distinctClause.Select(VisitExpression).WhereNotNull());
         }
 
         // <target>
-        if (node.TargetList is { Count: > 0 } target)
+        if (node.TargetLists is { Count: > 0 } target)
         {
             var columns = new QsiColumnsDeclarationNode();
             columns.Columns.AddRange(target.Select(Visit<QsiColumnNode>));
@@ -72,7 +71,7 @@ internal static partial class PgNodeVisitor
         }
 
         // <sources>
-        if (node.FromClause is { Count: > 0 } sources)
+        if (node.FromClauses is { Count: > 0 } sources)
         {
             QsiTableNode? from = null;
 
@@ -106,7 +105,7 @@ internal static partial class PgNodeVisitor
         }
 
         // <group_by>
-        if (node.GroupClause is { Count: > 0 } groupClause)
+        if (node.GroupClauses is { Count: > 0 } groupClause)
         {
             table.Grouping.Value = new QsiGroupingExpressionNode
             {
@@ -137,10 +136,10 @@ internal static partial class PgNodeVisitor
         }
 
         // ORDER BY sort_clause1, sort_clause2..
-        if (node.SortClause is { Count: > 0 })
+        if (node.SortClauses is { Count: > 0 })
         {
             var multipleOrder = new QsiMultipleOrderExpressionNode();
-            multipleOrder.Orders.AddRange(node.SortClause.Select(Visit<QsiOrderExpressionNode>));
+            multipleOrder.Orders.AddRange(node.SortClauses.Select(Visit<QsiOrderExpressionNode>));
 
             table.Order.Value = multipleOrder;
         }
@@ -165,7 +164,7 @@ internal static partial class PgNodeVisitor
             },
             Expression = { Value = VisitExpression(node.Node) },
             SortByNulls = node.SortbyNulls,
-            UsingOperator = { node.UseOp.Select(VisitExpression) },
+            UsingOperator = { node.UseOps.Select(VisitExpression) },
             SoryByUsing = node.SortbyDir is SortByDir.SortbyUsing,
             IsDefault = node.SortbyDir is SortByDir.SortbyDefault
         };
@@ -228,13 +227,13 @@ internal static partial class PgNodeVisitor
             IsNatural = node.IsNatural
         };
 
-        if (node.UsingClause is { Count: > 0 })
+        if (node.UsingClauses is { Count: > 0 })
         {
             table.PivotColumns.Value = new QsiColumnsDeclarationNode
             {
                 Columns =
                 {
-                    node.UsingClause.Select(n => new QsiColumnReferenceNode
+                    node.UsingClauses.Select(n => new QsiColumnReferenceNode
                     {
                         Name = CreateQualifiedIdentifier(n)
                     })
@@ -300,7 +299,7 @@ internal static partial class PgNodeVisitor
             Ordinality = node.Ordinality,
             Lateral = node.Lateral,
             IsRowsfrom = node.IsRowsfrom,
-            ColumnDefinitions = { node.Coldeflist.Select(Visit<PgColumnDefinitionNode>) }
+            ColumnDefinitions = { node.Coldeflists.Select(Visit<PgColumnDefinitionNode>) }
         };
 
         // TODO: colDefList (feature/pg-official-parser)
@@ -313,7 +312,7 @@ internal static partial class PgNodeVisitor
             {
                 _ when item.FuncCall is { } funcCall => Visit(funcCall),
                 _ when item.SqlvalueFunction is { } sqlValueFunc => Visit(sqlValueFunc),
-                _ => throw CreateInternalException($"RangeFunction function target not supported: {item.NodeCase}")
+                _ => throw CreateInternalException($"RangeFunction function target not supported: {item.nodeCase}")
             };
 
             // TODO: Alias - ex: ... AS (column1 VARCHAR, column2 INT)
@@ -374,7 +373,7 @@ internal static partial class PgNodeVisitor
         {
             Target = CreateQualifiedIdentifier(node.Name),
             Value = { Value = VisitExpression(node.Val) },
-            Indirections = { node.Indirection.Select(VisitExpression) }
+            Indirections = { node.Indirections.Select(VisitExpression) }
         };
     }
 
@@ -397,7 +396,7 @@ internal static partial class PgNodeVisitor
 
         // NOTE: https://www.postgresql.org/docs/current/sql-insert.html
         //       Parameters > Inserting > column_name
-        if (node.Indirection.Count > 0)
+        if (node.Indirections.Count > 0)
             throw TreeHelper.NotSupportedFeature("Insert column with indirection");
 
         var column = value switch
@@ -425,9 +424,9 @@ internal static partial class PgNodeVisitor
 
     public static QsiColumnNode Visit(ColumnRef node)
     {
-        RepeatedField<Node> fields = node.Fields;
+        List<Node> fields = node.Fields;
 
-        if (fields[^1] is { NodeCase: NodeOneofCase.AStar })
+        if (fields[^1] is { nodeCase: nodeOneofCase.AStar })
         {
             return new QsiAllColumnNode
             {
@@ -435,7 +434,7 @@ internal static partial class PgNodeVisitor
             };
         }
 
-        if (node.Fields.Any(f => f.NodeCase is not NodeOneofCase.String))
+        if (node.Fields.Any(f => f.nodeCase is not nodeOneofCase.String))
             throw TreeHelper.NotSupportedTree(node);
 
         return new QsiColumnReferenceNode
@@ -465,7 +464,7 @@ internal static partial class PgNodeVisitor
         columnsDeclaration.Columns.AddRange(colNames.Select(n =>
         {
             if (n.String is not { } name)
-                throw CreateInternalException($"ColNames contains not String node. ({n.NodeCase})");
+                throw CreateInternalException($"ColNames contains not String node. ({n.nodeCase})");
 
             return new QsiSequentialColumnNode
             {

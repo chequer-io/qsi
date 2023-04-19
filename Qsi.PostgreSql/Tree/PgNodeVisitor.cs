@@ -12,7 +12,7 @@ internal static partial class PgNodeVisitor
     [return: NotNullIfNotNull("node")]
     public static IQsiTreeNode? Visit(Node node)
     {
-        if (node is not { } || node.NodeCase is Node.NodeOneofCase.None || node.Get() is not { })
+        if (node is not { } || node.nodeCase is Node.nodeOneofCase.None || node.Get() is not { })
             return null;
 
         return node.Get() switch
@@ -23,7 +23,7 @@ internal static partial class PgNodeVisitor
             IPgClauseNode clause => VisitClause(clause),
             ResTarget resTarget => Visit(resTarget),
             RangeVar rangeVar => Visit(rangeVar),
-            A_Indices aIndices => Visit(aIndices),
+            AIndices aIndices => Visit(aIndices),
             MultiAssignRef multiAssignRef => Visit(multiAssignRef),
             RangeSubselect rangeSubselect => Visit(rangeSubselect),
             SortBy sortBy => Visit(sortBy),
@@ -36,7 +36,7 @@ internal static partial class PgNodeVisitor
             RangeTableFunc rangeTableFunc => Visit(rangeTableFunc),
             RangeTableFuncCol rangeTableFuncCol => Visit(rangeTableFuncCol),
             IndexElem indexElem => Visit(indexElem),
-            A_Star aStar => Visit(aStar),
+            AStar aStar => Visit(aStar),
             _ => throw TreeHelper.NotSupportedTree(node.Get())
         };
     }
@@ -104,7 +104,7 @@ internal static partial class PgNodeVisitor
             "FULL JOIN" => JoinType.JoinFull,
             "LEFT JOIN" => JoinType.JoinLeft,
             "RIGHT JOIN" => JoinType.JoinRight,
-            _ => JoinType.Undefined
+            _ => JoinType.JoinTypeUndefined
         };
     }
 
@@ -127,7 +127,7 @@ internal static partial class PgNodeVisitor
             "EXCEPT" => SetOperation.SetopExcept,
             "INTERSECT" => SetOperation.SetopIntersect,
             "UNION" => SetOperation.SetopUnion,
-            _ => SetOperation.Undefined
+            _ => SetOperation.SetOperationUndefined
         };
     }
 
