@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Qsi.Analyzers;
 using Qsi.Analyzers.Action;
 using Qsi.Analyzers.Definition;
@@ -11,9 +12,13 @@ namespace Qsi.PostgreSql
 {
     public abstract class PostgreSqlLanguageServiceBase : QsiLanguageServiceBase
     {
+        public int TotalStack { get; set; } = 1024 * 1024 * 25; // 25MB
+
+        public ulong TotalMemory { get; set; } = 1024 * 1024 * 1024; // 1GB
+
         public override IQsiTreeParser CreateTreeParser()
         {
-            return new PostgreSqlParser();
+            return new PostgreSqlParser(TotalStack, TotalMemory);
         }
 
         public override IQsiTreeDeparser CreateTreeDeparser()
