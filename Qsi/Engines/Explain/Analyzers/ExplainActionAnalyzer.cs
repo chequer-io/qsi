@@ -70,15 +70,11 @@ namespace Qsi.Engines.Explain
                     operation |= QsiDataValueOperation.Delete;
             }
 
-            var explainResult = new QsiExplainDataManipulationResult(
+            return new QsiExplainDataManipulationResult(
                 result.Table,
                 result.AffectedColumns,
                 operations
             );
-
-            explainResult.SensitiveDataCollection.AddRange(result.SensitiveDataCollection);
-
-            return explainResult;
         }
     }
 }

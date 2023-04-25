@@ -10,4 +10,6 @@ public class ExecuteOptions
 
     [AllowNull]
     public string SchemaName { get; set; }
+
+    public ExecuteMode Mode { get; set; } = ExecuteMode.Default;
 }

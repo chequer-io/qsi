@@ -10,7 +10,5 @@ namespace Qsi.SqlServer.Data
         public QsiIdentifier DefaultSchema { get; set; }
 
         public QsiIdentifier NewUserName { get; set; }
-
-        public QsiSensitiveDataCollection SensitiveDataCollection => QsiSensitiveDataCollection.Empty;
     }
 }

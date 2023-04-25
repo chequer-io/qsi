@@ -31,6 +31,11 @@ public class QsiSensitiveDataCollection : ICollection<QsiSensitiveData>
         _sensitiveDataList.Add(item);
     }
 
+    public void Add(IEnumerable<QsiSensitiveData> item)
+    {
+        AddRange(item);
+    }
+
     public void AddRange(IEnumerable<QsiSensitiveData> item)
     {
         ThrowIfReadOnly();

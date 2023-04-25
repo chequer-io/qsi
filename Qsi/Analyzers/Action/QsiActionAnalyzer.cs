@@ -1006,11 +1006,12 @@ namespace Qsi.Analyzers.Action
         #region CreateUser
         protected virtual ValueTask<IQsiAnalysisResult[]> ExecuteCreateUserAction(IAnalyzerContext context, IQsiCreateUserActionNode node)
         {
-            var result = new QsiUserActionResult();
-
-            result.UserInfos = node.Users
-                .Select(user => ResolveUser(context, user, result.SensitiveDataCollection))
-                .ToArray();
+            var result = new QsiUserActionResult
+            {
+                UserInfos = node.Users
+                    .Select(user => ResolveUser(context, user))
+                    .ToArray()
+            };
 
             return result
                 .ToSingleArray()
@@ -1024,7 +1025,7 @@ namespace Qsi.Analyzers.Action
             var result = new QsiUserActionResult();
 
             result.UserInfos = node.Users
-                .Select(user => ResolveUser(context, user, result.SensitiveDataCollection))
+                .Select(user => ResolveUser(context, user))
                 .ToArray();
 
             return result
@@ -1038,12 +1039,11 @@ namespace Qsi.Analyzers.Action
         {
             var result = new QsiGrantUserActionResult
             {
-                Roles = node.Roles?.ToArray() ?? Array.Empty<string>()
+                Roles = node.Roles?.ToArray() ?? Array.Empty<string>(),
+                TargetUsers = node.Users
+                    .Select(user => ResolveUser(context, user))
+                    .ToArray()
             };
-
-            result.TargetUsers = node.Users
-                .Select(user => ResolveUser(context, user, result.SensitiveDataCollection))
-                .ToArray();
 
             return result
                 .ToSingleArray()
@@ -1070,17 +1070,12 @@ namespace Qsi.Analyzers.Action
         }
         #endregion
 
-        protected virtual QsiUserInfo ResolveUser(IAnalyzerContext context, IQsiUserNode node, QsiSensitiveDataCollection dataCollection)
+        protected virtual QsiUserInfo ResolveUser(IAnalyzerContext context, IQsiUserNode node)
         {
             return new QsiUserInfo
             {
                 Username = node.Username
             };
-        }
-
-        protected virtual QsiSensitiveData CreateSensitiveData(QsiSensitiveDataType dataType, IQsiTreeNode node)
-        {
-            throw new NotSupportedException();
         }
     }
 }

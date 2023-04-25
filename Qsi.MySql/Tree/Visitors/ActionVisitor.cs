@@ -440,7 +440,7 @@ namespace Qsi.MySql.Tree
                     {
                         new QsiVariableSetItemNode
                         {
-                            Name = new QsiIdentifier("PASSWORD", false),
+                            Name = new QsiIdentifier(MySqlKnownVariable.Password, false),
                             Expression =
                             {
                                 Value = new QsiLiteralExpressionNode

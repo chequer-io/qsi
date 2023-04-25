@@ -6,8 +6,10 @@ using Qsi.Analyzers;
 using Qsi.Data;
 using Qsi.Data.Cache;
 using Qsi.Engines.Explain;
+using Qsi.Engines.SensitiveData;
 using Qsi.Parsing;
 using Qsi.Services;
+using Qsi.Tree;
 
 namespace Qsi.Engines
 {
@@ -52,7 +54,8 @@ namespace Qsi.Engines
 
         public T GetAnalyzer<T>() where T : QsiAnalyzerBase
         {
-            return _analyzers.Value.OfType<T>().First();
+            return _analyzers.Value.OfType<T>().FirstOrDefault()
+                   ?? throw new InvalidOperationException($"{typeof(T).Name} analyzer not found");
         }
 
         public async ValueTask<IQsiAnalysisResult[]> Execute(QsiScript script, QsiParameter[] parameters, ExecuteOptions executeOptions = null, CancellationToken cancellationToken = default)
@@ -60,9 +63,9 @@ namespace Qsi.Engines
             var tree = TreeParser.Parse(script, cancellationToken);
 
             var options = LanguageService.CreateAnalyzerOptions();
-            var analyzer = _analyzers.Value.FirstOrDefault(a => a.CanExecute(script, tree));
+            var analyzer = GetAnalyzer(executeOptions?.Mode ?? ExecuteMode.Default, script, tree);
 
-            if (analyzer == null)
+            if (analyzer is null)
             {
                 if (script.ScriptType is QsiScriptType.Trivia or QsiScriptType.Delimiter)
                     return Array.Empty<IQsiAnalysisResult>();
@@ -71,6 +74,15 @@ namespace Qsi.Engines
             }
 
             return await analyzer.Execute(script, parameters, tree, options, executeOptions, cancellationToken);
+        }
+
+        private IQsiAnalyzer GetAnalyzer(ExecuteMode mode, QsiScript script, IQsiTreeNode tree)
+        {
+            return mode switch
+            {
+                ExecuteMode.SensitiveData => GetAnalyzer<SensitiveDataAnalyzer>(),
+                _ => _analyzers.Value.FirstOrDefault(a => a is not SensitiveDataAnalyzer && a.CanExecute(script, tree))
+            };
         }
 
         public ValueTask<IQsiAnalysisResult[]> Explain(QsiScript script, ExecuteOptions executeOptions = null, CancellationToken cancellationToken = default)

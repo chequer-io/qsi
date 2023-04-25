@@ -7,6 +7,4 @@ public class QsiGrantUserActionResult : IQsiAnalysisResult
     public string[] Roles { get; set; }
 
     public QsiUserInfo[] TargetUsers { get; set; }
-
-    public QsiSensitiveDataCollection SensitiveDataCollection { get; } = new();
 }
