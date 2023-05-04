@@ -157,7 +157,6 @@ if ($_Mode -eq [PublishMode]::Publish) {
 
     while ($Packages.Length -gt 0) {
         $PackageName = $Packages[0]
-        # $PackageVersion = Get-Nuget-Package-Version $Packages[0]
         if (Check-Nuget-Package-Index $PackageName $Version) {
             Write-Host "NuGet package $PackageName $Version has been indexed"
 
