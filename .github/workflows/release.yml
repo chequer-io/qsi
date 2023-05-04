@@ -9,6 +9,7 @@ on:
 
 jobs:
   release:
+    name: Release QSI
     runs-on: [self-hosted, querypie] # Nexus access required
     steps:
       - name: Checkout
