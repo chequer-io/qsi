@@ -26,21 +26,6 @@ if (Get-Module Antlr) {
 Import-Module ".\Build\Common.ps1"
 
 if ($_Mode -eq [PublishMode]::Publish) {
-    # git rev-parse HEAD
-    $GitTagVersion = [Version]$(git describe --tags $(git rev-list --tags --max-count=1)).trimstart('v')
-
-    if ($(git rev-parse HEAD) -ne $(git rev-parse origin/master)) {
-        throw "Publish is only allow in 'master' branch."
-    }
-
-    if ($(git diff --name-only).Length -gt 0) {
-        throw "There are files that have been changed."
-    }
-
-    if ($GitTagVersion -ge $Version) {
-        throw "The version is lower than the git tag. ($GitTagVersion >= $Version)"
-    }
-
     $NugetApiKey = $Env:QSI_NUGET_API_KEY
 
     if ($NugetApiKey.Length -eq 0) {
@@ -112,12 +97,15 @@ Function NuGet-Push {
     dotnet nuget push $PackageFile --source $Source --api-key $ApiKey
 }
 
-Function Get-Nuget-Package-Version {
+Function Check-Nuget-Package-Index {
     Param (
-        [Parameter(Mandatory = $true)][string] $PackageName
+        [Parameter(Mandatory = $true)][string] $PackageName,
+        [Parameter(Mandatory = $true)][version] $Version
     )
 
-    return [Version](Invoke-WebRequest https://api.nuget.org/v3-flatcontainer/$PackageName/index.json | ConvertFrom-Json).versions[-1]
+    $IndexedVersions = (Invoke-WebRequest https://api.nuget.org/v3-flatcontainer/$PackageName/index.json | ConvertFrom-Json).versions
+
+    return $IndexedVersions -contains $Version
 }
 
 # Clean publish
@@ -153,11 +141,9 @@ if ($_Mode -eq [PublishMode]::Publish) {
     Write-Host "Waiting for indexing NuGet packages"
 
     while ($Packages.Length -gt 0) {
-        $PackageVersion = Get-Nuget-Package-Version $Packages[0]
-
-        Write-Host "$($Packages[0]): $PackageVersion"
-        if ($PackageVersion -eq $Version) {
-            Write-Host "NuGet package $($Packages[0]) $Version has been indexed"
+        $PackageName = $Packages[0]
+        if (Check-Nuget-Package-Index $PackageName $Version) {
+            Write-Host "NuGet package $PackageName $Version has been indexed"
 
             if ($Packages.Length -eq 1) {
                 break
@@ -165,6 +151,9 @@ if ($_Mode -eq [PublishMode]::Publish) {
 
             $Packages = $Packages[1..($Packages.Length - 1)]
             continue
+        }
+        else {
+            Write-Host "Waiting NuGet package $PackageName $Version indexing"
         }
 
         sleep 15
