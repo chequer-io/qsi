@@ -1,0 +1,20 @@
+name: Release QSI
+
+on:
+  workflow_dispatch:
+    inputs:
+      VERSION:
+        description: 배포 버전 (ex. 0.18.16.2)
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Publish
+        shell: pwsh
+        run: pwsh ./Publish.ps1 ${{ inputs.VERSION }}
+        env:
+          QSI_NUGET_API_KEY: ${{ secrets.QSI_NUGET_API_KEY }}
