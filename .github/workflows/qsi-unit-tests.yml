@@ -2,12 +2,12 @@ name: QSI Unit Tests
 
 on:
   push:
-    branches: [alpha, master]
+    branches: [main]
     paths:
       - "Qsi*/**"
       - "!Qsi.Debugger/**"
   pull_request:
-    branches: [alpha, master]
+    branches: [main]
 
 jobs:
   test:
