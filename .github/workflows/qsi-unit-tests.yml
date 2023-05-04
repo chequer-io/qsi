@@ -33,16 +33,15 @@ jobs:
 
       - name: Setup .NET
         id: setup-dotnet
-        uses: actions/setup-dotnet@v2
+        uses: actions/setup-dotnet@v3
         with:
           # Both global.json(Qsi) version and 7.0.x(Qsi.Tests) required
           global-json-file: global.json
           dotnet-version: 7.0.x
 
-      - name: Create temporary global.json
+      - name: Remove global.json
         shell: bash
-        run: |
-          echo '{"sdk":{"version": "${{ steps.setup-dotnet.outputs.dotnet-version }}"}}' > ./global.json
+        run: rm global.json
 
       - name: Setup Java
         uses: actions/setup-java@v3
