@@ -18,6 +18,12 @@ jobs:
         with:
           global-json-file: global.json
 
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: "corretto"
+          java-version: "17"
+
       - name: Publish
         shell: pwsh
         run: pwsh ./Publish.ps1 ${{ inputs.VERSION }}
