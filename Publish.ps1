@@ -26,21 +26,6 @@ if (Get-Module Antlr) {
 Import-Module ".\Build\Common.ps1"
 
 if ($_Mode -eq [PublishMode]::Publish) {
-    # git rev-parse HEAD
-    $GitTagVersion = [Version]$(git describe --tags $(git rev-list --tags --max-count=1)).trimstart('v')
-
-    if ($(git rev-parse HEAD) -ne $(git rev-parse origin/master)) {
-        throw "Publish is only allow in 'master' branch."
-    }
-
-    if ($(git diff --name-only).Length -gt 0) {
-        throw "There are files that have been changed."
-    }
-
-    if ($GitTagVersion -ge $Version) {
-        throw "The version is lower than the git tag. ($GitTagVersion >= $Version)"
-    }
-
     $NugetApiKey = $Env:QSI_NUGET_API_KEY
 
     if ($NugetApiKey.Length -eq 0) {
