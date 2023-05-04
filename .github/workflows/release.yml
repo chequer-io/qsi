@@ -1,4 +1,5 @@
 name: Release QSI
+run-name: Release QSI ${{ inputs.VERSION }}
 
 on:
   workflow_dispatch:
