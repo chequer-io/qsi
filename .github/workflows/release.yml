@@ -1,0 +1,31 @@
+name: Release QSI
+
+on:
+  workflow_dispatch:
+    inputs:
+      VERSION:
+        description: 배포 버전 (ex. 0.18.16.2)
+
+jobs:
+  release:
+    runs-on: [self-hosted, querypie] # Nexus access required
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v2
+        with:
+          global-json-file: global.json
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: "corretto"
+          java-version: "17"
+
+      - name: Publish
+        shell: pwsh
+        run: pwsh ./Publish.ps1 ${{ inputs.VERSION }}
+        env:
+          QSI_NUGET_API_KEY: ${{ secrets.QSI_NUGET_API_KEY }}
