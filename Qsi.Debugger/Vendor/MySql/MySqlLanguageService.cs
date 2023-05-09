@@ -10,9 +10,12 @@ namespace Qsi.Debugger.Vendor.MySql
     {
         public override Version Version { get; }
 
-        public MySqlLanguageService(Version version)
+        public override bool MariaDBCompatibility { get; }
+
+        public MySqlLanguageService(Version version, bool mariaDbCompatibility)
         {
             Version = version;
+            MariaDBCompatibility = mariaDbCompatibility;
         }
 
         public override IQsiRepositoryProvider CreateRepositoryProvider()

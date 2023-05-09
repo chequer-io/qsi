@@ -16,6 +16,8 @@ namespace Qsi.MySql
     {
         public abstract Version Version { get; }
 
+        public abstract bool MariaDBCompatibility { get; }
+
         protected override IEqualityComparer<QsiIdentifier> GetIdentifierComparer()
         {
             return new QsiIdentifierEqualityComparer(StringComparison.OrdinalIgnoreCase);
@@ -23,7 +25,7 @@ namespace Qsi.MySql
 
         public override IQsiTreeParser CreateTreeParser()
         {
-            return new MySqlParser(Version);
+            return new MySqlParser(Version, MariaDBCompatibility);
         }
 
         public override IQsiTreeDeparser CreateTreeDeparser()

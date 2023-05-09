@@ -89,6 +89,8 @@ namespace Qsi.MySql.Internal
 
         public HashSet<string> Charsets { get; } = new(CharacterSets);
 
+        public bool MariaDB { get; set; }
+
         protected bool inVersionComment;
 
         private readonly int _serverVersion;
@@ -340,7 +342,7 @@ namespace Qsi.MySql.Internal
             {
                 var max = ((Vocabulary)Vocabulary).getMaxTokenType();
                 _symbols = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-                
+
                 for (int i = 0; i <= max; i++)
                 {
                     var key = Vocabulary.GetSymbolicName(i);

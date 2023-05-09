@@ -1072,6 +1072,9 @@ REQUIRE_TABLE_PRIMARY_KEY_CHECK_SYMBOL:
 STREAM_SYMBOL:                   S T R E A M;                                 // MYSQL
 OFF_SYMBOL:                      O F F;                                       // SQL-1999-R
 
+// ** Patch by QSI
+STATEMENT_SYMBOL: S T A T E M E N T                                          {MariaDB}?;
+
 // $antlr-format groupedAlignments on, alignTrailers off, alignLexerCommands on
 
 // Additional tokens which are mapped to existing tokens.

@@ -16,16 +16,18 @@ namespace Qsi.Debugger.Vendor.MySql
     {
         private readonly Version _version;
         private readonly bool _useDelimiter;
+        private readonly bool _mariaDbCompatibility;
 
-        public MySqlDebugger(Version version, bool useDelimiter = true)
+        public MySqlDebugger(Version version, bool useDelimiter = true, bool mariaDbCompatibility = false)
         {
             _version = version;
             _useDelimiter = useDelimiter;
+            _mariaDbCompatibility = mariaDbCompatibility;
         }
 
         protected override IQsiLanguageService CreateLanguageService()
         {
-            var service = new MySqlLanguageService(_version);
+            var service = new MySqlLanguageService(_version, _mariaDbCompatibility);
 
             if (_useDelimiter)
                 return service;
@@ -35,7 +37,7 @@ namespace Qsi.Debugger.Vendor.MySql
 
         protected override IRawTreeParser CreateRawTreeParser()
         {
-            return new MySqlRawParser(_version);
+            return new MySqlRawParser(_version, _mariaDbCompatibility);
         }
 
         private class MySqlLanguageServiceWrapper : IQsiLanguageService

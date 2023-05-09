@@ -1,0 +1,15 @@
+﻿[
+  {
+    Script: SET STATEMENT @t = (SELECT SUBSTRING('abc' FROM 2 FOR 1)) FOR SELECT @t,
+    ScriptType: Select,
+    Start: {
+      Line: 1,
+      Column: 1
+    },
+    End: {
+      Line: 1,
+      Column: 72,
+      Index: 70
+    }
+  }
+]

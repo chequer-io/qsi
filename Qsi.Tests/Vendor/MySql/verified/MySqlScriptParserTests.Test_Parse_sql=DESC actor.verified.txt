@@ -1,0 +1,15 @@
+﻿[
+  {
+    Script: DESC actor,
+    ScriptType: Describe,
+    Start: {
+      Line: 1,
+      Column: 1
+    },
+    End: {
+      Line: 1,
+      Column: 11,
+      Index: 9
+    }
+  }
+]

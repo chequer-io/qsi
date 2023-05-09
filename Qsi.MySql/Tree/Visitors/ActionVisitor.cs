@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Qsi.Data;
 using Qsi.MySql.Tree.Common;
@@ -428,33 +429,69 @@ namespace Qsi.MySql.Tree
 
         public static QsiVariableSetActionNode VisitSetStatement(SetStatementContext context)
         {
-            if (context.startOptionValueList() is not { } options)
-                throw TreeHelper.NotSupportedTree(context);
-
-            if (options.HasToken(PASSWORD_SYMBOL) && options.HasRule<EqualContext>())
+            return context switch
             {
-                // PASSWORD (FOR user) = textString 
-                return new QsiVariableSetActionNode
+                SetContext ctx => VisitSet(ctx),
+                SetStatementForContext ctx => VisitSetStatementFor(ctx),
+                _ => throw TreeHelper.NotSupportedTree(context)
+            };
+        }
+
+        private static QsiVariableSetActionNode VisitSet(SetContext context)
+        {
+            var options = context.startOptionValueList();
+
+            return new QsiVariableSetActionNode
+            {
+                SetItems =
                 {
-                    SetItems =
+                    VisitStartOptionValueList(options)
+                }
+            };
+        }
+
+        private static QsiVariableSetActionNode VisitSetStatementFor(SetStatementForContext context)
+        {
+            var options = context.startOptionValueList();
+            var node = new QsiVariableSetActionNode();
+
+            try
+            {
+                node.SetItems.AddRange(VisitStartOptionValueList(options));
+            }
+            catch (QsiException e) when (e.Error is QsiError.NotSupportedTree)
+            {
+                // ignore
+            }
+
+            if (context.simpleStatement() is { } simpleStatement)
+                node.Target = MySqlParser.Parse(simpleStatement.children[0]);
+
+            return node;
+        }
+
+        private static IEnumerable<QsiVariableSetItemNode> VisitStartOptionValueList(StartOptionValueListContext context)
+        {
+            if (context.HasToken(PASSWORD_SYMBOL) && context.HasRule<EqualContext>())
+            {
+                // PASSWORD (FOR user) = textString
+                yield return new QsiVariableSetItemNode
+                {
+                    Name = new QsiIdentifier("PASSWORD", false),
+                    Expression =
                     {
-                        new QsiVariableSetItemNode
+                        Value = new QsiLiteralExpressionNode
                         {
-                            Name = new QsiIdentifier("PASSWORD", false),
-                            Expression =
-                            {
-                                Value = new QsiLiteralExpressionNode
-                                {
-                                    Value = options.textString().GetText(),
-                                    Type = QsiDataType.String
-                                }.WithContextSpan(options.textString())
-                            }
-                        }
+                            Value = context.textString().GetText(),
+                            Type = QsiDataType.String
+                        }.WithContextSpan(context.textString())
                     }
                 };
             }
-
-            throw TreeHelper.NotSupportedTree(context);
+            else
+            {
+                throw TreeHelper.NotSupportedTree(context);
+            }
         }
 
         private static string GetUsername(UserContext context)

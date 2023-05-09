@@ -1,0 +1,15 @@
+﻿[
+  {
+    Script: SET STATEMENT sort_buffer_size = 100000 for SET SESSION sort_buffer_size = 200000,
+    ScriptType: Set,
+    Start: {
+      Line: 1,
+      Column: 1
+    },
+    End: {
+      Line: 1,
+      Column: 82,
+      Index: 80
+    }
+  }
+]

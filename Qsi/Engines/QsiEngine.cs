@@ -8,6 +8,7 @@ using Qsi.Data.Cache;
 using Qsi.Engines.Explain;
 using Qsi.Parsing;
 using Qsi.Services;
+using Qsi.Tree;
 
 namespace Qsi.Engines
 {
@@ -55,22 +56,16 @@ namespace Qsi.Engines
             return _analyzers.Value.OfType<T>().First();
         }
 
-        public async ValueTask<IQsiAnalysisResult[]> Execute(QsiScript script, QsiParameter[] parameters, ExecuteOptions executeOptions = null, CancellationToken cancellationToken = default)
+        public IQsiAnalyzer FindAnalyzer(QsiScript script, IQsiTreeNode tree)
+        {
+            return _analyzers.Value.FirstOrDefault(a => a.CanExecute(script, tree));
+        }
+
+        public ValueTask<IQsiAnalysisResult[]> Execute(QsiScript script, QsiParameter[] parameters, ExecuteOptions executeOptions = null, CancellationToken cancellationToken = default)
         {
             var tree = TreeParser.Parse(script, cancellationToken);
-
             var options = LanguageService.CreateAnalyzerOptions();
-            var analyzer = _analyzers.Value.FirstOrDefault(a => a.CanExecute(script, tree));
-
-            if (analyzer == null)
-            {
-                if (script.ScriptType is QsiScriptType.Trivia or QsiScriptType.Delimiter)
-                    return Array.Empty<IQsiAnalysisResult>();
-
-                throw new QsiException(QsiError.NotSupportedScript, script.ScriptType);
-            }
-
-            return await analyzer.Execute(script, parameters, tree, options, executeOptions, cancellationToken);
+            return Execute(script, parameters, tree, options, executeOptions, cancellationToken);
         }
 
         public ValueTask<IQsiAnalysisResult[]> Explain(QsiScript script, ExecuteOptions executeOptions = null, CancellationToken cancellationToken = default)
@@ -86,6 +81,27 @@ namespace Qsi.Engines
             explainLanguageService.ExplainEngine = explainEngine;
 
             return explainEngine.Execute(script, parameters, executeOptions, cancellationToken);
+        }
+
+        internal async ValueTask<IQsiAnalysisResult[]> Execute(
+            QsiScript script,
+            QsiParameter[] parameters,
+            IQsiTreeNode tree,
+            QsiAnalyzerOptions analyzerOptions,
+            ExecuteOptions executeOptions = null,
+            CancellationToken cancellationToken = default)
+        {
+            var analyzer = FindAnalyzer(script, tree);
+
+            if (analyzer == null)
+            {
+                if (script.ScriptType is QsiScriptType.Trivia or QsiScriptType.Delimiter)
+                    return Array.Empty<IQsiAnalysisResult>();
+
+                throw new QsiException(QsiError.NotSupportedScript, script.ScriptType);
+            }
+
+            return await analyzer.Execute(script, parameters, tree, analyzerOptions, executeOptions, cancellationToken);
         }
     }
 }

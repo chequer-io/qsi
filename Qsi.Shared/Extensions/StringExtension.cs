@@ -4,6 +4,11 @@ namespace Qsi.Shared.Extensions
 {
     internal static class StringExtension
     {
+        public static bool EqualsIgnoreCase(this string a, ReadOnlySpan<char> b)
+        {
+            return b.Equals(a, StringComparison.OrdinalIgnoreCase);
+        }
+
         public static bool EqualsIgnoreCase(this string a, string b)
         {
             return string.Equals(a, b, StringComparison.OrdinalIgnoreCase);

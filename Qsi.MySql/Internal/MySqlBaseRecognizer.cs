@@ -17,6 +17,8 @@ namespace Qsi.MySql.Internal
 
         public int serverVersion { get; init; }
 
+        public bool MariaDB { get; init; }
+
         public int ParamIndex { get; set; }
 
         protected MySqlBaseRecognizer(ITokenStream input) : base(input)

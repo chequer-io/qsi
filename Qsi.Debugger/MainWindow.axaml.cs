@@ -68,6 +68,7 @@ namespace Qsi.Debugger
                 ["MySQL 5.7.13"] = new(() => new MySqlDebugger(new Version(5, 7, 13))),
                 ["MySQL 8.0.22"] = new(() => new MySqlDebugger(new Version(8, 0, 22))),
                 ["MySQL 8.0.22 (No Delimiter)"] = new(() => new MySqlDebugger(new Version(8, 0, 22), false)),
+                ["MariaDB"] = new(() => new MySqlDebugger(new Version(5, 5, 0), mariaDbCompatibility: true)),
                 ["PostgreSQL"] = new(() => new PostgreSqlDebugger()),
                 ["SQL Server 2000"] = new(() => new SqlServerDebugger(TransactSqlVersion.Version80)),
                 ["SQL Server 2012"] = new(() => new SqlServerDebugger(TransactSqlVersion.Version110)),

@@ -7,6 +7,8 @@ public class QsiVariableSetActionNode : QsiActionNode, IQsiVariableSetActionNode
 {
     public QsiTreeNodeList<QsiVariableSetItemNode> SetItems { get; }
 
+    public IQsiTreeNode Target { get; set; }
+
     IQsiVariableSetItemNode[] IQsiVariableSetActionNode.SetItems => SetItems.Cast<IQsiVariableSetItemNode>().ToArray();
 
     public QsiVariableSetActionNode()

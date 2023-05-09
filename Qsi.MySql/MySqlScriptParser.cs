@@ -12,11 +12,11 @@ namespace Qsi.MySql
 {
     public class MySqlScriptParser : CommonScriptParser
     {
-        private const string table = "TABLE";
-        private const string delimiter = "DELIMITER";
-        private const string deallocate = "DEALLOCATE";
-        private const string prepare = "PREPARE";
-        private const string desc = "DESC";
+        private const string TABLE = "TABLE";
+        private const string DELIMITER = "DELIMITER";
+        private const string DEALLOCATE = "DEALLOCATE";
+        private const string PREPARE = "PREPARE";
+        private const string DESC = "DESC";
 
         private const string XA = "XA";
         private const string BEGIN = "BEGIN";
@@ -32,6 +32,9 @@ namespace Qsi.MySql
         private const string CASE = "CASE";
         private const string WHEN = "WHEN";
         private const string THEN = "THEN";
+        private const string SET = "SET";
+        private const string STATEMENT = "STATEMENT";
+        private const string FOR = "FOR";
 
         private readonly Regex _delimiterPattern = new(@"\G\S+(?=\s|$)");
 
@@ -437,7 +440,7 @@ namespace Qsi.MySql
                 if (tokens.Count > 1 &&
                     tokens[^1].Type == TokenType.WhiteSpace &&
                     tokens[^2].Type == TokenType.Keyword &&
-                    delimiter.EqualsIgnoreCase(context.Cursor.Value[tokens[^2].Span]) &&
+                    DELIMITER.EqualsIgnoreCase(context.Cursor.Value[tokens[^2].Span]) &&
                     tokens.SkipLast(2).All(t => TokenType.Trivia.HasFlag(t.Type)))
                 {
                     var match = _delimiterPattern.Match(context.Cursor.Value, context.Cursor.Index);
@@ -460,12 +463,94 @@ namespace Qsi.MySql
         {
             return leadingTokens.Length switch
             {
-                >= 1 when table.EqualsIgnoreCase(cursor.Value[leadingTokens[0].Span]) => QsiScriptType.Select,
-                >= 1 when desc.EqualsIgnoreCase(cursor.Value[leadingTokens[0].Span]) => QsiScriptType.Describe,
-                >= 2 when deallocate.EqualsIgnoreCase(cursor.Value[leadingTokens[0].Span]) &&
-                          prepare.EqualsIgnoreCase(cursor.Value[leadingTokens[1].Span]) => QsiScriptType.DropPrepare,
+                >= 1 when StartsWith(cursor, leadingTokens, TABLE) => QsiScriptType.Select,
+                >= 1 when StartsWith(cursor, leadingTokens, DESC) => QsiScriptType.Describe,
+                >= 2 when StartsWith(cursor, leadingTokens, DEALLOCATE, PREPARE) => QsiScriptType.DropPrepare,
+                >= 2 when StartsWith(cursor, leadingTokens, SET, STATEMENT) => GetSetStatementType(cursor, tokens),
                 _ => base.GetSuitableType(cursor, tokens, leadingTokens)
             };
+        }
+
+        private bool StartsWith(CommonScriptCursor cursor, Token[] leadingTokens, params string[] tokens)
+        {
+            if (leadingTokens.Length < tokens.Length)
+                return false;
+
+            for (int i = 0; i < tokens.Length; i++)
+            {
+                ReadOnlySpan<char> tokenSpan = cursor.ValueSpan[leadingTokens[i].Span];
+
+                if (!tokenSpan.Equals(tokens[i], StringComparison.OrdinalIgnoreCase))
+                    return false;
+            }
+
+            return true;
+        }
+
+        private QsiScriptType GetSetStatementType(CommonScriptCursor cursor, IReadOnlyList<Token> tokens)
+        {
+            var queue = new Queue<string>(new[] { SET, STATEMENT });
+            var forIndex = -1;
+
+            // Find '.. FOR <statement>'
+            //          ^^^
+            for (int i = 0; i < tokens.Count; i++)
+            {
+                var token = tokens[i];
+
+                if (TokenType.Trivia.HasFlag(token.Type))
+                    continue;
+
+                ReadOnlySpan<char> tokenSpan = cursor.ValueSpan[token.Span];
+
+                if (queue.TryPeek(out var peek) && tokenSpan.Equals(peek, StringComparison.OrdinalIgnoreCase))
+                {
+                    queue.Dequeue();
+                    continue;
+                }
+
+                if (queue.Count == 0 &&
+                    token.Type is TokenType.Keyword &&
+                    tokenSpan.Equals(FOR, StringComparison.OrdinalIgnoreCase))
+                {
+                    forIndex = i;
+                    break;
+                }
+
+                if (tokenSpan.Length == 1)
+                {
+                    switch (tokenSpan[0])
+                    {
+                        case '(':
+                            queue.Enqueue(")");
+                            break;
+
+                        case '[':
+                            queue.Enqueue("]");
+                            break;
+
+                        case '{':
+                            queue.Enqueue("}");
+                            break;
+                    }
+                }
+            }
+
+            if (forIndex == -1 || forIndex + 1 >= tokens.Count)
+                return QsiScriptType.Set;
+
+            // <statement>
+            Token[] statementTokens = tokens
+                .Skip(forIndex + 1)
+                .SkipWhile(x => TokenType.Trivia.HasFlag(x.Type))
+                .ToArray();
+
+            if (statementTokens.Length == 0)
+                return QsiScriptType.Set;
+
+            Token[] leadingTokens = GetLeadingTokens(cursor.Value, statementTokens, TokenType.Keyword, 2);
+
+            return GetSuitableType(cursor, statementTokens, leadingTokens);
         }
 
         private class BufferedTokenStream
