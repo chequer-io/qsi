@@ -28,4 +28,22 @@ public class MySqlScriptParserTests
 
         await Verifier.Verify(result).UseDirectory("verified");
     }
+
+    [TestCase("SET STATEMENT @t = 'FOR' FOR SELECT @t")]
+    [TestCase("SET STATEMENT @t = 'FOR' FOR/*aa*/SELECT @t")]
+    public async Task Test_TrySplitSetStatement_ReturnsTrue(string sql)
+    {
+        var result = Parser.TrySplitSetStatement(sql, out var setPart, out var statementPart);
+
+        Assert.IsTrue(result);
+
+        await Verifier.Verify(new { Set = setPart, Statement = statementPart }).UseDirectory("verified");
+    }
+
+    [TestCase("SELECT 1", ExpectedResult = false)]
+    [TestCase("SET @t = 'a'", ExpectedResult = false)]
+    public bool Test_TrySplitSetStatement_ReturnsFalse(string sql)
+    {
+        return Parser.TrySplitSetStatement(sql, out _, out _);
+    }
 }
