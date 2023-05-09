@@ -583,20 +583,20 @@ public class MySqlScriptParser : CommonScriptParser
             return false;
         }
 
-        Span<Token> setPartTokens = tokens.AsSpan(0, forIndex - 1);
+        Span<Token> setPartTokens = tokens.AsSpan(0, forIndex);
         Span<Token> statementPartTokens = tokens.AsSpan(forIndex + 1);
 
-        setPart = GetText(input, setPartTokens);
-        statementPart = GetText(input, statementPartTokens);
+        setPart = GetText(input, setPartTokens).Trim().ToString();
+        statementPart = GetText(input, statementPartTokens).Trim().ToString();
 
         return true;
 
-        static string GetText(string input, ReadOnlySpan<Token> tokens)
+        static ReadOnlySpan<char> GetText(string input, ReadOnlySpan<Token> tokens)
         {
             var (startOffset, _) = tokens[0].Span.GetOffsetAndLength(input.Length);
             var (endOffset, endLength) = tokens[^1].Span.GetOffsetAndLength(input.Length);
 
-            return input[startOffset..(endOffset + endLength)];
+            return input.AsSpan(startOffset, endOffset + endLength - startOffset);
         }
     }
     #endregion

@@ -31,6 +31,7 @@ public class MySqlScriptParserTests
 
     [TestCase("SET STATEMENT @t = 'FOR' FOR SELECT @t")]
     [TestCase("SET STATEMENT @t = 'FOR' FOR/*aa*/SELECT @t")]
+    [TestCase("SET STATEMENT @t = 'FOR'/*a*/FOR/*b*/SELECT @t")]
     public async Task Test_TrySplitSetStatement_ReturnsTrue(string sql)
     {
         var result = Parser.TrySplitSetStatement(sql, out var setPart, out var statementPart);
