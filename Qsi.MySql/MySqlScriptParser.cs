@@ -8,112 +8,70 @@ using Qsi.Data;
 using Qsi.Parsing.Common;
 using Qsi.Shared.Extensions;
 
-namespace Qsi.MySql
+namespace Qsi.MySql;
+
+public class MySqlScriptParser : CommonScriptParser
 {
-    public class MySqlScriptParser : CommonScriptParser
+    private const string TABLE = "TABLE";
+    private const string DELIMITER = "DELIMITER";
+    private const string DEALLOCATE = "DEALLOCATE";
+    private const string PREPARE = "PREPARE";
+    private const string DESC = "DESC";
+
+    private const string XA = "XA";
+    private const string BEGIN = "BEGIN";
+    private const string END = "END";
+    private const string IF = "IF";
+    private const string ELSEIF = "ELSEIF";
+    private const string ELSE = "ELSE";
+    private const string WHILE = "WHILE";
+    private const string DO = "DO";
+    private const string REPEAT = "REPEAT";
+    private const string UNTIL = "UNTIL";
+    private const string LOOP = "LOOP";
+    private const string CASE = "CASE";
+    private const string WHEN = "WHEN";
+    private const string THEN = "THEN";
+    private const string SET = "SET";
+    private const string STATEMENT = "STATEMENT";
+    private const string FOR = "FOR";
+
+    private readonly Regex _delimiterPattern = new(@"\G\S+(?=\s|$)");
+
+    public bool UseDelimiter { get; set; } = true;
+
+    public override IEnumerable<QsiScript> Parse(string input, CancellationToken cancellationToken)
     {
-        private const string TABLE = "TABLE";
-        private const string DELIMITER = "DELIMITER";
-        private const string DEALLOCATE = "DEALLOCATE";
-        private const string PREPARE = "PREPARE";
-        private const string DESC = "DESC";
-
-        private const string XA = "XA";
-        private const string BEGIN = "BEGIN";
-        private const string END = "END";
-        private const string IF = "IF";
-        private const string ELSEIF = "ELSEIF";
-        private const string ELSE = "ELSE";
-        private const string WHILE = "WHILE";
-        private const string DO = "DO";
-        private const string REPEAT = "REPEAT";
-        private const string UNTIL = "UNTIL";
-        private const string LOOP = "LOOP";
-        private const string CASE = "CASE";
-        private const string WHEN = "WHEN";
-        private const string THEN = "THEN";
-        private const string SET = "SET";
-        private const string STATEMENT = "STATEMENT";
-        private const string FOR = "FOR";
-
-        private readonly Regex _delimiterPattern = new(@"\G\S+(?=\s|$)");
-
-        public bool UseDelimiter { get; set; } = true;
-
-        public override IEnumerable<QsiScript> Parse(string input, CancellationToken cancellationToken)
+        if (!UseDelimiter)
         {
-            if (!UseDelimiter)
-            {
-                return ParseWithoutDelimiter(input, cancellationToken);
-            }
-
-            return base.Parse(input, cancellationToken);
+            return ParseWithoutDelimiter(input, cancellationToken);
         }
 
-        private IEnumerable<QsiScript> ParseWithoutDelimiter(string input, CancellationToken cancellationToken)
+        return base.Parse(input, cancellationToken);
+    }
+
+    private IEnumerable<QsiScript> ParseWithoutDelimiter(string input, CancellationToken cancellationToken)
+    {
+        var context = new ParseContext(input, ";", cancellationToken);
+        using IEnumerator<Token> tokenEnumerator = ParseTokens(context.Cursor).GetEnumerator();
+        var tokenStream = new BufferedTokenStream(input, tokenEnumerator);
+
+        while (tokenStream.TryNext(out var token))
         {
-            var context = new ParseContext(input, ";", cancellationToken);
-            using IEnumerator<Token> tokenEnumerator = ParseTokens(context.Cursor).GetEnumerator();
-            var tokenStream = new BufferedTokenStream(input, tokenEnumerator);
-
-            while (tokenStream.TryNext(out var token))
+            if (TryParseBeginEndBlockState(context, tokenStream, out var label))
             {
-                if (TryParseBeginEndBlockState(context, tokenStream, out var label))
-                {
-                    context.AddToken(token);
-                    ProcessBeginEndBlock(context, tokenStream, label);
+                context.AddToken(token);
+                ProcessBeginEndBlock(context, tokenStream, label);
 
-                    var script = CreateScript(context, context.Tokens);
-                    context.ClearTokens();
+                var script = CreateScript(context, context.Tokens);
+                context.ClearTokens();
 
-                    yield return script;
-                }
-                else if (context.Cursor.Value[token.Span] == ";")
-                {
-                    foreach (var script in BuildScripts(context))
-                        yield return script;
-                }
-                else
-                {
-                    context.AddToken(token);
-                }
-            }
-
-            foreach (var script in BuildScripts(context))
                 yield return script;
-        }
-
-        #region Block
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void ProcessInnerStatements(ParseContext context, BufferedTokenStream stream, in Token token)
-        {
-            if (context.Cursor.Value[token.Span] == ";")
-            {
-                // skip
             }
-            else if (TryParseBeginEndBlockState(context, stream, out var innerState))
+            else if (context.Cursor.Value[token.Span] == ";")
             {
-                ProcessBeginEndBlock(context, stream, innerState);
-            }
-            else if (TryParseIfBlock(context, stream))
-            {
-                ProcessIfBlock(context, stream);
-            }
-            else if (TryParseWhileBlock(context, stream))
-            {
-                ProcessWhileBlock(context, stream);
-            }
-            else if (TryParseRepeatBlock(context, stream))
-            {
-                ProcessRepeatBlock(context, stream);
-            }
-            else if (TryParseLoopBlock(context, stream))
-            {
-                ProcessLoopBlock(context, stream);
-            }
-            else if (TryParseCaseBlock(context, stream))
-            {
-                ProcessCaseBlock(context, stream);
+                foreach (var script in BuildScripts(context))
+                    yield return script;
             }
             else
             {
@@ -121,537 +79,578 @@ namespace Qsi.MySql
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool TryParseBeginEndBlockState(ParseContext context, BufferedTokenStream stream, out string label)
+        foreach (var script in BuildScripts(context))
+            yield return script;
+    }
+
+    #region Block
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ProcessInnerStatements(ParseContext context, BufferedTokenStream stream, in Token token)
+    {
+        if (context.Cursor.Value[token.Span] == ";")
         {
-            label = null;
+            // skip
+        }
+        else if (TryParseBeginEndBlockState(context, stream, out var innerState))
+        {
+            ProcessBeginEndBlock(context, stream, innerState);
+        }
+        else if (TryParseIfBlock(context, stream))
+        {
+            ProcessIfBlock(context, stream);
+        }
+        else if (TryParseWhileBlock(context, stream))
+        {
+            ProcessWhileBlock(context, stream);
+        }
+        else if (TryParseRepeatBlock(context, stream))
+        {
+            ProcessRepeatBlock(context, stream);
+        }
+        else if (TryParseLoopBlock(context, stream))
+        {
+            ProcessLoopBlock(context, stream);
+        }
+        else if (TryParseCaseBlock(context, stream))
+        {
+            ProcessCaseBlock(context, stream);
+        }
+        else
+        {
+            context.AddToken(token);
+        }
+    }
 
-            // BEGIN .. END -> O
-            // XA BEGIN ..  -> X
-            if (stream.IsKeyword(BEGIN) && !stream.IsKeyword(XA, -1))
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private bool TryParseBeginEndBlockState(ParseContext context, BufferedTokenStream stream, out string label)
+    {
+        label = null;
+
+        // BEGIN .. END -> O
+        // XA BEGIN ..  -> X
+        if (stream.IsKeyword(BEGIN) && !stream.IsKeyword(XA, -1))
+        {
+            Token? labelColonToken = stream.Get(-1);
+
+            if (labelColonToken.HasValue && labelColonToken.Value.Type == TokenType.Identifier)
             {
-                Token? labelColonToken = stream.Get(-1);
+                label = context.Cursor.Value[labelColonToken.Value.Span];
+                label = label.EndsWith(':') ? label[..^1] : null;
+            }
 
-                if (labelColonToken.HasValue && labelColonToken.Value.Type == TokenType.Identifier)
+            return true;
+        }
+
+        return false;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ProcessBeginEndBlock(ParseContext context, BufferedTokenStream stream, string label)
+    {
+        // label: BEGIN| ..
+        //             ^ current
+
+        while (stream.TryNext(out var token))
+        {
+            // .. END [<label>]|
+            //                 ^ end
+            if (stream.IsKeyword(END))
+            {
+                context.AddToken(token);
+
+                if (label != null && stream.IsKeyword(label, 1))
                 {
-                    label = context.Cursor.Value[labelColonToken.Value.Span];
-                    label = label.EndsWith(':') ? label[..^1] : null;
+                    stream.TryNext(out var nextToken);
+                    context.AddToken(nextToken);
                 }
 
-                return true;
+                break;
+            }
+
+            ProcessInnerStatements(context, stream, token);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private bool TryParseIfBlock(ParseContext context, BufferedTokenStream stream)
+    {
+        return stream.IsKeyword(IF);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ProcessIfBlock(ParseContext context, BufferedTokenStream stream)
+    {
+        // IF| ..
+        //   ^ current
+
+        if (!SkipToThen())
+            throw new QsiException(QsiError.Syntax);
+
+        // IF .. THEN|
+        //           ^ current
+
+        while (stream.TryNext(out var token))
+        {
+            var text = context.Cursor.Value[token.Span];
+            context.AddToken(token);
+
+            if (text.EqualsIgnoreCase(ELSEIF))
+            {
+                if (!SkipToThen())
+                    throw new QsiException(QsiError.Syntax);
+            }
+            else if (text.EqualsIgnoreCase(ELSE))
+            {
+                // skip
+            }
+            else if (text.EqualsIgnoreCase(END) && stream.IsKeyword(IF, 1))
+            {
+                stream.TryNext(out var nextToken);
+                context.AddToken(nextToken);
+                break;
+            }
+
+            ProcessInnerStatements(context, stream, token);
+        }
+
+        bool SkipToThen()
+        {
+            while (stream.TryNext(out var token))
+            {
+                var text = context.Cursor.Value[token.Span];
+                context.AddToken(token);
+
+                if (text == ";")
+                    return false;
+
+                if (THEN.EqualsIgnoreCase(text))
+                    return true;
             }
 
             return false;
         }
+    }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void ProcessBeginEndBlock(ParseContext context, BufferedTokenStream stream, string label)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private bool TryParseWhileBlock(ParseContext context, BufferedTokenStream stream)
+    {
+        return stream.IsKeyword(WHILE);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ProcessWhileBlock(ParseContext context, BufferedTokenStream stream)
+    {
+        // WHILE| ..
+        //      ^ current
+
+        if (!SkipToDo())
+            throw new QsiException(QsiError.Syntax);
+
+        // WHILE .. DO| ..
+        //            ^ current
+
+        while (stream.TryNext(out var token))
         {
-            // label: BEGIN| ..
-            //             ^ current
+            context.AddToken(token);
 
-            while (stream.TryNext(out var token))
+            if (stream.IsKeyword(END) && stream.IsKeyword(WHILE, 1))
             {
-                // .. END [<label>]|
-                //                 ^ end
-                if (stream.IsKeyword(END))
-                {
-                    context.AddToken(token);
-
-                    if (label != null && stream.IsKeyword(label, 1))
-                    {
-                        stream.TryNext(out var nextToken);
-                        context.AddToken(nextToken);
-                    }
-
-                    break;
-                }
-
-                ProcessInnerStatements(context, stream, token);
+                stream.TryNext(out var nextToken);
+                context.AddToken(nextToken);
+                break;
             }
+
+            ProcessInnerStatements(context, stream, token);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool TryParseIfBlock(ParseContext context, BufferedTokenStream stream)
+        bool SkipToDo()
         {
-            return stream.IsKeyword(IF);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void ProcessIfBlock(ParseContext context, BufferedTokenStream stream)
-        {
-            // IF| ..
-            //   ^ current
-
-            if (!SkipToThen())
-                throw new QsiException(QsiError.Syntax);
-
-            // IF .. THEN|
-            //           ^ current
-
             while (stream.TryNext(out var token))
             {
                 var text = context.Cursor.Value[token.Span];
                 context.AddToken(token);
 
-                if (text.EqualsIgnoreCase(ELSEIF))
-                {
-                    if (!SkipToThen())
-                        throw new QsiException(QsiError.Syntax);
-                }
-                else if (text.EqualsIgnoreCase(ELSE))
-                {
-                    // skip
-                }
-                else if (text.EqualsIgnoreCase(END) && stream.IsKeyword(IF, 1))
-                {
-                    stream.TryNext(out var nextToken);
-                    context.AddToken(nextToken);
-                    break;
-                }
+                if (text == ";")
+                    return false;
 
-                ProcessInnerStatements(context, stream, token);
+                if (DO.EqualsIgnoreCase(text))
+                    return true;
             }
 
-            bool SkipToThen()
+            return false;
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private bool TryParseRepeatBlock(ParseContext context, BufferedTokenStream stream)
+    {
+        return stream.IsKeyword(REPEAT);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ProcessRepeatBlock(ParseContext context, BufferedTokenStream stream)
+    {
+        // REPEAT|
+        //       ^ current
+
+        while (stream.TryNext(out var token))
+        {
+            context.AddToken(token);
+
+            // UNTIL .. END REPEAT
+            if (stream.IsKeyword(UNTIL))
             {
-                while (stream.TryNext(out var token))
+                while (stream.TryNext(out _))
                 {
-                    var text = context.Cursor.Value[token.Span];
                     context.AddToken(token);
 
-                    if (text == ";")
-                        return false;
-
-                    if (THEN.EqualsIgnoreCase(text))
-                        return true;
+                    if (stream.IsKeyword(END))
+                        break;
                 }
 
-                return false;
+                if (!stream.IsKeyword(REPEAT, 1))
+                    throw new QsiException(QsiError.Syntax);
+
+                stream.TryNext(out var nextToken);
+                context.AddToken(nextToken);
+
+                break;
             }
+
+            ProcessInnerStatements(context, stream, token);
         }
+    }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool TryParseWhileBlock(ParseContext context, BufferedTokenStream stream)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private bool TryParseLoopBlock(ParseContext context, BufferedTokenStream stream)
+    {
+        return stream.IsKeyword(LOOP);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ProcessLoopBlock(ParseContext context, BufferedTokenStream stream)
+    {
+        // LOOP|
+        //     ^ current
+
+        while (stream.TryNext(out var token))
         {
-            return stream.IsKeyword(WHILE);
-        }
+            context.AddToken(token);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void ProcessWhileBlock(ParseContext context, BufferedTokenStream stream)
-        {
-            // WHILE| ..
-            //      ^ current
-
-            if (!SkipToDo())
-                throw new QsiException(QsiError.Syntax);
-
-            // WHILE .. DO| ..
-            //            ^ current
-
-            while (stream.TryNext(out var token))
+            // .. END LOOP
+            if (stream.IsKeyword(END) && stream.IsKeyword(LOOP, 1))
             {
-                context.AddToken(token);
-
-                if (stream.IsKeyword(END) && stream.IsKeyword(WHILE, 1))
-                {
-                    stream.TryNext(out var nextToken);
-                    context.AddToken(nextToken);
-                    break;
-                }
-
-                ProcessInnerStatements(context, stream, token);
+                stream.TryNext(out var nextToken);
+                context.AddToken(nextToken);
+                break;
             }
 
-            bool SkipToDo()
+            ProcessInnerStatements(context, stream, token);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private bool TryParseCaseBlock(ParseContext context, BufferedTokenStream stream)
+    {
+        return stream.IsKeyword(CASE);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ProcessCaseBlock(ParseContext context, BufferedTokenStream stream)
+    {
+        // CASE|
+        //     ^ current
+
+        while (stream.TryNext(out var token))
+        {
+            var text = context.Cursor.Value[token.Span];
+            context.AddToken(token);
+
+            if (WHEN.EqualsIgnoreCase(text))
             {
-                while (stream.TryNext(out var token))
-                {
-                    var text = context.Cursor.Value[token.Span];
-                    context.AddToken(token);
+                // WHEN .. THEN
 
-                    if (text == ";")
-                        return false;
-
-                    if (DO.EqualsIgnoreCase(text))
-                        return true;
-                }
-
-                return false;
+                if (!SkipToThen())
+                    throw new QsiException(QsiError.Syntax);
             }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool TryParseRepeatBlock(ParseContext context, BufferedTokenStream stream)
-        {
-            return stream.IsKeyword(REPEAT);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void ProcessRepeatBlock(ParseContext context, BufferedTokenStream stream)
-        {
-            // REPEAT|
-            //       ^ current
-
-            while (stream.TryNext(out var token))
+            else if (ELSE.EqualsIgnoreCase(text))
             {
-                context.AddToken(token);
-
-                // UNTIL .. END REPEAT
-                if (stream.IsKeyword(UNTIL))
-                {
-                    while (stream.TryNext(out _))
-                    {
-                        context.AddToken(token);
-
-                        if (stream.IsKeyword(END))
-                            break;
-                    }
-
-                    if (!stream.IsKeyword(REPEAT, 1))
-                        throw new QsiException(QsiError.Syntax);
-
-                    stream.TryNext(out var nextToken);
-                    context.AddToken(nextToken);
-
-                    break;
-                }
-
-                ProcessInnerStatements(context, stream, token);
+                // ELSE
             }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool TryParseLoopBlock(ParseContext context, BufferedTokenStream stream)
-        {
-            return stream.IsKeyword(LOOP);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void ProcessLoopBlock(ParseContext context, BufferedTokenStream stream)
-        {
-            // LOOP|
-            //     ^ current
-
-            while (stream.TryNext(out var token))
+            else if (END.EqualsIgnoreCase(text) && stream.IsKeyword(CASE, 1))
             {
-                context.AddToken(token);
+                // END CASE
 
-                // .. END LOOP
-                if (stream.IsKeyword(END) && stream.IsKeyword(LOOP, 1))
-                {
-                    stream.TryNext(out var nextToken);
-                    context.AddToken(nextToken);
-                    break;
-                }
-
-                ProcessInnerStatements(context, stream, token);
+                stream.TryNext(out var nextToken);
+                context.AddToken(nextToken);
+                break;
             }
+
+            ProcessInnerStatements(context, stream, token);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool TryParseCaseBlock(ParseContext context, BufferedTokenStream stream)
+        bool SkipToThen()
         {
-            return stream.IsKeyword(CASE);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void ProcessCaseBlock(ParseContext context, BufferedTokenStream stream)
-        {
-            // CASE|
-            //     ^ current
-
             while (stream.TryNext(out var token))
             {
                 var text = context.Cursor.Value[token.Span];
                 context.AddToken(token);
 
-                if (WHEN.EqualsIgnoreCase(text))
-                {
-                    // WHEN .. THEN
+                if (text == ";")
+                    return false;
 
-                    if (!SkipToThen())
-                        throw new QsiException(QsiError.Syntax);
-                }
-                else if (ELSE.EqualsIgnoreCase(text))
-                {
-                    // ELSE
-                }
-                else if (END.EqualsIgnoreCase(text) && stream.IsKeyword(CASE, 1))
-                {
-                    // END CASE
-
-                    stream.TryNext(out var nextToken);
-                    context.AddToken(nextToken);
-                    break;
-                }
-
-                ProcessInnerStatements(context, stream, token);
+                if (THEN.EqualsIgnoreCase(text))
+                    return true;
             }
 
-            bool SkipToThen()
+            return false;
+        }
+    }
+    #endregion
+
+    protected override bool TryParseToken(CommonScriptCursor cursor, out Token token)
+    {
+        const TokenType labelType = TokenType.Keyword | TokenType.Identifier;
+
+        if (!UseDelimiter && cursor.Current == ';')
+        {
+            token = new Token(TokenType.Fragment, new Range(cursor.Index, cursor.Index + 1));
+            return true;
+        }
+
+        if (!base.TryParseToken(cursor, out token))
+            return false;
+
+        if (labelType.HasFlag(token.Type) && cursor.Next == ':')
+        {
+            var (offset, length) = token.Span.GetOffsetAndLength(cursor.Length);
+            token = new Token(TokenType.Identifier, new Range(offset, offset + length + 1));
+            cursor.Index++;
+        }
+
+        return true;
+    }
+
+    protected override bool IsEndOfScript(ParseContext context)
+    {
+        if (UseDelimiter)
+        {
+            IReadOnlyList<Token> tokens = context.Tokens;
+
+            if (tokens.Count > 1 &&
+                tokens[^1].Type == TokenType.WhiteSpace &&
+                tokens[^2].Type == TokenType.Keyword &&
+                DELIMITER.EqualsIgnoreCase(context.Cursor.Value[tokens[^2].Span]) &&
+                tokens.SkipLast(2).All(t => TokenType.Trivia.HasFlag(t.Type)))
             {
-                while (stream.TryNext(out var token))
+                var match = _delimiterPattern.Match(context.Cursor.Value, context.Cursor.Index);
+
+                if (match.Success)
                 {
-                    var text = context.Cursor.Value[token.Span];
-                    context.AddToken(token);
+                    context.Cursor.Index = match.Index + match.Length - 1;
+                    context.Delimiter = match.Value;
+                    context.AddToken(new Token(TokenType.Fragment, match.Index..(context.Cursor.Index + 1)));
 
-                    if (text == ";")
-                        return false;
-
-                    if (THEN.EqualsIgnoreCase(text))
-                        return true;
+                    return true;
                 }
-
-                return false;
             }
         }
-        #endregion
 
-        protected override bool TryParseToken(CommonScriptCursor cursor, out Token token)
+        return base.IsEndOfScript(context);
+    }
+
+    protected override QsiScriptType GetSuitableType(CommonScriptCursor cursor, IReadOnlyList<Token> tokens, Token[] leadingTokens)
+    {
+        return leadingTokens.Length switch
         {
-            const TokenType labelType = TokenType.Keyword | TokenType.Identifier;
+            >= 1 when StartsWith(cursor, leadingTokens, TABLE) => QsiScriptType.Select,
+            >= 1 when StartsWith(cursor, leadingTokens, DESC) => QsiScriptType.Describe,
+            >= 2 when StartsWith(cursor, leadingTokens, DEALLOCATE, PREPARE) => QsiScriptType.DropPrepare,
+            >= 2 when StartsWith(cursor, leadingTokens, SET, STATEMENT) => GetSetStatementType(cursor, tokens),
+            _ => base.GetSuitableType(cursor, tokens, leadingTokens)
+        };
+    }
 
-            if (!UseDelimiter && cursor.Current == ';')
+    private bool StartsWith(CommonScriptCursor cursor, Token[] leadingTokens, params string[] tokens)
+    {
+        if (leadingTokens.Length < tokens.Length)
+            return false;
+
+        for (int i = 0; i < tokens.Length; i++)
+        {
+            ReadOnlySpan<char> tokenSpan = cursor.ValueSpan[leadingTokens[i].Span];
+
+            if (!tokenSpan.Equals(tokens[i], StringComparison.OrdinalIgnoreCase))
+                return false;
+        }
+
+        return true;
+    }
+
+    private QsiScriptType GetSetStatementType(CommonScriptCursor cursor, IReadOnlyList<Token> tokens)
+    {
+        var queue = new Queue<string>(new[] { SET, STATEMENT });
+        var forIndex = -1;
+
+        // Find '.. FOR <statement>'
+        //          ^^^
+        for (int i = 0; i < tokens.Count; i++)
+        {
+            var token = tokens[i];
+
+            if (TokenType.Trivia.HasFlag(token.Type))
+                continue;
+
+            ReadOnlySpan<char> tokenSpan = cursor.ValueSpan[token.Span];
+
+            if (queue.TryPeek(out var peek) && tokenSpan.Equals(peek, StringComparison.OrdinalIgnoreCase))
             {
-                token = new Token(TokenType.Fragment, new Range(cursor.Index, cursor.Index + 1));
+                queue.Dequeue();
+                continue;
+            }
+
+            if (queue.Count == 0 &&
+                token.Type is TokenType.Keyword &&
+                tokenSpan.Equals(FOR, StringComparison.OrdinalIgnoreCase))
+            {
+                forIndex = i;
+                break;
+            }
+
+            if (tokenSpan.Length == 1)
+            {
+                switch (tokenSpan[0])
+                {
+                    case '(':
+                        queue.Enqueue(")");
+                        break;
+
+                    case '[':
+                        queue.Enqueue("]");
+                        break;
+
+                    case '{':
+                        queue.Enqueue("}");
+                        break;
+                }
+            }
+        }
+
+        if (forIndex == -1 || forIndex + 1 >= tokens.Count)
+            return QsiScriptType.Set;
+
+        // <statement>
+        Token[] statementTokens = tokens
+            .Skip(forIndex + 1)
+            .SkipWhile(x => TokenType.Trivia.HasFlag(x.Type))
+            .ToArray();
+
+        if (statementTokens.Length == 0)
+            return QsiScriptType.Set;
+
+        Token[] leadingTokens = GetLeadingTokens(cursor.Value, statementTokens, TokenType.Keyword, 2);
+
+        return GetSuitableType(cursor, statementTokens, leadingTokens);
+    }
+
+    private class BufferedTokenStream
+    {
+        private readonly string _input;
+        private readonly IEnumerator<Token> _enumerator;
+        private readonly List<Token> _buffer;
+
+        private int _position;
+
+        public BufferedTokenStream(string input, IEnumerator<Token> enumerator)
+        {
+            _input = input;
+            _enumerator = enumerator;
+            _buffer = new List<Token>();
+        }
+
+        public Token? Get(int offset)
+        {
+            var index = _position + offset - 1;
+
+            if (index >= 0 && index < _buffer.Count)
+                return _buffer[index];
+
+            return null;
+        }
+
+        public bool TryNext(out Token token)
+        {
+            if (_position < _buffer.Count)
+            {
+                token = _buffer[_position++];
                 return true;
             }
 
-            if (!base.TryParseToken(cursor, out token))
-                return false;
-
-            if (labelType.HasFlag(token.Type) && cursor.Next == ':')
+            while (_enumerator.MoveNext())
             {
-                var (offset, length) = token.Span.GetOffsetAndLength(cursor.Length);
-                token = new Token(TokenType.Identifier, new Range(offset, offset + length + 1));
-                cursor.Index++;
-            }
-
-            return true;
-        }
-
-        protected override bool IsEndOfScript(ParseContext context)
-        {
-            if (UseDelimiter)
-            {
-                IReadOnlyList<Token> tokens = context.Tokens;
-
-                if (tokens.Count > 1 &&
-                    tokens[^1].Type == TokenType.WhiteSpace &&
-                    tokens[^2].Type == TokenType.Keyword &&
-                    DELIMITER.EqualsIgnoreCase(context.Cursor.Value[tokens[^2].Span]) &&
-                    tokens.SkipLast(2).All(t => TokenType.Trivia.HasFlag(t.Type)))
-                {
-                    var match = _delimiterPattern.Match(context.Cursor.Value, context.Cursor.Index);
-
-                    if (match.Success)
-                    {
-                        context.Cursor.Index = match.Index + match.Length - 1;
-                        context.Delimiter = match.Value;
-                        context.AddToken(new Token(TokenType.Fragment, match.Index..(context.Cursor.Index + 1)));
-
-                        return true;
-                    }
-                }
-            }
-
-            return base.IsEndOfScript(context);
-        }
-
-        protected override QsiScriptType GetSuitableType(CommonScriptCursor cursor, IReadOnlyList<Token> tokens, Token[] leadingTokens)
-        {
-            return leadingTokens.Length switch
-            {
-                >= 1 when StartsWith(cursor, leadingTokens, TABLE) => QsiScriptType.Select,
-                >= 1 when StartsWith(cursor, leadingTokens, DESC) => QsiScriptType.Describe,
-                >= 2 when StartsWith(cursor, leadingTokens, DEALLOCATE, PREPARE) => QsiScriptType.DropPrepare,
-                >= 2 when StartsWith(cursor, leadingTokens, SET, STATEMENT) => GetSetStatementType(cursor, tokens),
-                _ => base.GetSuitableType(cursor, tokens, leadingTokens)
-            };
-        }
-
-        private bool StartsWith(CommonScriptCursor cursor, Token[] leadingTokens, params string[] tokens)
-        {
-            if (leadingTokens.Length < tokens.Length)
-                return false;
-
-            for (int i = 0; i < tokens.Length; i++)
-            {
-                ReadOnlySpan<char> tokenSpan = cursor.ValueSpan[leadingTokens[i].Span];
-
-                if (!tokenSpan.Equals(tokens[i], StringComparison.OrdinalIgnoreCase))
-                    return false;
-            }
-
-            return true;
-        }
-
-        private QsiScriptType GetSetStatementType(CommonScriptCursor cursor, IReadOnlyList<Token> tokens)
-        {
-            var queue = new Queue<string>(new[] { SET, STATEMENT });
-            var forIndex = -1;
-
-            // Find '.. FOR <statement>'
-            //          ^^^
-            for (int i = 0; i < tokens.Count; i++)
-            {
-                var token = tokens[i];
-
-                if (TokenType.Trivia.HasFlag(token.Type))
+                if (TokenType.Trivia.HasFlag(_enumerator.Current.Type))
                     continue;
 
-                ReadOnlySpan<char> tokenSpan = cursor.ValueSpan[token.Span];
-
-                if (queue.TryPeek(out var peek) && tokenSpan.Equals(peek, StringComparison.OrdinalIgnoreCase))
-                {
-                    queue.Dequeue();
-                    continue;
-                }
-
-                if (queue.Count == 0 &&
-                    token.Type is TokenType.Keyword &&
-                    tokenSpan.Equals(FOR, StringComparison.OrdinalIgnoreCase))
-                {
-                    forIndex = i;
-                    break;
-                }
-
-                if (tokenSpan.Length == 1)
-                {
-                    switch (tokenSpan[0])
-                    {
-                        case '(':
-                            queue.Enqueue(")");
-                            break;
-
-                        case '[':
-                            queue.Enqueue("]");
-                            break;
-
-                        case '{':
-                            queue.Enqueue("}");
-                            break;
-                    }
-                }
+                token = _enumerator.Current;
+                _buffer.Add(token);
+                _position++;
+                return true;
             }
 
-            if (forIndex == -1 || forIndex + 1 >= tokens.Count)
-                return QsiScriptType.Set;
-
-            // <statement>
-            Token[] statementTokens = tokens
-                .Skip(forIndex + 1)
-                .SkipWhile(x => TokenType.Trivia.HasFlag(x.Type))
-                .ToArray();
-
-            if (statementTokens.Length == 0)
-                return QsiScriptType.Set;
-
-            Token[] leadingTokens = GetLeadingTokens(cursor.Value, statementTokens, TokenType.Keyword, 2);
-
-            return GetSuitableType(cursor, statementTokens, leadingTokens);
+            token = default;
+            return false;
         }
 
-        private class BufferedTokenStream
+        public bool IsKeyword(string keyword)
         {
-            private readonly string _input;
-            private readonly IEnumerator<Token> _enumerator;
-            private readonly List<Token> _buffer;
-
-            private int _position;
-
-            public BufferedTokenStream(string input, IEnumerator<Token> enumerator)
-            {
-                _input = input;
-                _enumerator = enumerator;
-                _buffer = new List<Token>();
-            }
-
-            public Token? Get(int offset)
-            {
-                var index = _position + offset - 1;
-
-                if (index >= 0 && index < _buffer.Count)
-                    return _buffer[index];
-
-                return null;
-            }
-
-            public bool TryNext(out Token token)
-            {
-                if (_position < _buffer.Count)
-                {
-                    token = _buffer[_position++];
-                    return true;
-                }
-
-                while (_enumerator.MoveNext())
-                {
-                    if (TokenType.Trivia.HasFlag(_enumerator.Current.Type))
-                        continue;
-
-                    token = _enumerator.Current;
-                    _buffer.Add(token);
-                    _position++;
-                    return true;
-                }
-
-                token = default;
+            if (_position == 0)
                 return false;
-            }
 
-            public bool IsKeyword(string keyword)
+            return keyword.EqualsIgnoreCase(_input[_buffer[_position - 1].Span]);
+        }
+
+        public bool IsKeyword(string keyword, int offset)
+        {
+            if (offset == 0)
+                return IsKeyword(keyword);
+
+            if (offset < 0)
             {
-                if (_position == 0)
-                    return false;
+                offset = -offset;
 
-                return keyword.EqualsIgnoreCase(_input[_buffer[_position - 1].Span]);
-            }
-
-            public bool IsKeyword(string keyword, int offset)
-            {
-                if (offset == 0)
-                    return IsKeyword(keyword);
-
-                if (offset < 0)
+                for (int i = _position - offset - 1; i >= 0; i--)
                 {
-                    offset = -offset;
+                    var token = _buffer[i];
 
-                    for (int i = _position - offset - 1; i >= 0; i--)
-                    {
-                        var token = _buffer[i];
+                    if (token.Type != TokenType.Keyword)
+                        return false;
 
-                        if (token.Type != TokenType.Keyword)
-                            return false;
-
-                        if (--offset == 0)
-                            return keyword.EqualsIgnoreCase(_input[token.Span]);
-                    }
-
-                    return false;
-                }
-
-                var save = _position;
-
-                try
-                {
-                    while (TryNext(out var token))
-                    {
-                        if (token.Type != TokenType.Keyword)
-                            return false;
-
-                        if (--offset == 0)
-                            return keyword.EqualsIgnoreCase(_input[token.Span]);
-                    }
-                }
-                finally
-                {
-                    _position = save;
+                    if (--offset == 0)
+                        return keyword.EqualsIgnoreCase(_input[token.Span]);
                 }
 
                 return false;
             }
+
+            var save = _position;
+
+            try
+            {
+                while (TryNext(out var token))
+                {
+                    if (token.Type != TokenType.Keyword)
+                        return false;
+
+                    if (--offset == 0)
+                        return keyword.EqualsIgnoreCase(_input[token.Span]);
+                }
+            }
+            finally
+            {
+                _position = save;
+            }
+
+            return false;
         }
     }
 }
