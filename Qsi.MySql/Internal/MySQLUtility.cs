@@ -31,13 +31,14 @@ namespace Qsi.MySql.Internal
             return result;
         }
 
-        public static MySqlParserInternal CreateParser(string input, int version)
+        public static MySqlParserInternal CreateParser(string input, int version, bool mariaDBCompatibility)
         {
             var stream = new AntlrInputStream(input);
 
             var lexer = new MySqlLexerInternal(stream)
             {
-                serverVersion = version
+                serverVersion = version,
+                MariaDB = mariaDBCompatibility
             };
 
             lexer.RemoveErrorListeners();
@@ -48,6 +49,7 @@ namespace Qsi.MySql.Internal
             var parser = new MySqlParserInternal(tokens)
             {
                 serverVersion = version,
+                MariaDB = mariaDBCompatibility,
                 Interpreter =
                 {
                     PredictionMode = PredictionMode.SLL

@@ -1,0 +1,15 @@
+﻿[
+  {
+    Script: SET STATEMENT max_statement_time=1000 FOR SELECT 1,
+    ScriptType: Select,
+    Start: {
+      Line: 1,
+      Column: 1
+    },
+    End: {
+      Line: 1,
+      Column: 51,
+      Index: 49
+    }
+  }
+]

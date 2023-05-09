@@ -1,0 +1,15 @@
+﻿[
+  {
+    Script: DEALLOCATE PREPARE statement,
+    ScriptType: DropPrepare,
+    Start: {
+      Line: 1,
+      Column: 1
+    },
+    End: {
+      Line: 1,
+      Column: 29,
+      Index: 27
+    }
+  }
+]

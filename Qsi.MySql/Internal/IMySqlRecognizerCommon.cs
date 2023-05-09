@@ -4,6 +4,8 @@
     {
         int serverVersion { get; }
 
+        bool MariaDB { get; }
+
         bool isSqlModeActive(int mode);
     }
 }

@@ -16,6 +16,8 @@ namespace Qsi.Parsing.Common
 
         public string Value { get; internal set; }
 
+        public ReadOnlySpan<char> ValueSpan => Value;
+
         public CommonScriptCursor(in string value)
         {
             Value = value;
@@ -30,20 +32,14 @@ namespace Qsi.Parsing.Common
             Index = 0;
         }
 
-        public bool StartsWith(in string value)
+        public bool StartsWith(ReadOnlySpan<char> value)
         {
             return StartsWith(value, Index);
         }
 
-        public bool StartsWith(in ReadOnlySpan<char> value, int start)
+        public bool StartsWith(ReadOnlySpan<char> value, int start)
         {
-            for (int i = 0; i < value.Length; i++)
-            {
-                if (Index + i >= Length || Value[start + i] != value[i])
-                    return false;
-            }
-
-            return true;
+            return Value.AsSpan(start).StartsWith(value);
         }
 
         public bool StartsWithIgnoreCase(in ReadOnlySpan<char> value)

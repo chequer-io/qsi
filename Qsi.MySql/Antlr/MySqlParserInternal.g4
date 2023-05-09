@@ -2007,7 +2007,8 @@ installUninstallStatment:
 //----------------------------------------------------------------------------------------------------------------------
 
 setStatement:
-    SET_SYMBOL startOptionValueList
+    {MariaDB}? SET_SYMBOL STATEMENT_SYMBOL startOptionValueList FOR_SYMBOL (simpleStatement | beginWork) #setStatementFor
+    | SET_SYMBOL startOptionValueList                                                                    #set
 ;
 
 startOptionValueList:

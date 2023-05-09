@@ -44,7 +44,7 @@ public partial class MySqlTest : VendorTestBase
 
     protected override IQsiLanguageService CreateLanguageService(DbConnection connection)
     {
-        return new Driver.MySqlLanguageService(connection);
+        return new Driver.MySqlLanguageService(connection, false);
     }
 
     [TestCase("SELECT * FROM actor")]

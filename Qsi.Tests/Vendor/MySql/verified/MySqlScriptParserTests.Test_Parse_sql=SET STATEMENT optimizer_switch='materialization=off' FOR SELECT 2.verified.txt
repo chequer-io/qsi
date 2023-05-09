@@ -1,0 +1,15 @@
+﻿[
+  {
+    Script: SET STATEMENT optimizer_switch='materialization=off' FOR SELECT 2,
+    ScriptType: Select,
+    Start: {
+      Line: 1,
+      Column: 1
+    },
+    End: {
+      Line: 1,
+      Column: 66,
+      Index: 64
+    }
+  }
+]

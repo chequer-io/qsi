@@ -1052,12 +1052,27 @@ namespace Qsi.Analyzers.Action
         #endregion
 
         #region VariableSet
-        protected virtual ValueTask<IQsiAnalysisResult[]> ExecuteVariableSetAction(IAnalyzerContext context, IQsiVariableSetActionNode node)
+        protected virtual async ValueTask<IQsiAnalysisResult[]> ExecuteVariableSetAction(IAnalyzerContext context, IQsiVariableSetActionNode node)
         {
-            return node.SetItems.Select(setItem => ResolveVariableSet(context, setItem))
-                .OfType<IQsiAnalysisResult>()
-                .ToArray()
-                .AsValueTask();
+            var results = new List<IQsiAnalysisResult>();
+
+            results.AddRange(node.SetItems.Select(setItem => ResolveVariableSet(context, setItem)));
+
+            if (node.Target is not null)
+            {
+                results.AddRange(
+                    await context.Engine.Execute(
+                        context.Script,
+                        context.Parameters.Values.ToArray(),
+                        node.Target,
+                        context.AnalyzerOptions,
+                        context.ExecuteOptions,
+                        context.CancellationToken
+                    )
+                );
+            }
+
+            return results.ToArray();
         }
 
         protected virtual QsiVariableSetActionResult ResolveVariableSet(IAnalyzerContext context, IQsiVariableSetItemNode node)

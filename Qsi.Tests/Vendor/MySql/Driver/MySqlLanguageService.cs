@@ -10,9 +10,11 @@ public class MySqlLanguageService : MySqlLanguageServiceBase
 {
     public override Version Version { get; }
 
+    public override bool MariaDBCompatibility { get; }
+
     private readonly DbConnection _connection;
 
-    public MySqlLanguageService(DbConnection connection)
+    public MySqlLanguageService(DbConnection connection, bool mariaDBCompatibility)
     {
         var match = Regex.Match(connection.ServerVersion ?? string.Empty, @"\d+(?:\.\d+){1,3}");
 
@@ -26,6 +28,7 @@ public class MySqlLanguageService : MySqlLanguageServiceBase
         }
 
         _connection = connection;
+        MariaDBCompatibility = mariaDBCompatibility;
     }
 
     public override IQsiRepositoryProvider CreateRepositoryProvider()

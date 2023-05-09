@@ -1,0 +1,15 @@
+﻿[
+  {
+    Script: TABLE actor,
+    ScriptType: Select,
+    Start: {
+      Line: 1,
+      Column: 1
+    },
+    End: {
+      Line: 1,
+      Column: 12,
+      Index: 10
+    }
+  }
+]
