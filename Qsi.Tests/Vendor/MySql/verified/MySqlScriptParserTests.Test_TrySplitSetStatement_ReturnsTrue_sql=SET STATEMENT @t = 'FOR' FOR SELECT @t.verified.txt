@@ -1,0 +1,4 @@
+﻿{
+  Set: SET STATEMENT @t = 'FOR',
+  Statement: SELECT @t
+}

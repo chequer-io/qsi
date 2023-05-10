@@ -487,10 +487,20 @@ public class MySqlScriptParser : CommonScriptParser
         return true;
     }
 
+    #region MariaDB - SET STATEMENT
     private QsiScriptType GetSetStatementType(CommonScriptCursor cursor, IReadOnlyList<Token> tokens)
     {
+        if (!TryParseSetStatementTokens(cursor, tokens, out Token[] statementTokens))
+            return QsiScriptType.Set;
+
+        Token[] leadingTokens = GetLeadingTokens(cursor.Value, statementTokens, TokenType.Keyword, 2);
+
+        return GetSuitableType(cursor, statementTokens, leadingTokens);
+    }
+
+    private int IndexOfSetStatementForKeyword(CommonScriptCursor cursor, IReadOnlyList<Token> tokens)
+    {
         var queue = new Queue<string>(new[] { SET, STATEMENT });
-        var forIndex = -1;
 
         // Find '.. FOR <statement>'
         //          ^^^
@@ -513,8 +523,7 @@ public class MySqlScriptParser : CommonScriptParser
                 token.Type is TokenType.Keyword &&
                 tokenSpan.Equals(FOR, StringComparison.OrdinalIgnoreCase))
             {
-                forIndex = i;
-                break;
+                return i;
             }
 
             if (tokenSpan.Length == 1)
@@ -536,22 +545,61 @@ public class MySqlScriptParser : CommonScriptParser
             }
         }
 
-        if (forIndex == -1 || forIndex + 1 >= tokens.Count)
-            return QsiScriptType.Set;
+        return -1;
+    }
 
-        // <statement>
-        Token[] statementTokens = tokens
+    private bool TryParseSetStatementTokens(CommonScriptCursor cursor, IReadOnlyList<Token> tokens, out Token[] statementTokens)
+    {
+        var forIndex = IndexOfSetStatementForKeyword(cursor, tokens);
+
+        if (forIndex == -1 || forIndex + 1 >= tokens.Count)
+        {
+            statementTokens = null;
+            return false;
+        }
+
+        statementTokens = tokens
             .Skip(forIndex + 1)
             .SkipWhile(x => TokenType.Trivia.HasFlag(x.Type))
             .ToArray();
 
-        if (statementTokens.Length == 0)
-            return QsiScriptType.Set;
-
-        Token[] leadingTokens = GetLeadingTokens(cursor.Value, statementTokens, TokenType.Keyword, 2);
-
-        return GetSuitableType(cursor, statementTokens, leadingTokens);
+        return statementTokens.Length > 0;
     }
+
+    // SET STATEMENT <variable> FOR <statement>
+    // ^~~~~~~~~~~~~~~~~~~~~~~^ ^~^ ^~~~~~~~~~^
+    // └ set part       forIndex ┘  └ statement part
+    public bool TrySplitSetStatement(string input, out string setPart, out string statementPart)
+    {
+        var cursor = new CommonScriptCursor(input);
+        Token[] tokens = ParseTokens(cursor).ToArray();
+
+        var forIndex = IndexOfSetStatementForKeyword(cursor, tokens);
+
+        if (forIndex == -1)
+        {
+            setPart = null;
+            statementPart = null;
+            return false;
+        }
+
+        Span<Token> setPartTokens = tokens.AsSpan(0, forIndex);
+        Span<Token> statementPartTokens = tokens.AsSpan(forIndex + 1);
+
+        setPart = GetText(input, setPartTokens).Trim().ToString();
+        statementPart = GetText(input, statementPartTokens).Trim().ToString();
+
+        return true;
+
+        static ReadOnlySpan<char> GetText(string input, ReadOnlySpan<Token> tokens)
+        {
+            var (startOffset, _) = tokens[0].Span.GetOffsetAndLength(input.Length);
+            var (endOffset, endLength) = tokens[^1].Span.GetOffsetAndLength(input.Length);
+
+            return input.AsSpan(startOffset, endOffset + endLength - startOffset);
+        }
+    }
+    #endregion
 
     private class BufferedTokenStream
     {
