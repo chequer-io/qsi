@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Qsi.Analyzers.Table;
 using Qsi.Analyzers.Table.Context;
 using Qsi.Data;
@@ -26,6 +27,16 @@ namespace Qsi.MySql.Analyzers
             }
 
             return base.ResolveColumnsInExpression(context, expression);
+        }
+
+        protected override async ValueTask<QsiTableStructure> BuildTableReferenceStructure(TableCompileContext context, IQsiTableReferenceNode table)
+        {
+            var structure = await base.BuildTableReferenceStructure(context, table);
+
+            if (table is MySqlExplicitTableReferenceNode)
+                return structure.CloneVisibleOnly();
+
+            return structure;
         }
     }
 }

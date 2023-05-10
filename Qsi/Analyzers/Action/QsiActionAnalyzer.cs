@@ -350,14 +350,23 @@ namespace Qsi.Analyzers.Action
             if (columnTarget.SourceColumn.IsAnonymous)
                 throw new QsiException(QsiError.NotUpdatableColumn, "anonymous");
 
-            if (columnTarget.SourceColumn.IsBinding || columnTarget.SourceColumn.IsExpression || !columnTarget.SourceColumn.IsVisible)
+            if (columnTarget.SourceColumn.IsBinding || columnTarget.SourceColumn.IsExpression)
                 throw new QsiException(QsiError.NotUpdatableColumn, columnTarget.SourceColumn.Name);
+
+            if (!columnTarget.SourceColumn.IsVisible)
+                return new DataManipulationTargetDataPivot(
+                    columnTarget,
+                    columnTarget.AffectedColumn.Parent.Columns.IndexOf(columnTarget.AffectedColumn),
+                    columnTarget.AffectedColumn,
+                    columnTarget.SourceColumn.Parent.VisibleColumns.Count() + columnTarget.DeclaredOrder,
+                    columnTarget.SourceColumn
+                );
 
             return new DataManipulationTargetDataPivot(
                 columnTarget,
                 columnTarget.AffectedColumn.Parent.Columns.IndexOf(columnTarget.AffectedColumn),
                 columnTarget.AffectedColumn,
-                columnTarget.SourceColumn.Parent.Columns.IndexOf(columnTarget.SourceColumn),
+                columnTarget.SourceColumn.Parent.VisibleColumns.IndexOf(columnTarget.SourceColumn),
                 columnTarget.SourceColumn
             );
         }
@@ -397,7 +406,8 @@ namespace Qsi.Analyzers.Action
                         derivedTable.Grouping,
                         derivedTable.Order,
                         derivedTable.Limit,
-                        null);
+                        null
+                    );
 
                 case IQsiCompositeTableNode compositeTable:
                     return compositeTable.ToImmutable(true);
@@ -411,7 +421,13 @@ namespace Qsi.Analyzers.Action
                         null,
                         TreeHelper.CreateAllColumnsDeclaration(),
                         node,
-                        null, null, null, null, null, null);
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null
+                    );
             }
         }
 
@@ -445,12 +461,12 @@ namespace Qsi.Analyzers.Action
             var script = new QsiScript(query, scriptType);
             QsiParameter[] parameters = ArrangeBindParameters(context, commonTableNode);
 
-            return (await context.Engine.RepositoryProvider.GetDataTable(
+            return await context.Engine.RepositoryProvider.GetDataTable(
                 script,
                 parameters,
                 context.ExecuteOptions,
                 context.CancellationToken
-            )).CloneVisibleOnly();
+            );
         }
         #endregion
 
@@ -462,7 +478,7 @@ namespace Qsi.Analyzers.Action
 
             using (var tableContext = new TableCompileContext(context))
             {
-                table = (await tableAnalyzer.BuildTableStructure(tableContext, action.Target)).CloneVisibleOnly();
+                table = await tableAnalyzer.BuildTableStructure(tableContext, action.Target);
             }
 
             ColumnTarget[] columnTargets = ResolveColumnTargetsFromDataInsertAction(context, table, action);
@@ -544,7 +560,7 @@ namespace Qsi.Analyzers.Action
 
         protected virtual ColumnTarget[] ResolveColumnTargetsFromTable(IAnalyzerContext context, QsiTableStructure table)
         {
-            return table.Columns
+            return table.VisibleColumns
                 .Select((x, i) =>
                 {
                     QsiTableColumn[] affectedColumns = GetAffectedColumns(x)
@@ -857,40 +873,39 @@ namespace Qsi.Analyzers.Action
             var tableAnalyzer = context.Engine.GetAnalyzer<QsiTableAnalyzer>();
             using var tableContext = new TableCompileContext(context);
 
-            var sourceTable = (await tableAnalyzer.BuildTableStructure(tableContext, action.Target)).CloneVisibleOnly();
+            var targetTable = await tableAnalyzer.BuildTableStructure(tableContext, action.Target);
 
-            // update data (rows)
-            var commonTableNode = ReassembleCommonTableNode(action.Target);
-            var dataTable = await GetDataTableByCommonTableNode(context, commonTableNode);
-
-            if (dataTable.Table.Columns.Count != sourceTable.Columns.Count)
-                throw new QsiException(QsiError.DifferentColumnsCount);
-
-            var values = new QsiDataValue[sourceTable.Columns.Count];
-            var affectedColumnMap = new bool[sourceTable.Columns.Count];
             ColumnTarget[] columnTargets;
+            var newValues = new QsiDataValue[targetTable.Columns.Count];
+            var affectedColumnMap = new bool[targetTable.Columns.Count];
 
             if (!ListUtility.IsNullOrEmpty(action.SetValues))
             {
-                SetColumnTarget[] setColumnTargets = ResolveSetColumnTargets(context, sourceTable, action.SetValues);
+                SetColumnTarget[] setColumnTargets = ResolveSetColumnTargets(context, targetTable, action.SetValues);
                 columnTargets = setColumnTargets.ToArray<ColumnTarget>();
 
                 foreach (var columnTarget in setColumnTargets)
                 {
-                    var targetIndex = columnTarget.SourceColumn.Parent.Columns.IndexOf(columnTarget.SourceColumn);
-                    values[targetIndex] = ResolveColumnValue(context, columnTarget.ValueNode);
+                    int targetIndex;
+
+                    if (columnTarget.SourceColumn.IsVisible)
+                        targetIndex = columnTarget.SourceColumn.Parent.VisibleColumns.IndexOf(columnTarget.SourceColumn);
+                    else
+                        targetIndex = columnTarget.SourceColumn.Parent.VisibleColumns.Count() + columnTarget.DeclaredOrder;
+
+                    newValues[targetIndex] = ResolveColumnValue(context, columnTarget.ValueNode);
                     affectedColumnMap[targetIndex] = true;
                 }
             }
             else if (action.Value != null)
             {
-                columnTargets = ResolveColumnTargetsFromTable(context, sourceTable);
+                columnTargets = ResolveColumnTargetsFromTable(context, targetTable);
 
-                if (action.Value.ColumnValues.Length != values.Length)
+                if (action.Value.ColumnValues.Length != newValues.Length)
                     throw new QsiException(QsiError.DifferentColumnValueCount, 0);
 
-                for (int i = 0; i < values.Length; i++)
-                    values[i] = ResolveColumnValue(context, action.Value.ColumnValues[i]);
+                for (int i = 0; i < newValues.Length; i++)
+                    newValues[i] = ResolveColumnValue(context, action.Value.ColumnValues[i]);
 
                 affectedColumnMap.AsSpan().Fill(true);
             }
@@ -899,50 +914,95 @@ namespace Qsi.Analyzers.Action
                 throw new QsiException(QsiError.Syntax);
             }
 
+            // update data (rows)
+            var oldValueTableNode = ReassembleCommonTableNode(action.Target);
+            int invisibleColumnCount = 0;
+
+            // Use explicit columns instead of *(all column) to resolve inivisble columns
+            if (oldValueTableNode is IQsiDerivedTableNode derivedTableNode)
+            {
+                ColumnTarget[] invisibleColumnTargets = columnTargets
+                    .Where(target => !target.AffectedColumn.IsVisible)
+                    .ToArray();
+
+                invisibleColumnCount = invisibleColumnTargets.Length;
+
+                IEnumerable<IQsiColumnNode> invisibleColumnNodes = invisibleColumnTargets
+                    .Select<ColumnTarget, IQsiColumnNode>(
+                        columnTarget => new QsiColumnReferenceNode { Name = columnTarget.DeclaredName }
+                    );
+
+                IQsiColumnNode[] columnNodes = derivedTableNode.Columns.Columns
+                    .Concat(invisibleColumnNodes)
+                    .ToArray();
+
+                var columnsDeclarationNode = new ImmutableColumnsDeclarationNode(null, columnNodes, null);
+
+                oldValueTableNode = new ImmutableDerivedTableNode(
+                    derivedTableNode.Parent,
+                    derivedTableNode.Directives,
+                    columnsDeclarationNode,
+                    derivedTableNode.Source,
+                    null,
+                    derivedTableNode.Where,
+                    derivedTableNode.Grouping,
+                    derivedTableNode.Order,
+                    derivedTableNode.Limit,
+                    null
+                );
+            }
+
+            var oldValueTable = await GetDataTableByCommonTableNode(context, oldValueTableNode);
+
+            if (oldValueTable.Table.Columns.Count != targetTable.VisibleColumns.Count() + invisibleColumnCount)
+                throw new QsiException(QsiError.DifferentColumnsCount);
+
             return ResolveDataManipulationTargets(context, columnTargets)
-                .Select(target =>
-                {
-                    foreach (var row in dataTable.Rows)
+                .Select(
+                    target =>
                     {
-                        var oldRow = new QsiDataRow(target.UpdateBeforeRows.ColumnCount);
-                        var newRow = new QsiDataRow(target.UpdateAfterRows.ColumnCount);
-
-                        foreach (var pivot in target.DataPivots)
+                        foreach (var row in oldValueTable.Rows)
                         {
-                            ref var oldItem = ref oldRow.Items[pivot.DestinationOrder];
-                            ref var newItem = ref newRow.Items[pivot.DestinationOrder];
+                            var oldRow = new QsiDataRow(target.UpdateBeforeRows.ColumnCount);
+                            var newRow = new QsiDataRow(target.UpdateAfterRows.ColumnCount);
 
-                            if (pivot.SourceColumn != null)
+                            foreach (var pivot in target.DataPivots)
                             {
-                                var value = row.Items[pivot.SourceOrder];
+                                ref var oldItem = ref oldRow.Items[pivot.DestinationOrder];
+                                ref var newItem = ref newRow.Items[pivot.DestinationOrder];
 
-                                oldItem = value;
-                                newItem = values[pivot.SourceOrder] ?? value;
+                                if (pivot.SourceColumn != null)
+                                {
+                                    var value = row.Items[pivot.SourceOrder];
+
+                                    oldItem = value;
+                                    newItem = newValues[pivot.SourceOrder] ?? value;
+                                }
+                                else
+                                {
+                                    oldItem = QsiDataValue.Unknown;
+                                    newItem = QsiDataValue.Unset;
+                                }
                             }
-                            else
-                            {
-                                oldItem = QsiDataValue.Unknown;
-                                newItem = QsiDataValue.Unset;
-                            }
+
+                            target.UpdateBeforeRows.Add(oldRow);
+                            target.UpdateAfterRows.Add(newRow);
                         }
 
-                        target.UpdateBeforeRows.Add(oldRow);
-                        target.UpdateAfterRows.Add(newRow);
+                        QsiTableColumn[] affectedColumns = target.DataPivots
+                            .Where(p => p.SourceColumn != null)
+                            .Select(p => p.SourceColumn)
+                            .ToArray();
+
+                        return new QsiDataManipulationResult
+                        {
+                            Table = target.Table,
+                            AffectedColumns = affectedColumns,
+                            UpdateBeforeRows = target.UpdateBeforeRows.ToNullIfEmpty(),
+                            UpdateAfterRows = target.UpdateAfterRows.ToNullIfEmpty()
+                        };
                     }
-
-                    QsiTableColumn[] affectedColumns = target.DataPivots
-                        .Where(p => p.SourceColumn != null && affectedColumnMap[p.SourceOrder])
-                        .Select(p => p.SourceColumn)
-                        .ToArray();
-
-                    return new QsiDataManipulationResult
-                    {
-                        Table = target.Table,
-                        AffectedColumns = affectedColumns,
-                        UpdateBeforeRows = target.UpdateBeforeRows.ToNullIfEmpty(),
-                        UpdateAfterRows = target.UpdateAfterRows.ToNullIfEmpty()
-                    };
-                })
+                )
                 .ToArray<IQsiAnalysisResult>();
         }
 

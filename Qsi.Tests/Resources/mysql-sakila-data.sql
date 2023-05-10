@@ -46443,6 +46443,14 @@ INSERT INTO store VALUES (1,1,1,'2006-02-15 04:57:12'),
 (2,2,2,'2006-02-15 04:57:12');
 COMMIT;
 
+--
+-- Dumping data for table tbl_invisible
+--
+
+SET AUTOCOMMIT=0;
+INSERT INTO tbl_invisible (id,col1,col2_invisible,col3_invisible) VALUES (1,1,1,1);
+COMMIT;
+
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
