@@ -64,23 +64,34 @@ namespace Qsi.Engines
         public ValueTask<IQsiAnalysisResult[]> Execute(QsiScript script, QsiParameter[] parameters, ExecuteOptions executeOptions = null, CancellationToken cancellationToken = default)
         {
             var tree = TreeParser.Parse(script, cancellationToken);
+            return Execute(script, tree, parameters, executeOptions, cancellationToken);
+        }
+
+        public ValueTask<IQsiAnalysisResult[]> Execute(QsiScript script, IQsiTreeNode tree, QsiParameter[] parameters, ExecuteOptions executeOptions = null, CancellationToken cancellationToken = default)
+        {
             var options = LanguageService.CreateAnalyzerOptions();
             return Execute(script, parameters, tree, options, executeOptions, cancellationToken);
         }
 
         public ValueTask<IQsiAnalysisResult[]> Explain(QsiScript script, ExecuteOptions executeOptions = null, CancellationToken cancellationToken = default)
         {
+            var tree = TreeParser.Parse(script, cancellationToken);
+            return Explain(script, tree, executeOptions, cancellationToken);
+        }
+
+        public ValueTask<IQsiAnalysisResult[]> Explain(QsiScript script, IQsiTreeNode tree, ExecuteOptions executeOptions = null, CancellationToken cancellationToken = default)
+        {
             var parameters = new[] { new QsiParameter(QsiParameterType.Name, string.Empty, QsiDataValue.Explain) };
 
             if (IsExplainEngine)
-                return Execute(script, parameters, executeOptions, cancellationToken);
+                return Execute(script, tree, parameters, executeOptions, cancellationToken);
 
             var explainLanguageService = new ExplainLanguageService(LanguageService);
             var explainEngine = new QsiEngine(explainLanguageService);
 
             explainLanguageService.ExplainEngine = explainEngine;
 
-            return explainEngine.Execute(script, parameters, executeOptions, cancellationToken);
+            return explainEngine.Execute(script, tree, parameters, executeOptions, cancellationToken);
         }
 
         internal async ValueTask<IQsiAnalysisResult[]> Execute(
