@@ -380,12 +380,13 @@ namespace Qsi.Parsing.Common
         public QsiScriptType GetSuitableType(string input)
         {
             var cursor = new CommonScriptCursor(input);
-            Token[] leadingTokens = GetLeadingTokens(input, ParseTokens(cursor), TokenType.Keyword, 2);
+            using IBufferedEnumerable<Token> tokens = ParseTokens(cursor).Buffer();
+            Token[] leadingTokens = GetLeadingTokens(input, tokens, TokenType.Keyword, 2);
 
-            return GetSuitableType(cursor, leadingTokens, leadingTokens);
+            return GetSuitableType(cursor, tokens, leadingTokens);
         }
 
-        protected virtual QsiScriptType GetSuitableType(CommonScriptCursor cursor, IReadOnlyList<Token> tokens, Token[] leadingTokens)
+        protected virtual QsiScriptType GetSuitableType(CommonScriptCursor cursor, IEnumerable<Token> tokens, Token[] leadingTokens)
         {
             switch (leadingTokens.Length)
             {

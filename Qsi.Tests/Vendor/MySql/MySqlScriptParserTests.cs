@@ -29,6 +29,22 @@ public class MySqlScriptParserTests
         await Verifier.Verify(result).UseDirectory("verified");
     }
 
+    [TestCase("SELECT 1; SELECT ';';", ExpectedResult = QsiScriptType.Select)]
+    [TestCase("TABLE actor", ExpectedResult = QsiScriptType.Select)]
+    [TestCase("DESC actor", ExpectedResult = QsiScriptType.Describe)]
+    [TestCase("DEALLOCATE PREPARE statement", ExpectedResult = QsiScriptType.DropPrepare)]
+    [TestCase("SET STATEMENT max_statement_time=1000 FOR SELECT 1", ExpectedResult = QsiScriptType.Select)]
+    [TestCase("SET STATEMENT optimizer_switch='materialization=off' FOR SELECT 2", ExpectedResult = QsiScriptType.Select)]
+    [TestCase("SET STATEMENT join_cache_level=6, optimizer_switch='mrr=on' FOR SELECT 3", ExpectedResult = QsiScriptType.Select)]
+    [TestCase("SET STATEMENT sort_buffer_size = 100000 for SET SESSION sort_buffer_size = 200000", ExpectedResult = QsiScriptType.Set)]
+    [TestCase("SET STATEMENT @t = (SELECT SUBSTRING('abc' FROM 2 FOR 1)) FOR SELECT @t", ExpectedResult = QsiScriptType.Select)]
+    [TestCase("SET STATEMENT @t = 5 /* FOR */ FOR SELECT @t", ExpectedResult = QsiScriptType.Select)]
+    [TestCase("SET STATEMENT @t = 'FOR' FOR SELECT @t", ExpectedResult = QsiScriptType.Select)]
+    public QsiScriptType Test_GetSuitableType(string sql)
+    {
+        return Parser.GetSuitableType(sql);
+    }
+
     [TestCase("SET STATEMENT @t = 'FOR' FOR SELECT @t")]
     [TestCase("SET STATEMENT @t = 'FOR' FOR/*aa*/SELECT @t")]
     [TestCase("SET STATEMENT @t = 'FOR'/*a*/FOR/*b*/SELECT @t")]

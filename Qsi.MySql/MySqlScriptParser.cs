@@ -459,7 +459,7 @@ public class MySqlScriptParser : CommonScriptParser
         return base.IsEndOfScript(context);
     }
 
-    protected override QsiScriptType GetSuitableType(CommonScriptCursor cursor, IReadOnlyList<Token> tokens, Token[] leadingTokens)
+    protected override QsiScriptType GetSuitableType(CommonScriptCursor cursor, IEnumerable<Token> tokens, Token[] leadingTokens)
     {
         return leadingTokens.Length switch
         {
@@ -488,7 +488,7 @@ public class MySqlScriptParser : CommonScriptParser
     }
 
     #region MariaDB - SET STATEMENT
-    private QsiScriptType GetSetStatementType(CommonScriptCursor cursor, IReadOnlyList<Token> tokens)
+    private QsiScriptType GetSetStatementType(CommonScriptCursor cursor, IEnumerable<Token> tokens)
     {
         if (!TryParseSetStatementTokens(cursor, tokens, out Token[] statementTokens))
             return QsiScriptType.Set;
@@ -498,15 +498,16 @@ public class MySqlScriptParser : CommonScriptParser
         return GetSuitableType(cursor, statementTokens, leadingTokens);
     }
 
-    private int IndexOfSetStatementForKeyword(CommonScriptCursor cursor, IReadOnlyList<Token> tokens)
+    private int IndexOfSetStatementForKeyword(CommonScriptCursor cursor, IEnumerable<Token> tokens)
     {
         var queue = new Queue<string>(new[] { SET, STATEMENT });
+        var i = -1;
 
         // Find '.. FOR <statement>'
         //          ^^^
-        for (int i = 0; i < tokens.Count; i++)
+        foreach (var token in tokens)
         {
-            var token = tokens[i];
+            i++;
 
             if (TokenType.Trivia.HasFlag(token.Type))
                 continue;
@@ -548,11 +549,11 @@ public class MySqlScriptParser : CommonScriptParser
         return -1;
     }
 
-    private bool TryParseSetStatementTokens(CommonScriptCursor cursor, IReadOnlyList<Token> tokens, out Token[] statementTokens)
+    private bool TryParseSetStatementTokens(CommonScriptCursor cursor, IEnumerable<Token> tokens, out Token[] statementTokens)
     {
         var forIndex = IndexOfSetStatementForKeyword(cursor, tokens);
 
-        if (forIndex == -1 || forIndex + 1 >= tokens.Count)
+        if (forIndex == -1)
         {
             statementTokens = null;
             return false;
