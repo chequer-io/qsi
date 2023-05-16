@@ -7,7 +7,7 @@ namespace Qsi.PostgreSql
 {
     public class PostgreSqlScriptParser : CommonScriptParser
     {
-        protected override QsiScriptType GetSuitableType(CommonScriptCursor cursor, IReadOnlyList<Token> tokens, Token[] leadingTokens)
+        protected override QsiScriptType GetSuitableType(CommonScriptCursor cursor, IEnumerable<Token> tokens, Token[] leadingTokens)
         {
             return leadingTokens.Length switch
             {

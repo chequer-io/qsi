@@ -15,7 +15,7 @@ namespace Qsi.Impala
             TrimDelimiter = false;
         }
 
-        protected override QsiScriptType GetSuitableType(CommonScriptCursor cursor, IReadOnlyList<Token> tokens, Token[] leadingTokens)
+        protected override QsiScriptType GetSuitableType(CommonScriptCursor cursor, IEnumerable<Token> tokens, Token[] leadingTokens)
         {
             if (leadingTokens.Length >= 1 && cursor.Value[leadingTokens[0].Span].EqualsIgnoreCase("VALUES"))
                 return QsiScriptType.Select;
