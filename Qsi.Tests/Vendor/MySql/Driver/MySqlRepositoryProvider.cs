@@ -59,7 +59,7 @@ limit 1";
         }
 
         sql = @$"
-select COLUMN_NAME 
+select COLUMN_NAME, COLUMN_TYPE, EXTRA, COLUMN_KEY
 from information_schema.COLUMNS
 where TABLE_SCHEMA = '{names[0]}' and TABLE_NAME = '{names[1]}'
 order by ORDINAL_POSITION";
@@ -70,6 +70,8 @@ order by ORDINAL_POSITION";
             {
                 var column = table.NewColumn();
                 column.Name = new QsiIdentifier(reader.GetString(0), false);
+                column.IsVisible = !reader.GetString(2/* EXTRA */).Contains("INVISIBLE"); // "DEFAULT_GENERATED on update CURRENT_TIMESTAMP", "auto_increment INVISIBLE"
+                column.HasIndex = !string.IsNullOrWhiteSpace(reader.GetString(3 /* COLUMN_KEY */));
             }
         }
 

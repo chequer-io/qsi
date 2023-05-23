@@ -15,7 +15,7 @@ using VerifyNUnit;
 
 namespace Qsi.Tests.Vendor.MySql;
 
-[TestFixture("server=localhost;port=3306;user id=root;password=root;pooling=False;allowuservariables=True", Category = "MySql")]
+[TestFixture("server=127.0.0.1;port=3306;user id=root;password=root;pooling=False;allowuservariables=True", Category = "MySql")]
 public partial class MySqlTest : VendorTestBase
 {
     public MySqlTest(string connectionString) : base(connectionString)
@@ -61,6 +61,8 @@ public partial class MySqlTest : VendorTestBase
     [TestCase("WITH RECURSIVE CTE AS (SELECT 1 N UNION ALL SELECT N + 1 FROM CTE WHERE N < 10) SELECT * FROM CTE")]
     [TestCase("SELECT (SELECT actor_id from city) from actor")]
     [TestCase("SELECT (SELECT actor_id from actor) from actor_info")]
+    [TestCase("SELECT * from tbl_invisible")]
+    [TestCase("SELECT id, col1, col2_invisible, col3_invisible from tbl_invisible")]
     public async Task Test_SELECT(string sql)
     {
         IQsiAnalysisResult[] result = await Engine.Execute(new QsiScript(sql, QsiScriptType.Select), null);
@@ -74,6 +76,7 @@ public partial class MySqlTest : VendorTestBase
 
     [TestCase("TABLE actor")]
     [TestCase("TABLE city")]
+    [TestCase("TABLE tbl_invisible")]
     public async Task Test_TABLE(string sql)
     {
         if (Connection.ServerVersion![0] == '5')
@@ -106,6 +109,9 @@ public partial class MySqlTest : VendorTestBase
     [TestCase("SELECT f.* FROM actor a JOIN film_actor f USING (actor_id) LIMIT 0", ExpectedResult = new[] { "actor_id", "film_id", "last_update" })]
     [TestCase("SELECT * FROM actor JOIN film_actor USING (actor_id, last_update) LIMIT 0", ExpectedResult = new[] { "actor_id", "last_update", "first_name", "last_name", "film_id" })]
     [TestCase("(SELECT 1) UNION (SELECT 2)", ExpectedResult = new[] { "1" })]
+    [TestCase("SELECT * from tbl_invisible", ExpectedResult = new[] { "id", "col1" })]
+    [TestCase("SELECT *, col2_invisible from tbl_invisible", ExpectedResult = new[] { "id", "col1", "col2_invisible" })]
+    [TestCase("SELECT id, col2_invisible from tbl_invisible", ExpectedResult = new[] { "id", "col2_invisible" })]
     public async Task<string[]> Test_SELECT_ColumnNames(string sql)
     {
         IQsiAnalysisResult[] result = await Engine.Execute(new QsiScript(sql, QsiScriptType.Select), null);
@@ -127,6 +133,9 @@ public partial class MySqlTest : VendorTestBase
     [TestCase("INSERT INTO actor SET actor_id = 1", new string[0], 1)]
     [TestCase("INSERT INTO actor SET actor.actor_id = 1", new string[0], 1)]
     [TestCase("INSERT INTO actor VALUES (1, 2, 3, 4) ON DUPLICATE KEY UPDATE last_update = now()", new string[0], 1)]
+    [TestCase("INSERT INTO tbl_invisible VALUES (1, 2);", new string[0], 1)]
+    [TestCase("INSERT INTO tbl_invisible (col1, col2_invisible) VALUES (1, 2);", new string[0], 1)]
+    [TestCase("INSERT INTO tbl_invisible (col1, col2_invisible, col3_invisible) VALUES (1, 2, 3);", new string[0], 1)]
     public async Task Test_INSERT(string sql, string[] expectedSqls, int expectedResultCount)
     {
         IQsiAnalysisResult[] result = await Engine.Execute(new QsiScript(sql, QsiScriptType.Select), null);
@@ -148,6 +157,8 @@ public partial class MySqlTest : VendorTestBase
     [TestCase("DELETE a, c FROM actor a JOIN city c ON false", new[] { "SELECT a.*, c.* FROM actor a JOIN city c ON false" }, 2)]
     [TestCase("DELETE a, c, film FROM actor a JOIN city c JOIN film WHERE false", new[] { "SELECT a.*, c.*, film.* FROM actor a JOIN city c JOIN film WHERE false" }, 3)]
     [TestCase("DELETE c FROM address a JOIN city c USING (city_id) WHERE false", new[] { "SELECT c.* FROM address a JOIN city c USING (city_id) WHERE false" }, 1)]
+    [TestCase("DELETE FROM tbl_invisible", new[] { "SELECT * FROM tbl_invisible" }, 1)]
+    [TestCase("DELETE col2_invisible FROM tbl_invisible", new[] { "SELECT col2_invisible FROM tbl_invisible" }, 1)]
     public async Task Test_DELETE(string sql, string[] expectedSqls, int expectedResultCount)
     {
         IQsiAnalysisResult[] result = await Engine.Execute(new QsiScript(sql, QsiScriptType.Select), null);
@@ -158,7 +169,7 @@ public partial class MySqlTest : VendorTestBase
 
     [TestCase("UPDATE actor SET actor_id = 1", new[] { "SELECT * FROM actor" }, 1)]
     [TestCase("UPDATE actor SET actor.actor_id = 1", new[] { "SELECT * FROM actor" }, 1)]
-    [TestCase("UPDATE actor SET actor_id = (SELECT city_id FROM city LIMIT 1)", new[] { "SELECT * FROM actor", "(SELECT city_id FROM city LIMIT 1)" }, 1)]
+    [TestCase("UPDATE actor SET actor_id = (SELECT city_id FROM city LIMIT 1)", new[] { "(SELECT city_id FROM city LIMIT 1)", "SELECT * FROM actor" }, 1)]
     [TestCase("UPDATE actor SET actor_id = 1 WHERE false", new[] { "SELECT * FROM actor WHERE false" }, 1)]
     [TestCase("UPDATE actor AS a SET a.actor_id = 1 WHERE false", new[] { "SELECT * FROM actor AS a WHERE false" }, 1)]
     [TestCase("UPDATE actor, city SET city_id = 2, actor_id = 1 WHERE false", new[] { "SELECT * FROM actor, city WHERE false" }, 2)]
@@ -166,6 +177,7 @@ public partial class MySqlTest : VendorTestBase
     [TestCase("UPDATE actor a JOIN city c ON false JOIN film f ON false SET a.last_update = null, c.last_update = null, f.last_update = null", new[] { "SELECT * FROM actor a JOIN city c ON false JOIN film f ON false" }, 3)]
     [TestCase("UPDATE address a JOIN city c USING (city_id) SET c.city = 1, a.address_id = 2 WHERE false", new[] { "SELECT * FROM address a JOIN city c USING (city_id) WHERE false" }, 2)]
     [TestCase("UPDATE address a JOIN city c USING (city_id) SET c.last_update = 1, a.last_update = 2 WHERE false", new[] { "SELECT * FROM address a JOIN city c USING (city_id) WHERE false" }, 2)]
+    [TestCase("UPDATE tbl_invisible SET col2_invisible = 2", new[] { "SELECT *, col2_invisible FROM tbl_invisible" }, 1)]
     public async Task Test_UPDATE(string sql, string[] expectedSqls, int expectedResultCount)
     {
         IQsiAnalysisResult[] result = await Engine.Execute(new QsiScript(sql, QsiScriptType.Select), null);

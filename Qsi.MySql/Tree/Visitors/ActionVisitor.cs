@@ -173,7 +173,7 @@ namespace Qsi.MySql.Tree
                 if (tableNode is not QsiDerivedTableNode derivedTableNode || !derivedTableNode.Alias.IsEmpty)
                 {
                     derivedTableNode = new QsiDerivedTableNode();
-                    derivedTableNode.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+                    derivedTableNode.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration(true));
                     derivedTableNode.Source.SetValue(tableNode);
                 }
 

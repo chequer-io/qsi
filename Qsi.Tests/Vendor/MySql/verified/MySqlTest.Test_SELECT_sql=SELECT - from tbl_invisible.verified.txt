@@ -1,0 +1,58 @@
+﻿[
+  {
+    Type: Derived,
+    References: [
+      $tbl_6
+    ],
+    Columns: [
+      {
+        Parent: $tbl_5,
+        Name: id,
+        References: [
+          $col_2
+        ],
+        IsVisible: true,
+        RefId: $col_1
+      },
+      {
+        Parent: $tbl_5,
+        Name: col1,
+        References: [
+          $col_4
+        ],
+        IsVisible: true,
+        RefId: $col_3
+      }
+    ],
+    RefId: $tbl_5
+  },
+  {
+    Type: Table,
+    Identifier: qsi_unit_tests.tbl_invisible,
+    Columns: [
+      {
+        Parent: $tbl_6,
+        Name: id,
+        IsVisible: true,
+        RefId: $col_2
+      },
+      {
+        Parent: $tbl_6,
+        Name: col1,
+        IsVisible: true,
+        RefId: $col_4
+      },
+      {
+        Parent: $tbl_6,
+        Name: col2_invisible,
+        RefId: $col_7
+      },
+      {
+        Parent: $tbl_6,
+        Name: col3_invisible,
+        RefId: $col_8
+      }
+    ],
+    RefId: $tbl_6
+  }
+]

@@ -71,7 +71,11 @@ public partial class MySqlTest
 
         new("DELETE title, category FROM film_list WHERE FID = 1"),
 
-        new("WITH CTE AS (SELECT 1) DELETE title, category FROM film_list WHERE FID = 1 AND (SELECT `1` FROM CTE) = 1")
+        new("WITH CTE AS (SELECT 1) DELETE title, category FROM film_list WHERE FID = 1 AND (SELECT `1` FROM CTE) = 1"),
+
+        new("UPDATE tbl_invisible SET col2_invisible = 99 WHERE col1 = 1 LIMIT 1"),
+        
+        new("UPDATE tbl_invisible SET col2_invisible = 99 WHERE col3_invisible = 1 LIMIT 1"),
     };
 
     private static readonly TestCaseData[] Test_InferredName_TestDatas = {
@@ -171,5 +175,8 @@ public partial class MySqlTest
         new("SELECT f.title, fl.title FROM film AS f JOIN film_list AS fl LIMIT 1;", new[] { "title", "title" }),
         new("SELECT (f.title), (fl.title) FROM film AS f JOIN film_list AS fl LIMIT 1;", new[] { "title", "title" }),
         new("SELECT DISTINCT (f.title), (fl.title) FROM film AS f JOIN film_list AS fl LIMIT 1;", new[] { "title", "title" }),
+        
+        new("SELECT * FROM tbl_invisible;", new[] { "id", "col1" }),
+        new("SELECT id, col1, col2_invisible FROM tbl_invisible;", new[] { "id", "col1", "col2_invisible" }),
     };
 }

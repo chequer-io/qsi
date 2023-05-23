@@ -344,6 +344,19 @@ CREATE TABLE store (
   CONSTRAINT fk_store_address FOREIGN KEY (address_id) REFERENCES address (address_id) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+
+--
+-- Table structure for table `invi`
+--
+
+CREATE TABLE tbl_invisible (
+    id TINYINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    col1 INT NOT NULL,
+    col2_invisible INT INVISIBLE,
+    col3_invisible INT INVISIBLE NOT NULL DEFAULT 0,
+    PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 --
 -- View structure for view `customer_list`
 --
