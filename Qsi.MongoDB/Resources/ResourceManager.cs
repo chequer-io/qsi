@@ -1,23 +1,22 @@
 using System.IO;
 using System.Reflection;
 
-namespace Qsi.MongoDB.Resources
+namespace Qsi.MongoDB.Resources;
+
+internal static class ResourceManager
 {
-    internal static class ResourceManager
+    private static readonly Assembly _assembly;
+
+    static ResourceManager()
     {
-        private static readonly Assembly _assembly;
+        _assembly = Assembly.GetCallingAssembly();
+    }
 
-        static ResourceManager()
-        {
-            _assembly = Assembly.GetCallingAssembly();
-        }
+    public static string GetResourceContent(string resource)
+    {
+        var stream = _assembly.GetManifestResourceStream($"Qsi.MongoDB.Resources.{resource}");
+        var reader = new StreamReader(stream!);
 
-        public static string GetResourceContent(string resource)
-        {
-            var stream = _assembly.GetManifestResourceStream($"Qsi.MongoDB.Resources.{resource}");
-            var reader = new StreamReader(stream!);
-
-            return reader.ReadToEnd();
-        }
+        return reader.ReadToEnd();
     }
 }

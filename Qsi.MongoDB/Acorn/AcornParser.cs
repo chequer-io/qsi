@@ -9,92 +9,91 @@ using Qsi.MongoDB.Internal.Serialization;
 using Qsi.MongoDB.Resources;
 using Jint.Native;
 
-namespace Qsi.MongoDB.Acorn
+namespace Qsi.MongoDB.Acorn;
+
+internal static class AcornParser
 {
-    internal static class AcornParser
+    private static readonly JsonSerializerSettings _serializerSettings;
+
+    private static readonly JsValue _parse;
+    private static readonly JsValue _parseLoose;
+
+    static AcornParser()
     {
-        private static readonly JsonSerializerSettings _serializerSettings;
+        var engine = new Engine()
+            .Execute(ResourceManager.GetResourceContent("acorn.min.js"))
+            .Execute(ResourceManager.GetResourceContent("acorn-loose.min.js"))
+            .Execute("function acorn_parse(code) { return JSON.stringify(acorn.parse(code, {locations: true})) }")
+            .Execute("function acorn_parse_loose(code) { return JSON.stringify(acorn.loose.LooseParser.parse(code, {locations: true})) }");
 
-        private static readonly JsValue _parse;
-        private static readonly JsValue _parseLoose;
+        _parse = engine.GetValue("acorn_parse");
+        _parseLoose = engine.GetValue("acorn_parse_loose");
 
-        static AcornParser()
+        _serializerSettings = new JsonSerializerSettings
         {
-            var engine = new Engine()
-                .Execute(ResourceManager.GetResourceContent("acorn.min.js"))
-                .Execute(ResourceManager.GetResourceContent("acorn-loose.min.js"))
-                .Execute("function acorn_parse(code) { return JSON.stringify(acorn.parse(code, {locations: true})) }")
-                .Execute("function acorn_parse_loose(code) { return JSON.stringify(acorn.loose.LooseParser.parse(code, {locations: true})) }");
-
-            _parse = engine.GetValue("acorn_parse");
-            _parseLoose = engine.GetValue("acorn_parse_loose");
-
-            _serializerSettings = new JsonSerializerSettings
+            Converters =
             {
-                Converters =
-                {
-                    new JsNodeConverter()
-                },
-                ContractResolver = new CamelCasePropertyNamesContractResolver()
-            };
+                new JsNodeConverter()
+            },
+            ContractResolver = new CamelCasePropertyNamesContractResolver()
+        };
+    }
+
+    public static IEnumerable<MongoDBStatement> Parse(string code)
+    {
+        string result;
+
+        try
+        {
+            result = ParseStrict(code);
+        }
+        catch (Exception)
+        {
+            result = ParseLoose(code);
         }
 
-        public static IEnumerable<MongoDBStatement> Parse(string code)
+        return FlattenNode(JsonConvert.DeserializeObject<ProgramNode>(result, _serializerSettings))
+            .Cast<BaseNode>()
+            .Select(n => new MongoDBStatement
+            {
+                Range = n.Range,
+                Start = n.Loc.Start,
+                End = n.Loc.End
+            });
+    }
+
+    private static IEnumerable<INode> FlattenNode(INode rootNode)
+    {
+        var queue = new Queue<INode>();
+
+        foreach (var child in rootNode.Children)
         {
-            string result;
+            queue.Enqueue(child);
 
-            try
+            while (queue.TryDequeue(out var node))
             {
-                result = ParseStrict(code);
-            }
-            catch (Exception)
-            {
-                result = ParseLoose(code);
-            }
-
-            return FlattenNode(JsonConvert.DeserializeObject<ProgramNode>(result, _serializerSettings))
-                .Cast<BaseNode>()
-                .Select(n => new MongoDBStatement
+                if (node is BlockStatementNode scope)
                 {
-                    Range = n.Range,
-                    Start = n.Loc.Start,
-                    End = n.Loc.End
-                });
-        }
-
-        private static IEnumerable<INode> FlattenNode(INode rootNode)
-        {
-            var queue = new Queue<INode>();
-
-            foreach (var child in rootNode.Children)
-            {
-                queue.Enqueue(child);
-
-                while (queue.TryDequeue(out var node))
-                {
-                    if (node is BlockStatementNode scope)
+                    foreach (var childNode in scope.Children)
                     {
-                        foreach (var childNode in scope.Children)
-                        {
-                            queue.Enqueue(childNode);
-                        }
-
-                        continue;
+                        queue.Enqueue(childNode);
                     }
 
-                    yield return node;
+                    continue;
                 }
+
+                yield return node;
             }
         }
+    }
 
-        internal static string ParseStrict(string code)
-        {
-            return _parse.Invoke(code).ToString();
-        }
+    internal static string ParseStrict(string code)
+    {
+        return _parse.Invoke(code).ToString();
+    }
 
-        internal static string ParseLoose(string code)
-        {
-            return _parseLoose.Invoke(code).ToString();
-        }
+    internal static string ParseLoose(string code)
+    {
+        return _parseLoose.Invoke(code).ToString();
     }
 }
