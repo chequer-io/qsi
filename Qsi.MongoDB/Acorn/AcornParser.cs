@@ -1,26 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using JavaScriptEngineSwitcher.Core;
+using Jint;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using Qsi.MongoDB.Internal;
 using Qsi.MongoDB.Internal.Nodes;
 using Qsi.MongoDB.Internal.Serialization;
 using Qsi.MongoDB.Resources;
-using Qsi.Parsing;
+using Jint.Native;
 
 namespace Qsi.MongoDB.Acorn
 {
     internal static class AcornParser
     {
-        private static readonly JavascriptContext _javascriptContext;
         private static readonly JsonSerializerSettings _serializerSettings;
+
+        private static readonly JsValue _parse;
+        private static readonly JsValue _parseLoose;
 
         static AcornParser()
         {
-            _javascriptContext = new JavascriptContext();
-            Initialize();
+            var engine = new Engine()
+                .Execute(ResourceManager.GetResourceContent("acorn.min.js"))
+                .Execute(ResourceManager.GetResourceContent("acorn-loose.min.js"))
+                .Execute("function acorn_parse(code) { return JSON.stringify(acorn.parse(code, {locations: true})) }")
+                .Execute("function acorn_parse_loose(code) { return JSON.stringify(acorn.loose.LooseParser.parse(code, {locations: true})) }");
+
+            _parse = engine.GetValue("acorn_parse");
+            _parseLoose = engine.GetValue("acorn_parse_loose");
 
             _serializerSettings = new JsonSerializerSettings
             {
@@ -30,27 +37,6 @@ namespace Qsi.MongoDB.Acorn
                 },
                 ContractResolver = new CamelCasePropertyNamesContractResolver()
             };
-        }
-
-        private static void Initialize()
-        {
-            _javascriptContext.InitializeEngine();
-            _javascriptContext.Execute(ResourceManager.GetResourceContent("acorn.min.js"));
-            _javascriptContext.Execute(ResourceManager.GetResourceContent("acorn-loose.min.js"));
-        }
-
-        public static INode GetAstNode(string code)
-        {
-            try
-            {
-                string result = ParseStrict(code);
-                Console.WriteLine(result);
-                return JsonConvert.DeserializeObject<ProgramNode>(result, _serializerSettings);
-            }
-            catch (JsCompilationException e)
-            {
-                throw new QsiSyntaxErrorException(e.LineNumber, e.ColumnNumber, e.Description);
-            }
         }
 
         public static IEnumerable<MongoDBStatement> Parse(string code)
@@ -101,21 +87,14 @@ namespace Qsi.MongoDB.Acorn
             }
         }
 
-        public static string Execute(string code)
-        {
-            return _javascriptContext.Evaluate(code);
-        }
-
         internal static string ParseStrict(string code)
         {
-            _javascriptContext.SetVariable("code", code);
-            return _javascriptContext.Evaluate($"JSON.stringify(acorn.parse(code, {{locations: true}}))");
+            return _parse.Invoke(code).ToString();
         }
 
         internal static string ParseLoose(string code)
         {
-            _javascriptContext.SetVariable("code", code);
-            return _javascriptContext.Evaluate($"JSON.stringify(acorn.loose.LooseParser.parse(code, {{locations: true}}))");
+            return _parseLoose.Invoke(code).ToString();
         }
     }
 }
