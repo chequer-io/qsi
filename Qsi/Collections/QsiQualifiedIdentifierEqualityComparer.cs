@@ -2,39 +2,38 @@
 using System.Linq;
 using Qsi.Data;
 
-namespace Qsi.Collections
+namespace Qsi.Collections;
+
+public sealed class QsiQualifiedIdentifierEqualityComparer : IEqualityComparer<QsiQualifiedIdentifier>
 {
-    public sealed class QsiQualifiedIdentifierEqualityComparer : IEqualityComparer<QsiQualifiedIdentifier>
+    public static QsiQualifiedIdentifierEqualityComparer Default =>
+        _default ??= new QsiQualifiedIdentifierEqualityComparer(QsiIdentifierEqualityComparer.Default);
+
+    private static QsiQualifiedIdentifierEqualityComparer _default;
+
+    private readonly IEqualityComparer<QsiIdentifier> _identifierComparer;
+
+    public QsiQualifiedIdentifierEqualityComparer(IEqualityComparer<QsiIdentifier> identifierComparer)
     {
-        public static QsiQualifiedIdentifierEqualityComparer Default =>
-            _default ??= new QsiQualifiedIdentifierEqualityComparer(QsiIdentifierEqualityComparer.Default);
+        _identifierComparer = identifierComparer;
+    }
 
-        private static QsiQualifiedIdentifierEqualityComparer _default;
+    public bool Equals(QsiQualifiedIdentifier x, QsiQualifiedIdentifier y)
+    {
+        if (x == null && y == null)
+            return true;
 
-        private readonly IEqualityComparer<QsiIdentifier> _identifierComparer;
+        if (x == null || y == null)
+            return false;
 
-        public QsiQualifiedIdentifierEqualityComparer(IEqualityComparer<QsiIdentifier> identifierComparer)
-        {
-            _identifierComparer = identifierComparer;
-        }
+        if (x.Level != y.Level)
+            return false;
 
-        public bool Equals(QsiQualifiedIdentifier x, QsiQualifiedIdentifier y)
-        {
-            if (x == null && y == null)
-                return true;
+        return x.SequenceEqual(y, _identifierComparer);
+    }
 
-            if (x == null || y == null)
-                return false;
-
-            if (x.Level != y.Level)
-                return false;
-
-            return x.SequenceEqual(y, _identifierComparer);
-        }
-
-        public int GetHashCode(QsiQualifiedIdentifier obj)
-        {
-            return obj.GetHashCode();
-        }
+    public int GetHashCode(QsiQualifiedIdentifier obj)
+    {
+        return obj.GetHashCode();
     }
 }

@@ -1,8 +1,7 @@
-﻿namespace Qsi.Data
+﻿namespace Qsi.Data;
+
+public enum QsiSortOrder
 {
-    public enum QsiSortOrder
-    {
-        Ascending,
-        Descending
-    }
+    Ascending,
+    Descending
 }

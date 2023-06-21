@@ -1,13 +1,12 @@
 ﻿using Qsi.Data;
 
-namespace Qsi.Tree
+namespace Qsi.Tree;
+
+public interface IQsiSetVariableExpressionNode : IQsiExpressionNode
 {
-    public interface IQsiSetVariableExpressionNode : IQsiExpressionNode
-    {
-        QsiQualifiedIdentifier Target { get; }
+    QsiQualifiedIdentifier Target { get; }
 
-        QsiAssignmentKind AssignmentKind { get; }
+    QsiAssignmentKind AssignmentKind { get; }
 
-        IQsiExpressionNode Value { get; }
-    }
+    IQsiExpressionNode Value { get; }
 }

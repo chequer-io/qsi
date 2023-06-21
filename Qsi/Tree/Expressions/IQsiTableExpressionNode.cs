@@ -1,7 +1,6 @@
-namespace Qsi.Tree
+namespace Qsi.Tree;
+
+public interface IQsiTableExpressionNode : IQsiExpressionNode
 {
-    public interface IQsiTableExpressionNode : IQsiExpressionNode
-    {
-        IQsiTableNode Table { get; }
-    }
+    IQsiTableNode Table { get; }
 }

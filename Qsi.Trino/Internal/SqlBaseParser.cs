@@ -1,12 +1,11 @@
-﻿namespace Qsi.Trino.Internal
-{
-    internal partial class SqlBaseParser
-    {
-        private int _bindParamIndex = 1;
+﻿namespace Qsi.Trino.Internal;
 
-        protected int NextBindParameterIndex()
-        {
-            return _bindParamIndex++;
-        }
+internal partial class SqlBaseParser
+{
+    private int _bindParamIndex = 1;
+
+    protected int NextBindParameterIndex()
+    {
+        return _bindParamIndex++;
     }
 }

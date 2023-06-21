@@ -1,12 +1,11 @@
-namespace Qsi.Trino.Common
+namespace Qsi.Trino.Common;
+
+public enum TrinoIntervalField
 {
-    public enum TrinoIntervalField
-    {
-        Year,
-        Month,
-        Day,
-        Hour,
-        Minute,
-        Second
-    }
+    Year,
+    Month,
+    Day,
+    Hour,
+    Minute,
+    Second
 }

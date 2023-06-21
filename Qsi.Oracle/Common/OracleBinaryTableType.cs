@@ -1,11 +1,10 @@
-﻿namespace Qsi.Oracle.Common
+﻿namespace Qsi.Oracle.Common;
+
+public enum OracleBinaryTableType
 {
-    public enum OracleBinaryTableType
-    {
-        Union,
-        UnionAll,
-        Intersect,
-        Minus,
-        Except
-    }
+    Union,
+    UnionAll,
+    Intersect,
+    Minus,
+    Except
 }

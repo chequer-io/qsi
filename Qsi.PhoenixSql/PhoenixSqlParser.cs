@@ -7,30 +7,29 @@ using Qsi.Tree;
 using Qsi.Utilities;
 using PhoenixSqlParserInternal = PhoenixSql.PhoenixSqlParser;
 
-namespace Qsi.PhoenixSql
+namespace Qsi.PhoenixSql;
+
+public class PhoenixSqlParser : IQsiTreeParser
 {
-    public class PhoenixSqlParser : IQsiTreeParser
+    public IQsiTreeNode Parse(QsiScript script, CancellationToken cancellationToken = default)
     {
-        public IQsiTreeNode Parse(QsiScript script, CancellationToken cancellationToken = default)
+        var result = PhoenixSqlParserInternal.Parse(script.Script);
+
+        switch (result)
         {
-            var result = PhoenixSqlParserInternal.Parse(script.Script);
+            case SelectStatement selectStatement:
+                return TableVisitor.VisitSelectStatement(selectStatement);
 
-            switch (result)
-            {
-                case SelectStatement selectStatement:
-                    return TableVisitor.VisitSelectStatement(selectStatement);
+            case CreateTableStatement { TableType: PTableType.View } createTableStatement:
+                return DefinitionVisitor.VisitCreateViewStatement(createTableStatement);
 
-                case CreateTableStatement { TableType: PTableType.View } createTableStatement:
-                    return DefinitionVisitor.VisitCreateViewStatement(createTableStatement);
+            case IDMLStatement dmlStatement:
+                return ActionVisitor.Visit(dmlStatement);
 
-                case IDMLStatement dmlStatement:
-                    return ActionVisitor.Visit(dmlStatement);
-
-                case UseSchemaStatement useSchemaStatement:
-                    return ActionVisitor.VisitUseSchemaStatement(useSchemaStatement);
-            }
-
-            throw TreeHelper.NotSupportedTree(result);
+            case UseSchemaStatement useSchemaStatement:
+                return ActionVisitor.VisitUseSchemaStatement(useSchemaStatement);
         }
+
+        throw TreeHelper.NotSupportedTree(result);
     }
 }

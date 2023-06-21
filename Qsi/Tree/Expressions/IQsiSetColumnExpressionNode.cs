@@ -1,11 +1,10 @@
 using Qsi.Data;
 
-namespace Qsi.Tree
-{
-    public interface IQsiSetColumnExpressionNode : IQsiExpressionNode
-    {
-        QsiQualifiedIdentifier Target { get; }
+namespace Qsi.Tree;
 
-        IQsiExpressionNode Value { get; }
-    }
+public interface IQsiSetColumnExpressionNode : IQsiExpressionNode
+{
+    QsiQualifiedIdentifier Target { get; }
+
+    IQsiExpressionNode Value { get; }
 }

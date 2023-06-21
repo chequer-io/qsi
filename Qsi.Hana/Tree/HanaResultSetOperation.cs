@@ -1,8 +1,7 @@
-﻿namespace Qsi.Hana.Tree
+﻿namespace Qsi.Hana.Tree;
+
+public enum HanaResultSetOperation
 {
-    public enum HanaResultSetOperation
-    {
-        All,
-        Distinct
-    }
+    All,
+    Distinct
 }

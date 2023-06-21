@@ -4,60 +4,59 @@ using System.Linq;
 using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
 using Qsi.Diagnostics;
 
-namespace Qsi.SqlServer.Diagnostics
+namespace Qsi.SqlServer.Diagnostics;
+
+internal sealed class SqlServerRawTree : IRawTree
 {
-    internal sealed class SqlServerRawTree : IRawTree
+    public string DisplayName { get; }
+
+    public IRawTree[] Children { get; private set; }
+
+    public int ChildrenCount => _children?.Count ?? Children.Length;
+
+    private List<IRawTree> _children;
+
+    public SqlServerRawTree(string displayName)
     {
-        public string DisplayName { get; }
+        DisplayName = displayName;
+        _children = new List<IRawTree>();
+    }
 
-        public IRawTree[] Children { get; private set; }
+    public SqlServerRawTree(SqlCodeObject tree)
+    {
+        DisplayName = tree.GetType().Name;
+        SqlCodeObject[] childrens = tree.Children.ToArray();
+        int count = childrens.Length;
 
-        public int ChildrenCount => _children?.Count ?? Children.Length;
-
-        private List<IRawTree> _children;
-
-        public SqlServerRawTree(string displayName)
+        if (childrens.Length == 0)
         {
-            DisplayName = displayName;
-            _children = new List<IRawTree>();
+            Children = new IRawTree[] { new SqlServerRawTreeTerminalNode(tree.Sql) };
         }
-
-        public SqlServerRawTree(SqlCodeObject tree)
+        else
         {
-            DisplayName = tree.GetType().Name;
-            SqlCodeObject[] childrens = tree.Children.ToArray();
-            int count = childrens.Length;
+            var trees = new IRawTree[count];
 
-            if (childrens.Length == 0)
+            for (int i = 0; i < count; i++)
             {
-                Children = new IRawTree[] { new SqlServerRawTreeTerminalNode(tree.Sql) };
+                var child = childrens[i];
+                trees[i] = new SqlServerRawTree(child);
             }
-            else
-            {
-                var trees = new IRawTree[count];
 
-                for (int i = 0; i < count; i++)
-                {
-                    var child = childrens[i];
-                    trees[i] = new SqlServerRawTree(child);
-                }
-
-                Children = trees;
-            }
+            Children = trees;
         }
+    }
 
-        internal void AddChild(IRawTree rawTree)
-        {
-            _children.Add(rawTree);
-        }
+    internal void AddChild(IRawTree rawTree)
+    {
+        _children.Add(rawTree);
+    }
 
-        internal void Freeze()
-        {
-            if (Children != null)
-                throw new InvalidOperationException();
+    internal void Freeze()
+    {
+        if (Children != null)
+            throw new InvalidOperationException();
 
-            Children = _children.ToArray();
-            _children = null;
-        }
+        Children = _children.ToArray();
+        _children = null;
     }
 }

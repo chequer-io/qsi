@@ -1,7 +1,6 @@
-﻿namespace Qsi.Diagnostics
+﻿namespace Qsi.Diagnostics;
+
+public interface IRawTreeParser
 {
-    public interface IRawTreeParser
-    {
-        IRawTree Parse(string input);
-    }
+    IRawTree Parse(string input);
 }

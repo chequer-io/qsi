@@ -1,11 +1,10 @@
 ﻿using Qsi.Data;
 
-namespace Qsi.Tree
-{
-    public interface IQsiExecutePrepareActionNode : IQsiActionNode
-    {
-        QsiQualifiedIdentifier Identifier { get; }
+namespace Qsi.Tree;
 
-        IQsiMultipleExpressionNode Variables { get; }
-    }
+public interface IQsiExecutePrepareActionNode : IQsiActionNode
+{
+    QsiQualifiedIdentifier Identifier { get; }
+
+    IQsiMultipleExpressionNode Variables { get; }
 }

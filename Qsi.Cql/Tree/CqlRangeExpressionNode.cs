@@ -1,30 +1,29 @@
 ﻿using System.Collections.Generic;
 using Qsi.Tree;
 
-namespace Qsi.Cql.Tree
+namespace Qsi.Cql.Tree;
+
+public sealed class CqlRangeExpressionNode : QsiExpressionNode
 {
-    public sealed class CqlRangeExpressionNode : QsiExpressionNode
+    public QsiTreeNodeProperty<QsiExpressionNode> Start { get; }
+
+    public QsiTreeNodeProperty<QsiExpressionNode> End { get; }
+
+    public override IEnumerable<IQsiTreeNode> Children
     {
-        public QsiTreeNodeProperty<QsiExpressionNode> Start { get; }
-
-        public QsiTreeNodeProperty<QsiExpressionNode> End { get; }
-
-        public override IEnumerable<IQsiTreeNode> Children
+        get
         {
-            get
-            {
-                if (!Start.IsEmpty)
-                    yield return Start.Value;
+            if (!Start.IsEmpty)
+                yield return Start.Value;
 
-                if (!End.IsEmpty)
-                    yield return End.Value;
-            }
+            if (!End.IsEmpty)
+                yield return End.Value;
         }
+    }
 
-        public CqlRangeExpressionNode()
-        {
-            Start = new QsiTreeNodeProperty<QsiExpressionNode>(this);
-            End = new QsiTreeNodeProperty<QsiExpressionNode>(this);
-        }
+    public CqlRangeExpressionNode()
+    {
+        Start = new QsiTreeNodeProperty<QsiExpressionNode>(this);
+        End = new QsiTreeNodeProperty<QsiExpressionNode>(this);
     }
 }

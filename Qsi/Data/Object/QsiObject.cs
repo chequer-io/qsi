@@ -1,14 +1,13 @@
-﻿namespace Qsi.Data.Object
+﻿namespace Qsi.Data.Object;
+
+public abstract class QsiObject
 {
-    public abstract class QsiObject
+    public abstract QsiObjectType Type { get; }
+
+    public QsiQualifiedIdentifier Identifier { get; }
+
+    protected QsiObject(QsiQualifiedIdentifier identifier)
     {
-        public abstract QsiObjectType Type { get; }
-
-        public QsiQualifiedIdentifier Identifier { get; }
-
-        protected QsiObject(QsiQualifiedIdentifier identifier)
-        {
-            Identifier = identifier;
-        }
+        Identifier = identifier;
     }
 }

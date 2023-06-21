@@ -1,51 +1,50 @@
-namespace Qsi.Data
+namespace Qsi.Data;
+
+public enum QsiScriptType
 {
-    public enum QsiScriptType
-    {
-        Unknown,
+    Unknown,
 
-        // ** DML **
-        With,
-        Select,
-        Insert,
-        Upsert,
-        Replace,
-        Update,
-        Delete,
-        MergeInto,
+    // ** DML **
+    With,
+    Select,
+    Insert,
+    Upsert,
+    Replace,
+    Update,
+    Delete,
+    MergeInto,
 
-        // ** DDL **
-        Create,
-        Alter,
-        Drop,
-        Rename,
-        Truncate,
+    // ** DDL **
+    Create,
+    Alter,
+    Drop,
+    Rename,
+    Truncate,
 
-        // ** DCL **
-        Grant,
-        Revoke,
+    // ** DCL **
+    Grant,
+    Revoke,
 
-        // ** TCL **
-        Commit,
-        Rollback,
-        SavePoint,
+    // ** TCL **
+    Commit,
+    Rollback,
+    SavePoint,
 
-        // ** Prepared **
-        Prepare,
-        DropPrepare,
-        Execute,
+    // ** Prepared **
+    Prepare,
+    DropPrepare,
+    Execute,
 
-        // Others
-        Delimiter,
-        Call,
-        Explain,
-        Use,
-        Show,
-        Describe,
-        Set,
-        Begin,
-        Comment,
+    // Others
+    Delimiter,
+    Call,
+    Explain,
+    Use,
+    Show,
+    Describe,
+    Set,
+    Begin,
+    Comment,
 
-        Trivia
-    }
+    Trivia
 }

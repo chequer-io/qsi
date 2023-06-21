@@ -1,15 +1,14 @@
 ﻿using Qsi.Data;
 
-namespace Qsi.Tree
+namespace Qsi.Tree;
+
+/// <summary>
+/// Specifies the declared table.
+/// </summary>
+public interface IQsiTableReferenceNode : IQsiTableNode
 {
     /// <summary>
-    /// Specifies the declared table.
+    /// Get declared table name.
     /// </summary>
-    public interface IQsiTableReferenceNode : IQsiTableNode
-    {
-        /// <summary>
-        /// Get declared table name.
-        /// </summary>
-        QsiQualifiedIdentifier Identifier { get; }
-    }
+    QsiQualifiedIdentifier Identifier { get; }
 }

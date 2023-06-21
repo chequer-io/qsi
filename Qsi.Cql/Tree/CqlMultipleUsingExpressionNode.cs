@@ -1,17 +1,16 @@
 ﻿using System.Collections.Generic;
 using Qsi.Tree;
 
-namespace Qsi.Cql.Tree
+namespace Qsi.Cql.Tree;
+
+public sealed class CqlMultipleUsingExpressionNode : QsiExpressionNode
 {
-    public sealed class CqlMultipleUsingExpressionNode : QsiExpressionNode
+    public QsiTreeNodeList<CqlUsingExpressionNode> Elements { get; }
+
+    public override IEnumerable<IQsiTreeNode> Children => Elements;
+
+    public CqlMultipleUsingExpressionNode()
     {
-        public QsiTreeNodeList<CqlUsingExpressionNode> Elements { get; }
-
-        public override IEnumerable<IQsiTreeNode> Children => Elements;
-
-        public CqlMultipleUsingExpressionNode()
-        {
-            Elements = new QsiTreeNodeList<CqlUsingExpressionNode>(this);
-        }
+        Elements = new QsiTreeNodeList<CqlUsingExpressionNode>(this);
     }
 }

@@ -2,14 +2,13 @@
 using System.Linq;
 using Qsi.Data;
 
-namespace Qsi.Tree
+namespace Qsi.Tree;
+
+public class QsiLiteralExpressionNode : QsiExpressionNode, IQsiLiteralExpressionNode, IQsiTerminalNode
 {
-    public class QsiLiteralExpressionNode : QsiExpressionNode, IQsiLiteralExpressionNode, IQsiTerminalNode
-    {
-        public object Value { get; set; }
+    public object Value { get; set; }
 
-        public QsiDataType Type { get; set; }
+    public QsiDataType Type { get; set; }
 
-        public override IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
-    }
+    public override IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
 }

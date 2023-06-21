@@ -1,24 +1,23 @@
 ﻿using System.Collections.Generic;
 using Qsi.Tree;
 
-namespace Qsi.Cql.Tree
+namespace Qsi.Cql.Tree;
+
+public sealed class CqlIndexerExpressionNode : QsiExpressionNode
 {
-    public sealed class CqlIndexerExpressionNode : QsiExpressionNode
+    public QsiTreeNodeProperty<QsiExpressionNode> Indexer { get; }
+
+    public override IEnumerable<IQsiTreeNode> Children
     {
-        public QsiTreeNodeProperty<QsiExpressionNode> Indexer { get; }
-
-        public override IEnumerable<IQsiTreeNode> Children
+        get
         {
-            get
-            {
-                if (!Indexer.IsEmpty)
-                    yield return Indexer.Value;
-            }
+            if (!Indexer.IsEmpty)
+                yield return Indexer.Value;
         }
+    }
 
-        public CqlIndexerExpressionNode()
-        {
-            Indexer = new QsiTreeNodeProperty<QsiExpressionNode>(this);
-        }
+    public CqlIndexerExpressionNode()
+    {
+        Indexer = new QsiTreeNodeProperty<QsiExpressionNode>(this);
     }
 }

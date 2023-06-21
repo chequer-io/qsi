@@ -3,34 +3,33 @@ using System.Linq;
 using Qsi.Tree;
 using Qsi.Utilities;
 
-namespace Qsi.Oracle.Tree
+namespace Qsi.Oracle.Tree;
+
+public class OracleJsonOperationExpressionNode : QsiExpressionNode
 {
-    public class OracleJsonOperationExpressionNode : QsiExpressionNode
+    public string Type { get; set; }
+
+    public QsiTreeNodeProperty<QsiExpressionNode> Left { get; }
+
+    public QsiTreeNodeProperty<QsiExpressionNode> Right { get; }
+
+    public override IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Left, Right);
+
+    public OracleJsonOperationExpressionNode()
     {
-        public string Type { get; set; }
-
-        public QsiTreeNodeProperty<QsiExpressionNode> Left { get; }
-
-        public QsiTreeNodeProperty<QsiExpressionNode> Right { get; }
-
-        public override IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Left, Right);
-
-        public OracleJsonOperationExpressionNode()
-        {
-            Left = new QsiTreeNodeProperty<QsiExpressionNode>(this);
-            Right = new QsiTreeNodeProperty<QsiExpressionNode>(this);
-        }
+        Left = new QsiTreeNodeProperty<QsiExpressionNode>(this);
+        Right = new QsiTreeNodeProperty<QsiExpressionNode>(this);
     }
+}
 
-    public class OracleJsonKeepOperationExpressionNode : QsiExpressionNode
+public class OracleJsonKeepOperationExpressionNode : QsiExpressionNode
+{
+    public QsiTreeNodeList<QsiExpressionNode> Items { get; }
+
+    public override IEnumerable<IQsiTreeNode> Children => Items;
+
+    public OracleJsonKeepOperationExpressionNode()
     {
-        public QsiTreeNodeList<QsiExpressionNode> Items { get; }
-
-        public override IEnumerable<IQsiTreeNode> Children => Items;
-
-        public OracleJsonKeepOperationExpressionNode()
-        {
-            Items = new QsiTreeNodeList<QsiExpressionNode>(this);
-        }
+        Items = new QsiTreeNodeList<QsiExpressionNode>(this);
     }
 }

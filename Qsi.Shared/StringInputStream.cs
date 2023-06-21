@@ -1,14 +1,13 @@
 using Antlr4.Runtime;
 
-namespace Qsi.Shared
-{
-    internal class StringInputStream : AntlrInputStream
-    {
-        public string Input { get; }
+namespace Qsi.Shared;
 
-        public StringInputStream(string input) : base(input)
-        {
-            Input = input;
-        }
+internal class StringInputStream : AntlrInputStream
+{
+    public string Input { get; }
+
+    public StringInputStream(string input) : base(input)
+    {
+        Input = input;
     }
 }

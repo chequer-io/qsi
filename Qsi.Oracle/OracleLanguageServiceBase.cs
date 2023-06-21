@@ -6,35 +6,34 @@ using Qsi.Oracle.Analyzers;
 using Qsi.Parsing;
 using Qsi.Services;
 
-namespace Qsi.Oracle
+namespace Qsi.Oracle;
+
+public abstract class OracleLanguageServiceBase : QsiLanguageServiceBase
 {
-    public abstract class OracleLanguageServiceBase : QsiLanguageServiceBase
+    public override IQsiTreeParser CreateTreeParser()
     {
-        public override IQsiTreeParser CreateTreeParser()
-        {
-            return new OracleParser();
-        }
+        return new OracleParser();
+    }
 
-        public override IQsiTreeDeparser CreateTreeDeparser()
-        {
-            return new OracleDeparser();
-        }
+    public override IQsiTreeDeparser CreateTreeDeparser()
+    {
+        return new OracleDeparser();
+    }
 
-        public override IQsiScriptParser CreateScriptParser()
-        {
-            return new OracleScriptParser();
-        }
+    public override IQsiScriptParser CreateScriptParser()
+    {
+        return new OracleScriptParser();
+    }
 
-        public override QsiAnalyzerOptions CreateAnalyzerOptions()
-        {
-            return new();
-        }
+    public override QsiAnalyzerOptions CreateAnalyzerOptions()
+    {
+        return new();
+    }
 
-        public override IEnumerable<QsiAnalyzerBase> CreateAnalyzers(QsiEngine engine)
-        {
-            yield return new OracleActionAnalyzer(engine);
-            yield return new OracleTableAnalyzer(engine);
-            yield return new QsiDefinitionAnalyzer(engine);
-        }
+    public override IEnumerable<QsiAnalyzerBase> CreateAnalyzers(QsiEngine engine)
+    {
+        yield return new OracleActionAnalyzer(engine);
+        yield return new OracleTableAnalyzer(engine);
+        yield return new QsiDefinitionAnalyzer(engine);
     }
 }

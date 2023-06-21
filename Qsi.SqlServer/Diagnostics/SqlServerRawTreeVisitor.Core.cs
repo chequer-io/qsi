@@ -3,63 +3,62 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.SqlServer.TransactSql.ScriptDom;
 
-namespace Qsi.SqlServer.Diagnostics
+namespace Qsi.SqlServer.Diagnostics;
+
+internal sealed partial class SqlServerRawTreeVisitor : TSqlFragmentVisitor
 {
-    internal sealed partial class SqlServerRawTreeVisitor : TSqlFragmentVisitor
+    private delegate void VisitorDelegate<in T>(T fragment);
+
+    public SqlServerRawTree Root { get; set; }
+
+    private readonly Stack<SqlServerRawTree> _stack;
+
+    private SqlServerRawTreeVisitor()
     {
-        private delegate void VisitorDelegate<in T>(T fragment);
+        _stack = new Stack<SqlServerRawTree>();
+    }
 
-        public SqlServerRawTree Root { get; set; }
+    private void MakeTree<T>(T fragment, VisitorDelegate<T> visitor) where T : TSqlFragment
+    {
+        var current = new SqlServerRawTree(typeof(T).Name);
 
-        private readonly Stack<SqlServerRawTree> _stack;
-
-        private SqlServerRawTreeVisitor()
+        if (_stack.TryPeek(out var parent))
         {
-            _stack = new Stack<SqlServerRawTree>();
+            parent.AddChild(current);
+        }
+        else if (Root == null)
+        {
+            Root = current;
+        }
+        else
+        {
+            throw new InvalidOperationException();
         }
 
-        private void MakeTree<T>(T fragment, VisitorDelegate<T> visitor) where T : TSqlFragment
+        _stack.Push(current);
+        visitor(fragment);
+        _stack.Pop();
+
+        if (current.ChildrenCount == 0)
         {
-            var current = new SqlServerRawTree(typeof(T).Name);
+            var builder = new StringBuilder();
 
-            if (_stack.TryPeek(out var parent))
+            for (int i = fragment.FirstTokenIndex; i <= fragment.LastTokenIndex; i++)
             {
-                parent.AddChild(current);
-            }
-            else if (Root == null)
-            {
-                Root = current;
-            }
-            else
-            {
-                throw new InvalidOperationException();
+                builder.Append(fragment.ScriptTokenStream[i].Text);
             }
 
-            _stack.Push(current);
-            visitor(fragment);
-            _stack.Pop();
-
-            if (current.ChildrenCount == 0)
-            {
-                var builder = new StringBuilder();
-
-                for (int i = fragment.FirstTokenIndex; i <= fragment.LastTokenIndex; i++)
-                {
-                    builder.Append(fragment.ScriptTokenStream[i].Text);
-                }
-
-                current.AddChild(new SqlServerRawTreeTerminalNode(builder.ToString()));
-            }
-
-            current.Freeze();
+            current.AddChild(new SqlServerRawTreeTerminalNode(builder.ToString()));
         }
 
-        public static SqlServerRawTree CreateRawTree(TSqlFragment fragment)
-        {
-            var visitor = new SqlServerRawTreeVisitor();
-            fragment.Accept(visitor);
+        current.Freeze();
+    }
 
-            return visitor.Root ?? throw new InvalidOperationException();
-        }
+    public static SqlServerRawTree CreateRawTree(TSqlFragment fragment)
+    {
+        var visitor = new SqlServerRawTreeVisitor();
+        fragment.Accept(visitor);
+
+        return visitor.Root ?? throw new InvalidOperationException();
     }
 }

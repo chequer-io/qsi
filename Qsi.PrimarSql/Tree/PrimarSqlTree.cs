@@ -4,33 +4,32 @@ using Antlr4.Runtime;
 using Qsi.Tree;
 using Qsi.Tree.Data;
 
-namespace Qsi.PrimarSql.Tree
+namespace Qsi.PrimarSql.Tree;
+
+public static class PrimarSqlTree
 {
-    public static class PrimarSqlTree
+    public static KeyIndexer<Range> Span { get; }
+
+    static PrimarSqlTree()
     {
-        public static KeyIndexer<Range> Span { get; }
+        Span = new KeyIndexer<Range>(QsiNodeProperties.Span);
+    }
 
-        static PrimarSqlTree()
-        {
-            Span = new KeyIndexer<Range>(QsiNodeProperties.Span);
-        }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static void PutContextSpan(IQsiTreeNode node, ParserRuleContext context)
+    {
+        PutContextSpan(node, context.Start, context.Stop);
+    }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void PutContextSpan(IQsiTreeNode node, ParserRuleContext context)
-        {
-            PutContextSpan(node, context.Start, context.Stop);
-        }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static void PutContextSpan(IQsiTreeNode node, IToken token)
+    {
+        PutContextSpan(node, token, token);
+    }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void PutContextSpan(IQsiTreeNode node, IToken token)
-        {
-            PutContextSpan(node, token, token);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void PutContextSpan(IQsiTreeNode node, IToken start, IToken stop)
-        {
-            Span[node] = new Range(start.StartIndex, stop.StopIndex + 1);
-        }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static void PutContextSpan(IQsiTreeNode node, IToken start, IToken stop)
+    {
+        Span[node] = new Range(start.StartIndex, stop.StopIndex + 1);
     }
 }

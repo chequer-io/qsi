@@ -2,123 +2,122 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Qsi.Data
+namespace Qsi.Data;
+
+internal sealed class QsiTableColumnCollection : IList<QsiTableColumn>
 {
-    internal sealed class QsiTableColumnCollection : IList<QsiTableColumn>
+    public int Count => _list.Count;
+
+    public QsiTableColumn this[int index]
     {
-        public int Count => _list.Count;
+        get => _list[index];
+        set => _list[index] = value;
+    }
 
-        public QsiTableColumn this[int index]
-        {
-            get => _list[index];
-            set => _list[index] = value;
-        }
+    bool ICollection<QsiTableColumn>.IsReadOnly => false;
 
-        bool ICollection<QsiTableColumn>.IsReadOnly => false;
+    private readonly List<QsiTableColumn> _list;
+    private readonly QsiTableStructure _parent;
 
-        private readonly List<QsiTableColumn> _list;
-        private readonly QsiTableStructure _parent;
+    public QsiTableColumnCollection(QsiTableStructure parent)
+    {
+        _list = new List<QsiTableColumn>();
+        _parent = parent;
+    }
 
-        public QsiTableColumnCollection(QsiTableStructure parent)
-        {
-            _list = new List<QsiTableColumn>();
-            _parent = parent;
-        }
+    public void Add(QsiTableColumn item)
+    {
+        if (item == null)
+            throw new ArgumentNullException(nameof(item));
 
-        public void Add(QsiTableColumn item)
-        {
-            if (item == null)
-                throw new ArgumentNullException(nameof(item));
+        if (item.Parent == _parent)
+            return;
 
-            if (item.Parent == _parent)
-                return;
+        if (item.Parent != null)
+            throw new ArgumentException(nameof(item));
 
-            if (item.Parent != null)
-                throw new ArgumentException(nameof(item));
+        item.Parent = _parent;
+        _list.Add(item);
+    }
 
-            item.Parent = _parent;
-            _list.Add(item);
-        }
+    public void Insert(int index, QsiTableColumn item)
+    {
+        if (item == null)
+            throw new ArgumentNullException(nameof(item));
 
-        public void Insert(int index, QsiTableColumn item)
-        {
-            if (item == null)
-                throw new ArgumentNullException(nameof(item));
+        if (item.Parent == _parent)
+            return;
 
-            if (item.Parent == _parent)
-                return;
+        if (item.Parent != null)
+            throw new ArgumentException(nameof(item));
 
-            if (item.Parent != null)
-                throw new ArgumentException(nameof(item));
+        item.Parent = _parent;
+        _list.Insert(index, item);
+    }
 
-            item.Parent = _parent;
-            _list.Insert(index, item);
-        }
-
-        public void Clear()
-        {
-            foreach (var column in _list)
-                column.Parent = null;
-
-            _list.Clear();
-        }
-
-        public bool Contains(QsiTableColumn item)
-        {
-            if (item == null || item.Parent != _parent)
-                return false;
-
-            return _list.Contains(item);
-        }
-
-        public int IndexOf(QsiTableColumn item)
-        {
-            if (item == null)
-                throw new ArgumentNullException(nameof(item));
-
-            if (item.Parent != _parent)
-                return -1;
-
-            return _list.IndexOf(item);
-        }
-
-        public bool Remove(QsiTableColumn item)
-        {
-            if (item == null)
-                return false;
-
-            if (item.Parent != _parent)
-                throw new ArgumentException(nameof(item));
-
-            if (!_list.Remove(item))
-                return false;
-
-            item.Parent = null;
-
-            return true;
-        }
-
-        public void RemoveAt(int index)
-        {
-            var column = _list[index];
-
-            _list.RemoveAt(index);
+    public void Clear()
+    {
+        foreach (var column in _list)
             column.Parent = null;
-        }
 
-        void ICollection<QsiTableColumn>.CopyTo(QsiTableColumn[] array, int arrayIndex)
-        {
-            _list.CopyTo(array, arrayIndex);
-        }
+        _list.Clear();
+    }
 
-        public IEnumerator<QsiTableColumn> GetEnumerator()
-        {
-            return _list.GetEnumerator();
-        }
+    public bool Contains(QsiTableColumn item)
+    {
+        if (item == null || item.Parent != _parent)
+            return false;
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        return _list.Contains(item);
+    }
+
+    public int IndexOf(QsiTableColumn item)
+    {
+        if (item == null)
+            throw new ArgumentNullException(nameof(item));
+
+        if (item.Parent != _parent)
+            return -1;
+
+        return _list.IndexOf(item);
+    }
+
+    public bool Remove(QsiTableColumn item)
+    {
+        if (item == null)
+            return false;
+
+        if (item.Parent != _parent)
+            throw new ArgumentException(nameof(item));
+
+        if (!_list.Remove(item))
+            return false;
+
+        item.Parent = null;
+
+        return true;
+    }
+
+    public void RemoveAt(int index)
+    {
+        var column = _list[index];
+
+        _list.RemoveAt(index);
+        column.Parent = null;
+    }
+
+    void ICollection<QsiTableColumn>.CopyTo(QsiTableColumn[] array, int arrayIndex)
+    {
+        _list.CopyTo(array, arrayIndex);
+    }
+
+    public IEnumerator<QsiTableColumn> GetEnumerator()
+    {
+        return _list.GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
     }
 }

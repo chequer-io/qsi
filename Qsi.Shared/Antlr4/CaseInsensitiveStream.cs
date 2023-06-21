@@ -1,61 +1,60 @@
 ﻿using Antlr4.Runtime;
 using Antlr4.Runtime.Misc;
 
-namespace Qsi.Shared.Antlr4
+namespace Qsi.Shared.Antlr4;
+
+internal sealed class CaseInsensitiveStream : ICharStream
 {
-    internal sealed class CaseInsensitiveStream : ICharStream
+    public int Index => _stream.Index;
+
+    public int Size => _stream.Size;
+
+    public string SourceName => _stream.SourceName;
+
+    private readonly ICharStream _stream;
+
+    public CaseInsensitiveStream(ICharStream stream)
     {
-        public int Index => _stream.Index;
+        _stream = stream;
+    }
 
-        public int Size => _stream.Size;
+    public void Consume()
+    {
+        _stream.Consume();
+    }
 
-        public string SourceName => _stream.SourceName;
+    public int LA(int i)
+    {
+        int result = _stream.LA(i);
 
-        private readonly ICharStream _stream;
-
-        public CaseInsensitiveStream(ICharStream stream)
+        switch (result)
         {
-            _stream = stream;
+            case 0:
+            case IntStreamConstants.EOF:
+                return result;
+
+            default:
+                return char.ToUpperInvariant((char)result);
         }
+    }
 
-        public void Consume()
-        {
-            _stream.Consume();
-        }
+    public int Mark()
+    {
+        return _stream.Mark();
+    }
 
-        public int LA(int i)
-        {
-            int result = _stream.LA(i);
+    public void Release(int marker)
+    {
+        _stream.Release(marker);
+    }
 
-            switch (result)
-            {
-                case 0:
-                case IntStreamConstants.EOF:
-                    return result;
+    public void Seek(int index)
+    {
+        _stream.Seek(index);
+    }
 
-                default:
-                    return char.ToUpperInvariant((char)result);
-            }
-        }
-
-        public int Mark()
-        {
-            return _stream.Mark();
-        }
-
-        public void Release(int marker)
-        {
-            _stream.Release(marker);
-        }
-
-        public void Seek(int index)
-        {
-            _stream.Seek(index);
-        }
-
-        public string GetText(Interval interval)
-        {
-            return _stream.GetText(interval);
-        }
+    public string GetText(Interval interval)
+    {
+        return _stream.GetText(interval);
     }
 }

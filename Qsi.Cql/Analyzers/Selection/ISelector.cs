@@ -1,9 +1,8 @@
 ﻿using Newtonsoft.Json.Linq;
 
-namespace Qsi.Cql.Analyzers.Selection
+namespace Qsi.Cql.Analyzers.Selection;
+
+internal interface ISelector
 {
-    internal interface ISelector
-    {
-        JToken Run(JToken value);
-    }
+    JToken Run(JToken value);
 }

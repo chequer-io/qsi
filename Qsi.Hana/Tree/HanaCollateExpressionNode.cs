@@ -2,12 +2,11 @@
 using System.Linq;
 using Qsi.Tree;
 
-namespace Qsi.Hana.Tree
-{
-    public sealed class HanaCollateExpressionNode : QsiExpressionNode
-    {
-        public string Name { get; set; }
+namespace Qsi.Hana.Tree;
 
-        public override IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
-    }
+public sealed class HanaCollateExpressionNode : QsiExpressionNode
+{
+    public string Name { get; set; }
+
+    public override IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
 }

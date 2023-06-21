@@ -1,10 +1,9 @@
 ﻿using Qsi.Oracle.Common;
 using Qsi.Tree;
 
-namespace Qsi.Oracle.Tree
+namespace Qsi.Oracle.Tree;
+
+public class OracleInvokeExpressionNode : QsiInvokeExpressionNode
 {
-    public class OracleInvokeExpressionNode : QsiInvokeExpressionNode
-    {
-        public OracleQueryBehavior? QueryBehavior { get; set; }
-    }
+    public OracleQueryBehavior? QueryBehavior { get; set; }
 }

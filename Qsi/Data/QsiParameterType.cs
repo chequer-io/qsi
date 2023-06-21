@@ -1,8 +1,7 @@
-﻿namespace Qsi.Data
+﻿namespace Qsi.Data;
+
+public enum QsiParameterType
 {
-    public enum QsiParameterType
-    {
-        Name,
-        Index
-    }
+    Name,
+    Index
 }

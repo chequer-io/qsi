@@ -1,35 +1,34 @@
-﻿namespace Qsi.Data
+﻿namespace Qsi.Data;
+
+public enum QsiAssignmentKind
 {
-    public enum QsiAssignmentKind
-    {
-        /// <summary>=</summary>
-        Equals,
+    /// <summary>=</summary>
+    Equals,
 
-        /// <summary>:=</summary>
-        ColonEquals,
+    /// <summary>:=</summary>
+    ColonEquals,
 
-        /// <summary>+=</summary>
-        AddEquals,
+    /// <summary>+=</summary>
+    AddEquals,
 
-        /// <summary>-=</summary>
-        SubtractEquals,
+    /// <summary>-=</summary>
+    SubtractEquals,
 
-        /// <summary>*=</summary>
-        MultiplyEquals,
+    /// <summary>*=</summary>
+    MultiplyEquals,
 
-        /// <summary>/=</summary>
-        DivideEquals,
+    /// <summary>/=</summary>
+    DivideEquals,
 
-        /// <summary>%=</summary>
-        ModEquals,
+    /// <summary>%=</summary>
+    ModEquals,
 
-        /// <summary>&=</summary>
-        BitwiseAndEquals,
+    /// <summary>&=</summary>
+    BitwiseAndEquals,
 
-        /// <summary>|=</summary>
-        BitwiseOrEquals,
+    /// <summary>|=</summary>
+    BitwiseOrEquals,
 
-        /// <summary>^=</summary>
-        BitwiseXorEquals
-    }
+    /// <summary>^=</summary>
+    BitwiseXorEquals
 }

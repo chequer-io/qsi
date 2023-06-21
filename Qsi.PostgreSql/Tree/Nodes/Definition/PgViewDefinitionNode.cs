@@ -3,21 +3,20 @@ using Qsi.PostgreSql.Data;
 using Qsi.Tree;
 using Qsi.Tree.Definition;
 
-namespace Qsi.PostgreSql.Tree.Nodes
+namespace Qsi.PostgreSql.Tree.Nodes;
+
+public class PgViewDefinitionNode : QsiViewDefinitionNode
 {
-    public class PgViewDefinitionNode : QsiViewDefinitionNode
+    public string? CheckOptionOld { get; set; }
+
+    public ViewCheckOption CheckOption { get; set; }
+
+    public Relpersistence Relpersistence { get; set; }
+
+    public QsiTreeNodeList<PgDefinitionElementNode?> Options { get; }
+
+    public PgViewDefinitionNode()
     {
-        public string? CheckOptionOld { get; set; }
-
-        public ViewCheckOption CheckOption { get; set; }
-
-        public Relpersistence Relpersistence { get; set; }
-
-        public QsiTreeNodeList<PgDefinitionElementNode?> Options { get; }
-
-        public PgViewDefinitionNode()
-        {
-            Options = new QsiTreeNodeList<PgDefinitionElementNode?>(this);
-        }
+        Options = new QsiTreeNodeList<PgDefinitionElementNode?>(this);
     }
 }

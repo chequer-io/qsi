@@ -4,119 +4,118 @@ using Qsi.Data;
 using Qsi.Tree;
 using Qsi.Utilities;
 
-namespace Qsi.Oracle.Tree
+namespace Qsi.Oracle.Tree;
+
+public class OracleXmlFunctionExpressionNode : OracleInvokeExpressionNode
 {
-    public class OracleXmlFunctionExpressionNode : OracleInvokeExpressionNode
+    public QsiTreeNodeList<OracleXmlExpressionNode> Passings { get; }
+
+    public override IEnumerable<IQsiTreeNode> Children => Passings;
+
+    public OracleXmlFunctionExpressionNode()
     {
-        public QsiTreeNodeList<OracleXmlExpressionNode> Passings { get; }
+        Passings = new QsiTreeNodeList<OracleXmlExpressionNode>(this);
+    }
+}
 
-        public override IEnumerable<IQsiTreeNode> Children => Passings;
+public sealed class OracleXmlAttributesExpressionNode : QsiExpressionNode
+{
+    public QsiTreeNodeList<OracleXmlColumnAttributeItemNode> Attributes { get; }
 
-        public OracleXmlFunctionExpressionNode()
+    public override IEnumerable<IQsiTreeNode> Children => Attributes;
+
+    public OracleXmlAttributesExpressionNode()
+    {
+        Attributes = new QsiTreeNodeList<OracleXmlColumnAttributeItemNode>(this);
+    }
+}
+
+public sealed class OracleXmlColumnAttributeItemNode : QsiExpressionNode
+{
+    public QsiTreeNodeProperty<QsiExpressionNode> Expression { get; }
+
+    public QsiAliasNode Alias { get; set; }
+
+    public QsiTreeNodeProperty<QsiExpressionNode> EvalName { get; }
+
+    public override IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Expression, EvalName);
+
+    public OracleXmlColumnAttributeItemNode()
+    {
+        Expression = new QsiTreeNodeProperty<QsiExpressionNode>(this);
+        EvalName = new QsiTreeNodeProperty<QsiExpressionNode>(this);
+    }
+}
+
+public sealed class OracleXmlExpressionNode : QsiExpressionNode
+{
+    public QsiTreeNodeProperty<QsiExpressionNode> Expression { get; }
+
+    public QsiAliasNode Alias { get; set; }
+
+    public override IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Expression);
+
+    public OracleXmlExpressionNode()
+    {
+        Expression = new QsiTreeNodeProperty<QsiExpressionNode>(this);
+    }
+}
+
+public sealed class OracleXmlTableFunctionNode : OracleXmlFunctionExpressionNode
+{
+    public QsiTreeNodeList<OracleXmlNamespaceNode> Namespaces { get; }
+
+    public QsiTreeNodeList<OracleXmlColumnDefinitionNode> Columns { get; }
+
+    public bool IsReturningSequenceByRef { get; set; }
+
+    public override IEnumerable<IQsiTreeNode> Children
+    {
+        get
         {
-            Passings = new QsiTreeNodeList<OracleXmlExpressionNode>(this);
+            foreach (var passing in Passings)
+                yield return passing;
+
+            foreach (var OracleNamespace in Namespaces)
+                yield return OracleNamespace;
+
+            foreach (var column in Columns)
+                yield return column;
         }
     }
 
-    public sealed class OracleXmlAttributesExpressionNode : QsiExpressionNode
+    public OracleXmlTableFunctionNode()
     {
-        public QsiTreeNodeList<OracleXmlColumnAttributeItemNode> Attributes { get; }
+        Namespaces = new QsiTreeNodeList<OracleXmlNamespaceNode>(this);
+        Columns = new QsiTreeNodeList<OracleXmlColumnDefinitionNode>(this);
+    }
+}
 
-        public override IEnumerable<IQsiTreeNode> Children => Attributes;
+public sealed class OracleXmlNamespaceNode : QsiTreeNode
+{
+    public string Url { get; }
 
-        public OracleXmlAttributesExpressionNode()
-        {
-            Attributes = new QsiTreeNodeList<OracleXmlColumnAttributeItemNode>(this);
-        }
+    public string Alias { get; }
+
+    public override IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
+
+    public OracleXmlNamespaceNode(string url)
+    {
+        Url = url;
     }
 
-    public sealed class OracleXmlColumnAttributeItemNode : QsiExpressionNode
+    public OracleXmlNamespaceNode(string url, string alias) : this(url)
     {
-        public QsiTreeNodeProperty<QsiExpressionNode> Expression { get; }
-
-        public QsiAliasNode Alias { get; set; }
-
-        public QsiTreeNodeProperty<QsiExpressionNode> EvalName { get; }
-
-        public override IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Expression, EvalName);
-
-        public OracleXmlColumnAttributeItemNode()
-        {
-            Expression = new QsiTreeNodeProperty<QsiExpressionNode>(this);
-            EvalName = new QsiTreeNodeProperty<QsiExpressionNode>(this);
-        }
+        Alias = alias;
     }
+}
 
-    public sealed class OracleXmlExpressionNode : QsiExpressionNode
+public sealed class OracleXmlColumnDefinitionNode : QsiColumnExpressionNode
+{
+    public string Type { get; }
+
+    public OracleXmlColumnDefinitionNode(string type)
     {
-        public QsiTreeNodeProperty<QsiExpressionNode> Expression { get; }
-
-        public QsiAliasNode Alias { get; set; }
-
-        public override IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Expression);
-
-        public OracleXmlExpressionNode()
-        {
-            Expression = new QsiTreeNodeProperty<QsiExpressionNode>(this);
-        }
-    }
-
-    public sealed class OracleXmlTableFunctionNode : OracleXmlFunctionExpressionNode
-    {
-        public QsiTreeNodeList<OracleXmlNamespaceNode> Namespaces { get; }
-
-        public QsiTreeNodeList<OracleXmlColumnDefinitionNode> Columns { get; }
-
-        public bool IsReturningSequenceByRef { get; set; }
-
-        public override IEnumerable<IQsiTreeNode> Children
-        {
-            get
-            {
-                foreach (var passing in Passings)
-                    yield return passing;
-
-                foreach (var OracleNamespace in Namespaces)
-                    yield return OracleNamespace;
-
-                foreach (var column in Columns)
-                    yield return column;
-            }
-        }
-
-        public OracleXmlTableFunctionNode()
-        {
-            Namespaces = new QsiTreeNodeList<OracleXmlNamespaceNode>(this);
-            Columns = new QsiTreeNodeList<OracleXmlColumnDefinitionNode>(this);
-        }
-    }
-
-    public sealed class OracleXmlNamespaceNode : QsiTreeNode
-    {
-        public string Url { get; }
-
-        public string Alias { get; }
-
-        public override IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
-
-        public OracleXmlNamespaceNode(string url)
-        {
-            Url = url;
-        }
-
-        public OracleXmlNamespaceNode(string url, string alias) : this(url)
-        {
-            Alias = alias;
-        }
-    }
-
-    public sealed class OracleXmlColumnDefinitionNode : QsiColumnExpressionNode
-    {
-        public string Type { get; }
-
-        public OracleXmlColumnDefinitionNode(string type)
-        {
-            Type = type;
-        }
+        Type = type;
     }
 }

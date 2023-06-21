@@ -3,19 +3,18 @@ using Qsi.Data;
 using Qsi.Tree;
 using Qsi.Utilities;
 
-namespace Qsi.Trino.Tree
+namespace Qsi.Trino.Tree;
+
+public class TrinoLambdaExpressionNode : QsiExpressionNode
 {
-    public class TrinoLambdaExpressionNode : QsiExpressionNode
+    public QsiIdentifier[] Identifiers { get; set; }
+
+    public QsiTreeNodeProperty<QsiExpressionNode> Expression { get; }
+
+    public override IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Expression);
+
+    public TrinoLambdaExpressionNode()
     {
-        public QsiIdentifier[] Identifiers { get; set; }
-
-        public QsiTreeNodeProperty<QsiExpressionNode> Expression { get; }
-
-        public override IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Expression);
-
-        public TrinoLambdaExpressionNode()
-        {
-            Expression = new QsiTreeNodeProperty<QsiExpressionNode>(this);
-        }
+        Expression = new QsiTreeNodeProperty<QsiExpressionNode>(this);
     }
 }

@@ -1,20 +1,19 @@
-﻿namespace Qsi.Cql.Schema
+﻿namespace Qsi.Cql.Schema;
+
+public sealed class CqlTupleType : CqlType
 {
-    public sealed class CqlTupleType : CqlType
+    public CqlType FirstType { get; }
+
+    public CqlType SecondType { get; }
+
+    public CqlTupleType(CqlType firstType, CqlType secondType)
     {
-        public CqlType FirstType { get; }
+        FirstType = firstType;
+        SecondType = secondType;
+    }
 
-        public CqlType SecondType { get; }
-
-        public CqlTupleType(CqlType firstType, CqlType secondType)
-        {
-            FirstType = firstType;
-            SecondType = secondType;
-        }
-
-        public override string ToSql()
-        {
-            return $"tuple<{FirstType.ToSql()}, {SecondType.ToSql()}>";
-        }
+    public override string ToSql()
+    {
+        return $"tuple<{FirstType.ToSql()}, {SecondType.ToSql()}>";
     }
 }

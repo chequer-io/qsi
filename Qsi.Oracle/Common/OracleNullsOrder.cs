@@ -1,8 +1,7 @@
-namespace Qsi.Oracle.Common
+namespace Qsi.Oracle.Common;
+
+public enum OracleNullsOrder
 {
-    public enum OracleNullsOrder
-    {
-        Last,
-        First
-    }
+    Last,
+    First
 }

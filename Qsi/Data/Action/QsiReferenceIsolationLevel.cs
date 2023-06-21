@@ -1,8 +1,7 @@
-﻿namespace Qsi.Data
+﻿namespace Qsi.Data;
+
+public enum QsiReferenceIsolationLevel
 {
-    public enum QsiReferenceIsolationLevel
-    {
-        Session,
-        Connection
-    }
+    Session,
+    Connection
 }
