@@ -1,8 +1,7 @@
 ﻿using Qsi.Tree;
 
-namespace Qsi.Cql.Tree
+namespace Qsi.Cql.Tree;
+
+public sealed class CqlTupleExpressionNode : QsiMultipleExpressionNode
 {
-    public sealed class CqlTupleExpressionNode : QsiMultipleExpressionNode
-    {
-    }
 }

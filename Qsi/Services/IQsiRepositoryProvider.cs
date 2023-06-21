@@ -6,23 +6,22 @@ using Qsi.Data;
 using Qsi.Data.Object;
 using Qsi.Engines;
 
-namespace Qsi.Services
+namespace Qsi.Services;
+
+public interface IQsiRepositoryProvider
 {
-    public interface IQsiRepositoryProvider
-    {
-        QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier, ExecuteOptions executeOptions);
+    QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier, ExecuteOptions executeOptions);
 
-        QsiTableStructure LookupTable(QsiQualifiedIdentifier identifier);
+    QsiTableStructure LookupTable(QsiQualifiedIdentifier identifier);
 
-        QsiScript LookupDefinition(QsiQualifiedIdentifier identifier, QsiTableType type);
+    QsiScript LookupDefinition(QsiQualifiedIdentifier identifier, QsiTableType type);
 
-        QsiVariable LookupVariable(QsiQualifiedIdentifier identifier);
+    QsiVariable LookupVariable(QsiQualifiedIdentifier identifier);
 
-        QsiObject LookupObject(QsiQualifiedIdentifier identifier, QsiObjectType type);
+    QsiObject LookupObject(QsiQualifiedIdentifier identifier, QsiObjectType type);
 
-        [Obsolete("Use GetDataReader")]
-        Task<QsiDataTable> GetDataTable(QsiScript script, QsiParameter[] parameters, ExecuteOptions executeOptions, CancellationToken cancellationToken);
+    [Obsolete("Use GetDataReader")]
+    Task<QsiDataTable> GetDataTable(QsiScript script, QsiParameter[] parameters, ExecuteOptions executeOptions, CancellationToken cancellationToken);
 
-        Task<IDataReader> GetDataReaderAsync(QsiScript script, QsiParameter[] parameters, ExecuteOptions executeOptions, CancellationToken cancellationToken);
-    }
+    Task<IDataReader> GetDataReaderAsync(QsiScript script, QsiParameter[] parameters, ExecuteOptions executeOptions, CancellationToken cancellationToken);
 }

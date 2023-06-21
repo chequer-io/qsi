@@ -2,12 +2,11 @@
 using System.Linq;
 using Qsi.Data;
 
-namespace Qsi.Tree
-{
-    public class QsiColumnReferenceNode : QsiColumnNode, IQsiColumnReferenceNode, IQsiTerminalNode
-    {
-        public QsiQualifiedIdentifier Name { get; set; }
+namespace Qsi.Tree;
 
-        public override IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
-    }
+public class QsiColumnReferenceNode : QsiColumnNode, IQsiColumnReferenceNode, IQsiTerminalNode
+{
+    public QsiQualifiedIdentifier Name { get; set; }
+
+    public override IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
 }

@@ -1,8 +1,7 @@
-﻿namespace Qsi.Oracle.Common
+﻿namespace Qsi.Oracle.Common;
+
+public enum OracleFetchOption
 {
-    public enum OracleFetchOption
-    {
-        Only,
-        WithTies
-    }
+    Only,
+    WithTies
 }

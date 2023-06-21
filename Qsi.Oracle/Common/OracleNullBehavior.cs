@@ -1,8 +1,7 @@
-namespace Qsi.Oracle.Common
+namespace Qsi.Oracle.Common;
+
+public enum OracleNullBehavior
 {
-    public enum OracleNullBehavior
-    {
-        Null,
-        Absent
-    }
+    Null,
+    Absent
 }

@@ -1,8 +1,7 @@
-﻿namespace Qsi.Data
+﻿namespace Qsi.Data;
+
+public enum QsiSequentialColumnType
 {
-    public enum QsiSequentialColumnType
-    {
-        Default,
-        Overwrite
-    }
+    Default,
+    Overwrite
 }

@@ -1,19 +1,18 @@
 ﻿using Qsi.Data;
 
-namespace Qsi.Tree
+namespace Qsi.Tree;
+
+/// <summary>
+/// Specifies all columns.
+/// </summary>
+public interface IQsiAllColumnNode : IQsiColumnNode
 {
     /// <summary>
-    /// Specifies all columns.
+    /// Get the path of the target table to search the entire columns.
     /// </summary>
-    public interface IQsiAllColumnNode : IQsiColumnNode
-    {
-        /// <summary>
-        /// Get the path of the target table to search the entire columns.
-        /// </summary>
-        public QsiQualifiedIdentifier Path { get; }
+    public QsiQualifiedIdentifier Path { get; }
 
-        public bool IncludeInvisibleColumns { get; }
+    public bool IncludeInvisibleColumns { get; }
 
-        public IQsiSequentialColumnNode[] SequentialColumns { get; }
-    }
+    public IQsiSequentialColumnNode[] SequentialColumns { get; }
 }

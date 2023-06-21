@@ -1,8 +1,7 @@
-﻿namespace Qsi.Impala.Common.Thrift
+﻿namespace Qsi.Impala.Common.Thrift;
+
+public enum TReservedWordsVersion
 {
-    public enum TReservedWordsVersion
-    {
-        IMPALA_2_11,
-        IMPALA_3_0
-    }
+    IMPALA_2_11,
+    IMPALA_3_0
 }

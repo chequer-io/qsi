@@ -1,8 +1,7 @@
 ﻿using Qsi.Tree;
 
-namespace Qsi.PrimarSql.Tree
+namespace Qsi.PrimarSql.Tree;
+
+public class PrimarSqlAppendArrayExpressionNode : QsiMultipleExpressionNode
 {
-    public class PrimarSqlAppendArrayExpressionNode : QsiMultipleExpressionNode
-    {
-    }
 }

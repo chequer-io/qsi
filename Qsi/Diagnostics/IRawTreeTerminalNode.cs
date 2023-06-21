@@ -1,7 +1,6 @@
-﻿namespace Qsi.Diagnostics
+﻿namespace Qsi.Diagnostics;
+
+public interface IRawTreeTerminalNode : IRawTree
 {
-    public interface IRawTreeTerminalNode : IRawTree
-    {
-        string TypeName => "TerminalNode";
-    }
+    string TypeName => "TerminalNode";
 }

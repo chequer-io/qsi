@@ -6,99 +6,98 @@ using Avalonia.Media;
 using AvaloniaEdit.Rendering;
 using Qsi.Data;
 
-namespace Qsi.Debugger.Controls
+namespace Qsi.Debugger.Controls;
+
+public class QsiScriptRenderer : IBackgroundRenderer
 {
-    public class QsiScriptRenderer : IBackgroundRenderer
+    public KnownLayer Layer => KnownLayer.Caret;
+
+    private readonly IPen _pen;
+
+    private QsiScript[] _scripts;
+
+    public QsiScriptRenderer(IPen pen)
     {
-        public KnownLayer Layer => KnownLayer.Caret;
+        _pen = pen;
+    }
 
-        private readonly IPen _pen;
+    public void Update(QsiScript[] scripts)
+    {
+        _scripts = scripts;
+    }
 
-        private QsiScript[] _scripts;
+    public void Draw(TextView textView, DrawingContext drawingContext)
+    {
+        if (_scripts == null)
+            return;
 
-        public QsiScriptRenderer(IPen pen)
+        var scrollOffset = textView.ScrollOffset;
+        var top = textView.GetDocumentLineByVisualTop(scrollOffset.Y);
+        var bottom = textView.GetDocumentLineByVisualTop(scrollOffset.Y + textView.Bounds.Height);
+
+        IEnumerable<QsiScript> scripts = _scripts
+            .Where(s => !(s.End.Line < top.LineNumber || bottom.LineNumber < s.Start.Line));
+
+        foreach (var script in scripts)
         {
-            _pen = pen;
-        }
+            var minTop = double.MaxValue;
+            var minLeft = double.MaxValue;
+            var maxRight = double.MinValue;
+            var maxBottom = double.MinValue;
 
-        public void Update(QsiScript[] scripts)
-        {
-            _scripts = scripts;
-        }
+            var singleLine = script.Start.Line == script.End.Line;
 
-        public void Draw(TextView textView, DrawingContext drawingContext)
-        {
-            if (_scripts == null)
-                return;
-
-            var scrollOffset = textView.ScrollOffset;
-            var top = textView.GetDocumentLineByVisualTop(scrollOffset.Y);
-            var bottom = textView.GetDocumentLineByVisualTop(scrollOffset.Y + textView.Bounds.Height);
-
-            IEnumerable<QsiScript> scripts = _scripts
-                .Where(s => !(s.End.Line < top.LineNumber || bottom.LineNumber < s.Start.Line));
-
-            foreach (var script in scripts)
+            foreach (var line in GetVisualLines(textView, script.Start.Line, script.End.Line))
             {
-                var minTop = double.MaxValue;
-                var minLeft = double.MaxValue;
-                var maxRight = double.MinValue;
-                var maxBottom = double.MinValue;
+                Rect bounds;
 
-                var singleLine = script.Start.Line == script.End.Line;
-
-                foreach (var line in GetVisualLines(textView, script.Start.Line, script.End.Line))
+                if (singleLine)
                 {
-                    Rect bounds;
-
-                    if (singleLine)
-                    {
-                        var textLine = line.TextLines[^1];
-                        bounds = textLine.GetTextBounds(script.Start.Column - 1, script.Script.Length);
-                    }
-                    else if (line.FirstDocumentLine.LineNumber == script.Start.Line)
-                    {
-                        var textLine = line.TextLines[^1];
-                        bounds = textLine.GetTextBounds(script.Start.Column - 1, textLine.Length);
-                    }
-                    else if (line.LastDocumentLine.LineNumber == script.End.Line)
-                    {
-                        bounds = line.TextLines[^1].GetTextBounds(0, script.End.Column);
-                    }
-                    else
-                    {
-                        var textLine = line.TextLines[^1];
-                        bounds = textLine.GetTextBounds(0, textLine.Length);
-                    }
-
-                    minTop = Math.Min(minTop, bounds.Y + line.VisualTop);
-                    minLeft = Math.Min(minLeft, bounds.X);
-                    maxRight = Math.Max(maxRight, bounds.Right);
-                    maxBottom = Math.Max(maxBottom, bounds.Bottom + line.VisualTop);
+                    var textLine = line.TextLines[^1];
+                    bounds = textLine.GetTextBounds(script.Start.Column - 1, script.Script.Length);
+                }
+                else if (line.FirstDocumentLine.LineNumber == script.Start.Line)
+                {
+                    var textLine = line.TextLines[^1];
+                    bounds = textLine.GetTextBounds(script.Start.Column - 1, textLine.Length);
+                }
+                else if (line.LastDocumentLine.LineNumber == script.End.Line)
+                {
+                    bounds = line.TextLines[^1].GetTextBounds(0, script.End.Column);
+                }
+                else
+                {
+                    var textLine = line.TextLines[^1];
+                    bounds = textLine.GetTextBounds(0, textLine.Length);
                 }
 
-                var rect = new Rect(
-                    minLeft - scrollOffset.X,
-                    minTop - scrollOffset.Y,
-                    maxRight - minLeft,
-                    maxBottom - minTop);
-
-                drawingContext.DrawRectangle(_pen, rect);
+                minTop = Math.Min(minTop, bounds.Y + line.VisualTop);
+                minLeft = Math.Min(minLeft, bounds.X);
+                maxRight = Math.Max(maxRight, bounds.Right);
+                maxBottom = Math.Max(maxBottom, bounds.Bottom + line.VisualTop);
             }
+
+            var rect = new Rect(
+                minLeft - scrollOffset.X,
+                minTop - scrollOffset.Y,
+                maxRight - minLeft,
+                maxBottom - minTop);
+
+            drawingContext.DrawRectangle(_pen, rect);
         }
+    }
 
-        private IEnumerable<VisualLine> GetVisualLines(TextView textView, int startLineNumber, int endLineNumber)
+    private IEnumerable<VisualLine> GetVisualLines(TextView textView, int startLineNumber, int endLineNumber)
+    {
+        foreach (var visualLine in textView.VisualLines)
         {
-            foreach (var visualLine in textView.VisualLines)
-            {
-                var start = visualLine.FirstDocumentLine.LineNumber;
-                var end = visualLine.LastDocumentLine.LineNumber;
+            var start = visualLine.FirstDocumentLine.LineNumber;
+            var end = visualLine.LastDocumentLine.LineNumber;
 
-                if (end < startLineNumber || endLineNumber < start)
-                    continue;
+            if (end < startLineNumber || endLineNumber < start)
+                continue;
 
-                yield return visualLine;
-            }
+            yield return visualLine;
         }
     }
 }

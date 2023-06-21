@@ -1,10 +1,9 @@
-﻿namespace Qsi.Oracle.Common
+﻿namespace Qsi.Oracle.Common;
+
+public enum OracleOnMissingOrExistingBehavior
 {
-    public enum OracleOnMissingOrExistingBehavior
-    {
-        Ignore,
-        Error,
-        Replace,
-        Create
-    }
+    Ignore,
+    Error,
+    Replace,
+    Create
 }

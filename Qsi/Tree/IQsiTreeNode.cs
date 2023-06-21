@@ -1,15 +1,14 @@
 ﻿using System.Collections.Generic;
 using Qsi.Tree.Data;
 
-namespace Qsi.Tree
+namespace Qsi.Tree;
+
+public interface IQsiTreeNode
 {
-    public interface IQsiTreeNode
-    {
-        IQsiTreeNode Parent { get; }
+    IQsiTreeNode Parent { get; }
 
-        // TODO: Change to visitor pattern
-        IEnumerable<IQsiTreeNode> Children { get; }
+    // TODO: Change to visitor pattern
+    IEnumerable<IQsiTreeNode> Children { get; }
 
-        IUserDataHolder UserData { get; }
-    }
+    IUserDataHolder UserData { get; }
 }

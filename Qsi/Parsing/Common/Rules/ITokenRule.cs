@@ -1,7 +1,6 @@
-﻿namespace Qsi.Parsing.Common.Rules
+﻿namespace Qsi.Parsing.Common.Rules;
+
+public interface ITokenRule
 {
-    public interface ITokenRule
-    {
-        bool Run(CommonScriptCursor cursor);
-    }
+    bool Run(CommonScriptCursor cursor);
 }

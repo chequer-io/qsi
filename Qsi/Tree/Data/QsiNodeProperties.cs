@@ -1,9 +1,8 @@
 ﻿using System;
 
-namespace Qsi.Tree.Data
+namespace Qsi.Tree.Data;
+
+public sealed class QsiNodeProperties
 {
-    public sealed class QsiNodeProperties
-    {
-        public static readonly Key<Range> Span = new("node::span");
-    }
+    public static readonly Key<Range> Span = new("node::span");
 }

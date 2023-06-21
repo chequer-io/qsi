@@ -11,61 +11,60 @@ using Qsi.Engines;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
 
-namespace Qsi.Cql.Analyzers
+namespace Qsi.Cql.Analyzers;
+
+public class CqlTableAnalyzer : QsiTableAnalyzer
 {
-    public class CqlTableAnalyzer : QsiTableAnalyzer
+    public CqlTableAnalyzer(QsiEngine engine) : base(engine)
     {
-        public CqlTableAnalyzer(QsiEngine engine) : base(engine)
-        {
-        }
+    }
 
-        protected override async ValueTask<IQsiAnalysisResult[]> OnExecute(IAnalyzerContext context)
+    protected override async ValueTask<IQsiAnalysisResult[]> OnExecute(IAnalyzerContext context)
+    {
+        if (context.Tree is CqlDerivedTableNode { IsJson: true } cqlTableNode)
         {
-            if (context.Tree is CqlDerivedTableNode { IsJson: true } cqlTableNode)
+            using var scope = new TableCompileContext(context);
+            var table = await BuildTableStructure(scope, cqlTableNode);
+
+            var jsonTable = new QsiTableStructure
             {
-                using var scope = new TableCompileContext(context);
-                var table = await BuildTableStructure(scope, cqlTableNode);
+                Identifier = table.Identifier,
+                Type = table.Type,
+                IsSystem = table.IsSystem
+            };
 
-                var jsonTable = new QsiTableStructure
-                {
-                    Identifier = table.Identifier,
-                    Type = table.Type,
-                    IsSystem = table.IsSystem
-                };
+            jsonTable.References.AddRange(table.References);
 
-                jsonTable.References.AddRange(table.References);
+            var jsonColumn = jsonTable.NewColumn();
 
-                var jsonColumn = jsonTable.NewColumn();
+            jsonColumn.Name = new QsiIdentifier("[json]", false);
+            jsonColumn.References.AddRange(table.Columns);
 
-                jsonColumn.Name = new QsiIdentifier("[json]", false);
-                jsonColumn.References.AddRange(table.Columns);
-
-                return new CqlJsonTableResult(jsonTable).ToSingleArray();
-            }
-
-            return await base.OnExecute(context);
+            return new CqlJsonTableResult(jsonTable).ToSingleArray();
         }
 
-        protected override IEnumerable<QsiTableColumn> ResolveColumnsInExpression(TableCompileContext context, IQsiExpressionNode expression)
+        return await base.OnExecute(context);
+    }
+
+    protected override IEnumerable<QsiTableColumn> ResolveColumnsInExpression(TableCompileContext context, IQsiExpressionNode expression)
+    {
+        switch (expression)
         {
-            switch (expression)
+            case CqlIndexExpressionNode _:
+            case CqlMultipleUsingExpressionNode _:
+            case CqlUsingExpressionNode _:
+                break;
+
+            case CqlIndexerExpressionNode _:
+            case CqlRangeExpressionNode _:
+            case CqlSetColumnExpressionNode _:
             {
-                case CqlIndexExpressionNode _:
-                case CqlMultipleUsingExpressionNode _:
-                case CqlUsingExpressionNode _:
-                    break;
-
-                case CqlIndexerExpressionNode _:
-                case CqlRangeExpressionNode _:
-                case CqlSetColumnExpressionNode _:
-                {
-                    return expression.Children
-                        .Cast<IQsiExpressionNode>()
-                        .SelectMany(n => ResolveColumnsInExpression(context, n));
-                }
+                return expression.Children
+                    .Cast<IQsiExpressionNode>()
+                    .SelectMany(n => ResolveColumnsInExpression(context, n));
             }
-
-            return base.ResolveColumnsInExpression(context, expression);
         }
+
+        return base.ResolveColumnsInExpression(context, expression);
     }
 }

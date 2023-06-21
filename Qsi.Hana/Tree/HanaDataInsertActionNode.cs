@@ -1,17 +1,16 @@
 ﻿using Qsi.Tree;
 
-namespace Qsi.Hana.Tree
+namespace Qsi.Hana.Tree;
+
+public sealed class HanaDataInsertActionNode : QsiDataInsertActionNode
 {
-    public sealed class HanaDataInsertActionNode : QsiDataInsertActionNode
+    public QsiTreeNodeProperty<QsiExpressionFragmentNode> Overriding { get; }
+
+    public QsiTreeNodeProperty<QsiExpressionFragmentNode> Hint { get; }
+
+    public HanaDataInsertActionNode()
     {
-        public QsiTreeNodeProperty<QsiExpressionFragmentNode> Overriding { get; }
-
-        public QsiTreeNodeProperty<QsiExpressionFragmentNode> Hint { get; }
-
-        public HanaDataInsertActionNode()
-        {
-            Overriding = new QsiTreeNodeProperty<QsiExpressionFragmentNode>(this);
-            Hint = new QsiTreeNodeProperty<QsiExpressionFragmentNode>(this);
-        }
+        Overriding = new QsiTreeNodeProperty<QsiExpressionFragmentNode>(this);
+        Hint = new QsiTreeNodeProperty<QsiExpressionFragmentNode>(this);
     }
 }

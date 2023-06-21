@@ -11,57 +11,56 @@ using Qsi.Parsing;
 using Qsi.Tree;
 using Qsi.Utilities;
 
-namespace Qsi.Impala
+namespace Qsi.Impala;
+
+using static ImpalaParserInternal;
+
+public sealed class ImpalaParser : IQsiTreeParser
 {
-    using static ImpalaParserInternal;
+    public ImpalaDialect Dialect { get; }
 
-    public sealed class ImpalaParser : IQsiTreeParser
+    public ImpalaParser(ImpalaDialect dialect)
     {
-        public ImpalaDialect Dialect { get; }
+        Dialect = dialect ?? throw new ArgumentNullException(nameof(dialect));
+    }
 
-        public ImpalaParser(ImpalaDialect dialect)
+    public IQsiTreeNode Parse(QsiScript script, CancellationToken cancellationToken = default)
+    {
+        var parser = ImpalaUtility.CreateParserInternal(
+            script.Script,
+            Dialect
+        );
+
+        var stmt = parser.root().stmt();
+
+        switch (stmt.children[0])
         {
-            Dialect = dialect ?? throw new ArgumentNullException(nameof(dialect));
-        }
+            case Query_stmtContext queryStmt:
+                return TableVisitor.VisitQueryStmt(queryStmt);
 
-        public IQsiTreeNode Parse(QsiScript script, CancellationToken cancellationToken = default)
-        {
-            var parser = ImpalaUtility.CreateParserInternal(
-                script.Script,
-                Dialect
-            );
+            case Create_view_stmtContext createViewStmt:
+                return ActionVisitor.VisitCreateViewStmt(createViewStmt);
 
-            var stmt = parser.root().stmt();
+            case Create_tbl_as_select_stmtContext createTblAsSelectStmt:
+                return ActionVisitor.VisitCreateTblAsSelectStmt(createTblAsSelectStmt);
 
-            switch (stmt.children[0])
-            {
-                case Query_stmtContext queryStmt:
-                    return TableVisitor.VisitQueryStmt(queryStmt);
+            case Use_stmtContext useStmt:
+                return ActionVisitor.VisitUseStmt(useStmt);
 
-                case Create_view_stmtContext createViewStmt:
-                    return ActionVisitor.VisitCreateViewStmt(createViewStmt);
+            case Upsert_stmtContext upsertStmt:
+                return ActionVisitor.VisitUpsertStmt(upsertStmt);
 
-                case Create_tbl_as_select_stmtContext createTblAsSelectStmt:
-                    return ActionVisitor.VisitCreateTblAsSelectStmt(createTblAsSelectStmt);
+            case Update_stmtContext updateStmt:
+                return ActionVisitor.VisitUpdateStmt(updateStmt);
 
-                case Use_stmtContext useStmt:
-                    return ActionVisitor.VisitUseStmt(useStmt);
+            case Insert_stmtContext insertStmt:
+                return ActionVisitor.VisitInsertStmt(insertStmt);
 
-                case Upsert_stmtContext upsertStmt:
-                    return ActionVisitor.VisitUpsertStmt(upsertStmt);
+            case Delete_stmtContext deleteStmt:
+                return ActionVisitor.VisitDeleteStmt(deleteStmt);
 
-                case Update_stmtContext updateStmt:
-                    return ActionVisitor.VisitUpdateStmt(updateStmt);
-
-                case Insert_stmtContext insertStmt:
-                    return ActionVisitor.VisitInsertStmt(insertStmt);
-
-                case Delete_stmtContext deleteStmt:
-                    return ActionVisitor.VisitDeleteStmt(deleteStmt);
-
-                default:
-                    throw TreeHelper.NotSupportedTree(stmt.children[0]);
-            }
+            default:
+                throw TreeHelper.NotSupportedTree(stmt.children[0]);
         }
     }
 }

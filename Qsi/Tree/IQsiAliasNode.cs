@@ -1,9 +1,8 @@
 ﻿using Qsi.Data;
 
-namespace Qsi.Tree
+namespace Qsi.Tree;
+
+public interface IQsiAliasNode : IQsiTreeNode
 {
-    public interface IQsiAliasNode : IQsiTreeNode
-    {
-        QsiIdentifier Name { get; }
-    }
+    QsiIdentifier Name { get; }
 }

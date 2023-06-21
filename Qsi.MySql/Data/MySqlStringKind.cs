@@ -1,12 +1,11 @@
-﻿namespace Qsi.MySql.Data
+﻿namespace Qsi.MySql.Data;
+
+public enum MySqlStringKind
 {
-    public enum MySqlStringKind
-    {
-        Default,
-        National,
-        Bit,
-        BitString,
-        Hexa,
-        HexaString
-    }
+    Default,
+    National,
+    Bit,
+    BitString,
+    Hexa,
+    HexaString
 }

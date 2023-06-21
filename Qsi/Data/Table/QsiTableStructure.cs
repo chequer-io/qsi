@@ -2,68 +2,67 @@
 using System.Linq;
 using Qsi.Shared.Extensions;
 
-namespace Qsi.Data
+namespace Qsi.Data;
+
+public sealed class QsiTableStructure
 {
-    public sealed class QsiTableStructure
+    public QsiTableType Type { get; set; }
+
+    public QsiQualifiedIdentifier Identifier { get; set; }
+
+    public bool HasIdentifier => Identifier != null;
+
+    public bool IsSystem { get; set; }
+
+    public IList<QsiTableStructure> References { get; } = new List<QsiTableStructure>();
+
+    public IList<QsiTableColumn> Columns => _columns;
+
+    internal IEnumerable<QsiTableColumn> VisibleColumns => _columns.Where(c => c.IsVisible);
+
+    private readonly QsiTableColumnCollection _columns;
+
+    public QsiTableStructure()
     {
-        public QsiTableType Type { get; set; }
+        _columns = new QsiTableColumnCollection(this);
+    }
 
-        public QsiQualifiedIdentifier Identifier { get; set; }
+    public QsiTableColumn NewColumn()
+    {
+        var column = new QsiTableColumn();
+        _columns.Add(column);
 
-        public bool HasIdentifier => Identifier != null;
+        return column;
+    }
 
-        public bool IsSystem { get; set; }
-
-        public IList<QsiTableStructure> References { get; } = new List<QsiTableStructure>();
-
-        public IList<QsiTableColumn> Columns => _columns;
-
-        internal IEnumerable<QsiTableColumn> VisibleColumns => _columns.Where(c => c.IsVisible);
-
-        private readonly QsiTableColumnCollection _columns;
-
-        public QsiTableStructure()
+    public QsiTableStructure Clone()
+    {
+        var table = new QsiTableStructure
         {
-            _columns = new QsiTableColumnCollection(this);
-        }
+            Type = Type,
+            Identifier = Identifier,
+            IsSystem = IsSystem
+        };
 
-        public QsiTableColumn NewColumn()
+        table.References.AddRange(References);
+        table._columns.AddRange(_columns.Select(c => c.CloneInternal()));
+
+        return table;
+    }
+
+    // TODO: Refactor to VisibleColumns
+    public QsiTableStructure CloneVisibleOnly()
+    {
+        var table = new QsiTableStructure
         {
-            var column = new QsiTableColumn();
-            _columns.Add(column);
+            Type = Type,
+            Identifier = Identifier,
+            IsSystem = IsSystem
+        };
 
-            return column;
-        }
+        table.References.AddRange(References);
+        table._columns.AddRange(VisibleColumns.Select(c => c.CloneInternal()));
 
-        public QsiTableStructure Clone()
-        {
-            var table = new QsiTableStructure
-            {
-                Type = Type,
-                Identifier = Identifier,
-                IsSystem = IsSystem
-            };
-
-            table.References.AddRange(References);
-            table._columns.AddRange(_columns.Select(c => c.CloneInternal()));
-
-            return table;
-        }
-
-        // TODO: Refactor to VisibleColumns
-        public QsiTableStructure CloneVisibleOnly()
-        {
-            var table = new QsiTableStructure
-            {
-                Type = Type,
-                Identifier = Identifier,
-                IsSystem = IsSystem
-            };
-
-            table.References.AddRange(References);
-            table._columns.AddRange(VisibleColumns.Select(c => c.CloneInternal()));
-
-            return table;
-        }
+        return table;
     }
 }

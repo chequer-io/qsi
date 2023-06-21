@@ -1,6 +1,5 @@
-﻿namespace Qsi.Tree
+﻿namespace Qsi.Tree;
+
+public abstract class QsiActionNode : QsiTreeNode, IQsiActionNode
 {
-    public abstract class QsiActionNode : QsiTreeNode, IQsiActionNode
-    {
-    }
 }

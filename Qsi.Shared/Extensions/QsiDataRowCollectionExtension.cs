@@ -1,15 +1,14 @@
 ﻿using Qsi.Data;
 
-namespace Qsi.Shared.Extensions
-{
-    internal static class QsiDataRowCollectionExtension
-    {
-        public static QsiDataRowCollection ToNullIfEmpty(this QsiDataRowCollection collection)
-        {
-            if (collection is null || collection.Count == 0)
-                return null;
+namespace Qsi.Shared.Extensions;
 
-            return collection;
-        }
+internal static class QsiDataRowCollectionExtension
+{
+    public static QsiDataRowCollection ToNullIfEmpty(this QsiDataRowCollection collection)
+    {
+        if (collection is null || collection.Count == 0)
+            return null;
+
+        return collection;
     }
 }

@@ -6,85 +6,84 @@ using Google.Protobuf.Reflection;
 using PhoenixSql;
 using Qsi.Diagnostics;
 
-namespace Qsi.PhoenixSql.Diagnostics
+namespace Qsi.PhoenixSql.Diagnostics;
+
+internal class PhoenixSqlRawTreeNode : IRawTree
 {
-    internal class PhoenixSqlRawTreeNode : IRawTree
+    public string DisplayName { get; }
+
+    public IRawTree[] Children { get; }
+
+    public PhoenixSqlRawTreeNode(IMessage message)
     {
-        public string DisplayName { get; }
-
-        public IRawTree[] Children { get; }
-
-        public PhoenixSqlRawTreeNode(IMessage message)
+        if (message is IPhoenixProxyNode<IPhoenixNode> proxyMessage)
         {
-            if (message is IPhoenixProxyNode<IPhoenixNode> proxyMessage)
-            {
-                message = (IMessage)proxyMessage.Message;
-            }
-
-            DisplayName = message.GetType().Name;
-
-            Children = message.Descriptor.Fields.InFieldNumberOrder()
-                .Select(field => GetChildren(message, field))
-                .Where(n => n != null)
-                .ToArray();
+            message = (IMessage)proxyMessage.Message;
         }
 
-        private PhoenixSqlRawTreeNode(string key, IList list)
-        {
-            DisplayName = key;
+        DisplayName = message.GetType().Name;
 
-            Children = list.OfType<object>()
-                .Select(e =>
-                {
-                    if (e is IMessage message)
-                        return new PhoenixSqlRawTreeNode(message);
+        Children = message.Descriptor.Fields.InFieldNumberOrder()
+            .Select(field => GetChildren(message, field))
+            .Where(n => n != null)
+            .ToArray();
+    }
 
-                    return (IRawTree)new PhoenixSqlRawTerminalNode(e);
-                })
-                .ToArray();
-        }
+    private PhoenixSqlRawTreeNode(string key, IList list)
+    {
+        DisplayName = key;
 
-        private PhoenixSqlRawTreeNode(string key, object value)
-        {
-            DisplayName = key;
-            Children = new IRawTree[1];
-
-            ref var child = ref Children[0];
-
-            if (value is IMessage message)
-                child = new PhoenixSqlRawTreeNode(message);
-            else
-                child = new PhoenixSqlRawTerminalNode(value);
-        }
-
-        private IRawTree GetChildren(IMessage message, FieldDescriptor field)
-        {
-            var value = field.Accessor.GetValue(message);
-
-            switch (value)
+        Children = list.OfType<object>()
+            .Select(e =>
             {
-                case IMessage childMessage:
-                    return new PhoenixSqlRawTreeNode(field.Name, childMessage);
+                if (e is IMessage message)
+                    return new PhoenixSqlRawTreeNode(message);
 
-                case IList list:
-                    return new PhoenixSqlRawTreeNode(field.Name, list);
+                return (IRawTree)new PhoenixSqlRawTerminalNode(e);
+            })
+            .ToArray();
+    }
 
-                case string str when string.IsNullOrEmpty(str):
-                    return null;
+    private PhoenixSqlRawTreeNode(string key, object value)
+    {
+        DisplayName = key;
+        Children = new IRawTree[1];
 
-                case null:
-                    return null;
-            }
+        ref var child = ref Children[0];
 
-            var valueType = value.GetType();
+        if (value is IMessage message)
+            child = new PhoenixSqlRawTreeNode(message);
+        else
+            child = new PhoenixSqlRawTerminalNode(value);
+    }
 
-            if (valueType.IsValueType && !valueType.IsEnum &&
-                Activator.CreateInstance(valueType).Equals(value))
-            {
+    private IRawTree GetChildren(IMessage message, FieldDescriptor field)
+    {
+        var value = field.Accessor.GetValue(message);
+
+        switch (value)
+        {
+            case IMessage childMessage:
+                return new PhoenixSqlRawTreeNode(field.Name, childMessage);
+
+            case IList list:
+                return new PhoenixSqlRawTreeNode(field.Name, list);
+
+            case string str when string.IsNullOrEmpty(str):
                 return null;
-            }
 
-            return new PhoenixSqlRawTreeNode(field.Name, value);
+            case null:
+                return null;
         }
+
+        var valueType = value.GetType();
+
+        if (valueType.IsValueType && !valueType.IsEnum &&
+            Activator.CreateInstance(valueType).Equals(value))
+        {
+            return null;
+        }
+
+        return new PhoenixSqlRawTreeNode(field.Name, value);
     }
 }

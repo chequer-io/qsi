@@ -1,8 +1,7 @@
-﻿namespace Qsi.Trino.Tree
+﻿namespace Qsi.Trino.Tree;
+
+public enum TrinoOrderByNullBehavior
 {
-    public enum TrinoOrderByNullBehavior
-    {
-        NullsFirst,
-        NullsLast
-    }
+    NullsFirst,
+    NullsLast
 }

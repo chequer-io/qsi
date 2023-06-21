@@ -5,221 +5,221 @@ using Qsi.Data.Object.Function;
 using Qsi.Engines;
 using Qsi.Utilities;
 
-namespace Qsi.Debugger.Vendor.PostgreSql
+namespace Qsi.Debugger.Vendor.PostgreSql;
+
+internal class PostgreSqlRepositoryProvider : VendorRepositoryProvider
 {
-    internal class PostgreSqlRepositoryProvider : VendorRepositoryProvider
+    protected override QsiTableStructure LookupTable(QsiQualifiedIdentifier identifier)
     {
-        protected override QsiTableStructure LookupTable(QsiQualifiedIdentifier identifier)
+        var tableName = IdentifierUtility.Unescape(identifier[^1].Value);
+
+        switch (tableName)
         {
-            var tableName = IdentifierUtility.Unescape(identifier[^1].Value);
+            case "actor":
+                var actor = CreateTable("postgres", "public", "actor");
+                AddColumns(actor, "actor_id", "first_name", "last_name", "last_update");
+                return actor;
 
-            switch (tableName)
-            {
-                case "actor":
-                    var actor = CreateTable("postgres", "public", "actor");
-                    AddColumns(actor, "actor_id", "first_name", "last_name", "last_update");
-                    return actor;
+            case "actor_view":
+                var actorView = CreateTable("postgres", "public", "actor_view");
+                actorView.Type = QsiTableType.View;
+                AddColumns(actorView, "actor_id", "first_name", "last_name", "last_update");
+                return actorView;
 
-                case "actor_view":
-                    var actorView = CreateTable("postgres", "public", "actor_view");
-                    actorView.Type = QsiTableType.View;
-                    AddColumns(actorView, "actor_id", "first_name", "last_name", "last_update");
-                    return actorView;
+            case "actor_mat_view":
+                var actorMatView = CreateTable("postgres", "public", "actor_mat_view");
+                actorMatView.Type = QsiTableType.View;
+                AddColumns(actorMatView, "actor_id", "first_name", "last_name", "last_update");
+                return actorMatView;
 
-                case "actor_mat_view":
-                    var actorMatView = CreateTable("postgres", "public", "actor_mat_view");
-                    actorMatView.Type = QsiTableType.View;
-                    AddColumns(actorMatView, "actor_id", "first_name", "last_name", "last_update");
-                    return actorMatView;
+            case "address":
+                var address = CreateTable("postgres", "public", "address");
+                AddColumns(address, "address_id", "address", "address2", "district", "city_id", "postal_code", "phone", "location", "last_update");
+                return address;
 
-                case "address":
-                    var address = CreateTable("postgres", "public", "address");
-                    AddColumns(address, "address_id", "address", "address2", "district", "city_id", "postal_code", "phone", "location", "last_update");
-                    return address;
+            case "city":
+                var city = CreateTable("postgres", "public", "city");
+                AddColumns(city, "city_id", "city", "country_id", "last_update", "test");
+                return city;
 
-                case "city":
-                    var city = CreateTable("postgres", "public", "city");
-                    AddColumns(city, "city_id", "city", "country_id", "last_update", "test");
-                    return city;
+            case "test 1":
+                var test1 = CreateTable("postgres", "public", "\"test 1\"");
+                AddColumns(test1, "`c 1`", "`c 2`");
+                return test1;
 
-                case "test 1":
-                    var test1 = CreateTable("postgres", "public", "\"test 1\"");
-                    AddColumns(test1, "`c 1`", "`c 2`");
-                    return test1;
+            case "cs_memo":
+                var csMemo = CreateTable("postgres", "public", "cs_memo");
+                AddColumns(csMemo, "id", "memo");
+                return csMemo;
 
-                case "cs_memo":
-                    var csMemo = CreateTable("postgres", "public", "cs_memo");
-                    AddColumns(csMemo, "id", "memo");
-                    return csMemo;
+            case "pg_database":
+                var pgDatabase = CreateTable("postgres", "pg_catalog", "pg_database");
 
-                case "pg_database":
-                    var pgDatabase = CreateTable("postgres", "pg_catalog", "pg_database");
+                AddInvisibleColumns(
+                    pgDatabase,
+                    "tableoid",
+                    "cmax",
+                    "xmax",
+                    "cmin",
+                    "xmin",
+                    "ctid"
+                );
 
-                    AddInvisibleColumns(
-                        pgDatabase,
-                        "tableoid",
-                        "cmax",
-                        "xmax",
-                        "cmin",
-                        "xmin",
-                        "ctid"
-                    );
+                AddColumns(
+                    pgDatabase,
+                    "oid",
+                    "datname",
+                    "datdba",
+                    "encoding",
+                    "datcollate",
+                    "datctype",
+                    "datistemplate",
+                    "datallowconn",
+                    "datconnlimit",
+                    "datlastsysoid",
+                    "datfrozenxid",
+                    "datminmxid",
+                    "dattablespace",
+                    "datacl"
+                );
 
-                    AddColumns(
-                        pgDatabase,
-                        "oid",
-                        "datname",
-                        "datdba",
-                        "encoding",
-                        "datcollate",
-                        "datctype",
-                        "datistemplate",
-                        "datallowconn",
-                        "datconnlimit",
-                        "datlastsysoid",
-                        "datfrozenxid",
-                        "datminmxid",
-                        "dattablespace",
-                        "datacl"
-                    );
+                return pgDatabase;
 
-                    return pgDatabase;
+            case "pg_authid":
+                var pgAuthid = CreateTable("postgres", "pg_catalog", "pg_authid");
 
-                case "pg_authid":
-                    var pgAuthid = CreateTable("postgres", "pg_catalog", "pg_authid");
+                AddColumns(
+                    pgAuthid,
+                    "oid",
+                    "rolname",
+                    "rolsuper",
+                    "rolinherit",
+                    "rolcreaterole",
+                    "rolcreatedb",
+                    "rolcanlogin",
+                    "rolreplication",
+                    "rolbypassrls",
+                    "rolconnlimit",
+                    "rolpassword",
+                    "rolvaliduntil"
+                );
 
-                    AddColumns(
-                        pgAuthid,
-                        "oid",
-                        "rolname",
-                        "rolsuper",
-                        "rolinherit",
-                        "rolcreaterole",
-                        "rolcreatedb",
-                        "rolcanlogin",
-                        "rolreplication",
-                        "rolbypassrls",
-                        "rolconnlimit",
-                        "rolpassword",
-                        "rolvaliduntil"
-                    );
+                return pgAuthid;
 
-                    return pgAuthid;
+            case "pg_stat_activity":
 
-                case "pg_stat_activity":
+                var pgStatActivity = CreateTable("postgres", "pg_catalog", "pg_stat_activity");
+                pgStatActivity.Type = QsiTableType.View;
 
-                    var pgStatActivity = CreateTable("postgres", "pg_catalog", "pg_stat_activity");
-                    pgStatActivity.Type = QsiTableType.View;
+                AddColumns(pgStatActivity,
+                    "datid",
+                    "datname",
+                    "pid",
+                    "usesysid",
+                    "usename",
+                    "application_name",
+                    "client_addr",
+                    "client_hostname",
+                    "client_port",
+                    "backend_start",
+                    "xact_start",
+                    "query_start",
+                    "state_change",
+                    "wait_event_type",
+                    "wait_event",
+                    "state",
+                    "backend_xid",
+                    "backend_xmin",
+                    "query",
+                    "backend_type"
+                );
 
-                    AddColumns(pgStatActivity,
-                        "datid",
-                        "datname",
-                        "pid",
-                        "usesysid",
-                        "usename",
-                        "application_name",
-                        "client_addr",
-                        "client_hostname",
-                        "client_port",
-                        "backend_start",
-                        "xact_start",
-                        "query_start",
-                        "state_change",
-                        "wait_event_type",
-                        "wait_event",
-                        "state",
-                        "backend_xid",
-                        "backend_xmin",
-                        "query",
-                        "backend_type"
-                    );
+                return pgStatActivity;
 
-                    return pgStatActivity;
+            case "pg_stat_database":
 
-                case "pg_stat_database":
+                var pgStatDatabase = CreateTable("postgres", "pg_catalog", "pg_stat_database");
+                pgStatDatabase.Type = QsiTableType.View;
 
-                    var pgStatDatabase = CreateTable("postgres", "pg_catalog", "pg_stat_database");
-                    pgStatDatabase.Type = QsiTableType.View;
+                AddColumns(pgStatDatabase,
+                    "datid",
+                    "datname",
+                    "numbackends",
+                    "xact_commit",
+                    "xact_rollback",
+                    "blks_read",
+                    "blks_hit",
+                    "tup_returned",
+                    "tup_fetched",
+                    "tup_inserted",
+                    "tup_updated",
+                    "tup_deleted",
+                    "conflicts",
+                    "temp_files",
+                    "temp_bytes",
+                    "deadlocks",
+                    "checksum_failures",
+                    "checksum_last_failure",
+                    "blk_read_time",
+                    "blk_write_time",
+                    "stats_reset"
+                );
 
-                    AddColumns(pgStatDatabase,
-                        "datid",
-                        "datname",
-                        "numbackends",
-                        "xact_commit",
-                        "xact_rollback",
-                        "blks_read",
-                        "blks_hit",
-                        "tup_returned",
-                        "tup_fetched",
-                        "tup_inserted",
-                        "tup_updated",
-                        "tup_deleted",
-                        "conflicts",
-                        "temp_files",
-                        "temp_bytes",
-                        "deadlocks",
-                        "checksum_failures",
-                        "checksum_last_failure",
-                        "blk_read_time",
-                        "blk_write_time",
-                        "stats_reset"
-                    );
+                return pgStatDatabase;
 
-                    return pgStatDatabase;
+            case "pg_roles":
 
-                case "pg_roles":
+                var pgRoles = CreateTable("postgres", "pg_catalog", "pg_roles");
+                pgRoles.Type = QsiTableType.View;
 
-                    var pgRoles = CreateTable("postgres", "pg_catalog", "pg_roles");
-                    pgRoles.Type = QsiTableType.View;
+                AddColumns(pgRoles,
+                    "rolname",
+                    "rolsuper",
+                    "rolinherit",
+                    "rolcreaterole",
+                    "rolcreatedb",
+                    "rolcanlogin",
+                    "rolreplication",
+                    "rolconnlimit",
+                    "rolpassword",
+                    "rolvaliduntil",
+                    "rolbypassrls",
+                    "rolconfig",
+                    "oid"
+                );
 
-                    AddColumns(pgRoles,
-                        "rolname",
-                        "rolsuper",
-                        "rolinherit",
-                        "rolcreaterole",
-                        "rolcreatedb",
-                        "rolcanlogin",
-                        "rolreplication",
-                        "rolconnlimit",
-                        "rolpassword",
-                        "rolvaliduntil",
-                        "rolbypassrls",
-                        "rolconfig",
-                        "oid"
-                    );
+                return pgRoles;
 
-                    return pgRoles;
+            case "pg_db_role_setting":
+                var pgDbRoleSetting = CreateTable("postgres", "pg_catalog", "pg_db_role_setting");
 
-                case "pg_db_role_setting":
-                    var pgDbRoleSetting = CreateTable("postgres", "pg_catalog", "pg_db_role_setting");
+                AddColumns(pgDbRoleSetting, "setdatabase", "setrole", "setconfig");
+                return pgDbRoleSetting;
 
-                    AddColumns(pgDbRoleSetting, "setdatabase", "setrole", "setconfig");
-                    return pgDbRoleSetting;
+            case "pg_auth_members":
+                var pgAuthMembers = CreateTable("postgres", "pg_catalog", "pg_auth_members");
 
-                case "pg_auth_members":
-                    var pgAuthMembers = CreateTable("postgres", "pg_catalog", "pg_auth_members");
-
-                    AddColumns(pgAuthMembers, "roleid", "member", "grantor", "admin_option");
-                    return pgAuthMembers;
-            }
-
-            return null;
+                AddColumns(pgAuthMembers, "roleid", "member", "grantor", "admin_option");
+                return pgAuthMembers;
         }
 
-        protected override QsiScript LookupDefinition(QsiQualifiedIdentifier identifier, QsiTableType type)
+        return null;
+    }
+
+    protected override QsiScript LookupDefinition(QsiQualifiedIdentifier identifier, QsiTableType type)
+    {
+        var name = IdentifierUtility.Unescape(identifier[^1].Value);
+
+        switch (name)
         {
-            var name = IdentifierUtility.Unescape(identifier[^1].Value);
+            case "actor_view":
+                return new QsiScript("CREATE OR REPLACE VIEW public.actor_view AS SELECT actor.actor_id, actor.first_name, actor.last_name, actor.last_update FROM actor;", QsiScriptType.Create);
 
-            switch (name)
-            {
-                case "actor_view":
-                    return new QsiScript("CREATE OR REPLACE VIEW public.actor_view AS SELECT actor.actor_id, actor.first_name, actor.last_name, actor.last_update FROM actor;", QsiScriptType.Create);
+            case "actor_mat_view":
+                return new QsiScript("CREATE MATERIALIZED VIEW public.actor_view AS SELECT actor.actor_id, actor.first_name, actor.last_name, actor.last_update FROM actor;", QsiScriptType.Create);
 
-                case "actor_mat_view":
-                    return new QsiScript("CREATE MATERIALIZED VIEW public.actor_view AS SELECT actor.actor_id, actor.first_name, actor.last_name, actor.last_update FROM actor;", QsiScriptType.Create);
-
-                case "pg_stat_activity":
-                    return new QsiScript(@"CREATE OR REPLACE VIEW pg_catalog.pg_stat_activity AS  SELECT s.datid,
+            case "pg_stat_activity":
+                return new QsiScript(@"CREATE OR REPLACE VIEW pg_catalog.pg_stat_activity AS  SELECT s.datid,
     d.datname,
     s.pid,
     s.usesysid,
@@ -243,8 +243,8 @@ namespace Qsi.Debugger.Vendor.PostgreSql
      LEFT JOIN pg_database d ON ((s.datid = d.oid)))
      LEFT JOIN pg_authid u ON ((s.usesysid = u.oid)));", QsiScriptType.Create);
 
-                case "pg_stat_database":
-                    return new QsiScript(@"CREATE OR REPLACE VIEW pg_catalog.pg_stat_database AS  SELECT d.oid AS datid,
+            case "pg_stat_database":
+                return new QsiScript(@"CREATE OR REPLACE VIEW pg_catalog.pg_stat_database AS  SELECT d.oid AS datid,
     d.datname,
         CASE
             WHEN (d.oid = (0)::oid) THEN 0
@@ -275,8 +275,8 @@ namespace Qsi.Debugger.Vendor.PostgreSql
             pg_database.datname
            FROM pg_database) d;", QsiScriptType.Create);
 
-                case "pg_roles":
-                    return new QsiScript(@"CREATE OR REPLACE VIEW pg_catalog.pg_roles AS  SELECT pg_authid.rolname,
+            case "pg_roles":
+                return new QsiScript(@"CREATE OR REPLACE VIEW pg_catalog.pg_roles AS  SELECT pg_authid.rolname,
     pg_authid.rolsuper,
     pg_authid.rolinherit,
     pg_authid.rolcreaterole,
@@ -291,75 +291,75 @@ namespace Qsi.Debugger.Vendor.PostgreSql
     pg_authid.oid
    FROM (pg_authid
      LEFT JOIN pg_db_role_setting s ON (((pg_authid.oid = s.setrole) AND (s.setdatabase = (0)::oid))));", QsiScriptType.Create);
-            }
-
-            return null;
         }
 
-        protected override QsiVariable LookupVariable(QsiQualifiedIdentifier identifier)
-        {
-            throw new NotImplementedException();
-        }
+        return null;
+    }
 
-        protected override QsiObject LookupObject(QsiQualifiedIdentifier identifier, QsiObjectType type)
-        {
-            var name = IdentifierUtility.Unescape(identifier[^1].Value);
+    protected override QsiVariable LookupVariable(QsiQualifiedIdentifier identifier)
+    {
+        throw new NotImplementedException();
+    }
 
-            switch (name)
+    protected override QsiObject LookupObject(QsiQualifiedIdentifier identifier, QsiObjectType type)
+    {
+        var name = IdentifierUtility.Unescape(identifier[^1].Value);
+
+        switch (name)
+        {
+            case "generate_series" when type is QsiObjectType.Function:
             {
-                case "generate_series" when type is QsiObjectType.Function:
-                {
-                    return new QsiFunctionObject(
-                        new QsiQualifiedIdentifier(
-                            new QsiIdentifier("pg_catalog", false),
-                            new QsiIdentifier("generate_series", false)
-                        ),
-                        @"CREATE OR REPLACE FUNCTION pg_catalog.generate_series(integer, integer)
+                return new QsiFunctionObject(
+                    new QsiQualifiedIdentifier(
+                        new QsiIdentifier("pg_catalog", false),
+                        new QsiIdentifier("generate_series", false)
+                    ),
+                    @"CREATE OR REPLACE FUNCTION pg_catalog.generate_series(integer, integer)
                          RETURNS SETOF integer
                          LANGUAGE internal
                          IMMUTABLE PARALLEL SAFE STRICT
                         AS $function$generate_series_int4$function$",
-                        2);
-                }
+                    2);
+            }
 
-                case "unnest" when type is QsiObjectType.Function:
-                {
-                    return new QsiFunctionObject(
-                        new QsiQualifiedIdentifier(
-                            new QsiIdentifier("pg_catalog", false),
-                            new QsiIdentifier("unnest", false)
-                        ),
-                        @"CREATE OR REPLACE FUNCTION pg_catalog.unnest(anyarray)
+            case "unnest" when type is QsiObjectType.Function:
+            {
+                return new QsiFunctionObject(
+                    new QsiQualifiedIdentifier(
+                        new QsiIdentifier("pg_catalog", false),
+                        new QsiIdentifier("unnest", false)
+                    ),
+                    @"CREATE OR REPLACE FUNCTION pg_catalog.unnest(anyarray)
                          RETURNS SETOF anyelement
                          LANGUAGE internal
                          IMMUTABLE PARALLEL SAFE STRICT ROWS 100
                         AS $function$array_unnest$function$",
-                        1);
-                }
+                    1);
+            }
 
-                case "pg_indexam_has_property" when type is QsiObjectType.Function:
-                {
-                    return new QsiFunctionObject(
-                        new QsiQualifiedIdentifier(
-                            new QsiIdentifier("pg_catalog", false),
-                            new QsiIdentifier("pg_indexam_has_property", false)),
-                        @"CREATE OR REPLACE FUNCTION pg_catalog.pg_indexam_has_property(oid, text)
+            case "pg_indexam_has_property" when type is QsiObjectType.Function:
+            {
+                return new QsiFunctionObject(
+                    new QsiQualifiedIdentifier(
+                        new QsiIdentifier("pg_catalog", false),
+                        new QsiIdentifier("pg_indexam_has_property", false)),
+                    @"CREATE OR REPLACE FUNCTION pg_catalog.pg_indexam_has_property(oid, text)
                          RETURNS boolean
                          LANGUAGE internal
                          STABLE PARALLEL SAFE STRICT
                         AS $function$pg_indexam_has_property$function$
                         ",
-                        2);
-                }
+                    2);
+            }
 
-                case "pg_get_keywords" when type is QsiObjectType.Function:
-                {
-                    return new QsiFunctionObject(
-                        new QsiQualifiedIdentifier(
-                            new QsiIdentifier("pg_catalog", false),
-                            new QsiIdentifier("pg_get_keywords", false)
-                        ),
-                        @"CREATE OR REPLACE FUNCTION pg_catalog.pg_get_keywords
+            case "pg_get_keywords" when type is QsiObjectType.Function:
+            {
+                return new QsiFunctionObject(
+                    new QsiQualifiedIdentifier(
+                        new QsiIdentifier("pg_catalog", false),
+                        new QsiIdentifier("pg_get_keywords", false)
+                    ),
+                    @"CREATE OR REPLACE FUNCTION pg_catalog.pg_get_keywords
                             (
                                 OUT word text,
                                 OUT catcode ""char"",
@@ -371,34 +371,33 @@ namespace Qsi.Debugger.Vendor.PostgreSql
                             LANGUAGE internal
                             STABLE PARALLEL SAFE STRICT COST 10 ROWS 500
                             AS $function$pg_get_keywords$function$",
-                        5);
-                }
+                    5);
             }
-
-            return null;
         }
 
-        protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier, ExecuteOptions executeOptions)
+        return null;
+    }
+
+    protected override QsiQualifiedIdentifier ResolveQualifiedIdentifier(QsiQualifiedIdentifier identifier, ExecuteOptions executeOptions)
+    {
+        identifier = identifier.Level switch
         {
-            identifier = identifier.Level switch
-            {
-                1 => new QsiQualifiedIdentifier(
-                    new QsiIdentifier("postgres", false),
-                    new QsiIdentifier("public", false),
-                    identifier[0]
-                ),
-                2 => new QsiQualifiedIdentifier(
-                    new QsiIdentifier("postgres", false),
-                    identifier[0],
-                    identifier[1]
-                ),
-                _ => identifier
-            };
+            1 => new QsiQualifiedIdentifier(
+                new QsiIdentifier("postgres", false),
+                new QsiIdentifier("public", false),
+                identifier[0]
+            ),
+            2 => new QsiQualifiedIdentifier(
+                new QsiIdentifier("postgres", false),
+                identifier[0],
+                identifier[1]
+            ),
+            _ => identifier
+        };
 
-            if (identifier.Level != 3)
-                throw new InvalidOperationException();
+        if (identifier.Level != 3)
+            throw new InvalidOperationException();
 
-            return identifier;
-        }
+        return identifier;
     }
 }

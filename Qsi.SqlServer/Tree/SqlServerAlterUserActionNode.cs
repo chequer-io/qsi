@@ -3,16 +3,15 @@ using System.Linq;
 using Qsi.Data;
 using Qsi.Tree;
 
-namespace Qsi.SqlServer.Tree
+namespace Qsi.SqlServer.Tree;
+
+public class SqlServerAlterUserActionNode : QsiActionNode
 {
-    public class SqlServerAlterUserActionNode : QsiActionNode
-    {
-        public QsiIdentifier TargetUser { get; set; }
+    public QsiIdentifier TargetUser { get; set; }
 
-        public QsiIdentifier DefaultSchema { get; set; }
+    public QsiIdentifier DefaultSchema { get; set; }
 
-        public QsiIdentifier NewUserName { get; set; }
+    public QsiIdentifier NewUserName { get; set; }
 
-        public override IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
-    }
+    public override IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
 }

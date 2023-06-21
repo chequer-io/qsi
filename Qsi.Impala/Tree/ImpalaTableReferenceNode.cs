@@ -1,11 +1,10 @@
 ﻿using Qsi.Tree;
 
-namespace Qsi.Impala.Tree
-{
-    public class ImpalaTableReferenceNode : QsiTableReferenceNode
-    {
-        public string PlanHints { get; set; }
+namespace Qsi.Impala.Tree;
 
-        public string TableSample { get; set; }
-    }
+public class ImpalaTableReferenceNode : QsiTableReferenceNode
+{
+    public string PlanHints { get; set; }
+
+    public string TableSample { get; set; }
 }

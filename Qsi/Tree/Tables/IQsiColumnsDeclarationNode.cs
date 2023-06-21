@@ -1,22 +1,21 @@
 ﻿using System.Collections.Generic;
 
-namespace Qsi.Tree
+namespace Qsi.Tree;
+
+/// <summary>
+/// The interface where the declared columns.
+/// </summary>
+public interface IQsiColumnsDeclarationNode : IQsiTreeNode, IEnumerable<IQsiColumnNode>
 {
     /// <summary>
-    /// The interface where the declared columns.
+    /// Get count of declared columns.
     /// </summary>
-    public interface IQsiColumnsDeclarationNode : IQsiTreeNode, IEnumerable<IQsiColumnNode>
-    {
-        /// <summary>
-        /// Get count of declared columns.
-        /// </summary>
-        int Count { get; }
+    int Count { get; }
 
-        /// <summary>
-        /// Get all declared columns. 
-        /// </summary>
-        IQsiColumnNode[] Columns { get; }
+    /// <summary>
+    /// Get all declared columns. 
+    /// </summary>
+    IQsiColumnNode[] Columns { get; }
 
-        bool IsEmpty { get; }
-    }
+    bool IsEmpty { get; }
 }

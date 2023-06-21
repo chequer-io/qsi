@@ -1,8 +1,7 @@
 ﻿using Qsi.Parsing.Common;
 
-namespace Qsi.PrimarSql
+namespace Qsi.PrimarSql;
+
+public class PrimarSqlScriptParser : CommonScriptParser
 {
-    public class PrimarSqlScriptParser : CommonScriptParser
-    {
-    }
 }

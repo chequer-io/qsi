@@ -1,8 +1,7 @@
-﻿namespace Qsi.Oracle.Common
+﻿namespace Qsi.Oracle.Common;
+
+public enum OracleIntervalCycle
 {
-    public enum OracleIntervalCycle
-    {
-        DayToSecond,
-        YearToMonth
-    }
+    DayToSecond,
+    YearToMonth
 }

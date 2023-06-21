@@ -1,8 +1,7 @@
-﻿namespace Qsi.Cql.Tree
+﻿namespace Qsi.Cql.Tree;
+
+// List<T>
+// [T, T, ..]
+public class CqlListExpressionNode : CqlCollectionExpressionNode
 {
-    // List<T>
-    // [T, T, ..]
-    public class CqlListExpressionNode : CqlCollectionExpressionNode
-    {
-    }
 }

@@ -1,9 +1,8 @@
 ﻿using Qsi.Tree;
 
-namespace Qsi.Trino.Tree
+namespace Qsi.Trino.Tree;
+
+public sealed class TrinoGroupingExpressionNode : QsiGroupingExpressionNode
 {
-    public sealed class TrinoGroupingExpressionNode : QsiGroupingExpressionNode
-    {
-        public TrinoSetQuantifier? SetQuantifier { get; set; }
-    }
+    public TrinoSetQuantifier? SetQuantifier { get; set; }
 }

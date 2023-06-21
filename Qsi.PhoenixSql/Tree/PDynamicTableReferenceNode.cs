@@ -1,9 +1,8 @@
 ﻿using Qsi.Tree;
 
-namespace Qsi.PhoenixSql.Tree
+namespace Qsi.PhoenixSql.Tree;
+
+internal sealed class PDynamicTableReferenceNode : QsiTableReferenceNode, IDynamicColumnsNode
 {
-    internal sealed class PDynamicTableReferenceNode : QsiTableReferenceNode, IDynamicColumnsNode
-    {
-        public QsiColumnsDeclarationNode DynamicColumns { get; set; }
-    }
+    public QsiColumnsDeclarationNode DynamicColumns { get; set; }
 }

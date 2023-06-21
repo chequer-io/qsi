@@ -6,38 +6,37 @@ using Qsi.Parsing;
 using Qsi.PrimarSql.Analyzers;
 using Qsi.Services;
 
-namespace Qsi.PrimarSql
+namespace Qsi.PrimarSql;
+
+public abstract class PrimarSqlLanguageServiceBase : QsiLanguageServiceBase
 {
-    public abstract class PrimarSqlLanguageServiceBase : QsiLanguageServiceBase
+    public override IQsiTreeParser CreateTreeParser()
     {
-        public override IQsiTreeParser CreateTreeParser()
-        {
-            return PrimarSqlParser.Instance;
-        }
+        return PrimarSqlParser.Instance;
+    }
 
-        public override IQsiTreeDeparser CreateTreeDeparser()
-        {
-            return new PrimarSqlDeparser();
-        }
+    public override IQsiTreeDeparser CreateTreeDeparser()
+    {
+        return new PrimarSqlDeparser();
+    }
 
-        public override IQsiScriptParser CreateScriptParser()
-        {
-            return new PrimarSqlScriptParser();
-        }
+    public override IQsiScriptParser CreateScriptParser()
+    {
+        return new PrimarSqlScriptParser();
+    }
 
-        public override QsiAnalyzerOptions CreateAnalyzerOptions()
+    public override QsiAnalyzerOptions CreateAnalyzerOptions()
+    {
+        return new()
         {
-            return new()
-            {
-                AllowEmptyColumnsInSelect = false
-            };
-        }
+            AllowEmptyColumnsInSelect = false
+        };
+    }
 
-        public override IEnumerable<QsiAnalyzerBase> CreateAnalyzers(QsiEngine engine)
-        {
-            yield return new PrimarSqlTableAnalyzer(engine);
-            yield return new PrimarSqlActionAnalyzer(engine);
-            yield return new QsiDefinitionAnalyzer(engine);
-        }
+    public override IEnumerable<QsiAnalyzerBase> CreateAnalyzers(QsiEngine engine)
+    {
+        yield return new PrimarSqlTableAnalyzer(engine);
+        yield return new PrimarSqlActionAnalyzer(engine);
+        yield return new QsiDefinitionAnalyzer(engine);
     }
 }

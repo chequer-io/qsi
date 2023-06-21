@@ -1,10 +1,9 @@
 ﻿using Qsi.Tree;
 using Qsi.Tree.Definition;
 
-namespace Qsi.PhoenixSql.Tree
+namespace Qsi.PhoenixSql.Tree;
+
+public sealed class PViewDefinitionNode : QsiViewDefinitionNode, IDynamicColumnsNode
 {
-    public sealed class PViewDefinitionNode : QsiViewDefinitionNode, IDynamicColumnsNode
-    {
-        public QsiColumnsDeclarationNode DynamicColumns { get; set; }
-    }
+    public QsiColumnsDeclarationNode DynamicColumns { get; set; }
 }

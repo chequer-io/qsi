@@ -1,54 +1,53 @@
-﻿namespace Qsi.Cql.Schema
+﻿namespace Qsi.Cql.Schema;
+
+public abstract class CqlCollectionType : CqlType
 {
-    public abstract class CqlCollectionType : CqlType
+}
+
+public sealed class CqlListType : CqlCollectionType
+{
+    public CqlType ElementType { get; }
+
+    internal CqlListType(CqlType elementType)
     {
+        ElementType = elementType;
     }
 
-    public sealed class CqlListType : CqlCollectionType
+    public override string ToSql()
     {
-        public CqlType ElementType { get; }
+        return $"list<{ElementType.ToSql()}>";
+    }
+}
 
-        internal CqlListType(CqlType elementType)
-        {
-            ElementType = elementType;
-        }
+public sealed class CqlSetType : CqlCollectionType
+{
+    public CqlType ElementType { get; }
 
-        public override string ToSql()
-        {
-            return $"list<{ElementType.ToSql()}>";
-        }
+    internal CqlSetType(CqlType elementType)
+    {
+        ElementType = elementType;
     }
 
-    public sealed class CqlSetType : CqlCollectionType
+    public override string ToSql()
     {
-        public CqlType ElementType { get; }
+        return $"set<{ElementType.ToSql()}>";
+    }
+}
 
-        internal CqlSetType(CqlType elementType)
-        {
-            ElementType = elementType;
-        }
+public sealed class CqlMapType : CqlCollectionType
+{
+    public CqlType KeyType { get; }
 
-        public override string ToSql()
-        {
-            return $"set<{ElementType.ToSql()}>";
-        }
+    public CqlType ValueType { get; }
+
+    internal CqlMapType(CqlType keyType, CqlType valueType)
+    {
+        KeyType = keyType;
+        ValueType = valueType;
     }
 
-    public sealed class CqlMapType : CqlCollectionType
+    public override string ToSql()
     {
-        public CqlType KeyType { get; }
-
-        public CqlType ValueType { get; }
-
-        internal CqlMapType(CqlType keyType, CqlType valueType)
-        {
-            KeyType = keyType;
-            ValueType = valueType;
-        }
-
-        public override string ToSql()
-        {
-            return $"map<{KeyType.ToSql()}, {ValueType.ToSql()}>";
-        }
+        return $"map<{KeyType.ToSql()}, {ValueType.ToSql()}>";
     }
 }

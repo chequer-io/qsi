@@ -1,7 +1,6 @@
-﻿namespace Qsi.Data
+﻿namespace Qsi.Data;
+
+public enum QsiReferenceType
 {
-    public enum QsiReferenceType
-    {
-        Prepared
-    }
+    Prepared
 }

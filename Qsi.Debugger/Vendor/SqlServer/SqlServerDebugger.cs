@@ -3,25 +3,24 @@ using Qsi.Services;
 using Qsi.SqlServer.Common;
 using Qsi.SqlServer.Diagnostics;
 
-namespace Qsi.Debugger.Vendor.SqlServer
+namespace Qsi.Debugger.Vendor.SqlServer;
+
+internal class SqlServerDebugger : VendorDebugger
 {
-    internal class SqlServerDebugger : VendorDebugger
+    private readonly TransactSqlVersion _transactSqlVersion;
+
+    public SqlServerDebugger(TransactSqlVersion transactSqlVersion)
     {
-        private readonly TransactSqlVersion _transactSqlVersion;
+        _transactSqlVersion = transactSqlVersion;
+    }
 
-        public SqlServerDebugger(TransactSqlVersion transactSqlVersion)
-        {
-            _transactSqlVersion = transactSqlVersion;
-        }
+    protected override IQsiLanguageService CreateLanguageService()
+    {
+        return new SqlServerLanguageService(_transactSqlVersion);
+    }
 
-        protected override IQsiLanguageService CreateLanguageService()
-        {
-            return new SqlServerLanguageService(_transactSqlVersion);
-        }
-
-        protected override IRawTreeParser CreateRawTreeParser()
-        {
-            return new SqlServerRawTreeParser(_transactSqlVersion);
-        }
+    protected override IRawTreeParser CreateRawTreeParser()
+    {
+        return new SqlServerRawTreeParser(_transactSqlVersion);
     }
 }

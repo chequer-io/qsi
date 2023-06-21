@@ -4,61 +4,60 @@ using Qsi.Data.Object;
 using Qsi.Tree;
 using Qsi.Utilities;
 
-namespace Qsi.Data
+namespace Qsi.Data;
+
+public class QsiTableColumn
 {
-    public class QsiTableColumn
+    // TODO: Revert setter access modifier to internal after refactoring QsiTableAnalyzer
+    public QsiTableStructure Parent { get; set; }
+
+    public QsiIdentifier Name { get; set; }
+
+    public List<QsiTableColumn> References { get; } = new();
+
+    public List<QsiObject> ObjectReferences { get; } = new();
+
+    public bool IsVisible { get; set; } = true;
+
+    public bool IsBinding { get; set; }
+
+    public bool HasIndex { get; set; }
+
+    public bool IsAnonymous => Name == null;
+
+    public bool IsDynamic { get; set; }
+
+    public string Default { get; set; }
+
+    public bool IsExpression
     {
-        // TODO: Revert setter access modifier to internal after refactoring QsiTableAnalyzer
-        public QsiTableStructure Parent { get; set; }
+        get => _isExpression || QsiUtility.FlattenColumns(this).Any(r => r._isExpression);
+        set => _isExpression = value;
+    }
 
-        public QsiIdentifier Name { get; set; }
+    internal QsiQualifiedIdentifier ImplicitTableWildcardTarget { get; set; }
 
-        public List<QsiTableColumn> References { get; } = new();
+    internal bool _isExpression;
 
-        public List<QsiObject> ObjectReferences { get; } = new();
+    internal QsiTableColumn CloneInternal()
+    {
+        var column = Clone();
 
-        public bool IsVisible { get; set; } = true;
+        column.Name = Name;
+        column.References.AddRange(References);
+        column.IsVisible = IsVisible;
+        column.IsBinding = IsBinding;
+        column.IsDynamic = IsDynamic;
+        column.Default = Default;
+        column.ImplicitTableWildcardTarget = ImplicitTableWildcardTarget;
+        column._isExpression = _isExpression;
+        column.HasIndex = HasIndex;
 
-        public bool IsBinding { get; set; }
+        return column;
+    }
 
-        public bool HasIndex { get; set; }
-
-        public bool IsAnonymous => Name == null;
-
-        public bool IsDynamic { get; set; }
-
-        public string Default { get; set; }
-
-        public bool IsExpression
-        {
-            get => _isExpression || QsiUtility.FlattenColumns(this).Any(r => r._isExpression);
-            set => _isExpression = value;
-        }
-
-        internal QsiQualifiedIdentifier ImplicitTableWildcardTarget { get; set; }
-
-        internal bool _isExpression;
-
-        internal QsiTableColumn CloneInternal()
-        {
-            var column = Clone();
-
-            column.Name = Name;
-            column.References.AddRange(References);
-            column.IsVisible = IsVisible;
-            column.IsBinding = IsBinding;
-            column.IsDynamic = IsDynamic;
-            column.Default = Default;
-            column.ImplicitTableWildcardTarget = ImplicitTableWildcardTarget;
-            column._isExpression = _isExpression;
-            column.HasIndex = HasIndex;
-
-            return column;
-        }
-
-        protected virtual QsiTableColumn Clone()
-        {
-            return new();
-        }
+    protected virtual QsiTableColumn Clone()
+    {
+        return new();
     }
 }

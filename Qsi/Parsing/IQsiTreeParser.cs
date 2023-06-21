@@ -2,10 +2,9 @@
 using Qsi.Data;
 using Qsi.Tree;
 
-namespace Qsi.Parsing
+namespace Qsi.Parsing;
+
+public interface IQsiTreeParser
 {
-    public interface IQsiTreeParser
-    {
-        IQsiTreeNode Parse(QsiScript script, CancellationToken cancellationToken = default);
-    }
+    IQsiTreeNode Parse(QsiScript script, CancellationToken cancellationToken = default);
 }

@@ -8,194 +8,148 @@ using Qsi.Tree;
 using Qsi.Utilities;
 using static Qsi.Cql.Internal.CqlParserInternal;
 
-namespace Qsi.Cql.Tree
+namespace Qsi.Cql.Tree;
+
+internal static class ActionVisitor
 {
-    internal static class ActionVisitor
+    #region UseStatement
+    public static QsiChangeSearchPathActionNode VisitUseStatement(UseStatementContext context)
     {
-        #region UseStatement
-        public static QsiChangeSearchPathActionNode VisitUseStatement(UseStatementContext context)
+        var node = new QsiChangeSearchPathActionNode
         {
-            var node = new QsiChangeSearchPathActionNode
+            Identifiers = new[]
             {
-                Identifiers = new[]
-                {
-                    new QsiQualifiedIdentifier(context.ks.id)
-                }
-            };
+                new QsiQualifiedIdentifier(context.ks.id)
+            }
+        };
 
-            CqlTree.PutContextSpan(node, context);
+        CqlTree.PutContextSpan(node, context);
 
-            return node;
+        return node;
+    }
+    #endregion
+
+    #region InsertStatement
+    public static QsiActionNode VisitInsertStatement(InsertStatementContext context)
+    {
+        var node = new CqlDataInsertActionNode();
+        UsingClauseContext usingClause;
+        bool ifNotExists;
+
+        node.Target.SetValue(TableVisitor.VisitColumnFamilyName(context.cf));
+
+        if (context.st1 != null)
+        {
+            node.Columns = context.st1.cidentList().list
+                .Select(i => new QsiQualifiedIdentifier(i))
+                .ToArray();
+
+            var rowNode = new QsiRowValueExpressionNode();
+            rowNode.ColumnValues.AddRange(context.st1._values.Select(ExpressionVisitor.VisitTerm));
+            // TODO: CqlTree.PutContextSpan(rowNode, context.st1...);
+
+            node.Values.Add(rowNode);
+
+            ifNotExists = context.st1.ifNotExists;
+            usingClause = context.st1.usingClause();
         }
-        #endregion
-
-        #region InsertStatement
-        public static QsiActionNode VisitInsertStatement(InsertStatementContext context)
+        else
         {
-            var node = new CqlDataInsertActionNode();
-            UsingClauseContext usingClause;
-            bool ifNotExists;
+            var jsonValue = context.st2.jsonValue().s.raw;
+            (QsiQualifiedIdentifier[] columns, var row) = JsonToRowValue(jsonValue);
 
-            node.Target.SetValue(TableVisitor.VisitColumnFamilyName(context.cf));
+            node.Columns = columns;
+            node.Values.Add(row);
+            node.DefaultValue = context.st2.defaultValue;
 
-            if (context.st1 != null)
-            {
-                node.Columns = context.st1.cidentList().list
-                    .Select(i => new QsiQualifiedIdentifier(i))
-                    .ToArray();
-
-                var rowNode = new QsiRowValueExpressionNode();
-                rowNode.ColumnValues.AddRange(context.st1._values.Select(ExpressionVisitor.VisitTerm));
-                // TODO: CqlTree.PutContextSpan(rowNode, context.st1...);
-
-                node.Values.Add(rowNode);
-
-                ifNotExists = context.st1.ifNotExists;
-                usingClause = context.st1.usingClause();
-            }
-            else
-            {
-                var jsonValue = context.st2.jsonValue().s.raw;
-                (QsiQualifiedIdentifier[] columns, var row) = JsonToRowValue(jsonValue);
-
-                node.Columns = columns;
-                node.Values.Add(row);
-                node.DefaultValue = context.st2.defaultValue;
-
-                ifNotExists = context.st2.ifNotExists;
-                usingClause = context.st2.usingClause();
-            }
-
-            node.ConflictBehavior = ifNotExists ? QsiDataConflictBehavior.None : QsiDataConflictBehavior.Update;
-
-            if (usingClause != null)
-                node.Usings.SetValue(ExpressionVisitor.VisitUsingClause(context.st2.usingClause()));
-
-            CqlTree.PutContextSpan(node, context);
-
-            return node;
+            ifNotExists = context.st2.ifNotExists;
+            usingClause = context.st2.usingClause();
         }
 
-        private static (QsiQualifiedIdentifier[] Columns, QsiRowValueExpressionNode Row) JsonToRowValue(string json)
+        node.ConflictBehavior = ifNotExists ? QsiDataConflictBehavior.None : QsiDataConflictBehavior.Update;
+
+        if (usingClause != null)
+            node.Usings.SetValue(ExpressionVisitor.VisitUsingClause(context.st2.usingClause()));
+
+        CqlTree.PutContextSpan(node, context);
+
+        return node;
+    }
+
+    private static (QsiQualifiedIdentifier[] Columns, QsiRowValueExpressionNode Row) JsonToRowValue(string json)
+    {
+        var jsonObject = JObject.Parse(json);
+        var columns = new List<QsiQualifiedIdentifier>();
+        var row = new QsiRowValueExpressionNode();
+
+        foreach (var property in jsonObject.Properties())
         {
-            var jsonObject = JObject.Parse(json);
-            var columns = new List<QsiQualifiedIdentifier>();
-            var row = new QsiRowValueExpressionNode();
+            var column = new QsiIdentifier(property.Name, property.Name[0] == '"');
+            var jValue = property.Value;
 
-            foreach (var property in jsonObject.Properties())
+            object value;
+            QsiDataType type;
+
+            switch (jValue.Type)
             {
-                var column = new QsiIdentifier(property.Name, property.Name[0] == '"');
-                var jValue = property.Value;
+                case JTokenType.Null:
+                    value = null;
+                    type = QsiDataType.Null;
+                    break;
 
-                object value;
-                QsiDataType type;
+                case JTokenType.Float:
+                    value = jValue.Value<decimal>();
+                    type = QsiDataType.Decimal;
+                    break;
 
-                switch (jValue.Type)
-                {
-                    case JTokenType.Null:
-                        value = null;
-                        type = QsiDataType.Null;
-                        break;
+                case JTokenType.Integer:
+                    value = jValue.Value<int>();
+                    type = QsiDataType.Numeric;
+                    break;
 
-                    case JTokenType.Float:
-                        value = jValue.Value<decimal>();
-                        type = QsiDataType.Decimal;
-                        break;
+                case JTokenType.Boolean:
+                    value = jValue.Value<bool>();
+                    type = QsiDataType.Boolean;
+                    break;
 
-                    case JTokenType.Integer:
-                        value = jValue.Value<int>();
-                        type = QsiDataType.Numeric;
-                        break;
+                case JTokenType.String:
+                    value = Escape(jValue.Value<string>());
+                    type = QsiDataType.String;
+                    break;
 
-                    case JTokenType.Boolean:
-                        value = jValue.Value<bool>();
-                        type = QsiDataType.Boolean;
-                        break;
-
-                    case JTokenType.String:
-                        value = Escape(jValue.Value<string>());
-                        type = QsiDataType.String;
-                        break;
-
-                    default:
-                        value = Escape(jValue.ToString(Formatting.None));
-                        type = QsiDataType.Json;
-                        break;
-                }
-
-                columns.Add(new QsiQualifiedIdentifier(column));
-                row.ColumnValues.Add(TreeHelper.CreateLiteral(value, type));
+                default:
+                    value = Escape(jValue.ToString(Formatting.None));
+                    type = QsiDataType.Json;
+                    break;
             }
 
-            return (columns.ToArray(), row);
-
-            static string Escape(string value)
-            {
-                return $"'{value.Replace("'", "''")}'";
-            }
+            columns.Add(new QsiQualifiedIdentifier(column));
+            row.ColumnValues.Add(TreeHelper.CreateLiteral(value, type));
         }
-        #endregion
 
-        #region UpdateStatement
-        public static QsiActionNode VisitUpdateStatement(UpdateStatementContext context)
+        return (columns.ToArray(), row);
+
+        static string Escape(string value)
         {
-            QsiTableNode tableNode = TableVisitor.VisitColumnFamilyName(context.cf);
-
-            if (context.wclause != null)
-            {
-                var derivedTableNode = new CqlDerivedTableNode
-                {
-                    AllowFiltering = true
-                };
-
-                derivedTableNode.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
-                derivedTableNode.Source.SetValue(tableNode);
-
-                var whereContext = new ParserRuleContextWrapper<WhereClauseContext>
-                (
-                    context.wclause,
-                    context.w,
-                    context.wclause.Stop
-                );
-
-                derivedTableNode.Where.SetValue(CreateWhere(whereContext, context.conditions));
-
-                tableNode = derivedTableNode;
-            }
-
-            var node = new CqlDataUpdateActionNode();
-
-            node.Target.SetValue(tableNode);
-
-            if (context.usingClause() != null)
-                node.Usings.SetValue(ExpressionVisitor.VisitUsingClause(context.usingClause()));
-
-            node.SetValues.AddRange(context.columnOperation().Select(ExpressionVisitor.VisitColumnOperation));
-
-            CqlTree.PutContextSpan(node, context);
-
-            return node;
+            return $"'{value.Replace("'", "''")}'";
         }
-        #endregion
+    }
+    #endregion
 
-        #region DeleteStatement
-        public static QsiActionNode VisitDeleteStatement(DeleteStatementContext context)
+    #region UpdateStatement
+    public static QsiActionNode VisitUpdateStatement(UpdateStatementContext context)
+    {
+        QsiTableNode tableNode = TableVisitor.VisitColumnFamilyName(context.cf);
+
+        if (context.wclause != null)
         {
-            var node = new CqlDataDeleteActionNode();
-
-            var tableNode = new CqlDerivedTableNode
+            var derivedTableNode = new CqlDerivedTableNode
             {
                 AllowFiltering = true
             };
 
-            tableNode.Columns.SetValue
-            (
-                context.dels != null ?
-                    VisitDeleteSelection(context.dels) :
-                    TreeHelper.CreateAllColumnsDeclaration()
-            );
-
-            tableNode.Source.SetValue(TableVisitor.VisitColumnFamilyName(context.cf));
+            derivedTableNode.Columns.SetValue(TreeHelper.CreateAllColumnsDeclaration());
+            derivedTableNode.Source.SetValue(tableNode);
 
             var whereContext = new ParserRuleContextWrapper<WhereClauseContext>
             (
@@ -204,114 +158,159 @@ namespace Qsi.Cql.Tree
                 context.wclause.Stop
             );
 
-            tableNode.Where.SetValue(CreateWhere(whereContext, context.conditions));
+            derivedTableNode.Where.SetValue(CreateWhere(whereContext, context.conditions));
 
-            node.Target.SetValue(tableNode);
-
-            if (context.usingClauseDelete() != null)
-                node.Using.SetValue(ExpressionVisitor.VisitUsingClauseDelete(context.usingClauseDelete()));
-
-            CqlTree.PutContextSpan(node, context);
-
-            return node;
+            tableNode = derivedTableNode;
         }
 
-        private static QsiColumnsDeclarationNode VisitDeleteSelection(DeleteSelectionContext context)
+        var node = new CqlDataUpdateActionNode();
+
+        node.Target.SetValue(tableNode);
+
+        if (context.usingClause() != null)
+            node.Usings.SetValue(ExpressionVisitor.VisitUsingClause(context.usingClause()));
+
+        node.SetValues.AddRange(context.columnOperation().Select(ExpressionVisitor.VisitColumnOperation));
+
+        CqlTree.PutContextSpan(node, context);
+
+        return node;
+    }
+    #endregion
+
+    #region DeleteStatement
+    public static QsiActionNode VisitDeleteStatement(DeleteStatementContext context)
+    {
+        var node = new CqlDataDeleteActionNode();
+
+        var tableNode = new CqlDerivedTableNode
         {
-            var node = new QsiColumnsDeclarationNode();
+            AllowFiltering = true
+        };
 
-            node.Columns.AddRange(context.deleteOp().Select(VisitDeleteOp));
-            CqlTree.PutContextSpan(node, context);
+        tableNode.Columns.SetValue
+        (
+            context.dels != null ?
+                VisitDeleteSelection(context.dels) :
+                TreeHelper.CreateAllColumnsDeclaration()
+        );
 
-            return node;
+        tableNode.Source.SetValue(TableVisitor.VisitColumnFamilyName(context.cf));
+
+        var whereContext = new ParserRuleContextWrapper<WhereClauseContext>
+        (
+            context.wclause,
+            context.w,
+            context.wclause.Stop
+        );
+
+        tableNode.Where.SetValue(CreateWhere(whereContext, context.conditions));
+
+        node.Target.SetValue(tableNode);
+
+        if (context.usingClauseDelete() != null)
+            node.Using.SetValue(ExpressionVisitor.VisitUsingClauseDelete(context.usingClauseDelete()));
+
+        CqlTree.PutContextSpan(node, context);
+
+        return node;
+    }
+
+    private static QsiColumnsDeclarationNode VisitDeleteSelection(DeleteSelectionContext context)
+    {
+        var node = new QsiColumnsDeclarationNode();
+
+        node.Columns.AddRange(context.deleteOp().Select(VisitDeleteOp));
+        CqlTree.PutContextSpan(node, context);
+
+        return node;
+    }
+
+    private static QsiColumnNode VisitDeleteOp(DeleteOpContext context)
+    {
+        switch (context)
+        {
+            case DeleteSingleContext deleteSingle:
+                return VisitDeleteSingle(deleteSingle);
+
+            case DeleteIndexContext deleteIndex:
+                return VisitDeleteIndex(deleteIndex);
+
+            case DeleteFieldContext deleteField:
+                return VisitDeleteField(deleteField);
+
+            default:
+                throw TreeHelper.NotSupportedTree(context);
         }
+    }
 
-        private static QsiColumnNode VisitDeleteOp(DeleteOpContext context)
+    private static QsiColumnReferenceNode VisitDeleteSingle(DeleteSingleContext context)
+    {
+        return TableVisitor.VisitCident(context.c);
+    }
+
+    private static QsiDerivedColumnNode VisitDeleteIndex(DeleteIndexContext context)
+    {
+        var accessTargetNode = new QsiColumnExpressionNode();
+        var accessMemberNode = new CqlIndexerExpressionNode();
+
+        accessTargetNode.Column.SetValue(TableVisitor.VisitCident(context.c));
+        accessMemberNode.Indexer.SetValue(ExpressionVisitor.VisitTerm(context.term()));
+
+        var accessNode = new QsiMemberAccessExpressionNode();
+
+        accessNode.Target.SetValue(accessTargetNode);
+        accessNode.Member.SetValue(accessMemberNode);
+
+        var node = new QsiDerivedColumnNode();
+
+        node.Expression.SetValue(accessNode);
+        CqlTree.PutContextSpan(node, context);
+
+        return node;
+    }
+
+    private static QsiDerivedColumnNode VisitDeleteField(DeleteFieldContext context)
+    {
+        var accessTargetNode = new QsiColumnExpressionNode();
+        var accessMemberNode = new QsiFieldExpressionNode();
+
+        accessTargetNode.Column.SetValue(TableVisitor.VisitCident(context.c));
+        accessMemberNode.Identifier = new QsiQualifiedIdentifier(context.field.id);
+
+        var accessNode = new QsiMemberAccessExpressionNode();
+
+        accessNode.Target.SetValue(accessTargetNode);
+        accessNode.Member.SetValue(accessMemberNode);
+
+        var node = new QsiDerivedColumnNode();
+
+        node.Expression.SetValue(accessNode);
+        CqlTree.PutContextSpan(node, context);
+
+        return node;
+    }
+    #endregion
+
+    private static QsiWhereExpressionNode CreateWhere(
+        ParserRuleContextWrapper<WhereClauseContext> context,
+        UpdateConditionsContext conditionContext)
+    {
+        var node = ExpressionVisitor.CreateWhere(context);
+
+        if (conditionContext != null)
         {
-            switch (context)
+            var binaryNode = new QsiBinaryExpressionNode
             {
-                case DeleteSingleContext deleteSingle:
-                    return VisitDeleteSingle(deleteSingle);
+                Operator = "AND"
+            };
 
-                case DeleteIndexContext deleteIndex:
-                    return VisitDeleteIndex(deleteIndex);
+            binaryNode.Left.SetValue(node.Expression.Value);
+            binaryNode.Right.SetValue(ExpressionVisitor.VisitUpdateConditions(conditionContext));
 
-                case DeleteFieldContext deleteField:
-                    return VisitDeleteField(deleteField);
-
-                default:
-                    throw TreeHelper.NotSupportedTree(context);
-            }
+            node.Expression.SetValue(binaryNode);
         }
 
-        private static QsiColumnReferenceNode VisitDeleteSingle(DeleteSingleContext context)
-        {
-            return TableVisitor.VisitCident(context.c);
-        }
-
-        private static QsiDerivedColumnNode VisitDeleteIndex(DeleteIndexContext context)
-        {
-            var accessTargetNode = new QsiColumnExpressionNode();
-            var accessMemberNode = new CqlIndexerExpressionNode();
-
-            accessTargetNode.Column.SetValue(TableVisitor.VisitCident(context.c));
-            accessMemberNode.Indexer.SetValue(ExpressionVisitor.VisitTerm(context.term()));
-
-            var accessNode = new QsiMemberAccessExpressionNode();
-
-            accessNode.Target.SetValue(accessTargetNode);
-            accessNode.Member.SetValue(accessMemberNode);
-
-            var node = new QsiDerivedColumnNode();
-
-            node.Expression.SetValue(accessNode);
-            CqlTree.PutContextSpan(node, context);
-
-            return node;
-        }
-
-        private static QsiDerivedColumnNode VisitDeleteField(DeleteFieldContext context)
-        {
-            var accessTargetNode = new QsiColumnExpressionNode();
-            var accessMemberNode = new QsiFieldExpressionNode();
-
-            accessTargetNode.Column.SetValue(TableVisitor.VisitCident(context.c));
-            accessMemberNode.Identifier = new QsiQualifiedIdentifier(context.field.id);
-
-            var accessNode = new QsiMemberAccessExpressionNode();
-
-            accessNode.Target.SetValue(accessTargetNode);
-            accessNode.Member.SetValue(accessMemberNode);
-
-            var node = new QsiDerivedColumnNode();
-
-            node.Expression.SetValue(accessNode);
-            CqlTree.PutContextSpan(node, context);
-
-            return node;
-        }
-        #endregion
-
-        private static QsiWhereExpressionNode CreateWhere(
-            ParserRuleContextWrapper<WhereClauseContext> context,
-            UpdateConditionsContext conditionContext)
-        {
-            var node = ExpressionVisitor.CreateWhere(context);
-
-            if (conditionContext != null)
-            {
-                var binaryNode = new QsiBinaryExpressionNode
-                {
-                    Operator = "AND"
-                };
-
-                binaryNode.Left.SetValue(node.Expression.Value);
-                binaryNode.Right.SetValue(ExpressionVisitor.VisitUpdateConditions(conditionContext));
-
-                node.Expression.SetValue(binaryNode);
-            }
-
-            return node;
-        }
+        return node;
     }
 }

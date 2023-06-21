@@ -1,9 +1,8 @@
-﻿namespace Qsi.MySql.Data
+﻿namespace Qsi.MySql.Data;
+
+public enum MySqlTableLockType
 {
-    public enum MySqlTableLockType
-    {
-        Update,
-        Share,
-        ShareMode
-    }
+    Update,
+    Share,
+    ShareMode
 }

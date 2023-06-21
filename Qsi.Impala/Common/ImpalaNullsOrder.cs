@@ -1,8 +1,7 @@
-﻿namespace Qsi.Impala.Common
+﻿namespace Qsi.Impala.Common;
+
+public enum ImpalaNullsOrder
 {
-    public enum ImpalaNullsOrder
-    {
-        Last,
-        First
-    }
+    Last,
+    First
 }

@@ -1,8 +1,7 @@
-﻿namespace Qsi.Hana.Tree
+﻿namespace Qsi.Hana.Tree;
+
+public enum HanaOrderByNullBehavior
 {
-    public enum HanaOrderByNullBehavior
-    {
-        NullsFirst,
-        NullsLast
-    }
+    NullsFirst,
+    NullsLast
 }

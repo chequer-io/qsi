@@ -7,63 +7,62 @@ using Qsi.Parsing;
 using Qsi.Services;
 using Qsi.Tree;
 
-namespace Qsi.Engines.Explain
+namespace Qsi.Engines.Explain;
+
+internal sealed class ExplainLanguageService : IQsiLanguageService
 {
-    internal sealed class ExplainLanguageService : IQsiLanguageService
+    public QsiEngine ExplainEngine { get; set; }
+
+    private readonly IQsiLanguageService _languageService;
+
+    public ExplainLanguageService(IQsiLanguageService languageService)
     {
-        public QsiEngine ExplainEngine { get; set; }
+        _languageService = languageService ?? throw new ArgumentNullException(nameof(languageService));
+    }
 
-        private readonly IQsiLanguageService _languageService;
+    public QsiAnalyzerOptions CreateAnalyzerOptions()
+    {
+        return _languageService.CreateAnalyzerOptions();
+    }
 
-        public ExplainLanguageService(IQsiLanguageService languageService)
+    public IEnumerable<IQsiAnalyzer> CreateAnalyzers(QsiEngine engine)
+    {
+        foreach (var analyzer in _languageService.CreateAnalyzers(engine))
         {
-            _languageService = languageService ?? throw new ArgumentNullException(nameof(languageService));
+            if (analyzer is QsiActionAnalyzer actionAnalyzer)
+                yield return new ExplainActionAnalyzer(actionAnalyzer);
+            else
+                yield return analyzer;
         }
+    }
 
-        public QsiAnalyzerOptions CreateAnalyzerOptions()
-        {
-            return _languageService.CreateAnalyzerOptions();
-        }
+    public IQsiTreeParser CreateTreeParser()
+    {
+        return _languageService.CreateTreeParser();
+    }
 
-        public IEnumerable<IQsiAnalyzer> CreateAnalyzers(QsiEngine engine)
-        {
-            foreach (var analyzer in _languageService.CreateAnalyzers(engine))
-            {
-                if (analyzer is QsiActionAnalyzer actionAnalyzer)
-                    yield return new ExplainActionAnalyzer(actionAnalyzer);
-                else
-                    yield return analyzer;
-            }
-        }
+    public IQsiTreeDeparser CreateTreeDeparser()
+    {
+        return _languageService.CreateTreeDeparser();
+    }
 
-        public IQsiTreeParser CreateTreeParser()
-        {
-            return _languageService.CreateTreeParser();
-        }
+    public IQsiScriptParser CreateScriptParser()
+    {
+        return _languageService.CreateScriptParser();
+    }
 
-        public IQsiTreeDeparser CreateTreeDeparser()
-        {
-            return _languageService.CreateTreeDeparser();
-        }
+    public IQsiRepositoryProvider CreateRepositoryProvider()
+    {
+        return new ExplainRepositoryProvider(ExplainEngine, _languageService.CreateRepositoryProvider());
+    }
 
-        public IQsiScriptParser CreateScriptParser()
-        {
-            return _languageService.CreateScriptParser();
-        }
+    public bool MatchIdentifier(QsiIdentifier x, QsiIdentifier y)
+    {
+        return _languageService.MatchIdentifier(x, y);
+    }
 
-        public IQsiRepositoryProvider CreateRepositoryProvider()
-        {
-            return new ExplainRepositoryProvider(ExplainEngine, _languageService.CreateRepositoryProvider());
-        }
-
-        public bool MatchIdentifier(QsiIdentifier x, QsiIdentifier y)
-        {
-            return _languageService.MatchIdentifier(x, y);
-        }
-
-        public QsiParameter FindParameter(QsiParameter[] parameters, IQsiBindParameterExpressionNode node)
-        {
-            return parameters[0];
-        }
+    public QsiParameter FindParameter(QsiParameter[] parameters, IQsiBindParameterExpressionNode node)
+    {
+        return parameters[0];
     }
 }

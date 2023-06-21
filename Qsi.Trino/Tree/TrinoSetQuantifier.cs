@@ -1,8 +1,7 @@
-﻿namespace Qsi.Trino.Tree
+﻿namespace Qsi.Trino.Tree;
+
+public enum TrinoSetQuantifier
 {
-    public enum TrinoSetQuantifier
-    {
-        All,
-        Distinct
-    }
+    All,
+    Distinct
 }

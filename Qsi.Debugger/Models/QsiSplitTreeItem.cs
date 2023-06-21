@@ -1,6 +1,5 @@
-﻿namespace Qsi.Debugger.Models
+﻿namespace Qsi.Debugger.Models;
+
+public class QsiSplitTreeItem
 {
-    public class QsiSplitTreeItem
-    {
-    }
 }
