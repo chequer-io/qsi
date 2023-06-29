@@ -315,7 +315,7 @@ namespace Qsi.MySql.Tree
 
             if (context.roleOrPrivilegesList() is { } roleOrPrivilegesList)
             {
-                node.Roles.AddRange(roleOrPrivilegesList.roleOrPrivilege().Select(p => p.GetInputText()));
+                node.Roles = roleOrPrivilegesList.roleOrPrivilege().Select(p => p.GetInputText()).ToArray();
             }
 
             if (context.HasToken(ALL_SYMBOL))
