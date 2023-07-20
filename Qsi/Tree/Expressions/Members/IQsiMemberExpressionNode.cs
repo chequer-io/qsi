@@ -1,9 +1,8 @@
 ﻿using Qsi.Data;
 
-namespace Qsi.Tree
+namespace Qsi.Tree;
+
+public interface IQsiMemberExpressionNode : IQsiExpressionNode
 {
-    public interface IQsiMemberExpressionNode : IQsiExpressionNode
-    {
-        QsiQualifiedIdentifier Identifier { get; }
-    }
+    QsiQualifiedIdentifier Identifier { get; }
 }

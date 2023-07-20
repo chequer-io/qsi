@@ -1,6 +1,5 @@
-﻿namespace Qsi.Tree
+﻿namespace Qsi.Tree;
+
+public abstract class QsiTableNode : QsiTreeNode, IQsiTableNode
 {
-    public abstract class QsiTableNode : QsiTreeNode, IQsiTableNode
-    {
-    }
 }

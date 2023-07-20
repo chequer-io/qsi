@@ -1,9 +1,8 @@
-﻿namespace Qsi.Tree
-{
-    public interface IQsiLimitExpressionNode : IQsiExpressionNode
-    {
-        IQsiExpressionNode Limit { get; }
+﻿namespace Qsi.Tree;
 
-        IQsiExpressionNode Offset { get; }
-    }
+public interface IQsiLimitExpressionNode : IQsiExpressionNode
+{
+    IQsiExpressionNode Limit { get; }
+
+    IQsiExpressionNode Offset { get; }
 }

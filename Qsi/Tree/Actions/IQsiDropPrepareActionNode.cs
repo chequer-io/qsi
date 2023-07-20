@@ -1,9 +1,8 @@
 ﻿using Qsi.Data;
 
-namespace Qsi.Tree
+namespace Qsi.Tree;
+
+public interface IQsiDropPrepareActionNode : IQsiActionNode
 {
-    public interface IQsiDropPrepareActionNode : IQsiActionNode
-    {
-        QsiQualifiedIdentifier Identifier { get; }
-    }
+    QsiQualifiedIdentifier Identifier { get; }
 }

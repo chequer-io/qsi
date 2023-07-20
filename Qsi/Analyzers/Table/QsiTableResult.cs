@@ -1,16 +1,15 @@
 ﻿using Qsi.Data;
 
-namespace Qsi.Analyzers.Table
+namespace Qsi.Analyzers.Table;
+
+public class QsiTableResult : IQsiAnalysisResult
 {
-    public class QsiTableResult : IQsiAnalysisResult
+    public QsiTableStructure Table { get; }
+
+    public virtual QsiSensitiveDataCollection SensitiveDataCollection => QsiSensitiveDataCollection.Empty;
+
+    public QsiTableResult(QsiTableStructure table)
     {
-        public QsiTableStructure Table { get; }
-
-        public virtual QsiSensitiveDataCollection SensitiveDataCollection => QsiSensitiveDataCollection.Empty;
-
-        public QsiTableResult(QsiTableStructure table)
-        {
-            Table = table;
-        }
+        Table = table;
     }
 }

@@ -1,15 +1,14 @@
-﻿namespace Qsi.SqlServer.Tree
+﻿namespace Qsi.SqlServer.Tree;
+
+internal interface IVisitorContext
 {
-    internal interface IVisitorContext
-    {
-        TableVisitor TableVisitor { get; }
+    TableVisitor TableVisitor { get; }
 
-        ExpressionVisitor ExpressionVisitor { get; }
+    ExpressionVisitor ExpressionVisitor { get; }
 
-        IdentifierVisitor IdentifierVisitor { get; }
+    IdentifierVisitor IdentifierVisitor { get; }
 
-        ActionVisitor ActionVisitor { get; }
+    ActionVisitor ActionVisitor { get; }
 
-        DefinitionVisitor DefinitionVisitor { get; }
-    }
+    DefinitionVisitor DefinitionVisitor { get; }
 }

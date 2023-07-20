@@ -2,10 +2,9 @@
 using PhoenixSql;
 using Qsi.Tree;
 
-namespace Qsi.PhoenixSql.Tree
+namespace Qsi.PhoenixSql.Tree;
+
+internal sealed class PDeleteActionNode : QsiDataDeleteActionNode
 {
-    internal sealed class PDeleteActionNode : QsiDataDeleteActionNode
-    {
-        public IReadOnlyList<HintNode.Types.Entry> Hints { get; set; }
-    }
+    public IReadOnlyList<HintNode.Types.Entry> Hints { get; set; }
 }

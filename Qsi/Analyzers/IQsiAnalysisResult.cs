@@ -1,11 +1,10 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Qsi.Data;
 
-namespace Qsi.Analyzers
+namespace Qsi.Analyzers;
+
+public interface IQsiAnalysisResult
 {
-    public interface IQsiAnalysisResult
-    {
-        [NotNull]
-        QsiSensitiveDataCollection SensitiveDataCollection { get; }
-    }
+    [NotNull]
+    QsiSensitiveDataCollection SensitiveDataCollection { get; }
 }

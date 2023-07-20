@@ -1,23 +1,22 @@
 ﻿using Qsi.Tree;
 
-namespace Qsi.Cql.Tree.Common
+namespace Qsi.Cql.Tree.Common;
+
+internal readonly ref struct SelectorPair
 {
-    internal readonly ref struct SelectorPair
+    public QsiColumnReferenceNode Column { get; }
+
+    public QsiExpressionNode Expression { get; }
+
+    public SelectorPair(QsiColumnReferenceNode column)
     {
-        public QsiColumnReferenceNode Column { get; }
+        Column = column;
+        Expression = null;
+    }
 
-        public QsiExpressionNode Expression { get; }
-
-        public SelectorPair(QsiColumnReferenceNode column)
-        {
-            Column = column;
-            Expression = null;
-        }
-
-        public SelectorPair(QsiExpressionNode expression)
-        {
-            Column = null;
-            Expression = expression;
-        }
+    public SelectorPair(QsiExpressionNode expression)
+    {
+        Column = null;
+        Expression = expression;
     }
 }

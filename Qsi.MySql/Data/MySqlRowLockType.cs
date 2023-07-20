@@ -1,8 +1,7 @@
-﻿namespace Qsi.MySql.Data
+﻿namespace Qsi.MySql.Data;
+
+public enum MySqlRowLockType
 {
-    public enum MySqlRowLockType
-    {
-        SkipLocked,
-        NoWait
-    }
+    SkipLocked,
+    NoWait
 }

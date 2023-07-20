@@ -10,86 +10,85 @@ using Qsi.Parsing;
 using Qsi.Services;
 using Qsi.Tree;
 
-namespace Qsi.Debugger.Vendor.MySql
+namespace Qsi.Debugger.Vendor.MySql;
+
+internal class MySqlDebugger : VendorDebugger
 {
-    internal class MySqlDebugger : VendorDebugger
+    private readonly Version _version;
+    private readonly bool _useDelimiter;
+    private readonly bool _mariaDbCompatibility;
+
+    public MySqlDebugger(Version version, bool useDelimiter = true, bool mariaDbCompatibility = false)
     {
-        private readonly Version _version;
-        private readonly bool _useDelimiter;
-        private readonly bool _mariaDbCompatibility;
+        _version = version;
+        _useDelimiter = useDelimiter;
+        _mariaDbCompatibility = mariaDbCompatibility;
+    }
 
-        public MySqlDebugger(Version version, bool useDelimiter = true, bool mariaDbCompatibility = false)
+    protected override IQsiLanguageService CreateLanguageService()
+    {
+        var service = new MySqlLanguageService(_version, _mariaDbCompatibility);
+
+        if (_useDelimiter)
+            return service;
+
+        return new MySqlLanguageServiceWrapper(service);
+    }
+
+    protected override IRawTreeParser CreateRawTreeParser()
+    {
+        return new MySqlRawParser(_version, _mariaDbCompatibility);
+    }
+
+    private class MySqlLanguageServiceWrapper : IQsiLanguageService
+    {
+        private readonly MySqlLanguageService _service;
+
+        public MySqlLanguageServiceWrapper(MySqlLanguageService service)
         {
-            _version = version;
-            _useDelimiter = useDelimiter;
-            _mariaDbCompatibility = mariaDbCompatibility;
+            _service = service;
         }
 
-        protected override IQsiLanguageService CreateLanguageService()
+        public QsiAnalyzerOptions CreateAnalyzerOptions()
         {
-            var service = new MySqlLanguageService(_version, _mariaDbCompatibility);
-
-            if (_useDelimiter)
-                return service;
-
-            return new MySqlLanguageServiceWrapper(service);
+            return _service.CreateAnalyzerOptions();
         }
 
-        protected override IRawTreeParser CreateRawTreeParser()
+        public IEnumerable<IQsiAnalyzer> CreateAnalyzers(QsiEngine engine)
         {
-            return new MySqlRawParser(_version, _mariaDbCompatibility);
+            return _service.CreateAnalyzers(engine);
         }
 
-        private class MySqlLanguageServiceWrapper : IQsiLanguageService
+        public IQsiTreeParser CreateTreeParser()
         {
-            private readonly MySqlLanguageService _service;
+            return _service.CreateTreeParser();
+        }
 
-            public MySqlLanguageServiceWrapper(MySqlLanguageService service)
-            {
-                _service = service;
-            }
+        public IQsiTreeDeparser CreateTreeDeparser()
+        {
+            return _service.CreateTreeDeparser();
+        }
 
-            public QsiAnalyzerOptions CreateAnalyzerOptions()
-            {
-                return _service.CreateAnalyzerOptions();
-            }
+        public IQsiScriptParser CreateScriptParser()
+        {
+            var scriptParser = (MySqlScriptParser)_service.CreateScriptParser();
+            scriptParser.UseDelimiter = false;
+            return scriptParser;
+        }
 
-            public IEnumerable<IQsiAnalyzer> CreateAnalyzers(QsiEngine engine)
-            {
-                return _service.CreateAnalyzers(engine);
-            }
+        public IQsiRepositoryProvider CreateRepositoryProvider()
+        {
+            return _service.CreateRepositoryProvider();
+        }
 
-            public IQsiTreeParser CreateTreeParser()
-            {
-                return _service.CreateTreeParser();
-            }
+        public bool MatchIdentifier(QsiIdentifier x, QsiIdentifier y)
+        {
+            return _service.MatchIdentifier(x, y);
+        }
 
-            public IQsiTreeDeparser CreateTreeDeparser()
-            {
-                return _service.CreateTreeDeparser();
-            }
-
-            public IQsiScriptParser CreateScriptParser()
-            {
-                var scriptParser = (MySqlScriptParser)_service.CreateScriptParser();
-                scriptParser.UseDelimiter = false;
-                return scriptParser;
-            }
-
-            public IQsiRepositoryProvider CreateRepositoryProvider()
-            {
-                return _service.CreateRepositoryProvider();
-            }
-
-            public bool MatchIdentifier(QsiIdentifier x, QsiIdentifier y)
-            {
-                return _service.MatchIdentifier(x, y);
-            }
-
-            public QsiParameter FindParameter(QsiParameter[] parameters, IQsiBindParameterExpressionNode node)
-            {
-                return _service.FindParameter(parameters, node);
-            }
+        public QsiParameter FindParameter(QsiParameter[] parameters, IQsiBindParameterExpressionNode node)
+        {
+            return _service.FindParameter(parameters, node);
         }
     }
 }

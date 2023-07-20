@@ -1,30 +1,29 @@
-﻿namespace PrimarSql.Data.Models.Columns
+﻿namespace PrimarSql.Data.Models.Columns;
+
+internal sealed class IdentifierPart : IPart
 {
-    internal sealed class IdentifierPart : IPart
-    {
-        public string Identifier { get; }
+    public string Identifier { get; }
         
-        public IdentifierPart(string identifier)
-        {
-            Identifier = identifier;
-        }
+    public IdentifierPart(string identifier)
+    {
+        Identifier = identifier;
+    }
 
-        public override string ToString()
-        {
-            return Identifier;
-        }
+    public override string ToString()
+    {
+        return Identifier;
+    }
 
-        public override bool Equals(object obj)
-        {
-            if (obj is not IdentifierPart identifierPart)
-                return false;
+    public override bool Equals(object obj)
+    {
+        if (obj is not IdentifierPart identifierPart)
+            return false;
             
-            return Identifier == identifierPart.Identifier;
-        }
+        return Identifier == identifierPart.Identifier;
+    }
 
-        public override int GetHashCode()
-        {
-            return Identifier.GetHashCode();
-        }
+    public override int GetHashCode()
+    {
+        return Identifier.GetHashCode();
     }
 }

@@ -1,9 +1,8 @@
-﻿namespace Qsi.Oracle.Common
+﻿namespace Qsi.Oracle.Common;
+
+public enum OracleWindowingType
 {
-    public enum OracleWindowingType
-    {
-        Rows,
-        Range,
-        Groups
-    }
+    Rows,
+    Range,
+    Groups
 }

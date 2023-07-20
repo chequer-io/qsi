@@ -1,9 +1,8 @@
-﻿namespace Qsi.Oracle.Common
+﻿namespace Qsi.Oracle.Common;
+
+public enum OracleQueryBehavior
 {
-    public enum OracleQueryBehavior
-    {
-        Distinct,
-        Unique,
-        All
-    }
+    Distinct,
+    Unique,
+    All
 }

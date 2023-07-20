@@ -1,11 +1,10 @@
 ﻿using Qsi.Data;
 
-namespace Qsi.Tree
-{
-    public interface IQsiPrepareActionNode : IQsiActionNode
-    {
-        QsiQualifiedIdentifier Identifier { get; }
+namespace Qsi.Tree;
 
-        IQsiExpressionNode Query { get; }
-    }
+public interface IQsiPrepareActionNode : IQsiActionNode
+{
+    QsiQualifiedIdentifier Identifier { get; }
+
+    IQsiExpressionNode Query { get; }
 }

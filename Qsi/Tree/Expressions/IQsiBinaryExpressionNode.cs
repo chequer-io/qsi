@@ -1,11 +1,10 @@
-namespace Qsi.Tree
+namespace Qsi.Tree;
+
+public interface IQsiBinaryExpressionNode : IQsiExpressionNode
 {
-    public interface IQsiBinaryExpressionNode : IQsiExpressionNode
-    {
-        IQsiExpressionNode Left { get; }
+    IQsiExpressionNode Left { get; }
 
-        string Operator { get; }
+    string Operator { get; }
 
-        IQsiExpressionNode Right { get; }
-    }
+    IQsiExpressionNode Right { get; }
 }

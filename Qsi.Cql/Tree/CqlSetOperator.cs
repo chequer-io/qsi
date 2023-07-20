@@ -1,9 +1,8 @@
-﻿namespace Qsi.Cql.Tree
+﻿namespace Qsi.Cql.Tree;
+
+public enum CqlSetOperator
 {
-    public enum CqlSetOperator
-    {
-        Assignment,
-        AdditionAssignment,
-        SubtractionAssignment
-    }
+    Assignment,
+    AdditionAssignment,
+    SubtractionAssignment
 }

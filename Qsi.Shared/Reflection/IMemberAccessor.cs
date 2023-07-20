@@ -1,9 +1,8 @@
-namespace Qsi.Shared.Reflection
-{
-    internal interface IMemberAccessor<in TType, TValue>
-    {
-        TValue GetValue(TType obj);
+namespace Qsi.Shared.Reflection;
 
-        void SetValue(TType obj, TValue value);
-    }
+internal interface IMemberAccessor<in TType, TValue>
+{
+    TValue GetValue(TType obj);
+
+    void SetValue(TType obj, TValue value);
 }

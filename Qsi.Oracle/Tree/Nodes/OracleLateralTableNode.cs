@@ -1,24 +1,23 @@
 ﻿using System.Collections.Generic;
 using Qsi.Tree;
 
-namespace Qsi.Oracle.Tree
+namespace Qsi.Oracle.Tree;
+
+public sealed class OracleLateralTableNode : QsiTableNode
 {
-    public sealed class OracleLateralTableNode : QsiTableNode
+    public QsiTreeNodeProperty<QsiTableNode> Source { get; }
+
+    public override IEnumerable<IQsiTreeNode> Children
     {
-        public QsiTreeNodeProperty<QsiTableNode> Source { get; }
-
-        public override IEnumerable<IQsiTreeNode> Children
+        get
         {
-            get
-            {
-                if (!Source.IsEmpty)
-                    yield return Source.Value;
-            }
+            if (!Source.IsEmpty)
+                yield return Source.Value;
         }
+    }
 
-        public OracleLateralTableNode()
-        {
-            Source = new QsiTreeNodeProperty<QsiTableNode>(this);
-        }
+    public OracleLateralTableNode()
+    {
+        Source = new QsiTreeNodeProperty<QsiTableNode>(this);
     }
 }

@@ -1,17 +1,16 @@
-﻿namespace Qsi.Cql.Schema
+﻿namespace Qsi.Cql.Schema;
+
+public sealed class CqlFrozenType : CqlType
 {
-    public sealed class CqlFrozenType : CqlType
+    public CqlType ElementType { get; }
+
+    internal CqlFrozenType(CqlType elementType)
     {
-        public CqlType ElementType { get; }
+        ElementType = elementType;
+    }
 
-        internal CqlFrozenType(CqlType elementType)
-        {
-            ElementType = elementType;
-        }
-
-        public override string ToSql()
-        {
-            return $"frozen<{ElementType.ToSql()}>";
-        }
+    public override string ToSql()
+    {
+        return $"frozen<{ElementType.ToSql()}>";
     }
 }

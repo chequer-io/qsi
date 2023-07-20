@@ -2,18 +2,17 @@
 using Qsi.PrimarSql.Diagnostics;
 using Qsi.Services;
 
-namespace Qsi.Debugger.Vendor.PrimarSql
-{
-    internal class PrimarSqlDebugger : VendorDebugger
-    {
-        protected override IRawTreeParser CreateRawTreeParser()
-        {
-            return new PrimarSqlRawParser();
-        }
+namespace Qsi.Debugger.Vendor.PrimarSql;
 
-        protected override IQsiLanguageService CreateLanguageService()
-        {
-            return new PrimarSqlLanguageService();
-        }
+internal class PrimarSqlDebugger : VendorDebugger
+{
+    protected override IRawTreeParser CreateRawTreeParser()
+    {
+        return new PrimarSqlRawParser();
+    }
+
+    protected override IQsiLanguageService CreateLanguageService()
+    {
+        return new PrimarSqlLanguageService();
     }
 }

@@ -3,77 +3,76 @@ using System.Linq;
 using Qsi.Data;
 using Qsi.Tree;
 
-namespace Qsi.Hana.Tree
+namespace Qsi.Hana.Tree;
+
+public sealed class HanaXmlTableNode : QsiTableNode
 {
-    public sealed class HanaXmlTableNode : QsiTableNode
+    public QsiIdentifier Identifier { get; set; }
+
+    public HanaXmlNamespaceNode DefaultNamespace { get; set; }
+
+    public HanaXmlNamespaceNode[] Namespaces { get; set; }
+
+    public string RowPattern { get; set; }
+
+    public string Argument { get; set; }
+
+    public QsiQualifiedIdentifier ArgumentColumnReference { get; set; }
+
+    public HanaXmlColumnDefinitionNode[] Columns { get; set; }
+
+    public override IEnumerable<IQsiTreeNode> Children
     {
-        public QsiIdentifier Identifier { get; set; }
-
-        public HanaXmlNamespaceNode DefaultNamespace { get; set; }
-
-        public HanaXmlNamespaceNode[] Namespaces { get; set; }
-
-        public string RowPattern { get; set; }
-
-        public string Argument { get; set; }
-
-        public QsiQualifiedIdentifier ArgumentColumnReference { get; set; }
-
-        public HanaXmlColumnDefinitionNode[] Columns { get; set; }
-
-        public override IEnumerable<IQsiTreeNode> Children
+        get
         {
-            get
+            if (DefaultNamespace != null)
+                yield return DefaultNamespace;
+
+            if (Namespaces != null)
             {
-                if (DefaultNamespace != null)
-                    yield return DefaultNamespace;
+                foreach (var hanaNamespace in Namespaces)
+                    yield return hanaNamespace;
+            }
 
-                if (Namespaces != null)
-                {
-                    foreach (var hanaNamespace in Namespaces)
-                        yield return hanaNamespace;
-                }
-
-                if (Columns != null)
-                {
-                    foreach (var column in Columns)
-                        yield return column;
-                }
+            if (Columns != null)
+            {
+                foreach (var column in Columns)
+                    yield return column;
             }
         }
     }
+}
 
-    public sealed class HanaXmlNamespaceNode : QsiTreeNode
+public sealed class HanaXmlNamespaceNode : QsiTreeNode
+{
+    public string Url { get; }
+
+    public string Alias { get; }
+
+    public override IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
+
+    public HanaXmlNamespaceNode(string url)
     {
-        public string Url { get; }
-
-        public string Alias { get; }
-
-        public override IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
-
-        public HanaXmlNamespaceNode(string url)
-        {
-            Url = url;
-        }
-
-        public HanaXmlNamespaceNode(string url, string alias) : this(url)
-        {
-            Alias = alias;
-        }
+        Url = url;
     }
 
-    public sealed class HanaXmlColumnDefinitionNode : QsiTreeNode
+    public HanaXmlNamespaceNode(string url, string alias) : this(url)
     {
-        public QsiIdentifier Identifier { get; }
+        Alias = alias;
+    }
+}
 
-        public string Type { get; }
+public sealed class HanaXmlColumnDefinitionNode : QsiTreeNode
+{
+    public QsiIdentifier Identifier { get; }
 
-        public override IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
+    public string Type { get; }
 
-        public HanaXmlColumnDefinitionNode(QsiIdentifier identifier, string type)
-        {
-            Identifier = identifier;
-            Type = type;
-        }
+    public override IEnumerable<IQsiTreeNode> Children => Enumerable.Empty<IQsiTreeNode>();
+
+    public HanaXmlColumnDefinitionNode(QsiIdentifier identifier, string type)
+    {
+        Identifier = identifier;
+        Type = type;
     }
 }

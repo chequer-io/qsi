@@ -1,11 +1,10 @@
-﻿namespace Qsi.Tree
+﻿namespace Qsi.Tree;
+
+public interface IQsiDataUpdateActionNode : IQsiActionNode
 {
-    public interface IQsiDataUpdateActionNode : IQsiActionNode
-    {
-        IQsiTableNode Target { get; }
+    IQsiTableNode Target { get; }
 
-        IQsiRowValueExpressionNode Value { get; }
+    IQsiRowValueExpressionNode Value { get; }
 
-        IQsiSetColumnExpressionNode[] SetValues { get; }
-    }
+    IQsiSetColumnExpressionNode[] SetValues { get; }
 }

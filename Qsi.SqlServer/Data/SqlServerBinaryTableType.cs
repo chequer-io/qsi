@@ -1,9 +1,8 @@
-﻿namespace Qsi.SqlServer.Data
+﻿namespace Qsi.SqlServer.Data;
+
+public enum SqlServerBinaryTableType
 {
-    public enum SqlServerBinaryTableType
-    {
-        Union,
-        Except,
-        Intersect,
-    }
+    Union,
+    Except,
+    Intersect,
 }

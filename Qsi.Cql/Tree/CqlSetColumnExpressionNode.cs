@@ -1,29 +1,28 @@
 ﻿using System.Collections.Generic;
 using Qsi.Tree;
 
-namespace Qsi.Cql.Tree
+namespace Qsi.Cql.Tree;
+
+public sealed class CqlSetColumnExpressionNode : QsiSetColumnExpressionNode
 {
-    public sealed class CqlSetColumnExpressionNode : QsiSetColumnExpressionNode
+    public QsiTreeNodeProperty<QsiMemberAccessExpressionNode> TargetExpression { get; }
+
+    public CqlSetOperator Operator { get; set; }
+
+    public override IEnumerable<IQsiTreeNode> Children
     {
-        public QsiTreeNodeProperty<QsiMemberAccessExpressionNode> TargetExpression { get; }
-
-        public CqlSetOperator Operator { get; set; }
-
-        public override IEnumerable<IQsiTreeNode> Children
+        get
         {
-            get
-            {
-                if (!TargetExpression.IsEmpty)
-                    yield return TargetExpression.Value;
+            if (!TargetExpression.IsEmpty)
+                yield return TargetExpression.Value;
 
-                if (!Value.IsEmpty)
-                    yield return Value.Value;
-            }
+            if (!Value.IsEmpty)
+                yield return Value.Value;
         }
+    }
 
-        public CqlSetColumnExpressionNode()
-        {
-            TargetExpression = new QsiTreeNodeProperty<QsiMemberAccessExpressionNode>(this);
-        }
+    public CqlSetColumnExpressionNode()
+    {
+        TargetExpression = new QsiTreeNodeProperty<QsiMemberAccessExpressionNode>(this);
     }
 }

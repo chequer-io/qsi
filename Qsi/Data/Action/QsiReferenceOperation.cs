@@ -1,8 +1,7 @@
-﻿namespace Qsi.Data
+﻿namespace Qsi.Data;
+
+public enum QsiReferenceOperation
 {
-    public enum QsiReferenceOperation
-    {
-        Create,
-        Delete
-    }
+    Create,
+    Delete
 }

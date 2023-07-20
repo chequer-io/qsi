@@ -6,44 +6,43 @@ using Qsi.Trino.Internal;
 using Qsi.Trino.Tree.Visitors;
 using Qsi.Utilities;
 
-namespace Qsi.Trino
+namespace Qsi.Trino;
+
+using static SqlBaseParser;
+
+public class TrinoParser : IQsiTreeParser
 {
-    using static SqlBaseParser;
-
-    public class TrinoParser : IQsiTreeParser
+    public IQsiTreeNode Parse(QsiScript script, CancellationToken cancellationToken = default)
     {
-        public IQsiTreeNode Parse(QsiScript script, CancellationToken cancellationToken = default)
+        var (_, result) = SqlParser.Parse(script.Script, p => p.singleStatement());
+
+        var statement = result.statement();
+
+        switch (statement)
         {
-            var (_, result) = SqlParser.Parse(script.Script, p => p.singleStatement());
+            case InsertIntoContext insertInto:
+                return ActionVisitor.VisitInsertInto(insertInto);
 
-            var statement = result.statement();
+            case UpdateContext update:
+                return ActionVisitor.VisitUpdate(update);
 
-            switch (statement)
-            {
-                case InsertIntoContext insertInto:
-                    return ActionVisitor.VisitInsertInto(insertInto);
+            case DeleteContext delete:
+                return ActionVisitor.VisitDelete(delete);
 
-                case UpdateContext update:
-                    return ActionVisitor.VisitUpdate(update);
+            case StatementDefaultContext statementDefault:
+                return TableVisitor.VisitQuery(statementDefault.query());
 
-                case DeleteContext delete:
-                    return ActionVisitor.VisitDelete(delete);
+            case MergeContext merge:
+                return ActionVisitor.VisitMerge(merge);
 
-                case StatementDefaultContext statementDefault:
-                    return TableVisitor.VisitQuery(statementDefault.query());
+            case CreateViewContext createView:
+                return ActionVisitor.VisitCreateView(createView);
 
-                case MergeContext merge:
-                    return ActionVisitor.VisitMerge(merge);
-
-                case CreateViewContext createView:
-                    return ActionVisitor.VisitCreateView(createView);
-
-                case UseContext use:
-                    return ActionVisitor.VisitUse(use);
+            case UseContext use:
+                return ActionVisitor.VisitUse(use);
                 
-                default:
-                    throw TreeHelper.NotSupportedTree(statement);
-            }
+            default:
+                throw TreeHelper.NotSupportedTree(statement);
         }
     }
 }

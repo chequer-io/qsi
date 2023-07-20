@@ -1,17 +1,16 @@
 ﻿using Qsi.Data;
 
-namespace Qsi.Tree
+namespace Qsi.Tree;
+
+public interface IQsiBindParameterExpressionNode : IQsiExpressionNode
 {
-    public interface IQsiBindParameterExpressionNode : IQsiExpressionNode
-    {
-        QsiParameterType Type { get; }
+    QsiParameterType Type { get; }
 
-        string Prefix { get; }
+    string Prefix { get; }
 
-        bool NoSuffix { get; }
+    bool NoSuffix { get; }
 
-        string Name { get; }
+    string Name { get; }
 
-        int? Index { get; }
-    }
+    int? Index { get; }
 }

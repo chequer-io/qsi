@@ -7,42 +7,41 @@ using Qsi.Parsing;
 using Qsi.PostgreSql.Analyzers;
 using Qsi.Services;
 
-namespace Qsi.PostgreSql
+namespace Qsi.PostgreSql;
+
+public abstract class PostgreSqlLanguageServiceBase : QsiLanguageServiceBase
 {
-    public abstract class PostgreSqlLanguageServiceBase : QsiLanguageServiceBase
+    public override IQsiTreeParser CreateTreeParser()
     {
-        public override IQsiTreeParser CreateTreeParser()
-        {
-            return new PostgreSqlParser();
-        }
+        return new PostgreSqlParser();
+    }
 
-        public override IQsiTreeDeparser CreateTreeDeparser()
-        {
-            return new PostgreSqlDeparser();
-        }
+    public override IQsiTreeDeparser CreateTreeDeparser()
+    {
+        return new PostgreSqlDeparser();
+    }
 
-        public override IQsiScriptParser CreateScriptParser()
-        {
-            return new PostgreSqlScriptParser();
-        }
+    public override IQsiScriptParser CreateScriptParser()
+    {
+        return new PostgreSqlScriptParser();
+    }
 
-        public override QsiAnalyzerOptions CreateAnalyzerOptions()
+    public override QsiAnalyzerOptions CreateAnalyzerOptions()
+    {
+        return new()
         {
-            return new()
-            {
-                AllowEmptyColumnsInSelect = true,
-                AllowEmptyColumnsInInline = true,
-                AllowNoAliasInDerivedTable = true,
-                IncludeInvisibleColumnsInAlias = true,
-                UseImplicitTableWildcardInSelect = true,
-            };
-        }
+            AllowEmptyColumnsInSelect = true,
+            AllowEmptyColumnsInInline = true,
+            AllowNoAliasInDerivedTable = true,
+            IncludeInvisibleColumnsInAlias = true,
+            UseImplicitTableWildcardInSelect = true,
+        };
+    }
 
-        public override IEnumerable<IQsiAnalyzer> CreateAnalyzers(QsiEngine engine)
-        {
-            yield return new QsiActionAnalyzer(engine);
-            yield return new PgTableAnalyzer(engine);
-            yield return new QsiDefinitionAnalyzer(engine);
-        }
+    public override IEnumerable<IQsiAnalyzer> CreateAnalyzers(QsiEngine engine)
+    {
+        yield return new QsiActionAnalyzer(engine);
+        yield return new PgTableAnalyzer(engine);
+        yield return new QsiDefinitionAnalyzer(engine);
     }
 }

@@ -1,11 +1,10 @@
-﻿namespace Qsi.MySql.Internal
+﻿namespace Qsi.MySql.Internal;
+
+internal interface IMySqlRecognizerCommon
 {
-    internal interface IMySqlRecognizerCommon
-    {
-        int serverVersion { get; }
+    int serverVersion { get; }
 
-        bool MariaDB { get; }
+    bool MariaDB { get; }
 
-        bool isSqlModeActive(int mode);
-    }
+    bool isSqlModeActive(int mode);
 }

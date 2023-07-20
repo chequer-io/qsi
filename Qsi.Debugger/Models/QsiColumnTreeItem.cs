@@ -2,40 +2,39 @@
 using System.Linq;
 using Qsi.Data;
 
-namespace Qsi.Debugger.Models
+namespace Qsi.Debugger.Models;
+
+public class QsiColumnTreeItem
 {
-    public class QsiColumnTreeItem
+    public int Depth { get; }
+
+    public QsiTableColumn Column { get; }
+
+    public QsiColumnTreeItem[] Items { get; }
+
+    public bool IsRecursive { get; }
+
+    public QsiColumnTreeItem(QsiTableColumn column, int depth = 0) : this(column, depth, new HashSet<QsiTableColumn>())
     {
-        public int Depth { get; }
+    }
 
-        public QsiTableColumn Column { get; }
+    private QsiColumnTreeItem(QsiTableColumn column, int depth, HashSet<QsiTableColumn> recursiveTracker)
+    {
+        Depth = depth;
+        Column = column;
 
-        public QsiColumnTreeItem[] Items { get; }
-
-        public bool IsRecursive { get; }
-
-        public QsiColumnTreeItem(QsiTableColumn column, int depth = 0) : this(column, depth, new HashSet<QsiTableColumn>())
+        if (recursiveTracker.Contains(column))
         {
+            IsRecursive = true;
+            return;
         }
 
-        private QsiColumnTreeItem(QsiTableColumn column, int depth, HashSet<QsiTableColumn> recursiveTracker)
-        {
-            Depth = depth;
-            Column = column;
+        recursiveTracker.Add(column);
 
-            if (recursiveTracker.Contains(column))
-            {
-                IsRecursive = true;
-                return;
-            }
+        Items = column.References
+            .Select(c => new QsiColumnTreeItem(c, depth + 1, recursiveTracker))
+            .ToArray();
 
-            recursiveTracker.Add(column);
-
-            Items = column.References
-                .Select(c => new QsiColumnTreeItem(c, depth + 1, recursiveTracker))
-                .ToArray();
-
-            recursiveTracker.Remove(column);
-        }
+        recursiveTracker.Remove(column);
     }
 }

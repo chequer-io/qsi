@@ -1,8 +1,7 @@
-namespace Qsi.Trino.Common
+namespace Qsi.Trino.Common;
+
+public enum TrinoNullTreatment
 {
-    public enum TrinoNullTreatment
-    {
-        IgnoreNulls,
-        RespectNulls
-    }
+    IgnoreNulls,
+    RespectNulls
 }

@@ -1,9 +1,8 @@
-﻿namespace Qsi.Tree.Data
-{
-    public interface IUserDataHolder
-    {
-        T GetData<T>(Key<T> key);
+﻿namespace Qsi.Tree.Data;
 
-        void PutData<T>(Key<T> key, T value);
-    }
+public interface IUserDataHolder
+{
+    T GetData<T>(Key<T> key);
+
+    void PutData<T>(Key<T> key, T value);
 }

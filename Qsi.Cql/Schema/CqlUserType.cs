@@ -1,19 +1,18 @@
 ﻿using Qsi.Data;
 
-namespace Qsi.Cql.Schema
+namespace Qsi.Cql.Schema;
+
+public sealed class CqlUserType : CqlType
 {
-    public sealed class CqlUserType : CqlType
+    public QsiQualifiedIdentifier Identifier { get; }
+
+    internal CqlUserType(QsiQualifiedIdentifier identifier)
     {
-        public QsiQualifiedIdentifier Identifier { get; }
+        Identifier = identifier;
+    }
 
-        internal CqlUserType(QsiQualifiedIdentifier identifier)
-        {
-            Identifier = identifier;
-        }
-
-        public override string ToSql()
-        {
-            return Identifier.ToString();
-        }
+    public override string ToSql()
+    {
+        return Identifier.ToString();
     }
 }
