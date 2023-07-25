@@ -700,7 +700,10 @@ internal static class TableVisitor
                     node.Grouping.SetValue(ExpressionVisitor.VisitGroupByClause(groupByClause));
                     break;
 
-                case HavingClauseContext havingClause when !node.Grouping.IsEmpty:
+                case HavingClauseContext havingClause:
+                    if (node.Grouping.IsEmpty)
+                        node.Grouping.SetValue(ExpressionVisitor.MakeEmptyQsiGroupingExpressionNode(havingClause));
+
                     node.Grouping.Value.Having.SetValue(ExpressionVisitor.VisitHavingClause(havingClause));
                     break;
 
