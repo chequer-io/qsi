@@ -1585,6 +1585,16 @@ internal static class ExpressionVisitor
     }
 
     #region Having Clause
+    public static QsiGroupingExpressionNode MakeEmptyQsiGroupingExpressionNode(HavingClauseContext context)
+    {
+        return TreeHelper.Create<QsiGroupingExpressionNode>(n =>
+        {
+            n.Items.AddRange(new List<QsiExpressionNode>(0));
+
+            MySqlTree.PutContextSpan(n, context);
+        });
+    }
+
     public static QsiExpressionNode VisitHavingClause(HavingClauseContext context)
     {
         return VisitExpr(context.expr());
