@@ -80,4 +80,4 @@ jobs:
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
       with:
-        ram: 30720
+        ram: 20480
