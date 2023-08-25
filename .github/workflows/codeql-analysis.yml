@@ -52,6 +52,7 @@ jobs:
 
     strategy:
       fail-fast: false
+      max-parallel: 3
       matrix:
         language: ["csharp"]
         csproj-file: ${{ fromJson(needs.resolve-csproj.outputs.CSPROJ_FILES) }}
