@@ -85,7 +85,7 @@ jobs:
       - name: Login to nexus
         continue-on-error: true
         run: |
-          dotnet nuget add source https://api.nuget.org/v3/index.json \
+          dotnet nuget add source https://nexus.chequer.io/repository/nuget-hosted/index.json \
               --name codeql.nexus.chequer.io \
               --username "$PRIVATE_API_NEXUS_USERNAME" \
               --password "$PRIVATE_API_NEXUS_PASSWORD" \
