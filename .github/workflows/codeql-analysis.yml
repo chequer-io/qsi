@@ -77,6 +77,11 @@ jobs:
           distribution: "temurin" # See 'Supported distributions' for available options
           java-version: "17"
 
+      - name: Fix
+        continue-on-error: true
+        run: |
+          dotnet nuget remove source nexus.chequer.io
+
       - name: Login to nexus
         continue-on-error: true
         run: |
