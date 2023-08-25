@@ -93,3 +93,8 @@ jobs:
       uses: github/codeql-action/analyze@v2
       with:
         ram: 20480
+
+    - name: Remove nexus auth
+      if: always()
+      run: |
+        dotnet nuget remove source codeql.nexus.chequer.io
