@@ -1,0 +1,133 @@
+# For most projects, this workflow file will not need changing; you simply need
+# to commit it to your repository.
+#
+# You may wish to alter this file to override the set of languages analyzed,
+# or to provide custom queries or build logic.
+#
+# ******** NOTE ********
+# We have attempted to detect the languages in your repository. Please check
+# the `language` matrix defined below to confirm you have the correct set of
+# supported CodeQL languages.
+#
+name: 🔍 CodeQL
+
+on:
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: ["main"]
+  schedule:
+    - cron: "0 20 * * 0"
+  workflow_dispatch:
+
+jobs:
+  resolve-csproj:
+    name: Resolve csproj files
+    runs-on: ubuntu-latest
+    outputs:
+      CSPROJ_FILES: ${{ steps.csproj-files.outputs.CSPROJ_FILES }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          token: "${{ secrets.DEV_CHEQUER_GITHUB_TOKEN }}"
+          submodules: true
+          lfs: true
+
+      - name: Find csproj files
+        id: csproj-files
+        shell: bash
+        run: |
+          CSPROJ_FILES=$(find . -type f -name "*.csproj" | jq -R . | jq -sc .)
+          echo "CSPROJ_FILES=$CSPROJ_FILES" >> $GITHUB_OUTPUT;
+
+  analyze:
+    needs: [resolve-csproj]
+    name: Analyze
+    runs-on: [self-hosted, querypie]
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        language: ["csharp"]
+        csproj-file: ${{ fromJson(needs.resolve-csproj.outputs.CSPROJ_FILES) }}
+        # CodeQL supports [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python', 'ruby' ]
+        # Learn more about CodeQL language support at https://aka.ms/codeql-docs/language-support
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          token: "${{ secrets.DEV_CHEQUER_GITHUB_TOKEN }}"
+          submodules: true
+          lfs: true
+
+      - name: "Setup .NET"
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: "6.0.301"
+
+      - name: "Setup Java"
+        uses: actions/setup-java@v3
+        with:
+          distribution: "temurin" # See 'Supported distributions' for available options
+          java-version: "17"
+
+      - name: Login to nexus
+        continue-on-error: true
+        run: |
+          dotnet nuget add source https://nexus.chequer.io/repository/nuget-hosted/index.json \
+              --name codeql.nexus.chequer.io \
+              --username "$PRIVATE_API_NEXUS_USERNAME" \
+              --password "$PRIVATE_API_NEXUS_PASSWORD" \
+              --store-password-in-clear-text
+        env:
+          PRIVATE_API_NEXUS_USERNAME: ${{ secrets.PRIVATE_API_NEXUS_USERNAME }}
+          PRIVATE_API_NEXUS_PASSWORD: ${{ secrets.PRIVATE_API_NEXUS_PASSWORD }}
+
+      # Initializes the CodeQL tools for scanning.
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: ${{ matrix.language }}
+          # If you wish to specify custom queries, you can do so here or in a config file.
+          # By default, queries listed here will override any specified in a config file.
+          # Prefix the list here with "+" to use these queries and those in the config file.
+
+          # Details on CodeQL's query packs refer to : https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
+          # queries: security-extended,security-and-quality
+
+      - name: Run Setup.ps1
+        shell: pwsh
+        run: ./Setup.ps1
+
+      - name: Resolve dirname
+        id: csproj-dirname
+        shell: bash
+        run: |
+          CSPROJ_DIRNAME=$(dirname $CSPROJ_FILE);
+          echo "CSPROJ_DIRNAME=$CSPROJ_DIRNAME" >> $GITHUB_OUTPUT;
+        env:
+          CSPROJ_FILE: ${{ matrix.csproj-file }}
+
+      # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
+      # If this step fails, then you should remove it and run the build manually (see below)
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v2
+        with:
+          working-directory: ${{ steps.csproj-dirname.outputs.CSPROJ_DIRNAME }}
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+        with:
+          ram: 20480
+
+      - name: Remove nexus auth
+        if: always()
+        run: |
+          dotnet nuget remove source codeql.nexus.chequer.io
