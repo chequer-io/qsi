@@ -77,6 +77,11 @@ jobs:
           distribution: "temurin" # See 'Supported distributions' for available options
           java-version: "17"
 
+      - name: Login to Nexus
+        continue-on-error: true
+        run: |
+          dotnet nuget add source nexus.chequer.io --name nexus.chequer.io --username '${{ secrets.PRIVATE_API_NEXUS_USERNAME }}' --password '${{ secrets.PRIVATE_API_NEXUS_PASSWORD }}' --store-password-in-clear-text
+
       # Initializes the CodeQL tools for scanning.
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v2
