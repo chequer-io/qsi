@@ -77,10 +77,17 @@ jobs:
           distribution: "temurin" # See 'Supported distributions' for available options
           java-version: "17"
 
-      - name: Login to Nexus
+      - name: Login to nexus
         continue-on-error: true
         run: |
-          dotnet nuget add source nexus.chequer.io --name nexus.chequer.io --username '${{ secrets.PRIVATE_API_NEXUS_USERNAME }}' --password '${{ secrets.PRIVATE_API_NEXUS_PASSWORD }}' --store-password-in-clear-text
+          dotnet nuget add source https://api.nuget.org/v3/index.json \
+              --name codeql.nexus.chequer.io \
+              --username "$PRIVATE_API_NEXUS_USERNAME" \
+              --password "$PRIVATE_API_NEXUS_PASSWORD" \
+              --store-password-in-clear-text
+        env:
+          PRIVATE_API_NEXUS_USERNAME: ${{ secrets.PRIVATE_API_NEXUS_USERNAME }}
+          PRIVATE_API_NEXUS_PASSWORD: ${{ secrets.PRIVATE_API_NEXUS_PASSWORD }}
 
       # Initializes the CodeQL tools for scanning.
       - name: Initialize CodeQL
@@ -118,3 +125,8 @@ jobs:
         uses: github/codeql-action/analyze@v2
         with:
           ram: 20480
+
+      - name: Remove nexus auth
+        if: always()
+        run: |
+          dotnet nuget remove source codeql.nexus.chequer.io
