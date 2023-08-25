@@ -21,8 +21,8 @@ on:
 
 jobs:
   resolve-csproj:
-    name: Resolve csporj files
-    runs-on: [self-hosted, querypie]
+    name: Resolve csproj files
+    runs-on: ubuntu-latest
     outputs:
       CSPROJ_FILES: ${{ steps.csproj-files.outputs.CSPROJ_FILES }}
 
