@@ -1111,7 +1111,7 @@ INVALID_INPUT:
 // ** Patch by QSI
 // The underscore charset token is used to defined the repertoire of a string, though it conflicts
 // with normal identifiers, which also can start with an underscore.
-UNDERSCORE_CHARSET: '_' [a-z0-9]+ { setType(checkCharset(getText())); };
+UNDERSCORE_CHARSET: '_' [a-zA-Z0-9]+ { setType(checkCharset(getText())); };
 
 // Identifiers might start with a digit, even though it is discouraged, and may not consist entirely of digits only.
 // All keywords above are automatically excluded.
