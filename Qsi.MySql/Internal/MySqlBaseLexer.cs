@@ -169,7 +169,7 @@ internal abstract class MySqlBaseLexer : Lexer, IMySqlRecognizerCommon
     // MySQLBaseLexer::checkCharset
     protected int checkCharset(string text)
     {
-        return Charsets.Contains(text) ? MySqlLexerInternal.UNDERSCORE_CHARSET : MySqlLexerInternal.IDENTIFIER;
+        return Charsets.Contains(text.ToLowerInvariant()) ? MySqlLexerInternal.UNDERSCORE_CHARSET : MySqlLexerInternal.IDENTIFIER;
     }
 
     // MySQLBaseLexer::emitDot
