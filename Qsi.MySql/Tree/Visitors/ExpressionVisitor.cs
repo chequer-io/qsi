@@ -1515,7 +1515,7 @@ internal static class ExpressionVisitor
                 break;
 
             case NTILE_SYMBOL:
-                node.Parameters.Add(VisitSimpleExprWithParentheses(context.simpleExprWithParentheses()));
+                node.Parameters.Add(VisitExprWithParentheses(context.exprWithParentheses()));
                 break;
 
             case LEAD_SYMBOL:

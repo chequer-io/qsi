@@ -233,4 +233,10 @@ public partial class MySqlTest : VendorTestBase
 
         Assert.AreEqual(expectColumnNames, qsiIdentifierColumnNames);
     }
+
+    [TestCaseSource(nameof(Test_LeadLagInfo_TestDatas))]
+    public async Task Test_LeadLagInfo(string sql)
+    {
+        Assert.DoesNotThrowAsync
+            (() => Engine.Execute(new QsiScript(sql, QsiScriptType.Select), null).AsTask()); }
 }
