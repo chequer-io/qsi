@@ -15,7 +15,7 @@ using VerifyNUnit;
 
 namespace Qsi.Tests.PrimarSql;
 
-[TestFixture("EndPoint=127.0.0.1:8000")]
+[TestFixture("EndPoint=127.0.0.1:8001")]
 public partial class PrimarSqlTest : VendorTestBase
 {
     public PrimarSqlTest(string connectionString) : base(connectionString)

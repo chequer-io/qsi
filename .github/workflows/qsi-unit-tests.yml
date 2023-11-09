@@ -17,24 +17,6 @@ on:
 jobs:
   test:
     runs-on: [ self-hosted, querypie ]
-    services:
-      mysql:
-        image: mysql:latest
-        env:
-          MYSQL_USER: root
-          MYSQL_PASSWORD: root
-          MYSQL_ROOT_PASSWORD: root
-        ports:
-          - 33066:3306
-      
-      postgres:
-        image: postgres:latest
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: 1234
-          POSTGRES_DB: dvdrental
-        ports:
-          - 54322:5432
 
     steps:
       - uses: actions/checkout@v2
@@ -83,3 +65,6 @@ jobs:
 
       - name: Test
         run: dotnet test Qsi.Tests --no-build --verbosity normal
+
+      - name: Remove containers
+        run: docker ps -q -f "publish=33066" -f "publish=54322" -f "publish=8001" | xargs docker rm -f
