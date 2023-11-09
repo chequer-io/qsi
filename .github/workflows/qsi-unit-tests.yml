@@ -26,12 +26,24 @@ jobs:
           MYSQL_ROOT_PASSWORD: root
         ports:
           - 33066:3306
+      
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: 1234
+          POSTGRES_DB: dvdrental
+        ports:
+          - 54322:5432
 
     steps:
       - uses: actions/checkout@v2
 
       - name: Setup MySQL
-        run: docker run --name mysql --detach --env MYSQL_ROOT_PASSWORD=root --publish 33066:3306  mysql
+        run: docker run --name mysql --detach --env MYSQL_ROOT_PASSWORD=root --publish 33066:3306 mysql
+
+      - name: Setup Postgres
+        run: docker run --name postgres --detach -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=1234 -e POSTGRES_DB=dvdrental --publish 54322:5432 postgres
 
       - name: Setup docker-compose
         uses: KengoTODA/actions-setup-docker-compose@v1

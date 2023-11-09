@@ -17,7 +17,7 @@ using VerifyNUnit;
 
 namespace Qsi.Tests.PostgreSql;
 
-[TestFixture("server=localhost;port=5432;user id=postgres;password=1234;database=dvdrental", Category = "PostgreSql")]
+[TestFixture("server=localhost;port=54322;user id=postgres;password=1234;database=dvdrental", Category = "PostgreSql")]
 public partial class PostgreSqlTest : VendorTestBase
 {
     private const string _baseResourcePath = "PostgreSql.dvdrental";
