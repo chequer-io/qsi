@@ -15,7 +15,7 @@ using VerifyNUnit;
 
 namespace Qsi.Tests.Vendor.MySql;
 
-[TestFixture("server=localhost;port=3306;user id=root;password=root;pooling=False;allowuservariables=True", Category = "MySql")]
+[TestFixture("server=localhost;port=33066;user id=root;password=root;pooling=False;allowuservariables=True", Category = "MySql")]
 public partial class MySqlTest : VendorTestBase
 {
     public MySqlTest(string connectionString) : base(connectionString)

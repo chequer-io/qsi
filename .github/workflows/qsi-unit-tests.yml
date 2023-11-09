@@ -16,23 +16,28 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: [ self-hosted, querypie ]
     services:
       mysql:
-        image: mysql:8.0.27
+        image: mysql:latest
         env:
           MYSQL_USER: root
           MYSQL_PASSWORD: root
           MYSQL_ROOT_PASSWORD: root
         ports:
-          - 3306
+          - 33066:3306
 
     steps:
       - uses: actions/checkout@v2
 
       - name: Setup MySQL
-        run: sudo /etc/init.d/mysql start
+        run: docker run --name mysql --detach --env MYSQL_ROOT_PASSWORD=root --publish 33066:3306  mysql
 
+      - name: Setup docker-compose
+        uses: KengoTODA/actions-setup-docker-compose@v1
+        with:
+          version: '2.14.2' # the full version of `docker-compose` command
+      
       - name: Setup DynamoDB
         run: docker-compose -f "./Qsi.Tests/Vendor/PrimarSql/docker-compose.yml" up -d
 
