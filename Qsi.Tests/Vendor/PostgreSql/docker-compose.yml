@@ -1,0 +1,11 @@
+version: '3.8'
+services:
+  postgres:
+    container_name: postgres-qsi
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: dvdrental
+    ports:
+      - 54322:5432
