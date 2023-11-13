@@ -178,10 +178,12 @@ public partial class MySqlTest
     {
         // QCP-1303 : https://chequer.atlassian.net/browse/QP-5465?focusedCommentId=48962
         new("SELECT LAG(first_name, 4294967295) OVER(ORDER BY actor_id) FROM actor;"),
+        new("SELECT LAG(first_name, last_name, 4294967295) OVER(ORDER BY actor_id) FROM actor;"),
         new("SELECT LAG(first_name, IF(TRUE, 2, 1)) OVER(ORDER BY actor_id) FROM actor;"),
         new("SELECT LAG(first_name, IF(TRUE, 2, 1) + IF(FALSE, 2, 1)) OVER(ORDER BY actor_id) FROM actor;"),
         
         new("SELECT LEAD(first_name, 4294967295) OVER(ORDER BY actor_id) FROM actor;"),
+        new("SELECT LEAD(first_name, last_name, 4294967295) OVER(ORDER BY actor_id) FROM actor;"),
         new("SELECT LEAD(first_name, IF(TRUE, 2, 1)) OVER(ORDER BY actor_id) FROM actor;"),
         new("SELECT LEAD(first_name, IF(TRUE, 2, 1) + IF(FALSE, 2, 1)) OVER(ORDER BY actor_id) FROM actor;"),
         

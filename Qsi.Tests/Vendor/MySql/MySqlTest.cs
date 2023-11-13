@@ -238,5 +238,6 @@ public partial class MySqlTest : VendorTestBase
     public async Task Test_LeadLagInfo(string sql)
     {
         Assert.DoesNotThrowAsync
-            (() => Engine.Execute(new QsiScript(sql, QsiScriptType.Select), null).AsTask()); }
+            (() => Engine.Execute(new QsiScript(sql, QsiScriptType.Select), null).AsTask());
+    }
 }
