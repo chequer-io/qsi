@@ -74,7 +74,8 @@ public partial class MySqlTest
         new("WITH CTE AS (SELECT 1) DELETE title, category FROM film_list WHERE FID = 1 AND (SELECT `1` FROM CTE) = 1")
     };
 
-    private static readonly TestCaseData[] Test_InferredName_TestDatas = {
+    private static readonly TestCaseData[] Test_InferredName_TestDatas =
+    {
         new("SELECT DISTINCT first_name FROM actor LIMIT 1;", new[] { "first_name" }),
         new("SELECT DISTINCT `first_name` FROM actor LIMIT 1;", new[] { "first_name" }),
         new("SELECT DISTINCT (first_name) FROM actor LIMIT 1;", new[] { "first_name" }),
@@ -85,7 +86,7 @@ public partial class MySqlTest
         new("SELECT DISTINCT ((first_name)) FROM actor LIMIT 1;", new[] { "first_name" }),
         new("SELECT DISTINCT ((`first_name`)) FROM actor LIMIT 1;", new[] { "first_name" }),
         new("SELECT DISTINCT ((`actor`.`first_name`)) FROM actor LIMIT 1;", new[] { "first_name" }),
-        new("SELECT DISTINCT ((`actor`.`first_name`)) AS A FROM actor LIMIT 1;", new [] { "A" }),
+        new("SELECT DISTINCT ((`actor`.`first_name`)) AS A FROM actor LIMIT 1;", new[] { "A" }),
         new("SELECT DISTINCT DISTINCT DISTINCT ((`actor`.`first_name`)) FROM actor LIMIT 1;", new[] { "first_name" }),
         new("SELECT DISTINCT (actor_id) FROM actor WHERE first_name = ANY(SELECT DISTINCT first_name FROM actor);", new[] { "actor_id" }),
         new("SELECT actor_id IN (1, 2, 3) FROM actor LIMIT 1", new[] { "actor_id IN (1, 2, 3)" }),
@@ -93,14 +94,14 @@ public partial class MySqlTest
         new("SELECT (`actor_id`) IN (1, 2, 3) FROM actor LIMIT 1", new[] { "(`actor_id`) IN (1, 2, 3)" }),
         new("SELECT actor_id IN (`actor_id`) FROM actor LIMIT 1", new[] { "actor_id IN (`actor_id`)" }),
         new("SELECT (actor_id IN (`actor_id`)) FROM actor LIMIT 1", new[] { "(actor_id IN (`actor_id`))" }),
-        
-        
+
+
         new("SELECT actor_id, first_name FROM actor LIMIT 1;", new[] { "actor_id", "first_name" }),
         new("SELECT `actor_id`, `first_name` FROM actor LIMIT 1;", new[] { "actor_id", "first_name" }),
         new("SELECT (actor_id), (first_name) FROM actor LIMIT 1;", new[] { "actor_id", "first_name" }),
         new("SELECT (`actor_id`), (`first_name`) FROM actor LIMIT 1;", new[] { "actor_id", "first_name" }),
         new("SELECT (`actor`.`actor_id`), (`actor`.first_name) FROM actor LIMIT 1", new[] { "actor_id", "first_name" }),
-        
+
         new("SELECT SUM(DISTINCT first_name) FROM actor LIMIT 1;", new[] { "SUM(DISTINCT first_name)" }),
         new("SELECT SUM(DISTINCT `first_name`) FROM actor LIMIT 1;", new[] { "SUM(DISTINCT `first_name`)" }),
         new("SELECT SUM(DISTINCT (first_name)) FROM actor LIMIT 1;", new[] { "SUM(DISTINCT (first_name))" }),
@@ -110,11 +111,11 @@ public partial class MySqlTest
         new("SELECT SUM(DISTINCT ((first_name))) FROM actor LIMIT 1;", new[] { "SUM(DISTINCT ((first_name)))" }),
         new("SELECT SUM(DISTINCT ((`first_name`))) FROM actor LIMIT 1;", new[] { "SUM(DISTINCT ((`first_name`)))" }),
         new("SELECT SUM(actor_id) FROM actor WHERE first_name = ANY(select DISTINCT first_name FROM actor);", new[] { "SUM(actor_id)" }),
-        
+
         new("SELECT @actor_id:=@actor_ID+1 FROM actor;", new[] { "@actor_id:=@actor_ID+1" }),
         new("SELECT ABS(LAG(rental_id, 1, rental_id) OVER (ORDER BY rental_id) - rental_id) FROM payment LIMIT 1;",
             new[] { "ABS(LAG(rental_id, 1, rental_id) OVER (ORDER BY rental_id) - rental_id)" }),
-        
+
         new("SELECT ('A' | 'B');", new[] { "('A' | 'B')" }),
         new("SELECT ('A' || 'B');", new[] { "('A' || 'B')" }),
         new("SELECT ('A' xor 'B');", new[] { "('A' xor 'B')" }),
@@ -133,12 +134,12 @@ public partial class MySqlTest
         // PredicateExprIn:         IN_SYMBOL (subquery | OPEN_PAR_SYMBOL exprList CLOSE_PAR_SYMBOL)
         new("SELECT actor_id IN (SELECT actor_id from actor) FROM actor LIMIT 1;", new[] { "actor_id IN (SELECT actor_id from actor)" }),
         new("SELECT actor_id IN (1, 2, 3) FROM actor LIMIT 1;", new[] { "actor_id IN (1, 2, 3)" }),
-        
+
         // PredicateExprBetween:    BETWEEN_SYMBOL bitExpr AND_SYMBOL predicate
         new("SELECT actor_id BETWEEN 1 AND 3 FROM actor LIMIT 1;", new[] { "actor_id BETWEEN 1 AND 3" }),
         new("SELECT actor_id BETWEEN (1) AND (3) FROM actor LIMIT 1;", new[] { "actor_id BETWEEN (1) AND (3)" }),
         new("SELECT actor_id BETWEEN (SELECT actor_id FROM actor LIMIT 1) AND (3) FROM actor LIMIT 1;", new[] { "actor_id BETWEEN (SELECT actor_id FROM actor LIMIT 1) AND (3)" }),
-        
+
         // PredicateExprLike:       LIKE_SYMBOL simpleExpr (ESCAPE_SYMBOL simpleExpr)?
         new("SELECT first_name LIKE '%A%' FROM actor LIMIT 1;", new[] { "first_name LIKE '%A%'" }),
         new("SELECT first_name LIKE ('%A%' OR '%B%') FROM actor LIMIT 1;", new[] { "first_name LIKE ('%A%' OR '%B%')" }),
@@ -163,7 +164,7 @@ public partial class MySqlTest
         // NOTE: Table must descript FULLTEXT indexing.
         // FULLTEXT SEARCH do not affect to search result columns naming.
         // new("SELECT * FROM actor WHERE MATCH(last_name) AGAINST('GUINESS');", new[] { "" }),
-        
+
         new("SELECT * FROM actor LIMIT 1;", new[] { "actor_id", "first_name", "last_name", "last_update" }),
         new("SELECT * FROM actor a INNER JOIN actor_info ai USING (actor_id) LIMIT 1;", new[] { "actor_id", "first_name", "last_name", "last_update", "first_name", "last_name", "film_info" }),
         new("SELECT actor_id FROM actor a INNER JOIN actor_info ai USING (actor_id) LIMIT 1;", new[] { "actor_id" }),
@@ -171,5 +172,23 @@ public partial class MySqlTest
         new("SELECT f.title, fl.title FROM film AS f JOIN film_list AS fl LIMIT 1;", new[] { "title", "title" }),
         new("SELECT (f.title), (fl.title) FROM film AS f JOIN film_list AS fl LIMIT 1;", new[] { "title", "title" }),
         new("SELECT DISTINCT (f.title), (fl.title) FROM film AS f JOIN film_list AS fl LIMIT 1;", new[] { "title", "title" }),
+    };
+
+    private static readonly TestCaseData[] Test_LeadLagInfo_TestDatas = 
+    {
+        // QCP-1303 : https://chequer.atlassian.net/browse/QP-5465?focusedCommentId=48962
+        new("SELECT LAG(first_name, 4294967295) OVER(ORDER BY actor_id) FROM actor;"),
+        new("SELECT LAG(first_name, last_name, 4294967295) OVER(ORDER BY actor_id) FROM actor;"),
+        new("SELECT LAG(first_name, IF(TRUE, 2, 1)) OVER(ORDER BY actor_id) FROM actor;"),
+        new("SELECT LAG(first_name, IF(TRUE, 2, 1) + IF(FALSE, 2, 1)) OVER(ORDER BY actor_id) FROM actor;"),
+        
+        new("SELECT LEAD(first_name, 4294967295) OVER(ORDER BY actor_id) FROM actor;"),
+        new("SELECT LEAD(first_name, last_name, 4294967295) OVER(ORDER BY actor_id) FROM actor;"),
+        new("SELECT LEAD(first_name, IF(TRUE, 2, 1)) OVER(ORDER BY actor_id) FROM actor;"),
+        new("SELECT LEAD(first_name, IF(TRUE, 2, 1) + IF(FALSE, 2, 1)) OVER(ORDER BY actor_id) FROM actor;"),
+        
+        new("SELECT NTILE(4294967295) OVER(ORDER BY actor_id) FROM actor;"),
+        new("SELECT NTILE(IF(TRUE, 2, 1)) OVER(ORDER BY actor_id) FROM actor;"),
+        new("SELECT NTILE(IF(TRUE, 2, 1) + IF(FALSE, 2, 1)) OVER(ORDER BY actor_id) FROM actor;")
     };
 }

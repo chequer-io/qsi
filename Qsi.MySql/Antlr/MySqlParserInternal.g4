@@ -2528,7 +2528,7 @@ windowFunctionCall:
         | CUME_DIST_SYMBOL
         | PERCENT_RANK_SYMBOL
     ) parentheses windowingClause
-    | NTILE_SYMBOL simpleExprWithParentheses windowingClause
+    | NTILE_SYMBOL exprWithParentheses windowingClause
     | (LEAD_SYMBOL | LAG_SYMBOL) OPEN_PAR_SYMBOL expr leadLagInfo? CLOSE_PAR_SYMBOL nullTreatment? windowingClause
     | (FIRST_VALUE_SYMBOL | LAST_VALUE_SYMBOL) exprWithParentheses nullTreatment? windowingClause
     | NTH_VALUE_SYMBOL OPEN_PAR_SYMBOL expr COMMA_SYMBOL simpleExpr CLOSE_PAR_SYMBOL (
@@ -2541,7 +2541,7 @@ windowingClause:
 ;
 
 leadLagInfo:
-    COMMA_SYMBOL (ulonglong_number | paramMarker) (COMMA_SYMBOL expr)?
+    COMMA_SYMBOL expr (COMMA_SYMBOL expr)?
 ;
 
 nullTreatment:

@@ -1515,12 +1515,15 @@ internal static class ExpressionVisitor
                 break;
 
             case NTILE_SYMBOL:
-                node.Parameters.Add(VisitSimpleExprWithParentheses(context.simpleExprWithParentheses()));
+                node.Parameters.Add(VisitExprWithParentheses(context.exprWithParentheses()));
                 break;
 
             case LEAD_SYMBOL:
             case LAG_SYMBOL:
                 node.Parameters.Add(VisitExpr(context.expr()));
+
+                if (context.leadLagInfo() != null)
+                    node.Parameters.Add(VisitLeadLagInfo(context.leadLagInfo()));
 
                 // nullTreatment ignored
                 break;
@@ -2192,5 +2195,15 @@ internal static class ExpressionVisitor
         MySqlTree.PutContextSpan(node, context);
 
         return node;
+    }
+    
+    public static QsiExpressionNode VisitLeadLagInfo(LeadLagInfoContext context)
+    {
+        return TreeHelper.Create<QsiInvokeExpressionNode>(n =>
+        {
+            n.Parameters.AddRange(context.expr().Select(VisitExpr));
+
+            MySqlTree.PutContextSpan(n, context);
+        });
     }
 }
