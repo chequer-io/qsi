@@ -358,7 +358,13 @@ internal static class ActionVisitor
         {
             if (context.HasToken(RANDOM_SYMBOL) && context.HasToken(PASSWORD_SYMBOL))
             {
-                // NOTE: RANDOM PASSWORD
+                var isRandomPasswordProperty = new QsiSetValueExpressionNode
+                {
+                    Target = MySqlProperties.User.IsRandomPasswordIdentifier,
+                    Value = { Value = TreeHelper.CreateLiteral(true) }
+                };
+
+                user.Properties.Add(isRandomPasswordProperty);
             }
             else
             {
@@ -379,7 +385,7 @@ internal static class ActionVisitor
                     password.Type = QsiDataType.String;
                 }
 
-                if (password is { })
+                if (password is not null)
                     user.Password.Value = password;
 
                 // WITH <auth_plugin> ignored

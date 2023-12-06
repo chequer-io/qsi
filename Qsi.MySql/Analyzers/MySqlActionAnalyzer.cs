@@ -9,6 +9,7 @@ using Qsi.Engines;
 using Qsi.Extensions;
 using Qsi.MySql.Tree;
 using Qsi.Tree;
+using static Qsi.MySql.Tree.MySqlProperties;
 
 namespace Qsi.MySql.Analyzers;
 
@@ -62,8 +63,17 @@ public class MySqlActionAnalyzer : QsiActionAnalyzer
     {
         var result = base.ResolveUser(context, node, dataCollection);
 
-        if (node.Password is { })
+        if (node.Password is not null)
+        {
             dataCollection.Add(CreateSensitiveData(QsiSensitiveDataType.Password, node.Password));
+            result.Properties[User.IsRandomPassword] = false;
+        }
+        else
+        {
+            var prop = node.Properties.FirstOrDefault(p => p.Target == User.IsRandomPasswordIdentifier);
+
+            result.Properties[User.IsRandomPassword] = prop?.Value is IQsiLiteralExpressionNode { Value: true };
+        }
 
         return result;
     }
