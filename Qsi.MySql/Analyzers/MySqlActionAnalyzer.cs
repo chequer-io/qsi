@@ -61,21 +61,19 @@ public class MySqlActionAnalyzer : QsiActionAnalyzer
 
     protected override QsiUserInfo ResolveUser(IAnalyzerContext context, IQsiUserNode node, QsiSensitiveDataCollection dataCollection)
     {
-        var result = base.ResolveUser(context, node, dataCollection);
+        var user = base.ResolveUser(context, node, dataCollection);
 
         if (node.Password is not null)
         {
             dataCollection.Add(CreateSensitiveData(QsiSensitiveDataType.Password, node.Password));
-            result.Properties[User.IsRandomPassword] = false;
+            user.Properties[User.IsRandomPassword] = false;
         }
         else
         {
-            var prop = node.Properties.FirstOrDefault(p => p.Target == User.IsRandomPasswordIdentifier);
-
-            result.Properties[User.IsRandomPassword] = prop?.Value is IQsiLiteralExpressionNode { Value: true };
+            user.Properties[User.IsRandomPassword] = node is MySqlUserNode { IsRandomPassword: true };
         }
 
-        return result;
+        return user;
     }
 
     private void AddSensitiveData(QsiSensitiveDataCollection collection, IEnumerable<IQsiExpressionNode> nodes)

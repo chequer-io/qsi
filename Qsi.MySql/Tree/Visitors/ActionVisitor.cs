@@ -290,11 +290,11 @@ internal static class ActionVisitor
         else if (context.HasToken(RANDOM_SYMBOL) && context.HasToken(PASSWORD_SYMBOL))
         {
             // user IDENTIFIER (WITH textOrIdentifier)? BY RANDOM PASSWORD retainCurrentPassword?
-            // RANDOM PASSWORD ignored
 
-            node.Users.Add(new QsiUserNode
+            node.Users.Add(new MySqlUserNode
             {
-                Username = GetUsername(alterUserTail.user())
+                Username = GetUsername(alterUserTail.user()),
+                IsRandomPassword = true
             });
         }
         else if (context.HasToken(FAILED_LOGIN_ATTEMPTS_SYMBOL))
@@ -349,7 +349,7 @@ internal static class ActionVisitor
 
     private static QsiUserNode VisitCreateUserEntry(CreateUserEntryContext context)
     {
-        var user = new QsiUserNode
+        var user = new MySqlUserNode
         {
             Username = GetUsername(context.user())
         }.WithContextSpan(context);
@@ -358,13 +358,7 @@ internal static class ActionVisitor
         {
             if (context.HasToken(RANDOM_SYMBOL) && context.HasToken(PASSWORD_SYMBOL))
             {
-                var isRandomPasswordProperty = new QsiSetValueExpressionNode
-                {
-                    Target = MySqlProperties.User.IsRandomPasswordIdentifier,
-                    Value = { Value = TreeHelper.CreateLiteral(true) }
-                };
-
-                user.Properties.Add(isRandomPasswordProperty);
+                user.IsRandomPassword = true;
             }
             else
             {
