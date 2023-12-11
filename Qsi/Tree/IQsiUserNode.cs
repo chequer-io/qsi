@@ -5,6 +5,4 @@ public interface IQsiUserNode : IQsiTreeNode
     string Username { get; }
 
     IQsiExpressionNode Password { get; }
-
-    IQsiSetValueExpressionNode[] Properties { get; }
 }
