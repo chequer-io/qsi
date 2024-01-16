@@ -2254,9 +2254,10 @@ rename
     ;
 
 revoke
-    : REVOKE( ( revokeSystemPrivileges | revokeObjectPrivileges )
-          ( CONTAINER '=' ( CURRENT | ALL ) )? )
-    | revokeRolesFromPrograms
+    : REVOKE ( ( revokeSystemPrivileges | revokeObjectPrivileges )
+               ( CONTAINER '=' ( CURRENT | ALL ) )? 
+              | revokeRolesFromPrograms
+             )
     ;
 
 set
