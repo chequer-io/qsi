@@ -5,14 +5,21 @@ options {
 }
 
 root
-    : EOF
-    | (block (SEMICOLON_SYMBOL EOF? | EOF))+
+    : (block SEMICOLON_SYMBOL?)* EOF
+    ;
+
+rootWithSqlPlus
+    : (blockWithSqlplus SEMICOLON_SYMBOL?)* EOF
     ;
 
 block
     : plsqlBlock
-    | sqlplusCommand
     | oracleStatement
+    ;
+
+blockWithSqlplus
+    : block
+    | sqlplusCommand
     ;
 
 plsqlBlock
@@ -8202,7 +8209,7 @@ inlineAnalyticView
     ;
 
 queryTableExpression
-    : fullObjectPath ( partitionExtensionClause
+    : (fullObjectPath | '(' fullObjectPath ')') ( partitionExtensionClause
                      | hierarchiesClause
                      | modifiedExternalTable
                      )? sampleClause?                                   #objectPathTableExpression
