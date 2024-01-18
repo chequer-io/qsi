@@ -517,15 +517,7 @@ internal static class ActionVisitor
         var deleteActionNode = new OracleDataInsertActionNode
         {
             ValueTable = { Value = itemSelectionSubqueryTable },
-            Target =
-            {
-                Value = leftSource switch
-                {
-                    QsiDerivedTableNode { Source.Value: QsiTableReferenceNode reference } => reference,
-                    QsiTableReferenceNode referenceNode => referenceNode,
-                    _ => throw new InvalidOperationException("Delete target must be Aliased or Reference table")
-                }
-            },
+            Target = { Value = leftNode },
             Columns = mergeInsertClause
                 .column()
                 .Select(c => IdentifierVisitor.CreateQualifiedIdentifier(c.identifier()))
