@@ -7,7 +7,9 @@ public partial class OracleParserTest
     private static readonly TestCaseData[] Parse_TestDatas =
     {
         new("SELECT 1 FROM DUAL"),
+        new("SELECT 1 FROM ((((DUAL))))"),
         new("SELECT * FROM (HR.FIRST) a JOIN (HR.SECOND) b ON a.id = b.id"),
+        new("SELECT * FROM ((HR.FIRST)) a JOIN ((HR.SECOND)) b ON a.id = b.id"),
         new("MERGE INTO HR.FIRST a USING HR.SECOND b ON (a.id = b.id) " +
             "WHEN MATCHED THEN " +
             "UPDATE SET a.name = b.name " +

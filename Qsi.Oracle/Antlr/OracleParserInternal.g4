@@ -8209,14 +8209,19 @@ inlineAnalyticView
     ;
 
 queryTableExpression
-    : (fullObjectPath | '(' fullObjectPath ')') ( partitionExtensionClause
-                     | hierarchiesClause
-                     | modifiedExternalTable
-                     )? sampleClause?                                   #objectPathTableExpression
-    | LATERAL? '(' subquery subqueryRestrictionClause? ')'              #subqueryTableExpression
-    | tableCollectionExpression                                         #queryTableCollectionExpression
+    : tableName ( partitionExtensionClause
+                | hierarchiesClause
+                | modifiedExternalTable
+                )? sampleClause?                            #objectPathTableExpression
+    | LATERAL? '(' subquery subqueryRestrictionClause? ')'  #subqueryTableExpression
+    | tableCollectionExpression                             #queryTableCollectionExpression
     // returning table function
-    | functionExpression                                                #functionTableExpression
+    | functionExpression                                    #functionTableExpression
+    ;
+
+tableName
+    : fullObjectPath    #singleTable
+    | '(' tableName ')' #singleTableParens
     ;
 
 modifiedExternalTable

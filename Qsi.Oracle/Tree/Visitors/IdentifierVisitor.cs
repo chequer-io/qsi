@@ -3,6 +3,7 @@ using System.Linq;
 using Qsi.Data;
 using Qsi.Oracle.Internal;
 using Qsi.Tree;
+using Qsi.Utilities;
 
 namespace Qsi.Oracle.Tree.Visitors;
 
@@ -42,6 +43,21 @@ internal static class IdentifierVisitor
         return dbIdentifier is not null ?
             new QsiQualifiedIdentifier(dbIdentifier, objIdentifier) :
             new QsiQualifiedIdentifier(objIdentifier);
+    }
+
+    public static QsiQualifiedIdentifier VisitTableName(TableNameContext context)
+    {
+        while (context is SingleTableParensContext parens)
+            context = parens.tableName();
+
+        switch (context)
+        {
+            case SingleTableContext singleTable:
+                return VisitFullObjectPath(singleTable.fullObjectPath());
+
+            default:
+                throw TreeHelper.NotSupportedTree(context);
+        }
     }
 
     public static QsiIdentifier VisitIdentifier(IdentifierContext context)
