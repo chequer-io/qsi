@@ -5,14 +5,21 @@ options {
 }
 
 root
-    : EOF
-    | (block (SEMICOLON_SYMBOL EOF? | EOF))+
+    : (block SEMICOLON_SYMBOL?)* EOF
+    ;
+
+rootWithSqlPlus
+    : (blockWithSqlplus SEMICOLON_SYMBOL?)* EOF
     ;
 
 block
     : plsqlBlock
-    | sqlplusCommand
     | oracleStatement
+    ;
+
+blockWithSqlplus
+    : block
+    | sqlplusCommand
     ;
 
 plsqlBlock
@@ -2254,9 +2261,10 @@ rename
     ;
 
 revoke
-    : REVOKE( ( revokeSystemPrivileges | revokeObjectPrivileges )
-          ( CONTAINER '=' ( CURRENT | ALL ) )? )
-    | revokeRolesFromPrograms
+    : REVOKE ( ( revokeSystemPrivileges | revokeObjectPrivileges )
+               ( CONTAINER '=' ( CURRENT | ALL ) )? 
+              | revokeRolesFromPrograms
+             )
     ;
 
 set
@@ -8201,14 +8209,19 @@ inlineAnalyticView
     ;
 
 queryTableExpression
-    : fullObjectPath ( partitionExtensionClause
-                     | hierarchiesClause
-                     | modifiedExternalTable
-                     )? sampleClause?                                   #objectPathTableExpression
-    | LATERAL? '(' subquery subqueryRestrictionClause? ')'              #subqueryTableExpression
-    | tableCollectionExpression                                         #queryTableCollectionExpression
+    : tableName ( partitionExtensionClause
+                | hierarchiesClause
+                | modifiedExternalTable
+                )? sampleClause?                            #objectPathTableExpression
+    | LATERAL? '(' subquery subqueryRestrictionClause? ')'  #subqueryTableExpression
+    | tableCollectionExpression                             #queryTableCollectionExpression
     // returning table function
-    | functionExpression                                                #functionTableExpression
+    | functionExpression                                    #functionTableExpression
+    ;
+
+tableName
+    : fullObjectPath    #singleTable
+    | '(' tableName ')' #singleTableParens
     ;
 
 modifiedExternalTable

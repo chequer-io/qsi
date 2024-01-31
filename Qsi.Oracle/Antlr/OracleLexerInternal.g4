@@ -1686,6 +1686,8 @@ JSON_PATH_SYMBOL:                   '$' DOT_SYMBOL;
 SINGLE_QUOTE_SYMBOL:                SINGLE_QUOTE;
 PARAMETER_SUBSTITUTE_SYMBOL:        '=>';
 
+H_WS: [ \t\f\r\n] -> channel(HIDDEN);
+
 H_COMMENT
     : '--'
       { Hint == default }?
@@ -1731,5 +1733,3 @@ H_LineTerminator
       { Hint = default; }
       -> type(HINT_CLOSE_SYMBOL)
     ;
-
-H_WS: [ \t\f\r\n] -> channel(HIDDEN);

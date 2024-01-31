@@ -605,7 +605,7 @@ internal static class TableVisitor
     {
         var node = OracleTree.CreateWithSpan<OracleTableReferenceNode>(context);
 
-        node.Identifier = IdentifierVisitor.VisitFullObjectPath(context.fullObjectPath());
+        node.Identifier = IdentifierVisitor.VisitTableName(context.tableName());
 
         if (context.partitionExtensionClause() is not null)
             node.Partition.Value = ExpressionVisitor.VisitPartitionExtensionClause(context.partitionExtensionClause());
