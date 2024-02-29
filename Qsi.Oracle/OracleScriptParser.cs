@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Qsi.Data;
 using Qsi.Parsing.Common;
+using Qsi.Parsing.Common.Rules;
 using Qsi.Shared.Extensions;
 
 namespace Qsi.Oracle;
@@ -36,6 +37,8 @@ public sealed class OracleScriptParser : CommonScriptParser
 
     private const string BlockKey = "Oracle::Type";
 
+    private readonly ITokenRule _oracleKeyword = new OracleLookbehindUnknownKeywordRule();
+
     public OracleScriptParser()
     {
         EnablePoundComment = false;
@@ -53,9 +56,33 @@ public sealed class OracleScriptParser : CommonScriptParser
 
     protected override bool TryParseToken(CommonScriptCursor cursor, out Token token)
     {
-        if (cursor.Current == ';')
+        int offset;
+        TokenType tokenType;
+        ITokenRule rule;
+
+        switch (cursor.Current)
         {
-            token = new Token(TokenType.Fragment, new Range(cursor.Index, cursor.Index + 1));
+            case ';':
+                token = new Token(TokenType.Fragment, new Range(cursor.Index, cursor.Index + 1));
+                return true;
+
+            case var c when OracleLookbehindUnknownKeywordRule.IsOracleIdentifier(c):
+                offset = 1;
+                rule = _oracleKeyword;
+                tokenType = TokenType.Keyword;
+                break;
+
+            default:
+                return base.TryParseToken(cursor, out token);
+        }
+
+        int start = cursor.Index;
+        cursor.Index += offset;
+
+        if (rule.Run(cursor))
+        {
+            token = new Token(tokenType, start..(cursor.Index + 1));
+
             return true;
         }
 
