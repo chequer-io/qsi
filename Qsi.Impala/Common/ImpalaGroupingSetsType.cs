@@ -1,10 +1,9 @@
-﻿namespace Qsi.Impala.Common
+﻿namespace Qsi.Impala.Common;
+
+public enum ImpalaGroupingSetsType
 {
-    public enum ImpalaGroupingSetsType
-    {
-        None,
-        Cube,
-        Sets,
-        Rollup
-    }
+    None,
+    Cube,
+    Sets,
+    Rollup
 }

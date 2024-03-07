@@ -8,51 +8,50 @@ using Qsi.Tree;
 using Qsi.Utilities;
 using static Qsi.Cql.Internal.CqlParserInternal;
 
-namespace Qsi.Cql
+namespace Qsi.Cql;
+
+public sealed class CqlParser : IQsiTreeParser
 {
-    public sealed class CqlParser : IQsiTreeParser
+    public static CqlParser Instance => _instance ??= new CqlParser();
+
+    private static CqlParser _instance;
+
+    private CqlParser()
     {
-        public static CqlParser Instance => _instance ??= new CqlParser();
+    }
 
-        private static CqlParser _instance;
+    public IQsiTreeNode Parse(QsiScript script, CancellationToken cancellationToken = default)
+    {
+        var stream = new AntlrInputStream(script.Script);
+        var lexer = new CqlLexerInternal(stream);
+        var tokens = new CommonTokenStream(lexer);
+        var parser = new CqlParserInternal(tokens);
+        parser.AddErrorListener(new ErrorListener());
 
-        private CqlParser()
+        var statement = parser.cqlStatement().children[0];
+
+        switch (statement)
         {
-        }
+            case SelectStatementContext selectStatement:
+                return TableVisitor.VisitSelectStatement(selectStatement);
 
-        public IQsiTreeNode Parse(QsiScript script, CancellationToken cancellationToken = default)
-        {
-            var stream = new AntlrInputStream(script.Script);
-            var lexer = new CqlLexerInternal(stream);
-            var tokens = new CommonTokenStream(lexer);
-            var parser = new CqlParserInternal(tokens);
-            parser.AddErrorListener(new ErrorListener());
+            case CreateMaterializedViewStatementContext createMaterializedViewStatement:
+                return DefinitionVisitor.VisitCreateMaterializedViewStatement(createMaterializedViewStatement);
 
-            var statement = parser.cqlStatement().children[0];
+            case UseStatementContext useStatement:
+                return ActionVisitor.VisitUseStatement(useStatement);
 
-            switch (statement)
-            {
-                case SelectStatementContext selectStatement:
-                    return TableVisitor.VisitSelectStatement(selectStatement);
+            case InsertStatementContext insertStatement:
+                return ActionVisitor.VisitInsertStatement(insertStatement);
 
-                case CreateMaterializedViewStatementContext createMaterializedViewStatement:
-                    return DefinitionVisitor.VisitCreateMaterializedViewStatement(createMaterializedViewStatement);
+            case UpdateStatementContext updateStatement:
+                return ActionVisitor.VisitUpdateStatement(updateStatement);
 
-                case UseStatementContext useStatement:
-                    return ActionVisitor.VisitUseStatement(useStatement);
+            case DeleteStatementContext deleteStatement:
+                return ActionVisitor.VisitDeleteStatement(deleteStatement);
 
-                case InsertStatementContext insertStatement:
-                    return ActionVisitor.VisitInsertStatement(insertStatement);
-
-                case UpdateStatementContext updateStatement:
-                    return ActionVisitor.VisitUpdateStatement(updateStatement);
-
-                case DeleteStatementContext deleteStatement:
-                    return ActionVisitor.VisitDeleteStatement(deleteStatement);
-
-                default:
-                    throw TreeHelper.NotSupportedTree(statement);
-            }
+            default:
+                throw TreeHelper.NotSupportedTree(statement);
         }
     }
 }

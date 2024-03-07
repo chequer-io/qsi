@@ -1,11 +1,10 @@
 ﻿using Qsi.Data;
 
-namespace Qsi.Tree
-{
-    public interface IQsiDataDeleteActionNode : IQsiActionNode
-    {
-        IQsiTableNode Target { get; }
+namespace Qsi.Tree;
 
-        QsiQualifiedIdentifier[] Columns { get; }
-    }
+public interface IQsiDataDeleteActionNode : IQsiActionNode
+{
+    IQsiTableNode Target { get; }
+
+    QsiQualifiedIdentifier[] Columns { get; }
 }

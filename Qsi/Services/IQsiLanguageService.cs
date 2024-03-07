@@ -5,24 +5,23 @@ using Qsi.Engines;
 using Qsi.Parsing;
 using Qsi.Tree;
 
-namespace Qsi.Services
+namespace Qsi.Services;
+
+public interface IQsiLanguageService
 {
-    public interface IQsiLanguageService
-    {
-        QsiAnalyzerOptions CreateAnalyzerOptions();
+    QsiAnalyzerOptions CreateAnalyzerOptions();
 
-        IEnumerable<IQsiAnalyzer> CreateAnalyzers(QsiEngine engine);
+    IEnumerable<IQsiAnalyzer> CreateAnalyzers(QsiEngine engine);
 
-        IQsiTreeParser CreateTreeParser();
+    IQsiTreeParser CreateTreeParser();
 
-        IQsiTreeDeparser CreateTreeDeparser();
+    IQsiTreeDeparser CreateTreeDeparser();
 
-        IQsiScriptParser CreateScriptParser();
+    IQsiScriptParser CreateScriptParser();
 
-        IQsiRepositoryProvider CreateRepositoryProvider();
+    IQsiRepositoryProvider CreateRepositoryProvider();
 
-        bool MatchIdentifier(QsiIdentifier x, QsiIdentifier y);
+    bool MatchIdentifier(QsiIdentifier x, QsiIdentifier y);
 
-        QsiParameter FindParameter(QsiParameter[] parameters, IQsiBindParameterExpressionNode node);
-    }
+    QsiParameter FindParameter(QsiParameter[] parameters, IQsiBindParameterExpressionNode node);
 }

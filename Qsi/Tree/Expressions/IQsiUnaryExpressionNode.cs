@@ -1,9 +1,8 @@
-namespace Qsi.Tree
-{
-    public interface IQsiUnaryExpressionNode : IQsiExpressionNode
-    {
-        string Operator { get; }
+namespace Qsi.Tree;
 
-        IQsiExpressionNode Expression { get; }
-    }
+public interface IQsiUnaryExpressionNode : IQsiExpressionNode
+{
+    string Operator { get; }
+
+    IQsiExpressionNode Expression { get; }
 }

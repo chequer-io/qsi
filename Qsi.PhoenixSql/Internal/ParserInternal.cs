@@ -4,42 +4,41 @@ using PhoenixSql;
 using Qsi.Parsing;
 using PParser = PhoenixSql.PhoenixSqlParser;
 
-namespace Qsi.PhoenixSql.Internal
-{
-    internal static class ParserInternal
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static IBindableStatement Parse(string sql)
-        {
-            try
-            {
-                return PParser.Parse(sql);
-            }
-            catch (PhoenixSqlSyntaxException e)
-            {
-                throw new QsiSyntaxErrorException(-1, -1, e.Message);
-            }
-            catch (PhoenixSqlException e)
-            {
-                throw new QsiException(QsiError.Internal, e.Message);
-            }
-        }
+namespace Qsi.PhoenixSql.Internal;
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static async Task<IBindableStatement> ParseAsync(string sql)
+internal static class ParserInternal
+{
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IBindableStatement Parse(string sql)
+    {
+        try
         {
-            try
-            {
-                return await PParser.ParseAsync(sql);
-            }
-            catch (PhoenixSqlSyntaxException e)
-            {
-                throw new QsiSyntaxErrorException(-1, -1, e.Message);
-            }
-            catch (PhoenixSqlException e)
-            {
-                throw new QsiException(QsiError.Internal, e.Message);
-            }
+            return PParser.Parse(sql);
+        }
+        catch (PhoenixSqlSyntaxException e)
+        {
+            throw new QsiSyntaxErrorException(-1, -1, e.Message);
+        }
+        catch (PhoenixSqlException e)
+        {
+            throw new QsiException(QsiError.Internal, e.Message);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static async Task<IBindableStatement> ParseAsync(string sql)
+    {
+        try
+        {
+            return await PParser.ParseAsync(sql);
+        }
+        catch (PhoenixSqlSyntaxException e)
+        {
+            throw new QsiSyntaxErrorException(-1, -1, e.Message);
+        }
+        catch (PhoenixSqlException e)
+        {
+            throw new QsiException(QsiError.Internal, e.Message);
         }
     }
 }

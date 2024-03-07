@@ -8,63 +8,62 @@ using Qsi.Extensions;
 using Qsi.Impala.Tree;
 using Qsi.Tree;
 
-namespace Qsi.Impala.Analyzers
+namespace Qsi.Impala.Analyzers;
+
+public class ImpalaTableAnalyzer : QsiTableAnalyzer
 {
-    public class ImpalaTableAnalyzer : QsiTableAnalyzer
+    public ImpalaTableAnalyzer(QsiEngine engine) : base(engine)
     {
-        public ImpalaTableAnalyzer(QsiEngine engine) : base(engine)
+    }
+
+    public override ValueTask<QsiTableStructure> BuildTableStructure(TableCompileContext context, IQsiTableNode table)
+    {
+        if (table is ImpalaValuesTableNode valuesTableNode)
+            return BuildImpalaValuesTableStructure(context, valuesTableNode);
+
+        return base.BuildTableStructure(context, table);
+    }
+
+    private ValueTask<QsiTableStructure> BuildImpalaValuesTableStructure(TableCompileContext context, ImpalaValuesTableNode table)
+    {
+        if (table.Rows.Count == 0)
+            throw new QsiException(QsiError.Syntax);
+
+        var structure = new QsiTableStructure
         {
+            Type = QsiTableType.Inline
+        };
+
+        var columnCount = table.Rows[0].ColumnValues.Count;
+
+        foreach (var value in table.Rows[0].ColumnValues)
+        {
+            var column = structure.NewColumn();
+
+            if (value is IQsiColumnExpressionNode { Column: IQsiDerivedColumnNode { Alias: { } } derivedColumnNode })
+                column.Name = derivedColumnNode.Alias.Name;
+            else
+                column.IsExpression = true;
         }
 
-        public override ValueTask<QsiTableStructure> BuildTableStructure(TableCompileContext context, IQsiTableNode table)
+        foreach (var row in table.Rows)
         {
-            if (table is ImpalaValuesTableNode valuesTableNode)
-                return BuildImpalaValuesTableStructure(context, valuesTableNode);
+            if (columnCount != row.ColumnValues.Count)
+                throw new QsiException(QsiError.DifferentColumnsCount);
 
-            return base.BuildTableStructure(context, table);
-        }
-
-        private ValueTask<QsiTableStructure> BuildImpalaValuesTableStructure(TableCompileContext context, ImpalaValuesTableNode table)
-        {
-            if (table.Rows.Count == 0)
-                throw new QsiException(QsiError.Syntax);
-
-            var structure = new QsiTableStructure
+            for (int i = 0; i < columnCount; i++)
             {
-                Type = QsiTableType.Inline
-            };
+                var value = row.ColumnValues[i];
 
-            var columnCount = table.Rows[0].ColumnValues.Count;
+                IEnumerable<QsiTableColumn> references =
+                    value is IQsiColumnExpressionNode columnExpressionNode ?
+                        ResolveColumns(context, columnExpressionNode.Column, out _) :
+                        ResolveColumnsInExpression(context, value);
 
-            foreach (var value in table.Rows[0].ColumnValues)
-            {
-                var column = structure.NewColumn();
-
-                if (value is IQsiColumnExpressionNode { Column: IQsiDerivedColumnNode { Alias: { } } derivedColumnNode })
-                    column.Name = derivedColumnNode.Alias.Name;
-                else
-                    column.IsExpression = true;
+                structure.Columns[i].References.AddRange(references);
             }
-
-            foreach (var row in table.Rows)
-            {
-                if (columnCount != row.ColumnValues.Count)
-                    throw new QsiException(QsiError.DifferentColumnsCount);
-
-                for (int i = 0; i < columnCount; i++)
-                {
-                    var value = row.ColumnValues[i];
-
-                    IEnumerable<QsiTableColumn> references =
-                        value is IQsiColumnExpressionNode columnExpressionNode ?
-                            ResolveColumns(context, columnExpressionNode.Column, out _) :
-                            ResolveColumnsInExpression(context, value);
-
-                    structure.Columns[i].References.AddRange(references);
-                }
-            }
-
-            return new ValueTask<QsiTableStructure>(structure);
         }
+
+        return new ValueTask<QsiTableStructure>(structure);
     }
 }

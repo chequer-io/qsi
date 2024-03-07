@@ -1,54 +1,49 @@
 ﻿using System;
 
-namespace Qsi.Parsing.Common
+namespace Qsi.Parsing.Common;
+
+public sealed class CommonScriptCursor
 {
-    public sealed class CommonScriptCursor
+    public char Current => Value[Index];
+
+    public char Next => HasNext ? Value[Index + 1] : default;
+
+    public bool HasNext => Index + 1 < Length;
+
+    public int Index { get; set; }
+
+    public int Length { get; internal set; }
+
+    public string Value { get; internal set; }
+
+    public ReadOnlySpan<char> ValueSpan => Value;
+
+    public CommonScriptCursor(in string value)
     {
-        public char Current => Value[Index];
+        Value = value;
+        Length = Value.Length;
+        Index = 0;
+    }
 
-        public char Next => HasNext ? Value[Index + 1] : default;
+    public void Reset(string value)
+    {
+        Value = value;
+        Length = Value.Length;
+        Index = 0;
+    }
 
-        public bool HasNext => Index + 1 < Length;
+    public bool StartsWith(ReadOnlySpan<char> value)
+    {
+        return StartsWith(value, Index);
+    }
 
-        public int Index { get; set; }
+    public bool StartsWith(ReadOnlySpan<char> value, int start)
+    {
+        return Value.AsSpan(start).StartsWith(value);
+    }
 
-        public int Length { get; internal set; }
-
-        public string Value { get; internal set; }
-
-        public CommonScriptCursor(in string value)
-        {
-            Value = value;
-            Length = Value.Length;
-            Index = 0;
-        }
-
-        public void Reset(string value)
-        {
-            Value = value;
-            Length = Value.Length;
-            Index = 0;
-        }
-
-        public bool StartsWith(in string value)
-        {
-            return StartsWith(value, Index);
-        }
-
-        public bool StartsWith(in ReadOnlySpan<char> value, int start)
-        {
-            for (int i = 0; i < value.Length; i++)
-            {
-                if (Index + i >= Length || Value[start + i] != value[i])
-                    return false;
-            }
-
-            return true;
-        }
-
-        public bool StartsWithIgnoreCase(in ReadOnlySpan<char> value)
-        {
-            return Value.AsSpan(Index).StartsWith(value, StringComparison.OrdinalIgnoreCase);
-        }
+    public bool StartsWithIgnoreCase(in ReadOnlySpan<char> value)
+    {
+        return Value.AsSpan(Index).StartsWith(value, StringComparison.OrdinalIgnoreCase);
     }
 }

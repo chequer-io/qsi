@@ -5,5 +5,5 @@ namespace Qsi.PostgreSql.Tree.Nodes;
 
 public class PgBinaryExpressionNode : QsiBinaryExpressionNode
 {
-    public A_Expr_Kind ExprKind { get; set; } = A_Expr_Kind.Undefined;
+    public AExprKind ExprKind { get; set; } = AExprKind.AExprKindUndefined;
 }

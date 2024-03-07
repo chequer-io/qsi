@@ -1,14 +1,13 @@
 ﻿using System;
 using Qsi.MongoDB.Internal.Nodes.Location;
 
-namespace Qsi.MongoDB.Acorn
+namespace Qsi.MongoDB.Acorn;
+
+internal struct MongoDBStatement
 {
-    internal struct MongoDBStatement
-    {
-        public Range Range { get; set; }
+    public Range Range { get; set; }
         
-        public Location Start { get; set; }
+    public Location Start { get; set; }
         
-        public Location End { get; set; }
-    }
+    public Location End { get; set; }
 }

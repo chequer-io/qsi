@@ -1,9 +1,8 @@
-namespace Qsi.Tree
-{
-    public interface IQsiSwitchExpressionNode : IQsiExpressionNode
-    {
-        IQsiExpressionNode Value { get; }
+namespace Qsi.Tree;
 
-        IQsiSwitchCaseExpressionNode[] Cases { get; }
-    }
+public interface IQsiSwitchExpressionNode : IQsiExpressionNode
+{
+    IQsiExpressionNode Value { get; }
+
+    IQsiSwitchCaseExpressionNode[] Cases { get; }
 }

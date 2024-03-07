@@ -1,16 +1,15 @@
-﻿namespace Qsi.Cql.Schema
+﻿namespace Qsi.Cql.Schema;
+
+public abstract class CqlType
 {
-    public abstract class CqlType
+    internal CqlType()
     {
-        internal CqlType()
-        {
-        }
+    }
 
-        public abstract string ToSql();
+    public abstract string ToSql();
 
-        public override string ToString()
-        {
-            return ToSql();
-        }
+    public override string ToString()
+    {
+        return ToSql();
     }
 }

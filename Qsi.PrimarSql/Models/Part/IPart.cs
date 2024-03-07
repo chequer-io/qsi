@@ -1,6 +1,5 @@
-﻿namespace PrimarSql.Data.Models.Columns
+﻿namespace PrimarSql.Data.Models.Columns;
+
+internal interface IPart
 {
-    internal interface IPart
-    {
-    }
 }

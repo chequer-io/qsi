@@ -6,75 +6,78 @@ using Qsi.Analyzers.Action;
 using Qsi.Data;
 using Qsi.Tree;
 
-namespace Qsi.Engines.Explain
+namespace Qsi.Engines.Explain;
+
+internal sealed class ExplainActionAnalyzer : IQsiAnalyzer
 {
-    internal sealed class ExplainActionAnalyzer : IQsiAnalyzer
+    public readonly QsiActionAnalyzer _analyzer;
+
+    public ExplainActionAnalyzer(QsiActionAnalyzer analyzer)
     {
-        public readonly QsiActionAnalyzer _analyzer;
+        _analyzer = analyzer;
+    }
 
-        public ExplainActionAnalyzer(QsiActionAnalyzer analyzer)
+    public bool CanExecute(QsiScript script, IQsiTreeNode tree)
+    {
+        return _analyzer.CanExecute(script, tree);
+    }
+
+    public async ValueTask<IQsiAnalysisResult[]> Execute(
+        QsiScript script,
+        QsiParameter[] parameters,
+        IQsiTreeNode tree,
+        QsiAnalyzerOptions analyzerOptions,
+        ExecuteOptions executeOptions,
+        CancellationToken cancellationToken = default)
+    {
+        IQsiAnalysisResult[] results = await _analyzer.Execute(script, parameters, tree, analyzerOptions, executeOptions, cancellationToken);
+
+        for (int i = 0; i < results.Length; i++)
         {
-            _analyzer = analyzer;
-        }
+            var result = results[i];
 
-        public bool CanExecute(QsiScript script, IQsiTreeNode tree)
-        {
-            return _analyzer.CanExecute(script, tree);
-        }
-
-        public async ValueTask<IQsiAnalysisResult[]> Execute(
-            QsiScript script,
-            QsiParameter[] parameters,
-            IQsiTreeNode tree,
-            QsiAnalyzerOptions analyzerOptions,
-            ExecuteOptions executeOptions,
-            CancellationToken cancellationToken = default)
-        {
-            IQsiAnalysisResult[] results = await _analyzer.Execute(script, parameters, tree, analyzerOptions, executeOptions, cancellationToken);
-
-            for (int i = 0; i < results.Length; i++)
+            if (result is QsiDataManipulationResult dmResult)
             {
-                var result = results[i];
-
-                if (result is QsiDataManipulationResult dmResult)
-                {
-                    results[i] = ConvertToExplain(dmResult);
-                }
+                results[i] = ConvertToExplain(dmResult);
             }
-
-            return results;
         }
 
-        private QsiExplainDataManipulationResult ConvertToExplain(QsiDataManipulationResult result)
+        return results;
+    }
+
+    private QsiExplainDataManipulationResult ConvertToExplain(QsiDataManipulationResult result)
+    {
+        var ordinalMap = result.AffectedColumns
+            .Select(ac => result.Table.Columns.IndexOf(ac))
+            .ToArray();
+
+        var operations = new QsiDataValueOperation[result.Table.Columns.Count];
+
+        for (int i = 0; i < ordinalMap.Length; i++)
         {
-            var ordinalMap = result.AffectedColumns
-                .Select(ac => result.Table.Columns.IndexOf(ac))
-                .ToArray();
+            ref var operation = ref operations[i];
 
-            var operations = new QsiDataValueOperation[result.Table.Columns.Count];
+            if (result.InsertRows?.Count > 0)
+                operation |= QsiDataValueOperation.Insert;
 
-            for (int i = 0; i < ordinalMap.Length; i++)
-            {
-                ref var operation = ref operations[i];
+            if (result.DeleteRows?.Count > 0)
+                operation |= QsiDataValueOperation.Delete;
 
-                if (result.InsertRows?.Count > 0)
-                    operation |= QsiDataValueOperation.Insert;
+            if (result.UpdateAfterRows?.Count > 0)
+                operation |= QsiDataValueOperation.Update;
 
-                if (result.DeleteRows?.Count > 0)
-                    operation |= QsiDataValueOperation.Delete;
-
-                if (result.UpdateAfterRows?.Count > 0)
-                    operation |= QsiDataValueOperation.Update;
-
-                if (result.DeleteRows?.Count > 0)
-                    operation |= QsiDataValueOperation.Delete;
-            }
-
-            return new QsiExplainDataManipulationResult(
-                result.Table,
-                result.AffectedColumns,
-                operations
-            );
+            if (result.DeleteRows?.Count > 0)
+                operation |= QsiDataValueOperation.Delete;
         }
+
+        var explainResult = new QsiExplainDataManipulationResult(
+            result.Table,
+            result.AffectedColumns,
+            operations
+        );
+
+        explainResult.SensitiveDataCollection.AddRange(result.SensitiveDataCollection);
+
+        return explainResult;
     }
 }

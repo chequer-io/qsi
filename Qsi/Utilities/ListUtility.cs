@@ -1,12 +1,11 @@
 ﻿using System.Collections.Generic;
 
-namespace Qsi.Utilities
+namespace Qsi.Utilities;
+
+public static class ListUtility
 {
-    public static class ListUtility
+    public static bool IsNullOrEmpty<T>(IList<T> list)
     {
-        public static bool IsNullOrEmpty<T>(IList<T> list)
-        {
-            return list == null || list.Count == 0;
-        }
+        return list == null || list.Count == 0;
     }
 }

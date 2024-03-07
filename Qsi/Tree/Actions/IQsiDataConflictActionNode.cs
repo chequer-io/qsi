@@ -1,13 +1,12 @@
 ﻿using Qsi.Data;
 
-namespace Qsi.Tree
+namespace Qsi.Tree;
+
+public interface IQsiDataConflictActionNode : IQsiActionNode
 {
-    public interface IQsiDataConflictActionNode : IQsiActionNode
-    {
-        QsiQualifiedIdentifier Target { get; }
+    QsiQualifiedIdentifier Target { get; }
 
-        IQsiSetColumnExpressionNode[] SetValues { get; }
+    IQsiSetColumnExpressionNode[] SetValues { get; }
 
-        IQsiExpressionNode Condition { get; }
-    }
+    IQsiExpressionNode Condition { get; }
 }

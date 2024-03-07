@@ -1,9 +1,8 @@
-﻿namespace Qsi.PrimarSql.Tree
+﻿namespace Qsi.PrimarSql.Tree;
+
+public enum SelectSpec
 {
-    public enum SelectSpec
-    {
-        Empty,
-        Strongly,
-        Eventually,
-    }
+    Empty,
+    Strongly,
+    Eventually,
 }

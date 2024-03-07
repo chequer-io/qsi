@@ -2,17 +2,16 @@ using System.Collections.Generic;
 using Qsi.Tree;
 using Qsi.Utilities;
 
-namespace Qsi.Trino.Tree
+namespace Qsi.Trino.Tree;
+
+public class TrinoExistsExpressionNode : QsiExpressionNode
 {
-    public class TrinoExistsExpressionNode : QsiExpressionNode
+    public QsiTreeNodeProperty<QsiTableNode> Query { get; }
+
+    public override IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Query);
+
+    public TrinoExistsExpressionNode()
     {
-        public QsiTreeNodeProperty<QsiTableNode> Query { get; }
-
-        public override IEnumerable<IQsiTreeNode> Children => TreeHelper.YieldChildren(Query);
-
-        public TrinoExistsExpressionNode()
-        {
-            Query = new QsiTreeNodeProperty<QsiTableNode>(this);
-        }
+        Query = new QsiTreeNodeProperty<QsiTableNode>(this);
     }
 }

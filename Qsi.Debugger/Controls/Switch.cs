@@ -1,8 +1,7 @@
 ﻿using Avalonia.Controls.Primitives;
 
-namespace Qsi.Debugger.Controls
+namespace Qsi.Debugger.Controls;
+
+public class Switch : ToggleButton
 {
-    public class Switch : ToggleButton
-    {
-    }
 }

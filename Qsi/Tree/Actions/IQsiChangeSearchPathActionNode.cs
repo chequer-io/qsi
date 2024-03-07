@@ -1,9 +1,8 @@
 ﻿using Qsi.Data;
 
-namespace Qsi.Tree
+namespace Qsi.Tree;
+
+public interface IQsiChangeSearchPathActionNode : IQsiActionNode
 {
-    public interface IQsiChangeSearchPathActionNode : IQsiActionNode
-    {
-        QsiQualifiedIdentifier[] Identifiers { get; }
-    }
+    QsiQualifiedIdentifier[] Identifiers { get; }
 }

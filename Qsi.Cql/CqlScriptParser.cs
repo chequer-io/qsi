@@ -1,8 +1,7 @@
 ﻿using Qsi.Parsing.Common;
 
-namespace Qsi.Cql
+namespace Qsi.Cql;
+
+public sealed class CqlScriptParser : CommonScriptParser
 {
-    public sealed class CqlScriptParser : CommonScriptParser
-    {
-    }
 }

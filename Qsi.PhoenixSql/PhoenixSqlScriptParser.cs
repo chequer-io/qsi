@@ -1,8 +1,7 @@
 ﻿using Qsi.Parsing.Common;
 
-namespace Qsi.PhoenixSql
+namespace Qsi.PhoenixSql;
+
+public sealed class PhoenixSqlScriptParser : CommonScriptParser
 {
-    public sealed class PhoenixSqlScriptParser : CommonScriptParser
-    {
-    }
 }

@@ -1,19 +1,18 @@
-﻿namespace Qsi.Tree
+﻿namespace Qsi.Tree;
+
+/// <summary>
+/// Specifies a virtual table in which two or more tables are combined.
+/// </summary>
+public interface IQsiCompositeTableNode : IQsiTableNode
 {
     /// <summary>
-    /// Specifies a virtual table in which two or more tables are combined.
+    /// Get all tables.
     /// </summary>
-    public interface IQsiCompositeTableNode : IQsiTableNode
-    {
-        /// <summary>
-        /// Get all tables.
-        /// </summary>
-        IQsiTableNode[] Sources { get; }
+    IQsiTableNode[] Sources { get; }
 
-        IQsiMultipleOrderExpressionNode Order { get; }
+    IQsiMultipleOrderExpressionNode Order { get; }
 
-        IQsiLimitExpressionNode Limit { get; }
+    IQsiLimitExpressionNode Limit { get; }
 
-        string CompositeType { get; }
-    }
+    string CompositeType { get; }
 }

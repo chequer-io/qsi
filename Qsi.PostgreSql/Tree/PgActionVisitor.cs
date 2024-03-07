@@ -13,7 +13,7 @@ internal static partial class PgNodeVisitor
 {
     public static PgDataInsertActionNode Visit(InsertStmt node)
     {
-        if (node.ReturningList is { Count: not 0 })
+        if (node.ReturningLists is { Count: not 0 })
             throw TreeHelper.NotSupportedFeature("returning list");
 
         var relation = Visit(node.Relation);
@@ -105,7 +105,7 @@ internal static partial class PgNodeVisitor
 
     public static PgDataUpdateActionNode Visit(UpdateStmt node)
     {
-        if (node.ReturningList is { Count: not 0 })
+        if (node.ReturningLists is { Count: not 0 })
             throw TreeHelper.NotSupportedFeature("returning list");
 
         var target = Visit(node.Relation);
@@ -134,21 +134,21 @@ internal static partial class PgNodeVisitor
         if (node.WithClause is { })
             update.Directives.Value = Visit(node.WithClause);
 
-        if (node.TargetList is { })
-            update.SetValues.AddRange(node.TargetList.Select(t => VisitSetColumn(t.ResTarget)));
+        if (node.TargetLists is { })
+            update.SetValues.AddRange(node.TargetLists.Select(t => VisitSetColumn(t.ResTarget)));
 
-        if (node.FromClause is { })
-            update.FromSources.AddRange(node.FromClause.Select(Visit<QsiTableNode>).WhereNotNull());
+        if (node.FromClauses is { })
+            update.FromSources.AddRange(node.FromClauses.Select(Visit<QsiTableNode>).WhereNotNull());
 
         return update;
     }
 
     public static QsiDataDeleteActionNode Visit(DeleteStmt node)
     {
-        if (node.UsingClause is { Count: not 0 })
+        if (node.UsingClauses is { Count: not 0 })
             throw TreeHelper.NotSupportedFeature("using clause");
 
-        if (node.ReturningList is { Count: not 0 })
+        if (node.ReturningLists is { Count: not 0 })
             throw TreeHelper.NotSupportedFeature("returning list");
 
         var target = Visit(node.Relation);

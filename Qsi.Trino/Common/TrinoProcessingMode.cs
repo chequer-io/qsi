@@ -1,8 +1,7 @@
-namespace Qsi.Trino.Common
+namespace Qsi.Trino.Common;
+
+public enum TrinoProcessingMode
 {
-    public enum TrinoProcessingMode
-    {
-        Running,
-        Final
-    }
+    Running,
+    Final
 }

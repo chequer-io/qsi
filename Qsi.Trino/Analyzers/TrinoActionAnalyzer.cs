@@ -8,61 +8,60 @@ using Qsi.Tree;
 using Qsi.Trino.Tree;
 using Qsi.Utilities;
 
-namespace Qsi.Trino.Analyzers
+namespace Qsi.Trino.Analyzers;
+
+public sealed class TrinoActionAnalyzer : QsiActionAnalyzer
 {
-    public sealed class TrinoActionAnalyzer : QsiActionAnalyzer
+    public TrinoActionAnalyzer(QsiEngine engine) : base(engine)
     {
-        public TrinoActionAnalyzer(QsiEngine engine) : base(engine)
+    }
+
+    protected override async ValueTask<IQsiAnalysisResult[]> OnExecute(IAnalyzerContext context)
+    {
+        switch (context.Tree)
         {
+            case TrinoMergeActionNode mergeActionNode:
+                return await ExecuteMergeAction(context, mergeActionNode);
         }
 
-        protected override async ValueTask<IQsiAnalysisResult[]> OnExecute(IAnalyzerContext context)
+        return await base.OnExecute(context);
+    }
+
+    private async ValueTask<IQsiAnalysisResult[]> ExecuteMergeAction(IAnalyzerContext context, TrinoMergeActionNode mergeActionNode)
+    {
+        var results = new List<IQsiAnalysisResult>();
+
+        foreach (var actionNode in mergeActionNode.ActionNodes)
         {
-            switch (context.Tree)
+            IQsiAnalysisResult[] result;
+
+            switch (actionNode)
             {
-                case TrinoMergeActionNode mergeActionNode:
-                    return await ExecuteMergeAction(context, mergeActionNode);
-            }
-
-            return await base.OnExecute(context);
-        }
-
-        private async ValueTask<IQsiAnalysisResult[]> ExecuteMergeAction(IAnalyzerContext context, TrinoMergeActionNode mergeActionNode)
-        {
-            var results = new List<IQsiAnalysisResult>();
-
-            foreach (var actionNode in mergeActionNode.ActionNodes)
-            {
-                IQsiAnalysisResult[] result;
-
-                switch (actionNode)
+                case QsiDataInsertActionNode insertActionNode:
                 {
-                    case QsiDataInsertActionNode insertActionNode:
-                    {
-                        result = await ExecuteDataInsertAction(context, insertActionNode);
-                        break;
-                    }
-
-                    case QsiDataDeleteActionNode deleteActionNode:
-                    {
-                        result = await ExecuteDataDeleteAction(context, deleteActionNode);
-                        break;
-                    }
-
-                    case QsiDataUpdateActionNode updateActionNode:
-                    {
-                        result = await ExecuteDataUpdateAction(context, updateActionNode);
-                        break;
-                    }
-
-                    default:
-                        throw TreeHelper.NotSupportedTree(actionNode);
+                    result = await ExecuteDataInsertAction(context, insertActionNode);
+                    break;
                 }
 
-                results.AddRange(result);
+                case QsiDataDeleteActionNode deleteActionNode:
+                {
+                    result = await ExecuteDataDeleteAction(context, deleteActionNode);
+                    break;
+                }
+
+                case QsiDataUpdateActionNode updateActionNode:
+                {
+                    result = await ExecuteDataUpdateAction(context, updateActionNode);
+                    break;
+                }
+
+                default:
+                    throw TreeHelper.NotSupportedTree(actionNode);
             }
 
-            return results.ToArray();
+            results.AddRange(result);
         }
+
+        return results.ToArray();
     }
 }

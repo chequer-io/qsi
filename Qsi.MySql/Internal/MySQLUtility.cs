@@ -2,62 +2,63 @@ using System;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Atn;
 
-namespace Qsi.MySql.Internal
+namespace Qsi.MySql.Internal;
+
+internal static class MySQLUtility
 {
-    internal static class MySQLUtility
+    // backend/wbpublic/grtdb/db_helpers.cpp
+    // bec::version_to_int
+    //
+    // Version  |  GrtVersionRef
+    // ---------+---------------
+    // Major    |  Major
+    // Minor    |  Minor
+    // Build    |  Release
+    // Revision |  Build
+    public static int VersionToInt(Version version)
     {
-        // backend/wbpublic/grtdb/db_helpers.cpp
-        // bec::version_to_int
-        //
-        // Version  |  GrtVersionRef
-        // ---------+---------------
-        // Major    |  Major
-        // Minor    |  Minor
-        // Build    |  Release
-        // Revision |  Build
-        public static int VersionToInt(Version version)
+        if (version == null || version.Major == -1)
+            return 80000;
+
+        int result = version.Major * 10000;
+
+        if (version.Minor > 0)
+            result += version.Minor * 100;
+
+        if (version.Build > 0)
+            result += version.Build;
+
+        return result;
+    }
+
+    public static MySqlParserInternal CreateParser(string input, int version, bool mariaDBCompatibility)
+    {
+        var stream = new AntlrInputStream(input);
+
+        var lexer = new MySqlLexerInternal(stream)
         {
-            if (version == null || version.Major == -1)
-                return 80000;
+            serverVersion = version,
+            MariaDB = mariaDBCompatibility
+        };
 
-            int result = version.Major * 10000;
+        lexer.RemoveErrorListeners();
+        lexer.AddErrorListener(new MySqlLexerErrorHandler());
 
-            if (version.Minor > 0)
-                result += version.Minor * 100;
+        var tokens = new CommonTokenStream(lexer);
 
-            if (version.Build > 0)
-                result += version.Build;
-
-            return result;
-        }
-
-        public static MySqlParserInternal CreateParser(string input, int version)
+        var parser = new MySqlParserInternal(tokens)
         {
-            var stream = new AntlrInputStream(input);
-
-            var lexer = new MySqlLexerInternal(stream)
+            serverVersion = version,
+            MariaDB = mariaDBCompatibility,
+            Interpreter =
             {
-                serverVersion = version
-            };
+                PredictionMode = PredictionMode.SLL
+            }
+        };
 
-            lexer.RemoveErrorListeners();
-            lexer.AddErrorListener(new MySqlLexerErrorHandler());
+        parser.RemoveErrorListeners();
+        parser.AddErrorListener(new MySqlParserErrorHandler());
 
-            var tokens = new CommonTokenStream(lexer);
-
-            var parser = new MySqlParserInternal(tokens)
-            {
-                serverVersion = version,
-                Interpreter =
-                {
-                    PredictionMode = PredictionMode.SLL
-                }
-            };
-
-            parser.RemoveErrorListeners();
-            parser.AddErrorListener(new MySqlParserErrorHandler());
-
-            return parser;
-        }
+        return parser;
     }
 }

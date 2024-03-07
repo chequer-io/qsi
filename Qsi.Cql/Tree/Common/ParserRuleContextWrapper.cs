@@ -1,25 +1,24 @@
 ﻿using Antlr4.Runtime;
 using Qsi.Shared;
 
-namespace Qsi.Cql.Tree.Common
+namespace Qsi.Cql.Tree.Common;
+
+internal readonly struct ParserRuleContextWrapper<T> : IParserRuleContext
 {
-    internal readonly struct ParserRuleContextWrapper<T> : IParserRuleContext
+    public T Value { get; }
+
+    public IToken Start { get; }
+
+    public IToken Stop { get; }
+
+    public ParserRuleContextWrapper(T value, IToken start, IToken stop)
     {
-        public T Value { get; }
+        Value = value;
+        Start = start;
+        Stop = stop;
+    }
 
-        public IToken Start { get; }
-
-        public IToken Stop { get; }
-
-        public ParserRuleContextWrapper(T value, IToken start, IToken stop)
-        {
-            Value = value;
-            Start = start;
-            Stop = stop;
-        }
-
-        public ParserRuleContextWrapper(T value, ParserRuleContext context) : this(value, context.Start, context.Stop)
-        {
-        }
+    public ParserRuleContextWrapper(T value, ParserRuleContext context) : this(value, context.Start, context.Stop)
+    {
     }
 }

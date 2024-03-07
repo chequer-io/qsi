@@ -1,16 +1,15 @@
-﻿namespace Qsi.Data
+﻿namespace Qsi.Data;
+
+public interface IDataProvider
 {
-    public interface IDataProvider
-    {
-        QsiDataType Type { get; }
+    QsiDataType Type { get; }
 
-        object Value { get; }
-    }
+    object Value { get; }
+}
 
-    public interface IDataProvider<out T> : IDataProvider
-    {
-        new T Value { get; }
+public interface IDataProvider<out T> : IDataProvider
+{
+    new T Value { get; }
 
-        object IDataProvider.Value => Value;
-    }
+    object IDataProvider.Value => Value;
 }

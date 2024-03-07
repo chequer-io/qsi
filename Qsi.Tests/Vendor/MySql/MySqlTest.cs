@@ -44,7 +44,7 @@ public partial class MySqlTest : VendorTestBase
 
     protected override IQsiLanguageService CreateLanguageService(DbConnection connection)
     {
-        return new Driver.MySqlLanguageService(connection);
+        return new Driver.MySqlLanguageService(connection, false);
     }
 
     [TestCase("SELECT * FROM actor")]
@@ -232,5 +232,12 @@ public partial class MySqlTest : VendorTestBase
         IEnumerable<string> expectColumnNames = Enumerable.Range(0, dataReader.FieldCount).Select(i => dataReader.GetName(i));
 
         Assert.AreEqual(expectColumnNames, qsiIdentifierColumnNames);
+    }
+
+    [TestCaseSource(nameof(Test_LeadLagInfo_TestDatas))]
+    public async Task Test_LeadLagInfo(string sql)
+    {
+        Assert.DoesNotThrowAsync
+            (() => Engine.Execute(new QsiScript(sql, QsiScriptType.Select), null).AsTask());
     }
 }

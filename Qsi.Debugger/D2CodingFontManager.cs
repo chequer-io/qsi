@@ -7,58 +7,57 @@ using Avalonia.Skia;
 using Qsi.Debugger.Utilities;
 using SkiaSharp;
 
-namespace Qsi.Debugger
+namespace Qsi.Debugger;
+
+public class D2CodingFontManager : IFontManagerImpl
 {
-    public class D2CodingFontManager : IFontManagerImpl
+    private readonly string[] _bcp47 = { CultureInfo.CurrentCulture.ThreeLetterISOLanguageName, CultureInfo.CurrentCulture.TwoLetterISOLanguageName };
+
+    private readonly SKTypeface[] _customTypefaces;
+    private readonly string _defaultFamilyName;
+
+    private readonly SKTypeface _defaultTypeface = SKTypeface.FromStream(AssetManager.FindResource("Fonts/D2Coding.ttf"));
+
+    public D2CodingFontManager()
     {
-        private readonly string[] _bcp47 = { CultureInfo.CurrentCulture.ThreeLetterISOLanguageName, CultureInfo.CurrentCulture.TwoLetterISOLanguageName };
+        _customTypefaces = new[] { _defaultTypeface };
+        _defaultFamilyName = _defaultTypeface.FamilyName;
+    }
 
-        private readonly SKTypeface[] _customTypefaces;
-        private readonly string _defaultFamilyName;
+    public string GetDefaultFontFamilyName()
+    {
+        return _defaultFamilyName;
+    }
 
-        private readonly SKTypeface _defaultTypeface = SKTypeface.FromStream(AssetManager.FindResource("Fonts/D2Coding.ttf"));
+    public IEnumerable<string> GetInstalledFontFamilyNames(bool checkForUpdates = false)
+    {
+        return _customTypefaces.Select(x => x.FamilyName);
+    }
 
-        public D2CodingFontManager()
+    public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, FontFamily fontFamily, CultureInfo culture, out Typeface typeface)
+    {
+        foreach (var customTypeface in _customTypefaces)
         {
-            _customTypefaces = new[] { _defaultTypeface };
-            _defaultFamilyName = _defaultTypeface.FamilyName;
-        }
-
-        public string GetDefaultFontFamilyName()
-        {
-            return _defaultFamilyName;
-        }
-
-        public IEnumerable<string> GetInstalledFontFamilyNames(bool checkForUpdates = false)
-        {
-            return _customTypefaces.Select(x => x.FamilyName);
-        }
-
-        public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, FontFamily fontFamily, CultureInfo culture, out Typeface typeface)
-        {
-            foreach (var customTypeface in _customTypefaces)
+            if (customTypeface.GetGlyph(codepoint) == 0)
             {
-                if (customTypeface.GetGlyph(codepoint) == 0)
-                {
-                    continue;
-                }
-
-                typeface = new Typeface(customTypeface.FamilyName, fontStyle, fontWeight);
-
-                return true;
+                continue;
             }
 
-            var fallback = SKFontManager.Default.MatchCharacter(fontFamily?.Name, (SKFontStyleWeight)fontWeight,
-                SKFontStyleWidth.Normal, (SKFontStyleSlant)fontStyle, _bcp47, codepoint);
-
-            typeface = new Typeface(fallback?.FamilyName ?? _defaultFamilyName, fontStyle, fontWeight);
+            typeface = new Typeface(customTypeface.FamilyName, fontStyle, fontWeight);
 
             return true;
         }
 
-        public IGlyphTypefaceImpl CreateGlyphTypeface(Typeface typeface)
-        {
-            return new GlyphTypefaceImpl(_defaultTypeface);
-        }
+        var fallback = SKFontManager.Default.MatchCharacter(fontFamily?.Name, (SKFontStyleWeight)fontWeight,
+            SKFontStyleWidth.Normal, (SKFontStyleSlant)fontStyle, _bcp47, codepoint);
+
+        typeface = new Typeface(fallback?.FamilyName ?? _defaultFamilyName, fontStyle, fontWeight);
+
+        return true;
+    }
+
+    public IGlyphTypefaceImpl CreateGlyphTypeface(Typeface typeface)
+    {
+        return new GlyphTypefaceImpl(_defaultTypeface);
     }
 }

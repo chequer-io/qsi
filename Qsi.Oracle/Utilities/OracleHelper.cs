@@ -6,61 +6,60 @@ using Qsi.Tree;
 using Qsi.Utilities;
 using static Qsi.Oracle.Internal.OracleParserInternal;
 
-namespace Qsi.Oracle.Utilities
+namespace Qsi.Oracle.Utilities;
+
+internal static class OracleHelper
 {
-    internal static class OracleHelper
+    public static QsiDerivedTableNode CreateDerivedTableWithPath(QsiTableNode source, QsiQualifiedIdentifier path)
     {
-        public static QsiDerivedTableNode CreateDerivedTableWithPath(QsiTableNode source, QsiQualifiedIdentifier path)
+        var node = new OracleDerivedTableNode();
+        node.Source.Value = source;
+
+        var columns = new QsiColumnsDeclarationNode();
+
+        columns.Columns.Add(new QsiAllColumnNode
         {
-            var node = new OracleDerivedTableNode();
-            node.Source.Value = source;
+            Path = path
+        });
 
-            var columns = new QsiColumnsDeclarationNode();
+        node.Columns.Value = columns;
 
-            columns.Columns.Add(new QsiAllColumnNode
-            {
-                Path = path
-            });
+        return node;
+    }
 
-            node.Columns.Value = columns;
+    public static QsiDerivedTableNode CreateDerivedTable(QsiTableNode source, QsiAliasNode alias = null)
+    {
+        var node = new QsiDerivedTableNode();
+        node.Source.Value = source;
+        node.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
 
-            return node;
-        }
+        if (alias is not null)
+            node.Alias.Value = alias;
 
-        public static QsiDerivedTableNode CreateDerivedTable(QsiTableNode source, QsiAliasNode alias = null)
-        {
-            var node = new QsiDerivedTableNode();
-            node.Source.Value = source;
-            node.Columns.Value = TreeHelper.CreateAllColumnsDeclaration();
+        return node;
+    }
 
-            if (alias is not null)
-                node.Alias.Value = alias;
+    public static QsiDerivedTableNode CreateDerivedTable(QsiTableNode source, TAliasContext alias)
+    {
+        return CreateDerivedTable(source, IdentifierVisitor.VisitAlias(alias));
+    }
 
-            return node;
-        }
+    public static QsiJoinedTableNode CreateJoinedTable(QsiTableNode left, QsiTableNode right, QsiExpressionNode pivotExpression)
+    {
+        var node = new QsiJoinedTableNode();
+        node.Left.Value = left;
+        node.Right.Value = right;
+        node.JoinType = "JOIN";
+        node.PivotExpression.Value = pivotExpression;
 
-        public static QsiDerivedTableNode CreateDerivedTable(QsiTableNode source, TAliasContext alias)
-        {
-            return CreateDerivedTable(source, IdentifierVisitor.VisitAlias(alias));
-        }
+        return node;
+    }
 
-        public static QsiJoinedTableNode CreateJoinedTable(QsiTableNode left, QsiTableNode right, QsiExpressionNode pivotExpression)
-        {
-            var node = new QsiJoinedTableNode();
-            node.Left.Value = left;
-            node.Right.Value = right;
-            node.JoinType = "JOIN";
-            node.PivotExpression.Value = pivotExpression;
+    public static OracleNamedParameterExpressionNode CreateNamedParameter(ParserRuleContext context, string name)
+    {
+        var node = OracleTree.CreateWithSpan<OracleNamedParameterExpressionNode>(context);
+        node.Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(name, false));
 
-            return node;
-        }
-
-        public static OracleNamedParameterExpressionNode CreateNamedParameter(ParserRuleContext context, string name)
-        {
-            var node = OracleTree.CreateWithSpan<OracleNamedParameterExpressionNode>(context);
-            node.Identifier = new QsiQualifiedIdentifier(new QsiIdentifier(name, false));
-
-            return node;
-        }
+        return node;
     }
 }

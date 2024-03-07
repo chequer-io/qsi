@@ -1,8 +1,7 @@
 ﻿using Qsi.Tree;
 
-namespace Qsi.PhoenixSql.Tree
+namespace Qsi.PhoenixSql.Tree;
+
+internal sealed class PDynamicColumnReferenceNode : QsiColumnReferenceNode
 {
-    internal sealed class PDynamicColumnReferenceNode : QsiColumnReferenceNode
-    {
-    }
 }

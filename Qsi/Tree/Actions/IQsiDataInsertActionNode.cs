@@ -1,25 +1,24 @@
 ﻿using Qsi.Data;
 
-namespace Qsi.Tree
+namespace Qsi.Tree;
+
+public interface IQsiDataInsertActionNode : IQsiActionNode
 {
-    public interface IQsiDataInsertActionNode : IQsiActionNode
-    {
-        IQsiTableDirectivesNode Directives { get; }
+    IQsiTableDirectivesNode Directives { get; }
 
-        IQsiTableReferenceNode Target { get; }
+    IQsiTableReferenceNode Target { get; }
 
-        QsiQualifiedIdentifier[] Partitions { get; }
+    QsiQualifiedIdentifier[] Partitions { get; }
 
-        QsiQualifiedIdentifier[] Columns { get; }
+    QsiQualifiedIdentifier[] Columns { get; }
 
-        IQsiRowValueExpressionNode[] Values { get; }
+    IQsiRowValueExpressionNode[] Values { get; }
 
-        IQsiSetColumnExpressionNode[] SetValues { get; }
+    IQsiSetColumnExpressionNode[] SetValues { get; }
 
-        IQsiTableNode ValueTable { get; }
+    IQsiTableNode ValueTable { get; }
 
-        QsiDataConflictBehavior ConflictBehavior { get; }
+    QsiDataConflictBehavior ConflictBehavior { get; }
 
-        IQsiDataConflictActionNode ConflictAction { get; }
-    }
+    IQsiDataConflictActionNode ConflictAction { get; }
 }

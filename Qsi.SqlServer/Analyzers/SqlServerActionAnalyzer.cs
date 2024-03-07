@@ -9,76 +9,75 @@ using Qsi.SqlServer.Tree;
 using Qsi.Tree;
 using Qsi.Utilities;
 
-namespace Qsi.SqlServer.Analyzers
+namespace Qsi.SqlServer.Analyzers;
+
+public class SqlServerActionAnalyzer : QsiActionAnalyzer
 {
-    public class SqlServerActionAnalyzer : QsiActionAnalyzer
+    public SqlServerActionAnalyzer(QsiEngine engine) : base(engine)
     {
-        public SqlServerActionAnalyzer(QsiEngine engine) : base(engine)
+    }
+
+    protected override async ValueTask<IQsiAnalysisResult[]> OnExecute(IAnalyzerContext context)
+    {
+        switch (context.Tree)
         {
+            case SqlServerMergeActionNode mergeActionNode:
+                return await ExecuteMergeAction(context, mergeActionNode);
+
+            case SqlServerAlterUserActionNode alterUserActionNode:
+                return new[] { await ExecuteAlterUserAction(context, alterUserActionNode) };
         }
 
-        protected override async ValueTask<IQsiAnalysisResult[]> OnExecute(IAnalyzerContext context)
+        return await base.OnExecute(context);
+    }
+
+    protected async ValueTask<IQsiAnalysisResult[]> ExecuteMergeAction(IAnalyzerContext context, SqlServerMergeActionNode mergeActionNode)
+    {
+        var results = new List<IQsiAnalysisResult>();
+
+        foreach (var actionNode in mergeActionNode.ActionNodes)
         {
-            switch (context.Tree)
+            IQsiAnalysisResult[] result;
+
+            switch (actionNode)
             {
-                case SqlServerMergeActionNode mergeActionNode:
-                    return await ExecuteMergeAction(context, mergeActionNode);
-
-                case SqlServerAlterUserActionNode alterUserActionNode:
-                    return new[] { await ExecuteAlterUserAction(context, alterUserActionNode) };
-            }
-
-            return await base.OnExecute(context);
-        }
-
-        protected async ValueTask<IQsiAnalysisResult[]> ExecuteMergeAction(IAnalyzerContext context, SqlServerMergeActionNode mergeActionNode)
-        {
-            var results = new List<IQsiAnalysisResult>();
-
-            foreach (var actionNode in mergeActionNode.ActionNodes)
-            {
-                IQsiAnalysisResult[] result;
-
-                switch (actionNode)
+                case QsiDataInsertActionNode insertActionNode:
                 {
-                    case QsiDataInsertActionNode insertActionNode:
-                    {
-                        result = await ExecuteDataInsertAction(context, insertActionNode);
-                        break;
-                    }
-
-                    case QsiDataDeleteActionNode deleteActionNode:
-                    {
-                        result = await ExecuteDataDeleteAction(context, deleteActionNode);
-                        break;
-                    }
-
-                    case QsiDataUpdateActionNode updateActionNode:
-                    {
-                        result = await ExecuteDataUpdateAction(context, updateActionNode);
-                        break;
-                    }
-
-                    default:
-                        throw TreeHelper.NotSupportedTree(actionNode);
+                    result = await ExecuteDataInsertAction(context, insertActionNode);
+                    break;
                 }
 
-                results.AddRange(result);
+                case QsiDataDeleteActionNode deleteActionNode:
+                {
+                    result = await ExecuteDataDeleteAction(context, deleteActionNode);
+                    break;
+                }
+
+                case QsiDataUpdateActionNode updateActionNode:
+                {
+                    result = await ExecuteDataUpdateAction(context, updateActionNode);
+                    break;
+                }
+
+                default:
+                    throw TreeHelper.NotSupportedTree(actionNode);
             }
 
-            return results.ToArray();
+            results.AddRange(result);
         }
 
-        protected ValueTask<IQsiAnalysisResult> ExecuteAlterUserAction(IAnalyzerContext context, SqlServerAlterUserActionNode alterUserActionNode)
+        return results.ToArray();
+    }
+
+    protected ValueTask<IQsiAnalysisResult> ExecuteAlterUserAction(IAnalyzerContext context, SqlServerAlterUserActionNode alterUserActionNode)
+    {
+        var action = new SqlServerAlterUserAction
         {
-            var action = new SqlServerAlterUserAction
-            {
-                TargetUser = alterUserActionNode.TargetUser,
-                NewUserName = alterUserActionNode.NewUserName,
-                DefaultSchema = alterUserActionNode.DefaultSchema
-            };
+            TargetUser = alterUserActionNode.TargetUser,
+            NewUserName = alterUserActionNode.NewUserName,
+            DefaultSchema = alterUserActionNode.DefaultSchema
+        };
 
-            return new ValueTask<IQsiAnalysisResult>(action);
-        }
+        return new ValueTask<IQsiAnalysisResult>(action);
     }
 }

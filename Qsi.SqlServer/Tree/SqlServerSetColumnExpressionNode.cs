@@ -1,16 +1,15 @@
 ﻿using Qsi.Tree;
 
-namespace Qsi.SqlServer.Tree
+namespace Qsi.SqlServer.Tree;
+
+public sealed class SqlServerSetColumnExpressionNode : QsiSetColumnExpressionNode
 {
-    public sealed class SqlServerSetColumnExpressionNode : QsiSetColumnExpressionNode
+    public QsiTreeNodeProperty<QsiVariableExpressionNode> Variable { get; }
+
+    public string Operator { get; set; }
+
+    public SqlServerSetColumnExpressionNode()
     {
-        public QsiTreeNodeProperty<QsiVariableExpressionNode> Variable { get; }
-
-        public string Operator { get; set; }
-
-        public SqlServerSetColumnExpressionNode()
-        {
-            Variable = new QsiTreeNodeProperty<QsiVariableExpressionNode>(this);
-        }
+        Variable = new QsiTreeNodeProperty<QsiVariableExpressionNode>(this);
     }
 }

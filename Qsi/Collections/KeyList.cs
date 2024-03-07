@@ -1,28 +1,27 @@
 ﻿using System.Collections.Generic;
 
-namespace Qsi.Collections
+namespace Qsi.Collections;
+
+internal readonly ref struct KeyList<TKey, TValue>
 {
-    internal readonly ref struct KeyList<TKey, TValue>
+    public IList<TValue> this[TKey key]
     {
-        public IList<TValue> this[TKey key]
+        get
         {
-            get
+            if (!_dictionary.TryGetValue(key, out IList<TValue> list))
             {
-                if (!_dictionary.TryGetValue(key, out IList<TValue> list))
-                {
-                    list = new List<TValue>();
-                    _dictionary[key] = list;
-                }
-
-                return list;
+                list = new List<TValue>();
+                _dictionary[key] = list;
             }
-        }
 
-        private readonly Dictionary<TKey, IList<TValue>> _dictionary;
-
-        public KeyList(bool _ = false)
-        {
-            _dictionary = new Dictionary<TKey, IList<TValue>>();
+            return list;
         }
+    }
+
+    private readonly Dictionary<TKey, IList<TValue>> _dictionary;
+
+    public KeyList(bool _ = false)
+    {
+        _dictionary = new Dictionary<TKey, IList<TValue>>();
     }
 }

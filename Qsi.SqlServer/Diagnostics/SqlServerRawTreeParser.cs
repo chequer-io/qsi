@@ -5,35 +5,34 @@ using Qsi.SqlServer.Common;
 using Qsi.SqlServer.Internal;
 using Microsoft.SqlServer.Management.SqlParser.Parser;
 
-namespace Qsi.SqlServer.Diagnostics
+namespace Qsi.SqlServer.Diagnostics;
+
+public sealed class SqlServerRawTreeParser : IRawTreeParser
 {
-    public sealed class SqlServerRawTreeParser : IRawTreeParser
+    private readonly TSqlParserInternal _parser;
+
+    public SqlServerRawTreeParser(TransactSqlVersion version)
     {
-        private readonly TSqlParserInternal _parser;
+        _parser = new TSqlParserInternal(version, false);
+    }
 
-        public SqlServerRawTreeParser(TransactSqlVersion version)
+    public IRawTree Parse(string input)
+    {
+        try
         {
-            _parser = new TSqlParserInternal(version, false);
+            return SqlServerRawTreeVisitor.CreateRawTree(_parser.Parse(input));
         }
-
-        public IRawTree Parse(string input)
+        catch (Exception)
         {
-            try
+            if (input.Contains("physloc", StringComparison.InvariantCultureIgnoreCase))
             {
-                return SqlServerRawTreeVisitor.CreateRawTree(_parser.Parse(input));
-            }
-            catch (Exception)
-            {
-                if (input.Contains("physloc", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    var parseResult = Parser.Parse(input);
+                var parseResult = Parser.Parse(input);
 
-                    if (!parseResult.Errors.Any())
-                        return new SqlServerRawTree(parseResult.Script);
-                }
-
-                throw;
+                if (!parseResult.Errors.Any())
+                    return new SqlServerRawTree(parseResult.Script);
             }
+
+            throw;
         }
     }
 }

@@ -2,21 +2,20 @@
 using Qsi.Diagnostics.Antlr;
 using Qsi.Impala.Utilities;
 
-namespace Qsi.Impala.Diagnostics
+namespace Qsi.Impala.Diagnostics;
+
+public class ImpalaRawParser : AntlrRawParserBase
 {
-    public class ImpalaRawParser : AntlrRawParserBase
+    private readonly ImpalaDialect _dialect;
+
+    public ImpalaRawParser(ImpalaDialect dialect)
     {
-        private readonly ImpalaDialect _dialect;
+        _dialect = dialect;
+    }
 
-        public ImpalaRawParser(ImpalaDialect dialect)
-        {
-            _dialect = dialect;
-        }
-
-        protected override (ITree Tree, string[] RuleNames) ParseAntlrTree(string input)
-        {
-            var parser = ImpalaUtility.CreateParserInternal(input, _dialect);
-            return (parser.root(), parser.RuleNames);
-        }
+    protected override (ITree Tree, string[] RuleNames) ParseAntlrTree(string input)
+    {
+        var parser = ImpalaUtility.CreateParserInternal(input, _dialect);
+        return (parser.root(), parser.RuleNames);
     }
 }

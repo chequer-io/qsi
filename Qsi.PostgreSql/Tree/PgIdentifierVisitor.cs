@@ -19,7 +19,7 @@ internal static partial class PgNodeVisitor
 
     private static QsiIdentifier CreateIdentifier(Node strNode)
     {
-        if (strNode is not { NodeCase: Node.NodeOneofCase.String })
+        if (strNode is not { nodeCase: Node.nodeOneofCase.String })
             throw CreateInternalException("CreateIdentifier(Node) only support String node");
 
         return new QsiIdentifier(strNode.String.Sval, false);

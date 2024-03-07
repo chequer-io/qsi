@@ -7,35 +7,34 @@ using Qsi.Parsing;
 using Qsi.PhoenixSql.Analyzers;
 using Qsi.Services;
 
-namespace Qsi.PhoenixSql
+namespace Qsi.PhoenixSql;
+
+public abstract class PhoenixSqlLanguageServiceBase : QsiLanguageServiceBase
 {
-    public abstract class PhoenixSqlLanguageServiceBase : QsiLanguageServiceBase
+    public override IQsiTreeParser CreateTreeParser()
     {
-        public override IQsiTreeParser CreateTreeParser()
-        {
-            return new PhoenixSqlParser();
-        }
+        return new PhoenixSqlParser();
+    }
 
-        public override IQsiTreeDeparser CreateTreeDeparser()
-        {
-            return new PhoenixSqlDeparser();
-        }
+    public override IQsiTreeDeparser CreateTreeDeparser()
+    {
+        return new PhoenixSqlDeparser();
+    }
 
-        public override IQsiScriptParser CreateScriptParser()
-        {
-            return new PhoenixSqlScriptParser();
-        }
+    public override IQsiScriptParser CreateScriptParser()
+    {
+        return new PhoenixSqlScriptParser();
+    }
 
-        public override QsiAnalyzerOptions CreateAnalyzerOptions()
-        {
-            return new();
-        }
+    public override QsiAnalyzerOptions CreateAnalyzerOptions()
+    {
+        return new();
+    }
         
-        public override IEnumerable<QsiAnalyzerBase> CreateAnalyzers(QsiEngine engine)
-        {
-            yield return new QsiActionAnalyzer(engine);
-            yield return new PhoenixSqlTableAnalyzer(engine);
-            yield return new QsiDefinitionAnalyzer(engine);
-        }
+    public override IEnumerable<QsiAnalyzerBase> CreateAnalyzers(QsiEngine engine)
+    {
+        yield return new QsiActionAnalyzer(engine);
+        yield return new PhoenixSqlTableAnalyzer(engine);
+        yield return new QsiDefinitionAnalyzer(engine);
     }
 }

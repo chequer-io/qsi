@@ -2,18 +2,17 @@
 using Qsi.Diagnostics;
 using Qsi.Services;
 
-namespace Qsi.Debugger.Vendor.Cql
-{
-    internal class CqlDebugger : VendorDebugger
-    {
-        protected override IQsiLanguageService CreateLanguageService()
-        {
-            return new CqlLanguageService();
-        }
+namespace Qsi.Debugger.Vendor.Cql;
 
-        protected override IRawTreeParser CreateRawTreeParser()
-        {
-            return new CqlRawParser();
-        }
+internal class CqlDebugger : VendorDebugger
+{
+    protected override IQsiLanguageService CreateLanguageService()
+    {
+        return new CqlLanguageService();
+    }
+
+    protected override IRawTreeParser CreateRawTreeParser()
+    {
+        return new CqlRawParser();
     }
 }

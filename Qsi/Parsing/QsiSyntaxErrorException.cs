@@ -1,15 +1,14 @@
-﻿namespace Qsi.Parsing
+﻿namespace Qsi.Parsing;
+
+public sealed class QsiSyntaxErrorException : QsiException
 {
-    public sealed class QsiSyntaxErrorException : QsiException
+    public int Line { get; }
+
+    public int Column { get; }
+
+    public QsiSyntaxErrorException(int line, int column, string message) : base(QsiError.SyntaxError, message)
     {
-        public int Line { get; }
-
-        public int Column { get; }
-
-        public QsiSyntaxErrorException(int line, int column, string message) : base(QsiError.SyntaxError, message)
-        {
-            Line = line;
-            Column = column;
-        }
+        Line = line;
+        Column = column;
     }
 }

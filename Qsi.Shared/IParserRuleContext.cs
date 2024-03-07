@@ -1,11 +1,10 @@
 ﻿using Antlr4.Runtime;
 
-namespace Qsi.Shared
-{
-    internal interface IParserRuleContext
-    {
-        IToken Start { get; }
+namespace Qsi.Shared;
 
-        IToken Stop { get; }
-    }
+internal interface IParserRuleContext
+{
+    IToken Start { get; }
+
+    IToken Stop { get; }
 }

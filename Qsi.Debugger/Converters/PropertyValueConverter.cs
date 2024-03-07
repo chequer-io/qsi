@@ -6,47 +6,46 @@ using Avalonia.Data.Converters;
 using Avalonia.Markup.Xaml;
 using Qsi.Data;
 
-namespace Qsi.Debugger.Converters
+namespace Qsi.Debugger.Converters;
+
+public class PropertyValueConverter : MarkupExtension, IValueConverter
 {
-    public class PropertyValueConverter : MarkupExtension, IValueConverter
+    public override object ProvideValue(IServiceProvider serviceProvider)
     {
-        public override object ProvideValue(IServiceProvider serviceProvider)
+        return this;
+    }
+
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        return Format(value);
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotSupportedException();
+    }
+
+    private string Format(object value)
+    {
+        switch (value)
         {
-            return this;
-        }
+            case string strValue:
+                return strValue;
 
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            return Format(value);
-        }
+            case QsiIdentifier identifier:
+                return identifier.ToString();
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            throw new NotSupportedException();
-        }
+            case QsiQualifiedIdentifier qualifiedIdentifier:
+                return qualifiedIdentifier.ToString();
 
-        private string Format(object value)
-        {
-            switch (value)
-            {
-                case string strValue:
-                    return strValue;
+            case null:
+                return "null";
 
-                case QsiIdentifier identifier:
-                    return identifier.ToString();
+            case IEnumerable<object> enumerable:
+                return $"[{string.Join(", ", enumerable.Select(Format))}]";
 
-                case QsiQualifiedIdentifier qualifiedIdentifier:
-                    return qualifiedIdentifier.ToString();
-
-                case null:
-                    return "null";
-
-                case IEnumerable<object> enumerable:
-                    return $"[{string.Join(", ", enumerable.Select(Format))}]";
-
-                default:
-                    return value.ToString();
-            }
+            default:
+                return value.ToString();
         }
     }
 }

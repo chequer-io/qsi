@@ -1,11 +1,10 @@
 ﻿using Qsi.Data;
 
-namespace Qsi.Tree
-{
-    public interface IQsiOrderExpressionNode : IQsiExpressionNode
-    {
-        QsiSortOrder Order { get; }
+namespace Qsi.Tree;
 
-        IQsiExpressionNode Expression { get; }
-    }
+public interface IQsiOrderExpressionNode : IQsiExpressionNode
+{
+    QsiSortOrder Order { get; }
+
+    IQsiExpressionNode Expression { get; }
 }

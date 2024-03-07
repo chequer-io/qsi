@@ -1,6 +1,5 @@
-﻿namespace Qsi.Tree
+﻿namespace Qsi.Tree;
+
+public interface IQsiTerminalNode
 {
-    public interface IQsiTerminalNode
-    {
-    }
 }

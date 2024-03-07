@@ -1,10 +1,9 @@
-﻿namespace Qsi.MySql.Internal
+﻿namespace Qsi.MySql.Internal;
+
+internal enum MySqlVersion
 {
-    internal enum MySqlVersion
-    {
-        Unknown,
-        MySQL56,
-        MySQL57,
-        MySQL80
-    }
+    Unknown,
+    MySQL56,
+    MySQL57,
+    MySQL80
 }

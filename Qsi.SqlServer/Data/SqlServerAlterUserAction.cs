@@ -1,16 +1,15 @@
 ﻿using Qsi.Analyzers;
 using Qsi.Data;
 
-namespace Qsi.SqlServer.Data
+namespace Qsi.SqlServer.Data;
+
+public class SqlServerAlterUserAction : IQsiAnalysisResult
 {
-    public class SqlServerAlterUserAction : IQsiAnalysisResult
-    {
-        public QsiIdentifier TargetUser { get; set; }
+    public QsiIdentifier TargetUser { get; set; }
 
-        public QsiIdentifier DefaultSchema { get; set; }
+    public QsiIdentifier DefaultSchema { get; set; }
 
-        public QsiIdentifier NewUserName { get; set; }
+    public QsiIdentifier NewUserName { get; set; }
 
-        public QsiSensitiveDataCollection SensitiveDataCollection => QsiSensitiveDataCollection.Empty;
-    }
+    public QsiSensitiveDataCollection SensitiveDataCollection => QsiSensitiveDataCollection.Empty;
 }

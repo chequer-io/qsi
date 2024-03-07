@@ -1072,6 +1072,9 @@ REQUIRE_TABLE_PRIMARY_KEY_CHECK_SYMBOL:
 STREAM_SYMBOL:                   S T R E A M;                                 // MYSQL
 OFF_SYMBOL:                      O F F;                                       // SQL-1999-R
 
+// ** Patch by QSI
+STATEMENT_SYMBOL: S T A T E M E N T                                          {MariaDB}?;
+
 // $antlr-format groupedAlignments on, alignTrailers off, alignLexerCommands on
 
 // Additional tokens which are mapped to existing tokens.
@@ -1108,7 +1111,7 @@ INVALID_INPUT:
 // ** Patch by QSI
 // The underscore charset token is used to defined the repertoire of a string, though it conflicts
 // with normal identifiers, which also can start with an underscore.
-UNDERSCORE_CHARSET: '_' [a-z0-9]+ { setType(checkCharset(getText())); };
+UNDERSCORE_CHARSET: '_' [a-zA-Z0-9]+ { setType(checkCharset(getText())); };
 
 // Identifiers might start with a digit, even though it is discouraged, and may not consist entirely of digits only.
 // All keywords above are automatically excluded.

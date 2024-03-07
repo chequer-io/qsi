@@ -1,9 +1,8 @@
-﻿namespace Qsi.Diagnostics
-{
-    public interface IRawTree
-    {
-        string DisplayName { get; }
+﻿namespace Qsi.Diagnostics;
 
-        IRawTree[] Children { get; }
-    }
+public interface IRawTree
+{
+    string DisplayName { get; }
+
+    IRawTree[] Children { get; }
 }

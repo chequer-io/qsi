@@ -1,12 +1,11 @@
-﻿namespace Qsi.Oracle.Common
+﻿namespace Qsi.Oracle.Common;
+
+public enum OracleOnEmptyBehavior
 {
-    public enum OracleOnEmptyBehavior
-    {
-        Error,
-        Null,
-        Empty,
-        EmptyArray,
-        EmptyObject,
-        Default
-    }
+    Error,
+    Null,
+    Empty,
+    EmptyArray,
+    EmptyObject,
+    Default
 }

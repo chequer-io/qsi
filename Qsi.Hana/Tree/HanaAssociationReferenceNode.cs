@@ -2,28 +2,27 @@
 using Qsi.Data;
 using Qsi.Tree;
 
-namespace Qsi.Hana.Tree
+namespace Qsi.Hana.Tree;
+
+public sealed class HanaAssociationReferenceNode : QsiExpressionNode
 {
-    public sealed class HanaAssociationReferenceNode : QsiExpressionNode
+    public QsiIdentifier Identifier { get; set; }
+
+    public QsiTreeNodeProperty<QsiExpressionNode> Condition { get; }
+
+    public string Cardinality { get; set; }
+
+    public override IEnumerable<IQsiTreeNode> Children
     {
-        public QsiIdentifier Identifier { get; set; }
-
-        public QsiTreeNodeProperty<QsiExpressionNode> Condition { get; }
-
-        public string Cardinality { get; set; }
-
-        public override IEnumerable<IQsiTreeNode> Children
+        get
         {
-            get
-            {
-                if (!Condition.IsEmpty)
-                    yield return Condition.Value;
-            }
+            if (!Condition.IsEmpty)
+                yield return Condition.Value;
         }
+    }
 
-        public HanaAssociationReferenceNode()
-        {
-            Condition = new QsiTreeNodeProperty<QsiExpressionNode>(this);
-        }
+    public HanaAssociationReferenceNode()
+    {
+        Condition = new QsiTreeNodeProperty<QsiExpressionNode>(this);
     }
 }
