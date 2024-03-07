@@ -19,17 +19,20 @@ namespace Qsi.MongoDB.Acorn
 
         private static readonly JsValue _parse;
         private static readonly JsValue _parseLoose;
+        private static readonly Engine _engine;
+        private static readonly object _lockObj = new();
 
         static AcornParser()
         {
-            var engine = new Engine()
-                .Execute(ResourceManager.GetResourceContent("acorn.min.js"))
+            _engine = new Engine();
+
+            _engine.Execute(ResourceManager.GetResourceContent("acorn.min.js"))
                 .Execute(ResourceManager.GetResourceContent("acorn-loose.min.js"))
                 .Execute("function acorn_parse(code) { return JSON.stringify(acorn.parse(code, {locations: true})) }")
                 .Execute("function acorn_parse_loose(code) { return JSON.stringify(acorn.loose.LooseParser.parse(code, {locations: true})) }");
 
-            _parse = engine.GetValue("acorn_parse");
-            _parseLoose = engine.GetValue("acorn_parse_loose");
+            _parse = _engine.GetValue("acorn_parse");
+            _parseLoose = _engine.GetValue("acorn_parse_loose");
 
             _serializerSettings = new JsonSerializerSettings
             {
@@ -120,12 +123,18 @@ namespace Qsi.MongoDB.Acorn
 
         internal static string ParseStrict(string code)
         {
-            return _parse.Invoke(code).ToString();
+            lock (_lockObj)
+            {
+                return _engine.Invoke(_parse, code).ToString();
+            }
         }
 
         internal static string ParseLoose(string code)
         {
-            return _parseLoose.Invoke(code).ToString();
+            lock (_lockObj)
+            {
+                return _engine.Invoke(_parseLoose, code).ToString();
+            }
         }
     }
 }
