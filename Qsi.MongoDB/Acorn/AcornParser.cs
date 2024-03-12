@@ -16,7 +16,6 @@ internal static class AcornParser
 {
     private static readonly JavascriptContext _javascriptContext;
     private static readonly JsonSerializerSettings _serializerSettings;
-    private static readonly object _lockObj = new();
 
     static AcornParser()
     {
@@ -104,27 +103,18 @@ internal static class AcornParser
 
     public static string Execute(string code)
     {
-        lock (_lockObj)
-        {
-            return _javascriptContext.Evaluate(code);
-        }
+        return _javascriptContext.Evaluate(code);
     }
 
     internal static string ParseStrict(string code)
     {
-        lock (_lockObj)
-        {
-            _javascriptContext.SetVariable("code", code);
-            return _javascriptContext.Evaluate("JSON.stringify(acorn.parse(code, {{locations: true}}))");
-        }
+        _javascriptContext.SetVariable("code", code);
+        return _javascriptContext.Evaluate($"JSON.stringify(acorn.parse(code, {{locations: true}}))");
     }
 
     internal static string ParseLoose(string code)
     {
-        lock (_lockObj)
-        {
-            _javascriptContext.SetVariable("code", code);
-            return _javascriptContext.Evaluate("JSON.stringify(acorn.loose.LooseParser.parse(code, {{locations: true}}))");
-        }
+        _javascriptContext.SetVariable("code", code);
+        return _javascriptContext.Evaluate($"JSON.stringify(acorn.loose.LooseParser.parse(code, {{locations: true}}))");
     }
 }
