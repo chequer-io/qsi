@@ -50,7 +50,6 @@ $Tasks =
 [Task]::new("Qsi.PostgreSql", $false),
 [Task]::new("Qsi.Oracle", $true),
 [Task]::new("Qsi.SqlServer", $false),
-[Task]::new("Qsi.MongoDB", $false),
 [Task]::new("Qsi.PhoenixSql", $false),
 [Task]::new("Qsi.Cql", $true),
 [Task]::new("Qsi.PrimarSql", $false),
