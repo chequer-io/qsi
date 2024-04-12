@@ -467,6 +467,9 @@ public class QsiActionAnalyzer : QsiAnalyzerBase
 
         ColumnTarget[] columnTargets = ResolveColumnTargetsFromDataInsertAction(context, table, action);
 
+        if (CheckNotNullConstraintsExceptTarget(table.Columns, columnTargets))
+            throw new QsiException(QsiError.NotNullConstraints);
+
         var dataContext = new TableDataInsertContext(context, table)
         {
             ColumnTargets = columnTargets,
@@ -606,6 +609,15 @@ public class QsiActionAnalyzer : QsiAnalyzerBase
         );
     }
 
+    protected virtual bool CheckNotNullConstraintsExceptTarget(IEnumerable<QsiTableColumn> columns, IEnumerable<ColumnTarget> columnTargets)
+    {
+        HashSet<int> targetIndices = columnTargets.Select(ct => ct.DeclaredOrder).ToHashSet();
+
+        return columns
+            .Where((x, i) => !targetIndices.Contains(i) && !x.IsNullable && x.Default == null)
+            .Any();
+    }
+
     private async ValueTask ProcessQueryValues(TableDataInsertContext context, IQsiTableDirectivesNode directives, IQsiTableNode valueTable)
     {
         var engine = context.Engine;
@@ -734,6 +746,9 @@ public class QsiActionAnalyzer : QsiAnalyzerBase
                 item = pivot.SourceColumn is not null
                     ? valueSelector(pivot)
                     : ResolveDefaultColumnValue(pivot);
+
+                if (item is null && target.Table.Columns[pivot.DestinationOrder].IsNullable == false)
+                    throw new QsiException(QsiError.NotNullConstraints);
             }
 
             target.InsertRows.Add(targetRow);
