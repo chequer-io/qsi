@@ -73,7 +73,7 @@ internal static class SR
     public const string InvalidNestedExplain = "Invalid nested explain for '{0}'";
     public const string SubqueryReturnsMoreThanRow = "Subquery returns more than {0} row";
     public const string UnableResolveFunction = "Unable to resolve function '{0}'";
-    public const string NotNullConstraints = "Not Null constraints violation.";
+    public const string NotNullConstraints = "The column '{0}' has a Not Null constraint.";
 
     public static string GetResource(QsiError error)
     {

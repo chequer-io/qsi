@@ -89,7 +89,7 @@ order by ORDINAL_POSITION";
                 var column = table.NewColumn();
                 column.Name = new QsiIdentifier(reader.GetString(0), false);
                 column.IsNullable = reader.GetString(1) == "YES";
-                column.Default = reader.GetString(2);
+                column.Default = reader.IsDBNull(2) ? null : reader.GetString(2);
             }
         }
 

@@ -466,9 +466,10 @@ public class QsiActionAnalyzer : QsiAnalyzerBase
         }
 
         ColumnTarget[] columnTargets = ResolveColumnTargetsFromDataInsertAction(context, table, action);
+        var columnWithInvalidDefault = ResolveNotNullableColumnWithInvalidDefault(table.Columns, columnTargets);
 
-        if (CheckNotNullConstraintsExceptTarget(table.Columns, columnTargets))
-            throw new QsiException(QsiError.NotNullConstraints);
+        if (columnWithInvalidDefault is not null)
+            throw new QsiException(QsiError.NotNullConstraints, columnWithInvalidDefault.Name.Value);
 
         var dataContext = new TableDataInsertContext(context, table)
         {
@@ -609,13 +610,12 @@ public class QsiActionAnalyzer : QsiAnalyzerBase
         );
     }
 
-    protected virtual bool CheckNotNullConstraintsExceptTarget(IEnumerable<QsiTableColumn> columns, IEnumerable<ColumnTarget> columnTargets)
+    protected virtual QsiTableColumn ResolveNotNullableColumnWithInvalidDefault(IEnumerable<QsiTableColumn> columns, IEnumerable<ColumnTarget> columnTargets)
     {
-        HashSet<int> targetIndices = columnTargets.Select(ct => ct.DeclaredOrder).ToHashSet();
+        HashSet<string> targetNames = columnTargets.Select(ct => ct.DeclaredName.SubIdentifier(0).ToString()).ToHashSet();
 
         return columns
-            .Where((x, i) => !targetIndices.Contains(i) && !x.IsNullable && x.Default == null)
-            .Any();
+            .FirstOrDefault(x => !targetNames.Contains(x.Name.Value) && !x.IsNullable && x.Default is null);
     }
 
     private async ValueTask ProcessQueryValues(TableDataInsertContext context, IQsiTableDirectivesNode directives, IQsiTableNode valueTable)
@@ -747,8 +747,8 @@ public class QsiActionAnalyzer : QsiAnalyzerBase
                     ? valueSelector(pivot)
                     : ResolveDefaultColumnValue(pivot);
 
-                if (item is null && target.Table.Columns[pivot.DestinationOrder].IsNullable == false)
-                    throw new QsiException(QsiError.NotNullConstraints);
+                if (item.Value is null && target.Table.Columns[pivot.DestinationOrder].IsNullable == false)
+                    throw new QsiException(QsiError.NotNullConstraints, pivot.DestinationColumn.Name.Value);
             }
 
             target.InsertRows.Add(targetRow);
