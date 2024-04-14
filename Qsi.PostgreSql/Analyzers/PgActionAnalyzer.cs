@@ -5,6 +5,8 @@ using Qsi.Analyzers.Action;
 using Qsi.Analyzers.Action.Context;
 using Qsi.Analyzers.Action.Models;
 using Qsi.Analyzers.Context;
+using Qsi.Analyzers.Table;
+using Qsi.Analyzers.Table.Context;
 using Qsi.Data;
 using Qsi.Engines;
 using Qsi.PostgreSql.Tree.Nodes;
@@ -19,18 +21,23 @@ public class PgActionAnalyzer : QsiActionAnalyzer
     {
     }
 
-    protected override ColumnTarget[] ResolveColumnTargetsFromDataInsertAction(IAnalyzerContext context, QsiTableStructure table, IQsiDataInsertActionNode action)
+    protected override async ValueTask<ColumnTarget[]> ResolveColumnTargetsFromDataInsertActionAsync(IAnalyzerContext context, QsiTableStructure table, IQsiDataInsertActionNode action)
     {
-        if (!ListUtility.IsNullOrEmpty(action.Columns) || !ListUtility.IsNullOrEmpty(action.SetValues))
-            return base.ResolveColumnTargetsFromDataInsertAction(context, table, action);
+        if (action.ValueTable is PgDerivedTableNode pgDerivedTableNode)
+        {
+            var tableAnalyzer = context.Engine.GetAnalyzer<QsiTableAnalyzer>();
+            using var tableContext = new TableCompileContext(context);
+            var valueTable = (await tableAnalyzer.BuildTableStructure(tableContext, pgDerivedTableNode)).CloneVisibleOnly();
+            return ResolveColumnTargetsFromTable(context, table, valueTable);
+        }
 
-        return ResolveColumnTargetsFromTable(context, table, (PgDerivedTableNode)action.ValueTable);
+        return await base.ResolveColumnTargetsFromDataInsertActionAsync(context, table, action);
     }
 
-    protected ColumnTarget[] ResolveColumnTargetsFromTable(IAnalyzerContext context, QsiTableStructure table, PgDerivedTableNode valueTable)
+    protected ColumnTarget[] ResolveColumnTargetsFromTable(IAnalyzerContext context, QsiTableStructure table, QsiTableStructure valueTable)
     {
         return ResolveColumnTargetsFromTable(context, table)
-            .Take(valueTable.Columns.Value.Count)
+            .Take(valueTable.Columns.Count)
             .ToArray();
     }
 }

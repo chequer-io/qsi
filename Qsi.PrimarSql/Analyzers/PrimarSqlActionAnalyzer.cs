@@ -162,7 +162,7 @@ public class PrimarSqlActionAnalyzer : QsiActionAnalyzer
 
         var table = await tableAnalyzer.BuildTableStructure(tableContext, action.Target);
 
-        ColumnTarget[] columnTargets = ResolveColumnTargetsFromDataInsertAction(context, table, action);
+        ColumnTarget[] columnTargets = await ResolveColumnTargetsFromDataInsertActionAsync(context, table, action);
         var insertRows = new QsiDataRowCollection(columnTargets.Length, context.Engine.CacheProviderFactory());
 
         foreach (var value in action.Values)
@@ -197,7 +197,7 @@ public class PrimarSqlActionAnalyzer : QsiActionAnalyzer
         }.ToSingleArray();
     }
 
-    protected override ColumnTarget[] ResolveColumnTargetsFromDataInsertAction(IAnalyzerContext context, QsiTableStructure table, IQsiDataInsertActionNode action)
+    protected override ValueTask<ColumnTarget[]> ResolveColumnTargetsFromDataInsertActionAsync(IAnalyzerContext context, QsiTableStructure table, IQsiDataInsertActionNode action)
     {
         // table.Columns[0] : hash (required)
         // table.Columns[1] : sort (optional)
@@ -271,7 +271,7 @@ public class PrimarSqlActionAnalyzer : QsiActionAnalyzer
             }
         }
 
-        return targets;
+        return ValueTask.FromResult(targets);
     }
 
     private Exception CreateColumnsNotSpecifiedError(IReadOnlyList<QsiTableColumn> notSpecifiedColumns)

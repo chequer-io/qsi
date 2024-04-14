@@ -465,7 +465,7 @@ public class QsiActionAnalyzer : QsiAnalyzerBase
             table = (await tableAnalyzer.BuildTableStructure(tableContext, action.Target)).CloneVisibleOnly();
         }
 
-        ColumnTarget[] columnTargets = ResolveColumnTargetsFromDataInsertAction(context, table, action);
+        ColumnTarget[] columnTargets = await ResolveColumnTargetsFromDataInsertActionAsync(context, table, action);
 
         var dataContext = new TableDataInsertContext(context, table)
         {
@@ -506,15 +506,26 @@ public class QsiActionAnalyzer : QsiAnalyzerBase
             .ToArray<IQsiAnalysisResult>();
     }
 
-    protected virtual ColumnTarget[] ResolveColumnTargetsFromDataInsertAction(IAnalyzerContext context, QsiTableStructure table, IQsiDataInsertActionNode action)
+    protected virtual ValueTask<ColumnTarget[]> ResolveColumnTargetsFromDataInsertActionAsync(IAnalyzerContext context, QsiTableStructure table, IQsiDataInsertActionNode action)
     {
-        if (!ListUtility.IsNullOrEmpty(action.Columns))
-            return ResolveColumnTargetsFromIdentifiers(context, table, action.Columns);
+        ColumnTarget[] columnTargets;
 
-        if (!ListUtility.IsNullOrEmpty(action.SetValues))
-            return ResolveSetColumnTargets(context, table, action.SetValues).ToArray<ColumnTarget>();
+        switch (action)
+        {
+            case { Columns.Length: > 0 }:
+                columnTargets = ResolveColumnTargetsFromIdentifiers(context, table, action.Columns);
+                break;
 
-        return ResolveColumnTargetsFromTable(context, table);
+            case { SetValues.Length: > 0 }:
+                columnTargets = ResolveSetColumnTargets(context, table, action.SetValues).ToArray<ColumnTarget>();
+                break;
+
+            default:
+                columnTargets = ResolveColumnTargetsFromTable(context, table);
+                break;
+        }
+
+        return ValueTask.FromResult(columnTargets);
     }
 
     protected virtual ColumnTarget[] ResolveColumnTargetsFromIdentifiers(IAnalyzerContext context, QsiTableStructure table, IEnumerable<QsiQualifiedIdentifier> identifiers)
