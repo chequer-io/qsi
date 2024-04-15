@@ -103,8 +103,12 @@ public class PgTableAnalyzer : QsiTableAnalyzer
                         // IsSystem = true // NOTE: Is it System Table?
                     };
 
-                    if (!funcDef.ReturnType.Value.Setof && func.ArgumentsCount != invoke.Parameters.Count)
+                    if (!funcDef.ReturnType.Value.Setof &&
+                        (invoke.Parameters.Count < func.ArgumentsCount - func.DefaultArgumentsCount ||
+                         invoke.Parameters.Count > func.ArgumentsCount))
+                    {
                         continue;
+                    }
 
                     #region Special Functions
                     // pg_catalog.unnest: same return count with parameter count
