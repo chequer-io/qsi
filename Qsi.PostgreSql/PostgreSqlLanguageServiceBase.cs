@@ -40,7 +40,7 @@ public abstract class PostgreSqlLanguageServiceBase : QsiLanguageServiceBase
 
     public override IEnumerable<IQsiAnalyzer> CreateAnalyzers(QsiEngine engine)
     {
-        yield return new QsiActionAnalyzer(engine);
+        yield return new PgActionAnalyzer(engine);
         yield return new PgTableAnalyzer(engine);
         yield return new QsiDefinitionAnalyzer(engine);
     }
