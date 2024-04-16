@@ -466,6 +466,10 @@ public class QsiActionAnalyzer : QsiAnalyzerBase
         }
 
         ColumnTarget[] columnTargets = await ResolveColumnTargetsFromDataInsertActionAsync(context, table, action);
+        var columnWithInvalidDefault = ResolveNotNullableColumnWithInvalidDefault(table.Columns, columnTargets);
+
+        if (columnWithInvalidDefault is not null)
+            throw new QsiException(QsiError.NotNullConstraints, columnWithInvalidDefault.Name.Value);
 
         var dataContext = new TableDataInsertContext(context, table)
         {
@@ -617,6 +621,14 @@ public class QsiActionAnalyzer : QsiAnalyzerBase
         );
     }
 
+    protected virtual QsiTableColumn ResolveNotNullableColumnWithInvalidDefault(IEnumerable<QsiTableColumn> columns, IEnumerable<ColumnTarget> columnTargets)
+    {
+        HashSet<string> targetNames = columnTargets.Select(ct => ct.DeclaredName.SubIdentifier(0).ToString()).ToHashSet();
+
+        return columns
+            .FirstOrDefault(x => !targetNames.Contains(x.Name.Value) && !x.IsNullable && x.Default is null);
+    }
+
     private async ValueTask ProcessQueryValues(TableDataInsertContext context, IQsiTableDirectivesNode directives, IQsiTableNode valueTable)
     {
         var engine = context.Engine;
@@ -745,6 +757,9 @@ public class QsiActionAnalyzer : QsiAnalyzerBase
                 item = pivot.SourceColumn is not null
                     ? valueSelector(pivot)
                     : ResolveDefaultColumnValue(pivot);
+
+                if (item.Value is null && target.Table.Columns[pivot.DestinationOrder].IsNullable == false)
+                    throw new QsiException(QsiError.NotNullConstraints, pivot.DestinationColumn.Name.Value);
             }
 
             target.InsertRows.Add(targetRow);

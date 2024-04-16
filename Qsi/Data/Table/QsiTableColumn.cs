@@ -35,6 +35,8 @@ public class QsiTableColumn
         set => _isExpression = value;
     }
 
+    public bool IsNullable { get; set; } = true;
+
     internal QsiQualifiedIdentifier ImplicitTableWildcardTarget { get; set; }
 
     internal bool _isExpression;
@@ -52,6 +54,7 @@ public class QsiTableColumn
         column.ImplicitTableWildcardTarget = ImplicitTableWildcardTarget;
         column._isExpression = _isExpression;
         column.HasIndex = HasIndex;
+        column.IsNullable = IsNullable;
 
         return column;
     }

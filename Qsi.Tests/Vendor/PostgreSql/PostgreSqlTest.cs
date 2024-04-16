@@ -275,6 +275,38 @@ public partial class PostgreSqlTest : VendorTestBase
     }
 
     /// <summary>
+    /// Insert Action 시 Not Null 제약조건 있는 테이블에 값 대입하는 상황에 관한 에러 처리를 확인하는 테스트를 수행합니다.
+    /// </summary>
+    [Test]
+    public async Task Test_InsertNotNull()
+    {
+        const string CreateTableQuery = @"create table if not exists test_not_null (
+col1 VARCHAR NOT NULL,
+col2 VARCHAR
+)";
+
+        var command = Connection.CreateCommand();
+        command.CommandText = CreateTableQuery;
+        await command.ExecuteNonQueryAsync();
+
+        string[] queries =
+        {
+            "INSERT INTO test_not_null VALUES (null, 'test')",
+            "INSERT INTO test_not_null (col2) VALUES ('test')"
+        };
+
+        const string errorMessage = "QSI-0021: The column 'col1' has a Not Null constraint.";
+
+        foreach (var query in queries)
+        {
+            Assert.ThrowsAsync<QsiException>(async () =>
+            {
+                await Engine.Execute(new QsiScript(query, QsiScriptType.Insert), null);
+            }, errorMessage);
+        }
+    }
+
+    /// <summary>
     /// Parameterized query에 대하여 테스트를 수행합니다.
     /// </summary>
     /// <param name="query">Parameterized된 쿼리입니다.</param>

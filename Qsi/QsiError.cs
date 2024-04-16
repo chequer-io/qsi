@@ -34,7 +34,8 @@ public enum QsiError
     ParameterNotFound,
     InvalidNestedExplain,
     SubqueryReturnsMoreThanRow,
-    UnableResolveFunction
+    UnableResolveFunction,
+    NotNullConstraints
 }
 
 internal static class SR
@@ -72,6 +73,7 @@ internal static class SR
     public const string InvalidNestedExplain = "Invalid nested explain for '{0}'";
     public const string SubqueryReturnsMoreThanRow = "Subquery returns more than {0} row";
     public const string UnableResolveFunction = "Unable to resolve function '{0}'";
+    public const string NotNullConstraints = "The column '{0}' has a Not Null constraint.";
 
     public static string GetResource(QsiError error)
     {
@@ -110,6 +112,7 @@ internal static class SR
             QsiError.InvalidNestedExplain => InvalidNestedExplain,
             QsiError.SubqueryReturnsMoreThanRow => SubqueryReturnsMoreThanRow,
             QsiError.UnableResolveFunction => UnableResolveFunction,
+            QsiError.NotNullConstraints => NotNullConstraints,
             _ => null
         };
     }

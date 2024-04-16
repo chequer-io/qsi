@@ -7,6 +7,7 @@ using Qsi.Data;
 using Qsi.Data.Object;
 using Qsi.Data.Object.Function;
 using Qsi.Engines;
+using Qsi.PostgreSql.Data;
 using Qsi.Utilities;
 
 namespace Qsi.Tests.PostgreSql.Driver;
@@ -76,7 +77,7 @@ limit 1";
         }
 
         sql = $@"
-select COLUMN_NAME 
+select COLUMN_NAME, IS_NULLABLE, COLUMN_DEFAULT
 from information_schema.COLUMNS
 where TABLE_CATALOG = '{table.Identifier[0]}' and TABLE_SCHEMA = '{table.Identifier[1].Value}' and TABLE_NAME = '{table.Identifier[2].Value}'
 order by ORDINAL_POSITION";
@@ -87,6 +88,8 @@ order by ORDINAL_POSITION";
             {
                 var column = table.NewColumn();
                 column.Name = new QsiIdentifier(reader.GetString(0), false);
+                column.IsNullable = reader.GetString(1) == "YES";
+                column.Default = reader.IsDBNull(2) ? null : reader.GetString(2);
             }
         }
 
