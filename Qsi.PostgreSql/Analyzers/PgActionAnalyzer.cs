@@ -1,8 +1,6 @@
-using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Qsi.Analyzers.Action;
-using Qsi.Analyzers.Action.Context;
 using Qsi.Analyzers.Action.Models;
 using Qsi.Analyzers.Context;
 using Qsi.Analyzers.Table;
@@ -11,7 +9,6 @@ using Qsi.Data;
 using Qsi.Engines;
 using Qsi.PostgreSql.Tree.Nodes;
 using Qsi.Tree;
-using Qsi.Utilities;
 
 namespace Qsi.PostgreSql.Analyzers;
 
@@ -23,7 +20,7 @@ public class PgActionAnalyzer : QsiActionAnalyzer
 
     protected override async ValueTask<ColumnTarget[]> ResolveColumnTargetsFromDataInsertActionAsync(IAnalyzerContext context, QsiTableStructure table, IQsiDataInsertActionNode action)
     {
-        if (action.ValueTable is PgDerivedTableNode pgDerivedTableNode)
+        if (action.Columns.Length == 0 && action.ValueTable is PgDerivedTableNode pgDerivedTableNode)
         {
             var tableAnalyzer = context.Engine.GetAnalyzer<QsiTableAnalyzer>();
             using var tableContext = new TableCompileContext(context);
