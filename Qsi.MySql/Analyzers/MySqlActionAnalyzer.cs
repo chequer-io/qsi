@@ -7,6 +7,7 @@ using Qsi.Analyzers.Context;
 using Qsi.Data;
 using Qsi.Engines;
 using Qsi.Extensions;
+using Qsi.MySql.Data;
 using Qsi.MySql.Tree;
 using Qsi.Tree;
 using static Qsi.MySql.Tree.MySqlProperties;
@@ -47,6 +48,16 @@ public class MySqlActionAnalyzer : QsiActionAnalyzer
         }
 
         return result;
+    }
+
+    protected override QsiDataValue ResolveColumnValue(IAnalyzerContext context, IQsiExpressionNode expression)
+    {
+        if (expression is IQsiLiteralExpressionNode { Value: MySqlString mysqlString })
+        {
+            return new QsiDataValue(mysqlString.ToString(), QsiDataType.String);
+        }
+
+        return base.ResolveColumnValue(context, expression);
     }
 
     protected override QsiVariableSetActionResult ResolveVariableSet(IAnalyzerContext context, IQsiVariableSetItemNode node)

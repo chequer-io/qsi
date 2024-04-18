@@ -147,7 +147,7 @@ public class QsiActionAnalyzer : QsiAnalyzerBase
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    protected QsiDataValue ResolveColumnValue(IAnalyzerContext context, IQsiExpressionNode expression)
+    protected virtual QsiDataValue ResolveColumnValue(IAnalyzerContext context, IQsiExpressionNode expression)
     {
         switch (expression)
         {
