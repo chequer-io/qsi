@@ -59,7 +59,7 @@ limit 1";
         }
 
         sql = @$"
-select COLUMN_NAME 
+select COLUMN_NAME, IS_NULLABLE, COLUMN_DEFAULT
 from information_schema.COLUMNS
 where TABLE_SCHEMA = '{names[0]}' and TABLE_NAME = '{names[1]}'
 order by ORDINAL_POSITION";
@@ -70,6 +70,8 @@ order by ORDINAL_POSITION";
             {
                 var column = table.NewColumn();
                 column.Name = new QsiIdentifier(reader.GetString(0), false);
+                column.IsNullable = reader.GetString(1) == "YES";
+                column.Default = reader.IsDBNull(2) ? null : reader.GetString(2);
             }
         }
 

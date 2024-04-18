@@ -292,7 +292,9 @@ col2 VARCHAR
         string[] queries =
         {
             "INSERT INTO test_not_null VALUES (null, 'test')",
-            "INSERT INTO test_not_null (col2) VALUES ('test')"
+            "INSERT INTO test_not_null (col2) VALUES ('test')",
+            "INSERT INTO test_not_null SELECT null, 'test'",
+            "INSERT INTO test_not_null (col2) SELECT 'test'"
         };
 
         const string errorMessage = "QSI-0021: The column 'col1' has a Not Null constraint.";
