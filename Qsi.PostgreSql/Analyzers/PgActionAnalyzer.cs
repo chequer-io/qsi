@@ -1,8 +1,6 @@
-using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Qsi.Analyzers.Action;
-using Qsi.Analyzers.Action.Context;
 using Qsi.Analyzers.Action.Models;
 using Qsi.Analyzers.Context;
 using Qsi.Analyzers.Table;
@@ -23,7 +21,7 @@ public class PgActionAnalyzer : QsiActionAnalyzer
 
     protected override async ValueTask<ColumnTarget[]> ResolveColumnTargetsFromDataInsertActionAsync(IAnalyzerContext context, QsiTableStructure table, IQsiDataInsertActionNode action)
     {
-        if (action.ValueTable is PgDerivedTableNode pgDerivedTableNode)
+        if (ListUtility.IsNullOrEmpty(action.Columns) && action.ValueTable is PgDerivedTableNode pgDerivedTableNode)
         {
             var tableAnalyzer = context.Engine.GetAnalyzer<QsiTableAnalyzer>();
             using var tableContext = new TableCompileContext(context);
