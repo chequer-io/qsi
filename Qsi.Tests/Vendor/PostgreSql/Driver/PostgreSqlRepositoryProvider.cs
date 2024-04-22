@@ -145,12 +145,12 @@ WHERE relname = '{identifier[^1]}'";
 
     protected IEnumerable<QsiFunctionObject> LookupFunction(QsiQualifiedIdentifier identifier)
     {
-        var funcInformation = @$"select oid, pronargs from ""{identifier[0]}"".pg_catalog.pg_proc
+        var funcInformation = @$"select oid, pronargs, pronargdefaults from ""{identifier[0]}"".pg_catalog.pg_proc
          where
              proname = '{identifier[2]}' and
              pronamespace = (select oid from pg_namespace where nspname = '{identifier[1]}' limit 1);";
 
-        var funcDefinitions = new List<(string, int)>();
+        var funcDefinitions = new List<(string, int, int)>();
 
         using (var reader = GetDataReaderCoreAsync(new QsiScript(funcInformation, QsiScriptType.Select), null, default).Result)
         {
@@ -158,19 +158,20 @@ WHERE relname = '{identifier[^1]}'";
             {
                 var oid = reader.GetString(0);
                 var argsCount = reader.GetString(1);
+                var defaultArgsCount = reader.GetString(2);
 
-                funcDefinitions.Add((oid, int.Parse(argsCount)));
+                funcDefinitions.Add((oid, int.Parse(argsCount), int.Parse(defaultArgsCount)));
             }
         }
 
-        foreach (var (oid, argsCount) in funcDefinitions)
+        foreach (var (oid, argsCount, defaultArgsCount) in funcDefinitions)
         {
-            using var defReader = GetDataReaderCoreAsync(new QsiScript($@"SELECT pg_catalog.pg_get_functiondef({oid})", QsiScriptType.Select), null, default).Result;
+            using var defReader = GetDataReaderCoreAsync(new QsiScript($"SELECT pg_catalog.pg_get_functiondef({oid})", QsiScriptType.Select), null, default).Result;
 
             if (!defReader.Read())
                 continue;
 
-            yield return new QsiFunctionObject(identifier, defReader.GetString(0), argsCount);
+            yield return new QsiFunctionObject(identifier, defReader.GetString(0), argsCount, defaultArgsCount);
         }
     }
 

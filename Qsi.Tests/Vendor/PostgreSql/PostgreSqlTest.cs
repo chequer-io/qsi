@@ -399,4 +399,38 @@ col2 VARCHAR
 
         Assert.Pass();
     }
+
+    /// <summary>
+    /// Default 값 설정된 인자를 갖는 함수를 테이블 함수로 인자 없이 호출하는 경우에 대해 테스트를 수행합니다.
+    /// </summary>
+    [Test]
+    public async Task Test_TableFunctionWithDefaultArgument()
+    {
+        const string CreateTableFunctionQuery = @"
+CREATE OR REPLACE FUNCTION get_department_info_for_pgtest(department_name TEXT DEFAULT 'Engineering')
+RETURNS TEXT AS $$
+BEGIN
+    RETURN department_name;
+END;
+$$ LANGUAGE plpgsql;
+";
+
+        var command = Connection.CreateCommand();
+        command.CommandText = CreateTableFunctionQuery;
+        await command.ExecuteNonQueryAsync();
+
+        string[] queries =
+        {
+            "SELECT * FROM get_department_info_for_pgtest();",
+            "SELECT * FROM get_department_info_for_pgtest('Marketing');"
+        };
+
+        foreach (var query in queries)
+        {
+            Assert.DoesNotThrowAsync(async () =>
+            {
+                await Engine.Execute(new QsiScript(query, QsiScriptType.Select), null);
+            });
+        }
+    }
 }
