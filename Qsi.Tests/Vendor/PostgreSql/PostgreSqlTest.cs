@@ -435,4 +435,30 @@ $$ LANGUAGE plpgsql;
             });
         }
     }
+
+    /// <summary>
+    /// 테이블 함수가 리턴하는 테이블의 컬럼 이름을 사용하는 경우에 대해 테스트를 수행합니다.
+    /// </summary>
+    [Test]
+    public async Task Test_TableFunctionWithColumnNameInReturnedTable()
+    {
+        const string CreateTableFunctionQuery = @"
+CREATE OR REPLACE FUNCTION table_function_with_column_name_in_returned_table()
+RETURNS TABLE(column1 text) AS $$
+BEGIN
+    RETURN QUERY SELECT '1' AS column1;
+END;
+$$ LANGUAGE plpgsql;
+";
+
+        var command = Connection.CreateCommand();
+        command.CommandText = CreateTableFunctionQuery;
+        await command.ExecuteNonQueryAsync();
+        const string Query = "select column1 from table_function_with_column_name_in_returned_table();";
+
+        Assert.DoesNotThrowAsync(async () =>
+        {
+            await Engine.Execute(new QsiScript(Query, QsiScriptType.Select), null);
+        });
+    }
 }

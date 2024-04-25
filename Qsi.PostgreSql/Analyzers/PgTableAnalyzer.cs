@@ -137,6 +137,16 @@ public class PgTableAnalyzer : QsiTableAnalyzer
                         column.Name = outParam.Name;
                     }
 
+                    var tableParams = funcDef.Parameters.WhereNotNull().Where(p => p.Mode is FunctionParameterMode.FuncParamTable);
+
+                    foreach (var tableParam in tableParams)
+                    {
+                        count++;
+
+                        var column = structure.NewColumn();
+                        column.Name = tableParam.Name;
+                    }
+
                     if (count == 0)
                     {
                         var returnType = funcDef.ReturnType.Value;
