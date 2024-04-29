@@ -95,7 +95,6 @@ public partial class MySqlTest
         new("SELECT actor_id IN (`actor_id`) FROM actor LIMIT 1", new[] { "actor_id IN (`actor_id`)" }),
         new("SELECT (actor_id IN (`actor_id`)) FROM actor LIMIT 1", new[] { "(actor_id IN (`actor_id`))" }),
 
-
         new("SELECT actor_id, first_name FROM actor LIMIT 1;", new[] { "actor_id", "first_name" }),
         new("SELECT `actor_id`, `first_name` FROM actor LIMIT 1;", new[] { "actor_id", "first_name" }),
         new("SELECT (actor_id), (first_name) FROM actor LIMIT 1;", new[] { "actor_id", "first_name" }),
@@ -129,7 +128,6 @@ public partial class MySqlTest
         new("SELECT 1 + (2) IN (2, (3));", new[] { "1 + (2) IN (2, (3))" }),
         new("SELECT (2 * 3) | (1 & 7);", new[] { "(2 * 3) | (1 & 7)" }),
         new("SELECT (('A' | 'B') | (1 + 7));", new[] { "(('A' | 'B') | (1 + 7))" }),
-
 
         // PredicateExprIn:         IN_SYMBOL (subquery | OPEN_PAR_SYMBOL exprList CLOSE_PAR_SYMBOL)
         new("SELECT actor_id IN (SELECT actor_id from actor) FROM actor LIMIT 1;", new[] { "actor_id IN (SELECT actor_id from actor)" }),
@@ -172,21 +170,23 @@ public partial class MySqlTest
         new("SELECT f.title, fl.title FROM film AS f JOIN film_list AS fl LIMIT 1;", new[] { "title", "title" }),
         new("SELECT (f.title), (fl.title) FROM film AS f JOIN film_list AS fl LIMIT 1;", new[] { "title", "title" }),
         new("SELECT DISTINCT (f.title), (fl.title) FROM film AS f JOIN film_list AS fl LIMIT 1;", new[] { "title", "title" }),
+
+        new("SELECT @@GLOBAL.character_set_server,@@GLOBAL.collation_server;", new[] { "@@GLOBAL.character_set_server", "@@GLOBAL.collation_server" }),
     };
 
-    private static readonly TestCaseData[] Test_LeadLagInfo_TestDatas = 
+    private static readonly TestCaseData[] Test_LeadLagInfo_TestDatas =
     {
         // QCP-1303 : https://chequer.atlassian.net/browse/QP-5465?focusedCommentId=48962
         new("SELECT LAG(first_name, 4294967295) OVER(ORDER BY actor_id) FROM actor;"),
         new("SELECT LAG(first_name, last_name, 4294967295) OVER(ORDER BY actor_id) FROM actor;"),
         new("SELECT LAG(first_name, IF(TRUE, 2, 1)) OVER(ORDER BY actor_id) FROM actor;"),
         new("SELECT LAG(first_name, IF(TRUE, 2, 1) + IF(FALSE, 2, 1)) OVER(ORDER BY actor_id) FROM actor;"),
-        
+
         new("SELECT LEAD(first_name, 4294967295) OVER(ORDER BY actor_id) FROM actor;"),
         new("SELECT LEAD(first_name, last_name, 4294967295) OVER(ORDER BY actor_id) FROM actor;"),
         new("SELECT LEAD(first_name, IF(TRUE, 2, 1)) OVER(ORDER BY actor_id) FROM actor;"),
         new("SELECT LEAD(first_name, IF(TRUE, 2, 1) + IF(FALSE, 2, 1)) OVER(ORDER BY actor_id) FROM actor;"),
-        
+
         new("SELECT NTILE(4294967295) OVER(ORDER BY actor_id) FROM actor;"),
         new("SELECT NTILE(IF(TRUE, 2, 1)) OVER(ORDER BY actor_id) FROM actor;"),
         new("SELECT NTILE(IF(TRUE, 2, 1) + IF(FALSE, 2, 1)) OVER(ORDER BY actor_id) FROM actor;")
