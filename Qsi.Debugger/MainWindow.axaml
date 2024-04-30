@@ -147,6 +147,10 @@
                         <Rectangle Margin="0,6" Fill="{DynamicResource ThemeBackgroundBrush}" Height="2" />
                     </TreeDataTemplate>
 
+                    <TreeDataTemplate DataType="md:QsiLabelTreeItem">
+                        <TextBlock Foreground="LightGray" Text="{Binding Label}"></TextBlock>
+                    </TreeDataTemplate>
+
                     <TreeDataTemplate DataType="md:QsiColumnTreeItem" ItemsSource="{Binding Items}">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Foreground="{Binding Converter={cvt:ColumnBrushConverter}}"
