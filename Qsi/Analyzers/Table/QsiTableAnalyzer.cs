@@ -285,6 +285,7 @@ public class QsiTableAnalyzer : QsiAnalyzerBase
             }
         }
 
+        scopedContext.IsIndirectSource = true;
         declaredTable.IndirectColumns = GetIndirectColumns(scopedContext, table).ToArray() ?? Array.Empty<QsiTableColumn>();
 
         return declaredTable;
@@ -305,9 +306,7 @@ public class QsiTableAnalyzer : QsiAnalyzerBase
         if (table.Where is not { } where)
             yield break;
 
-        context.IsIndirectSource = true;
         IEnumerable<QsiTableColumn> columns = ResolveColumnsInExpression(context, where.Expression);
-        context.IsIndirectSource = false;
 
         foreach (var c in columns)
             yield return c;
