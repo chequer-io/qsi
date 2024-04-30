@@ -457,6 +457,13 @@ public class MainWindow : Window
                 items.Add(new QsiSplitTreeItem());
 
             items.AddRange(tables[i].Columns.Select(c => new QsiColumnTreeItem(c)));
+
+            // Indirect columns
+            if (tables[i].IndirectColumns is not { } indirectColumns)
+                continue;
+
+            items.Add(new QsiLabelTreeItem("Indirect Columns"));
+            items.AddRange(indirectColumns.Select(c => new QsiColumnTreeItem(c)));
         }
 
         _tvResult.Items = items;
