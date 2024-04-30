@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Qsi.Analyzers.Context;
+using Qsi.Analyzers.Expression;
 using Qsi.Analyzers.Table.Context;
 using Qsi.Data;
 using Qsi.Data.Object;
@@ -20,8 +21,11 @@ public class QsiTableAnalyzer : QsiAnalyzerBase
 {
     private const string scopeFieldList = "field list";
 
+    private readonly IndirectColumnResolver _indirectColumnResolver;
+
     public QsiTableAnalyzer(QsiEngine engine) : base(engine)
     {
+        _indirectColumnResolver = new IndirectColumnResolver(engine.LanguageService, BuildTableStructure);
     }
 
     #region Execute
@@ -285,6 +289,8 @@ public class QsiTableAnalyzer : QsiAnalyzerBase
             }
         }
 
+        declaredTable.IndirectColumns = GetIndirectColumns(scopedContext, table).ToArray() ?? Array.Empty<QsiTableColumn>();
+
         return declaredTable;
     }
 
@@ -296,6 +302,25 @@ public class QsiTableAnalyzer : QsiAnalyzerBase
     protected virtual QsiIdentifier ResolveDerivedColumnName(TableCompileContext context, IQsiDerivedTableNode table, IQsiDerivedColumnNode column)
     {
         return column.Alias?.Name ?? column.InferredName;
+    }
+
+    private IEnumerable<QsiTableColumn> GetIndirectColumns(TableCompileContext context, IQsiDerivedTableNode table)
+    {
+        // Parent indirect columns
+        foreach (var t in context.GetAllSourceTables())
+        {
+            if (t.IndirectColumns is not { } columns)
+                continue;
+
+            foreach (var c in columns)
+                yield return c;
+        }
+
+        if (table.Where is not { } where)
+            yield break;
+
+        foreach (var c in _indirectColumnResolver.GetValues(context, where.Expression))
+            yield return c;
     }
 
     protected virtual ValueTask<QsiTableStructure> BuildInlineDerivedTableStructure(TableCompileContext context, IQsiInlineDerivedTableNode table)
