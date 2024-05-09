@@ -188,23 +188,23 @@ public class QsiActionAnalyzer : QsiAnalyzerBase
 
         var value = context.Engine.TreeDeparser.Deparse(expression, context.Script);
         return new QsiDataValue(value, QsiDataType.Raw);
+    }
 
-        IEnumerable<IQsiTableExpressionNode> CollectSubqueries(IQsiExpressionNode node)
+    private IEnumerable<IQsiTableExpressionNode> CollectSubqueries(IQsiExpressionNode node)
+    {
+        var queue = new Queue<IQsiTreeNode>();
+        queue.Enqueue(node);
+
+        while (queue.TryDequeue(out var item))
         {
-            var queue = new Queue<IQsiTreeNode>();
-            queue.Enqueue(node);
-
-            while (queue.TryDequeue(out var item))
+            if (item is IQsiTableExpressionNode tNode)
             {
-                if (item is IQsiTableExpressionNode tNode)
-                {
-                    yield return tNode;
-                }
-                else
-                {
-                    foreach (var child in item.Children ?? Enumerable.Empty<IQsiTreeNode>())
-                        queue.Enqueue(child);
-                }
+                yield return tNode;
+            }
+            else
+            {
+                foreach (var child in item.Children ?? Enumerable.Empty<IQsiTreeNode>())
+                    queue.Enqueue(child);
             }
         }
     }
@@ -505,7 +505,8 @@ public class QsiActionAnalyzer : QsiAnalyzerBase
                 Table = t.Table,
                 AffectedColumns = GetAffectedColumns(t),
                 InsertRows = t.InsertRows.ToNullIfEmpty(),
-                DuplicateRows = t.DuplicateRows.ToNullIfEmpty()
+                DuplicateRows = t.DuplicateRows.ToNullIfEmpty(),
+                TablesInRows = dataContext.TableStructureCache.Get(t)
             })
             .ToArray<IQsiAnalysisResult>();
     }
@@ -681,6 +682,31 @@ public class QsiActionAnalyzer : QsiAnalyzerBase
         {
             PopulateInsertRow(context, pivot => row.Items[pivot.SourceOrder]);
         }
+
+        var tableAnalyzer = context.Engine.GetAnalyzer<QsiTableAnalyzer>();
+
+        QsiTableStructure table;
+
+        using (var tableContext = new TableCompileContext(context))
+            table = await tableAnalyzer.BuildTableStructure(tableContext, valueTable);
+
+        foreach (var target in context.Targets)
+            context.TableStructureCache.Add(target, table);
+
+        if (directives is null)
+            return;
+
+        QsiTableStructure[] directiveTables = directives.Tables
+            .Select(t =>
+            {
+                using var tableContext = new TableCompileContext(context);
+                return tableAnalyzer.BuildTableStructure(tableContext, t).Result;
+            })
+            .ToArray();
+
+        // TODO: 동일한 TableStructure를 서로 다른 키에 계속 저장해야 하는 문제가 있습니다.
+        foreach (var target in context.Targets)
+            context.TableStructureCache.AddRange(target, directiveTables);
     }
 
     private void ProcessValues(TableDataInsertContext context, IQsiRowValueExpressionNode[] rows)
@@ -695,6 +721,7 @@ public class QsiActionAnalyzer : QsiAnalyzerBase
                 throw new QsiException(QsiError.DifferentColumnValueCount, i + 1);
 
             PopulateInsertRow(context, pivot => ResolveColumnValue(context, row.ColumnValues[pivot.DeclaredColumnTarget.DeclaredOrder]));
+            StoreTablesFromRow(context, pivot => row.ColumnValues[pivot.DeclaredColumnTarget.DeclaredOrder]);
         }
     }
 
@@ -704,6 +731,12 @@ public class QsiActionAnalyzer : QsiAnalyzerBase
         {
             var declaredColumnTarget = (SetColumnTarget)pivot.DeclaredColumnTarget;
             return ResolveColumnValue(context, declaredColumnTarget.ValueNode);
+        });
+
+        StoreTablesFromRow(context, pivot =>
+        {
+            var declaredColumnTarget = (SetColumnTarget)pivot.DeclaredColumnTarget;
+            return declaredColumnTarget.ValueNode;
         });
     }
 
@@ -763,6 +796,25 @@ public class QsiActionAnalyzer : QsiAnalyzerBase
             }
 
             target.InsertRows.Add(targetRow);
+        }
+    }
+
+    private void StoreTablesFromRow(TableDataInsertContext context, Func<DataManipulationTargetDataPivot, IQsiExpressionNode> expressionSelector)
+    {
+        var tableAnalyzer = context.Engine.GetAnalyzer<QsiTableAnalyzer>();
+
+        foreach (var target in context.Targets)
+        {
+            IEnumerable<QsiTableStructure> tables = target.DataPivots
+                .Select(expressionSelector)
+                .SelectMany(CollectSubqueries)
+                .Select(n =>
+                {
+                    using var tableContext = new TableCompileContext(context);
+                    return tableAnalyzer.BuildTableStructure(tableContext, n.Table).Result;
+                });
+
+            context.TableStructureCache.AddRange(target, tables);
         }
     }
     #endregion
