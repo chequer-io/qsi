@@ -1,4 +1,6 @@
-﻿using Qsi.Analyzers;
+﻿using System;
+using System.Collections.Generic;
+using Qsi.Analyzers;
 
 namespace Qsi.Data;
 
@@ -17,6 +19,8 @@ public class QsiDataManipulationResult : IQsiAnalysisResult
     public QsiDataRowCollection UpdateAfterRows { get; set; }
 
     public QsiDataRowCollection DeleteRows { get; set; }
+
+    public ICollection<QsiTableStructure> TablesInRows { get; set; } = Array.Empty<QsiTableStructure>();
 
     public QsiSensitiveDataCollection SensitiveDataCollection { get; } = new();
 }
