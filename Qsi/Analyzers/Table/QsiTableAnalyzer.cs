@@ -287,6 +287,7 @@ public class QsiTableAnalyzer : QsiAnalyzerBase
 
         scopedContext.IsIndirectSource = true;
         declaredTable.IndirectColumns = GetIndirectColumns(scopedContext, table).ToArray() ?? Array.Empty<QsiTableColumn>();
+        scopedContext.IsIndirectSource = false;
 
         return declaredTable;
     }
