@@ -18,6 +18,8 @@ public sealed class TableCompileContext : AnalyzerContextWrapper, IDisposable
 
     public List<QsiTableStructure> JoinedSouceTables { get; }
 
+    public bool IsIndirectSource { get; set; }
+
     private readonly List<QsiTableStructure> _directives;
     private Stack<QsiQualifiedIdentifier> _identifierScope;
 

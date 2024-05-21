@@ -285,7 +285,32 @@ public class QsiTableAnalyzer : QsiAnalyzerBase
             }
         }
 
+        scopedContext.IsIndirectSource = true;
+        declaredTable.IndirectColumns = GetIndirectColumns(scopedContext, table).ToArray() ?? Array.Empty<QsiTableColumn>();
+        scopedContext.IsIndirectSource = false;
+
         return declaredTable;
+    }
+
+    private IEnumerable<QsiTableColumn> GetIndirectColumns(TableCompileContext context, IQsiDerivedTableNode table)
+    {
+        // Indirect columns from sources
+        foreach (var t in context.GetAllSourceTables())
+        {
+            if (t.IndirectColumns is not { } indirectColumns)
+                continue;
+
+            foreach (var c in indirectColumns)
+                yield return c;
+        }
+
+        if (table.Where is not { } where)
+            yield break;
+
+        IEnumerable<QsiTableColumn> columns = ResolveColumnsInExpression(context, where.Expression);
+
+        foreach (var c in columns)
+            yield return c;
     }
 
     protected virtual QsiIdentifier ResolveCompoundColumnName(TableCompileContext context, IQsiDerivedTableNode table, IQsiColumnNode column, QsiTableColumn refColumn)
@@ -951,10 +976,18 @@ public class QsiTableAnalyzer : QsiAnalyzerBase
 
             case IQsiTableExpressionNode e:
             {
+                var isIndirectSource = context.IsIndirectSource;
+
                 using var scopedContext = new TableCompileContext(context);
                 var structure = BuildTableStructure(scopedContext, e.Table).Result;
 
                 foreach (var c in structure.Columns)
+                    yield return c;
+
+                if (!isIndirectSource)
+                    break;
+
+                foreach (var c in structure.IndirectColumns)
                     yield return c;
 
                 break;
