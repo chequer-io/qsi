@@ -948,6 +948,11 @@ public class QsiActionAnalyzer : QsiAnalyzerBase
         var affectedColumnMap = new bool[sourceTable.Columns.Count];
         ColumnTarget[] columnTargets;
 
+        var tablesInRows = new List<QsiTableStructure>[sourceTable.Columns.Count];
+
+        for (int i = 0; i < sourceTable.Columns.Count; ++i)
+            tablesInRows[i] = new List<QsiTableStructure>();
+
         if (!ListUtility.IsNullOrEmpty(action.SetValues))
         {
             SetColumnTarget[] setColumnTargets = ResolveSetColumnTargets(context, sourceTable, action.SetValues);
@@ -958,6 +963,8 @@ public class QsiActionAnalyzer : QsiAnalyzerBase
                 var targetIndex = columnTarget.SourceColumn.Parent.Columns.IndexOf(columnTarget.SourceColumn);
                 values[targetIndex] = ResolveColumnValue(context, columnTarget.ValueNode);
                 affectedColumnMap[targetIndex] = true;
+
+                tablesInRows[targetIndex].AddRange(GetTables(columnTarget.ValueNode));
             }
         }
         else if (action.Value != null)
@@ -968,7 +975,10 @@ public class QsiActionAnalyzer : QsiAnalyzerBase
                 throw new QsiException(QsiError.DifferentColumnValueCount, 0);
 
             for (int i = 0; i < values.Length; i++)
+            {
                 values[i] = ResolveColumnValue(context, action.Value.ColumnValues[i]);
+                tablesInRows[i].AddRange(GetTables(action.Value.ColumnValues[i]));
+            }
 
             affectedColumnMap.AsSpan().Fill(true);
         }
@@ -1018,10 +1028,37 @@ public class QsiActionAnalyzer : QsiAnalyzerBase
                     Table = target.Table,
                     AffectedColumns = affectedColumns,
                     UpdateBeforeRows = target.UpdateBeforeRows.ToNullIfEmpty(),
-                    UpdateAfterRows = target.UpdateAfterRows.ToNullIfEmpty()
+                    UpdateAfterRows = target.UpdateAfterRows.ToNullIfEmpty(),
+                    TablesInRows = FilterTablesInRows(affectedColumnMap).ToArray()
                 };
             })
             .ToArray<IQsiAnalysisResult>();
+
+        IEnumerable<QsiTableStructure> GetTables(IQsiExpressionNode expression)
+        {
+            IEnumerable<IQsiTableExpressionNode> subqueries = CollectSubqueries(expression);
+
+            if (!subqueries.Any())
+                return Enumerable.Empty<QsiTableStructure>();
+
+            return subqueries.Select(q =>
+            {
+                using var ctx = new TableCompileContext(context);
+                return tableAnalyzer.BuildTableStructure(ctx, q.Table).Result;
+            });
+        }
+
+        IEnumerable<QsiTableStructure> FilterTablesInRows(bool[] flagMap)
+        {
+            for (var i = 0; i < tablesInRows.Length; ++i)
+            {
+                if (!flagMap[i])
+                    continue;
+
+                foreach (var item in tablesInRows[i])
+                    yield return item;
+            }
+        }
     }
 
     protected int FindColumnIndex(IAnalyzerContext context, QsiTableStructure table, QsiQualifiedIdentifier identifier)
