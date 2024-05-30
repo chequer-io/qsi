@@ -8,6 +8,8 @@ internal abstract class VisitorBase
 
     protected IdentifierVisitor IdentifierVisitor => _visitorContext.IdentifierVisitor;
 
+    protected ActionVisitor ActionVisitor => _visitorContext.ActionVisitor;
+
     private readonly IVisitorContext _visitorContext;
 
     protected VisitorBase(IVisitorContext visitorContext)

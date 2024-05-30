@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
 using Microsoft.SqlServer.TransactSql.ScriptDom;
 using Qsi.Data;
 using Qsi.SqlServer.Data;
@@ -31,6 +32,10 @@ internal sealed class TableVisitor : VisitorBase
     {
         switch (statementWithCtesAndXmlNamespaces)
         {
+            case SelectStatement { QueryExpression: QuerySpecification querySpecification } when
+                querySpecification.SelectElements.All(expr => expr is SelectSetVariable):
+                return ActionVisitor.VisitSelectVariableStatement(querySpecification);
+
             case SelectStatement selectStatement:
                 return VisitSelectStatement(selectStatement);
         }
