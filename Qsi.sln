@@ -37,6 +37,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qsi.Athena", "Qsi.Athena\Qs
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qsi.Redshift", "Qsi.Redshift\Qsi.Redshift.csproj", "{33ED3A3A-F7E3-4F1E-BAF5-AD0285A00FDD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qsi.SingleStore", "Qsi.SingleStore\Qsi.SingleStore.csproj", "{F70B03F6-F605-4168-B19A-A8DF2CCBE67F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -103,6 +105,10 @@ Global
 		{33ED3A3A-F7E3-4F1E-BAF5-AD0285A00FDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{33ED3A3A-F7E3-4F1E-BAF5-AD0285A00FDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{33ED3A3A-F7E3-4F1E-BAF5-AD0285A00FDD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F70B03F6-F605-4168-B19A-A8DF2CCBE67F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F70B03F6-F605-4168-B19A-A8DF2CCBE67F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F70B03F6-F605-4168-B19A-A8DF2CCBE67F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F70B03F6-F605-4168-B19A-A8DF2CCBE67F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -120,6 +126,7 @@ Global
 		{66C882CC-E664-457B-9A8A-5385E2BA7AAA} = {97493A14-DF8A-4A8A-A521-5900DFAC1CDA}
 		{CBA2D064-7DEB-427A-B26B-41179F60205F} = {97493A14-DF8A-4A8A-A521-5900DFAC1CDA}
 		{33ED3A3A-F7E3-4F1E-BAF5-AD0285A00FDD} = {97493A14-DF8A-4A8A-A521-5900DFAC1CDA}
+		{F70B03F6-F605-4168-B19A-A8DF2CCBE67F} = {97493A14-DF8A-4A8A-A521-5900DFAC1CDA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A12491D7-EB7D-4F23-A7B6-6B4AB1DD08D9}
