@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Microsoft.SqlServer.TransactSql.ScriptDom;
 using Qsi.Tree;
@@ -23,7 +24,7 @@ internal static class SqlServerTree
             sqlFragment.ScriptTokenStream[sqlFragment.LastTokenIndex]
         );
     }
-        
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void PutFragmentSpan(IQsiTreeNode node, TSqlParserToken first, TSqlParserToken last)
     {

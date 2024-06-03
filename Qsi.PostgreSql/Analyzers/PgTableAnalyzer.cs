@@ -186,35 +186,25 @@ public class PgTableAnalyzer : QsiTableAnalyzer
         return await base.BuildTableFunctionStructure(context, table);
     }
 
-    private IEnumerable<QsiFunctionObject> LookupFunctions(TableCompileContext context, QsiQualifiedIdentifier identifier)
+    protected override IEnumerable<QsiFunctionObject> LookupFunctions(TableCompileContext context, QsiQualifiedIdentifier identifier)
     {
-        var provider = context.Engine.RepositoryProvider;
-        var funcIdentifier = ResolveQualifiedIdentifier(context, identifier);
-        var func = provider.LookupObject(funcIdentifier, QsiObjectType.Function);
+        IEnumerable<QsiFunctionObject> functions = base.LookupFunctions(context, identifier);
 
-        // Check System Functions
-        if (func is QsiFunctionOverloadSet { Functions.Count: 0 } && identifier.Level == 1)
+        // Check System Functions (pg_catalog)
+        if (!functions.Any() && identifier.Level == 1)
         {
+            var funcIdentifier = ResolveQualifiedIdentifier(context, identifier);
+
             var fallBackIdentifier = new QsiQualifiedIdentifier(
                 funcIdentifier[0],
                 new QsiIdentifier("pg_catalog", false),
                 identifier[0]
             );
 
-            func = provider.LookupObject(fallBackIdentifier, QsiObjectType.Function);
+            return base.LookupFunctions(context, fallBackIdentifier);
         }
 
-        switch (func)
-        {
-            case QsiFunctionOverloadSet funcList:
-                return funcList.Functions;
-
-            case QsiFunctionObject funcObj:
-                return new[] { funcObj };
-
-            default:
-                return Array.Empty<QsiFunctionObject>();
-        }
+        return functions;
     }
 
     protected override async ValueTask<QsiTableStructure> BuildCompositeTableStructure(TableCompileContext context, IQsiCompositeTableNode table)
