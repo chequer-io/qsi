@@ -3,5 +3,5 @@
 public enum QsiObjectType
 {
     Sequence,
-    Function
+    Function,
 }

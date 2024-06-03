@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Qsi.Data;
+using Qsi.Data.Object.Function;
 using Qsi.Engines;
 using Qsi.Services;
 using Qsi.Utilities;
@@ -69,6 +70,16 @@ internal abstract class VendorRepositoryProvider : QsiRepositoryProviderBase
             var c = table.NewColumn();
             c.IsVisible = false;
             c.Name = new QsiIdentifier(name, IdentifierUtility.IsEscaped(name));
+        }
+    }
+
+    protected void AddInParameters(QsiFunctionObject func, bool isDefault, params string[] names)
+    {
+        foreach (var name in names)
+        {
+            var c = func.NewInParameter();
+            c.Name = name;
+            c.IsDefault = isDefault;
         }
     }
 }

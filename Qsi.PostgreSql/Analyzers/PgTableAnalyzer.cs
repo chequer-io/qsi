@@ -84,7 +84,7 @@ public class PgTableAnalyzer : QsiTableAnalyzer
             {
                 var identifier = invoke.Member.Value.Identifier;
 
-                QsiFunctionObject[] functions = LookupFunctions(context, identifier);
+                QsiFunctionObject[] functions = LookupFunctions(context, identifier).ToArray();
 
                 if (functions is { Length: 0 })
                     throw new QsiException(QsiError.UnableResolveFunction, identifier);
@@ -104,8 +104,8 @@ public class PgTableAnalyzer : QsiTableAnalyzer
                     };
 
                     if (!funcDef.ReturnType.Value.Setof &&
-                        (invoke.Parameters.Count < func.ArgumentsCount - func.DefaultArgumentsCount ||
-                         invoke.Parameters.Count > func.ArgumentsCount))
+                        (invoke.Parameters.Count < func.InParametersCount - func.InDefaultParametersCount ||
+                         invoke.Parameters.Count > func.InParametersCount))
                     {
                         continue;
                     }
@@ -186,14 +186,14 @@ public class PgTableAnalyzer : QsiTableAnalyzer
         return await base.BuildTableFunctionStructure(context, table);
     }
 
-    private QsiFunctionObject[] LookupFunctions(TableCompileContext context, QsiQualifiedIdentifier identifier)
+    private IEnumerable<QsiFunctionObject> LookupFunctions(TableCompileContext context, QsiQualifiedIdentifier identifier)
     {
         var provider = context.Engine.RepositoryProvider;
         var funcIdentifier = ResolveQualifiedIdentifier(context, identifier);
         var func = provider.LookupObject(funcIdentifier, QsiObjectType.Function);
 
         // Check System Functions
-        if (func is QsiFunctionList { Functions.Length: 0 } && identifier.Level == 1)
+        if (func is QsiFunctionOverloadSet { Functions.Count: 0 } && identifier.Level == 1)
         {
             var fallBackIdentifier = new QsiQualifiedIdentifier(
                 funcIdentifier[0],
@@ -206,7 +206,7 @@ public class PgTableAnalyzer : QsiTableAnalyzer
 
         switch (func)
         {
-            case QsiFunctionList funcList:
+            case QsiFunctionOverloadSet funcList:
                 return funcList.Functions;
 
             case QsiFunctionObject funcObj:

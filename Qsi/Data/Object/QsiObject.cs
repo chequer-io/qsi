@@ -4,10 +4,5 @@ public abstract class QsiObject
 {
     public abstract QsiObjectType Type { get; }
 
-    public QsiQualifiedIdentifier Identifier { get; }
-
-    protected QsiObject(QsiQualifiedIdentifier identifier)
-    {
-        Identifier = identifier;
-    }
+    public QsiQualifiedIdentifier Identifier { get; set; }
 }
