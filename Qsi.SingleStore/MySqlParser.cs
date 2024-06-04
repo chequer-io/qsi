@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
 using Qsi.Data;
 using Qsi.SingleStore.Internal;
@@ -13,16 +14,7 @@ namespace Qsi.SingleStore;
 
 public sealed class SingleStoreParser : IQsiTreeParser
 {
-    private readonly int _version;
-    private readonly bool _mariaDBCompatibility;
-
-    public SingleStoreParser(Version version, bool mariaDBCompatibility)
-    {
-        _mariaDBCompatibility = mariaDBCompatibility;
-        _version = SingleStoreUtility.VersionToInt(version);
-    }
-
-    public IQsiTreeNode Parse(QsiScript script, CancellationToken cancellationToken = default)
+    public IQsiTreeNode? Parse(QsiScript script, CancellationToken cancellationToken = default)
     {
         var parser = SingleStoreUtility.CreateParser(script.Script, _version, _mariaDBCompatibility);
         var query = parser.query();

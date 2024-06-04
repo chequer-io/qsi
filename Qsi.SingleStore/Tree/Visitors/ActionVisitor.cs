@@ -432,7 +432,6 @@ internal static class ActionVisitor
         return context switch
         {
             SetContext ctx => VisitSet(ctx),
-            SetStatementForContext ctx => VisitSetStatementFor(ctx),
             _ => throw TreeHelper.NotSupportedTree(context)
         };
     }
@@ -448,26 +447,6 @@ internal static class ActionVisitor
                 VisitStartOptionValueList(options)
             }
         };
-    }
-
-    private static QsiVariableSetActionNode VisitSetStatementFor(SetStatementForContext context)
-    {
-        var options = context.startOptionValueList();
-        var node = new QsiVariableSetActionNode();
-
-        try
-        {
-            node.SetItems.AddRange(VisitStartOptionValueList(options));
-        }
-        catch (QsiException e) when (e.Error is QsiError.NotSupportedTree)
-        {
-            // ignore
-        }
-
-        if (context.simpleStatement() is { } simpleStatement)
-            node.Target = SingleStoreParser.Parse(simpleStatement.children[0]);
-
-        return node;
     }
 
     private static IEnumerable<QsiVariableSetItemNode> VisitStartOptionValueList(StartOptionValueListContext context)

@@ -25,7 +25,7 @@ public abstract class SingleStoreLanguageServiceBase : QsiLanguageServiceBase
 
     public override IQsiTreeParser CreateTreeParser()
     {
-        return new SingleStoreParser(Version, MariaDBCompatibility);
+        return new SingleStoreParser();
     }
 
     public override IQsiTreeDeparser CreateTreeDeparser()
