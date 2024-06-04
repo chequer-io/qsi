@@ -45,7 +45,6 @@ lexer grammar SingleStoreLexerInternal;
 // $antlr-format allowShortRulesOnASingleLine on, alignSemicolons ownLine
 
 options {
-    tokenVocab = predefined; // Keyword tokens in a predefined order for simpler checks.
     exportMacro = PARSERS_PUBLIC_TYPE;
 }
 
