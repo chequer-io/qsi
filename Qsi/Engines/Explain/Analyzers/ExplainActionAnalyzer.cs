@@ -73,7 +73,8 @@ internal sealed class ExplainActionAnalyzer : IQsiAnalyzer
         var explainResult = new QsiExplainDataManipulationResult(
             result.Table,
             result.AffectedColumns,
-            operations
+            operations,
+            result.TablesInRows
         );
 
         explainResult.SensitiveDataCollection.AddRange(result.SensitiveDataCollection);

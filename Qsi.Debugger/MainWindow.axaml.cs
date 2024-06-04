@@ -34,6 +34,7 @@ using Qsi.Debugger.Vendor.PrimarSql;
 using Qsi.Debugger.Vendor.Redshift;
 using Qsi.Debugger.Vendor.SqlServer;
 using Qsi.Debugger.Vendor.Trino;
+using Qsi.Engines.Explain;
 using Qsi.SqlServer.Common;
 using Qsi.Tree;
 
@@ -232,6 +233,7 @@ public class MainWindow : Window
             {
                 IQsiAnalysisResult[] results = await _vendor.Engine.Explain(script);
                 tables.AddRange(results.OfType<QsiTableResult>().Select(r => r.Table));
+                tables.AddRange(results.OfType<QsiExplainDataManipulationResult>().SelectMany(r => r.TablesInRows));
             }
 
             BuildQsiTableTree(tables);
