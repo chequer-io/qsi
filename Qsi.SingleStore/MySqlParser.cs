@@ -16,7 +16,7 @@ public sealed class SingleStoreParser : IQsiTreeParser
 {
     public IQsiTreeNode? Parse(QsiScript script, CancellationToken cancellationToken = default)
     {
-        var parser = CreateParser(script.Script);
+        var parser = SingleStoreUtility.CreateParser(script.Script);
         var query = parser.query();
 
         if (query.children[0] is not SimpleStatementContext simpleStatement)
@@ -95,15 +95,5 @@ public sealed class SingleStoreParser : IQsiTreeParser
             default:
                 throw TreeHelper.NotSupportedTree(context.children[0]);
         }
-    }
-
-    private SingleStoreParserInternal CreateParser(string input)
-    {
-        var stream = new AntlrInputStream(input);
-        var lexer = new SingleStoreLexerInternal(stream);
-        var tokens = new CommonTokenStream(lexer);
-        var parser = new SingleStoreParserInternal(tokens);
-
-        return parser;
     }
 }

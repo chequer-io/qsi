@@ -30,4 +30,14 @@ internal static class SingleStoreUtility
 
         return result;
     }
+
+    public static SingleStoreParserInternal CreateParser(string input)
+    {
+        var stream = new AntlrInputStream(input);
+        var lexer = new SingleStoreLexerInternal(stream);
+        var tokens = new CommonTokenStream(lexer);
+        var parser = new SingleStoreParserInternal(tokens);
+
+        return parser;
+    }
 }
