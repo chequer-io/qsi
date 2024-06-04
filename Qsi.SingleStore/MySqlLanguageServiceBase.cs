@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Qsi.Analyzers;
-using Qsi.Analyzers.Action;
+﻿using Qsi.Analyzers;
 using Qsi.Analyzers.Definition;
 using Qsi.Collections;
 using Qsi.Data;
@@ -14,10 +11,6 @@ namespace Qsi.SingleStore;
 
 public abstract class SingleStoreLanguageServiceBase : QsiLanguageServiceBase
 {
-    public abstract Version Version { get; }
-
-    public abstract bool MariaDBCompatibility { get; }
-
     protected override IEqualityComparer<QsiIdentifier> GetIdentifierComparer()
     {
         return new QsiIdentifierEqualityComparer(StringComparison.OrdinalIgnoreCase);
