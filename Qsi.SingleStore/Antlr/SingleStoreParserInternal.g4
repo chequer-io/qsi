@@ -381,7 +381,7 @@ changeTablespaceOption:
 ;
 
 alterView:
-    viewAlgorithm? definerClause? viewSuid? VIEW_SYMBOL viewRef viewTail
+    viewAlgorithm? definerClause? viewSuid? schemaBinding? VIEW_SYMBOL viewRef viewTail
 ;
 
 // This is not the full view_tail from sql_yacc.yy as we have either a view name or a view reference,
