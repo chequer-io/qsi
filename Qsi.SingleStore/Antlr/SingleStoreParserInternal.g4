@@ -658,7 +658,7 @@ tsOptionEncryption:
 ;
 
 createView:
-    viewReplaceOrAlgorithm? definerClause? viewSuid? VIEW_SYMBOL viewName viewTail
+    viewReplaceOrAlgorithm? definerClause? viewSuid? schemaBinding? VIEW_SYMBOL viewName viewTail
 ;
 
 viewReplaceOrAlgorithm:
@@ -676,6 +676,10 @@ viewAlgorithm:
 
 viewSuid:
     SQL_SYMBOL SECURITY_SYMBOL (DEFINER_SYMBOL | INVOKER_SYMBOL)
+;
+
+schemaBinding:
+    SCHEMA_BINDING_SYMBOL EQUAL_OPERATOR (ON_SYMBOL | OFF_SYMBOL)
 ;
 
 createTrigger:

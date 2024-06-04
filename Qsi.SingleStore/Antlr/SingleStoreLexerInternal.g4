@@ -1071,6 +1071,12 @@ REQUIRE_TABLE_PRIMARY_KEY_CHECK_SYMBOL:
 STREAM_SYMBOL:                   S T R E A M;                                 // MYSQL
 OFF_SYMBOL:                      O F F;                                       // SQL-1999-R
 
+//
+// Unique Keywords of SingleStore
+//
+
+SCHEMA_BINDING_SYMBOL:           S C H E M A '_' B I N D I N G;              // CREATE VIEW, ALTER VIEW
+
 // $antlr-format groupedAlignments on, alignTrailers off, alignLexerCommands on
 
 // Additional tokens which are mapped to existing tokens.
