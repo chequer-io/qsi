@@ -45,6 +45,7 @@ lexer grammar SingleStoreLexerInternal;
 // $antlr-format allowShortRulesOnASingleLine on, alignSemicolons ownLine
 
 options {
+    superClass = SingleStoreBaseLexer;
     exportMacro = PARSERS_PUBLIC_TYPE;
 }
 

@@ -45,6 +45,7 @@ parser grammar SingleStoreParserInternal;
 // $antlr-format useTab off, allowShortRulesOnASingleLine off, allowShortBlocksOnASingleLine on, alignSemicolons ownLine
 
 options {
+    superClass = SingleStoreBaseRecognizer;
     tokenVocab = SingleStoreLexerInternal;
     exportMacro = PARSERS_PUBLIC_TYPE;
 }
