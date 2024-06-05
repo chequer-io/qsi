@@ -120,7 +120,7 @@ internal abstract class SingleStoreBaseLexer : Lexer, ISingleStoreRecognizerComm
     // MySQLRecognizerCommon::isSqlModeActive
     public bool isSqlModeActive(int mode)
     {
-        return mode == 0;
+        return mode == AnsiQuotes;
     }
     #endregion
 
