@@ -1341,7 +1341,7 @@ innerJoinType:
 ;
 
 outerJoinType:
-    type = (LEFT_SYMBOL | RIGHT_SYMBOL) OUTER_SYMBOL? JOIN_SYMBOL
+    type = (LEFT_SYMBOL | RIGHT_SYMBOL | FULL_SYMBOL) OUTER_SYMBOL? JOIN_SYMBOL
 ;
 
 /**
