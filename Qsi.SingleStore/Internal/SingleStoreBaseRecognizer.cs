@@ -15,10 +15,6 @@ internal abstract class SingleStoreBaseRecognizer : Parser, ISingleStoreRecogniz
     protected const int NoBackslashEscapes = 1 << 4;
     #endregion
 
-    public int serverVersion { get; init; }
-
-    public bool MariaDB { get; init; }
-
     public int ParamIndex { get; set; }
 
     protected SingleStoreBaseRecognizer(ITokenStream input) : base(input)

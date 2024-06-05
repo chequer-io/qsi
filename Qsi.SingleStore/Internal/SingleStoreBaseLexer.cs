@@ -89,8 +89,6 @@ internal abstract class SingleStoreBaseLexer : Lexer, ISingleStoreRecognizerComm
 
     public HashSet<string> Charsets { get; } = new(CharacterSets);
 
-    public bool MariaDB { get; set; }
-
     protected bool inVersionComment;
 
     private readonly int _serverVersion;
