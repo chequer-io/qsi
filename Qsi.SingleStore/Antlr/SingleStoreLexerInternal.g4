@@ -134,6 +134,12 @@ CLOSE_PAR_SYMBOL:   ')';
 OPEN_CURLY_SYMBOL:  '{';
 CLOSE_CURLY_SYMBOL: '}';
 
+//
+// SingleStore Supports array expression with brackets. (e.g. [1, 2])
+//
+OPEN_BRACKET_SYMBOL: '[';
+CLOSE_BRACKET_SYMBOL: ']';
+
 // ** Patch by QSI
 //UNDERLINE_SYMBOL:   '_';
 
@@ -1076,6 +1082,18 @@ OFF_SYMBOL:                      O F F;                                       //
 //
 
 SCHEMA_BINDING_SYMBOL:           S C H E M A '_' B I N D I N G;              // CREATE VIEW, ALTER VIEW
+FS_SYMBOL:                       F S;                                        // SELECT .. INTO
+S3_SYMBOL:                       S '3';
+HDFS_SYMBOL:                     H D F S;
+GCS_SYMBOL:                      G C S;
+KAFKA_SYMBOL:                    K A F K A;
+AZURE_SYMBOL:                    A Z U R E;
+GZIP_SYMBOL:                     G Z I P;
+CONFIG_SYMBOL:                   C O N F I G;
+CREDENTIALS_SYMBOL:              C R E D E N T I A L S;
+PARQUET_SYMBOL:                  P A R Q U E T;                              // FORMAT PARQUET
+LINK_SYMBOL:                     L I N K;
+SAMPLE_RATIO_SYMBOL:             S A M P L E '_' R A T I O;                  // WITH ( SAMPLE_RATIO = x )
 
 // $antlr-format groupedAlignments on, alignTrailers off, alignLexerCommands on
 
@@ -1104,8 +1122,6 @@ INVALID_INPUT:
     | '\u000B'        // Line tabulation.
     | '\u000C'        // Form feed.
     | [\u000E-\u001F] // More control codes.
-    | '['
-    | ']'
 ;
 
 // String and text types.
