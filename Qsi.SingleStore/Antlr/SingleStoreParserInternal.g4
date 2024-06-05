@@ -1356,12 +1356,15 @@ outerJoinType:
 
   We call this rule tableReferenceListParens.
 */
-tableFactor:
-    singleTable
-    | singleTableParens
-    | derivedTable
-    | tableReferenceListParens
-    | tableFunction
+tableFactor: (
+        singleTable
+        | singleTableParens
+        | derivedTable
+        | tableReferenceListParens
+        | tableFunction
+        // see: https://docs.singlestore.com/db/v8.0/reference/sql-reference/data-manipulation-language-dml/table/
+        | TABLE_SYMBOL OPEN_PAR_SYMBOL expr CLOSE_PAR_SYMBOL tableAlias?
+    )
 ;
 
 singleTable:
@@ -2500,6 +2503,8 @@ simpleExpr:
     | DEFAULT_SYMBOL OPEN_PAR_SYMBOL simpleIdentifier CLOSE_PAR_SYMBOL                                   # simpleExprDefault
     | VALUES_SYMBOL OPEN_PAR_SYMBOL simpleIdentifier CLOSE_PAR_SYMBOL                                    # simpleExprValues
     | INTERVAL_SYMBOL expr interval PLUS_OPERATOR expr                                                   # simpleExprInterval
+    // see: "https://docs.singlestore.com/cloud/reference/sql-reference/sql-command-syntax/#arrays"
+    | OPEN_BRACKET_SYMBOL exprList CLOSE_BRACKET_SYMBOL                                                  # simpleExprArray
 ;
 
 arrayCast:
