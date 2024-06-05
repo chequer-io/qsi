@@ -35,8 +35,15 @@ internal static class SingleStoreUtility
     {
         var stream = new AntlrInputStream(input);
         var lexer = new SingleStoreLexerInternal(stream);
+
+        lexer.RemoveErrorListeners();
+        lexer.AddErrorListener(new SingleStoreLexerErrorListener());
+
         var tokens = new CommonTokenStream(lexer);
         var parser = new SingleStoreParserInternal(tokens);
+
+        parser.RemoveErrorListeners();
+        parser.AddErrorListener(new SingleStoreParserErrorListener());
 
         return parser;
     }
