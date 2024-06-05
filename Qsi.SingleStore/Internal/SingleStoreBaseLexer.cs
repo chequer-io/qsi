@@ -94,7 +94,7 @@ internal abstract class SingleStoreBaseLexer : Lexer, ISingleStoreRecognizerComm
     private readonly int _serverVersion;
     private readonly SingleStoreVersion _singleStoreVersion;
     private readonly Queue<IToken> _pendingTokens = new();
-    private Dictionary<string, int> _symbols;
+    private Dictionary<string, int>? _symbols;
 
     protected SingleStoreBaseLexer(ICharStream input) : base(input)
     {
