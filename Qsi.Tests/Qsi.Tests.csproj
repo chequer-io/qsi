@@ -7,33 +7,34 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="CsvHelper" Version="30.0.1" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />
-        <PackageReference Include="MySql.Data" Version="8.0.28" />
-        <PackageReference Include="Npgsql" Version="7.0.1" />
-        <PackageReference Include="NUnit" Version="3.13.3" />
-        <PackageReference Include="NUnit3TestAdapter" Version="4.2.1" />
+        <PackageReference Include="CsvHelper" Version="30.0.1"/>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0"/>
+        <PackageReference Include="MySql.Data" Version="8.0.28"/>
+        <PackageReference Include="Npgsql" Version="7.0.1"/>
+        <PackageReference Include="NUnit" Version="3.13.3"/>
+        <PackageReference Include="NUnit3TestAdapter" Version="4.2.1"/>
         <PackageReference Include="coverlet.collector" Version="3.1.2">
-          <PrivateAssets>all</PrivateAssets>
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="EastAsianWidth" Version="1.2.0" />
-        <PackageReference Include="PrimarSql.Data" Version="1.3.0" />
-        <PackageReference Include="Verify.NUnit" Version="16.5.2" />
+        <PackageReference Include="EastAsianWidth" Version="1.2.0"/>
+        <PackageReference Include="PrimarSql.Data" Version="1.3.0"/>
+        <PackageReference Include="Verify.NUnit" Version="16.5.2"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Qsi.MySql\Qsi.MySql.csproj" />
-   		<ProjectReference Include="..\Qsi.Oracle\Qsi.Oracle.csproj" />
-   		<ProjectReference Include="..\Qsi.PostgreSql\Qsi.PostgreSql.csproj" />
-   		<ProjectReference Include="..\Qsi.PrimarSql\Qsi.PrimarSql.csproj" />
+        <ProjectReference Include="..\Qsi.MySql\Qsi.MySql.csproj"/>
+        <ProjectReference Include="..\Qsi.Oracle\Qsi.Oracle.csproj"/>
+        <ProjectReference Include="..\Qsi.PostgreSql\Qsi.PostgreSql.csproj"/>
+        <ProjectReference Include="..\Qsi.PrimarSql\Qsi.PrimarSql.csproj"/>
+        <ProjectReference Include="..\Qsi.SingleStore\Qsi.SingleStore.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <EmbeddedResource Include="Resources\**">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </EmbeddedResource>
+        <EmbeddedResource Include="Resources\**">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </EmbeddedResource>
     </ItemGroup>
 
-    <Import Project="Packages.props" />
+    <Import Project="Packages.props"/>
 </Project>
