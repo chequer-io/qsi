@@ -1364,7 +1364,11 @@ tableFactor: (
         | tableFunction
         // see: https://docs.singlestore.com/db/v8.0/reference/sql-reference/data-manipulation-language-dml/table/
         | TABLE_SYMBOL OPEN_PAR_SYMBOL expr CLOSE_PAR_SYMBOL tableAlias?
-    )
+    ) withSampleRatioClause?
+;
+
+withSampleRatioClause:
+    WITH_SYMBOL OPEN_PAR_SYMBOL SAMPLE_RATIO_SYMBOL EQUAL_OPERATOR numLiteral CLOSE_PAR_SYMBOL
 ;
 
 singleTable:
