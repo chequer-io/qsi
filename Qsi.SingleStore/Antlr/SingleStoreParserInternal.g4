@@ -1102,12 +1102,48 @@ limitOption:
 
 intoClause:
     INTO_SYMBOL (
-        OUTFILE_SYMBOL textStringLiteral charsetClause? fieldsClause? linesClause?
-        | DUMPFILE_SYMBOL textStringLiteral
+        intoOutFileClause
         | (textOrIdentifier | userVariable) (
             COMMA_SYMBOL (textOrIdentifier | userVariable)
         )*
     )
+;
+
+intoOutFileClause: (
+    OUTFILE_SYMBOL textStringLiteral charsetClause?
+    | FS_SYMBOL textStringLiteral
+    | S3_SYMBOL textStringLiteral intoConfig? intoCredentials
+    | HDFS_SYMBOL textStringLiteral intoConfig?
+    | GCS_SYMBOL textStringLiteral intoConfig? intoCredentials
+    | KAFKA_SYMBOL textStringLiteral intoConfig? intoCredentials? (KAFKA_SYMBOL KEY_SYMBOL textStringLiteral)?
+    | AZURE_SYMBOL textStringLiteral intoCredentials
+    | LINK_SYMBOL qualifiedIdentifier textStringLiteral
+    )
+    intoFormat withCompression?
+;
+
+intoConfig:
+    CONFIG_SYMBOL textStringLiteral
+;
+
+intoCredentials:
+    CREDENTIALS_SYMBOL textStringLiteral
+;
+
+intoFormat:
+    fieldsClause? linesClause?
+    | FORMAT_SYMBOL PARQUET_SYMBOL
+;
+
+withCompression:
+    WITH_SYMBOL COMPRESSION_SYMBOL (
+        GZIP_SYMBOL
+    )?
+;
+
+formatOptionsClause:
+    fieldsClause? linesClause?
+    | FORMAT_SYMBOL PARQUET_SYMBOL   
 ;
 
 procedureAnalyseClause:
