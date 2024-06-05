@@ -1072,7 +1072,7 @@ STREAM_SYMBOL:                   S T R E A M;                                 //
 OFF_SYMBOL:                      O F F;                                       // SQL-1999-R
 
 //
-// Unique Keywords of SingleStore
+// Keywords from SingleStore
 //
 
 SCHEMA_BINDING_SYMBOL:           S C H E M A '_' B I N D I N G;              // CREATE VIEW, ALTER VIEW
