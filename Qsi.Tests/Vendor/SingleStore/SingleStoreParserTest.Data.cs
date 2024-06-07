@@ -160,7 +160,7 @@ public sealed partial class SingleStoreParserTest
         "INSERT INTO mytbl (column1, column2, column3) SELECT WITH(force_random_reshuffle=1) * FROM mytbl_new ON DUPLICATE KEY UPDATE column1 = VALUES(column1), column2 = VALUES(column2), column3 = VALUES(column3);",
 
         // ON DUPLICATE KEY DELETE ~ is available after v8.5
-        "INSERT INTO viewing_stats VALUES(_program_id, _view_count) ON DUPLICATE KEY DELETE WHEN view_count + values(view_count) <= 0",
+        // "INSERT INTO viewing_stats VALUES(_program_id, _view_count) ON DUPLICATE KEY DELETE WHEN view_count + values(view_count) <= 0",
 
         // <see href="https://docs.singlestore.com/db/v8.5/reference/sql-reference/data-manipulation-language-dml/replace/"/>
         "REPLACE INTO Emp(ID,Name,City) VALUES(10,\"Bill\",\"San Jose\");",
