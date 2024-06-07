@@ -2809,6 +2809,8 @@ castType:
     | FLOAT_SYMBOL standardFloatOptions?
     | VECTOR_SYMBOL fieldLength?
     | blobType fieldLength?
+    | GEOGRAPHYPOINT_SYMBOL
+    | GEOGRAPHY_SYMBOL
 ;
 
 exprList:
