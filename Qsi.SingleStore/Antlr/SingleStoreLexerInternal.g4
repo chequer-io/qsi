@@ -102,6 +102,14 @@ LESS_THAN_OPERATOR:        '<';
 NOT_EQUAL_OPERATOR:        '!=';
 NOT_EQUAL2_OPERATOR:       '<>' -> type(NOT_EQUAL_OPERATOR);
 
+//
+// Operators from SingleStore
+//
+DOT_PRODUCT_OPERATOR:           '<*>';
+EUCLIDEAN_DISTANCE_OPERATOR:    '<->';
+TYPECAST_OPERATOR:              ':>';
+FORCEFUL_TYPECAST_OPERATOR:     '!:>';
+
 PLUS_OPERATOR:  '+';
 MINUS_OPERATOR: '-';
 MULT_OPERATOR:  '*';
