@@ -6,7 +6,7 @@ namespace Qsi.Tests.SingleStore;
 
 public sealed partial class SingleStoreParserTest
 {
-    [TestCaseSource(nameof(ValidQuery_Select_TestCaseData))]
+    [TestCaseSource(nameof(GetAllValidQueryTestCaseDatas))]
     public void Parse_ValidQuery_ShouldPass(string query)
     {
         var context = GetContext(query);

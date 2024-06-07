@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 
@@ -5,16 +7,26 @@ namespace Qsi.Tests.SingleStore;
 
 public sealed partial class SingleStoreParserTest
 {
-    public static TestCaseData[] ValidQuery_Select_TestCaseData
-        => _validQuery_Select_TestCaseData ??= GetTestCaseData(ValidQuery_Select);
+    private static TestCaseData[] GetAllValidQueryTestCaseDatas
+    {
+        get
+        {
+            return Enumerable.Empty<string>()
+                .Concat(ValidQuery_Select)
+                .Concat(ValidQuery_Insert)
+                .Concat(ValidQuery_Update)
+                .Concat(ValidQuery_Delete)
+                .Concat(ValidQuery_Set)
+                .Select(q => new TestCaseData(q))
+                .ToArray();
+        }
+    }
 
-    private static TestCaseData[] _validQuery_Select_TestCaseData;
-
-    private static TestCaseData[] GetTestCaseData(string[] queries)
-        => queries.Select(q => new TestCaseData(q)).ToArray();
+    private static IEnumerable<TestCaseData> GetTestCaseData(string[] query)
+        => query.Select(q => new TestCaseData(q));
 
     #region Test Queries
-    public static readonly string[] ValidQuery_Select =
+    private static readonly string[] ValidQuery_Select =
     {
         // <see href="https://docs.singlestore.com/db/v8.5/reference/sql-reference/data-manipulation-language-dml/select/"/>
         "SELECT * FROM hrRec;",
