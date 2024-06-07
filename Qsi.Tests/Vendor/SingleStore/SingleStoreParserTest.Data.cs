@@ -113,6 +113,42 @@ public sealed partial class SingleStoreParserTest
         "SELECT id, '[3, 2, 1]' <-> vectors_i16.vec AS score FROM vectors_i16 ORDER BY score ASC;",
         "SELECT id, @query_vec <*> vectors_b.vec AS score FROM vectors_b ORDER BY score DESC;",
         "SELECT EUCLIDEAN_DISTANCE(JSON_ARRAY_PACK('[0.44, 0.554, 0.34, 0.62]'), vec) AS score FROM vectors_b ORDER BY score ASC;",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/reference/sql-reference/comparison-operators-and-functions/between-not-between/"/>
+        "SELECT * FROM bet_r WHERE t BETWEEN \"blue\" AND \"pink\";",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/reference/sql-reference/comparison-operators-and-functions/null-handling/"/>
+        "SELECT * FROM n_s WHERE t IS NULL;",
+        "SELECT 'x' IS NULL, NULL IS NULL, NULL IS NOT NULL;",
+        "SELECT * FROM n_s AS s1, n_s AS s2 WHERE s1.t <=> s2.t;",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/reference/sql-reference/comparison-operators-and-functions/like-not-like/"/>
+        "SELECT * FROM like_s WHERE t LIKE 'r_d';",
+        "SELECT * FROM like_s WHERE t NOT LIKE 'r%';",
+        "SELECT \"foo_\" LIKE \"foo\\_\";",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/reference/sql-reference/comparison-operators-and-functions/in-not-in/"/>
+        "SELECT * FROM hrRec WHERE City IN('DC','New York');",
+        "SELECT * FROM hrRec WHERE City NOT IN('DC','Brooklyn');",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/reference/sql-reference/comparison-operators-and-functions/strcmp/"/>
+        "SELECT r1.t, r2.t, strcmp(r1.t, r2.t) FROM sc_r AS r1, sc_r AS r2;",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/reference/sql-reference/comparison-operators-and-functions/where-operators-can-be-used/"/>
+        "SELECT t, t LIKE 'r%', t != 'red' FROM s WHERE t = 'red';",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/reference/sql-reference/comparison-operators-and-functions/using-comparison-operators-with-date-and-time-functions/"/>
+        "SELECT * FROM Emp WHERE MONTH(DOJ) = 01;",
+        "SELECT * FROM Emp WHERE DOJ < CURRENT_DATE;",
+        "SELECT * FROM Emp WHERE DOJ BETWEEN DATE('2019-01-01') AND DATE('2020-01-30');",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/reference/sql-reference/database-object-case-sensitivity/"/>
+        "SELECT @@table_name_case_sensitivity;",
+
+        // <see href="https://docs.singlestore.com/db/v8.0/developer-resources/functional-extensions/working-with-geospatial-features/"/>
+        // Queries below are self-made
+        "select \"POLYGON((1 1,2 1,2 2, 1 2, 1 1))\" :> GEOGRAPHY;",
+        "select \"POINT(3.5 3.5)\" :> GEOGRAPHYPOINT;"
     };
 
     public static readonly string[] ValidQuery_Insert =
