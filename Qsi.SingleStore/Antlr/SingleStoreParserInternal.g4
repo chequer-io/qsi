@@ -1063,7 +1063,7 @@ queryPrimary:
 ;
 
 querySpecification:
-    SELECT_SYMBOL selectOption* selectItemList intoClause? fromClause? whereClause? groupByClause? havingClause? (
+    SELECT_SYMBOL withExpressionClause? selectOption* selectItemList intoClause? fromClause? whereClause? groupByClause? havingClause? (
         windowClause
     )?
 ;
@@ -1264,6 +1264,12 @@ rowValueExplicit:
     ROW_SYMBOL OPEN_PAR_SYMBOL values? CLOSE_PAR_SYMBOL
 ;
 
+// see: https://docs.singlestore.com/db/v8.5/reference/sql-reference/data-manipulation-language-dml/insert/#force-random-reshuffle
+// see: https://docs.singlestore.com/db/v8.5/reference/sql-reference/data-manipulation-language-dml/select/#select-with-sample-ratio-value
+withExpressionClause:
+    WITH_SYMBOL exprWithParentheses
+;
+
 selectOption:
     querySpecOption
     | SQL_NO_CACHE_SYMBOL // Deprecated and ignored in 8.0.
@@ -1364,11 +1370,7 @@ tableFactor: (
         | tableFunction
         // see: https://docs.singlestore.com/db/v8.0/reference/sql-reference/data-manipulation-language-dml/table/
         | TABLE_SYMBOL OPEN_PAR_SYMBOL expr CLOSE_PAR_SYMBOL tableAlias?
-    ) withSampleRatioClause?
-;
-
-withSampleRatioClause:
-    WITH_SYMBOL exprWithParentheses
+    ) withExpressionClause?
 ;
 
 singleTable:
