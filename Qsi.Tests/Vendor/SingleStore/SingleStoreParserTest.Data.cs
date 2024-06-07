@@ -17,6 +17,7 @@ public sealed partial class SingleStoreParserTest
                 .Concat(ValidQuery_Update)
                 .Concat(ValidQuery_Delete)
                 .Concat(ValidQuery_Set)
+                .Concat(ValidQuery_CreateView)
                 .Select(q => new TestCaseData(q))
                 .ToArray();
         }
@@ -212,6 +213,17 @@ public sealed partial class SingleStoreParserTest
     public static readonly string[] ValidQuery_Set =
     {
         "SET @query_vec = ('[9,0]'):> VECTOR(2) :> BLOB;"
+    };
+
+    public static readonly string[] ValidQuery_CreateView =
+    {
+        // <see href="https://docs.singlestore.com/db/v8.5/reference/sql-reference/data-definition-language-ddl/create-view/"/>
+        "CREATE VIEW person_view AS SELECT first_name, last_name FROM table_name WHERE user_id = 'real_person';",
+        "CREATE VIEW active_items_view AS SELECT name FROM items WHERE status = 'active';",
+        "CREATE VIEW discounted_items_view AS SELECT name FROM active_items_view WHERE discount = 1;",
+        "CREATE VIEW customer_orders AS SELECT o.id, c.last_name, c.first_name\nFROM orders_db.orders o, customers_db.customers c WHERE o.customer_id = c.id;",
+        // Queries below are self-made
+        "CREATE DEFINER=mason SCHEMA_BINDING=ON VIEW mason_view AS select * from mason_table;"
     };
     #endregion
 }
