@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using Qsi.Parsing;
 using Qsi.SingleStore.Internal;
 
 namespace Qsi.Tests.SingleStore;
@@ -19,12 +20,19 @@ public sealed partial class SingleStoreParserTest
     [TestCase("4gmvrt3ygx")]
     public void Parse_InvalidQuery_ShouldFail(string query)
     {
-        var context = GetContext(query);
+        try
+        {
+            var context = GetContext(query);
 
-        if (context.simpleStatement().Length == 0)
-            Assert.Pass();
+            if (context.simpleStatement().Length == 0)
+                Assert.Pass();
 
-        Assert.Fail();
+            Assert.Fail();
+        }
+        catch (QsiSyntaxErrorException syntax)
+        {
+            Assert.Pass(syntax.Message);
+        }
     }
 
     private SingleStoreParserInternal.QueryContext GetContext(string query)
