@@ -1101,7 +1101,9 @@ CONFIG_SYMBOL:                   C O N F I G;
 CREDENTIALS_SYMBOL:              C R E D E N T I A L S;
 PARQUET_SYMBOL:                  P A R Q U E T;                              // FORMAT PARQUET
 LINK_SYMBOL:                     L I N K;
-VECTOR_SYMBOL:                   V E C T O R;                                // vector(2)
+VECTOR_SYMBOL:                   V E C T O R;                                // vector(2), avaliable after v8.5
+GEOGRAPHYPOINT_SYMBOL:           G E O G R A P H Y P O I N T;
+GEOGRAPHY_SYMBOL:                G E O G R A P H Y;
 
 // $antlr-format groupedAlignments on, alignTrailers off, alignLexerCommands on
 
