@@ -14,11 +14,9 @@ public sealed partial class SingleStoreParserTest
         => queries.Select(q => new TestCaseData(q)).ToArray();
 
     #region Test Queries
-    /// <see href="https://docs.singlestore.com/db/v8.5/reference/sql-reference/data-manipulation-language-dml/select/"/>
-    /// <see href="https://docs.singlestore.com/db/v8.5/reference/sql-reference/operational-commands/select-global/"/>
-    /// <see cref="https://docs.singlestore.com/db/v8.5/reference/sql-reference/data-manipulation-language-dml/table/"/>
     public static readonly string[] ValidQuery_Select =
     {
+        // <see href="https://docs.singlestore.com/db/v8.5/reference/sql-reference/data-manipulation-language-dml/select/"/>
         "SELECT * FROM hrRec;",
         "SELECT * FROM hrRec LIMIT 2;",
         "SELECT * FROM hrRec LIMIT 1,2;",
@@ -57,17 +55,57 @@ public sealed partial class SingleStoreParserTest
         "SELECT * FROM table1 INTO OUTFILE '/tmp/parquet_files3' FORMAT PARQUET;",
         "SELECT num FROM example_table WITH (SAMPLE_RATIO = 0.7) ORDER BY num;",
         "SELECT AVG(num) FROM example_table WITH (SAMPLE_RATIO = 0.8);",
-        "SELECT c.name, o.order_id, o.order_total FROM customer WITH (SAMPLE_RATIO = 0.4) c JOIN order o ON c.customer_id = o.customer_id;",
-        "SELECT c.name, o.order_id, o.order_total FROM customer c JOIN order o WITH (SAMPLE_RATIO = 0.4) ON c.customer_id = o.customer_id;",
+        "SELECT c.name, o.order_id, o.order_total FROM customer c WITH (SAMPLE_RATIO = 0.4) JOIN order_tbl o ON c.customer_id = o.customer_id;",
+        "SELECT c.name, o.order_id, o.order_total FROM customer c JOIN order_tbl o WITH (SAMPLE_RATIO = 0.4) ON c.customer_id = o.customer_id;",
 
+        // <see href="https://docs.singlestore.com/db/v8.5/reference/sql-reference/operational-commands/select-global/"/>
         "SELECT @@GLOBAL.redundancy_level;",
 
+        // <see href="https://docs.singlestore.com/db/v8.5/reference/sql-reference/data-manipulation-language-dml/table/"/>
         "SELECT * FROM TABLE([1,2,3]);",
         "SELECT * FROM TABLE([\"hello\", \"world\"]);",
         "SELECT * FROM TABLE(JSON_TO_ARRAY('[1,2,3]'));",
         "SELECT * FROM num, TABLE([1,2]);",
         "SELECT num, table_col AS \"SQUARE\" FROM square INNER JOIN TABLE(to_array(6)) ON table_col = num*num ORDER BY num;",
-        "SELECT Name, table_col AS \"Title\" FROM empRole JOIN TABLE(JSON_TO_ARRAY(Role));"
+        "SELECT Name, table_col AS \"Title\" FROM empRole JOIN TABLE(JSON_TO_ARRAY(Role));",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/developer-resources/functional-extensions/working-with-vector-data/"/>
+        "SELECT id, comment, category, comment_embedding <*> @query_vec AS score FROM comments ORDER BY score DESC LIMIT 2;",
+        "SELECT id, comment, category, comment_embedding <*> @query_vec AS score FROM comments WHERE category = \"Food\" ORDER BY score DESC LIMIT 3;",
+        "SELECT id, comment, category, comment_embedding <*> @query_vec AS score FROM comments ORDER BY score DESC LIMIT 2;",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/reference/sql-reference/vector-functions/vector-indexing/"/>
+        // Vector indexing feature is available after v8.5
+        // "SELECT k, v, v <*> @query_vec AS score FROM vect ORDER BY score DESC LIMIT 1;",
+        // "SELECT k, v, v <*> '[9, 0]' AS score FROM vect ORDER BY score SEARCH_OPTIONS '{\"k\" : 30 }' DESC LIMIT 3;",
+        // "SELECT id, v, v <-> @qv AS score FROM ann_test ORDER BY score LIMIT 5;",
+        // "SELECT k, v <*> ('[9, 0]' :> vector(2)) AS score FROM vect ORDER BY score USE KEY (v) DESC LIMIT 2;",
+        // "SELECT k, v <*> ('[9, 0]' :> vector(2)) AS score FROM vect ORDER BY score USE KEY () DESC LIMIT 2;",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/reference/sql-reference/vector-functions/dot-product/"/>
+        "SELECT vec, vec <*> @query_vec AS score FROM vectors ORDER BY score DESC;",
+        "SELECT vec FROM vectors WHERE vec <*> @query_vec > 0.7;",
+        "SELECT vec, vec <*> @query_vec AS score FROM vectors WHERE score > 0.7 ORDER BY score DESC;",
+        "SELECT v1.id, v2.id_2, v1.vec <*> v2.vec_2 AS score FROM vectors v1, vectors_2 v2 WHERE v1.vec <*> v2.vec_2 > 0.7 ORDER BY score DESC;",
+        "SELECT vec, vec <*> '[0.44, 0.554, 0.34, 0.62]' AS score FROM vectors ORDER BY score DESC;",
+        "SELECT id, '[3, 2, 1]' <*> vectors_i16.vec AS score FROM vectors_i16 ORDER BY score DESC;",
+        "SELECT id, @query_vec <*> vectors_b.vec AS score FROM vectors_b ORDER BY score DESC;",
+        "SELECT @query_vec <*> @query_vec AS DotProduct;",
+        "SELECT JSON_ARRAY_UNPACK(vec) FROM vectors_b; ",
+        "SELECT DOT_PRODUCT(vec, @query_vec) AS score FROM vectors_b ORDER BY score DESC;",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/reference/sql-reference/vector-functions/euclidean-distance/"/>
+        "SELECT vec <-> @query_vec AS score FROM vectors ORDER BY score ASC;",
+        "SELECT v1.id, v2.id_2, v1.vec <-> v2.vec_2 AS score FROM vectors v1, vectors_2 v2 WHERE v1.vec <-> v2.vec_2 < 0.7 ORDER BY score ASC;",
+        "SELECT vec, vec <-> '[0.44, 0.554, 0.34, 0.62]' AS score FROM vectors ORDER BY score ASC;",
+        "SELECT id, '[3, 2, 1]' <-> vectors_i16.vec AS score FROM vectors_i16 ORDER BY score ASC;",
+        "SELECT id, @query_vec <*> vectors_b.vec AS score FROM vectors_b ORDER BY score DESC;",
+        "SELECT EUCLIDEAN_DISTANCE(JSON_ARRAY_PACK('[0.44, 0.554, 0.34, 0.62]'), vec) AS score FROM vectors_b ORDER BY score ASC;",
+    };
+
+    public static readonly string[] ValidQuery_Set =
+    {
+        "SET @query_vec = ('[9,0]'):> VECTOR(2) :> BLOB;"
     };
     #endregion
 }
