@@ -1101,7 +1101,6 @@ CONFIG_SYMBOL:                   C O N F I G;
 CREDENTIALS_SYMBOL:              C R E D E N T I A L S;
 PARQUET_SYMBOL:                  P A R Q U E T;                              // FORMAT PARQUET
 LINK_SYMBOL:                     L I N K;
-SAMPLE_RATIO_SYMBOL:             S A M P L E '_' R A T I O;                  // WITH ( SAMPLE_RATIO = x )
 
 // $antlr-format groupedAlignments on, alignTrailers off, alignLexerCommands on
 
