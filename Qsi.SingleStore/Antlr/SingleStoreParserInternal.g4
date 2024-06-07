@@ -2466,6 +2466,7 @@ predicateOperations:
 
 bitExpr:
     simpleExpr
+    | bitExpr op = (DOT_PRODUCT_OPERATOR | EUCLIDEAN_DISTANCE_OPERATOR) bitExpr     // see: https://docs.singlestore.com/cloud/developer-resources/functional-extensions/working-with-vector-data/
     | bitExpr op = BITWISE_XOR_OPERATOR bitExpr
     | bitExpr op = (
         MULT_OPERATOR
@@ -2803,6 +2804,7 @@ castType:
     | JSON_SYMBOL
     | realType
     | FLOAT_SYMBOL standardFloatOptions?
+    | VECTOR_SYMBOL fieldLength?
 ;
 
 exprList:
