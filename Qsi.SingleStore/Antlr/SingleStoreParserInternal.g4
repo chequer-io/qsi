@@ -2808,7 +2808,7 @@ castType:
     | realType
     | FLOAT_SYMBOL standardFloatOptions?
     | VECTOR_SYMBOL fieldLength?
-    | BLOB_SYMBOL
+    | blobType fieldLength?
 ;
 
 exprList:
@@ -3335,6 +3335,13 @@ nchar:
 realType:
     type = REAL_SYMBOL
     | type = DOUBLE_SYMBOL PRECISION_SYMBOL?
+;
+
+blobType:
+    LONGBLOB_SYMBOL
+    | MEDIUMBLOB_SYMBOL
+    | BLOB_SYMBOL
+    | TINYBLOB_SYMBOL
 ;
 
 fieldLength:
