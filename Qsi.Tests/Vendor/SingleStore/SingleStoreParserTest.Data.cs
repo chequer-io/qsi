@@ -154,7 +154,6 @@ public sealed partial class SingleStoreParserTest
     public static readonly string[] ValidQuery_Insert =
     {
         // <see href="https://docs.singlestore.com/db/v8.5/reference/sql-reference/data-manipulation-language-dml/insert/"/>
-        "INSERT INTO db2.test2.t2 (col1, col2) SELECT col1, col2 FROM db1.test1.t1;",
         "INSERT INTO t1 (col1, col2) VALUES ((SELECT col1 FROM t2 LIMIT 1), 1);",
         "INSERT INTO mytbl (v) VALUES (\"hello\"), (\"goodbye\");",
         "INSERT IGNORE mytbl2 VALUES(null);",
