@@ -2808,6 +2808,7 @@ castType:
     | realType
     | FLOAT_SYMBOL standardFloatOptions?
     | VECTOR_SYMBOL fieldLength?
+    | BLOB_SYMBOL
 ;
 
 exprList:
