@@ -147,8 +147,67 @@ public sealed partial class SingleStoreParserTest
 
         // <see href="https://docs.singlestore.com/db/v8.0/developer-resources/functional-extensions/working-with-geospatial-features/"/>
         // Queries below are self-made
-        "select \"POLYGON((1 1,2 1,2 2, 1 2, 1 1))\" :> GEOGRAPHY;",
-        "select \"POINT(3.5 3.5)\" :> GEOGRAPHYPOINT;"
+        "SELECT \"POLYGON((1 1,2 1,2 2, 1 2, 1 1))\" :> GEOGRAPHY;",
+        "SELECT \"POINT(3.5 3.5)\" :> GEOGRAPHYPOINT;",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/reference/sql-reference/character-encoding/character-set-and-collation-override/"/>
+        "SELECT lastname :> text COLLATE utf8_bin FROM grades GROUP BY 1;",
+        "SELECT lastname :> text COLLATE utf8_general_ci FROM grades GROUP BY 1;",
+        "SELECT * FROM sets WHERE sets.json_field::$x :> text COLLATE utf8_bin = \"string1\" AND sets.json_field::$y :> text COLLATE utf8_general_ci = \"string2\";",
+        "SELECT \"My string\" COLLATE utf8mb4_unicode_ci;",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/reference/sql-reference/character-encoding/special-cases/"/>
+        "SELECT character_length(\"敥\"), character_length(\"\ud83d\ude00\");\n",
+        "SELECT \"My string literal\" COLLATE utf8mb4_unicode_ci;",
+        "SELECT character_length(\"\ud83d\ude00\" :> CHAR(20) COLLATE utf8mb4_unicode_ci) as result;",
+        "SELECT a, character_length(a) AS len FROM t;",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/reference/sql-reference/user-defined-variables/select-into-user-defined-variable/"/>
+        "SELECT 3.14 INTO @pi;",
+        "SELECT Radius, Radius*POW(@pi,2) AS \"Area\" FROM circle;",
+        "SELECT number_students FROM udv_courses WHERE course_code = 'CS-301' and section_number = 1 INTO @ns;",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/query-data/basic-query-examples/"/>
+        "SELECT COUNT(*) from employees;",
+        "SELECT id, name FROM employees ORDER BY id;",
+        "SELECT id, name FROM employees WHERE state = 'TX' ORDER BY id;",
+        "SELECT id, name, hireDate FROM employees WHERE hireDate < '2002-01-01' ORDER BY id;",
+        "SELECT state, COUNT(*) from employees group by state ORDER BY state;",
+        "SELECT e.name, s.salary FROM employees e, salaries s WHERE e.id = s.employeeId and s.salary = (SELECT MAX(salary) FROM salaries);",
+        "SELECT e.state, AVG(salary) FROM employees e JOIN salaries s on e.id = s.employeeId GROUP BY e.state ORDER BY e.state;",
+        "SELECT name FROM employees WHERE id IN (SELECT managerId FROM employees) ORDER BY name;",
+        "SELECT m.name, COUNT(*) count FROM employees m JOIN employees e ON m.id = e.managerId GROUP BY m.id ORDER BY count DESC;",
+        "SELECT m.name, COUNT(e.id) count FROM employees m LEFT JOIN employees e ON m.id = e.managerId GROUP BY m.id ORDER BY count DESC;",
+        "SELECT e.name employee_name, m.name manager_name FROM employees e LEFT JOIN employees m ON e.managerId = m.id ORDER BY manager_name;",
+        "SELECT m.name, SUM(salary) FROM employees m JOIN employees e ON m.id = e.managerId JOIN salaries s ON s.employeeId = e.id GROUP BY m.id ORDER BY SUM(salary) DESC;",
+        "SELECT e.name employee_name, se.salary employee_salary, m.name manager_name, sm.salary manager_salary FROM employees e JOIN salaries se ON e.id = se.employeeId JOIN employees m ON m.id = e.managerId JOIN salaries sm ON sm.employeeId = m.id JOIN departments d ON d.id = e.deptId WHERE d.name = 'Finance' AND sm.salary < se.salary ORDER BY employee_salary, manager_salary;",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/query-data/advanced-query-topics/with-common-table-expressions/"/>
+        "WITH myCTE AS (SELECT col FROM myTable) SELECT col FROM myCTE;",
+        "WITH myCTE (colAlias) AS (SELECT col FROM myTable) SELECT colAlias FROM myCTE;",
+        "WITH orderCTE AS (select o_orderkey from orders), lineitemCTE AS (select l_orderkey from lineitem) select count(*) from orderCTE join lineitemCTE on o_orderkey = l_orderkey;",
+        "WITH foo AS (WITH bar AS (SELECT * FROM t) SELECT * FROM bar) SELECT * FROM foo;",
+        "WITH EmpSal(averageSal) AS (SELECT AVG(Salary) FROM Employee) SELECT EmpID, Name, Salary FROM Employee, EmpSal WHERE Employee.Salary > EmpSal.averageSal;",
+        "WITH ObjectCTE (Name, Id, Date) AS (SELECT objname, objectid, invoicedate FROM Inventory) INSERT INTO Itemlist(Name, objectid, createdDate) SELECT Name, Id, Date FROM ObjectCTE;",
+        "WITH RECURSIVE org_chart (emp_id, mgr_id, name, level) AS (SELECT cte_emp.id, cte_emp.mgr_id, cte_emp.name, 0 AS level FROM cte_emp WHERE cte_emp.mgr_id IS NULL UNION ALL SELECT cte_emp.id, cte_emp.mgr_id, cte_emp.name, level + 1 FROM cte_emp INNER JOIN org_chart ON cte_emp.mgr_id = org_chart.emp_id) SELECT * FROM org_chart;",
+        "WITH RECURSIVE depths AS (SELECT 0 depth, * FROM cte_g WHERE id = 0 UNION ALL SELECT depth + 1, cte_g.id, cte_g.pr FROM cte_g, depths WHERE cte_g = depths.id) SELECT depth, id FROM depths;",
+        "WITH RECURSIVE depths AS (SELECT 0 depth, id, pr FROM cte_g WHERE pr IS NULL UNION ALL SELECT CAST((depth + 1) AS DECIMAL(10, 2)), cte_g.id, cte_g.pr FROM cte_g, depths WHERE cte_g.pr = depths.id) SELECT depth, id FROM depths;",
+        "WITH RECURSIVE routes (id, path) AS (SELECT id, CAST(1 AS CHAR(30)) FROM cte_g WHERE pr IS NULL UNION ALL SELECT t.id, CONCAT(routes.path, '-->', t.id) FROM cte_g JOIN routes ON routes.id = cte_g.pr) SELECT * FROM routes;",
+        "SELECT * FROM foo OPTION(materialize_ctes=\"OFF\");",
+        "WITH foo AS (SELECT WITH (materialize = off) * FROM titanic), bar AS (SELECT * FROM titanic) SELECT * FROM foo, bar;",
+        "WITH foo AS (SELECT * FROM t) SELECT * FROM foo, foo AS bar WHERE foo.a = 1 AND bar.b = 2;",
+        "WITH foo AS (SELECT * FROM t WHERE t.a = 1 OR t.b = 2) SELECT * FROM foo, foo AS bar WHERE foo.a = 1 AND bar.b = 2;",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/query-data/advanced-query-topics/read-query-results-in-parallel/"/>
+        "SELECT * FROM :: t1_result_table WHERE partition_id() = 1 and partition_row_id() < 4;",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/manage-data/local-and-unlimited-database-storage-concepts/"/>
+        "SELECT SUM(mv_columnstore_files.size) / (1024 * 1024 * 1024) AS dataSizeGB FROM mv_columnstore_files WHERE mv_columnstore_files.database_name = 'database_name';",
+        "SELECT COUNT(*) AS numSegments, SUM(mv_cached_blobs.size) / (1024 * 1024 * 1024) AS blobdataSizeGB FROM mv_cached_blobs WHERE mv_cached_blobs.database_name = 's2_dataset_tpch' AND type = 'primary';",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/manage-data/moving-data/moving-data-between-databases/"/>
+        "SELECT * FROM table_name_1 INTO OUTFILE '/home/username/file_name.csv' FIELDS TERMINATED BY ',' LINES TERMINATED BY '\\n';",
+        "SELECT * FROM table_name_1 INTO S3 bucket/target CONFIG configuration_json CREDENTIALS credentials_json;"
     };
 
     public static readonly string[] ValidQuery_Insert =
@@ -173,6 +232,21 @@ public sealed partial class SingleStoreParserTest
         "INSERT INTO t1 VALUES (1, 1, 0),(2, 2, 0),(3, 3, 0);",
         "INSERT INTO t2 VALUES (1, 11, 0),(2, 12, 0),(3, 13, 0);",
         "INSERT INTO lmt_exp VALUES(1, 'widget'), (2, 'lgr widget'), (3, 'xl widget');",
+
+        // <see href="https://docs.singlestore.com/db/v8.0/reference/sql-reference/data-types/geospatial-types/"/>
+        "INSERT INTO departments (id, name) VALUES (1, 'Marketing'), (2, 'Finance'), (3, 'Sales'), (4, 'Customer Service');",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/query-data/advanced-query-topics/performing-upserts/"/>
+        "INSERT INTO cust (name, id, orders) VALUES (\"Chris\",7214,2), (\"Adam\",3412,5), (\"Elen\",8301,4);",
+        "INSERT INTO cust (ID, ORDERS) VALUES (7214, 3) ON DUPLICATE KEY UPDATE ORDERS=3;",
+        "INSERT INTO cust (ID, ORDERS) VALUES (7214, 4) ON DUPLICATE KEY UPDATE ORDERS = VALUES(ORDERS) + ORDERS;",
+        "INSERT INTO cust (NAME, ID, ORDERS) SELECT * FROM cust_new ON DUPLICATE KEY UPDATE NAME = VALUES(NAME), ORDERS =  VALUES (ORDERS);",
+        "INSERT IGNORE INTO cust SELECT * FROM cust_new;",
+        "INSERT INTO product(name,id_1,id_2,quantity) VALUES ('red pen',2792,5,325) ON DUPLICATE KEY UPDATE quantity = 325;",
+        "INSERT INTO product(name,id_1,id_2,quantity) VALUES ('yellow paper',4624,7,125) ON DUPLICATE KEY UPDATE quantity = 125;",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/query-data/advanced-query-topics/read-query-results-in-parallel/"/>
+        "INSERT INTO t1 (colint, colchar, colst) SELECT * FROM :: t1_result_table;"
     };
 
     public static readonly string[] ValidQuery_Update =
@@ -196,6 +270,12 @@ public sealed partial class SingleStoreParserTest
         "UPDATE stock s INNER JOIN product p ON s.ID = p.ID SET s.P_ID = p.ID;",
         "UPDATE lmt_exp SET item_id=2 LIMIT 1;", // NOTE: LIMIT is used with an UPDATE query to limit the number of rows that will be updated. However, for UPDATE to work, it must run on a single partition; otherwise, it will result in an error.
         "UPDATE lmt_exp SET item_name='med widget' WHERE item_id = 2 LIMIT 1;",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/query-data/advanced-query-topics/performing-upserts/"/>
+        "UPDATE cust JOIN cust_new ON (cust_new.ID = cust.ID) SET cust.NAME = cust_new.NAME, cust.ORDERS = cust_new.ORDERS;",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/query-data/advanced-query-topics/row-locking/"/>
+        "UPDATE stock JOIN product ON stock.qty = 10 AND stock.id = product.id SET stock.qty = stock.qty + 1",
     };
 
     public static readonly string[] ValidQuery_Delete =
@@ -211,7 +291,8 @@ public sealed partial class SingleStoreParserTest
 
     public static readonly string[] ValidQuery_Set =
     {
-        "SET @query_vec = ('[9,0]'):> VECTOR(2) :> BLOB;"
+        "SET @query_vec = ('[9,0]'):> VECTOR(2) :> BLOB;",
+        // "SET CLUSTER character_set_server = 'utf8';",
     };
 
     public static readonly string[] ValidQuery_CreateView =
@@ -225,4 +306,36 @@ public sealed partial class SingleStoreParserTest
         "CREATE DEFINER=mason SCHEMA_BINDING=ON VIEW mason_view AS select * from mason_table;"
     };
     #endregion
+
+    public static readonly string[] ValidQuery_LoadData =
+    {
+        // <see href="https://docs.singlestore.com/db/v8.5/reference/sql-reference/user-defined-variables/select-into-user-defined-variable/"/>
+        "LOAD DATA INFILE '/tmp/data.csv' INTO TABLE allviews FIELDS TERMINATED BY ',' (State,Product,@Views) SET Views = @Views + 10;",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/manage-data/moving-data/moving-data-between-databases/"/>
+        "LOAD DATA INFILE '/home/username/file_name.csv' INTO TABLE table_name_2;",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/load-data/load-data-from-files/load-data-from-local-files/"/>
+        "LOAD DATA INFILE '/tmp/emp_data.csv' INTO TABLE employees FIELDS TERMINATED BY ',' ENCLOSED BY '\"';",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/load-data/load-data-from-files/load-data-from-avro-files/"/>
+        "LOAD DATA FS \"/path/to/files/data.avro\" INTO TABLE t FORMAT AVRO SCHEMA REGISTRY \"your_schema_registry_host_name_or_ip:your_schema_registry_port\" (id <- %::id, color <- %::color, input_record <- %);",
+        "LOAD DATA FS \"/path/to/files/data.avro\" INTO TABLE t FORMAT AVRO SCHEMA REGISTRY \"your_schema_registry_host_name_or_ip:your_schema_registry_port\" (id <- %::id, color <- %::color, price <- %::price DEFAULT NULL, input_record <- %);",
+        "LOAD DATA FS \"/path/to/files/data.avro\" INTO TABLE t FORMAT AVRO SCHEMA REGISTRY \"your_schema_registry_host_name_or_ip:your_schema_registry_port\" (id <- %::id, color <- %::color, price <- %::price, input_record <- %);",
+        "LOAD DATA FS \"/path/to/files/data.avro\" INTO TABLE t FORMAT AVRO SCHEMA REGISTRY \"\" (id <- %::id, color <- %::color, input_record <- %);",
+        "LOAD DATA FS \"/path/to/files/data.avro\" INTO TABLE t FORMAT AVRO SCHEMA REGISTRY \"\" (id <- %::id, color <- %::color, input_record <- %) CONFIG '{\"schema.registry.ssl.certificate.location\": \"/var/private/ssl/client_memsql_client.pem\", \"schema.registry.ssl.key.location\": \"/var/private/ssl/client_memsql_client.key\", \"schema.registry.ssl.ca.location\": \"/var/private/ssl/ca-cert.pem\"}' CREDENTIALS '{\"schema.registry.ssl.key.password\": \"abcdefgh\"}';",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/load-data/load-data-from-files/load-data-in-csv-format-from-amazon-s-3-using-a-pipeline/"/>
+        "LOAD DATA S3 's3://test-bucket/nautical_books.csv' CONFIG '{\"region\":\"us-west-2\"}' CREDENTIALS '{\"aws_access_key_id\": \"XXXXXXXXXXXXXXX\", \"aws_secret_access_key\": \"XXXXXXXXXXXXXXX\"}' INTO TABLE nautical_books;",
+        "LOAD DATA S3 's3://test-bucket/nautical_books.csv' CONFIG '{\"region\":\"us-west-2\"}' CREDENTIALS '{\"aws_access_key_id\": \"XXXXXXXXXX\", \"aws_secret_access_key\": \"XXXXXXXXXX\"}' INTO TABLE nautical_books FIELDS TERMINATED BY ',' ENCLOSED BY '\"' ESCAPED BY '\\\\' LINES TERMINATED BY '\\r\\n' STARTING BY '';",
+        "LOAD DATA S3 's3://test-bucket/nautical_books.csv' CONFIG '{\"region\":\"us-west-2\"}' CREDENTIALS '{\"aws_access_key_id\": \"XXXXXXXXXX\", \"aws_secret_access_key\": \"XXXXXXXXXX\"}' INTO TABLE nautical_books FIELDS TERMINATED BY ',' ENCLOSED BY '\"' ESCAPED BY '\\\\' LINES TERMINATED BY '\\r\\n' STARTING BY '' IGNORE 1 LINES;",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/load-data/load-data-from-files/load-data-in-json-format-from-amazon-s-3-using-a-wildcard/"/>
+        "LOAD DATA S3 '<bucket_name>/<folder_name>/*.json' CONFIG '{\"region\":\"us-west-2\"}' CREDENTIALS '{\"aws_access_key_id\": \"<xxxxxxxxxxxxxxx>\", \"aws_secret_access_key\": \"<xxxxxxxxxxxxxxx>\"}' BATCH_INTERVAL 2500 MAX_PARTITIONS_PER_BATCH 1 DISABLE OUT_OF_ORDER OPTIMIZATION DISABLE OFFSETS METADATA GC SKIP DUPLICATE KEY ERRORS INTO TABLE employees FORMAT JSON (`lastname` <- `lastname` default '', `firstname` <- `firstname` default '', `age` <- `age` default -1, `DOB` <- `DOB` default -1, `partner` <- `partner` default '', `hasChildren` <- `hasChildren` default '', `children` <- `children` default '');",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/load-data/load-data-from-files/load-data-from-parquet-files/"/>
+        "LOAD DATA INFILE '/tmp/assets.parquet' INTO TABLE assets (Product_ID <- Product_ID, Category <- Category, Model <- Model, Price <- Price, Employee_ID <- Employee_ID) FORMAT PARQUET;",
+        "LOAD DATA S3 '<bucket name>' CONFIG '{\"region\" : \"<region_name>\"}' CREDENTIALS '{\"aws_access_key_id\" : \"<key_id> \", \"aws_secret_access_key\": \"<access_key>\"}' INTO TABLE <table_name> (`<col_a>` <- %, `<col_b>` <- % DEFAULT NULL) FORMAT PARQUET;",
+        "LOAD DATA S3 's3://<path to file>/employee_data.parquet' CONFIG '{\"region\":\"us-west-2\"}' CREDENTIALS '{\"aws_access_key_id\": \"XXXXXXXXXX\", \"aws_secret_access_key\": \"XXXXXXXXXX\"}' INTO TABLE employees (`ID` <- ID, `Last_Name` <- Last_Name, `First_Name` <- First_Name, `Job_Title` <- Job_Title, `Department` <- Department, `City` <- City, `State` <- State, `Email` <- Email) FORMAT PARQUET;",
+    };
 }
