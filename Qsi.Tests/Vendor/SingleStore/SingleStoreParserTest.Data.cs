@@ -103,6 +103,65 @@ public sealed partial class SingleStoreParserTest
         "SELECT EUCLIDEAN_DISTANCE(JSON_ARRAY_PACK('[0.44, 0.554, 0.34, 0.62]'), vec) AS score FROM vectors_b ORDER BY score ASC;",
     };
 
+    public static readonly string[] ValidQuery_Insert =
+    {
+        // <see href="https://docs.singlestore.com/db/v8.5/reference/sql-reference/data-manipulation-language-dml/insert/"/>
+        "INSERT INTO db2.test2.t2 (col1, col2) SELECT col1, col2 FROM db1.test1.t1;",
+        "INSERT INTO t1 (col1, col2) VALUES ((SELECT col1 FROM t2 LIMIT 1), 1);",
+        "INSERT INTO mytbl (v) VALUES (\"hello\"), (\"goodbye\");",
+        "INSERT IGNORE mytbl2 VALUES(null);",
+        "INSERT INTO mytbl (column1, column2, column3) SELECT WITH(force_random_reshuffle=1) * FROM mytbl_new ON DUPLICATE KEY UPDATE column1 = VALUES(column1), column2 = VALUES(column2), column3 = VALUES(column3);",
+
+        // ON DUPLICATE KEY DELETE ~ is available after v8.5
+        "INSERT INTO viewing_stats VALUES(_program_id, _view_count) ON DUPLICATE KEY DELETE WHEN view_count + values(view_count) <= 0",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/reference/sql-reference/data-manipulation-language-dml/replace/"/>
+        "REPLACE INTO Emp(ID,Name,City) VALUES(10,\"Bill\",\"San Jose\");",
+        "REPLACE INTO Emp SET ID = 10, Name = \"Bill\", City = \"San Jose\";",
+        "REPLACE INTO Emp(ID,City) VALUES(10,\"San Jose\");",
+        "REPLACE INTO EmpTable(ID,Name,City) SELECT ID,EmpName,CityName FROM EmpCity WHERE ID = 20;",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/reference/sql-reference/data-manipulation-language-dml/update/"/>
+        "INSERT INTO t1 SELECT t1.* FROM t1 JOIN t2 ON t1.b = t2.b ON DUPLICATE KEY UPDATE t1.b = t1.b + 1",
+        "INSERT INTO t1 VALUES (1, 1, 0),(2, 2, 0),(3, 3, 0);",
+        "INSERT INTO t2 VALUES (1, 11, 0),(2, 12, 0),(3, 13, 0);",
+        "INSERT INTO lmt_exp VALUES(1, 'widget'), (2, 'lgr widget'), (3, 'xl widget');",
+    };
+
+    public static readonly string[] ValidQuery_Update =
+    {
+        // <see href="https://docs.singlestore.com/db/v8.5/reference/sql-reference/data-manipulation-language-dml/update/"/>
+        "UPDATE t1 JOIN t2 ON t1.b = t2.b SET t1.b = t1.b+1;",
+        "UPDATE a SET c1 = 0;",
+        "UPDATE a SET c1 = 0;",
+        "UPDATE a SET c1 = 0 WHERE c2 = 100;",
+        "UPDATE a, b SET a.v = b.v WHERE a.name = b.name;",
+        "UPDATE a LEFT JOIN b ON a.name = b.name SET a.v = b.v;",
+        "UPDATE looooooooong as a, b SET a.v = b.v WHERE a.name = b.name;",
+        "UPDATE a, b, c SET a.v = 0 WHERE a.x = b.x and b.y = c.y;",
+        "UPDATE a, b, c SET a.v = c.v WHERE a.x = b.x and b.y = c.y;",
+        "UPDATE b, a SET a.v = b.v WHERE a.name = b.name;",
+        "UPDATE dataset SET valid = false WHERE v = (SELECT MAX(v) FROM dataset);",
+        "UPDATE dataset SET valid = false WHERE name IN (SELECT * FROM invalid_names);",
+        "UPDATE dataset SET v = v - (SELECT MIN(v) FROM dataset);",
+        "UPDATE records a JOIN (SELECT name, COUNT(*) as count FROM samples GROUP BY name) b SET a.count = a.count + b.count WHERE a.name = b.name;",
+        "UPDATE t1 SET b = (SELECT b FROM t2 WHERE t1.a = t2.a), c = (SELECT c FROM t2 WHERE t1.a = t2.a) WHERE t1.a IN (SELECT t2.a FROM t2);",
+        "UPDATE stock s INNER JOIN product p ON s.ID = p.ID SET s.P_ID = p.ID;",
+        "UPDATE lmt_exp SET item_id=2 LIMIT 1;", // NOTE: LIMIT is used with an UPDATE query to limit the number of rows that will be updated. However, for UPDATE to work, it must run on a single partition; otherwise, it will result in an error.
+        "UPDATE lmt_exp SET item_name='med widget' WHERE item_id = 2 LIMIT 1;",
+    };
+
+    public static readonly string[] ValidQuery_Delete =
+    {
+        "DELETE FROM mytbl WHERE seq = 1;",
+        "DELETE FROM mytable LIMIT 100000;",
+        "DELETE FROM mytbl WHERE id IN (SELECT id FROM myother) LIMIT 10;",
+        "DELETE t_rec FROM t_rec JOIN t_invalid WHERE t_rec.id = t_invalid.id;",
+        "DELETE t_rec FROM t_rec JOIN (SELECT id FROM t_rec ORDER BY score LIMIT 10) temp WHERE t_rec.id = temp.id;",
+        "DELETE b FROM a, b, c WHERE a.name = b.name OR b.name = c.name;",
+        "DELETE x FROM looooooooooongName as x, y WHERE x.id = y.id;"
+    };
+
     public static readonly string[] ValidQuery_Set =
     {
         "SET @query_vec = ('[9,0]'):> VECTOR(2) :> BLOB;"
