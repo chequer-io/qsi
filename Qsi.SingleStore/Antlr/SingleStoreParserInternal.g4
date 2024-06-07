@@ -1368,7 +1368,7 @@ tableFactor: (
 ;
 
 withSampleRatioClause:
-    WITH_SYMBOL OPEN_PAR_SYMBOL SAMPLE_RATIO_SYMBOL EQUAL_OPERATOR numLiteral CLOSE_PAR_SYMBOL
+    WITH_SYMBOL exprWithParentheses
 ;
 
 singleTable:
