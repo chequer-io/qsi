@@ -2878,7 +2878,7 @@ orderList:
 ;
 
 orderExpression:
-    expr direction?
+    expr (USE_SYMBOL (INDEX_SYMBOL | KEY_SYMBOL) OPEN_PAR_SYMBOL columnRef? CLOSE_PAR_SYMBOL)? (SEARCH_OPTIONS_SYMBOL textStringLiteral)? direction?
 ;
 
 groupList:

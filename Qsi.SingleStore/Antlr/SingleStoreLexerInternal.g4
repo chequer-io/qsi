@@ -1105,6 +1105,7 @@ LINK_SYMBOL:                     L I N K;
 VECTOR_SYMBOL:                   V E C T O R;                                // vector(2), avaliable after v8.5
 GEOGRAPHYPOINT_SYMBOL:           G E O G R A P H Y P O I N T;
 GEOGRAPHY_SYMBOL:                G E O G R A P H Y;
+SEARCH_OPTIONS_SYMBOL:           S E A R C H '_' O P T I O N S;              // vector indexing, available after 8.5
 
 // $antlr-format groupedAlignments on, alignTrailers off, alignLexerCommands on
 
