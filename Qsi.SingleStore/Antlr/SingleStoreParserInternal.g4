@@ -844,7 +844,7 @@ deleteStatement:
                 whereClause? orderClause? simpleLimitClause?                     // Single table delete.
         )
         | tableAliasRefList FROM_SYMBOL tableReferenceList whereClause?          // Multi table variant 2.
-    )
+    ) optionClause?
 ;
 
 partitionDelete:
@@ -897,7 +897,7 @@ insertStatement:
         insertFromConstructor (valuesReference)?
         | SET_SYMBOL updateList (valuesReference)?
         | insertQueryExpression
-    ) insertUpdateList?
+    ) insertUpdateList? optionClause?
 ;
 
 insertLockOption:
@@ -987,7 +987,7 @@ replaceStatement:
 //----------------------------------------------------------------------------------------------------------------------
 
 selectStatement:
-    queryExpression lockingClauseList?
+    queryExpression lockingClauseList? optionClause?
     | queryExpressionParens
     | selectStatementWithInto
 ;
@@ -1028,7 +1028,7 @@ selectStatement:
 */
 selectStatementWithInto:
     OPEN_PAR_SYMBOL selectStatementWithInto CLOSE_PAR_SYMBOL
-    | queryExpression intoClause lockingClauseList?
+    | queryExpression intoClause lockingClauseList? optionClause?
     | lockingClauseList intoClause
 ;
 
@@ -1052,7 +1052,7 @@ queryExpressionBody:
 queryExpressionParens:
     OPEN_PAR_SYMBOL (
         queryExpressionParens
-        | queryExpression lockingClauseList?
+        | queryExpression lockingClauseList? optionClause?
     ) CLOSE_PAR_SYMBOL
 ;
 
@@ -1141,6 +1141,8 @@ withCompression:
     )?
 ;
 
+optionClause:
+    OPTION_SYMBOL exprWithParentheses
 ;
 
 procedureAnalyseClause:
@@ -1472,7 +1474,7 @@ indexListElement:
 
 updateStatement:
     (withClause)? UPDATE_SYMBOL LOW_PRIORITY_SYMBOL? IGNORE_SYMBOL? tableReferenceList SET_SYMBOL
-        updateList whereClause? orderClause? simpleLimitClause?
+        updateList whereClause? orderClause? simpleLimitClause? optionClause?
 ;
 
 //----------------------------------------------------------------------------------------------------------------------
