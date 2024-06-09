@@ -1373,7 +1373,7 @@ tableFactor: (
 ;
 
 singleTable:
-    tableRef usePartition? tableAlias? indexHintList?
+    JSON_SEPARATOR_SYMBOL? tableRef usePartition? tableAlias? indexHintList?
 ;
 
 singleTableParens:
