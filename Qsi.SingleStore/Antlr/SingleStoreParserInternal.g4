@@ -2503,7 +2503,7 @@ simpleExpr:
     | MATCH_SYMBOL identListArg AGAINST_SYMBOL OPEN_PAR_SYMBOL bitExpr fulltextOptions? CLOSE_PAR_SYMBOL # simpleExprMatch
     | BINARY_SYMBOL simpleExpr                                                                           # simpleExprBinary
     | CAST_SYMBOL OPEN_PAR_SYMBOL expr AS_SYMBOL castType arrayCast? CLOSE_PAR_SYMBOL                    # simpleExprCast
-    | simpleExpr (TYPECAST_OPERATOR | FORCEFUL_TYPECAST_OPERATOR) castType                               # simpleExprCastOperator
+    | simpleExpr (TYPECAST_OPERATOR | FORCEFUL_TYPECAST_OPERATOR) dataType                               # simpleExprCastOperator
     | CASE_SYMBOL expr? (whenExpression thenExpression)+ elseExpression? END_SYMBOL                      # simpleExprCase
     | CONVERT_SYMBOL OPEN_PAR_SYMBOL expr COMMA_SYMBOL castType CLOSE_PAR_SYMBOL                         # simpleExprConvert
     | CONVERT_SYMBOL OPEN_PAR_SYMBOL expr USING_SYMBOL charsetName CLOSE_PAR_SYMBOL                      # simpleExprConvertUsing
@@ -2807,10 +2807,6 @@ castType:
     | JSON_SYMBOL
     | realType
     | FLOAT_SYMBOL standardFloatOptions?
-    | VECTOR_SYMBOL fieldLength?
-    | blobType fieldLength?
-    | GEOGRAPHYPOINT_SYMBOL
-    | GEOGRAPHY_SYMBOL
 ;
 
 exprList:
@@ -3326,7 +3322,10 @@ dataType: // type in sql_yacc.yy
         | MULTILINESTRING_SYMBOL
         | POLYGON_SYMBOL
         | MULTIPOLYGON_SYMBOL
+        | GEOGRAPHY_SYMBOL
+        | GEOGRAPHYPOINT_SYMBOL
     )
+    | type = VECTOR_SYMBOL fieldLength?
 ;
 
 nchar:
