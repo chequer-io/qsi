@@ -1297,7 +1297,7 @@ lockedRowAction:
     | NOWAIT_SYMBOL
 ;
 
-selectItemList: (selectItem | MULT_OPERATOR) (COMMA_SYMBOL selectItem)*
+selectItemList: (selectItem | MULT_OPERATOR) (COMMA_SYMBOL (selectItem | MULT_OPERATOR))*
 ;
 
 selectItem:
