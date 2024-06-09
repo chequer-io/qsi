@@ -6,13 +6,14 @@ namespace Qsi.Tests.SingleStore;
 
 public sealed partial class SingleStoreParserTest
 {
+    [Timeout(1000)]
     [TestCaseSource(nameof(GetAllValidQueryTestCaseDatas))]
     public void Parse_ValidQuery_ShouldPass(string query)
     {
         var context = GetContext(query);
 
         if (context.simpleStatement().Length == 0)
-            Assert.Fail("Failed to ");
+            Assert.Fail();
 
         Assert.Pass();
     }
