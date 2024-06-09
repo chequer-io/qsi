@@ -88,11 +88,11 @@ public sealed partial class SingleStoreParserTest
 
         // <see href="https://docs.singlestore.com/db/v8.5/reference/sql-reference/vector-functions/vector-indexing/"/>
         // Vector indexing feature is available after v8.5
-        // "SELECT k, v, v <*> @query_vec AS score FROM vect ORDER BY score DESC LIMIT 1;",
-        // "SELECT k, v, v <*> '[9, 0]' AS score FROM vect ORDER BY score SEARCH_OPTIONS '{\"k\" : 30 }' DESC LIMIT 3;",
-        // "SELECT id, v, v <-> @qv AS score FROM ann_test ORDER BY score LIMIT 5;",
-        // "SELECT k, v <*> ('[9, 0]' :> vector(2)) AS score FROM vect ORDER BY score USE KEY (v) DESC LIMIT 2;",
-        // "SELECT k, v <*> ('[9, 0]' :> vector(2)) AS score FROM vect ORDER BY score USE KEY () DESC LIMIT 2;",
+        "SELECT k, v, v <*> @query_vec AS score FROM vect ORDER BY score DESC LIMIT 1;",
+        "SELECT k, v, v <*> '[9, 0]' AS score FROM vect ORDER BY score SEARCH_OPTIONS '{\"k\" : 30 }' DESC LIMIT 3;",
+        "SELECT id, v, v <-> @qv AS score FROM ann_test ORDER BY score LIMIT 5;",
+        "SELECT k, v <*> ('[9, 0]' :> vector(2)) AS score FROM vect ORDER BY score USE KEY (v) DESC LIMIT 2;",
+        "SELECT k, v <*> ('[9, 0]' :> vector(2)) AS score FROM vect ORDER BY score USE KEY () DESC LIMIT 2;",
 
         // <see href="https://docs.singlestore.com/db/v8.5/reference/sql-reference/vector-functions/dot-product/"/>
         "SELECT vec, vec <*> @query_vec AS score FROM vectors ORDER BY score DESC;",
@@ -207,7 +207,34 @@ public sealed partial class SingleStoreParserTest
 
         // <see href="https://docs.singlestore.com/db/v8.5/manage-data/moving-data/moving-data-between-databases/"/>
         "SELECT * FROM table_name_1 INTO OUTFILE '/home/username/file_name.csv' FIELDS TERMINATED BY ',' LINES TERMINATED BY '\\n';",
-        "SELECT * FROM table_name_1 INTO S3 bucket/target CONFIG configuration_json CREDENTIALS credentials_json;"
+        "SELECT * FROM table_name_1 INTO S3 'bucket/target' CONFIG 'configuration_json' CREDENTIALS 'credentials_json';",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/create-a-database/using-json/"/>
+        "SELECT * FROM assets WHERE properties::$license_plate = \"VGB116\";",
+        "SELECT * FROM assets ORDER BY properties::%weight;",
+        "SELECT * FROM json_empty_values_table ORDER BY a;",
+        "SELECT data::first, data::$first FROM TestJSON;",
+        "SELECT CONCAT(data::$first, ' ', data::$second) FROM TestJSON;",
+        "SELECT json, json::a::`2` FROM (SELECT '{\"a\":[1,2,3,4]}' AS json) sub;",
+        "SELECT json, json_extract_json(json, 'a', 1+1) FROM (SELECT '{\"a\":[1,2,3,4]}' AS json) sub;",
+        "WITH t AS(SELECT id, jsondata::city city , table_col AS sports_clubs FROM json_tab JOIN TABLE(JSON_TO_ARRAY(jsondata::sports_teams))), t1 AS(SELECT t.id, t.city, t.sports_clubs::sport_name sport, table_col AS clubs FROM t JOIN TABLE(JSON_TO_ARRAY(t.sports_clubs::teams))) SELECT t1.id, t1.city,t1.sport,t1.clubs::club_name club_name FROM t1;",
+        "WITH t AS (SELECT id, jsondata::city city , table_col AS sports_clubs FROM json_tab JOIN TABLE(JSON_TO_ARRAY(jsondata::sports_teams))), t1 AS (SELECT t.id, t.city, t.sports_clubs::sport_name sport, table_col AS clubs FROM t JOIN TABLE(JSON_TO_ARRAY(t.sports_clubs::teams))) SELECT t1.id, t1.city,t1.sport,t1.clubs::club_name club_name FROM t1 WHERE t1.clubs::club_name = 'Yankees';",
+        "SELECT ticker_symbol FROM stocks WHERE statistics::%`P/E` > 1.5;",
+        "SELECT ticker_symbol FROM stocks WHERE JSON_EXTRACT_DOUBLE(statistics, 'P/E') > 1.5;",
+        "SELECT t.table_col::$l_shipmode, sum(t.table_col::%l_quantity) as quantity FROM orders JOIN TABLE(JSON_TO_ARRAY(lineitems_json)) t GROUP BY t.table_col::$l_shipmode;",
+        "SELECT o_orderpriority as priority, sum(t.table_col::$l_quantity) as quantity FROM orders JOIN TABLE(JSON_TO_ARRAY(lineitems_json)) t GROUP BY o_orderpriority",
+        "SELECT t.table_col::$l_returnflag as r, t.table_col::$l_linestatus as s, sum(t.table_col::%l_quantity) as sum_qty, sum(t.table_col::%l_extendedprice) as sum_base_price, sum(t.table_col::%l_extendedprice * (1 - t.table_col::%l_discount)) as sum_disc_price, avg(t.table_col::%l_quantity) as avg_qty FROM orders JOIN TABLE(JSON_TO_ARRAY(lineitems_json)) t GROUP by r, s",
+        "SELECT '{\"a\":\"\\\\u00F9\"}' :> JSON;",
+        "SELECT * FROM sets WHERE sets.json_field::$x :> text collate utf8_bin = 'string1' AND sets.json_field::$y :> text collate utf8_general_ci = 'string2'",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/create-a-database/columnstore/encoded-data-in-columnstores/"/>
+        "SELECT table_name, COUNT(*) FROM r WHERE table_name LIKE '%COLUMN%' GROUP BY table_name;",
+        "SELECT d.category, COUNT(*) FROM r, d WHERE r.n = d.n AND d.category LIKE 'cat1%' GROUP BY d.category;",
+        "SELECT SUM(a) FROM t WITH (disable_ordered_scan=true) GROUP BY b;",
+        "SELECT SUM(t2.c) FROM (SELECT a, COUNT(*) AS c FROM t GROUP BY a) AS t2;",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/create-a-database/understanding-shard-key-selection/"/>
+        "SELECT DATABASE_NAME, TABLE_NAME, ORDINAL AS PARTITION_ID, ROWS, MEMORY_USE FROM INFORMATION_SCHEMA.TABLE_STATISTICS WHERE TABLE_NAME = 'people_1';"
     };
 
     public static readonly string[] ValidQuery_Insert =
@@ -246,7 +273,33 @@ public sealed partial class SingleStoreParserTest
         "INSERT INTO product(name,id_1,id_2,quantity) VALUES ('yellow paper',4624,7,125) ON DUPLICATE KEY UPDATE quantity = 125;",
 
         // <see href="https://docs.singlestore.com/db/v8.5/query-data/advanced-query-topics/read-query-results-in-parallel/"/>
-        "INSERT INTO t1 (colint, colchar, colst) SELECT * FROM :: t1_result_table;"
+        "INSERT INTO t1 (colint, colchar, colst) SELECT * FROM :: t1_result_table;",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/query-data/advanced-query-topics/with-common-table-expressions/"/>
+        // Queries below are self-made
+        "INSERT INTO actor VALUES (default, 'Mason', 'Oh', now()) OPTION(materialize_ctes=\"OFF\")",
+        "INSERT INTO actor VALUES (9, 'mason', 'oh', now()) ON DUPLICATE KEY UPDATE actor_id = actor_id + 1 OPTION(materialize_ctes='off');",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/create-a-database/using-json/"/>
+        "INSERT INTO test_table(col_a,col_b) VALUES ('hello','{\"x\":\"goodbye\",\"y\":\"goodnight\"}');",
+        "INSERT INTO json_empty_values_table VALUES (1, '{\"v\":null}');",
+        "INSERT INTO json_empty_values_table VALUES (2, '{\"w\":[]}');",
+        "INSERT INTO json_empty_values_table VALUES (3, '{\"x\":\"foo\",\"y\":null,\"z\":[]}');",
+        "INSERT INTO json_empty_values_table VALUES (4, 'null');",
+        "INSERT INTO json_empty_values_table VALUES (5, '[]');",
+        "INSERT INTO TestJSON VALUES ('{\"first\":\"hello\"}');",
+        "INSERT INTO TestJSON VALUES ('{\"first\":\"hello\", \"second\":\"world\"}');",
+        "INSERT INTO json_tab VALUES ( 8765 ,' {\"city\":\"SFO\",\"sports_teams\":[{\"sport_name\":\"football\",\"teams\":  [{\"club_name\":\"Raiders\"},{\"club_name\":\"49ers\"}]},{\"sport_name\":\"baseball\",\"teams\" : [{\"club_name\":\"As\"},{\"club_name\":\"SF Giants\"}]}]}') ;",
+        "INSERT INTO json_tab VALUES ( 9876,'{\"city\":\"NY\",\"sports_teams\" : [{ \"sport_name\":\"football\",\"teams\" : [{ \"club_name\":\"Jets\"},{\"club_name\":\"Giants\"}]},{\"sport_name\":\"baseball\",\"teams\" : [ {\"club_name\":\"Mets\"},{\"club_name\":\"Yankees\"}]},{\"sport_name\":\"basketball\",\"teams\" : [{\"club_name\":\"Nets\"},{\"club_name\":\"Knicks\"}]}]}');",
+        "INSERT INTO test_json VALUES ('{\"addParams\": \"{\\\"Emp_Id\\\":\\\"1487\\\", \\\"Emp_LastName\\\":\\\"Stephens\\\",\\\"Emp_FirstName\\\":\\\"Mark\\\",\\\"Dept\\\":\\\"Support\\\"}\"}');",
+        "INSERT INTO orders2 SELECT * FROM orders;",
+        "INSERT INTO new_table SELECT l_orderkey, JSON_AGG( JSON_BUILD_OBJECT( 'l_partkey', l_partkey, 'l_suppkey', l_suppkey, 'l_linenumber', l_linenumber, 'l_quantity', l_quantity, 'l_extendedprice', l_extendedprice, 'l_discount', l_discount, 'l_tax', l_tax, 'l_returnflag', l_returnflag, 'l_linestatus', l_linestatus, 'l_shipdate', l_shipdate, 'l_commitdate', l_commitdate, 'l_receiptdate', l_receiptdate, 'l_shipinstruct', l_shipinstruct, 'l_shipmode', l_shipmode, 'l_comment', l_comment ) ) as lineitems FROM lineitem GROUP BY l_orderkey;",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/create-a-database/understanding-shard-key-selection/"/>
+        "INSERT INTO people_1 (id, user, first, last) SELECT WITH(force_random_reshuffle=1) * FROM people;",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/create-a-database/understanding-how-datatype-can-affect-performance/"/>
+        "INSERT INTO tmp_dates (date_str) SELECT * FROM dates WHERE date_int <> CONVERT(CONVERT(date_str, DATE) + 1, SIGNED INT);"
     };
 
     public static readonly string[] ValidQuery_Update =
@@ -276,23 +329,45 @@ public sealed partial class SingleStoreParserTest
 
         // <see href="https://docs.singlestore.com/db/v8.5/query-data/advanced-query-topics/row-locking/"/>
         "UPDATE stock JOIN product ON stock.qty = 10 AND stock.id = product.id SET stock.qty = stock.qty + 1",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/query-data/advanced-query-topics/with-common-table-expressions/"/>
+        // Queries below are self-made
+        "UPDATE actor SET first_name = 'Mason' WHERE actor_id < 30 OPTION(materialize_ctes=\"AUTO\")",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/create-a-database/using-json/"/>
+        "UPDATE users SET userdata::name::first = 'Alex';",
+        "UPDATE users SET userdata = JSON_SET_STRING(userdata, 'name', 'first', 'Alex');",
+        "UPDATE orders o JOIN new_table t ON o.o_orderkey = t.l_orderkey SET o.lineitems_json = t.lineitems;",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/create-a-database/columnstore/locking-in-columnstores/"/>
+        "UPDATE app_errors SET error_code = 'ERR-2000' WHERE app_name = 'App1' OPTION (columnstore_table_lock_threshold = 4000);"
     };
 
     public static readonly string[] ValidQuery_Delete =
     {
+        // <see href="https://docs.singlestore.com/db/v8.0/reference/sql-reference/data-manipulation-language-dml/delete/"/>
         "DELETE FROM mytbl WHERE seq = 1;",
         "DELETE FROM mytable LIMIT 100000;",
         "DELETE FROM mytbl WHERE id IN (SELECT id FROM myother) LIMIT 10;",
         "DELETE t_rec FROM t_rec JOIN t_invalid WHERE t_rec.id = t_invalid.id;",
         "DELETE t_rec FROM t_rec JOIN (SELECT id FROM t_rec ORDER BY score LIMIT 10) temp WHERE t_rec.id = temp.id;",
         "DELETE b FROM a, b, c WHERE a.name = b.name OR b.name = c.name;",
-        "DELETE x FROM looooooooooongName as x, y WHERE x.id = y.id;"
+        "DELETE x FROM looooooooooongName as x, y WHERE x.id = y.id;",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/query-data/advanced-query-topics/with-common-table-expressions/"/>
+        // Queries below are self-made
+        "DELETE FROM actor WHERE actor_id < 3 OPTION(materialize_ctes=\"ON\")",
+
+        // <see href="https://docs.singlestore.com/db/v8.5/create-a-database/understanding-how-datatype-can-affect-performance/"/>
+        "DELETE FROM dates WHERE date_int <> CONVERT(CONVERT(date_str, DATE) + 1, SIGNED INT);"
     };
 
     public static readonly string[] ValidQuery_Set =
     {
         "SET @query_vec = ('[9,0]'):> VECTOR(2) :> BLOB;",
         // "SET CLUSTER character_set_server = 'utf8';",
+        "SET GLOBAL use_seekable_json = OFF;",
+        "SET GLOBAL use_seekable_json = ON"
     };
 
     public static readonly string[] ValidQuery_CreateView =
@@ -301,7 +376,7 @@ public sealed partial class SingleStoreParserTest
         "CREATE VIEW person_view AS SELECT first_name, last_name FROM table_name WHERE user_id = 'real_person';",
         "CREATE VIEW active_items_view AS SELECT name FROM items WHERE status = 'active';",
         "CREATE VIEW discounted_items_view AS SELECT name FROM active_items_view WHERE discount = 1;",
-        "CREATE VIEW customer_orders AS SELECT o.id, c.last_name, c.first_name\nFROM orders_db.orders o, customers_db.customers c WHERE o.customer_id = c.id;",
+        "CREATE VIEW customer_orders AS SELECT o.id, c.last_name, c.first_name FROM orders_db.orders o, customers_db.customers c WHERE o.customer_id = c.id;",
         // Queries below are self-made
         "CREATE DEFINER=mason SCHEMA_BINDING=ON VIEW mason_view AS select * from mason_table;"
     };
