@@ -1141,9 +1141,6 @@ withCompression:
     )?
 ;
 
-formatOptionsClause:
-    fieldsClause? linesClause?
-    | FORMAT_SYMBOL PARQUET_SYMBOL   
 ;
 
 procedureAnalyseClause:
