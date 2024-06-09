@@ -151,8 +151,9 @@ CLOSE_BRACKET_SYMBOL: ']';
 // ** Patch by QSI
 //UNDERLINE_SYMBOL:   '_';
 
-JSON_SEPARATOR_SYMBOL:          '->';  // MYSQL
-JSON_UNQUOTED_SEPARATOR_SYMBOL: '->>'; // MYSQL
+JSON_SEPARATOR_SYMBOL:          '::';
+JSON_UNQUOTED_SEPARATOR_SYMBOL: '::$';
+JSON_DOUBLE_SEPARATOR_SYMBOL: '::%';
 
 // The MySQL server parser uses custom code in its lexer to allow base alphanum chars (and ._$) as variable name.
 // For this it handles user variables in 2 different ways and we have to model this to match that behavior.

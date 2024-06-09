@@ -2485,7 +2485,7 @@ bitExpr:
 
 simpleExpr:
     variable (equal expr)?                                                                               # simpleExprVariable
-    | columnRef jsonOperator?                                                                            # simpleExprColumnRef
+    | columnRef jsonOperator*                                                                            # simpleExprColumnRef
     | runtimeFunctionCall                                                                                # simpleExprRuntimeFunction
     | functionCall                                                                                       # simpleExprFunction
     | simpleExpr COLLATE_SYMBOL textOrIdentifier                                                         # simpleExprCollate
@@ -2519,8 +2519,9 @@ arrayCast:
 ;
 
 jsonOperator:
-    JSON_SEPARATOR_SYMBOL textStringLiteral
-    | JSON_UNQUOTED_SEPARATOR_SYMBOL textStringLiteral
+    JSON_SEPARATOR_SYMBOL identifier
+    | JSON_UNQUOTED_SEPARATOR_SYMBOL identifier
+    | JSON_DOUBLE_SEPARATOR_SYMBOL identifier
 ;
 
 sumExpr:
@@ -3574,8 +3575,10 @@ updateList:
     updateElement (COMMA_SYMBOL updateElement)*
 ;
 
+// NOTE From QSI: SingleStore는 JSON element 단위로 업데이트를 지원합니다.
+//                따라서, 향후 QsiDataUpdateActionNode를 상속하여 JSON에 대한 데이터를 가질 수 있도록 하는 것이 좋아보입니다.
 updateElement:
-    columnRef EQUAL_OPERATOR (expr | DEFAULT_SYMBOL)
+    columnRef jsonOperator* EQUAL_OPERATOR (expr | DEFAULT_SYMBOL)
 ;
 
 charsetClause:

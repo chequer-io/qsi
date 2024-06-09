@@ -501,19 +501,36 @@ internal static class ExpressionVisitor
             SingleStoreTree.PutContextSpan(n, context.columnRef());
         });
 
-        if (context.jsonOperator() == null)
+        if (context.jsonOperator() is not { } jsonOperators)
             return columnNode;
 
-        return TreeHelper.Create<QsiBinaryExpressionNode>(n =>
+        var jsonNode = new QsiBinaryExpressionNode();
+        jsonNode.Left.SetValue(columnNode);
+
+        var currentNode = jsonNode;
+
+        for (var i = 0; i < jsonOperators.Length; i++)
         {
-            var jsonOperator = context.jsonOperator();
+            var jsonOperator = jsonOperators[i];
+            currentNode.Operator = jsonOperator.children[0].GetText();
 
-            n.Left.SetValue(columnNode);
-            n.Operator = jsonOperator.children[0].GetText();
-            n.Right.SetValue(VisitTextStringLiteral(jsonOperator.textStringLiteral()));
+            var literal = TreeHelper.CreateLiteral(jsonOperator.identifier().GetText());
 
-            SingleStoreTree.PutContextSpan(n, context);
-        });
+            if (i == jsonOperators.Length - 1)
+            {
+                currentNode.Right.SetValue(literal);
+                break;
+            }
+
+            var node = new QsiBinaryExpressionNode();
+            node.Left.SetValue(literal);
+            node.Operator = jsonOperator.children[0].GetText();
+
+            currentNode.Right.SetValue(node);
+            currentNode = node;
+        }
+
+        return jsonNode;
     }
 
     public static QsiColumnReferenceNode VisitColumnRef(ColumnRefContext context)
