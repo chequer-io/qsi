@@ -893,7 +893,7 @@ handlerReadOrScan:
 //----------------------------------------------------------------------------------------------------------------------
 
 insertStatement:
-    INSERT_SYMBOL insertLockOption? IGNORE_SYMBOL? INTO_SYMBOL? tableRef usePartition? (
+    (withClause)? INSERT_SYMBOL insertLockOption? IGNORE_SYMBOL? INTO_SYMBOL? tableRef usePartition? (
         insertFromConstructor (valuesReference)?
         | SET_SYMBOL updateList (valuesReference)?
         | insertQueryExpression
