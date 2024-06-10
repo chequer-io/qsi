@@ -21,6 +21,8 @@ public class QsiDataManipulationResult : IQsiAnalysisResult
     public QsiDataRowCollection DeleteRows { get; set; }
 
     public ICollection<QsiTableStructure> TablesInRows { get; set; } = Array.Empty<QsiTableStructure>();
+    
+    public QsiIdentifier FileValue { get; set; }
 
     public QsiSensitiveDataCollection SensitiveDataCollection { get; } = new();
 }

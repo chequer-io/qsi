@@ -489,6 +489,10 @@ public class QsiActionAnalyzer : QsiAnalyzerBase
         {
             ProcessSetValues(dataContext, action.SetValues);
         }
+        else if (action.FileValue is not null)
+        {
+            ProcessFileValues(dataContext, action.FileValue);
+        }
         else
         {
             throw new QsiException(QsiError.Syntax);
@@ -506,7 +510,8 @@ public class QsiActionAnalyzer : QsiAnalyzerBase
                 AffectedColumns = GetAffectedColumns(t),
                 InsertRows = t.InsertRows.ToNullIfEmpty(),
                 DuplicateRows = t.DuplicateRows.ToNullIfEmpty(),
-                TablesInRows = dataContext.TableStructureCache.Get(t)
+                TablesInRows = dataContext.TableStructureCache.Get(t),
+                FileValue = action.FileValue
             })
             .ToArray<IQsiAnalysisResult>();
     }
@@ -738,6 +743,15 @@ public class QsiActionAnalyzer : QsiAnalyzerBase
             var declaredColumnTarget = (SetColumnTarget)pivot.DeclaredColumnTarget;
             return declaredColumnTarget.ValueNode;
         });
+    }
+
+    private void ProcessFileValues(TableDataInsertContext context, QsiIdentifier fileValue)
+    {
+        // Does not support FileValues DML Snapshot
+        foreach (var target in context.Targets)
+        {
+            context.TableStructureCache.AddRange(target, Enumerable.Empty<QsiTableStructure>());
+        }
     }
 
     // TODO: action.Target, action.Condition

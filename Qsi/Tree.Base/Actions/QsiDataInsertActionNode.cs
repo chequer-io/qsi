@@ -20,6 +20,8 @@ public class QsiDataInsertActionNode : QsiActionNode, IQsiDataInsertActionNode
     public QsiTreeNodeList<QsiSetColumnExpressionNode> SetValues { get; }
 
     public QsiTreeNodeProperty<QsiTableNode> ValueTable { get; }
+    
+    public QsiIdentifier FileValue { get; set; }
 
     public QsiDataConflictBehavior ConflictBehavior { get; set; }
 

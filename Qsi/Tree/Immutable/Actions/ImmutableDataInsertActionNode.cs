@@ -22,6 +22,8 @@ public readonly struct ImmutableDataInsertActionNode : IQsiDataInsertActionNode
 
     public IQsiSetColumnExpressionNode[] SetValues { get; }
 
+    public QsiIdentifier FileValue { get; }
+
     public IQsiTableNode ValueTable { get; }
 
     public QsiDataConflictBehavior ConflictBehavior { get; }
@@ -44,6 +46,7 @@ public readonly struct ImmutableDataInsertActionNode : IQsiDataInsertActionNode
         QsiQualifiedIdentifier[] columns,
         IQsiRowValueExpressionNode[] values,
         IQsiSetColumnExpressionNode[] setValues,
+        QsiIdentifier fileValue,
         IQsiTableNode valueTable,
         QsiDataConflictBehavior conflictBehavior,
         IQsiDataConflictActionNode conflictAction,
@@ -56,6 +59,7 @@ public readonly struct ImmutableDataInsertActionNode : IQsiDataInsertActionNode
         Columns = columns;
         Values = values;
         SetValues = setValues;
+        FileValue = fileValue;
         ValueTable = valueTable;
         ConflictBehavior = conflictBehavior;
         ConflictAction = conflictAction;

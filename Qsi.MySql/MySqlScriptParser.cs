@@ -35,6 +35,9 @@ public class MySqlScriptParser : CommonScriptParser
     private const string SET = "SET";
     private const string STATEMENT = "STATEMENT";
     private const string FOR = "FOR";
+    private const string LOAD = "LOAD";
+    private const string DATA = "DATA";
+    private const string XML = "XML";
 
     private readonly Regex _delimiterPattern = new(@"\G\S+(?=\s|$)");
 
@@ -467,6 +470,8 @@ public class MySqlScriptParser : CommonScriptParser
             >= 1 when StartsWith(cursor, leadingTokens, DESC) => QsiScriptType.Describe,
             >= 2 when StartsWith(cursor, leadingTokens, DEALLOCATE, PREPARE) => QsiScriptType.DropPrepare,
             >= 2 when StartsWith(cursor, leadingTokens, SET, STATEMENT) => GetSetStatementType(cursor, tokens),
+            >= 2 when StartsWith(cursor, leadingTokens, LOAD, DATA) => QsiScriptType.Insert,
+            >= 2 when StartsWith(cursor, leadingTokens, LOAD, XML) => QsiScriptType.Insert,
             _ => base.GetSuitableType(cursor, tokens, leadingTokens)
         };
     }
