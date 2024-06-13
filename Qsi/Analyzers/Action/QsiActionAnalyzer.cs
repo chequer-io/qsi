@@ -806,6 +806,7 @@ public class QsiActionAnalyzer : QsiAnalyzerBase
         foreach (var target in context.Targets)
         {
             IEnumerable<QsiTableStructure> tables = target.DataPivots
+                .Where(pivot => pivot.SourceColumn is not null)
                 .Select(expressionSelector)
                 .SelectMany(CollectSubqueries)
                 .Select(n =>
