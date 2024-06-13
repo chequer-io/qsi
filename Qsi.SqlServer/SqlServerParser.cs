@@ -156,6 +156,9 @@ public sealed class SqlServerParser : IQsiTreeParser, IVisitorContext
                 case ViewStatementBody viewStatementBody:
                     return _definitionVisitor.VisitViewStatementBody(viewStatementBody);
 
+                case SetVariableStatement setVariableStatement:
+                    return _actionVisitor.VisitSetVariableStatement(setVariableStatement);
+
                 default:
                     return _tableVisitor.Visit(statement);
             }

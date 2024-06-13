@@ -396,4 +396,55 @@ internal sealed class ActionVisitor : VisitorBase
         });
     }
     #endregion
+
+    #region Set Varaible
+    public QsiVariableSetActionNode VisitSetVariableStatement(SetVariableStatement setVariableStatement)
+    {
+        var node = new QsiVariableSetActionNode();
+
+        var setItem = new QsiVariableSetItemNode
+        {
+            Name = IdentifierVisitor.VisitVariableReference(setVariableStatement.Variable)[0]
+        };
+
+        if (setVariableStatement.Expression is not null)
+            setItem.Expression.Value = ExpressionVisitor.VisitScalarExpression(setVariableStatement.Expression);
+
+        SqlServerTree.PutFragmentSpan(node, setVariableStatement);
+        return node;
+    }
+    #endregion
+
+    #region Select (Set Variable)
+    public SqlServerVariableSetActionNode VisitSelectVariableStatement(QuerySpecification specification)
+    {
+        var node = new SqlServerVariableSetActionNode();
+
+        if (specification.FromClause is not null)
+            node.Source.Value = TableVisitor.VisitFromClause(specification.FromClause);
+
+        foreach (var setVariable in specification.SelectElements.OfType<SelectSetVariable>())
+            node.SetItems.Add(VisitSelectSetVaraible(setVariable));
+
+        SqlServerTree.PutFragmentSpan(node, specification);
+
+        return node;
+    }
+
+    public QsiVariableSetItemNode VisitSelectSetVaraible(SelectSetVariable selectSetVariable)
+    {
+        var node = new QsiVariableSetItemNode
+        {
+            Name = IdentifierVisitor.VisitVariableReference(selectSetVariable.Variable)[0],
+            Expression =
+            {
+                Value = ExpressionVisitor.VisitScalarExpression(selectSetVariable.Expression)
+            }
+        };
+
+        SqlServerTree.PutFragmentSpan(node, selectSetVariable);
+
+        return node;
+    }
+    #endregion
 }

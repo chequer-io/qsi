@@ -39,7 +39,7 @@ internal sealed partial class SqlServerRawTreeVisitor : TSqlFragmentVisitor
         visitor(fragment);
         _stack.Pop();
 
-        if (current.ChildrenCount == 0)
+        if (current.ChildrenCount == 0 && fragment.FragmentLength != -1)
         {
             var builder = new StringBuilder();
 
