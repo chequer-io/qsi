@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Microsoft.SqlServer.TransactSql.ScriptDom;
 using Qsi.Tree;
