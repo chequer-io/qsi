@@ -138,7 +138,7 @@ WHERE relname = '{identifier[^1]}'";
     {
         return type switch
         {
-            QsiObjectType.Function => new QsiFunctionList(LookupFunction(identifier)),
+            QsiObjectType.Function => new QsiFunctionOverloadSet(LookupFunction(identifier)),
             _ => null
         };
     }
@@ -171,7 +171,19 @@ WHERE relname = '{identifier[^1]}'";
             if (!defReader.Read())
                 continue;
 
-            yield return new QsiFunctionObject(identifier, defReader.GetString(0), argsCount, defaultArgsCount);
+            var func = new QsiFunctionObject
+            {
+                Identifier = identifier,
+                Definition = defReader.GetString(0),
+            };
+
+            for (int i = 0; i < argsCount - defaultArgsCount; i++)
+                func.NewInParameter();
+
+            for (int i = 0; i < defaultArgsCount; i++)
+                func.NewInParameter().IsDefault = true;
+
+            yield return func;
         }
     }
 

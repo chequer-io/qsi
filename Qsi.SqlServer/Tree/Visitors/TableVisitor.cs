@@ -768,10 +768,40 @@ internal sealed class TableVisitor : VisitorBase
         throw TreeHelper.NotSupportedFeature("Remote table");
     }
 
-    // CHANGETABLE Function
-    public QsiTableNode VisitSchemaObjectFunctionTableReference(SchemaObjectFunctionTableReference schemaObjectFunctionTableReference)
+    public QsiTableNode VisitSchemaObjectFunctionTableReference(SchemaObjectFunctionTableReference schemaObjFunction)
     {
-        throw TreeHelper.NotSupportedFeature("Table function");
+        var node = new QsiTableFunctionNode
+        {
+            Member =
+            {
+                Value = new QsiFunctionExpressionNode
+                {
+                    Identifier = IdentifierVisitor.CreateQualifiedIdentifier(schemaObjFunction.SchemaObject.Identifiers)
+                }
+            },
+            Parameters = { schemaObjFunction.Parameters.Select(ExpressionVisitor.VisitScalarExpression) }
+        };
+
+        SqlServerTree.PutFragmentSpan(node, schemaObjFunction);
+
+        if (schemaObjFunction.Alias is { } alias)
+        {
+            var aliasNode = CreateAliasNode(alias);
+            SqlServerTree.PutFragmentSpan(aliasNode, alias);
+
+            var derivedTable = new QsiDerivedTableNode
+            {
+                Columns = { Value = TreeHelper.CreateAllColumnsDeclaration() },
+                Source = { Value = node },
+                Alias = { Value = aliasNode }
+            };
+
+            SqlServerTree.PutFragmentSpan(derivedTable, schemaObjFunction);
+
+            return derivedTable;
+        }
+
+        return node;
     }
 
     // CHANGETABLE Function

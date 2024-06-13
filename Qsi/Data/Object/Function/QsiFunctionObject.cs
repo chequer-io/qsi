@@ -1,24 +1,48 @@
+using System.Collections.Generic;
+using System.Linq;
+
 namespace Qsi.Data.Object.Function;
 
 public class QsiFunctionObject : QsiObject
 {
+    private readonly QsiFunctionParameterCollection _inParameters;
+    private readonly QsiFunctionParameterCollection _outParameters;
+
+    public IList<QsiFunctionParameter> InParameters => _inParameters;
+
+    public IList<QsiFunctionParameter> OutParameters => _outParameters;
+
     public override QsiObjectType Type => QsiObjectType.Function;
 
-    public string Definition { get; }
+    public bool HasDefinition => !string.IsNullOrEmpty(Definition);
 
-    public int ArgumentsCount { get; }
+    public string Definition { get; set; }
 
-    public int DefaultArgumentsCount { get; }
+    public int InParametersCount => InParameters.Count;
 
-    public QsiFunctionObject(QsiQualifiedIdentifier identifier, string definition, int argumentsCount) : base(identifier)
+    public int InDefaultParametersCount => InParameters.Count(p => p.IsDefault);
+
+    public int OutParametersCount => OutParameters.Count;
+
+    public QsiFunctionObject()
     {
-        Definition = definition;
-        ArgumentsCount = argumentsCount;
+        _inParameters = new QsiFunctionParameterCollection(this);
+        _outParameters = new QsiFunctionParameterCollection(this);
     }
 
-    public QsiFunctionObject(QsiQualifiedIdentifier identifier, string definition, int argumentsCount, int defaultArgumentsCount)
-        : this(identifier, definition, argumentsCount)
+    public QsiFunctionParameter NewInParameter()
     {
-        DefaultArgumentsCount = defaultArgumentsCount;
+        var column = new QsiFunctionParameter();
+        _inParameters.Add(column);
+
+        return column;
+    }
+
+    public QsiFunctionParameter NewOutParameter()
+    {
+        var column = new QsiFunctionParameter();
+        _outParameters.Add(column);
+
+        return column;
     }
 }

@@ -7,6 +7,7 @@ using Qsi.Analyzers.Context;
 using Qsi.Analyzers.Table.Context;
 using Qsi.Data;
 using Qsi.Data.Object;
+using Qsi.Data.Object.Function;
 using Qsi.Engines;
 using Qsi.Extensions;
 using Qsi.Shared.Extensions;
@@ -1120,6 +1121,27 @@ public class QsiTableAnalyzer : QsiAnalyzerBase
     {
         context.ThrowIfCancellationRequested();
         return context.GetAllSourceTables().Where(x => Match(context, x, identifier));
+    }
+    #endregion
+
+    #region Function Lookup
+    protected virtual IEnumerable<QsiFunctionObject> LookupFunctions(TableCompileContext context, QsiQualifiedIdentifier identifier)
+    {
+        var provider = context.Engine.RepositoryProvider;
+        var funcIdentifier = ResolveQualifiedIdentifier(context, identifier);
+        var func = provider.LookupObject(funcIdentifier, QsiObjectType.Function);
+
+        switch (func)
+        {
+            case QsiFunctionOverloadSet funcList:
+                return funcList.Functions;
+
+            case QsiFunctionObject funcObj:
+                return new[] { funcObj };
+
+            default:
+                return Enumerable.Empty<QsiFunctionObject>();
+        }
     }
     #endregion
 
