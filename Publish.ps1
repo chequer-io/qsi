@@ -57,7 +57,8 @@ $Tasks =
 [Task]::new("Qsi.Impala", $true),
 [Task]::new("Qsi.Trino", $true),
 [Task]::new("Qsi.Athena", $true),
-[Task]::new("Qsi.Redshift", $false)
+[Task]::new("Qsi.Redshift", $false),
+[Task]::new("Qsi.SingleStore", $true)
 
 Function DotNet-Pack {
     Param (
