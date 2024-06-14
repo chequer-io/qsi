@@ -70,6 +70,9 @@ public sealed class MySqlParser : IQsiTreeParser
             case SetStatementContext setStatement:
                 return ActionVisitor.VisitSetStatement(setStatement);
 
+            case LoadStatementContext loadStatementContext:
+                return ActionVisitor.VisitLoadStatement(loadStatementContext);
+            
             default:
                 throw TreeHelper.NotSupportedTree(tree);
         }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Qsi.Data;
+using Qsi.MySql.Data;
 using Qsi.MySql.Tree.Common;
 using Qsi.Shared.Extensions;
 using Qsi.Tree;
@@ -492,6 +493,51 @@ internal static class ActionVisitor
         {
             throw TreeHelper.NotSupportedTree(context);
         }
+    }
+
+    public static QsiDataInsertActionNode VisitLoadStatement(LoadStatementContext context)
+    {
+        var node = new QsiDataInsertActionNode();
+        var filePathLiteral = ExpressionVisitor.VisitTextLiteral(context.textLiteral());  
+        
+        node.FileValue = new QsiIdentifier(filePathLiteral.Value.ToString(), false);
+
+        QsiDataConflictBehavior conflictBehavior;
+        
+        if (context.HasToken(IGNORE_SYMBOL))
+            conflictBehavior = QsiDataConflictBehavior.Ignore;
+        else if (context.HasToken(REPLACE_SYMBOL))
+            conflictBehavior = QsiDataConflictBehavior.Update;
+        else
+            conflictBehavior = QsiDataConflictBehavior.None;
+        
+        node.ConflictBehavior = conflictBehavior;
+
+        node.Target.SetValue(TableVisitor.VisitTableRef(new CommonTableRefContext(context.tableRef(), context.usePartition())));
+
+        var tail = context.loadDataFileTail();
+
+        if (tail.loadDataFileTargetList() is {} targetListContext && targetListContext.fieldOrVariableList() is {} fieldOrVariableListContext)
+        {
+            node.Columns = fieldOrVariableListContext
+                .columnRef()
+                .Select(ExpressionVisitor.VisitColumnRef)
+                .Select(columnRef => columnRef.Name)
+                .ToArray();
+        }
+
+        if (tail.updateList() is {} updateListContext)
+        {
+            var conflictActionNode = new QsiDataConflictActionNode();
+            conflictActionNode.SetValues.AddRange(ExpressionVisitor.VisitUpdateList(updateListContext));
+            MySqlTree.PutContextSpan(conflictActionNode, updateListContext);
+            
+            node.ConflictAction.SetValue(conflictActionNode);
+        }
+
+        MySqlTree.PutContextSpan(node, context);
+
+        return node;
     }
 
     private static string GetUsername(UserContext context)

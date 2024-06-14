@@ -17,6 +17,8 @@ public interface IQsiDataInsertActionNode : IQsiActionNode
     IQsiSetColumnExpressionNode[] SetValues { get; }
 
     IQsiTableNode ValueTable { get; }
+    
+    QsiIdentifier FileValue { get; }
 
     QsiDataConflictBehavior ConflictBehavior { get; }
 

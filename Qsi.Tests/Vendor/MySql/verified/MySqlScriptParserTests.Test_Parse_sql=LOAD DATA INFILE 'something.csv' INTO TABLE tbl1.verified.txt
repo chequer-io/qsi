@@ -1,0 +1,15 @@
+﻿[
+  {
+    Script: LOAD DATA INFILE 'something.csv' INTO TABLE tbl1,
+    ScriptType: Insert,
+    Start: {
+      Line: 1,
+      Column: 1
+    },
+    End: {
+      Line: 1,
+      Column: 49,
+      Index: 47
+    }
+  }
+]

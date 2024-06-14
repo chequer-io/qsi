@@ -189,6 +189,7 @@ public static class NodeExtension
             node.Columns,
             node.Values,
             node.SetValues,
+            node.FileValue,
             node.ValueTable,
             node.ConflictBehavior,
             node.ConflictAction,

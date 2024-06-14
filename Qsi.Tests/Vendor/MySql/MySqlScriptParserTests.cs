@@ -22,6 +22,8 @@ public class MySqlScriptParserTests
     [TestCase("SET STATEMENT @t = (SELECT SUBSTRING('abc' FROM 2 FOR 1)) FOR SELECT @t")]
     [TestCase("SET STATEMENT @t = 5 /* FOR */ FOR SELECT @t")]
     [TestCase("SET STATEMENT @t = 'FOR' FOR SELECT @t")]
+    [TestCase("LOAD DATA INFILE 'something.csv' INTO TABLE tbl1")]
+    [TestCase(@"LOAD DATA INFILE '/var/lib/mysql-files/test.csv' INTO TABLE test FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n' IGNORE 1 LINES (col1, col2) SET col1 = 'value'")]
     public async Task Test_Parse(string sql)
     {
         QsiScript[] result = Parser.Parse(sql, default).ToArray();
@@ -40,6 +42,8 @@ public class MySqlScriptParserTests
     [TestCase("SET STATEMENT @t = (SELECT SUBSTRING('abc' FROM 2 FOR 1)) FOR SELECT @t", ExpectedResult = QsiScriptType.Select)]
     [TestCase("SET STATEMENT @t = 5 /* FOR */ FOR SELECT @t", ExpectedResult = QsiScriptType.Select)]
     [TestCase("SET STATEMENT @t = 'FOR' FOR SELECT @t", ExpectedResult = QsiScriptType.Select)]
+    [TestCase("LOAD DATA INFILE 'something.csv' INTO TABLE tbl1", ExpectedResult = QsiScriptType.Insert)]
+    [TestCase(@"LOAD DATA INFILE '/var/lib/mysql-files/test.csv' INTO TABLE test FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n' IGNORE 1 LINES (col1, col2) SET col1 = 'value'", ExpectedResult = QsiScriptType.Insert)]
     public QsiScriptType Test_GetSuitableType(string sql)
     {
         return Parser.GetSuitableType(sql);

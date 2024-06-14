@@ -22,5 +22,9 @@ public class QsiDataManipulationResult : IQsiAnalysisResult
 
     public ICollection<QsiTableStructure> TablesInRows { get; set; } = Array.Empty<QsiTableStructure>();
 
+    // Note: If we need to support the "DML Snapshot" feature for the LOAD DATA statement or any new statements that manipulate data using files,
+    //       we will need to refactor this field or class to be more abstract.
+    public QsiIdentifier FileValue { get; set; }
+
     public QsiSensitiveDataCollection SensitiveDataCollection { get; } = new();
 }

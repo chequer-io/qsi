@@ -25,7 +25,7 @@ public abstract class VendorTestBase
     }
 
     [OneTimeSetUp]
-    public void OneTimeSetUp()
+    public virtual void OneTimeSetUp()
     {
         Connection = OpenConnection(_connectionString);
         Connection.Open();
@@ -36,13 +36,13 @@ public abstract class VendorTestBase
     }
 
     [SetUp]
-    public void SetUp()
+    public virtual void SetUp()
     {
         ScriptHistories.Clear();
     }
 
     [OneTimeTearDown]
-    public void OneTimeTearDown()
+    public virtual void OneTimeTearDown()
     {
         Connection.Close();
         Connection.Dispose();

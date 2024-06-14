@@ -1,0 +1,15 @@
+﻿[
+  {
+    Script: LOAD DATA INFILE '/var/lib/mysql-files/test.csv' INTO TABLE test FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n' IGNORE 1 LINES (col1, col2) SET col1 = 'value',
+    ScriptType: Insert,
+    Start: {
+      Line: 1,
+      Column: 1
+    },
+    End: {
+      Line: 1,
+      Column: 162,
+      Index: 160
+    }
+  }
+]
