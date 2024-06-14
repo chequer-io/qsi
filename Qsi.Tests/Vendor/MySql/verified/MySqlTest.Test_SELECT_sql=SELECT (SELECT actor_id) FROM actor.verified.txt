@@ -26,6 +26,7 @@
         Parent: $tbl_5,
         Name: actor_id,
         IsVisible: true,
+        Default: AUTO_INCREMENT,
         RefId: $col_3
       },
       {

@@ -25,6 +25,7 @@
         Parent: $tbl_17,
         Name: actor_id,
         IsVisible: true,
+        Default: AUTO_INCREMENT,
         RefId: $col_18
       },
       {
@@ -122,6 +123,7 @@
         Parent: $tbl_8,
         Name: actor_id,
         IsVisible: true,
+        Default: AUTO_INCREMENT,
         RefId: $col_5
       },
       {

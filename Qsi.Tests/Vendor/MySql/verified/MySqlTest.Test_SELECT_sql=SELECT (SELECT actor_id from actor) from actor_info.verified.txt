@@ -53,6 +53,7 @@
         Parent: $tbl_11,
         Name: actor_id,
         IsVisible: true,
+        Default: AUTO_INCREMENT,
         RefId: $col_72
       },
       {
@@ -148,6 +149,7 @@
         Parent: $tbl_133,
         Name: film_id,
         IsVisible: true,
+        Default: AUTO_INCREMENT,
         RefId: $col_135
       },
       {
@@ -427,6 +429,7 @@
         Parent: $tbl_17,
         Name: category_id,
         IsVisible: true,
+        Default: AUTO_INCREMENT,
         RefId: $col_82
       },
       {
@@ -471,6 +474,7 @@
         Parent: $tbl_19,
         Name: actor_id,
         IsVisible: true,
+        Default: AUTO_INCREMENT,
         RefId: $col_3
       },
       {

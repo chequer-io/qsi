@@ -7,6 +7,7 @@
         Parent: $tbl_5,
         Name: city_id,
         IsVisible: true,
+        Default: AUTO_INCREMENT,
         RefId: $col_1
       },
       {

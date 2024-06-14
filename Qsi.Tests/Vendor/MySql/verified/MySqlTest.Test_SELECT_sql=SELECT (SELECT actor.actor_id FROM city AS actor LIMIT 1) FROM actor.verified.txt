@@ -53,6 +53,7 @@
         Parent: $tbl_13,
         Name: city_id,
         IsVisible: true,
+        Default: AUTO_INCREMENT,
         RefId: $col_15
       },
       {
@@ -104,6 +105,7 @@
         Parent: $tbl_6,
         Name: actor_id,
         IsVisible: true,
+        Default: AUTO_INCREMENT,
         RefId: $col_4
       },
       {
