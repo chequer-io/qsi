@@ -32,6 +32,7 @@ using Qsi.Debugger.Vendor.PhoenixSql;
 using Qsi.Debugger.Vendor.PostgreSql;
 using Qsi.Debugger.Vendor.PrimarSql;
 using Qsi.Debugger.Vendor.Redshift;
+using Qsi.Debugger.Vendor.SingleStore;
 using Qsi.Debugger.Vendor.SqlServer;
 using Qsi.Debugger.Vendor.Trino;
 using Qsi.Engines.Explain;
@@ -84,7 +85,8 @@ public class MainWindow : Window
             ["Trino"] = new(() => new TrinoDebugger()),
             ["Oracle"] = new(() => new OracleDebugger()),
             ["Athena"] = new(() => new AthenaDebugger()),
-            ["Redshift"] = new(() => new RedshiftDebugger())
+            ["Redshift"] = new(() => new RedshiftDebugger()),
+            ["SingleStore"] = new(() => new SingleStoreDebugger())
         };
 
         _cbLanguages = this.Find<ComboBox>("cbLanguages");
