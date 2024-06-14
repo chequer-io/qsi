@@ -53,6 +53,7 @@
         Parent: $tbl_11,
         Name: actor_id,
         IsVisible: true,
+        Default: AUTO_INCREMENT,
         RefId: $col_72
       },
       {
@@ -71,6 +72,7 @@
         Parent: $tbl_11,
         Name: last_update,
         IsVisible: true,
+        Default: CURRENT_TIMESTAMP,
         RefId: $col_75
       }
     ],
@@ -133,6 +135,7 @@
         Parent: $tbl_13,
         Name: last_update,
         IsVisible: true,
+        Default: CURRENT_TIMESTAMP,
         RefId: $col_78
       }
     ],
@@ -146,6 +149,7 @@
         Parent: $tbl_133,
         Name: film_id,
         IsVisible: true,
+        Default: AUTO_INCREMENT,
         RefId: $col_135
       },
       {
@@ -182,12 +186,14 @@
         Parent: $tbl_133,
         Name: rental_duration,
         IsVisible: true,
+        Default: 3,
         RefId: $col_145
       },
       {
         Parent: $tbl_133,
         Name: rental_rate,
         IsVisible: true,
+        Default: 4.99,
         RefId: $col_147
       },
       {
@@ -200,12 +206,14 @@
         Parent: $tbl_133,
         Name: replacement_cost,
         IsVisible: true,
+        Default: 19.99,
         RefId: $col_151
       },
       {
         Parent: $tbl_133,
         Name: rating,
         IsVisible: true,
+        Default: G,
         RefId: $col_153
       },
       {
@@ -218,6 +226,7 @@
         Parent: $tbl_133,
         Name: last_update,
         IsVisible: true,
+        Default: CURRENT_TIMESTAMP,
         RefId: $col_157
       }
     ],
@@ -280,6 +289,7 @@
         Parent: $tbl_15,
         Name: last_update,
         IsVisible: true,
+        Default: CURRENT_TIMESTAMP,
         RefId: $col_81
       }
     ],
@@ -379,6 +389,7 @@
         Parent: $tbl_162,
         Name: last_update,
         IsVisible: true,
+        Default: CURRENT_TIMESTAMP,
         RefId: $col_165
       }
     ],
@@ -404,6 +415,7 @@
         Parent: $tbl_166,
         Name: last_update,
         IsVisible: true,
+        Default: CURRENT_TIMESTAMP,
         RefId: $col_169
       }
     ],
@@ -417,6 +429,7 @@
         Parent: $tbl_17,
         Name: category_id,
         IsVisible: true,
+        Default: AUTO_INCREMENT,
         RefId: $col_82
       },
       {
@@ -429,6 +442,7 @@
         Parent: $tbl_17,
         Name: last_update,
         IsVisible: true,
+        Default: CURRENT_TIMESTAMP,
         RefId: $col_84
       }
     ],
@@ -460,6 +474,7 @@
         Parent: $tbl_19,
         Name: actor_id,
         IsVisible: true,
+        Default: AUTO_INCREMENT,
         RefId: $col_3
       },
       {
@@ -478,6 +493,7 @@
         Parent: $tbl_19,
         Name: last_update,
         IsVisible: true,
+        Default: CURRENT_TIMESTAMP,
         RefId: $col_87
       }
     ],
@@ -516,6 +532,7 @@
           $col_21
         ],
         IsVisible: true,
+        Default: 0,
         RefId: $col_20
       },
       {

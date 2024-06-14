@@ -165,13 +165,13 @@ public partial class MySqlTest : VendorTestBase
     }
 
     [TestCase("INSERT INTO actor VALUES (1, 2, 3, 4), (5, 6, 7, 8)", new string[0], 1)]
-    [TestCase("INSERT INTO actor (actor_id) VALUES (1)", new string[0], 1)]
-    [TestCase("INSERT INTO actor (actor_id, last_name) SELECT city_id, city FROM city", new[] { "SELECT city_id, city FROM city" }, 1)]
+    [TestCase("INSERT INTO actor (first_name, last_name) VALUES ('a', 'b')", new string[0], 1)]
+    [TestCase("INSERT INTO actor (actor_id, first_name, last_name) SELECT city_id, city, city FROM city", new[] { "SELECT city_id, city, city FROM city" }, 1)]
     [TestCase("INSERT INTO actor SELECT * FROM actor LIMIT 0", new[] { "SELECT * FROM actor LIMIT 0" }, 1)]
     [TestCase("INSERT INTO actor SELECT * FROM actor LIMIT 1", new[] { "SELECT * FROM actor LIMIT 1" }, 1)]
     [TestCase("INSERT INTO actor SELECT * FROM actor LIMIT 2", new[] { "SELECT * FROM actor LIMIT 2" }, 1)]
-    [TestCase("INSERT INTO actor SET actor_id = 1", new string[0], 1)]
-    [TestCase("INSERT INTO actor SET actor.actor_id = 1", new string[0], 1)]
+    [TestCase("INSERT INTO actor SET first_name = 'a', last_name = 'b'", new string[0], 1)]
+    [TestCase("INSERT INTO actor SET actor.first_name = 'a', actor.last_name = 'b'", new string[0], 1)]
     [TestCase("INSERT INTO actor VALUES (1, 2, 3, 4) ON DUPLICATE KEY UPDATE last_update = now()", new string[0], 1)]
     public async Task Test_INSERT(string sql, string[] expectedSqls, int expectedResultCount)
     {

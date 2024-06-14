@@ -53,7 +53,7 @@ public partial class MySqlTest
 
         new("INSERT INTO actor SELECT 1, 'MORRIS', 'BABO', null"),
 
-        new("INSERT INTO actor (actor_id, last_name) SELECT city_id, city FROM city LIMIT 2"),
+        new("INSERT INTO actor (actor_id, first_name, last_name) SELECT city_id, city, city FROM city LIMIT 2"),
 
         new("UPDATE actor SET first_name = 'MORRIS', last_name = 'BABO' WHERE actor_id = 1"),
 

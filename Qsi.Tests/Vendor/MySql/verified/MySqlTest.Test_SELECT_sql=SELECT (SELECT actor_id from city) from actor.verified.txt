@@ -7,6 +7,7 @@
         Parent: $tbl_10,
         Name: city_id,
         IsVisible: true,
+        Default: AUTO_INCREMENT,
         RefId: $col_11
       },
       {
@@ -25,6 +26,7 @@
         Parent: $tbl_10,
         Name: last_update,
         IsVisible: true,
+        Default: CURRENT_TIMESTAMP,
         RefId: $col_14
       }
     ],
@@ -57,6 +59,7 @@
         Parent: $tbl_5,
         Name: actor_id,
         IsVisible: true,
+        Default: AUTO_INCREMENT,
         RefId: $col_3
       },
       {
@@ -75,6 +78,7 @@
         Parent: $tbl_5,
         Name: last_update,
         IsVisible: true,
+        Default: CURRENT_TIMESTAMP,
         RefId: $col_9
       }
     ],

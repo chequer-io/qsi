@@ -77,7 +77,7 @@ order by ORDINAL_POSITION";
                 column.IsNullable = reader.GetString(1) == "YES";
 
                 column.Default = isAutoIncrement
-                    ? "<AUTO_INCREMENT>"
+                    ? "AUTO_INCREMENT"
                     : reader.IsDBNull(2)
                         ? null
                         : reader.GetString(2);
