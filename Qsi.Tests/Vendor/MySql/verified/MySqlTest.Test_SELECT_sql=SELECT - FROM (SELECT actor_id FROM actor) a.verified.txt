@@ -80,6 +80,7 @@
         Parent: $tbl_8,
         Name: last_update,
         IsVisible: true,
+        Default: CURRENT_TIMESTAMP,
         RefId: $col_11
       }
     ],

@@ -120,6 +120,7 @@
         Parent: $tbl_23,
         Name: last_update,
         IsVisible: true,
+        Default: CURRENT_TIMESTAMP,
         RefId: $col_18
       }
     ],
@@ -196,6 +197,7 @@
         Parent: $tbl_25,
         Name: last_update,
         IsVisible: true,
+        Default: CURRENT_TIMESTAMP,
         RefId: $col_20
       }
     ],
