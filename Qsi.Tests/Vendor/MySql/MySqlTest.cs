@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
@@ -18,13 +19,33 @@ namespace Qsi.Tests.Vendor.MySql;
 [TestFixture("server=localhost;port=3306;user id=root;password=root;pooling=False;allowuservariables=True", Category = "MySql")]
 public partial class MySqlTest : VendorTestBase
 {
+    private string _loadDataFilePath;
+    
     public MySqlTest(string connectionString) : base(connectionString)
     {
     }
 
     protected override DbConnection OpenConnection(string connectionString)
     {
-        return new MySqlConnection(connectionString);
+        var builder = new MySqlConnectionStringBuilder(connectionString)
+        {
+            AllowLoadLocalInfile = true,
+            AllowLoadLocalInfileInPath = _loadDataFilePath
+        };
+
+        return new MySqlConnection(builder.ToString());
+    }
+
+    public override void OneTimeSetUp()
+    {
+        CreateLoadDataFile();
+        base.OneTimeSetUp();
+    }
+
+    public override void OneTimeTearDown()
+    {
+        base.OneTimeTearDown();
+        DeleteLoadDataFile();
     }
 
     protected override void PrepareConnection(DbConnection connection)
@@ -40,6 +61,31 @@ public partial class MySqlTest : VendorTestBase
         ).Execute();
 
         connection.ChangeDatabase("qsi_unit_tests");
+    }
+
+    private void CreateLoadDataFile()
+    {
+        _loadDataFilePath = Path.GetTempFileName();
+
+        using var resourceStream = ResourceUtility.GetResourceStream("load_data.csv");
+        using var stream = File.OpenWrite(_loadDataFilePath);
+
+        resourceStream.CopyTo(stream);
+    }
+
+    private void DeleteLoadDataFile()
+    {
+        if (_loadDataFilePath is null) 
+            return;
+
+        try
+        {
+            File.Delete(_loadDataFilePath);
+        }
+        catch (Exception e)
+        {
+            Console.Error.WriteLine(e.Message, e.StackTrace);
+        }
     }
 
     protected override IQsiLanguageService CreateLanguageService(DbConnection connection)
@@ -129,6 +175,18 @@ public partial class MySqlTest : VendorTestBase
     [TestCase("INSERT INTO actor VALUES (1, 2, 3, 4) ON DUPLICATE KEY UPDATE last_update = now()", new string[0], 1)]
     public async Task Test_INSERT(string sql, string[] expectedSqls, int expectedResultCount)
     {
+        IQsiAnalysisResult[] result = await Engine.Execute(new QsiScript(sql, QsiScriptType.Select), null);
+        CollectionAssert.AreEqual(expectedSqls, ScriptHistories.Select(x => x.Script));
+        CollectionAssert.IsNotEmpty(result);
+        Assert.AreEqual(result.Length, expectedResultCount);
+    }
+
+    [TestCase("LOAD DATA INFILE '<LOAD_DATA_FILE_PATH>' INTO TABLE actor", new string[0], 1)]
+    [TestCase(@"LOAD DATA INFILE '<LOAD_DATA_FILE_PATH>' INTO TABLE actor FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n' IGNORE 1 LINES (first_name, last_name)", new string[0], 1)]
+    public async Task Test_LOAD(string sql, string[] expectedSqls, int expectedResultCount)
+    {
+        sql = sql.Replace("<LOAD_DATA_FILE_PATH>", _loadDataFilePath);
+        
         IQsiAnalysisResult[] result = await Engine.Execute(new QsiScript(sql, QsiScriptType.Select), null);
         CollectionAssert.AreEqual(expectedSqls, ScriptHistories.Select(x => x.Script));
         CollectionAssert.IsNotEmpty(result);

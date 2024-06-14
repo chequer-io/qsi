@@ -59,7 +59,7 @@ limit 1";
         }
 
         sql = @$"
-select COLUMN_NAME, IS_NULLABLE, COLUMN_DEFAULT
+select COLUMN_NAME, IS_NULLABLE, COLUMN_DEFAULT, EXTRA
 from information_schema.COLUMNS
 where TABLE_SCHEMA = '{names[0]}' and TABLE_NAME = '{names[1]}'
 order by ORDINAL_POSITION";
@@ -69,9 +69,18 @@ order by ORDINAL_POSITION";
             while (reader.Read())
             {
                 var column = table.NewColumn();
+
+                var extra = reader.GetString(3);
+                bool isAutoIncrement = extra.Contains("auto_increment", StringComparison.OrdinalIgnoreCase);
+
                 column.Name = new QsiIdentifier(reader.GetString(0), false);
                 column.IsNullable = reader.GetString(1) == "YES";
-                column.Default = reader.IsDBNull(2) ? null : reader.GetString(2);
+
+                column.Default = isAutoIncrement
+                    ? "<AUTO_INCREMENT>"
+                    : reader.IsDBNull(2)
+                        ? null
+                        : reader.GetString(2);
             }
         }
 
