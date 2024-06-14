@@ -629,7 +629,7 @@ public class QsiActionAnalyzer : QsiAnalyzerBase
 
     protected virtual QsiTableColumn ResolveNotNullableColumnWithInvalidDefault(IEnumerable<QsiTableColumn> columns, IEnumerable<ColumnTarget> columnTargets)
     {
-        HashSet<string> targetNames = columnTargets.Select(ct => ct.DeclaredName.SubIdentifier(0).ToString()).ToHashSet();
+        HashSet<string> targetNames = columnTargets.Select(ct => ct.DeclaredName.SubIdentifier(^1).ToString()).ToHashSet();
 
         return columns
             .FirstOrDefault(x => !targetNames.Contains(x.Name.Value) && !x.IsNullable && x.Default is null);
@@ -685,7 +685,10 @@ public class QsiActionAnalyzer : QsiAnalyzerBase
 
         foreach (var row in dataTable.Rows)
         {
-            PopulateInsertRow(context, pivot => row.Items[pivot.SourceOrder]);
+            PopulateInsertRow(context, pivot =>
+            {
+                return row.Items[pivot.SourceOrder];
+            });
         }
 
         var tableAnalyzer = context.Engine.GetAnalyzer<QsiTableAnalyzer>();
@@ -801,9 +804,11 @@ public class QsiActionAnalyzer : QsiAnalyzerBase
             {
                 ref var item = ref targetRow.Items[pivot.DestinationOrder];
 
-                item = pivot.SourceColumn is not null
-                    ? valueSelector(pivot)
-                    : ResolveDefaultColumnValue(pivot);
+                if (pivot.SourceColumn is not null)
+                    item = valueSelector(pivot);
+
+                if (item?.Value is null)
+                    item = ResolveDefaultColumnValue(pivot);
 
                 if (item.Value is null && target.Table.Columns[pivot.DestinationOrder].IsNullable == false)
                     throw new QsiException(QsiError.NotNullConstraints, pivot.DestinationColumn.Name.Value);
