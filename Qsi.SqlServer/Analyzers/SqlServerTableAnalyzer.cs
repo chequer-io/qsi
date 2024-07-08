@@ -23,6 +23,9 @@ public class SqlServerTableAnalyzer : QsiTableAnalyzer
         {
             case SqlServerPhyslocExpressionNode:
                 return Enumerable.Empty<QsiTableColumn>();
+            
+            case SqlServerDatePartExpressionNode:
+                return Enumerable.Empty<QsiTableColumn>();
         }
 
         return base.ResolveColumnsInExpression(context, expression);

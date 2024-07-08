@@ -10,6 +10,17 @@ namespace Qsi.SqlServer.Tree;
 
 internal sealed class ExpressionVisitor : VisitorBase
 {
+    private static readonly string[] _datePartFunctions =
+    {
+        "DATE_BUCKET",
+        "DATEADD",
+        "DATEDIFF",
+        "DATEDIFF_BIG",
+        "DATENAME",
+        "DATEPART",
+        "DATETRUNC"
+    };
+
     public List<Range> PhyslocRanges { get; } = new();
 
     public ExpressionVisitor(IVisitorContext visitorContext) : base(visitorContext)
@@ -507,7 +518,7 @@ internal sealed class ExpressionVisitor : VisitorBase
                 {
                     MultiPartIdentifierCallTarget multiPartIdentifierCallTarget => multiPartIdentifierCallTarget.MultiPartIdentifier,
                     UserDefinedTypeCallTarget userDefinedTypeCallTarget => userDefinedTypeCallTarget.SchemaObjectName,
-                    ExpressionCallTarget _ => throw TreeHelper.NotSupportedFeature("expression call target"),
+                    ExpressionCallTarget => throw TreeHelper.NotSupportedFeature("expression call target"),
                     null => new MultiPartIdentifier(),
                     _ => throw TreeHelper.NotSupportedTree(functionCall.CallTarget)
                 };
@@ -856,69 +867,93 @@ internal sealed class ExpressionVisitor : VisitorBase
         {
             n.Member.SetValue(functionExpressionNode);
 
-            n.Parameters.AddRange(parameters
-                .Where(p => p != null)
-                .Select(p =>
+            if (functionExpressionNode.Identifier.Level is 1 &&
+                IsDatePartParameterFunction(functionExpressionNode.Identifier[^1].Value))
+            {
+                var parameter = parameters.FirstOrDefault();
+
+                // 첫번째 파라미터가 DATEPART에 해당하는 값인 경우에만 특수 처리
+                if (parameter is ColumnReferenceExpression { MultiPartIdentifier.Count: 1 } columnReferenceExpression)
                 {
-                    switch (p)
+                    n.Parameters.Add(TreeHelper.Create<SqlServerDatePartExpressionNode>(node =>
                     {
-                        case BooleanExpression booleanExpression:
-                            return VisitBooleanExpression(booleanExpression);
+                        node.DatePart = columnReferenceExpression.MultiPartIdentifier[0].Value;
+                        SqlServerTree.PutFragmentSpan(node, columnReferenceExpression);
+                    }));
 
-                        case ScalarExpression scalarExpression:
-                            return VisitScalarExpression(scalarExpression);
+                    parameters = parameters.Skip(1);
+                }
+            }
 
-                        case DataTypeReference dataTypeReference:
-                        {
-                            var node = new QsiTypeExpressionNode
-                            {
-                                Identifier = IdentifierVisitor.CreateQualifiedIdentifier(dataTypeReference.Name)
-                            };
-
-                            SqlServerTree.PutFragmentSpan(node, dataTypeReference);
-
-                            return node;
-                        }
-
-                        case Identifier identifier:
-                        {
-                            return TreeHelper.Create<QsiColumnExpressionNode>(cn =>
-                            {
-                                cn.Column.SetValue(new QsiColumnReferenceNode
-                                {
-                                    Name = new QsiQualifiedIdentifier(IdentifierVisitor.CreateIdentifier(identifier))
-                                });
-
-                                SqlServerTree.PutFragmentSpan(cn, identifier);
-                            });
-                        }
-
-                        case MultiPartIdentifier multiPartIdentifier:
-                        {
-                            var node = TreeHelper.Create<QsiTableExpressionNode>(tn =>
-                            {
-                                tn.Table.SetValue(new QsiTableReferenceNode
-                                {
-                                    Identifier = IdentifierVisitor.CreateQualifiedIdentifier(multiPartIdentifier)
-                                });
-                            });
-
-                            SqlServerTree.PutFragmentSpan(node, multiPartIdentifier);
-
-                            return node;
-                        }
-
-                        case OverClause _:
-                            throw TreeHelper.NotSupportedFeature("over clause");
-
-                        default:
-                            throw new InvalidOperationException();
-                    }
-                })
-            );
+            n.Parameters.AddRange(parameters
+                .Where(p => p is not null)
+                .Select(CreateParameterExpression));
 
             SqlServerTree.PutFragmentSpan(n, fragment);
         });
+    }
+
+    private static bool IsDatePartParameterFunction(string value)
+    {
+        return _datePartFunctions.Contains(value, StringComparer.OrdinalIgnoreCase);
+    }
+
+    private QsiExpressionNode CreateParameterExpression(TSqlFragment fragment)
+    {
+        switch (fragment)
+        {
+            case BooleanExpression booleanExpression:
+                return VisitBooleanExpression(booleanExpression);
+
+            case ScalarExpression scalarExpression:
+                return VisitScalarExpression(scalarExpression);
+
+            case DataTypeReference dataTypeReference:
+            {
+                var node = new QsiTypeExpressionNode
+                {
+                    Identifier = IdentifierVisitor.CreateQualifiedIdentifier(dataTypeReference.Name)
+                };
+
+                SqlServerTree.PutFragmentSpan(node, dataTypeReference);
+
+                return node;
+            }
+
+            case Identifier identifier:
+            {
+                return TreeHelper.Create<QsiColumnExpressionNode>(cn =>
+                {
+                    cn.Column.SetValue(new QsiColumnReferenceNode
+                    {
+                        Name = new QsiQualifiedIdentifier(IdentifierVisitor.CreateIdentifier(identifier))
+                    });
+
+                    SqlServerTree.PutFragmentSpan(cn, identifier);
+                });
+            }
+
+            case MultiPartIdentifier multiPartIdentifier:
+            {
+                var node = TreeHelper.Create<QsiTableExpressionNode>(tn =>
+                {
+                    tn.Table.SetValue(new QsiTableReferenceNode
+                    {
+                        Identifier = IdentifierVisitor.CreateQualifiedIdentifier(multiPartIdentifier)
+                    });
+                });
+
+                SqlServerTree.PutFragmentSpan(node, multiPartIdentifier);
+
+                return node;
+            }
+
+            case OverClause:
+                throw TreeHelper.NotSupportedFeature("over clause");
+
+            default:
+                throw new InvalidOperationException();
+        }
     }
 
     public string ConvertBooleanComparisonType(BooleanComparisonType booleanComparisonType)
