@@ -18,10 +18,10 @@ The QSI is the pure C# Query Structure Interface.
 |Redshift|based on Qsi.PostgreSql||
 |Oracle|Antlr4||
 |SqlServer|Microsoft.SqlServer.TransactSql.ScriptDom, Microsoft.SqlServer.Management.SqlParser|[MSDN](https://docs.microsoft.com/en-us/dotnet/api/microsoft.sqlserver.transactsql.scriptdom?view=sql-dacfx-150), [NuGet (ScriptDom)](https://www.nuget.org/packages/Microsoft.SqlServer.TransactSql.ScriptDom),[NuGet (Management)](https://www.nuget.org/packages/Microsoft.SqlServer.Management.SqlParser/)|
-|Cassandra|Antlr||
-|Athena|Antlr||
-|SAP Hana|Antlr||
-|Impala|Antlr||
+|Cassandra|Antlr4||
+|Athena|Antlr4||
+|SAP Hana|Antlr4||
+|Impala|Antlr4||
 |Trino|Trino source code(Antlr4)|[trino](https://github.com/trinodb/trino/)|
 |PrimarSql|PrimarSql|[PrimarSql](https://github.com/chequer-io/PrimarSql)|
 
