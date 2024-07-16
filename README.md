@@ -1,6 +1,6 @@
 [![QSI Unit Tests](https://github.com/chequer-io/qsi/actions/workflows/qsi-unit-tests.yml/badge.svg)](https://github.com/chequer-io/qsi/actions/workflows/qsi-unit-tests.yml)
 
-![Logo](https://github.com/chequer-io/qsi/blob/master/Resources/logo-256.png?raw=true)
+![Logo](https://github.com/chequer-io/qsi/blob/main/Resources/logo-256.png?raw=true)
 
 The QSI is the pure C# Query Structure Interface.
 
@@ -8,7 +8,7 @@ The QSI is the pure C# Query Structure Interface.
 
 |Language|Parser|Repos|
 |--|--|--|
-|MySql|MySQL Workbench source code(Antlr4)|[mysql-workbench](https://github.com/mysql/mysql-workbench)|
+|MySql|MySQL Workbench source code(Antlr4)|[mysql-fworkbench](https://github.com/mysql/mysql-workbench)|
 |PostgreSql10|PostgreSQL server source code(yacc)|[libpg_query](https://github.com/lfittl/libpg_query), [ChakraCore](https://github.com/microsoft/ChakraCore)|
 |JSql|JavaCC|[JSqlParser](https://github.com/JSQLParser/JSqlParser), [IKVM](https://github.com/ikvm-revived/ikvm)|
 |Oracle|Qsi.JSql||
@@ -543,7 +543,7 @@ PS> ./Publish.ps1 <VERSION> [-Mode <PUBLISH_MODE>]
 
 It supports abstract syntax trees and semantic trees, and a debugger that can debug compilation results.
 
-![Preview](https://github.com/chequer-io/qsi/blob/master/Qsi.Debugger/Screenshot.png?raw=true)
+![Preview](https://github.com/chequer-io/qsi/blob/main/Qsi.Debugger/Screenshot.png?raw=true)
 
 ### Run
 ```sh
