@@ -1,8 +1,10 @@
+
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://raw.githubusercontent.com/chequer-io/qsi/main/LICENSE)
 [![Nuget](https://img.shields.io/nuget/dt/Qsi?label=Nuget.org%20Downloads&style=flat-square&color=blue)](https://www.nuget.org/packages/Qsi)
 [![QSI Unit Tests](https://github.com/chequer-io/qsi/actions/workflows/qsi-unit-tests.yml/badge.svg)](https://github.com/chequer-io/qsi/actions/workflows/qsi-unit-tests.yml)
 
 ![Logo](https://github.com/chequer-io/qsi/blob/main/Resources/logo-256.png?raw=true)
+
 
 The QSI is the pure C# Query Structure Interface.
 
@@ -32,31 +34,403 @@ based on semantic tree transformed by parser's  for each language.
 &#x26A0; ⚠
 -->
 
-|Features                           |MySql   |PostgreSql|JSql    |Oracle  |SqlServer|PhoenixSql|PrimarSql|
-|-----------------------------------|:------:|:--------:|:------:|:------:|:-------:|:--------:|:-------:|
-|No table                           |&#x2714;|&#x2714;  |&#x2714;|&#x274C;|&#x2714; |&#x2714;  |&#x274C; |
-|Table access                       |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |&#x2714;  |&#x2714; |
-|Derived table                      |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |&#x2714;  |&#x274C; |
-|Derived table (Non-Alias)          |&#x274C;|&#x274C;  |&#x2714;|&#x2714;|&#x274C; |&#x2714;  |&#x274C; |
-|Specify columns to table alias     |&#x274C;|&#x2714;  |&#x2714;|&#x274C;|&#x274C; |&#x274C;  |&#x274C; |
-|Inline derived table               |&#x274C;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |&#x274C;  |&#x274C; |
-|Table function                     |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |&#x274C;  |&#x274C; |
-|Table variable                     |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |&#x274C;  |&#x274C; |
-|Common table expression            |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |&#x274C;  |&#x274C; |
-|Common table expression (Aliases)  |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |&#x274C;  |&#x274C; |
-|Common table expression (Recursive)|&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |&#x274C;  |&#x274C; |
-|Join tables                        |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |&#x2714;  |&#x274C; |
-|Join tables (Pivot columns)        |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x274C; |&#x274C;  |&#x274C; |
-|Join tables (Natural)              |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x274C; |&#x274C;  |&#x274C; |
-|Union many tables                  |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |&#x2714;  |&#x274C; |
-|Table pivot                        |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |&#x274C;  |&#x274C; |
-|Table unpivot                      |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |&#x274C;  |&#x274C; |
-|Trace view definition              |&#x2714;|&#x2714;  |&#x2714;|&#x2714;|&#x2714; |&#x2714;  |&#x274C; |
-|Trace variable definition          |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |&#x274C;  |&#x274C; |
-|Execute prepared table query       |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |&#x274C;  |&#x274C; |
-|Call table procedure               |&#x26A0;|&#x26A0;  |&#x26A0;|&#x26A0;|&#x26A0; |&#x26A0;  |&#x274C; |
+<table>
+    <tr>
+        <th>Features</th>
+        <th>
+            <a href="https://www.mysql.com/">
+                <img
+                    src="https://github.com/user-attachments/assets/efc5b372-03e5-4e48-995c-10588e8645b5" 
+                    alt="MySql"
+                    title="MySql"
+                    style="width:20px;height:auto;" />
+            </a>
+        </th>
+        <th>
+            <a href="https://www.singlestore.com/">
+                <img
+                    src="https://github.com/user-attachments/assets/32bc33c1-a3c6-4d45-8143-d39e95e4ccd8" 
+                    alt="SingleStore"
+                    title="SingleStore"
+                    style="width:20px;height:auto;" />
+            </a>
+        </th>
+        <th>
+            <a href="https://www.postgresql.org/">
+                <img
+                    src="https://github.com/user-attachments/assets/b691ab32-4f53-418a-8639-e960265d34ae"
+                    alt="PostgreSql"
+                    title="PostgreSql"
+                    style="width:20px;height:auto;" />
+            </a>
+        </th>
+        <th>
+            <a href="https://aws.amazon.com/redshift/">
+                <img
+                    src="https://github.com/user-attachments/assets/b35a983f-2cfc-4892-93f9-7108d24ff14d" 
+                    alt="Amazon Redshift"
+                    title="Amazon Redshift"
+                    style="width:20px;height:auto;" />
+            </a>
+        </th>
+        <th>
+            <a href="https://www.oracle.com/database/">
+                <img
+                    src="https://github.com/user-attachments/assets/c93aaae3-91d3-4463-a993-f191f1ad130a" 
+                    alt="Oracle"
+                    title="Oracle"
+                    style="width:20px;height:auto;" />
+            </a>
+        </th>
+        <th>
+            <a href="https://www.microsoft.com/en-us/sql-server">
+                <img
+                    src="https://github.com/user-attachments/assets/2212f7a0-8f53-4198-b5e0-d9bbe6451a7a" 
+                    alt="SQLServer"
+                    title="SQLServer"
+                    style="width:20px;height:auto;" />
+            </a>
+        </th>
+        <th>
+            <a href="https://cassandra.apache.org/_/index.html">
+                <img
+                    src="https://github.com/user-attachments/assets/23516570-37c3-48ff-9247-0d4eaa581968" 
+                    alt="Cassandra(Cql)"
+                    title="Cassandra(Cql)"
+                    style="width:20px;height:auto;" />
+            </a>
+        </th>
+        <th>
+            <a href="https://aws.amazon.com/athena/">
+                <img
+                    src="https://github.com/user-attachments/assets/abcc7f7a-fd3c-4116-ba88-31bcbaf47485" 
+                    alt="Amazon Athena"
+                    title="Amazon Athena"
+                    style="width:20px;height:auto;" />
+            </a>
+        </th>
+        <th>
+            <a href="https://www.sap.com/products/technology-platform/hana/what-is-sap-hana.html">
+                <img
+                    src="https://github.com/user-attachments/assets/2f436dda-90cb-43c9-b324-48b039d6b614" 
+                    alt="SAP Hana"
+                    title="SAP Hana"
+                    style="width:20px;height:auto;" />
+            </a>
+        </th>
+<!--         <th>
+            <a href="https://phoenix.apache.org/">
+                <img
+                    src="https://github.com/user-attachments/assets/c0a7fc23-d692-4048-b620-317e2eafc1d6" 
+                    alt="Apache Phoenix"
+                    title="Apache Phoenix"
+                    style="width:20px;height:auto;" />
+            </a>
+        </th> -->
+        <th>
+            <a href="https://impala.apache.org/">
+                <img
+                    src="https://github.com/user-attachments/assets/7b566a03-e7eb-4902-aecc-c9499925a9c5" 
+                    alt="Apache Impala"
+                    title="Apache Impala"
+                    style="width:20px;height:auto;" />
+            </a>
+        </th>
+        <th>
+            <a href="https://trino.io/">
+                <img
+                    src="https://github.com/user-attachments/assets/bc11487e-ad05-4c44-ae20-4194dac12243" 
+                    alt="Trino"
+                    title="Trino"
+                    style="width:20px;height:auto;" />
+            </a>
+        </th>
+        <th>
+            <a href="https://github.com/chequer-io/PrimarSql">
+                <img
+                    src="https://raw.githubusercontent.com/chequer-io/primarsql/main/Logo.png" 
+                    alt="Trino"
+                    title="Trino"
+                    style="width:20px;height:auto;" />
+            </a>
+        </th>
+    </tr>
+    <tr>
+        <td>No table</td>
+        <td>&check;</td> <!-- MySql -->
+        <td>&check;</td> <!-- SingleStore -->
+        <td>&check;</td> <!-- PostgreSql -->
+        <td>&check;</td> <!-- Amazon Redshift -->
+        <td>&#10005;</td> <!-- Oracle -->
+        <td>&check;</td> <!-- SqlServer -->
+        <td>&#10005;</td> <!-- Cassandra -->
+        <td>&check;</td> <!-- Amazon Athena -->
+        <td>&#10005;</td> <!-- SAP Hana -->
+        <!-- <td>&#10005;</td> <!-- Apache Phoenix -->
+        <td>&check;</td> <!-- Apache Impala -->
+        <td>&check;</td> <!-- Trino -->
+        <td>&#10005;</td> <!-- PrimarSql -->
+    </tr>
+    <tr>
+        <td>Table access</td>
+        <td>&check;</td> <!-- MySql -->
+        <td>&check;</td> <!-- SingleStore -->
+        <td>&check;</td> <!-- PostgreSql -->
+        <td>&check;</td> <!-- Amazon Redshift -->
+        <td>&check;</td> <!-- Oracle -->
+        <td>&check;</td> <!-- SqlServer -->
+        <td>&check;</td> <!-- Cassandra -->
+        <td>&check;</td> <!-- Amazon Athena -->
+        <td>&check;</td> <!-- SAP Hana -->
+        <!-- <td>&#10005;</td> <!-- Apache Phoenix -->
+        <td>&check;</td> <!-- Apache Impala -->
+        <td>&check;</td> <!-- Trino -->
+        <td>&check;</td> <!-- PrimarSql -->
+    </tr>
+    <tr>
+        <td>Derived table</td>
+        <td>&check;</td> <!-- MySql -->
+        <td>&check;</td> <!-- SingleStore -->
+        <td>&check;</td> <!-- PostgreSql -->
+        <td>&check;</td> <!-- Amazon Redshift -->
+        <td>&check;</td> <!-- Oracle -->
+        <td>&check;</td> <!-- SqlServer -->
+        <td>&#10005;</td> <!-- Cassandra -->
+        <td>&check;</td> <!-- Amazon Athena -->
+        <td>&check;</td> <!-- SAP Hana -->
+        <!-- <td>&#10005;</td> <!-- Apache Phoenix -->
+        <td>&check;</td> <!-- Apache Impala -->
+        <td>&check;</td> <!-- Trino -->
+        <td>&#10005;</td> <!-- PrimarSql -->
+    </tr>
+    <tr>
+        <td>Derived table (Non-Alias)</td>
+        <td>&check;</td> <!-- MySql -->
+        <td>&check;</td> <!-- SingleStore -->
+        <td>&#10005;</td> <!-- PostgreSql -->
+        <td>&#10005;</td> <!-- Amazon Redshift -->
+        <td>&check;</td> <!-- Oracle -->
+        <td>&#10005;</td> <!-- SqlServer -->
+        <td>&#10005;</td> <!-- Cassandra -->
+        <td>&check;</td> <!-- Amazon Athena -->
+        <td>&check;</td> <!-- SAP Hana -->
+        <!-- <td>&#10005;</td> <!-- Apache Phoenix -->
+        <td>&#10005;</td> <!-- Apache Impala -->
+        <td>&check;</td> <!-- Trino -->
+        <td>&#10005;</td> <!-- PrimarSql -->
+    </tr>
+    <tr>
+        <td>Specify columns to table alias</td>
+        <td>&#10005;</td> <!-- MySql -->
+        <td>&#10005;</td> <!-- SingleStore -->
+        <td>&check;</td> <!-- PostgreSql -->
+        <td>&check;</td> <!-- Amazon Redshift -->
+        <td>&#10005;</td> <!-- Oracle -->
+        <td>&#10005;</td> <!-- SqlServer -->
+        <td>&#10005;</td> <!-- Cassandra -->
+        <td>&check;</td> <!-- Amazon Athena -->
+        <td>&#10005;</td> <!-- SAP Hana -->
+        <!-- <td>&#10005;</td> <!-- Apache Phoenix -->
+        <td>&#10005;</td> <!-- Apache Impala -->
+        <td>&check;</td> <!-- Trino -->
+        <td>&#10005;</td> <!-- PrimarSql -->
+    </tr>
+    <tr>
+        <td>Inline derived table</td>
+        <td>&#10005;</td> <!-- MySql -->
+        <td>&#10005;</td> <!-- SingleStore -->
+        <td>&check;</td> <!-- PostgreSql -->
+        <td>&check;</td> <!-- Amazon Redshift -->
+        <td>&#10005;</td> <!-- Oracle -->
+        <td>&check;</td> <!-- SqlServer -->
+        <td>&#10005;</td> <!-- Cassandra -->
+        <td>&check;</td> <!-- Amazon Athena -->
+        <td>&#10005;</td> <!-- SAP Hana -->
+        <!-- <td>&#10005;</td> <!-- Apache Phoenix -->
+        <td>&#10005;</td> <!-- Apache Impala -->
+        <td>&check;</td> <!-- Trino -->
+        <td>&#10005;</td> <!-- PrimarSql -->
+    </tr>
+    <tr>
+        <td>Table function</td>
+        <td>&#9888;</td> <!-- MySql -->
+        <td>&#9888;</td> <!-- SingleStore -->
+        <td>&check;</td> <!-- PostgreSql -->
+        <td>&check;</td> <!-- Amazon Redshift -->
+        <td>&#9888;</td> <!-- Oracle -->
+        <td>&check;</td> <!-- SqlServer -->
+        <td>&#10005;</td> <!-- Cassandra -->
+        <td>&#10005;</td> <!-- Amazon Athena -->
+        <td>&#9888;</td> <!-- SAP Hana -->
+        <!-- <td>&#10005;</td> <!-- Apache Phoenix -->
+        <td>&#10005;</td> <!-- Apache Impala -->
+        <td>&#10005;</td> <!-- Trino -->
+        <td>&#10005;</td> <!-- PrimarSql -->
+    </tr>
+    <tr>
+        <td>Table variable</td>
+        <td>&#9888;</td> <!-- MySql -->
+        <td>&#9888;</td> <!-- SingleStore -->
+        <td>&#9888;</td> <!-- PostgreSql -->
+        <td>&#9888;</td> <!-- Amazon Redshift -->
+        <td>&#9888;</td> <!-- Oracle -->
+        <td>&#9888;</td> <!-- SqlServer -->
+        <td>&#9888;</td> <!-- Cassandra -->
+        <td>&#9888;</td> <!-- Amazon Athena -->
+        <td>&#9888;</td> <!-- SAP Hana -->
+        <!-- <td>&#10005;</td> <!-- Apache Phoenix -->
+        <td>&#9888;</td> <!-- Apache Impala -->
+        <td>&#9888;</td> <!-- Trino -->
+        <td>&#10005;</td> <!-- PrimarSql -->
+    </tr>
+    <tr>
+        <td>Common table expression</td>
+        <td>&check;</td> <!-- MySql -->
+        <td>&check;</td> <!-- SingleStore -->
+        <td>&check;</td> <!-- PostgreSql -->
+        <td>&check;</td> <!-- Amazon Redshift -->
+        <td>&check;</td> <!-- Oracle -->
+        <td>&check;</td> <!-- SqlServer -->
+        <td>&#10005;</td> <!-- Cassandra -->
+        <td>&check;</td> <!-- Amazon Athena -->
+        <td>&check;</td> <!-- SAP Hana -->
+        <!-- <td>&#10005;</td> <!-- Apache Phoenix -->
+        <td>&check;</td> <!-- Apache Impala -->
+        <td>&check;</td> <!-- Trino -->
+        <td>&#10005;</td> <!-- PrimarSql -->
+    </tr>
+    <tr>
+        <td>Join tables</td>
+        <td>&check;</td> <!-- MySql -->
+        <td>&check;</td> <!-- SingleStore -->
+        <td>&check;</td> <!-- PostgreSql -->
+        <td>&check;</td> <!-- Amazon Redshift -->
+        <td>&check;</td> <!-- Oracle -->
+        <td>&check;</td> <!-- SqlServer -->
+        <td>&#10005;</td> <!-- Cassandra -->
+        <td>&check;</td> <!-- Amazon Athena -->
+        <td>&check;</td> <!-- SAP Hana -->
+        <!-- <td>&#10005;</td> <!-- Apache Phoenix -->
+        <td>&check;</td> <!-- Apache Impala -->
+        <td>&check;</td> <!-- Trino -->
+        <td>&#10005;</td> <!-- PrimarSql -->
+    </tr>
+    <tr>
+        <td>Union many tables</td>
+        <td>&check;</td> <!-- MySql -->
+        <td>&check;</td> <!-- SingleStore -->
+        <td>&check;</td> <!-- PostgreSql -->
+        <td>&check;</td> <!-- Amazon Redshift -->
+        <td>&check;</td> <!-- Oracle -->
+        <td>&check;</td> <!-- SqlServer -->
+        <td>&#10005;</td> <!-- Cassandra -->
+        <td>&check;</td> <!-- Amazon Athena -->
+        <td>&check;</td> <!-- SAP Hana -->
+        <!-- <td>&#10005;</td> <!-- Apache Phoenix -->
+        <td>&check;</td> <!-- Apache Impala -->
+        <td>&check;</td> <!-- Trino -->
+        <td>&#10005;</td> <!-- PrimarSql -->
+    </tr>
+    <tr>
+        <td>Table pivot</td>
+        <td>&#9888;</td> <!-- MySql -->
+        <td>&#9888;</td> <!-- SingleStore -->
+        <td>&#9888;</td> <!-- PostgreSql -->
+        <td>&#9888;</td> <!-- Amazon Redshift -->
+        <td>&#9888;</td> <!-- Oracle -->
+        <td>&#9888;</td> <!-- SqlServer -->
+        <td>&#9888;</td> <!-- Cassandra -->
+        <td>&#9888;</td> <!-- Amazon Athena -->
+        <td>&#9888;</td> <!-- SAP Hana -->
+        <!-- <td>&#10005;</td> <!-- Apache Phoenix -->
+        <td>&#9888;</td> <!-- Apache Impala -->
+        <td>&#9888;</td> <!-- Trino -->
+        <td>&#10005;</td> <!-- PrimarSql -->
+    </tr>
+    <tr>
+        <td>Table unpivot</td>
+        <td>&#9888;</td> <!-- MySql -->
+        <td>&#9888;</td> <!-- SingleStore -->
+        <td>&#9888;</td> <!-- PostgreSql -->
+        <td>&#9888;</td> <!-- Amazon Redshift -->
+        <td>&#9888;</td> <!-- Oracle -->
+        <td>&#9888;</td> <!-- SqlServer -->
+        <td>&#9888;</td> <!-- Cassandra -->
+        <td>&#9888;</td> <!-- Amazon Athena -->
+        <td>&#9888;</td> <!-- SAP Hana -->
+        <!-- <td>&#10005;</td> <!-- Apache Phoenix -->
+        <td>&#9888;</td> <!-- Apache Impala -->
+        <td>&#9888;</td> <!-- Trino -->
+        <td>&#10005;</td> <!-- PrimarSql -->
+    </tr>
+    <tr>
+        <td>Trace view definition</td>
+        <td>&check;</td> <!-- MySql -->
+        <td>&check;</td> <!-- SingleStore -->
+        <td>&check;</td> <!-- PostgreSql -->
+        <td>&check;</td> <!-- Amazon Redshift -->
+        <td>&check;</td> <!-- Oracle -->
+        <td>&check;</td> <!-- SqlServer -->
+        <td>&check;</td> <!-- Cassandra -->
+        <td>&check;</td> <!-- Amazon Athena -->
+        <td>&check;</td> <!-- SAP Hana -->
+        <!-- <td>&#10005;</td> <!-- Apache Phoenix -->
+        <td>&check;</td> <!-- Apache Impala -->
+        <td>&check;</td> <!-- Trino -->
+        <td>&#10005;</td> <!-- PrimarSql -->
+    </tr>
+    <tr>
+        <td>Trace variable definition</td>
+        <td>&#9888;</td> <!-- MySql -->
+        <td>&#9888;</td> <!-- SingleStore -->
+        <td>&#9888;</td> <!-- PostgreSql -->
+        <td>&#9888;</td> <!-- Amazon Redshift -->
+        <td>&#9888;</td> <!-- Oracle -->
+        <td>&#9888;</td> <!-- SqlServer -->
+        <td>&#9888;</td> <!-- Cassandra -->
+        <td>&#9888;</td> <!-- Amazon Athena -->
+        <td>&#9888;</td> <!-- SAP Hana -->
+        <!-- <td>&#10005;</td> <!-- Apache Phoenix -->
+        <td>&#9888;</td> <!-- Apache Impala -->
+        <td>&#9888;</td> <!-- Trino -->
+        <td>&#10005;</td> <!-- PrimarSql -->
+    </tr>
+    <tr>
+        <td>Execute prepared table query</td>
+        <td>&#9888;</td> <!-- MySql -->
+        <td>&#9888;</td> <!-- SingleStore -->
+        <td>&#9888;</td> <!-- PostgreSql -->
+        <td>&#9888;</td> <!-- Amazon Redshift -->
+        <td>&#9888;</td> <!-- Oracle -->
+        <td>&#9888;</td> <!-- SqlServer -->
+        <td>&#9888;</td> <!-- Cassandra -->
+        <td>&#9888;</td> <!-- Amazon Athena -->
+        <td>&#9888;</td> <!-- SAP Hana -->
+        <!-- <td>&#10005;</td> <!-- Apache Phoenix -->
+        <td>&#9888;</td> <!-- Apache Impala -->
+        <td>&#9888;</td> <!-- Trino -->
+        <td>&#10005;</td> <!-- PrimarSql -->
+    </tr>
+    <tr>
+        <td>Call table procedure</td>
+        <td>&#9888;</td> <!-- MySql -->
+        <td>&#9888;</td> <!-- SingleStore -->
+        <td>&#9888;</td> <!-- PostgreSql -->
+        <td>&#9888;</td> <!-- Amazon Redshift -->
+        <td>&#9888;</td> <!-- Oracle -->
+        <td>&#9888;</td> <!-- SqlServer -->
+        <td>&#9888;</td> <!-- Cassandra -->
+        <td>&#9888;</td> <!-- Amazon Athena -->
+        <td>&#9888;</td> <!-- SAP Hana -->
+        <!-- <td>&#10005;</td> <!-- Apache Phoenix -->
+        <td>&#9888;</td> <!-- Apache Impala -->
+        <td>&#9888;</td> <!-- Trino -->
+        <td>&#10005;</td> <!-- PrimarSql -->
+    </tr>
+</table>
 
 ## Table Features
+
 
 <table>
 
@@ -196,16 +570,16 @@ SELECT * FROM
 <td>
 
 ```sql
--- TODO
+-- function : id, name
+SELECT * FROM tbl_func('table function')
 ```
 </td>
 <td>
-
-<!--
-|Column|References|
-|:-:|-|
-|||
--->
+    
+|Column|References                |
+|:----:|--------------------------|
+|`id`   | no reference |
+|`name` | no reference |
 </td>
 </tr>
 
