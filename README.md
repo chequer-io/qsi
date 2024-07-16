@@ -884,16 +884,24 @@ SELECT * FROM table_view
 #### Requirements
 
 - PowerShell
-- .NET Core 3.1
+- .NET 6.0
 - Java >= 1.8
 
 ### Command
 
 #### Setup
 
+PowerShell
+
 ```ps1
 PS> cd ./qsi
 PS> ./Setup.ps1
+```
+
+Terminal
+```shell
+cd ./qsi
+./setup.sh
 ```
 
 #### Publish
