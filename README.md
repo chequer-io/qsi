@@ -1,3 +1,5 @@
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://raw.githubusercontent.com/chequer-io/qsi/main/LICENSE)
+[![Nuget](https://img.shields.io/nuget/dt/Qsi?label=Nuget.org%20Downloads&style=flat-square&color=blue)](https://www.nuget.org/packages/Qsi)
 [![QSI Unit Tests](https://github.com/chequer-io/qsi/actions/workflows/qsi-unit-tests.yml/badge.svg)](https://github.com/chequer-io/qsi/actions/workflows/qsi-unit-tests.yml)
 
 ![Logo](https://github.com/chequer-io/qsi/blob/main/Resources/logo-256.png?raw=true)
