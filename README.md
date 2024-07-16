@@ -13,13 +13,19 @@ The QSI is the pure C# Query Structure Interface.
 |Language|Parser|Repos|
 |--|--|--|
 |MySql|MySQL Workbench source code(Antlr4)|[mysql-fworkbench](https://github.com/mysql/mysql-workbench)|
-|PostgreSql10|PostgreSQL server source code(yacc)|[libpg_query](https://github.com/lfittl/libpg_query), [ChakraCore](https://github.com/microsoft/ChakraCore)|
-|JSql|JavaCC|[JSqlParser](https://github.com/JSQLParser/JSqlParser), [IKVM](https://github.com/ikvm-revived/ikvm)|
-|Oracle|Qsi.JSql||
-|SqlServer|Microsoft.SqlServer.TransactSql.ScriptDom|[MSDN](https://docs.microsoft.com/en-us/dotnet/api/microsoft.sqlserver.transactsql.scriptdom?view=sql-dacfx-150), [NuGet](https://www.nuget.org/packages/Microsoft.SqlServer.TransactSql.ScriptDom)|
-|PhoenixSql|Phoenix server source code(Antlr3)|[PhoenixSql](https://github.com/chequer-io/PhoenixSql)|
+|SingleStore|based on Qsi.MySql||
+|PostgreSql|PostgreSQL server source code(yacc)|[libpg_query](https://github.com/lfittl/libpg_query)|
+|Redshift|based on Qsi.PostgreSql||
+|Oracle|Antlr4||
+|SqlServer|Microsoft.SqlServer.TransactSql.ScriptDom, Microsoft.SqlServer.Management.SqlParser|[MSDN](https://docs.microsoft.com/en-us/dotnet/api/microsoft.sqlserver.transactsql.scriptdom?view=sql-dacfx-150), [NuGet (ScriptDom)](https://www.nuget.org/packages/Microsoft.SqlServer.TransactSql.ScriptDom),[NuGet (Management)](https://www.nuget.org/packages/Microsoft.SqlServer.Management.SqlParser/)|
+|Cassandra|Antlr||
+|Athena|Antlr||
+|SAP Hana|Antlr||
+|Impala|Antlr||
+|Trino|Trino source code(Antlr4)|[trino](https://github.com/trinodb/trino/)|
 |PrimarSql|PrimarSql|[PrimarSql](https://github.com/chequer-io/PrimarSql)|
 
+<!-- |PhoenixSql|Phoenix server source code(Antlr3)|[PhoenixSql](https://github.com/chequer-io/PhoenixSql)| -->
 
 ## Structure Compiler
 It compiles the result structure and relation 
