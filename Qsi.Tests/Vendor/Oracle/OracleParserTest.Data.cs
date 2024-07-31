@@ -1,3 +1,8 @@
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
 
 namespace Qsi.Tests.Oracle;
@@ -30,4 +35,36 @@ public partial class OracleParserTest
             "UPDATE SET a.deptno = 20 WHERE a.job = 'ANALYST' " +
             "DELETE WHERE a.job <> 'ANALYST';"),
     };
+
+    private static IEnumerable<TestCaseData> Parse_Oracle19Datas
+        => ReadSqlFromResources("oracle_19").Select(sql => new TestCaseData(sql)
+        {
+            TestName = TrimRemark(sql)
+        });
+
+    private static readonly Regex _regex = new("^(-- https://docs.oracle.com/en/database/oracle/oracle-database/19/.+)\\n");
+
+    private static string TrimRemark(string sql)
+    {
+        var matches = _regex.Matches(sql);
+
+        return matches.Count == 0
+            ? sql
+            : sql[matches[0].Length..];
+    }
+
+    private static IEnumerable<string> ReadSqlFromResources(string folder)
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+        var resources = assembly.GetManifestResourceNames();
+
+        return resources
+            .Where(r => r.StartsWith($"Qsi.Tests.Resources.Oracle.{folder}") && r.EndsWith(".sql"))
+            .Select(filePath =>
+            {
+                using var stream = assembly.GetManifestResourceStream(filePath)!;
+                using var reader = new StreamReader(stream);
+                return reader.ReadToEnd();
+            });
+    }
 }
