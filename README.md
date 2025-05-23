@@ -155,8 +155,8 @@ based on semantic tree transformed by parser's  for each language.
             <a href="https://github.com/chequer-io/PrimarSql">
                 <img
                     src="https://raw.githubusercontent.com/chequer-io/primarsql/main/Logo.png" 
-                    alt="Trino"
-                    title="Trino"
+                    alt="PrimarSql"
+                    title="PrimarSql"
                     style="width:20px;height:auto;" />
             </a>
         </th>
